@@ -1,6 +1,9 @@
 # Using Transport Layer Security (TLS) to Secure QUIC
 
-This is the working area for the Working Group internet-draft, "Using Transport Layer Security (TLS) to Secure QUIC".
+This is the working area for the QUIC working group drafts.
+
+
+## TLS Mapping
 
 * [Editor's copy](https://quicwg.github.io/base-drafts/)
 * [Working Group Draft] (https://tools.ietf.org/html/draft-ietf-quic-tls)
