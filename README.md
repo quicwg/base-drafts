@@ -1,6 +1,7 @@
-# Using Transport Layer Security (TLS) to Secure QUIC
+# QUIC Protocol
 
-This is the working area for the QUIC working group drafts.
+This is the working area for the IETF QUIC Working Group documents for the
+QUIC protocol suite.
 
 
 ## TLS Mapping
