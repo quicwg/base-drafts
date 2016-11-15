@@ -1,0 +1,12 @@
+*.redxml
+*.txt
+*.html
+*.pdf
+*~
+*.swp
+/*-[0-9][0-9].xml
+.refcache
+venv/
+issues.json
+lib
+draft-ietf-quic-tls.md

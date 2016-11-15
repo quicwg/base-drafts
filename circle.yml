@@ -1,0 +1,24 @@
+machine:
+  python:
+    version: 2.7.11
+  ruby:
+    version: 2.3.1
+
+checkout:
+  post:
+    - git fetch origin gh-pages --depth 10
+
+dependencies:
+  pre:
+    - pip install xml2rfc
+    - gem install --no-doc kramdown-rfc2629
+
+test:
+  override:
+    - make
+
+deployment:
+  production:
+    branch: /.*/
+    commands:
+      - make ghpages
