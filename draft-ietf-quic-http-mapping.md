@@ -105,39 +105,58 @@ frame are superseded by QUIC transport parameters in HTTP/2- over-QUIC.  Below
 is a listing of how each HTTP/2 SETTINGS parameter is mapped:
 
 SETTINGS_HEADER_TABLE_SIZE:
-
 : Sent in HTTP/2 SETTINGS frame.
 
 SETTINGS_ENABLE_PUSH:
-
 : Sent in HTTP/2 SETTINGS frame (TBD, currently set using QUIC "SPSH" connection
   option)
 
 SETTINGS_MAX_CONCURRENT_STREAMS
-
 : QUIC requires the maximum number of incoming streams per connection to be
   specified in the initial crypto handshake, using the "MSPC" tag.  Specifying
   SETTINGS_MAX_CONCURRENT_STREAMS in the HTTP/2 SETTINGS frame is an error.
 
 SETTINGS_INITIAL_WINDOW_SIZE:
-
 : QUIC requires both stream and connection flow control window sizes to be
   specified in the initial crypto handshake, using the "SFCW" and "CFCW" tags,
   respectively.  Specifying SETTINGS_INITIAL_WINDOW_SIZE in the HTTP/2 SETTINGS
   frame is an error.
 
 SETTINGS_MAX_FRAME_SIZE:
-
 : This setting has no equivalent in QUIC.  Specifying it in the HTTP/2 SETTINGS
   frame is an error.
 
 SETTINGS_MAX_HEADER_LIST_SIZE
-
 : Sent in HTTP/2 SETTINGS frame.
 
 As with HTTP/2-over-TCP, unknown SETTINGS parameters are tolerated but ignored.
 SETTINGS parameters are acknowledged by the receiving peer, by sending an empty
 SETTINGS frame in response with the ACK bit set.
+
+
+# Server Push
+
+HTTP/2-over-QUIC supports HTTP/2 server push.  During connection
+establishment, the client indicates whether or it is willing to
+receive server pushes via the SETTINGS_ENABLE_PUSH setting in the
+HTTP/2 SETTINGS frame (see [Connection Establishment]), which
+defaults to 1 (true).
+
+As with server push for HTTP/2-over-TCP, the server initiates a
+server push by sending an HTTP/2 PUSH_PROMISE frame containing the
+StreamID of the stream to be pushed, as well as request header fields
+attributed to the request.  The PUSH_PROMISE frame is sent on stream
+3, to ensure proper ordering with respect to other HEADERS and non-
+data frames.  Within the PUSH_PROMISE frame, the StreamID in the
+common HTTP/2 frame header indicates the associated (client-
+initiated) stream for the new push stream, while the Promised Stream
+ID field specifies the StreamID of the new push stream.
+
+The server push response is conveyed in the same way as a non-server-
+push response, with response headers and (if present) trailers
+carried by HTTP/2 HEADERS frames sent on reserved stream 3, and
+response body (if any) sent via QUIC stream frames on the stream
+specified in the corresponding PUSH_PROMISE frame.
 
 
 # Error Codes
@@ -146,48 +165,48 @@ The HTTP/2 error codes defined in [RFC7540 Section 7] map to QUIC
 error codes as follows:
 
 NO_ERROR (0x0):
-  :Maps to QUIC_NO_ERROR
+: Maps to QUIC_NO_ERROR
 
 PROTOCOL_ERROR (0x1):
-  :No single mapping?
+: No single mapping?
 
-INTERNAL_ERROR (0x2):
-  :QUIC_INTERNAL_ERROR? (not currently defined in core protocol
+INTERNAL_ERROR (0x2)
+: QUIC_INTERNAL_ERROR? (not currently defined in core protocol
          spec)
 
 FLOW_CONTROL_ERROR (0x3):
-  :QUIC_FLOW_CONTROL_RECEIVED_TOO_MUCH_DATA? (not currently
+: QUIC_FLOW_CONTROL_RECEIVED_TOO_MUCH_DATA? (not currently
          defined in core protocol spec)
 
 SETTINGS_TIMEOUT (0x4):
-  :(depends on whether we support SETTINGS acks)
+: (depends on whether we support SETTINGS acks)
 
 STREAM_CLOSED (0x5):
-  :QUIC_STREAM_DATA_AFTER_TERMINATION
+: QUIC_STREAM_DATA_AFTER_TERMINATION
 
 FRAME_SIZE_ERROR (0x6)
-  :QUIC_INVALID_FRAME_DATA
+: QUIC_INVALID_FRAME_DATA
 
 REFUSED_STREAM (0x7):
-  :?
+: ?
 
 CANCEL (0x8):
-  :?
+: ?
 
 COMPRESSION_ERROR (0x9):
-  :QUIC_DECOMPRESSION_FAILURE (not currently defined in core spec)
+: QUIC_DECOMPRESSION_FAILURE (not currently defined in core spec)
 
 CONNECT_ERROR (0xa):
-  :? (depends whether we decide to support CONNECT)
+: ? (depends whether we decide to support CONNECT)
 
 ENHANCE_YOUR_CALM (0xb):
-  :?
+: ?
 
 INADEQUATE_SECURITY (0xc):
-  :QUIC_HANDSHAKE_FAILED, QUIC_CRYPTO_NO_SUPPORT
+: QUIC_HANDSHAKE_FAILED, QUIC_CRYPTO_NO_SUPPORT
 
 HTTP_1_1_REQUIRED (0xd):
-  :?
+: ?
 
 TODO: fill in missing error code mappings.
 
