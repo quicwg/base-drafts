@@ -8,6 +8,11 @@ QUIC protocol suite.
 * [Editor's copy](https://quicwg.github.io/base-drafts/draft-ietf-quic-transport-protocol.html)
 * [Working Group Draft] (https://tools.ietf.org/html/draft-ietf-quic-transport-protocol) (not yet published)
 
+## Loss Detection & Congestion Control
+
+* [Editor's copy](https://quicwg.github.io/base-drafts/draft-ietf-quic-loss-detection.html)
+* [Working Group Draft] (https://tools.ietf.org/html/draft-ietf-quic-loss-detection) (not yet published)
+
 ## TLS Mapping
 
 * [Editor's copy](https://quicwg.github.io/base-drafts/draft-ietf-quic-tls.html)
