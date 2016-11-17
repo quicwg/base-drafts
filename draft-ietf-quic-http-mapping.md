@@ -2,7 +2,6 @@
 title: HTTP/2 Semantics Using The QUIC Transport Protocol
 abbrev: HTTP/2 Over QUIC
 docname: draft-ietf-quic-http-mapping-latest
-date: 2016
 category: std
 ipr: trust200902
 

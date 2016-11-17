@@ -2,7 +2,6 @@
 title: Using Transport Layer Security (TLS) to Secure QUIC
 abbrev: QUIC over TLS
 docname: draft-ietf-quic-tls-latest
-date: 2016
 category: std
 ipr: trust200902
 
