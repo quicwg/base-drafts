@@ -87,7 +87,7 @@ HTTP/2-over-TLS/TCP.
 
 HTTP/2-over-QUIC connections are established as described in
 {{!I-D.hamilton-quic-transport-protocol}}.  The QUIC crypto handshake MUST use TLS
-{{!I-D.ietf-quic-tls}}.
+{{!I-D.thomson-quic-tls}}.
 
 While connection-level options pertaining to the core QUIC protocol are set in
 the initial crypto handshake [Combined Crypto and Transport Handshake],
