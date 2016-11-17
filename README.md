@@ -3,6 +3,10 @@
 This is the working area for the IETF QUIC Working Group documents for the
 QUIC protocol suite.
 
+## Transport Protocol
+
+* [Editor's copy](https://quicwg.github.io/base-drafts/draft-ietf-quic-transport-protocol.html)
+* [Working Group Draft] (https://tools.ietf.org/html/draft-ietf-quic-transport-protocol) (not yet published)
 
 ## TLS Mapping
 

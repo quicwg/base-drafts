@@ -1,5 +1,5 @@
 ---
-title: QUIC: A UDP-Based Multiplexed and Secure Transport
+title: "QUIC: A UDP-Based Multiplexed and Secure Transport"
 abbrev: QUIC Transport Protocol
 docname: draft-ietf-quic-transport-protocol-latest
 category: std
@@ -29,7 +29,7 @@ author:
     name: Alyssa Wilk
     org: Google
     email: alyssar@google.com
- - 
+
 normative:
 
 
@@ -56,7 +56,6 @@ control, and the use of TLS 1.3 for key negotiation.
 
 --- middle
 
-
 # Introduction
 
 QUIC is a multiplexed and secure transport protocol that runs on top
@@ -82,9 +81,7 @@ The words "MUST", "MUST NOT", "SHOULD", and "MAY" are used in this document.
 It's not shouting; when they are capitalized, they have the special meaning
 defined in {{!RFC2119}}.
 
-
 # Security Considerations
-
 
 # IANA Considerations
 
