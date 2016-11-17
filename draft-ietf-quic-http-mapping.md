@@ -89,13 +89,14 @@ HTTP/2-over-QUIC connections are established as described in
 {{!I-D.hamilton-quic-transport-protocol}}.  The QUIC crypto handshake MUST use TLS
 {{!I-D.thomson-quic-tls}}.
 
-While connection-level options pertaining to the core QUIC protocol are set in
-the initial crypto handshake [Combined Crypto and Transport Handshake],
-HTTP/2-specific settings are conveyed in the HTTP/2 SETTINGS frame.  After the
-QUIC connection is established, an HTTP/2 SETTINGS frame may be sent as the
-initial frame of the QUIC headers stream (StreamID 3, See {{stream-mapping}}).
-As in HTTP/2, additional SETTINGS frames may be sent mid-connection by either
-endpoint.
+While connection-level options pertaining to the core QUIC protocol are 
+set in the initial crypto handshake {{!I-D.thomson-quic-tls}}, 
+HTTP/2-specific settings are conveyed in the HTTP/2 SETTINGS frame. 
+After the QUIC connection is established, an HTTP/2 SETTINGS frame may 
+be sent as the initial frame of the QUIC headers stream (StreamID 3, See 
+{{stream-mapping}}). As in HTTP/2, additional SETTINGS frames may be 
+sent mid-connection by either endpoint. 
+
 
 TODO: decide whether to acknowledge receipt of SETTINGS through empty
   SETTINGS frames with ACK bit set, as in HTTP/2, or rely on transport-
