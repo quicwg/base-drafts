@@ -97,8 +97,7 @@ headers stream (StreamID 3, See {{stream-mapping}}).  As in HTTP/2,
 additional SETTINGS frames may be sent mid-connection by either
 endpoint.
 
-TODO:
-: decide whether to acknowledge receipt of SETTINGS through empty
+TODO: decide whether to acknowledge receipt of SETTINGS through empty
   SETTINGS frames with ACK bit set, as in HTTP/2, or rely on transport-
   level acknowledgment.
 
@@ -109,8 +108,99 @@ is mapped:
 
 
 
+# Error Codes
+
+The HTTP/2 error codes defined in [RFC7540 Section 7] map to QUIC
+error codes as follows:
+
+NO_ERROR (0x0):
+  :Maps to QUIC_NO_ERROR
+
+PROTOCOL_ERROR (0x1):
+  :No single mapping?
+
+INTERNAL_ERROR (0x2):
+  :QUIC_INTERNAL_ERROR? (not currently defined in core protocol
+         spec)
+
+FLOW_CONTROL_ERROR (0x3):
+  :QUIC_FLOW_CONTROL_RECEIVED_TOO_MUCH_DATA? (not currently
+         defined in core protocol spec)
+
+SETTINGS_TIMEOUT (0x4):
+  :(depends on whether we support SETTINGS acks)
+
+STREAM_CLOSED (0x5):
+  :QUIC_STREAM_DATA_AFTER_TERMINATION
+
+FRAME_SIZE_ERROR (0x6)
+  :QUIC_INVALID_FRAME_DATA
+
+REFUSED_STREAM (0x7):
+  :?
+
+CANCEL (0x8):
+  :?
+
+COMPRESSION_ERROR (0x9):
+  :QUIC_DECOMPRESSION_FAILURE (not currently defined in core spec)
+
+CONNECT_ERROR (0xa):
+  :? (depends whether we decide to support CONNECT)
+
+ENHANCE_YOUR_CALM (0xb):
+  :?
+
+INADEQUATE_SECURITY (0xc):
+  :QUIC_HANDSHAKE_FAILED, QUIC_CRYPTO_NO_SUPPORT
+
+HTTP_1_1_REQUIRED (0xd):
+  :?
+
+TODO: fill in missing error code mappings.
+
+# Other HTTP/2 frames
+
+QUIC includes some features (e.g. flow control) which are also
+present in HTTP/2.  In these cases the HTTP/2 mapping need not re-
+implement them.  As a result some HTTP/2 frame types are not required
+when using QUIC, as they either are directly implemented in the QUIC
+layer, or their functionality is provided via other means.  This
+section of the document describes these cases.
+
+## GOAWAY frame
+
+QUIC has its own GOAWAY frame, and QUIC implementations may to expose
+the sending of a GOAWAY to the application.  The semantics of sending
+a GOAWAY in QUIC are identical to HTTP/2: an endpoint sending a
+GOAWAY will continue processing open streams, but will not accept
+newly created streams.
+
+QUIC's GOAWAY frame is described in detail in the [!draft-hamilton-
+quic-transport-protocol].
+
+## PING frame
+
+QUIC has its own PING frame, which is currently exposed to the
+application.  QUIC clients send periodic PINGs to servers if there
+are no currently active data streams on the connection.
+
+QUIC's PING frame is described in detail in the [!draft-hamilton-quic-
+transport-protocol].
+
+## PADDING frame
+
+There is no HTTP/2 padding in this mapping; padding is instead
+provided at the QUIC layer by including QUIC PADDING frames in a
+packet payload.  An HTTP/2 over QUIC mapping should treat any HTTP/2
+level padding as an error, to avoid any possibility of inconsistent
+flow control states between endpoints (e.g. client sends HTTP/2
+padding, counts it against flow control, server ignores).
+
 # Security Considerations
 
+The security considerations of HTTP over QUIC should be comparable to
+those of HTTP/2.
 
 
 # IANA Considerations
@@ -118,12 +208,6 @@ is mapped:
 This document has no IANA actions.  Yet.
 
 
+
 --- back
 
-# Acknowledgments
-
-Christian Huitema's knowledge of QUIC is far better than my own.  This would be
-even more inaccurate and useless if not for his assistance.  This document has
-variously benefited from a long series of discussions with Jana Iyengar, Adam
-Langley, Roberto Peon, Eric Rescorla, Ian Swett, and likely many others who are
-merely forgotten by a faulty meat computer.
