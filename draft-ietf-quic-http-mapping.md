@@ -66,7 +66,7 @@ response header.  It does so by including the header in any response sent over a
 non-QUIC (e.g.  HTTP/2 over TLS) connection:
 
    Alt-Svc: quic=":443"
-
+   
 In addition, the list of QUIC versions supported by the server can be specified
 by the v= parameter.  For example, if a server supported both version 33 and 34
 it would specify the following header:
@@ -132,6 +132,63 @@ SETTINGS_MAX_HEADER_LIST_SIZE
 As with HTTP/2-over-TCP, unknown SETTINGS parameters are tolerated but ignored.
 SETTINGS parameters are acknowledged by the receiving peer, by sending an empty
 SETTINGS frame in response with the ACK bit set.
+
+
+# Stream Priorities
+
+HTTP/2-over-QUIC uses the HTTP/2 priority scheme described in
+{{!RFC7540}} Section 5.3.  In the HTTP/2 priority scheme, a given stream
+can be designated as dependent upon another stream, which expresses
+the preference that the latter stream (the "parent" stream) be
+allocated resources before the former stream (the "dependent"
+stream).  Taken together, the dependencies across all streams in a
+connection form a dependency tree.  The structure of the dependency
+tree changes as HTTP/2 HEADERS and PRIORITY frames add, remove, or
+change the dependency links between streams.
+
+Implicit in this scheme is the notion of in-order delivery of
+priority changes (i.e., dependency tree mutations): since operations
+on the dependency tree such as reparenting a subtree are not
+commutative, both sender and receiver must apply them in the same
+order to ensure that both sides have a consistent view of the stream
+dependency tree.  HTTP/2 specifies priority assignments in PRIORITY
+frames and (optionally) in HEADERS frames.  To achieve in-order
+delivery of HTTP/2 priority changes in HTTP/2-over-QUIC, HTTP/2
+PRIORITY frames, in addition to HEADERS frames, are also sent on
+reserved stream 3.  The semantics of the Stream Dependency, Weight, E
+flag, and (for HEADERS frames) PRIORITY flag are the same as in
+HTTP/2-over-TCP.
+
+Since HEADERS and PRIORITY frames are sent on a different stream than
+the STREAM frames for the streams they reference, they may be
+delivered out-of-order with respect to the STREAM frames.  There is
+no special handling for this--the receiver should simply assign
+resources according to the most recent stream priority information
+that it has received.
+
+ALTERNATIVE DESIGN: if the core QUIC protocol implements priorities,
+then this document should map the HTTP/2 priorities scheme to that
+provided by the core protocol.  This would likely involve prohibiting
+the sending of HTTP/2 PRIORITY frames and setting of the PRIORITY
+flag in HTTP/2 HEADERS frames, to avoid conflicting directives.
+
+# Flow Control
+
+QUIC provides stream and connection level flow control, similar in
+principle to HTTP/2's flow control but with some implementation
+differences.  As flow control is handled by QUIC, the HTTP/2 mapping
+need not concern itself with maintaining flow control state, or how/
+when to send flow control frames to the peer.  The HTTP/2 mapping
+must not send HTTP/2 WINDOW_UPDATE frames.
+
+The initial flow control window sizes (stream and connection) are
+communicated during the crypto handshake (see [Connection
+establishment]).  Setting these values to the maximum size (2^31 - 1)
+effectively disables flow control.
+
+Relatively small initial windows can be used, as QUIC will attempt to
+auto-tune the flow control windows based on usage.  See
+[!I-D.ietf-quic-transport-protocol] for more details.
 
 
 # Server Push
@@ -227,8 +284,8 @@ a GOAWAY in QUIC are identical to HTTP/2: an endpoint sending a
 GOAWAY will continue processing open streams, but will not accept
 newly created streams.
 
-QUIC's GOAWAY frame is described in detail in the [!draft-hamilton-
-quic-transport-protocol].
+QUIC's GOAWAY frame is described in detail in the
+[!I-D.ietf-quic-transport-protocol].
 
 ## PING frame
 
@@ -236,8 +293,8 @@ QUIC has its own PING frame, which is currently exposed to the
 application.  QUIC clients send periodic PINGs to servers if there
 are no currently active data streams on the connection.
 
-QUIC's PING frame is described in detail in the [!draft-hamilton-quic-
-transport-protocol].
+QUIC's PING frame is described in detail in the
+[!I-D.ietf-quic-transport-protocol].
 
 ## PADDING frame
 
