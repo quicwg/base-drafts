@@ -6,9 +6,13 @@ QUIC protocol suite.
 
 ## TLS Mapping
 
-* [Editor's copy](https://quicwg.github.io/base-drafts/)
-* [Working Group Draft] (https://tools.ietf.org/html/draft-ietf-quic-tls)
+* [Editor's copy](https://quicwg.github.io/base-drafts/draft-ietf-quic-tls.html)
+* [Working Group Draft] (https://tools.ietf.org/html/draft-ietf-quic-tls) (not yet published)
 
+## HTTP Mapping
+
+* [Editor's copy](https://quicwg.github.io/base-drafts/draft-ietf-quic-http-mapping.html)
+* [Working Group Draft] (https://tools.ietf.org/html/draft-ietf-quic-http-mapping) (not yet published)
 
 ## Building the Draft
 
