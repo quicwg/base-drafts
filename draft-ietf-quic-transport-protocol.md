@@ -10,26 +10,16 @@ stand_alone: yes
 pi: [toc, sortrefs, symrefs, docmapping]
 
 author:
- -
-    ins: R. Hamilton
-    name: Ryan Hamilton
-    org: Google
-    email: rch@google.com
- -
+  -
     ins: J. Iyengar
     name: Jana Iyengar
     org: Google
-    email: jri@google.com
- -
-    ins: I. Swett
-    name: Ian Swett
-    org: Google
-    email: ianswett@google.com
- -
-    ins: A. Wilk
-    name: Alyssa Wilk
-    org: Google
-    email: alyssar@google.com
+    role: editor
+  -
+    ins: M. Thomson
+    name: Martin Thomson
+    org: Mozilla
+    role: editor
 
 normative:
 
@@ -2068,3 +2058,8 @@ This document has no IANA actions yet.
 
 
 --- back
+
+# Contributors
+
+The original authors of this specification were Ryan Hamilton, Jana Iyengar,
+Ian Swett, and Alyssa Wilk.
