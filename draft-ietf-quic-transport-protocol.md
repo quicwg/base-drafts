@@ -2,6 +2,7 @@
 title: "QUIC: A UDP-Based Multiplexed and Secure Transport"
 abbrev: QUIC Transport Protocol
 docname: draft-ietf-quic-transport-protocol-latest
+date: {DATE}
 category: std
 ipr: trust200902
 
@@ -32,8 +33,47 @@ author:
 
 normative:
 
+  QUIC-LOSS-RECOVERY:
+    title: "QUIC Loss Detection and Congestion Control"
+    date: {DATE}
+    author:
+      -
+        ins: J. Iyengar
+        name: Jana Iyengar
+        org: Google
+        role: editor
+      -
+        ins: I. Swett
+        name: Ian Swett
+        org: Google
+        role: editor
+
+  QUIC-TLS:
+    title: "Using Transport Layer Security (TLS) to Secure QUIC"
+    date: {DATE}
+    author:
+      -
+        ins: M. Thomson
+        name: Martin Thomson
+        org: Mozilla
+        role: editor
+      -
+        ins: S. Turner, Ed.
+        name: Sean Turner
+        org: sn3rd
+        role: editor
 
 informative:
+
+  QUIC-HTTP:
+    title: "HTTP/2 Semantics Using The QUIC Transport Protocol"
+    date: {DATE}
+    author:
+      -
+        ins: M. Bishop
+        name: Mike Bishop
+        org: Microsoft
+        role: editor
 
   SST:
     title: "Structured Streams: A New Transport Abstraction"
@@ -57,6 +97,7 @@ informative:
       - ins: J. Roskind
     date: 2013-12-02
     target: "https://goo.gl/dMVtFi"
+
 
 --- abstract
 
@@ -94,8 +135,8 @@ conceptual design, wire format, and mechanisms of the QUIC protocol
 for connection establishment, stream multiplexing, stream and
 connection-level flow control, and data reliability.  Accompanying
 documents describe QUIC's loss detection and congestion control
-{{!I-D.iyengar-quic-loss-recovery}}, and the use of TLS 1.3 for key
-negotiation {{!I-D.thomson-quic-tls}}.
+{{QUIC-LOSS-RECOVERY}}, and the use of TLS 1.3 for key negotiation
+{{QUIC-TLS}}.
 
 ## Notational Conventions
 
@@ -108,17 +149,23 @@ defined in {{!RFC2119}}.
 
 Definitions of terms that are used in this document:
 
-  * Client: The endpoint initiating a QUIC connection.
-  * Server: The endpoint accepting incoming QUIC connections.
-  * Endpoint: The client or server end of a connection.
-  * Stream: A logical, bi-directional channel of ordered bytes within
-    a QUIC connection.
-  * Connection: A conversation between two QUIC endpoints with a
-    single encryption context that multiplexes streams within it.
-  * Connection ID: The identifier for a QUIC connection.
-  * QUIC packet: A well-formed UDP payload that can be parsed by a
-    QUIC receiver.  QUIC packet size in this document refers to the
-    UDP payload size.
+* Client: The endpoint initiating a QUIC connection.
+
+* Server: The endpoint accepting incoming QUIC connections.
+
+* Endpoint: The client or server end of a connection.
+
+* Stream: A logical, bi-directional channel of ordered bytes within
+  a QUIC connection.
+
+* Connection: A conversation between two QUIC endpoints with a
+  single encryption context that multiplexes streams within it.
+
+* Connection ID: The identifier for a QUIC connection.
+
+* QUIC packet: A well-formed UDP payload that can be parsed by a
+  QUIC receiver.  QUIC packet size in this document refers to the
+  UDP payload size.
 
 
 # A QUIC Overview
@@ -126,13 +173,20 @@ Definitions of terms that are used in this document:
 This section briefly describes QUIC's key mechanisms and benefits.
 Key strengths of QUIC include:
 
-  * Low-latency Version Negotiation
-  * Low-latency connection establishment
-  * Multiplexing without head-of-line blocking
-  * Authenticated and encrypted header and payload
-  * Rich signaling for congestion control and loss recovery
-  * Stream and connection flow control
-  * Connection Migration and Resilience to NAT rebinding
+* Low-latency Version Negotiation
+
+* Low-latency connection establishment
+
+* Multiplexing without head-of-line blocking
+
+* Authenticated and encrypted header and payload
+
+* Rich signaling for congestion control and loss recovery
+
+* Stream and connection flow control
+
+* Connection Migration and Resilience to NAT rebinding
+
 
 ## Low-Latency Version Negotiation
 
@@ -162,8 +216,7 @@ dedicated stream (Stream ID 1) to be used for performing the crypto
 handshake and QUIC options negotiation.  The format of the QUIC
 options and parameters used during negotiation are described in this
 document, but the handshake protocol that runs on Stream ID 1 is
-described in the accompanying crypto handshake draft {{!I-D.thomson-
-quic-tls}}.
+described in the accompanying crypto handshake draft {{QUIC-TLS}}.
 
 ## Stream Multiplexing
 
@@ -682,9 +735,8 @@ QUIC's current crypto handshake mechanism is documented in
 handshake protocol, so the details of a specific handshake protocol
 are out of this document's scope.  If not explicitly specified in the
 application mapping, TLS is assumed to be the default crypto handshake
-protocol, as described in {{!I-D.thomson-quic-tls}}.  An application
-that maps to QUIC MAY however specify an alternative crypto handshake
-protocol to be used.
+protocol, as described in {{QUIC-TLS}}.  An application that maps to QUIC MAY
+however specify an alternative crypto handshake protocol to be used.
 
 The following list of requirements and recommendations documents
 properties of the current prototype handshake which should be
@@ -1261,7 +1313,7 @@ the sender SHOULD only resend frames that require retransmission.
 
 Upon detecting losses, a sender MUST take appropriate congestion
 control action.  The details of loss detection and congestion control
-are described in {{!I-D.iyengar-quic-loss-recovery}}.
+are described in {{QUIC-LOSS-RECOVERY}}.
 
 A receiver acknowledges receipt of a received packet by sending one
 or more ACK frames containing the packet number of the received
@@ -1274,7 +1326,7 @@ the receiving peer MAY send an ACK frame after a reasonable number
 
 Strategies and implications of the frequency of generating
 acknowledgments are discussed in more detail in
-{{!I-D.iyengar-quic-loss-recovery}}.
+{{QUIC-LOSS-RECOVERY}}.
 
 # Streams: QUIC's Data Structuring Abstraction
 
@@ -1565,7 +1617,7 @@ exceptions.
 
 Flow control is described in detail in Section XX, and congestion
 control is described in the companion document
-{{!I-D.iyengar-quic-loss-recovery}}.
+{{QUIC-LOSS-RECOVERY}}.
 
 
 # Flow Control
@@ -1982,18 +2034,18 @@ will not be able to generate forward-secure encrypted ack packets.
 # Contributors
 
 The pre-IETF design of QUIC, described in
-{{!I-D.hamilton-quic-transport-protocol}}, laid the foundations of the
+{{?I-D.hamilton-quic-transport-protocol}}, laid the foundations of the
 protocol described in this document. The authors of
-{{!I-D.hamilton-quic-transport-protocol}} are thus significant
+{{?I-D.hamilton-quic-transport-protocol}} are thus significant
 contributors to this document and deserve special
 mention. Specifically, Ryan Hamilton, Ian Swett, and Alyssa Wilk
 contributed significantly and directly to this document.
 
 The design and rationale behind
-{{!I-D.hamilton-quic-transport-protocol}} draw significantly from work
+{{?I-D.hamilton-quic-transport-protocol}} draw significantly from work
 by Jim Roskind {{EarlyDesign}}. In alphabetical order, the
 contributors to the pre-IETF QUIC project at Google that led to
-{{!I-D.hamilton-quic-transport-protocol}} are: Britt Cyr, Jeremy
+{{?I-D.hamilton-quic-transport-protocol}} are: Britt Cyr, Jeremy
 Dorfman, Ryan Hamilton, Jana Iyengar, Fedor Kouranov, Charles Krasic,
 Jo Kulik, Adam Langley, Jim Roskind, Robbie Shade, Satyam Shekhar,
 Cherie Shi, Ian Swett, Raman Tenneti, Victor Vasiliev, Antonio

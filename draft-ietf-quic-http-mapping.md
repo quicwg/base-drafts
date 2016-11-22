@@ -2,6 +2,7 @@
 title: HTTP/2 Semantics Using The QUIC Transport Protocol
 abbrev: HTTP/2 Over QUIC
 docname: draft-ietf-quic-http-mapping-latest
+date: {DATE}
 category: std
 ipr: trust200902
 
@@ -22,6 +23,35 @@ author:
 
 normative:
 
+  QUIC-TLS:
+    title: "Using Transport Layer Security (TLS) to Secure QUIC"
+    date: {DATE}
+    author:
+      -
+        ins: M. Thomson
+        name: Martin Thomson
+        org: Mozilla
+        role: editor
+      -
+        ins: S. Turner, Ed.
+        name: Sean Turner
+        org: sn3rd
+        role: editor
+
+  QUIC-TRANSPORT:
+    title: "QUIC: A UDP-Based Multiplexed and Secure Transport"
+    date: {DATE}
+    author:
+      -
+        ins: J. Iyengar
+        name: Jana Iyengar
+        org: Google
+        role: editor
+      -
+        ins: M. Thomson
+        name: Martin Thomson
+        org: Mozilla
+        role: editor
 
 informative:
 
@@ -48,8 +78,8 @@ HTTP/2 semantics over QUIC.  Specifically, this document identifies HTTP/2
 features that are subsumed by QUIC, and describes how the other features can be
 implemented atop QUIC.
 
-QUIC is described in {{!I-D.hamilton-quic-transport-protocol}}.  For a full
-description of HTTP/2, see {{!RFC7540}}.
+QUIC is described in {{QUIC-TRANSPORT}}.  For a full description of HTTP/2, see
+{{!RFC7540}}.
 
 
 ## Notational Conventions
@@ -85,16 +115,14 @@ HTTP/2-over-TLS/TCP.
 # Connection establishment
 
 HTTP/2-over-QUIC connections are established as described in
-{{!I-D.hamilton-quic-transport-protocol}}.  The QUIC crypto handshake MUST use TLS
-{{!I-D.thomson-quic-tls}}.
+{{QUIC-TRANSPORT}}.  The QUIC crypto handshake MUST use TLS {{QUIC-TLS}}.
 
 While connection-level options pertaining to the core QUIC protocol are 
-set in the initial crypto handshake {{!I-D.thomson-quic-tls}}, 
-HTTP/2-specific settings are conveyed in the HTTP/2 SETTINGS frame. 
-After the QUIC connection is established, an HTTP/2 SETTINGS frame may 
-be sent as the initial frame of the QUIC headers stream (StreamID 3, See 
-{{stream-mapping}}). As in HTTP/2, additional SETTINGS frames may be 
-sent mid-connection by either endpoint. 
+set in the initial crypto handshake {{QUIC-TLS}}.  HTTP/2-specific settings are
+conveyed in the HTTP/2 SETTINGS frame.  After the QUIC connection is
+established, an HTTP/2 SETTINGS frame may be sent as the initial frame of the
+QUIC headers stream (StreamID 3, See {{stream-mapping}}). As in HTTP/2,
+additional SETTINGS frames may be sent mid-connection by either endpoint. 
 
 
 TODO: decide whether to acknowledge receipt of SETTINGS through empty
@@ -204,9 +232,9 @@ HTTP/2 there are a couple of reserved (or dedicated) StreamIDs in QUIC.
 
 StreamID 1 is reserved for crypto operations (the handshake, crypto config
 updates), and MUST NOT be used for HTTP/2 headers or body, see
-{{I-D.hamilton-quic-transport-protocol}}.  StreamID 3 is reserved for sending
-and receiving HTTP/2 HEADERS frames.  Therefore the first client initiated data
-stream has StreamID 5.
+{{QUIC-TRANSPORT}}.  StreamID 3 is reserved for sending and receiving HTTP/2
+HEADERS frames.  Therefore the first client initiated data stream has StreamID
+5.
 
 There are no reserved server initiated StreamIDs, so the first server initiated
 (i.e. server push) stream has an ID of 2, followed by 4, etc.
@@ -308,8 +336,8 @@ during the crypto handshake (see {{connection-establishment}}).  Setting these
 values to the maximum size (2^31 - 1) effectively disables flow control.
 
 Relatively small initial windows can be used, as QUIC will attempt to auto-tune
-the flow control windows based on usage.  See
-{{!I-D.hamilton-quic-transport-protocol}} for more details.
+the flow control windows based on usage.  See {{QUIC-TRANSPORT}} for more
+details.
 
 
 # Server Push
@@ -402,8 +430,7 @@ sending of a GOAWAY to the application.  The semantics of sending a GOAWAY in
 QUIC are identical to HTTP/2: an endpoint sending a GOAWAY will continue
 processing open streams, but will not accept newly created streams.
 
-QUIC's GOAWAY frame is described in detail in the
-{{!I-D.hamilton-quic-transport-protocol}}.
+QUIC's GOAWAY frame is described in detail in the {{QUIC-TRANSPORT}}.
 
 
 ## PING frame
@@ -412,8 +439,7 @@ QUIC has its own PING frame, which is currently exposed to the application.
 QUIC clients send periodic PINGs to servers if there are no currently active
 data streams on the connection.
 
-QUIC's PING frame is described in detail in the
-{{!I-D.hamilton-quic-transport-protocol}}.
+QUIC's PING frame is described in detail in the {{QUIC-TRANSPORT}}.
 
 
 ## PADDING frame

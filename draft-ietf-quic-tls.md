@@ -2,6 +2,7 @@
 title: Using Transport Layer Security (TLS) to Secure QUIC
 abbrev: QUIC over TLS
 docname: draft-ietf-quic-tls-latest
+date: {DATE}
 category: std
 ipr: trust200902
 
@@ -22,7 +23,53 @@ author:
 
 normative:
 
+  QUIC-LOSS-RECOVERY:
+    title: "QUIC Loss Detection and Congestion Control"
+    date: {DATE}
+    author:
+      -
+        ins: J. Iyengar
+        name: Jana Iyengar
+        org: Google
+        role: editor
+      -
+        ins: I. Swett
+        name: Ian Swett
+        org: Google
+        role: editor
+
+  QUIC-TLS:
+    title: "Using Transport Layer Security (TLS) to Secure QUIC"
+    date: {DATE}
+    author:
+      -
+        ins: M. Thomson
+        name: Martin Thomson
+        org: Mozilla
+        role: editor
+      -
+        ins: S. Turner, Ed.
+        name: Sean Turner
+        org: sn3rd
+        role: editor
+
+  QUIC-TRANSPORT:
+    title: "QUIC: A UDP-Based Multiplexed and Secure Transport"
+    date: {DATE}
+    author:
+      -
+        ins: J. Iyengar
+        name: Jana Iyengar
+        org: Google
+        role: editor
+      -
+        ins: M. Thomson
+        name: Martin Thomson
+        org: Mozilla
+        role: editor
+
 informative:
+
   AEBounds:
     title: "Limits on Authenticated Encryption Use in TLS"
     author:
@@ -30,6 +77,16 @@ informative:
       - ins: K. Paterson
     date: 2016-03-08
     target: "http://www.isg.rhul.ac.uk/~kp/TLS-AEbounds.pdf"
+
+  QUIC-HTTP:
+    title: "HTTP/2 Semantics Using The QUIC Transport Protocol"
+    date: {DATE}
+    author:
+      -
+        ins: M. Bishop
+        name: Mike Bishop
+        org: Microsoft
+        role: editor
 
 
 --- abstract
@@ -42,10 +99,9 @@ QUIC.
 
 # Introduction
 
-QUIC {{!I-D.hamilton-quic-transport-protocol}} provides a multiplexed transport.
-When used for HTTP {{!RFC7230}} semantics {{?I-D.shade-quic-http2-mapping}} it
-provides several key advantages over HTTP/1.1 {{?RFC7230}} or HTTP/2
-{{?RFC7540}} over TCP {{?RFC0793}}.
+QUIC {{QUIC-TRANSPORT}} provides a multiplexed transport.  When used for HTTP
+{{!RFC7230}} semantics {{QUIC-HTTP}} it provides several key advantages over
+HTTP/1.1 {{?RFC7230}} or HTTP/2 {{?RFC7540}} over TCP {{?RFC0793}}.
 
 This document describes how QUIC can be secured using Transport Layer Security
 (TLS) version 1.3 {{!I-D.ietf-tls-tls13}}.  TLS 1.3 provides critical latency
@@ -69,8 +125,7 @@ defined in {{!RFC2119}}.
 
 # Protocol Overview
 
-QUIC {{!I-D.hamilton-quic-transport-protocol}} can be separated into several
-modules:
+QUIC {{QUIC-TRANSPORT}} can be separated into several modules:
 
 1. The basic frame envelope describes the common packet layout.  This layer
    includes connection identification, version negotiation, and includes markers
@@ -106,7 +161,7 @@ modules:
    is provided to the QUIC encryption layer for protecting the remainder of the
    QUIC traffic.
 
-9. The HTTP mapping {{?I-D.shade-quic-http2-mapping}} provides an adaptation to
+9. The HTTP mapping {{QUIC-HTTP}} provides an adaptation to
    HTTP semantics that is based on HTTP/2.
 
 The relative relationship of these components are pictorally represented in
@@ -208,7 +263,7 @@ replay.
 
 The integration of QUIC with a TLS handshake is shown in more detail in
 {{quic-tls-handshake}}.  QUIC `STREAM` frames on stream 1 carry the TLS
-handshake.  QUIC performs loss recovery {{?I-D.iyengar-quic-loss-recovery}} for
+handshake.  QUIC performs loss recovery {{QUIC-LOSS-RECOVERY}} for
 this stream and ensures that TLS handshake messages are delivered in the correct
 order.
 
@@ -531,7 +586,7 @@ exclusive OR of the padded packet number and the IV forms the AEAD nonce.
 The associated data, A, for the AEAD is an empty sequence.
 
 The input plaintext, P, for the AEAD is the contents of the QUIC frame following
-the packet number, as described in {{!I-D.hamilton-quic-transport-protocol}}.
+the packet number, as described in {{QUIC-TRANSPORT}}.
 
 The output ciphertext, C, of the AEAD is transmitted in place of P.
 

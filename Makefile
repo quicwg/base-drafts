@@ -1,3 +1,5 @@
+MD_PREPROCESSOR := sed -e 's/{DATE}/$(shell date +%Y-%m)/'
+
 include lib/main.mk
 
 lib/main.mk:
