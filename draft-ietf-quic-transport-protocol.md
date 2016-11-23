@@ -547,35 +547,78 @@ which the server supports, as shown below.
 ## Public Reset Packet
 
 A Public Reset packet MUST have the PUBLIC_RESET flag set, and MUST
-include the full 64-bit connection ID.  The rest of the Public Reset
-packet is encoded as if it were a crypto handshake message of the tag
-PRST, as shown below.
+include the full 64-bit connection ID. It contains a series of packed
+values as detailed below.
 
 ~~~
-   +-----------------------------------+
-   |  Flags(8)  |  Connection ID (64)  | ->
-   +-----------------------------------+
-   +-------------------------------------+
-   |  Quic Tag (PRST) and tag value map  |
-   +-------------------------------------+
++-----------------------------------+
+|  Flags(8)  |  Connection ID (64)  | ->
++-----------------------------------+
++------------------+
+|    Proof (128)   | ->
++------------------+
++------------------+
+|  Rej. Packet (64)| ->
++------------------+
++--------------------------+
+|  Client Addr (variable)  |
++--------------------------+
 ~~~
 {: #public-reset-format title="Public Reset Packet"}
 
-The tag value map contains the following tag-values:
+The values contained in the public reset packet are as follows:
 
-* RNON (public reset nonce proof) - a 64-bit unsigned integer.
-* RSEQ (rejected packet number) - a 64-bit packet number.
-* CADR (client address) - the observed client IP address and port
-  number.  This is currently for debugging purposes only and hence
-  is optional.
+* Proof - a 64-bit number which proves continuity with the
+  initial handshake, as described below.
+* Rejected packet - a 64-bit packet number indicating the packet
+  that the public reset is in response to.
+* Client address - the observed client IP address and port
+  number. This is currently for debugging purposes only and hence
+  is optional (and extends to the end of the packet).
+  If present, it must consist of either 18 bytes (a 128-bit
+  IPv6 address and a 16-bit port) or 6 bytes (a 32-bit IPv4 address
+  and a 16-bit port).
 
-DISCUSS_AND_REPLACE: The crypto handshake message format is described
-in the QUIC crypto document, and should be replaced with something
-simpler when this document is adopted.  The purpose of the tag-value
-map following the PRST tag is to enable the receiver of the Public
-Reset packet to reasonably authenticate the packet.  This map is an
-extensible map format that allows specification of various tags, which
-should again be replaced by something simpler.
+The Proof value is a pre-image of the Verifier value transmitted in
+the initial handshake ({{required-transport-parameters}}). In order to
+generate the Verifier, the server generates a secret per-connection
+128-bit Proof value and then computes the Verifier as the first 128
+bits of SHA-256(Proof). It then transmits the verifier and retains the
+Proof value. Prior to accepting the public reset the client MUST
+validate that the digest of Proof matches the previously provided
+verifier and if not MUST ignore the public reset.
+
+### Proof Construction
+
+The details of how to compute the Proof value are a local matter.
+A trivial approach is to simply store the Proof value in a per-connection
+table. However this requires server-side state. A stateless
+possibility is to have a static master secret K_m and compute Proof =
+HMAC(K_m, Conn-ID || Server-ID) where Server-ID is some value unique
+to each server which shares K_m (e.g., the IP address). The reason
+for including Server-ID is to prevent bounce attacks where an
+on-path attacker forwards a packet from a valid connection to
+server A to server B, causing B to generate a reset which can be
+forwarded to the client to terminate the connection. This construction
+guarantees that each server will generate a different per-connection
+Proof.
+
+### Design Rationale
+
+This mechanism was designed to allow a network element
+which observes the handshake to validate the Public Reset.
+The motivation for this is that these elements (e.g., NATs or
+firewalls) can determine that a packet is a Public Reset and
+if they are unable to validate the packet, they may simple
+destroy per-connection state on the basis of packet type.
+A mechanism which allows for third-party validation makes
+it more likely that such elements will only destroy per-connection
+state in response to valid public resets.
+
+Note: In order to enable third-party validation, the Verifier will need to
+appear in the clear in the initial handshake. It is expected that the
+TLS binding {{QUIC-TLS}} will have this property.
+
 
 # Life of a Connection
 
@@ -683,6 +726,10 @@ all as 7-bit ASCII strings.  QUIC parameter tags are listed below.
   control byte offset advertised by the sender of this parameter.
 
 * MSPC: Maximum number of incoming streams per connection.
+
+* PRVF: A verifier value for the public reset, consisting of an
+  opaque 128-bit value. See {{public-reset-packet}} for the use
+  of this value.
 
 #### Optional Transport Parameters
 
