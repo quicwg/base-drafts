@@ -13,15 +13,10 @@ pi: [toc, sortrefs, symrefs, docmapping]
 
 author:
  -
-    ins: R. Shade
-    name: Robbie Shade
-    org: Google
-    email: rjshade@google.com
- -
-    ins: M. Warres
-    name: Mike Warres
-    org: Google
-    email: mpw@google.com
+    ins: M. Bishop
+    name: Mike Bishop
+    org: Microsoft
+    email: Mike.Bishop@microsoft.com
 
 normative:
 
@@ -464,5 +459,8 @@ HTTP/2.
 This document has no IANA actions.  Yet.
 
 
-
 --- back
+
+# Contributors
+
+The original authors of this specification were Robbie Shade and Mike Warres.

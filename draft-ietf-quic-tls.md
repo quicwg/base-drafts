@@ -12,20 +12,20 @@ stand_alone: yes
 pi: [toc, sortrefs, symrefs, docmapping]
 
 author:
- -
+  -
     ins: M. Thomson
     name: Martin Thomson
     org: Mozilla
     email: martin.thomson@gmail.com
- -
-    ins: R. Hamilton
-    name: Ryan Hamilton
-    org: Google
-    email: rch@google.com
+  -
+    ins: S. Turner, Ed.
+    name: Sean Turner
+    org: sn3rd
+    role: editor
 
 normative:
 
-  QUIC-LOSS-RECOVERY:
+  QUIC-RECOVERY:
     title: "QUIC Loss Detection and Congestion Control"
     date: {DATE}
     author:
@@ -38,21 +38,6 @@ normative:
         ins: I. Swett
         name: Ian Swett
         org: Google
-        role: editor
-
-  QUIC-TLS:
-    title: "Using Transport Layer Security (TLS) to Secure QUIC"
-    date: {DATE}
-    author:
-      -
-        ins: M. Thomson
-        name: Martin Thomson
-        org: Mozilla
-        role: editor
-      -
-        ins: S. Turner, Ed.
-        name: Sean Turner
-        org: sn3rd
         role: editor
 
   QUIC-TRANSPORT:
@@ -265,9 +250,8 @@ replay.
 
 The integration of QUIC with a TLS handshake is shown in more detail in
 {{quic-tls-handshake}}.  QUIC `STREAM` frames on stream 1 carry the TLS
-handshake.  QUIC performs loss recovery {{QUIC-LOSS-RECOVERY}} for
-this stream and ensures that TLS handshake messages are delivered in the correct
-order.
+handshake.  QUIC performs loss recovery {{QUIC-RECOVERY}} for this stream and
+ensures that TLS handshake messages are delivered in the correct order.
 
 ~~~
     Client                                             Server
@@ -1033,10 +1017,12 @@ This document has no IANA actions.  Yet.
 
 --- back
 
+# Contributors
+
+Ryan Hamilton was originally an author of this specification.
+
+
 # Acknowledgments
 
-Christian Huitema's knowledge of QUIC is far better than my own.  This would be
-even more inaccurate and useless if not for his assistance.  This document has
-variously benefited from a long series of discussions with Jana Iyengar, Adam
-Langley, Roberto Peon, Eric Rescorla, Ian Swett, and likely many others who are
-merely forgotten by a faulty meat computer.
+This document has benefited from input from Christian Huitema, Jana Iyengar,
+Adam Langley, Roberto Peon, Eric Rescorla, Ian Swett, and many others.
