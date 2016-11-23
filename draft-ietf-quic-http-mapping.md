@@ -5,6 +5,8 @@ docname: draft-ietf-quic-http-mapping-latest
 date: {DATE}
 category: std
 ipr: trust200902
+area: Transport
+workgroup: QUIC
 
 stand_alone: yes
 pi: [toc, sortrefs, symrefs, docmapping]
