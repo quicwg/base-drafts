@@ -23,7 +23,7 @@ author:
 
 normative:
 
-  QUIC-LOSS-RECOVERY:
+  QUIC-RECOVERY:
     title: "QUIC Loss Detection and Congestion Control"
     date: {DATE}
     author:
@@ -125,7 +125,7 @@ conceptual design, wire format, and mechanisms of the QUIC protocol
 for connection establishment, stream multiplexing, stream and
 connection-level flow control, and data reliability.  Accompanying
 documents describe QUIC's loss detection and congestion control
-{{QUIC-LOSS-RECOVERY}}, and the use of TLS 1.3 for key negotiation
+{{QUIC-RECOVERY}}, and the use of TLS 1.3 for key negotiation
 {{QUIC-TLS}}.
 
 ## Notational Conventions
@@ -1303,7 +1303,7 @@ the sender SHOULD only resend frames that require retransmission.
 
 Upon detecting losses, a sender MUST take appropriate congestion
 control action.  The details of loss detection and congestion control
-are described in {{QUIC-LOSS-RECOVERY}}.
+are described in {{QUIC-RECOVERY}}.
 
 A receiver acknowledges receipt of a received packet by sending one
 or more ACK frames containing the packet number of the received
@@ -1316,7 +1316,7 @@ the receiving peer MAY send an ACK frame after a reasonable number
 
 Strategies and implications of the frequency of generating
 acknowledgments are discussed in more detail in
-{{QUIC-LOSS-RECOVERY}}.
+{{QUIC-RECOVERY}}.
 
 # Streams: QUIC's Data Structuring Abstraction
 
@@ -1606,8 +1606,7 @@ exceptions.
   connection-level flow control.
 
 Flow control is described in detail in Section XX, and congestion
-control is described in the companion document
-{{QUIC-LOSS-RECOVERY}}.
+control is described in the companion document {{QUIC-RECOVERY}}.
 
 
 # Flow Control

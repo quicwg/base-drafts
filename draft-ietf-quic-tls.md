@@ -23,7 +23,7 @@ author:
 
 normative:
 
-  QUIC-LOSS-RECOVERY:
+  QUIC-RECOVERY:
     title: "QUIC Loss Detection and Congestion Control"
     date: {DATE}
     author:
@@ -248,9 +248,8 @@ replay.
 
 The integration of QUIC with a TLS handshake is shown in more detail in
 {{quic-tls-handshake}}.  QUIC `STREAM` frames on stream 1 carry the TLS
-handshake.  QUIC performs loss recovery {{QUIC-LOSS-RECOVERY}} for
-this stream and ensures that TLS handshake messages are delivered in the correct
-order.
+handshake.  QUIC performs loss recovery {{QUIC-RECOVERY}} for this stream and
+ensures that TLS handshake messages are delivered in the correct order.
 
 ~~~
     Client                                             Server
