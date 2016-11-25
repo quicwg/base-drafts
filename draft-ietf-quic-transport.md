@@ -1,7 +1,7 @@
 ---
 title: "QUIC: A UDP-Based Multiplexed and Secure Transport"
 abbrev: QUIC Transport Protocol
-docname: draft-ietf-quic-transport-protocol-latest
+docname: draft-ietf-quic-transport-latest
 date: {DATE}
 category: std
 ipr: trust200902
