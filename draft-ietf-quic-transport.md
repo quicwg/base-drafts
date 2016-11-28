@@ -83,7 +83,7 @@ informative:
     date: 2016-05-26
     target: "http://goo.gl/OuVSxa"
 
-  EarlyDesign:
+  EARLY-DESIGN:
     title: "QUIC: Multiplexed Transport Over UDP"
     author:
       - ins: J. Roskind
@@ -2034,12 +2034,12 @@ The original authors of this specification were Ryan Hamilton, Jana Iyengar, Ian
 Swett, and Alyssa Wilk.
 
 The original design and rationale behind this protocol draw significantly from
-work by Jim Roskind. In alphabetical order, the contributors to the pre-IETF
-QUIC project at Google are: Britt Cyr, Jeremy Dorfman, Ryan Hamilton, Jana
-Iyengar, Fedor Kouranov, Charles Krasic, Jo Kulik, Adam Langley, Jim Roskind,
-Robbie Shade, Satyam Shekhar, Cherie Shi, Ian Swett, Raman Tenneti, Victor
-Vasiliev, Antonio Vicente, Patrik Westin, Alyssa Wilk, Dale Worley, Fan Yang,
-Dan Zhang, Daniel Ziegler.
+work by Jim Roskind {{EARLY-DESIGN}}. In alphabetical order, the contributors to
+the pre-IETF QUIC project at Google are: Britt Cyr, Jeremy Dorfman, Ryan
+Hamilton, Jana Iyengar, Fedor Kouranov, Charles Krasic, Jo Kulik, Adam Langley,
+Jim Roskind, Robbie Shade, Satyam Shekhar, Cherie Shi, Ian Swett, Raman Tenneti,
+Victor Vasiliev, Antonio Vicente, Patrik Westin, Alyssa Wilk, Dale Worley, Fan
+Yang, Dan Zhang, Daniel Ziegler.
 
 # Acknowledgments
 
