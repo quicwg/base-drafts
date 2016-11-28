@@ -130,14 +130,12 @@ documents describe QUIC's loss detection and congestion control
 {{QUIC-RECOVERY}}, and the use of TLS 1.3 for key negotiation
 {{QUIC-TLS}}.
 
-## Notational Conventions
+
+# Conventions and Definitions
 
 The words "MUST", "MUST NOT", "SHOULD", and "MAY" are used in this document.
 It's not shouting; when they are capitalized, they have the special meaning
 defined in {{!RFC2119}}.
-
-
-# Conventions and Definitions
 
 Definitions of terms that are used in this document:
 
