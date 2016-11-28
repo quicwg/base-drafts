@@ -20,8 +20,8 @@ QUIC protocol suite.
 
 ## HTTP Mapping
 
-* [Editor's copy](https://quicwg.github.io/base-drafts/draft-ietf-quic-http-mapping.html)
-* [Working Group Draft] (https://tools.ietf.org/html/draft-ietf-quic-http-mapping) (not yet published)
+* [Editor's copy](https://quicwg.github.io/base-drafts/draft-ietf-quic-http.html)
+* [Working Group Draft] (https://tools.ietf.org/html/draft-ietf-quic-http) (not yet published)
 
 ## Building the Draft
 
