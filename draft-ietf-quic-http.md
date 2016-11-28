@@ -1,10 +1,12 @@
 ---
 title: Hypertext Transfer Protocol (HTTP) over QUIC
 abbrev: HTTP over QUIC
-docname: draft-ietf-quic-http-mapping-latest
+docname: draft-ietf-quic-http-latest
 date: {DATE}
 category: std
 ipr: trust200902
+area: Transport
+workgroup: QUIC
 
 stand_alone: yes
 pi: [toc, sortrefs, symrefs, docmapping]

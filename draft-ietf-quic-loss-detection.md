@@ -5,6 +5,8 @@ docname: draft-ietf-quic-loss-detection
 date: {DATE}
 category: std
 ipr: trust200902
+area: Transport
+workgroup: QUIC
 
 stand_alone: yes
 pi: [toc, sortrefs, symrefs, docmapping]
@@ -15,11 +17,13 @@ author:
     name: Jana Iyengar
     org: Google
     email: jri@google.com
+    role: editor
  -
     ins: I. Swett
     name: Ian Swett
     org: Google
     email: ianswett@google.com
+    role: editor
 
 normative:
 
