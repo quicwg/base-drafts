@@ -854,8 +854,7 @@ TLS handshake has completely successfully.  A server MUST NOT use 1-RTT
 protected packets from the client if its response depends on client
 authentication.  A server MAY use 1-RTT protected packets from a client prior to
 receiving and verifying the Finished message if it has accepted 0-RTT data and
-it treats the out-of-order packets as though they only have 0-RTT
-protection.
+it treats the out-of-order packets as though they only have 0-RTT protection.
 
 
 # QUIC-Specific Additions to the TLS Handshake
