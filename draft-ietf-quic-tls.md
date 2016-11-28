@@ -312,7 +312,7 @@ ensures that TLS handshake messages are delivered in the correct order.
 
                                            QUIC Frames <any> @C
                             <--------
-@A QUIC STREAM Frame(s) <1>:
+@C QUIC STREAM Frame(s) <1>:
      (end_of_early_data)
      {Finished}
                             -------->
