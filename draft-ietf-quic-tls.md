@@ -844,16 +844,17 @@ endpoint before the final TLS handshake messages are received.  These will not
 be able to be decrypted, unless the missing handshake messages are the second
 flight of handshake messages sent by the client.
 
-Protected packets MAY be stored and used once the handshake is complete.  If
-packets are processed prior to completion of the handshake, an attacker might
-use the willingness of an implementation to use these packets to mount attacks.
+Protected packets MAY be stored and later decrypted and used once the handshake
+is complete.  If packets are processed prior to completion of the handshake, an
+attacker might use the willingness of an implementation to use these packets to
+mount attacks.
 
 Receiving and verifying the Finished message is critical in ensuring that the
 TLS handshake has completely successfully.  A server MUST NOT use 1-RTT
 protected packets from the client if its response depends on client
 authentication.  A server MAY use 1-RTT protected packets from a client prior to
 receiving and verifying the Finished message if it has accepted 0-RTT data and
-it treats the out-of-order packets as though they are only have 0-RTT
+it treats the out-of-order packets as though they only have 0-RTT
 protection.
 
 
