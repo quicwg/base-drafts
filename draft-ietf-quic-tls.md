@@ -136,13 +136,35 @@ QUIC streams.
 
 This document defines how QUIC interacts with TLS.  This includes a description
 of how TLS is used, how keying material is derived from TLS, and the application
-of that keying material to protect QUIC packets.
+of that keying material to protect QUIC packets.  {{schematic}} shows the basic
+interactions between TLS and QUIC, with the QUIC packet protection being called
+out specially.
+
+~~~
++------------+                     +------------+
+|            |----- Handshake ---->|            |
+|            |<---- Handshake -----|            |
+|   QUIC     |                     |    TLS     |
+|            |<---- 0-RTT Done ----|            |
+|            |<---- 1-RTT Done ----|            |
++------------+                     +------------+
+ |         ^                            ^ |
+ | Protect | Protected                  | |
+ v         | Packet                     | |
++------------+                          / /
+|   QUIC     |                         / /
+|  Packet    |------ Get Secret ------' /
+| Protection |<------ Secret ----------'
++------------+
+~~~
+{: #schematic title="QUIC and TLS Interactions"}
 
 The initial state of a QUIC connection has packets exchanged without any form of
 protection.  In this state, QUIC is limited to using stream 1 and associated
 packets.  Stream 1 is reserved for a TLS connection.  This is a complete TLS
 connection as it would appear when layered over TCP; the only difference is that
-QUIC provides the reliability and ordering that TLS depends on.
+QUIC provides the reliability and ordering that would otherwise be provided by
+TCP.
 
 At certain points during the TLS handshake, keying material is exported from the
 TLS connection for use by QUIC.  This keying material is used to derive packet
@@ -151,8 +173,8 @@ in {{packet-protection}}.
 
 This arrangement means that some TLS messages receive redundant protection from
 both the QUIC packet protection and the TLS record protection.  These messages
-are limited in number, since the TLS connection is rarely needed once the
-handshake completes.
+are limited in number; the TLS connection is rarely needed once the handshake
+completes.
 
 
 ## TLS Overview
@@ -161,7 +183,7 @@ TLS provides two endpoints a way to establish a means of communication over an
 untrusted medium (that is, the Internet) that ensures that messages they
 exchange cannot be observed, modified, or forged.
 
-TLS features can be separate into two basic functions: an authenticated key
+TLS features can be separated into two basic functions: an authenticated key
 exchange and record protection.  QUIC primarily uses the authenticated key
 exchange provided by TLS; QUIC provides its own packet protection.
 
@@ -328,6 +350,113 @@ introduces a potential for confusion between packets with 0-RTT protection (@B)
 and those with 1-RTT protection (@C) at the server if there is loss or
 reordering of the handshake packets.  See {{zero-transition}} for details on how
 this is addressed.
+
+
+## Interface to TLS
+
+As shown in {{schematic}}, the interface from QUIC to TLS consists of three
+primary functions: Handshake, Key Ready Events, and Secret Export.
+
+Additional functions might be needed to configure TLS.
+
+
+### Handshake Interface
+
+In order to drive the handshake, TLS depends on being able to send and receive
+handshake messages on stream 1.  There are two basic functions on this
+interface: one where QUIC requests handshake messages and one where QUIC
+provides handshake packets.
+
+A QUIC client starts TLS by requesting TLS handshake octets from
+TLS.  The client acquires handshake octets before sending its first packet.
+
+A QUIC server starts the process by providing TLS with any stream 1 octets that
+might have arrived.  Only in-sequence packets are delivered; packets that arrive
+out of order are buffered by QUIC until all preceding packets are available.
+QUIC first provides TLS with octets from stream 1.
+
+Each time that an endpoint receives data on stream 1, it determines if it can
+deliver the data to TLS.  When any octets of TLS data can be delivered, then TLS
+is provided with the data then new handshake octets are requested from TLS.
+
+TLS might not provide any octets if the handshake messages it has received are
+incomplete.
+
+Once the TLS handshake is complete, this is indicated to QUIC along with any
+final handshake octets that TLS needs to send.  Once the handshake is complete,
+TLS becomes passive.  TLS might still receive data from its peer and respond to
+that data, but it will not need to send more data unless it is explicitly
+requested.  One reason to send data is that the server might wish to provide
+additional or updated session tickets to a client.
+
+Important:
+
+: Until the handshake is reported as complete, the connection and key exchange
+  are not properly authenticated at the server.  Even though 1-RTT keys are
+  available to a server after receiving the first handshake messages from a
+  client, the server cannot consider the client to be authenticated until it
+  receives and validates the client's Finished message.
+
+
+### Key Ready Events
+
+TLS provides QUIC with signals when 0-RTT and 1-RTT keys are ready for use.
+These events are not asynchronous, they always occur immediately after TLS is
+provided with new handshake octets, or after TLS produces handshake octets.
+
+When TLS has enough information to generate 1-RTT keys, it indicates their
+availability.  On the client, this occurs after receiving the entirety of the
+first flight of TLS handshake messages from the server.  A server indicates that
+1-RTT keys are available after it sends its handshake messages.
+
+This ordering ensures that a client sends its second flight of handshake
+messages protected with 1-RTT keys.  More importantly, it ensures that the
+server sends its flight of handshake messages without protection.
+
+If 0-RTT is possible, it is ready after the client sends a TLS ClientHello
+message or the server receives that message.  After providing a QUIC client with
+the first handshake octets, the TLS stack might signal that 0-RTT keys are
+ready.  On the server, after receiving handshake octets that contain a
+ClientHello message, a TLS server might signal that 0-RTT keys are available.
+
+1-RTT keys are used for both sending and receiving packets.  0-RTT keys are only
+used to protect packets that the client sends.
+
+
+### Secret Export
+
+Details how secrets are exported from TLS are included in {{key-expansion}}.
+
+
+### TLS Interface Summary
+
+Assuming , {{exchange-summary}} summarizes the exchange between
+QUIC and TLS for both client and server.
+
+~~~
+Client                                                    Server
+
+Get Handshake
+0-RTT Key Ready
+                      --- send/receive --->
+                                              Handshake Received
+                                                 0-RTT Key Ready
+                                                   Get Handshake
+                                                1-RTT Keys Ready
+                     <--- send/receive ---
+Handshake Received
+1-RTT Keys Ready
+Get Handshake
+Handshake Complete
+                      --- send/receive --->
+                                              Handshake Received
+                                                   Get Handshake
+                                              Handshake Complete
+                     <--- send/receive ---
+Handshake Received
+Get Handshake
+~~~
+
 
 
 # QUIC Packet Protection {#packet-protection}
