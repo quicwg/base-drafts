@@ -538,20 +538,50 @@ TLS handshake messages need to be retransmitted with the same level of
 cryptographic protection that was originally used to protect them.  Newer keys
 cannot be used to protect QUIC packets that carry TLS messages.
 
-A client would be unable to decrypt retransmissions of a server's handshake
-messages that are protected using the 1-RTT keys, since the calculation of the
-1-RTT keys depends on the contents of the handshake messages.
+Ordinarily, an endpoint retransmits stream data in a new packet.  That packet
+uses the latest packet protection keys.  This simplifies key management when
+there are key updates (see {{key-update}}).
 
-This restriction means the creation of an exception to the requirement to always
-use new keys for sending once they are available.  A server MUST mark the
-retransmitted handshake messages with the same KEY_PHASE as the original
-messages to allow a recipient to distinguish retransmitted messages.
+The handshake messages the first flight of handshake messages from both client
+and server (ClientHello, or ServerHello through to the server's Finished) a
+critical to the key exchange.  The contents of these messages is used to
+determine the keys used to protect later messages.  If these are protected with
+newer keys, they will be indecipherable to the recipient.
 
-This rule also prevents a key update from being initiated while there are any
-outstanding handshake messages, see {{key-update}}.
+Even though newer keys are available, the first flight of TLS handshake messages
+sent by an endpoint MUST NOT be encrypted:
+
+* A client MUST NOT restransmit a TLS ClientHello with 0-RTT keys.  The server
+  needs this message in order to determine the 0-RTT keys.
+
+* A server MUST NOT retransmit any of its TLS handshake messages with 1-RTT
+  keys.  The client needs these messages in order to determine the 1-RTT keys.
+
+A HelloRetryRequest might be used to reject an initial ClientHello.  A
+HelloRetryRequest handshake message and any second ClientHello that is sent in
+response MUST also be sent without packet protection.  This is natural, because
+no new keying material will be available when these messages need to be sent.
+
+Note:
+
+: An alternative way of identifying handshake data that needs to be sent without
+  protection is to collect all handshake data from before TLS provides the first
+  keys (see {{key-ready-events}}).
+
+Retransmissions of these handshake messages MUST use a different packet to any
+other ongoing traffic, and they must use a KEY_PHASE of 0.
+
+The second flight of TLS handshake messages from a client is always protected
+with 1-RTT keys.
+
+To avoid confusion about which key is used for a given packet, an endpoint MUST
+NOT initiate a key update while there are any unacknowledged handshake messages,
+see {{key-update}}.
 
 
 ### Distinguishing 0-RTT and 1-RTT Packets {#zero-transition}
+
+FIX ME (Issue #27)
 
 Loss or reordering of the client's second flight of TLS handshake messages can
 cause 0-RTT packet and 1-RTT packets to become indistinguishable from each other
