@@ -1,7 +1,7 @@
 ---
 title: QUIC Loss Detection and Congestion Control
 abbrev: QUIC Loss Detection
-docname: draft-ietf-quic-loss-detection
+docname: draft-ietf-quic-recovery-latest
 date: {DATE}
 category: std
 ipr: trust200902
@@ -62,12 +62,12 @@ informative:
 --- abstract
 
 QUIC is a new multiplexed and secure transport atop UDP.  QUIC builds on
-decades of transport and security experience, and implements mechanisms 
-that make it attractive as a modern general-purpose transport.  QUIC 
-implements the spirit of known TCP loss detection mechanisms, described 
-in RFCs, various Internet-drafts, and also those prevalent in the 
-Linux TCP implementation.  This document describes QUIC loss detection 
-and congestion control, and attributes the TCP equivalent in RFCs, 
+decades of transport and security experience, and implements mechanisms
+that make it attractive as a modern general-purpose transport.  QUIC
+implements the spirit of known TCP loss detection mechanisms, described
+in RFCs, various Internet-drafts, and also those prevalent in the
+Linux TCP implementation.  This document describes QUIC loss detection
+and congestion control, and attributes the TCP equivalent in RFCs,
 Internet-drafts, academic papers, and TCP implementations.
 
 --- middle

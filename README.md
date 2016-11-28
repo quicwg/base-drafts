@@ -10,8 +10,8 @@ QUIC protocol suite.
 
 ## Loss Detection & Congestion Control
 
-* [Editor's copy](https://quicwg.github.io/base-drafts/draft-ietf-quic-loss-detection.html)
-* [Working Group Draft] (https://tools.ietf.org/html/draft-ietf-quic-loss-detection) (not yet published)
+* [Editor's copy](https://quicwg.github.io/base-drafts/draft-ietf-quic-recovery.html)
+* [Working Group Draft] (https://tools.ietf.org/html/draft-ietf-quic-recovery) (not yet published)
 
 ## TLS Mapping
 
