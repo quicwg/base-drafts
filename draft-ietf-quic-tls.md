@@ -852,11 +852,11 @@ according to the rules in the TLS protocol.
 
 # Pre-handshake QUIC Messages {#pre-handshake}
 
-Implementations MUST NOT exchange data on any stream other than stream 1 prior
-to the completion of the TLS handshake.  However, QUIC requires the use of
-several types of frame for managing loss detection and recovery.  In addition,
-it might be useful to use the data acquired during the exchange of
-unauthenticated messages for congestion management.
+Implementations MUST NOT exchange data on any stream other than stream 1 without
+packet protection.  QUIC requires the use of several types of frame for managing
+loss detection and recovery during this phase.  In addition, it might be useful
+to use the data acquired during the exchange of unauthenticated messages for
+congestion control.
 
 This section generally only applies to TLS handshake messages from both peers
 and acknowledgments of the packets carrying those messages.  In many cases, the
@@ -953,8 +953,6 @@ Once the TLS handshake is complete, both peers MUST ignore unprotected packets.
 The handshake is complete when the server receives a client's Finished message
 and when a client receives an acknowledgement that their Finished message was
 received.  From that point onward, unprotected messages can be safely dropped.
-Note that the client could retransmit its Finished message to the server, so the
-server cannot reject such a message.
 
 Since only TLS handshake packets and acknowledgments are sent in the clear, an
 attacker is able to force implementations to rely on retransmission for packets
@@ -971,9 +969,9 @@ ISSUE:
   authenticating the initial value, so that peers can be sure that they haven't
   missed an initial message.
 
-In addition to denying endpoints messages, an attacker to generate packets that
-cause no state change in a recipient.  See {{useless}} for a discussion of these
-risks.
+In addition to causing valid packets to be dropped, an attacker to generate
+packets with an intent of causing the recipient to expend processing resources.
+See {{useless}} for a discussion of these risks.
 
 To avoid receiving TLS packets that contain no useful data, a TLS implementation
 MUST reject empty TLS handshake records and any record that is not permitted by
