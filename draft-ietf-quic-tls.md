@@ -376,8 +376,10 @@ out of order are buffered by QUIC until all preceding packets are available.
 QUIC first provides TLS with octets from stream 1.
 
 Each time that an endpoint receives data on stream 1, it determines if it can
-deliver the data to TLS.  When any octets of TLS data can be delivered, then TLS
-is provided with the data then new handshake octets are requested from TLS.
+deliver the data to TLS.  Any octets that are contiguous with the last data
+provided to TLS can be delivered.  When any octets of TLS data can be delivered,
+then TLS is provided with the data then new handshake octets are requested from
+TLS.
 
 TLS might not provide any octets if the handshake messages it has received are
 incomplete.
@@ -430,7 +432,7 @@ Details how secrets are exported from TLS are included in {{key-expansion}}.
 
 ### TLS Interface Summary
 
-Assuming , {{exchange-summary}} summarizes the exchange between
+{{exchange-summary}} summarizes the exchange between
 QUIC and TLS for both client and server.
 
 ~~~
@@ -456,7 +458,7 @@ Handshake Complete
 Handshake Received
 Get Handshake
 ~~~
-
+{: #exchange-summary title="Interaction Summary between QUIC and TLS"}
 
 
 # QUIC Packet Protection {#packet-protection}
