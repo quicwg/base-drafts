@@ -66,7 +66,7 @@ informative:
     target: "http://www.isg.rhul.ac.uk/~kp/TLS-AEbounds.pdf"
 
   QUIC-HTTP:
-    title: "HTTP/2 Semantics Using The QUIC Transport Protocol"
+    title: "Hypertext Transfer Protocol (HTTP) over QUIC"
     date: {DATE}
     author:
       -
