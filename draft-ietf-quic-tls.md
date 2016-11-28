@@ -688,10 +688,14 @@ The complete key expansion uses an identical process for key expansion as
 defined in Section 7.3 of {{!I-D.ietf-tls-tls13}}, using different values for
 the input secret.  QUIC uses the AEAD function negotiated by TLS.
 
-The key and IV used to protect the 0-RTT packets sent by a client use the QUIC
-0-RTT secret.  This uses the HKDF-Expand-Label with the PRF hash function
-negotiated by TLS.  The length of the output is determined by the requirements
-of the AEAD function selected by TLS.
+The packet protection key and IV used to protect the 0-RTT packets sent by a
+client use the QUIC 0-RTT secret.  This uses the HKDF-Expand-Label with the PRF
+hash function negotiated by TLS.
+
+The length of the output is determined by the requirements of the AEAD function
+selected by TLS.  The key length is the AEAD key size.  As defined in Section
+5.3 of {{!I-D.ietf-tls-tls13}}, the IV length is the larger of 8 or N_MIN (see
+Section 4 of {{!RFC5116}}).
 
 ~~~
    client_0rtt_key = HKDF-Expand-Label(client_0rtt_secret,
@@ -700,8 +704,8 @@ of the AEAD function selected by TLS.
                                       "iv", "", iv_length)
 ~~~
 
-Similarly, the key and IV used to protect 1-RTT packets sent by both client and
-server use the current packet protection secret.
+Similarly, the packet protection key and IV used to protect 1-RTT packets sent
+by both client and server use the current packet protection secret.
 
 ~~~
    client_pp_key_<N> = HKDF-Expand-Label(client_pp_secret_<N>,
@@ -713,6 +717,9 @@ server use the current packet protection secret.
    server_pp_iv_<N> = HKDF-Expand-Label(server_pp_secret_<N>,
                                         "iv", "", iv_length)
 ~~~
+
+The client protects (or encrypts) packets with the client packet protection key
+and IV; the server protects packets with the server packet protection key.
 
 The QUIC record protection initially starts without keying material.  When the
 TLS state machine reports that the ClientHello has been sent, the 0-RTT keys can
@@ -734,14 +741,15 @@ and public reset packets are not protected.
 Once TLS has provided a key, the contents of regular QUIC packets immediately
 after any TLS messages have been sent are protected by the AEAD selected by TLS.
 
-The key, K, for the AEAD is either the Client Write Key or the Server Write Key,
-derived as defined in {{key-expansion}}.
+The key, K, for the AEAD is either the client packet protection key
+(client_pp_key_n) or the server packet protection key (server_pp_key_n), derived
+as defined in {{key-expansion}}.
 
-The nonce, N, for the AEAD is formed by combining either the Client Write IV or
-Server Write IV with packet numbers.  The 64 bits of the reconstructed QUIC
-packet number in network byte order is left-padded with
-zeros to the N_MAX parameter of the AEAD (see Section 4 of {{!RFC5116}}).  The
-exclusive OR of the padded packet number and the IV forms the AEAD nonce.
+The nonce, N, for the AEAD is formed by combining either the packet protection
+IV (either client_pp_iv_n or server_pp_iv_n) with packet numbers.  The 64 bits
+of the reconstructed QUIC packet number in network byte order is left-padded
+with zeros to the size of the IV.  The exclusive OR of the padded packet number
+and the IV forms the AEAD nonce.
 
 The associated data, A, for the AEAD is an empty sequence.
 
