@@ -839,30 +839,22 @@ client.
 
 ## Protected Frames Prior to Handshake Completion {#pre-handshake-protected}
 
-Due to reordering and loss, protected packets might be received by an endpoint
-before the final handshake messages are received.  If these can be decrypted
-successfully, such packets MAY be stored and used once the handshake is
-complete.
+Due to reordering and loss, 1-RTT protected packets might be received by an
+endpoint before the final TLS handshake messages are received.  These will not
+be able to be decrypted, unless the missing handshake messages are the second
+flight of handshake messages sent by the client.
 
-Unless expressly permitted below, encrypted packets MUST NOT be used prior to
-completing the TLS handshake, in particular the receipt of a valid Finished
-message and any authentication of the peer.  If packets are processed prior to
-completion of the handshake, an attacker might use the willingness of an
-implementation to use these packets to mount attacks.
+Protected packets MAY be stored and used once the handshake is complete.  If
+packets are processed prior to completion of the handshake, an attacker might
+use the willingness of an implementation to use these packets to mount attacks.
 
-TLS handshake messages are covered by record protection during the handshake,
-once key agreement has completed.  This means that protected messages need to be
-decrypted to determine if they are TLS handshake messages or not.  Similarly,
-`ACK` and `WINDOW_UPDATE` frames might be needed to successfully complete the
-TLS handshake.
-
-Any timestamps present in `ACK` frames MUST be ignored rather than causing a
-fatal error.  Timestamps on protected frames MAY be saved and used once the TLS
-handshake completes successfully.
-
-An endpoint MAY save the last protected `WINDOW_UPDATE` frame it receives for
-each stream and apply the values once the TLS handshake completes.  Failing
-to do this might result in temporary stalling of affected streams.
+Receiving and verifying the Finished message is critical in ensuring that the
+TLS handshake has completely successfully.  A server MUST NOT use 1-RTT
+protected packets from the client if its response depends on client
+authentication.  A server MAY use 1-RTT protected packets from a client prior to
+receiving and verifying the Finished message if it has accepted 0-RTT data and
+it treats the out-of-order packets as though they are only have 0-RTT
+protection.
 
 
 # QUIC-Specific Additions to the TLS Handshake
