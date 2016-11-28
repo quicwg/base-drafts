@@ -111,20 +111,21 @@ HTTP/2-over-TLS/TCP.
 
 # Connection establishment
 
-HTTP/2-over-QUIC connections are established as described in
-{{QUIC-TRANSPORT}}.  The QUIC crypto handshake MUST use TLS {{QUIC-TLS}}.
+HTTP/2-over-QUIC connections are established as described in {{QUIC-TRANSPORT}}.
+The QUIC crypto handshake MUST use TLS {{QUIC-TLS}}.
 
-While connection-level options pertaining to the core QUIC protocol are 
-set in the initial crypto handshake {{QUIC-TLS}}.  HTTP/2-specific settings are
+While connection-level options pertaining to the core QUIC protocol are set in
+the initial crypto handshake {{QUIC-TLS}}.  HTTP/2-specific settings are
 conveyed in the HTTP/2 SETTINGS frame.  After the QUIC connection is
 established, an HTTP/2 SETTINGS frame may be sent as the initial frame of the
 QUIC headers stream (StreamID 3, See {{stream-mapping}}). As in HTTP/2,
-additional SETTINGS frames may be sent mid-connection by either endpoint. 
+additional SETTINGS frames may be sent mid-connection by either endpoint.
 
 
-TODO: decide whether to acknowledge receipt of SETTINGS through empty
-  SETTINGS frames with ACK bit set, as in HTTP/2, or rely on transport-
-  level acknowledgment.
+TODO:
+: Decide whether to acknowledge receipt of SETTINGS through empty SETTINGS
+  frames with ACK bit set, as in HTTP/2, or rely on transport- level
+  acknowledgment.
 
 Some transport-level options that HTTP/2-over-TCP specifies via the SETTINGS
 frame are superseded by QUIC transport parameters in HTTP/2- over-QUIC.  Below
