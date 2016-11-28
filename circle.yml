@@ -10,6 +10,7 @@ checkout:
 
 dependencies:
   pre:
+    - sudo apt-get -qq update; sudo apt-get -q install xsltproc
     - pip install xml2rfc
     - if head -1 -q *.md | grep '^\-\-\-' >/dev/null 2>&1; then gem install --no-doc kramdown-rfc2629; fi
     - if head -1 -q *.md | grep '^%%%' >/dev/null 2>&1; then go get "$mmark_src" && go build "$mmark_src"; fi
