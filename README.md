@@ -6,22 +6,22 @@ QUIC protocol suite.
 ## Core Transport Protocol
 
 * [Editor's copy](https://quicwg.github.io/base-drafts/draft-ietf-quic-transport.html)
-* [Working Group Draft] (https://tools.ietf.org/html/draft-ietf-quic-transport) (not yet published)
+* [Working Group Draft] (https://tools.ietf.org/html/draft-ietf-quic-transport)
 
 ## Loss Detection & Congestion Control
 
 * [Editor's copy](https://quicwg.github.io/base-drafts/draft-ietf-quic-recovery.html)
-* [Working Group Draft] (https://tools.ietf.org/html/draft-ietf-quic-recovery) (not yet published)
+* [Working Group Draft] (https://tools.ietf.org/html/draft-ietf-quic-recovery)
 
 ## TLS Mapping
 
 * [Editor's copy](https://quicwg.github.io/base-drafts/draft-ietf-quic-tls.html)
-* [Working Group Draft] (https://tools.ietf.org/html/draft-ietf-quic-tls) (not yet published)
+* [Working Group Draft] (https://tools.ietf.org/html/draft-ietf-quic-tls)
 
 ## HTTP Mapping
 
 * [Editor's copy](https://quicwg.github.io/base-drafts/draft-ietf-quic-http.html)
-* [Working Group Draft] (https://tools.ietf.org/html/draft-ietf-quic-http) (not yet published)
+* [Working Group Draft] (https://tools.ietf.org/html/draft-ietf-quic-http)
 
 ## Building the Draft
 
