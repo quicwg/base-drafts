@@ -16,11 +16,13 @@ author:
     ins: J. Iyengar
     name: Jana Iyengar
     org: Google
+    email: jri@google.com
     role: editor
   -
     ins: M. Thomson
     name: Martin Thomson
     org: Mozilla
+    email: martin.thomson@gmail.com
     role: editor
 
 normative:
