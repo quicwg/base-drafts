@@ -561,10 +561,10 @@ QUIC's connection establishment begins with version negotiation, since all
 communication between the endpoints, including packet and frame formats, relies
 on the two endpoints agreeing on a version.
 
-A QUIC connection begins with a client sending a handshake packet.  The details
-of the handshake mechanisms are described in Section XX, but all of the initial
-packets sent from the client to the server MUST have the VERSION flag set, and
-MUST specify the version of the protocol being used.
+A QUIC connection begins with a client sending a handshake packet. The details 
+of the handshake mechanisms are described in {{handshake}}, but all of the 
+initial packets sent from the client to the server MUST have the VERSION flag 
+set, and MUST specify the version of the protocol being used. 
 
 When the server receives a packet from a client with the VERSION flag set for a
 connection that has not yet been established, it compares the client's version
@@ -632,7 +632,7 @@ protocol to be transmitted to the peer.
 QUIC encodes the transport parameters and options as tag-value pairs, all as
 7-bit ASCII strings.  QUIC parameter tags are listed below.
 
-#### Required Transport Parameters
+#### Required Transport Parameters {#required-transport-parameters}
 
 * SFCW: Stream Flow Control Window.  The stream level flow control
   byte offset advertised by the sender of this parameter.
@@ -1197,7 +1197,7 @@ the maximum packet size appropriately.
 
 A sender bundles one or more frames in a Regular QUIC packet.  A sender MAY
 bundle any set of frames in a packet.  All QUIC packets MUST contain a packet
-number and MAY contain one or more frames (Section XX).  Packet numbers MUST be
+number and MAY contain one or more frames ({{frames}}).  Packet numbers MUST be
 unique within a connection and MUST NOT be reused within the same connection.
 Packet numbers MUST be assigned to packets in a strictly monotonically
 increasing order.  The initial packet number used, at both the client and the
@@ -1343,14 +1343,14 @@ All streams start in the "idle" state.
 The following transitions are valid from this state:
 
 Sending or receiving a STREAM frame causes the stream to become "open".  The
-stream identifier is selected as described in Section XX.  The same STREAM frame
-can also cause a stream to immediately become "half-closed".
+stream identifier is selected as described in {{stream-identifiers}}.  The same
+STREAM frame can also cause a stream to immediately become "half-closed".
 
 An application can reserve an idle stream for later use.  The stream state for
 the reserved stream transitions to "reserved".
 
 Receiving any frame other than STREAM or RST_STREAM on a stream in this state
-MUST be treated as a connection error (Section XX) of type YYYY.
+MUST be treated as a connection error ({{error-handling}}) of type YYYY.
 
 ### reserved
 
@@ -1365,7 +1365,7 @@ this state only the following transitions are possible:
 
 A stream in the "open" state may be used by both peers to send frames of any
 type.  In this state, a sending peer must observe the flow- control limit
-advertised by its receiving peer (Section XX).
+advertised by its receiving peer ({{flow-control}}).
 
 From this state, either endpoint can send a frame with the FIN flag set, which
 causes the stream to transition into one of the "half- closed" states.  An
@@ -1399,11 +1399,11 @@ receiver stream-level flow-control window.
 
 If an endpoint receives any STREAM frames for a stream that is in this state, it
 MUST close the connection with a QUIC_STREAM_DATA_AFTER_TERMINATION error
-(Section XX).
+({{error-handling}}).
 
 A stream in this state can be used by the endpoint to send frames of any type.
 In this state, the endpoint continues to observe advertised stream-level and
-connection-level flow-control limits (Section XX).
+connection-level flow-control limits ({{flow-control}}).
 
 A stream can transition from this state to "closed" by sending a frame that
 contains a FIN flag or when either peer sends a RST_STREAM frame.
@@ -1420,7 +1420,7 @@ An endpoint that receives any frame for this stream after receiving either a FIN
 flag and all stream data preceding it, or a RST_STREAM frame, MUST quietly
 discard the frame, with one exception.  If a STREAM frame carrying data beyond
 the received final offset is received, the endpoint MUST close the connection
-with a QUIC_STREAM_DATA_AFTER_TERMINATION error (Section XX).
+with a QUIC_STREAM_DATA_AFTER_TERMINATION error ({{error-handling}}).
 
 An endpoint that receives a RST_STREAM frame (and which has not sent a FIN or a
 RST_STREAM) MUST immediately respond with a RST_STREAM frame, and MUST NOT send
@@ -1439,14 +1439,14 @@ connection and stream flow-control windows.  Even though these frames might be
 ignored, because they are sent before their sender receives the RST_STREAM, the
 sender will consider the frames to count against its flow-control windows.
 
-In the absence of more specific guidance elsewhere in this document,
-implementations SHOULD treat the receipt of a frame that is not expressly
-permitted in the description of a state as a connection error (Section XX).
-Frames of unknown types are ignored.
+In the absence of more specific guidance elsewhere in this document, 
+implementations SHOULD treat the receipt of a frame that is not expressly 
+permitted in the description of a state as a connection error 
+({{error-handling}}). Frames of unknown types are ignored. 
 
 (TODO: QUIC_STREAM_NO_ERROR is a special case.  Write it up.)
 
-## Stream Identifiers
+## Stream Identifiers {#stream-identifiers}
 
 Streams are identified by an unsigned 32-bit integer, referred to as the
 StreamID.  To avoid StreamID collision, clients MUST initiate streams usinge
@@ -1454,8 +1454,8 @@ odd-numbered StreamIDs; streams initiated by the server MUST use even-numbered
 StreamIDs.
 
 A StreamID of zero (0x0) is reserved and used for connection-level flow control
-frames (Section XX); the StreamID of zero cannot be used to establish a new
-stream.
+frames ({{flow-control}}); the StreamID of zero cannot be used to establish a
+new stream.
 
 StreamID 1 (0x1) is reserved for the crypto handshake.  StreamID 1 MUST NOT be
 used for application data, and MUST be the first client- initiated stream.
@@ -1466,12 +1466,13 @@ connection.
 
 ## Stream Concurrency
 
-An endpoint can limit the number of concurrently active incoming streams by
-setting the MSPC parameter (see Section XX) in the transport parameters.  The
-maximum concurrent streams setting is specific to each endpoint and applies only
-to the peer that receives the setting.  That is, clients specify the maximum
-number of concurrent streams the server can initiate, and servers specify the
-maximum number of concurrent streams the client can initiate.
+An endpoint can limit the number of concurrently active incoming streams by 
+setting the MSPC parameter (see {{required-transport-parameters}}) in the 
+transport parameters. The maximum concurrent streams setting is specific to each 
+endpoint and applies only to the peer that receives the setting. That is, 
+clients specify the maximum number of concurrent streams the server can 
+initiate, and servers specify the maximum number of concurrent streams the 
+client can initiate. 
 
 Streams that are in the "open" state or in either of the "half- closed" states
 count toward the maximum number of streams that an endpoint is permitted to
@@ -1481,7 +1482,7 @@ the MSPC setting.
 Endpoints MUST NOT exceed the limit set by their peer.  An endpoint that
 receives a STREAM frame that causes its advertised concurrent stream limit to be
 exceeded MUST treat this as a stream error of type QUIC_TOO_MANY_OPEN_STREAMS
-(Section XX).
+({{error-handling}}).
 
 ## Sending and Receiving Data
 
@@ -1511,11 +1512,11 @@ controller and the flow controller, with the following two exceptions.
   control.  If so, these streams MUST NOT be subject to connection-level flow
   control.
 
-Flow control is described in detail in Section XX, and congestion control is
-described in the companion document {{QUIC-RECOVERY}}.
+Flow control is described in detail in {{flow-control}}, and congestion control
+is described in the companion document {{QUIC-RECOVERY}}.
 
 
-# Flow Control
+# Flow Control {#flow-control}
 
 It is necessary to limit the amount of data that a sender may have outstanding
 at any time, so as to prevent a fast sender from overwhelming a slow receiver,
@@ -1626,10 +1627,12 @@ send a WINDOW_UPDATE frame at least two roundtrips before it expects the sender
 to get blocked.
 
 
-# Error Codes
+# Error Codes {#error-handling}
 
 This section lists all the QUIC error codes that may be used in a
 CONNECTION_CLOSE frame.  TODO: Trim list and group errors for readabiity.
+
+TODO: Discuss error handling beyond just listing error codes.
 
 * 0x01: QUIC_INTERNAL_ERROR.  (Connection has reached an invalid state.)
 
@@ -1860,8 +1863,8 @@ QUIC_HANDSHAKE_FAILED.  (Crypto errors.Hanshake failed.)
 * 0x5d: QUIC_TOO_MANY_FRAME_GAPS.  (Stream frames arrived too discontiguously so
   that stream sequencer buffermaintains too many gaps.)
 
-* 0x5f: QUIC_STREAM_SEQUENCER_INVALID_STATE.  (Sequencer buffer get into weird
-  state where continuing read/write will leadto crash.)
+* 0x5f: QUIC_STREAM_SEQUENCER_INVALID_STATE.  (Sequencer buffer gets into weird
+  state where continuing read/write will lead to crash.)
 
 * 0x60: QUIC_TOO_MANY_SESSIONS_ON_SERVER.  (Connection closed because of server
   hits max number of sessions allowed.
