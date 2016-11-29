@@ -331,8 +331,8 @@ In {{quic-tls-handshake}}, symbols mean:
 
 If 0-RTT is not attempted, then the client does not send frames protected by the
 0-RTT key (@B).  In that case, the only key transition on the client is from
-cleartext (@A) to 1-RTT protection (@C), which happens before it sends its final
-set of TLS handshake messages.
+unprotected packets (@A) to 1-RTT protection (@C), which happens before it sends
+its final set of TLS handshake messages.
 
 The server sends TLS handshake messages without protection (@A).  The server
 transitions from no protection (@A) to full 1-RTT protection (@C) after it sends
@@ -340,15 +340,14 @@ the last of its handshake messages.
 
 Some TLS handshake messages are protected by the TLS handshake record
 protection.  These keys are not exported from the TLS connection for use in
-QUIC.  QUIC frames from the server are sent in the clear until the final
+QUIC.  QUIC packets from the server are sent in the clear until the final
 transition to 1-RTT keys.
 
-The client transitions from @A to @B when sending 0-RTT data, but it transitions
-back to @A when sending its second flight of TLS handshake messages.  This
-introduces a potential for confusion between packets with 0-RTT protection (@B)
-and those with 1-RTT protection (@C) at the server if there is loss or
-reordering of the handshake packets.  See {{zero-transition}} for details on how
-this is addressed.
+The client transitions from cleartest (@A) to 0-RTT keys (@B) when sending 0-RTT
+data, and subsequently to to 1-RTT keys (@C) for its second flight of TLS
+handshake messages.  This creates the potential for unprotected packets to be
+received by a server in close proximity to packets that are protected with 1-RTT
+keys.  More information on this key transition is included in {{cleartext-hs}}.
 
 
 ## Interface to TLS
@@ -468,127 +467,21 @@ protected by two different keys.  This redundancy is limited to a only a few TLS
 records, and is maintained for the sake of simplicity.
 
 
-## Key Phases
+## Installing New Keys {#new-key}
 
-At several stages during the handshake, new keying material can be exported from
-TLS and used for QUIC packet protection.  At each transition during the
-handshake a new secret is exported from TLS and keying material is derived from
-that secret.
+As TLS reports the availability of keying material, the packet protection keys
+and initialization vectors (IVs) are updated (see {{key-expansion}}).  The
+selection of AEAD function is also updated to match the AEAD negotiated by TLS.
 
-Every time that a new set of keys is used for protecting outbound packets, the
-KEY_PHASE bit in the public flags is toggled.  The KEY_PHASE bit starts out with
-a value of 0 and is set to 1 when the first encrypted packets are sent.  Once
-the connection is fully enabled, the KEY_PHASE bit can toggle between 0 and 1 as
-keys are updated (see {{key-update}}).
+For packets other than any unprotected handshake packets (see {{cleartext-hs}}),
+once a change of keys has been made, packets with higher packet numbers MUST use
+the new keying material.  The KEY_PHASE bit on these packets is inverted each
+time new keys are installed to signal the use of the new keys to the recipient
+(see {{key-phases}} for details).
 
-The KEY_PHASE bit on the public flags is the most significant bit (0x80).
-
-The KEY_PHASE bit allows a recipient to detect a change in keying material
-without necessarily needing to receive the first packet that triggered the
-change.  An endpoint that notices a changed KEY_PHASE bit can update keys and
-decrypt the packet that contains the changed bit.  This isn't possible during
-the handshake, because the entire first flight of TLS handshake messages is used
-as input to key derivation.
-
-The following transitions are possible:
-
-* When using 0-RTT, the client transitions to using 0-RTT keys after sending the
-  ClientHello.  The KEY_PHASE bit on 0-RTT packets sent by the client is set to
-  1.
-
-* The server sends messages in the clear until the TLS handshake completes.  The
-  KEY_PHASE bit on packets sent by the server is set to 0 when the handshake is
-  in progress.  Note that TLS handshake messages will still be protected by TLS
-  record protection based on the TLS handshake traffic keys.
-
-* The server transitions to using 1-RTT keys after sending its Finished message.
-  This causes the KEY_PHASE bit on packets sent by the server to be set to 1.
-
-* The client transitions back to cleartext when sending its second flight of TLS
-  handshake messages.  KEY_PHASE on the client's second flight of handshake
-  messages is set back to 0.  This includes a TLS end_of_early_data alert, which
-  is protected with TLS (not QUIC) 0-RTT keys.
-
-* The client transitions to sending with 1-RTT keys and a KEY_PHASE of 1 after
-  sending its Finished message.
-
-* Once the handshake is complete and all TLS handshake messages have been sent
-  and acknowledged, either endpoint can send packets with a new set of keys.
-  This is signaled by toggling the value of the KEY_PHASE bit, see
-  {{key-update}}.
-
-At each transition point, both keying material (see {{key-expansion}}) and the
-AEAD function used by TLS is interchanged with the values that are currently in
-use for protecting outbound packets.  Once a change of keys has been made,
-packets with higher sequence numbers MUST use the new keying material until a
-newer set of keys (and AEAD) are used.  The exception to this is that
-retransmissions of TLS handshake packets MUST use the keys that they were
-originally protected with (see {{hs-retransmit}}).
-
-
-### Retransmission of TLS Handshake Messages {#hs-retransmit}
-
-TLS handshake messages need to be retransmitted with the same level of
-cryptographic protection that was originally used to protect them.  Newer keys
-cannot be used to protect QUIC packets that carry TLS messages.
-
-Ordinarily, an endpoint retransmits stream data in a new packet.  That packet
-uses the latest packet protection keys.  This simplifies key management when
-there are key updates (see {{key-update}}).
-
-The first flight of handshake messages from both client and server (ClientHello,
-or ServerHello through to the server's Finished) are critical to the key
-exchange. The content of these messages is used to determine the keys used to
-protect later messages. If these are protected with newer keys, they will be
-indecipherable to the recipient.
-
-Even though newer keys are available, the first flight of TLS handshake messages
-sent by an endpoint MUST NOT be encrypted:
-
-* A client MUST NOT restransmit a TLS ClientHello with 0-RTT keys.  The server
-  needs this message in order to determine the 0-RTT keys.
-
-* A server MUST NOT retransmit any of its TLS handshake messages with 1-RTT
-  keys.  The client needs these messages in order to determine the 1-RTT keys.
-
-A HelloRetryRequest might be used to reject an initial ClientHello.  A
-HelloRetryRequest handshake message and any second ClientHello that is sent in
-response MUST also be sent without packet protection.  This is natural, because
-no new keying material will be available when these messages need to be sent.
-
-Note:
-
-: An alternative way of identifying handshake data that needs to be sent without
-  protection is to collect all handshake data from before TLS provides the first
-  keys (see {{key-ready-events}}).
-
-Retransmissions of these handshake messages MUST use a different packet to any
-other ongoing traffic, and they must use a KEY_PHASE of 0.
-
-The second flight of TLS handshake messages from a client is always protected
-with 1-RTT keys.
-
-To avoid confusion about which key is used for a given packet, an endpoint MUST
-NOT initiate a key update while there are any unacknowledged handshake messages,
-see {{key-update}}.
-
-
-### Distinguishing 0-RTT and 1-RTT Packets {#zero-transition}
-
-FIX ME (Issue #27)
-
-Loss or reordering of the client's second flight of TLS handshake messages can
-cause 0-RTT packet and 1-RTT packets to become indistinguishable from each other
-when they arrive at the server.  Both 0-RTT packets use a KEY_PHASE of 1.
-
-A server does not need to receive the client's second flight of TLS handshake
-messages in order to derive the secrets needed to decrypt 1-RTT messages.  Thus,
-a server is able to decrypt 1-RTT messages that arrive prior to receiving the
-client's Finished message.  Of course, any decision that might be made based on
-client authentication needs to be delayed until the client's authentication
-messages have been received and validated.
-
-A server can distinguish between 0-RTT and 1-RTT packets by TBDTBDTBD.
+An endpoint retransmits stream data in a new packet.  New packets have new
+packet numbers and use the latest packet protection keys.  This simplifies key
+management when there are key updates (see {{key-update}}).
 
 
 ## QUIC Key Expansion {#key-expansion}
@@ -645,12 +538,16 @@ the hash output for the PRF hash function negotiated by TLS.
                       "", Hash.length)
 ~~~
 
+These secrets are used to derive the initial client and server packet protection
+keys.
+
 After a key update (see {{key-update}}), these secrets are updated using the
-HKDF-Expand-Label function defined in Section 7.1 of {{!I-D.ietf-tls-tls13}},
-using the PRF hash function negotiated by TLS.  The replacement secret is
-derived using the existing Secret, a Label of "QUIC client 1-RTT Secret" for the
-client and "QUIC server 1-RTT Secret", an empty HashValue, and the same output
-Length as the hash function selected by TLS for its PRF.
+HKDF-Expand-Label function defined in Section 7.1 of {{!I-D.ietf-tls-tls13}}.
+HKDF-Expand-Label uses the the PRF hash function negotiated by TLS.  The
+replacement secret is derived using the existing Secret, a Label of "QUIC client
+1-RTT Secret" for the client and "QUIC server 1-RTT Secret" for the server, an
+empty HashValue, and the same output Length as the hash function selected by TLS
+for its PRF.
 
 ~~~
    client_pp_secret_<N+1>
@@ -663,16 +560,18 @@ Length as the hash function selected by TLS for its PRF.
                            "", Hash.length)
 ~~~
 
-For example, the client secret is updated using HKDF-Expand {{!RFC5869}} with an
-info parameter that includes the PRF hash length encoded on two octets, the
-string "TLS 1.3, QUIC client 1-RTT secret" and a zero octet.  This equates to a
-single use of HMAC {{!RFC2104}} with the negotiated PRF hash function:
+This allows for a succession of new secrets to be created as needed.
+
+HKDF-Expand-Label uses HKDF-Expand {{!RFC5869}} with a specially formatted info
+parameter.  The info parameter that includes the output length (in this case,
+the size of the PRF hash output) encoded on two octets in network byte order,
+the length of the prefixed Label as a single octet, the value of the Label
+prefixed with "TLS 1.3, ", and a zero octet to indicate an empty HashValue.  For
+example, the client packet protection secret uses an info parameter of:
 
 ~~~
-   info = Hash.length / 256 || Hash.length % 256 ||
+   info = (HashLen / 256) || (HashLen % 256) || 0x21 ||
           "TLS 1.3, QUIC client 1-RTT secret" || 0x00
-   client_pp_secret_<N+1>
-       = HMAC-Hash(client_pp_secret_<N>, info || 0x01)
 ~~~
 
 
@@ -756,6 +655,185 @@ Prior to TLS providing keys, no record protection is performed and the
 plaintext, P, is transmitted unmodified.
 
 
+## Packet Numbers {#packet-number}
+
+QUIC has a single, contiguous packet number space.  In comparison, TLS
+restarts its sequence number each time that record protection keys are
+changed.  The sequence number restart in TLS ensures that a compromise of the
+current traffic keys does not allow an attacker to truncate the data that is
+sent after a key update by sending additional packets under the old key
+(causing new packets to be discarded).
+
+QUIC does not assume a reliable transport and is required to handle attacks
+where packets are dropped in other ways.  QUIC is therefore not affected by this
+form of truncation.
+
+The packet number is not reset and it is not permitted to go higher than its
+maximum value of 2^64-1.  This establishes a hard limit on the number of packets
+that can be sent.
+
+Some AEAD functions have limits for how many packets can be encrypted under the
+same key and IV (see for example {{AEBounds}}).  This might be lower than the
+packet number limit.  An endpoint MUST initiate a key update ({{key-update}})
+prior to exceeding any limit set for the AEAD that is in use.
+
+TLS maintains a separate sequence number that is used for record protection on
+the connection that is hosted on stream 1.  This sequence number is not visible
+to QUIC.
+
+
+# Key Phases
+
+As TLS reports the availability of 0-RTT and 1-RTT keys, new keying material can
+be exported from TLS and used for QUIC packet protection.  At each transition
+during the handshake a new secret is exported from TLS and packet protection
+keys are derived from that secret.
+
+Every time that a new set of keys is used for protecting outbound packets, the
+KEY_PHASE bit in the public flags is toggled.
+
+Once the connection is fully enabled, the KEY_PHASE bit allows a recipient to
+detect a change in keying material without necessarily needing to receive the
+first packet that triggered the change.  An endpoint that notices a changed
+KEY_PHASE bit can update keys and decrypt the packet that contains the changed
+bit, see {{key-update}}.
+
+The KEY_PHASE bit on the public flags is the most significant bit (0x80).
+{{key-phase-table}} summarizes the different values for the KEY_PHASE bit.
+
+| Scenario | Client (No 0-RTT) | Client (0-RTT) | Server |
+|:-|-:|-:|-:|
+| Handshake | 0 | 0 |  0 |
+| 0-RTT Data | - | 1 | - |
+| 1-RTT Data | 1 | 0 | 1 |
+| 1st Key Update | 0 | 1 | 0 |
+| 2nd Key Update | 1 | 0 | 1 |
+{: #key-phase-table title="Summary of KEY_PHASE Values"}
+
+{{key-phase-table}} shows that a client marks 1-RTT with a different KEY_PHASE
+bit depending on whether 0-RTT is attempted.  Attempting 0-RTT therefore results
+in fully protected data having different KEY_PHASE values.  This is true even if
+0-RTT data is rejected and ignored by the server.
+
+Transitions between keys during the handshake are complicated by the need to
+ensure that TLS handshake messages are sent with the correct packet protection.
+
+
+## Packet Protection for the TLS Handshake {#cleartext-hs}
+
+The initial exchange of packets are sent without protection.  These packets are
+marked with a KEY_PHASE of 0.  The same key phase is used for all packets sent
+by TLS prior to the point that 1-RTT keys are made available to QUIC (0-RTT data
+does not contain TLS handshake messages).  This includes the TLS ClientHello and
+any TLS handshake message from the server, except those that are sent after the
+handshake completes, such as NewSessionTicket.  TLS handshake messages sent
+after completing the TLS handshake are not special and use packet protection
+keys that are current at the time of sending (or retransmission).
+
+A client might not attempt to send 0-RTT data.  This is either because the
+client has not talked to the server recently and is therefore does not have a
+valid session resumption ticket, or because the client does not wish to send any
+0-RTT data.
+
+If the client does not have 0-RTT data to send, it transitions to using 1-RTT
+keys before sending its second flight of TLS handshake messages (that is, the
+flight containing the TLS Finished message).  Subsequent messages are protected
+with 1-RTT keys and have a KEY_PHASE bit set to 1.
+
+If the client sends 0-RTT data, it marks packets protected with 0-RTT keys with
+a KEY_PHASE of 1.  The later transition to using 1-RTT keys then results in the
+client using a KEY_PHASE of 0 for packets that are protected with 1-RTT keys.
+
+The server transitions to using 1-RTT keys after sending its first flight of TLS
+handshake messages.  From this point, the server protects all packets with 1-RTT
+keys.  Future packets are therefore protected with 1-RTT keys and marked with a
+KEY_PHASE of 1.
+
+Like the client, a server MUST send retransmissions of its unprotected handshake
+messages or acknowledgments for unprotected handshake messages sent by the
+client in unprotected packets (KEY_PHASE=0).
+
+The second flight of TLS handshake messages from a client is always protected
+with the current packet protection keys.  This includes the TLS
+end_of_early_data alert, which a client sends before its final set of handshake
+messages.
+
+
+### Retransmission and Acknowledgment of Unprotected Packets
+
+The first flight of handshake messages from both client and server (ClientHello,
+or ServerHello through to the server's Finished) a critical to the key exchange.
+The content of these messages is used to determine the keys used to protect
+later messages.  If these are protected with newer keys, they will be
+indecipherable to the recipient.
+
+Even though newer keys could be available, the first flight of TLS handshake
+messages sent by an endpoint MUST NOT be sent in protected packets,
+specifically:
+
+* A client MUST NOT restransmit a TLS ClientHello with 0-RTT keys.  The server
+  needs this message in order to determine the 0-RTT keys.
+
+* A server MUST NOT retransmit any of its TLS handshake messages with 1-RTT
+  keys.  The client needs these messages in order to determine the 1-RTT keys.
+
+A HelloRetryRequest might be used to reject an initial ClientHello.  A
+HelloRetryRequest handshake message and any second ClientHello that is sent in
+response MUST also be sent without packet protection.  This is natural, because
+no new keying material will be available when these messages need to be sent.
+
+Note:
+
+: An alternative way of identifying handshake data that needs to be sent without
+  protection is to collect all handshake data from before TLS provides the first
+  keys (see {{key-ready-events}}).
+
+Retransmissions of these handshake messages MUST be send in unprotected packets
+(with a KEY_PHASE of 0).  Any ACK frames for these messages MUST also be send in
+unprotected packets.
+
+
+### Handshake Retransmission and 0-RTT
+
+The first protected packets sent by a client that has not attempted to send
+0-RTT data or packets sent by a server will be marked with a KEY_PHASE of 1.
+This distinguishes those protected packets from unprotected packets.  Though loss
+or reordering might cause unprotected packets to arrive once 1-RTT keys are in
+use, unprotected packets are easily distinguished from 1-RTT packets.  Based on
+the KEY_PHASE bit, these packets might initially appear to be a key update (see
+{{key-update}}), but they will not be decrypted successfully and so will be
+discarded.
+
+However, if a client has sent 0-RTT data, unprotected packets will not be
+clearly distinguished from 1-RTT protected packets.  Both will have a KEY_PHASE
+of 0.  A server that does not yet have 1-RTT keys will correctly interpret these
+as being unprotected, but a server that has 1-RTT keys could reject unprotected
+packets.
+
+A server that has successfully transitioned to using 1-RTT keys could attempt to
+decrypt these packets, which will be unsuccessful.  Though a server that has
+1-RTT keys can safely discard any unprotected handshake messages from the
+client, an unprotected ACK frame could indicate that the server needs to
+retransmit its own handshake messages.  ACK frames therefore cannot be
+discarded.
+
+Until the server has received a positive acknowledgment for all of its
+unprotected handshake messages, either in the form of an explicit acknowledgment
+or implicitly through the use of 1-RTT keys, it MUST NOT discard packets with a
+KEY_PHASE of 0 if they cannot be decrypted successfully.  If these packets are
+unprotected and contain ACK frames, those ACK frames MUST be recovered and used
+to determine whether to retransmit TLS handshake messages.
+
+TBD:
+
+: We could observe/require that all unprotected packets are marked with a
+  VERSION bit and use that to avoid the "trial decryption" mess.
+
+To limit the number of key phases that could be active, an endpoint MUST NOT
+initiate a key update while there are any unacknowledged handshake messages, see
+{{key-update}}.
+
+
 ## Key Update {#key-update}
 
 Once the TLS handshake is complete, the KEY_PHASE bit allows for refreshes of
@@ -765,16 +843,17 @@ new key is in use.
 
 An endpoint MUST NOT initiate more than one key update at a time.  A new key
 cannot be used until the endpoint has received and successfully decrypted a
-packet with a matching KEY_PHASE.
+packet with a matching KEY_PHASE.  Note that when 0-RTT is attempted the value
+of the KEY_PHASE bit will be different on packets sent by either peer.
 
 A receiving endpoint detects an update when the KEY_PHASE bit doesn't match what
 it is expecting.  It creates a new secret (see {{key-expansion}}) and the
 corresponding read key and IV.  If the packet can be decrypted and authenticated
-using these values, then a write keys and IV are generated and the active keys
-are replaced.  The next packet sent by the endpoint will then use the new keys.
+using these values, then the keys it uses for packet protection are also
+updated.  The next packet sent by the endpoint will then use the new keys.
 
 An endpoint doesn't need to send packets immediately when it detects that its
-peer has updated keys.  The next packets that it sends will simply use the new
+peer has updated keys.  The next packet that it sends will simply use the new
 keys.  If an endpoint detects a second update before it has sent any packets
 with updated keys it indicates that its peer has updated keys twice without
 awaiting a reciprocal update.  An endpoint MUST treat consecutive key updates as
@@ -786,13 +865,14 @@ update.  This allows an endpoint to consume packets that are reordered around
 the transition between keys.  Packets with higher packet numbers always use the
 updated keys and MUST NOT be decrypted with old keys.
 
-Keys and their corresponding secrets SHOULD be discarded when an endpoints has
+Keys and their corresponding secrets SHOULD be discarded when an endpoint has
 received all packets with sequence numbers lower than the lowest sequence number
-used for the new key, or when it determines that the length of the delay to
-affected packets is excessive.
+used for the new key.  An endpoint might discard keys if it determines that the
+length of the delay to affected packets is excessive.
 
-This ensures that once the handshake is complete, there are at most two keys to
-distinguish between at any one time, for which the KEY_PHASE bit is sufficient.
+This ensures that once the handshake is complete, packets with the same
+KEY_PHASE will have the same packet protection keys, unless there are multiple
+key updates in a short time frame succession and significant packet reordering.
 
 ~~~
    Initiating Peer                    Responding Peer
@@ -818,30 +898,6 @@ Finished message.  Otherwise, packets protected by the updated keys could be
 confused for retransmissions of handshake messages.  A client cannot initiate a
 key update until all of its handshake messages have been acknowledged by the
 server.
-
-
-## Packet Numbers {#packet-number}
-
-QUIC has a single, contiguous packet number space.  In comparison, TLS
-restarts its sequence number each time that record protection keys are
-changed.  The sequence number restart in TLS ensures that a compromise of the
-current traffic keys does not allow an attacker to truncate the data that is
-sent after a key update by sending additional packets under the old key
-(causing new packets to be discarded).
-
-QUIC does not assume a reliable transport and is therefore required to handle
-attacks where packets are dropped in other ways.
-
-The packet number is not reset and it is not permitted to go higher than its
-maximum value of 2^64-1.  This establishes a hard limit on the number of packets
-that can be sent.  Before this limit is reached, some AEAD functions have limits
-for how many packets can be encrypted under the same key and IV (see for example
-{{AEBounds}}).  An endpoint MUST initiate a key update ({{key-update}}) prior to
-exceeding any limit set for the AEAD that is in use.
-
-TLS maintains a separate sequence number that is used for record protection on
-the connection that is hosted on stream 1.  This sequence number is reset
-according to the rules in the TLS protocol.
 
 
 # Pre-handshake QUIC Messages {#pre-handshake}
