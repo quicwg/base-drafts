@@ -256,9 +256,9 @@ document:
    the connection is protected by a new Diffie-Hellman exchange.
 
 
-# TLS in Stream 1
+# TLS Usage
 
-QUIC reserves stream 1 for a TLS connection. This stream contains a complete TLS
+QUIC reserves stream 1 for a TLS connection.  Stream 1 contains a complete TLS
 connection, which includes the TLS record layer.  Other than the definition of a
 QUIC-specific extension (see Section-TBD), TLS is unmodified for this use.  This
 means that TLS will apply confidentiality and integrity protection to its
@@ -269,12 +269,6 @@ QUIC permits a client to send frames on streams starting from the first packet.
 The initial packet from a client contains a stream frame for stream 1 that
 contains the first TLS handshake messages from the client.  This allows the TLS
 handshake to start with the first packet that a client sends.
-
-Initial packets are not authenticated or confidentiality protected.
-{{pre-handshake}} covers some of the implications of this design.  This imposes
-some restrictions on what packets can be sent.  There are also restrictions on
-what can be sent by the client under the protection of 0-RTT keys; in
-particular, 0-RTT keys do not provide protection against replay.
 
 QUIC packets are protected using a scheme that is specific to QUIC, see
 {{packet-protection}}.  Keys are exported from the TLS connection when they
@@ -329,8 +323,8 @@ In {{quic-tls-handshake}}, symbols mean:
   application keys.
 * "{" and "}" enclose messages that are protected by the TLS Handshake keys.
 
-If 0-RTT is not attempted, then the client does not send frames protected by the
-0-RTT key (@B).  In that case, the only key transition on the client is from
+If 0-RTT is not attempted, then the client does not send packets protected by
+the 0-RTT key (@B).  In that case, the only key transition on the client is from
 unprotected packets (@A) to 1-RTT protection (@C), which happens before it sends
 its final set of TLS handshake messages.
 
@@ -368,13 +362,12 @@ provides handshake packets.
 A QUIC client starts TLS by requesting TLS handshake octets from
 TLS.  The client acquires handshake octets before sending its first packet.
 
-A QUIC server starts the process by providing TLS with any stream 1 octets that
-might have arrived.  Only in-sequence frame data is delivered; data that arrives
-out of order are buffered by QUIC until all preceding data is available.
+A QUIC server starts the process by providing TLS with stream 1 octets.
 
-After providing TLS with data, new handshake octets are then requested from TLS.
-TLS might not provide any octets if the handshake messages it has received are
-incomplete.
+Each time that an endpoint receives data on stream 1, it delivers the octets to
+TLS if it is able.  Each time that TLS is provided with new data, new handshake
+octets are requested from TLS.  TLS might not provide any octets if the
+handshake messages it has received are incomplete or it has no data to send.
 
 Once the TLS handshake is complete, this is indicated to QUIC along with any
 final handshake octets that TLS needs to send.  Once the handshake is complete,
@@ -761,11 +754,12 @@ messages.
 
 ### Retransmission and Acknowledgment of Unprotected Packets
 
-The first flight of handshake messages from both client and server (ClientHello,
-or ServerHello through to the server's Finished) a critical to the key exchange.
-The content of these messages is used to determine the keys used to protect
-later messages.  If these are protected with newer keys, they will be
-indecipherable to the recipient.
+The first flight of TLS handshake messages from both client and server
+(ClientHello, or ServerHello through to the server's Finished) are critical to
+the key exchange.  The contents of these messages is used to determine the keys
+used to protect later messages.  If these handshake messages are included in
+packets that are protected with these keys, they will be indecipherable to the
+recipient.
 
 Even though newer keys could be available, the first flight of TLS handshake
 messages sent by an endpoint MUST NOT be sent in protected packets,
@@ -789,7 +783,7 @@ Note:
   keys (see {{key-ready-events}}).
 
 Retransmissions of these handshake messages MUST be send in unprotected packets
-(with a KEY_PHASE of 0).  Any ACK frames for these messages MUST also be send in
+(with a KEY_PHASE of 0).  Any ACK frames for these messages MUST also be sent in
 unprotected packets.
 
 
@@ -878,11 +872,11 @@ key updates in a short time frame succession and significant packet reordering.
    Initiating Peer                    Responding Peer
 
 @M QUIC Frames
-                    New Keys -> @N
+               New Keys -> @N
 @N QUIC Frames
                       -------->
                                           QUIC Frames @M
-                    New Keys -> @N
+                          New Keys -> @N
                                           QUIC Frames @N
                       <--------
 ~~~
@@ -939,7 +933,7 @@ proposes that all strategies are possible depending on the type of message.
   {{pre-handshake-protected}}).
 
 
-## Unprotected Frames Prior to Handshake Completion {#pre-handshake-unprotected}
+## Unprotected Packets Prior to Handshake Completion {#pre-handshake-unprotected}
 
 This section describes the handling of messages that are sent and received prior
 to the completion of the TLS handshake.
@@ -1019,7 +1013,7 @@ ISSUE:
   authenticating the initial value, so that peers can be sure that they haven't
   missed an initial message.
 
-In addition to causing valid packets to be dropped, an attacker could generate
+In addition to causing valid packets to be dropped, an attacker can generate
 packets with an intent of causing the recipient to expend processing resources.
 See {{useless}} for a discussion of these risks.
 
@@ -1059,7 +1053,7 @@ server protects handshake messages using the 0-RTT key if it decides to accept a
 0-RTT key.  A server MUST still include the early_data extension in its
 ServerHello message.
 
-This restriction prevents a server from responding to a request using frames
+This restriction prevents a server from responding to a request using packets
 protected by the 0-RTT keys.  This ensures that all application data from the
 server are always protected with keys that have forward secrecy.  However, this
 results in head-of-line blocking at the client because server responses cannot
@@ -1067,7 +1061,7 @@ be decrypted until all the server's handshake messages are received by the
 client.
 
 
-## Protected Frames Prior to Handshake Completion {#pre-handshake-protected}
+## Protected Packets Prior to Handshake Completion {#pre-handshake-protected}
 
 Due to reordering and loss, protected packets might be received by an endpoint
 before the final handshake messages are received.  If these can be decrypted
@@ -1139,7 +1133,7 @@ QUIC defines an extension for use with TLS.  That extension defines
 transport-related parameters.  This provides integrity protection for these
 values.  Including these in the TLS handshake also make the values that a client
 sets available to a server one-round trip earlier than parameters that are
-carried in QUIC frames.  This document does not define that extension.
+carried in QUIC packets.  This document does not define that extension.
 
 
 ## Source Address Validation {#source-address}
