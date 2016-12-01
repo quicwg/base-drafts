@@ -100,7 +100,7 @@ QUIC builds on past transport experience, and implements mechanisms that make it
 useful as a modern general-purpose transport protocol.  Using UDP as the basis
 of QUIC is intended to address compatibility issues with legacy clients and
 middleboxes.  QUIC authenticates all of its headers, preventing third parties
-from from changing them.  QUIC encrypts most of its headers, thereby limiting
+from changing them.  QUIC encrypts most of its headers, thereby limiting
 protocol evolution to QUIC endpoints only.  Therefore, middleboxes, in large
 part, are not required to be updated as new protocol versions are deployed.
 This document describes the core QUIC protocol, including the conceptual design,
@@ -563,10 +563,10 @@ QUIC's connection establishment begins with version negotiation, since all
 communication between the endpoints, including packet and frame formats, relies
 on the two endpoints agreeing on a version.
 
-A QUIC connection begins with a client sending a handshake packet. The details 
-of the handshake mechanisms are described in {{handshake}}, but all of the 
-initial packets sent from the client to the server MUST have the VERSION flag 
-set, and MUST specify the version of the protocol being used. 
+A QUIC connection begins with a client sending a handshake packet. The details
+of the handshake mechanisms are described in {{handshake}}, but all of the
+initial packets sent from the client to the server MUST have the VERSION flag
+set, and MUST specify the version of the protocol being used.
 
 When the server receives a packet from a client with the VERSION flag set for a
 connection that has not yet been established, it compares the client's version
@@ -643,6 +643,8 @@ QUIC encodes the transport parameters and options as tag-value pairs, all as
   control byte offset advertised by the sender of this parameter.
 
 * MSPC: Maximum number of incoming streams per connection.
+
+* ICSL: ?
 
 #### Optional Transport Parameters
 
@@ -869,12 +871,12 @@ sender, the sender periodically sends STOP_WAITING frames that signal the
 receiver to stop acking packets below a specified sequence number, raising the
 "least unacked" packet number at the receiver.  A sender of an ACK frame thus
 reports only those ACK blocks between the received least unacked and the
-reported largest observed packet numbers.  It is recommended for the sender to
-send the most recent largest acked packet it has received in an ack as the
-STOP_WAITING frame's least unacked value.
+reported largest observed packet numbers.  An endpoint SHOULD use the "Largest
+Acked" packet number it received to calculate the "Least Unacked Delta" value in
+any STOP_WAITING frame it might send.
 
 Unlike TCP SACKs, QUIC ACK blocks are irrevocable.  Once a packet is acked, even
-if it does not appear in a future ack frame, it is assumed to be acked.
+if it does not appear in a future ACK frame, it is assumed to be acked.
 
 A sender MAY intentionally skip packet numbers to introduce entropy into the
 connection, to avoid opportunistic ack attacks.  The sender MUST close the
@@ -1155,7 +1157,7 @@ The fields of a CONNECTION_CLOSE frame are as follows:
 ## GOAWAY Frame
 
 An endpoint may use a GOAWAY frame to notify its peer that the connection should
-stop being used, and will likely be aborted in the future.  The endpoints will
+stop being used, and will likely be closed in the future.  The endpoints will
 continue using any active streams, but the sender of the GOAWAY will not
 initiate any additional streams, and will not accept any new streams.  The frame
 is as follows:
@@ -1221,8 +1223,8 @@ whole, but frames in a lost packet may be rebundled and transmitted in a
 subsequent packet as necessary.
 
 A packet may contain frames and/or application data, only some of which may
-require reliability.  When a packet is detected as lost, the sender SHOULD only
-resend frames that require retransmission.
+require reliability.  When a packet is detected as lost, the sender re-sends any
+frames as necessary:
 
 * All application data sent in STREAM frames MUST be retransmitted, with one
   exception.  When an endpoint sends a RST_STREAM frame, data outstanding on
@@ -1441,10 +1443,10 @@ connection and stream flow-control windows.  Even though these frames might be
 ignored, because they are sent before their sender receives the RST_STREAM, the
 sender will consider the frames to count against its flow-control windows.
 
-In the absence of more specific guidance elsewhere in this document, 
-implementations SHOULD treat the receipt of a frame that is not expressly 
-permitted in the description of a state as a connection error 
-({{error-handling}}). Frames of unknown types are ignored. 
+In the absence of more specific guidance elsewhere in this document,
+implementations SHOULD treat the receipt of a frame that is not expressly
+permitted in the description of a state as a connection error
+({{error-handling}}). Frames of unknown types are ignored.
 
 (TODO: QUIC_STREAM_NO_ERROR is a special case.  Write it up.)
 
@@ -1468,13 +1470,13 @@ connection.
 
 ## Stream Concurrency
 
-An endpoint can limit the number of concurrently active incoming streams by 
-setting the MSPC parameter (see {{required-transport-parameters}}) in the 
-transport parameters. The maximum concurrent streams setting is specific to each 
-endpoint and applies only to the peer that receives the setting. That is, 
-clients specify the maximum number of concurrent streams the server can 
-initiate, and servers specify the maximum number of concurrent streams the 
-client can initiate. 
+An endpoint can limit the number of concurrently active incoming streams by
+setting the MSPC parameter (see {{required-transport-parameters}}) in the
+transport parameters. The maximum concurrent streams setting is specific to each
+endpoint and applies only to the peer that receives the setting. That is,
+clients specify the maximum number of concurrent streams the server can
+initiate, and servers specify the maximum number of concurrent streams the
+client can initiate.
 
 Streams that are in the "open" state or in either of the "half- closed" states
 count toward the maximum number of streams that an endpoint is permitted to
