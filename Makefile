@@ -1,4 +1,5 @@
 MD_PREPROCESSOR := sed -e 's/{DATE}/$(shell date +%Y-%m)/'
+USE_XSLT := true
 
 include lib/main.mk
 
