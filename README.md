@@ -7,21 +7,25 @@ QUIC protocol suite.
 
 * [Editor's copy](https://quicwg.github.io/base-drafts/draft-ietf-quic-transport.html)
 * [Working Group Draft] (https://tools.ietf.org/html/draft-ietf-quic-transport)
+* [Compare Working Group Draft and Editor's copy] (https://tools.ietf.org/rfcdiff?url1=https://tools.ietf.org/id/draft-ietf-quic-transport&url2=https://quicwg.github.io/base-drafts/draft-ietf-quic-transport.txt)
 
 ## Loss Detection & Congestion Control
 
 * [Editor's copy](https://quicwg.github.io/base-drafts/draft-ietf-quic-recovery.html)
 * [Working Group Draft] (https://tools.ietf.org/html/draft-ietf-quic-recovery)
+* [Compare Working Group Draft and Editor's copy] (https://tools.ietf.org/rfcdiff?url1=https://tools.ietf.org/id/draft-ietf-quic-recovery&url2=https://quicwg.github.io/base-drafts/draft-ietf-quic-recovery.txt)
 
 ## TLS Mapping
 
 * [Editor's copy](https://quicwg.github.io/base-drafts/draft-ietf-quic-tls.html)
 * [Working Group Draft] (https://tools.ietf.org/html/draft-ietf-quic-tls)
+* [Compare Working Group Draft and Editor's copy] (https://tools.ietf.org/rfcdiff?url1=https://tools.ietf.org/id/draft-ietf-quic-tls&url2=https://quicwg.github.io/base-drafts/draft-ietf-quic-tls.txt)
 
 ## HTTP Mapping
 
 * [Editor's copy](https://quicwg.github.io/base-drafts/draft-ietf-quic-http.html)
 * [Working Group Draft] (https://tools.ietf.org/html/draft-ietf-quic-http)
+* [Compare Working Group Draft and Editor's copy] (https://tools.ietf.org/rfcdiff?url1=https://tools.ietf.org/id/draft-ietf-quic-http&url2=https://quicwg.github.io/base-drafts/draft-ietf-quic-http.txt)
 
 ## Building the Draft
 
