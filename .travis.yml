@@ -1,12 +1,22 @@
 language: python
 sudo: false
+dist: trusty
+
 addons:
   apt:
     packages:
      - python-pip
+     - xsltproc
+
+env:
+  global:
+   - GOPATH="${TRAVIS_BUILD_DIR}/.go_workspace"
+   - mmark_src=github.com/miekg/mmark/mmark
+   - mmark=./mmark
 
 install:
- - gem install kramdown-rfc2629
  - pip install xml2rfc
+ - if head -1 -q *.md | grep '^\-\-\-' >/dev/null 2>&1; then gem install --no-doc kramdown-rfc2629; fi
+ - if head -1 -q *.md | grep '^%%%' >/dev/null 2>&1; then go get "$mmark_src" && go build "$mmark_src"; fi
 
 script: make ghpages
