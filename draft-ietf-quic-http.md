@@ -169,20 +169,20 @@ An HTTP message (request or response) consists of:
 
 1. for a response only, zero or more header blocks (a sequence of HEADERS frames 
 with End Header Block set on the last) on the control stream containing the 
-message headers of informational (1xx) HTTP responses (see [RFC7230], Section 
-3.2 and [RFC7231], Section 6.2), 
+message headers of informational (1xx) HTTP responses (see {{!RFC7230}}, Section 
+3.2 and {{!RFC7231}}, Section 6.2), 
 
 2. one header block on the control stream containing the message headers (see 
-[RFC7230], Section 3.2), 
+{{!RFC7230}}, Section 3.2), 
 
-3. the payload body (see [RFC7230], Section 3.3), sent on the data stream 
+3. the payload body (see {{!RFC7230}}, Section 3.3), sent on the data stream 
 
 4. optionally, one header block on the control stream containing the 
-trailer-part, if present (see [RFC7230], Section 4.1.2). 
+trailer-part, if present (see {{!RFC7230}}, Section 4.1.2). 
 
 If the message does not contain a body, the corresponding data stream MUST still 
 be half-closed without transferring any data. The "chunked" transfer encoding 
-defined in Section 4.1 of [RFC7230] MUST NOT be used. 
+defined in Section 4.1 of {{!RFC7230}} MUST NOT be used. 
 
 Trailing header fields are carried in a header block following the body. Such a 
 header block is a sequence of HEADERS frames with End Header Block set on the 
@@ -269,7 +269,7 @@ HTTP level.
 
 ## Server Push
 
-HTTP-over-QUIC supports server push as described in [!RFC7540]. During 
+HTTP-over-QUIC supports server push as described in {{!RFC7540}}. During 
 connection establishment, the client indicates whether or it is willing to 
 receive server pushes via the SETTINGS_ENABLE_PUSH setting in the HTTP/2 
 SETTINGS frame (see {{connection-establishment}}), which defaults to 1 (true). 
@@ -300,7 +300,7 @@ Frames are used only on the connection (stream 3) and message (streams 5, 9, etc
 control streams.  Other streams carry data payload and are not framed at the
 HTTP layer.
 
-Frame payloads are largely drawn from [!RFC7540]. However, QUIC includes some 
+Frame payloads are largely drawn from {{!RFC7540}}. However, QUIC includes some 
 features (e.g. flow control) which are also present in HTTP/2. In these cases, 
 the HTTP mapping need not re-implement them. As a result, some frame types are 
 not required when using QUIC. Where an HTTP/2-defined frame is no longer used, 
@@ -339,7 +339,7 @@ DATA frames do not exist.  Frame type 0x0 is reserved.
 ### HEADERS
 
 The HEADERS frame (type=0x1) is used to carry part of a header set,
-compressed using HPACK [!RFC7541].
+compressed using HPACK {{!RFC7541}}.
 
 Padding MUST NOT be used.  The flags defined are:
 
@@ -370,7 +370,7 @@ The HEADERS frame payload has the following fields:
 
   E:
   : A single-bit flag indicating that the stream dependency is exclusive 
-  (see [!RFC7540] Section 5.3). This field is only present if the PRIORITY 
+  (see {{!RFC7540}} Section 5.3). This field is only present if the PRIORITY 
   flag is set. 
 
   Stream Dependency:
@@ -380,7 +380,7 @@ The HEADERS frame payload has the following fields:
 
   Weight:
   : An unsigned 8-bit integer representing a priority weight for the 
-  stream (see [!RFC7540] Section 5.3). Add one to the value to obtain a 
+  stream (see {{!RFC7540}} Section 5.3). Add one to the value to obtain a 
   weight between 1 and 256. This field is only present if the PRIORITY 
   flag is set. 
 
@@ -405,7 +405,7 @@ held until it arrives, or the connection terminated.
 
 ### PRIORITY
 
-The PRIORITY (type=0x02) frame is unmodified from [!RFC7540] (so far).
+The PRIORITY (type=0x02) frame is unmodified from {{!RFC7540}} (so far).
 
 
 ### RST_STREAM
@@ -415,7 +415,7 @@ Frame type 0x3 is reserved.
 
 ### SETTINGS {#SETTINGS}
 
-The SETTINGS frame (type=0x04) is unmodified from [!RFC7540] (so far). It MUST 
+The SETTINGS frame (type=0x04) is unmodified from {{!RFC7540}} (so far). It MUST 
 only be sent on the connection control stream (Stream 3). 
 
 As in HTTP/2, additional SETTINGS frames may be sent mid-connection by either 
@@ -481,7 +481,7 @@ The payload consists of:
   Promised Stream ID:
   : A 32-bit Stream ID indicating the QUIC stream on which the response headers 
     will be sent.  (The response body stream is implied by the headers stream,
-    as defined in {{stream-usage}}.)
+    as defined in {{stream-mapping}}.)
 
   HPACK Sequence:
   : A sixteen-bit counter, equivalent to the Sequence field in HEADERS
