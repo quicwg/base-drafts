@@ -118,8 +118,8 @@ The QUIC crypto handshake MUST use TLS {{QUIC-TLS}}.
 While connection-level options pertaining to the core QUIC protocol are set in 
 the initial crypto handshake {{QUIC-TLS}}, HTTP-specific settings are conveyed 
 in the SETTINGS frame. After the QUIC connection is established, a SETTINGS 
-frame ({{SETTINGS}} MUST be sent as the initial frame of the HTTP control stream 
-(StreamID 3, see {{stream-mapping}}).
+frame ({{SETTINGS}}) MUST be sent as the initial frame of the HTTP control
+stream (StreamID 3, see {{stream-mapping}}).
 
 # Stream Mapping and Usage {#stream-mapping}
 
@@ -356,7 +356,7 @@ Padding MUST NOT be used.  The flags defined are:
   : The Exclusive Flag (E), Stream Dependency, and Weight fields are present.
 
 ~~~~~~~~~~
-    +-+-------------+-----------------------------------------------+
+    +-+-------------------------------------------------------------+
     |E|                 Stream Dependency? (31)                     |
     +-+-------------+-----------------------------------------------+
     |  Weight? (8)  |
@@ -375,7 +375,7 @@ The HEADERS frame payload has the following fields:
 
   Stream Dependency:
   : A 31-bit stream identifier for the stream that this stream depends on 
-  (see [!RFC7540 Section 5.3). This field is only present if the PRIORITY 
+  (see {{!RFC7540}} Section 5.3). This field is only present if the PRIORITY 
   flag is set. 
 
   Weight:
@@ -468,9 +468,9 @@ The PUSH_PROMISE frame (type=0x05) is used to carry a request header set from
 server to client, as in HTTP/2.  It defines no flags.
 
 ~~~~~~~~~~
-    +-+-------------+-----------------------------------------------+
+    +---------------------------------------------------------------+
     |                   Promised Stream ID (32)                     |
-    +-+-----------------------------+-------------------------------+
+    +-------------------------------+-------------------------------+
     |       Sequence? (16)          |         Header Block (*)    ...
     +-------------------------------+-------------------------------+
 ~~~~~~~~~~
