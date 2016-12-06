@@ -382,7 +382,7 @@ decoder in sequence. If a block is missing, all subsequent HPACK frames MUST be
 held until it arrives, or the connection terminated. 
 
 
-### PRIORITY
+### PRIORITY {#frame-priority}
 
 The PRIORITY (type=0x02) frame specifies the sender-advised priority of a stream 
 and is substantially different from {{!RFC7540}}. In order to support ordering, 
@@ -415,7 +415,7 @@ The HEADERS frame payload has the following fields:
 
   Stream Dependency:
   : A 32-bit stream identifier for the stream that this stream depends on 
-  (see {{{priority}} and {!RFC7540}} Section 5.3).
+  (see {{priority}} and {!RFC7540}} Section 5.3).
 
   Weight:
   : An unsigned 8-bit integer representing a priority weight for the 
