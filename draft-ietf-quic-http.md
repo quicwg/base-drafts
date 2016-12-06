@@ -141,12 +141,13 @@ on stream 9 and 11, and so on. The server's first push consumes streams 2 and 4.
 This amounts to the second least-significant bit differentiating the two streams 
 in a request.
 
-The lower-numbered stream is called the message control stream and carries frames
-related to the request/response, including HEADERS.  All request control
-streams are exempt from flow control.  The higher-numbered stream is the
-data stream and carries the request/response body with no additional framing.
-Note that a request or response without a body will cause this stream to be
-half-closed in the corresponding direction without transferring data.
+The lower-numbered stream is called the message control stream and carries 
+frames related to the request/response, including HEADERS. All request control 
+streams are exempt from connection-level flow control. The higher-numbered 
+stream is the data stream and carries the request/response body with no 
+additional framing. Note that a request or response without a body will cause 
+this stream to be half-closed in the corresponding direction without 
+transferring data. 
 
 HTTP does not need to do any separate multiplexing when using QUIC - data sent 
 over a QUIC stream always maps to a particular HTTP transaction. Requests and 
@@ -158,7 +159,7 @@ in the appropriate direction.
 
 Since most connection-level concerns from HTTP/2 will be managed by QUIC, the 
 primary use of Stream 3 will be for SETTINGS and PRIORITY frames. Stream 3 is 
-exempt from flow-control. 
+exempt from connection-level flow-control. 
 
 ## HTTP Message Exchanges 
 
