@@ -89,7 +89,7 @@ defined in {{!RFC2119}}.
 
 # QUIC advertisement
 
-A server advertises that it can speak HTTP/2-over-QUIC via the Alt- Svc HTTP
+A server advertises that it can speak HTTP/2-over-QUIC via the Alt-Svc HTTP
 response header.  It does so by including the header in any response sent over a
 non-QUIC (e.g.  HTTP/2 over TLS) connection:
 
@@ -125,11 +125,11 @@ additional SETTINGS frames may be sent mid-connection by either endpoint.
 
 TODO:
 : Decide whether to acknowledge receipt of SETTINGS through empty SETTINGS
-  frames with ACK bit set, as in HTTP/2, or rely on transport- level
+  frames with ACK bit set, as in HTTP/2, or rely on transport-level
   acknowledgment.
 
 Some transport-level options that HTTP/2-over-TCP specifies via the SETTINGS
-frame are superseded by QUIC transport parameters in HTTP/2- over-QUIC.  Below
+frame are superseded by QUIC transport parameters in HTTP/2-over-QUIC.  Below
 is a listing of how each HTTP/2 SETTINGS parameter is mapped:
 
 SETTINGS_HEADER_TABLE_SIZE:
@@ -242,7 +242,7 @@ There are no reserved server initiated StreamIDs, so the first server initiated
 ###  Stream 3: headers
 
 HTTP/2-over-QUIC uses HPACK header compression as described in {{!RFC7541}}.
-HPACK was designed for HTTP/2 with the assumption of in- order delivery such as
+HPACK was designed for HTTP/2 with the assumption of in-order delivery such as
 that provided by TCP.  A sequence of encoded header blocks must arrive (and be
 decoded) at an endpoint in the same order in which they were encoded.  This
 ensures that the dynamic state at the two endpoints remains in sync.
@@ -350,12 +350,12 @@ As with server push for HTTP/2-over-TCP, the server initiates a server push by
 sending an HTTP/2 PUSH_PROMISE frame containing the StreamID of the stream to be
 pushed, as well as request header fields attributed to the request.  The
 PUSH_PROMISE frame is sent on stream 3, to ensure proper ordering with respect
-to other HEADERS and non- data frames.  Within the PUSH_PROMISE frame, the
+to other HEADERS and non-data frames.  Within the PUSH_PROMISE frame, the
 StreamID in the common HTTP/2 frame header indicates the associated (client-
 initiated) stream for the new push stream, while the Promised Stream ID field
 specifies the StreamID of the new push stream.
 
-The server push response is conveyed in the same way as a non-server- push
+The server push response is conveyed in the same way as a non-server-push
 response, with response headers and (if present) trailers carried by HTTP/2
 HEADERS frames sent on reserved stream 3, and response body (if any) sent via
 QUIC stream frames on the stream specified in the corresponding PUSH_PROMISE
@@ -416,7 +416,7 @@ TODO: fill in missing error code mappings.
 # Other HTTP/2 frames
 
 QUIC includes some features (e.g. flow control) which are also present in
-HTTP/2.  In these cases the HTTP/2 mapping need not re- implement them.  As a
+HTTP/2.  In these cases the HTTP/2 mapping need not re-implement them.  As a
 result some HTTP/2 frame types are not required when using QUIC, as they either
 are directly implemented in the QUIC layer, or their functionality is provided
 via other means.  This section of the document describes these cases.

@@ -752,7 +752,7 @@ TODO: Perhaps move mitigation techniques from Security Considerations here.
 
 ## Connection Termination {#termination}
 
-Connections should remain open until they become idle for a pre- negotiated
+Connections should remain open until they become idle for a pre-negotiated
 period of time.  A QUIC connection, once established, can be terminated in one
 of three ways:
 
@@ -828,7 +828,7 @@ The STREAM frame header fields are as follows:
     extends to the end of the packet.  When set to 1, this field indicates that
     Data Length field contains the length (in bytes) of the Stream Data field.
     The option to omit the length should only be used when the packet is a
-    "full- sized" packet, to avoid the risk of corruption via padding.
+    "full-sized" packet, to avoid the risk of corruption via padding.
 
   * The 'OOO' bits encode the length of the Offset header field as 0, 16, 24,
     32, 40, 48, 56, or 64 bits long.
@@ -1368,11 +1368,11 @@ this state only the following transitions are possible:
 ### open
 
 A stream in the "open" state may be used by both peers to send frames of any
-type.  In this state, a sending peer must observe the flow- control limit
+type.  In this state, a sending peer must observe the flow-control limit
 advertised by its receiving peer ({{flow-control}}).
 
 From this state, either endpoint can send a frame with the FIN flag set, which
-causes the stream to transition into one of the "half- closed" states.  An
+causes the stream to transition into one of the "half-closed" states.  An
 endpoint sending an FIN flag causes the stream state to become "half-closed
 (local)".  An endpoint receiving a FIN flag causes the stream state to become
 "half-closed (remote)"; the receiving endpoint MUST NOT process the FIN flag
@@ -1462,7 +1462,7 @@ frames ({{flow-control}}); the StreamID of zero cannot be used to establish a
 new stream.
 
 StreamID 1 (0x1) is reserved for the crypto handshake.  StreamID 1 MUST NOT be
-used for application data, and MUST be the first client- initiated stream.
+used for application data, and MUST be the first client-initiated stream.
 
 Streams MUST be created or reserved in sequential order, but MAY be used in
 arbitrary order.  A QUIC endpoint MUST NOT reuse a StreamID on a given
@@ -1478,7 +1478,7 @@ clients specify the maximum number of concurrent streams the server can
 initiate, and servers specify the maximum number of concurrent streams the
 client can initiate.
 
-Streams that are in the "open" state or in either of the "half- closed" states
+Streams that are in the "open" state or in either of the "half-closed" states
 count toward the maximum number of streams that an endpoint is permitted to
 open.  Streams in any of these three states count toward the limit advertised in
 the MSPC setting.
@@ -1512,7 +1512,7 @@ controller and the flow controller, with the following two exceptions.
   control or connection-level flow control, but MUST be subject to stream-level
   flow control.
 
-* An application MAY exclude specific stream IDs from connection- level flow
+* An application MAY exclude specific stream IDs from connection-level flow
   control.  If so, these streams MUST NOT be subject to connection-level flow
   control.
 
@@ -1892,7 +1892,7 @@ an ack for a packet that was never sent, the connection can be aborted.
 
 The second mitigation is that the server can require that acks for sent packets
 match the encryption level of the sent packet.  This mitigation is useful if the
-connection has an ephemeral forward- secure key that is generated and used for
+connection has an ephemeral forward-secure key that is generated and used for
 every new connection.  If a packet sent is encrypted with a forward-secure key,
 then any acks that are received for them must also be forward-secure encrypted.
 Since the attacker will not have the forward secure key, the attacker will not
