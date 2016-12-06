@@ -156,9 +156,9 @@ in the appropriate direction.
 
 ##  Stream 3: Connection Control Stream
 
-Since most connection-level concerns from HTTP/2 will be managed by QUIC, the
-primary use of Stream 3 will be for SETTINGS frames.  Stream 3 is exempt from
-flow-control.
+Since most connection-level concerns from HTTP/2 will be managed by QUIC, the 
+primary use of Stream 3 will be for SETTINGS and PRIORITY frames. Stream 3 is 
+exempt from flow-control. 
 
 ## HTTP Message Exchanges 
 
@@ -228,7 +228,7 @@ DISCUSS:
 do we need to retain compatibility with HTTP/2's HPACK? 
 
 
-## Stream Priorities
+## Stream Priorities {#priority}
 
 HTTP-over-QUIC uses the priority scheme described in {{!RFC7540}} Section 5.3. 
 In this priority scheme, a given stream can be designated as dependent upon 
@@ -243,16 +243,12 @@ Implicit in this scheme is the notion of in-order delivery of priority changes
 (i.e., dependency tree mutations): since operations on the dependency tree such 
 as reparenting a subtree are not commutative, both sender and receiver must 
 apply them in the same order to ensure that both sides have a consistent view of 
-the stream dependency tree. HTTP specifies priority assignments in PRIORITY 
+the stream dependency tree. HTTP/2 specifies priority assignments in PRIORITY 
 frames and (optionally) in HEADERS frames. To achieve in-order delivery of 
-HTTP/2 priority changes in HTTP/2-over-QUIC, HTTP/2 PRIORITY frames, in addition 
-to HEADERS frames, are also sent on reserved stream 3. The semantics of the 
-Stream Dependency, Weight, E flag, and (for HEADERS frames) PRIORITY flag are 
-the same as in HTTP/2.
-
-HEADERS and PRIORITY frames can be delivered out-of-order. There is (currently)
-no special handling for this -- the  receiver should simply assign resources
-according to the most recent stream priority information that it has received. 
+priority changes in HTTP-over-QUIC, PRIORITY frames are sent on the connection 
+control stream and the PRIORITY section is removed from the HEADERS frame. The 
+semantics of the Stream Dependency, Weight, E flag, and (for HEADERS frames) 
+PRIORITY flag are the same as in HTTP/2. 
 
 For consistency's sake, all PRIORITY frames MUST refer to the message control
 stream of the dependent request, not the data stream.
@@ -338,8 +334,10 @@ DATA frames do not exist.  Frame type 0x0 is reserved.
 
 ### HEADERS
 
-The HEADERS frame (type=0x1) is used to carry part of a header set,
-compressed using HPACK {{!RFC7541}}.
+The HEADERS frame (type=0x1) is used to carry part of a header set, compressed 
+using HPACK {{!RFC7541}}. Because HEADERS frames from different streams will be 
+delivered out-of-order and priority-changes are not commutative, the PRIORITY 
+region of HEADERS is not supported. A separate PRIORITY frame MUST be used. 
 
 Padding MUST NOT be used.  The flags defined are:
 
@@ -352,37 +350,17 @@ Padding MUST NOT be used.  The flags defined are:
   Reserved (0x8):
   : Reserved for HTTP/2 compatibility.
 
-  PRIORITY (0x20):
-  : The Exclusive Flag (E), Stream Dependency, and Weight fields are present.
+  Reserved (0x20):
+  : Reserved for HTTP/2 compatibility.
 
 ~~~~~~~~~~
-    +-+-------------------------------------------------------------+
-    |E|                 Stream Dependency? (31)                     |
-    +-+-------------+-----------------------------------------------+
-    |  Weight? (8)  |
-    +-+-------------+---------------+-------------------------------+
+    +-------------------------------+-------------------------------+
     |       Sequence? (16)          |    Header Block Fragment (*)...
     +-------------------------------+-------------------------------+
 ~~~~~~~~~~
 {: title="HEADERS frame payload"}
 
 The HEADERS frame payload has the following fields:
-
-  E:
-  : A single-bit flag indicating that the stream dependency is exclusive 
-  (see {{!RFC7540}} Section 5.3). This field is only present if the PRIORITY 
-  flag is set. 
-
-  Stream Dependency:
-  : A 31-bit stream identifier for the stream that this stream depends on 
-  (see {{!RFC7540}} Section 5.3). This field is only present if the PRIORITY 
-  flag is set. 
-
-  Weight:
-  : An unsigned 8-bit integer representing a priority weight for the 
-  stream (see {{!RFC7540}} Section 5.3). Add one to the value to obtain a 
-  weight between 1 and 256. This field is only present if the PRIORITY 
-  flag is set. 
 
   Sequence Number:
   : Present only on the first frame of a header block sequence. This MUST 
@@ -405,8 +383,43 @@ held until it arrives, or the connection terminated.
 
 ### PRIORITY
 
-The PRIORITY (type=0x02) frame is unmodified from {{!RFC7540}} (so far).
+The PRIORITY (type=0x02) frame specifies the sender-advised priority of a stream 
+and is substantially different from {{!RFC7540}}. In order to support ordering, 
+it MUST be sent only on the connection control stream. The format has been 
+modified to accommodate not being sent on-stream and the larger stream ID space 
+of QUIC. 
 
+The flags defined are:
+
+  E (0x01):
+  : Indicates that the stream dependency is exclusive (see {{!RFC7540}} Section 
+    5.3). 
+
+~~~~~~~~~~
+    +---------------------------------------------------------------+
+    |                   Prioritized Stream (32)                     |
+    +---------------+-----------------------------------------------+
+    |                    Dependent Stream (32)                      |
+    +---------------+-----------------------------------------------+
+    |   Weight (8)  |
+    +---------------+
+~~~~~~~~~~
+{: title="HEADERS frame payload"}
+
+The HEADERS frame payload has the following fields:
+
+  Prioritized Stream:
+  : A 32-bit stream identifier for the message control stream whose 
+    priority is being updated. 
+
+  Stream Dependency:
+  : A 32-bit stream identifier for the stream that this stream depends on 
+  (see {{{priority}} and {!RFC7540}} Section 5.3).
+
+  Weight:
+  : An unsigned 8-bit integer representing a priority weight for the 
+  stream (see {{!RFC7540}} Section 5.3). Add one to the value to obtain a 
+  weight between 1 and 256.
 
 ### RST_STREAM
 
@@ -489,12 +502,11 @@ The payload consists of:
   Payload:
   : HPACK-compressed request headers for the promised response.
 
-  TODO:
-  : QUIC stream space may be enlarged; would need to redefine Promised Stream
-    field in this case. 
+TODOs:
 
-TODO:
-: No CONTINUATION -- HEADERS have EHB; do we need it here?
+ - QUIC stream space may be enlarged; would need to redefine Promised Stream
+   field in this case. 
+ - No CONTINUATION -- HEADERS have EHB; do we need it here?
 
 ### PING
 
