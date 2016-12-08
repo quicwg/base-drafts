@@ -113,13 +113,12 @@ This document uses the terminology established in {{QUIC-TRANSPORT}}.
 
 For brevity, the acronym TLS is used to refer to TLS 1.3.
 
-This document uses TLS terminology is used when referring to parts of TLS.
-Though TLS assumes a continuous stream of octets, it divides that stream into
-*records*.  Most relevant to QUIC are the records that contain TLS *handshake
-messages*, which are discrete messages that are used for key agreement,
-authentication and parameter negotiation.  Ordinarily, TLS records can also
-contain *application data*, though in the QUIC usage there is no use of TLS
-application data.
+TLS terminology is used when referring to parts of TLS. Though TLS assumes a 
+continuous stream of octets, it divides that stream into *records*. Most 
+relevant to QUIC are the records that contain TLS *handshake messages*, which 
+are discrete messages that are used for key agreement, authentication and 
+parameter negotiation. Ordinarily, TLS records can also contain *application 
+data*, though in the QUIC usage there is no use of TLS application data. 
 
 
 # Protocol Overview
@@ -259,7 +258,7 @@ document:
 
 # TLS in Stream 1
 
-QUIC reserves stream 1 for a TLS connection.  Stream contains a complete TLS
+QUIC reserves stream 1 for a TLS connection. This stream contains a complete TLS
 connection, which includes the TLS record layer.  Other than the definition of a
 QUIC-specific extension (see Section-TBD), TLS is unmodified for this use.  This
 means that TLS will apply confidentiality and integrity protection to its
@@ -378,8 +377,7 @@ QUIC first provides TLS with octets from stream 1.
 Each time that an endpoint receives data on stream 1, it determines if it can
 deliver the data to TLS.  Any octets that are contiguous with the last data
 provided to TLS can be delivered.  When any octets of TLS data can be delivered,
-then TLS is provided with the data then new handshake octets are requested from
-TLS.
+TLS is provided with the data. New handshake octets are then requested from TLS.
 
 TLS might not provide any octets if the handshake messages it has received are
 incomplete.
@@ -542,11 +540,11 @@ Ordinarily, an endpoint retransmits stream data in a new packet.  That packet
 uses the latest packet protection keys.  This simplifies key management when
 there are key updates (see {{key-update}}).
 
-The handshake messages the first flight of handshake messages from both client
-and server (ClientHello, or ServerHello through to the server's Finished) a
-critical to the key exchange.  The contents of these messages is used to
-determine the keys used to protect later messages.  If these are protected with
-newer keys, they will be indecipherable to the recipient.
+The first flight of handshake messages from both client and server (ClientHello, 
+or ServerHello through to the server's Finished) are critical to the key 
+exchange. The content of these messages is used to determine the keys used to 
+protect later messages. If these are protected with newer keys, they will be 
+indecipherable to the recipient. 
 
 Even though newer keys are available, the first flight of TLS handshake messages
 sent by an endpoint MUST NOT be encrypted:
@@ -969,7 +967,7 @@ ISSUE:
   authenticating the initial value, so that peers can be sure that they haven't
   missed an initial message.
 
-In addition to causing valid packets to be dropped, an attacker to generate
+In addition to causing valid packets to be dropped, an attacker could generate
 packets with an intent of causing the recipient to expend processing resources.
 See {{useless}} for a discussion of these risks.
 
