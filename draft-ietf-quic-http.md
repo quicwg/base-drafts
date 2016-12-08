@@ -118,7 +118,7 @@ The QUIC crypto handshake MUST use TLS {{QUIC-TLS}}.
 While connection-level options pertaining to the core QUIC protocol are set in 
 the initial crypto handshake {{QUIC-TLS}}, HTTP-specific settings are conveyed 
 in the SETTINGS frame. After the QUIC connection is established, a SETTINGS 
-frame ({{SETTINGS}}) MUST be sent as the initial frame of the HTTP control
+frame ({{frame-settings}}) MUST be sent as the initial frame of the HTTP control
 stream (StreamID 3, see {{stream-mapping}}).
 
 # Stream Mapping and Usage {#stream-mapping}
@@ -333,7 +333,7 @@ All frames have the following format:
 
 DATA frames do not exist.  Frame type 0x0 is reserved.
 
-### HEADERS
+### HEADERS {#frame-headers}
 
 The HEADERS frame (type=0x1) is used to carry part of a header set, compressed 
 using HPACK {{!RFC7541}}. Because HEADERS frames from different streams will be 
@@ -427,7 +427,7 @@ The HEADERS frame payload has the following fields:
 RST_STREAM frames do not exist, since QUIC provides stream lifecycle management.
 Frame type 0x3 is reserved.
 
-### SETTINGS {#SETTINGS}
+### SETTINGS {#frame-settings}
 
 The SETTINGS frame (type=0x04) is unmodified from {{!RFC7540}} (so far). It MUST 
 only be sent on the connection control stream (Stream 3). 
@@ -476,7 +476,7 @@ parameters are acknowledged by the receiving peer, by sending an empty SETTINGS
 frame in response with the ACK bit set.
 
 
-### PUSH_PROMISE
+### PUSH_PROMISE {#frame-push-promise}
 
 The PUSH_PROMISE frame (type=0x05) is used to carry a request header set from 
 server to client, as in HTTP/2.  It defines no flags.
@@ -520,10 +520,18 @@ type 0x6 is reserved.
 GOAWAY frames do not exist, since QUIC provides equivalent functionality. Frame 
 type 0x7 is reserved. 
 
+
 ### WINDOW_UPDATE frame
 
 WINDOW_UPDATE frames do not exist, since QUIC provides equivalent functionality.
 Frame type 0x8 is reserved. 
+
+
+### CONTINUATION frame
+
+CONTINUATION frames do not exist, since larger supported HEADERS/PUSH_PROMISE 
+frames provide equivalent functionality. Frame type 0x9 is reserved. 
+
 
 # Error Handling {#errors}
 
@@ -584,9 +592,35 @@ HTTP/2.
 
 # IANA Considerations
 
-This document has no IANA actions.  Yet.
+## Frame Types
 
+This document adds two new columns to the "HTTP/2 Frame Type" registry defined in
+{{!RFC7540}}:
 
+  Supported in HTTP/QUIC:
+  : Indicates whether the frame is also supported in this HTTP/QUIC mapping
+  
+  HTTP/QUIC Specification:
+  : Indicates where this frame's behavior over QUIC is defined; required
+    if the frame is supported over QUIC.
+  
+Values for existing registrations are assigned by this document:
+
+   +---------------|------------------------|-------------------------+
+   | Frame Type    | Supported in HTTP/QUIC | HTTP/QUIC Specification |
+   |---------------|:----------------------:|-------------------------|
+   | DATA          | No                     | N/A                     |
+   | HEADERS       | Yes                    | {{frame-headers}}       |
+   | PRIORITY      | Yes                    | {{frame-priority}}      |
+   | RST_STREAM    | No                     | N/A                     |
+   | SETTINGS      | Yes                    | {{frame-settings}}      |
+   | PUSH_PROMISE  | Yes                    | {{frame-push-promise}}  |
+   | PING          | No                     | N/A                     |
+   | GOAWAY        | No                     | N/A                     |
+   | WINDOW_UPDATE | No                     | N/A                     |
+   | CONTINUATION  | No                     | N/A                     |
+   +---------------|------------------------|-------------------------+
+   
 --- back
 
 # Contributors
