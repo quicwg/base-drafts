@@ -57,9 +57,9 @@ informative:
 --- abstract
 
 The QUIC transport protocol has several features that are desirable in a
-transport for HTTP/2, such as stream multiplexing, per-stream flow control, and
+transport for HTTP, such as stream multiplexing, per-stream flow control, and
 low-latency connection establishment.  This document describes a mapping of
-HTTP/2 semantics over QUIC.  Specifically, this document identifies HTTP/2
+HTTP semantics over QUIC.  Specifically, this document identifies HTTP/2
 features that are subsumed by QUIC, and describes how the other features can be
 implemented atop QUIC.
 
@@ -69,12 +69,12 @@ implemented atop QUIC.
 
 # Introduction
 
-The QUIC transport protocol has several features that are desirable in a
-transport for HTTP/2, such as stream multiplexing, per-stream flow control, and
-low-latency connection establishment.  This document describes a mapping of
-HTTP/2 semantics over QUIC.  Specifically, this document identifies HTTP/2
-features that are subsumed by QUIC, and describes how the other features can be
-implemented atop QUIC.
+The QUIC transport protocol has several features that are desirable in a 
+transport for HTTP, such as stream multiplexing, per-stream flow control, and 
+low-latency connection establishment. This document describes a mapping of HTTP 
+semantics over QUIC, drawing heavily on the existing TCP mapping, HTTP/2. 
+Specifically, this document identifies HTTP/2 features that are subsumed by 
+QUIC, and describes how the other features can be implemented atop QUIC. 
 
 QUIC is described in {{QUIC-TRANSPORT}}.  For a full description of HTTP/2, see
 {{!RFC7540}}.
@@ -89,9 +89,9 @@ defined in {{!RFC2119}}.
 
 # QUIC advertisement
 
-A server advertises that it can speak HTTP/2-over-QUIC via the Alt-Svc HTTP
+A server advertises that it can speak HTTP-over-QUIC via the Alt-Svc HTTP
 response header.  It does so by including the header in any response sent over a
-non-QUIC (e.g.  HTTP/2 over TLS) connection:
+non-QUIC (e.g. HTTP/2) connection:
 
    Alt-Svc: quic=":443"
 
@@ -102,267 +102,438 @@ it would specify the following header:
    Alt-Svc: quic=":443"; v="34,33"
 
 On receipt of this header, a client may attempt to establish a QUIC connection
-on port 443 and, if successful, send HTTP/2 requests using the mapping described
+on port 443 and, if successful, send HTTP requests using the mapping described
 in this document.
 
 Connectivity problems (e.g. firewall blocking UDP) may result in QUIC connection
-establishment failure, in which case the client should gracefully fallback to
-HTTP/2-over-TLS/TCP.
+establishment failure, in which case the client should gracefully fall back to
+HTTP/2.
 
 
 # Connection establishment
 
-HTTP/2-over-QUIC connections are established as described in {{QUIC-TRANSPORT}}.
+HTTP-over-QUIC connections are established as described in {{QUIC-TRANSPORT}}.
 The QUIC crypto handshake MUST use TLS {{QUIC-TLS}}.
 
-While connection-level options pertaining to the core QUIC protocol are set in
-the initial crypto handshake {{QUIC-TLS}}.  HTTP/2-specific settings are
-conveyed in the HTTP/2 SETTINGS frame.  After the QUIC connection is
-established, an HTTP/2 SETTINGS frame may be sent as the initial frame of the
-QUIC headers stream (StreamID 3, See {{stream-mapping}}). As in HTTP/2,
-additional SETTINGS frames may be sent mid-connection by either endpoint.
+While connection-level options pertaining to the core QUIC protocol are set in 
+the initial crypto handshake {{QUIC-TLS}}, HTTP-specific settings are conveyed 
+in the SETTINGS frame. After the QUIC connection is established, a SETTINGS 
+frame ({{frame-settings}}) MUST be sent as the initial frame of the HTTP control
+stream (StreamID 3, see {{stream-mapping}}).
 
+# Stream Mapping and Usage {#stream-mapping}
 
-TODO:
-: Decide whether to acknowledge receipt of SETTINGS through empty SETTINGS
-  frames with ACK bit set, as in HTTP/2, or rely on transport-level
-  acknowledgment.
-
-Some transport-level options that HTTP/2-over-TCP specifies via the SETTINGS
-frame are superseded by QUIC transport parameters in HTTP/2-over-QUIC.  Below
-is a listing of how each HTTP/2 SETTINGS parameter is mapped:
-
-SETTINGS_HEADER_TABLE_SIZE:
-: Sent in HTTP/2 SETTINGS frame.
-
-SETTINGS_ENABLE_PUSH:
-: Sent in HTTP/2 SETTINGS frame (TBD, currently set using QUIC "SPSH" connection
-  option)
-
-SETTINGS_MAX_CONCURRENT_STREAMS
-: QUIC requires the maximum number of incoming streams per connection to be
-  specified in the initial crypto handshake, using the "MSPC" tag.  Specifying
-  SETTINGS_MAX_CONCURRENT_STREAMS in the HTTP/2 SETTINGS frame is an error.
-
-SETTINGS_INITIAL_WINDOW_SIZE:
-: QUIC requires both stream and connection flow control window sizes to be
-  specified in the initial crypto handshake, using the "SFCW" and "CFCW" tags,
-  respectively.  Specifying SETTINGS_INITIAL_WINDOW_SIZE in the HTTP/2 SETTINGS
-  frame is an error.
-
-SETTINGS_MAX_FRAME_SIZE:
-: This setting has no equivalent in QUIC.  Specifying it in the HTTP/2 SETTINGS
-  frame is an error.
-
-SETTINGS_MAX_HEADER_LIST_SIZE
-: Sent in HTTP/2 SETTINGS frame.
-
-As with HTTP/2-over-TCP, unknown SETTINGS parameters are tolerated but ignored.
-SETTINGS parameters are acknowledged by the receiving peer, by sending an empty
-SETTINGS frame in response with the ACK bit set.
-
-
-# Sending a request on an HTTP/2-over-QUIC connection
-
-A high level overview of sending an HTTP/2 request on an established QUIC
-connection is as follows, with further details in later sections of this
-document.  A client should first encode any HTTP headers using HPACK
-{{!RFC7541}} and frame them as HTTP/2 HEADERS frames.  These are sent on
-StreamID 3 (see {{stream-mapping}}).  The exact layout of the HEADERS frame is
-described in Section 6.2 of {{!RFC7540}}.  No HTTP/2 padding is required: QUIC
-provides a PADDING frame for this purpose.
-
-While HEADERS are sent on stream 3, the mandatory stream identifier in each
-HEADERS frame indicates the QUIC StreamID on which a corresponding request body
-may be sent.  If there is no non-header data, the specified QUIC data stream
-will never be used.
-
-
-## Terminating a stream
-
-A stream can be terminated in one of three ways:
-
-* the request/response is headers only, in which case a HEADERS frame with the
-  END_STREAM bit set ends the stream specified in the HEADERS frame
-
-* the request/response has headers and body but no trailing headers, in which
-  case the final QUIC STREAM frame will have the FIN bit set
-
-* the request/response has headers, body, and trailing headers, in which case
-  the final QUIC STREAM frame will not have the FIN bit set, and the trailing
-  HEADERS frame will have the END_STREAM bit set
-
-(TODO: Describe mapping of HTTP/2 stream state machine to QUIC stream state
-machine.)
-
-
-# Writing data to QUIC streams
-
-A QUIC stream provides reliable in-order delivery of bytes, within that stream.
-On the wire, data is framed into QUIC STREAM frames, but this framing is
-invisible to the HTTP/2 layer.  A QUIC receiver buffers and orders received
-STREAM frames, exposing the data contained within as a reliable byte stream to
+A QUIC stream provides reliable in-order delivery of bytes, but makes no guarantees
+about order of delivery with regard to bytes on other streams.
+On the wire, data is framed into QUIC STREAM frames, but this framing is 
+invisible to the HTTP framing layer. A QUIC receiver buffers and orders received 
+STREAM frames, exposing the data contained within as a reliable byte stream to 
 the application.
 
-Bytes written to Stream 3 must be HTTP/2 HEADERS frames (or other HTTP/2
-non-data frames), whereas bytes written to data streams should simply be request
-or response bodies.  No further framing is required by HTTP/2 (i.e. no HTTP/2
-DATA frames are used).
+QUIC reserves Stream 1 for crypto operations (the handshake, crypto config 
+updates). Stream 3 is reserved for sending and receiving HTTP control frames, 
+and is analogous to HTTP/2's Stream 0. 
 
-If data arrives on a data stream before the corresponding HEADERS have arrived
-on stream 3, then the data is buffered until the HEADERS arrive.
+When HTTP headers and data are sent over QUIC, the QUIC layer handles most of 
+the stream management. An HTTP request/response consumes a pair of streams: This 
+means that the client's first request occurs on QUIC streams 5 and 7, the second 
+on stream 9 and 11, and so on. The server's first push consumes streams 2 and 4. 
+This amounts to the second least-significant bit differentiating the two streams 
+in a request.
 
+The lower-numbered stream is called the message control stream and carries 
+frames related to the request/response, including HEADERS. All request control 
+streams are exempt from connection-level flow control. The higher-numbered 
+stream is the data stream and carries the request/response body with no 
+additional framing. Note that a request or response without a body will cause 
+this stream to be half-closed in the corresponding direction without 
+transferring data. 
 
-# Stream Mapping
-
-When HTTP/2 headers and data are sent over QUIC, the QUIC layer handles most of
-the stream management.  HTTP/2 StreamIDs are replaced by QUIC StreamIDs.  HTTP/2
-does not need to do any explicit stream framing when using QUIC - data sent over
-a QUIC stream simply consists of HTTP/2 headers or body.  Requests and responses
-are considered complete when the QUIC stream is closed in the corresponding
-direction.
-
-Like HTTP/2, QUIC uses odd-numbered StreamIDs for client initiated streams, and
-even-numbered IDs for server initiated (i.e. server push) streams.  Unlike
-HTTP/2 there are a couple of reserved (or dedicated) StreamIDs in QUIC.
-
-
-##  Reserved Streams
-
-StreamID 1 is reserved for crypto operations (the handshake, crypto config
-updates), and MUST NOT be used for HTTP/2 headers or body, see
-{{QUIC-TRANSPORT}}.  StreamID 3 is reserved for sending and receiving HTTP/2
-HEADERS frames.  Therefore the first client initiated data stream has StreamID
-5.
-
-There are no reserved server initiated StreamIDs, so the first server initiated
-(i.e. server push) stream has an ID of 2, followed by 4, etc.
+HTTP does not need to do any separate multiplexing when using QUIC - data sent 
+over a QUIC stream always maps to a particular HTTP transaction. Requests and 
+responses are considered complete when the corresponding QUIC streams are closed 
+in the appropriate direction. 
 
 
-###  Stream 3: headers
+##  Stream 3: Connection Control Stream
 
-HTTP/2-over-QUIC uses HPACK header compression as described in {{!RFC7541}}.
-HPACK was designed for HTTP/2 with the assumption of in-order delivery such as
-that provided by TCP.  A sequence of encoded header blocks must arrive (and be
-decoded) at an endpoint in the same order in which they were encoded.  This
-ensures that the dynamic state at the two endpoints remains in sync.
+Since most connection-level concerns from HTTP/2 will be managed by QUIC, the 
+primary use of Stream 3 will be for SETTINGS and PRIORITY frames. Stream 3 is 
+exempt from connection-level flow-control. 
 
-QUIC streams provide in-order delivery of data sent on those streams, but there
-are no guarantees about order of delivery between streams.  To achieve in-order
-delivery of HEADERS frames in QUIC, they are all sent on the reserved Stream 3.
-Data (request/response bodies) which arrive on other data streams are buffered
-until the corresponding HEADERS arrive and are read out of Stream 3.
+## HTTP Message Exchanges 
 
-This does introduce head-of-line blocking: if the packet containing HEADERS for
-stream N is lost or reordered then stream N+2 cannot be processed until they it
-has been retransmitted successfully, even though the HEADERS for stream N+2 may
-have arrived.
+A client sends an HTTP request on a new pair of QUIC streams. A server sends an
+HTTP response on the same streams as the request. 
 
-Trailing headers (trailers) can also be sent on stream 3.  These are sent as
-HTTP/2 HEADERS frames, but MUST have the END_STREAM bit set, and MUST include a
-":final-offset" pseudo-header.  Since QUIC supports out of order delivery,
-receipt of a HEADERS frame with the END_STREAM bit set does not guarantee that
-the entire request/ response body has been fully received.  Therefore, the extra
-":final-offset" pseudo-header is included in trailing HEADERS frames to indicate
-the total number of body bytes sent on the corresponding data stream.  This is
-used by the QUIC layer to determine when the full request has been received and
-therefore when it is safe to tear down local stream state.  The ":final-offset"
-pseudo header is stripped from the HEADERS before passing to the HTTP/2 layer.
+An HTTP message (request or response) consists of:
 
+1. for a response only, zero or more header blocks (a sequence of HEADERS frames 
+with End Header Block set on the last) on the control stream containing the 
+message headers of informational (1xx) HTTP responses (see {{!RFC7230}}, Section 
+3.2 and {{!RFC7231}}, Section 6.2), 
 
-###  Stream states
+2. one header block on the control stream containing the message headers (see 
+{{!RFC7230}}, Section 3.2), 
 
-The mapping of HTTP/2-over-QUIC with potential out of order delivery of HEADERS
-frames results in some changes to the HTTP/2 stream state transition diagram
-({{!RFC7540}}, Section 5.1}}.  Specifically the transition from "open" to "half
-closed (remote)", and the transition from "half closed (local)" to "closed"
-takes place only when:
+3. the payload body (see {{!RFC7230}}, Section 3.3), sent on the data stream 
 
-* the peer has explicitly ended the stream via either
+4. optionally, one header block on the control stream containing the 
+trailer-part, if present (see {{!RFC7230}}, Section 4.1.2). 
 
-  * an HTTP/2 HEADERS frame with END_STREAM bit set and, in the case of trailing
-    headers, the :final-offset pseudo-header
+If the message does not contain a body, the corresponding data stream MUST still 
+be half-closed without transferring any data. The "chunked" transfer encoding 
+defined in Section 4.1 of {{!RFC7230}} MUST NOT be used. 
 
-  * or a QUIC stream frame with the FIN bit set.
+Trailing header fields are carried in a header block following the body. Such a 
+header block is a sequence of HEADERS frames with End Header Block set on the 
+last frame. Header blocks after the first but before the end of the stream are 
+invalid. These MUST be decoded to maintain HPACK decoder state, but the 
+resulting output MUST be discarded. 
 
-* and the full request or response body has been received.
+An HTTP request/response exchange fully consumes a pair of streams. After 
+sending a request, a client closes the streams for sending; after sending a 
+response, the server closes its streams for sending and the QUIC streams are 
+fully closed.
 
-# Stream Priorities
+A server can send a complete response prior to the client sending an entire 
+request if the response does not depend on any portion of the request that has 
+not been sent and received. When this is true, a server MAY request that the 
+client abort transmission of a request without error by sending a RST_STREAM 
+with an error code of NO_ERROR after sending a complete response and closing its 
+stream. Clients MUST NOT discard responses as a result of receiving such a 
+RST_STREAM, though clients can always discard responses at their discretion for 
+other reasons. 
 
-HTTP/2-over-QUIC uses the HTTP/2 priority scheme described in {{!RFC7540}}
-Section 5.3.  In the HTTP/2 priority scheme, a given stream can be designated as
-dependent upon another stream, which expresses the preference that the latter
-stream (the "parent" stream) be allocated resources before the former stream
-(the "dependent" stream).  Taken together, the dependencies across all streams
-in a connection form a dependency tree.  The structure of the dependency tree
-changes as HTTP/2 HEADERS and PRIORITY frames add, remove, or change the
-dependency links between streams.
+### Header Compression 
 
-Implicit in this scheme is the notion of in-order delivery of priority changes
-(i.e., dependency tree mutations): since operations on the dependency tree such
-as reparenting a subtree are not commutative, both sender and receiver must
-apply them in the same order to ensure that both sides have a consistent view of
-the stream dependency tree.  HTTP/2 specifies priority assignments in PRIORITY
-frames and (optionally) in HEADERS frames.  To achieve in-order delivery of
-HTTP/2 priority changes in HTTP/2-over-QUIC, HTTP/2 PRIORITY frames, in addition
-to HEADERS frames, are also sent on reserved stream 3.  The semantics of the
-Stream Dependency, Weight, E flag, and (for HEADERS frames) PRIORITY flag are
-the same as in HTTP/2-over-TCP.
+HTTP-over-QUIC uses HPACK header compression as described in {{!RFC7541}}. HPACK 
+was designed for HTTP/2 with the assumption of in- order delivery such as that 
+provided by TCP. A sequence of encoded header blocks must arrive (and be 
+decoded) at an endpoint in the same order in which they were encoded. This 
+ensures that the dynamic state at the two endpoints remains in sync. 
 
-Since HEADERS and PRIORITY frames are sent on a different stream than the STREAM
-frames for the streams they reference, they may be delivered out-of-order with
-respect to the STREAM frames.  There is no special handling for this--the
-receiver should simply assign resources according to the most recent stream
-priority information that it has received.
+QUIC streams provide in-order delivery of data sent on those streams, but there 
+are no guarantees about order of delivery between streams. To achieve in-order 
+delivery of HEADERS frames in QUIC, the HPACK-bearing frames contain a counter 
+which can be used to ensure in-order processing. Data (request/response bodies) 
+which arrive out of order are buffered until the corresponding HEADERS arrive. 
 
-ALTERNATIVE DESIGN: if the core QUIC protocol implements priorities, then this
-document should map the HTTP/2 priorities scheme to that provided by the core
-protocol.  This would likely involve prohibiting the sending of HTTP/2 PRIORITY
-frames and setting of the PRIORITY flag in HTTP/2 HEADERS frames, to avoid
-conflicting directives.
+This does introduce head-of-line blocking: if the packet containing HEADERS for 
+stream N is lost or reordered then the HEADERS for stream N+4 cannot be 
+processed until it has been retransmitted successfully, even though the HEADERS 
+for stream N+4 may have arrived. 
+
+DISCUSS:
+: Keep HPACK with HOLB? Redesign HPACK to be order-invariant? How much 
+do we need to retain compatibility with HTTP/2's HPACK? 
 
 
-# Flow Control
+## Stream Priorities {#priority}
+
+HTTP-over-QUIC uses the priority scheme described in {{!RFC7540}} Section 5.3. 
+In this priority scheme, a given stream can be designated as dependent upon 
+another stream, which expresses the preference that the latter stream (the 
+"parent" stream) be allocated resources before the former stream (the 
+"dependent" stream). Taken together, the dependencies across all streams in a 
+connection form a dependency tree. The structure of the dependency tree changes 
+as HEADERS and PRIORITY frames add, remove, or change the dependency links 
+between streams.
+
+Implicit in this scheme is the notion of in-order delivery of priority changes 
+(i.e., dependency tree mutations): since operations on the dependency tree such 
+as reparenting a subtree are not commutative, both sender and receiver must 
+apply them in the same order to ensure that both sides have a consistent view of 
+the stream dependency tree. HTTP/2 specifies priority assignments in PRIORITY 
+frames and (optionally) in HEADERS frames. To achieve in-order delivery of 
+priority changes in HTTP-over-QUIC, PRIORITY frames are sent on the connection 
+control stream and the PRIORITY section is removed from the HEADERS frame. The 
+semantics of the Stream Dependency, Weight, E flag, and (for HEADERS frames) 
+PRIORITY flag are the same as in HTTP/2. 
+
+For consistency's sake, all PRIORITY frames MUST refer to the message control
+stream of the dependent request, not the data stream.
+
+
+## Flow Control
 
 QUIC provides stream and connection level flow control, similar in principle to
 HTTP/2's flow control but with some implementation differences.  As flow control
-is handled by QUIC, the HTTP/2 mapping need not concern itself with maintaining
-flow control state, or how/ when to send flow control frames to the peer.  The
-HTTP/2 mapping must not send HTTP/2 WINDOW_UPDATE frames.
-
-The initial flow control window sizes (stream and connection) are communicated
-during the crypto handshake (see {{connection-establishment}}).  Setting these
-values to the maximum size (2^31 - 1) effectively disables flow control.
-
-Relatively small initial windows can be used, as QUIC will attempt to auto-tune
-the flow control windows based on usage.  See {{QUIC-TRANSPORT}} for more
-details.
+is handled by QUIC, the HTTP mapping need not concern itself with maintaining
+flow control state.  The HTTP mapping MUST NOT send WINDOW_UPDATE frames at the
+HTTP level.
 
 
-# Server Push
+## Server Push
 
-HTTP/2-over-QUIC supports HTTP/2 server push.  During connection establishment,
-the client indicates whether or it is willing to receive server pushes via the
-SETTINGS_ENABLE_PUSH setting in the HTTP/2 SETTINGS frame (see
-{{connection-establishment}}), which defaults to 1 (true).
+HTTP-over-QUIC supports server push as described in {{!RFC7540}}. During 
+connection establishment, the client indicates whether or it is willing to 
+receive server pushes via the SETTINGS_ENABLE_PUSH setting in the HTTP/2 
+SETTINGS frame (see {{connection-establishment}}), which defaults to 1 (true). 
 
-As with server push for HTTP/2-over-TCP, the server initiates a server push by
-sending an HTTP/2 PUSH_PROMISE frame containing the StreamID of the stream to be
-pushed, as well as request header fields attributed to the request.  The
-PUSH_PROMISE frame is sent on stream 3, to ensure proper ordering with respect
-to other HEADERS and non-data frames.  Within the PUSH_PROMISE frame, the
-StreamID in the common HTTP/2 frame header indicates the associated (client-
-initiated) stream for the new push stream, while the Promised Stream ID field
-specifies the StreamID of the new push stream.
+As with server push for HTTP/2, the server initiates a server push by sending a 
+PUSH_PROMISE frame containing the StreamID of the stream to be pushed, as well 
+as request header fields attributed to the request. The PUSH_PROMISE frame is 
+sent on the control stream of the associated (client-initiated) request, while 
+the Promised Stream ID field specifies the Stream ID of the control stream for 
+the server-initiated request. 
 
-The server push response is conveyed in the same way as a non-server-push
-response, with response headers and (if present) trailers carried by HTTP/2
-HEADERS frames sent on reserved stream 3, and response body (if any) sent via
-QUIC stream frames on the stream specified in the corresponding PUSH_PROMISE
-frame.
+The server push response is conveyed in the same way as a non-server-push 
+response, with response headers and (if present) trailers carried by HEADERS 
+frames sent on the control stream, and response body (if any) sent via the 
+corresponding data stream. 
 
 
-# Error Codes
+# HTTP Framing Layer
+
+Many framing concepts from HTTP/2 can be elided away on QUIC, because the 
+transport deals with them. Because frames are already on a stream, they can omit 
+the stream number. Because frames do not block multiplexing (QUIC's multiplexing 
+occurs below this layer), the support for variable-maximum-length packets can be 
+removed. Because stream termination is handled by QUIC, an END_STREAM flag is 
+not required.
+
+Frames are used only on the connection (stream 3) and message (streams 5, 9, etc.)
+control streams.  Other streams carry data payload and are not framed at the
+HTTP layer.
+
+Frame payloads are largely drawn from {{!RFC7540}}. However, QUIC includes some 
+features (e.g. flow control) which are also present in HTTP/2. In these cases, 
+the HTTP mapping need not re-implement them. As a result, some frame types are 
+not required when using QUIC. Where an HTTP/2-defined frame is no longer used, 
+the frame ID is reserved in order to maximize portability between HTTP/2 and 
+HTTP/QUIC implementations. However, equivalent frames between the two mappings 
+are not necessarily identical. 
+
+This section describes HTTP framing in QUIC and highlights differences from 
+HTTP/2 framing. 
+
+## Frame Layout
+
+All frames have the following format:
+
+~~~~~~~~~~
+     0   1   2   3   4   5   6   7
+   +---+---+---+---+---+---+---+---+
+   |          Length (16)          |
+   |                               |
+   +---+---+---+---+---+---+---+---+
+   |            Type (8)           |  
+   +---+---+---+---+---+---+---+---+
+   |            Flags (8)          |
+   +---+---+---+---+---+---+---+---+
+   |        Frame Payload        ...
+   +---+---+---+---+---+---+---+---+
+~~~~~~~~~~
+{: title="HTTP/QUIC frame format"}
+
+## Frame Definitions {#frames}
+
+### DATA
+
+DATA frames do not exist.  Frame type 0x0 is reserved.
+
+### HEADERS {#frame-headers}
+
+The HEADERS frame (type=0x1) is used to carry part of a header set, compressed 
+using HPACK {{!RFC7541}}. Because HEADERS frames from different streams will be 
+delivered out-of-order and priority-changes are not commutative, the PRIORITY 
+region of HEADERS is not supported. A separate PRIORITY frame MUST be used. 
+
+Padding MUST NOT be used.  The flags defined are:
+
+  Reserved (0x1):
+  : Reserved for HTTP/2 compatibility.
+
+  End Header Block (0x4):
+  : This frame concludes a header block.
+
+  Reserved (0x8):
+  : Reserved for HTTP/2 compatibility.
+
+  Reserved (0x20):
+  : Reserved for HTTP/2 compatibility.
+
+~~~~~~~~~~
+    +-------------------------------+-------------------------------+
+    |       Sequence? (16)          |    Header Block Fragment (*)...
+    +-------------------------------+-------------------------------+
+~~~~~~~~~~
+{: title="HEADERS frame payload"}
+
+The HEADERS frame payload has the following fields:
+
+  Sequence Number:
+  : Present only on the first frame of a header block sequence. This MUST 
+  be set to zero on the first header block sequence, and incremented on 
+  each header block. 
+
+The next frame on the same stream after a HEADERS frame without the EHB flag set 
+MUST be another HEADERS frame. A receiver MUST treat the receipt of any other 
+type of frame as a stream error. (Note that QUIC can intersperse data from other 
+streams between frames, or even during transmission of frames, so multiplexing 
+is not blocked by this requirement.) 
+
+A full header block is contained in a sequence of zero or more HEADERS frames 
+without EHB set, followed by a HEADERS frame with EHB set. 
+
+On receipt, header blocks (HEADERS, PUSH_PROMISE) MUST be processed by the HPACK 
+decoder in sequence. If a block is missing, all subsequent HPACK frames MUST be 
+held until it arrives, or the connection terminated. 
+
+
+### PRIORITY {#frame-priority}
+
+The PRIORITY (type=0x02) frame specifies the sender-advised priority of a stream 
+and is substantially different from {{!RFC7540}}. In order to support ordering, 
+it MUST be sent only on the connection control stream. The format has been 
+modified to accommodate not being sent on-stream and the larger stream ID space 
+of QUIC. 
+
+The flags defined are:
+
+  E (0x01):
+  : Indicates that the stream dependency is exclusive (see {{!RFC7540}} Section 
+    5.3). 
+
+~~~~~~~~~~
+    +---------------------------------------------------------------+
+    |                   Prioritized Stream (32)                     |
+    +---------------+-----------------------------------------------+
+    |                    Dependent Stream (32)                      |
+    +---------------+-----------------------------------------------+
+    |   Weight (8)  |
+    +---------------+
+~~~~~~~~~~
+{: title="HEADERS frame payload"}
+
+The HEADERS frame payload has the following fields:
+
+  Prioritized Stream:
+  : A 32-bit stream identifier for the message control stream whose 
+    priority is being updated. 
+
+  Stream Dependency:
+  : A 32-bit stream identifier for the stream that this stream depends on 
+  (see {{priority}} and {!RFC7540}} Section 5.3).
+
+  Weight:
+  : An unsigned 8-bit integer representing a priority weight for the 
+  stream (see {{!RFC7540}} Section 5.3). Add one to the value to obtain a 
+  weight between 1 and 256.
+
+### RST_STREAM
+
+RST_STREAM frames do not exist, since QUIC provides stream lifecycle management.
+Frame type 0x3 is reserved.
+
+### SETTINGS {#frame-settings}
+
+The SETTINGS frame (type=0x04) is unmodified from {{!RFC7540}} (so far). It MUST 
+only be sent on the connection control stream (Stream 3). 
+
+As in HTTP/2, additional SETTINGS frames may be sent mid-connection by either 
+endpoint. 
+
+TODO:
+: Decide whether to acknowledge receipt of SETTINGS through empty SETTINGS
+  frames with ACK bit set, as in HTTP/2, or rely on transport- level
+  acknowledgment.
+
+#### Defined SETTINGS Parameters
+  
+Some transport-level options that HTTP/2 specifies via the SETTINGS frame are 
+superseded by QUIC transport parameters in HTTP-over-QUIC. Below is a listing of 
+how each HTTP/2 SETTINGS parameter is mapped: 
+
+  SETTINGS_HEADER_TABLE_SIZE:
+  : Sent in SETTINGS frame.
+
+  SETTINGS_ENABLE_PUSH:
+  : Sent in SETTINGS frame (TBD, currently set using QUIC "SPSH" connection
+    option)
+
+  SETTINGS_MAX_CONCURRENT_STREAMS
+  : QUIC requires the maximum number of incoming streams per connection to be
+    specified in the initial crypto handshake, using the "MSPC" tag.  Specifying
+    SETTINGS_MAX_CONCURRENT_STREAMS in the SETTINGS frame is an error.
+
+  SETTINGS_INITIAL_WINDOW_SIZE:
+  : QUIC requires both stream and connection flow control window sizes to be
+    specified in the initial crypto handshake, using the "SFCW" and "CFCW" tags,
+    respectively.  Specifying SETTINGS_INITIAL_WINDOW_SIZE in the SETTINGS
+    frame is an error.
+
+  SETTINGS_MAX_FRAME_SIZE:
+  : This setting has no equivalent in QUIC.  Specifying it in the SETTINGS
+    frame is an error.
+
+  SETTINGS_MAX_HEADER_LIST_SIZE
+  : Sent in SETTINGS frame.
+
+As with HTTP/2, unknown SETTINGS parameters are tolerated but ignored. SETTINGS 
+parameters are acknowledged by the receiving peer, by sending an empty SETTINGS 
+frame in response with the ACK bit set.
+
+
+### PUSH_PROMISE {#frame-push-promise}
+
+The PUSH_PROMISE frame (type=0x05) is used to carry a request header set from 
+server to client, as in HTTP/2.  It defines no flags.
+
+~~~~~~~~~~
+    +---------------------------------------------------------------+
+    |                   Promised Stream ID (32)                     |
+    +-------------------------------+-------------------------------+
+    |       Sequence? (16)          |         Header Block (*)    ...
+    +-------------------------------+-------------------------------+
+~~~~~~~~~~
+{: title="PUSH_PROMISE frame payload"}
+
+The payload consists of:
+
+  Promised Stream ID:
+  : A 32-bit Stream ID indicating the QUIC stream on which the response headers 
+    will be sent.  (The response body stream is implied by the headers stream,
+    as defined in {{stream-mapping}}.)
+
+  HPACK Sequence:
+  : A sixteen-bit counter, equivalent to the Sequence field in HEADERS
+
+  Payload:
+  : HPACK-compressed request headers for the promised response.
+
+TODOs:
+
+ - QUIC stream space may be enlarged; would need to redefine Promised Stream
+   field in this case. 
+ - No CONTINUATION -- HEADERS have EHB; do we need it here?
+
+### PING
+
+PING frames do not exist, since QUIC provides equivalent functionality. Frame 
+type 0x6 is reserved. 
+
+
+### GOAWAY frame
+
+GOAWAY frames do not exist, since QUIC provides equivalent functionality. Frame 
+type 0x7 is reserved. 
+
+
+### WINDOW_UPDATE frame
+
+WINDOW_UPDATE frames do not exist, since QUIC provides equivalent functionality.
+Frame type 0x8 is reserved. 
+
+
+### CONTINUATION frame
+
+CONTINUATION frames do not exist, since larger supported HEADERS/PUSH_PROMISE 
+frames provide equivalent functionality. Frame type 0x9 is reserved. 
+
+
+# Error Handling {#errors}
 
 The HTTP/2 error codes defined in Section 7 of {{!RFC7540}} map to QUIC error
 codes as follows:
@@ -413,43 +584,6 @@ HTTP_1_1_REQUIRED (0xd):
 TODO: fill in missing error code mappings.
 
 
-# Other HTTP/2 frames
-
-QUIC includes some features (e.g. flow control) which are also present in
-HTTP/2.  In these cases the HTTP/2 mapping need not re-implement them.  As a
-result some HTTP/2 frame types are not required when using QUIC, as they either
-are directly implemented in the QUIC layer, or their functionality is provided
-via other means.  This section of the document describes these cases.
-
-
-## GOAWAY frame
-
-QUIC has its own GOAWAY frame, and QUIC implementations may to expose the
-sending of a GOAWAY to the application.  The semantics of sending a GOAWAY in
-QUIC are identical to HTTP/2: an endpoint sending a GOAWAY will continue
-processing open streams, but will not accept newly created streams.
-
-QUIC's GOAWAY frame is described in detail in the {{QUIC-TRANSPORT}}.
-
-
-## PING frame
-
-QUIC has its own PING frame, which is currently exposed to the application.
-QUIC clients send periodic PINGs to servers if there are no currently active
-data streams on the connection.
-
-QUIC's PING frame is described in detail in the {{QUIC-TRANSPORT}}.
-
-
-## PADDING frame
-
-There is no HTTP/2 padding in this mapping; padding is instead provided at the
-QUIC layer by including QUIC PADDING frames in a packet payload.  An HTTP/2 over
-QUIC mapping should treat any HTTP/2 level padding as an error, to avoid any
-possibility of inconsistent flow control states between endpoints (e.g. client
-sends HTTP/2 padding, counts it against flow control, server ignores).
-
-
 # Security Considerations
 
 The security considerations of HTTP over QUIC should be comparable to those of
@@ -458,9 +592,35 @@ HTTP/2.
 
 # IANA Considerations
 
-This document has no IANA actions.  Yet.
+## Frame Types
 
+This document adds two new columns to the "HTTP/2 Frame Type" registry defined in
+{{!RFC7540}}:
 
+  Supported in HTTP/QUIC:
+  : Indicates whether the frame is also supported in this HTTP/QUIC mapping
+  
+  HTTP/QUIC Specification:
+  : Indicates where this frame's behavior over QUIC is defined; required
+    if the frame is supported over QUIC.
+  
+Values for existing registrations are assigned by this document:
+
+   +---------------|------------------------|-------------------------+
+   | Frame Type    | Supported in HTTP/QUIC | HTTP/QUIC Specification |
+   |---------------|:----------------------:|-------------------------|
+   | DATA          | No                     | N/A                     |
+   | HEADERS       | Yes                    | {{frame-headers}}       |
+   | PRIORITY      | Yes                    | {{frame-priority}}      |
+   | RST_STREAM    | No                     | N/A                     |
+   | SETTINGS      | Yes                    | {{frame-settings}}      |
+   | PUSH_PROMISE  | Yes                    | {{frame-push-promise}}  |
+   | PING          | No                     | N/A                     |
+   | GOAWAY        | No                     | N/A                     |
+   | WINDOW_UPDATE | No                     | N/A                     |
+   | CONTINUATION  | No                     | N/A                     |
+   +---------------|------------------------|-------------------------+
+   
 --- back
 
 # Contributors
