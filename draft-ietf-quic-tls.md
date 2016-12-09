@@ -782,9 +782,9 @@ Note:
   protection is to collect all handshake data from before TLS provides the first
   keys (see {{key-ready-events}}).
 
-Retransmissions of these handshake messages MUST be send in unprotected packets
-(with a KEY_PHASE of 0).  Any ACK frames for these messages MUST also be sent in
-unprotected packets.
+Retransmissions of these handshake messages MUST be sent in unprotected packets
+(with a KEY_PHASE of 0).  An endpoint MUST also generate ACK frames for these
+messages that are sent in unprotected packets.
 
 
 ### Handshake Retransmission and 0-RTT
@@ -808,8 +808,8 @@ A server that has successfully transitioned to using 1-RTT keys could attempt to
 decrypt these packets, which will be unsuccessful.  Though a server that has
 1-RTT keys can safely discard any unprotected handshake messages from the
 client, an unprotected ACK frame could indicate that the server needs to
-retransmit its own handshake messages.  ACK frames therefore cannot be
-discarded.
+retransmit its own handshake messages.  ACK frames in unprotected packets
+therefore cannot be discarded.
 
 Until the server has received a positive acknowledgment for all of its
 unprotected handshake messages, either in the form of an explicit acknowledgment
@@ -962,9 +962,9 @@ might be spoofed or altered.
 
 Endpoints MUST NOT use an unprotected `ACK` frame to acknowledge data that was
 protected by 0-RTT or 1-RTT keys.  An endpoint MUST ignore an unprotected `ACK`
-frame if it claims to acknowledge data that was protected data.  Such an
-acknowledgement can only serve as a denial of service, since an endpoint that
-can read protected data is always permitted to send protected data.
+frame if it claims to acknowledge data that was sent in a protected packet.
+Such an acknowledgement can only serve as a denial of service, since an endpoint
+that can read protected data is always able to send protected data.
 
 An endpoint SHOULD use data from unprotected or 0-RTT-protected `ACK` frames
 only during the initial handshake and while they have insufficient information
