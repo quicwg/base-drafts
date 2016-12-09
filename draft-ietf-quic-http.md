@@ -476,7 +476,8 @@ value.
 
 A zero-length content indicates that the setting value is a Boolean given by the 
 B bit. If Length is not zero, the B bit MUST be zero, and MUST be ignored by 
-receivers. The initial value of each setting is "false." 
+receivers. The initial value of each setting is "false" unless otherwise
+specified by the definition of the setting.
 
 An implementation MUST ignore the contents for any EXTENDED_SETTINGS identifier 
 it does not understand. 
@@ -488,7 +489,13 @@ receives an SETTINGS frame whose stream identifier field is anything other than
 
 The SETTINGS frame affects connection state. A badly formed or incomplete 
 SETTINGS frame MUST be treated as a connection error (Section 5.4.1) of type 
-PROTOCOL_ERROR. 
+PROTOCOL_ERROR.
+
+#### Integer encoding
+
+Settings which are integers are transmitted in network byte order.  Leading
+zero octets are permitted, but implementations SHOULD use only as many bytes as
+are needed to represent the value.
 
 #### Defined SETTINGS Parameters
   
@@ -500,7 +507,8 @@ how each HTTP/2 SETTINGS parameter is mapped:
   : An integer with a maximum value of 2^32 - 1.
 
   SETTINGS_ENABLE_PUSH:
-  : A Boolean
+  : Transmitted as a Boolean.  The default remains "true" as specified in
+    {{!RFC7540}}.
 
   SETTINGS_MAX_CONCURRENT_STREAMS:
   : QUIC requires the maximum number of incoming streams per connection to be
