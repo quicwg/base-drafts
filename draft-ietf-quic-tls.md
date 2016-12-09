@@ -373,20 +373,17 @@ A QUIC server starts the process by providing TLS with any stream 1 octets that
 might have arrived.  Only in-sequence frame data is delivered; data that arrives
 out of order are buffered by QUIC until all preceding data is available.
 
-Each time that an endpoint receives data on stream 1, it determines if it can
-deliver the data to TLS.  Any octets that are contiguous with the last data
-provided to TLS can be delivered.  When any octets of TLS data can be delivered,
-TLS is provided with the data. New handshake octets are then requested from TLS.
-
+After providing TLS with data, new handshake octets are then requested from TLS.
 TLS might not provide any octets if the handshake messages it has received are
 incomplete.
 
 Once the TLS handshake is complete, this is indicated to QUIC along with any
 final handshake octets that TLS needs to send.  Once the handshake is complete,
-TLS becomes passive.  TLS might still receive data from its peer and respond to
-that data, but it will not need to send more data unless it is explicitly
-requested.  One reason to send data is that the server might wish to provide
-additional or updated session tickets to a client.
+TLS becomes passive.  TLS can still receive data from its peer and respond in
+kind that data, but it will not need to send more data unless specifically
+requested - either by an application or QUIC.  One reason to send data is that
+the server might wish to provide additional or updated session tickets to a
+client.
 
 Important:
 
