@@ -1,5 +1,0 @@
-
-draft-ietf-quic-http-mapping-00.xml: draft-ietf-quic-http-mapping.xml
-	sed -e 's/draft-ietf-quic-http-mapping-latest/draft-ietf-quic-http-mapping-00/' $< > $@
-draft-ietf-quic-tls-00.xml: draft-ietf-quic-tls.xml
-	sed -e 's/draft-ietf-quic-tls-latest/draft-ietf-quic-tls-00/' $< > $@

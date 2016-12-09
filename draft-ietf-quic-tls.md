@@ -144,8 +144,9 @@ out specially.
 |            |----- Handshake ---->|            |
 |            |<---- Handshake -----|            |
 |   QUIC     |                     |    TLS     |
-|            |<---- 0-RTT Done ----|            |
-|            |<---- 1-RTT Done ----|            |
+|            |<----- 0-RTT OK -----|            |
+|            |<----- 1-RTT OK -----|            |
+|            |<-- Handshake Done --|            |
 +------------+                     +------------+
  |         ^                            ^ |
  | Protect | Protected                  | |
@@ -287,30 +288,30 @@ ensures that TLS handshake messages are delivered in the correct order.
 ~~~
     Client                                             Server
 
-@A QUIC STREAM Frame(s) <1>:
+@C QUIC STREAM Frame(s) <1>:
      ClientHello
        + QUIC Extension
                             -------->
-                        0-RTT Key => @B
+                        0-RTT Key => @0
 
-@B QUIC STREAM Frame(s) <any stream>:
+@0 QUIC STREAM Frame(s) <any stream>:
    Replayable QUIC Frames
                             -------->
 
-                                      QUIC STREAM Frame <1>: @A
+                                      QUIC STREAM Frame <1>: @C
                                                ServerHello
                                   {TLS Handshake Messages}
                             <--------
-                        1-RTT Key => @C
+                        1-RTT Key => @1
 
-                                           QUIC Frames <any> @C
+                                           QUIC Frames <any> @1
                             <--------
-@C QUIC STREAM Frame(s) <1>:
+@1 QUIC STREAM Frame(s) <1>:
      (end_of_early_data)
      {Finished}
                             -------->
 
-@C QUIC Frames <any>        <------->      QUIC Frames <any> @C
+@1 QUIC Frames <any>        <------->      QUIC Frames <any> @1
 ~~~
 {: #quic-tls-handshake title="QUIC over TLS Handshake"}
 
@@ -324,12 +325,12 @@ In {{quic-tls-handshake}}, symbols mean:
 * "{" and "}" enclose messages that are protected by the TLS Handshake keys.
 
 If 0-RTT is not attempted, then the client does not send packets protected by
-the 0-RTT key (@B).  In that case, the only key transition on the client is from
-unprotected packets (@A) to 1-RTT protection (@C), which happens before it sends
+the 0-RTT key (@0).  In that case, the only key transition on the client is from
+unprotected packets (@C) to 1-RTT protection (@1), which happens before it sends
 its final set of TLS handshake messages.
 
-The server sends TLS handshake messages without protection (@A).  The server
-transitions from no protection (@A) to full 1-RTT protection (@C) after it sends
+The server sends TLS handshake messages without protection (@C).  The server
+transitions from no protection (@C) to full 1-RTT protection (@1) after it sends
 the last of its handshake messages.
 
 Some TLS handshake messages are protected by the TLS handshake record
@@ -337,11 +338,13 @@ protection.  These keys are not exported from the TLS connection for use in
 QUIC.  QUIC packets from the server are sent in the clear until the final
 transition to 1-RTT keys.
 
-The client transitions from cleartest (@A) to 0-RTT keys (@B) when sending 0-RTT
-data, and subsequently to to 1-RTT keys (@C) for its second flight of TLS
+The client transitions from cleartest (@C) to 0-RTT keys (@0) when sending 0-RTT
+data, and subsequently to to 1-RTT keys (@1) for its second flight of TLS
 handshake messages.  This creates the potential for unprotected packets to be
 received by a server in close proximity to packets that are protected with 1-RTT
-keys.  More information on this key transition is included in {{cleartext-hs}}.
+keys.
+
+More information on key transitions is included in {{cleartext-hs}}.
 
 
 ## Interface to TLS
@@ -376,6 +379,10 @@ kind that data, but it will not need to send more data unless specifically
 requested - either by an application or QUIC.  One reason to send data is that
 the server might wish to provide additional or updated session tickets to a
 client.
+
+When the handshake is complete, QUIC only needs to provide TLS with any data
+that arrives on stream 1.  In the same way that is done during the handshake,
+new data is requested from TLS after providing received data.
 
 Important:
 
@@ -418,8 +425,8 @@ Details how secrets are exported from TLS are included in {{key-expansion}}.
 
 ### TLS Interface Summary
 
-{{exchange-summary}} summarizes the exchange between
-QUIC and TLS for both client and server.
+{{exchange-summary}} summarizes the exchange between QUIC and TLS for both
+client and server.
 
 ~~~
 Client                                                    Server
@@ -683,7 +690,9 @@ during the handshake a new secret is exported from TLS and packet protection
 keys are derived from that secret.
 
 Every time that a new set of keys is used for protecting outbound packets, the
-KEY_PHASE bit in the public flags is toggled.
+KEY_PHASE bit in the public flags is toggled.  The exception is the transition
+from 0-RTT keys to 1-RTT keys, where the presence of the version field and its
+associated bit is used (see {{first-keys}}).
 
 Once the connection is fully enabled, the KEY_PHASE bit allows a recipient to
 detect a change in keying material without necessarily needing to receive the
@@ -692,21 +701,6 @@ KEY_PHASE bit can update keys and decrypt the packet that contains the changed
 bit, see {{key-update}}.
 
 The KEY_PHASE bit on the public flags is the most significant bit (0x80).
-{{key-phase-table}} summarizes the different values for the KEY_PHASE bit.
-
-| Scenario | Client (No 0-RTT) | Client (0-RTT) | Server |
-|:-|-:|-:|-:|
-| Handshake | 0 | 0 |  0 |
-| 0-RTT Data | - | 1 | - |
-| 1-RTT Data | 1 | 0 | 1 |
-| 1st Key Update | 0 | 1 | 0 |
-| 2nd Key Update | 1 | 0 | 1 |
-{: #key-phase-table title="Summary of KEY_PHASE Values"}
-
-{{key-phase-table}} shows that a client marks 1-RTT with a different KEY_PHASE
-bit depending on whether 0-RTT is attempted.  Attempting 0-RTT therefore results
-in fully protected data having different KEY_PHASE values.  This is true even if
-0-RTT data is rejected and ignored by the server.
 
 Transitions between keys during the handshake are complicated by the need to
 ensure that TLS handshake messages are sent with the correct packet protection.
@@ -715,55 +709,86 @@ ensure that TLS handshake messages are sent with the correct packet protection.
 ## Packet Protection for the TLS Handshake {#cleartext-hs}
 
 The initial exchange of packets are sent without protection.  These packets are
-marked with a KEY_PHASE of 0.  The same key phase is used for all packets sent
-by TLS prior to the point that 1-RTT keys are made available to QUIC (0-RTT data
-does not contain TLS handshake messages).  This includes the TLS ClientHello and
-any TLS handshake message from the server, except those that are sent after the
-handshake completes, such as NewSessionTicket.  TLS handshake messages sent
-after completing the TLS handshake are not special and use packet protection
-keys that are current at the time of sending (or retransmission).
+marked with a KEY_PHASE of 0.
 
-A client might not attempt to send 0-RTT data.  This is either because the
-client has not talked to the server recently and is therefore does not have a
-valid session resumption ticket, or because the client does not wish to send any
-0-RTT data.
+TLS handshake messages that are critical to the TLS key exchange cannot be
+protected using QUIC packet protection.  A KEY_PHASE of 0 is used for all of
+these packets, even during retransmission.  The messages critical to key
+exchange are the TLS ClientHello and any TLS handshake message from the server,
+except those that are sent after the handshake completes, such as
+NewSessionTicket.
 
-If the client does not have 0-RTT data to send, it transitions to using 1-RTT
-keys before sending its second flight of TLS handshake messages (that is, the
-flight containing the TLS Finished message).  Subsequent messages are protected
-with 1-RTT keys and have a KEY_PHASE bit set to 1.
+The second flight of TLS handshake messages from the client, and any TLS
+handshake messages that are sent after completing the TLS handshake do not need
+special packet protection rules.  This includes the end_of_early_data alert that
+is sent by a client to mark the end of its 0-RTT data.  Packets containing these
+messages use the packet protection keys that are current at the time of sending
+(or retransmission).
+
+Like the client, a server MUST send retransmissions of its unprotected handshake
+messages or acknowledgments for unprotected handshake messages sent by the
+client in unprotected packets (KEY_PHASE=0).
+
+
+### Initial Key Transitions {#first-keys}
+
+Once the TLS key exchange is complete, keying material is exported from TLS and
+QUIC packet protection commences.
+
+Packets protected with 1-RTT keys have a KEY_PHASE bit set to 1.  These packets
+also have a VERSION bit set to 0.
+
+If the client is unable to send 0-RTT data - or it does not have 0-RTT data to
+send - packet protection with 1-RTT keys starts with the packets that contain
+its second flight of TLS handshake messages.  That is, the flight containing the
+TLS Finished handshake message and optionally a Certificate and
+CertificateVerify message.
 
 If the client sends 0-RTT data, it marks packets protected with 0-RTT keys with
-a KEY_PHASE of 1.  The later transition to using 1-RTT keys then results in the
-client using a KEY_PHASE of 0 for packets that are protected with 1-RTT keys.
+a KEY_PHASE of 1 and a VERSION bit of 1.  Setting the version bit means that all
+packets also include the version field.  The client removes the VERSION bit when
+it transitions to using 1-RTT keys, but it does not change the KEY_PHASE bit.
+
+Marking 0-RTT data with the both KEY_PHASE and VERSION bits ensures that the
+server is able to identify these packets as 0-RTT data in case the packet
+containing the TLS ClientHello is lost or delayed.  Including the version also
+ensures that the packet format is known to the server in this case.
+
+Using both KEY_PHASE and VERSION also ensures that the server is able to
+distinguish between cleartext handshake packets (KEY_PHASE=0, VERSION=1), 0-RTT
+protected packets (KEY_PHASE=1, VERSION=1), and 1-RTT protected packets
+(KEY_PHASE=1, VERSION=0).  Packets with all of these markings can arrive
+concurrently, and being able to identify each cleanly ensures that the correct
+packet protection keys can be selected and applied.
+
+A server might choose to retain 0-RTT packets that arrive before a TLS
+ClientHello.  The server can then use those packets once the ClientHello
+arrives.  However, the potential for denial of service from buffering 0-RTT
+packets is significant.  These packets cannot be authenticated and so might be
+employed by an attacker to exhaust server resources.  Limiting the number of
+packets that are saved might be necessary.
 
 The server transitions to using 1-RTT keys after sending its first flight of TLS
 handshake messages.  From this point, the server protects all packets with 1-RTT
 keys.  Future packets are therefore protected with 1-RTT keys and marked with a
 KEY_PHASE of 1.
 
-Like the client, a server MUST send retransmissions of its unprotected handshake
-messages or acknowledgments for unprotected handshake messages sent by the
-client in unprotected packets (KEY_PHASE=0).
-
-The second flight of TLS handshake messages from a client is always protected
-with the current packet protection keys.  This includes the TLS
-end_of_early_data alert, which a client sends before its final set of handshake
-messages.
-
 
 ### Retransmission and Acknowledgment of Unprotected Packets
 
 The first flight of TLS handshake messages from both client and server
 (ClientHello, or ServerHello through to the server's Finished) are critical to
-the key exchange.  The contents of these messages is used to determine the keys
-used to protect later messages.  If these handshake messages are included in
-packets that are protected with these keys, they will be indecipherable to the
+the key exchange.  The contents of these messages determines the keys used to
+protect later messages.  If these handshake messages are included in packets
+that are protected with these keys, they will be indecipherable to the
 recipient.
 
-Even though newer keys could be available, the first flight of TLS handshake
-messages sent by an endpoint MUST NOT be sent in protected packets,
-specifically:
+Even though newer keys could be available when retranmitting, retransmissions of
+these handshake messages MUST be sent in unprotected packets (with a KEY_PHASE
+of 0).  An endpoint MUST also generate ACK frames for these messages that are
+sent in unprotected packets.
+
+The TLS handshake messages that are affected by this rule are specifically:
 
 * A client MUST NOT restransmit a TLS ClientHello with 0-RTT keys.  The server
   needs this message in order to determine the 0-RTT keys.
@@ -771,57 +796,32 @@ specifically:
 * A server MUST NOT retransmit any of its TLS handshake messages with 1-RTT
   keys.  The client needs these messages in order to determine the 1-RTT keys.
 
-A HelloRetryRequest might be used to reject an initial ClientHello.  A
-HelloRetryRequest handshake message and any second ClientHello that is sent in
-response MUST also be sent without packet protection.  This is natural, because
-no new keying material will be available when these messages need to be sent.
+A HelloRetryRequest handshake message might be used to reject an initial
+ClientHello.  A HelloRetryRequest handshake message and any second ClientHello
+that is sent in response MUST also be sent without packet protection.  This is
+natural, because no new keying material will be available when these messages
+need to be sent.  Upon receipt of a HelloRetryRequest, a client SHOULD cease any
+transmission of 0-RTT data; 0-RTT data will only be discarded by any server that
+sends a HelloRetryRequest.
 
 Note:
 
-: An alternative way of identifying handshake data that needs to be sent without
-  protection is to collect all handshake data from before TLS provides the first
-  keys (see {{key-ready-events}}).
+: TLS handshake data that needs to be sent without protection is all the
+  handshake data acquired from TLS before the point that 1-RTT keys are provided
+  by TLS (see {{key-ready-events}}).
 
-Retransmissions of these handshake messages MUST be sent in unprotected packets
-(with a KEY_PHASE of 0).  An endpoint MUST also generate ACK frames for these
-messages that are sent in unprotected packets.
+The KEY_PHASE and VERSION bits ensure that protected packets are clearly
+distinguished from unprotected packets.  Loss or reordering might cause
+unprotected packets to arrive once 1-RTT keys are in use, unprotected packets
+are easily distinguished from 1-RTT packets.
 
-
-### Handshake Retransmission and 0-RTT
-
-The first protected packets sent by a client that has not attempted to send
-0-RTT data or packets sent by a server will be marked with a KEY_PHASE of 1.
-This distinguishes those protected packets from unprotected packets.  Though loss
-or reordering might cause unprotected packets to arrive once 1-RTT keys are in
-use, unprotected packets are easily distinguished from 1-RTT packets.  Based on
-the KEY_PHASE bit, these packets might initially appear to be a key update (see
-{{key-update}}), but they will not be decrypted successfully and so will be
-discarded.
-
-However, if a client has sent 0-RTT data, unprotected packets will not be
-clearly distinguished from 1-RTT protected packets.  Both will have a KEY_PHASE
-of 0.  A server that does not yet have 1-RTT keys will correctly interpret these
-as being unprotected, but a server that has 1-RTT keys could reject unprotected
-packets.
-
-A server that has successfully transitioned to using 1-RTT keys could attempt to
-decrypt these packets, which will be unsuccessful.  Though a server that has
-1-RTT keys can safely discard any unprotected handshake messages from the
-client, an unprotected ACK frame could indicate that the server needs to
-retransmit its own handshake messages.  ACK frames in unprotected packets
-therefore cannot be discarded.
-
-Until the server has received a positive acknowledgment for all of its
-unprotected handshake messages, either in the form of an explicit acknowledgment
-or implicitly through the use of 1-RTT keys, it MUST NOT discard packets with a
-KEY_PHASE of 0 if they cannot be decrypted successfully.  If these packets are
-unprotected and contain ACK frames, those ACK frames MUST be recovered and used
-to determine whether to retransmit TLS handshake messages.
-
-TBD:
-
-: We could observe/require that all unprotected packets are marked with a
-  VERSION bit and use that to avoid the "trial decryption" mess.
+Once 1-RTT keys are available to an endpoint, it no longer needs the TLS
+handshake messages that are carried in unprotected packets.  However, a server
+might need to retransmit its TLS handshake messages in response to receiving an
+unprotected packet that contains ACK frames.  A server MUST process ACK frames
+in unprotected packets until the TLS handshake is reported as complete, or it
+receives an ACK frame in a protected packet that acknowledges all of its
+handshake messages.
 
 To limit the number of key phases that could be active, an endpoint MUST NOT
 initiate a key update while there are any unacknowledged handshake messages, see
@@ -946,7 +946,8 @@ fatal error.
 ### STREAM Frames
 
 `STREAM` frames for stream 1 are permitted.  These carry the TLS handshake
-messages.
+messages.  Once 1-RTT keys are available, unprotected `STREAM` frames on stream
+1 can be ignored.
 
 Receiving unprotected `STREAM` frames for other streams MUST be treated as a
 fatal error.
@@ -965,6 +966,14 @@ protected by 0-RTT or 1-RTT keys.  An endpoint MUST ignore an unprotected `ACK`
 frame if it claims to acknowledge data that was sent in a protected packet.
 Such an acknowledgement can only serve as a denial of service, since an endpoint
 that can read protected data is always able to send protected data.
+
+ISSUE:
+
+: What about 0-RTT data?  Should we allow acknowledgment of 0-RTT with
+  unprotected frames?  If we don't, then 0-RTT data will be unacknowledged until
+  the handshake completes.  This isn't a problem if the handshake completes
+  without loss, but it could mean that 0-RTT stalls when a handshake packet
+  disappears for any reason.
 
 An endpoint SHOULD use data from unprotected or 0-RTT-protected `ACK` frames
 only during the initial handshake and while they have insufficient information
@@ -994,9 +1003,7 @@ sequence number.  The spurious packet shadows the genuine packet, causing the
 genuine packet to be ignored as redundant.
 
 Once the TLS handshake is complete, both peers MUST ignore unprotected packets.
-The handshake is complete when the server receives a client's Finished message
-and when a client receives an acknowledgement that their Finished message was
-received.  From that point onward, unprotected messages can be safely dropped.
+From that point onward, unprotected messages can be safely dropped.
 
 Since only TLS handshake packets and acknowledgments are sent in the clear, an
 attacker is able to force implementations to rely on retransmission for packets
@@ -1037,28 +1044,15 @@ equivalent to 1-RTT keys.
 A client that receives an indication that its 0-RTT data has been accepted by a
 server can send 0-RTT data until it receives all of the server's handshake
 messages.  A client SHOULD stop sending 0-RTT data if it receives an indication
-that 0-RTT data has been rejected.  In addition to a ServerHello without an
-early_data extension, an unprotected handshake message with a KEY_PHASE bit set
-to 0 indicates that 0-RTT data has been rejected.
+that 0-RTT data has been rejected.
 
 A client SHOULD send its end_of_early_data alert only after it has received all
-of the server's handshake messages.  Alternatively phrased, a client is
-encouraged to use 0-RTT keys until 1-RTT keys become available.  This prevents
-stalling of the connection and allows the client to send continuously.
+of the server's handshake messages.  In other words, a client is encouraged to
+use 0-RTT keys until 1-RTT keys become available.  This prevents stalling of the
+connection when there is packet loss or delay and allows the client to send
+continuously.
 
-A server MUST NOT use 0-RTT keys to protect anything other than TLS handshake
-messages.  Servers therefore treat packets protected with 0-RTT keys as
-equivalent to unprotected packets in determining what is permissible to send.  A
-server protects handshake messages using the 0-RTT key if it decides to accept a
-0-RTT key.  A server MUST still include the early_data extension in its
-ServerHello message.
-
-This restriction prevents a server from responding to a request using packets
-protected by the 0-RTT keys.  This ensures that all application data from the
-server are always protected with keys that have forward secrecy.  However, this
-results in head-of-line blocking at the client because server responses cannot
-be decrypted until all the server's handshake messages are received by the
-client.
+A server MUST NOT use 0-RTT keys to protect packets.
 
 
 ## Protected Packets Prior to Handshake Completion {#pre-handshake-protected}
@@ -1248,5 +1242,6 @@ Ryan Hamilton was originally an author of this specification.
 
 # Acknowledgments
 
-This document has benefited from input from Christian Huitema, Jana Iyengar,
-Adam Langley, Roberto Peon, Eric Rescorla, Ian Swett, and many others.
+This document has benefited from input from Dragana Damjanovic, Christian
+Huitema, Jana Iyengar, Adam Langley, Roberto Peon, Eric Rescorla, Ian Swett, and
+many others.
