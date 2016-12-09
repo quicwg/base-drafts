@@ -113,12 +113,12 @@ This document uses the terminology established in {{QUIC-TRANSPORT}}.
 
 For brevity, the acronym TLS is used to refer to TLS 1.3.
 
-TLS terminology is used when referring to parts of TLS. Though TLS assumes a 
-continuous stream of octets, it divides that stream into *records*. Most 
-relevant to QUIC are the records that contain TLS *handshake messages*, which 
-are discrete messages that are used for key agreement, authentication and 
-parameter negotiation. Ordinarily, TLS records can also contain *application 
-data*, though in the QUIC usage there is no use of TLS application data. 
+TLS terminology is used when referring to parts of TLS. Though TLS assumes a
+continuous stream of octets, it divides that stream into *records*. Most
+relevant to QUIC are the records that contain TLS *handshake messages*, which
+are discrete messages that are used for key agreement, authentication and
+parameter negotiation. Ordinarily, TLS records can also contain *application
+data*, though in the QUIC usage there is no use of TLS application data.
 
 
 # Protocol Overview
@@ -370,9 +370,8 @@ A QUIC client starts TLS by requesting TLS handshake octets from
 TLS.  The client acquires handshake octets before sending its first packet.
 
 A QUIC server starts the process by providing TLS with any stream 1 octets that
-might have arrived.  Only in-sequence packets are delivered; packets that arrive
-out of order are buffered by QUIC until all preceding packets are available.
-QUIC first provides TLS with octets from stream 1.
+might have arrived.  Only in-sequence frame data is delivered; data that arrives
+out of order are buffered by QUIC until all preceding data is available.
 
 Each time that an endpoint receives data on stream 1, it determines if it can
 deliver the data to TLS.  Any octets that are contiguous with the last data
@@ -540,11 +539,11 @@ Ordinarily, an endpoint retransmits stream data in a new packet.  That packet
 uses the latest packet protection keys.  This simplifies key management when
 there are key updates (see {{key-update}}).
 
-The first flight of handshake messages from both client and server (ClientHello, 
-or ServerHello through to the server's Finished) are critical to the key 
-exchange. The content of these messages is used to determine the keys used to 
-protect later messages. If these are protected with newer keys, they will be 
-indecipherable to the recipient. 
+The first flight of handshake messages from both client and server (ClientHello,
+or ServerHello through to the server's Finished) are critical to the key
+exchange. The content of these messages is used to determine the keys used to
+protect later messages. If these are protected with newer keys, they will be
+indecipherable to the recipient.
 
 Even though newer keys are available, the first flight of TLS handshake messages
 sent by an endpoint MUST NOT be encrypted:
