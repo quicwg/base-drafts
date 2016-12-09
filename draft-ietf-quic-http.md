@@ -429,16 +429,66 @@ Frame type 0x3 is reserved.
 
 ### SETTINGS {#frame-settings}
 
-The SETTINGS frame (type=0x04) is unmodified from {{!RFC7540}} (so far). It MUST 
-only be sent on the connection control stream (Stream 3). 
+The SETTINGS frame (type=0x4) conveys configuration parameters that affect how 
+endpoints communicate, such as preferences and constraints on peer behavior, and 
+is substantially different from {{!RFC7540}}. Individually, a SETTINGS parameter 
+can also be referred to as a "setting". 
 
-As in HTTP/2, additional SETTINGS frames may be sent mid-connection by either 
-endpoint. 
+SETTINGS parameters are not negotiated; they describe characteristics of the 
+sending peer, which are used by the receiving peer. However, a negotiation can 
+be implied by the use of SETTINGS -- a peer uses SETTINGS to advertise a set of 
+supported values. The recipient can then choose which entries from this list are 
+also acceptable and proceed with the value it has chosen. (This choice could be 
+announced in a field of an extension frame, or in a value in SETTINGS.) 
 
-TODO:
-: Decide whether to acknowledge receipt of SETTINGS through empty SETTINGS
-  frames with ACK bit set, as in HTTP/2, or rely on transport- level
-  acknowledgment.
+Different values for the same parameter can be advertised by each peer. For 
+example, a server might support many different signing algorithms, while a 
+resource constrained client has only one or two that it can validate. 
+
+A SETTINGS frame MAY be sent at any time by either endpoint over the lifetime 
+of the connection. 
+
+Each parameter in a SETTINGS frame replaces any existing value for that 
+parameter. Parameters are processed in the order in which they appear, and a 
+receiver of a SETTINGS frame does not need to maintain any state other than the 
+current value of its parameters. Therefore, the value of a SETTINGS parameter is 
+the last value that is seen by a receiver.
+
+The SETTINGS frame defines the following flag: 
+
+  REQUEST_ACK (0x1):
+  : When set, bit 0 indicates that this frame contains values which the sender 
+  wants to know were understood and applied. For more information, see 
+  {{settings-synchronization}}.
+  
+The payload of a SETTINGS frame consists of zero or more parameters, each 
+consisting of an unsigned 16-bit setting identifier and a length-prefixed binary 
+value.
+
+~~~~~~~~~~~~~~~
++-------------------------------+-+-------------+---------------+
+|        Identifier (16)        |B|        Length (15)          |
++-------------------------------+-+-------------+---------------+
+|                          Contents (?)                       ...
++---------------------------------------------------------------+
+~~~~~~~~~~~~~~~
+{: #fig-ext-settings title="SETTINGS value format"}
+
+A zero-length content indicates that the setting value is a Boolean given by the 
+B bit. If Length is not zero, the B bit MUST be zero, and MUST be ignored by 
+receivers. The initial value of each setting is "false." 
+
+An implementation MUST ignore the contents for any EXTENDED_SETTINGS identifier 
+it does not understand. 
+
+SETTINGS frames always apply to a connection, never a single stream, and MUST 
+only be sent on the connection control stream (Stream 3). If an endpoint 
+receives an SETTINGS frame whose stream identifier field is anything other than 
+0x0, the endpoint MUST respond with a connection error. 
+
+The SETTINGS frame affects connection state. A badly formed or incomplete 
+SETTINGS frame MUST be treated as a connection error (Section 5.4.1) of type 
+PROTOCOL_ERROR. 
 
 #### Defined SETTINGS Parameters
   
@@ -447,13 +497,12 @@ superseded by QUIC transport parameters in HTTP-over-QUIC. Below is a listing of
 how each HTTP/2 SETTINGS parameter is mapped: 
 
   SETTINGS_HEADER_TABLE_SIZE:
-  : Sent in SETTINGS frame.
+  : An integer with a maximum value of 2^32 - 1.
 
   SETTINGS_ENABLE_PUSH:
-  : Sent in SETTINGS frame (TBD, currently set using QUIC "SPSH" connection
-    option)
+  : A Boolean
 
-  SETTINGS_MAX_CONCURRENT_STREAMS
+  SETTINGS_MAX_CONCURRENT_STREAMS:
   : QUIC requires the maximum number of incoming streams per connection to be
     specified in the initial crypto handshake, using the "MSPC" tag.  Specifying
     SETTINGS_MAX_CONCURRENT_STREAMS in the SETTINGS frame is an error.
@@ -468,14 +517,34 @@ how each HTTP/2 SETTINGS parameter is mapped:
   : This setting has no equivalent in QUIC.  Specifying it in the SETTINGS
     frame is an error.
 
-  SETTINGS_MAX_HEADER_LIST_SIZE
-  : Sent in SETTINGS frame.
+  SETTINGS_MAX_HEADER_LIST_SIZE:
+  : An integer with a maximium value of 2^32 - 1.
 
-As with HTTP/2, unknown SETTINGS parameters are tolerated but ignored. SETTINGS 
-parameters are acknowledged by the receiving peer, by sending an empty SETTINGS 
-frame in response with the ACK bit set.
+#### Settings Synchronization {#settings-synchronization}
 
+Some values in SETTINGS benefit from or require an understanding of when the 
+peer has received and applied the changed parameter values. In order to provide 
+such synchronization timepoints, the recipient of a SETTINGS frame MUST apply 
+the updated parameters as soon as possible upon receipt. The values in the 
+SETTINGS frame MUST be processed in the order they appear, with no other frame 
+processing between values. Unsupported parameters MUST be ignored. 
 
+Once all values have been processed, if the REQUEST_ACK flag was set, the 
+recipient MUST immediately emit a SETTINGS_ACK frame listing the identifiers 
+whose values were understood and applied. (If none of the values were 
+understood, the SETTINGS_ACK frame will be empty, but MUST still be sent.) Upon 
+receiving an SETTINGS_ACK frame, the sender of the altered parameters can rely 
+on the setting having been applied. 
+
+TODO:
+: The above text was written for HTTP/2 -- QUIC has cross-stream timing issues 
+here that need to be solved.
+
+If the sender of a SETTINGS frame with the REQUEST_ACK flag set does not 
+receive an acknowledgement within a reasonable amount of time, it MAY issue a 
+connection error ([RFC7540] Section 5.4.1) of type SETTINGS_TIMEOUT. 
+  
+  
 ### PUSH_PROMISE {#frame-push-promise}
 
 The PUSH_PROMISE frame (type=0x05) is used to carry a request header set from 
@@ -532,6 +601,17 @@ Frame type 0x8 is reserved.
 CONTINUATION frames do not exist, since larger supported HEADERS/PUSH_PROMISE 
 frames provide equivalent functionality. Frame type 0x9 is reserved. 
 
+
+### SETTINGS_ACK Frame {#frame-settings-ack}
+
+The SETTINGS_ACK frame (id = 0x0b) acknowledges receipt and application 
+of specific values in the peer's SETTINGS frame. It contains a list of 
+SETTINGS identifiers which the sender has understood and applied. This 
+list MAY be empty. 
+
+Any SETTINGS_ACK frame whose length is not a multiple of two bytes MUST 
+be treated as a connection error ({{errors}}) of type 
+`FRAME_SIZE_ERROR`.
 
 # Error Handling {#errors}
 
@@ -592,13 +672,18 @@ HTTP/2.
 
 # IANA Considerations
 
-## Frame Types
+## Existing Frame Types
 
 This document adds two new columns to the "HTTP/2 Frame Type" registry defined in
 {{!RFC7540}}:
 
-  Supported in HTTP/QUIC:
-  : Indicates whether the frame is also supported in this HTTP/QUIC mapping
+  Supported Protocols:
+  : Indicates which associated protocols use the frame type.  Values MUST be one
+  of:
+  
+    - "HTTP/2 only"
+    - "HTTP/QUIC only"
+    - "Both"
   
   HTTP/QUIC Specification:
   : Indicates where this frame's behavior over QUIC is defined; required
@@ -606,21 +691,45 @@ This document adds two new columns to the "HTTP/2 Frame Type" registry defined i
   
 Values for existing registrations are assigned by this document:
 
-   +---------------|------------------------|-------------------------+
-   | Frame Type    | Supported in HTTP/QUIC | HTTP/QUIC Specification |
-   |---------------|:----------------------:|-------------------------|
-   | DATA          | No                     | N/A                     |
-   | HEADERS       | Yes                    | {{frame-headers}}       |
-   | PRIORITY      | Yes                    | {{frame-priority}}      |
-   | RST_STREAM    | No                     | N/A                     |
-   | SETTINGS      | Yes                    | {{frame-settings}}      |
-   | PUSH_PROMISE  | Yes                    | {{frame-push-promise}}  |
-   | PING          | No                     | N/A                     |
-   | GOAWAY        | No                     | N/A                     |
-   | WINDOW_UPDATE | No                     | N/A                     |
-   | CONTINUATION  | No                     | N/A                     |
-   +---------------|------------------------|-------------------------+
-   
+  +---------------|---------------------|-------------------------+
+  | Frame Type    | Supported Protocols | HTTP/QUIC Specification |
+  |---------------|:-------------------:|-------------------------|
+  | DATA          | HTTP/2 only         | N/A                     |
+  | HEADERS       | Both                | {{frame-headers}}       |
+  | PRIORITY      | Both                | {{frame-priority}}      |
+  | RST_STREAM    | HTTP/2 only         | N/A                     |
+  | SETTINGS      | Both                | {{frame-settings}}      |
+  | PUSH_PROMISE  | Both                | {{frame-push-promise}}  |
+  | PING          | HTTP/2 only         | N/A                     |
+  | GOAWAY        | HTTP/2 only         | N/A                     |
+  | WINDOW_UPDATE | HTTP/2 only         | N/A                     |
+  | CONTINUATION  | HTTP/2 only         | N/A                     |
+  +---------------|---------------------|-------------------------+
+
+The "Specification" column is renamed to "HTTP/2 specification" and is only
+required if the frame is supported over HTTP/2.
+  
+  
+## New Frame Types
+
+This document adds one new entry to the "HTTP/2 Frame Type" registry defined in
+{{!RFC7540}}:
+
+  Frame Type:
+  : SETTINGS_ACK
+  
+  Code:
+  : 0x0b
+  
+  HTTP/2 Specification:
+  : N/A
+  
+  Supported Protocols:
+  : HTTP/QUIC only
+  
+  HTTP/QUIC Specification:
+  : {{frame-settings-ack}}
+
 --- back
 
 # Contributors
