@@ -442,8 +442,8 @@ also acceptable and proceed with the value it has chosen. (This choice could be
 announced in a field of an extension frame, or in a value in SETTINGS.) 
 
 Different values for the same parameter can be advertised by each peer. For 
-example, a server might support many different signing algorithms, while a 
-resource constrained client has only one or two that it can validate. 
+example, a client might permit a very large HPACK state table while a server 
+chooses to use a small one to conserve memory.
 
 A SETTINGS frame MAY be sent at any time by either endpoint over the lifetime 
 of the connection. 
