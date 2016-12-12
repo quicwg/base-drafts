@@ -474,11 +474,13 @@ consisting of an unsigned 16-bit setting identifier and a length-prefixed binary
 value.
 
 ~~~~~~~~~~~~~~~
-+-------------------------------+-+-------------+---------------+
-|        Identifier (16)        |B|        Length (15)          |
-+-------------------------------+-+-------------+---------------+
-|                          Contents (?)                       ...
-+---------------------------------------------------------------+
+    0                   1                   2                   3
+    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |        Identifier (16)        |B|        Length (15)          |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |                          Contents (?)                       ...
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~~~~~~~~~~~~~
 {: #fig-ext-settings title="SETTINGS value format"}
 
@@ -503,7 +505,8 @@ PROTOCOL_ERROR.
 
 Settings which are integers are transmitted in network byte order.  Leading
 zero octets are permitted, but implementations SHOULD use only as many bytes as
-are needed to represent the value.
+are needed to represent the value.  An integer MUST NOT be represented in more
+bytes than would be used to transfer the maximum permitted value.
 
 #### Defined SETTINGS Parameters
   
