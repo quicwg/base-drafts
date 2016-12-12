@@ -63,6 +63,14 @@ HTTP semantics over QUIC.  Specifically, this document identifies HTTP/2
 features that are subsumed by QUIC, and describes how the other features can be
 implemented atop QUIC.
 
+--- note_Note_to_Readers
+
+Discussion of this draft takes place on the QUIC working group mailing list (quic@ietf.org),
+which is archived at <https://mailarchive.ietf.org/arch/search/?email_list=quic>.
+
+Working Group information can be found at <https://github.com/quicwg>; source code and issues list
+for this draft can be found at <https://github.com/quicwg/base-drafts/labels/http>.
+
 
 --- middle
 
@@ -313,17 +321,13 @@ HTTP/2 framing.
 All frames have the following format:
 
 ~~~~~~~~~~
-     0   1   2   3   4   5   6   7
-   +---+---+---+---+---+---+---+---+
-   |          Length (16)          |
-   |                               |
-   +---+---+---+---+---+---+---+---+
-   |            Type (8)           |  
-   +---+---+---+---+---+---+---+---+
-   |            Flags (8)          |
-   +---+---+---+---+---+---+---+---+
-   |        Frame Payload        ...
-   +---+---+---+---+---+---+---+---+
+    0                   1                   2                   3
+    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |           Length (16)         |     Type (8)  |   Flags (8)   |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |                       Frame Payload (*)                     ...
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~~~~~~~~
 {: title="HTTP/QUIC frame format"}
 
@@ -355,9 +359,11 @@ Padding MUST NOT be used.  The flags defined are:
   : Reserved for HTTP/2 compatibility.
 
 ~~~~~~~~~~
-    +-------------------------------+-------------------------------+
-    |       Sequence? (16)          |    Header Block Fragment (*)...
-    +-------------------------------+-------------------------------+
+    0                   1                   2                   3
+    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |       Sequence? (16)          |    Header Block Fragment (*)...
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~~~~~~~~
 {: title="HEADERS frame payload"}
 
@@ -397,13 +403,15 @@ The flags defined are:
     5.3). 
 
 ~~~~~~~~~~
-    +---------------------------------------------------------------+
-    |                   Prioritized Stream (32)                     |
-    +---------------+-----------------------------------------------+
-    |                    Dependent Stream (32)                      |
-    +---------------+-----------------------------------------------+
-    |   Weight (8)  |
-    +---------------+
+    0                   1                   2                   3
+    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |                   Prioritized Stream (32)                     |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |                    Dependent Stream (32)                      |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |   Weight (8)  |
+   +-+-+-+-+-+-+-+-+
 ~~~~~~~~~~
 {: title="HEADERS frame payload"}
 
@@ -559,11 +567,13 @@ The PUSH_PROMISE frame (type=0x05) is used to carry a request header set from
 server to client, as in HTTP/2.  It defines no flags.
 
 ~~~~~~~~~~
-    +---------------------------------------------------------------+
-    |                   Promised Stream ID (32)                     |
-    +-------------------------------+-------------------------------+
-    |       Sequence? (16)          |         Header Block (*)    ...
-    +-------------------------------+-------------------------------+
+    0                   1                   2                   3
+    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |                   Promised Stream ID (32)                     |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |       Sequence? (16)          |         Header Block (*)    ...
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~~~~~~~~
 {: title="PUSH_PROMISE frame payload"}
 

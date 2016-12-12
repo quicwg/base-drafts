@@ -308,10 +308,8 @@ The fields in the Common Header are the following:
    * 0x02 = PUBLIC_RESET.  Set to indicate that the packet is a Public Reset
      packet.
 
-   * 0x04 = DIVERSIFICATION_NONCE.  Set to indicate the presence of a 32-byte
-     diversification nonce in the header.  (DISCUSS_AND_MODIFY: This flag should
-     be removed along with the Diversification Nonce bits, as discussed further
-     below.)
+   * 0x04 = KEY_PHASE.  This is used by the QUIC packet protection to identify
+     the correct packet protection keys, see {{QUIC-TLS}}.
 
    * 0x08 = CONNECTION_ID.  Indicates the Connection ID is present in the
      packet.  This must be set in all packets until negotiated to a different
