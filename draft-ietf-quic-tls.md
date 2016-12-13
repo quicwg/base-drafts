@@ -346,7 +346,7 @@ protection.  These keys are not exported from the TLS connection for use in
 QUIC.  QUIC packets from the server are sent in the clear until the final
 transition to 1-RTT keys.
 
-The client transitions from cleartest (@C) to 0-RTT keys (@0) when sending 0-RTT
+The client transitions from cleartext (@C) to 0-RTT keys (@0) when sending 0-RTT
 data, and subsequently to to 1-RTT keys (@1) for its second flight of TLS
 handshake messages.  This creates the potential for unprotected packets to be
 received by a server in close proximity to packets that are protected with 1-RTT
