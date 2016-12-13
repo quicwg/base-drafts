@@ -549,20 +549,38 @@ SETTINGS frame MUST be processed in the order they appear, with no other frame
 processing between values. Unsupported parameters MUST be ignored. 
 
 Once all values have been processed, if the REQUEST_ACK flag was set, the 
-recipient MUST immediately emit a SETTINGS_ACK frame listing the identifiers 
-whose values were understood and applied. (If none of the values were 
-understood, the SETTINGS_ACK frame will be empty, but MUST still be sent.) Upon 
-receiving an SETTINGS_ACK frame, the sender of the altered parameters can rely 
-on the setting having been applied. 
+recipient MUST immediately emit the following:
 
-TODO:
-: The above text was written for HTTP/2 -- QUIC has cross-stream timing issues 
-here that need to be solved.
+ - On the connection control stream, a SETTINGS_ACK frame listing the 
+   identifiers whose values were understood and applied. (If none of the values 
+   were understood, the SETTINGS_ACK frame will be empty, but MUST still be
+   sent.) 
 
+ - On each request control stream which is not in the "half-closed (local)" or
+   "closed" state, an empty SETTINGS_ACK frame.
+
+The SETTINGS_ACK frame on the connection control stream contains the highest
+stream number which was open at the time the SETTINGS frame was received.  All
+streams with higher numbers can safely be assumed to have the new settings in
+effect when they open.
+
+For already-open streams, the empty SETTINGS_ACK frame indicates the point at
+which the new settings took effect, if they did so before the peer half-closed
+the stream.  If the peer closed the stream before receiving the SETTINGS frame,
+the previous settings were in effect for the full lifetime of that stream.
+
+In certain conditions, the SETTINGS_ACK frame can be the first frame on a given
+stream -- this simply indicates that the new settings apply from the beginning
+of that stream.
+ 
 If the sender of a SETTINGS frame with the REQUEST_ACK flag set does not 
-receive an acknowledgement within a reasonable amount of time, it MAY issue a 
-connection error ([RFC7540] Section 5.4.1) of type SETTINGS_TIMEOUT. 
-  
+receive full acknowledgement within a reasonable amount of time, it MAY issue a 
+connection error ([RFC7540] Section 5.4.1) of type SETTINGS_TIMEOUT.  A full
+acknowledgement has occurred when a SETTINGS_ACK frame has been received on the
+connection control stream, and all message control streams with a Stream ID
+through those given in the SETTINGS_ACK frame have either closed or had a
+SETTINGS_ACK frame sent.
+
   
 ### PUSH_PROMISE {#frame-push-promise}
 
@@ -626,13 +644,39 @@ frames provide equivalent functionality. Frame type 0x9 is reserved.
 ### SETTINGS_ACK Frame {#frame-settings-ack}
 
 The SETTINGS_ACK frame (id = 0x0b) acknowledges receipt and application 
-of specific values in the peer's SETTINGS frame. It contains a list of 
-SETTINGS identifiers which the sender has understood and applied. This 
-list MAY be empty. 
+of specific values in the peer's SETTINGS frame. Depending on the stream where
+it is sent, it takes two different forms.
 
-Any SETTINGS_ACK frame whose length is not a multiple of two bytes MUST 
-be treated as a connection error ({{errors}}) of type 
-`FRAME_SIZE_ERROR`.
+On the connection control stream, it contains information about how and when the
+sender has processed the most recently-received SETTINGS frame, and has the
+following payload:
+
+~~~~~~~~~~~~~~~
+    0                   1                   2                   3
+    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |                      Highest Local Stream (32)                |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |                      Highest Remote Stream (32)               |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |                    Recognized Identifiers (*)               ...
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~~~~~~~~~~~~~
+{: #fig-settings-ack title="SETTINGS_ACK connection control stream format"}
+
+  Highest Local Stream (32 bits):
+  : The highest locally-initiated Stream ID which is not in the "idle" state
+  
+  Highest Remote Stream (32 bits):
+  : The highest peer-initiated Stream ID which is not in the "idle" state
+
+  Recognized Identifiers:
+  : A list of 16-bit SETTINGS identifiers which the sender has understood and 
+  applied. This list MAY be empty. 
+
+On message control streams, the SETTINGS_ACK frame carries no payload, and is
+strictly a synchronization marker for settings application.  See
+{{settings-synchronization}} for more detail.
 
 # Error Handling {#errors}
 
