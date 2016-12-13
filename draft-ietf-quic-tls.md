@@ -19,7 +19,7 @@ author:
     email: martin.thomson@gmail.com
     role: editor
   -
-    ins: S. Turner, Ed.
+    ins: S. Turner
     name: Sean Turner
     org: sn3rd
     role: editor
