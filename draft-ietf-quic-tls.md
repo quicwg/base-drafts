@@ -204,7 +204,7 @@ when the DH keys are destroyed.
 
 After completing the TLS handshake, the client will have learned and
 authenticated an identity for the server and the server is optionally able to
-learn and authenticate an identity for the server.  TLS supports X.509
+learn and authenticate an identity for the client.  TLS supports X.509
 certificate-based authentication {{?RFC5280}} for both server and client.
 
 The TLS key exchange is resistent to tampering by attackers and it produces
