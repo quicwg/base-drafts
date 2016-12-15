@@ -157,6 +157,11 @@ additional framing. Note that a request or response without a body will cause
 this stream to be half-closed in the corresponding direction without 
 transferring data. 
 
+Pairs of streams must be utilized sequentially, with no gaps.  The data stream
+MUST be reserved with the QUIC implementation when the message control stream
+is opened or reserved, and MUST be closed after transferring the body, or else
+closed immediately after sending the request headers if there is no body.
+
 HTTP does not need to do any separate multiplexing when using QUIC - data sent 
 over a QUIC stream always maps to a particular HTTP transaction. Requests and 
 responses are considered complete when the corresponding QUIC streams are closed 
@@ -177,18 +182,19 @@ HTTP response on the same streams as the request.
 An HTTP message (request or response) consists of:
 
 1. for a response only, zero or more header blocks (a sequence of HEADERS frames 
-with End Header Block set on the last) on the control stream containing the 
-message headers of informational (1xx) HTTP responses (see {{!RFC7230}}, Section 
-3.2 and {{!RFC7231}}, Section 6.2), 
+   with End Header Block set on the last) on the control stream containing the 
+   message headers of informational (1xx) HTTP responses (see {{!RFC7230}},
+   Section 3.2 and {{!RFC7231}}, Section 6.2), 
 
 2. one header block on the control stream containing the message headers (see 
-{{!RFC7230}}, Section 3.2), 
+   {{!RFC7230}}, Section 3.2), 
 
-3. the payload body (see {{!RFC7230}}, Section 3.3), sent on the data stream 
+3. the payload body (see {{!RFC7230}}, Section 3.3), sent on the data stream,
 
 4. optionally, one header block on the control stream containing the 
-trailer-part, if present (see {{!RFC7230}}, Section 4.1.2). 
+   trailer-part, if present (see {{!RFC7230}}, Section 4.1.2). 
 
+The data stream MUST be half-closed immediately after the transfer of the body. 
 If the message does not contain a body, the corresponding data stream MUST still 
 be half-closed without transferring any data. The "chunked" transfer encoding 
 defined in Section 4.1 of {{!RFC7230}} MUST NOT be used. 
@@ -655,11 +661,11 @@ following payload:
     0                   1                   2                   3
     0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |                      Highest Local Stream (32)                |
+   |                   Highest Local Stream (32)                   |
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |                      Highest Remote Stream (32)               |
+   |                   Highest Remote Stream (32)                  |
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |                    Recognized Identifiers (*)               ...
+   |                  Unrecognized Identifiers (*)               ...
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~~~~~~~~~~~~~
 {: #fig-settings-ack title="SETTINGS_ACK connection control stream format"}
@@ -670,9 +676,9 @@ following payload:
   Highest Remote Stream (32 bits):
   : The highest peer-initiated Stream ID which is not in the "idle" state
 
-  Recognized Identifiers:
-  : A list of 16-bit SETTINGS identifiers which the sender has understood and 
-  applied. This list MAY be empty. 
+  Unrecognized Identifiers:
+  : A list of 16-bit SETTINGS identifiers which the sender has not understood
+    and therefore ignored. This list MAY be empty. 
 
 On message control streams, the SETTINGS_ACK frame carries no payload, and is
 strictly a synchronization marker for settings application.  See
