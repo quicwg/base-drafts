@@ -555,12 +555,11 @@ SETTINGS frame MUST be processed in the order they appear, with no other frame
 processing between values. Unsupported parameters MUST be ignored. 
 
 Once all values have been processed, if the REQUEST_ACK flag was set, the 
-recipient MUST immediately emit the following:
+recipient MUST emit the following frames:
 
- - On the connection control stream, a SETTINGS_ACK frame listing the 
-   identifiers whose values were understood and applied. (If none of the values 
-   were understood, the SETTINGS_ACK frame will be empty, but MUST still be
-   sent.) 
+ - On the connection control stream, a SETTINGS_ACK frame 
+   ({{frame-settings-ack}}) listing the identifiers whose values were not 
+   understood.
 
  - On each request control stream which is not in the "half-closed (local)" or
    "closed" state, an empty SETTINGS_ACK frame.
@@ -570,10 +569,11 @@ stream number which was open at the time the SETTINGS frame was received.  All
 streams with higher numbers can safely be assumed to have the new settings in
 effect when they open.
 
-For already-open streams, the empty SETTINGS_ACK frame indicates the point at
-which the new settings took effect, if they did so before the peer half-closed
-the stream.  If the peer closed the stream before receiving the SETTINGS frame,
-the previous settings were in effect for the full lifetime of that stream.
+For already-open streams including the connection control stream, the 
+SETTINGS_ACK frame indicates the point at which the new settings took effect, if 
+they did so before the peer half-closed the stream. If the peer closed the 
+stream before receiving the SETTINGS frame, the previous settings were in effect 
+for the full lifetime of that stream. 
 
 In certain conditions, the SETTINGS_ACK frame can be the first frame on a given
 stream -- this simply indicates that the new settings apply from the beginning
@@ -582,10 +582,14 @@ of that stream.
 If the sender of a SETTINGS frame with the REQUEST_ACK flag set does not 
 receive full acknowledgement within a reasonable amount of time, it MAY issue a 
 connection error ([RFC7540] Section 5.4.1) of type SETTINGS_TIMEOUT.  A full
-acknowledgement has occurred when a SETTINGS_ACK frame has been received on the
-connection control stream, and all message control streams with a Stream ID
-through those given in the SETTINGS_ACK frame have either closed or had a
-SETTINGS_ACK frame sent.
+acknowledgement has occurred when:
+
+ - All previous SETTINGS frames have been fully acknowledged,
+ 
+ - A SETTINGS_ACK frame has been received on the connection control stream,
+
+ - All message control streams with a Stream ID through those given in the
+   SETTINGS_ACK frame have either closed or received a SETTINGS_ACK frame.
 
   
 ### PUSH_PROMISE {#frame-push-promise}
