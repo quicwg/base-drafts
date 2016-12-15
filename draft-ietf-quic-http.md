@@ -157,6 +157,11 @@ additional framing. Note that a request or response without a body will cause
 this stream to be half-closed in the corresponding direction without 
 transferring data. 
 
+Pairs of streams must be utilized sequentially, with no gaps.  The data stream
+MUST be reserved with the QUIC implementation when the message control stream
+is opened or reserved, and MUST be closed after transferring the body, or else
+closed immediately after sending the request headers if there is no body.
+
 HTTP does not need to do any separate multiplexing when using QUIC - data sent 
 over a QUIC stream always maps to a particular HTTP transaction. Requests and 
 responses are considered complete when the corresponding QUIC streams are closed 
@@ -177,18 +182,19 @@ HTTP response on the same streams as the request.
 An HTTP message (request or response) consists of:
 
 1. for a response only, zero or more header blocks (a sequence of HEADERS frames 
-with End Header Block set on the last) on the control stream containing the 
-message headers of informational (1xx) HTTP responses (see {{!RFC7230}}, Section 
-3.2 and {{!RFC7231}}, Section 6.2), 
+   with End Header Block set on the last) on the control stream containing the 
+   message headers of informational (1xx) HTTP responses (see {{!RFC7230}},
+   Section 3.2 and {{!RFC7231}}, Section 6.2), 
 
 2. one header block on the control stream containing the message headers (see 
-{{!RFC7230}}, Section 3.2), 
+   {{!RFC7230}}, Section 3.2), 
 
-3. the payload body (see {{!RFC7230}}, Section 3.3), sent on the data stream 
+3. the payload body (see {{!RFC7230}}, Section 3.3), sent on the data stream,
 
 4. optionally, one header block on the control stream containing the 
-trailer-part, if present (see {{!RFC7230}}, Section 4.1.2). 
+   trailer-part, if present (see {{!RFC7230}}, Section 4.1.2). 
 
+The data stream MUST be half-closed immediately after the transfer of the body. 
 If the message does not contain a body, the corresponding data stream MUST still 
 be half-closed without transferring any data. The "chunked" transfer encoding 
 defined in Section 4.1 of {{!RFC7230}} MUST NOT be used. 
@@ -437,16 +443,76 @@ Frame type 0x3 is reserved.
 
 ### SETTINGS {#frame-settings}
 
-The SETTINGS frame (type=0x04) is unmodified from {{!RFC7540}} (so far). It MUST 
-only be sent on the connection control stream (Stream 3). 
+The SETTINGS frame (type=0x4) conveys configuration parameters that affect how 
+endpoints communicate, such as preferences and constraints on peer behavior, and 
+is substantially different from {{!RFC7540}}. Individually, a SETTINGS parameter 
+can also be referred to as a "setting". 
 
-As in HTTP/2, additional SETTINGS frames may be sent mid-connection by either 
-endpoint. 
+SETTINGS parameters are not negotiated; they describe characteristics of the 
+sending peer, which can be used by the receiving peer. However, a negotiation 
+can be implied by the use of SETTINGS -- a peer uses SETTINGS to advertise a set 
+of supported values. The recipient can then choose which entries from this list 
+are also acceptable and proceed with the value it has chosen. (This choice could 
+be announced in a field of an extension frame, or in its own value in SETTINGS.) 
 
-TODO:
-: Decide whether to acknowledge receipt of SETTINGS through empty SETTINGS
-  frames with ACK bit set, as in HTTP/2, or rely on transport- level
-  acknowledgment.
+Different values for the same parameter can be advertised by each peer. For 
+example, a client might permit a very large HPACK state table while a server 
+chooses to use a small one to conserve memory.
+
+A SETTINGS frame MAY be sent at any time by either endpoint over the lifetime 
+of the connection. 
+
+Each parameter in a SETTINGS frame replaces any existing value for that 
+parameter. Parameters are processed in the order in which they appear, and a 
+receiver of a SETTINGS frame does not need to maintain any state other than the 
+current value of its parameters. Therefore, the value of a SETTINGS parameter is 
+the last value that is seen by a receiver.
+
+The SETTINGS frame defines the following flag: 
+
+  REQUEST_ACK (0x1):
+  : When set, bit 0 indicates that this frame contains values which the sender 
+  wants to know were understood and applied. For more information, see 
+  {{settings-synchronization}}.
+  
+The payload of a SETTINGS frame consists of zero or more parameters, each 
+consisting of an unsigned 16-bit setting identifier and a length-prefixed binary 
+value.
+
+~~~~~~~~~~~~~~~
+    0                   1                   2                   3
+    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |        Identifier (16)        |B|        Length (15)          |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |                          Contents (?)                       ...
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~~~~~~~~~~~~~
+{: #fig-ext-settings title="SETTINGS value format"}
+
+A zero-length content indicates that the setting value is a Boolean given by the 
+B bit. If Length is not zero, the B bit MUST be zero, and MUST be ignored by 
+receivers. The initial value of each setting is "false" unless otherwise
+specified by the definition of the setting.
+
+An implementation MUST ignore the contents for any EXTENDED_SETTINGS identifier 
+it does not understand. 
+
+SETTINGS frames always apply to a connection, never a single stream, and MUST 
+only be sent on the connection control stream (Stream 3). If an endpoint 
+receives an SETTINGS frame whose stream identifier field is anything other than 
+0x0, the endpoint MUST respond with a connection error. 
+
+The SETTINGS frame affects connection state. A badly formed or incomplete 
+SETTINGS frame MUST be treated as a connection error (Section 5.4.1) of type 
+PROTOCOL_ERROR.
+
+#### Integer encoding
+
+Settings which are integers are transmitted in network byte order.  Leading
+zero octets are permitted, but implementations SHOULD use only as many bytes as
+are needed to represent the value.  An integer MUST NOT be represented in more
+bytes than would be used to transfer the maximum permitted value.
 
 #### Defined SETTINGS Parameters
   
@@ -455,13 +521,13 @@ superseded by QUIC transport parameters in HTTP-over-QUIC. Below is a listing of
 how each HTTP/2 SETTINGS parameter is mapped: 
 
   SETTINGS_HEADER_TABLE_SIZE:
-  : Sent in SETTINGS frame.
+  : An integer with a maximum value of 2^32 - 1.
 
   SETTINGS_ENABLE_PUSH:
-  : Sent in SETTINGS frame (TBD, currently set using QUIC "SPSH" connection
-    option)
+  : Transmitted as a Boolean.  The default remains "true" as specified in
+    {{!RFC7540}}.
 
-  SETTINGS_MAX_CONCURRENT_STREAMS
+  SETTINGS_MAX_CONCURRENT_STREAMS:
   : QUIC requires the maximum number of incoming streams per connection to be
     specified in the initial crypto handshake, using the "MSPC" tag.  Specifying
     SETTINGS_MAX_CONCURRENT_STREAMS in the SETTINGS frame is an error.
@@ -476,14 +542,56 @@ how each HTTP/2 SETTINGS parameter is mapped:
   : This setting has no equivalent in QUIC.  Specifying it in the SETTINGS
     frame is an error.
 
-  SETTINGS_MAX_HEADER_LIST_SIZE
-  : Sent in SETTINGS frame.
+  SETTINGS_MAX_HEADER_LIST_SIZE:
+  : An integer with a maximium value of 2^32 - 1.
 
-As with HTTP/2, unknown SETTINGS parameters are tolerated but ignored. SETTINGS 
-parameters are acknowledged by the receiving peer, by sending an empty SETTINGS 
-frame in response with the ACK bit set.
+#### Settings Synchronization {#settings-synchronization}
 
+Some values in SETTINGS benefit from or require an understanding of when the 
+peer has received and applied the changed parameter values. In order to provide 
+such synchronization timepoints, the recipient of a SETTINGS frame MUST apply 
+the updated parameters as soon as possible upon receipt. The values in the 
+SETTINGS frame MUST be processed in the order they appear, with no other frame 
+processing between values. Unsupported parameters MUST be ignored. 
 
+Once all values have been processed, if the REQUEST_ACK flag was set, the 
+recipient MUST emit the following frames:
+
+ - On the connection control stream, a SETTINGS_ACK frame 
+   ({{frame-settings-ack}}) listing the identifiers whose values were not 
+   understood.
+
+ - On each request control stream which is not in the "half-closed (local)" or
+   "closed" state, an empty SETTINGS_ACK frame.
+
+The SETTINGS_ACK frame on the connection control stream contains the highest
+stream number which was open at the time the SETTINGS frame was received.  All
+streams with higher numbers can safely be assumed to have the new settings in
+effect when they open.
+
+For already-open streams including the connection control stream, the 
+SETTINGS_ACK frame indicates the point at which the new settings took effect, if 
+they did so before the peer half-closed the stream. If the peer closed the 
+stream before receiving the SETTINGS frame, the previous settings were in effect 
+for the full lifetime of that stream. 
+
+In certain conditions, the SETTINGS_ACK frame can be the first frame on a given
+stream -- this simply indicates that the new settings apply from the beginning
+of that stream.
+ 
+If the sender of a SETTINGS frame with the REQUEST_ACK flag set does not 
+receive full acknowledgement within a reasonable amount of time, it MAY issue a 
+connection error ([RFC7540] Section 5.4.1) of type SETTINGS_TIMEOUT.  A full
+acknowledgement has occurred when:
+
+ - All previous SETTINGS frames have been fully acknowledged,
+ 
+ - A SETTINGS_ACK frame has been received on the connection control stream,
+
+ - All message control streams with a Stream ID through those given in the
+   SETTINGS_ACK frame have either closed or received a SETTINGS_ACK frame.
+
+  
 ### PUSH_PROMISE {#frame-push-promise}
 
 The PUSH_PROMISE frame (type=0x05) is used to carry a request header set from 
@@ -542,6 +650,43 @@ Frame type 0x8 is reserved.
 CONTINUATION frames do not exist, since larger supported HEADERS/PUSH_PROMISE 
 frames provide equivalent functionality. Frame type 0x9 is reserved. 
 
+
+### SETTINGS_ACK Frame {#frame-settings-ack}
+
+The SETTINGS_ACK frame (id = 0x0b) acknowledges receipt and application 
+of specific values in the peer's SETTINGS frame. Depending on the stream where
+it is sent, it takes two different forms.
+
+On the connection control stream, it contains information about how and when the
+sender has processed the most recently-received SETTINGS frame, and has the
+following payload:
+
+~~~~~~~~~~~~~~~
+    0                   1                   2                   3
+    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |                   Highest Local Stream (32)                   |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |                   Highest Remote Stream (32)                  |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |                  Unrecognized Identifiers (*)               ...
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~~~~~~~~~~~~~
+{: #fig-settings-ack title="SETTINGS_ACK connection control stream format"}
+
+  Highest Local Stream (32 bits):
+  : The highest locally-initiated Stream ID which is not in the "idle" state
+  
+  Highest Remote Stream (32 bits):
+  : The highest peer-initiated Stream ID which is not in the "idle" state
+
+  Unrecognized Identifiers:
+  : A list of 16-bit SETTINGS identifiers which the sender has not understood
+    and therefore ignored. This list MAY be empty. 
+
+On message control streams, the SETTINGS_ACK frame carries no payload, and is
+strictly a synchronization marker for settings application.  See
+{{settings-synchronization}} for more detail.
 
 # Error Handling {#errors}
 
@@ -602,13 +747,18 @@ HTTP/2.
 
 # IANA Considerations
 
-## Frame Types
+## Existing Frame Types
 
 This document adds two new columns to the "HTTP/2 Frame Type" registry defined in
 {{!RFC7540}}:
 
-  Supported in HTTP/QUIC:
-  : Indicates whether the frame is also supported in this HTTP/QUIC mapping
+  Supported Protocols:
+  : Indicates which associated protocols use the frame type.  Values MUST be one
+  of:
+  
+    - "HTTP/2 only"
+    - "HTTP/QUIC only"
+    - "Both"
   
   HTTP/QUIC Specification:
   : Indicates where this frame's behavior over QUIC is defined; required
@@ -616,21 +766,45 @@ This document adds two new columns to the "HTTP/2 Frame Type" registry defined i
   
 Values for existing registrations are assigned by this document:
 
-   +---------------|------------------------|-------------------------+
-   | Frame Type    | Supported in HTTP/QUIC | HTTP/QUIC Specification |
-   |---------------|:----------------------:|-------------------------|
-   | DATA          | No                     | N/A                     |
-   | HEADERS       | Yes                    | {{frame-headers}}       |
-   | PRIORITY      | Yes                    | {{frame-priority}}      |
-   | RST_STREAM    | No                     | N/A                     |
-   | SETTINGS      | Yes                    | {{frame-settings}}      |
-   | PUSH_PROMISE  | Yes                    | {{frame-push-promise}}  |
-   | PING          | No                     | N/A                     |
-   | GOAWAY        | No                     | N/A                     |
-   | WINDOW_UPDATE | No                     | N/A                     |
-   | CONTINUATION  | No                     | N/A                     |
-   +---------------|------------------------|-------------------------+
-   
+  +---------------|---------------------|-------------------------+
+  | Frame Type    | Supported Protocols | HTTP/QUIC Specification |
+  |---------------|:-------------------:|-------------------------|
+  | DATA          | HTTP/2 only         | N/A                     |
+  | HEADERS       | Both                | {{frame-headers}}       |
+  | PRIORITY      | Both                | {{frame-priority}}      |
+  | RST_STREAM    | HTTP/2 only         | N/A                     |
+  | SETTINGS      | Both                | {{frame-settings}}      |
+  | PUSH_PROMISE  | Both                | {{frame-push-promise}}  |
+  | PING          | HTTP/2 only         | N/A                     |
+  | GOAWAY        | HTTP/2 only         | N/A                     |
+  | WINDOW_UPDATE | HTTP/2 only         | N/A                     |
+  | CONTINUATION  | HTTP/2 only         | N/A                     |
+  +---------------|---------------------|-------------------------+
+
+The "Specification" column is renamed to "HTTP/2 specification" and is only
+required if the frame is supported over HTTP/2.
+  
+  
+## New Frame Types
+
+This document adds one new entry to the "HTTP/2 Frame Type" registry defined in
+{{!RFC7540}}:
+
+  Frame Type:
+  : SETTINGS_ACK
+  
+  Code:
+  : 0x0b
+  
+  HTTP/2 Specification:
+  : N/A
+  
+  Supported Protocols:
+  : HTTP/QUIC only
+  
+  HTTP/QUIC Specification:
+  : {{frame-settings-ack}}
+
 --- back
 
 # Contributors
