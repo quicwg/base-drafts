@@ -443,11 +443,11 @@ is substantially different from {{!RFC7540}}. Individually, a SETTINGS parameter
 can also be referred to as a "setting". 
 
 SETTINGS parameters are not negotiated; they describe characteristics of the 
-sending peer, which are used by the receiving peer. However, a negotiation can 
-be implied by the use of SETTINGS -- a peer uses SETTINGS to advertise a set of 
-supported values. The recipient can then choose which entries from this list are 
-also acceptable and proceed with the value it has chosen. (This choice could be 
-announced in a field of an extension frame, or in a value in SETTINGS.) 
+sending peer, which can be used by the receiving peer. However, a negotiation 
+can be implied by the use of SETTINGS -- a peer uses SETTINGS to advertise a set 
+of supported values. The recipient can then choose which entries from this list 
+are also acceptable and proceed with the value it has chosen. (This choice could 
+be announced in a field of an extension frame, or in its own value in SETTINGS.) 
 
 Different values for the same parameter can be advertised by each peer. For 
 example, a client might permit a very large HPACK state table while a server 
