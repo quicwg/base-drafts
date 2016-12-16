@@ -110,10 +110,7 @@ response:
 ## QUIC version hints {#alt-svc-version-hint}
 
 This document defines the "v" parameter for Alt-Svc, which is used to provide
-version-negotiation hints to HTTP/QUIC clients.
-
-In addition, a list of QUIC versions supported by the server can be specified by
-the v= parameter.  Syntax:
+version-negotiation hints to HTTP/QUIC clients. Syntax:
 
     v = quoted-versions
     quoted-versions = DQUOTE *( version-string "," ) version-string DQUOTE
