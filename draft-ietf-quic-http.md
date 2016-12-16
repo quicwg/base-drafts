@@ -97,35 +97,15 @@ defined in {{!RFC2119}}.
 
 # QUIC advertisement
 
-A server advertises that it can speak HTTP/QUIC via the Alt-Svc
-({{!RFC7838}}) HTTP response header, using the ALPN token "hq".
+A server advertises that it can speak HTTP/QUIC via the Alt-Svc ({{!RFC7838}}) 
+HTTP response header, using the ALPN token defined in 
+{{connection-establishment}}. 
 
 Thus, a server could indicate in an HTTP/1.1 or HTTP/2 response that HTTP/QUIC
 was available on UDP port 443 by including the following header in any
 response:
 
-   Alt-Svc: hq=":443"
-
-## Draft version identification
-   
-> **RFC Editor's Note:**  Please remove this section prior to publication of a
-> final version of this document.
-
-Only implementations of the final, published RFC can identify themselves as 
-"hq". Until such an RFC exists, implementations MUST NOT identify themselves 
-using these strings. 
-
-Implementations of draft versions of the protocol MUST add the string "-" and 
-the corresponding draft number to the identifier. For example, 
-draft-ietf-quic-http-01 is identified using the string "hq-01". 
-
-Non-compatible experiments that are based on these draft versions MUST append 
-the string "-" and an experiment name to the identifier. For example, an 
-experimental implementation based on draft-ietf-quic-http-09 which reserves an 
-extra stream for unsolicited transmission of 1980s pop music might identify
-itself as "hq-09-rickroll". Note that any label MUST conform to the "token"
-syntax defined in Section 3.2.6 of [RFC7230]. Experimenters are encouraged to
-coordinate their experiments on the ietf-quic-wg@w3.org mailing list.
+    Alt-Svc: hq=":443"
 
 ## QUIC version hints {#alt-svc-version-hint}
 
@@ -162,16 +142,39 @@ Connectivity problems (e.g. firewall blocking UDP) may result in QUIC connection
 establishment failure, in which case the client should gracefully fall back to
 HTTP/2.
 
-# Connection establishment
+# Connection establishment {#connection-establishment}
 
 HTTP-over-QUIC connections are established as described in {{QUIC-TRANSPORT}}.
-The QUIC crypto handshake MUST use TLS {{QUIC-TLS}}.
+During connection establishment, HTTP/QUIC support is indicated by selecting the
+ALPN token "hq" in the crypto handshake.
 
 While connection-level options pertaining to the core QUIC protocol are set in 
-the initial crypto handshake {{QUIC-TLS}}, HTTP-specific settings are conveyed 
+the initial crypto handshake, HTTP-specific settings are conveyed 
 in the SETTINGS frame. After the QUIC connection is established, a SETTINGS 
 frame ({{frame-settings}}) MUST be sent as the initial frame of the HTTP control
 stream (StreamID 3, see {{stream-mapping}}).
+
+## Draft version identification
+   
+> **RFC Editor's Note:**  Please remove this section prior to publication of a
+> final version of this document.
+
+Only implementations of the final, published RFC can identify themselves as 
+"hq". Until such an RFC exists, implementations MUST NOT identify themselves 
+using these strings. 
+
+Implementations of draft versions of the protocol MUST add the string "-" and 
+the corresponding draft number to the identifier. For example, 
+draft-ietf-quic-http-01 is identified using the string "hq-01". 
+
+Non-compatible experiments that are based on these draft versions MUST append 
+the string "-" and an experiment name to the identifier. For example, an 
+experimental implementation based on draft-ietf-quic-http-09 which reserves an 
+extra stream for unsolicited transmission of 1980s pop music might identify
+itself as "hq-09-rickroll". Note that any label MUST conform to the "token"
+syntax defined in Section 3.2.6 of [RFC7230]. Experimenters are encouraged to
+coordinate their experiments on the ietf-quic-wg@w3.org mailing list.
+
 
 # Stream Mapping and Usage {#stream-mapping}
 
