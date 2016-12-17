@@ -491,7 +491,7 @@ document.
       | Type-field value |     Frame type     |
       +------------------+--------------------+
       | 1FDOOOSS         |  STREAM            |
-      | 01NTLLMM         |  ACK               |
+      | 01NULLMM         |  ACK               |
       | 00000000 (0x00)  |  PADDING           |
       | 00000001 (0x01)  |  RST_STREAM        |
       | 00000010 (0x02)  |  CONNECTION_CLOSE  |
