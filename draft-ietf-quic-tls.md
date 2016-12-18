@@ -1053,12 +1053,6 @@ server can send 0-RTT data until it receives all of the server's handshake
 messages.  A client SHOULD stop sending 0-RTT data if it receives an indication
 that 0-RTT data has been rejected.
 
-A client SHOULD send its EndOfEarlyData message only after it has received all
-of the server's handshake messages.  In other words, a client is encouraged to
-use 0-RTT keys until 1-RTT keys become available.  This prevents stalling of the
-connection when there is packet loss or delay and allows the client to send
-continuously.
-
 A server MUST NOT use 0-RTT keys to protect packets.
 
 
