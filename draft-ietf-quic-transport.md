@@ -96,18 +96,7 @@ informative:
 --- abstract
 
 QUIC is a multiplexed and secure transport protocol that runs on top of UDP.
-QUIC builds on past transport experience, and implements mechanisms that make it
-useful as a modern general-purpose transport protocol.  Using UDP as the basis
-of QUIC is intended to address compatibility issues with legacy clients and
-middleboxes.  QUIC authenticates all of its headers, preventing third parties
-from changing them.  QUIC encrypts most of its headers, thereby limiting
-protocol evolution to QUIC endpoints only.  Therefore, middleboxes, in large
-part, are not required to be updated as new protocol versions are deployed.
-This document describes the core QUIC protocol, including the conceptual design,
-wire format, and mechanisms of the QUIC protocol for connection establishment,
-stream multiplexing, stream and connection-level flow control, and data
-reliability.  Accompanying documents describe QUIC's loss recovery and
-congestion control, and the use of TLS 1.3 for key negotiation.
+
 
 --- note_Note_to_Readers
 
