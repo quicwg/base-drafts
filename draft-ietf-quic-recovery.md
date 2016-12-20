@@ -442,3 +442,13 @@ This document has no IANA actions.  Yet.
 --- back
 
 # Acknowledgments
+
+
+# Change Log
+
+> **RFC Editor's Note:**  Please remove this section prior to publication of a
+> final version of this document.
+
+## Since draft-ietf-quic-recovery-00:
+
+None yet.

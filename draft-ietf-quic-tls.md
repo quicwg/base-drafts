@@ -1246,3 +1246,12 @@ Ryan Hamilton was originally an author of this specification.
 This document has benefited from input from Dragana Damjanovic, Christian
 Huitema, Jana Iyengar, Adam Langley, Roberto Peon, Eric Rescorla, Ian Swett, and
 many others.
+
+# Change Log
+
+> **RFC Editor's Note:**  Please remove this section prior to publication of a
+> final version of this document.
+
+## Since draft-ietf-quic-tls-00:
+
+Too many for me to list effectively; **Martin**, please fill this in.

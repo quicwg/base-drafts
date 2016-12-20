@@ -1934,3 +1934,13 @@ Siddharth Vijayakrishnan, and Assar Westerlund.
 This document has benefited immensely from various private discussions and
 public ones on the quic@ietf.org and proto-quic@chromium.org mailing lists. Our
 thanks to all.
+
+
+# Change Log
+
+> **RFC Editor's Note:**  Please remove this section prior to publication of a
+> final version of this document.
+
+## Since draft-ietf-quic-transport-00:
+
+- Replaced DIVERSIFICATION_NONCE flag with KEY_PHASE flag
