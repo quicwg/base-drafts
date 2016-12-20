@@ -452,3 +452,11 @@ This document has no IANA actions.  Yet.
 ## Since draft-ietf-quic-recovery-00:
 
 None yet.
+
+## Since draft-iyengar-quic-loss-recovery-01:
+
+- Adopted as base for draft-ietf-quic-recovery.
+
+- Updated authors/editors list.
+
+- Added table of contents.

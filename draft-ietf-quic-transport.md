@@ -1944,3 +1944,7 @@ thanks to all.
 ## Since draft-ietf-quic-transport-00:
 
 - Replaced DIVERSIFICATION_NONCE flag with KEY_PHASE flag
+
+- Added IANA Considerations section.
+
+- Moved Contributors and Acknowledgments to appendices.

@@ -1255,3 +1255,13 @@ many others.
 ## Since draft-ietf-quic-tls-00:
 
 Too many for me to list effectively; **Martin**, please fill this in.
+
+## Since draft-thomson-quic-tls-01:
+
+- Adopted as base for draft-ietf-quic-tls.
+
+- Updated authors/editors list.
+
+- Added status note.
+
+- More; **Martin**?

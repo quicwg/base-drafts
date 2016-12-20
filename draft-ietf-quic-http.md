@@ -825,3 +825,9 @@ The original authors of this specification were Robbie Shade and Mike Warres.
 - Adopted SETTINGS format from draft-bishop-httpbis-extended-settings-01
 
 - Reworked SETTINGS_ACK to account for indeterminate inter-stream order.
+
+## Since draft-shade-quic-http2-mapping-00:
+
+- Adopted as base for draft-ietf-quic-http.
+
+- Updated authors/editors list.
