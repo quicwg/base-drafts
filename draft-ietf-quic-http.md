@@ -834,3 +834,19 @@ This document adds one new entry to the "HTTP/2 Frame Type" registry defined in
 # Contributors
 
 The original authors of this specification were Robbie Shade and Mike Warres.
+
+# Change Log
+
+> **RFC Editor's Note:**  Please remove this section prior to publication of a
+> final version of this document.
+
+## Since draft-ietf-quic-http-00:
+
+- Changed "HTTP/2-over-QUIC" to "HTTP/QUIC" throughout
+
+- Changed from using HTTP/2 framing within Stream 3 to new framing format and
+  two-stream-per-request model
+  
+- Adopted SETTINGS format from draft-bishop-httpbis-extended-settings-01
+
+- Reworked SETTINGS_ACK to account for indeterminate inter-stream order.
