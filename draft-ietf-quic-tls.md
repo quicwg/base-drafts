@@ -231,8 +231,7 @@ A simplified TLS 1.3 handshake with 0-RTT application data is shown in
     Client                                             Server
 
     ClientHello
-   (0-RTT Application Data)
-   (end_of_early_data)        -------->
+   (0-RTT Application Data)  -------->
                                                   ServerHello
                                          {EncryptedExtensions}
                                          {ServerConfiguration}
@@ -240,6 +239,7 @@ A simplified TLS 1.3 handshake with 0-RTT application data is shown in
                                            {CertificateVerify}
                                                     {Finished}
                              <--------      [Application Data]
+   (EndOfEarlyData)
    {Finished}                -------->
 
    [Application Data]        <------->      [Application Data]
@@ -315,7 +315,7 @@ ensures that TLS handshake messages are delivered in the correct order.
                                            QUIC Frames <any> @1
                             <--------
 @1 QUIC STREAM Frame(s) <1>:
-     (end_of_early_data)
+     (EndOfEarlyData)
      {Finished}
                             -------->
 
@@ -728,7 +728,7 @@ NewSessionTicket.
 
 The second flight of TLS handshake messages from the client, and any TLS
 handshake messages that are sent after completing the TLS handshake do not need
-special packet protection rules.  This includes the end_of_early_data alert that
+special packet protection rules.  This includes the EndOfEarlyData message that
 is sent by a client to mark the end of its 0-RTT data.  Packets containing these
 messages use the packet protection keys that are current at the time of sending
 (or retransmission).
@@ -1034,9 +1034,8 @@ See {{useless}} for a discussion of these risks.
 
 To avoid receiving TLS packets that contain no useful data, a TLS implementation
 MUST reject empty TLS handshake records and any record that is not permitted by
-the TLS state machine.  Any TLS application data or alerts - other than a single
-end_of_early_data at the appropriate time - that is received prior to the end of
-the handshake MUST be treated as a fatal error.
+the TLS state machine.  Any TLS application data or alerts that is received
+prior to the end of the handshake MUST be treated as a fatal error.
 
 
 ## Use of 0-RTT Keys {#using-early-data}
@@ -1053,12 +1052,6 @@ A client that receives an indication that its 0-RTT data has been accepted by a
 server can send 0-RTT data until it receives all of the server's handshake
 messages.  A client SHOULD stop sending 0-RTT data if it receives an indication
 that 0-RTT data has been rejected.
-
-A client SHOULD send its end_of_early_data alert only after it has received all
-of the server's handshake messages.  In other words, a client is encouraged to
-use 0-RTT keys until 1-RTT keys become available.  This prevents stalling of the
-connection when there is packet loss or delay and allows the client to send
-continuously.
 
 A server MUST NOT use 0-RTT keys to protect packets.
 
