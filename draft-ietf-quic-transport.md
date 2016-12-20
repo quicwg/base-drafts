@@ -1945,6 +1945,12 @@ thanks to all.
 
 - Replaced DIVERSIFICATION_NONCE flag with KEY_PHASE flag
 
+## Since draft-hamilton-quic-transport-protocol-01:
+
+- Adopted as base for draft-ietf-quic-tls.
+
+- Updated authors/editors list.
+
 - Added IANA Considerations section.
 
 - Moved Contributors and Acknowledgments to appendices.
