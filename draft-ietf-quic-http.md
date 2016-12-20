@@ -97,9 +97,9 @@ defined in {{!RFC2119}}.
 
 # QUIC advertisement
 
-A server advertises that it can speak HTTP-over-QUIC via the Alt-Svc HTTP
-response header.  It does so by including the header in any response sent over a
-non-QUIC (e.g. HTTP/2) connection:
+A server advertises that it can speak HTTP/QUIC via the Alt-Svc HTTP response 
+header. It does so by including the header in any response sent over a non-QUIC 
+(e.g. HTTP/2) connection: 
 
    Alt-Svc: quic=":443"
 
@@ -120,8 +120,8 @@ HTTP/2.
 
 # Connection establishment
 
-HTTP-over-QUIC connections are established as described in {{QUIC-TRANSPORT}}.
-The QUIC crypto handshake MUST use TLS {{QUIC-TLS}}.
+HTTP/QUIC connections are established as described in {{QUIC-TRANSPORT}}. The 
+QUIC crypto handshake MUST use TLS {{QUIC-TLS}}. 
 
 While connection-level options pertaining to the core QUIC protocol are set in 
 the initial crypto handshake {{QUIC-TLS}}, HTTP-specific settings are conveyed 
@@ -221,8 +221,8 @@ other reasons.
 
 ### Header Compression 
 
-HTTP-over-QUIC uses HPACK header compression as described in {{!RFC7541}}. HPACK 
-was designed for HTTP/2 with the assumption of in- order delivery such as that 
+HTTP/QUIC uses HPACK header compression as described in {{!RFC7541}}. HPACK was 
+designed for HTTP/2 with the assumption of in- order delivery such as that 
 provided by TCP. A sequence of encoded header blocks must arrive (and be 
 decoded) at an endpoint in the same order in which they were encoded. This 
 ensures that the dynamic state at the two endpoints remains in sync. 
@@ -245,14 +245,13 @@ do we need to retain compatibility with HTTP/2's HPACK?
 
 ## Stream Priorities {#priority}
 
-HTTP-over-QUIC uses the priority scheme described in {{!RFC7540}} Section 5.3. 
-In this priority scheme, a given stream can be designated as dependent upon 
-another stream, which expresses the preference that the latter stream (the 
-"parent" stream) be allocated resources before the former stream (the 
-"dependent" stream). Taken together, the dependencies across all streams in a 
-connection form a dependency tree. The structure of the dependency tree changes 
-as HEADERS and PRIORITY frames add, remove, or change the dependency links 
-between streams.
+HTTP/QUIC uses the priority scheme described in {{!RFC7540}} Section 5.3. In 
+this priority scheme, a given stream can be designated as dependent upon another 
+stream, which expresses the preference that the latter stream (the "parent" 
+stream) be allocated resources before the former stream (the "dependent" 
+stream). Taken together, the dependencies across all streams in a connection 
+form a dependency tree. The structure of the dependency tree changes as HEADERS 
+and PRIORITY frames add, remove, or change the dependency links between streams. 
 
 Implicit in this scheme is the notion of in-order delivery of priority changes 
 (i.e., dependency tree mutations): since operations on the dependency tree such 
@@ -260,7 +259,7 @@ as reparenting a subtree are not commutative, both sender and receiver must
 apply them in the same order to ensure that both sides have a consistent view of 
 the stream dependency tree. HTTP/2 specifies priority assignments in PRIORITY 
 frames and (optionally) in HEADERS frames. To achieve in-order delivery of 
-priority changes in HTTP-over-QUIC, PRIORITY frames are sent on the connection 
+priority changes in HTTP/QUIC, PRIORITY frames are sent on the connection 
 control stream and the PRIORITY section is removed from the HEADERS frame. The 
 semantics of the Stream Dependency, Weight, E flag, and (for HEADERS frames) 
 PRIORITY flag are the same as in HTTP/2. 
@@ -280,9 +279,9 @@ HTTP level.
 
 ## Server Push
 
-HTTP-over-QUIC supports server push as described in {{!RFC7540}}. During 
-connection establishment, the client indicates whether it is willing to receive 
-server pushes via the SETTINGS_ENABLE_PUSH setting in the SETTINGS frame (see 
+HTTP/QUIC supports server push as described in {{!RFC7540}}. During connection 
+establishment, the client indicates whether it is willing to receive server 
+pushes via the SETTINGS_ENABLE_PUSH setting in the SETTINGS frame (see 
 {{connection-establishment}}), which defaults to 1 (true). 
 
 As with server push for HTTP/2, the server initiates a server push by sending a 
@@ -517,8 +516,8 @@ bytes than would be used to transfer the maximum permitted value.
 #### Defined SETTINGS Parameters
   
 Some transport-level options that HTTP/2 specifies via the SETTINGS frame are 
-superseded by QUIC transport parameters in HTTP-over-QUIC. Below is a listing of 
-how each HTTP/2 SETTINGS parameter is mapped: 
+superseded by QUIC transport parameters in HTTP/QUIC. Below is a listing of how 
+each HTTP/2 SETTINGS parameter is mapped: 
 
   SETTINGS_HEADER_TABLE_SIZE:
   : An integer with a maximum value of 2^32 - 1.
