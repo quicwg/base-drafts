@@ -170,7 +170,7 @@ experimental implementation based on draft-ietf-quic-http-09 which reserves an
 extra stream for unsolicited transmission of 1980s pop music might identify
 itself as "hq-09-rickroll". Note that any label MUST conform to the "token"
 syntax defined in Section 3.2.6 of [RFC7230]. Experimenters are encouraged to
-coordinate their experiments on the ietf-quic-wg@w3.org mailing list.
+coordinate their experiments on the quic@ietf.org mailing list.
 
 
 # Stream Mapping and Usage {#stream-mapping}
