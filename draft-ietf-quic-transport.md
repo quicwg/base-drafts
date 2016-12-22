@@ -1674,10 +1674,6 @@ QUIC_OVERLAPPING_STREAM_DATA (0x57):
 QUIC_UNENCRYPTED_STREAM_DATA (0x3d):
 : Received STREAM frame data is not encrypted.
 
-QUIC_ATTEMPT_TO_SEND_UNENCRYPTED_STREAM_DATA (0x58):
-: Attempt to send unencrypted STREAM frame. Not sent on the wire, used for local 
-  logging. 
-
 QUIC_MAYBE_CORRUPTED_MEMORY (0x59):
 : Received a frame which is likely the result of memory corruption.
 
@@ -1762,12 +1758,6 @@ QUIC_ERROR_MIGRATING_ADDRESS (0x1a):
 QUIC_ERROR_MIGRATING_PORT (0x56):
 : There was an error encountered migrating port only.
 
-QUIC_PACKET_WRITE_ERROR (0x1b):
-: There was an error while writing to the socket.
-
-QUIC_PACKET_READ_ERROR (0x33):
-: There was an error while reading from the socket.
-
 QUIC_EMPTY_STREAM_FRAME_NO_FIN (0x32):
 : We received a STREAM_FRAME with no data and no fin flag set.
 
@@ -1803,9 +1793,6 @@ QUIC_PUBLIC_RESETS_POST_HANDSHAKE (0x49):
 
 QUIC_TIMEOUTS_WITH_OPEN_STREAMS (0x4a):
 : Disabled QUIC because of too many timeouts with streams open.
-
-QUIC_FAILED_TO_SERIALIZE_PACKET (0x4b):
-: Closed because we failed to serialize a packet.
 
 QUIC_TOO_MANY_RTOS (0x55):
 : QUIC timed out after too many RTOs.
@@ -1896,27 +1883,9 @@ QUIC_VERSION_NEGOTIATION_MISMATCH (0x37):
 QUIC_IP_ADDRESS_CHANGED (0x50):
 : IP address changed causing connection close.
 
-QUIC_CONNECTION_MIGRATION_NO_MIGRATABLE_STREAMS (0x51):
-: Connection migration errors. Network changed, but connection had no migratable
-  streams.
-
-QUIC_CONNECTION_MIGRATION_TOO_MANY_CHANGES (0x52):
-: Connection changed networks too many times.
-
-QUIC_CONNECTION_MIGRATION_NO_NEW_NETWORK (0x53):
-: Connection migration was attempted, but there was no new network to migrate
-  to.
-
-QUIC_CONNECTION_MIGRATION_NON_MIGRATABLE_STREAM (0x54):
-: Network changed, but connection had one or more non-migratable streams.
-
 QUIC_TOO_MANY_FRAME_GAPS (0x5d):
 : Stream frames arrived too discontiguously so that stream sequencer buffer
   maintains too many gaps.
-
-QUIC_STREAM_SEQUENCER_INVALID_STATE (0x5f):
-: Sequencer buffer gets into weird state where continuing read/write will lead
-  to crash.
 
 QUIC_TOO_MANY_SESSIONS_ON_SERVER (0x60):
 : Connection closed because server hit max number of sessions allowed. 
