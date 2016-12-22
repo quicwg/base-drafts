@@ -1772,9 +1772,6 @@ QUIC_ERROR_MIGRATING_PORT (0x56):
 QUIC_EMPTY_STREAM_FRAME_NO_FIN (0x32):
 : We received a STREAM_FRAME with no data and no fin flag set.
 
-QUIC_INVALID_HEADERS_STREAM_DATA (0x38):
-: We received invalid data on the headers stream.
-
 QUIC_FLOW_CONTROL_RECEIVED_TOO_MUCH_DATA (0x3b):
 : The peer received too much data, violating flow control.
 
@@ -1794,7 +1791,7 @@ QUIC_TOO_MANY_OUTSTANDING_RECEIVED_PACKETS (0x45):
 : The connection has too many outstanding received packets.
 
 QUIC_CONNECTION_CANCELLED (0x46):
-: The quic connection has been cancelled.
+: The QUIC connection has been cancelled.
 
 QUIC_BAD_PACKET_LOSS_RATE (0x47):
 : Disabled QUIC because of high packet loss rate.

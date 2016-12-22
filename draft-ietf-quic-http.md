@@ -363,6 +363,9 @@ Padding MUST NOT be used.  The flags defined are:
   Reserved (0x20):
   : Reserved for HTTP/2 compatibility.
 
+A HEADERS frame with the Reserved bits set MUST be treated as a connection error
+of type HTTP_MALFORMED_HEADERS.
+  
 ~~~~~~~~~~
     0                   1                   2                   3
     0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
@@ -381,9 +384,9 @@ The HEADERS frame payload has the following fields:
 
 The next frame on the same stream after a HEADERS frame without the EHB flag set 
 MUST be another HEADERS frame. A receiver MUST treat the receipt of any other 
-type of frame as a stream error. (Note that QUIC can intersperse data from other 
-streams between frames, or even during transmission of frames, so multiplexing 
-is not blocked by this requirement.) 
+type of frame as a stream error of type HTTP_INTERRUPTED_HEADERS. (Note that
+QUIC can intersperse data from other streams between frames, or even during
+transmission of frames, so multiplexing is not blocked by this requirement.) 
 
 A full header block is contained in a sequence of zero or more HEADERS frames 
 without EHB set, followed by a HEADERS frame with EHB set. 
@@ -434,6 +437,10 @@ The HEADERS frame payload has the following fields:
   : An unsigned 8-bit integer representing a priority weight for the 
   stream (see {{!RFC7540}} Section 5.3). Add one to the value to obtain a 
   weight between 1 and 256.
+
+A PRIORITY frame MUST have a payload length of nine octets.  A PRIORITY frame
+of any other length MUST be treated as a connection error of type
+HTTP_MALFORMED_PRIORITY.
 
 ### RST_STREAM
 
@@ -505,11 +512,12 @@ it does not understand.
 SETTINGS frames always apply to a connection, never a single stream, and MUST 
 only be sent on the connection control stream (Stream 3). If an endpoint 
 receives an SETTINGS frame whose stream identifier field is anything other than 
-0x0, the endpoint MUST respond with a connection error. 
+0x0, the endpoint MUST respond with a connection error of type
+HTTP_SETTINGS_ON_WRONG_STREAM.
 
 The SETTINGS frame affects connection state. A badly formed or incomplete 
 SETTINGS frame MUST be treated as a connection error (Section 5.4.1) of type 
-PROTOCOL_ERROR.
+HTTP_MALFORMED_SETTINGS.
 
 #### Integer encoding
 
@@ -585,7 +593,7 @@ of that stream.
  
 If the sender of a SETTINGS frame with the REQUEST_ACK flag set does not 
 receive full acknowledgement within a reasonable amount of time, it MAY issue a 
-connection error ([RFC7540] Section 5.4.1) of type SETTINGS_TIMEOUT.  A full
+connection error ({{errors}}) of type HTTP_SETTINGS_TIMEOUT.  A full
 acknowledgement has occurred when:
 
  - All previous SETTINGS frames have been fully acknowledged,
@@ -630,6 +638,7 @@ TODOs:
  - QUIC stream space may be enlarged; would need to redefine Promised Stream
    field in this case. 
  - No CONTINUATION -- HEADERS have EHB; do we need it here?
+
 
 ### PING
 
@@ -690,55 +699,132 @@ following payload:
 
 On message control streams, the SETTINGS_ACK frame carries no payload, and is
 strictly a synchronization marker for settings application.  See
-{{settings-synchronization}} for more detail.
+{{settings-synchronization}} for more detail.  A SETTINGS_ACK frame with a
+non-zero length MUST be treated as a connection error of type
+HTTP_MALFORMED_SETTINGS_ACK.
+
+On the connection control stream, the SETTINGS_ACK frame MUST have a length 
+which is a multiple of two octets. A SETTINGS_ACK frame of any other length MUST 
+be treated as a connection error of type HTTP_MALFORMED_SETTINGS_ACK. 
+
 
 # Error Handling {#errors}
+
+This section describes the specific error codes defined by HTTP and the mapping
+of HTTP/2 error codes into the QUIC error code space.
+
+## HTTP-Defined QUIC Error Codes {#http-error-codes}
+
+QUIC allocates error codes 0xB000-0xFFFF to application protocol definition.
+The following error codes are defined by HTTP for use in QUIC RST_STREAM,
+GOAWAY, and CONNECTION_CLOSE frames.
+
+HTTP_SETTINGS_TIMEOUT (0xB000):
+: After sending a SETTINGS frame which requested acknowledgement, the
+  acknowledgement was not completed (see {{settings-synchronization}}) in a
+  timely manner.
+  
+HTTP_PUSH_REFUSED (0xB001):
+: The server has attempted to push content which the client will not accept
+  on this connection.
+
+HTTP_INTERNAL_ERROR (0xB002):
+: An internal error has occurred in the HTTP stack.
+
+HTTP_PUSH_ALREADY_IN_CACHE (0xB003):
+: The server has attempted to push content which the client has cached.
+
+HTTP_REQUEST_CANCELLED (0xB004):
+: The client no longer needs the requested data.
+
+HTTP_HPACK_DECOMPRESSION_FAILED (0xB005):
+: HPACK failed to decompress a frame and cannot continue.
+
+HTTP_CONNECT_ERROR (0xB006):
+: The connection established in response to a CONNECT request was reset or
+  abnormally closed.
+  
+HTTP_EXCESSIVE_LOAD (0xB007):
+: The endpoint detected that its peer is exhibiting a behavior that might be
+  generating excessive load.
+
+HTTP_VERSION_FALLBACK (0xB008):
+: The requested operation cannot be served over HTTP/QUIC.  The peer should
+  retry over HTTP/2.
+
+HTTP_MALFORMED_HEADERS (0xB009):
+: A HEADERS frame has been received with an invalid format.
+
+HTTP_MALFORMED_PRIORITY (0xB00A):
+: A HEADERS frame has been received with an invalid format.
+
+HTTP_MALFORMED_SETTINGS (0xB00B):
+: A HEADERS frame has been received with an invalid format.
+
+HTTP_MALFORMED_PUSH_PROMISE (0xB00C):
+: A HEADERS frame has been received with an invalid format.
+
+HTTP_MALFORMED_SETTINGS_ACK (0xB00D):
+: A HEADERS frame has been received with an invalid format.
+
+HTTP_INTERRUPTED_HEADERS (0xB00E):
+: A HEADERS frame without the End Header Block flag was followed by a frame
+  other than HEADERS.
+  
+HTTP_SETTINGS_ON_WRONG_STREAM (0xB00F):
+: A SETTINGS frame was received on a request control stream.
+  
+## Mapping HTTP/2 Error Codes
 
 The HTTP/2 error codes defined in Section 7 of {{!RFC7540}} map to QUIC error
 codes as follows:
 
 NO_ERROR (0x0):
-: Maps to QUIC_NO_ERROR
+: QUIC_NO_ERROR
 
 PROTOCOL_ERROR (0x1):
-: No single mapping?
+: No single mapping.  See new HTTP_MALFORMED_* error codes defined in
+  {{http-error-codes}}.
 
 INTERNAL_ERROR (0x2)
-: QUIC_INTERNAL_ERROR? (not currently defined in core protocol spec)
+: HTTP_INTERNAL_ERROR in {{http-error-codes}}.
 
 FLOW_CONTROL_ERROR (0x3):
-: QUIC_FLOW_CONTROL_RECEIVED_TOO_MUCH_DATA? (not currently defined in core
-  protocol spec)
+: Not applicable, since QUIC handles flow control.  Would provoke a
+  QUIC_FLOW_CONTROL_RECEIVED_TOO_MUCH_DATA from the QUIC layer.
 
 SETTINGS_TIMEOUT (0x4):
-: (depends on whether we support SETTINGS acks)
+: HTTP_SETTINGS_TIMEOUT in {{http-error-codes}}.
 
 STREAM_CLOSED (0x5):
-: QUIC_STREAM_DATA_AFTER_TERMINATION
+: Not applicable, since QUIC handles stream management.  Would provoke a
+  QUIC_STREAM_DATA_AFTER_TERMINATION from the QUIC layer.
 
 FRAME_SIZE_ERROR (0x6)
-: QUIC_INVALID_FRAME_DATA
+: No single mapping.  See new error codes defined in {{http-error-codes}}.
 
 REFUSED_STREAM (0x7):
-: ?
+: Not applicable, since QUIC handles stream management.  Would provoke a
+  QUIC_TOO_MANY_OPEN_STREAMS from the QUIC layer.
 
 CANCEL (0x8):
-: ?
+: HTTP_REQUEST_CANCELLED in {{http-error-codes}}.
 
 COMPRESSION_ERROR (0x9):
-: QUIC_DECOMPRESSION_FAILURE (not currently defined in core spec)
+: HTTP_HPACK_DECOMPRESSION_FAILEDin {{http-error-codes}}.
 
 CONNECT_ERROR (0xa):
-: ? (depends whether we decide to support CONNECT)
+: HTTP_CONNECT_ERROR in {{http-error-codes}}.
 
 ENHANCE_YOUR_CALM (0xb):
-: ?
+: HTTP_EXCESSIVE_LOAD in {{http-error-codes}}.
 
 INADEQUATE_SECURITY (0xc):
-: QUIC_HANDSHAKE_FAILED, QUIC_CRYPTO_NO_SUPPORT
+: Not applicable, since QUIC is assumed to provide sufficient security on all
+  connections.
 
 HTTP_1_1_REQUIRED (0xd):
-: ?
+: HTTP_VERSION_FALLBACK in {{http-error-codes}}.
 
 TODO: fill in missing error code mappings.
 
