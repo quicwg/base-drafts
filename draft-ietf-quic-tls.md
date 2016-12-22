@@ -1254,7 +1254,13 @@ many others.
 
 ## Since draft-ietf-quic-tls-00:
 
-Too many for me to list effectively; **Martin**, please fill this in.
+- Changed bit used to signal key phase.
+
+- Updated key phase markings during the handshake.
+
+- Added TLS interface requirements section.
+
+- Moved to use of TLS exporters for key derivation.
 
 ## Since draft-thomson-quic-tls-01:
 
@@ -1263,5 +1269,3 @@ Too many for me to list effectively; **Martin**, please fill this in.
 - Updated authors/editors list.
 
 - Added status note.
-
-- More; **Martin**?
