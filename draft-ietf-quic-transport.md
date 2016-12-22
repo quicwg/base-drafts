@@ -1644,241 +1644,277 @@ CONNECTION_CLOSE frame.  TODO: Trim list and group errors for readabiity.
 
 TODO: Discuss error handling beyond just listing error codes.
 
-* 0x01: QUIC_INTERNAL_ERROR.  (Connection has reached an invalid state.)
+QUIC_INTERNAL_ERROR (0x01):
+: Connection has reached an invalid state.
 
-* 0x02: QUIC_STREAM_DATA_AFTER_TERMINATION.  (There were data frames after the a
-  fin or reset.)
+QUIC_STREAM_DATA_AFTER_TERMINATION (0x02):
+: There were data frames after the a fin or reset.
 
-* 0x03: QUIC_INVALID_PACKET_HEADER.  (Control frame is malformed.)
+QUIC_INVALID_PACKET_HEADER (0x03):
+: Control frame is malformed.
 
-* 0x04: QUIC_INVALID_FRAME_DATA.  (Frame data is malformed.)
+QUIC_INVALID_FRAME_DATA (0x04):
+: Frame data is malformed.
 
-* 0x30: QUIC_MISSING_PAYLOAD.  (The packet contained no payload.)
+QUIC_MISSING_PAYLOAD (0x30):
+: The packet contained no payload.
 
-* 0x2e: QUIC_INVALID_STREAM_DATA.  (STREAM frame data is malformed.)
+QUIC_INVALID_STREAM_DATA (0x2e):
+: STREAM frame data is malformed.
 
-* 0x57: QUIC_OVERLAPPING_STREAM_DATA.  (STREAM frame data overlaps with buffered
-  data.)
+QUIC_OVERLAPPING_STREAM_DATA (0x57):
+: STREAM frame data overlaps with buffered data.
 
-* 0x3d: QUIC_UNENCRYPTED_STREAM_DATA.  (Received STREAM frame data is not
-  encrypted.)
+QUIC_UNENCRYPTED_STREAM_DATA (0x3d):
+: Received STREAM frame data is not encrypted.
 
-* 0x58: QUIC_ATTEMPT_TO_SEND_UNENCRYPTED_STREAM_DATA.  (Attempt to send
-  unencrypted STREAM frame.  Not sent on the wire, used for local logging.)
+QUIC_ATTEMPT_TO_SEND_UNENCRYPTED_STREAM_DATA (0x58):
+: Attempt to send unencrypted STREAM frame. Not sent on the wire, used for local 
+  logging. 
 
-* 0x59: QUIC_MAYBE_CORRUPTED_MEMORY.  (Received a frame which is likely the
-  result of memory corruption.)
+QUIC_MAYBE_CORRUPTED_MEMORY (0x59):
+: Received a frame which is likely the result of memory corruption.
 
-* 0x06: QUIC_INVALID_RST_STREAM_DATA.  (RST_STREAM frame data is malformed.)
+QUIC_INVALID_RST_STREAM_DATA (0x06):
+: RST_STREAM frame data is malformed.
 
-* 0x07: QUIC_INVALID_CONNECTION_CLOSE_DATA.  (CONNECTION_CLOSE frame data is
-  malformed.)
+QUIC_INVALID_CONNECTION_CLOSE_DATA (0x07):
+: CONNECTION_CLOSE frame data is malformed.
 
-* 0x08: QUIC_INVALID_GOAWAY_DATA.  (GOAWAY frame data is malformed.)
+QUIC_INVALID_GOAWAY_DATA (0x08):
+: GOAWAY frame data is malformed.
 
-* 0x39: QUIC_INVALID_WINDOW_UPDATE_DATA.  (WINDOW_UPDATE frame data is
-  malformed.)
+QUIC_INVALID_WINDOW_UPDATE_DATA (0x39):
+: WINDOW_UPDATE frame data is malformed.
 
-* 0x3a: QUIC_INVALID_BLOCKED_DATA.  (BLOCKED frame data is malformed.)
+QUIC_INVALID_BLOCKED_DATA (0x3a):
+: BLOCKED frame data is malformed.
 
-* 0x3c: QUIC_INVALID_STOP_WAITING_DATA.  (STOP_WAITING frame data is malformed.)
+QUIC_INVALID_STOP_WAITING_DATA (0x3c):
+: STOP_WAITING frame data is malformed.
 
-* 0x4e: QUIC_INVALID_PATH_CLOSE_DATA.  (PATH_CLOSE frame data is malformed.)
+QUIC_INVALID_PATH_CLOSE_DATA (0x4e):
+: PATH_CLOSE frame data is malformed.
 
-* 0x09: QUIC_INVALID_ACK_DATA.  (ACK frame data is malformed.)
+QUIC_INVALID_ACK_DATA (0x09):
+: ACK frame data is malformed.
 
-* 0x0a: QUIC_INVALID_VERSION_NEGOTIATION_PACKET.  (Version negotiation packet is
-  malformed.)
+QUIC_INVALID_VERSION_NEGOTIATION_PACKET (0x0a):
+: Version negotiation packet is malformed.
 
-* 0x0b: QUIC_INVALID_PUBLIC_RST_PACKET.  (Public RST packet is malformed.)
+QUIC_INVALID_PUBLIC_RST_PACKET (0x0b):
+: Public RST packet is malformed.
 
-* 0x0c: QUIC_DECRYPTION_FAILURE.  (There was an error decrypting.)
+QUIC_DECRYPTION_FAILURE (0x0c):
+: There was an error decrypting.
 
-* 0x0d: QUIC_ENCRYPTION_FAILURE.  (There was an error encrypting.)
+QUIC_ENCRYPTION_FAILURE (0x0d):
+: There was an error encrypting.
 
-* 0x0e: QUIC_PACKET_TOO_LARGE.  (The packet exceeded kMaxPacketSize.)
+QUIC_PACKET_TOO_LARGE (0x0e):
+: The packet exceeded kMaxPacketSize.
 
-* 0x10: QUIC_PEER_GOING_AWAY.  (The peer is going away.  May be a client or
-  server.)
+QUIC_PEER_GOING_AWAY (0x10):
+: The peer is going away. May be a client or server.
 
-* 0x11: QUIC_INVALID_STREAM_ID.  (A stream ID was invalid.)
+QUIC_INVALID_STREAM_ID (0x11):
+: A stream ID was invalid.
 
-* 0x31: QUIC_INVALID_PRIORITY.  (A priority was invalid.)
+QUIC_INVALID_PRIORITY (0x31):
+: A priority was invalid.
 
-* 0x12: QUIC_TOO_MANY_OPEN_STREAMS.  (Too many streams already open.)
+QUIC_TOO_MANY_OPEN_STREAMS (0x12):
+: Too many streams already open.
 
-* 0x4c: QUIC_TOO_MANY_AVAILABLE_STREAMS.  (The peer created too many available
-  streams.)
+QUIC_TOO_MANY_AVAILABLE_STREAMS (0x4c):
+: The peer created too many available streams.
 
-* 0x13: QUIC_PUBLIC_RESET.  (Received public reset for this connection.)
+QUIC_PUBLIC_RESET (0x13):
+: Received public reset for this connection.
 
-* 0x14: QUIC_INVALID_VERSION.  (Invalid protocol version.)
+QUIC_INVALID_VERSION (0x14):
+: Invalid protocol version.
 
-* 0x16: QUIC_INVALID_HEADER_ID.  (The Header ID for a stream was too far from
-  the previous.)
+QUIC_INVALID_HEADER_ID (0x16):
+: The Header ID for a stream was too far from the previous.
 
-* 0x17: QUIC_INVALID_NEGOTIATED_VALUE.  (Negotiable parameter received during
-  handshake had invalid value.)
+QUIC_INVALID_NEGOTIATED_VALUE (0x17):
+: Negotiable parameter received during handshake had invalid value.
 
-* 0x18: QUIC_DECOMPRESSION_FAILURE.  (There was an error decompressing data.)
+QUIC_DECOMPRESSION_FAILURE (0x18):
+: There was an error decompressing data.
 
-* 0x19: QUIC_NETWORK_IDLE_TIMEOUT.  (The connection timed out due to no network
-  activity.)
+QUIC_NETWORK_IDLE_TIMEOUT (0x19):
+: The connection timed out due to no network activity.
 
-* 0x43: QUIC_HANDSHAKE_TIMEOUT.  (The connection timed out waiting for the
-  handshake to complete.)
+QUIC_HANDSHAKE_TIMEOUT (0x43):
+: The connection timed out waiting for the handshake to complete.
 
-* 0x1a: QUIC_ERROR_MIGRATING_ADDRESS.  (There was an error encountered migrating
-  addresses.)
+QUIC_ERROR_MIGRATING_ADDRESS (0x1a):
+: There was an error encountered migrating addresses.
 
-* 0x56: QUIC_ERROR_MIGRATING_PORT.  (There was an error encountered migrating
-  port only.)
+QUIC_ERROR_MIGRATING_PORT (0x56):
+: There was an error encountered migrating port only.
 
-* 0x1b: QUIC_PACKET_WRITE_ERROR.  (There was an error while writing to the
-  socket.)
+QUIC_PACKET_WRITE_ERROR (0x1b):
+: There was an error while writing to the socket.
 
-* 0x33: QUIC_PACKET_READ_ERROR.  (There was an error while reading from the
-  socket.)
+QUIC_PACKET_READ_ERROR (0x33):
+: There was an error while reading from the socket.
 
-* 0x32: QUIC_EMPTY_STREAM_FRAME_NO_FIN.  (We received a STREAM_FRAME with no
-  data and no fin flag set.)
+QUIC_EMPTY_STREAM_FRAME_NO_FIN (0x32):
+: We received a STREAM_FRAME with no data and no fin flag set.
 
-* 0x38: QUIC_INVALID_HEADERS_STREAM_DATA.  (We received invalid data on the
-  headers stream.)
+QUIC_INVALID_HEADERS_STREAM_DATA (0x38):
+: We received invalid data on the headers stream.
 
-* 0x3b: QUIC_FLOW_CONTROL_RECEIVED_TOO_MUCH_DATA.  (The peer received too much
-  data, violating flow control.)
+QUIC_FLOW_CONTROL_RECEIVED_TOO_MUCH_DATA (0x3b):
+: The peer received too much data, violating flow control.
 
-* 0x3f: QUIC_FLOW_CONTROL_SENT_TOO_MUCH_DATA.  (The peer sent too much data,
-  violating flow control.)
+QUIC_FLOW_CONTROL_SENT_TOO_MUCH_DATA (0x3f):
+: The peer sent too much data, violating flow control.
 
-* 0x40: QUIC_FLOW_CONTROL_INVALID_WINDOW.  (The peer received an invalid flow
-  control window.)
+QUIC_FLOW_CONTROL_INVALID_WINDOW (0x40):
+: The peer received an invalid flow control window.
 
-* 0x3e: QUIC_CONNECTION_IP_POOLED.  (The connection has been IP pooled into an
-  existing connection.)
+QUIC_CONNECTION_IP_POOLED (0x3e):
+: The connection has been IP pooled into an existing connection.
 
-* 0x44: QUIC_TOO_MANY_OUTSTANDING_SENT_PACKETS.  (The connection has too many
-  outstanding sent packets.)
+QUIC_TOO_MANY_OUTSTANDING_SENT_PACKETS (0x44):
+: The connection has too many outstanding sent packets.
 
-* 0x45: QUIC_TOO_MANY_OUTSTANDING_RECEIVED_PACKETS.  (The connection has too
-  many outstanding received packets.)
+QUIC_TOO_MANY_OUTSTANDING_RECEIVED_PACKETS (0x45):
+: The connection has too many outstanding received packets.
 
-* 0x46: QUIC_CONNECTION_CANCELLED.  (The quic connection has been cancelled.)
+QUIC_CONNECTION_CANCELLED (0x46):
+: The quic connection has been cancelled.
 
-* 0x47: QUIC_BAD_PACKET_LOSS_RATE.  (Disabled QUIC because of high packet loss
-  rate.)
+QUIC_BAD_PACKET_LOSS_RATE (0x47):
+: Disabled QUIC because of high packet loss rate.
 
-* 0x49: QUIC_PUBLIC_RESETS_POST_HANDSHAKE.  (Disabled QUIC because of too many
-  PUBLIC_RESETs post handshake.)
+QUIC_PUBLIC_RESETS_POST_HANDSHAKE (0x49):
+: Disabled QUIC because of too many PUBLIC_RESETs post handshake.
 
-* 0x4a: QUIC_TIMEOUTS_WITH_OPEN_STREAMS.  (Disabled QUIC because of too many
-  timeouts with streams open.)
+QUIC_TIMEOUTS_WITH_OPEN_STREAMS (0x4a):
+: Disabled QUIC because of too many timeouts with streams open.
 
-* 0x4b: QUIC_FAILED_TO_SERIALIZE_PACKET.  (Closed because we failed to serialize
-  a packet.)
+QUIC_FAILED_TO_SERIALIZE_PACKET (0x4b):
+: Closed because we failed to serialize a packet.
 
-* 0x55: QUIC_TOO_MANY_RTOS.  (QUIC timed out after too many RTOs.)  
+QUIC_TOO_MANY_RTOS (0x55):
+: QUIC timed out after too many RTOs.
 
-* 0x1c: QUIC_HANDSHAKE_FAILED.  (Crypto errors. Handshake failed.)
+QUIC_HANDSHAKE_FAILED (0x1c):
+: Crypto errors. Handshake failed.
 
-* 0x1d: QUIC_CRYPTO_TAGS_OUT_OF_ORDER.  (Handshake message contained out of
-  order tags.)
+QUIC_CRYPTO_TAGS_OUT_OF_ORDER (0x1d):
+: Handshake message contained out of order tags.
 
-* 0x1e: QUIC_CRYPTO_TOO_MANY_ENTRIES.  (Handshake message contained too many
-  entries.)
+QUIC_CRYPTO_TOO_MANY_ENTRIES (0x1e):
+: Handshake message contained too many entries.
 
-* 0x1f: QUIC_CRYPTO_INVALID_VALUE_LENGTH.  (Handshake message contained an
-  invalid value length.)
+QUIC_CRYPTO_INVALID_VALUE_LENGTH (0x1f):
+: Handshake message contained an invalid value length.
 
-* 0x20: QUIC_CRYPTO_MESSAGE_AFTER_HANDSHAKE_COMPLETE.  (A crypto message was
-  received after the handshake was complete.)
+QUIC_CRYPTO_MESSAGE_AFTER_HANDSHAKE_COMPLETE (0x20):
+: A crypto message was received after the handshake was complete.
 
-* 0x21: QUIC_INVALID_CRYPTO_MESSAGE_TYPE.  (A crypto message was received with
-  an illegal message tag.)
+QUIC_INVALID_CRYPTO_MESSAGE_TYPE (0x21):
+: A crypto message was received with an illegal message tag.
 
-* 0x22: QUIC_INVALID_CRYPTO_MESSAGE_PARAMETER.  (A crypto message was received
-  with an illegal parameter.)
+QUIC_INVALID_CRYPTO_MESSAGE_PARAMETER (0x22):
+: A crypto message was received with an illegal parameter.
 
-* 0x34: QUIC_INVALID_CHANNEL_ID_SIGNATURE.  (An invalid channel id signature was
-  supplied.)
+QUIC_INVALID_CHANNEL_ID_SIGNATURE (0x34):
+: An invalid channel id signature was supplied.
 
-* 0x23: QUIC_CRYPTO_MESSAGE_PARAMETER_NOT_FOUND.  (A crypto message was received
-  with a mandatory parameter missing.)
+QUIC_CRYPTO_MESSAGE_PARAMETER_NOT_FOUND (0x23):
+: A crypto message was received with a mandatory parameter missing.
 
-* 0x24: QUIC_CRYPTO_MESSAGE_PARAMETER_NO_OVERLAP.  (A crypto message was
-  received with a parameter that has no overlap with the local parameter.)
+QUIC_CRYPTO_MESSAGE_PARAMETER_NO_OVERLAP (0x24):
+: A crypto message was received with a parameter that has no overlap with the 
+  local parameter. 
 
-* 0x25: QUIC_CRYPTO_MESSAGE_INDEX_NOT_FOUND.  (A crypto message was received
-  that contained a parameter with too few values.)
+QUIC_CRYPTO_MESSAGE_INDEX_NOT_FOUND (0x25):
+: A crypto message was received that contained a parameter with too few values.
 
-* 0x5e: QUIC_UNSUPPORTED_PROOF_DEMAND.  (A demand for an unsupported proof type
-  was received.)
+QUIC_UNSUPPORTED_PROOF_DEMAND (0x5e):
+: A demand for an unsupported proof type was received.
 
-* 0x26: QUIC_CRYPTO_INTERNAL_ERROR.  (An internal error occured in crypto
-  processing.)
+QUIC_CRYPTO_INTERNAL_ERROR (0x26):
+: An internal error occured in crypto processing.
 
-* 0x27: QUIC_CRYPTO_VERSION_NOT_SUPPORTED.  (A crypto handshake message
-  specified an unsupported version.)
+QUIC_CRYPTO_VERSION_NOT_SUPPORTED (0x27):
+: A crypto handshake message specified an unsupported version.
 
-* 0x48: QUIC_CRYPTO_HANDSHAKE_STATELESS_REJECT.  (A crypto handshake message
-  resulted in a stateless reject.)
+QUIC_CRYPTO_HANDSHAKE_STATELESS_REJECT (0x48):
+: A crypto handshake message resulted in a stateless reject.
 
-* 0x28: QUIC_CRYPTO_NO_SUPPORT.  (There was no intersection between the crypto
-  primitives supported by the peer and ourselves.)
+QUIC_CRYPTO_NO_SUPPORT (0x28):
+: There was no intersection between the crypto primitives supported by the peer 
+  and ourselves. 
 
-* 0x29: QUIC_CRYPTO_TOO_MANY_REJECTS.  (The server rejected our client hello
-  messages too many times.)
+QUIC_CRYPTO_TOO_MANY_REJECTS (0x29):
+: The server rejected our client hello messages too many times.
 
-* 0x2a: QUIC_PROOF_INVALID.  (The client rejected the server's certificate chain
-  or signature.)
+QUIC_PROOF_INVALID (0x2a):
+: The client rejected the server's certificate chain or signature.
 
-* 0x2b: QUIC_CRYPTO_DUPLICATE_TAG.  (A crypto message was received with a
-  duplicate tag.)
+QUIC_CRYPTO_DUPLICATE_TAG (0x2b):
+: A crypto message was received with a duplicate tag.
 
-* 0x2c: QUIC_CRYPTO_ENCRYPTION_LEVEL_INCORRECT.  (A crypto message was received
-  with the wrong encryption level (i.e. it should have been encrypted but was
-  not.))
+QUIC_CRYPTO_ENCRYPTION_LEVEL_INCORRECT (0x2c):
+: A crypto message was received with the wrong encryption level (i.e. it should 
+  have been encrypted but was not.) 
 
-* 0x2d: QUIC_CRYPTO_SERVER_CONFIG_EXPIRED.  (The server config for a server has
-  expired.)
+QUIC_CRYPTO_SERVER_CONFIG_EXPIRED (0x2d):
+: The server config for a server has expired.
 
-* 0x35: QUIC_CRYPTO_SYMMETRIC_KEY_SETUP_FAILED.  (We failed to set up the
-  symmetric keys for a connection.)
+QUIC_CRYPTO_SYMMETRIC_KEY_SETUP_FAILED (0x35):
+: We failed to set up the symmetric keys for a connection.
 
-* 0x36: QUIC_CRYPTO_MESSAGE_WHILE_VALIDATING_CLIENT_HELLO.  (A handshake message
-  arrived, but we are still validating the previous handshake message.)
+QUIC_CRYPTO_MESSAGE_WHILE_VALIDATING_CLIENT_HELLO (0x36):
+: A handshake message arrived, but we are still validating the previous 
+  handshake message. 
 
-* 0x41: QUIC_CRYPTO_UPDATE_BEFORE_HANDSHAKE_COMPLETE.  (A server config update
-  arrived before the handshake is complete.)
+QUIC_CRYPTO_UPDATE_BEFORE_HANDSHAKE_COMPLETE (0x41):
+: A server config update arrived before the handshake is complete.
 
-* 0x5a: QUIC_CRYPTO_CHLO_TOO_LARGE.  (CHLO cannot fit in one packet.)
+QUIC_CRYPTO_CHLO_TOO_LARGE (0x5a):
+: CHLO cannot fit in one packet.
 
-* 0x37: QUIC_VERSION_NEGOTIATION_MISMATCH.  (This connection involved a version
-  negotiation which appears to have been tampered with.)
+QUIC_VERSION_NEGOTIATION_MISMATCH (0x37):
+: This connection involved a version negotiation which appears to have been
+  tampered with.
 
-* 0x50: QUIC_IP_ADDRESS_CHANGED.  (IP address changed causing connection close.)
+QUIC_IP_ADDRESS_CHANGED (0x50):
+: IP address changed causing connection close.
 
-* 0x51: QUIC_CONNECTION_MIGRATION_NO_MIGRATABLE_STREAMS.  (Connection migration
-  errors.  Network changed, but connection had no migratable streams.)
+QUIC_CONNECTION_MIGRATION_NO_MIGRATABLE_STREAMS (0x51):
+: Connection migration errors. Network changed, but connection had no migratable
+  streams.
 
-* 0x52: QUIC_CONNECTION_MIGRATION_TOO_MANY_CHANGES.  (Connection changed
-  networks too many times.)
+QUIC_CONNECTION_MIGRATION_TOO_MANY_CHANGES (0x52):
+: Connection changed networks too many times.
 
-* 0x53: QUIC_CONNECTION_MIGRATION_NO_NEW_NETWORK.  (Connection migration was
-  attempted, but there was no new network to migrate to.)
+QUIC_CONNECTION_MIGRATION_NO_NEW_NETWORK (0x53):
+: Connection migration was attempted, but there was no new network to migrate
+  to.
 
-* 0x54: QUIC_CONNECTION_MIGRATION_NON_MIGRATABLE_STREAM.  (Network changed, but
-  connection had one or more non-migratable streams.)
+QUIC_CONNECTION_MIGRATION_NON_MIGRATABLE_STREAM (0x54):
+: Network changed, but connection had one or more non-migratable streams.
 
-* 0x5d: QUIC_TOO_MANY_FRAME_GAPS.  (Stream frames arrived too discontiguously so
-  that stream sequencer buffer maintains too many gaps.)
+QUIC_TOO_MANY_FRAME_GAPS (0x5d):
+: Stream frames arrived too discontiguously so that stream sequencer buffer
+  maintains too many gaps.
 
-* 0x5f: QUIC_STREAM_SEQUENCER_INVALID_STATE.  (Sequencer buffer gets into weird
-  state where continuing read/write will lead to crash.)
+QUIC_STREAM_SEQUENCER_INVALID_STATE (0x5f):
+: Sequencer buffer gets into weird state where continuing read/write will lead
+  to crash.
 
-* 0x60: QUIC_TOO_MANY_SESSIONS_ON_SERVER.  (Connection closed because server
-  hit max number of sessions allowed.
+QUIC_TOO_MANY_SESSIONS_ON_SERVER (0x60):
+: Connection closed because server hit max number of sessions allowed. 
+
 
 # Security and Privacy Considerations
 
