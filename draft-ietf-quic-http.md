@@ -494,6 +494,11 @@ B bit. If Length is not zero, the B bit MUST be zero, and MUST be ignored by
 receivers. The initial value of each setting is "false" unless otherwise
 specified by the definition of the setting.
 
+Non-zero-length values MUST be compared against the remaining length of the
+SETTINGS frame.  Any value which purports to cross the end of the frame MUST
+cause the SETTINGS frame to be considered malformed and trigger a connection
+error.
+
 An implementation MUST ignore the contents for any EXTENDED_SETTINGS identifier 
 it does not understand. 
 
@@ -742,6 +747,11 @@ TODO: fill in missing error code mappings.
 
 The security considerations of HTTP over QUIC should be comparable to those of
 HTTP/2.
+
+The modified SETTINGS format contains nested length elements, which could pose
+a security risk to an uncautious implementer.  A SETTINGS frame parser MUST
+ensure that the length of the frame exactly matches the length of the settings
+it contains.
 
 
 # IANA Considerations
