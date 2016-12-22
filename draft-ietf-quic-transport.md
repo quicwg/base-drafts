@@ -1639,10 +1639,27 @@ to get blocked.
 
 # Error Codes {#error-handling}
 
-This section lists all the QUIC error codes that may be used in a
-CONNECTION_CLOSE frame.  TODO: Trim list and group errors for readabiity.
+Error codes are 32 bits long, with the first two bits indicating the source of
+the error code:
 
-TODO: Discuss error handling beyond just listing error codes.
+0x0000-0x3FFF:
+: QUIC transport error codes, including packet protection errors.  Applicable to
+  all uses of QUIC.
+
+0x4000-0x7FFF:
+: Cryptographic error codes.  Defined by the crypto handshake protocol in use.
+
+0x8000-0xAFFF:
+: Loss-detection and congestion control error codes.  Defined by the
+  loss-detection and congestion control algorithm currently in use.
+
+0xB000-0xFFFF:
+: Application-specific error codes.  Defined by each application-layer protocol.
+
+This section lists the defined QUIC transport error codes that may be used in a 
+CONNECTION_CLOSE or RST_STREAM frame. Error codes share a common code space. 
+Some error codes apply only to either streams or the entire connection and have 
+no defined semantics in the other context. 
 
 QUIC_INTERNAL_ERROR (0x01):
 : Connection has reached an invalid state.
