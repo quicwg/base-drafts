@@ -607,9 +607,17 @@ MUST ignore the VERSION flag in subsequently received packets.
 The Version Negotiation packet is unencrypted and exchanged without
 authentication.  To avoid a downgrade attack, the client needs to verify its
 record of the server's version list in the Version Negotiation packet and the
-server needs to verify its record of the client's originally proposed version.
+server needs to verify its record of the client's originally-proposed version.
 Therefore, the client and server MUST include this information later in their
 corresponding crypto handshake data.
+
+The server includes its Version Negotiation list in the crypto handshake even if
+the client's proposed version was acceptable.  Clients SHOULD cache this list
+and initially propose the highest mutual version in the future.  Clients which
+discover the server would have accepted a higher version than initially proposed
+MAY initiate a new connection with the higher version, then gracefully close the
+first connection.
+
 
 ## Crypto and Transport Handshake {#handshake}
 
@@ -650,7 +658,11 @@ QUIC encodes the transport parameters and options as tag-value pairs.
     } OptionTag;
     
     opaque TagString<0..2^16-1>;    /* String value for experimental tags */
+
+    opaque QuicVersion[4];          /* Version entry */
     
+    QuicVersion VersionList<1..255> /* List of versions */
+
     struct {
       OptionTag tag;         /* option being set */
       select (Option.tag) {  /* option value */
@@ -660,6 +672,8 @@ QUIC encodes the transport parameters and options as tag-value pairs.
         case ICSL:  uint16 Timeout;
         case TCID:  opaque Ignored;
         case COPT:  TagString OptionValue;
+        case VPRP:  QuicVersion ProposedVersion;
+        case VNGO:  VersionList SupportedVersions;
       }
     } Option
     
@@ -682,6 +696,13 @@ and cryptographically verified.
 * MSPC: Maximum number of incoming streams per connection.
 
 * ICSL: Idle timeout in seconds.  The maximum value is 600 seconds (10 minutes).
+
+* VPRP: Client's initially-proposed version (whether or not selected). MUST be
+  sent by client; MUST NOT be sent by server.
+
+* VNGO: Server's list of supported versions. MUST be sent by server, regardless 
+  of whether a Version Negotiation packet was sent; MUST NOT be sent by client. 
+
 
 #### Optional Transport Parameters
 
@@ -774,9 +795,9 @@ protocol.
 The following information used during the QUIC handshake MUST be
 cryptographically verified by the crypto handshake protocol:
 
-* Client's originally proposed version in its first packet.
+* Client's originally-proposed version in its first packet.
 
-* Server's version list in it's Version Negotiation packet, if one was sent.
+* Server's version list.
 
 ## Connection Migration {#migration}
 
