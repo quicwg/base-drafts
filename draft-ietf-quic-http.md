@@ -499,8 +499,8 @@ SETTINGS frame.  Any value which purports to cross the end of the frame MUST
 cause the SETTINGS frame to be considered malformed and trigger a connection
 error.
 
-An implementation MUST ignore the contents for any EXTENDED_SETTINGS identifier 
-it does not understand. 
+An implementation MUST ignore the contents for any SETTINGS identifier it does 
+not understand. 
 
 SETTINGS frames always apply to a connection, never a single stream, and MUST 
 only be sent on the connection control stream (Stream 3). If an endpoint 
