@@ -246,6 +246,44 @@ DISCUSS:
 do we need to retain compatibility with HTTP/2's HPACK? 
 
 
+### The CONNECT Method
+
+In HTTP/1.x, the pseudo-method CONNECT ({{!RFC7231}}, Section 4.3.6) is used to 
+convert an HTTP connection into a tunnel to a remote host. CONNECT is primarily 
+used with HTTP proxies to establish a TLS session with an origin server for the 
+purposes of interacting with "https" resources. In HTTP/2, the CONNECT method is 
+used to establish a tunnel over a single HTTP/2 stream to a remote host for 
+similar purposes. 
+
+A CONNECT request in HTTP/QUIC functions in the same manner as in HTTP/2. The 
+request MUST be formatted as described in {{!RFC7540}}, Section 8.3. A CONNECT 
+request that does not conform to these restrictions is malformed. The message 
+data stream MUST NOT be closed at the end of the request. 
+
+A proxy that supports CONNECT establishes a TCP connection ({{!RFC0793}}) to the 
+server identified in the ":authority" pseudo-header field. Once this connection 
+is successfully established, the proxy sends a HEADERS frame containing a 2xx 
+series status code to the client, as defined in {{!RFC7231}}, Section 4.3.6, on 
+the message control stream. 
+
+All activity on the message data stream corresponds to data sent on the TCP 
+connection. Any data sent by the client is transmitted by the proxy to the TCP 
+server; data received from the TCP server is written to the data stream by the 
+proxy. 
+
+The TCP connection can be closed by either peer. When the client half-closes the 
+data stream, the proxy will set the FIN bit on its connection to the TCP server. 
+When the proxy receives a packet with the FIN bit set, it will half-close the 
+corresponding data stream. Note that the size and number of TCP segments is not 
+guaranteed to map predictably to the size and number of QUIC STREAM frames. 
+
+A TCP connection error is signaled with RST_STREAM. A proxy treats any error in 
+the TCP connection, which includes receiving a TCP segment with the RST bit set, 
+as a stream error of type HTTP_CONNECT_ERROR. Correspondingly, a proxy MUST send 
+a TCP segment with the RST bit set if it detects an error with the stream or the 
+QUIC connection. 
+
+
 ## Stream Priorities {#priority}
 
 HTTP/QUIC uses the priority scheme described in {{!RFC7540}} Section 5.3. In 
