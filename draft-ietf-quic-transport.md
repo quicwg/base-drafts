@@ -728,6 +728,10 @@ protocol.
   mid-connection, to update the information stored in the STK at the client and
   to extend the period over which 0-RTT connections can be established by the
   client.
+  
+* Application-Layer Protocol Negotiation: The handshake MUST establish the 
+  application-layer protocol which the peers will speak over the QUIC
+  connection.
 
 * Certificate Compression: Early QUIC experience demonstrated that compressing
   certificates exchanged during a handshake is valuable in reducing latency.

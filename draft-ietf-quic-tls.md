@@ -1104,22 +1104,21 @@ protection for the QUIC negotiation.  This does not prevent version downgrade
 during the handshake, though it means that such a downgrade causes a handshake
 failure.
 
-Protocols that use the QUIC transport MUST use Application Layer Protocol
-Negotiation (ALPN) {{!RFC7301}}.  The ALPN identifier for the protocol MUST be
-specific to the QUIC version that it operates over.  When constructing a
-ClientHello, clients MUST include a list of all the ALPN identifiers that they
-support, regardless of whether the QUIC version that they have currently
-selected supports that protocol.
+TLS uses Application Layer Protocol Negotiation (ALPN) {{!RFC7301}} to select an 
+application protocol. The application-layer protocol MAY restrict the QUIC 
+versions that it can operate over. When constructing a ClientHello, clients 
+SHOULD include a list of all the ALPN identifiers that they support, regardless 
+of whether the QUIC version that they have currently selected supports that 
+protocol. 
 
-Servers SHOULD select an application protocol based solely on the information in
-the ClientHello, not using the QUIC version that the client has selected.  If
-the protocol that is selected is not supported with the QUIC version that is in
-use, the server MAY send a QUIC version negotiation packet to select a
-compatible version.
+Servers SHOULD select an application protocol compatible with the QUIC version 
+that the client has selected, if possible. If the protocol that is selected is 
+not supported with the QUIC version that is in use, the server MUST send a QUIC 
+version negotiation packet to select a compatible version. 
 
-If the server cannot select a combination of ALPN identifier and QUIC version it
-MUST abort the connection.  A client MUST abort a connection if the server picks
-an incompatible version of QUIC version and ALPN.
+If the server cannot select a compatible combination of ALPN identifier and QUIC 
+version, it MUST abort the connection. A client MUST abort a connection if the 
+server picks an incompatible combination of QUIC version and ALPN identifier.
 
 
 ## QUIC Extension {#quic_parameters}
