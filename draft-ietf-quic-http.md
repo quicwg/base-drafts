@@ -65,11 +65,14 @@ implemented atop QUIC.
 
 --- note_Note_to_Readers
 
-Discussion of this draft takes place on the QUIC working group mailing list (quic@ietf.org),
-which is archived at <https://mailarchive.ietf.org/arch/search/?email_list=quic>.
+Discussion of this draft takes place on the QUIC working group mailing list 
+(quic@ietf.org), which is archived at 
+<https://mailarchive.ietf.org/arch/search/?email_list=quic>. 
 
-Working Group information can be found at <https://github.com/quicwg>; source code and issues list
-for this draft can be found at <https://github.com/quicwg/base-drafts/labels/http>.
+Working Group information can be found at <https://github.com/quicwg>; source 
+code and issues list for this draft can be found at 
+<https://github.com/quicwg/base-drafts/labels/http>. 
+
 
 
 --- middle
@@ -131,12 +134,12 @@ stream (StreamID 3, see {{stream-mapping}}).
 
 # Stream Mapping and Usage {#stream-mapping}
 
-A QUIC stream provides reliable in-order delivery of bytes, but makes no guarantees
-about order of delivery with regard to bytes on other streams.
-On the wire, data is framed into QUIC STREAM frames, but this framing is 
-invisible to the HTTP framing layer. A QUIC receiver buffers and orders received 
-STREAM frames, exposing the data contained within as a reliable byte stream to 
-the application.
+A QUIC stream provides reliable in-order delivery of bytes, but makes no 
+guarantees about order of delivery with regard to bytes on other streams. On the 
+wire, data is framed into QUIC STREAM frames, but this framing is invisible to 
+the HTTP framing layer. A QUIC receiver buffers and orders received STREAM 
+frames, exposing the data contained within as a reliable byte stream to the 
+application. 
 
 QUIC reserves Stream 1 for crypto operations (the handshake, crypto config 
 updates). Stream 3 is reserved for sending and receiving HTTP control frames, 
@@ -306,9 +309,9 @@ occurs below this layer), the support for variable-maximum-length packets can be
 removed. Because stream termination is handled by QUIC, an END_STREAM flag is 
 not required.
 
-Frames are used only on the connection (stream 3) and message (streams 5, 9, etc.)
-control streams.  Other streams carry data payload and are not framed at the
-HTTP layer.
+Frames are used only on the connection (stream 3) and message (streams 5, 9, 
+etc.) control streams. Other streams carry data payload and are not framed at 
+the HTTP layer. 
 
 Frame payloads are largely drawn from {{!RFC7540}}. However, QUIC includes some 
 features (e.g. flow control) which are also present in HTTP/2. In these cases, 
@@ -423,17 +426,17 @@ The flags defined are:
 The HEADERS frame payload has the following fields:
 
   Prioritized Stream:
-  : A 32-bit stream identifier for the message control stream whose 
-    priority is being updated. 
+  : A 32-bit stream identifier for the message control stream whose priority is 
+    being updated. 
 
   Stream Dependency:
-  : A 32-bit stream identifier for the stream that this stream depends on 
-  (see {{priority}} and {!RFC7540}} Section 5.3).
+  : A 32-bit stream identifier for the stream that this stream depends on (see 
+    {{priority}} and {!RFC7540}} Section 5.3). 
 
   Weight:
-  : An unsigned 8-bit integer representing a priority weight for the 
-  stream (see {{!RFC7540}} Section 5.3). Add one to the value to obtain a 
-  weight between 1 and 256.
+  : An unsigned 8-bit integer representing a priority weight for the stream (see 
+    {{!RFC7540}} Section 5.3). Add one to the value to obtain a weight between 1
+    and 256. 
 
 ### RST_STREAM
 
@@ -758,12 +761,12 @@ it contains.
 
 ## Existing Frame Types
 
-This document adds two new columns to the "HTTP/2 Frame Type" registry defined in
-{{!RFC7540}}:
+This document adds two new columns to the "HTTP/2 Frame Type" registry defined 
+in {{!RFC7540}}: 
 
   Supported Protocols:
   : Indicates which associated protocols use the frame type.  Values MUST be one
-  of:
+    of:
   
     - "HTTP/2 only"
     - "HTTP/QUIC only"
