@@ -1778,8 +1778,9 @@ TODO: Discuss error handling beyond just listing error codes.
 * 0x4b: QUIC_FAILED_TO_SERIALIZE_PACKET.  (Closed because we failed to serialize
   a packet.)
 
-* 0x55: QUIC_TOO_MANY_RTOS.  (QUIC timed out after too many RTOs.)  x1c:
-QUIC_HANDSHAKE_FAILED.  (Crypto errors.Hanshake failed.)
+* 0x55: QUIC_TOO_MANY_RTOS.  (QUIC timed out after too many RTOs.)  
+
+* 0x1c: QUIC_HANDSHAKE_FAILED.  (Crypto errors. Handshake failed.)
 
 * 0x1d: QUIC_CRYPTO_TAGS_OUT_OF_ORDER.  (Handshake message contained out of
   order tags.)
@@ -1806,12 +1807,12 @@ QUIC_HANDSHAKE_FAILED.  (Crypto errors.Hanshake failed.)
   with a mandatory parameter missing.)
 
 * 0x24: QUIC_CRYPTO_MESSAGE_PARAMETER_NO_OVERLAP.  (A crypto message was
-  received with a parameter that has no overlapwith the local parameter.)
+  received with a parameter that has no overlap with the local parameter.)
 
 * 0x25: QUIC_CRYPTO_MESSAGE_INDEX_NOT_FOUND.  (A crypto message was received
-  that contained a parameter with too fewvalues.)
+  that contained a parameter with too few values.)
 
-* 0x5e: QUIC_UNSUPPORTED_PROOF_DEMAND.  (A demand for an unsupport proof type
+* 0x5e: QUIC_UNSUPPORTED_PROOF_DEMAND.  (A demand for an unsupported proof type
   was received.)
 
 * 0x26: QUIC_CRYPTO_INTERNAL_ERROR.  (An internal error occured in crypto
@@ -1824,7 +1825,7 @@ QUIC_HANDSHAKE_FAILED.  (Crypto errors.Hanshake failed.)
   resulted in a stateless reject.)
 
 * 0x28: QUIC_CRYPTO_NO_SUPPORT.  (There was no intersection between the crypto
-  primitives supported by thepeer and ourselves.)
+  primitives supported by the peer and ourselves.)
 
 * 0x29: QUIC_CRYPTO_TOO_MANY_REJECTS.  (The server rejected our client hello
   messages too many times.)
@@ -1836,17 +1837,17 @@ QUIC_HANDSHAKE_FAILED.  (Crypto errors.Hanshake failed.)
   duplicate tag.)
 
 * 0x2c: QUIC_CRYPTO_ENCRYPTION_LEVEL_INCORRECT.  (A crypto message was received
-  with the wrong encryption level (i.e. itshould have been encrypted but was
+  with the wrong encryption level (i.e. it should have been encrypted but was
   not.))
 
 * 0x2d: QUIC_CRYPTO_SERVER_CONFIG_EXPIRED.  (The server config for a server has
   expired.)
 
-* 0x35: QUIC_CRYPTO_SYMMETRIC_KEY_SETUP_FAILED.  (We failed to setup the
+* 0x35: QUIC_CRYPTO_SYMMETRIC_KEY_SETUP_FAILED.  (We failed to set up the
   symmetric keys for a connection.)
 
 * 0x36: QUIC_CRYPTO_MESSAGE_WHILE_VALIDATING_CLIENT_HELLO.  (A handshake message
-  arrived, but we are still validating theprevious handshake message.)
+  arrived, but we are still validating the previous handshake message.)
 
 * 0x41: QUIC_CRYPTO_UPDATE_BEFORE_HANDSHAKE_COMPLETE.  (A server config update
   arrived before the handshake is complete.)
@@ -1854,30 +1855,30 @@ QUIC_HANDSHAKE_FAILED.  (Crypto errors.Hanshake failed.)
 * 0x5a: QUIC_CRYPTO_CHLO_TOO_LARGE.  (CHLO cannot fit in one packet.)
 
 * 0x37: QUIC_VERSION_NEGOTIATION_MISMATCH.  (This connection involved a version
-  negotiation which appears to have beentampered with.)
+  negotiation which appears to have been tampered with.)
 
 * 0x50: QUIC_IP_ADDRESS_CHANGED.  (IP address changed causing connection close.)
 
 * 0x51: QUIC_CONNECTION_MIGRATION_NO_MIGRATABLE_STREAMS.  (Connection migration
-  errors.Network changed, but connection had no migratable streams.)
+  errors.  Network changed, but connection had no migratable streams.)
 
 * 0x52: QUIC_CONNECTION_MIGRATION_TOO_MANY_CHANGES.  (Connection changed
   networks too many times.)
 
 * 0x53: QUIC_CONNECTION_MIGRATION_NO_NEW_NETWORK.  (Connection migration was
-  attempted, but there was no new network tomigrate to.)
+  attempted, but there was no new network to migrate to.)
 
 * 0x54: QUIC_CONNECTION_MIGRATION_NON_MIGRATABLE_STREAM.  (Network changed, but
   connection had one or more non-migratable streams.)
 
 * 0x5d: QUIC_TOO_MANY_FRAME_GAPS.  (Stream frames arrived too discontiguously so
-  that stream sequencer buffermaintains too many gaps.)
+  that stream sequencer buffer maintains too many gaps.)
 
 * 0x5f: QUIC_STREAM_SEQUENCER_INVALID_STATE.  (Sequencer buffer gets into weird
   state where continuing read/write will lead to crash.)
 
-* 0x60: QUIC_TOO_MANY_SESSIONS_ON_SERVER.  (Connection closed because of server
-  hits max number of sessions allowed.
+* 0x60: QUIC_TOO_MANY_SESSIONS_ON_SERVER.  (Connection closed because server
+  hit max number of sessions allowed.
 
 # Security and Privacy Considerations
 
