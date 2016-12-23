@@ -1104,30 +1104,45 @@ protection for the QUIC negotiation.  This does not prevent version downgrade
 during the handshake, though it means that such a downgrade causes a handshake
 failure.
 
-TLS uses Application Layer Protocol Negotiation (ALPN) {{!RFC7301}} to select an 
-application protocol. The application-layer protocol MAY restrict the QUIC 
-versions that it can operate over. When constructing a ClientHello, clients 
-SHOULD include a list of all the ALPN identifiers that they support, regardless 
-of whether the QUIC version that they have currently selected supports that 
-protocol. 
+TLS uses Application Layer Protocol Negotiation (ALPN) {{!RFC7301}} to select an
+application protocol. The application-layer protocol MAY restrict the QUIC
+versions that it can operate over. When constructing a ClientHello, clients
+SHOULD include a list of all the ALPN identifiers that they support, regardless
+of whether the QUIC version that they have currently selected supports that
+protocol.
 
-Servers SHOULD select an application protocol compatible with the QUIC version 
-that the client has selected, if possible. If the protocol that is selected is 
-not supported with the QUIC version that is in use, the server MUST send a QUIC 
-version negotiation packet to select a compatible version. 
+Servers SHOULD select an application protocol compatible with the QUIC version
+that the client has selected, if possible. If the protocol that is selected is
+not supported with the QUIC version that is in use, the server MUST send a QUIC
+version negotiation packet to select a compatible version.
 
-If the server cannot select a compatible combination of ALPN identifier and QUIC 
-version, it MUST abort the connection. A client MUST abort a connection if the 
+If the server cannot select a compatible combination of ALPN identifier and QUIC
+version, it MUST abort the connection. A client MUST abort a connection if the
 server picks an incompatible combination of QUIC version and ALPN identifier.
 
 
 ## QUIC Extension {#quic_parameters}
 
-QUIC defines an extension for use with TLS.  That extension defines
-transport-related parameters.  This provides integrity protection for these
-values.  Including these in the TLS handshake also make the values that a client
-sets available to a server one-round trip earlier than parameters that are
-carried in QUIC packets.  This document does not define that extension.
+QUIC parameters are carried in a TLS extension. That extension carries
+transport-related parameters encoded as an opaque blob whose interpretation is
+specific to the QUIC version in use. This provides integrity protection for
+these values. Including these in the TLS handshake also makes the values that a
+client sets available to a server one round-trip earlier than parameters that
+are carried in QUIC packets. This document defines that extension, but does not
+specify how parameters are encoded in the blob.
+
+    enum {
+        quic_transport_parameters(26), (65535)
+    } ExtensionType;
+
+The `extension_data` field of the
+(`quic_transport_parameters(26)`) extension SHALL
+contain a `TransportParameters` value.
+
+    opaque TransportParameters<1..2^16-1>;
+
+`TransportParameters` contains the opaque blob provided by the QUIC transport
+layer.
 
 
 ## Source Address Validation {#source-address}

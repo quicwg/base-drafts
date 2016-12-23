@@ -635,10 +635,41 @@ protocol to be transmitted to the peer.
 
 #### Encoding
 
-(TODO: Describe format with example)
+QUIC encodes the transport parameters and options as tag-value pairs.
 
-QUIC encodes the transport parameters and options as tag-value pairs, all as
-7-bit ASCII strings.  QUIC parameter tags are listed below.
+    enum {
+      SFCW(0),
+      CFCW(1),
+      MSPC(2),
+      ICSL(3),
+      TCID(4),
+      COPT(5),
+      VPRP(6),
+      VNGO(7),
+      (255)
+    } OptionTag;
+    
+    opaque TagString<0..2^16-1>;    /* String value for experimental tags */
+    
+    struct {
+      OptionTag tag;         /* option being set */
+      select (Option.tag) {  /* option value */
+        case SFCW:  uint24 Window;
+        case CFCW:  uint24 Window;
+        case MSPC:  uint16 StreamCount;
+        case ICSL:  uint16 Timeout;
+        case TCID:  opaque Ignored;
+        case COPT:  TagString OptionValue;
+      }
+    } Option
+    
+    struct {
+      Option option_list<0..255>
+    } OptionList
+
+The OptionList is passed to the crypto layer to be transported in the handshake
+and cryptographically verified.
+    
 
 #### Required Transport Parameters {#required-transport-parameters}
 
