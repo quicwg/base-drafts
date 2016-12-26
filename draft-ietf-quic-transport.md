@@ -111,11 +111,13 @@ congestion control, and the use of TLS 1.3 for key negotiation.
 
 --- note_Note_to_Readers
 
-Discussion of this draft takes place on the QUIC working group mailing list (quic@ietf.org),
-which is archived at <https://mailarchive.ietf.org/arch/search/?email_list=quic>.
+Discussion of this draft takes place on the QUIC working group mailing list 
+(quic@ietf.org), which is archived at 
+<https://mailarchive.ietf.org/arch/search/?email_list=quic>. 
 
-Working Group information can be found at <https://github.com/quicwg>; source code and issues list
-for this draft can be found at <https://github.com/quicwg/base-drafts/labels/transport>.
+Working Group information can be found at <https://github.com/quicwg>; source 
+code and issues list for this draft can be found at 
+<https://github.com/quicwg/base-drafts/labels/transport>. 
 
 --- middle
 
