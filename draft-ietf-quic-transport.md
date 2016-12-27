@@ -1887,10 +1887,10 @@ TODO: Discuss error handling beyond just listing error codes.
 ## Spoofed Ack Attack
 
 An attacker receives an STK from the server and then releases the IP address on
-which it received the STK.  The attacked may in the future, spoof this same
-address (which now presumably addresses a different endpoint), and initiates a
+which it received the STK.  The attacker may, in the future, spoof this same
+address (which now presumably addresses a different endpoint), and initiate a
 0-RTT connection with a server on the victim's behalf.  The attacker then spoofs
-ack packets to the server which cause the server to potentially drown the victim
+ACK frames to the server which cause the server to potentially drown the victim
 in data.
 
 There are two possible mitigations to this attack.  The simplest one is that a
