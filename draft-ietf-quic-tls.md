@@ -1231,6 +1231,94 @@ SHOULD track redundant packets and treat excessive volumes of any non-productive
 packets as indicative of an attack.
 
 
+# Error codes {#errors}
+
+The portion of the QUIC error code space allocated for the crypto handshake is
+0x4000-0x7FFF.  The following error codes are defined when TLS is used for the
+crypto handshake:
+
+TLS_HANDSHAKE_FAILED (0x401c):
+: Crypto errors. Handshake failed.
+
+TLS_MESSAGE_OUT_OF_ORDER (0x401d):
+: Handshake message received out of order.
+
+TLS_TOO_MANY_ENTRIES (0x401e):
+: Handshake message contained too many entries.
+
+TLS_INVALID_VALUE_LENGTH (0x401f):
+: Handshake message contained an invalid value length.
+
+TLS_MESSAGE_AFTER_HANDSHAKE_COMPLETE (0x4020):
+: A handshake message was received after the handshake was complete.
+
+TLS_INVALID_RECORD_TYPE (0x4021):
+: A handshake message was received with an illegal record type.
+
+TLS_INVALID_PARAMETER (0x4022):
+: A handshake message was received with an illegal parameter.
+
+TLS_INVALID_CHANNEL_ID_SIGNATURE (0x4034):
+: An invalid channel id signature was supplied.
+
+TLS_MESSAGE_PARAMETER_NOT_FOUND (0x4023):
+: A handshake message was received with a mandatory parameter missing.
+
+TLS_MESSAGE_PARAMETER_NO_OVERLAP (0x4024):
+: A handshake message was received with a parameter that has no overlap with the 
+  local parameter. 
+
+TLS_MESSAGE_INDEX_NOT_FOUND (0x4025):
+: A handshake message was received that contained a parameter with too few values.
+
+TLS_UNSUPPORTED_PROOF_DEMAND (0x405e):
+: A demand for an unsupported proof type was received.
+
+TLS_INTERNAL_ERROR (0x4026):
+: An internal error occured in handshake processing.
+
+TLS_VERSION_NOT_SUPPORTED (0x4027):
+: A handshake handshake message specified an unsupported version.
+
+TLS_HANDSHAKE_STATELESS_REJECT (0x4048):
+: A handshake handshake message resulted in a stateless reject.
+
+TLS_NO_SUPPORT (0x4028):
+: There was no intersection between the crypto primitives supported by the peer 
+  and ourselves. 
+
+TLS_TOO_MANY_REJECTS (0x4029):
+: The server rejected our client hello messages too many times.
+
+TLS_PROOF_INVALID (0x402a):
+: The client rejected the server's certificate chain or signature.
+
+TLS_DUPLICATE_TAG (0x402b):
+: A handshake message was received with a duplicate tag.
+
+TLS_ENCRYPTION_LEVEL_INCORRECT (0x402c):
+: A handshake message was received with the wrong encryption level (i.e. it
+  should have been encrypted but was not.)
+
+TLS_SERVER_CONFIG_EXPIRED (0x402d):
+: The server config for a server has expired.
+
+TLS_SYMMETRIC_KEY_SETUP_FAILED (0x4035):
+: We failed to set up the symmetric keys for a connection.
+
+TLS_MESSAGE_WHILE_VALIDATING_CLIENT_HELLO (0x4036):
+: A handshake message arrived, but we are still validating the previous 
+  handshake message. 
+
+TLS_UPDATE_BEFORE_HANDSHAKE_COMPLETE (0x4041):
+: A server config update arrived before the handshake is complete.
+
+TLS_CLIENT_HELLO_TOO_LARGE (0x405a):
+: ClientHello cannot fit in one packet.
+
+
+
+
 # IANA Considerations
 
 This document has no IANA actions.  Yet.
