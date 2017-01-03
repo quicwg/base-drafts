@@ -266,16 +266,16 @@ is successfully established, the proxy sends a HEADERS frame containing a 2xx
 series status code to the client, as defined in {{!RFC7231}}, Section 4.3.6, on 
 the message control stream. 
 
-All activity on the message data stream corresponds to data sent on the TCP 
-connection. Any data sent by the client is transmitted by the proxy to the TCP 
-server; data received from the TCP server is written to the data stream by the 
-proxy. 
+All QUIC STREAM frames on the message data stream correspond to data sent on the 
+TCP connection. Any QUIC STREAM frame sent by the client is transmitted by the 
+proxy to the TCP server; data received from the TCP server is written to the 
+data stream by the proxy. Note that the size and number of TCP segments is not 
+guaranteed to map predictably to the size and number of QUIC STREAM frames. 
 
 The TCP connection can be closed by either peer. When the client half-closes the 
 data stream, the proxy will set the FIN bit on its connection to the TCP server. 
 When the proxy receives a packet with the FIN bit set, it will half-close the 
-corresponding data stream. Note that the size and number of TCP segments is not 
-guaranteed to map predictably to the size and number of QUIC STREAM frames. 
+corresponding data stream.
 
 A TCP connection error is signaled with RST_STREAM. A proxy treats any error in 
 the TCP connection, which includes receiving a TCP segment with the RST bit set, 
