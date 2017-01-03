@@ -95,7 +95,7 @@ It's not shouting; when they are capitalized, they have the special meaning
 defined in {{!RFC2119}}.
 
 
-# QUIC advertisement
+# QUIC Advertisement
 
 A server advertises that it can speak HTTP/QUIC via the Alt-Svc ({{!RFC7838}}) 
 HTTP response header, using the ALPN token defined in 
@@ -107,7 +107,7 @@ response:
 
     Alt-Svc: hq=":443"
 
-## QUIC version hints {#alt-svc-version-hint}
+## QUIC Version Hints {#alt-svc-version-hint}
 
 This document defines the "v" parameter for Alt-Svc, which is used to provide
 version-negotiation hints to HTTP/QUIC clients. Syntax:
@@ -130,16 +130,16 @@ percent-encoded as per Section 2.1 of {{!RFC3986}}. Consequently, the octet
 representing the percent character ("%", hex 25) MUST be percent-encoded as 
 well. 
 
-On receipt of this header, a client MAY attempt to establish a QUIC connection
-on port 443 and, if successful, send HTTP requests using the mapping described
-in this document.  Servers SHOULD list only versions which they support, but MAY
-omit supported versions for any reason.
+On receipt of an Alt-Svc header indicating QUIC support, a client MAY attempt to
+establish a QUIC connection on the indicated port and, if successful, send HTTP 
+requests using the mapping described in this document. Servers SHOULD list only 
+versions which they support, but MAY omit supported versions for any reason. 
 
 Connectivity problems (e.g. firewall blocking UDP) may result in QUIC connection
 establishment failure, in which case the client should gracefully fall back to
 HTTP/2.
 
-# Connection establishment {#connection-establishment}
+# Connection Establishment {#connection-establishment}
 
 HTTP/QUIC connections are established as described in {{QUIC-TRANSPORT}}. During 
 connection establishment, HTTP/QUIC support is indicated by selecting the ALPN 
@@ -151,7 +151,7 @@ in the SETTINGS frame. After the QUIC connection is established, a SETTINGS
 frame ({{frame-settings}}) MUST be sent as the initial frame of the HTTP control
 stream (StreamID 3, see {{stream-mapping}}).
 
-## Draft version identification
+## Draft Version Identification
    
 > **RFC Editor's Note:**  Please remove this section prior to publication of a
 > final version of this document.
