@@ -111,13 +111,13 @@ congestion control, and the use of TLS 1.3 for key negotiation.
 
 --- note_Note_to_Readers
 
-Discussion of this draft takes place on the QUIC working group mailing list 
-(quic@ietf.org), which is archived at 
-<https://mailarchive.ietf.org/arch/search/?email_list=quic>. 
+Discussion of this draft takes place on the QUIC working group mailing list
+(quic@ietf.org), which is archived at
+<https://mailarchive.ietf.org/arch/search/?email_list=quic>.
 
-Working Group information can be found at <https://github.com/quicwg>; source 
-code and issues list for this draft can be found at 
-<https://github.com/quicwg/base-drafts/labels/transport>. 
+Working Group information can be found at <https://github.com/quicwg>; source
+code and issues list for this draft can be found at
+<https://github.com/quicwg/base-drafts/labels/transport>.
 
 --- middle
 
@@ -807,9 +807,9 @@ subsequent sections.
 
 ## STREAM Frame {#frame-stream}
 
-STREAM frames implicitly create a stream and carry stream data. The type byte 
-for a STREAM frame contains embedded flags, and is formatted as `1FDOOOSS`. 
-These bits are parsed as follows: 
+STREAM frames implicitly create a stream and carry stream data. The type byte
+for a STREAM frame contains embedded flags, and is formatted as `1FDOOOSS`.
+These bits are parsed as follows:
 
 * The leftmost bit must be set to 1, indicating that this is a STREAM frame.
 
@@ -828,7 +828,7 @@ These bits are parsed as follows:
 * The `SS` bits encode the length of the Stream ID header field as 8, 16, 24,
   or 32 bits.  (DISCUSS: Consider making this 8, 16, 32, 64.)
 
-A STREAM frame is shown below. 
+A STREAM frame is shown below.
 
 ~~~
  0                   1                   2                   3
@@ -847,8 +847,8 @@ A STREAM frame is shown below.
 
 The STREAM frame payload contains the following fields:
 
-* Stream ID: A variable-sized unsigned ID unique to this stream, whose size is 
-  determined by the `SS` bits in the type byte. 
+* Stream ID: A variable-sized unsigned ID unique to this stream, whose size is
+  determined by the `SS` bits in the type byte.
 
 * Offset: A variable-sized unsigned number specifying the byte offset in the
   stream for the data in this STREAM frame.  The first byte in the stream has an
@@ -858,7 +858,7 @@ The STREAM frame payload contains the following fields:
   Stream Data field in this STREAM frame.
 
 * Stream Data: The bytes from the designated stream to be delivered.
-  
+
 A STREAM frame MUST have either non-zero data length or the FIN bit set.
 
 Stream multiplexing is achieved by interleaving STREAM frames from multiple
@@ -905,7 +905,7 @@ The type byte for a ACK frame contains embedded flags, and is formatted as
 
 * The first two bits must be set to 01 indicating that this is an ACK frame.
 
-* The `N` bit indicates whether the frame has more than 1 ack range (i.e.
+* The `N` bit indicates whether the frame has more than 1 ack range (i.e.,
   whether the Ack Block Section contains a Num Blocks field).
 
 * The `U` bit is unused and MUST be set to zero.
@@ -917,7 +917,7 @@ The type byte for a ACK frame contains embedded flags, and is formatted as
   4, or 6 bytes long.
 
 An ACK frame is shown below.
-  
+
 ~~~
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
@@ -942,7 +942,7 @@ The fields in the ACK frame are as follows:
 
 * Ack Block Section: Contains one or more blocks of packet numbers which have
   been successfully received.  See {{ack-block-section}}.
-  
+
 * Timestamp Section: Contains zero or more timestamps reporting transit delay of
   received packets.  See {{timestamp-section}}.
 
@@ -1030,9 +1030,9 @@ The fields in the Timestamp Section are:
   delta in microseconds, from the beginning of the connection to the arrival
   of this packet.
 
-* Delta Largest Acked 1-N (opt, repeated): (Same as above.)
+* Delta Largest Acked 1..N (opt, repeated): (Same as above.)
 
-* Time Since Previous Timestamp 1-N(opt, repeated): An optional 16-bit unsigned
+* Time Since Previous Timestamp 1..N(opt, repeated): An optional 16-bit unsigned
   value specifying time delta from the previous reported timestamp.  It is
   encoded in the same format as the Ack Delay.  Along with the previous field,
   this field is repeated "Num Timestamps" times.
@@ -1056,17 +1056,17 @@ to 0xFFFF.
 
 ## STOP_WAITING Frame {#frame-stop-waiting}
 
-The STOP_WAITING frame (type=0x06) is sent to inform the peer that it should not 
-continue to wait for packets with packet numbers lower than a specified value. 
-The packet number is encoded in 1, 2, 4 or 6 bytes, using the same coding length 
-as is specified for the packet number for the enclosing packet's header 
-(specified in the QUIC Frame packet's Flags field.) The frame is as follows: 
+The STOP_WAITING frame (type=0x06) is sent to inform the peer that it should not
+continue to wait for packets with packet numbers lower than a specified value.
+The packet number is encoded in 1, 2, 4 or 6 bytes, using the same coding length
+as is specified for the packet number for the enclosing packet's header
+(specified in the QUIC Frame packet's Flags field.) The frame is as follows:
 
 ~~~
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|               Least Unacked Delta (8/16/32/24)              ...
+|               Least Unacked Delta (8/16/32/48)              ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
 {: #stop-waiting-format title="STOP_WAITING Frame Format"}
@@ -1084,11 +1084,11 @@ The payload of the STOP_WAITING frame contains a single field:
 
 ## WINDOW_UPDATE Frame {#frame-window-update}
 
-The WINDOW_UPDATE frame (type=0x04) informs the peer of an increase in an 
-endpoint's flow control receive window. The Stream ID can be zero, indicating 
-this WINDOW_UPDATE applies to the connection level flow control window, or 
-non-zero, indicating that the specified stream should increase its flow control 
-window. The frame is as follows: 
+The WINDOW_UPDATE frame (type=0x04) informs the peer of an increase in an
+endpoint's flow control receive window. The Stream ID can be zero, indicating
+this WINDOW_UPDATE applies to the connection level flow control window, or
+non-zero, indicating that the specified stream should increase its flow control
+window. The frame is as follows:
 
 ~~~
  0                   1                   2                   3
@@ -1114,11 +1114,11 @@ The fields in the WINDOW_UPDATE frame payload are as follows:
 
 ## BLOCKED Frame {#frame-blocked}
 
-A sender sends a BLOCKED frame (type=0x05) when it is ready to send data (and 
-has data to send), but is currently flow control blocked. BLOCKED frames are 
-purely informational frames, but extremely useful for debugging purposes. A 
-receiver of a BLOCKED frame should simply discard it (after possibly printing a 
-helpful log message). The frame is as follows: 
+A sender sends a BLOCKED frame (type=0x05) when it is ready to send data (and
+has data to send), but is currently flow control blocked. BLOCKED frames are
+purely informational frames, but extremely useful for debugging purposes. A
+receiver of a BLOCKED frame should simply discard it (after possibly printing a
+helpful log message). The frame is as follows:
 
 ~~~
  0                   1                   2                   3
@@ -1166,19 +1166,20 @@ The fields are:
 
 ## PADDING Frame {#frame-padding}
 
-The PADDING frame pads a packet with 0x00 bytes. When this frame is encountered, 
-the rest of the packet is expected to be padding bytes. The frame contains 0x00 
-bytes and extends to the end of the QUIC packet. A PADDING frame has no payload, 
-and must have the 8-bit Frame Type field set to 0x00. 
+The PADDING frame (type=0x00) pads a packet with 0x00 bytes. When this frame is
+encountered, the rest of the packet is expected to be padding bytes. The frame
+contains 0x00 bytes and extends to the end of the QUIC packet. A PADDING frame
+has no payload.
+
 
 ## PING frame {#frame-ping}
 
-Endpoints can use PING frames to verify that their peers are still alive or to
-check reachability to the peer.  The PING frame contains no payload.  The
-receiver of a PING frame simply needs to ACK the packet containing this frame.
-The PING frame SHOULD be used to keep a connection alive when a stream is open.
-The default is to send a PING frame after 15 seconds of quiescence.  A PING
-frame has no payload, and must have the 8-bit Frame Type field set to 0x07.
+Endpoints can use PING frames (type=0x07) to verify that their peers are still
+alive or to check reachability to the peer. The PING frame contains no payload.
+The receiver of a PING frame simply needs to ACK the packet containing this
+frame. The PING frame SHOULD be used to keep a connection alive when a stream is
+open. The default is to send a PING frame after 15 seconds of quiescence. A PING
+frame has no payload.
 
 ## CONNECTION_CLOSE frame {#frame-connection-close}
 
@@ -1212,11 +1213,11 @@ The fields of a CONNECTION_CLOSE frame are as follows:
 
 ## GOAWAY Frame {#frame-goaway}
 
-An endpoint may use a GOAWAY frame (type=0x03) to notify its peer that the 
-connection should stop being used, and will likely be closed in the future. The 
-endpoints will continue using any active streams, but the sender of the GOAWAY 
-will not initiate any additional streams, and will not accept any new streams. 
-The frame is as follows: 
+An endpoint may use a GOAWAY frame (type=0x03) to notify its peer that the
+connection should stop being used, and will likely be closed in the future. The
+endpoints will continue using any active streams, but the sender of the GOAWAY
+will not initiate any additional streams, and will not accept any new streams.
+The frame is as follows:
 
 ~~~
  0                   1                   2                   3
@@ -1831,7 +1832,7 @@ TODO: Discuss error handling beyond just listing error codes.
 * 0x4b: QUIC_FAILED_TO_SERIALIZE_PACKET.  (Closed because we failed to serialize
   a packet.)
 
-* 0x55: QUIC_TOO_MANY_RTOS.  (QUIC timed out after too many RTOs.)  
+* 0x55: QUIC_TOO_MANY_RTOS.  (QUIC timed out after too many RTOs.)
 
 * 0x1c: QUIC_HANDSHAKE_FAILED.  (Crypto errors. Handshake failed.)
 
