@@ -290,9 +290,13 @@ across changes in the client's and the server's network addresses.
 # Packet Types and Formats
 
 We first describe QUIC's packet types and their formats, since some are
-referenced in subsequent mechanisms.  Note that unless otherwise noted, all
-values specified in this document are in little-endian format and all field
-sizes are in bits.
+referenced in subsequent mechanisms.
+
+All values specified in this document are in big-endian format and all field
+sizes are in bits.  When discussing individual bits of fields, the least
+significant bit is referred to as bit 0.  Hexadecimal notation is used for
+describing the value of fields.
+
 
 ## Common Header
 
