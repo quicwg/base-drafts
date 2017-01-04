@@ -666,64 +666,226 @@ Version negotiation uses unprotected data.  The result of the negotiation MUST
 be revalidated once the cryptographic handshake has completed (see
 {{version-validation}}).
 
+
 ## Crypto and Transport Handshake {#handshake}
 
 QUIC relies on a combined crypto and transport handshake to minimize connection
-establishment latency.  QUIC provides a dedicated stream (Stream ID 1) to be
-used for performing a combined connection and security handshake (streams are
-described in detail in {{streams}}).  The crypto handshake protocol encapsulates
-and delivers QUIC's transport handshake to the peer on the crypto stream.  The
-first QUIC packet from the client to the server MUST carry handshake information
-as data on Stream ID 1.
+establishment latency.  QUIC allocates stream 1 for the cryptographic handshake,
+which uses TLS.
 
-### Transport Parameters and Options
+QUIC provides this stream with reliable, ordered delivery of data.  In return,
+TLS provides QUIC with:
 
-During connection establishment, the handshake must negotiate various transport
-parameters.  The currently defined transport parameters are described later in
-the document.
+* authenticated key exchange, always for the server, optionally for the client
 
-The transport component of the handshake is responsible for exchanging and
-negotiating the following parameters for a QUIC connection.  Not all parameters
-are negotiated, some are parameters sent in just one direction.  These
-parameters and options are encoded and handed off to the crypto handshake
-protocol to be transmitted to the peer.
+* keying material for use in packet packet protection
 
-#### Encoding
+* authenticated values for the transport parameters of the peer (see
+  {{transport-parameters}})
 
-(TODO: Describe format with example)
+* authenticated confirmation of version negotiation (see {{version-validation}})
 
-QUIC encodes the transport parameters and options as tag-value pairs, all as
-7-bit ASCII strings.  QUIC parameter tags are listed below.
+* authenticated negotiation of an application protocol (TLS uses ALPN
+  {{?RFC7301}} for this purpose)
 
-#### Required Transport Parameters {#required-transport-parameters}
+* for the server, assurance that the client can receive packets that are
+  addressed with the transport address that is claimed by the client (see
+  {{source-address-token}})
 
-* SFCW: Stream Flow Control Window.  The stream level flow control
-  byte offset advertised by the sender of this parameter.
+Details of how TLS is integrated with QUIC is provided in more detail in
+{{QUIC-TLS}}.
 
-* CFCW: Connection Flow Control Window.  The connection level flow
-  control byte offset advertised by the sender of this parameter.
 
-* MSPC: Maximum number of incoming streams per connection.
+## Transport Parameters
 
-* ICSL: Idle timeout in seconds.  The maximum value is 600 seconds (10 minutes).
+During connection establishment, both endpoints make authenticated declarations
+of their transport parameters.  These declarations are made unilaterally by each
+endpoint.  Endpoints are required to comply with the restrictions implied by
+these parameters; the description of each parameter includes rules for its
+handling.
 
-#### Optional Transport Parameters
+The format of the transport parameters is the TransportParameters struct from
+{{figure-transport-parameters}}.  This is described using the presentation
+language from Section 3 of {{!I-D.ietf-tls-tls13}}.
 
-* TCID: Indicates support for truncated Connection IDs.  If sent by a peer,
-  indicates that connection IDs sent to the peer should be truncated to 0 bytes.
-  This is expected to commonly be used by an endpoint where the 5-tuple is
-  sufficient to identify a connection.  For instance, if the 5-tuple is unique
-  at the client, the client MAY send a TCID parameter to the server.  When a
-  TCID parameter is received, an endpoint MAY choose to not send the connection
-  ID on subsequent packets.
+~~~
+   uint32 QuicVersion;
 
-* COPT: Connection Options are a repeated tag field.  The field contains any
+   enum {
+      SFCW(0),
+      CFCW(1),
+      MSPC(2),
+      ICSL(3),
+      TCID(4),
+      COPT(5),
+      (65535)
+   } TransportParameterId;
+
+   struct {
+      TransportParameterId parameter;
+      opaque value<0..2^16-1>;
+   } TransportParameter;
+
+   struct {
+      select (Handshake.msg_type) {
+         case client_hello:
+            QuicVersion negotiated_version;
+            QuicVersion initial_version;
+
+         case encrypted_extensions:
+            QuicVersion supported_versions<2..2^8-4>;
+      };
+      TransportParameter parameters<30..2^16-1>;
+   } TransportParameters;
+~~~
+{: #figure-transport-parameters title="Definition of TransportParameters"}
+
+The "extension_data" field of the quic_transport_parameters extension defined in
+{{QUIC-TLS}} contains a TransportParameters value.  TLS encoding rules are
+therefore used to encode the transport parameters.
+
+Definitions for each of the defined transport parameters are included in
+{{transport-parameter-definitions}}.  Use of the version fields from transport
+parameters is described in {{version-validation}}.
+
+
+### Transport Parameter Definitions
+
+An endpoint MUST include the following parameters in its encoded
+TransportParameters:
+
+SFCW (0x0000):
+
+: The initial stream level flow control parameter is encoded as an unsigned
+  32-bit integer.  The sender of this parameter indicates that the flow control
+  offset for all stream data sent toward it is this value.
+
+CFCW (0x0001):
+
+: The connection level flow control parameter contains the initial connection
+  flow control window encoded as an unsigned 32-bit integer.  The sender of this
+  parameter sets the byte offset for connection level flow control to this
+  value.  This is equivalent to sending a WINDOW_UPDATE ({{frame-window-update}}
+  for stream 0 immediately after completing the handshake.
+
+MSPC (0x0002):
+
+: The maximum number of concurrent streams parameter is encoded as an unsigned
+  32-bit integer.
+
+ICSL (0x0003):
+
+: The idle timeout is a value in seconds that is encoded as an unsigned 16-bit
+  integer.  The maximum value is 600 seconds (10 minutes).
+
+An endpoint MAY use the following transport parameters:
+
+TCID (0x0004):
+
+: The truncated connection identifier parameter indicates that packets sent to
+  the peer can omit the connection ID.  This can be used by an endpoint where
+  the 5-tuple is sufficient to identify a connection.  This parameter is zero
+  length.
+
+COPT (0x0005):
+
+: Connection options are a repeated parameter.  The parameter contains any
   connection options being requested by the client or server.  These are
   typically used for experimentation and will evolve over time.  Example use
   cases include changing congestion control algorithms and parameters such as
   initial window.  (TODO: List connection options.)
 
-### Proof of Source Address Ownership
+### Values of Transport Parameters for 0-RTT
+
+Transport parameters from the server are remembered by the client for 0-RTT
+connections.  If values change as a result of completing the handshake, the
+client is expected to respect the new values.  This introduces some potential
+problems, particularly with respect to transport parameters that establish
+limits:
+
+* A client might exceed a newly declared connection or stream flow control limit
+  with 0-RTT data.  If this occurs, the client ceases transmission as though the
+  flow control limit was reached.  Once WINDOW_UPDATE frames indicating an
+  increase to the affected flow control offsets is received, the client can
+  recommence sending.
+
+* Similarly, a client might exceed the concurrent stream limit declared by the
+  server.  A client MUST reset any streams that exceed this connection.  A
+  server MAY reset these streams.
+
+A client cannot use or rely upon any other transport parameter that was enabled
+in a previous connection.  This includes those defined in this document.  A
+client MUST assume that the transport parameter was absent, unless the
+definition of a transport parameter provides explicit rules for use of the
+option in 0-RTT.
+
+
+### New Transport Parameters
+
+An endpoint MUST ignore transport parameters that it does not support.
+
+The definition of new transport parameters can be used to negotiate new protocol
+behavior.  Endpoints that support features that deviate from this specification
+MUST assume that a peer will operate as described in this document unless it
+provides an explicit signal of support.  A new transport parameter could be used
+to provide this signal.
+
+New transport parameters can be registered according to the rules in
+{{iana-transport-parameters}}.
+
+
+### Version Negotiation Validation {#version-validation}
+
+The transport parameters include three fields that encode version information.
+These retroactively authenticate the version negotiation (see
+{{version-negotiation}}) that is performed prior to the cryptographic handshake.
+
+Inclusion of these values in an extension provides integrity protection for
+these values.  As a result, modification of version negotiation packets by an
+attacker can be detected.
+
+The client includes two fields in the transport parameters that it includes in
+the TLS ClientHello:
+
+* The negotiated_version is the version that was finally selected for use.  This
+  MUST be identical to the value that is on the packet that carries the
+  ClientHello.  A server that receives a negotiated_version that does not match
+  the version of QUIC that is in use MUST terminate the connection with a TBD
+  error code.
+
+* The initial_version is the version that the client initially attempted to use.
+  If the server did not send a version negotiation packet
+  {{version-negotiation-packet}}, this will be identical to the
+  negotiated_version.
+
+A stateful server can remember how version negotiation was performed and
+validate the initial_version value.
+
+A server that does not maintain state for early packets uses a different
+process. If the initial and negotiated versions are the same, a stateless server
+can accept the value.
+
+If the initial version is different from the negotiated_version, a stateless
+server MUST validate the value.  A server MUST check that it would have sent a
+version negotiation packet if it had received a packet with the indicated
+initial_version.  If a server would have accepted the version included in the
+initial_version and the value differs from the value of negotiated_version, the
+server MUST terminate the connection with a TBD error code.
+
+The server includes a list of versions that it would send in any version
+negotiation packet ({{version-negotiation-packet}}) in supported_versions.  This
+value is set even if it did not send a version negotiation packet.
+
+The client can validate that the negotiated_version is included in the
+supported_versions list and - if version negotiation was performed - that it
+would have selected the negotiated version.  A client MUST terminate the
+connection with a TBD error code if the negotiated_version value is not included
+in the supported_versions list.  A client MUST terminate with a TBD error code
+if version negotiation occurred but it would have selected a different version
+based on the value of the supported_versions list.
+
+
+### Proof of Source Address Ownership {#source-address-token}
 
 Transport protocols commonly use a roundtrip time to verify a client's address
 ownership for protection from malicious clients that spoof their source address.
@@ -748,7 +910,10 @@ client in the STK.
 (TODO: Describe server and client actions on STK, encoding, recommendations for
 what to put in an STK.  Describe SCUP messages.)
 
+
 ### Crypto Handshake Protocol Features
+
+(TODO: Remove or migrate this section.)
 
 QUIC's current crypto handshake mechanism is documented in {{QUICCrypto}}.  QUIC
 does not restrict itself to using a specific handshake protocol, so the details
@@ -791,15 +956,6 @@ protocol.
   crypto protocol SHOULD compress certificates and any other information to
   minimize the number of packets sent during a handshake.
 
-
-### Version Negotiation Validation {#version-validation}
-
-The following information used during the QUIC handshake MUST be
-cryptographically verified by the crypto handshake protocol:
-
-* Client's originally proposed version in its first packet.
-
-* Server's version list in it's Version Negotiation packet, if one was sent.
 
 
 ## Connection Migration {#migration}
