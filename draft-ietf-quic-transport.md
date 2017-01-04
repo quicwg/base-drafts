@@ -740,7 +740,7 @@ language from Section 3 of {{!I-D.ietf-tls-tls13}}.
 ~~~
 {: #figure-transport-parameters title="Definition of TransportParameters"}
 
-The "extension_data" field of the quic_transport_parameters extension defined in
+The `extension_data` field of the quic_transport_parameters extension defined in
 {{QUIC-TLS}} contains a TransportParameters value.  TLS encoding rules are
 therefore used to encode the transport parameters.
 

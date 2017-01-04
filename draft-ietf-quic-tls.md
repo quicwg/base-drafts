@@ -84,13 +84,11 @@ QUIC.
 
 --- note_Note_to_Readers
 
-Discussion of this draft takes place on the QUIC working group mailing list
-(quic@ietf.org), which is archived at
-<https://mailarchive.ietf.org/arch/search/?email_list=quic>.
+Discussion of this draft takes place on the QUIC working group mailing list (quic@ietf.org),
+which is archived at <https://mailarchive.ietf.org/arch/search/?email_list=quic>.
 
-Working Group information can be found at <https://github.com/quicwg>; source
-code and issues list for this draft can be found at
-<https://github.com/quicwg/base-drafts/labels/tls>.
+Working Group information can be found at <https://github.com/quicwg>; source code and issues list
+for this draft can be found at <https://github.com/quicwg/base-drafts/labels/tls>.
 
 --- middle
 
@@ -1106,31 +1104,35 @@ protection for the QUIC negotiation.  This does not prevent version downgrade
 during the handshake, though it means that such a downgrade causes a handshake
 failure.
 
-Protocols that use the QUIC transport MUST use Application Layer Protocol
-Negotiation (ALPN) {{!RFC7301}}.  The ALPN identifier for the protocol MUST be
-specific to the QUIC version that it operates over.  When constructing a
-ClientHello, clients MUST include a list of all the ALPN identifiers that they
-support, regardless of whether the QUIC version that they have currently
-selected supports that protocol.
+TLS uses Application Layer Protocol Negotiation (ALPN) {{!RFC7301}} to select an
+application protocol.  The application-layer protocol MAY restrict the QUIC
+versions that it can operate over.  Servers MUST select an application protocol
+compatible with the QUIC version that the client has selected.
 
-Servers SHOULD select an application protocol based solely on the information in
-the ClientHello, not using the QUIC version that the client has selected.  If
-the protocol that is selected is not supported with the QUIC version that is in
-use, the server MAY send a QUIC version negotiation packet to select a
-compatible version.
-
-If the server cannot select a combination of ALPN identifier and QUIC version it
-MUST abort the connection.  A client MUST abort a connection if the server picks
-an incompatible version of QUIC version and ALPN.
+If the server cannot select a compatible combination of application protocol and
+QUIC version, it MUST abort the connection. A client MUST abort a connection if
+the server picks an incompatible combination of QUIC version and ALPN
+identifier.
 
 
-## QUIC Extension {#quic_parameters}
+## QUIC Transport Parameters Extension {#quic_parameters}
 
-QUIC defines an extension for use with TLS.  That extension defines
-transport-related parameters.  This provides integrity protection for these
-values.  Including these in the TLS handshake also make the values that a client
-sets available to a server one-round trip earlier than parameters that are
-carried in QUIC packets.  This document does not define that extension.
+QUIC transport parameters are carried in a TLS extension. Different versions of
+QUIC might define a different format for this struct.
+
+Including transport parameters in the TLS handshake provides integrity
+protection for these values.
+
+~~~
+   enum {
+      quic_transport_parameters(26), (65535)
+   } ExtensionType;
+~~~
+
+The `extension_data` field of the quic_transport_parameters extension contains a
+value that is defined by the version of QUIC that is in use.  The
+quic_transport_parameters extension carries a TransportParameters when the
+version of QUIC defined in {{QUIC-TRANSPORT}} is used.
 
 
 ## Source Address Validation {#source-address}
