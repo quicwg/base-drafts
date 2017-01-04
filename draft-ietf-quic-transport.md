@@ -765,7 +765,7 @@ CFCW (0x0001):
 : The connection level flow control parameter contains the initial connection
   flow control window encoded as an unsigned 32-bit integer.  The sender of this
   parameter sets the byte offset for connection level flow control to this
-  value.  This is equivalent to sending a WINDOW_UPDATE ({{frame-window-update}}
+  value.  This is equivalent to sending a WINDOW_UPDATE (TODO: section ref)
   for stream 0 immediately after completing the handshake.
 
 MSPC (0x0002):
@@ -1691,13 +1691,12 @@ connection.
 
 ## Stream Concurrency
 
-An endpoint can limit the number of concurrently active incoming streams by
-setting the MSPC parameter (see {{required-transport-parameters}}) in the
-transport parameters. The maximum concurrent streams setting is specific to each
-endpoint and applies only to the peer that receives the setting. That is,
-clients specify the maximum number of concurrent streams the server can
-initiate, and servers specify the maximum number of concurrent streams the
-client can initiate.
+An endpoint limits the number of concurrently active incoming streams by setting
+the MSPC parameter (see {{transport-parameter-definitions}}) in the transport
+parameters. The maximum concurrent streams setting is specific to each endpoint
+and applies only to the peer that receives the setting. That is, clients specify
+the maximum number of concurrent streams the server can initiate, and servers
+specify the maximum number of concurrent streams the client can initiate.
 
 Streams that are in the "open" state or in either of the "half-closed" states
 count toward the maximum number of streams that an endpoint is permitted to
@@ -2051,6 +2050,11 @@ be able to generate forward-secure encrypted ack packets.
 # IANA Considerations
 
 This document has no IANA actions yet.
+
+
+## QUIC Transport Parameter Registry {#iana-transport-parameters}
+
+TODO: establish a registry for transport parameter identifiers.  Steal from TLS.
 
 
 --- back
