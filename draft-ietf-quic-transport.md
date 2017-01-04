@@ -184,33 +184,22 @@ strengths of QUIC include:
 * Connection Migration and Resilience to NAT rebinding
 
 
-## Low-Latency Version Negotiation
-
-QUIC combines version negotiation with the rest of connection establishment to
-avoid unnecessary roundtrip delays.  A QUIC client proposes a version to use for
-the connection, and encodes the rest of the handshake using the proposed
-version.  If the server does not speak the client-chosen version, it forces
-version negotiation by sending back a Version Negotiation packet to the client,
-causing a roundtrip of delay before connection establishment.
-
-This mechanism eliminates roundtrip latency when the client's
-optimistically-chosen version is spoken by the server, and incentivizes servers
-to not lag behind clients in deployment of newer versions. Additionally, an
-application may negotiate QUIC versions out-of-band to increase chances of
-success in the first roundtrip and to obviate the additional roundtrip in the
-case of version mismatch.
-
 ## Low-Latency Connection Establishment
 
 QUIC relies on a combined crypto and transport handshake for setting up a secure
 transport connection.  QUIC connections are expected to commonly use 0-RTT
 handshakes, meaning that for most QUIC connections, data can be sent immediately
 following the client handshake packet, without waiting for a reply from the
-server.  QUIC provides a dedicated stream (Stream ID 1) to be used for
-performing the crypto handshake and QUIC options negotiation.  The format of the
-QUIC options and parameters used during negotiation are described in this
-document, but the handshake protocol that runs on Stream ID 1 is described in
-the accompanying crypto handshake draft {{QUIC-TLS}}.
+server.
+
+QUIC clients optimistically predict the version of QUIC that is used.  If this
+prediction is correct, no latency is added to connection setup to perform
+QUIC version negotiation.
+
+QUIC uses TLS for its cryptographic handshake {{QUIC-TLS}}.  TLS provides
+authenticated negotiation of keying material and other transport parameters
+using a minimal number of round trips.
+
 
 ## Stream Multiplexing
 
