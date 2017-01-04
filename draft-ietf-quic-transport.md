@@ -647,7 +647,7 @@ version.
 
 If the packet contains a version that is acceptable to the server, the server
 proceeds with the handshake ({{handshake}}).  All subsequent packets sent by the
-server MUST have the version flag off.  This commits the server to the version
+server MUST have the VERSION flag unset.  This commits the server to the version
 that the client selected.
 
 When the client receives a Version Negotiation packet from the server, it should
