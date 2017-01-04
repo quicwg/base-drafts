@@ -305,6 +305,9 @@ QUIC versions are identified using a 32-bit value.
 The version 0x00000000 is reserved to represent an invalid version.  This
 version of the specification is identified by the number 0x00000001.
 
+Versions with the most significant 16 bits of the version number cleared are
+reserved for use in future IETF consensus documents.
+
 \[\[RFC editor: please remove the remainder of this section before
 publication.]]
 
