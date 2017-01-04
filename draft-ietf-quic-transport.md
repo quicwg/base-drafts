@@ -171,8 +171,6 @@ Definitions of terms that are used in this document:
 This section briefly describes QUIC's key mechanisms and benefits.  Key
 strengths of QUIC include:
 
-* Low-latency Version Negotiation
-
 * Low-latency connection establishment
 
 * Multiplexing without head-of-line blocking
