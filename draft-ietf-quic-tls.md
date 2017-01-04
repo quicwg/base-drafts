@@ -260,7 +260,7 @@ document:
    an additional round trip prior to the basic exchange.  This is needed if the
    server wishes to request a different key exchange key from the client.
    HelloRetryRequest is also used to verify that the client is correctly able to
-   receive packets on the address it claims to have (see {{source-address}}).
+   receive packets on the address it claims to have (see {{QUIC-TRANSPORT}}).
 
  * A pre-shared key mode can be used for subsequent handshakes to avoid public
    key operations.  This is the basis for 0-RTT data, even if the remainder of
