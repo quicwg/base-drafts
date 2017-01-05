@@ -306,9 +306,13 @@ across changes in the client's and the server's network addresses.
 # Packet Types and Formats
 
 We first describe QUIC's packet types and their formats, since some are
-referenced in subsequent mechanisms.  Note that unless otherwise noted, all
-values specified in this document are in little-endian format and all field
-sizes are in bits.
+referenced in subsequent mechanisms.
+
+All numeric values are encoded in network byte order (that is, big-endian) and
+all field sizes are in bits.  When discussing individual bits of fields, the
+least significant bit is referred to as bit 0.  Hexadecimal notation is used for
+describing the value of fields.
+
 
 ## Common Header
 
@@ -652,7 +656,7 @@ QUIC encodes the transport parameters and options as tag-value pairs, all as
 
 * MSPC: Maximum number of incoming streams per connection.
 
-* ICSL: ?
+* ICSL: Idle timeout in seconds.  The maximum value is 600 seconds (10 minutes).
 
 #### Optional Transport Parameters
 
@@ -1939,10 +1943,10 @@ TODO: Discuss error handling beyond just listing error codes.
 ## Spoofed Ack Attack
 
 An attacker receives an STK from the server and then releases the IP address on
-which it received the STK.  The attacked may in the future, spoof this same
-address (which now presumably addresses a different endpoint), and initiates a
+which it received the STK.  The attacker may, in the future, spoof this same
+address (which now presumably addresses a different endpoint), and initiate a
 0-RTT connection with a server on the victim's behalf.  The attacker then spoofs
-ack packets to the server which cause the server to potentially drown the victim
+ACK frames to the server which cause the server to potentially drown the victim
 in data.
 
 There are two possible mitigations to this attack.  The simplest one is that a
