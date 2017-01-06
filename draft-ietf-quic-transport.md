@@ -374,25 +374,25 @@ packet types:
 
 ~~~
 Check the flags in the common header
-                 |
-                 |
-                 V
-           +--------------+
-           | PUBLIC_RESET |  YES
-           | flag set?    |-------> Public Reset packet
-           +--------------+
-                 |
-                 | NO
-                 V
-           +------------+         +-------------+
-           | VERSION    |  YES    | Packet sent |  YES     Version
-           | flag set?  |-------->| by server?  |--------> Negotiation
-           +------------+         +-------------+          packet
-                 |                       |
-                 | NO                    | NO
-                 V                       V
-         Regular packet with       Regular packet with
-     no QUIC Version in header    QUIC Version in header
+              |
+              |
+              V
+        +--------------+
+        | PUBLIC_RESET |  YES
+        | flag set?    |-------> Public Reset packet
+        +--------------+
+              |
+              | NO
+              V
+        +------------+         +-------------+
+        | VERSION    |  YES    | Packet sent |  YES     Version
+        | flag set?  |-------->| by server?  |--------> Negotiation
+        +------------+         +-------------+          packet
+              |                       |
+              | NO                    | NO
+              V                       V
+      Regular packet with       Regular packet with
+  no QUIC Version in header    QUIC Version in header
 ~~~
 {: #packet-types title="Types of QUIC Packets"}
 
