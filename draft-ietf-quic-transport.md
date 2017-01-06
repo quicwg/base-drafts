@@ -426,12 +426,11 @@ The fields in a Regular packet past the Common Header are the following:
   by the sender.  The first packet sent by an endpoint MUST have a packet number
   of 1.
 
-* AEAD Data: A Regular packet's Common Header and fields are authenticated,
-  but not encrypted.  The rest of a Regular packet, starting with the first
-  frame, is both authenticated and encrypted.  Immediately following the header,
-  Regular packets contain AEAD (Authenticated Encryption with Associated Data)
-  data.  After decryption, the plaintext consists of a sequence of
-  frames, as shown below (frames are described in {{frames}}).
+* AEAD Data: The remainder of a Regular packet is both authenticated and
+  encrypted once packet protection keys are available.  {{QUIC-TLS}} describes
+  packet protection in detail.  After decryption, the plaintext consists of a
+  sequence of frames, as shown in {{regular-packet-frames}}.  Frames are
+  described in {{frames}}.
 
 ~~~
  0                   1                   2                   3
