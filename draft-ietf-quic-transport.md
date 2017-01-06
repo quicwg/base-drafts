@@ -385,9 +385,9 @@ Check the flags in the common header
                  | NO
                  V
            +------------+         +-------------+
-           | VERSION    |  YES    | Packet sent |  YES
-           | flag set?  |-------->| by server?  |--------> Version Negotiation
-           +------------+         +-------------+               packet
+           | VERSION    |  YES    | Packet sent |  YES     Version
+           | flag set?  |-------->| by server?  |--------> Negotiation
+           +------------+         +-------------+          packet
                  |                       |
                  | NO                    | NO
                  V                       V
