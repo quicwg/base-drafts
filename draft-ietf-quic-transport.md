@@ -396,9 +396,11 @@ Check the flags in the common header
 ~~~
 {: #packet-types title="Types of QUIC Packets"}
 
+
 ## Regular Packets
 
-Each Regular packet's payload consists of fields shown below:
+Each Regular packet contains additional header fields followed by payload, as
+shown in {{regular-packet-format}}.
 
 ~~~
  0                   1                   2                   3
