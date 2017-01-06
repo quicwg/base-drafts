@@ -1129,7 +1129,7 @@ helpful log message). The frame is as follows:
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
 
-The BLOCKED frame payload contains a single field:
+The BLOCKED frame contains a single field:
 
 * Stream ID: A 32-bit unsigned number indicating the stream which is flow
   control blocked.  A non-zero Stream ID field specifies the stream that is flow
