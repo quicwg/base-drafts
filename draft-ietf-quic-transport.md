@@ -271,7 +271,7 @@ a new server IP address as well, since the Connection ID remains consistent
 across changes in the client's and the server's network addresses.
 
 
-## Version Negotiation
+## Version Negotiation {#benefit-version-negotiation}
 
 QUIC version negotiation allows for multiple versions of the protocol to be
 deployed and used concurrently. Version negotiation is described in
