@@ -846,7 +846,7 @@ A STREAM frame is shown below.
 ~~~
 {: #stream-format title="STREAM Frame Format"}
 
-The STREAM frame payload contains the following fields:
+The STREAM frame contains the following fields:
 
 * Stream ID: A variable-sized unsigned ID unique to this stream, whose size is
   determined by the `SS` bits in the type byte.
