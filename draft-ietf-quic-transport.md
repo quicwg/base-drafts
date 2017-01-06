@@ -411,8 +411,7 @@ have the VERSION bit set.  This bit is always set on packets that are sent prior
 to connection establishment.  When receiving a packet that is not associated
 with an existing connection, packets without a VERSION bit MUST be discarded.
 
-While there might be similarities between different versions of this protocol,
-implementations have to assume that a version that it does not support uses a
+Implementations have to assume that a version that it does not support uses a
 different packet format.
 
 Between different versions the following things are guaranteed to remain
@@ -644,7 +643,7 @@ list of versions that the server will accept.  A server MUST send a version
 negotiation packet for every packet that it receives with an unacceptable
 version.
 
-If the packet contains a version that is acceptable to the server, the server
+If the version selected by the client is acceptable to the server, the server
 proceeds with the handshake ({{handshake}}).  All subsequent packets sent by the
 server MUST have the VERSION flag unset.  This commits the server to the version
 that the client selected.
@@ -795,13 +794,21 @@ COPT (0x0005):
   cases include changing congestion control algorithms and parameters such as
   initial window.  (TODO: List connection options.)
 
+
 ### Values of Transport Parameters for 0-RTT
 
-Transport parameters from the server are remembered by the client for 0-RTT
-connections.  If values change as a result of completing the handshake, the
-client is expected to respect the new values.  This introduces some potential
-problems, particularly with respect to transport parameters that establish
-limits:
+Optional transport parameters from the server MUST be reset to default values by
+the client for 0-RTT connections.
+
+The mandatory transport parameters for stream and connection flow control and
+concurrent stream limits MUST be remembered by the client.  The idle timeout value
+is not expected to be relevant for the short time that it takes to obtain 1-RTT
+keys.
+
+
+Transport parameter values could change as a result of completing the handshake.
+The client MUST respect the new values when the handshake completes.  This
+introduces some potential problems:
 
 * A client might exceed a newly declared connection or stream flow control limit
   with 0-RTT data.  If this occurs, the client ceases transmission as though the
@@ -815,20 +822,15 @@ limits:
 
 A client cannot use or rely upon any other transport parameter that was enabled
 in a previous connection.  This includes those defined in this document.  A
-client MUST assume that the transport parameter was absent, unless the
-definition of a transport parameter provides explicit rules for use of the
-option in 0-RTT.
+client MUST assume that the transport parameter was absent unless the definition
+of a transport parameter provides explicit rules for use of the option in 0-RTT.
 
 
 ### New Transport Parameters
 
-An endpoint MUST ignore transport parameters that it does not support.
-
-The definition of new transport parameters can be used to negotiate new protocol
-behavior.  Endpoints that support features that deviate from this specification
-MUST assume that a peer will operate as described in this document unless it
-provides an explicit signal of support.  A new transport parameter could be used
-to provide this signal.
+New transport parameters can be used to by endpoints to advertise new
+capabilities.  This can be used to negotiate new protocol behavior.  An endpoint
+MUST ignore transport parameters that it does not support.
 
 New transport parameters can be registered according to the rules in
 {{iana-transport-parameters}}.
