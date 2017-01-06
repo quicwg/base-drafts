@@ -416,7 +416,7 @@ implementations have to assume that a version that it does not support uses a
 different packet format.
 
 Between different versions the following things are guaranteed to remain
-constant are:
+constant:
 
 * the location and size of the Flags field,
 
