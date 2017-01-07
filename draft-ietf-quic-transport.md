@@ -1783,7 +1783,7 @@ QUIC_TOO_MANY_OUTSTANDING_RECEIVED_PACKETS (0x45):
 : The connection has too many outstanding received packets.
 
 QUIC_CONNECTION_CANCELLED (0x46):
-: The quic connection has been cancelled.
+: The QUIC connection has been cancelled.
 
 QUIC_BAD_PACKET_LOSS_RATE (0x47):
 : Disabled QUIC because of high packet loss rate.
