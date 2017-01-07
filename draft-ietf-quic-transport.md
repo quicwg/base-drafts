@@ -328,7 +328,7 @@ All QUIC packets begin with a QUIC Common header, as shown below.
 +                     [Connection ID (64)]                      +
 |                                                               |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                          Payload (*)                        ...
+|                   Type-Dependent Fields (*)                 ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
 
@@ -402,7 +402,8 @@ Check the flags in the common header
 
 ## Regular Packets
 
-Each Regular packet's payload consists of fields shown below:
+Each Regular packet contains additional header fields followed by an encrypted
+payload, as shown below:
 
 ~~~
  0                   1                   2                   3
@@ -412,7 +413,7 @@ Each Regular packet's payload consists of fields shown below:
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                  Packet Number (8/16/32/48)                 ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                        {AEAD Data (*)}                      ...
+|                    {Encrypted Payload (*)}                  ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
 {: #regular-packet-format title="Regular Packet"}
@@ -428,12 +429,14 @@ The fields in a Regular packet past the Common Header are the following:
   by the sender.  The first packet sent by an endpoint MUST have a packet number
   of 1.
 
-* AEAD Data: A Regular packet's Common Header and fields are authenticated,
-  but not encrypted.  The rest of a Regular packet, starting with the first
-  frame, is both authenticated and encrypted.  Immediately following the header,
-  Regular packets contain AEAD (Authenticated Encryption with Associated Data)
-  data.  After decryption, the plaintext consists of a sequence of
-  frames, as shown below (frames are described in {{frames}}).
+* Encrypted Payload: A Regular packet's header fields, including the Common 
+  Header, are authenticated, but not encrypted. The rest of a Regular packet, 
+  starting with the first frame, is both authenticated and encrypted.
+  Immediately following the header, Regular packets contain AEAD (Authenticated 
+  Encryption with Associated Data) data. After decryption, the plaintext
+  consists of a sequence of frames, as shown below (frames are described in
+  {{frames}}). 
+
 
 ~~~
  0                   1                   2                   3
@@ -448,7 +451,7 @@ The fields in a Regular packet past the Common Header are the following:
 |                          Frame N (*)                        ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
-{: #regular-packet-frames title="Contents of AEAD Data"}
+{: #regular-packet-frames title="Contents of Encrypted Payload"}
 
 ### Packet Number Compression and Reconstruction
 
@@ -491,13 +494,13 @@ at any point in the connection.  In other words,
 A Regular packet MUST contain at least one frame, and MAY contain multiple
 frames and multiple frame types.  Frames MUST fit within a single QUIC packet
 and MUST NOT span a QUIC packet boundary.  Each frame begins with a Frame Type
-byte, indicating its type, followed by a type-dependent payload:
+byte, indicating its type, followed by additional type-dependent fields:
 
 ~~~
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|   Type (8)    |                  Payload (*)                ...
+|   Type (8)    |           Type-Dependent Fields (*)         ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
 {: #frame-layout title="Generic Frame Layout"}
@@ -526,7 +529,7 @@ document.
 ## Version Negotiation Packet
 
 A Version Negotiation packet is only sent by the server, MUST have the VERSION
-flag set, and MUST include the full 64-bit Connection ID.  The payload of the
+flag set, and MUST include the full 64-bit Connection ID.  The remainder of the
 Version Negotiation packet is a list of 32-bit versions which the server
 supports, as shown below.
 
@@ -548,13 +551,13 @@ supports, as shown below.
 ## Public Reset Packet
 
 A Public Reset packet MUST have the PUBLIC_RESET flag set, and MUST include the
-full 64-bit connection ID.  The payload of the Public Reset packet is TBD.
+full 64-bit connection ID.  The content of the Public Reset packet is TBD.
 
 ~~~
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                    Public Reset Payload (*)                 ...
+|                    Public Reset Fields (*)                  ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
 {: #public-reset-format title="Public Reset Packet"}
@@ -804,10 +807,10 @@ list.
 
 # Frame Types and Formats
 
-As described in {{packetization}}, Regular packets contain one or more frames.  We now
-describe the various QUIC frame types that can be present in a Regular packet.
-The use of these frames and various frame header bits are described in
-subsequent sections.
+As described in {{packetization}}, Regular packets contain one or more frames. 
+We now describe the various QUIC frame types that can be present in a Regular 
+packet. The use of these frames and various frame header bits are described in 
+subsequent sections. 
 
 ## STREAM Frame {#frame-stream}
 
@@ -849,7 +852,7 @@ A STREAM frame is shown below.
 ~~~
 {: #stream-format title="STREAM Frame Format"}
 
-The STREAM frame payload contains the following fields:
+The STREAM frame contains the following fields:
 
 * Stream ID: A variable-sized unsigned ID unique to this stream, whose size is
   determined by the `SS` bits in the type byte.
@@ -1075,7 +1078,7 @@ as is specified for the packet number for the enclosing packet's header
 ~~~
 {: #stop-waiting-format title="STOP_WAITING Frame Format"}
 
-The payload of the STOP_WAITING frame contains a single field:
+The STOP_WAITING frame contains a single field:
 
 * Least Unacked Delta: A variable-length packet number delta with the same
   length as the packet header's packet number.  Subtract it from the complete
@@ -1106,7 +1109,7 @@ window. The frame is as follows:
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
 
-The fields in the WINDOW_UPDATE frame payload are as follows:
+The fields in the WINDOW_UPDATE frame are as follows:
 
 * Stream ID: ID of the stream whose flow control windows is being updated, or 0
   to specify the connection-level flow control window.
@@ -1132,7 +1135,7 @@ helpful log message). The frame is as follows:
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
 
-The BLOCKED frame payload contains a single field:
+The BLOCKED frame contains a single field:
 
 * Stream ID: A 32-bit unsigned number indicating the stream which is flow
   control blocked.  A non-zero Stream ID field specifies the stream that is flow
@@ -1173,17 +1176,18 @@ The fields are:
 The PADDING frame (type=0x00) pads a packet with 0x00 bytes. When this frame is
 encountered, the rest of the packet is expected to be padding bytes. The frame
 contains 0x00 bytes and extends to the end of the QUIC packet. A PADDING frame
-has no payload.
+has no additional fields.
 
 
 ## PING frame {#frame-ping}
 
-Endpoints can use PING frames (type=0x07) to verify that their peers are still
-alive or to check reachability to the peer. The PING frame contains no payload.
-The receiver of a PING frame simply needs to ACK the packet containing this
-frame. The PING frame SHOULD be used to keep a connection alive when a stream is
-open. The default is to send a PING frame after 15 seconds of quiescence. A PING
-frame has no payload.
+Endpoints can use PING frames (type=0x07) to verify that their peers are still 
+alive or to check reachability to the peer. The PING frame contains no 
+additional fields. The receiver of a PING frame simply needs to ACK the packet 
+containing this frame. The PING frame SHOULD be used to keep a connection alive 
+when a stream is open. The default is to send a PING frame after 15 seconds of 
+quiescence. A PING frame has no payload. 
+
 
 ## CONNECTION_CLOSE frame {#frame-connection-close}
 
