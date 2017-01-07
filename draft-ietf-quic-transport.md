@@ -1761,9 +1761,6 @@ QUIC_ERROR_MIGRATING_PORT (0x56):
 QUIC_EMPTY_STREAM_FRAME_NO_FIN (0x32):
 : We received a STREAM_FRAME with no data and no fin flag set.
 
-QUIC_INVALID_HEADERS_STREAM_DATA (0x38):
-: We received invalid data on the headers stream.
-
 QUIC_FLOW_CONTROL_RECEIVED_TOO_MUCH_DATA (0x3b):
 : The peer received too much data, violating flow control.
 

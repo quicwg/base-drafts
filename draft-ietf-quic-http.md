@@ -697,6 +697,19 @@ strictly a synchronization marker for settings application.  See
 
 # Error Handling {#errors}
 
+This section describes the specific error codes defined by HTTP/QUIC and the
+mapping of HTTP/2 error codes into the QUIC error space.  (Work in progress.)
+
+## HTTP-Defined QUIC Error Codes {#http-error-codes}
+
+The following error codes are defined by HTTP/QUIC for use in QUIC RST_STREAM,
+GOAWAY, and CONNECTION_CLOSE frames.
+
+QUIC_INVALID_HEADERS_STREAM_DATA (0x38):
+: We received invalid data on the headers stream.
+
+## Mapping HTTP/2 Error Codes
+
 The HTTP/2 error codes defined in Section 7 of {{!RFC7540}} map to QUIC error
 codes as follows:
 
