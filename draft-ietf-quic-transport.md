@@ -931,9 +931,11 @@ An ACK frame is shown below.
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                  Largest Acked (8/16/32/48)                 ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|        Ack Delay (16)         |     Ack Block Section (*)   ...
+|        Ack Delay (16)         |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                     Timestamp Section (*)                   ...
+|[Num Blocks(8)]|             Ack Block Section (*)           ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|   NumTS (8)   |             Timestamp Section (*)           ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
 {: #ack-format title="ACK Frame Format"}
@@ -947,26 +949,33 @@ The fields in the ACK frame are as follows:
 * Ack Delay: Time from when the largest acked, as indicated in the Largest Acked
   field, was received by this peer to when this ack was sent.
 
+* Num Blocks (opt): An optional 8-bit unsigned value specifying the number of
+  additional ack blocks (besides the required First Ack Block) in this ACK
+  frame.  Only present if the 'N' flag bit is 1.
+
 * Ack Block Section: Contains one or more blocks of packet numbers which have
   been successfully received.  See {{ack-block-section}}.
 
+* Num Timestamps: An unsigned 8-bit number specifying the total number of
+  <packet number, timestamp> pairs in the Timestamp Section.
+  
 * Timestamp Section: Contains zero or more timestamps reporting transit delay of
   received packets.  See {{timestamp-section}}.
 
 
 ### Ack Block Section {#ack-block-section}
 
-The Ack Block Section contains between one and 256 blocks of packet numbers
-which have been successfully received.  If the `N` bit in the Type field is 0,
-the Num Blocks field is absent and only the First Ack Block length is present.
-If the `N` bit is 1, the Num Blocks field indicates how many additional blocks
-follow the First Ack Block Length field.
+The Ack Block Section contains between one and 256 blocks of packet numbers 
+which have been successfully received. If the Num Blocks field is absent, only 
+the First Ack Block length is present in this section. Otherwise, the Num Blocks 
+field indicates how many additional blocks follow the First Ack Block Length 
+field. 
 
 ~~~
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|[Num Blocks(8)]|      First Ack Block Length (8/16/32/48)    ...
+|              First Ack Block Length (8/16/32/48)            ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |  [Gap 1 (8)]  |       [Ack Block 1 Length (8/16/32/48)]     ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -980,10 +989,6 @@ follow the First Ack Block Length field.
 {: #ack-block-format title="Ack Block Section"}
 
 The fields in the Ack Block Section are:
-
-* Num Blocks (opt): An optional 8-bit unsigned value specifying the number of
-  additional ack blocks (besides the required First Ack Block) in this ACK
-  frame.  Only present if the 'N' flag bit is 1.
 
 * First Ack Block Length: An unsigned packet number delta that indicates the
   number of contiguous additional packets being acked starting at the Largest
@@ -1000,23 +1005,23 @@ The fields in the Ack Block Section are:
 
 ### Timestamp Section {#timestamp-section}
 
-The Timestamp Section contains between zero and 255 measurements of packet
-delay. This information can be used by a sender to better estimate the RTT of
-the connection.
+The Timestamp Section contains between zero and 255 measurements of packet 
+receive time deltas. This information can be used by a sender to better estimate 
+the RTT of the connection. 
 
 ~~~
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|   Num TS(8)   | [Delta LA (8)]|
++-+-+-+-+-+-+-+-+
+| [Delta LA (8)]|
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                [Time Since Largest Acked (32)]                |
+|                [First Timestamp (32)]                |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |[Delta LA 1(8)]| [Time Since Previous 1 (16)]  |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |[Delta LA 2(8)]| [Time Since Previous 2 (16)]  |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-                             ...
+                       ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |[Delta LA N(8)]| [Time Since Previous N (16)]  |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -1025,9 +1030,6 @@ the connection.
 
 The fields in the Timestamp Section are:
 
-* Num Timestamps: An unsigned 8-bit number specifying the total number of
-  <packet number, timestamp> pairs following, including the First Timestamp.
-
 * Delta Largest Acked (opt): An optional 8-bit unsigned packet number delta
   specifying the delta between the largest acked and the first packet whose
   timestamp is being reported.  In other words, this first packet number may
@@ -1035,7 +1037,7 @@ The fields in the Timestamp Section are:
 
 * First Timestamp (opt): An optional 32-bit unsigned value specifying the time
   delta in microseconds, from the beginning of the connection to the arrival
-  of this packet.
+  of the packet indicated by Delta Largest Acked.
 
 * Delta Largest Acked 1..N (opt, repeated): (Same as above.)
 
