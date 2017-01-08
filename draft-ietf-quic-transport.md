@@ -628,10 +628,9 @@ QUIC's connection establishment begins with version negotiation, since all
 communication between the endpoints, including packet and frame formats, relies
 on the two endpoints agreeing on a version.
 
-A QUIC connection begins with a client sending a handshake packet.  Until
-packets are protected by 1-RTT keys (see {{handshake}}), packets sent by a
-client MUST include the version in the packet header.  This allows the server to
-identify the version of early packets and enable version negotiation.
+A QUIC connection begins with a client sending a handshake packet. Until the
+cryptographic handshake ({{handshake}}) produces 1-RTT keys, packets sent by a
+client MUST include the version in the packet header.
 
 When the server receives a packet from a client with the VERSION flag set, it
 compares the client's version to the versions it supports.
@@ -811,8 +810,8 @@ The client MUST respect the new values when the handshake completes.  This
 introduces some potential problems:
 
 * A client might exceed a newly declared connection or stream flow control limit
-  with 0-RTT data.  If this occurs, the client ceases transmission as though the
-  flow control limit was reached.  Once WINDOW_UPDATE frames indicating an
+  with 0-RTT data.  If this occurs, the client MUST cease transmission as though
+  the flow control limit was reached.  Once WINDOW_UPDATE frames indicating an
   increase to the affected flow control offsets is received, the client can
   recommence sending.
 
