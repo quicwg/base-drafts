@@ -287,18 +287,7 @@ a new server IP address as well, since the Connection ID remains consistent
 across changes in the client's and the server's network addresses.
 
 
-# Packet Types and Formats
-
-We first describe QUIC's packet types and their formats, since some are
-referenced in subsequent mechanisms.
-
-All numeric values are encoded in network byte order (that is, big-endian) and
-all field sizes are in bits.  When discussing individual bits of fields, the
-least significant bit is referred to as bit 0.  Hexadecimal notation is used for
-describing the value of fields.
-
-
-## Versions
+# Versions
 
 QUIC versions are identified using a 32-bit value.
 
@@ -321,6 +310,16 @@ identified as 0xff00000D.
 Versions of QUIC that are used for experimentation are coordinated on the
 [github wiki](https://github.com/quicwg/base-drafts/wiki/QUIC-Versions).
 
+
+# Packet Types and Formats
+
+We first describe QUIC's packet types and their formats, since some are
+referenced in subsequent mechanisms.
+
+All numeric values are encoded in network byte order (that is, big-endian) and
+all field sizes are in bits.  When discussing individual bits of fields, the
+least significant bit is referred to as bit 0.  Hexadecimal notation is used for
+describing the value of fields.
 
 
 ## Common Header
@@ -630,10 +629,10 @@ QUIC's connection establishment begins with version negotiation, since all
 communication between the endpoints, including packet and frame formats, relies
 on the two endpoints agreeing on a version.
 
-A QUIC connection begins with a client sending a handshake packet. Until the
-cryptographic handshake ({{handshake}}) produces 1-RTT keys, packets sent by a
+A QUIC connection begins with a client sending a handshake packet.  Until
+packets are protected by 1-RTT keys (see {{handshake}}), packets sent by a
 client MUST include the version in the packet header.  This allows the server to
-identify early packets and to enable version negotiation.
+identify the version of early packets and enable version negotiation.
 
 When the server receives a packet from a client with the VERSION flag set, it
 compares the client's version to the versions it supports.
@@ -651,10 +650,11 @@ server MUST have the VERSION flag unset.  This commits the server to the version
 that the client selected.
 
 When the client receives a Version Negotiation packet from the server, it should
-select an acceptable protocol version.  If such a version is found, the client
-MUST resend all packets using the new version, and the resent packets MUST use
-new packet numbers.  These packets MUST continue to have the VERSION flag set
-and MUST include the new negotiated protocol version.
+select an acceptable protocol version.  If the server lists an acceptable
+version, the client selects that version and resends all packets using that
+version. The resent packets MUST use new packet numbers.  These packets MUST
+continue to have the VERSION flag set and MUST include the new negotiated
+protocol version.
 
 The client MUST include its selected version on all packets until it starts
 protecting packets with 1-RTT keys.  Only unprotected packets and 0-RTT
