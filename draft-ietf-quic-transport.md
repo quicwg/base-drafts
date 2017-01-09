@@ -171,8 +171,6 @@ Definitions of terms that are used in this document:
 This section briefly describes QUIC's key mechanisms and benefits.  Key
 strengths of QUIC include:
 
-* Low-latency Version Negotiation
-
 * Low-latency connection establishment
 
 * Multiplexing without head-of-line blocking
@@ -183,24 +181,10 @@ strengths of QUIC include:
 
 * Stream and connection flow control
 
-* Connection Migration and Resilience to NAT rebinding
+* Connection migration and resilience to NAT rebinding
 
+* Version negotiation
 
-## Low-Latency Version Negotiation
-
-QUIC combines version negotiation with the rest of connection establishment to
-avoid unnecessary roundtrip delays.  A QUIC client proposes a version to use for
-the connection, and encodes the rest of the handshake using the proposed
-version.  If the server does not speak the client-chosen version, it forces
-version negotiation by sending back a Version Negotiation packet to the client,
-causing a roundtrip of delay before connection establishment.
-
-This mechanism eliminates roundtrip latency when the client's
-optimistically-chosen version is spoken by the server, and incentivizes servers
-to not lag behind clients in deployment of newer versions. Additionally, an
-application may negotiate QUIC versions out-of-band to increase chances of
-success in the first roundtrip and to obviate the additional roundtrip in the
-case of version mismatch.
 
 ## Low-Latency Connection Establishment
 
@@ -285,6 +269,13 @@ continues to use the same session key for encrypting and decrypting packets.
 The consistent connection ID can be used to allow migration of the connection to
 a new server IP address as well, since the Connection ID remains consistent
 across changes in the client's and the server's network addresses.
+
+
+## Version Negotiation {#benefit-version-negotiation}
+
+QUIC version negotiation allows for multiple versions of the protocol to be
+deployed and used concurrently. Version negotiation is described in
+{{version-negotiation}}.
 
 
 # Packet Types and Formats
