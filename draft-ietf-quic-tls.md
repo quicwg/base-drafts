@@ -837,24 +837,28 @@ be decrypted until all the server's handshake messages are received by the
 client.
 
 
-## Protected Frames Prior to Handshake Completion {#pre-handshake-protected}
+## Receiving Out-of-Order Protected Frames {#pre-handshake-protected}
 
-Due to reordering and loss, 1-RTT protected packets might be received by an
-endpoint before the final TLS handshake messages are received.  These will not
-be able to be decrypted, unless the missing handshake messages are the second
-flight of handshake messages sent by the client.
+Due to reordering and loss, protected packets might be received by an endpoint
+before the final TLS handshake messages are received.  A client will be unable
+to decrypt 1-RTT packets from the server, whereas a server will be able to
+decrypt 1-RTT packets from the client.
 
-Protected packets MAY be stored and later decrypted and used once the handshake
-is complete.  If packets are processed prior to completion of the handshake, an
-attacker might use the willingness of an implementation to use these packets to
-mount attacks.
+Packets protected with 1-RTT keys MAY be stored and later decrypted and used
+once the handshake is complete.  A server MUST NOT use 1-RTT protected packets
+before verifying either the client Finished message or - in the case that the
+server has chosen to use a pre-shared key - the pre-shared key binder (see
+Section 4.2.8 of {{!I-D.ietf-tls-tls13}}).  Verifying these values provides the
+server with an assurance that the ClientHello has not been modified.
 
-Receiving and verifying the Finished message is critical in ensuring that the
-TLS handshake has completely successfully.  A server MUST NOT use 1-RTT
-protected packets from the client if its response depends on client
-authentication.  A server MAY use 1-RTT protected packets from a client prior to
-receiving and verifying the Finished message if it has accepted 0-RTT data and
-it treats the out-of-order packets as though they only have 0-RTT protection.
+A server could receive packets protected with 0-RTT keys prior to receiving a
+TLS ClientHello.  The server MAY retain these packets for later decryption in
+anticipation of receiving a ClientHello.
+
+Receiving and verifying the TLS Finished message is critical in ensuring the
+integrity of the TLS handshake.  A server MUST NOT use protected packets from
+the client prior to verifying the client Finished message if its response
+depends on client authentication.
 
 
 # QUIC-Specific Additions to the TLS Handshake
