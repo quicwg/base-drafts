@@ -378,27 +378,28 @@ packet types:
 
 ~~~
 Check the flags in the common header
-                 |
-                 |
-                 V
-           +--------------+
-           | PUBLIC_RESET |  YES
-           | flag set?    |-------> Public Reset packet
-           +--------------+
-                 |
-                 | NO
-                 V
-           +------------+         +-------------+
-           | VERSION    |  YES    | Packet sent |  YES
-           | flag set?  |-------->| by server?  |--------> Version Negotiation
-           +------------+         +-------------+               packet
-                 |                       |
-                 | NO                    | NO
-                 V                       V
-         Regular packet with       Regular packet with
-     no QUIC Version in header    QUIC Version in header
+              |
+              |
+              V
+        +--------------+
+        | PUBLIC_RESET |  YES
+        | flag set?    |-------> Public Reset packet
+        +--------------+
+              |
+              | NO
+              V
+        +------------+         +-------------+
+        | VERSION    |  YES    | Packet sent |  YES     Version
+        | flag set?  |-------->| by server?  |--------> Negotiation
+        +------------+         +-------------+          packet
+              |                       |
+              | NO                    | NO
+              V                       V
+      Regular packet with       Regular packet with
+  no QUIC Version in header    QUIC Version in header
 ~~~
 {: #packet-types title="Types of QUIC Packets"}
+
 
 ## Regular Packets
 
@@ -429,14 +430,11 @@ The fields in a Regular packet past the Common Header are the following:
   by the sender.  The first packet sent by an endpoint MUST have a packet number
   of 1.
 
-* Encrypted Payload: A Regular packet's header fields, including the Common 
-  Header, are authenticated, but not encrypted. The rest of a Regular packet, 
-  starting with the first frame, is both authenticated and encrypted.
-  Immediately following the header, Regular packets contain AEAD (Authenticated 
-  Encryption with Associated Data) data. After decryption, the plaintext
-  consists of a sequence of frames, as shown below (frames are described in
-  {{frames}}). 
-
+* Encrypted Payload: The remainder of a Regular packet is both authenticated and
+  encrypted once packet protection keys are available.  {{QUIC-TLS}} describes
+  packet protection in detail.  After decryption, the plaintext consists of a
+  sequence of frames, as shown in {{regular-packet-frames}}.  Frames are
+  described in {{frames}}.
 
 ~~~
  0                   1                   2                   3
@@ -1005,9 +1003,9 @@ The fields in the Ack Block Section are:
 
 ### Timestamp Section {#timestamp-section}
 
-The Timestamp Section contains between zero and 255 measurements of packet 
-receive time deltas. This information can be used by a sender to better estimate 
-the RTT of the connection. 
+The Timestamp Section contains between zero and 255 measurements of packet
+receive times. This information can be used by a sender to better estimate the
+RTT of the connection.
 
 ~~~
  0                   1                   2                   3
