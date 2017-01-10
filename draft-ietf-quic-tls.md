@@ -464,6 +464,20 @@ Get Handshake
 {: #exchange-summary title="Interaction Summary between QUIC and TLS"}
 
 
+## TLS Version
+
+This document describes how TLS 1.3 {{!I-D.ietf-tls-tls13}} is used with QUIC.
+
+In practice, the TLS handshake will negotiate a version of TLS to use.  This
+could result in a newer version of TLS than 1.3 being negotiated if both
+endpoints support that version.  This is acceptable provided that the features
+of TLS 1.3 that are used by QUIC are supported by the newer version.
+
+A badly configured TLS implementation could negotiate TLS 1.2 or an older
+version of TLS.  An endpoint MUST terminate the connection the handshake if a
+version of TLS older than 1.3 is negotiated.
+
+
 # QUIC Packet Protection {#packet-protection}
 
 QUIC packet protection provides authenticated encryption of packets.  This
