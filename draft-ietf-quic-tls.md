@@ -150,21 +150,23 @@ interactions between TLS and QUIC, with the QUIC packet protection being called
 out specially.
 
 ~~~
-+------------+                     +------------+
-|            |----- Handshake ---->|            |
-|            |<---- Handshake -----|            |
-|   QUIC     |                     |    TLS     |
-|            |<----- 0-RTT OK -----|            |
-|            |<----- 1-RTT OK -----|            |
-|            |<-- Handshake Done --|            |
-+------------+                     +------------+
- |         ^                            ^ |
- | Protect | Protected                  | |
- v         | Packet                     | |
-+------------+                          / /
-|   QUIC     |                         / /
-|  Packet    |------ Get Secret ------' /
-| Protection |<------ Secret ----------'
++------------+                       +------------+
+|            |-- Transport Params -->|            |
+|            |------ Handshake ----->|            |
+|            |<----- Handshake ------|            |
+|            |<-- Transport Params --|            |
+|   QUIC     |                       |    TLS     |
+|            |<------ 0-RTT OK ------|            |
+|            |<------ 1-RTT OK ------|            |
+|            |<--- Handshake Done ---|            |
++------------+                       +------------+
+ |         ^                              ^ |
+ | Protect | Protected                    | |
+ v         | Packet                       | |
++------------+                            / /
+|   QUIC     |                           / /
+|  Packet    |------- Get Secret -------' /
+| Protection |<------- Secret -----------'
 +------------+
 ~~~
 {: #schematic title="QUIC and TLS Interactions"}
@@ -300,7 +302,7 @@ ensures that TLS handshake messages are delivered in the correct order.
 
 @C QUIC STREAM Frame(s) <1>:
      ClientHello
-       + QUIC Extension
+       + QUIC Transport Params
                             -------->
                         0-RTT Key => @0
 
@@ -311,6 +313,7 @@ ensures that TLS handshake messages are delivered in the correct order.
                                       QUIC STREAM Frame <1>: @C
                                                ServerHello
                                   {TLS Handshake Messages}
+                                { + QUIC Transport Params}
                             <--------
                         1-RTT Key => @1
 
@@ -359,8 +362,9 @@ More information on key transitions is included in {{cleartext-hs}}.
 
 ## Interface to TLS
 
-As shown in {{schematic}}, the interface from QUIC to TLS consists of three
-primary functions: Handshake, Key Ready Events, and Secret Export.
+As shown in {{schematic}}, the interface from QUIC to TLS consists of four
+primary functions: Handshake, Key Ready Events, Transport Parameter Exchange,
+and Secret Export.
 
 Additional functions might be needed to configure TLS.
 
@@ -428,6 +432,31 @@ ClientHello message, a TLS server might signal that 0-RTT keys are available.
 used to protect packets that the client sends.
 
 
+### Transport Parameter Exchange
+
+As part of the handshake, QUIC provides TLS with the value of the QUIC transport
+parameters extension (see {{quic-extension}}).  This value is included in the
+TLS ClientHello or EncryptedExtensions message.  TLS provides QUIC with the
+authenticated value for the transport parameters that was advertised by the
+peer.
+
+The contents of the transport parameters is defined by the version of QUIC that
+is in use, see {{QUIC-TRANSPORT}}.
+
+Transport parameters are available only after handling incoming messages.
+
+A server learns authenticated values for the server's transport parameters after
+the handshake is complete.
+
+A server learns authenticated values for the client's transport parameters at
+one of two points depending on whether the connection is resumed (that is, if it
+uses a pre-shared key).  A server that accepts resumption learns the
+authenticated values for the client's transport parameters after receiving and
+verifying the TLS ClientHello.  A server that does not accept resumption
+authenticates the client's transport parameters once the TLS Finished message
+from the client is received and verified.
+
+
 ### Secret Export
 
 Details how secrets are exported from TLS are included in {{key-expansion}}.
@@ -435,8 +464,39 @@ Details how secrets are exported from TLS are included in {{key-expansion}}.
 
 ### TLS Interface Summary
 
-{{exchange-summary}} summarizes the exchange between QUIC and TLS for both
-client and server.
+{{1rtt-interface}} summarizes the exchange between QUIC and TLS for both client
+and server for a full handshake without either resumption or 0-RTT.
+
+~~~
+Client                                                    Server
+
+Get Handshake
+                      --- send/receive --->
+                                              Handshake Received
+                                                   Get Handshake
+                                                1-RTT Keys Ready
+                     <--- send/receive ---
+Handshake Received
+1-RTT Keys Ready
+Transport Parameters
+Get Handshake
+Handshake Complete
+                      --- send/receive --->
+                                              Handshake Received
+                                            Transport Parameters
+                                                   Get Handshake
+                                              Handshake Complete
+                     <--- send/receive ---
+Handshake Received
+Get Handshake
+~~~
+{: #1rtt-interface title="1-RTT Interactions between QUIC and TLS"}
+
+
+{{0rtt-interface}} summarizes the exchange between QUIC and TLS for both client
+and server in the case that 0-RTT is possible and successful.  The only
+difference is the availability of 0-RTT keys, and the earlier availability of
+the client's transport parameters at the server.
 
 ~~~
 Client                                                    Server
@@ -446,11 +506,13 @@ Get Handshake
                       --- send/receive --->
                                               Handshake Received
                                                  0-RTT Key Ready
+                                            Transport Parameters
                                                    Get Handshake
                                                 1-RTT Keys Ready
                      <--- send/receive ---
 Handshake Received
 1-RTT Keys Ready
+Transport Parameters
 Get Handshake
 Handshake Complete
                       --- send/receive --->
@@ -461,7 +523,7 @@ Handshake Complete
 Handshake Received
 Get Handshake
 ~~~
-{: #exchange-summary title="Interaction Summary between QUIC and TLS"}
+{: #0rtt-interface title="0-RTT Interactions between QUIC and TLS"}
 
 
 # QUIC Packet Protection {#packet-protection}
@@ -935,7 +997,7 @@ Different strategies are appropriate for different types of data.  This document
 proposes that all strategies are possible depending on the type of message.
 
 * Transport parameters and options are made usable and authenticated as part of
-  the TLS handshake (see {{quic_parameters}}).
+  the TLS handshake (see {{quic-extension}}).
 * Most unprotected messages are treated as fatal errors when received except for
   the small number necessary to permit the handshake to complete (see
   {{pre-handshake-unprotected}}).
@@ -1117,7 +1179,7 @@ the server picks an incompatible combination of QUIC version and ALPN
 identifier.
 
 
-## QUIC Transport Parameters Extension {#quic_parameters}
+## QUIC Transport Parameters Extension {#quic-extension}
 
 QUIC transport parameters are carried in a TLS extension. Different versions of
 QUIC might define a different format for this struct.
