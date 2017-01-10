@@ -464,7 +464,7 @@ Details how secrets are exported from TLS are included in {{key-expansion}}.
 
 ### TLS Interface Summary
 
-{{1rtt-interface}} summarizes the exchange between QUIC and TLS for both client
+{{full-interface}} summarizes the exchange between QUIC and TLS for both client
 and server for a full handshake without either resumption or 0-RTT.
 
 ~~~
@@ -490,11 +490,11 @@ Handshake Complete
 Handshake Received
 Get Handshake
 ~~~
-{: #1rtt-interface title="1-RTT Interactions between QUIC and TLS"}
+{: #full-interface title="1-RTT Interactions between QUIC and TLS"}
 
 
-{{0rtt-interface}} summarizes the exchange between QUIC and TLS for both client
-and server in the case that 0-RTT is possible and successful.  The only
+{{zero-rtt-interface}} summarizes the exchange between QUIC and TLS for both
+client and server in the case that 0-RTT is possible and successful.  The only
 difference is the availability of 0-RTT keys, and the earlier availability of
 the client's transport parameters at the server.
 
@@ -523,7 +523,7 @@ Handshake Complete
 Handshake Received
 Get Handshake
 ~~~
-{: #0rtt-interface title="0-RTT Interactions between QUIC and TLS"}
+{: #zero-rtt-interface title="0-RTT Interactions between QUIC and TLS"}
 
 
 # QUIC Packet Protection {#packet-protection}
