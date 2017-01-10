@@ -1201,88 +1201,22 @@ The fields of a GOAWAY frame are as follows:
 The maximum packet size for QUIC is the maximum size of the entire UDP payload,
 including the public header, encrypted payload, and any authentication fields.
 All QUIC packets SHOULD be sized to fit within the path's MTU to avoid IP
-fragmentation. To optimize bandwidth efficiency, endpoints SHOULD use Path MTU
+fragmentation. To optimize bandwidth efficiency, endpoints MAY use Path MTU
 Discovery ({{!RFC1191}}, {{!RFC1981}}) or Packetization Layer Path MTU
 Discovery ({{!RFC4821}}) for detecting the path's MTU, setting the maximum
 packet size appropriately, and storing the result of previous PMTU
 determinations. In the absence of these mechanisms,  the recommended default
 maximum packet size is 1350 bytes for IPv6 and 1370 bytes for IPv4. 
 
-(TODO: Should there be a high minimum MTU for QUIC to avoid ICMP attacks? If so,
-does the endpoint fail over to TCP or simply allow fragmentation?)
+QUIC endpoints that implement any kind of MTU discovery SHOULD maintain a
+separate PMTU estimate for each IP address the peer is using in the
+connection. Endpoints SHOULD maintain an estimate for each combination of
+local and remote IP addresses (as each pairing may have a different minimum
+MTU in the path).
 
-QUIC endpoints MUST maintain a separate PMTU estimate for each IP address the
-peer is using in the connection. Endpoints SHOULD maintain an estimate for each
-combination of local and remote IP addresses (as each pairing may have a different
-minimum MTU in the path).
-
-## Packet MTU Determination
-
-QUIC endpoints SHOULD set the Don't Fragment (DF) bit in the IP header of selected
-QUIC datagrams. These packets MUST use PADDING frames, as necessary, to raise the
-overall packet size to the expected maximum.
-
-### DF Marking {#dfmarking}
-
-The first packet from the client MUST be maximum-size and SHOULD set the DF bit.
-
-The last server-generated packet in the Transport Handshake SHOULD be padded to
-maximum-size with the DF bit set. Earlier packets may be smaller to save server
-resources until various handshake mechanisms have validated the client.
-
-QUIC endpoints SHOULD set the DF bit on the first packet sent to or from an IP address
-new to the QUIC connection, and pad the payload appropriately.
-
-QUIC endpoints MAY set DF and pad packets when implementing probes as described in
-{{!RFC1191}}, {{!RFC1981}}, or {{!RFC4821}}.
-
-QUIC endpoints MAY set DF and pad packets when it has evidence that the path between two
-previously used IP addresses has changed.
-
-### Special Considerations for Path MTU Discovery 
-
-Traditional ICMP-based path MTU discovery ({{!RFC1191}}, {{!RFC1981}}) is
-potentially vulnerable to off-path attacks that succesfully guess the IP/port 4-tuple
-and reduce the MTU to a bandwidth-inefficient value. TCP connections mitigate this
-risk by using the (at minimum) 8 bytes of transport header echoed in the ICMP message
-to validate the TCP sequence number as valid for the current connection. However, as
-QUIC operates over UDP, this echoed information may consist only of the IP and UDP
-headers, which hold no connection-specific context except the IP/port 4-tuple.
-
-Furthermore, PMTUD also performs poorly with misbehaving routers that do not send
-ICMP Packet Too Big messages {{!RFC2923}}.
-
-To mitigate this, QUIC endpoints MAY use PLPMTUD, {{!RFC4821}}, either in place of, or
-in addition to, PMTUD. This avoids the off-path attack and misbehaving router problems
-while potentially introducing multiple packet losses and long timeouts. 
-
-Due to the drawbacks of PLPMTUD, QUIC endpoints MAY use ICMP-based PTMU discovery.
-This is optional, and some user-space QUIC implementations may have limited ability to
-control the PTMUD process in the kernel. As a result, the following requirements
-apply only to PMTUD-enabled implementations and do not exceed the force of a SHOULD:
-
-The endpoint SHOULD maintain a list of all unacknowledged packet numbers with the DF
-flag set. Aside from the requirements in {#dfmarking} above, DF-marked packets SHOULD
-NOT be sent more often than every 20 RTTs (implying that the chance of a blind attack
-succeeding is less than 5% without a storm of ICMP packets).
-
-The endpoint SHOULD remove packet numbers from the list when the loss detection algorithm
-declares the packet lost, or the packet is acknowledged.
-
-The endpoint SHOULD ignore any Packet Too Big message that arrives when there are no
-unacknowledged packet numbers in the list.
-
-Incoming Packet Too Big messages SHOULD be applied to all QUIC connections that share
-the same local and remote IP addresses, assuming they are valid for one connection.
-
-Valid Packet Too Big messages SHOULD trigger immediate retransmission of
-retransmittable data from packet numbers in the list, with no adjustment in congestion
-control parameters consistent with a congestion-induced loss.
-
-The endpoint MAY store additional information from the IP or UDP headers (for example,
-the IP ID or UDP checksum) to further authenticate incoming Packet Too Big messages.
-
-## Packet Construction
+All handshake packets MUST include enough PADDING frames to bring the packet
+to the maximum size the endpoint is enforcing. Furthermore, all IPv4 handshake
+packets MUST have the DF bit set.
 
 A sender bundles one or more frames in a Regular QUIC packet.  A sender MAY
 bundle any set of frames in a packet.  All QUIC packets MUST contain a packet
@@ -1335,6 +1269,27 @@ frames), the receiving peer MAY send an ACK frame after a reasonable number
 
 Strategies and implications of the frequency of generating acknowledgments are
 discussed in more detail in {{QUIC-RECOVERY}}.
+
+## Special Considerations for Path MTU Discovery 
+
+Traditional ICMP-based path MTU discovery ({{!RFC1191}}, {{!RFC1981}}) is
+potentially vulnerable to off-path attacks that succesfully guess the IP/port
+4-tuple and reduce the MTU to a bandwidth-inefficient value. TCP connections
+mitigate this risk by using the (at minimum) 8 bytes of transport header
+echoed in the ICMP message to validate the TCP sequence number as valid for
+the current connection. However, as QUIC operates over UDP, the echoed
+information may consist only of the IP and UDP headers, which usually has
+insufficient entropy to mitigate off-path attacks.
+
+As a result, endpoints that implement PMTUD SHOULD take steps to mitigate this
+risk, which may include:
+
+* Set the IPv4 Don't Fragment (DF) bit on a small number of packets per RTT, so
+that most invalid ICMP messages arrive when there are no DF packets
+outstanding.
+
+* Store additional information from the IP or UDP headers (for example, the IP
+ID or UDP checksum) to further authenticate incoming Packet Too Big messages.
 
 # Streams: QUIC's Data Structuring Abstraction {#streams}
 
