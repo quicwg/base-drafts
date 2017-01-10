@@ -464,6 +464,25 @@ Get Handshake
 {: #exchange-summary title="Interaction Summary between QUIC and TLS"}
 
 
+## Peer Authentication
+
+The requirements for authentication depend on the application protocol that is
+in use.  TLS provides for server authentication and (optionally) client authentication.
+
+A client MUST authenticate the identity of the server.  This typically involves
+verification that the identity of the server is included in a certificate and
+that the certificate is issued by a trusted entity (see for example
+{{?RFC2818}}).
+
+A server MAY request that the client authenticate during the handshake. A server
+MAY refuse a connection if the client is unable to authenticate when requested.
+The conditions for client authenticate vary based on application protocol and
+deployment.
+
+A server MUST NOT use post-handshake client authentication (see Section 4.6.2 of
+{{!I-D.ietf-tls-tls13}}).
+
+
 # QUIC Packet Protection {#packet-protection}
 
 QUIC packet protection provides authenticated encryption of packets.  This
