@@ -1848,7 +1848,7 @@ QUIC_TOO_MANY_RTOS (0x55):
 : QUIC timed out after too many RTOs.
 
 QUIC_ENCRYPTION_LEVEL_INCORRECT (0x2c):
-: A packet was received with the wrong encryption level (i.e. it should 
+: A packet was received with the wrong encryption level (i.e. it should
   have been encrypted but was not.)
 
 QUIC_VERSION_NEGOTIATION_MISMATCH (0x37):
@@ -1863,7 +1863,7 @@ QUIC_TOO_MANY_FRAME_GAPS (0x5d):
   maintains too many gaps.
 
 QUIC_TOO_MANY_SESSIONS_ON_SERVER (0x60):
-: Connection closed because server hit max number of sessions allowed. 
+: Connection closed because server hit max number of sessions allowed.
 
 
 # Security and Privacy Considerations

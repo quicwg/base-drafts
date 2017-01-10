@@ -84,13 +84,13 @@ QUIC.
 
 --- note_Note_to_Readers
 
-Discussion of this draft takes place on the QUIC working group mailing list 
-(quic@ietf.org), which is archived at 
-<https://mailarchive.ietf.org/arch/search/?email_list=quic>. 
+Discussion of this draft takes place on the QUIC working group mailing list
+(quic@ietf.org), which is archived at
+<https://mailarchive.ietf.org/arch/search/?email_list=quic>.
 
-Working Group information can be found at <https://github.com/quicwg>; source 
-code and issues list for this draft can be found at 
-<https://github.com/quicwg/base-drafts/labels/tls>. 
+Working Group information can be found at <https://github.com/quicwg>; source
+code and issues list for this draft can be found at
+<https://github.com/quicwg/base-drafts/labels/tls>.
 
 --- middle
 
@@ -1263,8 +1263,8 @@ TLS_MESSAGE_PARAMETER_NOT_FOUND (0x23):
 : A handshake message was received with a mandatory parameter missing.
 
 TLS_MESSAGE_PARAMETER_NO_OVERLAP (0x24):
-: A handshake message was received with a parameter that has no overlap with the 
-  local parameter. 
+: A handshake message was received with a parameter that has no overlap with the
+  local parameter.
 
 TLS_MESSAGE_INDEX_NOT_FOUND (0x25):
 : A handshake message was received that contained a parameter with too few values.
@@ -1282,8 +1282,8 @@ TLS_HANDSHAKE_STATELESS_REJECT (0x48):
 : A handshake handshake message resulted in a stateless reject.
 
 TLS_NO_SUPPORT (0x28):
-: There was no intersection between the crypto primitives supported by the peer 
-  and ourselves. 
+: There was no intersection between the crypto primitives supported by the peer
+  and ourselves.
 
 TLS_TOO_MANY_REJECTS (0x29):
 : The server rejected our client hello messages too many times.
@@ -1305,8 +1305,8 @@ TLS_SYMMETRIC_KEY_SETUP_FAILED (0x35):
 : We failed to set up the symmetric keys for a connection.
 
 TLS_MESSAGE_WHILE_VALIDATING_CLIENT_HELLO (0x36):
-: A handshake message arrived, but we are still validating the previous 
-  handshake message. 
+: A handshake message arrived, but we are still validating the previous
+  handshake message.
 
 TLS_UPDATE_BEFORE_HANDSHAKE_COMPLETE (0x41):
 : A server config update arrived before the handshake is complete.

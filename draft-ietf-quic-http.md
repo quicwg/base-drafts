@@ -846,7 +846,7 @@ The original authors of this specification were Robbie Shade and Mike Warres.
 
 - Changed from using HTTP/2 framing within Stream 3 to new framing format and
   two-stream-per-request model
-  
+
 - Adopted SETTINGS format from draft-bishop-httpbis-extended-settings-01
 
 - Reworked SETTINGS_ACK to account for indeterminate inter-stream order.
