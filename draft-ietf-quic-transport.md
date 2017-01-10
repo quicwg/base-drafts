@@ -422,7 +422,7 @@ constant are:
 
 * the location and value of the VERSION bit in the Flags field,
 
-* the existence of a 64-bit field following the Flags field, and
+* the location and size of the Connection ID field, and
 
 * the Version (or Supported Versions, {{version-negotiation-packet}}) field.
 
