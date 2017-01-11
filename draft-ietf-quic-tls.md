@@ -467,7 +467,8 @@ Get Handshake
 ## Peer Authentication
 
 The requirements for authentication depend on the application protocol that is
-in use.  TLS provides for server authentication and (optionally) client authentication.
+in use.  TLS provides server authentication and permits the server to request
+client authentication.
 
 A client MUST authenticate the identity of the server.  This typically involves
 verification that the identity of the server is included in a certificate and
@@ -476,8 +477,8 @@ that the certificate is issued by a trusted entity (see for example
 
 A server MAY request that the client authenticate during the handshake. A server
 MAY refuse a connection if the client is unable to authenticate when requested.
-The conditions for client authenticate vary based on application protocol and
-deployment.
+The requirements for client authentication vary based on application protocol
+and deployment.
 
 A server MUST NOT use post-handshake client authentication (see Section 4.6.2 of
 {{!I-D.ietf-tls-tls13}}).
