@@ -800,10 +800,9 @@ Optional transport parameters from the server MUST be reset to default values by
 the client for 0-RTT connections.
 
 The mandatory transport parameters for stream and connection flow control and
-concurrent stream limits MUST be remembered by the client.  The idle timeout value
-is not expected to be relevant for the short time that it takes to obtain 1-RTT
-keys.
-
+concurrent stream limits is stored by the client along with any information
+needed to establish a 0-RTT connection.  The idle timeout value is not expected
+to be relevant for the short time that it takes to obtain 1-RTT keys.
 
 Transport parameter values could change as a result of completing the handshake.
 The client MUST respect the new values when the handshake completes.  This
