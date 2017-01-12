@@ -1205,18 +1205,17 @@ fragmentation. To optimize bandwidth efficiency, endpoints MAY use Path MTU
 Discovery ({{!RFC1191}}, {{!RFC1981}}) or Packetization Layer Path MTU
 Discovery ({{!RFC4821}}) for detecting the path's MTU, setting the maximum
 packet size appropriately, and storing the result of previous PMTU
-determinations. In the absence of these mechanisms,  the recommended default
+determinations. In the absence of these mechanisms, the recommended default
 maximum packet size is 1350 bytes for IPv6 and 1370 bytes for IPv4. 
 
 QUIC endpoints that implement any kind of MTU discovery SHOULD maintain a
-separate PMTU estimate for each IP address the peer is using in the
-connection. Endpoints SHOULD maintain an estimate for each combination of
-local and remote IP addresses (as each pairing may have a different minimum
-MTU in the path).
+separate PMTU estimate for each IP address the peer is using in a connection.
+Endpoints MAY maintain an estimate for each combination of local and remote IP
+addresses (as each pairing may have a different minimum MTU in the path).
 
-All handshake packets MUST include enough PADDING frames to bring the packet
-to the maximum size the endpoint is enforcing. Furthermore, all IPv4 handshake
-packets MUST have the DF bit set.
+All handshake packets MUST include a PADDING frame if necessary to bring the
+packet to the maximum size the endpoint is enforcing. Furthermore, all IPv4
+handshake packets MUST have the DF bit set.
 
 A sender bundles one or more frames in a Regular QUIC packet.  A sender MAY
 bundle any set of frames in a packet.  All QUIC packets MUST contain a packet
@@ -1272,17 +1271,17 @@ discussed in more detail in {{QUIC-RECOVERY}}.
 
 ## Special Considerations for Path MTU Discovery 
 
-Traditional ICMP-based path MTU discovery ({{!RFC1191}}, {{!RFC1981}}) is
-potentially vulnerable to off-path attacks that succesfully guess the IP/port
-4-tuple and reduce the MTU to a bandwidth-inefficient value. TCP connections
-mitigate this risk by using the (at minimum) 8 bytes of transport header
-echoed in the ICMP message to validate the TCP sequence number as valid for
-the current connection. However, as QUIC operates over UDP, the echoed
-information may consist only of the IP and UDP headers, which usually has
-insufficient entropy to mitigate off-path attacks.
+Traditional ICMP-based path MTU discovery in IPv4 ({{!RFC1191}} is potentially
+vulnerable to off-path attacks that succesfully guess the IP/port 4-tuple and
+reduce the MTU to a bandwidth-inefficient value. TCP connections mitigate this
+risk by using the (at minimum) 8 bytes of transport header echoed in the ICMP
+message to validate the TCP sequence number as valid for the current
+connection. However, as QUIC operates over UDP, in IPv4 the echoed information
+may consist only of the IP and UDP headers, which usually has insufficient
+entropy to mitigate off-path attacks.
 
-As a result, endpoints that implement PMTUD SHOULD take steps to mitigate this
-risk, which may include:
+As a result, endpoints that implement PMTUD in IPv4 SHOULD take steps to mitigate
+this risk, which may include:
 
 * Set the IPv4 Don't Fragment (DF) bit on a small number of packets per RTT, so
 that most invalid ICMP messages arrive when there are no DF packets
