@@ -411,8 +411,8 @@ have the VERSION bit set.  This bit is always set on packets that are sent prior
 to connection establishment.  When receiving a packet that is not associated
 with an existing connection, packets without a VERSION bit MUST be discarded.
 
-Implementations have to assume that a version that it does not support uses a
-different packet format.
+Implementations MUST assume that an unsupported version uses an unknown packet
+format.
 
 Between different versions the following things are guaranteed to remain
 constant are:
