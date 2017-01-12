@@ -280,10 +280,9 @@ SHOULD NOT half-close connections on which they are still expecting data.
 
 A TCP connection error is signaled with RST_STREAM. A proxy treats any error in 
 the TCP connection, which includes receiving a TCP segment with the RST bit set, 
-as a stream error of type HTTP_CONNECT_ERROR. Correspondingly, a proxy MUST send 
-a TCP segment with the RST bit set if it detects an error with the stream or the 
-QUIC connection. 
-
+as a stream error of type HTTP_CONNECT_ERROR ({{http-error-codes}}).
+Correspondingly, a proxy MUST send a TCP segment with the RST bit set if it
+detects an error with the stream or the QUIC connection.
 
 ## Stream Priorities {#priority}
 
