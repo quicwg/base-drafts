@@ -718,63 +718,63 @@ of HTTP/2 error codes into the QUIC error code space.
 
 ## HTTP-Defined QUIC Error Codes {#http-error-codes}
 
-QUIC allocates error codes 0x8000-0xAFFF to application protocol definition.
+QUIC allocates error codes 0x0000-0x3FFF to application protocol definition.
 The following error codes are defined by HTTP for use in QUIC RST_STREAM,
 GOAWAY, and CONNECTION_CLOSE frames.
 
-HTTP_SETTINGS_TIMEOUT (0x8000):
+HTTP_SETTINGS_TIMEOUT (0x00):
 : After sending a SETTINGS frame which requested acknowledgement, the
   acknowledgement was not completed (see {{settings-synchronization}}) in a
   timely manner.
   
-HTTP_PUSH_REFUSED (0x8001):
+HTTP_PUSH_REFUSED (0x01):
 : The server has attempted to push content which the client will not accept
   on this connection.
 
-HTTP_INTERNAL_ERROR (0x8002):
+HTTP_INTERNAL_ERROR (0x02):
 : An internal error has occurred in the HTTP stack.
 
-HTTP_PUSH_ALREADY_IN_CACHE (0x8003):
+HTTP_PUSH_ALREADY_IN_CACHE (0x03):
 : The server has attempted to push content which the client has cached.
 
-HTTP_REQUEST_CANCELLED (0x8004):
+HTTP_REQUEST_CANCELLED (0x04):
 : The client no longer needs the requested data.
 
-HTTP_HPACK_DECOMPRESSION_FAILED (0x8005):
+HTTP_HPACK_DECOMPRESSION_FAILED (0x05):
 : HPACK failed to decompress a frame and cannot continue.
 
-HTTP_CONNECT_ERROR (0x8006):
+HTTP_CONNECT_ERROR (0x06):
 : The connection established in response to a CONNECT request was reset or
   abnormally closed.
   
-HTTP_EXCESSIVE_LOAD (0x8007):
+HTTP_EXCESSIVE_LOAD (0x07):
 : The endpoint detected that its peer is exhibiting a behavior that might be
   generating excessive load.
 
-HTTP_VERSION_FALLBACK (0x8008):
+HTTP_VERSION_FALLBACK (0x08):
 : The requested operation cannot be served over HTTP/QUIC.  The peer should
   retry over HTTP/2.
 
-HTTP_MALFORMED_HEADERS (0x8009):
+HTTP_MALFORMED_HEADERS (0x09):
 : A HEADERS frame has been received with an invalid format.
 
-HTTP_MALFORMED_PRIORITY (0x800A):
+HTTP_MALFORMED_PRIORITY (0x0A):
 : A HEADERS frame has been received with an invalid format.
 
-HTTP_MALFORMED_SETTINGS (0x800B):
+HTTP_MALFORMED_SETTINGS (0x0B):
 : A HEADERS frame has been received with an invalid format.
 
-HTTP_MALFORMED_PUSH_PROMISE (0x800C):
+HTTP_MALFORMED_PUSH_PROMISE (0x0C):
 : A HEADERS frame has been received with an invalid format.
 
-HTTP_MALFORMED_SETTINGS_ACK (0x800D):
+HTTP_MALFORMED_SETTINGS_ACK (0x0D):
 : A HEADERS frame has been received with an invalid format.
 
-HTTP_INTERRUPTED_HEADERS (0x800E):
+HTTP_INTERRUPTED_HEADERS (0x0E):
 : A HEADERS frame without the End Header Block flag was followed by a frame
   other than HEADERS.
   
-HTTP_SETTINGS_ON_WRONG_STREAM (0x800F):
+HTTP_SETTINGS_ON_WRONG_STREAM (0x0F):
 : A SETTINGS frame was received on a request control stream.
 
 

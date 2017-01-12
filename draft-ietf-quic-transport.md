@@ -1649,184 +1649,184 @@ Error codes are 32 bits long, with the first two bits indicating the source of
 the error code:
 
 0x0000-0x3FFF:
+: Application-specific error codes.  Defined by each application-layer protocol.
+
+0x4000-0x7FFF:
+: Reserved for host-local error codes.  These codes MUST NOT be sent to a peer,
+  but MAY be used in API return codes and logs.
+
+0x8000-0xAFFF:
 : QUIC transport error codes, including packet protection errors.  Applicable to
   all uses of QUIC.
 
-0x4000-0x7FFF:
-: Cryptographic error codes.  Defined by the crypto handshake protocol in use.
-
-0x8000-0xAFFF:
-: Application-specific error codes.  Defined by each application-layer protocol.
-
 0xB000-0xFFFF:
-: Reserved for host-local error codes.  These codes MUST NOT be sent to a peer,
-  but MAY be used in API return codes and logs.
+: Cryptographic error codes.  Defined by the crypto handshake protocol in use.
 
 This section lists the defined QUIC transport error codes that may be used in a 
 CONNECTION_CLOSE or RST_STREAM frame. Error codes share a common code space. 
 Some error codes apply only to either streams or the entire connection and have 
 no defined semantics in the other context. 
 
-QUIC_INTERNAL_ERROR (0x01):
+QUIC_INTERNAL_ERROR (0x8001):
 : Connection has reached an invalid state.
 
-QUIC_STREAM_DATA_AFTER_TERMINATION (0x02):
+QUIC_STREAM_DATA_AFTER_TERMINATION (0x8002):
 : There were data frames after the a fin or reset.
 
-QUIC_INVALID_PACKET_HEADER (0x03):
+QUIC_INVALID_PACKET_HEADER (0x8003):
 : Control frame is malformed.
 
-QUIC_INVALID_FRAME_DATA (0x04):
+QUIC_INVALID_FRAME_DATA (0x8004):
 : Frame data is malformed.
 
-QUIC_MISSING_PAYLOAD (0x30):
+QUIC_MISSING_PAYLOAD (0x8030):
 : The packet contained no payload.
 
-QUIC_INVALID_STREAM_DATA (0x2e):
+QUIC_INVALID_STREAM_DATA (0x802e):
 : STREAM frame data is malformed.
 
-QUIC_OVERLAPPING_STREAM_DATA (0x57):
+QUIC_OVERLAPPING_STREAM_DATA (0x8057):
 : STREAM frame data overlaps with buffered data.
 
-QUIC_UNENCRYPTED_STREAM_DATA (0x3d):
+QUIC_UNENCRYPTED_STREAM_DATA (0x803d):
 : Received STREAM frame data is not encrypted.
 
-QUIC_MAYBE_CORRUPTED_MEMORY (0x59):
+QUIC_MAYBE_CORRUPTED_MEMORY (0x8059):
 : Received a frame which is likely the result of memory corruption.
 
-QUIC_INVALID_RST_STREAM_DATA (0x06):
+QUIC_INVALID_RST_STREAM_DATA (0x8006):
 : RST_STREAM frame data is malformed.
 
-QUIC_INVALID_CONNECTION_CLOSE_DATA (0x07):
+QUIC_INVALID_CONNECTION_CLOSE_DATA (0x8007):
 : CONNECTION_CLOSE frame data is malformed.
 
-QUIC_INVALID_GOAWAY_DATA (0x08):
+QUIC_INVALID_GOAWAY_DATA (0x8008):
 : GOAWAY frame data is malformed.
 
-QUIC_INVALID_WINDOW_UPDATE_DATA (0x39):
+QUIC_INVALID_WINDOW_UPDATE_DATA (0x8039):
 : WINDOW_UPDATE frame data is malformed.
 
-QUIC_INVALID_BLOCKED_DATA (0x3a):
+QUIC_INVALID_BLOCKED_DATA (0x803a):
 : BLOCKED frame data is malformed.
 
-QUIC_INVALID_STOP_WAITING_DATA (0x3c):
+QUIC_INVALID_STOP_WAITING_DATA (0x803c):
 : STOP_WAITING frame data is malformed.
 
-QUIC_INVALID_PATH_CLOSE_DATA (0x4e):
+QUIC_INVALID_PATH_CLOSE_DATA (0x804e):
 : PATH_CLOSE frame data is malformed.
 
-QUIC_INVALID_ACK_DATA (0x09):
+QUIC_INVALID_ACK_DATA (0x8009):
 : ACK frame data is malformed.
 
-QUIC_INVALID_VERSION_NEGOTIATION_PACKET (0x0a):
+QUIC_INVALID_VERSION_NEGOTIATION_PACKET (0x800a):
 : Version negotiation packet is malformed.
 
-QUIC_INVALID_PUBLIC_RST_PACKET (0x0b):
+QUIC_INVALID_PUBLIC_RST_PACKET (0x800b):
 : Public RST packet is malformed.
 
-QUIC_DECRYPTION_FAILURE (0x0c):
+QUIC_DECRYPTION_FAILURE (0x800c):
 : There was an error decrypting.
 
-QUIC_ENCRYPTION_FAILURE (0x0d):
+QUIC_ENCRYPTION_FAILURE (0x800d):
 : There was an error encrypting.
 
-QUIC_PACKET_TOO_LARGE (0x0e):
+QUIC_PACKET_TOO_LARGE (0x800e):
 : The packet exceeded kMaxPacketSize.
 
-QUIC_PEER_GOING_AWAY (0x10):
+QUIC_PEER_GOING_AWAY (0x8010):
 : The peer is going away. May be a client or server.
 
-QUIC_INVALID_STREAM_ID (0x11):
+QUIC_INVALID_STREAM_ID (0x8011):
 : A stream ID was invalid.
 
-QUIC_INVALID_PRIORITY (0x31):
+QUIC_INVALID_PRIORITY (0x8031):
 : A priority was invalid.
 
-QUIC_TOO_MANY_OPEN_STREAMS (0x12):
+QUIC_TOO_MANY_OPEN_STREAMS (0x8012):
 : Too many streams already open.
 
-QUIC_TOO_MANY_AVAILABLE_STREAMS (0x4c):
+QUIC_TOO_MANY_AVAILABLE_STREAMS (0x804c):
 : The peer created too many available streams.
 
-QUIC_PUBLIC_RESET (0x13):
+QUIC_PUBLIC_RESET (0x8013):
 : Received public reset for this connection.
 
-QUIC_INVALID_VERSION (0x14):
+QUIC_INVALID_VERSION (0x8014):
 : Invalid protocol version.
 
-QUIC_INVALID_HEADER_ID (0x16):
+QUIC_INVALID_HEADER_ID (0x8016):
 : The Header ID for a stream was too far from the previous.
 
-QUIC_INVALID_NEGOTIATED_VALUE (0x17):
+QUIC_INVALID_NEGOTIATED_VALUE (0x8017):
 : Negotiable parameter received during handshake had invalid value.
 
-QUIC_DECOMPRESSION_FAILURE (0x18):
+QUIC_DECOMPRESSION_FAILURE (0x8018):
 : There was an error decompressing data.
 
-QUIC_NETWORK_IDLE_TIMEOUT (0x19):
+QUIC_NETWORK_IDLE_TIMEOUT (0x8019):
 : The connection timed out due to no network activity.
 
-QUIC_HANDSHAKE_TIMEOUT (0x43):
+QUIC_HANDSHAKE_TIMEOUT (0x8043):
 : The connection timed out waiting for the handshake to complete.
 
-QUIC_ERROR_MIGRATING_ADDRESS (0x1a):
+QUIC_ERROR_MIGRATING_ADDRESS (0x801a):
 : There was an error encountered migrating addresses.
 
-QUIC_ERROR_MIGRATING_PORT (0x56):
+QUIC_ERROR_MIGRATING_PORT (0x8056):
 : There was an error encountered migrating port only.
 
-QUIC_EMPTY_STREAM_FRAME_NO_FIN (0x32):
+QUIC_EMPTY_STREAM_FRAME_NO_FIN (0x8032):
 : We received a STREAM_FRAME with no data and no fin flag set.
 
-QUIC_FLOW_CONTROL_RECEIVED_TOO_MUCH_DATA (0x3b):
+QUIC_FLOW_CONTROL_RECEIVED_TOO_MUCH_DATA (0x803b):
 : The peer received too much data, violating flow control.
 
-QUIC_FLOW_CONTROL_SENT_TOO_MUCH_DATA (0x3f):
+QUIC_FLOW_CONTROL_SENT_TOO_MUCH_DATA (0x803f):
 : The peer sent too much data, violating flow control.
 
-QUIC_FLOW_CONTROL_INVALID_WINDOW (0x40):
+QUIC_FLOW_CONTROL_INVALID_WINDOW (0x8040):
 : The peer received an invalid flow control window.
 
-QUIC_CONNECTION_IP_POOLED (0x3e):
+QUIC_CONNECTION_IP_POOLED (0x803e):
 : The connection has been IP pooled into an existing connection.
 
-QUIC_TOO_MANY_OUTSTANDING_SENT_PACKETS (0x44):
+QUIC_TOO_MANY_OUTSTANDING_SENT_PACKETS (0x8044):
 : The connection has too many outstanding sent packets.
 
-QUIC_TOO_MANY_OUTSTANDING_RECEIVED_PACKETS (0x45):
+QUIC_TOO_MANY_OUTSTANDING_RECEIVED_PACKETS (0x8045):
 : The connection has too many outstanding received packets.
 
-QUIC_CONNECTION_CANCELLED (0x46):
+QUIC_CONNECTION_CANCELLED (0x8046):
 : The QUIC connection has been cancelled.
 
-QUIC_BAD_PACKET_LOSS_RATE (0x47):
+QUIC_BAD_PACKET_LOSS_RATE (0x8047):
 : Disabled QUIC because of high packet loss rate.
 
-QUIC_PUBLIC_RESETS_POST_HANDSHAKE (0x49):
+QUIC_PUBLIC_RESETS_POST_HANDSHAKE (0x8049):
 : Disabled QUIC because of too many PUBLIC_RESETs post handshake.
 
-QUIC_TIMEOUTS_WITH_OPEN_STREAMS (0x4a):
+QUIC_TIMEOUTS_WITH_OPEN_STREAMS (0x804a):
 : Disabled QUIC because of too many timeouts with streams open.
 
-QUIC_TOO_MANY_RTOS (0x55):
+QUIC_TOO_MANY_RTOS (0x8055):
 : QUIC timed out after too many RTOs.
 
-QUIC_ENCRYPTION_LEVEL_INCORRECT (0x2c):
+QUIC_ENCRYPTION_LEVEL_INCORRECT (0x802c):
 : A packet was received with the wrong encryption level (i.e. it should 
   have been encrypted but was not.)
 
-QUIC_VERSION_NEGOTIATION_MISMATCH (0x37):
+QUIC_VERSION_NEGOTIATION_MISMATCH (0x8037):
 : This connection involved a version negotiation which appears to have been
   tampered with.
 
-QUIC_IP_ADDRESS_CHANGED (0x50):
+QUIC_IP_ADDRESS_CHANGED (0x8050):
 : IP address changed causing connection close.
 
-QUIC_TOO_MANY_FRAME_GAPS (0x5d):
+QUIC_TOO_MANY_FRAME_GAPS (0x805d):
 : Stream frames arrived too discontiguously so that stream sequencer buffer
   maintains too many gaps.
 
-QUIC_TOO_MANY_SESSIONS_ON_SERVER (0x60):
+QUIC_TOO_MANY_SESSIONS_ON_SERVER (0x8060):
 : Connection closed because server hit max number of sessions allowed. 
 
 
