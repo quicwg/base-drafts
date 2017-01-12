@@ -1004,8 +1004,7 @@ The fields in the Ack Block Section are:
 ### Timestamp Section {#timestamp-section}
 
 The Timestamp Section contains between zero and 255 measurements of packet
-receive times. This information can be used by a sender to better estimate the
-RTT of the connection.
+receive times relative to the beginning of the connection.
 
 ~~~
  0                   1                   2                   3
