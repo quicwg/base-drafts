@@ -77,14 +77,6 @@ informative:
     seriesinfo:
       ACM SIGCOMM 2007
 
-  QUICCrypto:
-    title: "QUIC Crypto"
-    author:
-      - ins: A. Langley
-      - ins: W. Chang
-    date: 2016-05-26
-    target: "http://goo.gl/OuVSxa"
-
   EARLY-DESIGN:
     title: "QUIC: Multiplexed Transport Over UDP"
     author:
@@ -748,49 +740,6 @@ client in the STK.
 
 (TODO: Describe server and client actions on STK, encoding, recommendations for
 what to put in an STK.  Describe SCUP messages.)
-
-### Crypto Handshake Protocol Features
-
-QUIC's current crypto handshake mechanism is documented in {{QUICCrypto}}.  QUIC
-does not restrict itself to using a specific handshake protocol, so the details
-of a specific handshake protocol are out of this document's scope.  If not
-explicitly specified in the application mapping, TLS is assumed to be the
-default crypto handshake protocol, as described in {{QUIC-TLS}}.  An application
-that maps to QUIC MAY however specify an alternative crypto handshake protocol
-to be used.
-
-The following list of requirements and recommendations documents properties of
-the current prototype handshake which should be provided by any handshake
-protocol.
-
-* The crypto handshake MUST ensure that the final negotiated key is distinct for
-  every connection between two endpoints.
-
-* Transport Negotiation: The crypto handshake MUST provide a mechanism for the
-  transport component to exchange transport parameters and Source Address
-  Tokens.  To avoid downgrade attacks, the transport parameters sent and
-  received MUST be verified before the handshake completes successfully.
-
-* Connection Establishment in 0-RTT: Since low-latency connection establishment
-  is a critical feature of QUIC, the QUIC handshake protocol SHOULD attempt to
-  achieve 0-RTT connection establishment latency for repeated connections
-  between the same endpoints.
-
-* Source Address Spoofing Defense: Since QUIC handles source address
-  verification, the crypto protocol SHOULD NOT impose a separate source address
-  verification mechanism.
-
-* Server Config Update: A QUIC server may refresh the source-address token (STK)
-  mid-connection, to update the information stored in the STK at the client and
-  to extend the period over which 0-RTT connections can be established by the
-  client.
-
-* Certificate Compression: Early QUIC experience demonstrated that compressing
-  certificates exchanged during a handshake is valuable in reducing latency.
-  This additionally helps to reduce the amplification attack footprint when a
-  server sends a large set of certificates, which is not uncommon with TLS.  The
-  crypto protocol SHOULD compress certificates and any other information to
-  minimize the number of packets sent during a handshake.
 
 
 ### Version Negotiation Validation {#version-validation}
