@@ -658,7 +658,7 @@ protocol version.
 The client MUST set the VERSION flag on all packets until version negotiation 
 concludes. Version negotiation successfully concludes when the client receives a
 packet from the server with the VERSION flag unset. All subsequent packets sent
-by the client MUST have the VERSION flag unset.
+by the client SHOULD have the VERSION flag unset.
 
 Once the server receives a packet from the client with the VERSION flag unset, 
 it MUST ignore the flag in subsequently received packets.
