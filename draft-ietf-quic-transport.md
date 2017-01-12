@@ -1208,14 +1208,13 @@ packet size appropriately, and storing the result of previous PMTU
 determinations. In the absence of these mechanisms, the recommended default
 maximum packet size is 1350 bytes for IPv6 and 1370 bytes for IPv4. 
 
-QUIC endpoints that implement any kind of MTU discovery SHOULD maintain a
-separate PMTU estimate for each IP address the peer is using in a connection.
-Endpoints MAY maintain an estimate for each combination of local and remote IP
-addresses (as each pairing may have a different minimum MTU in the path).
-
 All handshake packets MUST include a PADDING frame if necessary to bring the
 packet to the maximum size the endpoint is enforcing. Furthermore, all IPv4
-handshake packets MUST have the DF bit set.
+handshake packets SHOULD have the DF bit set.
+
+QUIC endpoints that implement any kind of MTU discovery SHOULD maintain an
+estimate for each combination of local and remote IP addresses (as each pairing
+may have a different maximum MTU in the path).
 
 A sender bundles one or more frames in a Regular QUIC packet.  A sender MAY
 bundle any set of frames in a packet.  All QUIC packets MUST contain a packet
@@ -1281,7 +1280,7 @@ may consist only of the IP and UDP headers, which usually has insufficient
 entropy to mitigate off-path attacks.
 
 As a result, endpoints that implement PMTUD in IPv4 SHOULD take steps to mitigate
-this risk, which may include:
+this risk. For instance, an application may:
 
 * Set the IPv4 Don't Fragment (DF) bit on a small number of packets per RTT, so
 that most invalid ICMP messages arrive when there are no DF packets
