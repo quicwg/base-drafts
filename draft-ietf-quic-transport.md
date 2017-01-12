@@ -411,9 +411,8 @@ have the VERSION bit set.  This bit is always set on packets that are sent prior
 to connection establishment.  When receiving a packet that is not associated
 with an existing connection, packets without a VERSION bit MUST be discarded.
 
-While there might be similarities between different versions of this protocol,
-implementations have to assume that a version that it does not support uses a
-different packet format.
+Implementations MUST assume that an unsupported version uses an unknown packet
+format.
 
 Between different versions the following things are guaranteed to remain
 constant are:
@@ -629,10 +628,10 @@ QUIC's connection establishment begins with version negotiation, since all
 communication between the endpoints, including packet and frame formats, relies
 on the two endpoints agreeing on a version.
 
-A QUIC connection begins with a client sending a handshake packet.  Until
-packets are protected by 1-RTT keys (see {{handshake}}), packets sent by a
-client MUST include the version in the packet header.  This allows the server to
-identify the version of early packets and enable version negotiation.
+A QUIC connection begins with a client sending a handshake packet. The details 
+of the handshake mechanisms are described in {{handshake}}, but all of the
+initial packets sent from the client to the server MUST have the VERSION flag
+set, and MUST specify the version of the protocol being used.
 
 When the server receives a packet from a client with the VERSION flag set, it
 compares the client's version to the versions it supports.
@@ -656,13 +655,15 @@ version. The resent packets MUST use new packet numbers.  These packets MUST
 continue to have the VERSION flag set and MUST include the new negotiated
 protocol version.
 
-The client MUST include its selected version on all packets until it starts
-protecting packets with 1-RTT keys.  Only unprotected packets and 0-RTT
-protected packets can include a version.  A client MUST NOT change the version
-it uses unless it is in response to a version negotiation packet from the
-server.
+The client MUST set the VERSION flag on all packets until version negotiation 
+concludes. Version negotiation successfully concludes when the client receives a
+packet from the server with the VERSION flag unset. All subsequent packets sent
+by the client SHOULD have the VERSION flag unset.
 
-Version negotiation uses unprotected data.  The result of the negotiation MUST
+Once the server receives a packet from the client with the VERSION flag unset, 
+it MUST ignore the flag in subsequently received packets.
+
+Version negotiation uses unprotected data. The result of the negotiation MUST
 be revalidated once the cryptographic handshake has completed (see
 {{version-validation}}).
 
