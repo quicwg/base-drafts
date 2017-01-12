@@ -84,13 +84,13 @@ QUIC.
 
 --- note_Note_to_Readers
 
-Discussion of this draft takes place on the QUIC working group mailing list 
-(quic@ietf.org), which is archived at 
-<https://mailarchive.ietf.org/arch/search/?email_list=quic>. 
+Discussion of this draft takes place on the QUIC working group mailing list
+(quic@ietf.org), which is archived at
+<https://mailarchive.ietf.org/arch/search/?email_list=quic>.
 
-Working Group information can be found at <https://github.com/quicwg>; source 
-code and issues list for this draft can be found at 
-<https://github.com/quicwg/base-drafts/labels/tls>. 
+Working Group information can be found at <https://github.com/quicwg>; source
+code and issues list for this draft can be found at
+<https://github.com/quicwg/base-drafts/labels/tls>.
 
 --- middle
 
@@ -1336,3 +1336,26 @@ Ryan Hamilton was originally an author of this specification.
 This document has benefited from input from Dragana Damjanovic, Christian
 Huitema, Jana Iyengar, Adam Langley, Roberto Peon, Eric Rescorla, Ian Swett, and
 many others.
+
+# Change Log
+
+> **RFC Editor's Note:**  Please remove this section prior to publication of a
+> final version of this document.
+
+## Since draft-ietf-quic-tls-00:
+
+- Changed bit used to signal key phase.
+
+- Updated key phase markings during the handshake.
+
+- Added TLS interface requirements section.
+
+- Moved to use of TLS exporters for key derivation.
+
+## Since draft-thomson-quic-tls-01:
+
+- Adopted as base for draft-ietf-quic-tls.
+
+- Updated authors/editors list.
+
+- Added status note.
