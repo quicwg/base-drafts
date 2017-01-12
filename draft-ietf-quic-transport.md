@@ -1186,7 +1186,7 @@ alive or to check reachability to the peer. The PING frame contains no
 additional fields. The receiver of a PING frame simply needs to ACK the packet 
 containing this frame. The PING frame SHOULD be used to keep a connection alive 
 when a stream is open. The default is to send a PING frame after 15 seconds of 
-quiescence. A PING frame has no payload. 
+quiescence. A PING frame has no additional fields. 
 
 
 ## CONNECTION_CLOSE frame {#frame-connection-close}
