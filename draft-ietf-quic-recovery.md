@@ -332,7 +332,7 @@ Pseudocode for OnPacketSent follows:
 
 When an ack is received, it may acknowledge 0 or more packets.  
 
-Pseudocode for OnAckReceied and UpdateRtt follow:
+Pseudocode for OnAckReceived and UpdateRtt follow:
 
 ~~~
    OnAckReceived(ack):
