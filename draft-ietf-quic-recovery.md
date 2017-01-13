@@ -235,7 +235,7 @@ mechanisms described in this section.
 
 * smoothed_rtt: The smoothed RTT of the connection, computed as described in
   {{!RFC6298}}
-  
+
 * rttvar: The RTT variance.
 
 * reordering_threshold: The largest delta between the largest acked
@@ -330,7 +330,7 @@ Pseudocode for OnPacketSent follows:
 
 ## On Ack Receipt
 
-When an ack is received, it may acknowledge 0 or more packets.  
+When an ack is received, it may acknowledge 0 or more packets.
 
 Pseudocode for OnAckReceived and UpdateRtt follow:
 
