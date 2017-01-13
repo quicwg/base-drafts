@@ -97,39 +97,84 @@ It's not shouting; when they are capitalized, they have the special meaning
 defined in {{!RFC2119}}.
 
 
-# QUIC advertisement
+# QUIC Advertisement
 
-A server advertises that it can speak HTTP/QUIC via the Alt-Svc HTTP response
-header. It does so by including the header in any response sent over a non-QUIC
-(e.g. HTTP/2) connection:
+A server advertises that it can speak HTTP/QUIC via the Alt-Svc ({{!RFC7838}})
+HTTP response header, using the ALPN token defined in
+{{connection-establishment}}.
 
-   Alt-Svc: quic=":443"
+Thus, a server could indicate in an HTTP/1.1 or HTTP/2 response that HTTP/QUIC
+was available on UDP port 443 by including the following header in any
+response:
 
-In addition, the list of QUIC versions supported by the server can be specified
-by the v= parameter.  For example, if a server supported both version 33 and 34
-it would specify the following header:
+    Alt-Svc: hq=":443"
 
-   Alt-Svc: quic=":443"; v="34,33"
+## QUIC Version Hints {#alt-svc-version-hint}
 
-On receipt of this header, a client may attempt to establish a QUIC connection
-on port 443 and, if successful, send HTTP requests using the mapping described
-in this document.
+This document defines the "v" parameter for Alt-Svc, which is used to provide
+version-negotiation hints to HTTP/QUIC clients. Syntax:
+
+    v = version
+    version = DQUOTE ( "c" version-string / "x" version-number ) DQUOTE
+    version-string = token; percent-encoded QUIC version
+    version-number = 1*8 HEXDIG; hex-encoded QUIC version
+
+When multiple versions are supported, the "v" parameter MAY be repeated multiple
+times in a single Alt-Svc entry.  For example, if a server supported both
+version "Q034" and version 0x00000001, it would specify the following header:
+
+    Alt-Svc: hq=":443";v="x1";v="cQ034"
+
+Where multiple versions are listed, the order of the values reflects the
+server's preference (with the first value being the most preferred version).
+
+QUIC versions are four-octet sequences with no additional constraints on format.
+Versions containing octets not allowed in tokens ({{!RFC7230}}, Section 3.2.6)
+MUST be encoded using the hexidecimal representation.  Versions containing only
+octets allowed in tokens MAY be encoded using either representation.
+
+On receipt of an Alt-Svc header indicating QUIC support, a client MAY attempt to
+establish a QUIC connection on the indicated port and, if successful, send HTTP
+requests using the mapping described in this document. Servers SHOULD list only
+versions which they support, but MAY omit supported versions for any reason.
 
 Connectivity problems (e.g. firewall blocking UDP) may result in QUIC connection
 establishment failure, in which case the client should gracefully fall back to
 HTTP/2.
 
+# Connection Establishment {#connection-establishment}
 
-# Connection establishment
-
-HTTP/QUIC connections are established as described in {{QUIC-TRANSPORT}}. The
-QUIC crypto handshake MUST use TLS {{QUIC-TLS}}.
+HTTP/QUIC connections are established as described in {{QUIC-TRANSPORT}}. During
+connection establishment, HTTP/QUIC support is indicated by selecting the ALPN
+token "hq" in the crypto handshake.
 
 While connection-level options pertaining to the core QUIC protocol are set in
-the initial crypto handshake {{QUIC-TLS}}, HTTP-specific settings are conveyed
+the initial crypto handshake, HTTP-specific settings are conveyed
 in the SETTINGS frame. After the QUIC connection is established, a SETTINGS
 frame ({{frame-settings}}) MUST be sent as the initial frame of the HTTP control
 stream (StreamID 3, see {{stream-mapping}}).
+
+## Draft Version Identification
+
+> **RFC Editor's Note:**  Please remove this section prior to publication of a
+> final version of this document.
+
+Only implementations of the final, published RFC can identify themselves as
+"hq". Until such an RFC exists, implementations MUST NOT identify themselves
+using these strings.
+
+Implementations of draft versions of the protocol MUST add the string "-" and
+the corresponding draft number to the identifier. For example,
+draft-ietf-quic-http-01 is identified using the string "hq-01".
+
+Non-compatible experiments that are based on these draft versions MUST append
+the string "-" and an experiment name to the identifier. For example, an
+experimental implementation based on draft-ietf-quic-http-09 which reserves an
+extra stream for unsolicited transmission of 1980s pop music might identify
+itself as "hq-09-rickroll". Note that any label MUST conform to the "token"
+syntax defined in Section 3.2.6 of [RFC7230]. Experimenters are encouraged to
+coordinate their experiments on the quic@ietf.org mailing list.
+
 
 # Stream Mapping and Usage {#stream-mapping}
 
@@ -884,6 +929,35 @@ it contains.
 
 
 # IANA Considerations
+
+## Registration of HTTP/QUIC Identification String
+
+This document creates a new registration for the identification of HTTP/QUIC in
+the "Application Layer Protocol Negotiation (ALPN) Protocol IDs" registry
+established in {{?RFC7301}}.
+
+The "hq" string identifies HTTP/QUIC:
+
+  Protocol:
+  : HTTP over QUIC
+
+  Identification Sequence:
+  : 0x68 0x71 ("hq")
+
+  Specification:
+  : This document
+
+## Registration of Version Hint Alt-Svc Parameter
+
+This document creates a new registration for version-negotiation hints in the
+"Hypertext Transfer Protocol (HTTP) Alt-Svc Parameter" registry established in
+{{!RFC7838}}.
+
+  Parameter:
+  : "v"
+
+  Specification:
+  : This document, {{alt-svc-version-hint}}
 
 ## Existing Frame Types
 
