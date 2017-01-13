@@ -254,22 +254,22 @@ an entire HTTP connection into a tunnel to a remote host. In HTTP/2, the CONNECT
 method is used to establish a tunnel over a single HTTP/2 stream to a remote
 host for similar purposes.
 
-A CONNECT request in HTTP/QUIC functions in the same manner as in HTTP/2. The 
-request MUST be formatted as described in {{!RFC7540}}, Section 8.3. A CONNECT 
-request that does not conform to these restrictions is malformed. The message 
-data stream MUST NOT be closed at the end of the request. 
+A CONNECT request in HTTP/QUIC functions in the same manner as in HTTP/2. The
+request MUST be formatted as described in {{!RFC7540}}, Section 8.3. A CONNECT
+request that does not conform to these restrictions is malformed. The message
+data stream MUST NOT be closed at the end of the request.
 
-A proxy that supports CONNECT establishes a TCP connection ({{!RFC0793}}) to the 
-server identified in the ":authority" pseudo-header field. Once this connection 
-is successfully established, the proxy sends a HEADERS frame containing a 2xx 
-series status code to the client, as defined in {{!RFC7231}}, Section 4.3.6, on 
-the message control stream. 
+A proxy that supports CONNECT establishes a TCP connection ({{!RFC0793}}) to the
+server identified in the ":authority" pseudo-header field. Once this connection
+is successfully established, the proxy sends a HEADERS frame containing a 2xx
+series status code to the client, as defined in {{!RFC7231}}, Section 4.3.6, on
+the message control stream.
 
-All QUIC STREAM frames on the message data stream correspond to data sent on the 
-TCP connection. Any QUIC STREAM frame sent by the client is transmitted by the 
-proxy to the TCP server; data received from the TCP server is written to the 
-data stream by the proxy. Note that the size and number of TCP segments is not 
-guaranteed to map predictably to the size and number of QUIC STREAM frames. 
+All QUIC STREAM frames on the message data stream correspond to data sent on the
+TCP connection. Any QUIC STREAM frame sent by the client is transmitted by the
+proxy to the TCP server; data received from the TCP server is written to the
+data stream by the proxy. Note that the size and number of TCP segments is not
+guaranteed to map predictably to the size and number of QUIC STREAM frames.
 
 The TCP connection can be closed by either peer. When the client half-closes the
 data stream, the proxy will set the FIN bit on its connection to the TCP server.
@@ -278,8 +278,8 @@ corresponding data stream. TCP connections which remain half-closed in a single
 direction are not invalid, but are often handled poorly by servers, so clients
 SHOULD NOT half-close connections on which they are still expecting data.
 
-A TCP connection error is signaled with RST_STREAM. A proxy treats any error in 
-the TCP connection, which includes receiving a TCP segment with the RST bit set, 
+A TCP connection error is signaled with RST_STREAM. A proxy treats any error in
+the TCP connection, which includes receiving a TCP segment with the RST bit set,
 as a stream error of type HTTP_CONNECT_ERROR ({{http-error-codes}}).
 Correspondingly, a proxy MUST send a TCP segment with the RST bit set if it
 detects an error with the stream or the QUIC connection.
@@ -406,7 +406,7 @@ Padding MUST NOT be used.  The flags defined are:
 
 A HEADERS frame with the Reserved bits set MUST be treated as a connection error
 of type HTTP_MALFORMED_HEADERS.
-  
+
 ~~~~~~~~~~
     0                   1                   2                   3
     0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
@@ -423,11 +423,11 @@ The HEADERS frame payload has the following fields:
   be set to zero on the first header block sequence, and incremented on
   each header block.
 
-The next frame on the same stream after a HEADERS frame without the EHB flag set 
-MUST be another HEADERS frame. A receiver MUST treat the receipt of any other 
+The next frame on the same stream after a HEADERS frame without the EHB flag set
+MUST be another HEADERS frame. A receiver MUST treat the receipt of any other
 type of frame as a stream error of type HTTP_INTERRUPTED_HEADERS. (Note that
 QUIC can intersperse data from other streams between frames, or even during
-transmission of frames, so multiplexing is not blocked by this requirement.) 
+transmission of frames, so multiplexing is not blocked by this requirement.)
 
 A full header block is contained in a sequence of zero or more HEADERS frames
 without EHB set, followed by a HEADERS frame with EHB set.
@@ -550,14 +550,14 @@ error.
 An implementation MUST ignore the contents for any SETTINGS identifier it does
 not understand.
 
-SETTINGS frames always apply to a connection, never a single stream, and MUST 
-only be sent on the connection control stream (Stream 3). If an endpoint 
-receives an SETTINGS frame whose stream identifier field is anything other than 
+SETTINGS frames always apply to a connection, never a single stream, and MUST
+only be sent on the connection control stream (Stream 3). If an endpoint
+receives an SETTINGS frame whose stream identifier field is anything other than
 0x0, the endpoint MUST respond with a connection error of type
 HTTP_SETTINGS_ON_WRONG_STREAM.
 
-The SETTINGS frame affects connection state. A badly formed or incomplete 
-SETTINGS frame MUST be treated as a connection error (Section 5.4.1) of type 
+The SETTINGS frame affects connection state. A badly formed or incomplete
+SETTINGS frame MUST be treated as a connection error (Section 5.4.1) of type
 HTTP_MALFORMED_SETTINGS.
 
 
@@ -632,9 +632,9 @@ for the full lifetime of that stream.
 In certain conditions, the SETTINGS_ACK frame can be the first frame on a given
 stream -- this simply indicates that the new settings apply from the beginning
 of that stream.
- 
-If the sender of a SETTINGS frame with the REQUEST_ACK flag set does not 
-receive full acknowledgement within a reasonable amount of time, it MAY issue a 
+
+If the sender of a SETTINGS frame with the REQUEST_ACK flag set does not
+receive full acknowledgement within a reasonable amount of time, it MAY issue a
 connection error ({{errors}}) of type HTTP_SETTINGS_TIMEOUT.  A full
 acknowledgement has occurred when:
 
@@ -745,9 +745,9 @@ strictly a synchronization marker for settings application.  See
 non-zero length MUST be treated as a connection error of type
 HTTP_MALFORMED_SETTINGS_ACK.
 
-On the connection control stream, the SETTINGS_ACK frame MUST have a length 
-which is a multiple of two octets. A SETTINGS_ACK frame of any other length MUST 
-be treated as a connection error of type HTTP_MALFORMED_SETTINGS_ACK. 
+On the connection control stream, the SETTINGS_ACK frame MUST have a length
+which is a multiple of two octets. A SETTINGS_ACK frame of any other length MUST
+be treated as a connection error of type HTTP_MALFORMED_SETTINGS_ACK.
 
 
 # Error Handling {#errors}
@@ -765,7 +765,7 @@ HTTP_SETTINGS_TIMEOUT (0x00):
 : After sending a SETTINGS frame which requested acknowledgement, the
   acknowledgement was not completed (see {{settings-synchronization}}) in a
   timely manner.
-  
+
 HTTP_PUSH_REFUSED (0x01):
 : The server has attempted to push content which the client will not accept
   on this connection.
@@ -785,7 +785,7 @@ HTTP_HPACK_DECOMPRESSION_FAILED (0x05):
 HTTP_CONNECT_ERROR (0x06):
 : The connection established in response to a CONNECT request was reset or
   abnormally closed.
-  
+
 HTTP_EXCESSIVE_LOAD (0x07):
 : The endpoint detected that its peer is exhibiting a behavior that might be
   generating excessive load.
@@ -812,7 +812,7 @@ HTTP_MALFORMED_SETTINGS_ACK (0x0D):
 HTTP_INTERRUPTED_HEADERS (0x0E):
 : A HEADERS frame without the End Header Block flag was followed by a frame
   other than HEADERS.
-  
+
 HTTP_SETTINGS_ON_WRONG_STREAM (0x0F):
 : A SETTINGS frame was received on a request control stream.
 
