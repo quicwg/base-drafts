@@ -114,23 +114,24 @@ response:
 This document defines the "v" parameter for Alt-Svc, which is used to provide
 version-negotiation hints to HTTP/QUIC clients. Syntax:
 
-    v = quoted-versions
-    quoted-versions = DQUOTE *( version-string "," ) version-string DQUOTE
+    v = version
+    version = DQUOTE ( "c" version-string / "x" version-number ) DQUOTE
     version-string = token; percent-encoded QUIC version
+    version-number = 1*8 HEXDIG; hex-encoded QUIC version
 
-For example, if a server supported both version Q033 and Q034 it would specify
-the following header:
+When multiple versions are supported, the "v" parameter MAY be repeated multiple
+times in a single Alt-Svc entry.  For example, if a server supported both
+version "Q034" and version 0x00000001, it would specify the following header:
 
-    Alt-Svc: hq=":443"; v="Q034,Q033"
+    Alt-Svc: hq=":443";v="x1";v="cQ034"
 
 Where multiple versions are listed, the order of the values reflects the
 server's preference (with the first value being the most preferred version).
 
 QUIC versions are four-octet sequences with no additional constraints on format.
-Octets not allowed in tokens ({{!RFC7230}}, Section 3.2.6) MUST be
-percent-encoded as per Section 2.1 of {{!RFC3986}}. Consequently, the octet
-representing the percent character ("%", hex 25) MUST be percent-encoded as
-well.
+Versions containing octets not allowed in tokens ({{!RFC7230}}, Section 3.2.6)
+MUST be encoded using the hexidecimal representation.  Versions containing only
+octets allowed in tokens MAY be encoded using either representation.
 
 On receipt of an Alt-Svc header indicating QUIC support, a client MAY attempt to
 establish a QUIC connection on the indicated port and, if successful, send HTTP
