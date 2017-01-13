@@ -195,7 +195,7 @@ of RFCs, papers, and common practice.  Some may need to be changed or negotiated
 in order to better suit a variety of environments.  
 
 * kMaxTLPs: 2
-  Maximum number of tail loss probes before an RTO fires.  
+  Maximum number of tail loss probes before an RTO fires.
 
 * kReorderingThreshold: 3
   Maximum reordering in packet number space before FACK style loss detection
