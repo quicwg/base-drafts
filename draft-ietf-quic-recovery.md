@@ -190,9 +190,9 @@ packet transmission, when a packet is acked, and timer expiration events.
 
 ## Constants of interest
 
-Constants used in loss recovery and congestion control are based on a combination
-of RFCs, papers, and common practice.  Some may need to be changed or negotiated
-in order to better suit a variety of environments.  
+Constants used in loss recovery and congestion control are based on a
+combination of RFCs, papers, and common practice.  Some may need to be changed
+or negotiated in order to better suit a variety of environments.
 
 * kMaxTLPs: 2
   Maximum number of tail loss probes before an RTO fires.
