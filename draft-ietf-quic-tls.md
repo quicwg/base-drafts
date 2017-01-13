@@ -11,7 +11,7 @@ workgroup: QUIC
 stand_alone: yes
 pi: [toc, sortrefs, symrefs, docmapping]
 
-author: 
+author:
   -
     ins: M. Thomson
     name: Martin Thomson
