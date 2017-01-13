@@ -345,11 +345,11 @@ Pseudocode for OnAckReceived and UpdateRtt follow:
      // Find all newly acked packets.
      for acked_packet in DetermineNewlyAckedPackets():
        OnPacketAcked(acked_packet)
-     
+
      DetectLostPackets(ack.largest_acked_packet);
      SetLossDetectionAlarm();
-     
-     
+
+
    UpdateRtt(rtt_sample):
      if (smoothed_rtt == 0):
        smoothed_rtt = rtt_sample
@@ -376,8 +376,8 @@ Pseudocode for OnPacketAcked follows:
      handshake_count = 0;
      tlp_count = 0;
      rto_count = 0;
-     # TODO: Don't remove packets immediately, since they can be used for detecting
-     # spurous retransmits.
+     # TODO: Don't remove packets immediately, since they can be used for
+     # detecting spurous retransmits.
      sent_packets.remove(acked_packet);
 ~~~
 
