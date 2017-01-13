@@ -1619,6 +1619,9 @@ for debugging and monitoring purposes.
 A receiver advertises credit for a stream by sending a WINDOW_UPDATE frame with
 the StreamID set appropriately. A receiver may use the current offset of data
 consumed to determine the flow control offset to be advertised.
+A receiver MAY send copies of a WINDOW_UPDATE frame in multiple packets in order
+to make sure that the sender receives it even if one of the packets is lost. A
+sender MUST ignore duplicate WINDOW_UPDATE frames.
 
 Connection flow control is a limit to the total bytes of stream data sent in
 STREAM frames.  A receiver advertises credit for a connection by sending a
