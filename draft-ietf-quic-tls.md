@@ -11,7 +11,7 @@ workgroup: QUIC
 stand_alone: yes
 pi: [toc, sortrefs, symrefs, docmapping]
 
-author:
+author: 
   -
     ins: M. Thomson
     name: Martin Thomson
@@ -1265,8 +1265,8 @@ TLS_MESSAGE_PARAMETER_NOT_FOUND (0xB023):
 : A handshake message was received with a mandatory parameter missing.
 
 TLS_MESSAGE_PARAMETER_NO_OVERLAP (0xB024):
-: A handshake message was received with a parameter that has no overlap with the 
-  local parameter. 
+: A handshake message was received with a parameter that has no overlap with the
+  local parameter.
 
 TLS_MESSAGE_INDEX_NOT_FOUND (0xB025):
 : A handshake message was received that contained a parameter with too few values.
@@ -1284,8 +1284,8 @@ TLS_HANDSHAKE_STATELESS_REJECT (0xB048):
 : A handshake handshake message resulted in a stateless reject.
 
 TLS_NO_SUPPORT (0xB028):
-: There was no intersection between the crypto primitives supported by the peer 
-  and ourselves. 
+: There was no intersection between the crypto primitives supported by the peer
+  and ourselves.
 
 TLS_TOO_MANY_REJECTS (0xB029):
 : The server rejected our client hello messages too many times.
@@ -1307,8 +1307,8 @@ TLS_SYMMETRIC_KEY_SETUP_FAILED (0xB035):
 : We failed to set up the symmetric keys for a connection.
 
 TLS_MESSAGE_WHILE_VALIDATING_CLIENT_HELLO (0xB036):
-: A handshake message arrived, but we are still validating the previous 
-  handshake message. 
+: A handshake message arrived, but we are still validating the previous
+  handshake message.
 
 TLS_UPDATE_BEFORE_HANDSHAKE_COMPLETE (0xB041):
 : A server config update arrived before the handshake is complete.
