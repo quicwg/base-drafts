@@ -1100,9 +1100,9 @@ The fields in the WINDOW_UPDATE frame are as follows:
   to specify the connection-level flow control window.
 
 * Byte offset: A 64-bit unsigned integer indicating the absolute byte offset of
-  data which can be sent on the given stream.  In the case of connection level
-  flow control, the cumulative number of bytes which can be sent on all
-  currently open streams.
+  data which can be sent on the given stream.  In the case of connection-level
+  flow control, the cumulative offset which can be sent on all streams that
+  contribute to connection-level flow control.
 
 ## BLOCKED Frame
 
@@ -1593,9 +1593,8 @@ Stream flow control, which prevents a single stream from consuming the entire
 receive buffer for a connection.
 
 A receiver sends WINDOW_UPDATE frames to the sender to advertise additional
-credit, for both connection and stream flow control.  A receiver advertises the
-maximum absolute byte offset in the stream or in the connection which the
-receiver is willing to receive.
+credit by sending the absolute byte offset in the stream or in the connection
+which it is willing to receive.
 
 The initial flow control credit is 65536 bytes for both the stream and
 connection flow controllers.
@@ -1624,12 +1623,13 @@ to make sure that the sender receives it even if one of the packets is lost. A
 sender MUST ignore duplicate WINDOW_UPDATE frames.
 
 Connection flow control is a limit to the total bytes of stream data sent in
-STREAM frames.  A receiver advertises credit for a connection by sending a
-WINDOW_UPDATE frame with the StreamID set to zero (0x00).  A receiver may
-maintain a cumulative sum of bytes received cumulatively on all streams to
-determine the value of the connection flow control offset to be advertised in
-WINDOW_UPDATE frames.  A sender may maintain a cumulative sum of stream data
-bytes sent to impose the connection flow control limit.
+STREAM frames on all streams contributing to connection flow control.  A
+receiver advertises credit for a connection by sending a WINDOW_UPDATE frame
+with the StreamID set to zero (0x00).  A receiver maintains a cumulative sum of
+bytes received on all streams contributing to connection-level flow control to
+check for flow control violations. A receiver may maintain a cumulative sum of
+bytes consumed on all contributing streams to determine the connection-level
+flow control offset to be advertised.
 
 ## Edge Cases and Other Considerations
 
