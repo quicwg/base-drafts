@@ -171,8 +171,6 @@ Definitions of terms that are used in this document:
 This section briefly describes QUIC's key mechanisms and benefits.  Key
 strengths of QUIC include:
 
-* Low-latency Version Negotiation
-
 * Low-latency connection establishment
 
 * Multiplexing without head-of-line blocking
@@ -183,24 +181,10 @@ strengths of QUIC include:
 
 * Stream and connection flow control
 
-* Connection Migration and Resilience to NAT rebinding
+* Connection migration and resilience to NAT rebinding
 
+* Version negotiation
 
-## Low-Latency Version Negotiation
-
-QUIC combines version negotiation with the rest of connection establishment to
-avoid unnecessary roundtrip delays.  A QUIC client proposes a version to use for
-the connection, and encodes the rest of the handshake using the proposed
-version.  If the server does not speak the client-chosen version, it forces
-version negotiation by sending back a Version Negotiation packet to the client,
-causing a roundtrip of delay before connection establishment.
-
-This mechanism eliminates roundtrip latency when the client's
-optimistically-chosen version is spoken by the server, and incentivizes servers
-to not lag behind clients in deployment of newer versions. Additionally, an
-application may negotiate QUIC versions out-of-band to increase chances of
-success in the first roundtrip and to obviate the additional roundtrip in the
-case of version mismatch.
 
 ## Low-Latency Connection Establishment
 
@@ -285,6 +269,13 @@ continues to use the same session key for encrypting and decrypting packets.
 The consistent connection ID can be used to allow migration of the connection to
 a new server IP address as well, since the Connection ID remains consistent
 across changes in the client's and the server's network addresses.
+
+
+## Version Negotiation {#benefit-version-negotiation}
+
+QUIC version negotiation allows for multiple versions of the protocol to be
+deployed and used concurrently. Version negotiation is described in
+{{version-negotiation}}.
 
 
 # Versions
@@ -628,7 +619,7 @@ QUIC's connection establishment begins with version negotiation, since all
 communication between the endpoints, including packet and frame formats, relies
 on the two endpoints agreeing on a version.
 
-A QUIC connection begins with a client sending a handshake packet. The details 
+A QUIC connection begins with a client sending a handshake packet. The details
 of the handshake mechanisms are described in {{handshake}}, but all of the
 initial packets sent from the client to the server MUST have the VERSION flag
 set, and MUST specify the version of the protocol being used.
@@ -655,12 +646,12 @@ version. The resent packets MUST use new packet numbers.  These packets MUST
 continue to have the VERSION flag set and MUST include the new negotiated
 protocol version.
 
-The client MUST set the VERSION flag on all packets until version negotiation 
+The client MUST set the VERSION flag on all packets until version negotiation
 concludes. Version negotiation successfully concludes when the client receives a
 packet from the server with the VERSION flag unset. All subsequent packets sent
 by the client SHOULD have the VERSION flag unset.
 
-Once the server receives a packet from the client with the VERSION flag unset, 
+Once the server receives a packet from the client with the VERSION flag unset,
 it MUST ignore the flag in subsequently received packets.
 
 Version negotiation uses unprotected data. The result of the negotiation MUST
@@ -1716,10 +1707,10 @@ the error code:
 0xB000-0xFFFF:
 : Cryptographic error codes.  Defined by the crypto handshake protocol in use.
 
-This section lists the defined QUIC transport error codes that may be used in a 
-CONNECTION_CLOSE or RST_STREAM frame. Error codes share a common code space. 
-Some error codes apply only to either streams or the entire connection and have 
-no defined semantics in the other context. 
+This section lists the defined QUIC transport error codes that may be used in a
+CONNECTION_CLOSE or RST_STREAM frame. Error codes share a common code space.
+Some error codes apply only to either streams or the entire connection and have
+no defined semantics in the other context.
 
 QUIC_INTERNAL_ERROR (0x8001):
 : Connection has reached an invalid state.
@@ -1866,7 +1857,7 @@ QUIC_TOO_MANY_RTOS (0x8055):
 : QUIC timed out after too many RTOs.
 
 QUIC_ENCRYPTION_LEVEL_INCORRECT (0x802c):
-: A packet was received with the wrong encryption level (i.e. it should 
+: A packet was received with the wrong encryption level (i.e. it should
   have been encrypted but was not.)
 
 QUIC_VERSION_NEGOTIATION_MISMATCH (0x8037):
@@ -1881,7 +1872,7 @@ QUIC_TOO_MANY_FRAME_GAPS (0x805d):
   maintains too many gaps.
 
 QUIC_TOO_MANY_SESSIONS_ON_SERVER (0x8060):
-: Connection closed because server hit max number of sessions allowed. 
+: Connection closed because server hit max number of sessions allowed.
 
 
 # Security and Privacy Considerations
