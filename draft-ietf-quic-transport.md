@@ -1607,6 +1607,10 @@ NOT subsequently advertise a smaller offset.  A sender may receive WINDOW_UPDATE
 frames out of order; a sender MUST therefore ignore any reductions in flow
 control credit.
 
+A receiver MUST close the connection with a
+QUIC_FLOW_CONTROL_RECEIVED_TOO_MUCH_DATA error ({{error-handling}}) if the
+peer violates the advertised stream or connection flow control windows.
+
 A sender MUST send BLOCKED frames to indicate it has data to write but is
 blocked by lack of connection or stream flow control credit.  BLOCKED frames are
 expected to be sent infrequently in common cases, but they are considered useful
