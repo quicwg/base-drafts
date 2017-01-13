@@ -1338,10 +1338,7 @@ A packet may contain frames and/or application data, only some of which may
 require reliability.  When a packet is detected as lost, the sender re-sends any
 frames as necessary:
 
-* All application data sent in STREAM frames MUST be retransmitted, with one
-  exception.  When an endpoint sends a RST_STREAM frame, data outstanding on
-  that stream SHOULD NOT be retransmitted, since subsequent data on this stream
-  is expected to not be delivered by the receiver.
+* All application data sent in STREAM frames MUST be retransmitted.
 
 * ACK, STOP_WAITING, and PADDING frames MUST NOT be retransmitted.  New frames
   of these types may however be bundled with any outgoing packet.
@@ -1544,7 +1541,8 @@ the highest data offset it already received on that stream.
 An endpoint that receives a RST_STREAM frame (and which has not sent a FIN or a
 RST_STREAM) MUST immediately respond with a RST_STREAM frame, and MUST NOT send
 any more data on the stream.  This endpoint may continue receiving frames for
-the stream on which a RST_STREAM is received.
+the stream on which a RST_STREAM is received, and MUST deliver the received
+data up to the final offset to the application.
 
 If this state is reached as a result of sending a RST_STREAM frame, the peer
 that receives the RST_STREAM might have already sent -- or enqueued for sending
