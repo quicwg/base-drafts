@@ -100,8 +100,8 @@ defined in {{!RFC2119}}.
 # QUIC Advertisement
 
 A server advertises that it can speak HTTP/QUIC via the Alt-Svc ({{!RFC7838}})
-HTTP response header, using the ALPN token defined in
-{{connection-establishment}}.
+HTTP response header (or the semantically equivalent Alt-Svc HTTP/2 Extension
+Frame Type), using the ALPN token defined in {{connection-establishment}}.
 
 Thus, a server could indicate in an HTTP/1.1 or HTTP/2 response that HTTP/QUIC
 was available on UDP port 443 by including the following header in any
