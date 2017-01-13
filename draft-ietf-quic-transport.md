@@ -1613,8 +1613,8 @@ expected to be sent infrequently in common cases, but they are considered useful
 for debugging and monitoring purposes.
 
 A receiver advertises credit for a stream by sending a WINDOW_UPDATE frame with
-the StreamID set appropriately.  A receiver may simply use the current received
-offset to determine the flow control offset to be advertised.
+the StreamID set appropriately. A receiver may use the current offset of data
+consumed to determine the flow control offset to be advertised.
 
 Connection flow control is a limit to the total bytes of stream data sent in
 STREAM frames.  A receiver advertises credit for a connection by sending a
