@@ -111,11 +111,13 @@ congestion control, and the use of TLS 1.3 for key negotiation.
 
 --- note_Note_to_Readers
 
-Discussion of this draft takes place on the QUIC working group mailing list (quic@ietf.org),
-which is archived at <https://mailarchive.ietf.org/arch/search/?email_list=quic>.
+Discussion of this draft takes place on the QUIC working group mailing list
+(quic@ietf.org), which is archived at
+<https://mailarchive.ietf.org/arch/search/?email_list=quic>.
 
-Working Group information can be found at <https://github.com/quicwg>; source code and issues list
-for this draft can be found at <https://github.com/quicwg/base-drafts/labels/transport>.
+Working Group information can be found at <https://github.com/quicwg>; source
+code and issues list for this draft can be found at
+<https://github.com/quicwg/base-drafts/labels/transport>.
 
 --- middle
 
@@ -169,8 +171,6 @@ Definitions of terms that are used in this document:
 This section briefly describes QUIC's key mechanisms and benefits.  Key
 strengths of QUIC include:
 
-* Low-latency Version Negotiation
-
 * Low-latency connection establishment
 
 * Multiplexing without head-of-line blocking
@@ -181,24 +181,10 @@ strengths of QUIC include:
 
 * Stream and connection flow control
 
-* Connection Migration and Resilience to NAT rebinding
+* Connection migration and resilience to NAT rebinding
 
+* Version negotiation
 
-## Low-Latency Version Negotiation
-
-QUIC combines version negotiation with the rest of connection establishment to
-avoid unnecessary roundtrip delays.  A QUIC client proposes a version to use for
-the connection, and encodes the rest of the handshake using the proposed
-version.  If the server does not speak the client-chosen version, it forces
-version negotiation by sending back a Version Negotiation packet to the client,
-causing a roundtrip of delay before connection establishment.
-
-This mechanism eliminates roundtrip latency when the client's
-optimistically-chosen version is spoken by the server, and incentivizes servers
-to not lag behind clients in deployment of newer versions. Additionally, an
-application may negotiate QUIC versions out-of-band to increase chances of
-success in the first roundtrip and to obviate the additional roundtrip in the
-case of version mismatch.
 
 ## Low-Latency Connection Establishment
 
@@ -285,12 +271,47 @@ a new server IP address as well, since the Connection ID remains consistent
 across changes in the client's and the server's network addresses.
 
 
+## Version Negotiation {#benefit-version-negotiation}
+
+QUIC version negotiation allows for multiple versions of the protocol to be
+deployed and used concurrently. Version negotiation is described in
+{{version-negotiation}}.
+
+
+# Versions
+
+QUIC versions are identified using a 32-bit value.
+
+The version 0x00000000 is reserved to represent an invalid version.  This
+version of the specification is identified by the number 0x00000001.
+
+Versions with the most significant 16 bits of the version number cleared are
+reserved for use in future IETF consensus documents.
+
+\[\[RFC editor: please remove the remainder of this section before
+publication.]]
+
+The version number for the final version of this specification (0x00000001), is
+reserved for the version of the protocol that is published as an RFC.
+
+Version numbers used to identify IETF drafts are created by adding the draft
+number to 0xff000000.  For example, draft-ietf-quic-transport-13 would be
+identified as 0xff00000D.
+
+Versions of QUIC that are used for experimentation are coordinated on the
+[github wiki](https://github.com/quicwg/base-drafts/wiki/QUIC-Versions).
+
+
 # Packet Types and Formats
 
 We first describe QUIC's packet types and their formats, since some are
-referenced in subsequent mechanisms.  Note that unless otherwise noted, all
-values specified in this document are in little-endian format and all field
-sizes are in bits.
+referenced in subsequent mechanisms.
+
+All numeric values are encoded in network byte order (that is, big-endian) and
+all field sizes are in bits.  When discussing individual bits of fields, the
+least significant bit is referred to as bit 0.  Hexadecimal notation is used for
+describing the value of fields.
+
 
 ## Common Header
 
@@ -341,6 +362,9 @@ The fields in the Common Header are the following:
   the identifier of the connection.  Connection ID is tied to a QUIC connection,
   and remains consistent across client and/or server IP and port changes.
 
+
+### Identifying Packet Types
+
 While all QUIC packets have the same common header, there are three types of
 packets: Regular packets, Version Negotiation packets, and Public Reset packets.
 The flowchart below shows how a packet is classified into one of these three
@@ -369,6 +393,32 @@ Check the flags in the common header
      no QUIC Version in header    QUIC Version in header
 ~~~
 {: #packet-types title="Types of QUIC Packets"}
+
+
+### Handling Packets from Different Versions
+
+Version negotiation ({{version-negotiation}}) is performed using packets that
+have the VERSION bit set.  This bit is always set on packets that are sent prior
+to connection establishment.  When receiving a packet that is not associated
+with an existing connection, packets without a VERSION bit MUST be discarded.
+
+Implementations MUST assume that an unsupported version uses an unknown packet
+format.
+
+Between different versions the following things are guaranteed to remain
+constant are:
+
+* the location and size of the Flags field,
+
+* the location and value of the VERSION bit in the Flags field,
+
+* the location and size of the Connection ID field, and
+
+* the Version (or Supported Versions, {{version-negotiation-packet}}) field.
+
+All other values MUST be ignored when processing a packet that contains an
+unsupported version.
+
 
 ## Regular Packets
 
@@ -574,42 +624,39 @@ of the handshake mechanisms are described in {{handshake}}, but all of the
 initial packets sent from the client to the server MUST have the VERSION flag
 set, and MUST specify the version of the protocol being used.
 
-When the server receives a packet from a client with the VERSION flag set for a
-connection that has not yet been established, it compares the client's version
-to the versions it supports.
+When the server receives a packet from a client with the VERSION flag set, it
+compares the client's version to the versions it supports.
 
-* If the client's version is acceptable to the server, the server MUST use this
-  protocol version for the lifetime of the connection.  All subsequent packets
-  sent by the server MUST have the version flag off.
+If the version selected by the client is not acceptable to the server, the
+server discards the incoming packet and responds with a version negotiation
+packet ({{version-negotiation-packet}}).  This includes the VERSION flag and a
+list of versions that the server will accept.  A server MUST send a version
+negotiation packet for every packet that it receives with an unacceptable
+version.
 
-* If the client's version is not acceptable to the server, the server MUST send
-  a Version Negotiation packet to the client.  This packet will have the VERSION
-  flag set and will include the server's set of supported versions.  On
-  subsequently received packets for the same connection ID with the unacceptable
-  version, the server MUST continue responding with a Version Negotiation
-  packet.
+If the packet contains a version that is acceptable to the server, the server
+proceeds with the handshake ({{handshake}}).  All subsequent packets sent by the
+server MUST have the VERSION flag unset.  This commits the server to the version
+that the client selected.
 
 When the client receives a Version Negotiation packet from the server, it should
-select an acceptable protocol version.  If such a version is found, the client
-MUST resend all packets using the new version, and the resent packets MUST use
-new packet numbers.  These packets MUST continue to have the VERSION flag set
-and MUST include the new negotiated protocol version.
+select an acceptable protocol version.  If the server lists an acceptable
+version, the client selects that version and resends all packets using that
+version. The resent packets MUST use new packet numbers.  These packets MUST
+continue to have the VERSION flag set and MUST include the new negotiated
+protocol version.
 
-The client MUST send its version on all packets until it receives a packet from
-the server with the VERSION flag off.  If version negotiation is successful, the
-client should receive a packet from the server with the VERSION flag off
-indicating the end of version negotiation.  All subsequent packets the client
-sends MUST have the version flag off.
+The client MUST set the VERSION flag on all packets until version negotiation
+concludes. Version negotiation successfully concludes when the client receives a
+packet from the server with the VERSION flag unset. All subsequent packets sent
+by the client SHOULD have the VERSION flag unset.
 
-Once the server receives a packet from the client with the VERSION flag off, it
-MUST ignore the VERSION flag in subsequently received packets.
+Once the server receives a packet from the client with the VERSION flag unset,
+it MUST ignore the flag in subsequently received packets.
 
-The Version Negotiation packet is unencrypted and exchanged without
-authentication.  To avoid a downgrade attack, the client needs to verify its
-record of the server's version list in the Version Negotiation packet and the
-server needs to verify its record of the client's originally proposed version.
-Therefore, the client and server MUST include this information later in their
-corresponding crypto handshake data.
+Version negotiation uses unprotected data. The result of the negotiation MUST
+be revalidated once the cryptographic handshake has completed (see
+{{version-validation}}).
 
 ## Crypto and Transport Handshake {#handshake}
 
@@ -650,7 +697,7 @@ QUIC encodes the transport parameters and options as tag-value pairs, all as
 
 * MSPC: Maximum number of incoming streams per connection.
 
-* ICSL: ?
+* ICSL: Idle timeout in seconds.  The maximum value is 600 seconds (10 minutes).
 
 #### Optional Transport Parameters
 
@@ -736,12 +783,16 @@ protocol.
   crypto protocol SHOULD compress certificates and any other information to
   minimize the number of packets sent during a handshake.
 
+
+### Version Negotiation Validation {#version-validation}
+
 The following information used during the QUIC handshake MUST be
 cryptographically verified by the crypto handshake protocol:
 
 * Client's originally proposed version in its first packet.
 
 * Server's version list in it's Version Negotiation packet, if one was sent.
+
 
 ## Connection Migration {#migration}
 
@@ -1639,255 +1690,200 @@ to get blocked.
 
 # Error Codes {#error-handling}
 
-This section lists all the QUIC error codes that may be used in a
-CONNECTION_CLOSE frame.  TODO: Trim list and group errors for readabiity.
+Error codes are 32 bits long, with the first two bits indicating the source of
+the error code:
 
-TODO: Discuss error handling beyond just listing error codes.
+0x0000-0x3FFF:
+: Application-specific error codes.  Defined by each application-layer protocol.
 
-* 0x01: QUIC_INTERNAL_ERROR.  (Connection has reached an invalid state.)
+0x4000-0x7FFF:
+: Reserved for host-local error codes.  These codes MUST NOT be sent to a peer,
+  but MAY be used in API return codes and logs.
 
-* 0x02: QUIC_STREAM_DATA_AFTER_TERMINATION.  (There were data frames after the a
-  fin or reset.)
+0x8000-0xAFFF:
+: QUIC transport error codes, including packet protection errors.  Applicable to
+  all uses of QUIC.
 
-* 0x03: QUIC_INVALID_PACKET_HEADER.  (Control frame is malformed.)
+0xB000-0xFFFF:
+: Cryptographic error codes.  Defined by the crypto handshake protocol in use.
 
-* 0x04: QUIC_INVALID_FRAME_DATA.  (Frame data is malformed.)
+This section lists the defined QUIC transport error codes that may be used in a
+CONNECTION_CLOSE or RST_STREAM frame. Error codes share a common code space.
+Some error codes apply only to either streams or the entire connection and have
+no defined semantics in the other context.
 
-* 0x30: QUIC_MISSING_PAYLOAD.  (The packet contained no payload.)
+QUIC_INTERNAL_ERROR (0x8001):
+: Connection has reached an invalid state.
 
-* 0x2e: QUIC_INVALID_STREAM_DATA.  (STREAM frame data is malformed.)
+QUIC_STREAM_DATA_AFTER_TERMINATION (0x8002):
+: There were data frames after the a fin or reset.
 
-* 0x57: QUIC_OVERLAPPING_STREAM_DATA.  (STREAM frame data overlaps with buffered
-  data.)
+QUIC_INVALID_PACKET_HEADER (0x8003):
+: Control frame is malformed.
 
-* 0x3d: QUIC_UNENCRYPTED_STREAM_DATA.  (Received STREAM frame data is not
-  encrypted.)
+QUIC_INVALID_FRAME_DATA (0x8004):
+: Frame data is malformed.
 
-* 0x58: QUIC_ATTEMPT_TO_SEND_UNENCRYPTED_STREAM_DATA.  (Attempt to send
-  unencrypted STREAM frame.  Not sent on the wire, used for local logging.)
+QUIC_MISSING_PAYLOAD (0x8030):
+: The packet contained no payload.
 
-* 0x59: QUIC_MAYBE_CORRUPTED_MEMORY.  (Received a frame which is likely the
-  result of memory corruption.)
+QUIC_INVALID_STREAM_DATA (0x802e):
+: STREAM frame data is malformed.
 
-* 0x06: QUIC_INVALID_RST_STREAM_DATA.  (RST_STREAM frame data is malformed.)
+QUIC_OVERLAPPING_STREAM_DATA (0x8057):
+: STREAM frame data overlaps with buffered data.
 
-* 0x07: QUIC_INVALID_CONNECTION_CLOSE_DATA.  (CONNECTION_CLOSE frame data is
-  malformed.)
+QUIC_UNENCRYPTED_STREAM_DATA (0x803d):
+: Received STREAM frame data is not encrypted.
 
-* 0x08: QUIC_INVALID_GOAWAY_DATA.  (GOAWAY frame data is malformed.)
+QUIC_MAYBE_CORRUPTED_MEMORY (0x8059):
+: Received a frame which is likely the result of memory corruption.
 
-* 0x39: QUIC_INVALID_WINDOW_UPDATE_DATA.  (WINDOW_UPDATE frame data is
-  malformed.)
+QUIC_INVALID_RST_STREAM_DATA (0x8006):
+: RST_STREAM frame data is malformed.
 
-* 0x3a: QUIC_INVALID_BLOCKED_DATA.  (BLOCKED frame data is malformed.)
+QUIC_INVALID_CONNECTION_CLOSE_DATA (0x8007):
+: CONNECTION_CLOSE frame data is malformed.
 
-* 0x3c: QUIC_INVALID_STOP_WAITING_DATA.  (STOP_WAITING frame data is malformed.)
+QUIC_INVALID_GOAWAY_DATA (0x8008):
+: GOAWAY frame data is malformed.
 
-* 0x4e: QUIC_INVALID_PATH_CLOSE_DATA.  (PATH_CLOSE frame data is malformed.)
+QUIC_INVALID_WINDOW_UPDATE_DATA (0x8039):
+: WINDOW_UPDATE frame data is malformed.
 
-* 0x09: QUIC_INVALID_ACK_DATA.  (ACK frame data is malformed.)
+QUIC_INVALID_BLOCKED_DATA (0x803a):
+: BLOCKED frame data is malformed.
 
-* 0x0a: QUIC_INVALID_VERSION_NEGOTIATION_PACKET.  (Version negotiation packet is
-  malformed.)
+QUIC_INVALID_STOP_WAITING_DATA (0x803c):
+: STOP_WAITING frame data is malformed.
 
-* 0x0b: QUIC_INVALID_PUBLIC_RST_PACKET.  (Public RST packet is malformed.)
+QUIC_INVALID_PATH_CLOSE_DATA (0x804e):
+: PATH_CLOSE frame data is malformed.
 
-* 0x0c: QUIC_DECRYPTION_FAILURE.  (There was an error decrypting.)
+QUIC_INVALID_ACK_DATA (0x8009):
+: ACK frame data is malformed.
 
-* 0x0d: QUIC_ENCRYPTION_FAILURE.  (There was an error encrypting.)
+QUIC_INVALID_VERSION_NEGOTIATION_PACKET (0x800a):
+: Version negotiation packet is malformed.
 
-* 0x0e: QUIC_PACKET_TOO_LARGE.  (The packet exceeded kMaxPacketSize.)
+QUIC_INVALID_PUBLIC_RST_PACKET (0x800b):
+: Public RST packet is malformed.
 
-* 0x10: QUIC_PEER_GOING_AWAY.  (The peer is going away.  May be a client or
-  server.)
+QUIC_DECRYPTION_FAILURE (0x800c):
+: There was an error decrypting.
 
-* 0x11: QUIC_INVALID_STREAM_ID.  (A stream ID was invalid.)
+QUIC_ENCRYPTION_FAILURE (0x800d):
+: There was an error encrypting.
 
-* 0x31: QUIC_INVALID_PRIORITY.  (A priority was invalid.)
+QUIC_PACKET_TOO_LARGE (0x800e):
+: The packet exceeded kMaxPacketSize.
 
-* 0x12: QUIC_TOO_MANY_OPEN_STREAMS.  (Too many streams already open.)
+QUIC_PEER_GOING_AWAY (0x8010):
+: The peer is going away. May be a client or server.
 
-* 0x4c: QUIC_TOO_MANY_AVAILABLE_STREAMS.  (The peer created too many available
-  streams.)
+QUIC_INVALID_STREAM_ID (0x8011):
+: A stream ID was invalid.
 
-* 0x13: QUIC_PUBLIC_RESET.  (Received public reset for this connection.)
+QUIC_INVALID_PRIORITY (0x8031):
+: A priority was invalid.
 
-* 0x14: QUIC_INVALID_VERSION.  (Invalid protocol version.)
+QUIC_TOO_MANY_OPEN_STREAMS (0x8012):
+: Too many streams already open.
 
-* 0x16: QUIC_INVALID_HEADER_ID.  (The Header ID for a stream was too far from
-  the previous.)
+QUIC_TOO_MANY_AVAILABLE_STREAMS (0x804c):
+: The peer created too many available streams.
 
-* 0x17: QUIC_INVALID_NEGOTIATED_VALUE.  (Negotiable parameter received during
-  handshake had invalid value.)
+QUIC_PUBLIC_RESET (0x8013):
+: Received public reset for this connection.
 
-* 0x18: QUIC_DECOMPRESSION_FAILURE.  (There was an error decompressing data.)
+QUIC_INVALID_VERSION (0x8014):
+: Invalid protocol version.
 
-* 0x19: QUIC_NETWORK_IDLE_TIMEOUT.  (The connection timed out due to no network
-  activity.)
+QUIC_INVALID_HEADER_ID (0x8016):
+: The Header ID for a stream was too far from the previous.
 
-* 0x43: QUIC_HANDSHAKE_TIMEOUT.  (The connection timed out waiting for the
-  handshake to complete.)
+QUIC_INVALID_NEGOTIATED_VALUE (0x8017):
+: Negotiable parameter received during handshake had invalid value.
 
-* 0x1a: QUIC_ERROR_MIGRATING_ADDRESS.  (There was an error encountered migrating
-  addresses.)
+QUIC_DECOMPRESSION_FAILURE (0x8018):
+: There was an error decompressing data.
 
-* 0x56: QUIC_ERROR_MIGRATING_PORT.  (There was an error encountered migrating
-  port only.)
+QUIC_NETWORK_IDLE_TIMEOUT (0x8019):
+: The connection timed out due to no network activity.
 
-* 0x1b: QUIC_PACKET_WRITE_ERROR.  (There was an error while writing to the
-  socket.)
+QUIC_HANDSHAKE_TIMEOUT (0x8043):
+: The connection timed out waiting for the handshake to complete.
 
-* 0x33: QUIC_PACKET_READ_ERROR.  (There was an error while reading from the
-  socket.)
+QUIC_ERROR_MIGRATING_ADDRESS (0x801a):
+: There was an error encountered migrating addresses.
 
-* 0x32: QUIC_EMPTY_STREAM_FRAME_NO_FIN.  (We received a STREAM_FRAME with no
-  data and no fin flag set.)
+QUIC_ERROR_MIGRATING_PORT (0x8056):
+: There was an error encountered migrating port only.
 
-* 0x38: QUIC_INVALID_HEADERS_STREAM_DATA.  (We received invalid data on the
-  headers stream.)
+QUIC_EMPTY_STREAM_FRAME_NO_FIN (0x8032):
+: We received a STREAM_FRAME with no data and no fin flag set.
 
-* 0x3b: QUIC_FLOW_CONTROL_RECEIVED_TOO_MUCH_DATA.  (The peer received too much
-  data, violating flow control.)
+QUIC_FLOW_CONTROL_RECEIVED_TOO_MUCH_DATA (0x803b):
+: The peer received too much data, violating flow control.
 
-* 0x3f: QUIC_FLOW_CONTROL_SENT_TOO_MUCH_DATA.  (The peer sent too much data,
-  violating flow control.)
+QUIC_FLOW_CONTROL_SENT_TOO_MUCH_DATA (0x803f):
+: The peer sent too much data, violating flow control.
 
-* 0x40: QUIC_FLOW_CONTROL_INVALID_WINDOW.  (The peer received an invalid flow
-  control window.)
+QUIC_FLOW_CONTROL_INVALID_WINDOW (0x8040):
+: The peer received an invalid flow control window.
 
-* 0x3e: QUIC_CONNECTION_IP_POOLED.  (The connection has been IP pooled into an
-  existing connection.)
+QUIC_CONNECTION_IP_POOLED (0x803e):
+: The connection has been IP pooled into an existing connection.
 
-* 0x44: QUIC_TOO_MANY_OUTSTANDING_SENT_PACKETS.  (The connection has too many
-  outstanding sent packets.)
+QUIC_TOO_MANY_OUTSTANDING_SENT_PACKETS (0x8044):
+: The connection has too many outstanding sent packets.
 
-* 0x45: QUIC_TOO_MANY_OUTSTANDING_RECEIVED_PACKETS.  (The connection has too
-  many outstanding received packets.)
+QUIC_TOO_MANY_OUTSTANDING_RECEIVED_PACKETS (0x8045):
+: The connection has too many outstanding received packets.
 
-* 0x46: QUIC_CONNECTION_CANCELLED.  (The quic connection has been cancelled.)
+QUIC_CONNECTION_CANCELLED (0x8046):
+: The QUIC connection has been cancelled.
 
-* 0x47: QUIC_BAD_PACKET_LOSS_RATE.  (Disabled QUIC because of high packet loss
-  rate.)
+QUIC_BAD_PACKET_LOSS_RATE (0x8047):
+: Disabled QUIC because of high packet loss rate.
 
-* 0x49: QUIC_PUBLIC_RESETS_POST_HANDSHAKE.  (Disabled QUIC because of too many
-  PUBLIC_RESETs post handshake.)
+QUIC_PUBLIC_RESETS_POST_HANDSHAKE (0x8049):
+: Disabled QUIC because of too many PUBLIC_RESETs post handshake.
 
-* 0x4a: QUIC_TIMEOUTS_WITH_OPEN_STREAMS.  (Disabled QUIC because of too many
-  timeouts with streams open.)
+QUIC_TIMEOUTS_WITH_OPEN_STREAMS (0x804a):
+: Disabled QUIC because of too many timeouts with streams open.
 
-* 0x4b: QUIC_FAILED_TO_SERIALIZE_PACKET.  (Closed because we failed to serialize
-  a packet.)
+QUIC_TOO_MANY_RTOS (0x8055):
+: QUIC timed out after too many RTOs.
 
-* 0x55: QUIC_TOO_MANY_RTOS.  (QUIC timed out after too many RTOs.)  x1c:
-QUIC_HANDSHAKE_FAILED.  (Crypto errors.Hanshake failed.)
+QUIC_ENCRYPTION_LEVEL_INCORRECT (0x802c):
+: A packet was received with the wrong encryption level (i.e. it should
+  have been encrypted but was not.)
 
-* 0x1d: QUIC_CRYPTO_TAGS_OUT_OF_ORDER.  (Handshake message contained out of
-  order tags.)
+QUIC_VERSION_NEGOTIATION_MISMATCH (0x8037):
+: This connection involved a version negotiation which appears to have been
+  tampered with.
 
-* 0x1e: QUIC_CRYPTO_TOO_MANY_ENTRIES.  (Handshake message contained too many
-  entries.)
+QUIC_IP_ADDRESS_CHANGED (0x8050):
+: IP address changed causing connection close.
 
-* 0x1f: QUIC_CRYPTO_INVALID_VALUE_LENGTH.  (Handshake message contained an
-  invalid value length.)
+QUIC_TOO_MANY_FRAME_GAPS (0x805d):
+: Stream frames arrived too discontiguously so that stream sequencer buffer
+  maintains too many gaps.
 
-* 0x20: QUIC_CRYPTO_MESSAGE_AFTER_HANDSHAKE_COMPLETE.  (A crypto message was
-  received after the handshake was complete.)
+QUIC_TOO_MANY_SESSIONS_ON_SERVER (0x8060):
+: Connection closed because server hit max number of sessions allowed.
 
-* 0x21: QUIC_INVALID_CRYPTO_MESSAGE_TYPE.  (A crypto message was received with
-  an illegal message tag.)
-
-* 0x22: QUIC_INVALID_CRYPTO_MESSAGE_PARAMETER.  (A crypto message was received
-  with an illegal parameter.)
-
-* 0x34: QUIC_INVALID_CHANNEL_ID_SIGNATURE.  (An invalid channel id signature was
-  supplied.)
-
-* 0x23: QUIC_CRYPTO_MESSAGE_PARAMETER_NOT_FOUND.  (A crypto message was received
-  with a mandatory parameter missing.)
-
-* 0x24: QUIC_CRYPTO_MESSAGE_PARAMETER_NO_OVERLAP.  (A crypto message was
-  received with a parameter that has no overlapwith the local parameter.)
-
-* 0x25: QUIC_CRYPTO_MESSAGE_INDEX_NOT_FOUND.  (A crypto message was received
-  that contained a parameter with too fewvalues.)
-
-* 0x5e: QUIC_UNSUPPORTED_PROOF_DEMAND.  (A demand for an unsupport proof type
-  was received.)
-
-* 0x26: QUIC_CRYPTO_INTERNAL_ERROR.  (An internal error occured in crypto
-  processing.)
-
-* 0x27: QUIC_CRYPTO_VERSION_NOT_SUPPORTED.  (A crypto handshake message
-  specified an unsupported version.)
-
-* 0x48: QUIC_CRYPTO_HANDSHAKE_STATELESS_REJECT.  (A crypto handshake message
-  resulted in a stateless reject.)
-
-* 0x28: QUIC_CRYPTO_NO_SUPPORT.  (There was no intersection between the crypto
-  primitives supported by thepeer and ourselves.)
-
-* 0x29: QUIC_CRYPTO_TOO_MANY_REJECTS.  (The server rejected our client hello
-  messages too many times.)
-
-* 0x2a: QUIC_PROOF_INVALID.  (The client rejected the server's certificate chain
-  or signature.)
-
-* 0x2b: QUIC_CRYPTO_DUPLICATE_TAG.  (A crypto message was received with a
-  duplicate tag.)
-
-* 0x2c: QUIC_CRYPTO_ENCRYPTION_LEVEL_INCORRECT.  (A crypto message was received
-  with the wrong encryption level (i.e. itshould have been encrypted but was
-  not.))
-
-* 0x2d: QUIC_CRYPTO_SERVER_CONFIG_EXPIRED.  (The server config for a server has
-  expired.)
-
-* 0x35: QUIC_CRYPTO_SYMMETRIC_KEY_SETUP_FAILED.  (We failed to setup the
-  symmetric keys for a connection.)
-
-* 0x36: QUIC_CRYPTO_MESSAGE_WHILE_VALIDATING_CLIENT_HELLO.  (A handshake message
-  arrived, but we are still validating theprevious handshake message.)
-
-* 0x41: QUIC_CRYPTO_UPDATE_BEFORE_HANDSHAKE_COMPLETE.  (A server config update
-  arrived before the handshake is complete.)
-
-* 0x5a: QUIC_CRYPTO_CHLO_TOO_LARGE.  (CHLO cannot fit in one packet.)
-
-* 0x37: QUIC_VERSION_NEGOTIATION_MISMATCH.  (This connection involved a version
-  negotiation which appears to have beentampered with.)
-
-* 0x50: QUIC_IP_ADDRESS_CHANGED.  (IP address changed causing connection close.)
-
-* 0x51: QUIC_CONNECTION_MIGRATION_NO_MIGRATABLE_STREAMS.  (Connection migration
-  errors.Network changed, but connection had no migratable streams.)
-
-* 0x52: QUIC_CONNECTION_MIGRATION_TOO_MANY_CHANGES.  (Connection changed
-  networks too many times.)
-
-* 0x53: QUIC_CONNECTION_MIGRATION_NO_NEW_NETWORK.  (Connection migration was
-  attempted, but there was no new network tomigrate to.)
-
-* 0x54: QUIC_CONNECTION_MIGRATION_NON_MIGRATABLE_STREAM.  (Network changed, but
-  connection had one or more non-migratable streams.)
-
-* 0x5d: QUIC_TOO_MANY_FRAME_GAPS.  (Stream frames arrived too discontiguously so
-  that stream sequencer buffermaintains too many gaps.)
-
-* 0x5f: QUIC_STREAM_SEQUENCER_INVALID_STATE.  (Sequencer buffer gets into weird
-  state where continuing read/write will lead to crash.)
-
-* 0x60: QUIC_TOO_MANY_SESSIONS_ON_SERVER.  (Connection closed because of server
-  hits max number of sessions allowed.
 
 # Security and Privacy Considerations
 
 ## Spoofed Ack Attack
 
 An attacker receives an STK from the server and then releases the IP address on
-which it received the STK.  The attacked may in the future, spoof this same
-address (which now presumably addresses a different endpoint), and initiates a
+which it received the STK.  The attacker may, in the future, spoof this same
+address (which now presumably addresses a different endpoint), and initiate a
 0-RTT connection with a server on the victim's behalf.  The attacker then spoofs
-ack packets to the server which cause the server to potentially drown the victim
+ACK frames to the server which cause the server to potentially drown the victim
 in data.
 
 There are two possible mitigations to this attack.  The simplest one is that a
@@ -1934,3 +1930,23 @@ Siddharth Vijayakrishnan, and Assar Westerlund.
 This document has benefited immensely from various private discussions and
 public ones on the quic@ietf.org and proto-quic@chromium.org mailing lists. Our
 thanks to all.
+
+
+# Change Log
+
+> **RFC Editor's Note:**  Please remove this section prior to publication of a
+> final version of this document.
+
+## Since draft-ietf-quic-transport-00:
+
+- Replaced DIVERSIFICATION_NONCE flag with KEY_PHASE flag
+
+## Since draft-hamilton-quic-transport-protocol-01:
+
+- Adopted as base for draft-ietf-quic-tls.
+
+- Updated authors/editors list.
+
+- Added IANA Considerations section.
+
+- Moved Contributors and Acknowledgments to appendices.
