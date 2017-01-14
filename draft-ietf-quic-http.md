@@ -16,7 +16,7 @@ author:
     ins: M. Bishop
     name: Mike Bishop
     org: Microsoft
-    email: Mike.Bishop@microsoft.com
+    email: Michael.Bishop@microsoft.com
     role: editor
 
 normative:
