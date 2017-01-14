@@ -165,6 +165,22 @@ Definitions of terms that are used in this document:
   QUIC receiver.  QUIC packet size in this document refers to the
   UDP payload size.
 
+## Notational Conventions
+
+Packet and frame diagrams use the format described in {{?RFC2360}} Section 3.1,
+with the following additional conventions:
+
+\[x\]
+: Indicates that x is optional
+
+\{x\}
+: Indicates that x is encrypted
+
+x (*) ...
+: Indicates that x is variable-length
+
+x (A/B/C) ...
+: Indicates that x is one of A, B, or C bits long
 
 # A QUIC Overview
 
@@ -318,9 +334,17 @@ describing the value of fields.
 All QUIC packets begin with a QUIC Common header, as shown below.
 
 ~~~
-   +------------+---------------------------------+
-   |  Flags(8)  |  Connection ID (64) (optional)  |
-   +------------+---------------------------------+
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+
+|   Flags (8)   |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                                                               |
++                     [Connection ID (64)]                      +
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                   Type-Dependent Fields (*)                 ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
 
 The fields in the Common Header are the following:
@@ -372,25 +396,25 @@ packet types:
 
 ~~~
 Check the flags in the common header
-                 |
-                 |
-                 V
-           +--------------+
-           | PUBLIC_RESET |  YES
-           | flag set?    |-------> Public Reset packet
-           +--------------+
-                 |
-                 | NO
-                 V
-           +------------+         +-------------+
-           | VERSION    |  YES    | Packet sent |  YES
-           | flag set?  |-------->| by server?  |--------> Version Negotiation
-           +------------+         +-------------+               packet
-                 |                       |
-                 | NO                    | NO
-                 V                       V
-         Regular packet with       Regular packet with
-     no QUIC Version in header    QUIC Version in header
+              |
+              |
+              V
+        +--------------+
+        | PUBLIC_RESET |  YES
+        | flag set?    |-------> Public Reset packet
+        +--------------+
+              |
+              | NO
+              V
+        +------------+         +-------------+
+        | VERSION    |  YES    | Packet sent |  YES     Version
+        | flag set?  |-------->| by server?  |--------> Negotiation
+        +------------+         +-------------+          packet
+              |                       |
+              | NO                    | NO
+              V                       V
+      Regular packet with       Regular packet with
+  no QUIC Version in header    QUIC Version in header
 ~~~
 {: #packet-types title="Types of QUIC Packets"}
 
@@ -422,27 +446,19 @@ unsupported version.
 
 ## Regular Packets
 
-Each Regular packet's header consists of a Common Header followed by fields
-specific to Regular packets, as shown below:
+Each Regular packet contains additional header fields followed by an encrypted
+payload, as shown below:
 
 ~~~
-+------------+---------------------------------+
-|  Flags(8)  |  Connection ID (64) (optional)  | ->
-+------------+---------------------------------+
-+---------------------------------------+-------------------------------+
-|  Version (32) (client-only, optional) |  Diversification Nonce (256)  | ->
-+---------------------------------------+-------------------------------+
-+------------------------------------+
-|  Packet Number (8, 16, 32, or 48)  | ->
-+------------------------------------+
-+------------+
-|  AEAD Data |
-+------------+
-
-Decrypted AEAD Data:
-+------------+-----------+     +-----------+
-|   Frame 1  |  Frame 2  | ... |  Frame N  |
-+------------+-----------+     +-----------+
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                        [Version (32)]                         |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                  Packet Number (8/16/32/48)                 ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                    {Encrypted Payload (*)}                  ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
 {: #regular-packet-format title="Regular Packet"}
 
@@ -452,33 +468,31 @@ The fields in a Regular packet past the Common Header are the following:
   protocol.  Only present in the client-to-server direction, and if the VERSION
   flag is set.  Version Negotiation is described in {{version-negotiation}}.
 
-* DISCUSS_AND_REPLACE: Diversification Nonce: A 32-byte nonce generated by the
-  server and used only in the Server->Client direction to ensure that the server
-  is able to generate unique keys per connection.  Specifically, when using
-  QUIC's 0-RTT crypto handshake, a repeated CHLO with the exact same connection
-  ID and CHLO can lead to the same (intermediate) initial-encryption keys being
-  derived for the connection.  A server-generated nonce disallows a client from
-  causing the same keys to be derived for two distinct connections.  Once the
-  connection is forward-secure, this nonce is no longer present in packets.
-  This nonce can be removed from the packet header if a requirement can be added
-  for the crypto handshake to ensure key uniqueness.  The expectation is that
-  TLS1.3 meets this requirement.  Upon working group adoption of this document,
-  this requirement should be added to the crypto handshake requirements, and the
-  nonce should be removed from the packet format.
-
 * Packet Number: The lower 8, 16, 32, or 48 bits of the packet number, based on
   the PACKET_NUMBER_SIZE flag.  Each Regular packet is assigned a packet number
   by the sender.  The first packet sent by an endpoint MUST have a packet number
   of 1.
 
-* AEAD Data: A Regular packet's header, which includes the Common Header, and
-  the Version, Diversification Nonce, and Packet Number fields, is authenticated
-  but not encrypted.  The rest of a Regular packet, starting with the first
-  frame, is both authenticated and encrypted.  Immediately following the header,
-  Regular packets contain AEAD (Authenticated Encryption with Associated Data)
-  data.  This data must be decrypted in order for the contents to be
-  interpreted.  After decryption, the plaintext consists of a sequence of
-  frames, as shown (frames are described in {{frames}}).
+* Encrypted Payload: The remainder of a Regular packet is both authenticated and
+  encrypted once packet protection keys are available.  {{QUIC-TLS}} describes
+  packet protection in detail.  After decryption, the plaintext consists of a
+  sequence of frames, as shown in {{regular-packet-frames}}.  Frames are
+  described in {{frames}}.
+
+~~~
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                          Frame 1 (*)                        ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                          Frame 2 (*)                        ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+                               ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                          Frame N (*)                        ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~
+{: #regular-packet-frames title="Contents of Encrypted Payload"}
 
 ### Packet Number Compression and Reconstruction
 
@@ -521,14 +535,16 @@ at any point in the connection.  In other words,
 A Regular packet MUST contain at least one frame, and MAY contain multiple
 frames and multiple frame types.  Frames MUST fit within a single QUIC packet
 and MUST NOT span a QUIC packet boundary.  Each frame begins with a Frame Type
-byte, indicating its type, followed by type-dependent headers, and
-variable-length data, as follows:
+byte, indicating its type, followed by additional type-dependent fields:
 
 ~~~
-   +-----------+---------------------------+-------------------------+
-   |  Type (8) |  Headers (type-dependent) |  Data (type-dependent)  |
-   +-----------+---------------------------+-------------------------+
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|   Type (8)    |           Type-Dependent Fields (*)         ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
+{: #frame-layout title="Generic Frame Layout"}
 
 The following table lists currently defined frame types.  Note that the Frame
 Type byte in STREAM and ACK frames is used to carry other frame-specific flags.
@@ -536,72 +552,56 @@ For all other frames, the Frame Type byte simply identifies the frame.  These
 frames are explained in more detail as they are referenced later in the
 document.
 
-~~~
-      +------------------+--------------------+
-      | Type-field value |     Frame type     |
-      +------------------+--------------------+
-      | 1FDOOOSS         |  STREAM            |
-      | 01NULLMM         |  ACK               |
-      | 00000000 (0x00)  |  PADDING           |
-      | 00000001 (0x01)  |  RST_STREAM        |
-      | 00000010 (0x02)  |  CONNECTION_CLOSE  |
-      | 00000011 (0x03)  |  GOAWAY            |
-      | 00000100 (0x04)  |  WINDOW_UPDATE     |
-      | 00000101 (0x05)  |  BLOCKED           |
-      | 00000110 (0x06)  |  STOP_WAITING      |
-      | 00000111 (0x07)  |  PING              |
-      +------------------+--------------------+
-~~~
-{: #frame-types title="Types of QUIC Frames"}
++------------------|--------------------|----------------------------+
+| Type-field value |     Frame type     | Definition                 |
++------------------|--------------------|----------------------------+
+| `1FDOOOSS`       |  STREAM            | {{frame-stream}}           |
+| `01NULLMM`       |  ACK               | {{frame-ack}}              |
+| 00000000 (0x00)  |  PADDING           | {{frame-padding}}          |
+| 00000001 (0x01)  |  RST_STREAM        | {{frame-rst-stream}}       |
+| 00000010 (0x02)  |  CONNECTION_CLOSE  | {{frame-connection-close}} |
+| 00000011 (0x03)  |  GOAWAY            | {{frame-goaway}}           |
+| 00000100 (0x04)  |  WINDOW_UPDATE     | {{frame-window-update}}    |
+| 00000101 (0x05)  |  BLOCKED           | {{frame-blocked}}          |
+| 00000110 (0x06)  |  STOP_WAITING      | {{frame-stop-waiting}}     |
+| 00000111 (0x07)  |  PING              | {{frame-ping}}             |
++------------------|--------------------|----------------------------+
 
 ## Version Negotiation Packet
 
 A Version Negotiation packet is only sent by the server, MUST have the VERSION
-flag set, and MUST include the full 64-bit Connection ID.  The rest of the
-Version Negotiation packet is a list of 4-byte versions which the server
+flag set, and MUST include the full 64-bit Connection ID.  The remainder of the
+Version Negotiation packet is a list of 32-bit versions which the server
 supports, as shown below.
 
 ~~~
-+-----------------------------------+
-|  Flags(8)  |  Connection ID (64)  | ->
-+-----------------------------------+
-+------------------------------+----------------------------------------+
-|  1st Supported Version (32)  |  2nd Supported Version (32) supported  | ...
-+------------------------------+----------------------------------------+
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                    Supported Version 1 (32)                 ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                    Supported Version 2 (32)                 ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+                               ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                    Supported Version N (32)                 ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
 {: #version-negotiation-format title="Version Negotiation Packet"}
 
 ## Public Reset Packet
 
 A Public Reset packet MUST have the PUBLIC_RESET flag set, and MUST include the
-full 64-bit connection ID.  The rest of the Public Reset packet is encoded as if
-it were a crypto handshake message of the tag PRST, as shown below.
+full 64-bit connection ID.  The content of the Public Reset packet is TBD.
 
 ~~~
-   +-----------------------------------+
-   |  Flags(8)  |  Connection ID (64)  | ->
-   +-----------------------------------+
-   +-------------------------------------+
-   |  Quic Tag (PRST) and tag value map  |
-   +-------------------------------------+
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                    Public Reset Fields (*)                  ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
 {: #public-reset-format title="Public Reset Packet"}
-
-The tag value map contains the following tag-values:
-
-* RNON (public reset nonce proof) - a 64-bit unsigned integer.
-
-* RSEQ (rejected packet number) - a 64-bit packet number.
-
-* CADR (client address) - the observed client IP address and port number.  This
-  is currently for debugging purposes only and hence is optional.
-
-DISCUSS_AND_REPLACE: The crypto handshake message format is described in the
-QUIC crypto document, and should be replaced with something simpler when this
-document is adopted.  The purpose of the tag-value map following the PRST tag is
-to enable the receiver of the Public Reset packet to reasonably authenticate the
-packet.  This map is an extensible map format that allows specification of
-various tags, which should again be replaced by something simpler.
 
 # Life of a Connection
 
@@ -849,51 +849,55 @@ list.
 
 # Frame Types and Formats
 
-As described in {{packetization}}, Regular packets contain one or more frames.  We now
-describe the various QUIC frame types that can be present in a Regular packet.
-The use of these frames and various frame header bits are described in
-subsequent sections.
+As described in {{packetization}}, Regular packets contain one or more frames. 
+We now describe the various QUIC frame types that can be present in a Regular 
+packet. The use of these frames and various frame header bits are described in 
+subsequent sections. 
 
-## STREAM Frame
+## STREAM Frame {#frame-stream}
 
-STREAM frames implicitly create a stream and carry stream data.  A STREAM frame
-is shown below.
+STREAM frames implicitly create a stream and carry stream data. The type byte
+for a STREAM frame contains embedded flags, and is formatted as `1FDOOOSS`.
+These bits are parsed as follows:
+
+* The leftmost bit must be set to 1, indicating that this is a STREAM frame.
+
+* `F` is the FIN bit, which is used for stream termination.
+
+* The `D` bit indicates whether a Data Length field is present in the STREAM
+  header.  When set to 0, this field indicates that the Stream Data field
+  extends to the end of the packet.  When set to 1, this field indicates that
+  Data Length field contains the length (in bytes) of the Stream Data field.
+  The option to omit the length should only be used when the packet is a
+  "full-sized" packet, to avoid the risk of corruption via padding.
+
+* The `OOO` bits encode the length of the Offset header field as 0, 16, 24,
+  32, 40, 48, 56, or 64 bits long.
+
+* The `SS` bits encode the length of the Stream ID header field as 8, 16, 24,
+  or 32 bits.  (DISCUSS: Consider making this 8, 16, 32, 64.)
+
+A STREAM frame is shown below.
 
 ~~~
-   +------------+--------------------------------+
-   |  Type (8)  |  Stream ID (8, 16, 24, or 32)  |
-   +------------+--------------------------------+
-   +---------------------------------------------+
-   |  Offset (0, 16, 24, 32, 40, 48, 56, or 64)  |
-   +---------------------------------------------+
-   +-------------------------+---------------------------------+
-   |  Data length (0 or 16)  |  Stream Data (per data length)  |
-   +-------------------------+---------------------------------+
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                    Stream ID (8/16/24/32)                   ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                Offset (0/16/24/32/40/48/56/64)              ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                      [Data Length (16)]                       |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                        Stream Data (*)                      ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
+{: #stream-format title="STREAM Frame Format"}
 
-The STREAM frame header fields are as follows:
+The STREAM frame contains the following fields:
 
-* Frame Type: The Frame Type byte is an 8-bit value containing various flags,
-  and is formatted as the following 8 bits: 1FDOOOSS.
-
-  * The leftmost bit must be set to 1 indicating that this is a STREAM frame.
-
-  * 'F' is the FIN bit, which is used for stream termination.
-
-  * The 'D' bit indicates whether a Data Length field is present in the STREAM
-    header.  When set to 0, this field indicates that the Stream Data field
-    extends to the end of the packet.  When set to 1, this field indicates that
-    Data Length field contains the length (in bytes) of the Stream Data field.
-    The option to omit the length should only be used when the packet is a
-    "full-sized" packet, to avoid the risk of corruption via padding.
-
-  * The 'OOO' bits encode the length of the Offset header field as 0, 16, 24,
-    32, 40, 48, 56, or 64 bits long.
-
-  * The 'SS' bits encode the length of the Stream ID header field as 8, 16, 24,
-    or 32 bits.  (DISCUSS: Consider making this 8, 16, 32, 64.)
-
-* Stream ID: A variable-sized unsigned ID unique to this stream.
+* Stream ID: A variable-sized unsigned ID unique to this stream, whose size is
+  determined by the `SS` bits in the type byte.
 
 * Offset: A variable-sized unsigned number specifying the byte offset in the
   stream for the data in this STREAM frame.  The first byte in the stream has an
@@ -901,6 +905,8 @@ The STREAM frame header fields are as follows:
 
 * Data Length: An optional 16-bit unsigned number specifying the length of the
   Stream Data field in this STREAM frame.
+
+* Stream Data: The bytes from the designated stream to be delivered.
 
 A STREAM frame MUST have either non-zero data length or the FIN bit set.
 
@@ -917,7 +923,7 @@ blocks all those streams from making progress.  An implementation is therefore
 advised to bundle as few streams as necessary in outgoing packets without losing
 transmission efficiency to underfilled packets.
 
-## ACK Frame
+## ACK Frame {#frame-ack}
 
 Receivers send ACK frames to inform senders which packets they have received, as
 well as which packets are considered missing.  The ACK frame contains between 1
@@ -943,47 +949,40 @@ between 1 and 255 effectively provides up to 8 bits of efficient entropy on
 demand, which should be adequate protection against most opportunistic ack
 attacks.
 
-~~~
-+--------------------------------------------------------------+
-| Type (8) | Largest Acked (8, 16, 32, or 48) | Ack Delay (16) |
-+--------------------------------------------------------------+
+The type byte for a ACK frame contains embedded flags, and is formatted as
+`01NULLMM`.  These bits are parsed as follows:
 
-Ack Block Section:
-+-------------------------------------------------------------------------+
-| Number Blocks (8) (opt) | First Ack Block Length (8, 16, 32 or 48 bits) |
-+-------------------------------------------------------------------------+
-+-----------------------------------------------------------------+
-| Gap To Next Block (8) | Ack Block Length (8, 16, 32, or 48 bits | <-- optional,
-+-----------------------------------------------------------------+     repeats
+* The first two bits must be set to 01 indicating that this is an ACK frame.
 
-Timestamp Section:
-+--------------------+
-| Num Timestamps (8) |
-+--------------------+
-+---------------------------------------------------------+
-| Delta Largest Acked (8) | Time Since Largest Acked (32) | <-- optional
-+---------------------------------------------------------+
-+---------------------------------------------------------------+
-| Delta Largest Acked (8) | Time Since Previous Timestamp  (16) | <-- optional,
-+---------------------------------------------------------------+     repeats
+* The `N` bit indicates whether the frame has more than 1 ack range (i.e.,
+  whether the Ack Block Section contains a Num Blocks field).
+
+* The `U` bit is unused and MUST be set to zero.
+
+* The two `LL` bits encode the length of the Largest Acked field as 1, 2, 4,
+  or 6 bytes long.
+
+* The two `MM` bits encode the length of the Ack Block Length fields as 1, 2,
+  4, or 6 bytes long.
+
+An ACK frame is shown below.
+
 ~~~
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                  Largest Acked (8/16/32/48)                 ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|        Ack Delay (16)         |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|[Num Blocks(8)]|             Ack Block Section (*)           ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|   NumTS (8)   |             Timestamp Section (*)           ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~
+{: #ack-format title="ACK Frame Format"}
 
 The fields in the ACK frame are as follows:
-
-* Frame Type: The Frame Type byte is an 8-bit value containing various flags.
-  This byte is formatted as the following 8 bits: 01NULLMM.
-
-  * The first two bits must be set to 01 indicating that this is an ACK frame.
-
-  * The 'N' bit indicates whether the frame has more than 1 ack range.
-
-  * The 'U' bit is unused.
-
-  * The two 'LL' bits encode the length of the Largest Acked field as 1, 2, 4,
-    or 6 bytes long.
-
-  * The two 'MM' bits encode the length of the Ack Block Length fields as 1, 2,
-    4, or 6 bytes long.
 
 * Largest Acked: A variable-sized unsigned value representing the largest packet
   number the peer is acking in this packet (typically the largest that the peer
@@ -992,47 +991,103 @@ The fields in the ACK frame are as follows:
 * Ack Delay: Time from when the largest acked, as indicated in the Largest Acked
   field, was received by this peer to when this ack was sent.
 
-* Ack Block Section:
+* Num Blocks (opt): An optional 8-bit unsigned value specifying the number of
+  additional ack blocks (besides the required First Ack Block) in this ACK
+  frame.  Only present if the 'N' flag bit is 1.
 
-  * Num Blocks (opt): An optional 8-bit unsigned value specifying the number of
-    additional ack blocks (besides the required First Ack Block) in this ACK
-    frame.  Only present if the 'N' flag bit is 1.
+* Ack Block Section: Contains one or more blocks of packet numbers which have
+  been successfully received.  See {{ack-block-section}}.
 
-  * First Ack Block Length: An unsigned packet number delta that indicates the
-    number of contiguous additional packets being acked starting at the Largest
-    Acked.
+* Num Timestamps: An unsigned 8-bit number specifying the total number of
+  <packet number, timestamp> pairs in the Timestamp Section.
+  
+* Timestamp Section: Contains zero or more timestamps reporting transit delay of
+  received packets.  See {{timestamp-section}}.
 
-  * Gap To Next Block (opt, repeated): An unsigned number specifying the number
-    of contiguous missing packets from the end of the previous ack block to the
-    start of the next.
 
-  * Ack Block Length (opt, repeated): An unsigned packet number delta that
-    indicates the number of contiguous packets being acked starting after the
-    end of the previous gap.  Along with the previous field, this field is
-    repeated "Num Blocks" times.
+### Ack Block Section {#ack-block-section}
 
-* Timestamp Section:
+The Ack Block Section contains between one and 256 blocks of packet numbers 
+which have been successfully received. If the Num Blocks field is absent, only 
+the First Ack Block length is present in this section. Otherwise, the Num Blocks 
+field indicates how many additional blocks follow the First Ack Block Length 
+field. 
 
-  * Num Timestamps: An unsigned 8-bit number specifying the total number of
-    <packet number, timestamp> pairs following, including the First Timestamp.
+~~~
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|              First Ack Block Length (8/16/32/48)            ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|  [Gap 1 (8)]  |       [Ack Block 1 Length (8/16/32/48)]     ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|  [Gap 2 (8)]  |       [Ack Block 2 Length (8/16/32/48)]     ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+                             ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|  [Gap N (8)]  |       [Ack Block N Length (8/16/32/48)]     ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~
+{: #ack-block-format title="Ack Block Section"}
 
-  * Delta Largest Acked (opt): An optional 8-bit unsigned packet number delta
-    specifying the delta between the largest acked and the first packet whose
-    timestamp is being reported.  In other words, this first packet number may
-    be computed as (Largest Acked - Delta Largest Acked.)
+The fields in the Ack Block Section are:
 
-  * First Timestamp (opt): An optional 32-bit unsigned value specifying the time
-    delta in microseconds, from the beginning of the connection to the arrival
-    of this packet.
+* First Ack Block Length: An unsigned packet number delta that indicates the
+  number of contiguous additional packets being acked starting at the Largest
+  Acked.
 
-  * Delta Largest Observed (opt, repeated): (Same as above.)
+* Gap To Next Block (opt, repeated): An unsigned number specifying the number
+  of contiguous missing packets from the end of the previous ack block to the
+  start of the next.
 
-  * Time Since Previous Timestamp (opt, repeated): An optional 16-bit unsigned
-    value specifying time delta from the previous reported timestamp.  It is
-    encoded in the same format as the Ack Delay.  Along with the previous field,
-    this field is repeated "Num Timestamps" times.
+* Ack Block Length (opt, repeated): An unsigned packet number delta that
+  indicates the number of contiguous packets being acked starting after the
+  end of the previous gap.  Along with the previous field, this field is
+  repeated "Num Blocks" times.
 
-### Time Format
+### Timestamp Section {#timestamp-section}
+
+The Timestamp Section contains between zero and 255 measurements of packet
+receive times relative to the beginning of the connection.
+
+~~~
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+
+| [Delta LA (8)]|
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                [First Timestamp (32)]                |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|[Delta LA 1(8)]| [Time Since Previous 1 (16)]  |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|[Delta LA 2(8)]| [Time Since Previous 2 (16)]  |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+                       ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|[Delta LA N(8)]| [Time Since Previous N (16)]  |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~
+{: #timestamp-format title="Timestamp Section"}
+
+The fields in the Timestamp Section are:
+
+* Delta Largest Acked (opt): An optional 8-bit unsigned packet number delta
+  specifying the delta between the largest acked and the first packet whose
+  timestamp is being reported.  In other words, this first packet number may
+  be computed as (Largest Acked - Delta Largest Acked.)
+
+* First Timestamp (opt): An optional 32-bit unsigned value specifying the time
+  delta in microseconds, from the beginning of the connection to the arrival
+  of the packet indicated by Delta Largest Acked.
+
+* Delta Largest Acked 1..N (opt, repeated): (Same as above.)
+
+* Time Since Previous Timestamp 1..N(opt, repeated): An optional 16-bit unsigned
+  value specifying time delta from the previous reported timestamp.  It is
+  encoded in the same format as the Ack Delay.  Along with the previous field,
+  this field is repeated "Num Timestamps" times.
+
+#### Time Format
 
 DISCUSS_AND_REPLACE: Perhaps make this format simpler.
 
@@ -1049,24 +1104,24 @@ actual exponent is one-less than the explicit exponent, and the value represents
 4096 microseconds.  Any values larger than the representable range are clamped
 to 0xFFFF.
 
-## STOP_WAITING Frame
+## STOP_WAITING Frame {#frame-stop-waiting}
 
-The STOP_WAITING frame is sent to inform the peer that it should not continue to
-wait for packets with packet numbers lower than a specified value.  The packet
-number is encoded in 1, 2, 4 or 6 bytes, using the same coding length as is
-specified for the packet number for the enclosing packet's header (specified in
-the QUIC Frame packet's Flags field.)  The frame is as follows:
+The STOP_WAITING frame (type=0x06) is sent to inform the peer that it should not
+continue to wait for packets with packet numbers lower than a specified value.
+The packet number is encoded in 1, 2, 4 or 6 bytes, using the same coding length
+as is specified for the packet number for the enclosing packet's header
+(specified in the QUIC Frame packet's Flags field.) The frame is as follows:
 
 ~~~
-   +---------------------------------------------------+
-   | Type (8) | Least unacked delta (8, 16, 32, or 48) |
-   +---------------------------------------------------+
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|               Least Unacked Delta (8/16/32/48)              ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
+{: #stop-waiting-format title="STOP_WAITING Frame Format"}
 
-The fields in the STOP_WAITING frame are as follows:
-
-* Frame Type: The Frame Type byte is an 8-bit value that must be set to 0x06
-  indicating that this is a STOP_WAITING frame.
+The STOP_WAITING frame contains a single field:
 
 * Least Unacked Delta: A variable-length packet number delta with the same
   length as the packet header's packet number.  Subtract it from the complete
@@ -1077,24 +1132,27 @@ The fields in the STOP_WAITING frame are as follows:
   to be irrecoverably lost and MUST NOT report those packets as missing in
   subsequent acks.
 
-## WINDOW_UPDATE Frame
+## WINDOW_UPDATE Frame {#frame-window-update}
 
-The WINDOW_UPDATE frame informs the peer of an increase in an endpoint's flow
-control receive window.  The StreamID can be zero, indicating this WINDOW_UPDATE
-applies to the connection level flow control window, or non-zero, indicating
-that the specified stream should increase its flow control window.  The frame is
-as follows:
+The WINDOW_UPDATE frame (type=0x04) informs the peer of an increase in an
+endpoint's flow control receive window. The Stream ID can be zero, indicating
+this WINDOW_UPDATE applies to the connection level flow control window, or
+non-zero, indicating that the specified stream should increase its flow control
+window. The frame is as follows:
 
 ~~~
-   +---------------------------------------------------+
-   |  Type(8)  |  Stream ID (32)  |  Byte offset (64)  |
-   +---------------------------------------------------+
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                        Stream ID (32)                         |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                                                               |
++                        Byte Offset (64)                       +
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
 
 The fields in the WINDOW_UPDATE frame are as follows:
-
-* Frame Type: The Frame Type byte is an 8-bit value that must be set to 0x04
-  indicating that this is a WINDOW_UPDATE frame.
 
 * Stream ID: ID of the stream whose flow control windows is being updated, or 0
   to specify the connection-level flow control window.
@@ -1104,45 +1162,49 @@ The fields in the WINDOW_UPDATE frame are as follows:
   flow control, the cumulative number of bytes which can be sent on all
   currently open streams.
 
-## BLOCKED Frame
+## BLOCKED Frame {#frame-blocked}
 
-A sender sends a BLOCKED frame when it is ready to send data (and has data to
-send), but is currently flow control blocked.  BLOCKED frames are purely
-informational frames, but extremely useful for debugging purposes.  A receiver
-of a BLOCKED frame should simply discard it (after possibly printing a helpful
-log message).  The frame is as follows:
+A sender sends a BLOCKED frame (type=0x05) when it is ready to send data (and
+has data to send), but is currently flow control blocked. BLOCKED frames are
+purely informational frames, but extremely useful for debugging purposes. A
+receiver of a BLOCKED frame should simply discard it (after possibly printing a
+helpful log message). The frame is as follows:
 
 ~~~
-   +------------------------------+
-   |  Type(8)  |  Stream ID (32)  |
-   +------------------------------+
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                        Stream ID (32)                         |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
 
-The fields in the BLOCKED frame are as follows:
-
-* Frame Type: The Frame Type byte is an 8-bit value that must be set to 0x05
-  indicating that this is a BLOCKED frame.
+The BLOCKED frame contains a single field:
 
 * Stream ID: A 32-bit unsigned number indicating the stream which is flow
   control blocked.  A non-zero Stream ID field specifies the stream that is flow
   control blocked.  When zero, the Stream ID field indicates that the connection
   is flow control blocked.
 
-## RST_STREAM Frame
+## RST_STREAM Frame {#frame-rst-stream}
 
-An endpoint may use a RST_STREAM frame to abruptly terminate a stream.  The
-frame is as follows:
+An endpoint may use a RST_STREAM frame (type=0x01) to abruptly terminate a
+stream.  The frame is as follows:
 
 ~~~
-+----------------------------------------------------------------------+
-|  Type(8)  |  StreamID (32)  |  Byte offset (64)  |  Error code (32)  |
-+----------------------------------------------------------------------+
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                        Stream ID (32)                         |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                                                               |
++                        Byte Offset (64)                       +
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                        Error Code (32)                        |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
 
 The fields are:
-
-* Frame type: The Frame Type is an 8-bit value that must be set to 0x01
-  specifying that this is a RST_STREAM frame.
 
 * Stream ID: The 32-bit Stream ID of the stream being terminated.
 
@@ -1152,80 +1214,72 @@ The fields are:
 * Error code: A 32-bit error code which indicates why the stream is being
   closed.
 
-## PADDING Frame
+## PADDING Frame {#frame-padding}
 
-The PADDING frame pads a packet with 0x00 bytes.  When this frame is
-encountered, the rest of the packet is expected to be padding bytes.  The frame
-contains 0x00 bytes and extends to the end of the QUIC packet.  A PADDING frame
-only has a Frame Type field, and must have the 8-bit Frame Type field set to
-0x00. The PADDING frame is as follows:
+The PADDING frame (type=0x00) pads a packet with 0x00 bytes. When this frame is
+encountered, the rest of the packet is expected to be padding bytes. The frame
+contains 0x00 bytes and extends to the end of the QUIC packet. A PADDING frame
+has no additional fields.
 
-~~~
-   +--------+
-   |  0x00  |
-   +--------+
-~~~
 
-## PING frame
+## PING frame {#frame-ping}
 
-Endpoints can use PING frames to verify that their peers are still alive or to
-check reachability to the peer.  The PING frame contains no payload.  The
-receiver of a PING frame simply needs to ACK the packet containing this frame.
-The PING frame SHOULD be used to keep a connection alive when a stream is open.
-The default is to send a PING frame after 15 seconds of quiescence.  A PING
-frame only has a Frame Type field, and must have the 8-bit Frame Type field set
-to 0x07. The PING frame is as follows:
+Endpoints can use PING frames (type=0x07) to verify that their peers are still 
+alive or to check reachability to the peer. The PING frame contains no 
+additional fields. The receiver of a PING frame simply needs to ACK the packet 
+containing this frame. The PING frame SHOULD be used to keep a connection alive 
+when a stream is open. The default is to send a PING frame after 15 seconds of 
+quiescence. A PING frame has no additional fields. 
 
-~~~
-   +--------+
-   |  0x07  |
-   +--------+
-~~~
 
-## CONNECTION_CLOSE frame
+## CONNECTION_CLOSE frame {#frame-connection-close}
 
-An endpoint sends a CONNECTION_CLOSE frame to notify its peer that the
-connection is being closed.  If there are open streams that haven't been
+An endpoint sends a CONNECTION_CLOSE frame (type=0x02) to notify its peer that
+the connection is being closed.  If there are open streams that haven't been
 explicitly closed, they are implicitly closed when the connection is closed.
 (Ideally, a GOAWAY frame would be sent with enough time that all streams are
 torn down.)  The frame is as follows:
 
 ~~~
-+-----------------------------------------------------------------------+
-| Type(8) | Error code (32) | Reason phrase length (16) | Reason phrase |
-+-----------------------------------------------------------------------+
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                        Error Code (32)                        |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|   Reason Phrase Length (16)   |      [Reason Phrase (*)]    ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
 
 The fields of a CONNECTION_CLOSE frame are as follows:
-
-* Frame Type: An 8-bit value that must be set to 0x02 specifying that this is a
-  CONNECTION_CLOSE frame.
 
 * Error Code: A 32-bit error code which indicates the reason for closing this
   connection.
 
 * Reason Phrase Length: A 16-bit unsigned number specifying the length of the
   reason phrase.  This may be zero if the sender chooses to not give details
-  beyond the QuicErrorCode.
+  beyond the Error Code.
 
 * Reason Phrase: An optional human-readable explanation for why the connection
   was closed.
 
-## GOAWAY Frame
+## GOAWAY Frame {#frame-goaway}
 
-An endpoint may use a GOAWAY frame to notify its peer that the connection should
-stop being used, and will likely be closed in the future.  The endpoints will
-continue using any active streams, but the sender of the GOAWAY will not
-initiate any additional streams, and will not accept any new streams.  The frame
-is as follows:
+An endpoint may use a GOAWAY frame (type=0x03) to notify its peer that the
+connection should stop being used, and will likely be closed in the future. The
+endpoints will continue using any active streams, but the sender of the GOAWAY
+will not initiate any additional streams, and will not accept any new streams.
+The frame is as follows:
 
 ~~~
-   +-----------------------------------------------------------+
-   |  Type (8) |  Error code (32) |  Last Good Stream ID (32)  |
-   +-----------------------------------------------------------+
-   +----------------------------------------------+
-   | Reason phrase length (16)  |  Reason phrase  |
-   +----------------------------------------------+
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                        Error Code (32)                        |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                     Last Good Stream ID (32)                  |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|   Reason Phrase Length (16)   |      [Reason Phrase (*)]    ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
 
 The fields of a GOAWAY frame are as follows:
