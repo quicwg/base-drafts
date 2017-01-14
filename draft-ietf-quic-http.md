@@ -1039,6 +1039,12 @@ The original authors of this specification were Robbie Shade and Mike Warres.
 
 - Reworked SETTINGS_ACK to account for indeterminate inter-stream order.
 
+- Described CONNECT pseudo-method
+
+- Updated ALPN token and Alt-Svc guidance
+
+- Application-layer-defined error codes
+
 ## Since draft-shade-quic-http2-mapping-00:
 
 - Adopted as base for draft-ietf-quic-http.

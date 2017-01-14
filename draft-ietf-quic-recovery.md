@@ -521,7 +521,7 @@ This document has no IANA actions.  Yet.
 
 ## Since draft-ietf-quic-recovery-00:
 
-None yet.
+- Improved description of constants and ACK behavior
 
 ## Since draft-iyengar-quic-loss-recovery-01:
 

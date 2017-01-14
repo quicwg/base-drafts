@@ -1352,6 +1352,8 @@ many others.
 
 - Moved to use of TLS exporters for key derivation.
 
+- Moved TLS error code definitions into this document.
+
 ## Since draft-thomson-quic-tls-01:
 
 - Adopted as base for draft-ietf-quic-tls.

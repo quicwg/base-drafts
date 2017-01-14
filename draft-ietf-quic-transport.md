@@ -1995,6 +1995,12 @@ thanks to all.
 
 - Replaced DIVERSIFICATION_NONCE flag with KEY_PHASE flag
 
+- Defined versioning
+
+- Reworked description of packet and frame layout
+
+- Error code space is divided into regions for each component
+
 ## Since draft-hamilton-quic-transport-protocol-01:
 
 - Adopted as base for draft-ietf-quic-tls.
