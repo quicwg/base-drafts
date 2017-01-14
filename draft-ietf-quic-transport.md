@@ -849,10 +849,10 @@ list.
 
 # Frame Types and Formats
 
-As described in {{packetization}}, Regular packets contain one or more frames. 
-We now describe the various QUIC frame types that can be present in a Regular 
-packet. The use of these frames and various frame header bits are described in 
-subsequent sections. 
+As described in {{packetization}}, Regular packets contain one or more frames.
+We now describe the various QUIC frame types that can be present in a Regular
+packet. The use of these frames and various frame header bits are described in
+subsequent sections.
 
 ## STREAM Frame {#frame-stream}
 
@@ -1000,18 +1000,18 @@ The fields in the ACK frame are as follows:
 
 * Num Timestamps: An unsigned 8-bit number specifying the total number of
   <packet number, timestamp> pairs in the Timestamp Section.
-  
+
 * Timestamp Section: Contains zero or more timestamps reporting transit delay of
   received packets.  See {{timestamp-section}}.
 
 
 ### Ack Block Section {#ack-block-section}
 
-The Ack Block Section contains between one and 256 blocks of packet numbers 
-which have been successfully received. If the Num Blocks field is absent, only 
-the First Ack Block length is present in this section. Otherwise, the Num Blocks 
-field indicates how many additional blocks follow the First Ack Block Length 
-field. 
+The Ack Block Section contains between one and 256 blocks of packet numbers
+which have been successfully received. If the Num Blocks field is absent, only
+the First Ack Block length is present in this section. Otherwise, the Num Blocks
+field indicates how many additional blocks follow the First Ack Block Length
+field.
 
 ~~~
  0                   1                   2                   3
@@ -1224,12 +1224,12 @@ has no additional fields.
 
 ## PING frame {#frame-ping}
 
-Endpoints can use PING frames (type=0x07) to verify that their peers are still 
-alive or to check reachability to the peer. The PING frame contains no 
-additional fields. The receiver of a PING frame simply needs to ACK the packet 
-containing this frame. The PING frame SHOULD be used to keep a connection alive 
-when a stream is open. The default is to send a PING frame after 15 seconds of 
-quiescence. A PING frame has no additional fields. 
+Endpoints can use PING frames (type=0x07) to verify that their peers are still
+alive or to check reachability to the peer. The PING frame contains no
+additional fields. The receiver of a PING frame simply needs to ACK the packet
+containing this frame. The PING frame SHOULD be used to keep a connection alive
+when a stream is open. The default is to send a PING frame after 15 seconds of
+quiescence. A PING frame has no additional fields.
 
 
 ## CONNECTION_CLOSE frame {#frame-connection-close}
