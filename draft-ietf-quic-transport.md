@@ -2001,6 +2001,8 @@ thanks to all.
 
 - Error code space is divided into regions for each component
 
+- Use big endian for all numeric values
+
 ## Since draft-hamilton-quic-transport-protocol-01:
 
 - Adopted as base for draft-ietf-quic-tls.
