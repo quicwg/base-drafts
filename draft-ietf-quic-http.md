@@ -116,8 +116,8 @@ version-negotiation hints to HTTP/QUIC clients. Syntax:
 
     v = version
     version = DQUOTE ( "c" version-string / "x" version-number ) DQUOTE
-    version-string = token; percent-encoded QUIC version
-    version-number = 1*8 HEXDIG; hex-encoded QUIC version
+    version-string = 4tchar; token-safe QUIC version
+    version-number = 1*8HEXDIG; hex-encoded QUIC version
 
 When multiple versions are supported, the "v" parameter MAY be repeated multiple
 times in a single Alt-Svc entry.  For example, if a server supported both
@@ -129,9 +129,10 @@ Where multiple versions are listed, the order of the values reflects the
 server's preference (with the first value being the most preferred version).
 
 QUIC versions are four-octet sequences with no additional constraints on format.
-Versions containing octets not allowed in tokens ({{!RFC7230}}, Section 3.2.6)
-MUST be encoded using the hexidecimal representation.  Versions containing only
-octets allowed in tokens MAY be encoded using either representation.
+Versions containing octets not allowed in tokens (tchar, {{!RFC7230}}, Section
+3.2.6) MUST be encoded using the hexadecimal representation.  Versions
+containing only octets allowed in tokens MAY be encoded using either
+representation.
 
 On receipt of an Alt-Svc header indicating QUIC support, a client MAY attempt to
 establish a QUIC connection on the indicated port and, if successful, send HTTP
