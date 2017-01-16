@@ -1413,7 +1413,7 @@ shown in the following figure and described below.
     |        | (remote) |            | recv RST    | (local)  |
     |        +----------+            |             +----------+
     |            |                   |                    |
-    |            | recv FIN/         |          send FIN/ |
+    |            | send FIN/         |          recv FIN/ |
     |            | app write_close/  |    app read_close/ |
     |            | send RST/         v          send RST/ |
     |            | recv RST     +--------+      recv RST  |
