@@ -1603,8 +1603,8 @@ A receiver MAY advertise a larger offset at any point in the connection by
 sending a WINDOW_UPDATE frame.  A receiver MUST NOT renege on an advertisement;
 that is, once a receiver advertises an offset via a WINDOW_UPDATE frame, it MUST
 NOT subsequently advertise a smaller offset.  A sender may receive WINDOW_UPDATE
-frames out of order; a sender MUST therefore ignore any reductions in flow
-control credit.
+frames out of order; a sender MUST therefore ignore any WINDOW_UPDATE that
+does not move the window forward.
 
 A receiver MUST close the connection with a
 QUIC_FLOW_CONTROL_RECEIVED_TOO_MUCH_DATA error ({{error-handling}}) if the
