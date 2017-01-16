@@ -1626,7 +1626,7 @@ Connection flow control is a limit to the total bytes of stream data sent in
 STREAM frames on all streams contributing to connection flow control.  A
 receiver advertises credit for a connection by sending a WINDOW_UPDATE frame
 with the StreamID set to zero (0x00).  A receiver maintains a cumulative sum of
-bytes received on all streams contributing to connection-level flow control to
+bytes received on all streams contributing to connection-level flow control, to
 check for flow control violations. A receiver may maintain a cumulative sum of
 bytes consumed on all contributing streams to determine the connection-level
 flow control offset to be advertised.
