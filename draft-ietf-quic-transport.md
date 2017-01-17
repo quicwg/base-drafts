@@ -1212,11 +1212,6 @@ In the absence of these mechanisms, QUIC endpoints SHOULD use a default PMTU of
 1398 octets. Assuming the minimum IP header size, this results in a UDP payload
 length of 1350 octets for IPv6 and 1370 octets for IPv4.
 
-Both the QUIC client and server MUST send at least one handshake packet of size
-equal to the estimated PMTU, and receive an acknowledgment for that packet. This
-could require a PADDING frame to increase the packet size. PMTU-size, IPv4
-handshake packets SHOULD have the DF bit set.
-
 QUIC endpoints that implement any kind of PMTU discovery SHOULD maintain an
 estimate for each combination of local and remote IP addresses (as each pairing
 could have a different maximum MTU in the path).
