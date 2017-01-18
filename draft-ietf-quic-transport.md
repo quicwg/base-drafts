@@ -1367,7 +1367,7 @@ discussed in more detail in {{QUIC-RECOVERY}}.
 Streams in QUIC provide a lightweight, ordered, and bidirectional byte-stream
 abstraction.  Streams can be created either by the client or the server, can
 concurrently send data interleaved with other streams, and can be cancelled.
-QUIC's stream lifetime is modeled closely after HTTP/2's {{!RFC7540}}.  Streams
+QUIC's stream lifetime is modeled closely after HTTP/2's {{?RFC7540}}.  Streams
 are independent of each other in delivery order.  That is, data that is received
 on a stream is delivered in order within that stream, but there is no particular
 delivery order across streams.  Transmit ordering among streams is left to the
@@ -1385,7 +1385,7 @@ more appealing description for some applications.
 ## Life of a Stream
 
 The semantics of QUIC streams is based on HTTP/2 streams, and the lifecycle of a
-QUIC stream therefore closely follows that of an HTTP/2 stream {{!RFC7540}},
+QUIC stream therefore closely follows that of an HTTP/2 stream {{?RFC7540}},
 with some differences to accommodate the possibility of out-of-order delivery
 due to the use of multiple streams in QUIC.  The lifecycle of a QUIC stream is
 shown in the following figure and described below.
@@ -1639,7 +1639,7 @@ or to prevent a malicious sender from consuming significant resources at a
 receiver.  This section describes QUIC's flow-control mechanisms.
 
 QUIC employs a credit-based flow-control scheme similar to HTTP/2's flow control
-{{!RFC7540}}.  A receiver advertises the number of octets it is prepared to
+{{?RFC7540}}.  A receiver advertises the number of octets it is prepared to
 receive on a given stream and for the entire connection.  This leads to two
 levels of flow control in QUIC: (i) Connection flow control, which prevents
 senders from exceeding a receiver's buffer capacity for the connection, and (ii)
