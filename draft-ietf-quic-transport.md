@@ -932,11 +932,11 @@ and 256 ack blocks.  Ack blocks are ranges of acknowledged packets.
 To limit the ACK blocks to the ones that haven't yet been received by the
 sender, the sender periodically sends STOP_WAITING frames that signal the
 receiver to stop acking packets below a specified sequence number, raising the
-"least unacked" packet number at the receiver.  A sender of an ACK frame thus
-reports only those ACK blocks between the received least unacked and the
-reported largest observed packet numbers.  An endpoint SHOULD use the "Largest
-Acked" packet number it received to calculate the "Least Unacked Delta" value in
-any STOP_WAITING frame it might send.
+Least Unacked packet number at the receiver.  A sender of an ACK frame thus
+reports only those ACK blocks between the received Least Unacked" and the
+reported Largest Acked packet numbers.  The endpoint SHOULD raise the Least
+Unacked communicated via future STOP_WAITING frames to the most recently
+received Largest Acked.
 
 Unlike TCP SACKs, QUIC ACK blocks are irrevocable.  Once a packet is acked, even
 if it does not appear in a future ACK frame, it is assumed to be acked.
