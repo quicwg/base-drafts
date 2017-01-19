@@ -933,7 +933,7 @@ To limit the ACK blocks to the ones that haven't yet been received by the
 sender, the sender periodically sends STOP_WAITING frames that signal the
 receiver to stop acking packets below a specified sequence number, raising the
 Least Unacked packet number at the receiver.  A sender of an ACK frame thus
-reports only those ACK blocks between the received Least Unacked" and the
+reports only those ACK blocks between the received Least Unacked and the
 reported Largest Acked packet numbers.  The endpoint SHOULD raise the Least
 Unacked communicated via future STOP_WAITING frames to the most recently
 received Largest Acked.
