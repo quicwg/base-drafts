@@ -904,7 +904,7 @@ key update until all of its handshake messages have been acknowledged by the
 server.
 
 
-# Pre-handshake QUIC Messages {#pre-handshake}
+# Pre-handshake QUIC Messages {#pre-hs}
 
 Implementations MUST NOT exchange data on any stream other than stream 1 without
 packet protection.  QUIC requires the use of several types of frame for managing
@@ -938,12 +938,12 @@ proposes that all strategies are possible depending on the type of message.
   the TLS handshake (see {{quic_parameters}}).
 * Most unprotected messages are treated as fatal errors when received except for
   the small number necessary to permit the handshake to complete (see
-  {{pre-handshake-unprotected}}).
+  {{pre-hs-unprotected}}).
 * Protected packets can either be discarded or saved and later used (see
-  {{pre-handshake-protected}}).
+  {{pre-hs-protected}}).
 
 
-## Unprotected Packets Prior to Handshake Completion {#pre-handshake-unprotected}
+## Unprotected Packets Prior to Handshake Completion {#pre-hs-unprotected}
 
 This section describes the handling of messages that are sent and received prior
 to the completion of the TLS handshake.
@@ -1058,7 +1058,7 @@ that 0-RTT data has been rejected.
 A server MUST NOT use 0-RTT keys to protect packets.
 
 
-## Protected Packets Prior to Handshake Completion {#pre-handshake-protected}
+## Protected Packets Prior to Handshake Completion {#pre-hs-protected}
 
 Due to reordering and loss, protected packets might be received by an endpoint
 before the final handshake messages are received.  If these can be decrypted
@@ -1269,7 +1269,8 @@ TLS_MESSAGE_PARAMETER_NO_OVERLAP (0xB024):
   local parameter.
 
 TLS_MESSAGE_INDEX_NOT_FOUND (0xB025):
-: A handshake message was received that contained a parameter with too few values.
+: A handshake message was received that contained a parameter with too few
+  values.
 
 TLS_UNSUPPORTED_PROOF_DEMAND (0xB05e):
 : A demand for an unsupported proof type was received.
