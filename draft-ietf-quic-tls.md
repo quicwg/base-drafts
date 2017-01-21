@@ -196,7 +196,7 @@ exchange cannot be observed, modified, or forged.
 
 TLS features can be separated into two basic functions: an authenticated key
 exchange and record protection.  QUIC primarily uses the authenticated key
-exchange provided by TLS; QUIC provides its own packet protection.
+exchange provided by TLS but provides its own packet protection.
 
 The TLS authenticated key exchange occurs between two entities: client and
 server.  The client initiates the exchange and the server responds.  If the key
