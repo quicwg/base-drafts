@@ -413,9 +413,9 @@ Pseudocode for DetectLostPackets follows:
    DetectLostPackets(acked_packet):
      lost_packets = {};
      foreach (unacked_packet less than acked_packet):
-         if (unacked_packet.time_sent <
-             acked_packet.time_sent - kTimeReorderThreshold * smoothed_rtt):
-           lost_packets.insert(unacked_packet.packet_number);
+       if (unacked_packet.time_sent <
+           acked_packet.time_sent - kTimeReorderThreshold * smoothed_rtt):
+         lost_packets.insert(unacked_packet.packet_number);
        else if (unacked_packet.packet_number <
                 acked_packet.packet_number - reordering_threshold)
          lost_packets.insert(unacked_packet.packet_number);
