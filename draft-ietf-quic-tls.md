@@ -200,7 +200,7 @@ exchange provided by TLS; QUIC provides its own packet protection.
 The TLS authenticated key exchange occurs between two entities: client and
 server.  The client initiates the exchange and the server responds.  If the key
 exchange completes successfully, both client and server will agree on a secret.
-TLS supports both pre-shared key (PSK) and Diffie-Hellman (DH) key exchange.
+TLS supports both pre-shared key (PSK) and Diffie-Hellman (DH) key exchanges.
 PSK is the basis for 0-RTT; the latter provides perfect forward secrecy (PFS)
 when the DH keys are destroyed.
 
@@ -473,7 +473,7 @@ connection (see {{key-expansion}}).
 
 Different keys are used for QUIC packet protection and TLS record protection.
 Having separate QUIC and TLS record protection means that TLS records can be
-protected by two different keys.  This redundancy is limited to a only a few TLS
+protected by two different keys.  This redundancy is limited to only a few TLS
 records, and is maintained for the sake of simplicity.
 
 
@@ -553,7 +553,7 @@ keys.
 
 After a key update (see {{key-update}}), these secrets are updated using the
 HKDF-Expand-Label function defined in Section 7.1 of {{!I-D.ietf-tls-tls13}}.
-HKDF-Expand-Label uses the the PRF hash function negotiated by TLS.  The
+HKDF-Expand-Label uses the PRF hash function negotiated by TLS.  The
 replacement secret is derived using the existing Secret, a Label of "QUIC client
 1-RTT Secret" for the client and "QUIC server 1-RTT Secret" for the server, an
 empty HashValue, and the same output Length as the hash function selected by TLS
