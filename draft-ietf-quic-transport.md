@@ -1692,7 +1692,7 @@ result in the endpoints getting out of sync, since the RST_STREAM frame may have
 arrived out of order and there may be further bytes in flight.  The data sender
 would have counted the data against its connection level flow control budget,
 but a receiver that has not received these bytes would not know to include them
-as well.  The receiver must learn of the number of bytes that were sent on the
+as well.  The receiver must learn the number of bytes that were sent on the
 stream to make the same adjustment in its connection flow controller.
 
 To avoid this de-synchronization, a RST_STREAM sender MUST include the final
@@ -1729,7 +1729,7 @@ the receiving application consumes data, similar to common TCP implementations.
 If a sender does not receive a WINDOW_UPDATE frame when it has run out of flow
 control credit, the sender will be blocked and MUST send a BLOCKED frame.  A
 BLOCKED frame is expected to be useful for debugging at the receiver.  A
-receiver SHOULD NOT wait for a BLOCKED frame before sending with a
+receiver SHOULD NOT wait for a BLOCKED frame before sending a
 WINDOW_UPDATE, since doing so will cause at least one roundtrip of quiescence.
 For smooth operation of the congestion controller, it is generally considered
 best to not let the sender go into quiescence if avoidable.  To avoid blocking a
