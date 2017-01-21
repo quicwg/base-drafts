@@ -105,7 +105,8 @@ This document describes how QUIC can be secured using Transport Layer Security
 improvements for connection establishment over previous versions.  Absent packet
 loss, most new connections can be established and secured within a single round
 trip; on subsequent connections between the same client and server, the client
-can often send application data immediately, that is, zero round trip setup.
+can often send application data immediately, that is, using a zero round trip
+setup.
 
 This document describes how the standardized TLS 1.3 can act a security
 component of QUIC.  The same design could work for TLS 1.2, though few of the
