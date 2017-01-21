@@ -1284,9 +1284,6 @@ The frame is as follows:
 
 The fields of a GOAWAY frame are as follows:
 
-* Frame type: An 8-bit value that must be set to 0x03 specifying that this is a
-  GOAWAY frame.
-
 * Error Code: A 32-bit field error code which indicates the reason for closing
   this connection.
 
