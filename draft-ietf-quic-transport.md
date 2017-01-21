@@ -896,8 +896,7 @@ A STREAM frame is shown below.
 
 The STREAM frame contains the following fields:
 
-* Stream ID: A variable-sized unsigned ID unique to this stream, whose size is
-  determined by the `SS` bits in the type byte.
+* Stream ID: A variable-sized unsigned ID unique to this stream.
 
 * Offset: A variable-sized unsigned number specifying the byte offset in the
   stream for the data in this STREAM frame.  The first byte in the stream has an
