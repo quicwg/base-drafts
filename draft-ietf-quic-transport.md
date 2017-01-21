@@ -1686,7 +1686,7 @@ waiting for a WINDOW_UPDATE which will never come.
 
 ### Mid-stream RST_STREAM
 
-On receipt of an RST_STREAM frame, an endpoint will tear down state for the
+On receipt of a RST_STREAM frame, an endpoint will tear down state for the
 matching stream and ignore further data arriving on that stream.  This could
 result in the endpoints getting out of sync, since the RST_STREAM frame may have
 arrived out of order and there may be further bytes in flight.  The data sender
