@@ -57,7 +57,38 @@ normative:
         org: Mozilla
         role: editor
 
-informative:
+informative:    
+  
+  RFC6298:
+    title: "Computing TCP's Retransmission Timer"
+    date: June 2011
+ 
+  RFC3782:
+    title: "The NewReno Modification to TCP's Fast Recovery Algorithm"
+    date: April 2004
+    
+  RFC6582:
+    tile: "The NewReno Modification to TCP's Fast Recovery Algorithm"
+    date: April 2012
+    
+  RFC5827:
+    title: "Early Retransmit for TCP and Stream Control Transmission
+            Protocol (SCTP)"
+    date: April 2010
+  
+  RFC5682:
+    title: "Forward RTO-Recovery (F-RTO): An Algorithm for Detecting
+            Spurious Retransmission Timeouts with TCP"
+    date: September 2009
+    
+  RFC6937:
+    title: "Proportional Rate Reduction for TCP"
+    date: May 2013
+    
+  TLP:
+    title: "Tail Loss Probe (TLP): An Algorithm for Fast Recovery of Tail Losses"
+    date: February 25, 2013
+    target: https://tools.ietf.org/html/draft-dukkipati-tcpm-tcp-loss-probe-01  
 
 --- abstract
 
@@ -236,7 +267,7 @@ mechanisms described in this section.
 * smoothed_rtt: The smoothed RTT of the connection, computed as described in
   {{!RFC6298}}
 
-* rttvar: The RTT variance.
+* rttvar: The RTT variance, computed as described in {{!RFC6298}}
 
 * reordering_threshold: The largest delta between the largest acked
   retransmittable packet and a packet containing retransmittable frames before
@@ -283,7 +314,7 @@ Pseudocode for SetLossDetectionAlarm follows:
       alarm_duration = max(1.5 * smoothed_rtt, kMinTLPTimeout) << handshake_count;
       handshake_count++;
     else if (largest sent packet is acked):
-      // Early retransmit alarm.
+      // Early retransmit {{!RFC 5827}} with an alarm to reduce spurious retransmits.
       alarm_duration = 0.25 x smoothed_rtt;
     else if (tlp_count < kMaxTLPs):
       // Tail Loss Probe alarm.
@@ -318,13 +349,16 @@ are as follows:
   acceptable for an ack to be received for this packet.  However, a caller MUST
   NOT set is_retransmittable to true if an ack is not expected.
 
+* sent_bytes: The number of bytes sent in the packet.
+
 Pseudocode for OnPacketSent follows:
 
 ~~~
- OnPacketSent(packet_number, is_retransmittable):
+ OnPacketSent(packet_number, is_retransmittable, sent_bytes):
    # TODO: Clarify the data in sent_packets.
-   sent_packets[packet_number] = {now}
+   sent_packets[packet_number].time = now
    if is_retransmittable:
+     sent_packets[packet_number].bytes = sent_bytes
      SetLossDetectionAlarm()
 ~~~
 
@@ -338,7 +372,7 @@ Pseudocode for OnAckReceived and UpdateRtt follow:
    OnAckReceived(ack):
      // If the largest acked is newly acked, update the RTT.
      if (sent_packets[ack.largest_acked]):
-       rtt_sample = now - sent_packets[ack.largest_acked]
+       rtt_sample = now - sent_packets[ack.largest_acked].time
        if (rtt_sample > ack.ack_delay):
          rtt_sample -= ack.delay;
        UpdateRtt(rtt_sample)
@@ -351,6 +385,7 @@ Pseudocode for OnAckReceived and UpdateRtt follow:
 
 
    UpdateRtt(rtt_sample):
+     // Based on {{!RFC6298}}.
      if (smoothed_rtt == 0):
        smoothed_rtt = rtt_sample
        rttvar = rtt_sample / 2
@@ -425,84 +460,11 @@ Pseudocode for DetectLostPackets follows:
 # Congestion Control
 
 (describe NewReno-style congestion control for QUIC.)
+(describe appropriate byte counting.)
+(define recovery based on packet numbers.)
+(describe min_rtt based hystart.)
+(describe how QUIC's F-RTO delays reducing CWND until an ack is received.)
 
-# TCP mechanisms in QUIC
-
-QUIC implements the spirit of a variety of RFCs, Internet drafts, and other
-well-known TCP loss recovery mechanisms, though the implementation details
-differ from the TCP implementations.
-
-
-## RFC 6298 (RTO computation)
-
-QUIC calculates SRTT and RTTVAR according to the standard formulas.  An RTT
-sample is only taken if the delayed ack correction is smaller than the measured
-RTT (otherwise a negative RTT would result), and the ack's contains a new,
-larger largest observed packet number.  min_rtt is only based on the observed
-RTT, but SRTT uses the delayed ack correction delta.
-
-As described above, QUIC implements RTO with the standard timeout and CWND
-reduction.  However, QUIC retransmits the earliest outstanding packets rather
-than the latest, because QUIC doesn't have retransmission ambiguity.  QUIC uses
-the commonly accepted min RTO of 200ms instead of the 1s the RFC specifies.
-
-## FACK Loss Recovery (paper)
-
-QUIC implements the algorithm for early loss recovery described in the FACK
-paper (and implemented in the Linux kernel.)  QUIC uses the packet number to
-measure the FACK reordering threshold.  Currently QUIC does not implement an
-adaptive threshold as many TCP implementations (i.e., the Linux kernel) do.
-
-## RFC 3782, RFC 6582 (NewReno Fast Recovery)
-
-QUIC only reduces its CWND once per congestion window, in keeping with the
-NewReno RFC.  It tracks the largest outstanding packet at the time the loss is
-declared and any losses which occur before that packet number are considered
-part of the same loss event.  It's worth noting that some TCP implementations
-may do this on a sequence number basis, and hence consider multiple losses of
-the same packet a single loss event.
-
-## TLP (draft)
-
-QUIC always sends two tail loss probes before RTO is triggered.  QUIC invokes
-tail loss probe even when a loss is outstanding, which is different than some
-TCP implementations.
-
-## RFC 5827 (Early Retransmit) with Delay Timer
-
-QUIC implements early retransmit with a timer in order to minimize spurious
-retransmits.  The timer is set to 1/4 SRTT after the final outstanding packet is
-acked.
-
-## RFC 5827 (F-RTO)
-
-QUIC implements F-RTO by not reducing the CWND and SSThresh until a subsequent
-ack is received and it's sure the RTO was not spurious.  Conceptually this is
-similar, but it makes for a much cleaner implementation with fewer edge cases.
-
-## RFC 6937 (Proportional Rate Reduction)
-
-PRR-SSRB is implemented by QUIC in the epoch when recovering from a loss.
-
-## TCP Cubic (draft) with optional RFC 5681 (Reno)
-
-TCP Cubic is the default congestion control algorithm in QUIC.  Reno is also an
-easily available option which may be requested via connection options and is
-fully implemented.
-
-## Hybrid Slow Start (paper)
-
-QUIC implements hybrid slow start, but disables ack train detection, because it
-has shown to falsely trigger when coupled with packet pacing, which is also on
-by default in QUIC.  Currently the minimum delay increase is 4ms, the maximum is
-16ms, and within that range QUIC exits slow start if the min_rtt within a round
-increases by more than one eighth of the connection mi
-
-## RACK (draft)
-
-QUIC's loss detection is by it's time-ordered nature, very similar to RACK.
-Though QUIC defaults to loss detection based on reordering threshold in packets,
-it could just as easily be based on fractions of an rtt, as RACK does.
 
 # IANA Considerations
 
