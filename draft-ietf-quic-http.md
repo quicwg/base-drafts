@@ -229,31 +229,30 @@ HTTP response on the same streams as the request.
 
 An HTTP message (request or response) consists of:
 
-1. one header block (see {{frame-headers}}) on the control stream
-   containing the message headers (see {{!RFC7230}}, Section 3.2),
+1. one header block (see {{frame-headers}}) on the control stream containing the
+   message headers (see {{!RFC7230}}, Section 3.2),
 
 2. the payload body (see {{!RFC7230}}, Section 3.3), sent on the data stream,
 
 3. optionally, one header block on the control stream containing the
    trailer-part, if present (see {{!RFC7230}}, Section 4.1.2).
 
-In addition, prior to sending the message header block indicated
-above, a response may contain zero or more header blocks on the
-control stream containing the message headers of informational (1xx)
-HTTP responses (see {{!RFC7230}}, Section 3.2 and {{!RFC7231}},
-Section 6.2).
+In addition, prior to sending the message header block indicated above, a
+response may contain zero or more header blocks on the control stream containing
+the message headers of informational (1xx) HTTP responses (see {{!RFC7230}},
+Section 3.2 and {{!RFC7231}}, Section 6.2).
 
 The data stream MUST be half-closed immediately after the transfer of the body.
 If the message does not contain a body, the corresponding data stream MUST still
 be half-closed without transferring any data. The "chunked" transfer encoding
 defined in Section 4.1 of {{!RFC7230}} MUST NOT be used.
 
-Trailing header fields are carried in a header block following the
-body. Such a header block is a sequence of HEADERS frames with End
-Header Block set on the last frame. Senders MUST send only one header
-block in the trailers section; receivers MUST decode any subsequent
-header blocks in order to maintain HPACK decoder state, but the
-resulting output MUST be discarded.
+Trailing header fields are carried in an additional header block on the message
+control stream. Such a header block is a sequence of HEADERS frames with End
+Header Block set on the last frame. Senders MUST send only one header block in
+the trailers section; receivers MUST decode any subsequent header blocks in
+order to maintain HPACK decoder state, but the resulting output MUST be
+discarded.
 
 An HTTP request/response exchange fully consumes a pair of streams. After
 sending a request, a client closes the streams for sending; after sending a
