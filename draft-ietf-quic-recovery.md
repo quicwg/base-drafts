@@ -64,10 +64,7 @@ informative:
   RFC5827:
   RFC5682:
   RFC6937:
-  TLP:
-    title: "Tail Loss Probe (TLP): An Algorithm for Fast Recovery of Tail Losses"
-    date: February 25, 2013
-    target: https://tools.ietf.org/html/draft-dukkipati-tcpm-tcp-loss-probe-01
+  I-D.dukkipati-tcpm-tcp-loss-probe:
 
 --- abstract
 
