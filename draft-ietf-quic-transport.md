@@ -176,11 +176,14 @@ with the following additional conventions:
 \{x\}
 : Indicates that x is encrypted
 
-x (*) ...
-: Indicates that x is variable-length
+x (A)
+: Indicates that x is A bits long
 
 x (A/B/C) ...
 : Indicates that x is one of A, B, or C bits long
+
+x (*) ...
+: Indicates that x is variable-length
 
 # A QUIC Overview
 
