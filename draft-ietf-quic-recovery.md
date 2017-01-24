@@ -57,38 +57,14 @@ normative:
         org: Mozilla
         role: editor
 
-informative:    
-  
-  RFC6298:
-    title: "Computing TCP's Retransmission Timer"
-    date: June 2011
- 
+informative:
+
   RFC3782:
-    title: "The NewReno Modification to TCP's Fast Recovery Algorithm"
-    date: April 2004
-    
   RFC6582:
-    tile: "The NewReno Modification to TCP's Fast Recovery Algorithm"
-    date: April 2012
-    
   RFC5827:
-    title: "Early Retransmit for TCP and Stream Control Transmission
-            Protocol (SCTP)"
-    date: April 2010
-  
   RFC5682:
-    title: "Forward RTO-Recovery (F-RTO): An Algorithm for Detecting
-            Spurious Retransmission Timeouts with TCP"
-    date: September 2009
-    
   RFC6937:
-    title: "Proportional Rate Reduction for TCP"
-    date: May 2013
-    
-  TLP:
-    title: "Tail Loss Probe (TLP): An Algorithm for Fast Recovery of Tail Losses"
-    date: February 25, 2013
-    target: https://tools.ietf.org/html/draft-dukkipati-tcpm-tcp-loss-probe-01  
+  I-D.dukkipati-tcpm-tcp-loss-probe:
 
 --- abstract
 
@@ -265,9 +241,9 @@ mechanisms described in this section.
 * rto_count: The number of times an rto has been sent without receiving an ack.
 
 * smoothed_rtt: The smoothed RTT of the connection, computed as described in
-  {{!RFC6298}}
+  {{?RFC6298}}
 
-* rttvar: The RTT variance, computed as described in {{!RFC6298}}
+* rttvar: The RTT variance, computed as described in {{?RFC6298}}
 
 * reordering_threshold: The largest delta between the largest acked
   retransmittable packet and a packet containing retransmittable frames before
@@ -385,7 +361,7 @@ Pseudocode for OnAckReceived and UpdateRtt follow:
 
 
    UpdateRtt(rtt_sample):
-     // Based on {{!RFC6298}}.
+     // Based on {{?RFC6298}}.
      if (smoothed_rtt == 0):
        smoothed_rtt = rtt_sample
        rttvar = rtt_sample / 2
