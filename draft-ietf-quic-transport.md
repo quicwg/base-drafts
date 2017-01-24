@@ -646,13 +646,11 @@ version. The resent packets MUST use new packet numbers.  These packets MUST
 continue to have the VERSION flag set and MUST include the new negotiated
 protocol version.
 
-The client MUST set the VERSION flag on all packets until version negotiation
-concludes. Version negotiation successfully concludes when the client receives a
-packet from the server with the VERSION flag unset. All subsequent packets sent
-by the client SHOULD have the VERSION flag unset.
-
-Once the server receives a packet from the client with the VERSION flag unset,
-it MUST ignore the flag in subsequently received packets.
+The client MUST set the VERSION flag and include its selected version on all
+packets until it starts protecting packets with 1-RTT keys.  Only unprotected
+packets and 0-RTT protected packets can include a version.  A client MUST NOT
+change the version it uses unless it is in response to a version negotiation
+packet from the server.
 
 Version negotiation uses unprotected data. The result of the negotiation MUST
 be revalidated once the cryptographic handshake has completed (see
