@@ -317,7 +317,8 @@ Version numbers used to identify IETF drafts are created by adding the draft
 number to 0xff000000.  For example, draft-ietf-quic-transport-13 would be
 identified as 0xff00000D.
 
-Versions of QUIC that are used for experimentation are coordinated on the
+Implementors are encouraged to register version numbers of QUIC that they
+are using for private experimentation on the
 [github wiki](https://github.com/quicwg/base-drafts/wiki/QUIC-Versions).
 
 
