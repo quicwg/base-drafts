@@ -665,7 +665,7 @@ establishment latency.  QUIC provides a dedicated stream (Stream ID 1) to be
 used for performing a combined connection and security handshake (streams are
 described in detail in {{streams}}).  The crypto handshake protocol encapsulates
 and delivers QUIC's transport handshake to the peer on the crypto stream.  The
-first QUIC packet from the client to the server MUST carry handshake information
+first QUIC packet sent by client to the server MUST carry handshake information
 as data on Stream ID 1.
 
 ### Transport Parameters and Options
@@ -676,7 +676,7 @@ the document.
 
 The transport component of the handshake is responsible for exchanging and
 negotiating the following parameters for a QUIC connection.  Not all parameters
-are negotiated, some are parameters sent in just one direction.  These
+are negotiated, some parameters are sent in just one direction.  These
 parameters and options are encoded and handed off to the crypto handshake
 protocol to be transmitted to the peer.
 
@@ -797,11 +797,12 @@ cryptographically verified by the crypto handshake protocol:
 ## Connection Migration {#migration}
 
 QUIC connections are identified by their 64-bit Connection ID.  QUIC's
-consistent connection ID allows connections to survive changes to the client's
-IP and/or port, such as those caused by client or server migrating to a new
-network.  QUIC also provides automatic cryptographic verification of a rebound
-client, since the client continues to use the same session key for encrypting
-and decrypting packets.
+consistent connection ID allows connections to survive changes to the
+client's IP and/or port, such as those caused by client or server
+migrating to a new network.  QUIC also provides automatic
+cryptographic verification of a client which has changed its IP
+address because the client continues to use the same session key for
+encrypting and decrypting packets.
 
 DISCUSS: Simultaneous migration.  Is this reasonable?
 
@@ -988,7 +989,7 @@ The fields in the ACK frame are as follows:
   number the peer is acking in this packet (typically the largest that the peer
   has seen thus far.)
 
-* Ack Delay: Time from when the largest acked, as indicated in the Largest Acked
+* Ack Delay: Time from when the largest acked packet, as indicated in the Largest Acked
   field, was received by this peer to when this ack was sent.
 
 * Num Blocks (opt): An optional 8-bit unsigned value specifying the number of
