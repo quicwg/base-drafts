@@ -241,7 +241,7 @@ In addition, prior to sending the message header block indicated
 above, a response may contain zero or more header blocks on the
 control stream containing the message headers of informational (1xx)
 HTTP responses (see {{!RFC7230}}, Section 3.2 and {{!RFC7231}},
-Section 6.2),
+Section 6.2).
 
 The data stream MUST be half-closed immediately after the transfer of the body.
 If the message does not contain a body, the corresponding data stream MUST still
