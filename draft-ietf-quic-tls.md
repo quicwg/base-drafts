@@ -236,9 +236,6 @@ A simplified TLS 1.3 handshake with 0-RTT application data is shown in
    (0-RTT Application Data)  -------->
                                                   ServerHello
                                          {EncryptedExtensions}
-                                         {ServerConfiguration}
-                                                 {Certificate}
-                                           {CertificateVerify}
                                                     {Finished}
                              <--------      [Application Data]
    (EndOfEarlyData)
