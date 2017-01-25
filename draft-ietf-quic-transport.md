@@ -908,7 +908,7 @@ updated STK message mid-connection to update server state that is stored at the
 client in the STK.
 
 (TODO: Describe server and client actions on STK, encoding, recommendations for
-what to put in an STK.  Describe SCUP messages.)
+what to put in an STK.)
 
 
 ### Crypto Handshake Protocol Features
