@@ -421,8 +421,8 @@ the first handshake octets, the TLS stack might signal that 0-RTT keys are
 ready.  On the server, after receiving handshake octets that contain a
 ClientHello message, a TLS server might signal that 0-RTT keys are available.
 
-1-RTT keys are used for both sending and receiving packets.  0-RTT keys are only
-used to protect packets that the client sends.
+1-RTT keys are used for packets in both directions.  0-RTT keys are only
+used to protect packets sent by the client.
 
 
 ### Secret Export
@@ -498,7 +498,7 @@ on the system used in TLS {{!I-D.ietf-tls-tls13}}.  The secrets that QUIC uses
 as the basis of its key schedule are obtained using TLS exporters (see Section
 7.3.3 of {{!I-D.ietf-tls-tls13}}).
 
-QUIC uses the Pseudo-Random Function (PRF) hash function negotiated by TLS for
+QUIC uses HKDF with the same hash function negotiated by TLS for
 key derivation.  For example, if TLS is using the TLS_AES_128_GCM_SHA256, the
 SHA-256 hash function is used.
 
