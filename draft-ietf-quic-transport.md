@@ -647,10 +647,14 @@ continue to have the VERSION flag set and MUST include the new negotiated
 protocol version.
 
 The client MUST set the VERSION flag and include its selected version on all
-packets until it starts protecting packets with 1-RTT keys.  Only unprotected
-packets and 0-RTT protected packets can include a version.  A client MUST NOT
-change the version it uses unless it is in response to a version negotiation
-packet from the server.
+packets until it has 1-RTT keys and it has received a packet from the server
+that does not have the VERSION flag set.  With TLS, this means that unprotected
+packets and 0-RTT protected packets all include a version field.
+
+A client MUST NOT change the version it uses unless it is in response to a
+version negotiation packet from the server.  Once a client receives a packet
+from the server with the VERSION flag unset, it MUST ignore the flag in
+subsequently received packets.
 
 Version negotiation uses unprotected data. The result of the negotiation MUST
 be revalidated once the cryptographic handshake has completed (see
