@@ -1203,18 +1203,40 @@ header, UDP header, and UDP payload. The UDP payload includes the QUIC public
 header, encrypted payload, and any authentication fields.
 
 All QUIC packets SHOULD be sized to fit within the estimated PMTU to avoid IP
-fragmentation or packet drops. To optimize bandwidth efficiency, endpoints MAY
-use PMTU Discovery ({{!RFC1191}}, {{!RFC1981}}) or Packetization Layer PMTU
-Discovery ({{!RFC4821}}) for detecting the PMTU, setting the PMTU appropriately,
-and storing the result of previous PMTU determinations.
+fragmentation or packet drops. To optimize bandwidth efficiency, endpoints
+SHOULD use Packetization Layer PMTU Discovery ({{!RFC4821}}) and MAY use PMTU
+Discovery ({{!RFC1191}}, {{!RFC1981}}) for detecting the PMTU, setting the PMTU
+appropriately, and storing the result of previous PMTU determinations.
 
 In the absence of these mechanisms, QUIC endpoints SHOULD use a default PMTU of
-1398 octets. Assuming the minimum IP header size, this results in a UDP payload
-length of 1350 octets for IPv6 and 1370 octets for IPv4.
+1280 octets. Assuming the minimum IP header size, this results in a UDP payload
+length of 1232 octets for IPv6 and 1252 octets for IPv4.
 
 QUIC endpoints that implement any kind of PMTU discovery SHOULD maintain an
 estimate for each combination of local and remote IP addresses (as each pairing
 could have a different maximum MTU in the path).
+
+QUIC connnections MUST NOT operate over a network path with an estimated PMTU
+below 1280 octets. This is equal to the IPv6 minimum. Most modern IPv4 networks
+support at least this packet size. A large packet size allows the first client
+handshake packet to fit in a single datagram, which in turn enables stateless
+rejects by the server.
+
+If a QUIC endpoint determines that the PMTU between any pair of local and remote
+IP addresses has fallen below 1280 octets, it MUST immediately cease sending
+QUIC packets between those IP addresses. This may result in abrupt termination
+of the connection if all pairs are affected. In this case, an endpoint SHOULD
+send a Public Reset packet to indicate the failure. The application SHOULD
+attempt to use TLS over TCP instead.
+
+Clients MUST ensure that the first packet in a connection, and any
+retransmissions of those octets, has a total size (including IP and UDP headers)
+of at least 1280 bytes. This might require inclusion of a PADDING frame. Clients
+MAY use a larger first packet size if it has reasonable assurance of a higher
+PMTU through out-of-band information.
+
+Servers MUST reject the first plaintext packet received from a client if it its
+total size is less than 1280 octets, to mitigate amplification attacks.
 
 A sender bundles one or more frames in a Regular QUIC packet.  A sender MAY
 bundle any set of frames in a packet.  All QUIC packets MUST contain a packet
@@ -1288,6 +1310,10 @@ most invalid ICMP messages arrive when there are no DF packets outstanding.
 * Store additional information from the IP or UDP headers from DF packets (for
 example, the IP ID or UDP checksum) to further authenticate incoming Packet Too
 Big messages.
+
+* Any reduction in PMTU due to a report contained in an ICMP packet is
+provisional until QUIC's loss detection algorithm determines that the packet is
+actually lost.
 
 # Streams: QUIC's Data Structuring Abstraction {#streams}
 
