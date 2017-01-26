@@ -109,25 +109,6 @@ response:
 
     Alt-Svc: hq=":443"
 
-## QUIC Version Hints {#alt-svc-version-hint}
-
-This document defines the "quic" parameter for Alt-Svc, which is used to provide
-version-negotiation hints to HTTP/QUIC clients. QUIC versions are four-octet
-sequences with no additional constraints on format. Syntax:
-
-    quic = version-number
-    version-number = 1*8HEXDIG; hex-encoded QUIC version
-
-When multiple versions are supported, the "quic" parameter MAY be repeated
-multiple times in a single Alt-Svc entry.  For example, if a server supported
-both version "Q034" and version 0x00000001, it would specify the following
-header:
-
-    Alt-Svc: hq=":443";quic=1;quic=51303334
-
-Where multiple versions are listed, the order of the values reflects the
-server's preference (with the first value being the most preferred version).
-
 On receipt of an Alt-Svc header indicating HTTP/QUIC support, a client MAY
 attempt to establish a QUIC connection on the indicated port and, if successful,
 send HTTP requests using the mapping described in this document. Servers SHOULD
@@ -137,6 +118,26 @@ reason.
 Connectivity problems (e.g. firewall blocking UDP) can result in QUIC connection
 establishment failure, in which case the client should gracefully fall back to
 HTTP/2.
+
+
+## QUIC Version Hints {#alt-svc-version-hint}
+
+This document defines the "quic" parameter for Alt-Svc, which is used to provide
+optional version-negotiation hints to HTTP/QUIC clients. QUIC versions are
+four-octet sequences with no additional constraints on format. Syntax:
+
+    quic = version-number
+    version-number = 1*8HEXDIG; hex-encoded QUIC version
+
+When multiple versions are supported, the "quic" parameter MAY be repeated
+multiple times in a single Alt-Svc entry.  For example, if a server supported
+both version "Q034" and version 0x00000001, it could specify the following
+header:
+
+    Alt-Svc: hq=":443";quic=1;quic=51303334
+
+Where multiple versions are listed, the order of the values reflects the
+server's preference (with the first value being the most preferred version).
 
 # Connection Establishment {#connection-establishment}
 
@@ -943,14 +944,14 @@ The "hq" string identifies HTTP/QUIC:
   Specification:
   : This document
 
-## Registration of Version Hint Alt-Svc Parameter
+## Registration of QUIC Version Hint Alt-Svc Parameter
 
 This document creates a new registration for version-negotiation hints in the
 "Hypertext Transfer Protocol (HTTP) Alt-Svc Parameter" registry established in
 {{!RFC7838}}.
 
   Parameter:
-  : "v"
+  : "quic"
 
   Specification:
   : This document, {{alt-svc-version-hint}}
