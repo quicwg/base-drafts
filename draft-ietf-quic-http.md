@@ -553,21 +553,12 @@ Different values for the same parameter can be advertised by each peer. For
 example, a client might permit a very large HPACK state table while a server
 chooses to use a small one to conserve memory.
 
-A SETTINGS frame MAY be sent at any time by either endpoint over the lifetime
-of the connection.
+Parameters are processed in the order in which they appear, and the value of a
+SETTINGS parameter is the last value that is seen by a receiver. The receiver of
+a SETTINGS frame does not need to maintain any state other than the last value
+of a given parameter.
 
-Each parameter in a SETTINGS frame replaces any existing value for that
-parameter. Parameters are processed in the order in which they appear, and a
-receiver of a SETTINGS frame does not need to maintain any state other than the
-current value of its parameters. Therefore, the value of a SETTINGS parameter is
-the last value that is seen by a receiver.
-
-The SETTINGS frame defines the following flag:
-
-  REQUEST_ACK (0x1):
-  : When set, bit 0 indicates that this frame contains values which the sender
-  wants to know were understood and applied. For more information, see
-  {{settings-synchronization}}.
+The SETTINGS frame defines no flags.
 
 The payload of a SETTINGS frame consists of zero or more parameters, each
 consisting of an unsigned 16-bit setting identifier and a length-prefixed binary
@@ -577,17 +568,15 @@ value.
     0                   1                   2                   3
     0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |        Identifier (16)        |B|        Length (15)          |
+   |        Identifier (16)        |         Length (16)           |
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
    |                          Contents (?)                       ...
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~~~~~~~~~~~~~
 {: #fig-ext-settings title="SETTINGS value format"}
 
-A zero-length content indicates that the setting value is a Boolean given by the
-B bit. If Length is not zero, the B bit MUST be zero, and MUST be ignored by
-receivers. The initial value of each setting is "false" unless otherwise
-specified by the definition of the setting.
+A zero-length content indicates that the setting value is a Boolean and true.
+(False is indicated by the absence of the setting.)
 
 Non-zero-length values MUST be compared against the remaining length of the
 SETTINGS frame.  Any value which purports to cross the end of the frame MUST
@@ -597,11 +586,14 @@ error.
 An implementation MUST ignore the contents for any SETTINGS identifier it does
 not understand.
 
-SETTINGS frames always apply to a connection, never a single stream, and MUST
-only be sent on the connection control stream (Stream 3). If an endpoint
-receives an SETTINGS frame whose stream identifier field is anything other than
-0x0, the endpoint MUST respond with a connection error of type
-HTTP_SETTINGS_ON_WRONG_STREAM.
+SETTINGS frames always apply to a connection, never a single stream.  A SETTINGS
+frame MUST be sent as the first frame of the connection control stream (see
+{{stream-mapping}}) by each peer, and MUST NOT be sent subsequently or on any
+other stream. If an endpoint receives an SETTINGS frame on a different stream,
+the endpoint MUST respond with a connection error of type
+HTTP_SETTINGS_ON_WRONG_STREAM.  If an endpoint receives a second SETTINGS frame,
+the endpoint MUST respond with a connection error of type
+HTTP_MULTIPLE_SETTINGS.
 
 The SETTINGS frame affects connection state. A badly formed or incomplete
 SETTINGS frame MUST be treated as a connection error (Section 5.4.1) of type
@@ -624,9 +616,8 @@ each HTTP/2 SETTINGS parameter is mapped:
   SETTINGS_HEADER_TABLE_SIZE:
   : An integer with a maximum value of 2^32 - 1.
 
-  SETTINGS_ENABLE_PUSH:
-  : Transmitted as a Boolean.  The default remains "true" as specified in
-    {{!RFC7540}}.
+  SETTINGS_DISABLE_PUSH:
+  : Transmitted as a Boolean; replaces SETTINGS_ENABLE_PUSH
 
   SETTINGS_MAX_CONCURRENT_STREAMS:
   : QUIC requires the maximum number of incoming streams per connection to be
@@ -644,54 +635,7 @@ each HTTP/2 SETTINGS parameter is mapped:
     frame is an error.
 
   SETTINGS_MAX_HEADER_LIST_SIZE:
-  : An integer with a maximium value of 2^32 - 1.
-
-#### Settings Synchronization {#settings-synchronization}
-
-Some values in SETTINGS benefit from or require an understanding of when the
-peer has received and applied the changed parameter values. In order to provide
-such synchronization timepoints, the recipient of a SETTINGS frame MUST apply
-the updated parameters as soon as possible upon receipt. The values in the
-SETTINGS frame MUST be processed in the order they appear, with no other frame
-processing between values. Unsupported parameters MUST be ignored.
-
-Once all values have been processed, if the REQUEST_ACK flag was set, the
-recipient MUST emit the following frames:
-
- - On the connection control stream, a SETTINGS_ACK frame
-   ({{frame-settings-ack}}) listing the identifiers whose values were not
-   understood.
-
- - On each request control stream which is not in the "half-closed (local)" or
-   "closed" state, an empty SETTINGS_ACK frame.
-
-The SETTINGS_ACK frame on the connection control stream contains the highest
-stream number which was open at the time the SETTINGS frame was received.  All
-streams with higher numbers can safely be assumed to have the new settings in
-effect when they open.
-
-For already-open streams including the connection control stream, the
-SETTINGS_ACK frame indicates the point at which the new settings took effect, if
-they did so before the peer half-closed the stream. If the peer closed the
-stream before receiving the SETTINGS frame, the previous settings were in effect
-for the full lifetime of that stream.
-
-In certain conditions, the SETTINGS_ACK frame can be the first frame on a given
-stream -- this simply indicates that the new settings apply from the beginning
-of that stream.
-
-If the sender of a SETTINGS frame with the REQUEST_ACK flag set does not
-receive full acknowledgement within a reasonable amount of time, it MAY issue a
-connection error ({{errors}}) of type HTTP_SETTINGS_TIMEOUT.  A full
-acknowledgement has occurred when:
-
- - All previous SETTINGS frames have been fully acknowledged,
-
- - A SETTINGS_ACK frame has been received on the connection control stream,
-
- - All message control streams with a Stream ID through those given in the
-   SETTINGS_ACK frame have either closed or received a SETTINGS_ACK frame.
-
+  : An integer with a maximum value of 2^32 - 1.
 
 ### PUSH_PROMISE {#frame-push-promise}
 
@@ -728,49 +672,6 @@ TODOs:
    field in this case.
  - No CONTINUATION -- HEADERS have EHB; do we need it here?
 
-### SETTINGS_ACK Frame {#frame-settings-ack}
-
-The SETTINGS_ACK frame (id = 0x0b) acknowledges receipt and application
-of specific values in the peer's SETTINGS frame. Depending on the stream where
-it is sent, it takes two different forms.
-
-On the connection control stream, it contains information about how and when the
-sender has processed the most recently-received SETTINGS frame, and has the
-following payload:
-
-~~~~~~~~~~~~~~~
-    0                   1                   2                   3
-    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |                   Highest Local Stream (32)                   |
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |                   Highest Remote Stream (32)                  |
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |                  Unrecognized Identifiers (*)               ...
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-~~~~~~~~~~~~~~~
-{: #fig-settings-ack title="SETTINGS_ACK connection control stream format"}
-
-  Highest Local Stream (32 bits):
-  : The highest locally-initiated Stream ID which is not in the "idle" state
-
-  Highest Remote Stream (32 bits):
-  : The highest peer-initiated Stream ID which is not in the "idle" state
-
-  Unrecognized Identifiers:
-  : A list of 16-bit SETTINGS identifiers which the sender has not understood
-    and therefore ignored. This list MAY be empty.
-
-On message control streams, the SETTINGS_ACK frame carries no payload, and is
-strictly a synchronization marker for settings application.  See
-{{settings-synchronization}} for more detail.  A SETTINGS_ACK frame with a
-non-zero length MUST be treated as a connection error of type
-HTTP_MALFORMED_SETTINGS_ACK.
-
-On the connection control stream, the SETTINGS_ACK frame MUST have a length
-which is a multiple of two octets. A SETTINGS_ACK frame of any other length MUST
-be treated as a connection error of type HTTP_MALFORMED_SETTINGS_ACK.
-
 ### PING
 
 PING frames do not exist, since QUIC provides equivalent functionality. Frame
@@ -806,11 +707,6 @@ of HTTP/2 error codes into the QUIC error code space.
 QUIC allocates error codes 0x0000-0x3FFF to application protocol definition.
 The following error codes are defined by HTTP for use in QUIC RST_STREAM,
 GOAWAY, and CONNECTION_CLOSE frames.
-
-HTTP_SETTINGS_TIMEOUT (0x00):
-: After sending a SETTINGS frame which requested acknowledgement, the
-  acknowledgement was not completed (see {{settings-synchronization}}) in a
-  timely manner.
 
 HTTP_PUSH_REFUSED (0x01):
 : The server has attempted to push content which the client will not accept
@@ -852,9 +748,6 @@ HTTP_MALFORMED_SETTINGS (0x0B):
 HTTP_MALFORMED_PUSH_PROMISE (0x0C):
 : A HEADERS frame has been received with an invalid format.
 
-HTTP_MALFORMED_SETTINGS_ACK (0x0D):
-: A HEADERS frame has been received with an invalid format.
-
 HTTP_INTERRUPTED_HEADERS (0x0E):
 : A HEADERS frame without the End Header Block flag was followed by a frame
   other than HEADERS.
@@ -862,6 +755,8 @@ HTTP_INTERRUPTED_HEADERS (0x0E):
 HTTP_SETTINGS_ON_WRONG_STREAM (0x0F):
 : A SETTINGS frame was received on a request control stream.
 
+HTTP_MULTIPLE_SETTINGS (0x10):
+: More than one SETTINGS frame was received.
 
 ## Mapping HTTP/2 Error Codes
 
@@ -883,7 +778,7 @@ FLOW_CONTROL_ERROR (0x3):
   QUIC_FLOW_CONTROL_RECEIVED_TOO_MUCH_DATA from the QUIC layer.
 
 SETTINGS_TIMEOUT (0x4):
-: HTTP_SETTINGS_TIMEOUT in {{http-error-codes}}.
+: Not applicable, since no acknowledgement of SETTINGS is defined.
 
 STREAM_CLOSED (0x5):
 : Not applicable, since QUIC handles stream management.  Would provoke a
@@ -998,26 +893,6 @@ The "Specification" column is renamed to "HTTP/2 specification" and is only
 required if the frame is supported over HTTP/2.
 
 
-## New Frame Types
-
-This document adds one new entry to the "HTTP/2 Frame Type" registry defined in
-{{!RFC7540}}:
-
-  Frame Type:
-  : SETTINGS_ACK
-
-  Code:
-  : 0x0b
-
-  HTTP/2 Specification:
-  : N/A
-
-  Supported Protocols:
-  : HTTP/QUIC only
-
-  HTTP/QUIC Specification:
-  : {{frame-settings-ack}}
-
 --- back
 
 # Contributors
@@ -1028,6 +903,11 @@ The original authors of this specification were Robbie Shade and Mike Warres.
 
 > **RFC Editor's Note:**  Please remove this section prior to publication of a
 > final version of this document.
+
+## Since draft-ietf-quic-http-01:
+
+- SETTINGS can be sent only one at the start of a connection.  SETTINGS_ACK
+  removed.
 
 ## Since draft-ietf-quic-http-00:
 
