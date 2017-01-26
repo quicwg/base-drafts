@@ -111,35 +111,30 @@ response:
 
 ## QUIC Version Hints {#alt-svc-version-hint}
 
-This document defines the "v" parameter for Alt-Svc, which is used to provide
-version-negotiation hints to HTTP/QUIC clients. Syntax:
+This document defines the "quic" parameter for Alt-Svc, which is used to provide
+version-negotiation hints to HTTP/QUIC clients. QUIC versions are four-octet
+sequences with no additional constraints on format. Syntax:
 
-    v = version
-    version = DQUOTE ( "c" version-string / "x" version-number ) DQUOTE
-    version-string = 4tchar; token-safe QUIC version
+    quic = version-number
     version-number = 1*8HEXDIG; hex-encoded QUIC version
 
-When multiple versions are supported, the "v" parameter MAY be repeated multiple
-times in a single Alt-Svc entry.  For example, if a server supported both
-version "Q034" and version 0x00000001, it would specify the following header:
+When multiple versions are supported, the "quic" parameter MAY be repeated
+multiple times in a single Alt-Svc entry.  For example, if a server supported
+both version "Q034" and version 0x00000001, it would specify the following
+header:
 
-    Alt-Svc: hq=":443";v="x1";v="cQ034"
+    Alt-Svc: hq=":443";quic=1;quic=51303334
 
 Where multiple versions are listed, the order of the values reflects the
 server's preference (with the first value being the most preferred version).
 
-QUIC versions are four-octet sequences with no additional constraints on format.
-Versions containing octets not allowed in tokens (tchar, {{!RFC7230}}, Section
-3.2.6) MUST be encoded using the hexadecimal representation.  Versions
-containing only octets allowed in tokens MAY be encoded using either
-representation.
+On receipt of an Alt-Svc header indicating HTTP/QUIC support, a client MAY
+attempt to establish a QUIC connection on the indicated port and, if successful,
+send HTTP requests using the mapping described in this document. Servers SHOULD
+list only versions which they support, but MAY omit supported versions for any
+reason.
 
-On receipt of an Alt-Svc header indicating QUIC support, a client MAY attempt to
-establish a QUIC connection on the indicated port and, if successful, send HTTP
-requests using the mapping described in this document. Servers SHOULD list only
-versions which they support, but MAY omit supported versions for any reason.
-
-Connectivity problems (e.g. firewall blocking UDP) may result in QUIC connection
+Connectivity problems (e.g. firewall blocking UDP) can result in QUIC connection
 establishment failure, in which case the client should gracefully fall back to
 HTTP/2.
 
