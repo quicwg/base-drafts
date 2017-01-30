@@ -1914,7 +1914,7 @@ the sender will consider the frames to count against its flow-control windows.
 Upon receipt of a REQUEST_RST frame, an endpoint SHOULD send a RST_STREAM with
 an error code of QUIC_RECEIVED_RST.  If the REQUEST_RST frame is received on a
 stream that is already in the "half-closed (local)" or "closed" states, a
-RST_STREAM frame SHOULD still be sent and retransmitted of previously-sent
+RST_STREAM frame SHOULD still be sent and retransmission of previously-sent
 STREAM frames SHOULD be cancelled.
 
 
