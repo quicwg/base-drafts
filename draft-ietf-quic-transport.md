@@ -1308,12 +1308,93 @@ The fields of a GOAWAY frame are as follows:
 
 # Packetization and Reliability {#packetization}
 
-The maximum packet size for QUIC is the maximum size of the encrypted payload of
-the resulting UDP datagram.  All QUIC packets SHOULD be sized to fit within the
-path's MTU to avoid IP fragmentation.  The recommended default maximum packet
-size is 1350 bytes for IPv6 and 1370 bytes for IPv4.  To optimize better,
-endpoints MAY use PLPMTUD {{!RFC4821}} for detecting the path's MTU and setting
-the maximum packet size appropriately.
+The maximum packet size for QUIC is the maximum size of the entire UDP payload,
+including the public header, encrypted payload, and any authentication fields.
+All QUIC packets SHOULD be sized to fit within the path's MTU to avoid IP
+fragmentation. To optimize bandwidth efficiency, endpoints SHOULD use Path MTU
+Discovery ({{!RFC1191}}, {{!RFC1981}}) for detecting the path's MTU, setting the
+maximum packet size appropriately, and storing the result of previous PMTU
+determinations.
+
+(TODO: Should there be a high minimum MTU for QUIC to avoid ICMP attacks? If so,
+does the endpoint fail over to TCP or simply allow fragmentation?)
+
+QUIC endpoints MUST maintain a separate PMTU estimate for each IP address the
+peer is using in the connection. Endpoints SHOULD maintain an estimate for each
+combination of local and remote IP addresses (as each pairing may have a
+different minimum MTU in the path).
+
+## Packet MTU Determination
+
+Path MTU Discovery is optional, but endpoints that implement it observe the
+following requirements.
+
+### DF Marking {#dfmarking}
+
+QUIC endpoints set the Don't Fragment (DF) bit in the IP header of selected
+QUIC datagrams. These packets MUST use PADDING frames, as necessary, to raise the
+overall packet size to the expected maximum.
+
+The first packet from the client MUST be maximum-size and set the DF bit.
+
+The last server-generated packet in the Transport Handshake MUST be padded to
+maximum-size with the DF bit set. Earlier packets may be smaller to save server
+resources until various handshake mechanisms have validated the client.
+
+QUIC endpoints MUST set the DF bit on the first packet sent to or from an IP
+address new to the QUIC connection, and pad the payload appropriately.
+
+QUIC endpoints MAY set DF and pad packets when it has evidence that the path
+between two previously used IP addresses has changed.
+
+QUIC endpoints SHOULD periodically send a DF-marked, padded packet exceeding the
+recorded PMTU to probe for a change in the PMTU. In a change from {{!RFC1191}}
+and {{!RFC1981}}, these packets MUST NOT be sent on a path more often than
+every 20 RTTs (implying that the chance of a blind attack succeeding is less than
+5% without a storm of ICMP packets, given the mechanisms below).
+
+### Special Considerations for Path MTU Discovery 
+
+Traditional ICMP-based path MTU discovery ({{!RFC1191}}, {{!RFC1981}}) is
+vulnerable to both misbehaving routers and off-path attacks. The latter requires
+specific mitigations unique to QUIC.
+
+PMTUD performs poorly with misbehaving routers that do not send
+ICMP Packet Too Big messages {{!RFC2923}}. To mitigate these "black holes", QUIC
+endpoints MAY use PLPMTUD {{!RFC4821}} in addition to PMTUD when repeated losses
+of DF-marked packets indicate this problem.
+
+PMTUD is potentially vulnerable to off-path attacks that successfully guess the
+IP/port 4-tuple and reduce the MTU to a bandwidth-inefficient value.
+TCP connections mitigate this risk by using the (at minimum) 8 bytes of transport
+header echoed in the ICMP message to validate the echoed TCP sequence number in
+the current connection context. However, as QUIC operates over UDP, this echoed
+information may consist only of the IP and UDP headers, which hold no connection
+context except the IP/port 4-tuple. The following requirements (in addition to
+limits on DF marking above) mitigate these problems:
+
+The endpoint MUST maintain a list of all unacknowledged packet numbers with the
+DF flag set.
+
+The endpoint MUST remove packet numbers from the list when the loss detection
+algorithm declares the packet lost, or the packet is acknowledged.
+
+The endpoint MUST ignore any Packet Too Big message that arrives when there are
+no unacknowledged packet numbers in the list.
+
+Incoming Packet Too Big messages SHOULD be applied to all QUIC connections that
+share the same local and remote IP addresses, assuming they are valid for one
+connection.
+
+Valid Packet Too Big messages MUST trigger immediate retransmission of
+retransmittable data from packet numbers in the list, with no adjustment in
+congestion control parameters consistent with a congestion-induced loss.
+
+The endpoint MAY store additional information from the IP or UDP headers (for
+example, the IP ID or UDP checksum) to further authenticate incoming Packet Too
+Big messages.
+
+## Packet Construction
 
 A sender bundles one or more frames in a Regular QUIC packet.  A sender MAY
 bundle any set of frames in a packet.  All QUIC packets MUST contain a packet
