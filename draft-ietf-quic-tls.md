@@ -993,7 +993,7 @@ sources can be discarded.
 
 `WINDOW_UPDATE` frames MUST NOT be sent unprotected.
 
-Though data is exchanged on stream 1, the initial flow control window is is
+Though data is exchanged on stream 1, the initial flow control window is
 sufficiently large to allow the TLS handshake to complete.  This limits the
 maximum size of the TLS handshake and would prevent a server or client from
 using an abnormally large certificate chain.
