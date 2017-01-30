@@ -1989,6 +1989,13 @@ thanks to all.
 > **RFC Editor's Note:**  Please remove this section prior to publication of a
 > final version of this document.
 
+## Since draft-ietf-quic-transport-01:
+
+- Moved crypto handshake to Stream 0
+
+- Removed ability to exclude application streams from connection-level
+  flow-control
+
 ## Since draft-ietf-quic-transport-00:
 
 - Replaced DIVERSIFICATION_NONCE flag with KEY_PHASE flag

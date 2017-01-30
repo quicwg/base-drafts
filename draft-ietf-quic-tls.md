@@ -1340,6 +1340,10 @@ many others.
 > **RFC Editor's Note:**  Please remove this section prior to publication of a
 > final version of this document.
 
+## Since draft-ietf-quic-tls-01:
+
+- Moved TLS handshake to QUIC Stream 0
+
 ## Since draft-ietf-quic-tls-00:
 
 - Changed bit used to signal key phase.
