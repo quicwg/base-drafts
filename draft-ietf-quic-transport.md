@@ -680,7 +680,7 @@ the document.
 
 The transport component of the handshake is responsible for exchanging and
 negotiating the following parameters for a QUIC connection.  Not all parameters
-are negotiated, some parameters are sent in just one direction.  These
+are negotiated; some parameters are sent in just one direction.  These
 parameters and options are encoded and handed off to the crypto handshake
 protocol to be transmitted to the peer.
 
