@@ -954,7 +954,7 @@ fatal error.
 
 `STREAM` frames for stream 0 are permitted.  These carry the TLS handshake
 messages.  Once 1-RTT keys are available, unprotected `STREAM` frames on stream
-1 can be ignored.
+0 can be ignored.
 
 Receiving unprotected `STREAM` frames for other streams MUST be treated as a
 fatal error.
