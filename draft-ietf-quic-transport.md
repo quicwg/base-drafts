@@ -1621,16 +1621,10 @@ as an ordered byte-stream.  Data received out of order MUST be buffered for
 later delivery, as long as it is not in violation of the receiver's flow control
 limits.
 
-An endpoint MUST NOT send any stream data without consulting the congestion
-controller and the flow controller, with the following two exceptions.
-
-* The crypto handshake stream, Stream 1, MUST NOT be subject to congestion
-  control or connection-level flow control, but MUST be subject to stream-level
-  flow control.
-
-* An application MAY exclude specific stream IDs from connection-level flow
-  control.  If so, these streams MUST NOT be subject to connection-level flow
-  control.
+The crypto handshake stream, Stream 1, MUST NOT be subject to congestion control
+or connection-level flow control, but MUST be subject to stream-level flow
+control. An endpoint MUST NOT send data on any other stream without consulting
+the congestion controller and the flow controller.
 
 Flow control is described in detail in {{flow-control}}, and congestion control
 is described in the companion document {{QUIC-RECOVERY}}.
