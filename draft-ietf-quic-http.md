@@ -198,8 +198,7 @@ This amounts to the second least-significant bit differentiating the two streams
 in a request.
 
 The lower-numbered stream is called the message control stream and carries
-frames related to the request/response, including HEADERS. All request control
-streams are exempt from connection-level flow control. The higher-numbered
+frames related to the request/response, including HEADERS. The higher-numbered
 stream is the data stream and carries the request/response body with no
 additional framing. Note that a request or response without a body will cause
 this stream to be half-closed in the corresponding direction without
