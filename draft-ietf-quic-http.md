@@ -136,8 +136,8 @@ header:
 
 Where multiple versions are listed, the order of the values reflects the
 server's preference (with the first value being the most preferred version).
-Origins SHOULD list only versions which they support, but MAY omit supported
-versions for any reason.
+Origins SHOULD list only versions which are supported by the alternative, but
+MAY omit supported versions for any reason.
 
 # Connection Establishment {#connection-establishment}
 
