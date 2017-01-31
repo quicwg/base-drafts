@@ -818,8 +818,8 @@ Connections should remain open until they become idle for a pre-negotiated
 period of time.  A QUIC connection, once established, can be terminated in one
 of three ways:
 
-1. Explicit Shutdown: An endpoint sends a CONNECTION_CLOSE frame to the peer
-   initiating a connection termination.  An endpoint may send a GOAWAY frame to
+1. Explicit Shutdown: An endpoint sends a CONNECTION_CLOSE frame to
+   initiate a connection termination.  An endpoint may send a GOAWAY frame to
    the peer prior to a CONNECTION_CLOSE to indicate that the connection will
    soon be terminated.  A GOAWAY frame signals to the peer that any active
    streams will continue to be processed, but the sender of the GOAWAY will not
