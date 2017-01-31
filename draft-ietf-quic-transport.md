@@ -226,7 +226,7 @@ results in blocking of all subsequent segments until a retransmission arrives,
 irrespective of the application streams that are encapsulated in subsequent
 segments.  QUIC ensures that lost packets carrying data for an individual stream
 only impact that specific stream.  Data received on other streams can continue
-to be reassembled and delivered to the application.
+to be reassembled and to the application.
 
 ## Rich Signaling for Congestion Control and Loss Recovery
 
@@ -1370,8 +1370,8 @@ abstraction.  Streams can be created either by the client or the server, can
 concurrently send data interleaved with other streams, and can be cancelled.
 QUIC's stream lifetime is modeled closely after HTTP/2's {{?RFC7540}}.  Streams
 are independent of each other in delivery order.  That is, data that is received
-on a stream is delivered in order within that stream, but there is no particular
-delivery order across streams.  Transmit ordering among streams is left to the
+on a stream is ordered within that stream via the frame offset, but there is no particular
+order across streams.  Transmit ordering among streams is left to the
 implementation.  QUIC streams are considered lightweight in that the creation
 and destruction of streams are expected to have minimal bandwidth and
 computational cost.  A single STREAM frame may create, carry data for, and
