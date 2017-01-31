@@ -559,16 +559,16 @@ document.
 +------------------|--------------------|----------------------------+
 | Type-field value |     Frame type     | Definition                 |
 +------------------|--------------------|----------------------------+
-| `1FDOOOSS`       |  STREAM            | {{frame-stream}}           |
-| `01NULLMM`       |  ACK               | {{frame-ack}}              |
-| 00000000 (0x00)  |  PADDING           | {{frame-padding}}          |
-| 00000001 (0x01)  |  RST_STREAM        | {{frame-rst-stream}}       |
-| 00000010 (0x02)  |  CONNECTION_CLOSE  | {{frame-connection-close}} |
-| 00000011 (0x03)  |  GOAWAY            | {{frame-goaway}}           |
-| 00000100 (0x04)  |  WINDOW_UPDATE     | {{frame-window-update}}    |
-| 00000101 (0x05)  |  BLOCKED           | {{frame-blocked}}          |
-| 00000110 (0x06)  |  STOP_WAITING      | {{frame-stop-waiting}}     |
-| 00000111 (0x07)  |  PING              | {{frame-ping}}             |
+| 0x00             |  PADDING           | {{frame-padding}}          |
+| 0x01             |  RST_STREAM        | {{frame-rst-stream}}       |
+| 0x02             |  CONNECTION_CLOSE  | {{frame-connection-close}} |
+| 0x03             |  GOAWAY            | {{frame-goaway}}           |
+| 0x04             |  WINDOW_UPDATE     | {{frame-window-update}}    |
+| 0x05             |  BLOCKED           | {{frame-blocked}}          |
+| 0x06             |  STOP_WAITING      | {{frame-stop-waiting}}     |
+| 0x07             |  PING              | {{frame-ping}}             |
+| 0x40 - 0x7f      |  ACK               | {{frame-ack}}              |
+| 0x80 - 0xff      |  STREAM            | {{frame-stream}}           |
 +------------------|--------------------|----------------------------+
 
 ## Version Negotiation Packet
