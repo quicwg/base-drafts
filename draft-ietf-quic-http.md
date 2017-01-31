@@ -554,10 +554,9 @@ Different values for the same parameter can be advertised by each peer. For
 example, a client might permit a very large HPACK state table while a server
 chooses to use a small one to conserve memory.
 
-Parameters are processed in the order in which they appear, and the value of a
-SETTINGS parameter is the last value that is seen by a receiver. The receiver of
-a SETTINGS frame does not need to maintain any state other than the last value
-of a given parameter.
+Parameters MUST NOT occur more than once.  A receiver MAY treat the presence of
+the same parameter more than once as a connection error of type
+HTTP_MALFORMED_SETTINGS.
 
 The SETTINGS frame defines no flags.
 
@@ -577,12 +576,12 @@ value.
 {: #fig-ext-settings title="SETTINGS value format"}
 
 A zero-length content indicates that the setting value is a Boolean and true.
-(False is indicated by the absence of the setting.)
+False is indicated by the absence of the setting.
 
 Non-zero-length values MUST be compared against the remaining length of the
 SETTINGS frame.  Any value which purports to cross the end of the frame MUST
 cause the SETTINGS frame to be considered malformed and trigger a connection
-error.
+error of type HTTP_MALFORMED_SETTINGS.
 
 An implementation MUST ignore the contents for any SETTINGS identifier it does
 not understand.
@@ -637,6 +636,28 @@ each HTTP/2 SETTINGS parameter is mapped:
 
   SETTINGS_MAX_HEADER_LIST_SIZE:
   : An integer with a maximum value of 2^32 - 1.
+
+#### Usage in 0-RTT
+
+When a 0-RTT QUIC connection is being used, the client's initial requests will
+be sent before the arrival of the server's SETTINGS frame.  Clients SHOULD
+cache at least the following settings about servers:
+
+  - SETTINGS_HEADER_TABLE_SIZE
+  - SETTINGS_MAX_HEADER_LIST_SIZE
+
+Clients MUST comply with cached settings until the server's current settings are
+received.  If a client does not have cached values, it MAY assume the following
+values:
+
+  - SETTINGS_HEADER_TABLE_SIZE:  4,096 octets
+  - SETTINGS_MAX_HEADER_LIST_SIZE:  16,384 octets
+
+Servers MAY continue processing data from clients which conform to these
+defaults during the initial flight, even if the client behavior exceeds its
+current configuration.  If the connection is closed because these or other
+constraints were violated during the 0-RTT flight, clients MAY retry using the
+settings sent by the server on the closed connection.
 
 ### PUSH_PROMISE {#frame-push-promise}
 
