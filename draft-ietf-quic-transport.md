@@ -1528,15 +1528,18 @@ contains a FIN flag or when either peer sends a RST_STREAM frame.
 
 The "closed" state is the terminal state.
 
-A final offset is present in both a frame bearing a FIN flag and in a RST_STREAM
-frame.  Upon sending either of these frames for a stream, the endpoint MUST NOT
-send a STREAM frame carrying data beyond the final offset.
+A final offset is present in both a STREAM frame bearing a FIN flag and in a
+RST_STREAM frame.  Upon sending either of these frames for a stream, the
+endpoint MUST NOT send a STREAM frame carrying data beyond the final offset.
 
-An endpoint that receives any frame for this stream after receiving either a FIN
-flag and all stream data preceding it, or a RST_STREAM frame, MUST quietly
-discard the frame, with one exception.  If a STREAM frame carrying data beyond
-the received final offset is received, the endpoint MUST close the connection
-with a QUIC_STREAM_DATA_AFTER_TERMINATION error ({{error-handling}}).
+An endpoint that receives a FIN flag or a RST_STREAM frame knows the final
+offset for this stream. If a STREAM frame carrying data beyond the received
+final offset is received, the endpoint MUST close the connection with a
+QUIC_STREAM_DATA_AFTER_TERMINATION error ({{error-handling}}).
+
+An endpoint MUST close the connection with a QUIC_STREAM_DATA_AFTER_TERMINATION
+error if it receives a RST_STREAM frame or a FIN flag with a lower final offset
+than the highest data offset it already received on that stream.
 
 An endpoint that receives a RST_STREAM frame (and which has not sent a FIN or a
 RST_STREAM) MUST immediately respond with a RST_STREAM frame, and MUST NOT send
@@ -1544,11 +1547,11 @@ any more data on the stream.  This endpoint may continue receiving frames for
 the stream on which a RST_STREAM is received.
 
 If this state is reached as a result of sending a RST_STREAM frame, the peer
-that receives the RST_STREAM might have already sent -- or enqueued for sending
--- frames on the stream that cannot be withdrawn.  An endpoint MUST ignore
-frames that it receives on closed streams after it has sent a RST_STREAM frame.
-An endpoint MAY choose to limit the period over which it ignores frames and
-treat frames that arrive after this time as being in error.
+that receives the RST_STREAM frame might have already sent -- or enqueued for
+sending -- frames on the stream that cannot be withdrawn.  An endpoint MUST
+ignore frames that it receives on closed streams after it has sent a RST_STREAM
+frame. An endpoint MAY choose to limit the period over which it ignores frames
+and treat frames that arrive after this time as being in error.
 
 STREAM frames received after sending RST_STREAM are counted toward the
 connection and stream flow-control windows.  Even though these frames might be
