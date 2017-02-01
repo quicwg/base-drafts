@@ -16,7 +16,7 @@ author:
     ins: M. Bishop
     name: Mike Bishop
     org: Microsoft
-    email: Mike.Bishop@microsoft.com
+    email: Michael.Bishop@microsoft.com
     role: editor
 
 normative:
@@ -97,39 +97,85 @@ It's not shouting; when they are capitalized, they have the special meaning
 defined in {{!RFC2119}}.
 
 
-# QUIC advertisement
+# QUIC Advertisement
 
-A server advertises that it can speak HTTP/QUIC via the Alt-Svc HTTP response
-header. It does so by including the header in any response sent over a non-QUIC
-(e.g. HTTP/2) connection:
+A server advertises that it can speak HTTP/QUIC via the Alt-Svc ({{!RFC7838}})
+HTTP response header (or the semantically equivalent Alt-Svc HTTP/2 Extension
+Frame Type), using the ALPN token defined in {{connection-establishment}}.
 
-   Alt-Svc: quic=":443"
+Thus, a server could indicate in an HTTP/1.1 or HTTP/2 response that HTTP/QUIC
+was available on UDP port 443 by including the following header in any
+response:
 
-In addition, the list of QUIC versions supported by the server can be specified
-by the v= parameter.  For example, if a server supported both version 33 and 34
-it would specify the following header:
+    Alt-Svc: hq=":443"
 
-   Alt-Svc: quic=":443"; v="34,33"
+## QUIC Version Hints {#alt-svc-version-hint}
 
-On receipt of this header, a client may attempt to establish a QUIC connection
-on port 443 and, if successful, send HTTP requests using the mapping described
-in this document.
+This document defines the "v" parameter for Alt-Svc, which is used to provide
+version-negotiation hints to HTTP/QUIC clients. Syntax:
+
+    v = version
+    version = DQUOTE ( "c" version-string / "x" version-number ) DQUOTE
+    version-string = 4tchar; token-safe QUIC version
+    version-number = 1*8HEXDIG; hex-encoded QUIC version
+
+When multiple versions are supported, the "v" parameter MAY be repeated multiple
+times in a single Alt-Svc entry.  For example, if a server supported both
+version "Q034" and version 0x00000001, it would specify the following header:
+
+    Alt-Svc: hq=":443";v="x1";v="cQ034"
+
+Where multiple versions are listed, the order of the values reflects the
+server's preference (with the first value being the most preferred version).
+
+QUIC versions are four-octet sequences with no additional constraints on format.
+Versions containing octets not allowed in tokens (tchar, {{!RFC7230}}, Section
+3.2.6) MUST be encoded using the hexadecimal representation.  Versions
+containing only octets allowed in tokens MAY be encoded using either
+representation.
+
+On receipt of an Alt-Svc header indicating QUIC support, a client MAY attempt to
+establish a QUIC connection on the indicated port and, if successful, send HTTP
+requests using the mapping described in this document. Servers SHOULD list only
+versions which they support, but MAY omit supported versions for any reason.
 
 Connectivity problems (e.g. firewall blocking UDP) may result in QUIC connection
 establishment failure, in which case the client should gracefully fall back to
 HTTP/2.
 
+# Connection Establishment {#connection-establishment}
 
-# Connection establishment
-
-HTTP/QUIC connections are established as described in {{QUIC-TRANSPORT}}. The
-QUIC crypto handshake MUST use TLS {{QUIC-TLS}}.
+HTTP/QUIC connections are established as described in {{QUIC-TRANSPORT}}. During
+connection establishment, HTTP/QUIC support is indicated by selecting the ALPN
+token "hq" in the crypto handshake.
 
 While connection-level options pertaining to the core QUIC protocol are set in
-the initial crypto handshake {{QUIC-TLS}}, HTTP-specific settings are conveyed
+the initial crypto handshake, HTTP-specific settings are conveyed
 in the SETTINGS frame. After the QUIC connection is established, a SETTINGS
 frame ({{frame-settings}}) MUST be sent as the initial frame of the HTTP control
 stream (StreamID 3, see {{stream-mapping}}).
+
+## Draft Version Identification
+
+> **RFC Editor's Note:**  Please remove this section prior to publication of a
+> final version of this document.
+
+Only implementations of the final, published RFC can identify themselves as
+"hq". Until such an RFC exists, implementations MUST NOT identify themselves
+using these strings.
+
+Implementations of draft versions of the protocol MUST add the string "-" and
+the corresponding draft number to the identifier. For example,
+draft-ietf-quic-http-01 is identified using the string "hq-01".
+
+Non-compatible experiments that are based on these draft versions MUST append
+the string "-" and an experiment name to the identifier. For example, an
+experimental implementation based on draft-ietf-quic-http-09 which reserves an
+extra stream for unsolicited transmission of 1980s pop music might identify
+itself as "hq-09-rickroll". Note that any label MUST conform to the "token"
+syntax defined in Section 3.2.6 of [RFC7230]. Experimenters are encouraged to
+coordinate their experiments on the quic@ietf.org mailing list.
+
 
 # Stream Mapping and Usage {#stream-mapping}
 
@@ -152,8 +198,7 @@ This amounts to the second least-significant bit differentiating the two streams
 in a request.
 
 The lower-numbered stream is called the message control stream and carries
-frames related to the request/response, including HEADERS. All request control
-streams are exempt from connection-level flow control. The higher-numbered
+frames related to the request/response, including HEADERS. The higher-numbered
 stream is the data stream and carries the request/response body with no
 additional framing. Note that a request or response without a body will cause
 this stream to be half-closed in the corresponding direction without
@@ -183,29 +228,30 @@ HTTP response on the same streams as the request.
 
 An HTTP message (request or response) consists of:
 
-1. for a response only, zero or more header blocks (a sequence of HEADERS frames
-   with End Header Block set on the last) on the control stream containing the
-   message headers of informational (1xx) HTTP responses (see {{!RFC7230}},
-   Section 3.2 and {{!RFC7231}}, Section 6.2),
+1. one header block (see {{frame-headers}}) on the control stream containing the
+   message headers (see {{!RFC7230}}, Section 3.2),
 
-2. one header block on the control stream containing the message headers (see
-   {{!RFC7230}}, Section 3.2),
+2. the payload body (see {{!RFC7230}}, Section 3.3), sent on the data stream,
 
-3. the payload body (see {{!RFC7230}}, Section 3.3), sent on the data stream,
-
-4. optionally, one header block on the control stream containing the
+3. optionally, one header block on the control stream containing the
    trailer-part, if present (see {{!RFC7230}}, Section 4.1.2).
+
+In addition, prior to sending the message header block indicated above, a
+response may contain zero or more header blocks on the control stream containing
+the message headers of informational (1xx) HTTP responses (see {{!RFC7230}},
+Section 3.2 and {{!RFC7231}}, Section 6.2).
 
 The data stream MUST be half-closed immediately after the transfer of the body.
 If the message does not contain a body, the corresponding data stream MUST still
 be half-closed without transferring any data. The "chunked" transfer encoding
 defined in Section 4.1 of {{!RFC7230}} MUST NOT be used.
 
-Trailing header fields are carried in a header block following the body. Such a
-header block is a sequence of HEADERS frames with End Header Block set on the
-last frame. Header blocks after the first but before the end of the stream are
-invalid. These MUST be decoded to maintain HPACK decoder state, but the
-resulting output MUST be discarded.
+Trailing header fields are carried in an additional header block on the message
+control stream. Such a header block is a sequence of HEADERS frames with End
+Header Block set on the last frame. Senders MUST send only one header block in
+the trailers section; receivers MUST decode any subsequent header blocks in
+order to maintain HPACK decoder state, but the resulting output MUST be
+discarded.
 
 An HTTP request/response exchange fully consumes a pair of streams. After
 sending a request, a client closes the streams for sending; after sending a
@@ -681,31 +727,6 @@ TODOs:
    field in this case.
  - No CONTINUATION -- HEADERS have EHB; do we need it here?
 
-
-### PING
-
-PING frames do not exist, since QUIC provides equivalent functionality. Frame
-type 0x6 is reserved.
-
-
-### GOAWAY frame
-
-GOAWAY frames do not exist, since QUIC provides equivalent functionality. Frame
-type 0x7 is reserved.
-
-
-### WINDOW_UPDATE frame
-
-WINDOW_UPDATE frames do not exist, since QUIC provides equivalent functionality.
-Frame type 0x8 is reserved.
-
-
-### CONTINUATION frame
-
-CONTINUATION frames do not exist, since larger supported HEADERS/PUSH_PROMISE
-frames provide equivalent functionality. Frame type 0x9 is reserved.
-
-
 ### SETTINGS_ACK Frame {#frame-settings-ack}
 
 The SETTINGS_ACK frame (id = 0x0b) acknowledges receipt and application
@@ -748,6 +769,30 @@ HTTP_MALFORMED_SETTINGS_ACK.
 On the connection control stream, the SETTINGS_ACK frame MUST have a length
 which is a multiple of two octets. A SETTINGS_ACK frame of any other length MUST
 be treated as a connection error of type HTTP_MALFORMED_SETTINGS_ACK.
+
+### PING
+
+PING frames do not exist, since QUIC provides equivalent functionality. Frame
+type 0x6 is reserved.
+
+
+### GOAWAY frame
+
+GOAWAY frames do not exist, since QUIC provides equivalent functionality. Frame
+type 0x7 is reserved.
+
+
+### WINDOW_UPDATE frame
+
+WINDOW_UPDATE frames do not exist, since QUIC provides equivalent functionality.
+Frame type 0x8 is reserved.
+
+
+### CONTINUATION frame
+
+CONTINUATION frames do not exist, since larger supported HEADERS/PUSH_PROMISE
+frames provide equivalent functionality. Frame type 0x9 is reserved.
+
 
 
 # Error Handling {#errors}
@@ -798,16 +843,16 @@ HTTP_MALFORMED_HEADERS (0x09):
 : A HEADERS frame has been received with an invalid format.
 
 HTTP_MALFORMED_PRIORITY (0x0A):
-: A HEADERS frame has been received with an invalid format.
+: A PRIORITY frame has been received with an invalid format.
 
 HTTP_MALFORMED_SETTINGS (0x0B):
-: A HEADERS frame has been received with an invalid format.
+: A SETTINGS frame has been received with an invalid format.
 
 HTTP_MALFORMED_PUSH_PROMISE (0x0C):
-: A HEADERS frame has been received with an invalid format.
+: A PUSH_PROMISE frame has been received with an invalid format.
 
 HTTP_MALFORMED_SETTINGS_ACK (0x0D):
-: A HEADERS frame has been received with an invalid format.
+: A SETTINGS_ACK frame has been received with an invalid format.
 
 HTTP_INTERRUPTED_HEADERS (0x0E):
 : A HEADERS frame without the End Header Block flag was followed by a frame
@@ -884,6 +929,35 @@ it contains.
 
 
 # IANA Considerations
+
+## Registration of HTTP/QUIC Identification String
+
+This document creates a new registration for the identification of HTTP/QUIC in
+the "Application Layer Protocol Negotiation (ALPN) Protocol IDs" registry
+established in {{?RFC7301}}.
+
+The "hq" string identifies HTTP/QUIC:
+
+  Protocol:
+  : HTTP over QUIC
+
+  Identification Sequence:
+  : 0x68 0x71 ("hq")
+
+  Specification:
+  : This document
+
+## Registration of Version Hint Alt-Svc Parameter
+
+This document creates a new registration for version-negotiation hints in the
+"Hypertext Transfer Protocol (HTTP) Alt-Svc Parameter" registry established in
+{{!RFC7838}}.
+
+  Parameter:
+  : "v"
+
+  Specification:
+  : This document, {{alt-svc-version-hint}}
 
 ## Existing Frame Types
 
@@ -964,6 +1038,12 @@ The original authors of this specification were Robbie Shade and Mike Warres.
 - Adopted SETTINGS format from draft-bishop-httpbis-extended-settings-01
 
 - Reworked SETTINGS_ACK to account for indeterminate inter-stream order.
+
+- Described CONNECT pseudo-method
+
+- Updated ALPN token and Alt-Svc guidance
+
+- Application-layer-defined error codes
 
 ## Since draft-shade-quic-http2-mapping-00:
 

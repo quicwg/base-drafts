@@ -105,7 +105,8 @@ This document describes how QUIC can be secured using Transport Layer Security
 improvements for connection establishment over previous versions.  Absent packet
 loss, most new connections can be established and secured within a single round
 trip; on subsequent connections between the same client and server, the client
-can often send application data immediately, that is, zero round trip setup.
+can often send application data immediately, that is, using a zero round trip
+setup.
 
 This document describes how the standardized TLS 1.3 can act a security
 component of QUIC.  The same design could work for TLS 1.2, though few of the
@@ -195,12 +196,12 @@ exchange cannot be observed, modified, or forged.
 
 TLS features can be separated into two basic functions: an authenticated key
 exchange and record protection.  QUIC primarily uses the authenticated key
-exchange provided by TLS; QUIC provides its own packet protection.
+exchange provided by TLS but provides its own packet protection.
 
 The TLS authenticated key exchange occurs between two entities: client and
 server.  The client initiates the exchange and the server responds.  If the key
 exchange completes successfully, both client and server will agree on a secret.
-TLS supports both pre-shared key (PSK) and Diffie-Hellman (DH) key exchange.
+TLS supports both pre-shared key (PSK) and Diffie-Hellman (DH) key exchanges.
 PSK is the basis for 0-RTT; the latter provides perfect forward secrecy (PFS)
 when the DH keys are destroyed.
 
@@ -236,9 +237,6 @@ A simplified TLS 1.3 handshake with 0-RTT application data is shown in
    (0-RTT Application Data)  -------->
                                                   ServerHello
                                          {EncryptedExtensions}
-                                         {ServerConfiguration}
-                                                 {Certificate}
-                                           {CertificateVerify}
                                                     {Finished}
                              <--------      [Application Data]
    (EndOfEarlyData)
@@ -424,8 +422,8 @@ the first handshake octets, the TLS stack might signal that 0-RTT keys are
 ready.  On the server, after receiving handshake octets that contain a
 ClientHello message, a TLS server might signal that 0-RTT keys are available.
 
-1-RTT keys are used for both sending and receiving packets.  0-RTT keys are only
-used to protect packets that the client sends.
+1-RTT keys are used for packets in both directions.  0-RTT keys are only
+used to protect packets sent by the client.
 
 
 ### Secret Export
@@ -464,6 +462,40 @@ Get Handshake
 {: #exchange-summary title="Interaction Summary between QUIC and TLS"}
 
 
+## TLS Version
+
+This document describes how TLS 1.3 {{!I-D.ietf-tls-tls13}} is used with QUIC.
+
+In practice, the TLS handshake will negotiate a version of TLS to use.  This
+could result in a newer version of TLS than 1.3 being negotiated if both
+endpoints support that version.  This is acceptable provided that the features
+of TLS 1.3 that are used by QUIC are supported by the newer version.
+
+A badly configured TLS implementation could negotiate TLS 1.2 or another older
+version of TLS.  An endpoint MUST terminate the connection if a version of TLS
+older than 1.3 is negotiated.
+
+
+## Peer Authentication
+
+The requirements for authentication depend on the application protocol that is
+in use.  TLS provides server authentication and permits the server to request
+client authentication.
+
+A client MUST authenticate the identity of the server.  This typically involves
+verification that the identity of the server is included in a certificate and
+that the certificate is issued by a trusted entity (see for example
+{{?RFC2818}}).
+
+A server MAY request that the client authenticate during the handshake. A server
+MAY refuse a connection if the client is unable to authenticate when requested.
+The requirements for client authentication vary based on application protocol
+and deployment.
+
+A server MUST NOT use post-handshake client authentication (see Section 4.6.2 of
+{{!I-D.ietf-tls-tls13}}).
+
+
 # QUIC Packet Protection {#packet-protection}
 
 QUIC packet protection provides authenticated encryption of packets.  This
@@ -473,7 +505,7 @@ connection (see {{key-expansion}}).
 
 Different keys are used for QUIC packet protection and TLS record protection.
 Having separate QUIC and TLS record protection means that TLS records can be
-protected by two different keys.  This redundancy is limited to a only a few TLS
+protected by two different keys.  This redundancy is limited to only a few TLS
 records, and is maintained for the sake of simplicity.
 
 
@@ -501,7 +533,7 @@ on the system used in TLS {{!I-D.ietf-tls-tls13}}.  The secrets that QUIC uses
 as the basis of its key schedule are obtained using TLS exporters (see Section
 7.3.3 of {{!I-D.ietf-tls-tls13}}).
 
-QUIC uses the Pseudo-Random Function (PRF) hash function negotiated by TLS for
+QUIC uses HKDF with the same hash function negotiated by TLS for
 key derivation.  For example, if TLS is using the TLS_AES_128_GCM_SHA256, the
 SHA-256 hash function is used.
 
@@ -553,7 +585,7 @@ keys.
 
 After a key update (see {{key-update}}), these secrets are updated using the
 HKDF-Expand-Label function defined in Section 7.1 of {{!I-D.ietf-tls-tls13}}.
-HKDF-Expand-Label uses the the PRF hash function negotiated by TLS.  The
+HKDF-Expand-Label uses the PRF hash function negotiated by TLS.  The
 replacement secret is derived using the existing Secret, a Label of "QUIC client
 1-RTT Secret" for the client and "QUIC server 1-RTT Secret" for the server, an
 empty HashValue, and the same output Length as the hash function selected by TLS
@@ -904,7 +936,7 @@ key update until all of its handshake messages have been acknowledged by the
 server.
 
 
-# Pre-handshake QUIC Messages {#pre-handshake}
+# Pre-handshake QUIC Messages {#pre-hs}
 
 Implementations MUST NOT exchange data on any stream other than stream 1 without
 packet protection.  QUIC requires the use of several types of frame for managing
@@ -938,12 +970,12 @@ proposes that all strategies are possible depending on the type of message.
   the TLS handshake (see {{quic_parameters}}).
 * Most unprotected messages are treated as fatal errors when received except for
   the small number necessary to permit the handshake to complete (see
-  {{pre-handshake-unprotected}}).
+  {{pre-hs-unprotected}}).
 * Protected packets can either be discarded or saved and later used (see
-  {{pre-handshake-protected}}).
+  {{pre-hs-protected}}).
 
 
-## Unprotected Packets Prior to Handshake Completion {#pre-handshake-unprotected}
+## Unprotected Packets Prior to Handshake Completion {#pre-hs-unprotected}
 
 This section describes the handling of messages that are sent and received prior
 to the completion of the TLS handshake.
@@ -996,7 +1028,7 @@ sources can be discarded.
 
 `WINDOW_UPDATE` frames MUST NOT be sent unprotected.
 
-Though data is exchanged on stream 1, the initial flow control window is is
+Though data is exchanged on stream 1, the initial flow control window is
 sufficiently large to allow the TLS handshake to complete.  This limits the
 maximum size of the TLS handshake and would prevent a server or client from
 using an abnormally large certificate chain.
@@ -1058,7 +1090,7 @@ that 0-RTT data has been rejected.
 A server MUST NOT use 0-RTT keys to protect packets.
 
 
-## Protected Packets Prior to Handshake Completion {#pre-handshake-protected}
+## Protected Packets Prior to Handshake Completion {#pre-hs-protected}
 
 Due to reordering and loss, protected packets might be received by an endpoint
 before the final handshake messages are received.  If these can be decrypted
@@ -1234,86 +1266,87 @@ packets as indicative of an attack.
 # Error codes {#errors}
 
 The portion of the QUIC error code space allocated for the crypto handshake is
-0xB000-0xFFFF. The following error codes are defined when TLS is used for the
+0xC0000000-0xFFFFFFFF. The following error codes are defined when TLS is used for the
 crypto handshake:
 
-TLS_HANDSHAKE_FAILED (0xB01c):
+TLS_HANDSHAKE_FAILED (0xC000001C):
 : Crypto errors. Handshake failed.
 
-TLS_MESSAGE_OUT_OF_ORDER (0xB01d):
+TLS_MESSAGE_OUT_OF_ORDER (0xC000001D):
 : Handshake message received out of order.
 
-TLS_TOO_MANY_ENTRIES (0xB01e):
+TLS_TOO_MANY_ENTRIES (0xC000001E):
 : Handshake message contained too many entries.
 
-TLS_INVALID_VALUE_LENGTH (0xB01f):
+TLS_INVALID_VALUE_LENGTH (0xC000001F):
 : Handshake message contained an invalid value length.
 
-TLS_MESSAGE_AFTER_HANDSHAKE_COMPLETE (0xB020):
+TLS_MESSAGE_AFTER_HANDSHAKE_COMPLETE (0xC0000020):
 : A handshake message was received after the handshake was complete.
 
-TLS_INVALID_RECORD_TYPE (0xB021):
+TLS_INVALID_RECORD_TYPE (0xC0000021):
 : A handshake message was received with an illegal record type.
 
-TLS_INVALID_PARAMETER (0xB022):
+TLS_INVALID_PARAMETER (0xC0000022):
 : A handshake message was received with an illegal parameter.
 
-TLS_INVALID_CHANNEL_ID_SIGNATURE (0xB034):
+TLS_INVALID_CHANNEL_ID_SIGNATURE (0xC0000034):
 : An invalid channel id signature was supplied.
 
-TLS_MESSAGE_PARAMETER_NOT_FOUND (0xB023):
+TLS_MESSAGE_PARAMETER_NOT_FOUND (0xC0000023):
 : A handshake message was received with a mandatory parameter missing.
 
-TLS_MESSAGE_PARAMETER_NO_OVERLAP (0xB024):
+TLS_MESSAGE_PARAMETER_NO_OVERLAP (0xC0000024):
 : A handshake message was received with a parameter that has no overlap with the
   local parameter.
 
-TLS_MESSAGE_INDEX_NOT_FOUND (0xB025):
-: A handshake message was received that contained a parameter with too few values.
+TLS_MESSAGE_INDEX_NOT_FOUND (0xC0000025):
+: A handshake message was received that contained a parameter with too few
+  values.
 
-TLS_UNSUPPORTED_PROOF_DEMAND (0xB05e):
+TLS_UNSUPPORTED_PROOF_DEMAND (0xC000005E):
 : A demand for an unsupported proof type was received.
 
-TLS_INTERNAL_ERROR (0xB026):
+TLS_INTERNAL_ERROR (0xC0000026):
 : An internal error occured in handshake processing.
 
-TLS_VERSION_NOT_SUPPORTED (0xB027):
+TLS_VERSION_NOT_SUPPORTED (0xC0000027):
 : A handshake handshake message specified an unsupported version.
 
-TLS_HANDSHAKE_STATELESS_REJECT (0xB048):
+TLS_HANDSHAKE_STATELESS_REJECT (0xC0000048):
 : A handshake handshake message resulted in a stateless reject.
 
-TLS_NO_SUPPORT (0xB028):
+TLS_NO_SUPPORT (0xC0000028):
 : There was no intersection between the crypto primitives supported by the peer
   and ourselves.
 
-TLS_TOO_MANY_REJECTS (0xB029):
+TLS_TOO_MANY_REJECTS (0xC0000029):
 : The server rejected our client hello messages too many times.
 
-TLS_PROOF_INVALID (0xB02a):
+TLS_PROOF_INVALID (0xC000002A):
 : The client rejected the server's certificate chain or signature.
 
-TLS_DUPLICATE_TAG (0xB02b):
+TLS_DUPLICATE_TAG (0xC000002B):
 : A handshake message was received with a duplicate tag.
 
-TLS_ENCRYPTION_LEVEL_INCORRECT (0xB02c):
+TLS_ENCRYPTION_LEVEL_INCORRECT (0xC000002C):
 : A handshake message was received with the wrong encryption level (i.e. it
   should have been encrypted but was not.)
 
-TLS_SERVER_CONFIG_EXPIRED (0xB02d):
+TLS_SERVER_CONFIG_EXPIRED (0xC000002D):
 : The server config for a server has expired.
 
-TLS_SYMMETRIC_KEY_SETUP_FAILED (0xB035):
+TLS_SYMMETRIC_KEY_SETUP_FAILED (0xC0000035):
 : We failed to set up the symmetric keys for a connection.
 
-TLS_MESSAGE_WHILE_VALIDATING_CLIENT_HELLO (0xB036):
+TLS_MESSAGE_WHILE_VALIDATING_CLIENT_HELLO (0xC0000036):
 : A handshake message arrived, but we are still validating the previous
   handshake message.
 
-TLS_UPDATE_BEFORE_HANDSHAKE_COMPLETE (0xB041):
+TLS_UPDATE_BEFORE_HANDSHAKE_COMPLETE (0xC0000041):
 : A server config update arrived before the handshake is complete.
 
-TLS_CLIENT_HELLO_TOO_LARGE (0xB05a):
+TLS_CLIENT_HELLO_TOO_LARGE (0xC000005A):
 : ClientHello cannot fit in one packet.
 
 
@@ -1351,6 +1384,8 @@ many others.
 - Added TLS interface requirements section.
 
 - Moved to use of TLS exporters for key derivation.
+
+- Moved TLS error code definitions into this document.
 
 ## Since draft-thomson-quic-tls-01:
 
