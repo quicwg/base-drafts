@@ -117,7 +117,6 @@ Connectivity problems (e.g. firewall blocking UDP) can result in QUIC connection
 establishment failure, in which case the client SHOULD continue using the
 existing connection or try another alternative endpoint offered by the origin.
 
-
 ## QUIC Version Hints {#alt-svc-version-hint}
 
 This document defines the "quic" parameter for Alt-Svc, which MAY be used to
@@ -127,10 +126,10 @@ four-octet sequences with no additional constraints on format. Syntax:
     quic = version-number
     version-number = 1*8HEXDIG; hex-encoded QUIC version
 
-When multiple versions are supported, the "quic" parameter MAY be repeated
-multiple times in a single Alt-Svc entry.  For example, if a server supported
-both version "Q034" and version 0x00000001, it could specify the following
-header:
+Leading zeros SHOULD be omitted for brevity.  When multiple versions are
+supported, the "quic" parameter MAY be repeated multiple times in a single
+Alt-Svc entry.  For example, if a server supported both version 0x00000001 and
+the version rendered in ASCII as "Q034", it could specify the following header:
 
     Alt-Svc: hq=":443";quic=1;quic=51303334
 
@@ -138,6 +137,7 @@ Where multiple versions are listed, the order of the values reflects the
 server's preference (with the first value being the most preferred version).
 Origins SHOULD list only versions which are supported by the alternative, but
 MAY omit supported versions for any reason.
+
 
 # Connection Establishment {#connection-establishment}
 
