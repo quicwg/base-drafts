@@ -1201,7 +1201,7 @@ stream.  The frame is as follows:
 |                        Stream ID (32)                         |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                                                               |
-+                        Byte Offset (64)                       +
++                       Final Offset (64)                       +
 |                                                               |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                        Error Code (32)                        |
@@ -1212,11 +1212,12 @@ The fields are:
 
 * Stream ID: The 32-bit Stream ID of the stream being terminated.
 
-* Byte offset: A 64-bit unsigned integer indicating the absolute byte offset of
+* Final offset: A 64-bit unsigned integer indicating the absolute byte offset of
   the end of data written on this stream by the RST_STREAM sender.
 
 * Error code: A 32-bit error code which indicates why the stream is being
   closed.
+
 
 ## PADDING Frame {#frame-padding}
 
@@ -1501,6 +1502,9 @@ STREAM frames; WINDOW_UPDATE and RST_STREAM MAY be sent in this state.
 A stream transitions from this state to "closed" when a frame that contains an
 FIN flag is received or when either peer sends a RST_STREAM frame.
 
+An endpoint that closes a stream MUST NOT send data beyond the final offset that
+it has chosen, see {{state-closed}} for details.
+
 An endpoint can receive any type of frame in this state.  Providing flow-control
 credit using WINDOW_UPDATE frames is necessary to continue receiving
 flow-controlled frames.  In this state, a receiver MAY ignore WINDOW_UPDATE
@@ -1513,9 +1517,8 @@ A stream that is "half-closed (remote)" is no longer being used by the peer to
 send any data.  In this state, a sender is no longer obligated to maintain a
 receiver stream-level flow-control window.
 
-If an endpoint receives any STREAM frames for a stream that is in this state, it
-MUST close the connection with a QUIC_STREAM_DATA_AFTER_TERMINATION error
-({{error-handling}}).
+A stream that is in the "half-closed (remote)" state will have a final offset
+for received data, see {{state-closed}} for details.
 
 A stream in this state can be used by the endpoint to send frames of any type.
 In this state, the endpoint continues to observe advertised stream-level and
@@ -1524,22 +1527,24 @@ connection-level flow-control limits ({{flow-control}}).
 A stream can transition from this state to "closed" by sending a frame that
 contains a FIN flag or when either peer sends a RST_STREAM frame.
 
-### closed
+### closed {#state-closed}
 
 The "closed" state is the terminal state.
 
-A final offset is present in both a STREAM frame bearing a FIN flag and in a
-RST_STREAM frame.  Upon sending either of these frames for a stream, the
-endpoint MUST NOT send a STREAM frame carrying data beyond the final offset.
+An endpoint will learn the final offset of the data is receives on a stream when
+it enters the "half-closed (remote)" state.  The final offset is carried
+explicitly in the RST_STREAM frame and it is the offset of the end of the data
+carried in STREAM frame that is marked with a FIN flag.  A sender MUST NOT send
+data on a stream at or beyond the final offset.
 
-An endpoint that receives a FIN flag or a RST_STREAM frame knows the final
-offset for this stream. If a STREAM frame carrying data beyond the received
-final offset is received, the endpoint MUST close the connection with a
-QUIC_STREAM_DATA_AFTER_TERMINATION error ({{error-handling}}).
-
-An endpoint MUST close the connection with a QUIC_STREAM_DATA_AFTER_TERMINATION
-error if it receives a RST_STREAM frame or a FIN flag with a lower final offset
-than the highest data offset it already received on that stream.
+Once a final offset for a stream is known, it cannot change.  If a RST_STREAM or
+STREAM frame causes the final offset to change for a stream, a receiver SHOULD
+respond with a QUIC_STREAM_DATA_AFTER_TERMINATION error (see
+{{error-handling}}).  A receiver SHOULD treat receipt of data at or beyond the
+final offset as a QUIC_STREAM_DATA_AFTER_TERMINATION error.  Generating these
+errors is not mandatory, but is strongly encouraged; requiring that a receiver
+generate these errors depends on maintaining the final offset state for closed
+streams, which could mean a significant state commitment.
 
 An endpoint that receives a RST_STREAM frame (and which has not sent a FIN or a
 RST_STREAM) MUST immediately respond with a RST_STREAM frame, and MUST NOT send
