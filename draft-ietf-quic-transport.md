@@ -372,7 +372,8 @@ The fields in the Common Header are the following:
      packet.  This must be set in all packets until negotiated to a different
      value for a given direction.  For instance, if a client indicates that the
      5-tuple fully identifies the connection at the client, the connection ID is
-     optional in the server-to-client direction.
+     optional in the server-to-client direction. The negotiation is described in
+     {{optional-transport-parameters}}.
 
    * 0x30 = PACKET_NUMBER_SIZE.  These two bits indicate the number of
      low-order-bytes of the packet number that are present in each packet.
@@ -703,7 +704,7 @@ QUIC encodes the transport parameters and options as tag-value pairs, all as
 
 * ICSL: Idle timeout in seconds.  The maximum value is 600 seconds (10 minutes).
 
-#### Optional Transport Parameters
+#### Optional Transport Parameters {#optional-transport-parameters}
 
 * TCID: Indicates support for truncated Connection IDs.  If sent by a peer,
   indicates that connection IDs sent to the peer should be truncated to 0 bytes.
