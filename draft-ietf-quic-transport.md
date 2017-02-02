@@ -225,8 +225,7 @@ many streams atop TCP's single-bytestream abstraction, a loss of a TCP segment
 results in blocking of all subsequent segments until a retransmission arrives,
 irrespective of the application streams that are encapsulated in subsequent
 segments.  QUIC ensures that lost packets carrying data for an individual stream
-only impact that specific stream.  Data received on other streams can continue
-to be reassembled and to the application.
+only impact that specific stream.
 
 ## Rich Signaling for Congestion Control and Loss Recovery
 
@@ -1612,8 +1611,8 @@ sender or during delivery to the application at the receiver.
 When new data is to be sent on a stream, a sender MUST set the encapsulating
 STREAM frame's offset field to the stream offset of the first byte of this new
 data.  The first byte of data that is sent on a stream has the stream offset 0.
-A receiver MUST ensure that received stream data is delivered to the application
-as an ordered byte-stream.  Data received out of order MUST be buffered for
+A receiver MUST ensure that received stream data creates an ordered
+byte-stream.  Data received out of order may need to be buffered for
 later delivery, as long as it is not in violation of the receiver's flow control
 limits.
 
