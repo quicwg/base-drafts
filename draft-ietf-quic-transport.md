@@ -662,6 +662,14 @@ Version negotiation uses unprotected data. The result of the negotiation MUST
 be revalidated once the cryptographic handshake has completed (see
 {{version-validation}}).
 
+The server includes its Version Negotiation list in the crypto handshake even if
+the client's proposed version was acceptable.  Clients SHOULD cache this list
+and initially propose the highest mutual version in the future.  Clients which
+discover the server would have accepted a higher version than initially proposed
+MAY initiate a new connection with the higher version, then gracefully close the
+first connection.
+
+
 ## Crypto and Transport Handshake {#handshake}
 
 QUIC relies on a combined crypto and transport handshake to minimize connection
@@ -686,10 +694,47 @@ protocol to be transmitted to the peer.
 
 #### Encoding
 
-(TODO: Describe format with example)
+QUIC encodes the transport parameters and options as tag-value pairs.
 
-QUIC encodes the transport parameters and options as tag-value pairs, all as
-7-bit ASCII strings.  QUIC parameter tags are listed below.
+    enum {
+      SFCW(0),
+      CFCW(1),
+      MSPC(2),
+      ICSL(3),
+      TCID(4),
+      COPT(5),
+      VPRP(6),
+      VNGO(7),
+      (255)
+    } OptionTag;
+    
+    opaque TagString<0..2^16-1>;    /* String value for experimental tags */
+
+    opaque QuicVersion[4];          /* Version entry */
+    
+    QuicVersion VersionList<1..255> /* List of versions */
+
+    struct {
+      OptionTag tag;         /* option being set */
+      select (Option.tag) {  /* option value */
+        case SFCW:  uint24 Window;
+        case CFCW:  uint24 Window;
+        case MSPC:  uint16 StreamCount;
+        case ICSL:  uint16 Timeout;
+        case TCID:  opaque Ignored;
+        case COPT:  TagString OptionValue;
+        case VPRP:  QuicVersion ProposedVersion;
+        case VNGO:  VersionList SupportedVersions;
+      }
+    } Option
+    
+    struct {
+      Option option_list<0..255>
+    } OptionList
+
+The OptionList is passed to the crypto layer to be transported in the handshake
+and cryptographically verified.
+    
 
 #### Required Transport Parameters {#required-transport-parameters}
 
@@ -702,6 +747,13 @@ QUIC encodes the transport parameters and options as tag-value pairs, all as
 * MSPC: Maximum number of incoming streams per connection.
 
 * ICSL: Idle timeout in seconds.  The maximum value is 600 seconds (10 minutes).
+
+* VPRP: Client's initially-proposed version (whether or not selected). MUST be
+  sent by client; MUST NOT be sent by server.
+
+* VNGO: Server's list of supported versions. MUST be sent by server, regardless 
+  of whether a Version Negotiation packet was sent; MUST NOT be sent by client. 
+
 
 #### Optional Transport Parameters
 
@@ -779,6 +831,10 @@ protocol.
   mid-connection, to update the information stored in the STK at the client and
   to extend the period over which 0-RTT connections can be established by the
   client.
+  
+* Application-Layer Protocol Negotiation: The handshake MUST establish the 
+  application-layer protocol which the peers will speak over the QUIC
+  connection.
 
 * Certificate Compression: Early QUIC experience demonstrated that compressing
   certificates exchanged during a handshake is valuable in reducing latency.
@@ -793,9 +849,9 @@ protocol.
 The following information used during the QUIC handshake MUST be
 cryptographically verified by the crypto handshake protocol:
 
-* Client's originally proposed version in its first packet.
+* Client's originally-proposed version in its first packet.
 
-* Server's version list in it's Version Negotiation packet, if one was sent.
+* Server's version list.
 
 
 ## Connection Migration {#migration}
