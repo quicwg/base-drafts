@@ -400,6 +400,12 @@ Important:
   client, the server cannot consider the client to be authenticated until it
   receives and validates the client's Finished message.
 
+: The requirement for the server to wait for the client Finished message creates
+  a dependency on that message being delivered.  A client can avoid the
+  potential for head-of-line blocking that this implies by sending a copy of the
+  STREAM frame that carries the Finished message in multiple packets.  This
+  enables immediate server processing for those packets.
+
 
 ### Key Ready Events
 
