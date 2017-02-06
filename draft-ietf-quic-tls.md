@@ -1096,32 +1096,28 @@ that 0-RTT data has been rejected.
 A server MUST NOT use 0-RTT keys to protect packets.
 
 
-## Protected Packets Prior to Handshake Completion {#pre-hs-protected}
+## Receiving Out-of-Order Protected Frames {#pre-hs-protected}
 
 Due to reordering and loss, protected packets might be received by an endpoint
-before the final handshake messages are received.  If these can be decrypted
-successfully, such packets MAY be stored and used once the handshake is
-complete.
+before the final TLS handshake messages are received.  A client will be unable
+to decrypt 1-RTT packets from the server, whereas a server will be able to
+decrypt 1-RTT packets from the client.
 
-Unless expressly permitted below, encrypted packets MUST NOT be used prior to
-completing the TLS handshake, in particular the receipt of a valid Finished
-message and any authentication of the peer.  If packets are processed prior to
-completion of the handshake, an attacker might use the willingness of an
-implementation to use these packets to mount attacks.
+Packets protected with 1-RTT keys MAY be stored and later decrypted and used
+once the handshake is complete.  A server MUST NOT use 1-RTT protected packets
+before verifying either the client Finished message or - in the case that the
+server has chosen to use a pre-shared key - the pre-shared key binder (see
+Section 4.2.8 of {{!I-D.ietf-tls-tls13}}).  Verifying these values provides the
+server with an assurance that the ClientHello has not been modified.
 
-TLS handshake messages are covered by record protection during the handshake,
-once key agreement has completed.  This means that protected messages need to be
-decrypted to determine if they are TLS handshake messages or not.  Similarly,
-`ACK` and `WINDOW_UPDATE` frames might be needed to successfully complete the
-TLS handshake.
+A server could receive packets protected with 0-RTT keys prior to receiving a
+TLS ClientHello.  The server MAY retain these packets for later decryption in
+anticipation of receiving a ClientHello.
 
-Any timestamps present in `ACK` frames MUST be ignored rather than causing a
-fatal error.  Timestamps on protected frames MAY be saved and used once the TLS
-handshake completes successfully.
-
-An endpoint MAY save the last protected `WINDOW_UPDATE` frame it receives for
-each stream and apply the values once the TLS handshake completes.  Failing
-to do this might result in temporary stalling of affected streams.
+Receiving and verifying the TLS Finished message is critical in ensuring the
+integrity of the TLS handshake.  A server MUST NOT use protected packets from
+the client prior to verifying the client Finished message if its response
+depends on client authentication.
 
 
 # QUIC-Specific Additions to the TLS Handshake
