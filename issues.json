@@ -1,35 +1,48 @@
 [
   {
-    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/261",
+    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/263",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
-    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/261/labels{/name}",
-    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/261/comments",
-    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/261/events",
-    "html_url": "https://github.com/quicwg/base-drafts/pull/261",
-    "id": 205105358,
-    "number": 261,
-    "title": "Save issues on gh-issue branch",
+    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/263/labels{/name}",
+    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/263/comments",
+    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/263/events",
+    "html_url": "https://github.com/quicwg/base-drafts/issues/263",
+    "id": 205406066,
+    "number": 263,
+    "title": "Concurrent Streams",
     "user": {
-      "login": "martinthomson",
-      "id": 67641,
-      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
+      "login": "marten-seemann",
+      "id": 1478487,
+      "avatar_url": "https://avatars.githubusercontent.com/u/1478487?v=3",
       "gravatar_id": "",
-      "url": "https://api.github.com/users/martinthomson",
-      "html_url": "https://github.com/martinthomson",
-      "followers_url": "https://api.github.com/users/martinthomson/followers",
-      "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
-      "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
-      "organizations_url": "https://api.github.com/users/martinthomson/orgs",
-      "repos_url": "https://api.github.com/users/martinthomson/repos",
-      "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/martinthomson/received_events",
+      "url": "https://api.github.com/users/marten-seemann",
+      "html_url": "https://github.com/marten-seemann",
+      "followers_url": "https://api.github.com/users/marten-seemann/followers",
+      "following_url": "https://api.github.com/users/marten-seemann/following{/other_user}",
+      "gists_url": "https://api.github.com/users/marten-seemann/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/marten-seemann/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/marten-seemann/subscriptions",
+      "organizations_url": "https://api.github.com/users/marten-seemann/orgs",
+      "repos_url": "https://api.github.com/users/marten-seemann/repos",
+      "events_url": "https://api.github.com/users/marten-seemann/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/marten-seemann/received_events",
       "type": "User",
       "site_admin": false
     },
     "labels": [
-
+      {
+        "id": 481871361,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/design",
+        "name": "design",
+        "color": "1d76db",
+        "default": false
+      },
+      {
+        "id": 481871399,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
+        "name": "transport",
+        "color": "fbca04",
+        "default": false
+      }
     ],
     "state": "open",
     "locked": false,
@@ -38,28 +51,22 @@
 
     ],
     "milestone": null,
-    "comments": 0,
-    "created_at": "2017-02-03T09:12:20Z",
-    "updated_at": "2017-02-03T09:12:20Z",
+    "comments": 2,
+    "created_at": "2017-02-05T06:43:38Z",
+    "updated_at": "2017-02-06T09:23:33Z",
     "closed_at": null,
-    "pull_request": {
-      "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/261",
-      "html_url": "https://github.com/quicwg/base-drafts/pull/261",
-      "diff_url": "https://github.com/quicwg/base-drafts/pull/261.diff",
-      "patch_url": "https://github.com/quicwg/base-drafts/pull/261.patch"
-    },
-    "body": "@mnot, this should do the trick.  See https://circleci.com/gh/quicwg/base-drafts/597 and the newly created [gh-issues branch](https://github.com/quicwg/base-drafts/tree/gh-issues) to see what this does.  I haven't written any HTML yet, but they are at least being saved."
+    "body": "This is an issue we briefly discussed in a coffee break in Tokyo, that nobody has written up so far.\r\n\r\nWe currently don't have a definition of the number of concurrent streams that both peers agree on at every given moment. Chrome and quic-go solve this problem by allowing a higher number of open streams (10% or 10 streams more, whichever is higher, than the advertised limit). This seems to work fine for HTTP, but will probably break down when using many short-lived streams.\r\n\r\n### Problem analysis\r\n\r\nThe main problem here is that it is very difficult for the sender to determine if the receiver considers a stream closed at any given moment. To do so, it would have to keep track of all packets containing stream data for that stream. Only when all of those packets have been ACKed (or retransmissions of those packets, if any packets were lost), it knows that the stream changed its state on the receiver's side.\r\n\r\nI think there's a more fundamental problem hidden here: Receiving a FIN should not cause a state transition in the first place. The concurrent stream limit is supposed to protect a receiver from allocating to many resources. Therefore, a stream should only be considered closed once the application finished reading from that stream (which, if it is reading the whole stream data, is only possible after receiving the FIN, but might be an arbitrary amount of time later, if the application is reading slowly).\r\n\r\n### Possible solution\r\n\r\nThere needs to be a way for the receiver to tell the sender that it considers a stream closed. We could introduce a CLOSED_STREAM frame type for that.\r\nA peer would send a CLOSED_STREAM frame only after it closed the stream locally (i.e. only from the *half closed (locally)* state) and after it finished reading from the stream. \r\nA peer receiving a CLOSED_STREAM can immediately remove the corresponding stream from the list of open streams.\r\n\r\n\r\nI can work out the details and provide a PR for this, but I'd like to discuss the proposal here first. It might make sense to finish the changes regarding the resetting of streams (related issues: #165 and #171), since this will already significantly change the stream state diagram."
   },
   {
-    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/260",
+    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/262",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
-    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/260/labels{/name}",
-    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/260/comments",
-    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/260/events",
-    "html_url": "https://github.com/quicwg/base-drafts/pull/260",
-    "id": 205063269,
-    "number": 260,
-    "title": "Avoid HOLB induced by a dependency on client Finished",
+    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/262/labels{/name}",
+    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/262/comments",
+    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/262/events",
+    "html_url": "https://github.com/quicwg/base-drafts/issues/262",
+    "id": 205336061,
+    "number": 262,
+    "title": "Don't encrypt client handshake with 1-RTT keys",
     "user": {
       "login": "martinthomson",
       "id": 67641,
@@ -86,6 +93,13 @@
         "name": "tls",
         "color": "fbca04",
         "default": false
+      },
+      {
+        "id": 481871399,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
+        "name": "transport",
+        "color": "fbca04",
+        "default": false
       }
     ],
     "state": "open",
@@ -96,103 +110,10 @@
     ],
     "milestone": null,
     "comments": 0,
-    "created_at": "2017-02-03T03:27:41Z",
-    "updated_at": "2017-02-03T03:27:41Z",
+    "created_at": "2017-02-04T09:32:15Z",
+    "updated_at": "2017-02-04T09:32:15Z",
     "closed_at": null,
-    "pull_request": {
-      "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/260",
-      "html_url": "https://github.com/quicwg/base-drafts/pull/260",
-      "diff_url": "https://github.com/quicwg/base-drafts/pull/260.diff",
-      "patch_url": "https://github.com/quicwg/base-drafts/pull/260.patch"
-    },
-    "body": "...by sending the Finished in every packet."
-  },
-  {
-    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/259",
-    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
-    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/259/labels{/name}",
-    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/259/comments",
-    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/259/events",
-    "html_url": "https://github.com/quicwg/base-drafts/issues/259",
-    "id": 205056925,
-    "number": 259,
-    "title": "Automatically fetch and check in issues.json",
-    "user": {
-      "login": "mnot",
-      "id": 74384,
-      "avatar_url": "https://avatars.githubusercontent.com/u/74384?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/mnot",
-      "html_url": "https://github.com/mnot",
-      "followers_url": "https://api.github.com/users/mnot/followers",
-      "following_url": "https://api.github.com/users/mnot/following{/other_user}",
-      "gists_url": "https://api.github.com/users/mnot/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/mnot/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/mnot/subscriptions",
-      "organizations_url": "https://api.github.com/users/mnot/orgs",
-      "repos_url": "https://api.github.com/users/mnot/repos",
-      "events_url": "https://api.github.com/users/mnot/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/mnot/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "labels": [
-      {
-        "id": 481871311,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/editorial",
-        "name": "editorial",
-        "color": "0e8a16",
-        "default": false
-      }
-    ],
-    "state": "open",
-    "locked": false,
-    "assignee": {
-      "login": "martinthomson",
-      "id": 67641,
-      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/martinthomson",
-      "html_url": "https://github.com/martinthomson",
-      "followers_url": "https://api.github.com/users/martinthomson/followers",
-      "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
-      "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
-      "organizations_url": "https://api.github.com/users/martinthomson/orgs",
-      "repos_url": "https://api.github.com/users/martinthomson/repos",
-      "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/martinthomson/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "assignees": [
-      {
-        "login": "martinthomson",
-        "id": 67641,
-        "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
-        "gravatar_id": "",
-        "url": "https://api.github.com/users/martinthomson",
-        "html_url": "https://github.com/martinthomson",
-        "followers_url": "https://api.github.com/users/martinthomson/followers",
-        "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
-        "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
-        "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
-        "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
-        "organizations_url": "https://api.github.com/users/martinthomson/orgs",
-        "repos_url": "https://api.github.com/users/martinthomson/repos",
-        "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
-        "received_events_url": "https://api.github.com/users/martinthomson/received_events",
-        "type": "User",
-        "site_admin": false
-      }
-    ],
-    "milestone": null,
-    "comments": 0,
-    "created_at": "2017-02-03T02:33:56Z",
-    "updated_at": "2017-02-03T02:33:56Z",
-    "closed_at": null,
-    "body": ""
+    "body": "As @ekr observes, this violates the rules we've agreed to for TLS, the same applies here.\r\n\r\n(This was a long and difficult conversation in TLS, we should probably just work out how to make the change.)"
   },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/258",
@@ -1883,8 +1804,7 @@
     "updated_at": "2017-01-25T02:22:52Z",
     "closed_at": null,
     "body": "S 8.3 says:\r\n```\r\nA source address token is opaque and consumed only by the server.  Therefore it\r\ncan be included in the TLS 1.3 pre-shared key identifier for 0-RTT handshakes.\r\nServers that use 0-RTT are advised to provide new pre-shared key identifiers\r\nafter every handshake to avoid linkability of connections by passive observers.\r\nClients MUST use a new pre-shared key identifier for every connection that they\r\ninitiate; if no pre-shared key identifier is available, then resumption is not\r\npossible.\r\n```\r\n\r\nThis seem like an unnecessary requirement. Reusing the same PSK ID seems fine here."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/221",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -1942,7 +1862,8 @@
     "updated_at": "2017-01-25T04:22:50Z",
     "closed_at": null,
     "body": "The quic-tls draft says:\r\n\r\n```\r\n  What about 0-RTT data?  Should we allow acknowledgment of 0-RTT with\r\n  unprotected frames?  If we don't, then 0-RTT data will be unacknowledged until\r\n  the handshake completes.  This isn't a problem if the handshake completes\r\n  without loss, but it could mean that 0-RTT stalls when a handshake packet\r\n  disappears for any reason.\r\n```\r\n\r\nI assume what you're talking about here is the case where the server's first flight of packets are lost, because the server can only find itself in one of two positions because the CH must fit in a single packet.\r\n\r\n- It has no ClientHello, in which case it must buffer any packets\r\n- It has a ClientHello, in which case it can can complete the handshake by sending its first flight.\r\n\r\nMy sense is that having stalling of 0-RTT in the case where parts of the server's first flight are lost is not that big a deal. If you really don't want stalling, you should retransmit faster :)\r\n\r\n\r\n\r\n"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/219",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3749,8 +3670,7 @@
     "updated_at": "2017-01-19T23:14:00Z",
     "closed_at": null,
     "body": "> A stream that is \"half-closed (remote)\" is no longer being used by\r\n>    the peer to send any data.  In this state, a sender is no longer\r\n>    obligated to maintain a receiver stream-level flow-control window.\r\n> \r\n>    If an endpoint receives any STREAM frames for a stream that is in\r\n>    this state, it MUST close the connection with a\r\n>    QUIC_STREAM_DATA_AFTER_TERMINATION error (Section 11).\r\n\r\nIf a packet sent before the packet with FIN bit set gets lost and is retransmitted is going to cause close of the connection.\r\nThe text needs to change to say if a frame with offset  larger than the offset + size of the frame with FIN bit set is received. (or a better wording)\r\n\r\n(An editorial remark: In the \"Lifecycle of a stream\" diagram going from \"half-closed(remote)\" to \"closed\" should be cause by \"send FIN\" not \"recv FIN\" and from \"half-closed(local)\" to \"closed\" should be cause by \"recv FIN\")\r\n"
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/178",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3808,7 +3728,8 @@
     "updated_at": "2017-01-19T23:06:42Z",
     "closed_at": null,
     "body": "In Section 7.3 (STOP_WAITING Frame), Least Unacked Delta is calculated using the packet ID of the packet carrying the STOP_WAITING frame. This is reasonable. \r\n\r\nIn the ACK Frame section:\r\n\r\n> An endpoint SHOULD use the \"Largest Acked\" packet number it received to calculate the \"Least Unacked Delta\" value in any STOP_WAITING frame it might send.\r\n\r\nMaybe I understood it wrong but it suggest to calculate Least Unacked Delta using \"Largest Acked\".\r\nThis should be written in a different way if it meant that the information from an ack (not only \"Largest Acked\" but also unacked gaps ) is used to decide to send a STOP_WAITING frame."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/177",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5867,8 +5788,7 @@
     "updated_at": "2017-01-26T04:51:36Z",
     "closed_at": null,
     "body": "When I wrote the section on what can change in different versions, I originally just left an unlabelled slot for the connection ID.  But @marten-seemann observed that the server is required to echo the connection ID in a version negotiation packet.\r\n\r\nI don't think that we need the server to echo the connection ID in this case.  That would allow us to restore the 8 octets to a version-specific field."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/128",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5940,7 +5860,8 @@
     "updated_at": "2017-01-19T22:24:07Z",
     "closed_at": null,
     "body": "The transport protocol has frames, and STREAM frames can contain frames for the HTTP mapping.  It's confusing.  We should work out how to deal with that."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/127",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7852,8 +7773,7 @@
     "updated_at": "2017-01-24T00:47:14Z",
     "closed_at": null,
     "body": "Does this need to be MUST use?"
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/64",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7954,7 +7874,8 @@
     "updated_at": "2017-01-26T02:19:00Z",
     "closed_at": null,
     "body": "Quoting Martin Duke:\r\n> RFC-Compliant ICMP PMTU messages include the\r\n> oversize packet's IP header and the first 8 bytes of the transport. This\r\n> allows  TCP to demultiplex the ICMP to the relevant connection/path, and\r\n> check that the echoed sequence number corresponds to an in-flight segment,\r\n> and that the segment that would have violated the advertised MTU. As TCP\r\n> windows increase, it's true that this may be less effective.\r\n>\r\n> For QUIC, these messages will contain only the UDP header. I believe this is\r\n> sufficient to demux to the right connection (QUIC allows the same 4-tuple\r\n> for multiple connection IDs, but it would be fine to apply it to all such\r\n> connections), but I see no clear mechanism to prevent a blind attacker that\r\n> guesses the 4-tuple from forcing a QUIC connection to revert to the min path\r\n> MTU. Some possibilities:\r\n>     (a) Require routers to send more bytes. This is probably not deployable,\r\n> and in any case because packet numbers always start at zero this doesn't add\r\n> much security.\r\n>     (b) Store UDP or IP data. We could require QUIC to store the UDP\r\n> checksum or IP ID in its send queue, thus allowing it to associate the\r\n> returned headers with a packet in its queue. This is ugly from a layering\r\n> perspective and may not be plausible with hardware offload of checksums,\r\n> various middleboxes, etc.\r\n>     (c) Isolated DF packets. QUIC could pick a long time interval (10\r\n> seconds?) in which is sets DF on a single MTU-sized packet (which may have\r\n> to be padded). QUIC would only accept ICMP messages within an RTT or so of\r\n> having sent one of these MTU probe packets, or until it's acked. Thus the\r\n> probabability an off-path attacker could time it correctly is (RTT / 10\r\n> sec). If there's an extended burst of ICMP to overcome this, that's probably\r\n> an attack indication to handle either in IP, the firewall, or at worst in\r\n> QUIC.  I have some language to codify this, and if we agree this is the\r\n> right approach I can share it."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/63",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
