@@ -213,13 +213,16 @@ or negotiated in order to better suit a variety of environments.
   a packet lost.  In fraction of an RTT.
 
 * kMinTLPTimeout: 10ms
- Minimum time in the future a tail loss probe alarm may be set for.
+  Minimum time in the future a tail loss probe alarm may be set for.
 
 * kMinRTOTimeout: 200ms
   Minimum time in the future an RTO alarm may be set for.
 
 * kDelayedAckTimeout: 25ms
   The length of the peer's delayed ack timer.
+
+* kDefaultInitialRtt: 200ms
+  The default RTT used before an RTT sample is taken.
 
 ## Variables of interest
 
@@ -245,6 +248,8 @@ mechanisms described in this section.
 
 * rttvar: The RTT variance, computed as described in {{?RFC6298}}
 
+* initial_rtt: The initial RTT used before any RTT measurements have been made.
+
 * reordering_threshold: The largest delta between the largest acked
   retransmittable packet and a packet containing retransmittable frames before
   it's declared lost.
@@ -268,47 +273,7 @@ follows:
    use_time_loss = false;
    smoothed_rtt = 0;
    rttvar = 0;
-~~~
-
-## Setting the Loss Detection Alarm
-
-QUIC loss detection uses a single alarm for all timer-based loss detection.  The
-duration of the alarm is based on the alarm's mode, which is set in the packet
-and timer events further below.  The function SetLossDetectionAlarm defined
-below shows how the single timer is set based on the alarm mode.
-
-Pseudocode for SetLossDetectionAlarm follows:
-
-~~~
- SetLossDetectionAlarm():
-    if (retransmittable packets are not outstanding):
-      loss_detection_alarm.cancel();
-      return;
-
-    if (handshake packets are outstanding):
-      // Handshake retransmission alarm.
-      alarm_duration = max(1.5 * smoothed_rtt, kMinTLPTimeout) << handshake_count;
-      handshake_count++;
-    else if (largest sent packet is acked):
-      // Early retransmit {{!RFC 5827}} with an alarm to reduce spurious retransmits.
-      alarm_duration = 0.25 x smoothed_rtt;
-    else if (tlp_count < kMaxTLPs):
-      // Tail Loss Probe alarm.
-      if (retransmittable_packets_outstanding = 1):
-        alarm_duration = max(1.5 x smoothed_rtt + kDelayedAckTimeout,
-                             2 x smoothed_rtt);
-      else:
-        alarm_duration = max (kMinTLPTimeout, 2 x smoothed_rtt);
-      tlp_count++;
-    else:
-      // RTO alarm.
-      if (rto_count = 0):
-        alarm_duration = max(kMinRTOTimeout, smoothed_rtt + 4 x rttvar);
-      else:
-        alarm_duration = loss_detection_alarm.get_delay() << 1;
-      rto_count++;
-
-    loss_detection_alarm.set(now + alarm_duration);
+   initial_rtt = kDefaultInitialRtt;
 ~~~
 
 ## On Sending a Packet
@@ -392,6 +357,72 @@ Pseudocode for OnPacketAcked follows:
      sent_packets.remove(acked_packet);
 ~~~
 
+## Setting the Loss Detection Alarm
+
+QUIC loss detection uses a single alarm for all timer-based loss detection.  The
+duration of the alarm is based on the alarm's mode, which is set in the packet
+and timer events further below.  The function SetLossDetectionAlarm defined
+below shows how the single timer is set based on the alarm mode.
+
+### Handshake Packets
+
+The initial client hello has no prior RTT sample.  A client SHOULD remember
+the previous RTT it observed when resumption is attempted and use that for an
+initial RTT value.  If no previous RTT is available, the initial RTT defaults
+to 200ms.  Once an RTT measurement is taken, it MUST replace initial_rtt.
+
+The client hello is retransmitted via a timer, similar to a tail loss probe, but
+it is expected client hellos will be acked immediately or a handshake packet will
+be sent immediately, so delayed acks do not need to be compensated for.  As such,
+it is always retransmitted at 2x the initial_rtt or smoothed_rtt.
+
+Server handshake packets may be sent based on a similar timer, or triggered by
+receipt of another client hello.  
+
+Version negotiation packets are always stateless, and MUST be sent once per
+client hello, and may be sent in response to 0RTT packets.
+
+(Add sections for early retransmit and TLP/RTO here)
+
+### Psuedocode
+
+Pseudocode for SetLossDetectionAlarm follows:
+
+~~~
+ SetLossDetectionAlarm():
+    if (retransmittable packets are not outstanding):
+      loss_detection_alarm.cancel();
+      return;
+
+    if (handshake packets are outstanding):
+      // Handshake retransmission alarm.
+      if (smoothed_rtt == 0):
+        alarm_duration = max(2 * initial_rtt, kMinTLPTimeout) << handshake_count;
+      else:
+        alarm_duration = max(2 * smoothed_rtt, kMinTLPTimeout) << handshake_count;
+      handshake_count++;
+    else if (largest sent packet is acked):
+      // Early retransmit {{!RFC 5827}} with an alarm to reduce spurious retransmits.
+      alarm_duration = 0.25 x smoothed_rtt;
+    else if (tlp_count < kMaxTLPs):
+      // Tail Loss Probe alarm.
+      if (retransmittable_packets_outstanding = 1):
+        alarm_duration = max(1.5 x smoothed_rtt + kDelayedAckTimeout,
+                             2 x smoothed_rtt);
+      else:
+        alarm_duration = max (kMinTLPTimeout, 2 x smoothed_rtt);
+      tlp_count++;
+    else:
+      // RTO alarm.
+      if (rto_count = 0):
+        alarm_duration = max(kMinRTOTimeout, smoothed_rtt + 4 x rttvar);
+      else:
+        alarm_duration = loss_detection_alarm.get_delay() << 1;
+      rto_count++;
+
+    loss_detection_alarm.set(now + alarm_duration);
+~~~
+
 ## On Alarm Firing
 
 QUIC uses one loss recovery alarm, which when set, can be in one of several
@@ -414,6 +445,15 @@ acknowledged.  DetectLostPackets is called every time there is a new largest
 packet or if the loss detection alarm fires the previous largest acked packet is
 supplied.
 
+### Handshake Packets
+
+The receiver MUST not trust an unencryped ack for encrypted packets.  The receiver
+MUST trust encrypted acks for unencrypted packets, however.  Aside from this,
+loss detection for handshake packets when an ack is processed is identical to
+other packets.
+
+### Psuedocode
+
 DetectLostPackets takes one parameter, acked_packet, which is the packet number
 of the largest acked packet, and returns a list of packet numbers detected as
 lost.
@@ -431,7 +471,7 @@ Pseudocode for DetectLostPackets follows:
                 acked_packet.packet_number - reordering_threshold)
          lost_packets.insert(unacked_packet.packet_number);
      return lost_packets;
-~~~
+~~~ 
 
 # Congestion Control
 
