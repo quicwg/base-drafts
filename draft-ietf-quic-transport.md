@@ -225,8 +225,7 @@ many streams atop TCP's single-bytestream abstraction, a loss of a TCP segment
 results in blocking of all subsequent segments until a retransmission arrives,
 irrespective of the application streams that are encapsulated in subsequent
 segments.  QUIC ensures that lost packets carrying data for an individual stream
-only impact that specific stream.  Data received on other streams can continue
-to be reassembled and delivered to the application.
+only impact that specific stream.
 
 ## Rich Signaling for Congestion Control and Loss Recovery
 
@@ -1401,8 +1400,8 @@ abstraction.  Streams can be created either by the client or the server, can
 concurrently send data interleaved with other streams, and can be cancelled.
 QUIC's stream lifetime is modeled closely after HTTP/2's {{?RFC7540}}.  Streams
 are independent of each other in delivery order.  That is, data that is received
-on a stream is delivered in order within that stream, but there is no particular
-delivery order across streams.  Transmit ordering among streams is left to the
+on a stream is ordered within that stream via the frame offset, but there is no particular
+order across streams.  Transmit ordering among streams is left to the
 implementation.  QUIC streams are considered lightweight in that the creation
 and destruction of streams are expected to have minimal bandwidth and
 computational cost.  A single STREAM frame may create, carry data for, and
@@ -1651,8 +1650,8 @@ sender or during delivery to the application at the receiver.
 When new data is to be sent on a stream, a sender MUST set the encapsulating
 STREAM frame's offset field to the stream offset of the first byte of this new
 data.  The first byte of data that is sent on a stream has the stream offset 0.
-A receiver MUST ensure that received stream data is delivered to the application
-as an ordered byte-stream.  Data received out of order MUST be buffered for
+A receiver MUST ensure that received stream data creates an ordered
+byte-stream.  Data received out of order may need to be buffered for
 later delivery, as long as it is not in violation of the receiver's flow control
 limits.
 
