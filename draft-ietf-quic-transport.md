@@ -729,7 +729,6 @@ language from Section 3 of {{!I-D.ietf-tls-tls13}}.
       MSPC(2),
       ICSL(3),
       TCID(4),
-      COPT(5),
       (65535)
    } TransportParameterId;
 
@@ -799,13 +798,8 @@ TCID (0x0004):
   the 5-tuple is sufficient to identify a connection.  This parameter is zero
   length.
 
-COPT (0x0005):
+An endpoint MUST ignore transport parameters that it does not understand.
 
-: Connection options are a repeated parameter.  The parameter contains any
-  connection options being requested by the client or server.  These are
-  typically used for experimentation and will evolve over time.  Example use
-  cases include changing congestion control algorithms and parameters such as
-  initial window.  (TODO: List connection options.)
 
 ### Values of Transport Parameters for 0-RTT
 
