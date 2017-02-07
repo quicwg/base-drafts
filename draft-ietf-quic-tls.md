@@ -370,6 +370,9 @@ handshake messages on stream 1.  There are two basic functions on this
 interface: one where QUIC requests handshake messages and one where QUIC
 provides handshake packets.
 
+Before starting the handshake QUIC provides TLS with the transport parameters
+(see {{quic_parameters}}) that it wishes to carry.
+
 A QUIC client starts TLS by requesting TLS handshake octets from
 TLS.  The client acquires handshake octets before sending its first packet.
 
@@ -381,12 +384,14 @@ octets are requested from TLS.  TLS might not provide any octets if the
 handshake messages it has received are incomplete or it has no data to send.
 
 Once the TLS handshake is complete, this is indicated to QUIC along with any
-final handshake octets that TLS needs to send.  Once the handshake is complete,
-TLS becomes passive.  TLS can still receive data from its peer and respond in
-kind that data, but it will not need to send more data unless specifically
-requested - either by an application or QUIC.  One reason to send data is that
-the server might wish to provide additional or updated session tickets to a
-client.
+final handshake octets that TLS needs to send.  TLS also provides QUIC with the
+transport parameters that the peer advertised during the handshake.
+
+Once the handshake is complete, TLS becomes passive.  TLS can still receive data
+from its peer and respond in kind, but it will not need to send more data unless
+specifically requested - either by an application or QUIC.  One reason to send
+data is that the server might wish to provide additional or updated session
+tickets to a client.
 
 When the handshake is complete, QUIC only needs to provide TLS with any data
 that arrives on stream 1.  In the same way that is done during the handshake,
@@ -973,11 +978,13 @@ prior to handshake completion:
 Different strategies are appropriate for different types of data.  This document
 proposes that all strategies are possible depending on the type of message.
 
-* Transport parameters and options are made usable and authenticated as part of
-  the TLS handshake (see {{quic_parameters}}).
+* Transport parameters are made usable and authenticated as part of the TLS
+  handshake (see {{quic_parameters}}).
+
 * Most unprotected messages are treated as fatal errors when received except for
   the small number necessary to permit the handshake to complete (see
   {{pre-hs-unprotected}}).
+
 * Protected packets can either be discarded or saved and later used (see
   {{pre-hs-protected}}).
 
