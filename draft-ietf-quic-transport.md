@@ -722,28 +722,57 @@ QUIC encodes the transport parameters and options as tag-value pairs, all as
 
 ### Proof of Source Address Ownership
 
-Transport protocols commonly use a roundtrip time to verify a client's address
-ownership for protection from malicious clients that spoof their source address.
-QUIC uses a cookie, called the Source Address Token (STK), to mostly eliminate
-this roundtrip of delay.  This technique is similar to TCP Fast Open's use of a
-cookie to avoid a roundtrip of delay in TCP connection establishment.
+Transport protocols commonly spend a round trip checking that a client owns the
+transport address (IP and port) that it claims.  Verifying that a client can
+receive packets sent to its claimed transport address protects against spoofing
+of this information by malicious clients.
 
-On a new connection, a QUIC server sends an STK, which is opaque to and stored
-by the client.  On a subsequent connection, the client echoes it in the
-transport handshake as proof of IP ownership.
+This technique is used primarily to avoid QUIC from being used for traffic
+amplification attack.  In such an attack, a packet is sent to a server with
+spoofed source address information that identifies a victim.  If a server
+generates more or larger packets in response to that packet, the attacker can
+use the server to send more data toward the victim than it would be able to send
+on its own.
 
-A QUIC server also uses the STK to store server-designated connection IDs for
-Stateless Rejects, to verify that an incoming connection contains the correct
-connection ID.
+Several methods are used in QUIC to mitigate this attack.  Firstly, the initial
+handshake packet from a client is padded to a moderately large size (TBD:
+describe/reference how this size is selected).  This allows a server to send a
+similar amount of data without validating ownership of an address (TBD: provide
+limits on what amount of amplification is enough).
 
-A QUIC server MAY additionally store other data in a the STK, such as measured
-bandwidth and measured minimum RTT to the client that may help the server better
-bootstrap a subsequent connection from the same client.  A server MAY send an
-updated STK message mid-connection to update server state that is stored at the
-client in the STK.
+A server eventually confirms that a client has received its messages when the
+cryptographic handshake successfully completes.  This might be either because
+the server wishes to avoid the computational cost of completing the handshake,
+or it might be that the size of the packets that are sent during the handshake
+is too large.  This is especially important for 0-RTT, where the server might
+wish to provide application data traffic - such as a response to a request - in
+response to the data carried in the early data from the client.
 
-(TODO: Describe server and client actions on STK, encoding, recommendations for
-what to put in an STK.  Describe SCUP messages.)
+To send additional data prior to completing the cryptographic handshake, the
+server then needs to validate that the client owns the address that it claims.
+
+Two tools are provided by TLS to enable validation of client source addresses:
+the cookie in the HelloRetryRequest message, and the ticket in the
+NewSessionTicket message.
+
+The cookie extension in the TLS HelloRetryRequest message allows a server to
+perform source address validation during the handshake.  As long as the cookie
+cannot be successfully guessed by a client, the server can be assured that the
+client received the HelloRetryRequest.
+
+A server can use the HelloRetryRequest cookie in a stateless fashion by
+encrypting the state it needs to verify ownership of the client address and
+continue the handshake into the cookie.
+
+The ticket in the TLS NewSessionTicket message allows a server to provide a
+client with a similar sort of token.  When a client resumes a TLS connection -
+whether or not 0-RTT is attempted - it includes the ticket in the handshake
+message.  As with the HelloRetryRequest cookie, the server can include the state
+in the ticket it needs to validate that the client owns the address.
+
+A server can send a NewSessionTicket message at any time.  This allows it to
+update the state that is included in the ticket.  This might be done to refresh
+the ticket, or in response to changes in the state of a connection.
 
 ### Crypto Handshake Protocol Features
 

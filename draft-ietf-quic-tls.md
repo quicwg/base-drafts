@@ -258,7 +258,7 @@ document:
    an additional round trip prior to the basic exchange.  This is needed if the
    server wishes to request a different key exchange key from the client.
    HelloRetryRequest is also used to verify that the client is correctly able to
-   receive packets on the address it claims to have (see {{source-address}}).
+   receive packets on the address it claims to have (see {{QUIC-TRANSPORT}}).
 
  * A pre-shared key mode can be used for subsequent handshakes to avoid public
    key operations.  This is the basis for 0-RTT data, even if the remainder of
@@ -1165,27 +1165,6 @@ transport-related parameters.  This provides integrity protection for these
 values.  Including these in the TLS handshake also make the values that a client
 sets available to a server one-round trip earlier than parameters that are
 carried in QUIC packets.  This document does not define that extension.
-
-
-## Source Address Validation {#source-address}
-
-QUIC implementations describe a source address token.  This is an opaque blob
-that a server might provide to clients when they first use a given source
-address.  The client returns this token in subsequent messages as a return
-routeability check.  That is, the client returns this token to prove that it is
-able to receive packets at the source address that it claims.  This prevents the
-server from being used in packet reflection attacks (see {{reflection}}).
-
-A source address token is opaque and consumed only by the server.  Therefore it
-can be included in the TLS 1.3 pre-shared key identifier for 0-RTT handshakes.
-Servers that use 0-RTT are advised to provide new pre-shared key identifiers
-after every handshake to avoid linkability of connections by passive observers.
-Clients MUST use a new pre-shared key identifier for every connection that they
-initiate; if no pre-shared key identifier is available, then resumption is not
-possible.
-
-A server that is under load might include a source address token in the cookie
-extension of a HelloRetryRequest.
 
 
 ## Priming 0-RTT
