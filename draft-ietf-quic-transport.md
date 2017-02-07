@@ -757,10 +757,10 @@ The `extension_data` field of the quic_transport_parameters extension defined in
 therefore used to encode the transport parameters.
 
 QUIC encodes transport parameters into a sequence of octets, which are then
-included in the cryptographic handshake.  Once the handshake completes, TLS
-provides the QUIC with the transport parameters declared by the peer.  Each
-endpoint validates the value provided by its peer.  In particular, version
-negotiation MUST be validated (see {{version-validation}}) before the connection
+included in the cryptographic handshake.  Once the handshake completes, the
+transport parameters declared by the peer are available.  Each endpoint
+validates the value provided by its peer.  In particular, version negotiation
+MUST be validated (see {{version-validation}}) before the connection
 establishment is considered properly complete.
 
 Definitions for each of the defined transport parameters are included in
