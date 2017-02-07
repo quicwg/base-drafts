@@ -804,16 +804,20 @@ TCID (0x0004):
 : The truncated connection identifier parameter indicates that packets sent to
   the peer can omit the connection ID.  This can be used by an endpoint where
   the 5-tuple is sufficient to identify a connection.  This parameter is zero
-  length.
+  length.  Omitting the parameter indicates that the endpoint relies on the
+  connection ID being present in every packet.
 
 
 ### Values of Transport Parameters for 0-RTT
 
-Transport parameters from the server are remembered by the client for 0-RTT
-connections.  If values change as a result of completing the handshake, the
-client is expected to respect the new values.  This introduces some potential
-problems, particularly with respect to transport parameters that establish
-limits:
+Transport parameters from the server SHOULD be remembered by the client for use
+with 0-RTT data.  A client that doesn't remember values from a previous
+connection can instead assume the following values: SFCW (65535), CFCW (65535),
+MSPC (10), ICSL (600), TCID (absent).
+
+If assumed values change as a result of completing the handshake, the client is
+expected to respect the new values.  This introduces some potential problems,
+particularly with respect to transport parameters that establish limits:
 
 * A client might exceed a newly declared connection or stream flow control limit
   with 0-RTT data.  If this occurs, the client ceases transmission as though the
@@ -821,21 +825,29 @@ limits:
   increase to the affected flow control offsets is received, the client can
   recommence sending.
 
-* Similarly, a client might exceed the concurrent stream limit declared by the
-  server.  A client MUST reset any streams that exceed this connection.  A
-  server MAY reset these streams.
+* Similarly, a client might exceed the concurrent stream limit (MSPC) declared
+  by the server.  A client MUST reset any streams that exceed this limit.  A
+  server SHOULD reset any streams it cannot handle with a code that allows the
+  client to retry any application action bound to those streams.
 
-A client cannot use or rely upon any other transport parameter that was enabled
-in a previous connection.  This includes those defined in this document.  A
-client MUST assume that the transport parameter was absent, unless the
-definition of a transport parameter provides explicit rules for use of the
-option in 0-RTT.
+A server MAY close a connection if remembered or assumed 0-RTT transport
+parameters cannot be supported, using an error code that is appropriate to the
+specific condition.  For example, a QUIC_FLOW_CONTROL_SENT_TOO_MUCH_DATA might
+be used to indicate that exceeding flow control limits caused the error.  A
+client that has a connection closed due to an error condition SHOULD NOT attempt
+0-RTT when attempting to create a new connection.
 
 
 ### New Transport Parameters
 
 New transport parameters can be used to negotiate new protocol behavior.  An
-endpoint MUST ignore transport parameters that it does not support.
+endpoint MUST ignore transport parameters that it does not support.  Absence of
+a transport parameter therefore disables any optional protocol feature that is
+negotiated using the parameter.
+
+The definition of a transport parameter SHOULD include a default value that a
+client can use when establishing a new connection.  If no default is specified,
+the value can be assumed to be absent when attempting 0-RTT.
 
 New transport parameters can be registered according to the rules in
 {{iana-transport-parameters}}.
@@ -2316,6 +2328,12 @@ thanks to all.
 
 > **RFC Editor's Note:**  Please remove this section prior to publication of a
 > final version of this document.
+
+
+## Since draft-ietf-quic-transport-01:
+
+- Defined transport parameters
+
 
 ## Since draft-ietf-quic-transport-00:
 
