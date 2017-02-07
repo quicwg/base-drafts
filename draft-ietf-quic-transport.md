@@ -77,14 +77,6 @@ informative:
     seriesinfo:
       ACM SIGCOMM 2007
 
-  QUICCrypto:
-    title: "QUIC Crypto"
-    author:
-      - ins: A. Langley
-      - ins: W. Chang
-    date: 2016-05-26
-    target: "http://goo.gl/OuVSxa"
-
   EARLY-DESIGN:
     title: "QUIC: Multiplexed Transport Over UDP"
     author:
