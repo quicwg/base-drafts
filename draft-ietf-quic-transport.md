@@ -2240,12 +2240,37 @@ packets with ACK frames.
 
 # IANA Considerations
 
-This document has no IANA actions yet.
-
-
 ## QUIC Transport Parameter Registry {#iana-transport-parameters}
 
-TODO: establish a registry for transport parameter identifiers.  Steal from TLS.
+IANA \[SHALL add/has added] a registry for "QUIC Transport Parameters" under a
+"QUIC Protocol" heading.
+
+The "QUIC Transport Parameters" registry governs a 16-bit space.  This space is
+split into two spaces that are governed by different policies.  Values with the
+first byte in the range 0-254 (decimal) are assigned via the Specification
+Required policy {{!RFC5226}}.  Values with the first byte 255 (decimal) are
+reserved for Private Use {{!RFC5226}}.
+
+Registrations MUST include the following fields:
+
+Value:
+
+: The numeric value of the assignment (registrations will be between 0x0000 and
+  0xfeff).
+
+Parameter Name:
+
+: A short mnemonic for the parameter.
+
+Specification:
+
+: A reference to a publicly available specification for the value.
+
+
+The nominated expert(s) verify that a specification exists and is readily
+accessible.  The expert(s) are encouraged to be biased towards approving
+registrations unless they are abusive, frivolous, or actively harmful (not
+merely aesthetically displeasing, or architecturally dubious).
 
 
 --- back
