@@ -847,12 +847,12 @@ The transport parameters include three fields that encode version information.
 These retroactively authenticate the version negotiation (see
 {{version-negotiation}}) that is performed prior to the cryptographic handshake.
 
-Inclusion of these values in an extension provides integrity protection for
-these values.  As a result, modification of version negotiation packets by an
-attacker can be detected.
+The cryptographic handshake provides integrity protection for the negotiated
+version as part of the transport parameters (see {{transport-parameters}}).  As
+a result, modification of version negotiation packets by an attacker can be
+detected.
 
-The client includes two fields in the transport parameters that it includes in
-the TLS ClientHello:
+The client includes two fields in the transport parameters:
 
 * The negotiated_version is the version that was finally selected for use.  This
   MUST be identical to the value that is on the packet that carries the
@@ -865,19 +865,19 @@ the TLS ClientHello:
   {{version-negotiation-packet}}, this will be identical to the
   negotiated_version.
 
-A stateful server can remember how version negotiation was performed and
-validate the initial_version value.
+A server that processes all packets in a stateful fashion can remember how
+version negotiation was performed and validate the initial_version value.
 
-A server that does not maintain state for early packets uses a different
-process. If the initial and negotiated versions are the same, a stateless server
-can accept the value.
+A server that does not maintain state for every packet it receives (i.e., a
+stateless server) uses a different process. If the initial and negotiated
+versions are the same, a stateless server can accept the value.
 
 If the initial version is different from the negotiated_version, a stateless
-server MUST validate the value.  A server MUST check that it would have sent a
-version negotiation packet if it had received a packet with the indicated
-initial_version.  If a server would have accepted the version included in the
-initial_version and the value differs from the value of negotiated_version, the
-server MUST terminate the connection with a TBD error code.
+server MUST check that it would have sent a version negotiation packet if it had
+received a packet with the indicated initial_version.  If a server would have
+accepted the version included in the initial_version and the value differs from
+the value of negotiated_version, the server MUST terminate the connection with a
+QUIC_VERSION_NEGOTIATION_MISMATCH error.
 
 The server includes a list of versions that it would send in any version
 negotiation packet ({{version-negotiation-packet}}) in supported_versions.  This
@@ -886,9 +886,10 @@ value is set even if it did not send a version negotiation packet.
 The client can validate that the negotiated_version is included in the
 supported_versions list and - if version negotiation was performed - that it
 would have selected the negotiated version.  A client MUST terminate the
-connection with a TBD error code if the negotiated_version value is not included
-in the supported_versions list.  A client MUST terminate with a TBD error code
-if version negotiation occurred but it would have selected a different version
+connection with a QUIC_VERSION_NEGOTIATION_MISMATCH error code if the
+negotiated_version value is not included in the supported_versions list.  A
+client MUST terminate with a QUIC_VERSION_NEGOTIATION_MISMATCH error code if
+version negotiation occurred but it would have selected a different version
 based on the value of the supported_versions list.
 
 
