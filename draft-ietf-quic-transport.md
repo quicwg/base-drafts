@@ -776,8 +776,9 @@ CFCW (0x0001):
 : The connection level flow control parameter contains the initial connection
   flow control window encoded as an unsigned 32-bit integer.  The sender of this
   parameter sets the byte offset for connection level flow control to this
-  value.  This is equivalent to sending a WINDOW_UPDATE (TODO: section ref)
-  for stream 0 immediately after completing the handshake.
+  value.  This is equivalent to sending a WINDOW_UPDATE
+  ({{frame-window-update}}) for stream 0 immediately after completing the
+  handshake.
 
 MSPC (0x0002):
 
