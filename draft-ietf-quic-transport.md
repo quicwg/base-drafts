@@ -829,11 +829,11 @@ option in 0-RTT.
 
 An endpoint MUST ignore transport parameters that it does not support.
 
-The definition of new transport parameters can be used to negotiate new protocol
-behavior.  Endpoints that support features that deviate from this specification
-MUST assume that a peer will operate as described in this document unless it
-provides an explicit signal of support.  A new transport parameter could be used
-to provide this signal.
+New transport parameters can be used to negotiate new protocol behavior.
+Endpoints that support features that deviate from this specification MUST assume
+that a peer will operate as described in this document unless it provides an
+explicit signal of support.  A new transport parameter could be used to provide
+this signal.
 
 New transport parameters can be registered according to the rules in
 {{iana-transport-parameters}}.
