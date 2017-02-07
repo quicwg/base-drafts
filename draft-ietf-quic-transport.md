@@ -2248,8 +2248,8 @@ IANA \[SHALL add/has added] a registry for "QUIC Transport Parameters" under a
 
 The "QUIC Transport Parameters" registry governs a 16-bit space.  This space is
 split into two spaces that are governed by different policies.  Values with the
-first byte in the range 0-254 (decimal) are assigned via the Specification
-Required policy {{!RFC5226}}.  Values with the first byte 255 (decimal) are
+first byte in the range 0x00 to 0xfe (in hexadecimal) are assigned via the
+Specification Required policy {{!RFC5226}}.  Values with the first byte 0xff are
 reserved for Private Use {{!RFC5226}}.
 
 Registrations MUST include the following fields:
@@ -2272,6 +2272,18 @@ The nominated expert(s) verify that a specification exists and is readily
 accessible.  The expert(s) are encouraged to be biased towards approving
 registrations unless they are abusive, frivolous, or actively harmful (not
 merely aesthetically displeasing, or architecturally dubious).
+
+The initial contents of this registry are shown in
+{{iana-transport-parameters-initial}}.
+
+| Value | Parameter Name | Specification |
+|:-|:-|:-|
+| 0x0000 | SFCW | {{transport-parameter-definitions}} |
+| 0x0001 | CFCW | {{transport-parameter-definitions}} |
+| 0x0002 | MSPC | {{transport-parameter-definitions}} |
+| 0x0003 | ICSL | {{transport-parameter-definitions}} |
+| 0x0004 | TCID | {{transport-parameter-definitions}} |
+{: #iana-transport-parameters-initial title="Initial QUIC Transport Parameters Entries"}
 
 
 --- back
