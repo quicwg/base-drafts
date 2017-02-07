@@ -1192,9 +1192,9 @@ The fields in the WINDOW_UPDATE frame are as follows:
   to specify the connection-level flow control window.
 
 * Byte offset: A 64-bit unsigned integer indicating the absolute byte offset of
-  data which can be sent on the given stream.  In the case of connection level
-  flow control, the cumulative number of bytes which can be sent on all
-  currently open streams.
+  data which can be sent on the given stream.  In the case of connection-level
+  flow control, the cumulative offset which can be sent on all streams that
+  contribute to connection-level flow control.
 
 ## BLOCKED Frame {#frame-blocked}
 
@@ -1681,9 +1681,8 @@ Stream flow control, which prevents a single stream from consuming the entire
 receive buffer for a connection.
 
 A receiver sends WINDOW_UPDATE frames to the sender to advertise additional
-credit, for both connection and stream flow control.  A receiver advertises the
-maximum absolute byte offset in the stream or in the connection which the
-receiver is willing to receive.
+credit by sending the absolute byte offset in the stream or in the connection
+which it is willing to receive.
 
 The initial flow control credit is 65536 bytes for both the stream and
 connection flow controllers.
@@ -1692,8 +1691,12 @@ A receiver MAY advertise a larger offset at any point in the connection by
 sending a WINDOW_UPDATE frame.  A receiver MUST NOT renege on an advertisement;
 that is, once a receiver advertises an offset via a WINDOW_UPDATE frame, it MUST
 NOT subsequently advertise a smaller offset.  A sender may receive WINDOW_UPDATE
-frames out of order; a sender MUST therefore ignore any reductions in flow
-control credit.
+frames out of order; a sender MUST therefore ignore any WINDOW_UPDATE that
+does not move the window forward.
+
+A receiver MUST close the connection with a
+QUIC_FLOW_CONTROL_RECEIVED_TOO_MUCH_DATA error ({{error-handling}}) if the
+peer violates the advertised stream or connection flow control windows.
 
 A sender MUST send BLOCKED frames to indicate it has data to write but is
 blocked by lack of connection or stream flow control credit.  BLOCKED frames are
@@ -1701,16 +1704,20 @@ expected to be sent infrequently in common cases, but they are considered useful
 for debugging and monitoring purposes.
 
 A receiver advertises credit for a stream by sending a WINDOW_UPDATE frame with
-the StreamID set appropriately.  A receiver may simply use the current received
-offset to determine the flow control offset to be advertised.
+the StreamID set appropriately. A receiver may use the current offset of data
+consumed to determine the flow control offset to be advertised.
+A receiver MAY send copies of a WINDOW_UPDATE frame in multiple packets in order
+to make sure that the sender receives it before running out of flow control
+credit, even if one of the packets is lost.
 
 Connection flow control is a limit to the total bytes of stream data sent in
-STREAM frames.  A receiver advertises credit for a connection by sending a
-WINDOW_UPDATE frame with the StreamID set to zero (0x00).  A receiver may
-maintain a cumulative sum of bytes received on all streams to determine the
-value of the connection flow control offset to be advertised in WINDOW_UPDATE
-frames.  A sender may maintain a cumulative sum of stream data bytes sent to
-impose the connection flow control limit.
+STREAM frames on all streams contributing to connection flow control.  A
+receiver advertises credit for a connection by sending a WINDOW_UPDATE frame
+with the StreamID set to zero (0x00).  A receiver maintains a cumulative sum of
+bytes received on all streams contributing to connection-level flow control, to
+check for flow control violations. A receiver may maintain a cumulative sum of
+bytes consumed on all contributing streams to determine the connection-level
+flow control offset to be advertised.
 
 ## Edge Cases and Other Considerations
 
