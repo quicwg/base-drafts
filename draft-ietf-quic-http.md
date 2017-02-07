@@ -647,17 +647,23 @@ cache at least the following settings about servers:
   - SETTINGS_MAX_HEADER_LIST_SIZE
 
 Clients MUST comply with cached settings until the server's current settings are
-received.  If a client does not have cached values, it MAY assume the following
-values:
+received.  If a client does not have cached values, it SHOULD assume the
+following values:
 
-  - SETTINGS_HEADER_TABLE_SIZE:  4,096 octets
+  - SETTINGS_HEADER_TABLE_SIZE:  0 octets
   - SETTINGS_MAX_HEADER_LIST_SIZE:  16,384 octets
 
-Servers MAY continue processing data from clients which conform to these
-defaults during the initial flight, even if the client behavior exceeds its
-current configuration.  If the connection is closed because these or other
-constraints were violated during the 0-RTT flight, clients MAY retry using the
-settings sent by the server on the closed connection.
+Servers MAY continue processing data from clients which exceed its current
+configuration during the initial flight.  In this case, the client MUST apply the new
+settings immediately upon receipt.
+
+If the connection is closed because these or other constraints were violated
+during the 0-RTT flight (e.g. with HTTP_HPACK_DECOMPRESSION_FAILED), clients MAY
+establish a new connection and retry any 0-RTT requests using the settings sent
+by the server on the closed connection. (This assumes that only requests that
+are safe to retry are sent in 0-RTT.) If the connection was closed before the
+SETTINGS frame was received, clients SHOULD discard any cached values and use
+the defaults above on the next connection.
 
 ### PUSH_PROMISE {#frame-push-promise}
 
