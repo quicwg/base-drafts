@@ -682,15 +682,24 @@ be revalidated once the cryptographic handshake has completed (see
 ## Crypto and Transport Handshake {#handshake}
 
 QUIC relies on a combined crypto and transport handshake to minimize connection
-establishment latency.  QUIC allocates stream 1 for the cryptographic handshake,
-which uses TLS.
+establishment latency.  QUIC allocates stream 1 for the cryptographic handshake.
+This version of QUIC uses TLS.
 
 QUIC provides this stream with reliable, ordered delivery of data.  In return,
 TLS provides QUIC with:
 
-* authenticated key exchange, always for the server, optionally for the client
+* authenticated key exchange, where
 
-* keying material for use in packet packet protection
+** a server is always authenticated,
+
+** a client is optionally authenticated,
+
+** every connection produces distinct and unrelated keys,
+
+** keying material is usable for packet protection for both 0-RTT and 1-RTT
+   packets, and
+
+** 1-RTT keys have forward secrecy
 
 * authenticated values for the transport parameters of the peer (see
   {{transport-parameters}})
@@ -700,9 +709,9 @@ TLS provides QUIC with:
 * authenticated negotiation of an application protocol (TLS uses ALPN
   {{?RFC7301}} for this purpose)
 
-* for the server, assurance that the client can receive packets that are
-  addressed with the transport address that is claimed by the client (see
-  {{source-address-token}})
+* for the server, the ability to carry data that provides assurance that the
+  client can receive packets that are addressed with the transport address that
+  is claimed by the client (see {{source-address-token}})
 
 Details of how TLS is integrated with QUIC is provided in more detail in
 {{QUIC-TLS}}.
@@ -755,9 +764,15 @@ The `extension_data` field of the quic_transport_parameters extension defined in
 {{QUIC-TLS}} contains a TransportParameters value.  TLS encoding rules are
 therefore used to encode the transport parameters.
 
+QUIC encodes transport parameters into a sequence of octets, which are then
+included in the cryptographic handshake.  Once the handshake completes, TLS
+provides the QUIC with the transport parameters declared by the peer.  Each
+endpoint validates the value provided by its peer.  In particular, version
+negotiation MUST be validated (see {{version-validation}}) before the connection
+establishment is considered properly complete.
+
 Definitions for each of the defined transport parameters are included in
-{{transport-parameter-definitions}}.  Use of the version fields from transport
-parameters is described in {{version-validation}}.
+{{transport-parameter-definitions}}.
 
 
 ### Transport Parameter Definitions
@@ -905,18 +920,17 @@ use the server to send more data toward the victim than it would be able to send
 on its own.
 
 Several methods are used in QUIC to mitigate this attack.  Firstly, the initial
-handshake packet from a client is padded to a moderately large size (TBD:
-describe/reference how this size is selected).  This allows a server to send a
-similar amount of data without validating ownership of an address (TBD: provide
-limits on what amount of amplification is enough).
+handshake packet from a client is padded to at least 1280 octets.  This allows a
+server to send a similar amount of data without risking causing an amplication
+attack toward an unproven remote address.
 
 A server eventually confirms that a client has received its messages when the
-cryptographic handshake successfully completes.  This might be either because
-the server wishes to avoid the computational cost of completing the handshake,
-or it might be that the size of the packets that are sent during the handshake
-is too large.  This is especially important for 0-RTT, where the server might
-wish to provide application data traffic - such as a response to a request - in
-response to the data carried in the early data from the client.
+cryptographic handshake successfully completes.  This might be insufficient,
+either because the server wishes to avoid the computational cost of completing
+the handshake, or it might be that the size of the packets that are sent during
+the handshake is too large.  This is especially important for 0-RTT, where the
+server might wish to provide application data traffic - such as a response to a
+request - in response to the data carried in the early data from the client.
 
 To send additional data prior to completing the cryptographic handshake, the
 server then needs to validate that the client owns the address that it claims.
@@ -943,51 +957,6 @@ in the ticket it needs to validate that the client owns the address.
 A server can send a NewSessionTicket message at any time.  This allows it to
 update the state that is included in the ticket.  This might be done to refresh
 the ticket, or in response to changes in the state of a connection.
-
-
-### Crypto Handshake Protocol Features
-
-QUIC's current crypto handshake mechanism is documented in {{QUICCrypto}}.  QUIC
-does not restrict itself to using a specific handshake protocol, so the details
-of a specific handshake protocol are out of this document's scope.  If not
-explicitly specified in the application mapping, TLS is assumed to be the
-default crypto handshake protocol, as described in {{QUIC-TLS}}.  An application
-that maps to QUIC MAY however specify an alternative crypto handshake protocol
-to be used.
-
-The following list of requirements and recommendations documents properties of
-the current prototype handshake which should be provided by any handshake
-protocol.
-
-* The crypto handshake MUST ensure that the final negotiated key is distinct for
-  every connection between two endpoints.
-
-* Transport Negotiation: The crypto handshake MUST provide a mechanism for the
-  transport component to exchange transport parameters and Source Address
-  Tokens.  To avoid downgrade attacks, the transport parameters sent and
-  received MUST be verified before the handshake completes successfully.
-
-* Connection Establishment in 0-RTT: Since low-latency connection establishment
-  is a critical feature of QUIC, the QUIC handshake protocol SHOULD attempt to
-  achieve 0-RTT connection establishment latency for repeated connections
-  between the same endpoints.
-
-* Source Address Spoofing Defense: Since QUIC handles source address
-  verification, the crypto protocol SHOULD NOT impose a separate source address
-  verification mechanism.
-
-* Server Config Update: A QUIC server may refresh the source-address token (STK)
-  mid-connection, to update the information stored in the STK at the client and
-  to extend the period over which 0-RTT connections can be established by the
-  client.
-
-* Certificate Compression: Early QUIC experience demonstrated that compressing
-  certificates exchanged during a handshake is valuable in reducing latency.
-  This additionally helps to reduce the amplification attack footprint when a
-  server sends a large set of certificates, which is not uncommon with TLS.  The
-  crypto protocol SHOULD compress certificates and any other information to
-  minimize the number of packets sent during a handshake.
-
 
 
 ## Connection Migration {#migration}
