@@ -682,16 +682,16 @@ TLS provides QUIC with:
 
 * authenticated key exchange, where
 
-** a server is always authenticated,
+   * a server is always authenticated,
 
-** a client is optionally authenticated,
+   * a client is optionally authenticated,
 
-** every connection produces distinct and unrelated keys,
+   * every connection produces distinct and unrelated keys,
 
-** keying material is usable for packet protection for both 0-RTT and 1-RTT
-   packets, and
+   * keying material is usable for packet protection for both 0-RTT and 1-RTT
+     packets, and
 
-** 1-RTT keys have forward secrecy
+   * 1-RTT keys have forward secrecy
 
 * authenticated values for the transport parameters of the peer (see
   {{transport-parameters}})
