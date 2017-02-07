@@ -167,9 +167,9 @@
 
     ],
     "milestone": null,
-    "comments": 4,
+    "comments": 5,
     "created_at": "2017-02-05T06:43:38Z",
-    "updated_at": "2017-02-07T04:24:52Z",
+    "updated_at": "2017-02-07T15:52:03Z",
     "closed_at": null,
     "body": "This is an issue we briefly discussed in a coffee break in Tokyo, that nobody has written up so far.\r\n\r\nWe currently don't have a definition of the number of concurrent streams that both peers agree on at every given moment. Chrome and quic-go solve this problem by allowing a higher number of open streams (10% or 10 streams more, whichever is higher, than the advertised limit). This seems to work fine for HTTP, but will probably break down when using many short-lived streams.\r\n\r\n### Problem analysis\r\n\r\nThe main problem here is that it is very difficult for the sender to determine if the receiver considers a stream closed at any given moment. To do so, it would have to keep track of all packets containing stream data for that stream. Only when all of those packets have been ACKed (or retransmissions of those packets, if any packets were lost), it knows that the stream changed its state on the receiver's side.\r\n\r\nI think there's a more fundamental problem hidden here: Receiving a FIN should not cause a state transition in the first place. The concurrent stream limit is supposed to protect a receiver from allocating to many resources. Therefore, a stream should only be considered closed once the application finished reading from that stream (which, if it is reading the whole stream data, is only possible after receiving the FIN, but might be an arbitrary amount of time later, if the application is reading slowly).\r\n\r\n### Possible solution\r\n\r\nThere needs to be a way for the receiver to tell the sender that it considers a stream closed. We could introduce a CLOSED_STREAM frame type for that.\r\nA peer would send a CLOSED_STREAM frame only after it closed the stream locally (i.e. only from the *half closed (locally)* state) and after it finished reading from the stream. \r\nA peer receiving a CLOSED_STREAM can immediately remove the corresponding stream from the list of open streams.\r\n\r\n\r\nI can work out the details and provide a PR for this, but I'd like to discuss the proposal here first. It might make sense to finish the changes regarding the resetting of streams (related issues: #165 and #171), since this will already significantly change the stream state diagram."
   },
@@ -405,9 +405,9 @@
 
     ],
     "milestone": null,
-    "comments": 16,
+    "comments": 17,
     "created_at": "2017-01-31T21:06:14Z",
-    "updated_at": "2017-02-07T04:12:23Z",
+    "updated_at": "2017-02-07T16:48:08Z",
     "closed_at": null,
     "body": "While HTTP/QUIC doesn't formally require a client to implement Alt-Svc, there's no discovery mechanism other than Alt-Svc provided, so you're not going to get very far without it.  That makes a full HTTP(/TLS)/TCP stack mandatory simply to open the connection in the first place.  For various reasons (e.g. an embedded device in a controlled environment), a client might want to dispense with TCP altogether when it knows that the endpoint will support QUIC.  It might also be useful in testing to be able to directly reference a QUIC endpoint.\r\n\r\nShould we mint new scheme(s) that allows direct reference to a resource served exclusively over HTTP/QUIC?\r\n\r\n(Note, in HTTP/2 the answer was \"no,\" because HTTP/2 could be negotiated using the same TCP connection.  QUIC doesn't have that luxury.)"
   },
@@ -2818,70 +2818,6 @@
     "body": "S 5.2.1 contains a bunch of instructions for how to deal with packet number 2^64 but (for instance) the connection flow control window is 64-bits in absolute values, so given that we're mostly sending data, it seems improbable you will get to 2^64 packets."
   },
   {
-    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/190",
-    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
-    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/190/labels{/name}",
-    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/190/comments",
-    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/190/events",
-    "html_url": "https://github.com/quicwg/base-drafts/pull/190",
-    "id": 202427241,
-    "number": 190,
-    "title": "Move references to informational references",
-    "user": {
-      "login": "ianswett",
-      "id": 20072817,
-      "avatar_url": "https://avatars.githubusercontent.com/u/20072817?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/ianswett",
-      "html_url": "https://github.com/ianswett",
-      "followers_url": "https://api.github.com/users/ianswett/followers",
-      "following_url": "https://api.github.com/users/ianswett/following{/other_user}",
-      "gists_url": "https://api.github.com/users/ianswett/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/ianswett/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/ianswett/subscriptions",
-      "organizations_url": "https://api.github.com/users/ianswett/orgs",
-      "repos_url": "https://api.github.com/users/ianswett/repos",
-      "events_url": "https://api.github.com/users/ianswett/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/ianswett/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "labels": [
-      {
-        "id": 481871311,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/editorial",
-        "name": "editorial",
-        "color": "0e8a16",
-        "default": false
-      },
-      {
-        "id": 481873040,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/recovery",
-        "name": "recovery",
-        "color": "fbca04",
-        "default": false
-      }
-    ],
-    "state": "open",
-    "locked": false,
-    "assignee": null,
-    "assignees": [
-
-    ],
-    "milestone": null,
-    "comments": 4,
-    "created_at": "2017-01-23T01:19:45Z",
-    "updated_at": "2017-01-24T16:28:19Z",
-    "closed_at": null,
-    "pull_request": {
-      "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/190",
-      "html_url": "https://github.com/quicwg/base-drafts/pull/190",
-      "diff_url": "https://github.com/quicwg/base-drafts/pull/190.diff",
-      "patch_url": "https://github.com/quicwg/base-drafts/pull/190.patch"
-    },
-    "body": "Moves references to informational references, clarifies that SRTT and RTTVar are computed based on an RFC, and adds todos for the congestion control section for anything formerly in the references section."
-  },
-  {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/188",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
     "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/188/labels{/name}",
@@ -3610,8 +3546,7 @@
     "updated_at": "2017-01-23T21:31:40Z",
     "closed_at": null,
     "body": "@martinthomson noticed an issue in the QPACK draft that's equally true with HPACK in -01:\r\n\r\nIf you RST_STREAM a stream with a missing QUIC STREAM frame that contains an HPACK frame (HEADERS, PUSH_PROMISE), that missing frame never gets retransmitted.  That, in turn, means that no future HPACK frame can be interpreted, ever, because you're missing part of your history.\r\n\r\nOops.\r\n\r\nMy first inclination is to change the HTTP draft to say that message control streams MUST NOT be reset.  If you don't want the message body, reset the data stream, but you MUST read the message headers.  If, for some reason, you cannot do so, then terminate the connection.\r\n\r\nAnyone see a barrier to that (other than the price of ginormous headers)?"
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/175",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3669,7 +3604,8 @@
     "updated_at": "2017-01-25T06:09:53Z",
     "closed_at": null,
     "body": "QUIC borrows the HTTP/2 state machine, or tries to replicate it as much as it can.  Part of that replication is the idea that a stream is bidirectional.  The state related to outgoing data and the state related to inbound data are tied.\r\n\r\n#174 suggests a simplification that could open up a more dramatic simplification: independent state for each direction.  #171 moves in that direction also.\r\n\r\nThe state machine that results from that is dramatically simpler: idle -> open -> closed.  That is, before packets, packets and after packets.\r\n\r\nThe consequence for the HTTP mapping is largely that it needs a different method for correlating request and response.\r\n\r\n## Correlating request and response\r\n\r\nCurrently, request and response are correlated by matching the stream identifier.  However, unidirectional streams would allow for cases where streams are not created symmetrically.  For instance, server push would only require streams from the server.  Similarly, the server would not be obligated to respond to requests in the order in which they were received (if at all, since it could reset request streams).\r\n\r\nThat implies that this would add a requirement for the server to identify which request a given stream is answering.  This is an extension of the requirement in #174, which only required that the server identify a push promise (actually, it's less onerous, because you only have one request per stream).\r\n\r\nI can imagine an arrangement where a stream containing headers identifies the stream containing the request headers from the client.  Then the stream containing the body identifies the stream that contained the headers.\r\n\r\n## Saving stream identifiers\r\n\r\nThis is a minor point, though it could be relevant for very long-lived connections.\r\n\r\nQUIC currently insists on a strictly monotonically increasing stream identifier: stream N is followed by stream N+2 always, no skipping of streams is permitted.  Aside from wasting every other stream identifier, other streams are wasted by the mapping. \r\n\r\nGET requests don't include a body, but nonetheless require that the client send a HEADERS on stream N, then a FIN on stream N+2.  Including a reference to the initiating stream at the start of the body of a message would use some octets, but potentially fewer than would be used otherwise (particularly if the reference was a varlen encoding of the difference in stream numbers, which would rarely be anything other than 1).\r\n\r\nObviously, this is an optimization for the case where there are no bodies, but that is a case where the optimization is particularly valuable.  Making more requests (which more frequently have no bodies) during the early stages of a connection is critical to performance."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/174",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5704,14 +5640,50 @@
     ],
     "state": "open",
     "locked": false,
-    "assignee": null,
+    "assignee": {
+      "login": "janaiyengar",
+      "id": 11067604,
+      "avatar_url": "https://avatars.githubusercontent.com/u/11067604?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/janaiyengar",
+      "html_url": "https://github.com/janaiyengar",
+      "followers_url": "https://api.github.com/users/janaiyengar/followers",
+      "following_url": "https://api.github.com/users/janaiyengar/following{/other_user}",
+      "gists_url": "https://api.github.com/users/janaiyengar/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/janaiyengar/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/janaiyengar/subscriptions",
+      "organizations_url": "https://api.github.com/users/janaiyengar/orgs",
+      "repos_url": "https://api.github.com/users/janaiyengar/repos",
+      "events_url": "https://api.github.com/users/janaiyengar/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/janaiyengar/received_events",
+      "type": "User",
+      "site_admin": false
+    },
     "assignees": [
-
+      {
+        "login": "janaiyengar",
+        "id": 11067604,
+        "avatar_url": "https://avatars.githubusercontent.com/u/11067604?v=3",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/janaiyengar",
+        "html_url": "https://github.com/janaiyengar",
+        "followers_url": "https://api.github.com/users/janaiyengar/followers",
+        "following_url": "https://api.github.com/users/janaiyengar/following{/other_user}",
+        "gists_url": "https://api.github.com/users/janaiyengar/gists{/gist_id}",
+        "starred_url": "https://api.github.com/users/janaiyengar/starred{/owner}{/repo}",
+        "subscriptions_url": "https://api.github.com/users/janaiyengar/subscriptions",
+        "organizations_url": "https://api.github.com/users/janaiyengar/orgs",
+        "repos_url": "https://api.github.com/users/janaiyengar/repos",
+        "events_url": "https://api.github.com/users/janaiyengar/events{/privacy}",
+        "received_events_url": "https://api.github.com/users/janaiyengar/received_events",
+        "type": "User",
+        "site_admin": false
+      }
     ],
     "milestone": null,
-    "comments": 0,
+    "comments": 1,
     "created_at": "2017-01-04T10:43:45Z",
-    "updated_at": "2017-02-07T08:58:09Z",
+    "updated_at": "2017-02-07T09:04:51Z",
     "closed_at": null,
     "pull_request": {
       "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/122",
@@ -5720,8 +5692,7 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/122.patch"
     },
     "body": "This builds on @MikeBishop's work in #99 in a big way.  I have stolen a lot of text from that.\r\n\r\nAgain, it's the tippy top of a bunch of changes.  #113 comes before this.\r\n\r\nCloses #99."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/121",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5786,7 +5757,8 @@
     "updated_at": "2017-01-15T21:33:34Z",
     "closed_at": null,
     "body": "If we do this badly, there might be two versions of QUIC for which the transport parameters are confusable in a way that confounds the validation of version negotiation because the transport parameters are interpreted differently for different QUIC versions.\r\n\r\nWe need to write that into the security considerations.  We might recommend preserving the initial part of the transport parameters extension, or - better yet - using a new extension codepoint when the format needs to change."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/119",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7801,8 +7773,7 @@
     "updated_at": "2016-11-30T04:16:06Z",
     "closed_at": null,
     "body": "Not all figures currently do."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/52",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7867,7 +7838,8 @@
     "updated_at": "2017-01-26T04:54:04Z",
     "closed_at": null,
     "body": "We need to write down how this happens:\r\n\r\n1. on the same connection\r\n2. on a subsequent connection"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/49",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -8050,9 +8022,9 @@
 
     ],
     "milestone": null,
-    "comments": 4,
+    "comments": 8,
     "created_at": "2016-11-29T21:28:11Z",
-    "updated_at": "2017-01-24T04:17:42Z",
+    "updated_at": "2017-02-07T15:37:58Z",
     "closed_at": null,
     "body": "It's currently unclear how two QUIC peers opening a connection know which handshake protocol to expect on Stream 1.\r\n\r\nSince the client has to include the opening handshake in its first flight, it has to at least be able to guess *a* handshake protocol that's acceptable to the server and include enough information for the server to know which one it's attempting.  Currently all the mechanisms for telling the client to retry with different options are at the TLS layer, which is too late.\r\n\r\nHow is this negotiated?  Is it baked into the QUIC version?  Is it specified as part of the application mapping (e.g. the HTTP mapping currently requires the TLS 1.3 handshake to be used) and therefore either supplied as part of the Alt-Svc record or implied by the port?"
   },
