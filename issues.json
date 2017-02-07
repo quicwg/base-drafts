@@ -557,206 +557,6 @@
     "body": "transport 9.4 contains: \"A receiver MUST ensure that received stream data is delivered to the application as an ordered byte-stream. Data received out of order MUST be buffered for later delivery, as long as it is not in violation of the receiver’s flow control limits.\"\r\n\r\nI agree QUIC provides an ordered byte stream abstraction, but why do we have this requirement about in-order delivery to the application? Surely that makes a lot of sense, but it seems to me the only real requirement is that it be a byte stream because boundaries are not preserved.."
   },
   {
-    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/251",
-    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
-    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/251/labels{/name}",
-    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/251/comments",
-    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/251/events",
-    "html_url": "https://github.com/quicwg/base-drafts/pull/251",
-    "id": 204294139,
-    "number": 251,
-    "title": "clarify 5.2.2 frame type enumerations",
-    "user": {
-      "login": "mcmanus",
-      "id": 260531,
-      "avatar_url": "https://avatars.githubusercontent.com/u/260531?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/mcmanus",
-      "html_url": "https://github.com/mcmanus",
-      "followers_url": "https://api.github.com/users/mcmanus/followers",
-      "following_url": "https://api.github.com/users/mcmanus/following{/other_user}",
-      "gists_url": "https://api.github.com/users/mcmanus/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/mcmanus/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/mcmanus/subscriptions",
-      "organizations_url": "https://api.github.com/users/mcmanus/orgs",
-      "repos_url": "https://api.github.com/users/mcmanus/repos",
-      "events_url": "https://api.github.com/users/mcmanus/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/mcmanus/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "labels": [
-      {
-        "id": 481871311,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/editorial",
-        "name": "editorial",
-        "color": "0e8a16",
-        "default": false
-      },
-      {
-        "id": 481871399,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
-        "name": "transport",
-        "color": "fbca04",
-        "default": false
-      }
-    ],
-    "state": "open",
-    "locked": false,
-    "assignee": {
-      "login": "janaiyengar",
-      "id": 11067604,
-      "avatar_url": "https://avatars.githubusercontent.com/u/11067604?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/janaiyengar",
-      "html_url": "https://github.com/janaiyengar",
-      "followers_url": "https://api.github.com/users/janaiyengar/followers",
-      "following_url": "https://api.github.com/users/janaiyengar/following{/other_user}",
-      "gists_url": "https://api.github.com/users/janaiyengar/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/janaiyengar/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/janaiyengar/subscriptions",
-      "organizations_url": "https://api.github.com/users/janaiyengar/orgs",
-      "repos_url": "https://api.github.com/users/janaiyengar/repos",
-      "events_url": "https://api.github.com/users/janaiyengar/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/janaiyengar/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "assignees": [
-      {
-        "login": "janaiyengar",
-        "id": 11067604,
-        "avatar_url": "https://avatars.githubusercontent.com/u/11067604?v=3",
-        "gravatar_id": "",
-        "url": "https://api.github.com/users/janaiyengar",
-        "html_url": "https://github.com/janaiyengar",
-        "followers_url": "https://api.github.com/users/janaiyengar/followers",
-        "following_url": "https://api.github.com/users/janaiyengar/following{/other_user}",
-        "gists_url": "https://api.github.com/users/janaiyengar/gists{/gist_id}",
-        "starred_url": "https://api.github.com/users/janaiyengar/starred{/owner}{/repo}",
-        "subscriptions_url": "https://api.github.com/users/janaiyengar/subscriptions",
-        "organizations_url": "https://api.github.com/users/janaiyengar/orgs",
-        "repos_url": "https://api.github.com/users/janaiyengar/repos",
-        "events_url": "https://api.github.com/users/janaiyengar/events{/privacy}",
-        "received_events_url": "https://api.github.com/users/janaiyengar/received_events",
-        "type": "User",
-        "site_admin": false
-      }
-    ],
-    "milestone": null,
-    "comments": 1,
-    "created_at": "2017-01-31T13:26:04Z",
-    "updated_at": "2017-02-01T02:56:12Z",
-    "closed_at": null,
-    "pull_request": {
-      "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/251",
-      "html_url": "https://github.com/quicwg/base-drafts/pull/251",
-      "diff_url": "https://github.com/quicwg/base-drafts/pull/251.diff",
-      "patch_url": "https://github.com/quicwg/base-drafts/pull/251.patch"
-    },
-    "body": "I've always found 5.2.2's use of 1fdoooss and 01nullmm more confusing than helpful when trying to figure out what the frame type enumerations are. They are well defined later on in the STREAM and ACK frame definitions, but in the general frame type section it reads a bit unclear to me. This PR just enumerates the type ranges of each frame type and forgoes the bit level definitions."
-  },
-  {
-    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/249",
-    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
-    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/249/labels{/name}",
-    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/249/comments",
-    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/249/events",
-    "html_url": "https://github.com/quicwg/base-drafts/pull/249",
-    "id": 204024770,
-    "number": 249,
-    "title": "Error Codes at a consistent offset",
-    "user": {
-      "login": "MikeBishop",
-      "id": 4273797,
-      "avatar_url": "https://avatars.githubusercontent.com/u/4273797?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/MikeBishop",
-      "html_url": "https://github.com/MikeBishop",
-      "followers_url": "https://api.github.com/users/MikeBishop/followers",
-      "following_url": "https://api.github.com/users/MikeBishop/following{/other_user}",
-      "gists_url": "https://api.github.com/users/MikeBishop/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/MikeBishop/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/MikeBishop/subscriptions",
-      "organizations_url": "https://api.github.com/users/MikeBishop/orgs",
-      "repos_url": "https://api.github.com/users/MikeBishop/repos",
-      "events_url": "https://api.github.com/users/MikeBishop/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/MikeBishop/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "labels": [
-      {
-        "id": 481871311,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/editorial",
-        "name": "editorial",
-        "color": "0e8a16",
-        "default": false
-      },
-      {
-        "id": 481871399,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
-        "name": "transport",
-        "color": "fbca04",
-        "default": false
-      }
-    ],
-    "state": "open",
-    "locked": false,
-    "assignee": {
-      "login": "janaiyengar",
-      "id": 11067604,
-      "avatar_url": "https://avatars.githubusercontent.com/u/11067604?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/janaiyengar",
-      "html_url": "https://github.com/janaiyengar",
-      "followers_url": "https://api.github.com/users/janaiyengar/followers",
-      "following_url": "https://api.github.com/users/janaiyengar/following{/other_user}",
-      "gists_url": "https://api.github.com/users/janaiyengar/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/janaiyengar/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/janaiyengar/subscriptions",
-      "organizations_url": "https://api.github.com/users/janaiyengar/orgs",
-      "repos_url": "https://api.github.com/users/janaiyengar/repos",
-      "events_url": "https://api.github.com/users/janaiyengar/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/janaiyengar/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "assignees": [
-      {
-        "login": "janaiyengar",
-        "id": 11067604,
-        "avatar_url": "https://avatars.githubusercontent.com/u/11067604?v=3",
-        "gravatar_id": "",
-        "url": "https://api.github.com/users/janaiyengar",
-        "html_url": "https://github.com/janaiyengar",
-        "followers_url": "https://api.github.com/users/janaiyengar/followers",
-        "following_url": "https://api.github.com/users/janaiyengar/following{/other_user}",
-        "gists_url": "https://api.github.com/users/janaiyengar/gists{/gist_id}",
-        "starred_url": "https://api.github.com/users/janaiyengar/starred{/owner}{/repo}",
-        "subscriptions_url": "https://api.github.com/users/janaiyengar/subscriptions",
-        "organizations_url": "https://api.github.com/users/janaiyengar/orgs",
-        "repos_url": "https://api.github.com/users/janaiyengar/repos",
-        "events_url": "https://api.github.com/users/janaiyengar/events{/privacy}",
-        "received_events_url": "https://api.github.com/users/janaiyengar/received_events",
-        "type": "User",
-        "site_admin": false
-      }
-    ],
-    "milestone": null,
-    "comments": 1,
-    "created_at": "2017-01-30T14:28:16Z",
-    "updated_at": "2017-01-31T00:40:52Z",
-    "closed_at": null,
-    "pull_request": {
-      "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/249",
-      "html_url": "https://github.com/quicwg/base-drafts/pull/249",
-      "diff_url": "https://github.com/quicwg/base-drafts/pull/249.diff",
-      "patch_url": "https://github.com/quicwg/base-drafts/pull/249.patch"
-    },
-    "body": "The Error Code field in RST_STREAM is at the end of the frame, while for GOAWAY and CONNECTION_CLOSE, it's at the beginning of the frame.  @martinthomson had suggested making these consistent, so I went with the majority."
-  },
-  {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/248",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
     "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/248/labels{/name}",
@@ -1905,8 +1705,7 @@
     "updated_at": "2017-01-25T00:59:17Z",
     "closed_at": null,
     "body": "We've assumed that this is the case, but we really need to write it down."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/222",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -2022,7 +1821,8 @@
     "updated_at": "2017-01-25T04:22:50Z",
     "closed_at": null,
     "body": "The quic-tls draft says:\r\n\r\n```\r\n  What about 0-RTT data?  Should we allow acknowledgment of 0-RTT with\r\n  unprotected frames?  If we don't, then 0-RTT data will be unacknowledged until\r\n  the handshake completes.  This isn't a problem if the handshake completes\r\n  without loss, but it could mean that 0-RTT stalls when a handshake packet\r\n  disappears for any reason.\r\n```\r\n\r\nI assume what you're talking about here is the case where the server's first flight of packets are lost, because the server can only find itself in one of two positions because the CH must fit in a single packet.\r\n\r\n- It has no ClientHello, in which case it must buffer any packets\r\n- It has a ClientHello, in which case it can can complete the handshake by sending its first flight.\r\n\r\nMy sense is that having stalling of 0-RTT in the case where parts of the server's first flight are lost is not that big a deal. If you really don't want stalling, you should retransmit faster :)\r\n\r\n\r\n\r\n"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/219",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3729,8 +3529,7 @@
     "updated_at": "2017-01-19T23:14:00Z",
     "closed_at": null,
     "body": "> A stream that is \"half-closed (remote)\" is no longer being used by\r\n>    the peer to send any data.  In this state, a sender is no longer\r\n>    obligated to maintain a receiver stream-level flow-control window.\r\n> \r\n>    If an endpoint receives any STREAM frames for a stream that is in\r\n>    this state, it MUST close the connection with a\r\n>    QUIC_STREAM_DATA_AFTER_TERMINATION error (Section 11).\r\n\r\nIf a packet sent before the packet with FIN bit set gets lost and is retransmitted is going to cause close of the connection.\r\nThe text needs to change to say if a frame with offset  larger than the offset + size of the frame with FIN bit set is received. (or a better wording)\r\n\r\n(An editorial remark: In the \"Lifecycle of a stream\" diagram going from \"half-closed(remote)\" to \"closed\" should be cause by \"send FIN\" not \"recv FIN\" and from \"half-closed(local)\" to \"closed\" should be cause by \"recv FIN\")\r\n"
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/178",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3853,7 +3652,8 @@
     "updated_at": "2017-01-24T06:11:08Z",
     "closed_at": null,
     "body": ">  If the total number of packets transmitted in this connection reaches 2^64 - 1, the sender MUST close the connection by sending a CONNECTION_CLOSE frame with the error code QUIC_SEQUENCE_NUMBER_LIMIT_REACHED\r\n\r\nIf this packet is lost there is not packet number available for its retransmission. CONNECTION_CLOSE should be reliably transmitted."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/176",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5826,8 +5626,7 @@
     "updated_at": "2017-01-20T02:41:05Z",
     "closed_at": null,
     "body": "HTTP/2 compatibility at the framing level is a bit of an unrealistic goal.  Maybe we could just avoid allocating those bits first."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/126",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5950,7 +5749,8 @@
     "updated_at": "2017-01-26T07:12:12Z",
     "closed_at": null,
     "body": "It may be possible to simplify the ACK frame, in particular, the timestamp section. We could conceivably make the \"Time from Largest Acked\" 16 bits, and simply have N-Timestamp-blocks, including this one. I think this is plausible."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/122",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7891,8 +7691,7 @@
     "updated_at": "2017-01-24T00:45:35Z",
     "closed_at": null,
     "body": "Also, Martin Duke observes that it's not clear how QUIC would determine that the crypto handshake was incomplete after one message.\r\n\r\nI note that this might be aided by #35."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/58",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -8008,7 +7807,8 @@
     "updated_at": "2017-01-26T06:20:30Z",
     "closed_at": null,
     "body": "We need to define how the public flags might be extended, or if it could be.  This has a pretty serious impact on #55."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/53",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
