@@ -799,8 +799,6 @@ TCID (0x0004):
   the 5-tuple is sufficient to identify a connection.  This parameter is zero
   length.
 
-An endpoint MUST ignore transport parameters that it does not understand.
-
 
 ### Values of Transport Parameters for 0-RTT
 
