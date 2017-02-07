@@ -369,7 +369,7 @@ The fields in the Common Header are the following:
      value for a given direction.  For instance, if a client indicates that the
      5-tuple fully identifies the connection at the client, the connection ID is
      optional in the server-to-client direction. The negotiation is described in
-     {{optional-transport-parameters}}.
+     {{transport-parameter-definitions}}.
 
    * 0x30 = PACKET_NUMBER_SIZE.  These two bits indicate the number of
      low-order-bytes of the packet number that are present in each packet.
