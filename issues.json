@@ -469,9 +469,9 @@
 
     ],
     "milestone": null,
-    "comments": 14,
+    "comments": 15,
     "created_at": "2017-01-31T21:06:14Z",
-    "updated_at": "2017-02-03T23:31:13Z",
+    "updated_at": "2017-02-07T01:46:52Z",
     "closed_at": null,
     "body": "While HTTP/QUIC doesn't formally require a client to implement Alt-Svc, there's no discovery mechanism other than Alt-Svc provided, so you're not going to get very far without it.  That makes a full HTTP(/TLS)/TCP stack mandatory simply to open the connection in the first place.  For various reasons (e.g. an embedded device in a controlled environment), a client might want to dispense with TCP altogether when it knows that the endpoint will support QUIC.  It might also be useful in testing to be able to directly reference a QUIC endpoint.\r\n\r\nShould we mint new scheme(s) that allows direct reference to a resource served exclusively over HTTP/QUIC?\r\n\r\n(Note, in HTTP/2 the answer was \"no,\" because HTTP/2 could be negotiated using the same TCP connection.  QUIC doesn't have that luxury.)"
   },
@@ -6163,7 +6163,7 @@
     "milestone": null,
     "comments": 0,
     "created_at": "2017-01-04T10:43:45Z",
-    "updated_at": "2017-02-07T00:02:35Z",
+    "updated_at": "2017-02-07T02:01:55Z",
     "closed_at": null,
     "pull_request": {
       "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/122",
@@ -6420,9 +6420,9 @@
 
     ],
     "milestone": null,
-    "comments": 3,
+    "comments": 4,
     "created_at": "2017-01-04T07:08:22Z",
-    "updated_at": "2017-01-15T21:36:32Z",
+    "updated_at": "2017-02-07T00:22:29Z",
     "closed_at": null,
     "body": "COPT is apparently repeated, once for each option.  \r\n\r\nOne thing that TLS implementations do is validate that there is only one instance of each extension.  This isn't possible for transport parameters if we require that COPT be used for a list of options.\r\n\r\nAlso, we can reduce the number of extension points in the protocol, we shouldn't pack a list of options into COPT when we have transport parameters for that."
   },
