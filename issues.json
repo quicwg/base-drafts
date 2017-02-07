@@ -2372,106 +2372,6 @@
     "body": "The doc defines stream identifiers as \"variable-length\".  But are they really?"
   },
   {
-    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/207",
-    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
-    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/207/labels{/name}",
-    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/207/comments",
-    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/207/events",
-    "html_url": "https://github.com/quicwg/base-drafts/pull/207",
-    "id": 202691090,
-    "number": 207,
-    "title": "Use the VERSION flag to identify 0-RTT packets",
-    "user": {
-      "login": "martinthomson",
-      "id": 67641,
-      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/martinthomson",
-      "html_url": "https://github.com/martinthomson",
-      "followers_url": "https://api.github.com/users/martinthomson/followers",
-      "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
-      "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
-      "organizations_url": "https://api.github.com/users/martinthomson/orgs",
-      "repos_url": "https://api.github.com/users/martinthomson/repos",
-      "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/martinthomson/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "labels": [
-      {
-        "id": 481871361,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/design",
-        "name": "design",
-        "color": "1d76db",
-        "default": false
-      },
-      {
-        "id": 481871399,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
-        "name": "transport",
-        "color": "fbca04",
-        "default": false
-      }
-    ],
-    "state": "open",
-    "locked": false,
-    "assignee": {
-      "login": "janaiyengar",
-      "id": 11067604,
-      "avatar_url": "https://avatars.githubusercontent.com/u/11067604?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/janaiyengar",
-      "html_url": "https://github.com/janaiyengar",
-      "followers_url": "https://api.github.com/users/janaiyengar/followers",
-      "following_url": "https://api.github.com/users/janaiyengar/following{/other_user}",
-      "gists_url": "https://api.github.com/users/janaiyengar/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/janaiyengar/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/janaiyengar/subscriptions",
-      "organizations_url": "https://api.github.com/users/janaiyengar/orgs",
-      "repos_url": "https://api.github.com/users/janaiyengar/repos",
-      "events_url": "https://api.github.com/users/janaiyengar/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/janaiyengar/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "assignees": [
-      {
-        "login": "janaiyengar",
-        "id": 11067604,
-        "avatar_url": "https://avatars.githubusercontent.com/u/11067604?v=3",
-        "gravatar_id": "",
-        "url": "https://api.github.com/users/janaiyengar",
-        "html_url": "https://github.com/janaiyengar",
-        "followers_url": "https://api.github.com/users/janaiyengar/followers",
-        "following_url": "https://api.github.com/users/janaiyengar/following{/other_user}",
-        "gists_url": "https://api.github.com/users/janaiyengar/gists{/gist_id}",
-        "starred_url": "https://api.github.com/users/janaiyengar/starred{/owner}{/repo}",
-        "subscriptions_url": "https://api.github.com/users/janaiyengar/subscriptions",
-        "organizations_url": "https://api.github.com/users/janaiyengar/orgs",
-        "repos_url": "https://api.github.com/users/janaiyengar/repos",
-        "events_url": "https://api.github.com/users/janaiyengar/events{/privacy}",
-        "received_events_url": "https://api.github.com/users/janaiyengar/received_events",
-        "type": "User",
-        "site_admin": false
-      }
-    ],
-    "milestone": null,
-    "comments": 1,
-    "created_at": "2017-01-24T00:26:27Z",
-    "updated_at": "2017-02-01T04:11:44Z",
-    "closed_at": null,
-    "pull_request": {
-      "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/207",
-      "html_url": "https://github.com/quicwg/base-drafts/pull/207",
-      "diff_url": "https://github.com/quicwg/base-drafts/pull/207.diff",
-      "patch_url": "https://github.com/quicwg/base-drafts/pull/207.patch"
-    },
-    "body": "This aligns the transport draft with the tls draft.\r\n\r\nThe primary reason for using this identification is that there are three types\r\nof keys that are in concurrent use during a 0-RTT handshake: unprotected\r\n(cleartext), 0-RTT and 1-RTT.  Identifying 0-RTT packets this way allows the\r\nserver to avoid trial decryption."
-  },
-  {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/205",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
     "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/205/labels{/name}",
@@ -3771,8 +3671,7 @@
     "updated_at": "2017-02-03T03:51:58Z",
     "closed_at": null,
     "body": "I know that this might be a hard decision to make, but we don't have many settings and it seems like we might be able to avoid changing them mid-connection.\r\n\r\nGetting settings synchronization right is a pain and we really only have one that is ever likely to change and that's the header table size.  We don't allow initial flow control windows to change (no mechanism exists to allow it), so I question whether that needs changing.  If it does need to change, that would be for the same reason that the flow control window needs to change, which suggests we would need to devise a way to change those too.\r\n\r\nSETTINGS_ACK is a huge amount of machinery.  With 0-RTT, it will mean that just opening a connection will trigger a flurry of SETTINGS_ACK frames from the client just to respond to the server's connection preface (assuming that we're still keeping that, it's not clear).  \r\n\r\nOn the other hand, if we reserved a space for application-specific traffic parameters (see #122), we could put the application-layer settings like header table size in the handshake.  That has some downsides (client values would be unencrypted and you would need to include one set of parameters per application protocol on offer), but it means that there couldn't ever be any confusion about the value of a given setting once the connection was open.\r\n\r\nThat would be a huge simplification to the HTTP mapping."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/179",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3830,7 +3729,8 @@
     "updated_at": "2017-01-19T23:14:00Z",
     "closed_at": null,
     "body": "> A stream that is \"half-closed (remote)\" is no longer being used by\r\n>    the peer to send any data.  In this state, a sender is no longer\r\n>    obligated to maintain a receiver stream-level flow-control window.\r\n> \r\n>    If an endpoint receives any STREAM frames for a stream that is in\r\n>    this state, it MUST close the connection with a\r\n>    QUIC_STREAM_DATA_AFTER_TERMINATION error (Section 11).\r\n\r\nIf a packet sent before the packet with FIN bit set gets lost and is retransmitted is going to cause close of the connection.\r\nThe text needs to change to say if a frame with offset  larger than the offset + size of the frame with FIN bit set is received. (or a better wording)\r\n\r\n(An editorial remark: In the \"Lifecycle of a stream\" diagram going from \"half-closed(remote)\" to \"closed\" should be cause by \"send FIN\" not \"recv FIN\" and from \"half-closed(local)\" to \"closed\" should be cause by \"recv FIN\")\r\n"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/178",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5147,93 +5047,6 @@
     "body": "Mostly references to drafts/rfcs/papers, but complete justifications are needed for this draft to be standalone."
   },
   {
-    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/150",
-    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
-    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/150/labels{/name}",
-    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/150/comments",
-    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/150/events",
-    "html_url": "https://github.com/quicwg/base-drafts/pull/150",
-    "id": 200699170,
-    "number": 150,
-    "title": "improve description of flow control",
-    "user": {
-      "login": "marten-seemann",
-      "id": 1478487,
-      "avatar_url": "https://avatars.githubusercontent.com/u/1478487?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/marten-seemann",
-      "html_url": "https://github.com/marten-seemann",
-      "followers_url": "https://api.github.com/users/marten-seemann/followers",
-      "following_url": "https://api.github.com/users/marten-seemann/following{/other_user}",
-      "gists_url": "https://api.github.com/users/marten-seemann/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/marten-seemann/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/marten-seemann/subscriptions",
-      "organizations_url": "https://api.github.com/users/marten-seemann/orgs",
-      "repos_url": "https://api.github.com/users/marten-seemann/repos",
-      "events_url": "https://api.github.com/users/marten-seemann/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/marten-seemann/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "labels": [
-
-    ],
-    "state": "open",
-    "locked": false,
-    "assignee": {
-      "login": "janaiyengar",
-      "id": 11067604,
-      "avatar_url": "https://avatars.githubusercontent.com/u/11067604?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/janaiyengar",
-      "html_url": "https://github.com/janaiyengar",
-      "followers_url": "https://api.github.com/users/janaiyengar/followers",
-      "following_url": "https://api.github.com/users/janaiyengar/following{/other_user}",
-      "gists_url": "https://api.github.com/users/janaiyengar/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/janaiyengar/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/janaiyengar/subscriptions",
-      "organizations_url": "https://api.github.com/users/janaiyengar/orgs",
-      "repos_url": "https://api.github.com/users/janaiyengar/repos",
-      "events_url": "https://api.github.com/users/janaiyengar/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/janaiyengar/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "assignees": [
-      {
-        "login": "janaiyengar",
-        "id": 11067604,
-        "avatar_url": "https://avatars.githubusercontent.com/u/11067604?v=3",
-        "gravatar_id": "",
-        "url": "https://api.github.com/users/janaiyengar",
-        "html_url": "https://github.com/janaiyengar",
-        "followers_url": "https://api.github.com/users/janaiyengar/followers",
-        "following_url": "https://api.github.com/users/janaiyengar/following{/other_user}",
-        "gists_url": "https://api.github.com/users/janaiyengar/gists{/gist_id}",
-        "starred_url": "https://api.github.com/users/janaiyengar/starred{/owner}{/repo}",
-        "subscriptions_url": "https://api.github.com/users/janaiyengar/subscriptions",
-        "organizations_url": "https://api.github.com/users/janaiyengar/orgs",
-        "repos_url": "https://api.github.com/users/janaiyengar/repos",
-        "events_url": "https://api.github.com/users/janaiyengar/events{/privacy}",
-        "received_events_url": "https://api.github.com/users/janaiyengar/received_events",
-        "type": "User",
-        "site_admin": false
-      }
-    ],
-    "milestone": null,
-    "comments": 2,
-    "created_at": "2017-01-13T18:35:40Z",
-    "updated_at": "2017-02-01T03:06:14Z",
-    "closed_at": null,
-    "pull_request": {
-      "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/150",
-      "html_url": "https://github.com/quicwg/base-drafts/pull/150",
-      "diff_url": "https://github.com/quicwg/base-drafts/pull/150.diff",
-      "patch_url": "https://github.com/quicwg/base-drafts/pull/150.patch"
-    },
-    "body": "I made a couple of changes regarding flow control. The most important change is 4.\r\n\r\n1. WINDOW_UPDATEs should be sent when the application consumed data sent by the peer, they should not be based on the highest received offset.\r\n2. I specified the error that should be sent if the peer violates the advertised flow control windows.\r\n3. I explicitly allow an optimization both Chrome and quic-go are already doing: WINDOW_UDPATEs are always sent twice. This increases the probability that the peer receives the frame and can continue sending data, even if one of the two packets is lost or delayed.\r\n4. The description of connection-level flow control was incomplete, since not all streams contribute to the connection-level flow control window. Furthermore, the receiver now has to check for connection-level flow control violations."
-  },
-  {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/148",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
     "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/148/labels{/name}",
@@ -5883,8 +5696,7 @@
     "updated_at": "2017-01-26T04:51:36Z",
     "closed_at": null,
     "body": "When I wrote the section on what can change in different versions, I originally just left an unlabelled slot for the connection ID.  But @marten-seemann observed that the server is required to echo the connection ID in a version negotiation packet.\r\n\r\nI don't think that we need the server to echo the connection ID in this case.  That would allow us to restore the 8 octets to a version-specific field."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/128",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -6014,7 +5826,8 @@
     "updated_at": "2017-01-20T02:41:05Z",
     "closed_at": null,
     "body": "HTTP/2 compatibility at the framing level is a bit of an unrealistic goal.  Maybe we could just avoid allocating those bits first."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/126",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7955,8 +7768,7 @@
     "updated_at": "2017-01-26T06:23:11Z",
     "closed_at": null,
     "body": "Martin Duke requests that all fields necessary for frame length computation be moved to the start of the frame."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/61",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -8079,7 +7891,8 @@
     "updated_at": "2017-01-24T00:45:35Z",
     "closed_at": null,
     "body": "Also, Martin Duke observes that it's not clear how QUIC would determine that the crypto handshake was incomplete after one message.\r\n\r\nI note that this might be aided by #35."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/58",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
