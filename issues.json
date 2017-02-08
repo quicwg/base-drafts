@@ -227,9 +227,9 @@
 
     ],
     "milestone": null,
-    "comments": 0,
+    "comments": 2,
     "created_at": "2017-02-08T21:52:00Z",
-    "updated_at": "2017-02-08T21:52:00Z",
+    "updated_at": "2017-02-08T23:30:03Z",
     "closed_at": null,
     "pull_request": {
       "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/271",
@@ -5275,71 +5275,6 @@
     "body": "In draft-ietf-quic-recovery.md\r\n\r\n`      if (rto_count = 0):\r\n        alarm_duration = max(200ms, smoothed_rtt + 4 x rttvar);\r\n      else:\r\n        alarm_duration = loss_detection_alarm.get_delay() << 1;\r\n      rto_count++;\r\n\r\nThe return value of get_delay() is not defined anywhere in the document."
   },
   {
-    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/136",
-    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
-    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/136/labels{/name}",
-    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/136/comments",
-    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/136/events",
-    "html_url": "https://github.com/quicwg/base-drafts/issues/136",
-    "id": 199738030,
-    "number": 136,
-    "title": "First client packet size",
-    "user": {
-      "login": "martinthomson",
-      "id": 67641,
-      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/martinthomson",
-      "html_url": "https://github.com/martinthomson",
-      "followers_url": "https://api.github.com/users/martinthomson/followers",
-      "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
-      "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
-      "organizations_url": "https://api.github.com/users/martinthomson/orgs",
-      "repos_url": "https://api.github.com/users/martinthomson/repos",
-      "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/martinthomson/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "labels": [
-      {
-        "id": 481871361,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/design",
-        "name": "design",
-        "color": "1d76db",
-        "default": false
-      },
-      {
-        "id": 489929683,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/editor-ready",
-        "name": "editor-ready",
-        "color": "0e8a16",
-        "default": false
-      },
-      {
-        "id": 481871399,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
-        "name": "transport",
-        "color": "fbca04",
-        "default": false
-      }
-    ],
-    "state": "open",
-    "locked": false,
-    "assignee": null,
-    "assignees": [
-
-    ],
-    "milestone": null,
-    "comments": 4,
-    "created_at": "2017-01-10T05:48:55Z",
-    "updated_at": "2017-01-26T04:57:13Z",
-    "closed_at": null,
-    "body": "We need a certain size to avoid amplification attacks.  See also #38."
-  },
-  {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/135",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
     "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/135/labels{/name}",
@@ -5656,8 +5591,7 @@
     "updated_at": "2017-02-08T22:02:05Z",
     "closed_at": null,
     "body": "HTTP/2 compatibility at the framing level is a bit of an unrealistic goal.  Maybe we could just avoid allocating those bits first."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/126",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5722,7 +5656,8 @@
     "updated_at": "2017-01-24T07:57:57Z",
     "closed_at": null,
     "body": "TLS provides an extension that limits the amount of data that can be sent during 0-RTT.  This is an explicit configuration item, even though TCP flow control would naturally limit the amount of data a client can send to a server with 0-RTT.  The reason for this is that servers might have to hold some or all of the 0-RTT data.  That buffering might be part of replay mitigation, for example.  A server that supports 0-RTT can use that limit to ensure that it doesn't have to buffer more than it is willing to buffer.\r\n\r\nIn #122, I have chosen to carry over the values for initial flow control window and concurrent stream limit.  We might want to provide separate transport parameters for 0-RTT so that servers can apply lower limits."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/123",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7744,8 +7679,7 @@
     "updated_at": "2017-01-26T06:20:30Z",
     "closed_at": null,
     "body": "We need to define how the public flags might be extended, or if it could be.  This has a pretty serious impact on #55."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/53",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7839,7 +7773,8 @@
     "updated_at": "2016-11-30T04:16:06Z",
     "closed_at": null,
     "body": "Not all figures currently do."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/52",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
