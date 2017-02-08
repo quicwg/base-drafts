@@ -151,21 +151,24 @@ interactions between TLS and QUIC, with the QUIC packet protection being called
 out specially.
 
 ~~~
-+------------+                     +------------+
-|            |----- Handshake ---->|            |
-|            |<---- Handshake -----|            |
-|   QUIC     |                     |    TLS     |
-|            |<----- 0-RTT OK -----|            |
-|            |<----- 1-RTT OK -----|            |
-|            |<-- Handshake Done --|            |
-+------------+                     +------------+
- |         ^                            ^ |
- | Protect | Protected                  | |
- v         | Packet                     | |
-+------------+                          / /
-|   QUIC     |                         / /
-|  Packet    |------ Get Secret ------' /
-| Protection |<------ Secret ----------'
++------------+                        +------------+
+|            |------ Handshake ------>|            |
+|            |<-- Validate Address ---|            |
+|            |-- OK/Error/Validate -->|            |
+|            |<----- Handshake -------|            |
+|   QUIC     |------ Validate ------->|    TLS     |
+|            |                        |            |
+|            |<------ 0-RTT OK -------|            |
+|            |<------ 1-RTT OK -------|            |
+|            |<--- Handshake Done ----|            |
++------------+                        +------------+
+ |         ^                               ^ |
+ | Protect | Protected                     | |
+ v         | Packet                        | |
++------------+                             / /
+|   QUIC     |                            / /
+|  Packet    |-------- Get Secret -------' /
+| Protection |<-------- Secret -----------'
 +------------+
 ~~~
 {: #schematic title="QUIC and TLS Interactions"}
@@ -357,8 +360,9 @@ More information on key transitions is included in {{cleartext-hs}}.
 
 ## Interface to TLS
 
-As shown in {{schematic}}, the interface from QUIC to TLS consists of three
-primary functions: Handshake, Key Ready Events, and Secret Export.
+As shown in {{schematic}}, the interface from QUIC to TLS consists of four
+primary functions: Handshake, Source Address Validation, Key Ready Events, and
+Secret Export.
 
 Additional functions might be needed to configure TLS.
 
@@ -410,6 +414,44 @@ Important:
   potential for head-of-line blocking that this implies by sending a copy of the
   STREAM frame that carries the Finished message in multiple packets.  This
   enables immediate server processing for those packets.
+
+
+### Source Address Validation
+
+During the processing of the TLS ClientHello, TLS requests that the transport
+make a decision about whether to request source address validation from the
+client.
+
+An initial TLS ClientHello that resumes a session includes an address validation
+token in the session ticket; this includes all attempts at 0-RTT.  If the client
+does not attempt session resumption, no token will be present.  While processing
+the initial ClientHello, TLS provides QUIC with any token that is present. In
+response, QUIC provides one of three responses:
+
+* proceed with the connection,
+
+* ask for client address validation, or
+
+* abort the connection.
+
+If QUIC requests source address validation, it also provides a new address
+validation token.  TLS includes that along with any information it requires in
+the cookie extension of the TLS HelloRetryRequest message.  In the other cases,
+the connection either proceeds or terminates with a handshake error.
+
+The client echoes the cookie extension in a second ClientHello.  A ClientHello
+that contains a cookie extension will be always be in response to a
+HelloRetryRequest.  If address validation was requested by QUIC, then this will
+include an address validation token.  TLS makes a second address validation
+request of QUIC, including the value extracted from the cookie extension.  In
+response to this request, QUIC cannot ask for client address validation, it can
+only abort or permit the connection attempt to proceed.
+
+QUIC can provide a new address validation token for use in session resumption at
+any time after the handshake is complete.  Each time a new token is provided TLS
+generates a NewSessionTicket message, with the token included in the ticket.
+
+See {{client-address-validation}} for more details on client address validation.
 
 
 ### Key Ready Events
@@ -946,6 +988,82 @@ Finished message.  Otherwise, packets protected by the updated keys could be
 confused for retransmissions of handshake messages.  A client cannot initiate a
 key update until all of its handshake messages have been acknowledged by the
 server.
+
+
+# Client Address Validation {#client-address-validation}
+
+Two tools are provided by TLS to enable validation of client source addresses at
+a server: the cookie in the HelloRetryRequest message, and the ticket in the
+NewSessionTicket message.
+
+
+## HelloRetryRequest Address Validation
+
+The cookie extension in the TLS HelloRetryRequest message allows a server to
+perform source address validation during the handshake.
+
+When QUIC requests address validation during the processing of the first
+ClientHello, the token it provides is included in the cookie extension of a
+HelloRetryRequest.  As long as the cookie cannot be successfully guessed by a
+client, the server can be assured that the client received the HelloRetryRequest
+if it includes the value in a second ClientHello.
+
+An initial ClientHello never includes a cookie extension.  Thus, if a server
+constructs a cookie that contains all the information necessary to reconstruct
+state, it can discard local state after sending a HelloRetryRequest.  Presence
+of a valid cookie in a ClientHello indicates that the ClientHello is a second
+attempt from the client.
+
+An address validation token can be extracted from a second ClientHello and
+passed to the transport for further validation.  If that validation fails, the
+server MUST fail the TLS handshake and send an illegal_parameter alert.
+
+Combining address validation with the other uses of HelloRetryRequest ensures
+that there are fewer ways in which an additional round-trip can be added to the
+handshake.  In particular, this makes it possible to combine a request for
+address validation with a request for a different client key share.
+
+If TLS needs to send a HelloRetryRequest for other reasons, it needs to ensure
+that it can correctly identify the reason that the HelloRetryRequest was
+generated.  During the processing of a second ClientHello, TLS does not need to
+consult the transport protocol regarding address validation if address
+validation was not requested originally.  In such cases, the cookie extension
+could either be absent or it could indicate that an address validation token is
+not present.
+
+
+## NewSessionTicket Address Validation
+
+The ticket in the TLS NewSessionTicket message allows a server to provide a
+client with a similar sort of token.  When a client resumes a TLS connection -
+whether or not 0-RTT is attempted - it includes the ticket in the handshake
+message.  As with the HelloRetryRequest cookie, the server includes the address
+validation token in the ticket.  TLS provides the token it extracts from the
+session ticket to the transport when it asks whether source address validation
+is needed.
+
+If both a HelloRetryRequest cookie and a session ticket are present in the
+ClientHello, only the token from the cookie is passed to the transport.  The
+presence of a cookie indicates that this is a second ClientHello - the token
+from the session ticket will have been provided to the transport when it
+appeared in the first ClientHello.
+
+A server can send a NewSessionTicket message at any time.  This allows it to
+update the state - and the address validation token - that is included in the
+ticket.  This might be done to refresh the ticket or token, or it might be
+generated in response to changes in the state of the connection.  QUIC can
+request that a NewSessionTicket be sent by providing a new address validation
+token.
+
+
+## Address Validation Token Integrity {#validation-token-integrity}
+
+TLS MUST provide integrity protection for address validation token unless the
+transport guarantees integrity protection by other means.  For a
+NewSessionTicket that includes confidential information - such as the resumption
+secret - including the token under authenticated encryption ensures that the
+token gains both confidentiality and integrity protection without duplicating
+the overheads of that protection.
 
 
 # Pre-handshake QUIC Messages {#pre-hs}
