@@ -952,9 +952,9 @@
 
     ],
     "milestone": null,
-    "comments": 0,
+    "comments": 1,
     "created_at": "2017-01-26T06:41:43Z",
-    "updated_at": "2017-01-26T06:41:43Z",
+    "updated_at": "2017-02-08T20:12:38Z",
     "closed_at": null,
     "body": "There might be a way in which both sides of a connection could agree (by convention, protocol, or explicit signaling) that a particular stream is closed WITHOUT sending a FIN and spending the extra octets.  This could be used by HTTP to avoid the FIN that a client currently has to send when receiving a server push."
   },
@@ -8695,71 +8695,6 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/20.patch"
     },
     "body": "The model here is that neither on-path nor off-path attackers should be able to forge one, but\r\nthat on-path elements should be able to validate the public reset."
-  },
-  {
-    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/19",
-    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
-    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/19/labels{/name}",
-    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/19/comments",
-    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/19/events",
-    "html_url": "https://github.com/quicwg/base-drafts/issues/19",
-    "id": 191252504,
-    "number": 19,
-    "title": "Core protocol doc missing RST_STREAM frame error codes ",
-    "user": {
-      "login": "LPardue",
-      "id": 6571445,
-      "avatar_url": "https://avatars.githubusercontent.com/u/6571445?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/LPardue",
-      "html_url": "https://github.com/LPardue",
-      "followers_url": "https://api.github.com/users/LPardue/followers",
-      "following_url": "https://api.github.com/users/LPardue/following{/other_user}",
-      "gists_url": "https://api.github.com/users/LPardue/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/LPardue/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/LPardue/subscriptions",
-      "organizations_url": "https://api.github.com/users/LPardue/orgs",
-      "repos_url": "https://api.github.com/users/LPardue/repos",
-      "events_url": "https://api.github.com/users/LPardue/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/LPardue/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "labels": [
-      {
-        "id": 481871311,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/editorial",
-        "name": "editorial",
-        "color": "0e8a16",
-        "default": false
-      },
-      {
-        "id": 481871627,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/http",
-        "name": "http",
-        "color": "fbca04",
-        "default": false
-      },
-      {
-        "id": 481871399,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
-        "name": "transport",
-        "color": "fbca04",
-        "default": false
-      }
-    ],
-    "state": "open",
-    "locked": false,
-    "assignee": null,
-    "assignees": [
-
-    ],
-    "milestone": null,
-    "comments": 7,
-    "created_at": "2016-11-23T11:59:22Z",
-    "updated_at": "2017-01-20T16:09:17Z",
-    "closed_at": null,
-    "body": "Hi,\r\n\r\nI believe the RST_STREAM error codes are missing from https://tools.ietf.org/html/draft-hamilton-quic-transport-protocol-01 (there weren't in the previous version either).\r\n\r\nThese error codes are distinct from other error codes but the enumeration ranges overlap, which causes some unfortunate aliasing. I raised this issue on the QUIC Protocol discussion group (https://groups.google.com/a/chromium.org/forum/#!topic/proto-quic/dSSNpQj3shI) but also raising here to signal when the the I-D gets updated.\r\n"
   },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/9",
