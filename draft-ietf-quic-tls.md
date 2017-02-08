@@ -105,7 +105,8 @@ This document describes how QUIC can be secured using Transport Layer Security
 improvements for connection establishment over previous versions.  Absent packet
 loss, most new connections can be established and secured within a single round
 trip; on subsequent connections between the same client and server, the client
-can often send application data immediately, that is, zero round trip setup.
+can often send application data immediately, that is, using a zero round trip
+setup.
 
 This document describes how the standardized TLS 1.3 can act a security
 component of QUIC.  The same design could work for TLS 1.2, though few of the
@@ -195,12 +196,12 @@ exchange cannot be observed, modified, or forged.
 
 TLS features can be separated into two basic functions: an authenticated key
 exchange and record protection.  QUIC primarily uses the authenticated key
-exchange provided by TLS; QUIC provides its own packet protection.
+exchange provided by TLS but provides its own packet protection.
 
 The TLS authenticated key exchange occurs between two entities: client and
 server.  The client initiates the exchange and the server responds.  If the key
 exchange completes successfully, both client and server will agree on a secret.
-TLS supports both pre-shared key (PSK) and Diffie-Hellman (DH) key exchange.
+TLS supports both pre-shared key (PSK) and Diffie-Hellman (DH) key exchanges.
 PSK is the basis for 0-RTT; the latter provides perfect forward secrecy (PFS)
 when the DH keys are destroyed.
 
@@ -257,7 +258,7 @@ document:
    an additional round trip prior to the basic exchange.  This is needed if the
    server wishes to request a different key exchange key from the client.
    HelloRetryRequest is also used to verify that the client is correctly able to
-   receive packets on the address it claims to have (see {{source-address}}).
+   receive packets on the address it claims to have (see {{QUIC-TRANSPORT}}).
 
  * A pre-shared key mode can be used for subsequent handshakes to avoid public
    key operations.  This is the basis for 0-RTT data, even if the remainder of
@@ -399,6 +400,12 @@ Important:
   client, the server cannot consider the client to be authenticated until it
   receives and validates the client's Finished message.
 
+: The requirement for the server to wait for the client Finished message creates
+  a dependency on that message being delivered.  A client can avoid the
+  potential for head-of-line blocking that this implies by sending a copy of the
+  STREAM frame that carries the Finished message in multiple packets.  This
+  enables immediate server processing for those packets.
+
 
 ### Key Ready Events
 
@@ -461,6 +468,40 @@ Get Handshake
 {: #exchange-summary title="Interaction Summary between QUIC and TLS"}
 
 
+## TLS Version
+
+This document describes how TLS 1.3 {{!I-D.ietf-tls-tls13}} is used with QUIC.
+
+In practice, the TLS handshake will negotiate a version of TLS to use.  This
+could result in a newer version of TLS than 1.3 being negotiated if both
+endpoints support that version.  This is acceptable provided that the features
+of TLS 1.3 that are used by QUIC are supported by the newer version.
+
+A badly configured TLS implementation could negotiate TLS 1.2 or another older
+version of TLS.  An endpoint MUST terminate the connection if a version of TLS
+older than 1.3 is negotiated.
+
+
+## Peer Authentication
+
+The requirements for authentication depend on the application protocol that is
+in use.  TLS provides server authentication and permits the server to request
+client authentication.
+
+A client MUST authenticate the identity of the server.  This typically involves
+verification that the identity of the server is included in a certificate and
+that the certificate is issued by a trusted entity (see for example
+{{?RFC2818}}).
+
+A server MAY request that the client authenticate during the handshake. A server
+MAY refuse a connection if the client is unable to authenticate when requested.
+The requirements for client authentication vary based on application protocol
+and deployment.
+
+A server MUST NOT use post-handshake client authentication (see Section 4.6.2 of
+{{!I-D.ietf-tls-tls13}}).
+
+
 # QUIC Packet Protection {#packet-protection}
 
 QUIC packet protection provides authenticated encryption of packets.  This
@@ -470,7 +511,7 @@ connection (see {{key-expansion}}).
 
 Different keys are used for QUIC packet protection and TLS record protection.
 Having separate QUIC and TLS record protection means that TLS records can be
-protected by two different keys.  This redundancy is limited to a only a few TLS
+protected by two different keys.  This redundancy is limited to only a few TLS
 records, and is maintained for the sake of simplicity.
 
 
@@ -550,7 +591,7 @@ keys.
 
 After a key update (see {{key-update}}), these secrets are updated using the
 HKDF-Expand-Label function defined in Section 7.1 of {{!I-D.ietf-tls-tls13}}.
-HKDF-Expand-Label uses the the PRF hash function negotiated by TLS.  The
+HKDF-Expand-Label uses the PRF hash function negotiated by TLS.  The
 replacement secret is derived using the existing Secret, a Label of "QUIC client
 1-RTT Secret" for the client and "QUIC server 1-RTT Secret" for the server, an
 empty HashValue, and the same output Length as the hash function selected by TLS
@@ -993,7 +1034,7 @@ sources can be discarded.
 
 `WINDOW_UPDATE` frames MUST NOT be sent unprotected.
 
-Though data is exchanged on stream 1, the initial flow control window is is
+Though data is exchanged on stream 1, the initial flow control window is
 sufficiently large to allow the TLS handshake to complete.  This limits the
 maximum size of the TLS handshake and would prevent a server or client from
 using an abnormally large certificate chain.
@@ -1055,32 +1096,28 @@ that 0-RTT data has been rejected.
 A server MUST NOT use 0-RTT keys to protect packets.
 
 
-## Protected Packets Prior to Handshake Completion {#pre-hs-protected}
+## Receiving Out-of-Order Protected Frames {#pre-hs-protected}
 
 Due to reordering and loss, protected packets might be received by an endpoint
-before the final handshake messages are received.  If these can be decrypted
-successfully, such packets MAY be stored and used once the handshake is
-complete.
+before the final TLS handshake messages are received.  A client will be unable
+to decrypt 1-RTT packets from the server, whereas a server will be able to
+decrypt 1-RTT packets from the client.
 
-Unless expressly permitted below, encrypted packets MUST NOT be used prior to
-completing the TLS handshake, in particular the receipt of a valid Finished
-message and any authentication of the peer.  If packets are processed prior to
-completion of the handshake, an attacker might use the willingness of an
-implementation to use these packets to mount attacks.
+Packets protected with 1-RTT keys MAY be stored and later decrypted and used
+once the handshake is complete.  A server MUST NOT use 1-RTT protected packets
+before verifying either the client Finished message or - in the case that the
+server has chosen to use a pre-shared key - the pre-shared key binder (see
+Section 4.2.8 of {{!I-D.ietf-tls-tls13}}).  Verifying these values provides the
+server with an assurance that the ClientHello has not been modified.
 
-TLS handshake messages are covered by record protection during the handshake,
-once key agreement has completed.  This means that protected messages need to be
-decrypted to determine if they are TLS handshake messages or not.  Similarly,
-`ACK` and `WINDOW_UPDATE` frames might be needed to successfully complete the
-TLS handshake.
+A server could receive packets protected with 0-RTT keys prior to receiving a
+TLS ClientHello.  The server MAY retain these packets for later decryption in
+anticipation of receiving a ClientHello.
 
-Any timestamps present in `ACK` frames MUST be ignored rather than causing a
-fatal error.  Timestamps on protected frames MAY be saved and used once the TLS
-handshake completes successfully.
-
-An endpoint MAY save the last protected `WINDOW_UPDATE` frame it receives for
-each stream and apply the values once the TLS handshake completes.  Failing
-to do this might result in temporary stalling of affected streams.
+Receiving and verifying the TLS Finished message is critical in ensuring the
+integrity of the TLS handshake.  A server MUST NOT use protected packets from
+the client prior to verifying the client Finished message if its response
+depends on client authentication.
 
 
 # QUIC-Specific Additions to the TLS Handshake
@@ -1128,27 +1165,6 @@ transport-related parameters.  This provides integrity protection for these
 values.  Including these in the TLS handshake also make the values that a client
 sets available to a server one-round trip earlier than parameters that are
 carried in QUIC packets.  This document does not define that extension.
-
-
-## Source Address Validation {#source-address}
-
-QUIC implementations describe a source address token.  This is an opaque blob
-that a server might provide to clients when they first use a given source
-address.  The client returns this token in subsequent messages as a return
-routeability check.  That is, the client returns this token to prove that it is
-able to receive packets at the source address that it claims.  This prevents the
-server from being used in packet reflection attacks (see {{reflection}}).
-
-A source address token is opaque and consumed only by the server.  Therefore it
-can be included in the TLS 1.3 pre-shared key identifier for 0-RTT handshakes.
-Servers that use 0-RTT are advised to provide new pre-shared key identifiers
-after every handshake to avoid linkability of connections by passive observers.
-Clients MUST use a new pre-shared key identifier for every connection that they
-initiate; if no pre-shared key identifier is available, then resumption is not
-possible.
-
-A server that is under load might include a source address token in the cookie
-extension of a HelloRetryRequest.
 
 
 ## Priming 0-RTT

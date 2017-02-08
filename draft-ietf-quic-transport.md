@@ -372,7 +372,8 @@ The fields in the Common Header are the following:
      packet.  This must be set in all packets until negotiated to a different
      value for a given direction.  For instance, if a client indicates that the
      5-tuple fully identifies the connection at the client, the connection ID is
-     optional in the server-to-client direction.
+     optional in the server-to-client direction. The negotiation is described in
+     {{optional-transport-parameters}}.
 
    * 0x30 = PACKET_NUMBER_SIZE.  These two bits indicate the number of
      low-order-bytes of the packet number that are present in each packet.
@@ -559,16 +560,16 @@ document.
 +------------------|--------------------|----------------------------+
 | Type-field value |     Frame type     | Definition                 |
 +------------------|--------------------|----------------------------+
-| `1FDOOOSS`       |  STREAM            | {{frame-stream}}           |
-| `01NULLMM`       |  ACK               | {{frame-ack}}              |
-| 00000000 (0x00)  |  PADDING           | {{frame-padding}}          |
-| 00000001 (0x01)  |  RST_STREAM        | {{frame-rst-stream}}       |
-| 00000010 (0x02)  |  CONNECTION_CLOSE  | {{frame-connection-close}} |
-| 00000011 (0x03)  |  GOAWAY            | {{frame-goaway}}           |
-| 00000100 (0x04)  |  WINDOW_UPDATE     | {{frame-window-update}}    |
-| 00000101 (0x05)  |  BLOCKED           | {{frame-blocked}}          |
-| 00000110 (0x06)  |  STOP_WAITING      | {{frame-stop-waiting}}     |
-| 00000111 (0x07)  |  PING              | {{frame-ping}}             |
+| 0x00             |  PADDING           | {{frame-padding}}          |
+| 0x01             |  RST_STREAM        | {{frame-rst-stream}}       |
+| 0x02             |  CONNECTION_CLOSE  | {{frame-connection-close}} |
+| 0x03             |  GOAWAY            | {{frame-goaway}}           |
+| 0x04             |  WINDOW_UPDATE     | {{frame-window-update}}    |
+| 0x05             |  BLOCKED           | {{frame-blocked}}          |
+| 0x06             |  STOP_WAITING      | {{frame-stop-waiting}}     |
+| 0x07             |  PING              | {{frame-ping}}             |
+| 0x40 - 0x7f      |  ACK               | {{frame-ack}}              |
+| 0x80 - 0xff      |  STREAM            | {{frame-stream}}           |
 +------------------|--------------------|----------------------------+
 
 ## Version Negotiation Packet
@@ -650,13 +651,15 @@ version. The resent packets MUST use new packet numbers.  These packets MUST
 continue to have the VERSION flag set and MUST include the new negotiated
 protocol version.
 
-The client MUST set the VERSION flag on all packets until version negotiation
-concludes. Version negotiation successfully concludes when the client receives a
-packet from the server with the VERSION flag unset. All subsequent packets sent
-by the client SHOULD have the VERSION flag unset.
+The client MUST set the VERSION flag and include its selected version on all
+packets until it has 1-RTT keys and it has received a packet from the server
+that does not have the VERSION flag set.  With TLS, this means that unprotected
+packets and 0-RTT protected packets all include a version field.
 
-Once the server receives a packet from the client with the VERSION flag unset,
-it MUST ignore the flag in subsequently received packets.
+A client MUST NOT change the version it uses unless it is in response to a
+version negotiation packet from the server.  Once a client receives a packet
+from the server with the VERSION flag unset, it MUST ignore the flag in
+subsequently received packets.
 
 Version negotiation uses unprotected data. The result of the negotiation MUST
 be revalidated once the cryptographic handshake has completed (see
@@ -680,7 +683,7 @@ the document.
 
 The transport component of the handshake is responsible for exchanging and
 negotiating the following parameters for a QUIC connection.  Not all parameters
-are negotiated, some parameters are sent in just one direction.  These
+are negotiated; some parameters are sent in just one direction.  These
 parameters and options are encoded and handed off to the crypto handshake
 protocol to be transmitted to the peer.
 
@@ -703,7 +706,7 @@ QUIC encodes the transport parameters and options as tag-value pairs, all as
 
 * ICSL: Idle timeout in seconds.  The maximum value is 600 seconds (10 minutes).
 
-#### Optional Transport Parameters
+#### Optional Transport Parameters {#optional-transport-parameters}
 
 * TCID: Indicates support for truncated Connection IDs.  If sent by a peer,
   indicates that connection IDs sent to the peer should be truncated to 0 bytes.
@@ -721,28 +724,57 @@ QUIC encodes the transport parameters and options as tag-value pairs, all as
 
 ### Proof of Source Address Ownership
 
-Transport protocols commonly use a roundtrip time to verify a client's address
-ownership for protection from malicious clients that spoof their source address.
-QUIC uses a cookie, called the Source Address Token (STK), to mostly eliminate
-this roundtrip of delay.  This technique is similar to TCP Fast Open's use of a
-cookie to avoid a roundtrip of delay in TCP connection establishment.
+Transport protocols commonly spend a round trip checking that a client owns the
+transport address (IP and port) that it claims.  Verifying that a client can
+receive packets sent to its claimed transport address protects against spoofing
+of this information by malicious clients.
 
-On a new connection, a QUIC server sends an STK, which is opaque to and stored
-by the client.  On a subsequent connection, the client echoes it in the
-transport handshake as proof of IP ownership.
+This technique is used primarily to avoid QUIC from being used for traffic
+amplification attack.  In such an attack, a packet is sent to a server with
+spoofed source address information that identifies a victim.  If a server
+generates more or larger packets in response to that packet, the attacker can
+use the server to send more data toward the victim than it would be able to send
+on its own.
 
-A QUIC server also uses the STK to store server-designated connection IDs for
-Stateless Rejects, to verify that an incoming connection contains the correct
-connection ID.
+Several methods are used in QUIC to mitigate this attack.  Firstly, the initial
+handshake packet from a client is padded to a moderately large size (TBD:
+describe/reference how this size is selected).  This allows a server to send a
+similar amount of data without validating ownership of an address (TBD: provide
+limits on what amount of amplification is enough).
 
-A QUIC server MAY additionally store other data in a the STK, such as measured
-bandwidth and measured minimum RTT to the client that may help the server better
-bootstrap a subsequent connection from the same client.  A server MAY send an
-updated STK message mid-connection to update server state that is stored at the
-client in the STK.
+A server eventually confirms that a client has received its messages when the
+cryptographic handshake successfully completes.  This might be either because
+the server wishes to avoid the computational cost of completing the handshake,
+or it might be that the size of the packets that are sent during the handshake
+is too large.  This is especially important for 0-RTT, where the server might
+wish to provide application data traffic - such as a response to a request - in
+response to the data carried in the early data from the client.
 
-(TODO: Describe server and client actions on STK, encoding, recommendations for
-what to put in an STK.  Describe SCUP messages.)
+To send additional data prior to completing the cryptographic handshake, the
+server then needs to validate that the client owns the address that it claims.
+
+Two tools are provided by TLS to enable validation of client source addresses:
+the cookie in the HelloRetryRequest message, and the ticket in the
+NewSessionTicket message.
+
+The cookie extension in the TLS HelloRetryRequest message allows a server to
+perform source address validation during the handshake.  As long as the cookie
+cannot be successfully guessed by a client, the server can be assured that the
+client received the HelloRetryRequest.
+
+A server can use the HelloRetryRequest cookie in a stateless fashion by
+encrypting the state it needs to verify ownership of the client address and
+continue the handshake into the cookie.
+
+The ticket in the TLS NewSessionTicket message allows a server to provide a
+client with a similar sort of token.  When a client resumes a TLS connection -
+whether or not 0-RTT is attempted - it includes the ticket in the handshake
+message.  As with the HelloRetryRequest cookie, the server can include the state
+in the ticket it needs to validate that the client owns the address.
+
+A server can send a NewSessionTicket message at any time.  This allows it to
+update the state that is included in the ticket.  This might be done to refresh
+the ticket, or in response to changes in the state of a connection.
 
 ### Crypto Handshake Protocol Features
 
@@ -818,8 +850,8 @@ Connections should remain open until they become idle for a pre-negotiated
 period of time.  A QUIC connection, once established, can be terminated in one
 of three ways:
 
-1. Explicit Shutdown: An endpoint sends a CONNECTION_CLOSE frame to the peer
-   initiating a connection termination.  An endpoint may send a GOAWAY frame to
+1. Explicit Shutdown: An endpoint sends a CONNECTION_CLOSE frame to
+   initiate a connection termination.  An endpoint may send a GOAWAY frame to
    the peer prior to a CONNECTION_CLOSE to indicate that the connection will
    soon be terminated.  A GOAWAY frame signals to the peer that any active
    streams will continue to be processed, but the sender of the GOAWAY will not
@@ -901,8 +933,7 @@ A STREAM frame is shown below.
 
 The STREAM frame contains the following fields:
 
-* Stream ID: A variable-sized unsigned ID unique to this stream, whose size is
-  determined by the `SS` bits in the type byte.
+* Stream ID: A variable-sized unsigned ID unique to this stream.
 
 * Offset: A variable-sized unsigned number specifying the byte offset in the
   stream for the data in this STREAM frame.  The first byte in the stream has an
@@ -937,11 +968,11 @@ and 256 ack blocks.  Ack blocks are ranges of acknowledged packets.
 To limit the ACK blocks to the ones that haven't yet been received by the
 sender, the sender periodically sends STOP_WAITING frames that signal the
 receiver to stop acking packets below a specified sequence number, raising the
-"least unacked" packet number at the receiver.  A sender of an ACK frame thus
-reports only those ACK blocks between the received least unacked and the
-reported largest observed packet numbers.  An endpoint SHOULD use the "Largest
-Acked" packet number it received to calculate the "Least Unacked Delta" value in
-any STOP_WAITING frame it might send.
+Least Unacked packet number at the receiver.  A sender of an ACK frame thus
+reports only those ACK blocks between the received Least Unacked and the
+reported Largest Acked packet numbers.  The endpoint SHOULD raise the Least
+Unacked communicated via future STOP_WAITING frames to the most recently
+received Largest Acked.
 
 Unlike TCP SACKs, QUIC ACK blocks are irrevocable.  Once a packet is acked, even
 if it does not appear in a future ACK frame, it is assumed to be acked.
@@ -1061,7 +1092,7 @@ receive times relative to the beginning of the connection.
 +-+-+-+-+-+-+-+-+
 | [Delta LA (8)]|
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                [First Timestamp (32)]                         |
+|                    [First Timestamp (32)]                     |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |[Delta LA 1(8)]| [Time Since Previous 1 (16)]  |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -1163,9 +1194,9 @@ The fields in the WINDOW_UPDATE frame are as follows:
   to specify the connection-level flow control window.
 
 * Byte offset: A 64-bit unsigned integer indicating the absolute byte offset of
-  data which can be sent on the given stream.  In the case of connection level
-  flow control, the cumulative number of bytes which can be sent on all
-  currently open streams.
+  data which can be sent on the given stream.  In the case of connection-level
+  flow control, the cumulative offset which can be sent on all streams that
+  contribute to connection-level flow control.
 
 ## BLOCKED Frame {#frame-blocked}
 
@@ -1199,25 +1230,26 @@ stream.  The frame is as follows:
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                        Error Code (32)                        |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                        Stream ID (32)                         |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                                                               |
-+                        Byte Offset (64)                       +
++                       Final Offset (64)                       +
 |                                                               |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                        Error Code (32)                        |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
 
 The fields are:
 
-* Stream ID: The 32-bit Stream ID of the stream being terminated.
-
-* Byte offset: A 64-bit unsigned integer indicating the absolute byte offset of
-  the end of data written on this stream by the RST_STREAM sender.
-
 * Error code: A 32-bit error code which indicates why the stream is being
   closed.
+
+* Stream ID: The 32-bit Stream ID of the stream being terminated.
+
+* Final offset: A 64-bit unsigned integer indicating the absolute byte offset of
+  the end of data written on this stream by the RST_STREAM sender.
+
 
 ## PADDING Frame {#frame-padding}
 
@@ -1289,9 +1321,6 @@ The frame is as follows:
 
 The fields of a GOAWAY frame are as follows:
 
-* Frame type: An 8-bit value that must be set to 0x03 specifying that this is a
-  GOAWAY frame.
-
 * Error Code: A 32-bit field error code which indicates the reason for closing
   this connection.
 
@@ -1360,9 +1389,9 @@ A receiver acknowledges receipt of a received packet by sending one or more ACK
 frames containing the packet number of the received packet.  To avoid perpetual
 acking between endpoints, a receiver MUST NOT generate an ack in response to
 every packet containing only ACK frames.  However, since it is possible that an
-endpoint sends only packets containing ACK frame (or other non-retransmittable
-frames), the receiving peer MAY send an ACK frame after a reasonable number
-(currently 20) of such packets have been received.
+endpoint might only send packets containing ACK frames (or other
+non-retransmittable frames), the receiving peer MAY send an ACK frame after a
+reasonable number (currently 20) of such packets have been received.
 
 Strategies and implications of the frequency of generating acknowledgments are
 discussed in more detail in {{QUIC-RECOVERY}}.
@@ -1370,18 +1399,21 @@ discussed in more detail in {{QUIC-RECOVERY}}.
 # Streams: QUIC's Data Structuring Abstraction {#streams}
 
 Streams in QUIC provide a lightweight, ordered, and bidirectional byte-stream
-abstraction.  Streams can be created either by the client or the server, can
-concurrently send data interleaved with other streams, and can be cancelled.
-QUIC's stream lifetime is modeled closely after HTTP/2's {{?RFC7540}}.  Streams
-are independent of each other in delivery order.  That is, data that is received
-on a stream is delivered in order within that stream, but there is no particular
-delivery order across streams.  Transmit ordering among streams is left to the
-implementation.  QUIC streams are considered lightweight in that the creation
-and destruction of streams are expected to have minimal bandwidth and
-computational cost.  A single STREAM frame may create, carry data for, and
+abstraction modeled closely on HTTP/2 streams {{?RFC7540}}
+
+Streams can be created either by the client or the server, can concurrently send
+data interleaved with other streams, and can be cancelled.
+
+Data that is received on a stream is delivered in order within that stream, but
+there is no particular delivery order across streams.  Transmit ordering among
+streams is left to the implementation.
+
+The creation and destruction of streams are expected to have minimal bandwidth
+and computational cost.  A single STREAM frame may create, carry data for, and
 terminate a stream, or a stream may last the entire duration of a connection.
-Implementations are therefore advised to keep these extremes in mind and to
-implement stream creation and destruction to be as lightweight as possible.
+
+Streams are individually flow controlled, allowing an endpoint to limit memory
+commitment and to apply back pressure.
 
 An alternative view of QUIC streams is as an elastic "message" abstraction,
 similar to the way ephemeral streams are used in SST {{SST}}, which may be a
@@ -1505,6 +1537,9 @@ STREAM frames; WINDOW_UPDATE and RST_STREAM MAY be sent in this state.
 A stream transitions from this state to "closed" when a frame that contains an
 FIN flag is received or when either peer sends a RST_STREAM frame.
 
+An endpoint that closes a stream MUST NOT send data beyond the final offset that
+it has chosen, see {{state-closed}} for details.
+
 An endpoint can receive any type of frame in this state.  Providing flow-control
 credit using WINDOW_UPDATE frames is necessary to continue receiving
 flow-controlled frames.  In this state, a receiver MAY ignore WINDOW_UPDATE
@@ -1517,9 +1552,8 @@ A stream that is "half-closed (remote)" is no longer being used by the peer to
 send any data.  In this state, a sender is no longer obligated to maintain a
 receiver stream-level flow-control window.
 
-If an endpoint receives any STREAM frames for a stream that is in this state, it
-MUST close the connection with a QUIC_STREAM_DATA_AFTER_TERMINATION error
-({{error-handling}}).
+A stream that is in the "half-closed (remote)" state will have a final offset
+for received data, see {{state-closed}} for details.
 
 A stream in this state can be used by the endpoint to send frames of any type.
 In this state, the endpoint continues to observe advertised stream-level and
@@ -1528,19 +1562,25 @@ connection-level flow-control limits ({{flow-control}}).
 A stream can transition from this state to "closed" by sending a frame that
 contains a FIN flag or when either peer sends a RST_STREAM frame.
 
-### closed
+### closed {#state-closed}
 
 The "closed" state is the terminal state.
 
-A final offset is present in both a frame bearing a FIN flag and in a RST_STREAM
-frame.  Upon sending either of these frames for a stream, the endpoint MUST NOT
-send a STREAM frame carrying data beyond the final offset.
+An endpoint will learn the final offset of the data it receives on a stream when
+it enters the "half-closed (remote)" or "closed" state.  The final offset is
+carried explicitly in the RST_STREAM frame; otherwise, the final offset is the
+offset of the end of the data carried in STREAM frame marked with a FIN flag.
 
-An endpoint that receives any frame for this stream after receiving either a FIN
-flag and all stream data preceding it, or a RST_STREAM frame, MUST quietly
-discard the frame, with one exception.  If a STREAM frame carrying data beyond
-the received final offset is received, the endpoint MUST close the connection
-with a QUIC_STREAM_DATA_AFTER_TERMINATION error ({{error-handling}}).
+An endpoint MUST NOT send data on a stream at or beyond the final offset.
+
+Once a final offset for a stream is known, it cannot change.  If a RST_STREAM or
+STREAM frame causes the final offset to change for a stream, an endpoint SHOULD
+respond with a QUIC_STREAM_DATA_AFTER_TERMINATION error (see
+{{error-handling}}).  A receiver SHOULD treat receipt of data at or beyond the
+final offset as a QUIC_STREAM_DATA_AFTER_TERMINATION error.  Generating these
+errors is not mandatory, but only because requiring that an endpoint generate
+these errors also means that the endpoint needs to maintain the final offset
+state for closed streams, which could mean a significant state commitment.
 
 An endpoint that receives a RST_STREAM frame (and which has not sent a FIN or a
 RST_STREAM) MUST immediately respond with a RST_STREAM frame, and MUST NOT send
@@ -1548,11 +1588,11 @@ any more data on the stream.  This endpoint may continue receiving frames for
 the stream on which a RST_STREAM is received.
 
 If this state is reached as a result of sending a RST_STREAM frame, the peer
-that receives the RST_STREAM might have already sent -- or enqueued for sending
--- frames on the stream that cannot be withdrawn.  An endpoint MUST ignore
-frames that it receives on closed streams after it has sent a RST_STREAM frame.
-An endpoint MAY choose to limit the period over which it ignores frames and
-treat frames that arrive after this time as being in error.
+that receives the RST_STREAM frame might have already sent -- or enqueued for
+sending -- frames on the stream that cannot be withdrawn.  An endpoint MUST
+ignore frames that it receives on closed streams after it has sent a RST_STREAM
+frame. An endpoint MAY choose to limit the period over which it ignores frames
+and treat frames that arrive after this time as being in error.
 
 STREAM frames received after sending RST_STREAM are counted toward the
 connection and stream flow-control windows.  Even though these frames might be
@@ -1621,16 +1661,10 @@ as an ordered byte-stream.  Data received out of order MUST be buffered for
 later delivery, as long as it is not in violation of the receiver's flow control
 limits.
 
-An endpoint MUST NOT send any stream data without consulting the congestion
-controller and the flow controller, with the following two exceptions.
-
-* The crypto handshake stream, Stream 1, MUST NOT be subject to congestion
-  control or connection-level flow control, but MUST be subject to stream-level
-  flow control.
-
-* An application MAY exclude specific stream IDs from connection-level flow
-  control.  If so, these streams MUST NOT be subject to connection-level flow
-  control.
+The crypto handshake stream, Stream 1, MUST NOT be subject to congestion control
+or connection-level flow control, but MUST be subject to stream-level flow
+control. An endpoint MUST NOT send data on any other stream without consulting
+the congestion controller and the flow controller.
 
 Flow control is described in detail in {{flow-control}}, and congestion control
 is described in the companion document {{QUIC-RECOVERY}}.
@@ -1652,9 +1686,8 @@ Stream flow control, which prevents a single stream from consuming the entire
 receive buffer for a connection.
 
 A receiver sends WINDOW_UPDATE frames to the sender to advertise additional
-credit, for both connection and stream flow control.  A receiver advertises the
-maximum absolute byte offset in the stream or in the connection which the
-receiver is willing to receive.
+credit by sending the absolute byte offset in the stream or in the connection
+which it is willing to receive.
 
 The initial flow control credit is 65536 bytes for both the stream and
 connection flow controllers.
@@ -1663,8 +1696,12 @@ A receiver MAY advertise a larger offset at any point in the connection by
 sending a WINDOW_UPDATE frame.  A receiver MUST NOT renege on an advertisement;
 that is, once a receiver advertises an offset via a WINDOW_UPDATE frame, it MUST
 NOT subsequently advertise a smaller offset.  A sender may receive WINDOW_UPDATE
-frames out of order; a sender MUST therefore ignore any reductions in flow
-control credit.
+frames out of order; a sender MUST therefore ignore any WINDOW_UPDATE that
+does not move the window forward.
+
+A receiver MUST close the connection with a
+QUIC_FLOW_CONTROL_RECEIVED_TOO_MUCH_DATA error ({{error-handling}}) if the
+peer violates the advertised stream or connection flow control windows.
 
 A sender MUST send BLOCKED frames to indicate it has data to write but is
 blocked by lack of connection or stream flow control credit.  BLOCKED frames are
@@ -1672,16 +1709,20 @@ expected to be sent infrequently in common cases, but they are considered useful
 for debugging and monitoring purposes.
 
 A receiver advertises credit for a stream by sending a WINDOW_UPDATE frame with
-the StreamID set appropriately.  A receiver may simply use the current received
-offset to determine the flow control offset to be advertised.
+the StreamID set appropriately. A receiver may use the current offset of data
+consumed to determine the flow control offset to be advertised.
+A receiver MAY send copies of a WINDOW_UPDATE frame in multiple packets in order
+to make sure that the sender receives it before running out of flow control
+credit, even if one of the packets is lost.
 
 Connection flow control is a limit to the total bytes of stream data sent in
-STREAM frames.  A receiver advertises credit for a connection by sending a
-WINDOW_UPDATE frame with the StreamID set to zero (0x00).  A receiver may
-maintain a cumulative sum of bytes received cumulatively on all streams to
-determine the value of the connection flow control offset to be advertised in
-WINDOW_UPDATE frames.  A sender may maintain a cumulative sum of stream data
-bytes sent to impose the connection flow control limit.
+STREAM frames on all streams contributing to connection flow control.  A
+receiver advertises credit for a connection by sending a WINDOW_UPDATE frame
+with the StreamID set to zero (0x00).  A receiver maintains a cumulative sum of
+bytes received on all streams contributing to connection-level flow control, to
+check for flow control violations. A receiver may maintain a cumulative sum of
+bytes consumed on all contributing streams to determine the connection-level
+flow control offset to be advertised.
 
 ## Edge Cases and Other Considerations
 
@@ -1695,13 +1736,13 @@ waiting for a WINDOW_UPDATE which will never come.
 
 ### Mid-stream RST_STREAM
 
-On receipt of an RST_STREAM frame, an endpoint will tear down state for the
+On receipt of a RST_STREAM frame, an endpoint will tear down state for the
 matching stream and ignore further data arriving on that stream.  This could
 result in the endpoints getting out of sync, since the RST_STREAM frame may have
 arrived out of order and there may be further bytes in flight.  The data sender
 would have counted the data against its connection level flow control budget,
 but a receiver that has not received these bytes would not know to include them
-as well.  The receiver must learn of the number of bytes that were sent on the
+as well.  The receiver must learn the number of bytes that were sent on the
 stream to make the same adjustment in its connection flow controller.
 
 To avoid this de-synchronization, a RST_STREAM sender MUST include the final
@@ -1738,7 +1779,7 @@ the receiving application consumes data, similar to common TCP implementations.
 If a sender does not receive a WINDOW_UPDATE frame when it has run out of flow
 control credit, the sender will be blocked and MUST send a BLOCKED frame.  A
 BLOCKED frame is expected to be useful for debugging at the receiver.  A
-receiver SHOULD NOT wait for a BLOCKED frame before sending with a
+receiver SHOULD NOT wait for a BLOCKED frame before sending a
 WINDOW_UPDATE, since doing so will cause at least one roundtrip of quiescence.
 For smooth operation of the congestion controller, it is generally considered
 best to not let the sender go into quiescence if avoidable.  To avoid blocking a
