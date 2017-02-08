@@ -201,6 +201,21 @@ additional framing. Note that a request or response without a body will cause
 this stream to be half-closed in the corresponding direction without
 transferring data.
 
+Because the message control stream contains HPACK data which manipulates
+connection-level state, the message control stream MUST NOT be closed with a
+stream-level error.  If an implementation chooses to reject a request with a
+QUIC error code, it MUST trigger a RST_STREAM on the data stream only.  An
+implementation MAY close (FIN) a message control stream without completing a
+full HTTP message if the data stream has been abruptly closed.  Data on message
+control streams MUST be fully consumed, or the connection terminated.
+
+If a message control stream is terminated abruptly by the transport layer (e.g.
+with QUIC_TOO_MANY_OPEN_STREAMS), any frames already sent on that stream MUST
+be re-played on another message control stream as soon as the maximum number of
+streams permits.  If the implementation no longer requires the response to this
+request, it MAY abruptly terminate the corresponding data stream at the same
+time.
+
 Pairs of streams must be utilized sequentially, with no gaps.  The data stream
 MUST be reserved with the QUIC implementation when the message control stream
 is opened or reserved, and MUST be closed after transferring the body, or else
