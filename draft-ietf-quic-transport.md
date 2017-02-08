@@ -947,9 +947,11 @@ was provided by the client.  For an initial packet, the transport can decide to
 abort the connection, allow it to proceed, or request address validation.
 
 If the transport decides to request address validation, it provides the
-cryptographic handshake with a token.  This token SHOULD include information
-about the claimed client address (IP and port), and any other supplementary
-information the server will need to validate the token in the future.
+cryptographic handshake with a token.  The contents of this token are consumed
+by the server that generates the token, so there is no need for a single
+well-defined format.  A token could include information about the claimed client
+address (IP and port), and any other supplementary information the server will
+need to validate the token in the future.
 
 The cryptographic handshake is responsible for enacting validation by sending
 the address validation token to the client.  A legitimate client will include a
