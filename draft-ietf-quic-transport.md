@@ -1431,7 +1431,7 @@ reasonable number (currently 20) of such packets have been received.
 Strategies and implications of the frequency of generating acknowledgments are
 discussed in more detail in {{QUIC-RECOVERY}}.
 
-## Special Considerations for PMTU Discovery 
+## Special Considerations for PMTU Discovery
 
 Traditional ICMP-based path MTU discovery in IPv4 ({{!RFC1191}} is potentially
 vulnerable to off-path attacks that successfully guess the IP/port 4-tuple and
