@@ -1,5 +1,56 @@
 [
   {
+    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/274",
+    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
+    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/274/labels{/name}",
+    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/274/comments",
+    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/274/events",
+    "html_url": "https://github.com/quicwg/base-drafts/pull/274",
+    "id": 206346273,
+    "number": 274,
+    "title": "Restrict RST to data streams, require replay",
+    "user": {
+      "login": "MikeBishop",
+      "id": 4273797,
+      "avatar_url": "https://avatars.githubusercontent.com/u/4273797?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/MikeBishop",
+      "html_url": "https://github.com/MikeBishop",
+      "followers_url": "https://api.github.com/users/MikeBishop/followers",
+      "following_url": "https://api.github.com/users/MikeBishop/following{/other_user}",
+      "gists_url": "https://api.github.com/users/MikeBishop/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/MikeBishop/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/MikeBishop/subscriptions",
+      "organizations_url": "https://api.github.com/users/MikeBishop/orgs",
+      "repos_url": "https://api.github.com/users/MikeBishop/repos",
+      "events_url": "https://api.github.com/users/MikeBishop/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/MikeBishop/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+
+    ],
+    "state": "open",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 0,
+    "created_at": "2017-02-08T22:33:40Z",
+    "updated_at": "2017-02-08T22:33:40Z",
+    "closed_at": null,
+    "pull_request": {
+      "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/274",
+      "html_url": "https://github.com/quicwg/base-drafts/pull/274",
+      "diff_url": "https://github.com/quicwg/base-drafts/pull/274.diff",
+      "patch_url": "https://github.com/quicwg/base-drafts/pull/274.patch"
+    },
+    "body": "Fixes #176, but I'm hoping we can find a cleaner way to do this."
+  },
+  {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/273",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
     "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/273/labels{/name}",
@@ -1668,7 +1719,8 @@
     "updated_at": "2017-01-25T04:43:48Z",
     "closed_at": null,
     "body": "This is an alternative to #167: We could just encrypt the cleartext data in the initial handshake packets with a deterministic key (e.g. a mixture of a version-dependent key and the initial packet number). The AEAD used there would have to be fixed in the spec.\r\n\r\nThe goal would be to make it harder for middleboxes to ossify on stuff in the client hello, e.g. SNI, and to detect initial packets (#203). On the other hand, there's additional computational cost for decrypting packets server-side."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/226",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -1762,8 +1814,7 @@
     "updated_at": "2017-02-03T03:51:15Z",
     "closed_at": null,
     "body": "QUIC AEAD usage in quic-tls draft currently says \"associated data, A,  for the AEAD is an empty sequence.\" The current rationale is that the public header fields do not need to be authenticated since the connection ID, flags, packet number, and version number are all effectively covered by  encryption/decryption. \r\n\r\nWe have at least 1 public flags field that is as yet unused. Since we do not know its use yet, we may want to authenticate the header to future-proof."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/224",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3508,7 +3559,8 @@
     "updated_at": "2017-01-19T23:14:00Z",
     "closed_at": null,
     "body": "> A stream that is \"half-closed (remote)\" is no longer being used by\r\n>    the peer to send any data.  In this state, a sender is no longer\r\n>    obligated to maintain a receiver stream-level flow-control window.\r\n> \r\n>    If an endpoint receives any STREAM frames for a stream that is in\r\n>    this state, it MUST close the connection with a\r\n>    QUIC_STREAM_DATA_AFTER_TERMINATION error (Section 11).\r\n\r\nIf a packet sent before the packet with FIN bit set gets lost and is retransmitted is going to cause close of the connection.\r\nThe text needs to change to say if a frame with offset  larger than the offset + size of the frame with FIN bit set is received. (or a better wording)\r\n\r\n(An editorial remark: In the \"Lifecycle of a stream\" diagram going from \"half-closed(remote)\" to \"closed\" should be cause by \"send FIN\" not \"recv FIN\" and from \"half-closed(local)\" to \"closed\" should be cause by \"recv FIN\")\r\n"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/178",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3566,8 +3618,7 @@
     "updated_at": "2017-01-19T23:06:42Z",
     "closed_at": null,
     "body": "In Section 7.3 (STOP_WAITING Frame), Least Unacked Delta is calculated using the packet ID of the packet carrying the STOP_WAITING frame. This is reasonable. \r\n\r\nIn the ACK Frame section:\r\n\r\n> An endpoint SHOULD use the \"Largest Acked\" packet number it received to calculate the \"Least Unacked Delta\" value in any STOP_WAITING frame it might send.\r\n\r\nMaybe I understood it wrong but it suggest to calculate Least Unacked Delta using \"Largest Acked\".\r\nThis should be written in a different way if it meant that the information from an ack (not only \"Largest Acked\" but also unacked gaps ) is used to decide to send a STOP_WAITING frame."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/177",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5605,7 +5656,8 @@
     "updated_at": "2017-02-08T22:02:05Z",
     "closed_at": null,
     "body": "HTTP/2 compatibility at the framing level is a bit of an unrealistic goal.  Maybe we could just avoid allocating those bits first."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/126",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5670,8 +5722,7 @@
     "updated_at": "2017-01-24T07:57:57Z",
     "closed_at": null,
     "body": "TLS provides an extension that limits the amount of data that can be sent during 0-RTT.  This is an explicit configuration item, even though TCP flow control would naturally limit the amount of data a client can send to a server with 0-RTT.  The reason for this is that servers might have to hold some or all of the 0-RTT data.  That buffering might be part of replay mitigation, for example.  A server that supports 0-RTT can use that limit to ensure that it doesn't have to buffer more than it is willing to buffer.\r\n\r\nIn #122, I have chosen to carry over the values for initial flow control window and concurrent stream limit.  We might want to provide separate transport parameters for 0-RTT so that servers can apply lower limits."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/123",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7693,7 +7744,8 @@
     "updated_at": "2017-01-26T06:20:30Z",
     "closed_at": null,
     "body": "We need to define how the public flags might be extended, or if it could be.  This has a pretty serious impact on #55."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/53",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7787,8 +7839,7 @@
     "updated_at": "2016-11-30T04:16:06Z",
     "closed_at": null,
     "body": "Not all figures currently do."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/52",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
