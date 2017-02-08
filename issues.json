@@ -1,5 +1,50 @@
 [
   {
+    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/269",
+    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
+    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/269/labels{/name}",
+    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/269/comments",
+    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/269/events",
+    "html_url": "https://github.com/quicwg/base-drafts/issues/269",
+    "id": 206298017,
+    "number": 269,
+    "title": "Packet Number Echo in Public Header",
+    "user": {
+      "login": "martinduke",
+      "id": 24398865,
+      "avatar_url": "https://avatars.githubusercontent.com/u/24398865?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/martinduke",
+      "html_url": "https://github.com/martinduke",
+      "followers_url": "https://api.github.com/users/martinduke/followers",
+      "following_url": "https://api.github.com/users/martinduke/following{/other_user}",
+      "gists_url": "https://api.github.com/users/martinduke/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/martinduke/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/martinduke/subscriptions",
+      "organizations_url": "https://api.github.com/users/martinduke/orgs",
+      "repos_url": "https://api.github.com/users/martinduke/repos",
+      "events_url": "https://api.github.com/users/martinduke/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/martinduke/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+
+    ],
+    "state": "open",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 0,
+    "created_at": "2017-02-08T19:24:35Z",
+    "updated_at": "2017-02-08T19:24:35Z",
+    "closed_at": null,
+    "body": "In Mirja's Management draft:\r\n[https://tools.ietf.org/html/draft-kuehlewind-quic-appman-00#section-3](url)\r\n\r\n> [EDITOR'S NOTE: the addition of a simple packet number echo would\r\n   allow passive RTT measurement and partial passive downstream loss/\r\n   reordering measurement.  Packet number echo can be sampled at the\r\n   echo-side (i.e. one-in-N packets or 1/p packets can carry an echo)\r\n   for efficiency tradeoff, if necessary.]\r\n\r\nI endorse this idea. Service providers are very interesting in measuring their users' quality of experience and this is one key thing we can expose to enable that. On the face of it, it seems that the privacy hit is marginal."
+  },
+  {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/267",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
     "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/267/labels{/name}",
@@ -44,9 +89,9 @@
 
     ],
     "milestone": null,
-    "comments": 0,
+    "comments": 2,
     "created_at": "2017-02-08T04:21:49Z",
-    "updated_at": "2017-02-08T04:21:49Z",
+    "updated_at": "2017-02-08T04:53:08Z",
     "closed_at": null,
     "body": "PR #106 added the following requirement on servers:\r\n\r\n> Servers MUST reject the first plaintext packet received from a client if it its total size is less than 1280 octets, to mitigate amplification attacks.\r\n\r\nHowever, this runs into an issue in the case where there are IP header extensions that the client knows about but the server doesn't.  If the client is aware of the IP header extensions and constructs a packet with a smaller payload in order to comply with our recommendation to create a packet of exactly 1280 octets, the server will receive a packet that it thinks is too small.\r\n\r\nI see a few options:\r\n1. loosen the enforcement constraint on the server\r\n2. specify that the server only enforce the constraint if it sees the entire IP packet\r\n3. specify the minimum size and its enforcement in terms of payload size (we could set different values here to allow for header extensions)"
   },
@@ -622,70 +667,6 @@
     "updated_at": "2017-01-30T02:05:39Z",
     "closed_at": null,
     "body": "The current transport doc exempts stream 1 from *congestion control*.  That seems to be unnecessary, potentially hard to implement, and maybe even dangerous."
-  },
-  {
-    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/247",
-    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
-    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/247/labels{/name}",
-    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/247/comments",
-    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/247/events",
-    "html_url": "https://github.com/quicwg/base-drafts/pull/247",
-    "id": 203909268,
-    "number": 247,
-    "title": "Move crypto to stream 0",
-    "user": {
-      "login": "MikeBishop",
-      "id": 4273797,
-      "avatar_url": "https://avatars.githubusercontent.com/u/4273797?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/MikeBishop",
-      "html_url": "https://github.com/MikeBishop",
-      "followers_url": "https://api.github.com/users/MikeBishop/followers",
-      "following_url": "https://api.github.com/users/MikeBishop/following{/other_user}",
-      "gists_url": "https://api.github.com/users/MikeBishop/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/MikeBishop/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/MikeBishop/subscriptions",
-      "organizations_url": "https://api.github.com/users/MikeBishop/orgs",
-      "repos_url": "https://api.github.com/users/MikeBishop/repos",
-      "events_url": "https://api.github.com/users/MikeBishop/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/MikeBishop/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "labels": [
-      {
-        "id": 481871604,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/tls",
-        "name": "tls",
-        "color": "fbca04",
-        "default": false
-      },
-      {
-        "id": 481871399,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
-        "name": "transport",
-        "color": "fbca04",
-        "default": false
-      }
-    ],
-    "state": "open",
-    "locked": false,
-    "assignee": null,
-    "assignees": [
-
-    ],
-    "milestone": null,
-    "comments": 11,
-    "created_at": "2017-01-30T00:37:18Z",
-    "updated_at": "2017-02-02T20:34:18Z",
-    "closed_at": null,
-    "pull_request": {
-      "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/247",
-      "html_url": "https://github.com/quicwg/base-drafts/pull/247",
-      "diff_url": "https://github.com/quicwg/base-drafts/pull/247.diff",
-      "patch_url": "https://github.com/quicwg/base-drafts/pull/247.patch"
-    },
-    "body": "In #246, we agreed that the crypto stream and only the crypto stream would be exempt from connection-level flow control.  It's also exempt from the congestion controller and has special rules about retransmissions.  Is there a logical reason to have stream-level flow control on a stream that is a control channel?\r\n\r\nIf not, let's make it clear that the crypto stream is special.  Make it Stream 0, the stream that can't be given any stream-level flow control credit because it's a reserved value.  The change is relatively modest, and seems like a good fit to our special snowflake stream."
   },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/245",
@@ -3146,9 +3127,9 @@
 
     ],
     "milestone": null,
-    "comments": 0,
+    "comments": 1,
     "created_at": "2017-01-20T16:08:39Z",
-    "updated_at": "2017-01-25T05:35:43Z",
+    "updated_at": "2017-02-08T19:47:58Z",
     "closed_at": null,
     "body": "QUIC-TRANSPORT defines the syntax of QUIC error codes and defines some values for the QUIC transport. The section says:\r\n\r\n> This section lists the defined QUIC transport error codes that may be used in a CONNECTION_CLOSE or RST_STREAM frame. Error codes share a common code space. Some error codes apply only to either streams or the entire connection and have no defined semantics in the other context.\r\n\r\nSince the error space is shared, it is not clear what error codes are appropriate to use with which frame types. There is the possibility for endpoints to send a semantically incorrect error code in a frame. How should a receiver handle such an occurrence?\r\n\r\nThis possibility exists only for the Application-specific, QUIC transport or Cryptographic error codes. Host-local error codes must not be sent.  \r\n\r\nAs an example, an client sends a `RST_STREAM` frame with the error code `QUIC_TOO_MANY_SESSIONS_ON_SERVER`.  Is this actually allowed and what should the server do (close the connection, igore it, ...)?"
   },
@@ -6203,9 +6184,9 @@
       }
     ],
     "milestone": null,
-    "comments": 22,
+    "comments": 23,
     "created_at": "2017-01-03T06:01:24Z",
-    "updated_at": "2017-01-28T19:40:36Z",
+    "updated_at": "2017-02-08T17:22:30Z",
     "closed_at": null,
     "body": "I note that the IEEE754 reference doesn't help."
   },
@@ -6585,78 +6566,6 @@
     "body": "#87 covers improving the current use of ALPN and the Alt-Svc v= parameter for HTTP.  However, I think this is something that QUIC needs to solve generically, so forking off a separate issue for that.\r\n\r\nHere are the paths I see that we need to support:\r\n\r\n- **Client to server, first time:** This is inherently a 1-RTT handshake *if* the client guesses the version correctly; 2 RTTs if it's wrong.  This incents clients to attempt the most widely-deployed version of QUIC rather than their highest version.  Consequently, there needs to be a way for a conservative client to discover that a server supports a more advanced version.\r\n- **Client to server, subsequent:** The cached information should contain information about the server's supported versions so the client can come back with the same version as last time. The scenarios where one side has changed need consideration, though:\r\n    - **Client upgraded:** Would require client to cache server's full set of supported versions and compare against the client's supported set at connect time, not just caching the selected version.\r\n    - **Server upgraded:** The current mechanism offers no way for a client to discover that the server would have accepted a version it didn't initially offer, whether because the server didn't previously support it or the client is being conservative.\r\n\r\nIdeally, I'd like to see these solved for QUIC independent of Alt-Svc -- there will be other users besides HTTP.\r\n\r\nI think this could be solved by requiring the server to always send its Version Negotiation list in the crypto handshake, not just if a Version Negotiation packet was actually sent.  Clients can discover when the server supports a newer version than they attempted, and either know what to offer next time or actively open a new connection with the new version in parallel."
   },
   {
-    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/87",
-    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
-    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/87/labels{/name}",
-    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/87/comments",
-    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/87/events",
-    "html_url": "https://github.com/quicwg/base-drafts/issues/87",
-    "id": 196072406,
-    "number": 87,
-    "title": "QUIC advertisement description",
-    "user": {
-      "login": "LPardue",
-      "id": 6571445,
-      "avatar_url": "https://avatars.githubusercontent.com/u/6571445?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/LPardue",
-      "html_url": "https://github.com/LPardue",
-      "followers_url": "https://api.github.com/users/LPardue/followers",
-      "following_url": "https://api.github.com/users/LPardue/following{/other_user}",
-      "gists_url": "https://api.github.com/users/LPardue/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/LPardue/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/LPardue/subscriptions",
-      "organizations_url": "https://api.github.com/users/LPardue/orgs",
-      "repos_url": "https://api.github.com/users/LPardue/repos",
-      "events_url": "https://api.github.com/users/LPardue/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/LPardue/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "labels": [
-      {
-        "id": 517015527,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/confirm-consensus",
-        "name": "confirm-consensus",
-        "color": "c5def5",
-        "default": false
-      },
-      {
-        "id": 481871361,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/design",
-        "name": "design",
-        "color": "1d76db",
-        "default": false
-      },
-      {
-        "id": 481871627,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/http",
-        "name": "http",
-        "color": "fbca04",
-        "default": false
-      },
-      {
-        "id": 481871604,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/tls",
-        "name": "tls",
-        "color": "fbca04",
-        "default": false
-      }
-    ],
-    "state": "open",
-    "locked": false,
-    "assignee": null,
-    "assignees": [
-
-    ],
-    "milestone": null,
-    "comments": 10,
-    "created_at": "2016-12-16T14:33:56Z",
-    "updated_at": "2017-01-31T21:24:54Z",
-    "closed_at": null,
-    "body": "Hi @MikeBishop,\r\n\r\nThe QUIC advertisement section of the HTTP mapping document introduces two terms:\r\n* the ALPN identifier `quic` \r\n* the Alt-Svc parameter `v`\r\n\r\nAre these to be defined as part of the mapping document? If so, they should be registered in line with the policies set out in RFC 7301 or RFC 7838 respectively."
-  },
-  {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/81",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
     "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/81/labels{/name}",
@@ -6838,9 +6747,9 @@
 
     ],
     "milestone": null,
-    "comments": 1,
+    "comments": 2,
     "created_at": "2016-12-03T15:38:48Z",
-    "updated_at": "2017-01-20T02:29:12Z",
+    "updated_at": "2017-02-08T19:11:56Z",
     "closed_at": null,
     "body": "ECN is not currently mentioned in the recovery draft, but it should be included.\r\n\r\nMore importantly, the transport draft has no ability for the peer to communicate ECN marks back to the sender.  I suspect, like ECN, the use of this in the transport would be negotiable in the QUIC handshake.\r\n\r\nIn practice, there most userspace network stacks also cannot see if those marks are set when packets are read."
   },
@@ -7744,14 +7653,50 @@
     ],
     "state": "open",
     "locked": false,
-    "assignee": null,
+    "assignee": {
+      "login": "martinthomson",
+      "id": 67641,
+      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/martinthomson",
+      "html_url": "https://github.com/martinthomson",
+      "followers_url": "https://api.github.com/users/martinthomson/followers",
+      "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
+      "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
+      "organizations_url": "https://api.github.com/users/martinthomson/orgs",
+      "repos_url": "https://api.github.com/users/martinthomson/repos",
+      "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/martinthomson/received_events",
+      "type": "User",
+      "site_admin": false
+    },
     "assignees": [
-
+      {
+        "login": "martinthomson",
+        "id": 67641,
+        "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/martinthomson",
+        "html_url": "https://github.com/martinthomson",
+        "followers_url": "https://api.github.com/users/martinthomson/followers",
+        "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
+        "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
+        "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
+        "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
+        "organizations_url": "https://api.github.com/users/martinthomson/orgs",
+        "repos_url": "https://api.github.com/users/martinthomson/repos",
+        "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
+        "received_events_url": "https://api.github.com/users/martinthomson/received_events",
+        "type": "User",
+        "site_admin": false
+      }
     ],
     "milestone": null,
     "comments": 2,
     "created_at": "2016-11-30T02:22:17Z",
-    "updated_at": "2017-01-26T04:54:04Z",
+    "updated_at": "2017-02-08T05:33:00Z",
     "closed_at": null,
     "body": "We need to write down how this happens:\r\n\r\n1. on the same connection\r\n2. on a subsequent connection"
   },
@@ -7819,8 +7764,7 @@
     "updated_at": "2017-01-24T07:02:17Z",
     "closed_at": null,
     "body": "We currently have no way of advertising things like flow control windows, maximum number of streams, etc...\r\n\r\nCandidate is a QUIC extension that we include in the handshake.   This can include the QUIC version."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/47",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7878,7 +7822,8 @@
     "updated_at": "2016-11-30T02:36:13Z",
     "closed_at": null,
     "body": "Error handling is rather... *distributed* in the core protocol spec.  The frames to signal errors are there, and there's a long list of error codes, but no generalized discussion of how errors are handled and what stream versus connection-level errors mean."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/45",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
