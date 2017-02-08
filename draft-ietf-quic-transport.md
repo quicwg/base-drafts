@@ -1885,6 +1885,12 @@ QUIC_INVALID_PACKET_HEADER (0x80000003):
 QUIC_INVALID_FRAME_DATA (0x80000004):
 : Frame data is malformed.
 
+QUIC_MULTIPLE_TERMINATION_OFFSETS (0x80000005):
+: Multiple final offset values were received on the same stream
+
+QUIC_STREAM_CANCELLED (0x80000006):
+: The stream was cancelled
+
 QUIC_MISSING_PAYLOAD (0x80000030):
 : The packet contained no payload.
 
