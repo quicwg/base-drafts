@@ -6,7 +6,7 @@ machine:
 
 checkout:
   post:
-    - git fetch origin gh-pages --unshallow
+    - git fetch origin gh-pages
 
 dependencies:
   pre:
