@@ -1,5 +1,98 @@
 [
   {
+    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/277",
+    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
+    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/277/labels{/name}",
+    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/277/comments",
+    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/277/events",
+    "html_url": "https://github.com/quicwg/base-drafts/pull/277",
+    "id": 206391927,
+    "number": 277,
+    "title": "Move length-determining fields to the start of STREAM and ACK",
+    "user": {
+      "login": "martinthomson",
+      "id": 67641,
+      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/martinthomson",
+      "html_url": "https://github.com/martinthomson",
+      "followers_url": "https://api.github.com/users/martinthomson/followers",
+      "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
+      "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
+      "organizations_url": "https://api.github.com/users/martinthomson/orgs",
+      "repos_url": "https://api.github.com/users/martinthomson/repos",
+      "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/martinthomson/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 481871399,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
+        "name": "transport",
+        "color": "fbca04",
+        "default": false
+      }
+    ],
+    "state": "open",
+    "locked": false,
+    "assignee": {
+      "login": "janaiyengar",
+      "id": 11067604,
+      "avatar_url": "https://avatars.githubusercontent.com/u/11067604?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/janaiyengar",
+      "html_url": "https://github.com/janaiyengar",
+      "followers_url": "https://api.github.com/users/janaiyengar/followers",
+      "following_url": "https://api.github.com/users/janaiyengar/following{/other_user}",
+      "gists_url": "https://api.github.com/users/janaiyengar/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/janaiyengar/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/janaiyengar/subscriptions",
+      "organizations_url": "https://api.github.com/users/janaiyengar/orgs",
+      "repos_url": "https://api.github.com/users/janaiyengar/repos",
+      "events_url": "https://api.github.com/users/janaiyengar/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/janaiyengar/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "assignees": [
+      {
+        "login": "janaiyengar",
+        "id": 11067604,
+        "avatar_url": "https://avatars.githubusercontent.com/u/11067604?v=3",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/janaiyengar",
+        "html_url": "https://github.com/janaiyengar",
+        "followers_url": "https://api.github.com/users/janaiyengar/followers",
+        "following_url": "https://api.github.com/users/janaiyengar/following{/other_user}",
+        "gists_url": "https://api.github.com/users/janaiyengar/gists{/gist_id}",
+        "starred_url": "https://api.github.com/users/janaiyengar/starred{/owner}{/repo}",
+        "subscriptions_url": "https://api.github.com/users/janaiyengar/subscriptions",
+        "organizations_url": "https://api.github.com/users/janaiyengar/orgs",
+        "repos_url": "https://api.github.com/users/janaiyengar/repos",
+        "events_url": "https://api.github.com/users/janaiyengar/events{/privacy}",
+        "received_events_url": "https://api.github.com/users/janaiyengar/received_events",
+        "type": "User",
+        "site_admin": false
+      }
+    ],
+    "milestone": null,
+    "comments": 0,
+    "created_at": "2017-02-09T03:12:06Z",
+    "updated_at": "2017-02-09T03:12:06Z",
+    "closed_at": null,
+    "pull_request": {
+      "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/277",
+      "html_url": "https://github.com/quicwg/base-drafts/pull/277",
+      "diff_url": "https://github.com/quicwg/base-drafts/pull/277.diff",
+      "patch_url": "https://github.com/quicwg/base-drafts/pull/277.patch"
+    },
+    "body": "I considered a more violent change here, but decided to start with the simplest move.\r\n\r\nI really want to rewrite the ACK section, it's a little obtuse as it is.  I think that it could be made a lot clearer.\r\n\r\nCloses #62."
+  },
+  {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/276",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
     "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/276/labels{/name}",
@@ -222,7 +315,13 @@
       "site_admin": false
     },
     "labels": [
-
+      {
+        "id": 481871627,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/http",
+        "name": "http",
+        "color": "fbca04",
+        "default": false
+      }
     ],
     "state": "open",
     "locked": false,
@@ -233,7 +332,7 @@
     "milestone": null,
     "comments": 0,
     "created_at": "2017-02-08T22:33:40Z",
-    "updated_at": "2017-02-08T22:33:40Z",
+    "updated_at": "2017-02-09T02:51:23Z",
     "closed_at": null,
     "pull_request": {
       "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/274",
@@ -273,7 +372,13 @@
       "site_admin": false
     },
     "labels": [
-
+      {
+        "id": 481871627,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/http",
+        "name": "http",
+        "color": "fbca04",
+        "default": false
+      }
     ],
     "state": "open",
     "locked": false,
@@ -284,7 +389,7 @@
     "milestone": null,
     "comments": 0,
     "created_at": "2017-02-08T22:19:44Z",
-    "updated_at": "2017-02-08T22:19:44Z",
+    "updated_at": "2017-02-09T02:51:23Z",
     "closed_at": null,
     "pull_request": {
       "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/273",
@@ -375,9 +480,9 @@
       }
     ],
     "milestone": null,
-    "comments": 0,
+    "comments": 5,
     "created_at": "2017-02-08T21:52:02Z",
-    "updated_at": "2017-02-08T21:52:02Z",
+    "updated_at": "2017-02-09T03:07:53Z",
     "closed_at": null,
     "body": "This needs to be written down.  I think that the best outcome would be to include BOTH a TLS alert and a QUIC error code (in a CONNECTION_CLOSE frame)."
   },
@@ -411,7 +516,13 @@
       "site_admin": false
     },
     "labels": [
-
+      {
+        "id": 481871627,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/http",
+        "name": "http",
+        "color": "fbca04",
+        "default": false
+      }
     ],
     "state": "open",
     "locked": false,
@@ -422,7 +533,7 @@
     "milestone": null,
     "comments": 2,
     "created_at": "2017-02-08T21:52:00Z",
-    "updated_at": "2017-02-08T23:30:03Z",
+    "updated_at": "2017-02-09T02:51:23Z",
     "closed_at": null,
     "pull_request": {
       "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/271",
@@ -558,7 +669,13 @@
       "site_admin": false
     },
     "labels": [
-
+      {
+        "id": 481873040,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/recovery",
+        "name": "recovery",
+        "color": "fbca04",
+        "default": false
+      }
     ],
     "state": "open",
     "locked": false,
@@ -569,7 +686,7 @@
     "milestone": null,
     "comments": 0,
     "created_at": "2017-02-07T18:39:04Z",
-    "updated_at": "2017-02-07T18:39:04Z",
+    "updated_at": "2017-02-09T02:51:33Z",
     "closed_at": null,
     "pull_request": {
       "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/266",
@@ -1738,7 +1855,8 @@
     "updated_at": "2017-01-31T06:46:27Z",
     "closed_at": null,
     "body": "Quoting myself from the mailing list:\r\n\r\nTL;DR. Encrypt the packet number with ECB or something like it. This\r\nis probably a bad idea but I wanted to write it down.\r\n\r\nI had an idea last night about encrypting the packet number. Here's\r\na diagram of a QUIC regular packet:\r\n\r\n ```  +-+-+-+-+-+-+-+-+\r\n   |   Flags (8)   |\r\n   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+\r\n   |                                                               |\r\n   +                     [Connection ID (64)]                      +\r\n   |                                                               |\r\n   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+\r\n   |                        [Version (32)]                         |\r\n   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ \r\n   |                  Packet Number (8/16/32/48)                 ...\r\n   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+\r\n   |                    {Encrypted Payload (*)}                  ...\r\n   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+\r\n   ```\r\nThe insight here is that the reason that the packet number is outside\r\nof the encryption is because it is used as the nonce for the AEAD\r\nfunction. However, there are encryption algorithms (which we usually\r\navoid for various reasons) which do not need a nonce. Specifically,\r\nwhat we could do is derive two keys:\r\n\r\n  K_h: header encryption\r\n  K_p: packet encryption\r\n\r\n\r\nSo you get:\r\n\r\n ```\r\n  +-+-+-+-+-+-+-+-+\r\n   |   Flags (8)   |\r\n   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+\r\n   |                                                               |\r\n   +                     [Connection ID (64)]                      +\r\n   |                                                               |\r\n   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+\r\n   |                        [Version (32)]                         |\r\n   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ ^ \r\n   |                 {Packet Number (8/16/32/48)}                ... | encrypted with K_h\r\n   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ v\r\n   |                    {Encrypted Payload (*)}                  ... ^\r\n   |                                                                 | encrypted with K_p\r\n   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ v\r\n```\r\n\r\nThis of course leaves the question of which crypto mode you use to encrypt\r\nthe packet number. The natural choice is ECB, but that only works with\r\ndata values the same size as the cipher block, which for AES is much\r\nbigger than the packet number (128 bits). So, that's waste, though you\r\nmight of course add stuff to the block if we had other headers.\r\nWe could use 3DES (which has a 64-bit block) or FFX (which can be used\r\nwith any block size, but at some additional computational cost).\r\n\r\nTwo pre-emptive responses to common questions:\r\n\r\n1. Yes, ECB and FFX are not generally as good as AEAD algorithms, in\r\nparticular because they don't have integrity and they reveal patterns\r\nin the plaintext. However, this is data which would (a) otherwise be in the\r\nclear and (b) is folded into the ordinary AEAD integrity check.\r\n\r\n2. As long as we correctly generate K_h and K_p independently using\r\na KDF, then any weaknesses in K_h don't implicate K_p.\r\n\r\nAgain, this probably isn't worth doing with the current amount of\r\nstuff in the headers, but I wanted to write it down so that people would\r\nknow about it.\r\n"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/230",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -1796,8 +1914,7 @@
     "updated_at": "2017-02-03T03:01:45Z",
     "closed_at": null,
     "body": "The spec just doesn't say anything about this so far. You at least want to put in some minumum requirement (like MUST send at least X ACKs per RTT).\r\n\r\nAlso related but might be a separate issue that I'm not sure about yet: Is there a value in having a mechanism for the sender to tell the receiver how often it would like to receive ACKs?"
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/228",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3565,7 +3682,8 @@
     "updated_at": "2017-02-08T19:47:58Z",
     "closed_at": null,
     "body": "QUIC-TRANSPORT defines the syntax of QUIC error codes and defines some values for the QUIC transport. The section says:\r\n\r\n> This section lists the defined QUIC transport error codes that may be used in a CONNECTION_CLOSE or RST_STREAM frame. Error codes share a common code space. Some error codes apply only to either streams or the entire connection and have no defined semantics in the other context.\r\n\r\nSince the error space is shared, it is not clear what error codes are appropriate to use with which frame types. There is the possibility for endpoints to send a semantically incorrect error code in a frame. How should a receiver handle such an occurrence?\r\n\r\nThis possibility exists only for the Application-specific, QUIC transport or Cryptographic error codes. Host-local error codes must not be sent.  \r\n\r\nAs an example, an client sends a `RST_STREAM` frame with the error code `QUIC_TOO_MANY_SESSIONS_ON_SERVER`.  Is this actually allowed and what should the server do (close the connection, igore it, ...)?"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/183",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3630,8 +3748,7 @@
     "updated_at": "2017-01-20T15:44:47Z",
     "closed_at": null,
     "body": "The question is whether we maintain TLS as some abstract concept or not.\r\n\r\nWe could talk about \"the cryptographic handshake\" and features that it provides in the abstract when referring to them in the transport document.  Or we could just describe how this protocol works in concrete terms.\r\n\r\nProponents of the first seem to think that would make replacing TLS easier.  Others disagree.  Others think that replacing TLS would be a bad idea.  Others think that replacing TLS is the only rational choice.  Some people think that people who hold opposing opinions are completely nuts."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/182",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -4634,107 +4751,6 @@
     "updated_at": "2017-01-26T02:31:38Z",
     "closed_at": null,
     "body": "@martinduke raised this in #106.  What should we say about the size of handshake packets.\r\n\r\n1. All handshake packets to be padded to maximum size.\r\n2. Pad at least one packet per handshake (in each direction) that is successfully acknowledged\r\n3. More specifically, the first client packet (CHLO) and retransmissions, and last server packet [SHLO] and retransmissions. In many cases this will be the same as #2, but is a bit more prescriptive.\r\n\r\nI think that we have agreed that the first packet from the client will be *at most* one packet.  The question is for the server where to pad.\r\n\r\nI believe that option 3 and option 1 amount to the same thing.  Option 2 looks a bit like option 4 (pad the first packet).\r\n\r\nThis relates to (and may subsume) #38."
-  },
-  {
-    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/162",
-    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
-    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/162/labels{/name}",
-    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/162/comments",
-    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/162/events",
-    "html_url": "https://github.com/quicwg/base-drafts/issues/162",
-    "id": 201152466,
-    "number": 162,
-    "title": "RST_STREAM and flow control",
-    "user": {
-      "login": "martinthomson",
-      "id": 67641,
-      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/martinthomson",
-      "html_url": "https://github.com/martinthomson",
-      "followers_url": "https://api.github.com/users/martinthomson/followers",
-      "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
-      "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
-      "organizations_url": "https://api.github.com/users/martinthomson/orgs",
-      "repos_url": "https://api.github.com/users/martinthomson/repos",
-      "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/martinthomson/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "labels": [
-      {
-        "id": 481871361,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/design",
-        "name": "design",
-        "color": "1d76db",
-        "default": false
-      },
-      {
-        "id": 489929683,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/editor-ready",
-        "name": "editor-ready",
-        "color": "0e8a16",
-        "default": false
-      },
-      {
-        "id": 481871399,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
-        "name": "transport",
-        "color": "fbca04",
-        "default": false
-      }
-    ],
-    "state": "open",
-    "locked": false,
-    "assignee": {
-      "login": "martinthomson",
-      "id": 67641,
-      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/martinthomson",
-      "html_url": "https://github.com/martinthomson",
-      "followers_url": "https://api.github.com/users/martinthomson/followers",
-      "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
-      "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
-      "organizations_url": "https://api.github.com/users/martinthomson/orgs",
-      "repos_url": "https://api.github.com/users/martinthomson/repos",
-      "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/martinthomson/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "assignees": [
-      {
-        "login": "martinthomson",
-        "id": 67641,
-        "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
-        "gravatar_id": "",
-        "url": "https://api.github.com/users/martinthomson",
-        "html_url": "https://github.com/martinthomson",
-        "followers_url": "https://api.github.com/users/martinthomson/followers",
-        "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
-        "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
-        "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
-        "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
-        "organizations_url": "https://api.github.com/users/martinthomson/orgs",
-        "repos_url": "https://api.github.com/users/martinthomson/repos",
-        "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
-        "received_events_url": "https://api.github.com/users/martinthomson/received_events",
-        "type": "User",
-        "site_admin": false
-      }
-    ],
-    "milestone": null,
-    "comments": 1,
-    "created_at": "2017-01-17T01:16:13Z",
-    "updated_at": "2017-02-03T03:50:41Z",
-    "closed_at": null,
-    "body": "If an endpoint receives a RST_STREAM that indicates that its peer has exceeded the stream or connection-level flow control window, it should treat this as a flow control error."
   },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/161",
@@ -7368,107 +7384,6 @@
     "body": "Does this need to be MUST use?"
   },
   {
-    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/64",
-    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
-    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/64/labels{/name}",
-    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/64/comments",
-    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/64/events",
-    "html_url": "https://github.com/quicwg/base-drafts/issues/64",
-    "id": 192996057,
-    "number": 64,
-    "title": "Path MTU Discovery",
-    "user": {
-      "login": "martinthomson",
-      "id": 67641,
-      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/martinthomson",
-      "html_url": "https://github.com/martinthomson",
-      "followers_url": "https://api.github.com/users/martinthomson/followers",
-      "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
-      "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
-      "organizations_url": "https://api.github.com/users/martinthomson/orgs",
-      "repos_url": "https://api.github.com/users/martinthomson/repos",
-      "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/martinthomson/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "labels": [
-      {
-        "id": 481871361,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/design",
-        "name": "design",
-        "color": "1d76db",
-        "default": false
-      },
-      {
-        "id": 489929683,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/editor-ready",
-        "name": "editor-ready",
-        "color": "0e8a16",
-        "default": false
-      },
-      {
-        "id": 481871399,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
-        "name": "transport",
-        "color": "fbca04",
-        "default": false
-      }
-    ],
-    "state": "open",
-    "locked": false,
-    "assignee": {
-      "login": "martinduke",
-      "id": 24398865,
-      "avatar_url": "https://avatars.githubusercontent.com/u/24398865?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/martinduke",
-      "html_url": "https://github.com/martinduke",
-      "followers_url": "https://api.github.com/users/martinduke/followers",
-      "following_url": "https://api.github.com/users/martinduke/following{/other_user}",
-      "gists_url": "https://api.github.com/users/martinduke/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/martinduke/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/martinduke/subscriptions",
-      "organizations_url": "https://api.github.com/users/martinduke/orgs",
-      "repos_url": "https://api.github.com/users/martinduke/repos",
-      "events_url": "https://api.github.com/users/martinduke/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/martinduke/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "assignees": [
-      {
-        "login": "martinduke",
-        "id": 24398865,
-        "avatar_url": "https://avatars.githubusercontent.com/u/24398865?v=3",
-        "gravatar_id": "",
-        "url": "https://api.github.com/users/martinduke",
-        "html_url": "https://github.com/martinduke",
-        "followers_url": "https://api.github.com/users/martinduke/followers",
-        "following_url": "https://api.github.com/users/martinduke/following{/other_user}",
-        "gists_url": "https://api.github.com/users/martinduke/gists{/gist_id}",
-        "starred_url": "https://api.github.com/users/martinduke/starred{/owner}{/repo}",
-        "subscriptions_url": "https://api.github.com/users/martinduke/subscriptions",
-        "organizations_url": "https://api.github.com/users/martinduke/orgs",
-        "repos_url": "https://api.github.com/users/martinduke/repos",
-        "events_url": "https://api.github.com/users/martinduke/events{/privacy}",
-        "received_events_url": "https://api.github.com/users/martinduke/received_events",
-        "type": "User",
-        "site_admin": false
-      }
-    ],
-    "milestone": null,
-    "comments": 22,
-    "created_at": "2016-12-01T23:52:46Z",
-    "updated_at": "2017-01-26T02:19:00Z",
-    "closed_at": null,
-    "body": "Quoting Martin Duke:\r\n> RFC-Compliant ICMP PMTU messages include the\r\n> oversize packet's IP header and the first 8 bytes of the transport. This\r\n> allows  TCP to demultiplex the ICMP to the relevant connection/path, and\r\n> check that the echoed sequence number corresponds to an in-flight segment,\r\n> and that the segment that would have violated the advertised MTU. As TCP\r\n> windows increase, it's true that this may be less effective.\r\n>\r\n> For QUIC, these messages will contain only the UDP header. I believe this is\r\n> sufficient to demux to the right connection (QUIC allows the same 4-tuple\r\n> for multiple connection IDs, but it would be fine to apply it to all such\r\n> connections), but I see no clear mechanism to prevent a blind attacker that\r\n> guesses the 4-tuple from forcing a QUIC connection to revert to the min path\r\n> MTU. Some possibilities:\r\n>     (a) Require routers to send more bytes. This is probably not deployable,\r\n> and in any case because packet numbers always start at zero this doesn't add\r\n> much security.\r\n>     (b) Store UDP or IP data. We could require QUIC to store the UDP\r\n> checksum or IP ID in its send queue, thus allowing it to associate the\r\n> returned headers with a packet in its queue. This is ugly from a layering\r\n> perspective and may not be plausible with hardware offload of checksums,\r\n> various middleboxes, etc.\r\n>     (c) Isolated DF packets. QUIC could pick a long time interval (10\r\n> seconds?) in which is sets DF on a single MTU-sized packet (which may have\r\n> to be padded). QUIC would only accept ICMP messages within an RTT or so of\r\n> having sent one of these MTU probe packets, or until it's acked. Thus the\r\n> probabability an off-path attacker could time it correctly is (RTT / 10\r\n> sec). If there's an extended burst of ICMP to overcome this, that's probably\r\n> an attack indication to handle either in IP, the firewall, or at worst in\r\n> QUIC.  I have some language to codify this, and if we agree this is the\r\n> right approach I can share it."
-  },
-  {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/63",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
     "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/63/labels{/name}",
@@ -7814,8 +7729,7 @@
     "updated_at": "2016-12-08T20:22:05Z",
     "closed_at": null,
     "body": "Do we want them? How do we accommodate them?  What are their semantics if they aren't understood?"
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/56",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7873,7 +7787,8 @@
     "updated_at": "2017-01-26T06:20:30Z",
     "closed_at": null,
     "body": "We need to define how the public flags might be extended, or if it could be.  This has a pretty serious impact on #55."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/53",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
