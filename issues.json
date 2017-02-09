@@ -1,5 +1,98 @@
 [
   {
+    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/276",
+    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
+    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/276/labels{/name}",
+    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/276/comments",
+    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/276/events",
+    "html_url": "https://github.com/quicwg/base-drafts/pull/276",
+    "id": 206372666,
+    "number": 276,
+    "title": "PADDING is a single 0 octet",
+    "user": {
+      "login": "martinthomson",
+      "id": 67641,
+      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/martinthomson",
+      "html_url": "https://github.com/martinthomson",
+      "followers_url": "https://api.github.com/users/martinthomson/followers",
+      "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
+      "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
+      "organizations_url": "https://api.github.com/users/martinthomson/orgs",
+      "repos_url": "https://api.github.com/users/martinthomson/repos",
+      "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/martinthomson/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 481871399,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
+        "name": "transport",
+        "color": "fbca04",
+        "default": false
+      }
+    ],
+    "state": "open",
+    "locked": false,
+    "assignee": {
+      "login": "janaiyengar",
+      "id": 11067604,
+      "avatar_url": "https://avatars.githubusercontent.com/u/11067604?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/janaiyengar",
+      "html_url": "https://github.com/janaiyengar",
+      "followers_url": "https://api.github.com/users/janaiyengar/followers",
+      "following_url": "https://api.github.com/users/janaiyengar/following{/other_user}",
+      "gists_url": "https://api.github.com/users/janaiyengar/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/janaiyengar/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/janaiyengar/subscriptions",
+      "organizations_url": "https://api.github.com/users/janaiyengar/orgs",
+      "repos_url": "https://api.github.com/users/janaiyengar/repos",
+      "events_url": "https://api.github.com/users/janaiyengar/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/janaiyengar/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "assignees": [
+      {
+        "login": "janaiyengar",
+        "id": 11067604,
+        "avatar_url": "https://avatars.githubusercontent.com/u/11067604?v=3",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/janaiyengar",
+        "html_url": "https://github.com/janaiyengar",
+        "followers_url": "https://api.github.com/users/janaiyengar/followers",
+        "following_url": "https://api.github.com/users/janaiyengar/following{/other_user}",
+        "gists_url": "https://api.github.com/users/janaiyengar/gists{/gist_id}",
+        "starred_url": "https://api.github.com/users/janaiyengar/starred{/owner}{/repo}",
+        "subscriptions_url": "https://api.github.com/users/janaiyengar/subscriptions",
+        "organizations_url": "https://api.github.com/users/janaiyengar/orgs",
+        "repos_url": "https://api.github.com/users/janaiyengar/repos",
+        "events_url": "https://api.github.com/users/janaiyengar/events{/privacy}",
+        "received_events_url": "https://api.github.com/users/janaiyengar/received_events",
+        "type": "User",
+        "site_admin": false
+      }
+    ],
+    "milestone": null,
+    "comments": 0,
+    "created_at": "2017-02-09T00:53:14Z",
+    "updated_at": "2017-02-09T00:53:14Z",
+    "closed_at": null,
+    "pull_request": {
+      "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/276",
+      "html_url": "https://github.com/quicwg/base-drafts/pull/276",
+      "diff_url": "https://github.com/quicwg/base-drafts/pull/276.diff",
+      "patch_url": "https://github.com/quicwg/base-drafts/pull/276.patch"
+    },
+    "body": "Closes #158."
+  },
+  {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/275",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
     "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/275/labels{/name}",
@@ -1703,7 +1796,8 @@
     "updated_at": "2017-02-03T03:01:45Z",
     "closed_at": null,
     "body": "The spec just doesn't say anything about this so far. You at least want to put in some minumum requirement (like MUST send at least X ACKs per RTT).\r\n\r\nAlso related but might be a separate issue that I'm not sure about yet: Is there a value in having a mechanism for the sender to tell the receiver how often it would like to receive ACKs?"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/228",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -1761,8 +1855,7 @@
     "updated_at": "2017-01-26T01:55:17Z",
     "closed_at": null,
     "body": "QUIC doesn't make order guarantees between streams.  The options on the table currently are:\r\n\r\n- Current (-01) draft puts a sequence number in the frames; HPACK data MUST be handled in order, and will HOL-block.  HPACK is exactly the same as HTTP/2.\r\n- Buck's proposal (draft forthcoming) puts two sequence numbers in the frames and modifies the HPACK encoder to prevent blocking references.  Partially-received HPACK frames must block until fully received.  The new encoder could also be used in HTTP/2, but would require changes to existing code.\r\n- [QPACK](https://tools.ietf.org/html/draft-bishop-quic-http-and-qpack) modifies HPACK to be order-resilient and permit partial frames to be processed, but breaks from the HPACK encoding enough that you'd have at least some separate code paths.\r\n\r\nAlso agreed to put a \"hard-hat warning\" in this section of the HTTP draft, to warn readers this is still work-in-progress."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/227",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3537,7 +3630,8 @@
     "updated_at": "2017-01-20T15:44:47Z",
     "closed_at": null,
     "body": "The question is whether we maintain TLS as some abstract concept or not.\r\n\r\nWe could talk about \"the cryptographic handshake\" and features that it provides in the abstract when referring to them in the transport document.  Or we could just describe how this protocol works in concrete terms.\r\n\r\nProponents of the first seem to think that would make replacing TLS easier.  Others disagree.  Others think that replacing TLS would be a bad idea.  Others think that replacing TLS is the only rational choice.  Some people think that people who hold opposing opinions are completely nuts."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/182",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3601,8 +3695,7 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/182.patch"
     },
     "body": "The app read_close and write_close events aren't defined any place other than a diagram.  I don't believe that it is appropriate to have state transitions that aren't signaled to the remote peer.\r\n\r\nI propose removing these, which only requires that the state diagram be adjusted.\r\n\r\nThis also closes #53, because that was the last diagram that exceeded the line length limits."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/179",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5633,7 +5726,8 @@
     "updated_at": "2017-01-19T22:24:07Z",
     "closed_at": null,
     "body": "The transport protocol has frames, and STREAM frames can contain frames for the HTTP mapping.  It's confusing.  We should work out how to deal with that."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/127",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5691,8 +5785,7 @@
     "updated_at": "2017-02-08T22:02:05Z",
     "closed_at": null,
     "body": "HTTP/2 compatibility at the framing level is a bit of an unrealistic goal.  Maybe we could just avoid allocating those bits first."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/126",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7721,7 +7814,8 @@
     "updated_at": "2016-12-08T20:22:05Z",
     "closed_at": null,
     "body": "Do we want them? How do we accommodate them?  What are their semantics if they aren't understood?"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/56",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7779,8 +7873,7 @@
     "updated_at": "2017-01-26T06:20:30Z",
     "closed_at": null,
     "body": "We need to define how the public flags might be extended, or if it could be.  This has a pretty serious impact on #55."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/53",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
