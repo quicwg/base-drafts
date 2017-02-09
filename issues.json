@@ -1,5 +1,98 @@
 [
   {
+    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/278",
+    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
+    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/278/labels{/name}",
+    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/278/comments",
+    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/278/events",
+    "html_url": "https://github.com/quicwg/base-drafts/pull/278",
+    "id": 206399008,
+    "number": 278,
+    "title": "Grease version negotiation",
+    "user": {
+      "login": "martinthomson",
+      "id": 67641,
+      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/martinthomson",
+      "html_url": "https://github.com/martinthomson",
+      "followers_url": "https://api.github.com/users/martinthomson/followers",
+      "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
+      "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
+      "organizations_url": "https://api.github.com/users/martinthomson/orgs",
+      "repos_url": "https://api.github.com/users/martinthomson/repos",
+      "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/martinthomson/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 481871399,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
+        "name": "transport",
+        "color": "fbca04",
+        "default": false
+      }
+    ],
+    "state": "open",
+    "locked": false,
+    "assignee": {
+      "login": "janaiyengar",
+      "id": 11067604,
+      "avatar_url": "https://avatars.githubusercontent.com/u/11067604?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/janaiyengar",
+      "html_url": "https://github.com/janaiyengar",
+      "followers_url": "https://api.github.com/users/janaiyengar/followers",
+      "following_url": "https://api.github.com/users/janaiyengar/following{/other_user}",
+      "gists_url": "https://api.github.com/users/janaiyengar/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/janaiyengar/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/janaiyengar/subscriptions",
+      "organizations_url": "https://api.github.com/users/janaiyengar/orgs",
+      "repos_url": "https://api.github.com/users/janaiyengar/repos",
+      "events_url": "https://api.github.com/users/janaiyengar/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/janaiyengar/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "assignees": [
+      {
+        "login": "janaiyengar",
+        "id": 11067604,
+        "avatar_url": "https://avatars.githubusercontent.com/u/11067604?v=3",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/janaiyengar",
+        "html_url": "https://github.com/janaiyengar",
+        "followers_url": "https://api.github.com/users/janaiyengar/followers",
+        "following_url": "https://api.github.com/users/janaiyengar/following{/other_user}",
+        "gists_url": "https://api.github.com/users/janaiyengar/gists{/gist_id}",
+        "starred_url": "https://api.github.com/users/janaiyengar/starred{/owner}{/repo}",
+        "subscriptions_url": "https://api.github.com/users/janaiyengar/subscriptions",
+        "organizations_url": "https://api.github.com/users/janaiyengar/orgs",
+        "repos_url": "https://api.github.com/users/janaiyengar/repos",
+        "events_url": "https://api.github.com/users/janaiyengar/events{/privacy}",
+        "received_events_url": "https://api.github.com/users/janaiyengar/received_events",
+        "type": "User",
+        "site_admin": false
+      }
+    ],
+    "milestone": null,
+    "comments": 0,
+    "created_at": "2017-02-09T04:08:26Z",
+    "updated_at": "2017-02-09T04:08:26Z",
+    "closed_at": null,
+    "pull_request": {
+      "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/278",
+      "html_url": "https://github.com/quicwg/base-drafts/pull/278",
+      "diff_url": "https://github.com/quicwg/base-drafts/pull/278.diff",
+      "patch_url": "https://github.com/quicwg/base-drafts/pull/278.patch"
+    },
+    "body": "I realize that I stuck this on top of #122.  That's convenient because the new text benefits from being able to reference some of that text.  It makes this diff look awful for the moment though (at least until #122 lands).\r\n\r\nCloses #112."
+  },
+  {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/277",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
     "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/277/labels{/name}",
@@ -1797,7 +1890,8 @@
     "updated_at": "2017-01-25T08:02:34Z",
     "closed_at": null,
     "body": "In order to break linkability across events that are known to an endpoint, we should explore the possibility of having each endpoint provide the other with a new connection identifier AND a number of packet numbers that should be skipped.  This allows an endpoint to continue using the same connection on a new path without linking use of that new path to use of the old path.\r\n\r\nYou need to change connection ID and packet numbers or they can be used for linking.  That doesn't preclude the use of other signals for linking, but it removes obvious ones.\r\n\r\nThis wouldn't address all of the potential linkability issues we identified, but would help in cases where an endpoint is aware of the need - or even potential need - for a gap in linkability."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/231",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -1855,8 +1949,7 @@
     "updated_at": "2017-01-31T06:46:27Z",
     "closed_at": null,
     "body": "Quoting myself from the mailing list:\r\n\r\nTL;DR. Encrypt the packet number with ECB or something like it. This\r\nis probably a bad idea but I wanted to write it down.\r\n\r\nI had an idea last night about encrypting the packet number. Here's\r\na diagram of a QUIC regular packet:\r\n\r\n ```  +-+-+-+-+-+-+-+-+\r\n   |   Flags (8)   |\r\n   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+\r\n   |                                                               |\r\n   +                     [Connection ID (64)]                      +\r\n   |                                                               |\r\n   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+\r\n   |                        [Version (32)]                         |\r\n   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ \r\n   |                  Packet Number (8/16/32/48)                 ...\r\n   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+\r\n   |                    {Encrypted Payload (*)}                  ...\r\n   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+\r\n   ```\r\nThe insight here is that the reason that the packet number is outside\r\nof the encryption is because it is used as the nonce for the AEAD\r\nfunction. However, there are encryption algorithms (which we usually\r\navoid for various reasons) which do not need a nonce. Specifically,\r\nwhat we could do is derive two keys:\r\n\r\n  K_h: header encryption\r\n  K_p: packet encryption\r\n\r\n\r\nSo you get:\r\n\r\n ```\r\n  +-+-+-+-+-+-+-+-+\r\n   |   Flags (8)   |\r\n   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+\r\n   |                                                               |\r\n   +                     [Connection ID (64)]                      +\r\n   |                                                               |\r\n   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+\r\n   |                        [Version (32)]                         |\r\n   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ ^ \r\n   |                 {Packet Number (8/16/32/48)}                ... | encrypted with K_h\r\n   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ v\r\n   |                    {Encrypted Payload (*)}                  ... ^\r\n   |                                                                 | encrypted with K_p\r\n   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ v\r\n```\r\n\r\nThis of course leaves the question of which crypto mode you use to encrypt\r\nthe packet number. The natural choice is ECB, but that only works with\r\ndata values the same size as the cipher block, which for AES is much\r\nbigger than the packet number (128 bits). So, that's waste, though you\r\nmight of course add stuff to the block if we had other headers.\r\nWe could use 3DES (which has a 64-bit block) or FFX (which can be used\r\nwith any block size, but at some additional computational cost).\r\n\r\nTwo pre-emptive responses to common questions:\r\n\r\n1. Yes, ECB and FFX are not generally as good as AEAD algorithms, in\r\nparticular because they don't have integrity and they reveal patterns\r\nin the plaintext. However, this is data which would (a) otherwise be in the\r\nclear and (b) is folded into the ordinary AEAD integrity check.\r\n\r\n2. As long as we correctly generate K_h and K_p independently using\r\na KDF, then any weaknesses in K_h don't implicate K_p.\r\n\r\nAgain, this probably isn't worth doing with the current amount of\r\nstuff in the headers, but I wanted to write it down so that people would\r\nknow about it.\r\n"
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/230",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3624,7 +3717,8 @@
     "updated_at": "2017-01-25T01:09:08Z",
     "closed_at": null,
     "body": "Some path elements may need to statelessly identify an initial packet of a connection. These path elements could include load balancers and organization's border security systems.  Ability to identify the initial packet may also be required for systems implementing Stateless Rejects #60.\r\n\r\nSince QUIC allows for packet number truncation, the most straightforward way to identify the initial packet is by checking for packet number 1 and VERSION flag set.\r\n\r\nHence:\r\n\r\n- The language of section 6.1 Version Negotiation would need to change SHOULD to MUST in \"All subsequent packets sent by the client SHOULD have the VERSION flag unset\".\r\n- Section 6.1 Version Negotiation should also gain language like: \"If Version negotiation is not complete in 2^6 packets, any endpoint MAY reset this connection\".  (This is a weaker statement than #143.)\r\n- Proposal in issue #35 is not compatible with this issue. If packet numbers are allowed to be deliberately skipped, we should require that packets with VERSION set MUST NOT be skipped."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/184",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3682,8 +3776,7 @@
     "updated_at": "2017-02-08T19:47:58Z",
     "closed_at": null,
     "body": "QUIC-TRANSPORT defines the syntax of QUIC error codes and defines some values for the QUIC transport. The section says:\r\n\r\n> This section lists the defined QUIC transport error codes that may be used in a CONNECTION_CLOSE or RST_STREAM frame. Error codes share a common code space. Some error codes apply only to either streams or the entire connection and have no defined semantics in the other context.\r\n\r\nSince the error space is shared, it is not clear what error codes are appropriate to use with which frame types. There is the possibility for endpoints to send a semantically incorrect error code in a frame. How should a receiver handle such an occurrence?\r\n\r\nThis possibility exists only for the Application-specific, QUIC transport or Cryptographic error codes. Host-local error codes must not be sent.  \r\n\r\nAs an example, an client sends a `RST_STREAM` frame with the error code `QUIC_TOO_MANY_SESSIONS_ON_SERVER`.  Is this actually allowed and what should the server do (close the connection, igore it, ...)?"
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/183",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -4652,107 +4745,6 @@
     "body": "I'm writing this issue because there was some discussion about a change I made in #145, that seemed to be controversial. I spent a lot of time thinking about this, and realized that my changes in that PR were insufficient to address the problem. I think there are multiple issues in the stream state machinery.\r\n\r\n\r\n## Two common scenarios\r\n\r\nI will describe two scenarios where RST_STREAMs will be used regularly when using HTTP/QUIC.\r\n\r\n### Rejected PUSH\r\n\r\nThe sender (in this case a HTTP server) uses HTTP/2 Push to push a resource that the receiver isn't interested in. The receiver therefore sends a RST_STREAM with offset 0 (since it didn't send any data on that stream) to stop the sender from pushing the resource.\r\n\r\nWhen the sender receives the RST_STREAM, there are two options:\r\n\r\n- the transfer hasn't completed yet: The sender then stops sending data and sends a RST_STREAM with a byte offset equal to whatever highest data offset it sent. RST_STREAMs are transmitted reliably, so both sides will *eventually* receive the other side's RST_STREAM and make adjustments to their flow controller. There is no problem here.\r\n- the transfer has already completed (i.e. the sender already sent a STREAM frame with the FIN bit): According to the draft, STREAM frames on reset streams are not retransmitted. If the STREAM frame with the FIN gets lost, and the sender will never be able to make the necessary adjustments to its flow controller. (I'm not sure, but maybe this is what #163 is about).\r\n\r\nA fix for this problem is to **always** send a RST_STREAM as a response to a RST_STREAM, even if the stream already transitioned to the *half closed* state by sending a FIN bit.\r\n\r\n\r\n\r\n### POST to a 404 URI\r\n\r\nThe second example is more involved, since it involves data flowing bidirectionaly (note that for the PUSH case, the receiver never sent any data on the stream):\r\n\r\nThe sender (in this case a HTTP client) performs a POST request to an URI that the receiver is not reading from, e.g. a non-existing site (HTTP status code 404). The receiver will first send the HTTP response header, and then the (non-empty) 404 body. It will send send a RST_STREAM with a offset equivalent to the body length, to stop the sender, to stop it from sending more data.\r\n\r\nOn the sender side, we have the same situation as in the PUSH case, but let's assume we already resolved that issue.\r\n\r\nThere are two more issues here:\r\n\r\n- We must ensure reliable delivery of the response body (the 404 page). Thus, although the stream was reset, STREAM frames need to be retransmitted.\r\n- The receiver can only send the RST_STREAM **after** composing the response body (since the final byte offset has to be included). However, it would make sense to send the RST_STREAM as soon as possible, to stop the unwanted upload.\r\n\r\nThe first issue could be fixed by requiring that the peer that is resetting a stream MUST ensure reliable delivery of stream data it sent, whereas a peer that is receiving the RST_STREAM SHOULD NOT retransmit any stream data.\r\n\r\nThe second issue could be fixed by defining a RST_STREAM frame that doesn't include a byte offset (or introducing an RST error code that indicates that the byte offset is not set). The receiver in the above example would send this RST_STREAM before sending the 404 body. Since stream data is transmitted reliably, the sender would eventually receive a highest byte offset with a STREAM frame carrying the FIN flag.\r\n\r\n\r\n## Open points for discussion\r\n\r\nDo the three changes capture all possible use cases of resetting streams. Or do we need\r\n* a way to reset a stream such that the peer initiating the reset doesn't ensure the reliable transmission of the data it already sent\r\n* a way to reset a stream such that the peer receiving the RST has to ensure the reliable transmission up to a certain (which?) offset\r\n\r\n"
   },
   {
-    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/164",
-    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
-    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/164/labels{/name}",
-    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/164/comments",
-    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/164/events",
-    "html_url": "https://github.com/quicwg/base-drafts/issues/164",
-    "id": 201158264,
-    "number": 164,
-    "title": "Padding handshake packets",
-    "user": {
-      "login": "martinthomson",
-      "id": 67641,
-      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/martinthomson",
-      "html_url": "https://github.com/martinthomson",
-      "followers_url": "https://api.github.com/users/martinthomson/followers",
-      "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
-      "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
-      "organizations_url": "https://api.github.com/users/martinthomson/orgs",
-      "repos_url": "https://api.github.com/users/martinthomson/repos",
-      "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/martinthomson/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "labels": [
-      {
-        "id": 481871361,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/design",
-        "name": "design",
-        "color": "1d76db",
-        "default": false
-      },
-      {
-        "id": 489929683,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/editor-ready",
-        "name": "editor-ready",
-        "color": "0e8a16",
-        "default": false
-      },
-      {
-        "id": 481871399,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
-        "name": "transport",
-        "color": "fbca04",
-        "default": false
-      }
-    ],
-    "state": "open",
-    "locked": false,
-    "assignee": {
-      "login": "martinduke",
-      "id": 24398865,
-      "avatar_url": "https://avatars.githubusercontent.com/u/24398865?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/martinduke",
-      "html_url": "https://github.com/martinduke",
-      "followers_url": "https://api.github.com/users/martinduke/followers",
-      "following_url": "https://api.github.com/users/martinduke/following{/other_user}",
-      "gists_url": "https://api.github.com/users/martinduke/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/martinduke/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/martinduke/subscriptions",
-      "organizations_url": "https://api.github.com/users/martinduke/orgs",
-      "repos_url": "https://api.github.com/users/martinduke/repos",
-      "events_url": "https://api.github.com/users/martinduke/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/martinduke/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "assignees": [
-      {
-        "login": "martinduke",
-        "id": 24398865,
-        "avatar_url": "https://avatars.githubusercontent.com/u/24398865?v=3",
-        "gravatar_id": "",
-        "url": "https://api.github.com/users/martinduke",
-        "html_url": "https://github.com/martinduke",
-        "followers_url": "https://api.github.com/users/martinduke/followers",
-        "following_url": "https://api.github.com/users/martinduke/following{/other_user}",
-        "gists_url": "https://api.github.com/users/martinduke/gists{/gist_id}",
-        "starred_url": "https://api.github.com/users/martinduke/starred{/owner}{/repo}",
-        "subscriptions_url": "https://api.github.com/users/martinduke/subscriptions",
-        "organizations_url": "https://api.github.com/users/martinduke/orgs",
-        "repos_url": "https://api.github.com/users/martinduke/repos",
-        "events_url": "https://api.github.com/users/martinduke/events{/privacy}",
-        "received_events_url": "https://api.github.com/users/martinduke/received_events",
-        "type": "User",
-        "site_admin": false
-      }
-    ],
-    "milestone": null,
-    "comments": 12,
-    "created_at": "2017-01-17T02:08:50Z",
-    "updated_at": "2017-01-26T02:31:38Z",
-    "closed_at": null,
-    "body": "@martinduke raised this in #106.  What should we say about the size of handshake packets.\r\n\r\n1. All handshake packets to be padded to maximum size.\r\n2. Pad at least one packet per handshake (in each direction) that is successfully acknowledged\r\n3. More specifically, the first client packet (CHLO) and retransmissions, and last server packet [SHLO] and retransmissions. In many cases this will be the same as #2, but is a bit more prescriptive.\r\n\r\nI think that we have agreed that the first packet from the client will be *at most* one packet.  The question is for the server where to pad.\r\n\r\nI believe that option 3 and option 1 amount to the same thing.  Option 2 looks a bit like option 4 (pad the first packet).\r\n\r\nThis relates to (and may subsume) #38."
-  },
-  {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/161",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
     "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/161/labels{/name}",
@@ -4819,7 +4811,7 @@
     "html_url": "https://github.com/quicwg/base-drafts/issues/158",
     "id": 200957150,
     "number": 158,
-    "title": "Inter-frame padding",
+    "title": "Intra-frame padding",
     "user": {
       "login": "larseggert",
       "id": 200328,
@@ -4864,14 +4856,50 @@
     ],
     "state": "open",
     "locked": false,
-    "assignee": null,
+    "assignee": {
+      "login": "martinthomson",
+      "id": 67641,
+      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/martinthomson",
+      "html_url": "https://github.com/martinthomson",
+      "followers_url": "https://api.github.com/users/martinthomson/followers",
+      "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
+      "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
+      "organizations_url": "https://api.github.com/users/martinthomson/orgs",
+      "repos_url": "https://api.github.com/users/martinthomson/repos",
+      "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/martinthomson/received_events",
+      "type": "User",
+      "site_admin": false
+    },
     "assignees": [
-
+      {
+        "login": "martinthomson",
+        "id": 67641,
+        "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/martinthomson",
+        "html_url": "https://github.com/martinthomson",
+        "followers_url": "https://api.github.com/users/martinthomson/followers",
+        "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
+        "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
+        "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
+        "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
+        "organizations_url": "https://api.github.com/users/martinthomson/orgs",
+        "repos_url": "https://api.github.com/users/martinthomson/repos",
+        "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
+        "received_events_url": "https://api.github.com/users/martinthomson/received_events",
+        "type": "User",
+        "site_admin": false
+      }
     ],
     "milestone": null,
     "comments": 5,
     "created_at": "2017-01-16T08:31:58Z",
-    "updated_at": "2017-01-26T07:21:19Z",
+    "updated_at": "2017-02-09T09:11:05Z",
     "closed_at": null,
     "body": "The section on padding frames currently says:\r\n```\r\n   The PADDING frame (type=0x00) pads a packet with 0x00 bytes.  When\r\n   this frame is encountered, the rest of the packet is expected to be\r\n   padding bytes.  The frame contains 0x00 bytes and extends to the end\r\n   of the QUIC packet.  A PADDING frame has no additional fields.\r\n```\r\n\r\nI'd like to discuss whether a padding frame that can be inserted anywhere, instead of only as the last frame in a packet, makes sense.\r\n\r\nI'm currently doing a [zero-copy implementation of QUIC](https://github.com/NTAP/quant) on top of [netmap](http://info.iet.unipi.it/~luigi/netmap/) via a [userspace IPv4/UDP stack](https://github.com/NTAP/warpcore), which due to static DMA mappings requires an app to place stream frame data directly into packet buffers at a (fixed) offset. The QUIC stack then inserts the common header and other frames before the stream frames, and needs to pad any unused space. Currently, this isn't possible.\r\n\r\nIn other words, I'd like something similar to the [No-Operation TCP option](https://tools.ietf.org/html/rfc793#page-18).\r\n\r\n(And it's an open question whether going to great lengths to support zero-copy TX is actually all that useful, given that we're going to do crypto over the entire buffer anyway.)"
   },
@@ -6216,14 +6244,50 @@
     ],
     "state": "open",
     "locked": false,
-    "assignee": null,
+    "assignee": {
+      "login": "martinthomson",
+      "id": 67641,
+      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/martinthomson",
+      "html_url": "https://github.com/martinthomson",
+      "followers_url": "https://api.github.com/users/martinthomson/followers",
+      "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
+      "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
+      "organizations_url": "https://api.github.com/users/martinthomson/orgs",
+      "repos_url": "https://api.github.com/users/martinthomson/repos",
+      "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/martinthomson/received_events",
+      "type": "User",
+      "site_admin": false
+    },
     "assignees": [
-
+      {
+        "login": "martinthomson",
+        "id": 67641,
+        "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/martinthomson",
+        "html_url": "https://github.com/martinthomson",
+        "followers_url": "https://api.github.com/users/martinthomson/followers",
+        "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
+        "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
+        "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
+        "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
+        "organizations_url": "https://api.github.com/users/martinthomson/orgs",
+        "repos_url": "https://api.github.com/users/martinthomson/repos",
+        "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
+        "received_events_url": "https://api.github.com/users/martinthomson/received_events",
+        "type": "User",
+        "site_admin": false
+      }
     ],
     "milestone": null,
     "comments": 3,
     "created_at": "2017-01-04T10:13:39Z",
-    "updated_at": "2017-01-26T04:56:01Z",
+    "updated_at": "2017-02-09T08:41:09Z",
     "closed_at": null,
     "body": "-transport currently has a TODO regarding the encoding of a source address token.\r\n\r\nI would contend that we don't need to fix this.  This is a protocol from the server to the server."
   },
@@ -6462,14 +6526,50 @@
     ],
     "state": "open",
     "locked": false,
-    "assignee": null,
+    "assignee": {
+      "login": "martinthomson",
+      "id": 67641,
+      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/martinthomson",
+      "html_url": "https://github.com/martinthomson",
+      "followers_url": "https://api.github.com/users/martinthomson/followers",
+      "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
+      "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
+      "organizations_url": "https://api.github.com/users/martinthomson/orgs",
+      "repos_url": "https://api.github.com/users/martinthomson/repos",
+      "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/martinthomson/received_events",
+      "type": "User",
+      "site_admin": false
+    },
     "assignees": [
-
+      {
+        "login": "martinthomson",
+        "id": 67641,
+        "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/martinthomson",
+        "html_url": "https://github.com/martinthomson",
+        "followers_url": "https://api.github.com/users/martinthomson/followers",
+        "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
+        "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
+        "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
+        "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
+        "organizations_url": "https://api.github.com/users/martinthomson/orgs",
+        "repos_url": "https://api.github.com/users/martinthomson/repos",
+        "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
+        "received_events_url": "https://api.github.com/users/martinthomson/received_events",
+        "type": "User",
+        "site_admin": false
+      }
     ],
     "milestone": null,
     "comments": 8,
     "created_at": "2017-01-04T02:47:10Z",
-    "updated_at": "2017-02-03T03:52:42Z",
+    "updated_at": "2017-02-09T08:41:01Z",
     "closed_at": null,
     "body": "Shout out to @davidben and the recently adopted draft-davidben-tls-grease."
   },
@@ -7538,14 +7638,50 @@
     ],
     "state": "open",
     "locked": false,
-    "assignee": null,
+    "assignee": {
+      "login": "martinthomson",
+      "id": 67641,
+      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/martinthomson",
+      "html_url": "https://github.com/martinthomson",
+      "followers_url": "https://api.github.com/users/martinthomson/followers",
+      "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
+      "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
+      "organizations_url": "https://api.github.com/users/martinthomson/orgs",
+      "repos_url": "https://api.github.com/users/martinthomson/repos",
+      "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/martinthomson/received_events",
+      "type": "User",
+      "site_admin": false
+    },
     "assignees": [
-
+      {
+        "login": "martinthomson",
+        "id": 67641,
+        "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/martinthomson",
+        "html_url": "https://github.com/martinthomson",
+        "followers_url": "https://api.github.com/users/martinthomson/followers",
+        "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
+        "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
+        "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
+        "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
+        "organizations_url": "https://api.github.com/users/martinthomson/orgs",
+        "repos_url": "https://api.github.com/users/martinthomson/repos",
+        "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
+        "received_events_url": "https://api.github.com/users/martinthomson/received_events",
+        "type": "User",
+        "site_admin": false
+      }
     ],
     "milestone": null,
     "comments": 1,
     "created_at": "2016-12-01T23:48:18Z",
-    "updated_at": "2017-01-26T06:23:11Z",
+    "updated_at": "2017-02-09T08:42:12Z",
     "closed_at": null,
     "body": "Martin Duke requests that all fields necessary for frame length computation be moved to the start of the frame."
   },
