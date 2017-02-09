@@ -436,11 +436,11 @@ response, QUIC provides one of three responses:
 
 If QUIC requests source address validation, it also provides a new address
 validation token.  TLS includes that along with any information it requires in
-the cookie extension of the TLS HelloRetryRequest message.  In the other cases,
+the cookie extension of a TLS HelloRetryRequest message.  In the other cases,
 the connection either proceeds or terminates with a handshake error.
 
 The client echoes the cookie extension in a second ClientHello.  A ClientHello
-that contains a cookie extension will be always be in response to a
+that contains a valid cookie extension will be always be in response to a
 HelloRetryRequest.  If address validation was requested by QUIC, then this will
 include an address validation token.  TLS makes a second address validation
 request of QUIC, including the value extracted from the cookie extension.  In
@@ -1054,6 +1054,9 @@ ticket.  This might be done to refresh the ticket or token, or it might be
 generated in response to changes in the state of the connection.  QUIC can
 request that a NewSessionTicket be sent by providing a new address validation
 token.
+
+A server that intends to support 0-RTT SHOULD provide an address validation
+token immediately after completing the TLS handshake.
 
 
 ## Address Validation Token Integrity {#validation-token-integrity}
