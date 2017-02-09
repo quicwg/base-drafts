@@ -616,10 +616,10 @@ The design of version negotiation permits a server to avoid maintaining state
 for packets that it rejects in this fashion.  However, when the server generates
 a version negotiation packet, it cannot randomly generate a reserved version
 number.  This is because the server is required to include the same value in its
-transport parameters.  To avoid the selected version number changing during
-connection establishment, the reserved version can be generated as a function of
-values that will be available to the server when later generating its handshake
-packets.
+transport parameters (see {{version-validation}}).  To avoid the selected
+version number changing during connection establishment, the reserved version
+can be generated as a function of values that will be available to the server
+when later generating its handshake packets.
 
 A pseudorandom function that takes client address information (IP and port) and
 the client selected version as input would ensure that there is sufficient
