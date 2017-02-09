@@ -1,5 +1,50 @@
 [
   {
+    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/279",
+    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
+    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/279/labels{/name}",
+    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/279/comments",
+    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/279/events",
+    "html_url": "https://github.com/quicwg/base-drafts/issues/279",
+    "id": 206591403,
+    "number": 279,
+    "title": "Public Flags to Aid Troubleshooting",
+    "user": {
+      "login": "martinduke",
+      "id": 24398865,
+      "avatar_url": "https://avatars.githubusercontent.com/u/24398865?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/martinduke",
+      "html_url": "https://github.com/martinduke",
+      "followers_url": "https://api.github.com/users/martinduke/followers",
+      "following_url": "https://api.github.com/users/martinduke/following{/other_user}",
+      "gists_url": "https://api.github.com/users/martinduke/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/martinduke/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/martinduke/subscriptions",
+      "organizations_url": "https://api.github.com/users/martinduke/orgs",
+      "repos_url": "https://api.github.com/users/martinduke/repos",
+      "events_url": "https://api.github.com/users/martinduke/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/martinduke/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+
+    ],
+    "state": "open",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 1,
+    "created_at": "2017-02-09T18:35:01Z",
+    "updated_at": "2017-02-09T18:46:43Z",
+    "closed_at": null,
+    "body": "Something that came up in Tokyo was the need for service providers (i.e. middleboxes) to troubleshoot performance issues in the network. Packet Number Echo (#269) could partially address this problem., particularly for RTT measurement. But it is imperfect for measuring other problems.\r\n\r\nAs someone who has spent quite a bit of time debugging TCP packet traces from service providers, there are two other things that would help greatly in answering the question \"why is my QUIC slow\", without significantly compromising privacy. To do both would take two bits in the public flags, which may be available depending on how some other issues turn out.\r\n\r\n(1) QUIC endpoints MAY set the BLOCKED bit if they include a BLOCKED frame in the packet. If you want to get fancy, you could have a different bit for \"stream blocked\" and \"connection blocked\", but flow control issues are a common cause of traffic pauses with no other discernable symptoms.\r\n(2) QUIC endpoints MUST (SHOULD?) set the RETRANS flag in any packet that contains retransmitted data. This would help operators identify that a connection is slowing down because it is responding to loss, and would allow for very reliable loss statistics for the downstream network."
+  },
+  {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/278",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
     "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/278/labels{/name}",
@@ -1832,7 +1877,8 @@
     "updated_at": "2017-01-25T23:17:08Z",
     "closed_at": null,
     "body": "The draft currently says:\r\n\r\n> Frames of unknown types are ignored.\r\n\r\nWhich is basically impossible. The only option an endpoint has when it encounters an unknown frame type is to throw out the entire frame or terminate the connection.  We should pick the latter."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/232",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -1890,8 +1936,7 @@
     "updated_at": "2017-01-25T08:02:34Z",
     "closed_at": null,
     "body": "In order to break linkability across events that are known to an endpoint, we should explore the possibility of having each endpoint provide the other with a new connection identifier AND a number of packet numbers that should be skipped.  This allows an endpoint to continue using the same connection on a new path without linking use of that new path to use of the old path.\r\n\r\nYou need to change connection ID and packet numbers or they can be used for linking.  That doesn't preclude the use of other signals for linking, but it removes obvious ones.\r\n\r\nThis wouldn't address all of the potential linkability issues we identified, but would help in cases where an endpoint is aware of the need - or even potential need - for a gap in linkability."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/231",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3659,7 +3704,8 @@
     "updated_at": "2017-01-24T01:03:19Z",
     "closed_at": null,
     "body": "The specification allows endpoints to specify the maximum number of concurrent streams (MSPC), but should not the spec provide for the minimum value of MSPC that all endpoints must support?  If the minimum is 1 (excluding \"service\" streams), it would be good for the spec to state so explicitly."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/185",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3717,8 +3763,7 @@
     "updated_at": "2017-01-25T01:09:08Z",
     "closed_at": null,
     "body": "Some path elements may need to statelessly identify an initial packet of a connection. These path elements could include load balancers and organization's border security systems.  Ability to identify the initial packet may also be required for systems implementing Stateless Rejects #60.\r\n\r\nSince QUIC allows for packet number truncation, the most straightforward way to identify the initial packet is by checking for packet number 1 and VERSION flag set.\r\n\r\nHence:\r\n\r\n- The language of section 6.1 Version Negotiation would need to change SHOULD to MUST in \"All subsequent packets sent by the client SHOULD have the VERSION flag unset\".\r\n- Section 6.1 Version Negotiation should also gain language like: \"If Version negotiation is not complete in 2^6 packets, any endpoint MAY reset this connection\".  (This is a weaker statement than #143.)\r\n- Proposal in issue #35 is not compatible with this issue. If packet numbers are allowed to be deliberately skipped, we should require that packets with VERSION set MUST NOT be skipped."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/184",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5698,7 +5743,8 @@
     "updated_at": "2017-01-26T04:51:36Z",
     "closed_at": null,
     "body": "When I wrote the section on what can change in different versions, I originally just left an unlabelled slot for the connection ID.  But @marten-seemann observed that the server is required to echo the connection ID in a version negotiation packet.\r\n\r\nI don't think that we need the server to echo the connection ID in this case.  That would allow us to restore the 8 octets to a version-specific field."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/128",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5770,8 +5816,7 @@
     "updated_at": "2017-01-19T22:24:07Z",
     "closed_at": null,
     "body": "The transport protocol has frames, and STREAM frames can contain frames for the HTTP mapping.  It's confusing.  We should work out how to deal with that."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/127",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7679,9 +7724,9 @@
       }
     ],
     "milestone": null,
-    "comments": 1,
+    "comments": 2,
     "created_at": "2016-12-01T23:48:18Z",
-    "updated_at": "2017-02-09T08:42:12Z",
+    "updated_at": "2017-02-09T18:39:25Z",
     "closed_at": null,
     "body": "Martin Duke requests that all fields necessary for frame length computation be moved to the start of the frame."
   },
@@ -7865,7 +7910,8 @@
     "updated_at": "2016-12-08T20:22:05Z",
     "closed_at": null,
     "body": "Do we want them? How do we accommodate them?  What are their semantics if they aren't understood?"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/56",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7923,8 +7969,7 @@
     "updated_at": "2017-01-26T06:20:30Z",
     "closed_at": null,
     "body": "We need to define how the public flags might be extended, or if it could be.  This has a pretty serious impact on #55."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/53",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
