@@ -962,7 +962,7 @@ the connection or permit it to proceed.
 
 A connection MAY be accepted without address validation - or with only limited
 validation - but a server SHOULD limit the data it sends toward an unvalidated
-address.  Successful Completion of the cryptographic handshake implicitly
+address.  Successful completion of the cryptographic handshake implicitly
 provides proof that the client has received packets from the server.
 
 
