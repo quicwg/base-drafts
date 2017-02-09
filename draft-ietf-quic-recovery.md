@@ -371,10 +371,10 @@ the previous RTT it observed when resumption is attempted and use that for an
 initial RTT value.  If no previous RTT is available, the initial RTT defaults
 to 200ms.  Once an RTT measurement is taken, it MUST replace initial_rtt.
 
-Endpoints MUST retransmit handshake packets if not acknowledged(1) within a
-time limit. This time limit will be the largest of twice the rtt value and
-MinTLPTimeout. For each previous handshake timeout without receiving an
-acknowledgement, the timeout doubles.
+Endpoints MUST retransmit handshake packets if not acknowledged within a
+time limit. This time limit will start as the largest of twice the rtt value
+and MinTLPTimeout.  Each consecutive handshake retransmission doubles the
+time limit, until an acknowledgement is received.
 
 When stateless rejects are in use, the connection is considered immediately
 closed once a reject is sent, so no timer is set to retransmit the reject.
