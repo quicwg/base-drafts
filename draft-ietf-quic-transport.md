@@ -295,6 +295,16 @@ version of the specification is identified by the number 0x00000001.
 Versions with the most significant 16 bits of the version number cleared are
 reserved for use in future IETF consensus documents.
 
+Versions that follow the pattern 0x?a?a?a?a are reserved for use in forcing
+version negotiation to be exercised.  That is, any version number where the low
+four bits of all octets is 1010 (in binary).  A client or server MAY advertise
+support for any of these reserved versions.
+
+Reserved version numbers will probably never represent a real protocol; a client
+MAY use one of these version numbers with the expectation that the server will
+initiate version negotiation; a server MAY advertise support for one of these
+versions and can expect that clients ignore the value.
+
 \[\[RFC editor: please remove the remainder of this section before
 publication.]]
 
@@ -597,6 +607,27 @@ supports, as shown below.
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
 {: #version-negotiation-format title="Version Negotiation Packet"}
+
+A server that generates a version negotiation packet SHOULD include one of the
+reserved version numbers (those following the pattern 0x?a?a?a?a).  This ensures
+that clients are able to correctly handle an unsupported version.
+
+The design of version negotiation permits a server to avoid maintaining state
+for packets that it rejects in this fashion.  However, when the server generates
+a version negotiation packet, it cannot randomly generate a reserved version
+number.  This is because the server is required to include the same value in its
+transport parameters.  To avoid the selected version number changing during
+connection establishment, the reserved version can be generated as a function of
+values that will be available to the server when later generating its handshake
+packets.
+
+A pseudorandom function that takes client address information (IP and port) and
+the client selected version as input would ensure that there is sufficient
+variability in the values that a server uses.
+
+A client MAY send a packet using a reserved version number.  This can be used to
+solicit a list of supported versions from a server.
+
 
 ## Public Reset Packet
 
