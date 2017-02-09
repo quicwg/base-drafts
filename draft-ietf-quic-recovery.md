@@ -201,27 +201,27 @@ Constants used in loss recovery and congestion control are based on a
 combination of RFCs, papers, and common practice.  Some may need to be changed
 or negotiated in order to better suit a variety of environments.
 
-* kMaxTLPs: 2
-  Maximum number of tail loss probes before an RTO fires.
+* kMaxTLPs (default 2):
+ : Maximum number of tail loss probes before an RTO fires.
 
-* kReorderingThreshold: 3
+* kReorderingThreshold (default 3):
   Maximum reordering in packet number space before FACK style loss detection
   considers a packet lost.
 
-* kTimeReorderingThreshold: 1/8
+* kTimeReorderingThreshold (default 1/8):
   Maximum reordering in time sapce before time based loss detection considers
   a packet lost.  In fraction of an RTT.
 
-* kMinTLPTimeout: 10ms
+* kMinTLPTimeout (default 10ms):
   Minimum time in the future a tail loss probe alarm may be set for.
 
-* kMinRTOTimeout: 200ms
+* kMinRTOTimeout (default 200ms):
   Minimum time in the future an RTO alarm may be set for.
 
-* kDelayedAckTimeout: 25ms
+* kDelayedAckTimeout (default 25ms):
   The length of the peer's delayed ack timer.
 
-* kDefaultInitialRtt: 200ms
+* kDefaultInitialRtt (default 200ms):
   The default RTT used before an RTT sample is taken.
 
 ## Variables of interest
@@ -366,21 +366,22 @@ below shows how the single timer is set based on the alarm mode.
 
 ### Handshake Packets
 
-The initial client hello has no prior RTT sample.  A client SHOULD remember
+The initial flight has no prior RTT sample.  A client SHOULD remember
 the previous RTT it observed when resumption is attempted and use that for an
 initial RTT value.  If no previous RTT is available, the initial RTT defaults
 to 200ms.  Once an RTT measurement is taken, it MUST replace initial_rtt.
 
-The client hello is retransmitted via a timer, similar to a tail loss probe, but
-it is expected client hellos will be acked immediately or a handshake packet will
-be sent immediately, so delayed acks do not need to be compensated for.  As such,
-it is always retransmitted at 2x the initial_rtt or smoothed_rtt.
+Endpoints MUST retransmit handshake packets if not acknowledged(1) within a
+time limit. This time limit will be the largest of twice the rtt value and
+MinTLPTimeout. For each previous handshake timeout without receiving an
+acknowledgement, the timeout doubles.
 
-Server handshake packets may be sent based on a similar timer, or triggered by
-receipt of another client hello.  
+When stateless rejects are in use, the connection is considered immediately
+closed once a reject is sent, so no timer is set to retransmit the reject.
 
 Version negotiation packets are always stateless, and MUST be sent once per
-client hello, and may be sent in response to 0RTT packets.
+per handshake packet that uses an unsupported QUIC version, and MAY be sent
+in response to 0RTT packets.
 
 (Add sections for early retransmit and TLP/RTO here)
 
@@ -447,10 +448,10 @@ supplied.
 
 ### Handshake Packets
 
-The receiver MUST not trust an unencryped ack for encrypted packets.  The receiver
-MUST trust encrypted acks for unencrypted packets, however.  Aside from this,
-loss detection for handshake packets when an ack is processed is identical to
-other packets.
+The receiver MUST ignore unencrypted packets that ack encrypted packets.
+The receiver MUST trust encrypted acks for unencrypted packets, however.  Aside
+from this, loss detection for handshake packets when an ack is processed is 
+identical to other packets.
 
 ### Psuedocode
 
@@ -471,7 +472,7 @@ Pseudocode for DetectLostPackets follows:
                 acked_packet.packet_number - reordering_threshold)
          lost_packets.insert(unacked_packet.packet_number);
      return lost_packets;
-~~~ 
+~~~
 
 # Congestion Control
 
