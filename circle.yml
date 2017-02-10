@@ -3,6 +3,8 @@ machine:
     GOPATH: "${HOME}/${CIRCLE_PROJECT_REPONAME}/.go_workspace"
     mmark_src: github.com/miekg/mmark/mmark
     mmark: ./mmark
+  python:
+    version: 3.5.2
 
 checkout:
   post:
