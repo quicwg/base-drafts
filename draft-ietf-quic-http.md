@@ -202,9 +202,9 @@ this stream to be half-closed in the corresponding direction without
 transferring data.
 
 Pairs of streams must be utilized sequentially, with no gaps.  The data stream
-MUST be reserved with the QUIC implementation when the message control stream
-is opened or reserved, and MUST be closed after transferring the body, or else
-closed immediately after sending the request headers if there is no body.
+is opened at the same time as the message control stream is opened and is closed
+after transferring the body.  The data stream is closed immediately after
+sending the request headers if there is no body.
 
 HTTP does not need to do any separate multiplexing when using QUIC - data sent
 over a QUIC stream always maps to a particular HTTP transaction. Requests and

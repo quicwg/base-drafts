@@ -1489,55 +1489,49 @@ due to the use of multiple streams in QUIC.  The lifecycle of a QUIC stream is
 shown in the following figure and described below.
 
 ~~~
-                        app     +--------+
-                 reserve_stream |        |
-                 ,--------------|  idle  |
-                /               |        |
-               /                +--------+
-              V                      |
-        +----------+ send data/      |
-        |          | recv data       | send data/
-    ,---| reserved |------------.    | recv data
-    |   |          |             \   |
-    |   +----------+              v  v
-    |               recv FIN/   +--------+ send FIN/
-    |            app read_close |        | app write_close
-    |                 ,---------|  open  |-----------.
-    |                /          |        |            \
-    |               v           +--------+             v
-    |        +----------+            |             +----------+
-    |        |   half   |            |             |   half   |
-    |        |  closed  |            | send RST/   |  closed  |
-    |        | (remote) |            | recv RST    | (local)  |
-    |        +----------+            |             +----------+
-    |            |                   |                    |
-    |            | send FIN/         |          recv FIN/ |
-    |            | app write_close/  |    app read_close/ |
-    |            | send RST/         v          send RST/ |
-    |            | recv RST     +--------+      recv RST  |
-    | send RST/  `------------->|        |<---------------'
-    | recv RST                  | closed |
-    `-------------------------->|        |
-                                +--------+
+                            +--------+
+                            |        |
+                            |  idle  |
+                            |        |
+                            +--------+
+                                 |
+                                 | send data/
+                                 | recv data/
+                                 | recv higher stream
+                                 |
+                                 v
+                            +--------+
+                recv FIN    |        |    send FIN
+                  ,---------|  open  |-----------.
+                 /          |        |            \
+                v           +--------+             v
+         +----------+            |             +----------+
+         |   half   |            |             |   half   |
+         |  closed  |            | send RST/   |  closed  |
+         | (remote) |            | recv RST    |  (local) |
+         +----------+            |             +----------+
+             |                   |                    |
+             | send FIN/         |          recv FIN/ |
+             | send RST/         v          send RST/ |
+             | recv RST     +--------+      recv RST  |
+             `------------->|        |<---------------'
+                            | closed |
+                            |        |
+                            +--------+
 
-       send:   endpoint sends this frame
-       recv:   endpoint receives this frame
+   send:   endpoint sends this frame
+   recv:   endpoint receives this frame
 
-       data: application data in a STREAM frame
-       FIN: FIN flag in a STREAM frame
-       RST: RST_STREAM frame
-
-       app: application API signals to QUIC
-       reserve_stream: causes a StreamID to be reserved for later use
-       read_close: causes stream to be half-closed without receiving a FIN
-       write_close: causes stream to be half-closed without sending a FIN
+   data: application data in a STREAM frame
+   FIN: FIN flag in a STREAM frame
+   RST: RST_STREAM frame
 ~~~
 {: #stream-lifecycle title="Lifecycle of a stream"}
 
 Note that this diagram shows stream state transitions and the frames and flags
 that affect those transitions only.  For the purpose of state transitions, the
 FIN flag is processed as a separate event to the frame that bears it; a STREAM
-frame with the FIN flag set can cause two state transitions.  When the FIN bit
+frame with the FIN flag set can cause two state transitions.  When the FIN flag
 is sent on an empty STREAM frame, the offset in the STREAM frame MUST be one
 greater than the last data byte sent on this stream.
 
@@ -1549,6 +1543,7 @@ sending RST_STREAM, where frames might be received for some time after closing.
 
 Streams have the following states:
 
+
 ### idle
 
 All streams start in the "idle" state.
@@ -1559,20 +1554,15 @@ Sending or receiving a STREAM frame causes the stream to become "open".  The
 stream identifier is selected as described in {{stream-identifiers}}.  The same
 STREAM frame can also cause a stream to immediately become "half-closed".
 
-An application can reserve an idle stream for later use.  The stream state for
-the reserved stream transitions to "reserved".
+Receiving a STREAM frame on a peer-initiated stream (that is, a packet sent by a
+server on an even-numbered stream or a client packet on an odd-numbered stream)
+also causes all idle streams with lower numbers to become "open".  This could
+occur if a peer begins sending on streams in a different order to their
+creation, or it could happen if packets are lost or reordered in transit.
 
 Receiving any frame other than STREAM or RST_STREAM on a stream in this state
 MUST be treated as a connection error ({{error-handling}}) of type YYYY.
 
-### reserved
-
-A stream in this state has been reserved for later use by the application.  In
-this state only the following transitions are possible:
-
-* Sending or receiving a STREAM frame causes the stream to become "open".
-
-* Sending or receiving a RST_STREAM frame causes the stream to become "closed".
 
 ### open
 
@@ -1681,9 +1671,10 @@ new stream.
 StreamID 1 (0x1) is reserved for the crypto handshake.  StreamID 1 MUST NOT be
 used for application data, and MUST be the first client-initiated stream.
 
-Streams MUST be created or reserved in sequential order, but MAY be used in
-arbitrary order.  A QUIC endpoint MUST NOT reuse a StreamID on a given
-connection.
+A QUIC endpoint cannot reuse a StreamID on a given connection.  Streams MUST be
+created in sequential order.  Open streams can be used in any order.  Streams
+that are used out of order result in lower-numbered streams being counted as
+open.
 
 ## Stream Concurrency
 
