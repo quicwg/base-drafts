@@ -38,9 +38,9 @@
 
     ],
     "milestone": null,
-    "comments": 1,
+    "comments": 6,
     "created_at": "2017-02-09T18:35:01Z",
-    "updated_at": "2017-02-09T18:46:43Z",
+    "updated_at": "2017-02-09T23:38:47Z",
     "closed_at": null,
     "body": "Something that came up in Tokyo was the need for service providers (i.e. middleboxes) to troubleshoot performance issues in the network. Packet Number Echo (#269) could partially address this problem., particularly for RTT measurement. But it is imperfect for measuring other problems.\r\n\r\nAs someone who has spent quite a bit of time debugging TCP packet traces from service providers, there are two other things that would help greatly in answering the question \"why is my QUIC slow\", without significantly compromising privacy. To do both would take two bits in the public flags, which may be available depending on how some other issues turn out.\r\n\r\n(1) QUIC endpoints MAY set the BLOCKED bit if they include a BLOCKED frame in the packet. If you want to get fancy, you could have a different bit for \"stream blocked\" and \"connection blocked\", but flow control issues are a common cause of traffic pauses with no other discernable symptoms.\r\n(2) QUIC endpoints MUST (SHOULD?) set the RETRANS flag in any packet that contains retransmitted data. This would help operators identify that a connection is slowing down because it is responding to loss, and would allow for very reliable loss statistics for the downstream network."
   },
@@ -822,9 +822,9 @@
 
     ],
     "milestone": null,
-    "comments": 0,
+    "comments": 3,
     "created_at": "2017-02-07T18:39:04Z",
-    "updated_at": "2017-02-09T18:59:43Z",
+    "updated_at": "2017-02-09T21:51:48Z",
     "closed_at": null,
     "pull_request": {
       "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/266",
@@ -4056,14 +4056,50 @@
     ],
     "state": "open",
     "locked": false,
-    "assignee": null,
+    "assignee": {
+      "login": "ianswett",
+      "id": 20072817,
+      "avatar_url": "https://avatars.githubusercontent.com/u/20072817?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/ianswett",
+      "html_url": "https://github.com/ianswett",
+      "followers_url": "https://api.github.com/users/ianswett/followers",
+      "following_url": "https://api.github.com/users/ianswett/following{/other_user}",
+      "gists_url": "https://api.github.com/users/ianswett/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/ianswett/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/ianswett/subscriptions",
+      "organizations_url": "https://api.github.com/users/ianswett/orgs",
+      "repos_url": "https://api.github.com/users/ianswett/repos",
+      "events_url": "https://api.github.com/users/ianswett/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/ianswett/received_events",
+      "type": "User",
+      "site_admin": false
+    },
     "assignees": [
-
+      {
+        "login": "ianswett",
+        "id": 20072817,
+        "avatar_url": "https://avatars.githubusercontent.com/u/20072817?v=3",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/ianswett",
+        "html_url": "https://github.com/ianswett",
+        "followers_url": "https://api.github.com/users/ianswett/followers",
+        "following_url": "https://api.github.com/users/ianswett/following{/other_user}",
+        "gists_url": "https://api.github.com/users/ianswett/gists{/gist_id}",
+        "starred_url": "https://api.github.com/users/ianswett/starred{/owner}{/repo}",
+        "subscriptions_url": "https://api.github.com/users/ianswett/subscriptions",
+        "organizations_url": "https://api.github.com/users/ianswett/orgs",
+        "repos_url": "https://api.github.com/users/ianswett/repos",
+        "events_url": "https://api.github.com/users/ianswett/events{/privacy}",
+        "received_events_url": "https://api.github.com/users/ianswett/received_events",
+        "type": "User",
+        "site_admin": false
+      }
     ],
     "milestone": null,
     "comments": 2,
     "created_at": "2017-01-19T11:44:21Z",
-    "updated_at": "2017-01-19T23:06:42Z",
+    "updated_at": "2017-02-09T21:26:12Z",
     "closed_at": null,
     "body": "In Section 7.3 (STOP_WAITING Frame), Least Unacked Delta is calculated using the packet ID of the packet carrying the STOP_WAITING frame. This is reasonable. \r\n\r\nIn the ACK Frame section:\r\n\r\n> An endpoint SHOULD use the \"Largest Acked\" packet number it received to calculate the \"Least Unacked Delta\" value in any STOP_WAITING frame it might send.\r\n\r\nMaybe I understood it wrong but it suggest to calculate Least Unacked Delta using \"Largest Acked\".\r\nThis should be written in a different way if it meant that the information from an ack (not only \"Largest Acked\" but also unacked gaps ) is used to decide to send a STOP_WAITING frame."
   },
@@ -7414,6 +7450,13 @@
         "default": false
       },
       {
+        "id": 489929683,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/editor-ready",
+        "name": "editor-ready",
+        "color": "0e8a16",
+        "default": false
+      },
+      {
         "id": 481871399,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
         "name": "transport",
@@ -7466,7 +7509,7 @@
     "milestone": null,
     "comments": 2,
     "created_at": "2016-12-02T00:24:36Z",
-    "updated_at": "2017-01-25T06:36:52Z",
+    "updated_at": "2017-02-09T21:26:32Z",
     "closed_at": null,
     "body": "@ianswett suggests that maybe this can be removed.  He didn't say why."
   },
@@ -7724,9 +7767,9 @@
       }
     ],
     "milestone": null,
-    "comments": 2,
+    "comments": 4,
     "created_at": "2016-12-01T23:48:18Z",
-    "updated_at": "2017-02-09T18:39:25Z",
+    "updated_at": "2017-02-10T00:02:29Z",
     "closed_at": null,
     "body": "Martin Duke requests that all fields necessary for frame length computation be moved to the start of the frame."
   },
