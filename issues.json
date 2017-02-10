@@ -1,5 +1,213 @@
 [
   {
+    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/282",
+    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
+    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/282/labels{/name}",
+    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/282/comments",
+    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/282/events",
+    "html_url": "https://github.com/quicwg/base-drafts/pull/282",
+    "id": 206703764,
+    "number": 282,
+    "title": "Stream 1 counts toward MSPC",
+    "user": {
+      "login": "martinthomson",
+      "id": 67641,
+      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/martinthomson",
+      "html_url": "https://github.com/martinthomson",
+      "followers_url": "https://api.github.com/users/martinthomson/followers",
+      "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
+      "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
+      "organizations_url": "https://api.github.com/users/martinthomson/orgs",
+      "repos_url": "https://api.github.com/users/martinthomson/repos",
+      "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/martinthomson/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 481871399,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
+        "name": "transport",
+        "color": "fbca04",
+        "default": false
+      }
+    ],
+    "state": "open",
+    "locked": false,
+    "assignee": {
+      "login": "janaiyengar",
+      "id": 11067604,
+      "avatar_url": "https://avatars.githubusercontent.com/u/11067604?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/janaiyengar",
+      "html_url": "https://github.com/janaiyengar",
+      "followers_url": "https://api.github.com/users/janaiyengar/followers",
+      "following_url": "https://api.github.com/users/janaiyengar/following{/other_user}",
+      "gists_url": "https://api.github.com/users/janaiyengar/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/janaiyengar/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/janaiyengar/subscriptions",
+      "organizations_url": "https://api.github.com/users/janaiyengar/orgs",
+      "repos_url": "https://api.github.com/users/janaiyengar/repos",
+      "events_url": "https://api.github.com/users/janaiyengar/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/janaiyengar/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "assignees": [
+      {
+        "login": "janaiyengar",
+        "id": 11067604,
+        "avatar_url": "https://avatars.githubusercontent.com/u/11067604?v=3",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/janaiyengar",
+        "html_url": "https://github.com/janaiyengar",
+        "followers_url": "https://api.github.com/users/janaiyengar/followers",
+        "following_url": "https://api.github.com/users/janaiyengar/following{/other_user}",
+        "gists_url": "https://api.github.com/users/janaiyengar/gists{/gist_id}",
+        "starred_url": "https://api.github.com/users/janaiyengar/starred{/owner}{/repo}",
+        "subscriptions_url": "https://api.github.com/users/janaiyengar/subscriptions",
+        "organizations_url": "https://api.github.com/users/janaiyengar/orgs",
+        "repos_url": "https://api.github.com/users/janaiyengar/repos",
+        "events_url": "https://api.github.com/users/janaiyengar/events{/privacy}",
+        "received_events_url": "https://api.github.com/users/janaiyengar/received_events",
+        "type": "User",
+        "site_admin": false
+      }
+    ],
+    "milestone": null,
+    "comments": 0,
+    "created_at": "2017-02-10T04:05:29Z",
+    "updated_at": "2017-02-10T04:05:29Z",
+    "closed_at": null,
+    "pull_request": {
+      "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/282",
+      "html_url": "https://github.com/quicwg/base-drafts/pull/282",
+      "diff_url": "https://github.com/quicwg/base-drafts/pull/282.diff",
+      "patch_url": "https://github.com/quicwg/base-drafts/pull/282.patch"
+    },
+    "body": "I've chosen to make stream 1 count toward MSPC on the same basis that we decided not to move crypto to stream 0: no special cases.\r\n\r\nCloses #201."
+  },
+  {
+    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/281",
+    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
+    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/281/labels{/name}",
+    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/281/comments",
+    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/281/events",
+    "html_url": "https://github.com/quicwg/base-drafts/issues/281",
+    "id": 206699621,
+    "number": 281,
+    "title": "Promising more than the client concurrency limit",
+    "user": {
+      "login": "martinthomson",
+      "id": 67641,
+      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/martinthomson",
+      "html_url": "https://github.com/martinthomson",
+      "followers_url": "https://api.github.com/users/martinthomson/followers",
+      "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
+      "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
+      "organizations_url": "https://api.github.com/users/martinthomson/orgs",
+      "repos_url": "https://api.github.com/users/martinthomson/repos",
+      "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/martinthomson/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 481871627,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/http",
+        "name": "http",
+        "color": "fbca04",
+        "default": false
+      },
+      {
+        "id": 481871399,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
+        "name": "transport",
+        "color": "fbca04",
+        "default": false
+      }
+    ],
+    "state": "open",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 0,
+    "created_at": "2017-02-10T03:33:41Z",
+    "updated_at": "2017-02-10T03:33:41Z",
+    "closed_at": null,
+    "body": "In HTTP/2, streams states were modified at the point that a PUSH_PROMISE was sent, but actually using that stream could be deferred.  The \"reserved\" state didn't count toward concurrency limit, those streams would count only when packets were first sent.\r\n\r\nIf the client had a low concurrency limit, that could mean that use of promised streams had to be deferred until active streams could be closed.  QUIC maintains a similar model, but that model is incompatible with QUIC.  In HTTP/2, any promised streams can be opened without creating any ambiguity about the state of other reserved streams.  HTTP/2 also allowed endpoints to skip stream numbers.\r\n\r\nIn QUIC the lack of ordering between streams (a feature!) forces us to insist on having a strict monotonic sequence of stream numbers.  If a stream number appears to be skipped, that is only because a packet using it has not yet arrived.  This ensures much simpler accounting for streams and avoids adding latency to stream creation.\r\n\r\nThis creates a problem for promises.  Servers cannot use streams in any order, only those streams within the window of streams permitted by the client concurrency limit are free to be used.\r\n\r\nFor example, a client could have an MSPC of 2.  That allows just one server push at a time.  A server that wants to push two resources could advertise one push on streams 4+6 and the other on 8+10.  However, unlike in HTTP/2 the server cannot start the second push first.  Opening stream 8 would imply that streams 4 and 6 are also open, violating the concurrency limit.\r\n\r\nIt's not clear that this problem needs a solution, but it is a functional regression that we should at least consider and make a conscious decision to accept."
+  },
+  {
+    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/280",
+    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
+    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/280/labels{/name}",
+    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/280/comments",
+    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/280/events",
+    "html_url": "https://github.com/quicwg/base-drafts/pull/280",
+    "id": 206696632,
+    "number": 280,
+    "title": "Remove stream reservation",
+    "user": {
+      "login": "martinthomson",
+      "id": 67641,
+      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/martinthomson",
+      "html_url": "https://github.com/martinthomson",
+      "followers_url": "https://api.github.com/users/martinthomson/followers",
+      "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
+      "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
+      "organizations_url": "https://api.github.com/users/martinthomson/orgs",
+      "repos_url": "https://api.github.com/users/martinthomson/repos",
+      "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/martinthomson/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 481871399,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
+        "name": "transport",
+        "color": "fbca04",
+        "default": false
+      }
+    ],
+    "state": "open",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 0,
+    "created_at": "2017-02-10T03:12:49Z",
+    "updated_at": "2017-02-10T03:12:49Z",
+    "closed_at": null,
+    "pull_request": {
+      "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/280",
+      "html_url": "https://github.com/quicwg/base-drafts/pull/280",
+      "diff_url": "https://github.com/quicwg/base-drafts/pull/280.diff",
+      "patch_url": "https://github.com/quicwg/base-drafts/pull/280.patch"
+    },
+    "body": "This PR is based on the outcome of the discussion in #174.  The observation there is that using stream X implicitly opens stream X-2; since all streams are opened in sequence, it must just be that the packets that mention stream X-2 got delayed or lost somehow.\r\n\r\nOnce you accept that, it's also reasonable to allow a different order of stream creation (the point at which numbers are allocated) and stream *use* (when you send packets on a stream).  This neatly addresses the issue whereby server push can promise use of streams, but not use them in the order in which they were promised.\r\n\r\nThere's a catch here, and it's not one that was introduced by this change, if a server promises more streams than the client permits in its concurrent streams limit, the server cannot use streams beyond the limit.  I'll open a bug on that.\r\n\r\nCloses #182 - that removed only a few of the application actions.  This removes all of them.\r\nCloses #174."
+  },
+  {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/279",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
     "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/279/labels{/name}",
@@ -1735,7 +1943,8 @@
     "updated_at": "2017-02-03T03:01:28Z",
     "closed_at": null,
     "body": "My understanding of the way the mechanism is supposed to work is that once the handshake is finished, QUIC takes over the encryption;  if server wants to send an NST, it needs to send it on stream 1, using TLS record layer on said stream, and said TLS record shall not be encrypted.  If that is so, this should be clarified, because otherwise this can be interpreted as a requirement to double-encrypt streams (on QUIC packet layer with QUIC key, and on TLS record layer with TLS traffic keys)."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/238",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -1909,8 +2118,7 @@
     "updated_at": "2017-01-25T23:17:08Z",
     "closed_at": null,
     "body": "The draft currently says:\r\n\r\n> Frames of unknown types are ignored.\r\n\r\nWhich is basically impossible. The only option an endpoint has when it encounters an unknown frame type is to throw out the entire frame or terminate the connection.  We should pick the latter."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/232",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3562,7 +3770,8 @@
     "updated_at": "2017-01-24T04:29:04Z",
     "closed_at": null,
     "body": "S 5.2.1 contains a bunch of instructions for how to deal with packet number 2^64 but (for instance) the connection flow control window is 64-bits in absolute values, so given that we're mostly sending data, it seems improbable you will get to 2^64 packets."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/188",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3736,8 +3945,7 @@
     "updated_at": "2017-01-24T01:03:19Z",
     "closed_at": null,
     "body": "The specification allows endpoints to specify the maximum number of concurrent streams (MSPC), but should not the spec provide for the minimum value of MSPC that all endpoints must support?  If the minimum is 1 (excluding \"service\" streams), it would be good for the spec to state so explicitly."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/185",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5623,7 +5831,8 @@
     "updated_at": "2017-01-16T14:24:18Z",
     "closed_at": null,
     "body": "In draft-ietf-quic-recovery.md\r\n\r\n`      if (rto_count = 0):\r\n        alarm_duration = max(200ms, smoothed_rtt + 4 x rttvar);\r\n      else:\r\n        alarm_duration = loss_detection_alarm.get_delay() << 1;\r\n      rto_count++;\r\n\r\nThe return value of get_delay() is not defined anywhere in the document."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/135",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5811,8 +6020,7 @@
     "updated_at": "2017-01-26T04:51:36Z",
     "closed_at": null,
     "body": "When I wrote the section on what can change in different versions, I originally just left an unlabelled slot for the connection ID.  But @marten-seemann observed that the server is required to echo the connection ID in a version negotiation packet.\r\n\r\nI don't think that we need the server to echo the connection ID in this case.  That would allow us to restore the 8 octets to a version-specific field."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/128",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7804,7 +8012,8 @@
     "updated_at": "2017-02-10T00:02:29Z",
     "closed_at": null,
     "body": "Martin Duke requests that all fields necessary for frame length computation be moved to the start of the frame."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/61",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7985,8 +8194,7 @@
     "updated_at": "2016-12-08T20:22:05Z",
     "closed_at": null,
     "body": "Do we want them? How do we accommodate them?  What are their semantics if they aren't understood?"
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/56",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
