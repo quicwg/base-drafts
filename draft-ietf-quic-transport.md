@@ -1705,6 +1705,15 @@ receives a STREAM frame that causes its advertised concurrent stream limit to be
 exceeded MUST treat this as a stream error of type QUIC_TOO_MANY_OPEN_STREAMS
 ({{error-handling}}).
 
+All streams, including stream 1, count toward this limit.  Thus, a concurrent
+stream limit of 0 will cause a connection to be unusable.  Application protocols
+that use QUIC might require a certain minimum number of streams to function
+correctly.  If a peer advertises an MSPC value that is too small for the
+selected application protocol to function, an endpoint MUST terminate the
+connection with an error of type QUIC_TOO_MANY_OPEN_STREAMS
+({{error-handling}}).
+
+
 ## Sending and Receiving Data
 
 Once a stream is created, endpoints may use the stream to send and receive data.
