@@ -1,5 +1,98 @@
 [
   {
+    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/283",
+    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
+    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/283/labels{/name}",
+    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/283/comments",
+    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/283/events",
+    "html_url": "https://github.com/quicwg/base-drafts/pull/283",
+    "id": 206715709,
+    "number": 283,
+    "title": "Random initial packet number",
+    "user": {
+      "login": "martinthomson",
+      "id": 67641,
+      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/martinthomson",
+      "html_url": "https://github.com/martinthomson",
+      "followers_url": "https://api.github.com/users/martinthomson/followers",
+      "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
+      "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
+      "organizations_url": "https://api.github.com/users/martinthomson/orgs",
+      "repos_url": "https://api.github.com/users/martinthomson/repos",
+      "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/martinthomson/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 481871399,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
+        "name": "transport",
+        "color": "fbca04",
+        "default": false
+      }
+    ],
+    "state": "open",
+    "locked": false,
+    "assignee": {
+      "login": "janaiyengar",
+      "id": 11067604,
+      "avatar_url": "https://avatars.githubusercontent.com/u/11067604?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/janaiyengar",
+      "html_url": "https://github.com/janaiyengar",
+      "followers_url": "https://api.github.com/users/janaiyengar/followers",
+      "following_url": "https://api.github.com/users/janaiyengar/following{/other_user}",
+      "gists_url": "https://api.github.com/users/janaiyengar/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/janaiyengar/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/janaiyengar/subscriptions",
+      "organizations_url": "https://api.github.com/users/janaiyengar/orgs",
+      "repos_url": "https://api.github.com/users/janaiyengar/repos",
+      "events_url": "https://api.github.com/users/janaiyengar/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/janaiyengar/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "assignees": [
+      {
+        "login": "janaiyengar",
+        "id": 11067604,
+        "avatar_url": "https://avatars.githubusercontent.com/u/11067604?v=3",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/janaiyengar",
+        "html_url": "https://github.com/janaiyengar",
+        "followers_url": "https://api.github.com/users/janaiyengar/followers",
+        "following_url": "https://api.github.com/users/janaiyengar/following{/other_user}",
+        "gists_url": "https://api.github.com/users/janaiyengar/gists{/gist_id}",
+        "starred_url": "https://api.github.com/users/janaiyengar/starred{/owner}{/repo}",
+        "subscriptions_url": "https://api.github.com/users/janaiyengar/subscriptions",
+        "organizations_url": "https://api.github.com/users/janaiyengar/orgs",
+        "repos_url": "https://api.github.com/users/janaiyengar/repos",
+        "events_url": "https://api.github.com/users/janaiyengar/events{/privacy}",
+        "received_events_url": "https://api.github.com/users/janaiyengar/received_events",
+        "type": "User",
+        "site_admin": false
+      }
+    ],
+    "milestone": null,
+    "comments": 0,
+    "created_at": "2017-02-10T06:02:11Z",
+    "updated_at": "2017-02-10T06:02:11Z",
+    "closed_at": null,
+    "pull_request": {
+      "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/283",
+      "html_url": "https://github.com/quicwg/base-drafts/pull/283",
+      "diff_url": "https://github.com/quicwg/base-drafts/pull/283.diff",
+      "patch_url": "https://github.com/quicwg/base-drafts/pull/283.patch"
+    },
+    "body": "In writing this up, it's clear that we've a bunch more work to do in this area."
+  },
+  {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/282",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
     "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/282/labels{/name}",
@@ -1885,7 +1978,8 @@
     "updated_at": "2017-02-08T20:12:38Z",
     "closed_at": null,
     "body": "There might be a way in which both sides of a connection could agree (by convention, protocol, or explicit signaling) that a particular stream is closed WITHOUT sending a FIN and spending the extra octets.  This could be used by HTTP to avoid the FIN that a client currently has to send when receiving a server push."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/239",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -1943,8 +2037,7 @@
     "updated_at": "2017-02-03T03:01:28Z",
     "closed_at": null,
     "body": "My understanding of the way the mechanism is supposed to work is that once the handshake is finished, QUIC takes over the encryption;  if server wants to send an NST, it needs to send it on stream 1, using TLS record layer on said stream, and said TLS record shall not be encrypted.  If that is so, this should be clarified, because otherwise this can be interpreted as a requirement to double-encrypt streams (on QUIC packet layer with QUIC key, and on TLS record layer with TLS traffic keys)."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/238",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3712,7 +3805,8 @@
     "updated_at": "2017-01-24T01:30:41Z",
     "closed_at": null,
     "body": "The formatting of the flags word section is kind of confusing. Rather than presenting things as hex, I think I would just do a bit diagram like in other flags sections. I can provide a PR if the editors want.\r\n\r\n"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/192",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3770,8 +3864,7 @@
     "updated_at": "2017-01-24T04:29:04Z",
     "closed_at": null,
     "body": "S 5.2.1 contains a bunch of instructions for how to deal with packet number 2^64 but (for instance) the connection flow control window is 64-bits in absolute values, so given that we're mostly sending data, it seems improbable you will get to 2^64 packets."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/188",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5737,7 +5830,8 @@
     "updated_at": "2017-01-20T02:33:13Z",
     "closed_at": null,
     "body": "Servers shouldn't need to send more than one version negotiation packet, they only resend so that they are stateless and to deal with packet loss on the return path.\r\n\r\nClients should ignore version negotiation packets if they already have received packets from the server.  \r\n\r\nThis requirement on the client could be used for denial of service in the case where the legitimate server needs to use version negotiation.  If an attacker can race a legitimate looking ServerHello at the client (which isn't impossible), then the client will ignore the real server's attempt at version negotiation.  This is hard for an off-path attacker due to the need to echo certain parts of the client initial packet.  (I'd say connection ID is enough, but that might run afoul of #119.)"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/142",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5831,8 +5925,7 @@
     "updated_at": "2017-01-16T14:24:18Z",
     "closed_at": null,
     "body": "In draft-ietf-quic-recovery.md\r\n\r\n`      if (rto_count = 0):\r\n        alarm_duration = max(200ms, smoothed_rtt + 4 x rttvar);\r\n      else:\r\n        alarm_duration = loss_detection_alarm.get_delay() << 1;\r\n      rto_count++;\r\n\r\nThe return value of get_delay() is not defined anywhere in the document."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/135",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7911,7 +8004,8 @@
     "updated_at": "2017-01-25T06:37:34Z",
     "closed_at": null,
     "body": "We have rules about retransmission of STREAM frames.  ACK has similar properties in terms of what needs to be retransmitted.  Once an ACK has been acked, what should a sender do when constructing future ACK messages?"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/62",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -8012,8 +8106,7 @@
     "updated_at": "2017-02-10T00:02:29Z",
     "closed_at": null,
     "body": "Martin Duke requests that all fields necessary for frame length computation be moved to the start of the frame."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/61",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
