@@ -505,7 +505,7 @@ The fields in a Regular packet past the Common Header are the following:
 The packet number is a 64-bit unsigned number and is used as part of a
 cryptographic nonce for packet encryption.  Each endpoint maintains a separate
 packet number for sending and receiving.  The packet number for sending MUST
-increase by one after sending any packet.
+increase by at least one after sending any packet.
 
 A QUIC endpoint MUST NOT reuse a packet number within the same connection (that
 is, under the same cryptographic keys).  If the packet number for sending
@@ -529,8 +529,8 @@ To enable unambiguous reconstruction of the packet number, an endpoint MUST use
 a packet number size that is able to represent 4 times more packet numbers than
 the endpoint has currently outstanding.  A packet is outstanding if it sent but
 has neither been acknowledged nor been marked as lost (see {{QUIC-RECOVERY}}).
-As a result, the size of the packet number encoding is at least two more than
-the base 2 logarithm of the number of outstanding packets, rounded up.  For
+As a result, the size of the packet number encoding is at least two more bits
+than the base 2 logarithm of the number of outstanding packets, rounded up.  For
 example, if an endpoint has 14,389 packets outstanding, the next packet uses a
 16-bit or larger packet number encoding; a 32-bit packet number is needed if
 there are 20,000 packets outstanding.
@@ -658,9 +658,10 @@ that the client selected.
 When the client receives a Version Negotiation packet from the server, it should
 select an acceptable protocol version.  If the server lists an acceptable
 version, the client selects that version and reattempts to created a connection
-using that version.  The client MUST update packet numbers when attempting to
-connect with the updated version.  Packets MUST continue to have the VERSION
-flag set and MUST include the new negotiated protocol version.
+using that version.  Though the contents of a packet might not change in
+response to version negotiation, a client MUST increase the packet number it
+uses on every packet it sends.  Packets MUST continue to have the VERSION flag
+set and MUST include the new negotiated protocol version.
 
 The client MUST set the VERSION flag and include its selected version on all
 packets until it has 1-RTT keys and it has received a packet from the server
