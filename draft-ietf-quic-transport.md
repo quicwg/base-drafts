@@ -527,13 +527,17 @@ value of 0x1f94 will be decoded as 0xaa831f94.
 
 To enable unambiguous reconstruction of the packet number, an endpoint MUST use
 a packet number size that is able to represent 4 times more packet numbers than
-the endpoint has currently outstanding.  A packet is outstanding if it sent but
-has neither been acknowledged nor been marked as lost (see {{QUIC-RECOVERY}}).
-As a result, the size of the packet number encoding is at least two more than
-the base 2 logarithm of the number of outstanding packets, rounded up.  For
-example, if an endpoint has 14,389 packets outstanding, the next packet uses a
-16-bit or larger packet number encoding; a 32-bit packet number is needed if
-there are 20,000 packets outstanding.
+the numerical difference between the current packet number and the lowest packet
+number on an outstanding packet, plus one.  A packet is outstanding if it has
+been sent but has neither been acknowledged nor been marked as lost (see
+{{QUIC-RECOVERY}}).  As a result, the size of the packet number encoding is at
+least two more than the base 2 logarithm of the range of outstanding packet
+numbers including the new packet, rounded up.
+
+For example, if an endpoint has is sending packet 0x6B4264 and 0x6B0A2F is the
+lowest outstanding packet number, the next packet uses a 16-bit or larger packet
+number encoding; whereas a 32-bit packet number is needed if packet 0x6AF0F7 is
+outstanding.
 
 
 ### Initial Packet Number
