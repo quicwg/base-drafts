@@ -454,7 +454,7 @@ supplied.
 
 The receiver MUST ignore unencrypted packets that ack encrypted packets.
 The receiver MUST trust encrypted acks for unencrypted packets, however.  Aside
-from this, loss detection for handshake packets when an ack is processed is 
+from this, loss detection for handshake packets when an ack is processed is
 identical to other packets.
 
 ### Psuedocode
