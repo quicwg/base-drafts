@@ -99,9 +99,11 @@ frames."  References without this preface refer to frames defined in {{frames}}.
 
 ## Discovering an HTTP/QUIC Endpoint
 
-An HTTP origin advertises the availability of an equivalent HTTP/QUIC endpoint
-via the Alt-Svc HTTP response header or the HTTP/2 ALTSVC frame ({{!RFC7838}}),
-using the ALPN token defined in {{connection-establishment}}.
+### QUIC Alternatives
+
+An HTTP/TCP origin advertises the availability of an equivalent HTTP/QUIC
+endpoint via the Alt-Svc HTTP response header or the HTTP/2 ALTSVC frame
+({{!RFC7838}}), using the ALPN token defined in {{connection-establishment}}.
 
 For example, an origin could indicate in an HTTP/1.1 or HTTP/2 response that
 HTTP/QUIC was available on UDP port 50781 at the same hostname by including the
@@ -123,7 +125,7 @@ Servers MAY serve HTTP/QUIC on any UDP port.  Servers MUST use the same port
 across all IP addresses that serve a single domain, and SHOULD NOT change this
 port.
 
-### QUIC Version Hints {#alt-svc-version-hint}
+#### QUIC Version Hints {#alt-svc-version-hint}
 
 This document defines the "quic" parameter for Alt-Svc, which MAY be used to
 provide version-negotiation hints to HTTP/QUIC clients. QUIC versions are
@@ -159,6 +161,34 @@ Alt-Svc: hq=":49288";quic="1,1abadaba,51303334,0"
 A client acting on this header would drop the reserved versions (because it does
 not support them), then attempt to connect to the alternative using the first
 version in the list which it does support.
+
+
+### QUIC-Only Origins
+
+An HTTP endpoint where the authoritative endpoint is served over QUIC can be
+identified using the "httpq" URI scheme.
+
+All of the requirements listed in {{!RFC7230}} for the "https" scheme are also
+requirements for the "httpq" scheme, except that if the port subcomponent is
+given, it is taken to be a UDP port rather than a TCP port.  If the port
+subcomponent is missing or empty, UDP port 443 is assumed.
+
+    httpq-URI = "httpq:" "//" authority path-abempty [ "?" query ]
+             [ "#" fragment ]
+
+Note that the "httpq" URI scheme depends on both UDP and the QUIC handshake for
+establishing authority.  Resources made available via the "httpq" scheme have no
+shared identity with the "http" or "https" schemes, even if their resource
+identifiers indicate the same authority (the same host).  They are distinct
+namespaces and are considered to be distinct origin servers.  However, an
+extension to HTTP that is defined to apply to entire host domains, such as the
+Cookie protocol {{?RFC6265}}, can allow information set by one service to impact
+communication with other services within a matching group of host domains.
+
+An HTTP/QUIC origin whose content can also be retrieved using HTTP/1.1 or HTTP/2
+MAY use HTTP Alternative Services ({{!RFC7838}}) to indicate the availability of
+those endpoints. However, given the prevalence of clients which do not support
+QUIC, servers capable of speaking TCP SHOULD NOT use the "httpq" scheme.
 
 ## Connection Establishment {#connection-establishment}
 
