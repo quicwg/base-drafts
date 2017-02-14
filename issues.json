@@ -1,5 +1,105 @@
 [
   {
+    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/302",
+    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
+    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/302/labels{/name}",
+    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/302/comments",
+    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/302/events",
+    "html_url": "https://github.com/quicwg/base-drafts/pull/302",
+    "id": 207415764,
+    "number": 302,
+    "title": "Integrity protection for the header",
+    "user": {
+      "login": "martinthomson",
+      "id": 67641,
+      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/martinthomson",
+      "html_url": "https://github.com/martinthomson",
+      "followers_url": "https://api.github.com/users/martinthomson/followers",
+      "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
+      "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
+      "organizations_url": "https://api.github.com/users/martinthomson/orgs",
+      "repos_url": "https://api.github.com/users/martinthomson/repos",
+      "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/martinthomson/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 481871361,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/design",
+        "name": "design",
+        "color": "1d76db",
+        "default": false
+      },
+      {
+        "id": 481871604,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/tls",
+        "name": "tls",
+        "color": "fbca04",
+        "default": false
+      }
+    ],
+    "state": "open",
+    "locked": false,
+    "assignee": {
+      "login": "seanturner",
+      "id": 4488966,
+      "avatar_url": "https://avatars.githubusercontent.com/u/4488966?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/seanturner",
+      "html_url": "https://github.com/seanturner",
+      "followers_url": "https://api.github.com/users/seanturner/followers",
+      "following_url": "https://api.github.com/users/seanturner/following{/other_user}",
+      "gists_url": "https://api.github.com/users/seanturner/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/seanturner/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/seanturner/subscriptions",
+      "organizations_url": "https://api.github.com/users/seanturner/orgs",
+      "repos_url": "https://api.github.com/users/seanturner/repos",
+      "events_url": "https://api.github.com/users/seanturner/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/seanturner/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "assignees": [
+      {
+        "login": "seanturner",
+        "id": 4488966,
+        "avatar_url": "https://avatars.githubusercontent.com/u/4488966?v=3",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/seanturner",
+        "html_url": "https://github.com/seanturner",
+        "followers_url": "https://api.github.com/users/seanturner/followers",
+        "following_url": "https://api.github.com/users/seanturner/following{/other_user}",
+        "gists_url": "https://api.github.com/users/seanturner/gists{/gist_id}",
+        "starred_url": "https://api.github.com/users/seanturner/starred{/owner}{/repo}",
+        "subscriptions_url": "https://api.github.com/users/seanturner/subscriptions",
+        "organizations_url": "https://api.github.com/users/seanturner/orgs",
+        "repos_url": "https://api.github.com/users/seanturner/repos",
+        "events_url": "https://api.github.com/users/seanturner/events{/privacy}",
+        "received_events_url": "https://api.github.com/users/seanturner/received_events",
+        "type": "User",
+        "site_admin": false
+      }
+    ],
+    "milestone": null,
+    "comments": 0,
+    "created_at": "2017-02-14T04:31:45Z",
+    "updated_at": "2017-02-14T04:31:45Z",
+    "closed_at": null,
+    "pull_request": {
+      "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/302",
+      "html_url": "https://github.com/quicwg/base-drafts/pull/302",
+      "diff_url": "https://github.com/quicwg/base-drafts/pull/302.diff",
+      "patch_url": "https://github.com/quicwg/base-drafts/pull/302.patch"
+    },
+    "body": "Apparently all this crypto stuff isn't going to live in the -tls doc forever, but since it is here.\r\n\r\nCloses #<an issue that I can't find>, but I know that we agreed to this at the Tokyo interim."
+  },
+  {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/301",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
     "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/301/labels{/name}",
@@ -2022,7 +2122,8 @@
     "updated_at": "2017-02-10T02:36:51Z",
     "closed_at": null,
     "body": "In Mirja's Management draft:\r\n[https://tools.ietf.org/html/draft-kuehlewind-quic-appman-00#section-3](url)\r\n\r\n> [EDITOR'S NOTE: the addition of a simple packet number echo would\r\n   allow passive RTT measurement and partial passive downstream loss/\r\n   reordering measurement.  Packet number echo can be sampled at the\r\n   echo-side (i.e. one-in-N packets or 1/p packets can carry an echo)\r\n   for efficiency tradeoff, if necessary.]\r\n\r\nI endorse this idea. Service providers are very interesting in measuring their users' quality of experience and this is one key thing we can expose to enable that. On the face of it, it seems that the privacy hit is marginal."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/267",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -2073,8 +2174,7 @@
     "updated_at": "2017-02-08T04:53:08Z",
     "closed_at": null,
     "body": "PR #106 added the following requirement on servers:\r\n\r\n> Servers MUST reject the first plaintext packet received from a client if it its total size is less than 1280 octets, to mitigate amplification attacks.\r\n\r\nHowever, this runs into an issue in the case where there are IP header extensions that the client knows about but the server doesn't.  If the client is aware of the IP header extensions and constructs a packet with a smaller payload in order to comply with our recommendation to create a packet of exactly 1280 octets, the server will receive a packet that it thinks is too small.\r\n\r\nI see a few options:\r\n1. loosen the enforcement constraint on the server\r\n2. specify that the server only enforce the constraint if it sees the entire IP packet\r\n3. specify the minimum size and its enforcement in terms of payload size (we could set different values here to allow for header extensions)"
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/266",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3797,7 +3897,8 @@
     "updated_at": "2017-01-24T23:45:10Z",
     "closed_at": null,
     "body": "It may be desirable for the client to increase the flow control window mid-connection (it observes that client actually has very high BDP; it decides based on application request by peer that it will send a lot of data; it decides that it trusts the peer for some reason; potentially other options).  Currently, we can bump connection flow control window without an issue, but any new individual streams are stuck with whatever was initially negotiated.  We may want to add a mechanism to increase initial stream flow control window mid-connection."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/217",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3855,8 +3956,7 @@
     "updated_at": "2017-01-24T23:34:14Z",
     "closed_at": null,
     "body": "For illustrative purposes, consider a server with an max open stream limit of 2.  The client sends packets with frames in the following order:\r\n\r\n1. Open stream 3\r\n2. Open stream 5\r\n3. Close stream 5\r\n4. Open stream 7\r\n\r\nThe network reorders packets 3 and 4. From the server's perspective, the client has violated the maximum.  In order to deal with this, the server will presumably need something more complicated than just \"if violated, kill\" -- maybe kill the connection if it *remains* violated for more than 1-2 RTT?"
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/215",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5644,7 +5744,8 @@
     "updated_at": "2017-01-25T22:29:19Z",
     "closed_at": null,
     "body": "QUIC borrows the concept of stream reservation from HTTP/2.  However, there is a small difference between those state machines in that a reserved stream becomes open when data is sent on it.  HTTP/2 reserved streams become half-closed in this case (basically, only the server can send on a reserved stream).\r\n\r\nThe reason we have reservation is that we use stream numbers to identify requests at the HTTP mapping.  We reserve the stream number so that we can use its number in the PUSH_PROMISE frame.  That ties the PUSH_PROMISE - which contains a request - to the stream containing the response.  We need to create streams sequentially, so reservation allows us to \"create\" the stream in the right order and still be able to reference it.\r\n\r\nIn practice, however, this is a nuisance.  Reserved streams don't count toward concurrency limits and so they represent an unbounded state exposure.  Reserved streams might be created in order, but they can be used in any order.  Of course, this is a minor annoyance at best because there is always application state, and maybe priority information for these streams.\r\n\r\nI believe that QUIC has the opportunity to address this annoyance and in the process make the state machine simpler.  If QUIC removed the concept of stream reservation and instead required that application protocols create their correlators for use with talking about future streams, that would greatly simplify things.\r\n\r\nFor instance, we could remove the promised stream identifier from PUSH_PROMISE.  Instead, the stream that carries a push promise response could start with a frame that identified the PUSH_PROMISE by stream and number: \"this stream contains the response for promised request number P on stream N\".  Or, we could mint a new PUSH_PROMISE identifier that could be carried at the start of the stream."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/173",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5702,8 +5803,7 @@
     "updated_at": "2017-02-08T22:14:21Z",
     "closed_at": null,
     "body": "Re: 5.2.2. HEADERS\r\n\r\nDefines the sequence number as 16 bits.  \r\n\r\nUnder the HTTP mapping, with stream ids being 32 bit, and 2 streams per request, the limit would be ~ 2^30 requests per connection.   The 16 bit HEADERs sequence number will run out much sooner.\r\n\r\nUnless the assumption is that these HEADERs sequence numbers can wrap around, and the active range constrained, ala TCP sequence numbers.\r\n\r\nOr a third alternative might be to go with compressed, ala issue #154.\r\n\r\nMaybe sequence numbers could adopt the integer encoding scheme of HPACK?\r\n\r\n\r\n"
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/171",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7797,7 +7897,8 @@
     "updated_at": "2017-02-09T08:41:01Z",
     "closed_at": null,
     "body": "Shout out to @davidben and the recently adopted draft-davidben-tls-grease."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/109",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7898,8 +7999,7 @@
     "updated_at": "2017-02-08T17:22:30Z",
     "closed_at": null,
     "body": "I note that the IEEE754 reference doesn't help."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/104",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -10028,7 +10128,8 @@
     "updated_at": "2017-02-14T03:53:20Z",
     "closed_at": null,
     "body": "We might be able to randomize the starting packet number and thereby avoid having it as a point of ossification.  It also increases the entropy for an off-path attacker who wishes to guess connection IDs because now they have to guess packet number as well."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/34",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -10122,8 +10223,7 @@
     "updated_at": "2017-02-01T10:20:04Z",
     "closed_at": null,
     "body": "If we consider cleartext << 0-RTT << 1-RTT, then we might be able to establish a clear rule regarding acknowledgments.\r\n\r\nThe desired rule is that an ACK MUST be sent with the same or higher protection.\r\n\r\nHowever: This rule would mean that a server is required to ACK 0-RTT data with 1-RTT keys.  That's tricky, because loss or delay of the server's first flight also delays the server's ACKs of 0-RTT data (the server can't use 0-RTT keys)."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/33",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
