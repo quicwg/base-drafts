@@ -1708,6 +1708,7 @@ receives a STREAM frame that causes its advertised concurrent stream limit to be
 exceeded MUST treat this as a stream error of type QUIC_TOO_MANY_OPEN_STREAMS
 ({{error-handling}}).
 
+
 ## Sending and Receiving Data
 
 Once a stream is created, endpoints may use the stream to send and receive data.
@@ -1732,6 +1733,46 @@ the congestion controller and the flow controller.
 
 Flow control is described in detail in {{flow-control}}, and congestion control
 is described in the companion document {{QUIC-RECOVERY}}.
+
+
+## Stream Prioritization
+
+Stream multiplexing has a significant effect on application performance if
+resources allocated to streams are correctly prioritized.  Experience with other
+multiplexed protocols, such as HTTP/2 {{?RFC7540}} shows that effective
+prioritization strategies have a significant impact on performance.
+
+QUIC does not provide frames for exchanging priotization information.  Instead
+it relies on receiving priority information from the application that uses QUIC.
+Protocols that use QUIC are able to define any prioritization scheme that suits
+their application semantics.  A protocol might define explicit messages for
+signaling priority, such as those defined in HTTP/2, it could define rules that
+allow an endpoint to determine priority based on context, or it could leave the
+determination to the application.
+
+A QUIC implementation SHOULD provide ways in which an application can indicate
+the relative priority of streams.  When deciding which streams to dedicate
+resources to, QUIC SHOULD use the information provided by the application.
+Failure to account for priority of streams can result in suboptimal performance.
+
+Stream priority is most relevant when deciding which stream data will be
+transmitted.  Often, there will be limits on what can be transmitted as a result
+of connection flow control or the current congestion controller state.
+
+Giving preference to the transmission of its own management frames ensures that
+the protocol functions efficiently.  That is, prioritizing frames other than
+STREAM frames ensures that loss recovery, congestion control, and flow control
+operate effectively.  Prioritizing stream 1 over other streams ensures that the
+cryptographic handshake can complete.
+
+Choosing to retransmit data that was already sent and determined to be lost can
+help ensure that flow control doesn't cause underutilization or temporary
+stalling of a connection.  Data sent in STREAM frames counts toward flow control
+limits from the instant it is initially transmitted, and preferring repair of
+lost data over sending new data ensures that receiver memory can be freed more
+quickly.  This is more valuable if the retransmission will repair a gap in a
+stream; retransmitting a gap in stream data potentially allows more octets of
+the stream to be made available.
 
 
 # Flow Control {#flow-control}
