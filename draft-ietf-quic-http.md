@@ -418,7 +418,7 @@ All frames have the following format:
    |                       Frame Payload (*)                     ...
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~~~~~~~~
-{: title="HTTP/QUIC frame format"}
+{: #fig-frame title="HTTP/QUIC frame format"}
 
 ## Frame Definitions {#frames}
 
@@ -457,7 +457,7 @@ of type HTTP_MALFORMED_HEADERS.
    |       Sequence? (16)          |    Header Block Fragment (*)...
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~~~~~~~~
-{: title="HEADERS frame payload"}
+{: #fig-headers title="HEADERS frame payload"}
 
 The HEADERS frame payload has the following fields:
 
@@ -505,7 +505,7 @@ The flags defined are:
    |   Weight (8)  |
    +-+-+-+-+-+-+-+-+
 ~~~~~~~~~~
-{: title="HEADERS frame payload"}
+{: #fig-priority title="PRIORITY frame payload"}
 
 The HEADERS frame payload has the following fields:
 
@@ -674,7 +674,7 @@ server to client, as in HTTP/2.  It defines no flags.
    |       Sequence? (16)          |         Header Block (*)    ...
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~~~~~~~~
-{: title="PUSH_PROMISE frame payload"}
+{: #fig-push-promise title="PUSH_PROMISE frame payload"}
 
 The payload consists of:
 
