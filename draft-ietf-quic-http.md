@@ -649,8 +649,8 @@ following values:
   - SETTINGS_MAX_HEADER_LIST_SIZE:  16,384 octets
 
 Servers MAY continue processing data from clients which exceed its current
-configuration during the initial flight.  In this case, the client MUST apply the new
-settings immediately upon receipt.
+configuration during the initial flight.  In this case, the client MUST apply
+the new settings immediately upon receipt.
 
 If the connection is closed because these or other constraints were violated
 during the 0-RTT flight (e.g. with HTTP_HPACK_DECOMPRESSION_FAILED), clients MAY

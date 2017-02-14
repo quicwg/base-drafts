@@ -1024,8 +1024,8 @@ The fields in the ACK frame are as follows:
   number the peer is acking in this packet (typically the largest that the peer
   has seen thus far.)
 
-* Ack Delay: Time from when the largest acked packet, as indicated in the Largest Acked
-  field, was received by this peer to when this ack was sent.
+* Ack Delay: Time from when the largest acked packet, as indicated in the
+  Largest Acked field, was received by this peer to when this ack was sent.
 
 * Num Blocks (opt): An optional 8-bit unsigned value specifying the number of
   additional ack blocks (besides the required First Ack Block) in this ACK
@@ -1445,8 +1445,8 @@ connection. However, as QUIC operates over UDP, in IPv4 the echoed information
 could consist only of the IP and UDP headers, which usually has insufficient
 entropy to mitigate off-path attacks.
 
-As a result, endpoints that implement PMTUD in IPv4 SHOULD take steps to mitigate
-this risk. For instance, an application could:
+As a result, endpoints that implement PMTUD in IPv4 SHOULD take steps to
+mitigate this risk. For instance, an application could:
 
 * Set the IPv4 Don't Fragment (DF) bit on a small proportion of packets, so that
 most invalid ICMP messages arrive when there are no DF packets outstanding, and

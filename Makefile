@@ -10,3 +10,6 @@ endif
 
 latest::
 	@if grep -l ' $$' *.md; then ! echo "Trailing whitespace found"; fi
+	@wc -L draft-*.md | head -n -1 | while read l f; do \
+	  [ "$$l" -le 80 ] || ! echo "$$f is contains a line with $$l characters"; \
+	done
