@@ -1277,6 +1277,20 @@ it contains.
 
 # IANA Considerations
 
+## Registration of "httpq" URI scheme
+
+IANA maintains the registry of URI Schemes {{?RFC4395}} at
+<http://www.iana.org/assignments/uri-schemes/>.
+
+This document defines the following URI schemes, so the "Permanent
+URI Schemes" registry has been updated accordingly.
+
+|------------|---------------------------------------|---------------|
+| URI Scheme | Description                           | Reference     |
+|------------|---------------------------------------|---------------|
+| httpq      | Hypertext Transfer Protocol over QUIC | {{httpq}}     |
+|------------|---------------------------------------|---------------|
+
 ## Registration of HTTP/QUIC Identification String
 
 This document creates a new registration for the identification of HTTP/QUIC in
