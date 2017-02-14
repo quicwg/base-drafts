@@ -80,9 +80,9 @@
       }
     ],
     "milestone": null,
-    "comments": 0,
+    "comments": 1,
     "created_at": "2017-02-14T06:50:47Z",
-    "updated_at": "2017-02-14T06:50:47Z",
+    "updated_at": "2017-02-14T22:13:05Z",
     "closed_at": null,
     "pull_request": {
       "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/303",
@@ -180,9 +180,9 @@
       }
     ],
     "milestone": null,
-    "comments": 0,
+    "comments": 1,
     "created_at": "2017-02-14T04:31:45Z",
-    "updated_at": "2017-02-14T04:31:45Z",
+    "updated_at": "2017-02-14T19:16:03Z",
     "closed_at": null,
     "pull_request": {
       "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/302",
@@ -190,7 +190,7 @@
       "diff_url": "https://github.com/quicwg/base-drafts/pull/302.diff",
       "patch_url": "https://github.com/quicwg/base-drafts/pull/302.patch"
     },
-    "body": "Apparently all this crypto stuff isn't going to live in the -tls doc forever, but since it is here.\r\n\r\nCloses #<an issue that I can't find>, but I know that we agreed to this at the Tokyo interim."
+    "body": "Apparently all this crypto stuff isn't going to live in the -tls doc forever, but since it is here.\r\n\r\nCloses #226, but I know that we agreed to this at the Tokyo interim."
   },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/300",
@@ -431,9 +431,9 @@
       }
     ],
     "milestone": null,
-    "comments": 0,
+    "comments": 2,
     "created_at": "2017-02-14T00:52:23Z",
-    "updated_at": "2017-02-14T00:52:23Z",
+    "updated_at": "2017-02-14T20:31:06Z",
     "closed_at": null,
     "pull_request": {
       "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/298",
@@ -1847,7 +1847,7 @@
     "milestone": null,
     "comments": 0,
     "created_at": "2017-02-08T22:33:40Z",
-    "updated_at": "2017-02-09T02:51:23Z",
+    "updated_at": "2017-02-14T21:32:42Z",
     "closed_at": null,
     "pull_request": {
       "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/274",
@@ -2213,9 +2213,9 @@
 
     ],
     "milestone": null,
-    "comments": 4,
+    "comments": 5,
     "created_at": "2017-02-07T18:39:04Z",
-    "updated_at": "2017-02-14T16:33:06Z",
+    "updated_at": "2017-02-14T23:22:35Z",
     "closed_at": null,
     "pull_request": {
       "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/266",
@@ -5920,9 +5920,9 @@
 
     ],
     "milestone": null,
-    "comments": 6,
+    "comments": 7,
     "created_at": "2017-01-18T04:42:06Z",
-    "updated_at": "2017-02-14T15:57:25Z",
+    "updated_at": "2017-02-14T23:16:06Z",
     "closed_at": null,
     "body": "There's currently no behavior defined for the case of a connection ID collision.\r\nThe probability for a collision of two 64 bit numbers is *really small*, if connections IDs are chosen randomly. For example, for a server handling 100,000 concurrent connections, the collision probability is about 3*10^-10.\r\nIt might therefore be justified to completely neglect this issue.\r\n\r\nAccording to the current draft, if a client initiates a handshake and chooses an existing connection ID, the server would just silently discard those packets, because it already switched to an encrypted connection and will regard them as undecryptable."
   },
@@ -7502,9 +7502,9 @@
 
     ],
     "milestone": null,
-    "comments": 7,
+    "comments": 8,
     "created_at": "2017-01-04T10:15:52Z",
-    "updated_at": "2017-02-14T16:10:22Z",
+    "updated_at": "2017-02-14T23:19:56Z",
     "closed_at": null,
     "body": "QUIC currently has the ability to embed this in the source address token.  I guess that this is primarily because they both happen at the same time (during a stateless reject).\r\n\r\nWe could turn this into a transport parameter, I guess, but that doesn't work for HelloRetryRequest."
   },
