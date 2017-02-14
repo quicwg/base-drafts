@@ -39,14 +39,50 @@
     ],
     "state": "open",
     "locked": false,
-    "assignee": null,
+    "assignee": {
+      "login": "janaiyengar",
+      "id": 11067604,
+      "avatar_url": "https://avatars.githubusercontent.com/u/11067604?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/janaiyengar",
+      "html_url": "https://github.com/janaiyengar",
+      "followers_url": "https://api.github.com/users/janaiyengar/followers",
+      "following_url": "https://api.github.com/users/janaiyengar/following{/other_user}",
+      "gists_url": "https://api.github.com/users/janaiyengar/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/janaiyengar/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/janaiyengar/subscriptions",
+      "organizations_url": "https://api.github.com/users/janaiyengar/orgs",
+      "repos_url": "https://api.github.com/users/janaiyengar/repos",
+      "events_url": "https://api.github.com/users/janaiyengar/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/janaiyengar/received_events",
+      "type": "User",
+      "site_admin": false
+    },
     "assignees": [
-
+      {
+        "login": "janaiyengar",
+        "id": 11067604,
+        "avatar_url": "https://avatars.githubusercontent.com/u/11067604?v=3",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/janaiyengar",
+        "html_url": "https://github.com/janaiyengar",
+        "followers_url": "https://api.github.com/users/janaiyengar/followers",
+        "following_url": "https://api.github.com/users/janaiyengar/following{/other_user}",
+        "gists_url": "https://api.github.com/users/janaiyengar/gists{/gist_id}",
+        "starred_url": "https://api.github.com/users/janaiyengar/starred{/owner}{/repo}",
+        "subscriptions_url": "https://api.github.com/users/janaiyengar/subscriptions",
+        "organizations_url": "https://api.github.com/users/janaiyengar/orgs",
+        "repos_url": "https://api.github.com/users/janaiyengar/repos",
+        "events_url": "https://api.github.com/users/janaiyengar/events{/privacy}",
+        "received_events_url": "https://api.github.com/users/janaiyengar/received_events",
+        "type": "User",
+        "site_admin": false
+      }
     ],
     "milestone": null,
     "comments": 0,
     "created_at": "2017-02-14T01:09:37Z",
-    "updated_at": "2017-02-14T01:09:37Z",
+    "updated_at": "2017-02-14T01:21:17Z",
     "closed_at": null,
     "pull_request": {
       "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/299",
@@ -195,9 +231,9 @@
 
     ],
     "milestone": null,
-    "comments": 2,
+    "comments": 3,
     "created_at": "2017-02-14T00:44:23Z",
-    "updated_at": "2017-02-14T01:04:40Z",
+    "updated_at": "2017-02-14T01:25:10Z",
     "closed_at": null,
     "body": "In #278, @martinthomson says that clients MAY choose a GREASE value for their initial packet to force version negotiation.  I would argue that no self-interested client will do so if the connection is latency-sensitive, since you incur an RTT, unless the spec has this at a higher level than MAY and with specific timing.\r\n\r\nHowever, for HTTP, bringing up a connection to a new Alternative is not latency-sensitive (because you still have your connection to the original host).  In the case where you're bringing up a connection to an alternative instead of to the origin, you've likely talked to the alternative before.\r\n\r\nWe could consider dropping the Alt-Svc version hint entirely, and saying that clients SHOULD open with a reserved version unless it has previously connected to the server and remembers a version list."
   },
@@ -669,7 +705,7 @@
     "milestone": null,
     "comments": 0,
     "created_at": "2017-02-10T08:35:43Z",
-    "updated_at": "2017-02-13T00:03:25Z",
+    "updated_at": "2017-02-14T01:11:22Z",
     "closed_at": null,
     "pull_request": {
       "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/288",
@@ -677,7 +713,7 @@
       "diff_url": "https://github.com/quicwg/base-drafts/pull/288.diff",
       "patch_url": "https://github.com/quicwg/base-drafts/pull/288.patch"
     },
-    "body": "This builds on #283 and it includes fixes the infidelities I noticed but did not fix during the process of creating that PR.\r\n\r\nThis is intended to be editorial, but it does remove the use of \"in flight\" as noted in #286.  I have defined \"outstanding packets\" to be the packets that aren't acknowledged or lost and made the formula count those packets.  I think that's probably not the right thing, and the definition in https://github.com/quicwg/base-drafts/issues/286#issuecomment-278883235 is probably closer to what is intended, but I was trying my best to avoid changing text and this seemed like the right compromise.\r\n\r\nIf I'm wrong and this isn't editorial, feel free to tell me what to write so that it can remain so."
+    "body": "This builds on #283 and it includes fixes the infidelities I noticed but did not fix during the process of creating that PR.\r\n\r\nThis is intended to be editorial, but it does remove the use of \"in flight\" as noted in #286.  I have defined \"outstanding packets\" to be the packets that aren't acknowledged or lost and made the formula count those packets.  I think that's probably not the right thing, and the definition in https://github.com/quicwg/base-drafts/issues/286#issuecomment-278883235 is probably closer to what is intended, but I was trying my best to avoid changing text and this seemed like the right compromise.\r\n\r\nIf I'm wrong and this isn't editorial, feel free to tell me what to write so that it can remain so.\r\n\r\nCloses #285 by removing the offending text."
   },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/286",
