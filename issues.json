@@ -1,5 +1,114 @@
 [
   {
+    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/295",
+    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
+    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/295/labels{/name}",
+    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/295/comments",
+    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/295/events",
+    "html_url": "https://github.com/quicwg/base-drafts/issues/295",
+    "id": 207095703,
+    "number": 295,
+    "title": "Connection ID on a version negotiation packet",
+    "user": {
+      "login": "martinthomson",
+      "id": 67641,
+      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/martinthomson",
+      "html_url": "https://github.com/martinthomson",
+      "followers_url": "https://api.github.com/users/martinthomson/followers",
+      "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
+      "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
+      "organizations_url": "https://api.github.com/users/martinthomson/orgs",
+      "repos_url": "https://api.github.com/users/martinthomson/repos",
+      "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/martinthomson/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 481871361,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/design",
+        "name": "design",
+        "color": "1d76db",
+        "default": false
+      },
+      {
+        "id": 481871399,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
+        "name": "transport",
+        "color": "fbca04",
+        "default": false
+      }
+    ],
+    "state": "open",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 2,
+    "created_at": "2017-02-13T00:11:21Z",
+    "updated_at": "2017-02-14T00:07:54Z",
+    "closed_at": null,
+    "body": "Given that we have opted to go with #119 universally, it might be reasonable to think that the server could make a proposal for the connection ID on a version negotiation packet.  However, it probably isn't a good idea.  Since version negotiation is stateless, there is less need to have stable routing for this packet.  Echoing the connection ID gives the client better assurance that its initial packet was what generated the response."
+  },
+  {
+    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/294",
+    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
+    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/294/labels{/name}",
+    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/294/comments",
+    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/294/events",
+    "html_url": "https://github.com/quicwg/base-drafts/issues/294",
+    "id": 207094918,
+    "number": 294,
+    "title": "Ignore version negotiation if the client version is present",
+    "user": {
+      "login": "martinthomson",
+      "id": 67641,
+      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/martinthomson",
+      "html_url": "https://github.com/martinthomson",
+      "followers_url": "https://api.github.com/users/martinthomson/followers",
+      "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
+      "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
+      "organizations_url": "https://api.github.com/users/martinthomson/orgs",
+      "repos_url": "https://api.github.com/users/martinthomson/repos",
+      "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/martinthomson/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 481871399,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
+        "name": "transport",
+        "color": "fbca04",
+        "default": false
+      }
+    ],
+    "state": "open",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 0,
+    "created_at": "2017-02-13T00:05:26Z",
+    "updated_at": "2017-02-13T00:05:26Z",
+    "closed_at": null,
+    "body": "That is, if the client picks X and the server returns a version negotiation packet that lists X, then something is badly wrong.  That version negotiation packet needs to be treated like internet-detritus."
+  },
+  {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/293",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
     "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/293/labels{/name}",
@@ -805,14 +914,50 @@
     ],
     "state": "open",
     "locked": false,
-    "assignee": null,
+    "assignee": {
+      "login": "janaiyengar",
+      "id": 11067604,
+      "avatar_url": "https://avatars.githubusercontent.com/u/11067604?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/janaiyengar",
+      "html_url": "https://github.com/janaiyengar",
+      "followers_url": "https://api.github.com/users/janaiyengar/followers",
+      "following_url": "https://api.github.com/users/janaiyengar/following{/other_user}",
+      "gists_url": "https://api.github.com/users/janaiyengar/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/janaiyengar/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/janaiyengar/subscriptions",
+      "organizations_url": "https://api.github.com/users/janaiyengar/orgs",
+      "repos_url": "https://api.github.com/users/janaiyengar/repos",
+      "events_url": "https://api.github.com/users/janaiyengar/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/janaiyengar/received_events",
+      "type": "User",
+      "site_admin": false
+    },
     "assignees": [
-
+      {
+        "login": "janaiyengar",
+        "id": 11067604,
+        "avatar_url": "https://avatars.githubusercontent.com/u/11067604?v=3",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/janaiyengar",
+        "html_url": "https://github.com/janaiyengar",
+        "followers_url": "https://api.github.com/users/janaiyengar/followers",
+        "following_url": "https://api.github.com/users/janaiyengar/following{/other_user}",
+        "gists_url": "https://api.github.com/users/janaiyengar/gists{/gist_id}",
+        "starred_url": "https://api.github.com/users/janaiyengar/starred{/owner}{/repo}",
+        "subscriptions_url": "https://api.github.com/users/janaiyengar/subscriptions",
+        "organizations_url": "https://api.github.com/users/janaiyengar/orgs",
+        "repos_url": "https://api.github.com/users/janaiyengar/repos",
+        "events_url": "https://api.github.com/users/janaiyengar/events{/privacy}",
+        "received_events_url": "https://api.github.com/users/janaiyengar/received_events",
+        "type": "User",
+        "site_admin": false
+      }
     ],
     "milestone": null,
     "comments": 0,
     "created_at": "2017-02-10T03:12:49Z",
-    "updated_at": "2017-02-10T03:12:49Z",
+    "updated_at": "2017-02-14T00:06:19Z",
     "closed_at": null,
     "pull_request": {
       "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/280",
@@ -1065,99 +1210,6 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/277.patch"
     },
     "body": "I considered a more violent change here, but decided to start with the simplest move.\r\n\r\nI really want to rewrite the ACK section, it's a little obtuse as it is.  I think that it could be made a lot clearer.\r\n\r\nCloses #62."
-  },
-  {
-    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/276",
-    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
-    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/276/labels{/name}",
-    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/276/comments",
-    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/276/events",
-    "html_url": "https://github.com/quicwg/base-drafts/pull/276",
-    "id": 206372666,
-    "number": 276,
-    "title": "PADDING is a single 0 octet",
-    "user": {
-      "login": "martinthomson",
-      "id": 67641,
-      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/martinthomson",
-      "html_url": "https://github.com/martinthomson",
-      "followers_url": "https://api.github.com/users/martinthomson/followers",
-      "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
-      "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
-      "organizations_url": "https://api.github.com/users/martinthomson/orgs",
-      "repos_url": "https://api.github.com/users/martinthomson/repos",
-      "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/martinthomson/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "labels": [
-      {
-        "id": 481871399,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
-        "name": "transport",
-        "color": "fbca04",
-        "default": false
-      }
-    ],
-    "state": "open",
-    "locked": false,
-    "assignee": {
-      "login": "janaiyengar",
-      "id": 11067604,
-      "avatar_url": "https://avatars.githubusercontent.com/u/11067604?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/janaiyengar",
-      "html_url": "https://github.com/janaiyengar",
-      "followers_url": "https://api.github.com/users/janaiyengar/followers",
-      "following_url": "https://api.github.com/users/janaiyengar/following{/other_user}",
-      "gists_url": "https://api.github.com/users/janaiyengar/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/janaiyengar/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/janaiyengar/subscriptions",
-      "organizations_url": "https://api.github.com/users/janaiyengar/orgs",
-      "repos_url": "https://api.github.com/users/janaiyengar/repos",
-      "events_url": "https://api.github.com/users/janaiyengar/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/janaiyengar/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "assignees": [
-      {
-        "login": "janaiyengar",
-        "id": 11067604,
-        "avatar_url": "https://avatars.githubusercontent.com/u/11067604?v=3",
-        "gravatar_id": "",
-        "url": "https://api.github.com/users/janaiyengar",
-        "html_url": "https://github.com/janaiyengar",
-        "followers_url": "https://api.github.com/users/janaiyengar/followers",
-        "following_url": "https://api.github.com/users/janaiyengar/following{/other_user}",
-        "gists_url": "https://api.github.com/users/janaiyengar/gists{/gist_id}",
-        "starred_url": "https://api.github.com/users/janaiyengar/starred{/owner}{/repo}",
-        "subscriptions_url": "https://api.github.com/users/janaiyengar/subscriptions",
-        "organizations_url": "https://api.github.com/users/janaiyengar/orgs",
-        "repos_url": "https://api.github.com/users/janaiyengar/repos",
-        "events_url": "https://api.github.com/users/janaiyengar/events{/privacy}",
-        "received_events_url": "https://api.github.com/users/janaiyengar/received_events",
-        "type": "User",
-        "site_admin": false
-      }
-    ],
-    "milestone": null,
-    "comments": 0,
-    "created_at": "2017-02-09T00:53:14Z",
-    "updated_at": "2017-02-09T00:53:14Z",
-    "closed_at": null,
-    "pull_request": {
-      "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/276",
-      "html_url": "https://github.com/quicwg/base-drafts/pull/276",
-      "diff_url": "https://github.com/quicwg/base-drafts/pull/276.diff",
-      "patch_url": "https://github.com/quicwg/base-drafts/pull/276.patch"
-    },
-    "body": "Closes #158."
   },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/275",
@@ -1921,7 +1973,8 @@
     "updated_at": "2017-02-06T23:45:53Z",
     "closed_at": null,
     "body": "As @ekr observes, this violates the rules we've agreed to for TLS, the same applies here.\r\n\r\n(This was a long and difficult conversation in TLS, we should probably just work out how to make the change.)"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/257",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -1978,8 +2031,7 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/257.patch"
     },
     "body": "for #252 "
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/255",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3697,7 +3749,8 @@
     "updated_at": "2017-01-25T00:29:17Z",
     "closed_at": null,
     "body": "This issue directly applies to the use of Server Proposed Connection ID (issue #119) / Stateless Rejects (issue #60).\r\n\r\n\"Origin servers\" are often complex multi-server data centers with load balancers. Some \"origin servers\" are actually globally distributed load balancing and routing systems, possibly with multiple levels of load balancing (for example global and local).  Since packets may show up at any load balancer node (both for global and local load balancers), it is very difficult (if not prohibitive) for these load balancers to keep track of the load balancing decision for each active connection and share that state among all nodes.\r\n\r\nTo enable stateless load balancing, load balancers need every packet to include routing information for its connection. Server Proposed Connection ID (#119) with Stateless Rejects (#60) are the methods of choice, as they allow the \"origin server system\" to encode some information into the ConnectionID -- a part of the public header present in every packet.  However, depending on the complexity of the encoded routing information, 64 bits may not be enough to ensure a sufficient amount of entropy in the ConnectionID.\r\n\r\nThe proposal is to allow Server Proposed Connection ID to include additional information to be present in every packet. That additional information can take a form of an optional longer Connection ID (and therefore be immutable) or be a new mutable part of the public header."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/204",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3762,8 +3815,7 @@
     "updated_at": "2017-02-08T22:36:48Z",
     "closed_at": null,
     "body": "There are currently two problems with streams not contributing to connection-level flow control:\r\n\r\n1. There is no way to negotiate which streams don't contribute (and their number is not limited one would have to negotiate an equation). For HTTP the non-contributing stream numbers are defined in the HTTP/QUIC draft, but defining those streams statically might not be suitable for every protocol.\r\n2. Non-contributing create a DoS opportunity. Current implementations of the QUIC protocol use a MCSP of 100. That means that a client can consume at least 100 * initial flow control window of memory on the server (and possibly even more since there's no size limit of a GET request). That results to an additional memory consumption of more than 6 MB (for comparison: Chrome and quic-go set the connection-level flow control window to 1.5 MB).\r\n\r\n### Possible solution\r\n\r\nNon-contributing are needed in the following situation: A client that is uploading data will be connection-level flow control blocked if it is sending data faster than the server is consuming it. In that situation, it makes sense to stop the client from overloading the server with more data, but at the same time allowing it to issue new requests.\r\n\r\nThe problem could be solved by defining two connection-level flow control windows: One that defines the amount of data that can be sent, and one that is defines the amount of request data and other application-layer control functions. I will refer two the two windows as \"data fc window\" and \"control fc window\".\r\n\r\nThe rules are:\r\n\r\n- When a peer opens a new stream, it defines which of the two windows the stream should be counted to (This could be done by the setting a bit in the STREAM frame public flag, but we'd have to steal it from some other field. Maybe there's a better solution?). The association of a STREAM to one of the two window cannot be changed later. Every stream has to contribute to either of the two windows.\r\n- A receiver maintains the two connection-level flow control windows and sends connection-level WINDOW_UPDATEs appropriately (there needs to be a way to distinguish between a WINDOW_UPDATE for the data and for the control window of course. Maybe use a bit of the frame type?). \r\n- In HTTP all data MUST be sent in the data fc window, and all request, PRIORITY and SETTINGs frames MUST be sent in the control fc window.\r\n\r\nThe question is: Is this general enough for all protocols? Can the messages in every protocol be mapped into the two categories \"data message\" and \"control message\"?\r\n"
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/203",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5378,9 +5430,9 @@
 
     ],
     "milestone": null,
-    "comments": 4,
+    "comments": 5,
     "created_at": "2017-01-18T04:42:06Z",
-    "updated_at": "2017-02-11T00:41:21Z",
+    "updated_at": "2017-02-13T00:24:03Z",
     "closed_at": null,
     "body": "There's currently no behavior defined for the case of a connection ID collision.\r\nThe probability for a collision of two 64 bit numbers is *really small*, if connections IDs are chosen randomly. For example, for a server handling 100,000 concurrent connections, the collision probability is about 3*10^-10.\r\nIt might therefore be justified to completely neglect this issue.\r\n\r\nAccording to the current draft, if a client initiates a handshake and chooses an existing connection ID, the server would just silently discard those packets, because it already switched to an encrypted connection and will regard them as undecryptable."
   },
@@ -5614,7 +5666,8 @@
     "updated_at": "2017-02-03T03:02:07Z",
     "closed_at": null,
     "body": "Fast troubleshooting of QoS is mandatory to maintain end users high Quality of Experience;\r\nThere are my cases of troubleshooting. A typical example starts by the signaling to the ISP that its end-users are experimenting a significant decrease of QoE when using an Internet application. Typical point of failures are line cards memory errors or overloaded routers located somewhere on the path, either in the ISP domain or outside.\r\n\r\nThe ISP NOC has to localize asap the point of failure. Currently it proceeds by dichotomy (is the point of failure inside ISP domain or outside ?) using passive monitoring of packet lost and congestion. \r\n\r\nFollowing is the description of the parameters in use:\r\n\r\n1. Packet lost downstream (vice versa for upstream): \r\n- Measure of packet lost before the point of measure needs TCP sequence number\r\n- Measure of lost after the point of measure needs TCP ACK + SACK \r\n\r\n1. Congestion: \r\n- Detects that the congestion is located either before or after the point of measure\r\n- Analysis based on TCP ACK+SACK observation\r\n\r\nQUIC packets numbering should be continuous to allow packet loss monitoring. Flows control fields (ACK, SACK) are available in QUIC but encrypted. \r\n\r\nIt should be nice to use the approach of the TCPinc WG (with an integrity check mechanism) to keep visible the fields allowing fast troubleshooting of the network layer.\r\n\r\n\r\n"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/165",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5679,8 +5732,7 @@
     "updated_at": "2017-02-08T22:06:15Z",
     "closed_at": null,
     "body": "I'm writing this issue because there was some discussion about a change I made in #145, that seemed to be controversial. I spent a lot of time thinking about this, and realized that my changes in that PR were insufficient to address the problem. I think there are multiple issues in the stream state machinery.\r\n\r\n\r\n## Two common scenarios\r\n\r\nI will describe two scenarios where RST_STREAMs will be used regularly when using HTTP/QUIC.\r\n\r\n### Rejected PUSH\r\n\r\nThe sender (in this case a HTTP server) uses HTTP/2 Push to push a resource that the receiver isn't interested in. The receiver therefore sends a RST_STREAM with offset 0 (since it didn't send any data on that stream) to stop the sender from pushing the resource.\r\n\r\nWhen the sender receives the RST_STREAM, there are two options:\r\n\r\n- the transfer hasn't completed yet: The sender then stops sending data and sends a RST_STREAM with a byte offset equal to whatever highest data offset it sent. RST_STREAMs are transmitted reliably, so both sides will *eventually* receive the other side's RST_STREAM and make adjustments to their flow controller. There is no problem here.\r\n- the transfer has already completed (i.e. the sender already sent a STREAM frame with the FIN bit): According to the draft, STREAM frames on reset streams are not retransmitted. If the STREAM frame with the FIN gets lost, and the sender will never be able to make the necessary adjustments to its flow controller. (I'm not sure, but maybe this is what #163 is about).\r\n\r\nA fix for this problem is to **always** send a RST_STREAM as a response to a RST_STREAM, even if the stream already transitioned to the *half closed* state by sending a FIN bit.\r\n\r\n\r\n\r\n### POST to a 404 URI\r\n\r\nThe second example is more involved, since it involves data flowing bidirectionaly (note that for the PUSH case, the receiver never sent any data on the stream):\r\n\r\nThe sender (in this case a HTTP client) performs a POST request to an URI that the receiver is not reading from, e.g. a non-existing site (HTTP status code 404). The receiver will first send the HTTP response header, and then the (non-empty) 404 body. It will send send a RST_STREAM with a offset equivalent to the body length, to stop the sender, to stop it from sending more data.\r\n\r\nOn the sender side, we have the same situation as in the PUSH case, but let's assume we already resolved that issue.\r\n\r\nThere are two more issues here:\r\n\r\n- We must ensure reliable delivery of the response body (the 404 page). Thus, although the stream was reset, STREAM frames need to be retransmitted.\r\n- The receiver can only send the RST_STREAM **after** composing the response body (since the final byte offset has to be included). However, it would make sense to send the RST_STREAM as soon as possible, to stop the unwanted upload.\r\n\r\nThe first issue could be fixed by requiring that the peer that is resetting a stream MUST ensure reliable delivery of stream data it sent, whereas a peer that is receiving the RST_STREAM SHOULD NOT retransmit any stream data.\r\n\r\nThe second issue could be fixed by defining a RST_STREAM frame that doesn't include a byte offset (or introducing an RST error code that indicates that the byte offset is not set). The receiver in the above example would send this RST_STREAM before sending the 404 body. Since stream data is transmitted reliably, the sender would eventually receive a highest byte offset with a STREAM frame carrying the FIN flag.\r\n\r\n\r\n## Open points for discussion\r\n\r\nDo the three changes capture all possible use cases of resetting streams. Or do we need\r\n* a way to reset a stream such that the peer initiating the reset doesn't ensure the reliable transmission of the data it already sent\r\n* a way to reset a stream such that the peer receiving the RST has to ensure the reliable transmission up to a certain (which?) offset\r\n\r\n"
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/161",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5738,107 +5790,6 @@
     "updated_at": "2017-01-18T22:06:29Z",
     "closed_at": null,
     "body": "When a client changes IP addresses (for any reason, including NAT rebinding), the server has no way of gaining an assurance that the client has actually seen its packets.  That opens an attack where the attacker establishes a connection, then starts spoofing source address.  If the server starts to send to that source address without verifying that the client can receive packets, that's potentially a powerful packet amplification attack.\r\n\r\nIt's not sufficient to look for ACKs or other such things, because no client message includes proof that the client has actually received a packet from the server.  A client can just generate ACK and WINDOW_UPDATE frames as necessary, even new requests.  The only risk a client runs is that it overestimates the number of packets that the server has sent and sends too many spurious ACK frames, which the server will then recognize and react to."
-  },
-  {
-    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/158",
-    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
-    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/158/labels{/name}",
-    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/158/comments",
-    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/158/events",
-    "html_url": "https://github.com/quicwg/base-drafts/issues/158",
-    "id": 200957150,
-    "number": 158,
-    "title": "Padding between frames",
-    "user": {
-      "login": "larseggert",
-      "id": 200328,
-      "avatar_url": "https://avatars.githubusercontent.com/u/200328?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/larseggert",
-      "html_url": "https://github.com/larseggert",
-      "followers_url": "https://api.github.com/users/larseggert/followers",
-      "following_url": "https://api.github.com/users/larseggert/following{/other_user}",
-      "gists_url": "https://api.github.com/users/larseggert/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/larseggert/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/larseggert/subscriptions",
-      "organizations_url": "https://api.github.com/users/larseggert/orgs",
-      "repos_url": "https://api.github.com/users/larseggert/repos",
-      "events_url": "https://api.github.com/users/larseggert/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/larseggert/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "labels": [
-      {
-        "id": 481871361,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/design",
-        "name": "design",
-        "color": "1d76db",
-        "default": false
-      },
-      {
-        "id": 489929683,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/editor-ready",
-        "name": "editor-ready",
-        "color": "0e8a16",
-        "default": false
-      },
-      {
-        "id": 481871399,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
-        "name": "transport",
-        "color": "fbca04",
-        "default": false
-      }
-    ],
-    "state": "open",
-    "locked": false,
-    "assignee": {
-      "login": "martinthomson",
-      "id": 67641,
-      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/martinthomson",
-      "html_url": "https://github.com/martinthomson",
-      "followers_url": "https://api.github.com/users/martinthomson/followers",
-      "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
-      "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
-      "organizations_url": "https://api.github.com/users/martinthomson/orgs",
-      "repos_url": "https://api.github.com/users/martinthomson/repos",
-      "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/martinthomson/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "assignees": [
-      {
-        "login": "martinthomson",
-        "id": 67641,
-        "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
-        "gravatar_id": "",
-        "url": "https://api.github.com/users/martinthomson",
-        "html_url": "https://github.com/martinthomson",
-        "followers_url": "https://api.github.com/users/martinthomson/followers",
-        "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
-        "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
-        "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
-        "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
-        "organizations_url": "https://api.github.com/users/martinthomson/orgs",
-        "repos_url": "https://api.github.com/users/martinthomson/repos",
-        "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
-        "received_events_url": "https://api.github.com/users/martinthomson/received_events",
-        "type": "User",
-        "site_admin": false
-      }
-    ],
-    "milestone": null,
-    "comments": 7,
-    "created_at": "2017-01-16T08:31:58Z",
-    "updated_at": "2017-02-10T18:47:13Z",
-    "closed_at": null,
-    "body": "The section on padding frames currently says:\r\n```\r\n   The PADDING frame (type=0x00) pads a packet with 0x00 bytes.  When\r\n   this frame is encountered, the rest of the packet is expected to be\r\n   padding bytes.  The frame contains 0x00 bytes and extends to the end\r\n   of the QUIC packet.  A PADDING frame has no additional fields.\r\n```\r\n\r\nI'd like to discuss whether a padding frame that can be inserted anywhere, instead of only as the last frame in a packet, makes sense.\r\n\r\nI'm currently doing a [zero-copy implementation of QUIC](https://github.com/NTAP/quant) on top of [netmap](http://info.iet.unipi.it/~luigi/netmap/) via a [userspace IPv4/UDP stack](https://github.com/NTAP/warpcore), which due to static DMA mappings requires an app to place stream frame data directly into packet buffers at a (fixed) offset. The QUIC stack then inserts the common header and other frames before the stream frames, and needs to pad any unused space. Currently, this isn't possible.\r\n\r\nIn other words, I'd like something similar to the [No-Operation TCP option](https://tools.ietf.org/html/rfc793#page-18).\r\n\r\n(And it's an open question whether going to great lengths to support zero-copy TX is actually all that useful, given that we're going to do crypto over the entire buffer anyway.)"
   },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/157",
@@ -7062,9 +7013,9 @@
 
     ],
     "milestone": null,
-    "comments": 5,
+    "comments": 6,
     "created_at": "2017-01-04T10:15:52Z",
-    "updated_at": "2017-01-26T01:39:40Z",
+    "updated_at": "2017-02-13T00:18:10Z",
     "closed_at": null,
     "body": "QUIC currently has the ability to embed this in the source address token.  I guess that this is primarily because they both happen at the same time (during a stateless reject).\r\n\r\nWe could turn this into a transport parameter, I guess, but that doesn't work for HelloRetryRequest."
   },
