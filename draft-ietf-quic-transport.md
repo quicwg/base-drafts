@@ -52,7 +52,7 @@ normative:
         org: Mozilla
         role: editor
       -
-        ins: S. Turner, Ed.
+        ins: S. Turner
         name: Sean Turner
         org: sn3rd
         role: editor
