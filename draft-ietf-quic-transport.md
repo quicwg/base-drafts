@@ -1025,8 +1025,8 @@ The fields in the ACK frame are as follows:
   packet number the peer is acknowledging in this packet (typically the largest
   that the peer has seen thus far.)
 
-* ACK Delay: The time from when the largest acknowledged packet, as indicated in the
-  Largest Acknowledged field, was received by this peer to when this ACK was
+* ACK Delay: The time from when the largest acknowledged packet, as indicated in
+  the Largest Acknowledged field, was received by this peer to when this ACK was
   sent.
 
 * Num Blocks (opt): An optional 8-bit unsigned value specifying the number of
@@ -2060,17 +2060,19 @@ in data.
 
 There are two possible mitigations to this attack.  The simplest one is that a
 server can unilaterally create a gap in packet-number space.  In the non-attack
-scenario, the client will send an ACK frame with the larger value for largest acknowledged.  In the
-attack scenario, the attacker could acknowledge a packet in the gap.  If the server sees
-an acknowledgment for a packet that was never sent, the connection can be aborted.
+scenario, the client will send an ACK frame with the larger value for largest
+acknowledged.  In the attack scenario, the attacker could acknowledge a packet
+in the gap.  If the server sees an acknowledgment for a packet that was never
+sent, the connection can be aborted.
 
-The second mitigation is that the server can require that acknowledgments for sent packets
-match the encryption level of the sent packet.  This mitigation is useful if the
-connection has an ephemeral forward-secure key that is generated and used for
-every new connection.  If a packet sent is encrypted with a forward-secure key,
-then any acknowledgments that are received for them MUST also be forward-secure encrypted.
-Since the attacker will not have the forward secure key, the attacker will not
-be able to generate forward-secure encrypted packets with ACK frames.
+The second mitigation is that the server can require that acknowledgments for
+sent packets match the encryption level of the sent packet.  This mitigation is
+useful if the connection has an ephemeral forward-secure key that is generated
+and used for every new connection.  If a packet sent is encrypted with a
+forward-secure key, then any acknowledgments that are received for them MUST
+also be forward-secure encrypted.  Since the attacker will not have the forward
+secure key, the attacker will not be able to generate forward-secure encrypted
+packets with ACK frames.
 
 
 # IANA Considerations
