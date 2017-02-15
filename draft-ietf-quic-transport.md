@@ -233,13 +233,13 @@ to be reassembled and delivered to the application.
 QUIC's packet framing and acknowledgments carry rich information that help both
 congestion control and loss recovery in fundamental ways.  Each QUIC packet
 carries a new packet number, including those carrying retransmitted data.  This
-obviates the need for a separate mechanism to distinguish acks for
+obviates the need for a separate mechanism to distinguish acknowledgments for
 retransmissions from those for original transmissions, avoiding TCP's
 retransmission ambiguity problem.  QUIC acknowledgments also explicitly encode
 the delay between the receipt of a packet and its acknowledgment being sent, and
 together with the monotonically-increasing packet numbers, this allows for
 precise network roundtrip-time (RTT) calculation.  QUIC's ACK frames support up
-to 256 ack blocks, so QUIC is more resilient to reordering than TCP with SACK
+to 256 ACK blocks, so QUIC is more resilient to reordering than TCP with SACK
 support, as well as able to keep more bytes on the wire when there is reordering
 or loss.
 
@@ -963,42 +963,43 @@ transmission efficiency to underfilled packets.
 
 Receivers send ACK frames to inform senders which packets they have received, as
 well as which packets are considered missing.  The ACK frame contains between 1
-and 256 ack blocks.  Ack blocks are ranges of acknowledged packets.
+and 256 ACK blocks.  ACK blocks are ranges of acknowledged packets.
 
 To limit the ACK blocks to the ones that haven't yet been received by the
 sender, the sender periodically sends STOP_WAITING frames that signal the
-receiver to stop acking packets below a specified sequence number, raising the
-Least Unacked packet number at the receiver.  A sender of an ACK frame thus
-reports only those ACK blocks between the received Least Unacked and the
-reported Largest Acked packet numbers.  The endpoint SHOULD raise the Least
-Unacked communicated via future STOP_WAITING frames to the most recently
-received Largest Acked.
+receiver to stop acknowledging packets below a specified sequence number,
+raising the Least Unacked packet number at the receiver.  A sender of an ACK
+frame thus reports only those ACK blocks between the received Least Unacked and
+the reported Largest Acknowledged packet numbers.  The endpoint SHOULD raise the
+Least Unacked communicated via future STOP_WAITING frames to the most recently
+received Largest Acknowledged.
 
-Unlike TCP SACKs, QUIC ACK blocks are irrevocable.  Once a packet is acked, even
-if it does not appear in a future ACK frame, it is assumed to be acked.
+Unlike TCP SACKs, QUIC ACK blocks are cumulative and therefore irrevocable.
+Once a packet has been acknowledged, even if it does not appear in a future ACK
+frame, it is assumed to be acknowledged.
 
 A sender MAY intentionally skip packet numbers to introduce entropy into the
-connection, to avoid opportunistic ack attacks.  The sender MUST close the
-connection if an unsent packet number is acked.  The format of the ACK frame is
-efficient at expressing blocks of missing packets; skipping packet numbers
-between 1 and 255 effectively provides up to 8 bits of efficient entropy on
-demand, which should be adequate protection against most opportunistic ack
-attacks.
+connection, to avoid opportunistic acknowledgement attacks.  The sender MUST
+close the connection if an unsent packet number is acknowledged.  The format of
+the ACK frame is efficient at expressing blocks of missing packets; skipping
+packet numbers between 1 and 255 effectively provides up to 8 bits of efficient
+entropy on demand, which should be adequate protection against most
+opportunistic acknowledgement attacks.
 
 The type byte for a ACK frame contains embedded flags, and is formatted as
 `01NULLMM`.  These bits are parsed as follows:
 
 * The first two bits must be set to 01 indicating that this is an ACK frame.
 
-* The `N` bit indicates whether the frame has more than 1 ack range (i.e.,
-  whether the Ack Block Section contains a Num Blocks field).
+* The `N` bit indicates whether the frame has more than 1 range of acknowledged
+  packets (i.e., whether the ACK Block Section contains a Num Blocks field).
 
 * The `U` bit is unused and MUST be set to zero.
 
-* The two `LL` bits encode the length of the Largest Acked field as 1, 2, 4,
-  or 6 bytes long.
+* The two `LL` bits encode the length of the Largest Acknowledged field as 1, 2,
+  4, or 6 bytes long.
 
-* The two `MM` bits encode the length of the Ack Block Length fields as 1, 2,
+* The two `MM` bits encode the length of the ACK Block Length fields as 1, 2,
   4, or 6 bytes long.
 
 An ACK frame is shown below.
@@ -1007,11 +1008,11 @@ An ACK frame is shown below.
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                  Largest Acked (8/16/32/48)                 ...
+|               Largest Acknowledged (8/16/32/48)             ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|        Ack Delay (16)         |
+|        ACK Delay (16)         |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|[Num Blocks(8)]|             Ack Block Section (*)           ...
+|[Num Blocks(8)]|             ACK Block Section (*)           ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |   NumTS (8)   |             Timestamp Section (*)           ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -1020,19 +1021,20 @@ An ACK frame is shown below.
 
 The fields in the ACK frame are as follows:
 
-* Largest Acked: A variable-sized unsigned value representing the largest packet
-  number the peer is acking in this packet (typically the largest that the peer
-  has seen thus far.)
+* Largest Received: A variable-sized unsigned value representing the largest
+  packet number the peer is acknowledging in this packet (typically the largest
+  that the peer has seen thus far.)
 
-* Ack Delay: Time from when the largest acked packet, as indicated in the
-  Largest Acked field, was received by this peer to when this ack was sent.
+* ACK Delay: The time from when the largest acknowledged packet, as indicated in the
+  Largest Acknowledged field, was received by this peer to when this ACK was
+  sent.
 
 * Num Blocks (opt): An optional 8-bit unsigned value specifying the number of
-  additional ack blocks (besides the required First Ack Block) in this ACK
+  additional ACK blocks (besides the required First ACK Block) in this ACK
   frame.  Only present if the 'N' flag bit is 1.
 
-* Ack Block Section: Contains one or more blocks of packet numbers which have
-  been successfully received.  See {{ack-block-section}}.
+* ACK Block Section: Contains one or more blocks of packet numbers which have
+  been successfully received, see {{ack-block-section}}.
 
 * Num Timestamps: An unsigned 8-bit number specifying the total number of
   <packet number, timestamp> pairs in the Timestamp Section.
@@ -1041,44 +1043,44 @@ The fields in the ACK frame are as follows:
   received packets.  See {{timestamp-section}}.
 
 
-### Ack Block Section {#ack-block-section}
+### ACK Block Section {#ack-block-section}
 
-The Ack Block Section contains between one and 256 blocks of packet numbers
+The ACK Block Section contains between one and 256 blocks of packet numbers
 which have been successfully received. If the Num Blocks field is absent, only
-the First Ack Block length is present in this section. Otherwise, the Num Blocks
-field indicates how many additional blocks follow the First Ack Block Length
+the First ACK Block length is present in this section. Otherwise, the Num Blocks
+field indicates how many additional blocks follow the First ACK Block Length
 field.
 
 ~~~
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|              First Ack Block Length (8/16/32/48)            ...
+|              First ACK Block Length (8/16/32/48)            ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|  [Gap 1 (8)]  |       [Ack Block 1 Length (8/16/32/48)]     ...
+|  [Gap 1 (8)]  |       [ACK Block 1 Length (8/16/32/48)]     ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|  [Gap 2 (8)]  |       [Ack Block 2 Length (8/16/32/48)]     ...
+|  [Gap 2 (8)]  |       [ACK Block 2 Length (8/16/32/48)]     ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
                              ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|  [Gap N (8)]  |       [Ack Block N Length (8/16/32/48)]     ...
+|  [Gap N (8)]  |       [ACK Block N Length (8/16/32/48)]     ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
-{: #ack-block-format title="Ack Block Section"}
+{: #ack-block-format title="ACK Block Section"}
 
-The fields in the Ack Block Section are:
+The fields in the ACK Block Section are:
 
-* First Ack Block Length: An unsigned packet number delta that indicates the
-  number of contiguous additional packets being acked starting at the Largest
-  Acked.
+* First ACK Block Length: An unsigned packet number delta that indicates the
+  number of contiguous additional packets being acknowledged starting at the
+  Largest Acknowledged.
 
 * Gap To Next Block (opt, repeated): An unsigned number specifying the number
-  of contiguous missing packets from the end of the previous ack block to the
+  of contiguous missing packets from the end of the previous ACK block to the
   start of the next.
 
-* Ack Block Length (opt, repeated): An unsigned packet number delta that
-  indicates the number of contiguous packets being acked starting after the
-  end of the previous gap.  Along with the previous field, this field is
+* ACK Block Length (opt, repeated): An unsigned packet number delta that
+  indicates the number of contiguous packets being acknowledged starting after
+  the end of the previous gap.  Along with the previous field, this field is
   repeated "Num Blocks" times.
 
 ### Timestamp Section {#timestamp-section}
@@ -1107,20 +1109,20 @@ receive times relative to the beginning of the connection.
 
 The fields in the Timestamp Section are:
 
-* Delta Largest Acked (opt): An optional 8-bit unsigned packet number delta
-  specifying the delta between the largest acked and the first packet whose
-  timestamp is being reported.  In other words, this first packet number may
-  be computed as (Largest Acked - Delta Largest Acked.)
+* Delta Largest Acknowledged (opt): An optional 8-bit unsigned packet number
+  delta specifying the delta between the largest acknowledged and the first
+  packet whose timestamp is being reported.  In other words, this first packet
+  number may be computed as (Largest Acknowledged - Delta Largest Acknowledged.)
 
 * First Timestamp (opt): An optional 32-bit unsigned value specifying the time
   delta in microseconds, from the beginning of the connection to the arrival
-  of the packet indicated by Delta Largest Acked.
+  of the packet indicated by Delta Largest Acknowledged.
 
 * Delta Largest Acked 1..N (opt, repeated): (Same as above.)
 
 * Time Since Previous Timestamp 1..N(opt, repeated): An optional 16-bit unsigned
   value specifying time delta from the previous reported timestamp.  It is
-  encoded in the same format as the Ack Delay.  Along with the previous field,
+  encoded in the same format as the ACK Delay.  Along with the previous field,
   this field is repeated "Num Timestamps" times.
 
 #### Time Format
@@ -1163,10 +1165,10 @@ The STOP_WAITING frame contains a single field:
   length as the packet header's packet number.  Subtract it from the complete
   packet number of the enclosing packet to determine the least unacked packet
   number.  The resulting least unacked packet number is the earliest packet for
-  which the sender is still awaiting an ack.  If the receiver is missing any
+  which the sender is still awaiting an ACK.  If the receiver is missing any
   packets earlier than this packet, the receiver SHOULD consider those packets
   to be irrecoverably lost and MUST NOT report those packets as missing in
-  subsequent acks.
+  subsequent ACKs.
 
 ## WINDOW_UPDATE Frame {#frame-window-update}
 
@@ -1266,10 +1268,10 @@ octet that identifies the frame as a PADDING frame.
 
 Endpoints can use PING frames (type=0x07) to verify that their peers are still
 alive or to check reachability to the peer. The PING frame contains no
-additional fields. The receiver of a PING frame simply needs to ACK the packet
-containing this frame. The PING frame SHOULD be used to keep a connection alive
-when a stream is open. The default is to send a PING frame after 15 seconds of
-quiescence. A PING frame has no additional fields.
+additional fields. The receiver of a PING frame simply needs to acknowledge the
+packet containing this frame. The PING frame SHOULD be used to keep a connection
+alive when a stream is open. The default is to send a PING frame after 15
+seconds of quiescence. A PING frame has no additional fields.
 
 
 ## CONNECTION_CLOSE frame {#frame-connection-close}
@@ -1425,11 +1427,11 @@ The details of loss detection and congestion control are described in
 
 A receiver acknowledges receipt of a received packet by sending one or more ACK
 frames containing the packet number of the received packet.  To avoid perpetual
-acking between endpoints, a receiver MUST NOT generate an ack in response to
-every packet containing only ACK frames.  However, since it is possible that an
-endpoint might only send packets containing ACK frames (or other
-non-retransmittable frames), the receiving peer MAY send an ACK frame after a
-reasonable number (currently 20) of such packets have been received.
+acknowledgment between endpoints, a receiver MUST NOT generate an ACK frame in
+response to every packet containing only ACK frames.  However, since it is
+possible that an endpoint might only send packets containing ACK frames (or
+other non-retransmittable frames), the receiving peer MAY send an ACK frame
+after a reasonable number (currently 20) of such packets have been received.
 
 Strategies and implications of the frequency of generating acknowledgments are
 discussed in more detail in {{QUIC-RECOVERY}}.
@@ -2047,7 +2049,7 @@ QUIC_TOO_MANY_SESSIONS_ON_SERVER (0x80000060):
 
 # Security and Privacy Considerations
 
-## Spoofed Ack Attack
+## Spoofed ACK Attack
 
 An attacker receives an STK from the server and then releases the IP address on
 which it received the STK.  The attacker may, in the future, spoof this same
@@ -2058,17 +2060,17 @@ in data.
 
 There are two possible mitigations to this attack.  The simplest one is that a
 server can unilaterally create a gap in packet-number space.  In the non-attack
-scenario, the client will send an ack with a larger largest acked.  In the
-attack scenario, the attacker may ack a packet in the gap.  If the server sees
-an ack for a packet that was never sent, the connection can be aborted.
+scenario, the client will send an ACK frame with the larger value for largest acknowledged.  In the
+attack scenario, the attacker could acknowledge a packet in the gap.  If the server sees
+an acknowledgment for a packet that was never sent, the connection can be aborted.
 
-The second mitigation is that the server can require that acks for sent packets
+The second mitigation is that the server can require that acknowledgments for sent packets
 match the encryption level of the sent packet.  This mitigation is useful if the
 connection has an ephemeral forward-secure key that is generated and used for
 every new connection.  If a packet sent is encrypted with a forward-secure key,
-then any acks that are received for them must also be forward-secure encrypted.
+then any acknowledgments that are received for them MUST also be forward-secure encrypted.
 Since the attacker will not have the forward secure key, the attacker will not
-be able to generate forward-secure encrypted ack packets.
+be able to generate forward-secure encrypted packets with ACK frames.
 
 
 # IANA Considerations
