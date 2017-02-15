@@ -1532,8 +1532,8 @@ shown in the following figure and described below.
 
        app: application API signals to QUIC
        reserve_stream: causes a StreamID to be reserved for later use
-       read_close: causes stream to be half-closed without receiving a FIN
-       write_close: causes stream to be half-closed without sending a FIN
+       read_close: causes stream to be half-closed without a FIN
+       write_close: causes stream to be half-closed without a FIN
 ~~~
 {: #stream-lifecycle title="Lifecycle of a stream"}
 
