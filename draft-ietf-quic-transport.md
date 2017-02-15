@@ -1739,15 +1739,15 @@ is described in the companion document {{QUIC-RECOVERY}}.
 
 Stream multiplexing has a significant effect on application performance if
 resources allocated to streams are correctly prioritized.  Experience with other
-multiplexed protocols, such as HTTP/2 {{?RFC7540}} shows that effective
-prioritization strategies have a significant impact on performance.
+multiplexed protocols, such as HTTP/2 {{?RFC7540}}, shows that effective
+prioritization strategies have a significant positive impact on performance.
 
 QUIC does not provide frames for exchanging priotization information.  Instead
 it relies on receiving priority information from the application that uses QUIC.
 Protocols that use QUIC are able to define any prioritization scheme that suits
 their application semantics.  A protocol might define explicit messages for
-signaling priority, such as those defined in HTTP/2, it could define rules that
-allow an endpoint to determine priority based on context, or it could leave the
+signaling priority, such as those defined in HTTP/2; it could define rules that
+allow an endpoint to determine priority based on context; or it could leave the
 determination to the application.
 
 A QUIC implementation SHOULD provide ways in which an application can indicate
