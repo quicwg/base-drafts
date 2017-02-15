@@ -1412,8 +1412,8 @@ When a packet is detected as lost, the sender re-sends any frames as necessary:
   receiver.
 
 * ACK, STOP_WAITING, and PADDING frames MUST NOT be retransmitted.  ACK and
-  STOP_WAITING frames are cumulative, so new frames will be created that contain
-  the data from any lost frame.
+  STOP_WAITING frames are cumulative, so new frames containing updated
+  information will be sent as described in {{frame-ack}}.
 
 * All other frames MUST be retransmitted.
 
