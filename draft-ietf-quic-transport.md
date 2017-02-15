@@ -557,9 +557,9 @@ For all other frames, the Frame Type byte simply identifies the frame.  These
 frames are explained in more detail as they are referenced later in the
 document.
 
-+------------------|--------------------|----------------------------+
+|------------------|--------------------|----------------------------|
 | Type-field value |     Frame type     | Definition                 |
-+------------------|--------------------|----------------------------+
+|------------------|--------------------|----------------------------|
 | 0x00             |  PADDING           | {{frame-padding}}          |
 | 0x01             |  RST_STREAM        | {{frame-rst-stream}}       |
 | 0x02             |  CONNECTION_CLOSE  | {{frame-connection-close}} |
@@ -570,7 +570,7 @@ document.
 | 0x07             |  PING              | {{frame-ping}}             |
 | 0x40 - 0x7f      |  ACK               | {{frame-ack}}              |
 | 0x80 - 0xff      |  STREAM            | {{frame-stream}}           |
-+------------------|--------------------|----------------------------+
+|------------------|--------------------|----------------------------|
 
 ## Version Negotiation Packet
 
@@ -1024,8 +1024,8 @@ The fields in the ACK frame are as follows:
   number the peer is acking in this packet (typically the largest that the peer
   has seen thus far.)
 
-* Ack Delay: Time from when the largest acked packet, as indicated in the Largest Acked
-  field, was received by this peer to when this ack was sent.
+* Ack Delay: Time from when the largest acked packet, as indicated in the
+  Largest Acked field, was received by this peer to when this ack was sent.
 
 * Num Blocks (opt): An optional 8-bit unsigned value specifying the number of
   additional ack blocks (besides the required First Ack Block) in this ACK
@@ -1253,10 +1253,13 @@ The fields are:
 
 ## PADDING Frame {#frame-padding}
 
-The PADDING frame (type=0x00) pads a packet with 0x00 bytes. When this frame is
-encountered, the rest of the packet is expected to be padding bytes. The frame
-contains 0x00 bytes and extends to the end of the QUIC packet. A PADDING frame
-has no additional fields.
+The PADDING frame (type=0x00) has no semantic value.  PADDING frames can be used
+to increase the size of a packet.  Padding can be used to increase an initial
+client packet to the minimum required size, or to provide protection against
+traffic analysis for protected packets.
+
+A PADDING frame has no content.  That is, a PADDING frame consists of the single
+octet that identifies the frame as a PADDING frame.
 
 
 ## PING frame {#frame-ping}
@@ -1337,12 +1340,47 @@ The fields of a GOAWAY frame are as follows:
 
 # Packetization and Reliability {#packetization}
 
-The maximum packet size for QUIC is the maximum size of the encrypted payload of
-the resulting UDP datagram.  All QUIC packets SHOULD be sized to fit within the
-path's MTU to avoid IP fragmentation.  The recommended default maximum packet
-size is 1350 bytes for IPv6 and 1370 bytes for IPv4.  To optimize better,
-endpoints MAY use PLPMTUD {{!RFC4821}} for detecting the path's MTU and setting
-the maximum packet size appropriately.
+The Path Maximum Transmission Unit (PTMU) is the maximum size of the entire IP
+header, UDP header, and UDP payload. The UDP payload includes the QUIC public
+header, encrypted payload, and any authentication fields.
+
+All QUIC packets SHOULD be sized to fit within the estimated PMTU to avoid IP
+fragmentation or packet drops. To optimize bandwidth efficiency, endpoints
+SHOULD use Packetization Layer PMTU Discovery ({{!RFC4821}}) and MAY use PMTU
+Discovery ({{!RFC1191}}, {{!RFC1981}}) for detecting the PMTU, setting the PMTU
+appropriately, and storing the result of previous PMTU determinations.
+
+In the absence of these mechanisms, QUIC endpoints SHOULD NOT send IP packets
+larger than 1280 octets. Assuming the minimum IP header size, this results in
+a UDP payload length of 1232 octets for IPv6 and 1252 octets for IPv4.
+
+QUIC endpoints that implement any kind of PMTU discovery SHOULD maintain an
+estimate for each combination of local and remote IP addresses (as each pairing
+could have a different maximum MTU in the path).
+
+QUIC depends on the network path supporting a MTU of at least 1280 octets. This
+is the IPv6 minimum and therefore also supported by most modern IPv4 networks.
+An endpoint MUST NOT reduce their MTU below this number, even if it receives
+signals that indicate a smaller limit might exist.
+
+Clients MUST ensure that the first packet in a connection, and any
+retransmissions of those octets, has a total size (including IP and UDP headers)
+of at least 1280 bytes. This might require inclusion of PADDING frames. It is
+RECOMMENDED that a packet be padded to exactly 1280 octets unless the client has
+a reasonable assurance that the PMTU is larger. Sending a packet of this size
+ensures that the network path supports an MTU of this size and helps mitigate
+amplification attacks caused by server responses toward an unverified client
+address.
+
+Servers MUST reject the first plaintext packet received from a client if it its
+total size is less than 1280 octets, to mitigate amplification attacks.
+
+If a QUIC endpoint determines that the PMTU between any pair of local and remote
+IP addresses has fallen below 1280 octets, it MUST immediately cease sending
+QUIC packets between those IP addresses. This may result in abrupt termination
+of the connection if all pairs are affected. In this case, an endpoint SHOULD
+send a Public Reset packet to indicate the failure. The application SHOULD
+attempt to use TLS over TCP instead.
 
 A sender bundles one or more frames in a Regular QUIC packet.  A sender MAY
 bundle any set of frames in a packet.  All QUIC packets MUST contain a packet
@@ -1395,6 +1433,32 @@ reasonable number (currently 20) of such packets have been received.
 
 Strategies and implications of the frequency of generating acknowledgments are
 discussed in more detail in {{QUIC-RECOVERY}}.
+
+## Special Considerations for PMTU Discovery
+
+Traditional ICMP-based path MTU discovery in IPv4 ({{!RFC1191}} is potentially
+vulnerable to off-path attacks that successfully guess the IP/port 4-tuple and
+reduce the MTU to a bandwidth-inefficient value. TCP connections mitigate this
+risk by using the (at minimum) 8 bytes of transport header echoed in the ICMP
+message to validate the TCP sequence number as valid for the current
+connection. However, as QUIC operates over UDP, in IPv4 the echoed information
+could consist only of the IP and UDP headers, which usually has insufficient
+entropy to mitigate off-path attacks.
+
+As a result, endpoints that implement PMTUD in IPv4 SHOULD take steps to
+mitigate this risk. For instance, an application could:
+
+* Set the IPv4 Don't Fragment (DF) bit on a small proportion of packets, so that
+most invalid ICMP messages arrive when there are no DF packets outstanding, and
+can therefore be identified as spurious.
+
+* Store additional information from the IP or UDP headers from DF packets (for
+example, the IP ID or UDP checksum) to further authenticate incoming Datagram
+Too Big messages.
+
+* Any reduction in PMTU due to a report contained in an ICMP packet is
+provisional until QUIC's loss detection algorithm determines that the packet is
+actually lost.
 
 # Streams: QUIC's Data Structuring Abstraction {#streams}
 
@@ -1823,6 +1887,12 @@ QUIC_INVALID_PACKET_HEADER (0x80000003):
 
 QUIC_INVALID_FRAME_DATA (0x80000004):
 : Frame data is malformed.
+
+QUIC_MULTIPLE_TERMINATION_OFFSETS (0x80000005):
+: Multiple final offset values were received on the same stream
+
+QUIC_STREAM_CANCELLED (0x80000006):
+: The stream was cancelled
 
 QUIC_MISSING_PAYLOAD (0x80000030):
 : The packet contained no payload.
