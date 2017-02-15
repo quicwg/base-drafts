@@ -406,7 +406,7 @@ Pseudocode for OnAlarm follows:
 ~~~
    OnAlarm(acked_packet):
      lost_packets = DetectLostPackets(acked_packet);
-     MaybeRetransmitLostPackets();
+     MaybeRetransmit(lost_packets);
      SetLossDetectionAlarm();
 ~~~
 
@@ -417,21 +417,21 @@ acknowledged.  DetectLostPackets is called every time there is a new largest
 packet or if the loss detection alarm fires the previous largest acked packet is
 supplied.
 
-DetectLostPackets takes one parameter, acked_packet, which is the packet number
-of the largest acked packet, and returns a list of packet numbers detected as
-lost.
+DetectLostPackets takes one parameter, acked, which is the largest acked packet,
+and returns a list of packets detected as lost.
 
 Pseudocode for DetectLostPackets follows:
 
 ~~~
-   DetectLostPackets(acked_packet):
+   DetectLostPackets(acked):
      lost_packets = {};
-     foreach (unacked_packet less than acked_packet):
-       delta = acked_packet.time_sent - unacked_packet.time_sent
-       if (delta > kTimeReorderThreshold * smoothed_rtt):
-         lost_packets.insert(unacked_packet.packet_number);
-       else if (delta > reordering_threshold)
-         lost_packets.insert(unacked_packet.packet_number);
+     foreach (unacked less than acked):
+       delta_t = acked.time_sent - unacked.time_sent
+       delta_pn = acked.packet_number - unacked.packet_number
+       if (delta_t > kTimeReorderThreshold * smoothed_rtt):
+         lost_packets.insert(unacked);
+       else if (delta_pn > reordering_threshold)
+         lost_packets.insert(unacked);
      return lost_packets;
 ~~~
 
