@@ -1502,48 +1502,44 @@ due to the use of multiple streams in QUIC.  The lifecycle of a QUIC stream is
 shown in the following figure and described below.
 
 ~~~
-                        app     +--------+
-                 reserve_stream |        |
-                 ,--------------|  idle  |
-                /               |        |
-               /                +--------+
-              V                      |
-        +----------+ send data/      |
-        |          | recv data       | send data/
-    ,---| reserved |------------.    | recv data
-    |   |          |             \   |
-    |   +----------+              v  v
-    |               recv FIN/   +--------+ send FIN/
-    |            app read_close |        | app write_close
-    |                 ,---------|  open  |-----------.
-    |                /          |        |            \
-    |               v           +--------+             v
-    |        +----------+            |             +----------+
-    |        |   half   |            |             |   half   |
-    |        |  closed  |            | send RST/   |  closed  |
-    |        | (remote) |            | recv RST    | (local)  |
-    |        +----------+            |             +----------+
-    |            |                   |                    |
-    |            | send FIN/         |          recv FIN/ |
-    |            | app write_close/  |    app read_close/ |
-    |            | send RST/         v          send RST/ |
-    |            | recv RST     +--------+      recv RST  |
-    | send RST/  `------------->|        |<---------------'
-    | recv RST                  | closed |
-    `-------------------------->|        |
-                                +--------+
+                              +--------+
+               reserve_stream |        |
+               ,--------------|  idle  |
+              /               |        |
+             /                +--------+
+            V                      |
+      +----------+ send data/      |
+      |          | recv data       | send data/
+  ,---| reserved |------------.    | recv data
+  |   |          |             \   |
+  |   +----------+              v  v
+  |                           +--------+
+  |               recv FIN    |        |   send FIN
+  |                 ,---------|  open  |-----------.
+  |                /          |        |            \
+  |               v           +--------+             v
+  |        +----------+            |             +----------+
+  |        |   half   |            |             |   half   |
+  |        |  closed  |            | send RST/   |  closed  |
+  |        | (remote) |            | recv RST    | (local)  |
+  |        +----------+            |             +----------+
+  |            |                   |                    |
+  |            | send FIN/         |          recv FIN/ |
+  |            | send RST/         v          send RST/ |
+  |            | recv RST     +--------+      recv RST  |
+  | send RST/  `------------->|        |<---------------'
+  | recv RST                  | closed |
+  `-------------------------->|        |
+                              +--------+
 
-       send:   endpoint sends this frame
-       recv:   endpoint receives this frame
+    send:   endpoint sends this frame
+    recv:   endpoint receives this frame
 
-       data: application data in a STREAM frame
-       FIN: FIN flag in a STREAM frame
-       RST: RST_STREAM frame
+    data: application data in a STREAM frame
+    FIN: FIN flag in a STREAM frame
+    RST: RST_STREAM frame
 
-       app: application API signals to QUIC
-       reserve_stream: causes a StreamID to be reserved for later use
-       read_close: causes stream to be half-closed without receiving a FIN
-       write_close: causes stream to be half-closed without sending a FIN
+    reserve_stream: application protocol reserves a StreamID
 ~~~
 {: #stream-lifecycle title="Lifecycle of a stream"}
 
