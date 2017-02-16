@@ -475,8 +475,8 @@ The fields in a Regular packet past the Common Header are the following:
 
 * Packet Number: The lower 8, 16, 32, or 48 bits of the packet number, based on
   the PACKET_NUMBER_SIZE flag.  Each Regular packet is assigned a packet number
-  by the sender.  The first packet sent by an endpoint MUST have a packet number
-  of 1.
+  by the sender.  The first packet number is randomized (see
+  {{initial-packet-number}}.
 
 * Encrypted Payload: The remainder of a Regular packet is both authenticated and
   encrypted once packet protection keys are available.  {{QUIC-TLS}} describes
@@ -534,6 +534,17 @@ at any point in the connection.  In other words,
   value closest to the next expected packet number from that peer.
 
 (TODO: Clarify how packet number size can change mid-connection.)
+
+
+### Initial Packet Number
+
+The initial value for packet number MUST be a 31-bit random number.  That is,
+the value is selected from an uniform random distribution between 0 and 2^31-1.
+
+The first set of packets sent by an endpoint MUST include the low 32-bits of the
+packet number.  Once any packet has been acknowledged, subsequent packets can
+use a shorter packet number encoding.
+
 
 ### Frames and Frame Types {#frames}
 
@@ -1388,9 +1399,7 @@ bundle any set of frames in a packet.  All QUIC packets MUST contain a packet
 number and MAY contain one or more frames ({{frames}}).  Packet numbers MUST be
 unique within a connection and MUST NOT be reused within the same connection.
 Packet numbers MUST be assigned to packets in a strictly monotonically
-increasing order.  The initial packet number used, at both the client and the
-server, MUST be 0.  That is, the first packet in both directions of the
-connection MUST have a packet number of 0.
+increasing order.
 
 A sender SHOULD minimize per-packet bandwidth and computational costs by
 bundling as many frames as possible within a QUIC packet.  A sender MAY wait for
