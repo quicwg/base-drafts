@@ -920,11 +920,11 @@ A STREAM frame is shown below.
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|       [Data Length (16)]      |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                    Stream ID (8/16/24/32)                   ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                Offset (0/16/24/32/40/48/56/64)              ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                      [Data Length (16)]                       |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                        Stream Data (*)                      ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -933,14 +933,15 @@ A STREAM frame is shown below.
 
 The STREAM frame contains the following fields:
 
+* Data Length: An optional 16-bit unsigned number specifying the length of the
+  Stream Data field in this STREAM frame.  This field is present when the `D`
+  bit is set to 1.
+
 * Stream ID: A variable-sized unsigned ID unique to this stream.
 
 * Offset: A variable-sized unsigned number specifying the byte offset in the
   stream for the data in this STREAM frame.  The first byte in the stream has an
   offset of 0.
-
-* Data Length: An optional 16-bit unsigned number specifying the length of the
-  Stream Data field in this STREAM frame.
 
 * Stream Data: The bytes from the designated stream to be delivered.
 
@@ -1007,18 +1008,25 @@ An ACK frame is shown below.
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                  Largest Acked (8/16/32/48)                 ...
+|[Num Blocks(8)]|   NumTS (8)   |  Largest Acked (8/16/32/48) ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |        Ack Delay (16)         |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|[Num Blocks(8)]|             Ack Block Section (*)           ...
+|                     Ack Block Section (*)                   ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|   NumTS (8)   |             Timestamp Section (*)           ...
+|                     Timestamp Section (*)                   ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
 {: #ack-format title="ACK Frame Format"}
 
 The fields in the ACK frame are as follows:
+
+* Num Blocks (opt): An optional 8-bit unsigned value specifying the number of
+  additional ack blocks (besides the required First Ack Block) in this ACK
+  frame.  Only present if the 'N' flag bit is 1.
+
+* Num Timestamps: An unsigned 8-bit number specifying the total number of
+  <packet number, timestamp> pairs in the Timestamp Section.
 
 * Largest Acked: A variable-sized unsigned value representing the largest packet
   number the peer is acking in this packet (typically the largest that the peer
@@ -1027,15 +1035,8 @@ The fields in the ACK frame are as follows:
 * Ack Delay: Time from when the largest acked packet, as indicated in the
   Largest Acked field, was received by this peer to when this ack was sent.
 
-* Num Blocks (opt): An optional 8-bit unsigned value specifying the number of
-  additional ack blocks (besides the required First Ack Block) in this ACK
-  frame.  Only present if the 'N' flag bit is 1.
-
 * Ack Block Section: Contains one or more blocks of packet numbers which have
   been successfully received.  See {{ack-block-section}}.
-
-* Num Timestamps: An unsigned 8-bit number specifying the total number of
-  <packet number, timestamp> pairs in the Timestamp Section.
 
 * Timestamp Section: Contains zero or more timestamps reporting transit delay of
   received packets.  See {{timestamp-section}}.
