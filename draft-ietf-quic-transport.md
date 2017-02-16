@@ -1762,17 +1762,17 @@ of connection flow control or the current congestion controller state.
 Giving preference to the transmission of its own management frames ensures that
 the protocol functions efficiently.  That is, prioritizing frames other than
 STREAM frames ensures that loss recovery, congestion control, and flow control
-operate effectively.  Prioritizing stream 1 over other streams ensures that the
-cryptographic handshake can complete.
+operate effectively.
 
-Choosing to retransmit data that was already sent and determined to be lost can
-help ensure that flow control doesn't cause underutilization or temporary
-stalling of a connection.  Data sent in STREAM frames counts toward flow control
-limits from the instant it is initially transmitted, and preferring repair of
-lost data over sending new data ensures that receiver memory can be freed more
-quickly.  This is more valuable if the retransmission will repair a gap in a
-stream; retransmitting a gap in stream data potentially allows more octets of
-the stream to be made available.
+Stream 1 MUST be prioritized over other streams prior to the completion of the
+cryptographic handshake.  This includes the retransmission of the second flight
+of client handshake messages, that is, the TLS Finished and any client
+authentication messages.
+
+STREAM frames that are determined to be lost SHOULD be retransmitted before
+sending new data, unless application priorities indicate otherwise.
+Retransmitting lost STREAM frames can fill in gaps, which allows the peer to
+consume already received data and free up flow control window.
 
 
 # Flow Control {#flow-control}
