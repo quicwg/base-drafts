@@ -38,9 +38,9 @@
 
     ],
     "milestone": null,
-    "comments": 6,
+    "comments": 7,
     "created_at": "2017-02-15T13:00:20Z",
-    "updated_at": "2017-02-16T20:59:23Z",
+    "updated_at": "2017-02-16T22:27:25Z",
     "closed_at": null,
     "body": "Google-QUIC had an issue where post-handshake QUIC packets were being dropped, because a bit changed in the public flags, and a middlebox no longer identified it as QUIC.\r\n\r\nIn order to ensure the entire public flags byte is usable, I suggest we GREASE it by defining the entire space as valid.\r\n\r\nBuilding on Jana's proposal for the public header with a flags byte as a set of codepoints: https://gist.github.com/janaiyengar/b05acb3af17d6e938d25befc69c11eae\r\n\r\nThe goal is to provide a simple mathematical mapping from any value of the public flags onto a frame type.  \r\n\r\nMy suggestion is to lookup the frame type, and if it's not defined, mod the flags value by the number of frame types defined in that phase(short or long form) and pick the type with that index when ordering the frame types by value.\r\n\r\nIf an initial packet number is chosen randomly, and the connection ID is as well, greasing the flags byte and version (#112 and #296) covers everything that is not encrypted."
   },
@@ -1664,192 +1664,6 @@
     "body": "The text currently says:\r\n\r\n> Once a client receives a packet from the server with the VERSION flag unset, it MUST ignore the flag in subsequently received packets.\r\n\r\nI don't know how to interpret this.  What should a client do if it receives a packet with the VERSION flag set after completing version negotiation?  Maybe should should mandate ignoring the packet not just the flag."
   },
   {
-    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/283",
-    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
-    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/283/labels{/name}",
-    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/283/comments",
-    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/283/events",
-    "html_url": "https://github.com/quicwg/base-drafts/pull/283",
-    "id": 206715709,
-    "number": 283,
-    "title": "Random initial packet number",
-    "user": {
-      "login": "martinthomson",
-      "id": 67641,
-      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/martinthomson",
-      "html_url": "https://github.com/martinthomson",
-      "followers_url": "https://api.github.com/users/martinthomson/followers",
-      "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
-      "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
-      "organizations_url": "https://api.github.com/users/martinthomson/orgs",
-      "repos_url": "https://api.github.com/users/martinthomson/repos",
-      "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/martinthomson/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "labels": [
-      {
-        "id": 481871399,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
-        "name": "transport",
-        "color": "fbca04",
-        "default": false
-      }
-    ],
-    "state": "open",
-    "locked": false,
-    "assignee": {
-      "login": "janaiyengar",
-      "id": 11067604,
-      "avatar_url": "https://avatars.githubusercontent.com/u/11067604?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/janaiyengar",
-      "html_url": "https://github.com/janaiyengar",
-      "followers_url": "https://api.github.com/users/janaiyengar/followers",
-      "following_url": "https://api.github.com/users/janaiyengar/following{/other_user}",
-      "gists_url": "https://api.github.com/users/janaiyengar/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/janaiyengar/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/janaiyengar/subscriptions",
-      "organizations_url": "https://api.github.com/users/janaiyengar/orgs",
-      "repos_url": "https://api.github.com/users/janaiyengar/repos",
-      "events_url": "https://api.github.com/users/janaiyengar/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/janaiyengar/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "assignees": [
-      {
-        "login": "janaiyengar",
-        "id": 11067604,
-        "avatar_url": "https://avatars.githubusercontent.com/u/11067604?v=3",
-        "gravatar_id": "",
-        "url": "https://api.github.com/users/janaiyengar",
-        "html_url": "https://github.com/janaiyengar",
-        "followers_url": "https://api.github.com/users/janaiyengar/followers",
-        "following_url": "https://api.github.com/users/janaiyengar/following{/other_user}",
-        "gists_url": "https://api.github.com/users/janaiyengar/gists{/gist_id}",
-        "starred_url": "https://api.github.com/users/janaiyengar/starred{/owner}{/repo}",
-        "subscriptions_url": "https://api.github.com/users/janaiyengar/subscriptions",
-        "organizations_url": "https://api.github.com/users/janaiyengar/orgs",
-        "repos_url": "https://api.github.com/users/janaiyengar/repos",
-        "events_url": "https://api.github.com/users/janaiyengar/events{/privacy}",
-        "received_events_url": "https://api.github.com/users/janaiyengar/received_events",
-        "type": "User",
-        "site_admin": false
-      }
-    ],
-    "milestone": null,
-    "comments": 0,
-    "created_at": "2017-02-10T06:02:11Z",
-    "updated_at": "2017-02-10T06:02:11Z",
-    "closed_at": null,
-    "pull_request": {
-      "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/283",
-      "html_url": "https://github.com/quicwg/base-drafts/pull/283",
-      "diff_url": "https://github.com/quicwg/base-drafts/pull/283.diff",
-      "patch_url": "https://github.com/quicwg/base-drafts/pull/283.patch"
-    },
-    "body": "In writing this up, it's clear that we've a bunch more work to do in this area."
-  },
-  {
-    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/282",
-    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
-    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/282/labels{/name}",
-    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/282/comments",
-    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/282/events",
-    "html_url": "https://github.com/quicwg/base-drafts/pull/282",
-    "id": 206703764,
-    "number": 282,
-    "title": "Stream 1 counts toward MSPC",
-    "user": {
-      "login": "martinthomson",
-      "id": 67641,
-      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/martinthomson",
-      "html_url": "https://github.com/martinthomson",
-      "followers_url": "https://api.github.com/users/martinthomson/followers",
-      "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
-      "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
-      "organizations_url": "https://api.github.com/users/martinthomson/orgs",
-      "repos_url": "https://api.github.com/users/martinthomson/repos",
-      "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/martinthomson/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "labels": [
-      {
-        "id": 481871399,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
-        "name": "transport",
-        "color": "fbca04",
-        "default": false
-      }
-    ],
-    "state": "open",
-    "locked": false,
-    "assignee": {
-      "login": "janaiyengar",
-      "id": 11067604,
-      "avatar_url": "https://avatars.githubusercontent.com/u/11067604?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/janaiyengar",
-      "html_url": "https://github.com/janaiyengar",
-      "followers_url": "https://api.github.com/users/janaiyengar/followers",
-      "following_url": "https://api.github.com/users/janaiyengar/following{/other_user}",
-      "gists_url": "https://api.github.com/users/janaiyengar/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/janaiyengar/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/janaiyengar/subscriptions",
-      "organizations_url": "https://api.github.com/users/janaiyengar/orgs",
-      "repos_url": "https://api.github.com/users/janaiyengar/repos",
-      "events_url": "https://api.github.com/users/janaiyengar/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/janaiyengar/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "assignees": [
-      {
-        "login": "janaiyengar",
-        "id": 11067604,
-        "avatar_url": "https://avatars.githubusercontent.com/u/11067604?v=3",
-        "gravatar_id": "",
-        "url": "https://api.github.com/users/janaiyengar",
-        "html_url": "https://github.com/janaiyengar",
-        "followers_url": "https://api.github.com/users/janaiyengar/followers",
-        "following_url": "https://api.github.com/users/janaiyengar/following{/other_user}",
-        "gists_url": "https://api.github.com/users/janaiyengar/gists{/gist_id}",
-        "starred_url": "https://api.github.com/users/janaiyengar/starred{/owner}{/repo}",
-        "subscriptions_url": "https://api.github.com/users/janaiyengar/subscriptions",
-        "organizations_url": "https://api.github.com/users/janaiyengar/orgs",
-        "repos_url": "https://api.github.com/users/janaiyengar/repos",
-        "events_url": "https://api.github.com/users/janaiyengar/events{/privacy}",
-        "received_events_url": "https://api.github.com/users/janaiyengar/received_events",
-        "type": "User",
-        "site_admin": false
-      }
-    ],
-    "milestone": null,
-    "comments": 0,
-    "created_at": "2017-02-10T04:05:29Z",
-    "updated_at": "2017-02-10T04:05:29Z",
-    "closed_at": null,
-    "pull_request": {
-      "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/282",
-      "html_url": "https://github.com/quicwg/base-drafts/pull/282",
-      "diff_url": "https://github.com/quicwg/base-drafts/pull/282.diff",
-      "patch_url": "https://github.com/quicwg/base-drafts/pull/282.patch"
-    },
-    "body": "I've chosen to make stream 1 count toward MSPC on the same basis that we decided not to move crypto to stream 0: no special cases.\r\n\r\nCloses #201."
-  },
-  {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/281",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
     "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/281/labels{/name}",
@@ -2157,8 +1971,7 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/278.patch"
     },
     "body": "I realize that I stuck this on top of #122.  That's convenient because the new text benefits from being able to reference some of that text.  It makes this diff look awful for the moment though (at least until #122 lands).\r\n\r\nCloses #112."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/275",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -2315,7 +2128,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/274.patch"
     },
     "body": "Fixes #176, but I'm hoping we can find a cleaner way to do this."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/273",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3971,8 +3785,7 @@
     "updated_at": "2017-01-26T01:55:17Z",
     "closed_at": null,
     "body": "QUIC doesn't make order guarantees between streams.  The options on the table currently are:\r\n\r\n- Current (-01) draft puts a sequence number in the frames; HPACK data MUST be handled in order, and will HOL-block.  HPACK is exactly the same as HTTP/2.\r\n- Buck's proposal (draft forthcoming) puts two sequence numbers in the frames and modifies the HPACK encoder to prevent blocking references.  Partially-received HPACK frames must block until fully received.  The new encoder could also be used in HTTP/2, but would require changes to existing code.\r\n- [QPACK](https://tools.ietf.org/html/draft-bishop-quic-http-and-qpack) modifies HPACK to be order-resilient and permit partial frames to be processed, but breaks from the HPACK encoding enough that you'd have at least some separate code paths.\r\n\r\nAlso agreed to put a \"hard-hat warning\" in this section of the HTTP draft, to warn readers this is still work-in-progress."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/227",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -4124,7 +3937,8 @@
     "updated_at": "2017-02-03T03:51:15Z",
     "closed_at": null,
     "body": "QUIC AEAD usage in quic-tls draft currently says \"associated data, A,  for the AEAD is an empty sequence.\" The current rationale is that the public header fields do not need to be authenticated since the connection ID, flags, packet number, and version number are all effectively covered by  encryption/decryption. \r\n\r\nWe have at least 1 public flags field that is as yet unused. Since we do not know its use yet, we may want to authenticate the header to future-proof."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/224",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -4762,71 +4576,6 @@
     "updated_at": "2017-01-25T00:30:26Z",
     "closed_at": null,
     "body": "One of the major features of QUIC vs TCP is the option of seamless connection migration. One can conceive of a situation where a network middle-man (e.g. an ISP, firewall implementer, etc) might have an interest in blocking this feature, e.g. by detecting connection migrations to their network and dropping those packets. I propose that we think of a way to make a connection migration indistinguishable from a \"normal\" new connection.\r\n\r\nOne solution I can think of would be to have the client send a \"fake\" initial packet with 0-RTT encryption (which would then be discarded by the server as undecryptable). The first few packets sent on the new address would also need to have the version bit set – which the server would have to ignore.\r\n\r\nThis would also require initial packet number randomization (see #35).\r\n\r\nThis issue might conflict somewhat with #185.\r\n\r\nThanks to @lcolitti for pointing this issue out."
-  },
-  {
-    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/201",
-    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
-    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/201/labels{/name}",
-    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/201/comments",
-    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/201/events",
-    "html_url": "https://github.com/quicwg/base-drafts/issues/201",
-    "id": 202447688,
-    "number": 201,
-    "title": "Do streams 0 and 1 count towards MSPC?",
-    "user": {
-      "login": "ekr",
-      "id": 1111457,
-      "avatar_url": "https://avatars.githubusercontent.com/u/1111457?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/ekr",
-      "html_url": "https://github.com/ekr",
-      "followers_url": "https://api.github.com/users/ekr/followers",
-      "following_url": "https://api.github.com/users/ekr/following{/other_user}",
-      "gists_url": "https://api.github.com/users/ekr/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/ekr/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/ekr/subscriptions",
-      "organizations_url": "https://api.github.com/users/ekr/orgs",
-      "repos_url": "https://api.github.com/users/ekr/repos",
-      "events_url": "https://api.github.com/users/ekr/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/ekr/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "labels": [
-      {
-        "id": 481871361,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/design",
-        "name": "design",
-        "color": "1d76db",
-        "default": false
-      },
-      {
-        "id": 489929683,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/editor-ready",
-        "name": "editor-ready",
-        "color": "0e8a16",
-        "default": false
-      },
-      {
-        "id": 481871399,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
-        "name": "transport",
-        "color": "fbca04",
-        "default": false
-      }
-    ],
-    "state": "open",
-    "locked": false,
-    "assignee": null,
-    "assignees": [
-
-    ],
-    "milestone": null,
-    "comments": 4,
-    "created_at": "2017-01-23T05:14:50Z",
-    "updated_at": "2017-01-26T04:29:59Z",
-    "closed_at": null,
-    "body": "And if so in which directions?"
   },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/200",
@@ -5804,8 +5553,7 @@
     "updated_at": "2017-01-19T23:14:00Z",
     "closed_at": null,
     "body": "> A stream that is \"half-closed (remote)\" is no longer being used by\r\n>    the peer to send any data.  In this state, a sender is no longer\r\n>    obligated to maintain a receiver stream-level flow-control window.\r\n> \r\n>    If an endpoint receives any STREAM frames for a stream that is in\r\n>    this state, it MUST close the connection with a\r\n>    QUIC_STREAM_DATA_AFTER_TERMINATION error (Section 11).\r\n\r\nIf a packet sent before the packet with FIN bit set gets lost and is retransmitted is going to cause close of the connection.\r\nThe text needs to change to say if a frame with offset  larger than the offset + size of the frame with FIN bit set is received. (or a better wording)\r\n\r\n(An editorial remark: In the \"Lifecycle of a stream\" diagram going from \"half-closed(remote)\" to \"closed\" should be cause by \"send FIN\" not \"recv FIN\" and from \"half-closed(local)\" to \"closed\" should be cause by \"recv FIN\")\r\n"
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/178",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -6022,7 +5770,8 @@
     "updated_at": "2017-01-23T21:31:40Z",
     "closed_at": null,
     "body": "@martinthomson noticed an issue in the QPACK draft that's equally true with HPACK in -01:\r\n\r\nIf you RST_STREAM a stream with a missing QUIC STREAM frame that contains an HPACK frame (HEADERS, PUSH_PROMISE), that missing frame never gets retransmitted.  That, in turn, means that no future HPACK frame can be interpreted, ever, because you're missing part of your history.\r\n\r\nOops.\r\n\r\nMy first inclination is to change the HTTP draft to say that message control streams MUST NOT be reset.  If you don't want the message body, reset the data stream, but you MUST read the message headers.  If, for some reason, you cannot do so, then terminate the connection.\r\n\r\nAnyone see a barrier to that (other than the price of ginormous headers)?"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/175",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7907,8 +7656,7 @@
     "updated_at": "2017-02-15T17:30:17Z",
     "closed_at": null,
     "body": "QUIC currently has the ability to embed this in the source address token.  I guess that this is primarily because they both happen at the same time (during a stateless reject).\r\n\r\nWe could turn this into a transport parameter, I guess, but that doesn't work for HelloRetryRequest."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/118",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -8125,7 +7873,8 @@
     "updated_at": "2017-01-25T08:02:05Z",
     "closed_at": null,
     "body": "There are a bunch of things that need to be addressed here.  What is likely to happen is that this issue will turn into many smaller issues and this will eventually get closed as those become better understood.\r\n\r\n1. Reasons migration might be needed (mobility, NAT rebinding, routing changes, etc...)\r\n2. Routing considerations when migration occurs\r\n3. Privacy implications of linkability across migrations\r\n4. Verifying consent to send on a new path\r\n5. Establishing any desired middlebox state along the path\r\n"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/114",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -10181,8 +9930,7 @@
     "updated_at": "2017-01-26T05:57:09Z",
     "closed_at": null,
     "body": "Packet numbers, stream offsets, various ACK information and many other fields can currently be encoded as variable length. Do we have some data on the benefits of this complexity? Would it be sufficient to use fewer increments, or could we even move to fixed length encoding for some or all of these fields?"
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/38",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -10356,7 +10104,8 @@
     "updated_at": "2016-11-28T06:00:20Z",
     "closed_at": null,
     "body": "The attacker needs to be on path to create a valid-looking unprotected packet.  \r\n\r\nAlso, randomization doesn't help much if the attacker is on-path."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/35",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
