@@ -446,25 +446,29 @@ Pseudocode for SetLossDetectionAlarm follows:
     if (handshake packets are outstanding):
       // Handshake retransmission alarm.
       if (smoothed_rtt == 0):
-        alarm_duration = max(2 * initial_rtt, kMinTLPTimeout) << handshake_count;
+        alarm_duration = 2 * initial_rtt
       else:
-        alarm_duration = max(2 * smoothed_rtt, kMinTLPTimeout) << handshake_count;
+        alarm_duration = 2 * smoothed_rtt
+      alarm_duration = max(alarm_duration, kMinTLPTimeout)
+      alarm_duration = alarm_duration << handshake_count
       handshake_count++;
     else if (largest sent packet is acked):
-      // Early retransmit {{!RFC 5827}} with an alarm to reduce spurious retransmits.
+      // Early retransmit {{!RFC 5827}}
+      // with an alarm to reduce spurious retransmits.
       alarm_duration = 0.25 x smoothed_rtt;
     else if (tlp_count < kMaxTLPs):
       // Tail Loss Probe alarm.
       if (retransmittable_packets_outstanding = 1):
-        alarm_duration = max(1.5 x smoothed_rtt + kDelayedAckTimeout,
-                             2 x smoothed_rtt);
+        alarm_duration = 1.5 x smoothed_rtt + kDelayedAckTimeout
       else:
-        alarm_duration = max (kMinTLPTimeout, 2 x smoothed_rtt);
+        alarm_duration = kMinTLPTimeout
+      alarm_duration = max(alarm_duration, 2 x smoothed_rtt);
       tlp_count++;
     else:
       // RTO alarm.
       if (rto_count = 0):
-        alarm_duration = max(kMinRTOTimeout, smoothed_rtt + 4 x rttvar);
+        alarm_duration = smoothed_rtt + 4 x rttvar
+        alarm_duration = max(alarm_duration, kMinRTOTimeout)
       else:
         alarm_duration = loss_detection_alarm.get_delay() << 1;
       rto_count++;
