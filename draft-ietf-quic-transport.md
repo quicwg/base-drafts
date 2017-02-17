@@ -540,6 +540,7 @@ there are 20,000 packets outstanding.
 
 The initial value for packet number MUST be a 31-bit random number.  That is,
 the value is selected from an uniform random distribution between 0 and 2^31-1.
+{{?RFC4086}} provides guidance on the generation of random values.
 
 The first set of packets sent by an endpoint MUST include the low 32-bits of the
 packet number.  Once any packet has been acknowledged, subsequent packets can
