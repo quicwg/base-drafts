@@ -52,7 +52,7 @@ normative:
         org: Mozilla
         role: editor
       -
-        ins: S. Turner, Ed.
+        ins: S. Turner
         name: Sean Turner
         org: sn3rd
         role: editor
@@ -475,8 +475,8 @@ The fields in a Regular packet past the Common Header are the following:
 
 * Packet Number: The lower 8, 16, 32, or 48 bits of the packet number, based on
   the PACKET_NUMBER_SIZE flag.  Each Regular packet is assigned a packet number
-  by the sender.  The first packet sent by an endpoint MUST have a packet number
-  of 1.
+  by the sender.  The first packet number is randomized (see
+  {{initial-packet-number}}.
 
 * Encrypted Payload: The remainder of a Regular packet is both authenticated and
   encrypted once packet protection keys are available.  {{QUIC-TLS}} describes
@@ -499,43 +499,54 @@ The fields in a Regular packet past the Common Header are the following:
 ~~~
 {: #regular-packet-frames title="Contents of Encrypted Payload"}
 
-### Packet Number Compression and Reconstruction
 
-The complete packet number is a 64-bit unsigned number and is used as part of a
-cryptographic nonce for packet encryption.  To reduce the number of bits
-required to represent the packet number over the wire, at most 48 bits of the
-packet number are transmitted over the wire.  A QUIC endpoint MUST NOT reuse a
-complete packet number within the same connection (that is, under the same
-cryptographic keys).  If the total number of packets transmitted in this
-connection reaches 2^64 - 1, the sender MUST close the connection by sending a
+## Packet Numbers
+
+The packet number is a 64-bit unsigned number and is used as part of a
+cryptographic nonce for packet encryption.  Each endpoint maintains a separate
+packet number for sending and receiving.  The packet number for sending MUST
+increase by at least one after sending any packet.
+
+A QUIC endpoint MUST NOT reuse a packet number within the same connection (that
+is, under the same cryptographic keys).  If the packet number for sending
+reaches 2^64 - 1, the sender MUST close the connection by sending a
 CONNECTION_CLOSE frame with the error code QUIC_SEQUENCE_NUMBER_LIMIT_REACHED
-(connection termination is described in {{termination}}.)  For unambiguous
-reconstruction of the complete packet number by a receiver from the lower-order
-bits, a QUIC sender MUST NOT have more than 2^(packet_number_size - 2) in flight
-at any point in the connection.  In other words,
+(connection termination is described in {{termination}}.)
 
-* If a sender sets PACKET_NUMBER_SIZE bits to 11, it MUST NOT have more than
-  (2^46) packets in flight.
+To reduce the number of bits required to represent the packet number over the
+wire, only the least significant bits of the packet number are transmitted over
+the wire, up to 48 bits.  The actual packet number for each packet is
+reconstructed at the receiver based on the largest packet number received on a
+successfully authenticated packet.
 
-* If a sender sets PACKET_NUMBER_SIZE bits to 10, it MUST NOT have more than
-  (2^30) packets in flight.
+A packet number is decoded by finding the packet number value that is closest to
+the next expected packet.  The next expected packet is the highest received
+packet number plus one.  For example, if the highest successfully authenticated
+packet had a packet number of 0xaa82f30e, then a packet containing a 16-bit
+value of 0x1f94 will be decoded as 0xaa831f94.
 
-* If a sender sets PACKET_NUMBER_SIZE bits to 01, it MUST NOT have more than
-  (2^14) packets in flight.
+To enable unambiguous reconstruction of the packet number, an endpoint MUST use
+a packet number size that is able to represent 4 times more packet numbers than
+the endpoint has currently outstanding.  A packet is outstanding if it sent but
+has neither been acknowledged nor been marked as lost (see {{QUIC-RECOVERY}}).
+As a result, the size of the packet number encoding is at least two more bits
+than the base 2 logarithm of the number of outstanding packets, rounded up.  For
+example, if an endpoint has 14,389 packets outstanding, the next packet uses a
+16-bit or larger packet number encoding; a 32-bit packet number is needed if
+there are 20,000 packets outstanding.
 
-* If a sender sets PACKET_NUMBER_SIZE bits to 00, it MUST NOT have more than
-  (2^6) packets in flight.
 
-  DISCUSS: Should the receiver be required to enforce this rule that the sender
-  MUST NOT exceed the inflight limit?  Specifically, should the receiver drop
-  packets that are received outside this window?
+### Initial Packet Number
 
-  Any truncated packet number received from a peer MUST be reconstructed as the
-  value closest to the next expected packet number from that peer.
+The initial value for packet number MUST be a 31-bit random number.  That is,
+the value is selected from an uniform random distribution between 0 and 2^31-1.
 
-(TODO: Clarify how packet number size can change mid-connection.)
+The first set of packets sent by an endpoint MUST include the low 32-bits of the
+packet number.  Once any packet has been acknowledged, subsequent packets can
+use a shorter packet number encoding.
 
-### Frames and Frame Types {#frames}
+
+## Frames and Frame Types {#frames}
 
 A Regular packet MUST contain at least one frame, and MAY contain multiple
 frames and multiple frame types.  Frames MUST fit within a single QUIC packet
@@ -646,10 +657,11 @@ that the client selected.
 
 When the client receives a Version Negotiation packet from the server, it should
 select an acceptable protocol version.  If the server lists an acceptable
-version, the client selects that version and resends all packets using that
-version. The resent packets MUST use new packet numbers.  These packets MUST
-continue to have the VERSION flag set and MUST include the new negotiated
-protocol version.
+version, the client selects that version and reattempts to created a connection
+using that version.  Though the contents of a packet might not change in
+response to version negotiation, a client MUST increase the packet number it
+uses on every packet it sends.  Packets MUST continue to have the VERSION flag
+set and MUST include the new negotiated protocol version.
 
 The client MUST set the VERSION flag and include its selected version on all
 packets until it has 1-RTT keys and it has received a packet from the server
@@ -920,11 +932,11 @@ A STREAM frame is shown below.
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|       [Data Length (16)]      |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                    Stream ID (8/16/24/32)                   ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                Offset (0/16/24/32/40/48/56/64)              ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                      [Data Length (16)]                       |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                        Stream Data (*)                      ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -933,14 +945,15 @@ A STREAM frame is shown below.
 
 The STREAM frame contains the following fields:
 
+* Data Length: An optional 16-bit unsigned number specifying the length of the
+  Stream Data field in this STREAM frame.  This field is present when the `D`
+  bit is set to 1.
+
 * Stream ID: A variable-sized unsigned ID unique to this stream.
 
 * Offset: A variable-sized unsigned number specifying the byte offset in the
   stream for the data in this STREAM frame.  The first byte in the stream has an
   offset of 0.
-
-* Data Length: An optional 16-bit unsigned number specifying the length of the
-  Stream Data field in this STREAM frame.
 
 * Stream Data: The bytes from the designated stream to be delivered.
 
@@ -1007,35 +1020,35 @@ An ACK frame is shown below.
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                  Largest Acked (8/16/32/48)                 ...
+|[Num Blocks(8)]|   NumTS (8)   |  Largest Acked (8/16/32/48) ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |        Ack Delay (16)         |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|[Num Blocks(8)]|             Ack Block Section (*)           ...
+|                     Ack Block Section (*)                   ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|   NumTS (8)   |             Timestamp Section (*)           ...
+|                     Timestamp Section (*)                   ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
 {: #ack-format title="ACK Frame Format"}
 
 The fields in the ACK frame are as follows:
 
-* Largest Acked: A variable-sized unsigned value representing the largest packet
-  number the peer is acking in this packet (typically the largest that the peer
-  has seen thus far.)
-
-* Ack Delay: Time from when the largest acked packet, as indicated in the Largest Acked
-  field, was received by this peer to when this ack was sent.
-
 * Num Blocks (opt): An optional 8-bit unsigned value specifying the number of
   additional ack blocks (besides the required First Ack Block) in this ACK
   frame.  Only present if the 'N' flag bit is 1.
 
-* Ack Block Section: Contains one or more blocks of packet numbers which have
-  been successfully received.  See {{ack-block-section}}.
-
 * Num Timestamps: An unsigned 8-bit number specifying the total number of
   <packet number, timestamp> pairs in the Timestamp Section.
+
+* Largest Acked: A variable-sized unsigned value representing the largest packet
+  number the peer is acking in this packet (typically the largest that the peer
+  has seen thus far.)
+
+* Ack Delay: Time from when the largest acked packet, as indicated in the
+  Largest Acked field, was received by this peer to when this ack was sent.
+
+* Ack Block Section: Contains one or more blocks of packet numbers which have
+  been successfully received.  See {{ack-block-section}}.
 
 * Timestamp Section: Contains zero or more timestamps reporting transit delay of
   received packets.  See {{timestamp-section}}.
@@ -1382,14 +1395,7 @@ of the connection if all pairs are affected. In this case, an endpoint SHOULD
 send a Public Reset packet to indicate the failure. The application SHOULD
 attempt to use TLS over TCP instead.
 
-A sender bundles one or more frames in a Regular QUIC packet.  A sender MAY
-bundle any set of frames in a packet.  All QUIC packets MUST contain a packet
-number and MAY contain one or more frames ({{frames}}).  Packet numbers MUST be
-unique within a connection and MUST NOT be reused within the same connection.
-Packet numbers MUST be assigned to packets in a strictly monotonically
-increasing order.  The initial packet number used, at both the client and the
-server, MUST be 0.  That is, the first packet in both directions of the
-connection MUST have a packet number of 0.
+A sender bundles one or more frames in a Regular QUIC packet (see {{frames}}).
 
 A sender SHOULD minimize per-packet bandwidth and computational costs by
 bundling as many frames as possible within a QUIC packet.  A sender MAY wait for
@@ -1402,20 +1408,21 @@ conservatively, since any delay is likely to increase application-visible
 latency.
 
 Regular QUIC packets are "containers" of frames; a packet is never retransmitted
-whole, but frames in a lost packet may be rebundled and transmitted in a
-subsequent packet as necessary.
+whole.  How an endpoint handles the loss of the frame depends on the type of the
+frame.  Some frames are simply retransmitted, some have their contents moved to
+new frames, and others are never retransmitted.
 
-A packet may contain frames and/or application data, only some of which may
-require reliability.  When a packet is detected as lost, the sender re-sends any
-frames as necessary:
+When a packet is detected as lost, the sender re-sends any frames as necessary:
 
-* All application data sent in STREAM frames MUST be retransmitted, with one
-  exception.  When an endpoint sends a RST_STREAM frame, data outstanding on
-  that stream SHOULD NOT be retransmitted, since subsequent data on this stream
-  is expected to not be delivered by the receiver.
+* All application data sent in STREAM frames MUST be retransmitted, unless the
+  endpoint has sent a RST_STREAM for that stream.  When an endpoint sends a
+  RST_STREAM frame, data outstanding on that stream SHOULD NOT be retransmitted,
+  since subsequent data on this stream is expected to not be delivered by the
+  receiver.
 
-* ACK, STOP_WAITING, and PADDING frames MUST NOT be retransmitted.  New frames
-  of these types may however be bundled with any outgoing packet.
+* ACK, STOP_WAITING, and PADDING frames MUST NOT be retransmitted.  ACK and
+  STOP_WAITING frames are cumulative, so new frames containing updated
+  information will be sent as described in {{frame-ack}}.
 
 * All other frames MUST be retransmitted.
 
@@ -1445,8 +1452,8 @@ connection. However, as QUIC operates over UDP, in IPv4 the echoed information
 could consist only of the IP and UDP headers, which usually has insufficient
 entropy to mitigate off-path attacks.
 
-As a result, endpoints that implement PMTUD in IPv4 SHOULD take steps to mitigate
-this risk. For instance, an application could:
+As a result, endpoints that implement PMTUD in IPv4 SHOULD take steps to
+mitigate this risk. For instance, an application could:
 
 * Set the IPv4 Don't Fragment (DF) bit on a small proportion of packets, so that
 most invalid ICMP messages arrive when there are no DF packets outstanding, and
@@ -1532,8 +1539,8 @@ shown in the following figure and described below.
 
        app: application API signals to QUIC
        reserve_stream: causes a StreamID to be reserved for later use
-       read_close: causes stream to be half-closed without receiving a FIN
-       write_close: causes stream to be half-closed without sending a FIN
+       read_close: causes stream to be half-closed without a FIN
+       write_close: causes stream to be half-closed without a FIN
 ~~~
 {: #stream-lifecycle title="Lifecycle of a stream"}
 
@@ -1687,6 +1694,15 @@ used for application data, and MUST be the first client-initiated stream.
 Streams MUST be created or reserved in sequential order, but MAY be used in
 arbitrary order.  A QUIC endpoint MUST NOT reuse a StreamID on a given
 connection.
+
+All streams, including stream 1, count toward this limit.  Thus, a concurrent
+stream limit of 0 will cause a connection to be unusable.  Application protocols
+that use QUIC might require a certain minimum number of streams to function
+correctly.  If a peer advertises an MSPC value that is too small for the
+selected application protocol to function, an endpoint MUST terminate the
+connection with an error of type QUIC_TOO_MANY_OPEN_STREAMS
+({{error-handling}}).
+
 
 ## Stream Concurrency
 
