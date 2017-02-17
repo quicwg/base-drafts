@@ -714,9 +714,11 @@ QUIC encodes the transport parameters and options as tag-value pairs, all as
 * CFCW: Connection Flow Control Window.  The connection level flow
   control byte offset advertised by the sender of this parameter.
 
-* MSPC: Maximum number of incoming streams per connection.
+* MSPC: Maxium Streams Per Connection.  The maximum number of incoming
+  streams per connection.
 
-* ICSL: Idle timeout in seconds.  The maximum value is 600 seconds (10 minutes).
+* ICSL: Idle Connection State Lifetime.  The maximum idle timeout in seconds.
+  The maximum value is 600 seconds (10 minutes).
 
 #### Optional Transport Parameters {#optional-transport-parameters}
 
