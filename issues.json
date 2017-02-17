@@ -559,99 +559,6 @@
     "body": "The cryptic 4 lettter names for these are a relic of the encoding in Google QUIC.  We can afford to use words since we're identifying them with numbers (assuming #122 ever moves). For example,\r\n\r\n* MSPC → maximum concurrent streams (or max_streams)\r\n* CFCW → initial connection flow control offset (conn_fc_offset)\r\n* SFCW → new stream flow control offset (str_fc_offset)\r\n* etc...\r\n"
   },
   {
-    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/299",
-    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
-    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/299/labels{/name}",
-    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/299/comments",
-    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/299/events",
-    "html_url": "https://github.com/quicwg/base-drafts/pull/299",
-    "id": 207387858,
-    "number": 299,
-    "title": "Redefine outstanding",
-    "user": {
-      "login": "martinthomson",
-      "id": 67641,
-      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/martinthomson",
-      "html_url": "https://github.com/martinthomson",
-      "followers_url": "https://api.github.com/users/martinthomson/followers",
-      "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
-      "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
-      "organizations_url": "https://api.github.com/users/martinthomson/orgs",
-      "repos_url": "https://api.github.com/users/martinthomson/repos",
-      "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/martinthomson/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "labels": [
-      {
-        "id": 481871399,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
-        "name": "transport",
-        "color": "fbca04",
-        "default": false
-      }
-    ],
-    "state": "open",
-    "locked": false,
-    "assignee": {
-      "login": "janaiyengar",
-      "id": 11067604,
-      "avatar_url": "https://avatars.githubusercontent.com/u/11067604?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/janaiyengar",
-      "html_url": "https://github.com/janaiyengar",
-      "followers_url": "https://api.github.com/users/janaiyengar/followers",
-      "following_url": "https://api.github.com/users/janaiyengar/following{/other_user}",
-      "gists_url": "https://api.github.com/users/janaiyengar/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/janaiyengar/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/janaiyengar/subscriptions",
-      "organizations_url": "https://api.github.com/users/janaiyengar/orgs",
-      "repos_url": "https://api.github.com/users/janaiyengar/repos",
-      "events_url": "https://api.github.com/users/janaiyengar/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/janaiyengar/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "assignees": [
-      {
-        "login": "janaiyengar",
-        "id": 11067604,
-        "avatar_url": "https://avatars.githubusercontent.com/u/11067604?v=3",
-        "gravatar_id": "",
-        "url": "https://api.github.com/users/janaiyengar",
-        "html_url": "https://github.com/janaiyengar",
-        "followers_url": "https://api.github.com/users/janaiyengar/followers",
-        "following_url": "https://api.github.com/users/janaiyengar/following{/other_user}",
-        "gists_url": "https://api.github.com/users/janaiyengar/gists{/gist_id}",
-        "starred_url": "https://api.github.com/users/janaiyengar/starred{/owner}{/repo}",
-        "subscriptions_url": "https://api.github.com/users/janaiyengar/subscriptions",
-        "organizations_url": "https://api.github.com/users/janaiyengar/orgs",
-        "repos_url": "https://api.github.com/users/janaiyengar/repos",
-        "events_url": "https://api.github.com/users/janaiyengar/events{/privacy}",
-        "received_events_url": "https://api.github.com/users/janaiyengar/received_events",
-        "type": "User",
-        "site_admin": false
-      }
-    ],
-    "milestone": null,
-    "comments": 2,
-    "created_at": "2017-02-14T01:09:37Z",
-    "updated_at": "2017-02-17T14:10:58Z",
-    "closed_at": null,
-    "pull_request": {
-      "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/299",
-      "html_url": "https://github.com/quicwg/base-drafts/pull/299",
-      "diff_url": "https://github.com/quicwg/base-drafts/pull/299.diff",
-      "patch_url": "https://github.com/quicwg/base-drafts/pull/299.patch"
-    },
-    "body": "In #288, I tried to keep the calculations intact.  This builds on that and changes the calculation to what we agreed on in the discussion on #286.\r\n\r\nCloses #286."
-  },
-  {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/296",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
     "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/296/labels{/name}",
@@ -1056,64 +963,6 @@
     "updated_at": "2017-02-15T05:22:13Z",
     "closed_at": null,
     "body": "The draft currently says:\r\n\r\n> In this case, an endpoint SHOULD send a Public Reset packet to indicate the failure. \r\n\r\n(This is in the context of discovering that the MTU is too small.)\r\n\r\nGiven that it doesn't take much to send an authenticated CONNECTION_CLOSE in a packet that won't risk breaking even the minimum IPv4 MTU, I think that this suggestion too much.  I would change this to \"treat this as a connection error of SOME_ERROR_CODE\" either defining a new MTU_TOO_SMALL error code, or reusing an existing one."
-  },
-  {
-    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/286",
-    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
-    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/286/labels{/name}",
-    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/286/comments",
-    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/286/events",
-    "html_url": "https://github.com/quicwg/base-drafts/issues/286",
-    "id": 206730190,
-    "number": 286,
-    "title": "Outstanding packets and packet number size",
-    "user": {
-      "login": "martinthomson",
-      "id": 67641,
-      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/martinthomson",
-      "html_url": "https://github.com/martinthomson",
-      "followers_url": "https://api.github.com/users/martinthomson/followers",
-      "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
-      "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
-      "organizations_url": "https://api.github.com/users/martinthomson/orgs",
-      "repos_url": "https://api.github.com/users/martinthomson/repos",
-      "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/martinthomson/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "labels": [
-      {
-        "id": 481871361,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/design",
-        "name": "design",
-        "color": "1d76db",
-        "default": false
-      },
-      {
-        "id": 481871399,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
-        "name": "transport",
-        "color": "fbca04",
-        "default": false
-      }
-    ],
-    "state": "open",
-    "locked": false,
-    "assignee": null,
-    "assignees": [
-
-    ],
-    "milestone": null,
-    "comments": 4,
-    "created_at": "2017-02-10T07:51:06Z",
-    "updated_at": "2017-02-15T05:21:52Z",
-    "closed_at": null,
-    "body": "The text for packet number size calculation says:\r\n\r\n> a QUIC sender MUST NOT have more than 2^(packet_number_size - 2) in flight\r\n\r\nWhat it means to be \"in flight\" is not defined.  It seems like it might mean unacknowledged, not including packets that were marked as \"lost\" by the recovery algorithm.  The difference between the current packet number and the highest acknowledged packet number might also work.\r\n\r\nThe more that I think about this, the more that I'm convinced that this is made up of 90% fudge.  Neither of the above definitions for \"in flight\" is perfect and the constant (4) is pure fudge.\r\n\r\nWhat we might ideally want to ask before determining how big the packet number encoding needs to be is how far out of order a packet could possibly get during transit - and at what point we consider excessive reordering to be considered loss.  If we assume either definition, the current mandate assumes that we want to recover from delay of 4 times the RTT (with the first definition, add four times the reordering threshold).\r\n\r\nThat seems excessive.  Given that we should be getting at least an ACK per RTT in these cases, that much delay will likely result in retransmission several times over unless all of the ACK packets are similarly delayed.\r\n\r\nWhile we might make some recommendations, \"MUST\" doesn't seem correct.  I suspect that we need data on reordering (or packet delays) under real-world conditions before we could make a better recommendation.\r\n\r\nI think that we need to make the following changes: \r\n1. define \"in flight\" (or use a new definition based on RTT and the reordering threshold)\r\n2. make this a recommendation rather than a requirement\r\n3. update the values in the recommendation based on data\r\n4. maybe advise being conservative: spending an extra byte or two occasionally might be wise if it means avoiding packets being lost\r\n\r\nThis issue should wait for the outcome of the header discussions, it could become moot."
   },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/284",
@@ -1904,8 +1753,7 @@
     "updated_at": "2017-02-10T02:36:51Z",
     "closed_at": null,
     "body": "In Mirja's Management draft:\r\n[https://tools.ietf.org/html/draft-kuehlewind-quic-appman-00#section-3](url)\r\n\r\n> [EDITOR'S NOTE: the addition of a simple packet number echo would\r\n   allow passive RTT measurement and partial passive downstream loss/\r\n   reordering measurement.  Packet number echo can be sampled at the\r\n   echo-side (i.e. one-in-N packets or 1/p packets can carry an echo)\r\n   for efficiency tradeoff, if necessary.]\r\n\r\nI endorse this idea. Service providers are very interesting in measuring their users' quality of experience and this is one key thing we can expose to enable that. On the face of it, it seems that the privacy hit is marginal."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/267",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -2014,7 +1862,8 @@
     "updated_at": "2017-02-07T00:01:56Z",
     "closed_at": null,
     "body": "And define how it interacts with TLS, if at all."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/264",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3644,8 +3493,7 @@
     "updated_at": "2017-01-25T04:24:39Z",
     "closed_at": null,
     "body": "There is some sadness about public reset. See PR #20"
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/211",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3761,7 +3609,8 @@
     "updated_at": "2017-01-24T07:28:47Z",
     "closed_at": null,
     "body": "- Version negotiation \r\n- Options negotiation\r\n\r\nThe document needs to define a general strategy for this. I see there are other related issues, but none that quite covers the general issue.\r\n"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/209",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5533,8 +5382,7 @@
     "updated_at": "2017-01-26T07:24:42Z",
     "closed_at": null,
     "body": "I would like to see some language in the loss recovery document about client actions when the first handshake message is lost. We have overloaded this loss signal with multiple meanings/responses:\r\n\r\n(1) Retransmit (due to garden-variety network loss)\r\n(2) Change MTU and retransmit (due to MTU problems, though we might see ICMP here?)\r\n(3) Failover to TCP (middleboxes eating QUIC)\r\n(4) Give up (path failure)\r\n\r\nIf I were implementing a client using these documents, I am not sure how I would handle a CHLO loss given these conflicting imperatives. I could accept having SHOULDs instead of MUSTs, but there ought to be something."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/167",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5664,7 +5512,8 @@
     "updated_at": "2017-02-03T03:02:07Z",
     "closed_at": null,
     "body": "Fast troubleshooting of QoS is mandatory to maintain end users high Quality of Experience;\r\nThere are my cases of troubleshooting. A typical example starts by the signaling to the ISP that its end-users are experimenting a significant decrease of QoE when using an Internet application. Typical point of failures are line cards memory errors or overloaded routers located somewhere on the path, either in the ISP domain or outside.\r\n\r\nThe ISP NOC has to localize asap the point of failure. Currently it proceeds by dichotomy (is the point of failure inside ISP domain or outside ?) using passive monitoring of packet lost and congestion. \r\n\r\nFollowing is the description of the parameters in use:\r\n\r\n1. Packet lost downstream (vice versa for upstream): \r\n- Measure of packet lost before the point of measure needs TCP sequence number\r\n- Measure of lost after the point of measure needs TCP ACK + SACK \r\n\r\n1. Congestion: \r\n- Detects that the congestion is located either before or after the point of measure\r\n- Analysis based on TCP ACK+SACK observation\r\n\r\nQUIC packets numbering should be continuous to allow packet loss monitoring. Flows control fields (ACK, SACK) are available in QUIC but encrypted. \r\n\r\nIt should be nice to use the approach of the TCPinc WG (with an integrity check mechanism) to keep visible the fields allowing fast troubleshooting of the network layer.\r\n\r\n\r\n"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/165",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7687,8 +7536,7 @@
     "updated_at": "2017-01-25T04:47:27Z",
     "closed_at": null,
     "body": "Need discussion of how CONNECT works.  Initial thought:\r\n\r\n - Client does not close data stream after sending request\r\n - If server responds (on the message control stream) with success, the data stream is being relayed into a TCP connection by the server.\r\n\r\nIs there a QUIC-CONNECT?  (Probably not, and almost certainly not in this document.)"
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/92",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7810,7 +7658,8 @@
     "updated_at": "2017-01-14T02:13:43Z",
     "closed_at": null,
     "body": "#87 covers improving the current use of ALPN and the Alt-Svc v= parameter for HTTP.  However, I think this is something that QUIC needs to solve generically, so forking off a separate issue for that.\r\n\r\nHere are the paths I see that we need to support:\r\n\r\n- **Client to server, first time:** This is inherently a 1-RTT handshake *if* the client guesses the version correctly; 2 RTTs if it's wrong.  This incents clients to attempt the most widely-deployed version of QUIC rather than their highest version.  Consequently, there needs to be a way for a conservative client to discover that a server supports a more advanced version.\r\n- **Client to server, subsequent:** The cached information should contain information about the server's supported versions so the client can come back with the same version as last time. The scenarios where one side has changed need consideration, though:\r\n    - **Client upgraded:** Would require client to cache server's full set of supported versions and compare against the client's supported set at connect time, not just caching the selected version.\r\n    - **Server upgraded:** The current mechanism offers no way for a client to discover that the server would have accepted a version it didn't initially offer, whether because the server didn't previously support it or the client is being conservative.\r\n\r\nIdeally, I'd like to see these solved for QUIC independent of Alt-Svc -- there will be other users besides HTTP.\r\n\r\nI think this could be solved by requiring the server to always send its Version Negotiation list in the crypto handshake, not just if a Version Negotiation packet was actually sent.  Clients can discover when the server supports a newer version than they attempted, and either know what to offer next time or actively open a new connection with the new version in parallel."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/81",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -9853,8 +9702,7 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/20.patch"
     },
     "body": "The model here is that neither on-path nor off-path attackers should be able to forge one, but\r\nthat on-path elements should be able to validate the public reset."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/9",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -9970,7 +9818,8 @@
     "updated_at": "2016-11-22T23:13:22Z",
     "closed_at": null,
     "body": "This isn't relevant for a specification."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/7",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
