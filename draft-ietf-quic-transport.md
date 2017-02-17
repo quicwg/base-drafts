@@ -202,16 +202,15 @@ strengths of QUIC include:
 
 ## Low-Latency Connection Establishment
 
-QUIC relies on a combined cryptographic and transport handshake for
-setting up a secure transport connection.  QUIC connections are
-expected to commonly use 0-RTT handshakes, meaning that for most QUIC
-connections, data can be sent immediately following the client
-handshake packet, without waiting for a reply from the server.  QUIC
-provides a dedicated stream (Stream ID 1) to be used for performing
-the cryptographic handshake and QUIC options negotiation.  The format of the
-QUIC options and parameters used during negotiation are described in
-this document, but the handshake protocol that runs on Stream ID 1 is
-described in the accompanying cryptographic handshake draft {{QUIC-TLS}}.
+QUIC relies on a combined crypto and transport handshake for setting up a secure
+transport connection.  QUIC connections are expected to commonly use 0-RTT
+handshakes, meaning that for most QUIC connections, data can be sent immediately
+following the client handshake packet, without waiting for a reply from the
+server.  QUIC provides a dedicated stream (Stream ID 1) to be used for
+performing the crypto handshake and QUIC options negotiation.  The format of the
+QUIC options and parameters used during negotiation are described in this
+document, but the handshake protocol that runs on Stream ID 1 is described in
+the accompanying crypto handshake draft {{QUIC-TLS}}.
 
 ## Stream Multiplexing
 
@@ -623,14 +622,13 @@ full 64-bit connection ID.  The content of the Public Reset packet is TBD.
 
 # Life of a Connection
 
-A QUIC connection is a single conversation between two QUIC endpoints.
-QUIC's connection establishment intertwines version negotiation with
-the cryptographic and transport handshakes to reduce connection
-establishment latency, as described in {{handshake}}.  Once
-established, a connection may migrate to a different IP or port at
-either endpoint, due to NAT rebinding or mobility, as described in
-{{migration}}.  Finally a connection may be terminated by either
-endpoint, as described in {{termination}}.
+A QUIC connection is a single conversation between two QUIC endpoints.  QUIC's
+connection establishment intertwines version negotiation with the crypto and
+transport handshakes to reduce connection establishment latency, as described in
+{{handshake}}.  Once established, a connection may migrate to a different IP or
+port at either endpoint, due to NAT rebinding or mobility, as described in
+{{migration}}.  Finally a connection may be terminated by either endpoint, as
+described in {{termination}}.
 
 ## Version Negotiation {#version-negotiation}
 
@@ -680,16 +678,15 @@ Version negotiation uses unprotected data. The result of the negotiation MUST
 be revalidated once the cryptographic handshake has completed (see
 {{version-validation}}).
 
-## Cryptographic and Transport Handshake {#handshake}
+## Crypto and Transport Handshake {#handshake}
 
-QUIC relies on a combined cryptographic and transport handshake to
-minimize connection establishment latency.  QUIC provides a dedicated
-stream (Stream ID 1) to be used for performing a combined connection
-and security handshake (streams are described in detail in
-{{streams}}).  The crypto handshake protocol encapsulates and delivers
-QUIC's transport handshake to the peer on the cryptographic stream.  The
-first QUIC packet sent by client to the server MUST carry handshake
-information as data on Stream ID 1.
+QUIC relies on a combined crypto and transport handshake to minimize connection
+establishment latency.  QUIC provides a dedicated stream (Stream ID 1) to be
+used for performing a combined connection and security handshake (streams are
+described in detail in {{streams}}).  The crypto handshake protocol encapsulates
+and delivers QUIC's transport handshake to the peer on the crypto stream.  The
+first QUIC packet sent by client to the server MUST carry handshake information
+as data on Stream ID 1.
 
 ### Transport Parameters and Options
 
@@ -700,7 +697,7 @@ the document.
 The transport component of the handshake is responsible for exchanging and
 negotiating the following parameters for a QUIC connection.  Not all parameters
 are negotiated; some parameters are sent in just one direction.  These
-parameters and options are encoded and handed off to the cryptographic handshake
+parameters and options are encoded and handed off to the crypto handshake
 protocol to be transmitted to the peer.
 
 #### Encoding
@@ -794,29 +791,27 @@ A server can send a NewSessionTicket message at any time.  This allows it to
 update the state that is included in the ticket.  This might be done to refresh
 the ticket, or in response to changes in the state of a connection.
 
-### Cryptographic Handshake Protocol Features
+### Crypto Handshake Protocol Features
 
-QUIC's current cryptographic handshake mechanism is documented in
-{{QUICCrypto}}.  QUIC does not restrict itself to using a specific
-handshake protocol, so the details of a specific handshake protocol
-are out of this document's scope.  If not explicitly specified in the
-application mapping, TLS is assumed to be the default cryptographic
-handshake protocol, as described in {{QUIC-TLS}}.  An application that
-maps to QUIC MAY however specify an alternative cryptographic
-handshake protocol to be used.
+QUIC's current crypto handshake mechanism is documented in {{QUICCrypto}}.  QUIC
+does not restrict itself to using a specific handshake protocol, so the details
+of a specific handshake protocol are out of this document's scope.  If not
+explicitly specified in the application mapping, TLS is assumed to be the
+default crypto handshake protocol, as described in {{QUIC-TLS}}.  An application
+that maps to QUIC MAY however specify an alternative crypto handshake protocol
+to be used.
 
 The following list of requirements and recommendations documents properties of
 the current prototype handshake which should be provided by any handshake
 protocol.
 
-* The cryptographic handshake MUST ensure that the final negotiated
-  key is distinct for every connection between two endpoints.
+* The crypto handshake MUST ensure that the final negotiated key is distinct for
+  every connection between two endpoints.
 
-* Transport Negotiation: The cryptographic handshake MUST provide a
-  mechanism for the transport component to exchange transport
-  parameters and Source Address Tokens.  To avoid downgrade attacks,
-  the transport parameters sent and received MUST be verified before
-  the handshake completes successfully.
+* Transport Negotiation: The crypto handshake MUST provide a mechanism for the
+  transport component to exchange transport parameters and Source Address
+  Tokens.  To avoid downgrade attacks, the transport parameters sent and
+  received MUST be verified before the handshake completes successfully.
 
 * Connection Establishment in 0-RTT: Since low-latency connection establishment
   is a critical feature of QUIC, the QUIC handshake protocol SHOULD attempt to
@@ -824,27 +819,26 @@ protocol.
   between the same endpoints.
 
 * Source Address Spoofing Defense: Since QUIC handles source address
-  verification, the cryptographic protocol SHOULD NOT impose a
-  separate source address verification mechanism.
+  verification, the crypto protocol SHOULD NOT impose a separate source address
+  verification mechanism.
 
 * Server Config Update: A QUIC server may refresh the source-address token (STK)
   mid-connection, to update the information stored in the STK at the client and
   to extend the period over which 0-RTT connections can be established by the
   client.
 
-* Certificate Compression: Early QUIC experience demonstrated that
-  compressing certificates exchanged during a handshake is valuable in
-  reducing latency.  This additionally helps to reduce the
-  amplification attack footprint when a server sends a large set of
-  certificates, which is not uncommon with TLS.  The cryptographic
-  protocol SHOULD compress certificates and any other information to
+* Certificate Compression: Early QUIC experience demonstrated that compressing
+  certificates exchanged during a handshake is valuable in reducing latency.
+  This additionally helps to reduce the amplification attack footprint when a
+  server sends a large set of certificates, which is not uncommon with TLS.  The
+  crypto protocol SHOULD compress certificates and any other information to
   minimize the number of packets sent during a handshake.
 
 
 ### Version Negotiation Validation {#version-validation}
 
 The following information used during the QUIC handshake MUST be
-cryptographically verified by the cryptographic handshake protocol:
+cryptographically verified by the crypto handshake protocol:
 
 * Client's originally proposed version in its first packet.
 
@@ -1701,9 +1695,8 @@ A StreamID of zero (0x0) is reserved and used for connection-level flow control
 frames ({{flow-control}}); the StreamID of zero cannot be used to establish a
 new stream.
 
-StreamID 1 (0x1) is reserved for the cryptographic handshake.
-StreamID 1 MUST NOT be used for application data, and MUST be the
-first client-initiated stream.
+StreamID 1 (0x1) is reserved for the crypto handshake.  StreamID 1 MUST NOT be
+used for application data, and MUST be the first client-initiated stream.
 
 Streams MUST be created or reserved in sequential order, but MAY be used in
 arbitrary order.  A QUIC endpoint MUST NOT reuse a StreamID on a given
@@ -1756,11 +1749,10 @@ as an ordered byte-stream.  Data received out of order MUST be buffered for
 later delivery, as long as it is not in violation of the receiver's flow control
 limits.
 
-The cryptographic handshake stream, Stream 1, MUST NOT be subject to
-congestion control or connection-level flow control, but MUST be
-subject to stream-level flow control. An endpoint MUST NOT send data
-on any other stream without consulting the congestion controller and
-the flow controller.
+The crypto handshake stream, Stream 1, MUST NOT be subject to congestion control
+or connection-level flow control, but MUST be subject to stream-level flow
+control. An endpoint MUST NOT send data on any other stream without consulting
+the congestion controller and the flow controller.
 
 Flow control is described in detail in {{flow-control}}, and congestion control
 is described in the companion document {{QUIC-RECOVERY}}.
