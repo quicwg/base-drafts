@@ -265,8 +265,8 @@ receive-window manipulation and sequence-number overwriting.  While some of
 these are mechanisms used by middleboxes to improve TCP performance, others are
 active attacks.  Even "performance-enhancing" middleboxes that routinely
 interpose on the transport state machine end up limiting the evolvability of the
-transport protocol, as has been observed in the design of MPTCP and in its
-subsequent deployability issues.
+transport protocol, as has been observed in the design of MPTCP {{?RFC6824}} and
+in its subsequent deployability issues.
 
 Generally, QUIC packets are always authenticated and the payload is typically
 fully encrypted.  The parts of the packet header which are not encrypted are
