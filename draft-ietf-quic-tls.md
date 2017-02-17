@@ -692,7 +692,8 @@ of the reconstructed QUIC packet number in network byte order is left-padded
 with zeros to the size of the IV.  The exclusive OR of the padded packet number
 and the IV forms the AEAD nonce.
 
-The associated data, A, for the AEAD is an empty sequence.
+The associated data, A, for the AEAD is the contents of the QUIC header,
+starting from the flags octet in the common header.
 
 The input plaintext, P, for the AEAD is the contents of the QUIC frame following
 the packet number, as described in {{QUIC-TRANSPORT}}.
