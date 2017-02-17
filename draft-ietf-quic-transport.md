@@ -52,7 +52,7 @@ normative:
         org: Mozilla
         role: editor
       -
-        ins: S. Turner, Ed.
+        ins: S. Turner
         name: Sean Turner
         org: sn3rd
         role: editor
@@ -505,7 +505,7 @@ The fields in a Regular packet past the Common Header are the following:
 The packet number is a 64-bit unsigned number and is used as part of a
 cryptographic nonce for packet encryption.  Each endpoint maintains a separate
 packet number for sending and receiving.  The packet number for sending MUST
-increase by one after sending any packet.
+increase by at least one after sending any packet.
 
 A QUIC endpoint MUST NOT reuse a packet number within the same connection (that
 is, under the same cryptographic keys).  If the packet number for sending
@@ -662,9 +662,10 @@ that the client selected.
 When the client receives a Version Negotiation packet from the server, it should
 select an acceptable protocol version.  If the server lists an acceptable
 version, the client selects that version and reattempts to created a connection
-using that version.  The client MUST update packet numbers when attempting to
-connect with the updated version.  Packets MUST continue to have the VERSION
-flag set and MUST include the new negotiated protocol version.
+using that version.  Though the contents of a packet might not change in
+response to version negotiation, a client MUST increase the packet number it
+uses on every packet it sends.  Packets MUST continue to have the VERSION flag
+set and MUST include the new negotiated protocol version.
 
 The client MUST set the VERSION flag and include its selected version on all
 packets until it has 1-RTT keys and it has received a packet from the server
@@ -935,11 +936,11 @@ A STREAM frame is shown below.
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|       [Data Length (16)]      |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                    Stream ID (8/16/24/32)                   ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                Offset (0/16/24/32/40/48/56/64)              ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                      [Data Length (16)]                       |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                        Stream Data (*)                      ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -948,14 +949,15 @@ A STREAM frame is shown below.
 
 The STREAM frame contains the following fields:
 
+* Data Length: An optional 16-bit unsigned number specifying the length of the
+  Stream Data field in this STREAM frame.  This field is present when the `D`
+  bit is set to 1.
+
 * Stream ID: A variable-sized unsigned ID unique to this stream.
 
 * Offset: A variable-sized unsigned number specifying the byte offset in the
   stream for the data in this STREAM frame.  The first byte in the stream has an
   offset of 0.
-
-* Data Length: An optional 16-bit unsigned number specifying the length of the
-  Stream Data field in this STREAM frame.
 
 * Stream Data: The bytes from the designated stream to be delivered.
 
@@ -1022,35 +1024,35 @@ An ACK frame is shown below.
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                  Largest Acked (8/16/32/48)                 ...
+|[Num Blocks(8)]|   NumTS (8)   |  Largest Acked (8/16/32/48) ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |        Ack Delay (16)         |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|[Num Blocks(8)]|             Ack Block Section (*)           ...
+|                     Ack Block Section (*)                   ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|   NumTS (8)   |             Timestamp Section (*)           ...
+|                     Timestamp Section (*)                   ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
 {: #ack-format title="ACK Frame Format"}
 
 The fields in the ACK frame are as follows:
 
-* Largest Acked: A variable-sized unsigned value representing the largest packet
-  number the peer is acking in this packet (typically the largest that the peer
-  has seen thus far.)
-
-* Ack Delay: Time from when the largest acked packet, as indicated in the Largest Acked
-  field, was received by this peer to when this ack was sent.
-
 * Num Blocks (opt): An optional 8-bit unsigned value specifying the number of
   additional ack blocks (besides the required First Ack Block) in this ACK
   frame.  Only present if the 'N' flag bit is 1.
 
-* Ack Block Section: Contains one or more blocks of packet numbers which have
-  been successfully received.  See {{ack-block-section}}.
-
 * Num Timestamps: An unsigned 8-bit number specifying the total number of
   <packet number, timestamp> pairs in the Timestamp Section.
+
+* Largest Acked: A variable-sized unsigned value representing the largest packet
+  number the peer is acking in this packet (typically the largest that the peer
+  has seen thus far.)
+
+* Ack Delay: Time from when the largest acked packet, as indicated in the
+  Largest Acked field, was received by this peer to when this ack was sent.
+
+* Ack Block Section: Contains one or more blocks of packet numbers which have
+  been successfully received.  See {{ack-block-section}}.
 
 * Timestamp Section: Contains zero or more timestamps reporting transit delay of
   received packets.  See {{timestamp-section}}.
@@ -1268,10 +1270,13 @@ The fields are:
 
 ## PADDING Frame {#frame-padding}
 
-The PADDING frame (type=0x00) pads a packet with 0x00 bytes. When this frame is
-encountered, the rest of the packet is expected to be padding bytes. The frame
-contains 0x00 bytes and extends to the end of the QUIC packet. A PADDING frame
-has no additional fields.
+The PADDING frame (type=0x00) has no semantic value.  PADDING frames can be used
+to increase the size of a packet.  Padding can be used to increase an initial
+client packet to the minimum required size, or to provide protection against
+traffic analysis for protected packets.
+
+A PADDING frame has no content.  That is, a PADDING frame consists of the single
+octet that identifies the frame as a PADDING frame.
 
 
 ## PING frame {#frame-ping}
@@ -1377,7 +1382,7 @@ signals that indicate a smaller limit might exist.
 
 Clients MUST ensure that the first packet in a connection, and any
 retransmissions of those octets, has a total size (including IP and UDP headers)
-of at least 1280 bytes. This might require inclusion of a PADDING frame. It is
+of at least 1280 bytes. This might require inclusion of PADDING frames. It is
 RECOMMENDED that a packet be padded to exactly 1280 octets unless the client has
 a reasonable assurance that the PMTU is larger. Sending a packet of this size
 ensures that the network path supports an MTU of this size and helps mitigate
@@ -1407,20 +1412,21 @@ conservatively, since any delay is likely to increase application-visible
 latency.
 
 Regular QUIC packets are "containers" of frames; a packet is never retransmitted
-whole, but frames in a lost packet may be rebundled and transmitted in a
-subsequent packet as necessary.
+whole.  How an endpoint handles the loss of the frame depends on the type of the
+frame.  Some frames are simply retransmitted, some have their contents moved to
+new frames, and others are never retransmitted.
 
-A packet may contain frames and/or application data, only some of which may
-require reliability.  When a packet is detected as lost, the sender re-sends any
-frames as necessary:
+When a packet is detected as lost, the sender re-sends any frames as necessary:
 
-* All application data sent in STREAM frames MUST be retransmitted, with one
-  exception.  When an endpoint sends a RST_STREAM frame, data outstanding on
-  that stream SHOULD NOT be retransmitted, since subsequent data on this stream
-  is expected to not be delivered by the receiver.
+* All application data sent in STREAM frames MUST be retransmitted, unless the
+  endpoint has sent a RST_STREAM for that stream.  When an endpoint sends a
+  RST_STREAM frame, data outstanding on that stream SHOULD NOT be retransmitted,
+  since subsequent data on this stream is expected to not be delivered by the
+  receiver.
 
-* ACK, STOP_WAITING, and PADDING frames MUST NOT be retransmitted.  New frames
-  of these types may however be bundled with any outgoing packet.
+* ACK, STOP_WAITING, and PADDING frames MUST NOT be retransmitted.  ACK and
+  STOP_WAITING frames are cumulative, so new frames containing updated
+  information will be sent as described in {{frame-ack}}.
 
 * All other frames MUST be retransmitted.
 
@@ -1450,8 +1456,8 @@ connection. However, as QUIC operates over UDP, in IPv4 the echoed information
 could consist only of the IP and UDP headers, which usually has insufficient
 entropy to mitigate off-path attacks.
 
-As a result, endpoints that implement PMTUD in IPv4 SHOULD take steps to mitigate
-this risk. For instance, an application could:
+As a result, endpoints that implement PMTUD in IPv4 SHOULD take steps to
+mitigate this risk. For instance, an application could:
 
 * Set the IPv4 Don't Fragment (DF) bit on a small proportion of packets, so that
 most invalid ICMP messages arrive when there are no DF packets outstanding, and
@@ -1537,8 +1543,8 @@ shown in the following figure and described below.
 
        app: application API signals to QUIC
        reserve_stream: causes a StreamID to be reserved for later use
-       read_close: causes stream to be half-closed without receiving a FIN
-       write_close: causes stream to be half-closed without sending a FIN
+       read_close: causes stream to be half-closed without a FIN
+       write_close: causes stream to be half-closed without a FIN
 ~~~
 {: #stream-lifecycle title="Lifecycle of a stream"}
 
@@ -1712,6 +1718,15 @@ Endpoints MUST NOT exceed the limit set by their peer.  An endpoint that
 receives a STREAM frame that causes its advertised concurrent stream limit to be
 exceeded MUST treat this as a stream error of type QUIC_TOO_MANY_OPEN_STREAMS
 ({{error-handling}}).
+
+All streams, including stream 1, count toward this limit.  Thus, a concurrent
+stream limit of 0 will cause a connection to be unusable.  Application protocols
+that use QUIC might require a certain minimum number of streams to function
+correctly.  If a peer advertises an MSPC value that is too small for the
+selected application protocol to function, an endpoint MUST terminate the
+connection with an error of type QUIC_TOO_MANY_OPEN_STREAMS
+({{error-handling}}).
+
 
 ## Sending and Receiving Data
 

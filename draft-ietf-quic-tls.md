@@ -1247,8 +1247,8 @@ packets as indicative of an attack.
 # Error codes {#errors}
 
 The portion of the QUIC error code space allocated for the crypto handshake is
-0xC0000000-0xFFFFFFFF. The following error codes are defined when TLS is used for the
-crypto handshake:
+0xC0000000-0xFFFFFFFF. The following error codes are defined when TLS is used
+for the crypto handshake:
 
 TLS_HANDSHAKE_FAILED (0xC000001C):
 : Crypto errors. Handshake failed.

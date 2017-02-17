@@ -37,7 +37,7 @@ normative:
         org: Mozilla
         role: editor
       -
-        ins: S. Turner, Ed.
+        ins: S. Turner
         name: Sean Turner
         org: sn3rd
         role: editor
@@ -287,10 +287,12 @@ Pseudocode for SetLossDetectionAlarm follows:
 
     if (handshake packets are outstanding):
       // Handshake retransmission alarm.
-      alarm_duration = max(1.5 * smoothed_rtt, kMinTLPTimeout) << handshake_count;
+      alarm_duration = max(1.5 * smoothed_rtt, kMinTLPTimeout)
+                         << handshake_count;
       handshake_count++;
     else if (largest sent packet is acked):
-      // Early retransmit {{!RFC 5827}} with an alarm to reduce spurious retransmits.
+      // Early retransmit {{!RFC 5827}}
+      // with an alarm to reduce spurious retransmits.
       alarm_duration = 0.25 x smoothed_rtt;
     else if (tlp_count < kMaxTLPs):
       // Tail Loss Probe alarm.
@@ -303,7 +305,8 @@ Pseudocode for SetLossDetectionAlarm follows:
     else:
       // RTO alarm.
       if (rto_count = 0):
-        alarm_duration = max(kMinRTOTimeout, smoothed_rtt + 4 x rttvar);
+        alarm_duration = max(kMinRTOTimeout,
+                             smoothed_rtt + 4 x rttvar);
       else:
         alarm_duration = loss_detection_alarm.get_delay() << 1;
       rto_count++;
@@ -387,8 +390,8 @@ Pseudocode for OnPacketAcked follows:
      handshake_count = 0;
      tlp_count = 0;
      rto_count = 0;
-     # TODO: Don't remove packets immediately, since they can be used for
-     # detecting spurous retransmits.
+     # TODO: Don't remove packets immediately, since they can be
+     # used for detecting spurous retransmits.
      sent_packets.remove(acked_packet);
 ~~~
 
@@ -403,7 +406,7 @@ Pseudocode for OnAlarm follows:
 ~~~
    OnAlarm(acked_packet):
      lost_packets = DetectLostPackets(acked_packet);
-     MaybeRetransmitLostPackets();
+     MaybeRetransmit(lost_packets);
      SetLossDetectionAlarm();
 ~~~
 
@@ -414,22 +417,21 @@ acknowledged.  DetectLostPackets is called every time there is a new largest
 packet or if the loss detection alarm fires the previous largest acked packet is
 supplied.
 
-DetectLostPackets takes one parameter, acked_packet, which is the packet number
-of the largest acked packet, and returns a list of packet numbers detected as
-lost.
+DetectLostPackets takes one parameter, acked, which is the largest acked packet,
+and returns a list of packets detected as lost.
 
 Pseudocode for DetectLostPackets follows:
 
 ~~~
-   DetectLostPackets(acked_packet):
+   DetectLostPackets(acked):
      lost_packets = {};
-     foreach (unacked_packet less than acked_packet):
-       if (unacked_packet.time_sent <
-           acked_packet.time_sent - kTimeReorderThreshold * smoothed_rtt):
-         lost_packets.insert(unacked_packet.packet_number);
-       else if (unacked_packet.packet_number <
-                acked_packet.packet_number - reordering_threshold)
-         lost_packets.insert(unacked_packet.packet_number);
+     foreach (unacked less than acked):
+       time_delta = acked.time_sent - unacked.time_sent
+       packet_delta = acked.packet_number - unacked.packet_number
+       if (time_delta > kTimeReorderThreshold * smoothed_rtt):
+         lost_packets.insert(unacked);
+       else if (packet_delta > reordering_threshold)
+         lost_packets.insert(unacked);
      return lost_packets;
 ~~~
 
