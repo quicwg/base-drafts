@@ -1408,20 +1408,21 @@ conservatively, since any delay is likely to increase application-visible
 latency.
 
 Regular QUIC packets are "containers" of frames; a packet is never retransmitted
-whole, but frames in a lost packet may be rebundled and transmitted in a
-subsequent packet as necessary.
+whole.  How an endpoint handles the loss of the frame depends on the type of the
+frame.  Some frames are simply retransmitted, some have their contents moved to
+new frames, and others are never retransmitted.
 
-A packet may contain frames and/or application data, only some of which may
-require reliability.  When a packet is detected as lost, the sender re-sends any
-frames as necessary:
+When a packet is detected as lost, the sender re-sends any frames as necessary:
 
-* All application data sent in STREAM frames MUST be retransmitted, with one
-  exception.  When an endpoint sends a RST_STREAM frame, data outstanding on
-  that stream SHOULD NOT be retransmitted, since subsequent data on this stream
-  is expected to not be delivered by the receiver.
+* All application data sent in STREAM frames MUST be retransmitted, unless the
+  endpoint has sent a RST_STREAM for that stream.  When an endpoint sends a
+  RST_STREAM frame, data outstanding on that stream SHOULD NOT be retransmitted,
+  since subsequent data on this stream is expected to not be delivered by the
+  receiver.
 
-* ACK, STOP_WAITING, and PADDING frames MUST NOT be retransmitted.  New frames
-  of these types may however be bundled with any outgoing packet.
+* ACK, STOP_WAITING, and PADDING frames MUST NOT be retransmitted.  ACK and
+  STOP_WAITING frames are cumulative, so new frames containing updated
+  information will be sent as described in {{frame-ack}}.
 
 * All other frames MUST be retransmitted.
 
