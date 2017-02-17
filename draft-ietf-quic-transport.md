@@ -273,8 +273,7 @@ fully encrypted.  The parts of the packet header which are not encrypted are
 still authenticated by the receiver, so as to thwart any packet injection or
 manipulation by third parties.  Some early handshake packets, such as the
 Version Negotiation packet, are not encrypted, but information sent in these
-unencrypted handshake packets is later verified as part of cryptographic 
-processing.
+unencrypted handshake packets is later verified under crypto cover.
 
 PUBLIC_RESET packets that reset a connection are currently not authenticated.
 
