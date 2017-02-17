@@ -2399,9 +2399,9 @@
 
     ],
     "milestone": null,
-    "comments": 5,
+    "comments": 7,
     "created_at": "2017-02-07T18:39:04Z",
-    "updated_at": "2017-02-15T00:14:04Z",
+    "updated_at": "2017-02-17T03:34:58Z",
     "closed_at": null,
     "pull_request": {
       "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/266",
