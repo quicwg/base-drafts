@@ -160,70 +160,6 @@
     "body": "* Replace uses of encrypted with protected.\r\n* Constistenly use * instead of x everywhere for multiplication\r\n* Remove trailing ;\r\n* Convert the constants and variables into Kramdown definition lists."
   },
   {
-    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/312",
-    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
-    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/312/labels{/name}",
-    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/312/comments",
-    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/312/events",
-    "html_url": "https://github.com/quicwg/base-drafts/pull/312",
-    "id": 208442925,
-    "number": 312,
-    "title": "Adding an informative reference for MPTCP.",
-    "user": {
-      "login": "seanturner",
-      "id": 4488966,
-      "avatar_url": "https://avatars.githubusercontent.com/u/4488966?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/seanturner",
-      "html_url": "https://github.com/seanturner",
-      "followers_url": "https://api.github.com/users/seanturner/followers",
-      "following_url": "https://api.github.com/users/seanturner/following{/other_user}",
-      "gists_url": "https://api.github.com/users/seanturner/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/seanturner/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/seanturner/subscriptions",
-      "organizations_url": "https://api.github.com/users/seanturner/orgs",
-      "repos_url": "https://api.github.com/users/seanturner/repos",
-      "events_url": "https://api.github.com/users/seanturner/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/seanturner/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "labels": [
-      {
-        "id": 481871311,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/editorial",
-        "name": "editorial",
-        "color": "0e8a16",
-        "default": false
-      },
-      {
-        "id": 481871399,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
-        "name": "transport",
-        "color": "fbca04",
-        "default": false
-      }
-    ],
-    "state": "open",
-    "locked": false,
-    "assignee": null,
-    "assignees": [
-
-    ],
-    "milestone": null,
-    "comments": 0,
-    "created_at": "2017-02-17T13:33:05Z",
-    "updated_at": "2017-02-17T15:12:10Z",
-    "closed_at": null,
-    "pull_request": {
-      "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/312",
-      "html_url": "https://github.com/quicwg/base-drafts/pull/312",
-      "diff_url": "https://github.com/quicwg/base-drafts/pull/312.diff",
-      "patch_url": "https://github.com/quicwg/base-drafts/pull/312.patch"
-    },
-    "body": "Saving us a GENART comment about a missing reference for MPTCP."
-  },
-  {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/311",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
     "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/311/labels{/name}",
@@ -656,106 +592,6 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/303.patch"
     },
     "body": "We decided that the transport would need priority but that it would rely on the application (protocol) to provide that information.  This attempts to capture that decision and provides a little guidance on what to prioritize (management stuff over STREAM, STREAM 1 over other streams, retransmissions, and then the rest of the streams according to application-layer priority).\r\n\r\nCloses #114, #104."
-  },
-  {
-    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/302",
-    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
-    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/302/labels{/name}",
-    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/302/comments",
-    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/302/events",
-    "html_url": "https://github.com/quicwg/base-drafts/pull/302",
-    "id": 207415764,
-    "number": 302,
-    "title": "Integrity protection for the header",
-    "user": {
-      "login": "martinthomson",
-      "id": 67641,
-      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/martinthomson",
-      "html_url": "https://github.com/martinthomson",
-      "followers_url": "https://api.github.com/users/martinthomson/followers",
-      "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
-      "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
-      "organizations_url": "https://api.github.com/users/martinthomson/orgs",
-      "repos_url": "https://api.github.com/users/martinthomson/repos",
-      "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/martinthomson/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "labels": [
-      {
-        "id": 481871361,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/design",
-        "name": "design",
-        "color": "1d76db",
-        "default": false
-      },
-      {
-        "id": 481871604,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/tls",
-        "name": "tls",
-        "color": "fbca04",
-        "default": false
-      }
-    ],
-    "state": "open",
-    "locked": false,
-    "assignee": {
-      "login": "seanturner",
-      "id": 4488966,
-      "avatar_url": "https://avatars.githubusercontent.com/u/4488966?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/seanturner",
-      "html_url": "https://github.com/seanturner",
-      "followers_url": "https://api.github.com/users/seanturner/followers",
-      "following_url": "https://api.github.com/users/seanturner/following{/other_user}",
-      "gists_url": "https://api.github.com/users/seanturner/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/seanturner/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/seanturner/subscriptions",
-      "organizations_url": "https://api.github.com/users/seanturner/orgs",
-      "repos_url": "https://api.github.com/users/seanturner/repos",
-      "events_url": "https://api.github.com/users/seanturner/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/seanturner/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "assignees": [
-      {
-        "login": "seanturner",
-        "id": 4488966,
-        "avatar_url": "https://avatars.githubusercontent.com/u/4488966?v=3",
-        "gravatar_id": "",
-        "url": "https://api.github.com/users/seanturner",
-        "html_url": "https://github.com/seanturner",
-        "followers_url": "https://api.github.com/users/seanturner/followers",
-        "following_url": "https://api.github.com/users/seanturner/following{/other_user}",
-        "gists_url": "https://api.github.com/users/seanturner/gists{/gist_id}",
-        "starred_url": "https://api.github.com/users/seanturner/starred{/owner}{/repo}",
-        "subscriptions_url": "https://api.github.com/users/seanturner/subscriptions",
-        "organizations_url": "https://api.github.com/users/seanturner/orgs",
-        "repos_url": "https://api.github.com/users/seanturner/repos",
-        "events_url": "https://api.github.com/users/seanturner/events{/privacy}",
-        "received_events_url": "https://api.github.com/users/seanturner/received_events",
-        "type": "User",
-        "site_admin": false
-      }
-    ],
-    "milestone": null,
-    "comments": 1,
-    "created_at": "2017-02-14T04:31:45Z",
-    "updated_at": "2017-02-17T06:29:36Z",
-    "closed_at": null,
-    "pull_request": {
-      "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/302",
-      "html_url": "https://github.com/quicwg/base-drafts/pull/302",
-      "diff_url": "https://github.com/quicwg/base-drafts/pull/302.diff",
-      "patch_url": "https://github.com/quicwg/base-drafts/pull/302.patch"
-    },
-    "body": "Apparently all this crypto stuff isn't going to live in the -tls doc forever, but since it is here.\r\n\r\nCloses #226, but I know that we agreed to this at the Tokyo interim."
   },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/300",
@@ -1952,8 +1788,7 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/273.patch"
     },
     "body": "Fixes #173, though I would like to ultimately get rid of the Sequence number altogether."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/272",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -2104,7 +1939,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/271.patch"
     },
     "body": "Fixes #127, but we may want to go further."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/269",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3555,100 +3391,6 @@
     "body": "This is an alternative to #167: We could just encrypt the cleartext data in the initial handshake packets with a deterministic key (e.g. a mixture of a version-dependent key and the initial packet number). The AEAD used there would have to be fixed in the spec.\r\n\r\nThe goal would be to make it harder for middleboxes to ossify on stuff in the client hello, e.g. SNI, and to detect initial packets (#203). On the other hand, there's additional computational cost for decrypting packets server-side."
   },
   {
-    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/226",
-    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
-    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/226/labels{/name}",
-    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/226/comments",
-    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/226/events",
-    "html_url": "https://github.com/quicwg/base-drafts/issues/226",
-    "id": 202992299,
-    "number": 226,
-    "title": "Authenticating public parts of the packet header",
-    "user": {
-      "login": "janaiyengar",
-      "id": 11067604,
-      "avatar_url": "https://avatars.githubusercontent.com/u/11067604?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/janaiyengar",
-      "html_url": "https://github.com/janaiyengar",
-      "followers_url": "https://api.github.com/users/janaiyengar/followers",
-      "following_url": "https://api.github.com/users/janaiyengar/following{/other_user}",
-      "gists_url": "https://api.github.com/users/janaiyengar/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/janaiyengar/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/janaiyengar/subscriptions",
-      "organizations_url": "https://api.github.com/users/janaiyengar/orgs",
-      "repos_url": "https://api.github.com/users/janaiyengar/repos",
-      "events_url": "https://api.github.com/users/janaiyengar/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/janaiyengar/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "labels": [
-      {
-        "id": 481871361,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/design",
-        "name": "design",
-        "color": "1d76db",
-        "default": false
-      },
-      {
-        "id": 481871604,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/tls",
-        "name": "tls",
-        "color": "fbca04",
-        "default": false
-      }
-    ],
-    "state": "open",
-    "locked": false,
-    "assignee": {
-      "login": "martinthomson",
-      "id": 67641,
-      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/martinthomson",
-      "html_url": "https://github.com/martinthomson",
-      "followers_url": "https://api.github.com/users/martinthomson/followers",
-      "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
-      "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
-      "organizations_url": "https://api.github.com/users/martinthomson/orgs",
-      "repos_url": "https://api.github.com/users/martinthomson/repos",
-      "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/martinthomson/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "assignees": [
-      {
-        "login": "martinthomson",
-        "id": 67641,
-        "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
-        "gravatar_id": "",
-        "url": "https://api.github.com/users/martinthomson",
-        "html_url": "https://github.com/martinthomson",
-        "followers_url": "https://api.github.com/users/martinthomson/followers",
-        "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
-        "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
-        "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
-        "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
-        "organizations_url": "https://api.github.com/users/martinthomson/orgs",
-        "repos_url": "https://api.github.com/users/martinthomson/repos",
-        "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
-        "received_events_url": "https://api.github.com/users/martinthomson/received_events",
-        "type": "User",
-        "site_admin": false
-      }
-    ],
-    "milestone": null,
-    "comments": 2,
-    "created_at": "2017-01-25T01:51:44Z",
-    "updated_at": "2017-02-03T03:51:15Z",
-    "closed_at": null,
-    "body": "QUIC AEAD usage in quic-tls draft currently says \"associated data, A,  for the AEAD is an empty sequence.\" The current rationale is that the public header fields do not need to be authenticated since the connection ID, flags, packet number, and version number are all effectively covered by  encryption/decryption. \r\n\r\nWe have at least 1 public flags field that is as yet unused. Since we do not know its use yet, we may want to authenticate the header to future-proof."
-  },
-  {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/224",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
     "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/224/labels{/name}",
@@ -3763,8 +3505,7 @@
     "updated_at": "2017-01-25T02:22:52Z",
     "closed_at": null,
     "body": "S 8.3 says:\r\n```\r\nA source address token is opaque and consumed only by the server.  Therefore it\r\ncan be included in the TLS 1.3 pre-shared key identifier for 0-RTT handshakes.\r\nServers that use 0-RTT are advised to provide new pre-shared key identifiers\r\nafter every handshake to avoid linkability of connections by passive observers.\r\nClients MUST use a new pre-shared key identifier for every connection that they\r\ninitiate; if no pre-shared key identifier is available, then resumption is not\r\npossible.\r\n```\r\n\r\nThis seem like an unnecessary requirement. Reusing the same PSK ID seems fine here."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/221",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3938,7 +3679,8 @@
     "updated_at": "2017-01-24T23:34:14Z",
     "closed_at": null,
     "body": "For illustrative purposes, consider a server with an max open stream limit of 2.  The client sends packets with frames in the following order:\r\n\r\n1. Open stream 3\r\n2. Open stream 5\r\n3. Close stream 5\r\n4. Open stream 7\r\n\r\nThe network reorders packets 3 and 4. From the server's perspective, the client has violated the maximum.  In order to deal with this, the server will presumably need something more complicated than just \"if violated, kill\" -- maybe kill the connection if it *remains* violated for more than 1-2 RTT?"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/215",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5596,8 +5338,7 @@
     "updated_at": "2017-01-25T22:29:19Z",
     "closed_at": null,
     "body": "QUIC borrows the concept of stream reservation from HTTP/2.  However, there is a small difference between those state machines in that a reserved stream becomes open when data is sent on it.  HTTP/2 reserved streams become half-closed in this case (basically, only the server can send on a reserved stream).\r\n\r\nThe reason we have reservation is that we use stream numbers to identify requests at the HTTP mapping.  We reserve the stream number so that we can use its number in the PUSH_PROMISE frame.  That ties the PUSH_PROMISE - which contains a request - to the stream containing the response.  We need to create streams sequentially, so reservation allows us to \"create\" the stream in the right order and still be able to reference it.\r\n\r\nIn practice, however, this is a nuisance.  Reserved streams don't count toward concurrency limits and so they represent an unbounded state exposure.  Reserved streams might be created in order, but they can be used in any order.  Of course, this is a minor annoyance at best because there is always application state, and maybe priority information for these streams.\r\n\r\nI believe that QUIC has the opportunity to address this annoyance and in the process make the state machine simpler.  If QUIC removed the concept of stream reservation and instead required that application protocols create their correlators for use with talking about future streams, that would greatly simplify things.\r\n\r\nFor instance, we could remove the promised stream identifier from PUSH_PROMISE.  Instead, the stream that carries a push promise response could start with a frame that identified the PUSH_PROMISE by stream and number: \"this stream contains the response for promised request number P on stream N\".  Or, we could mint a new PUSH_PROMISE identifier that could be carried at the start of the stream."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/173",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5784,7 +5525,8 @@
     "updated_at": "2017-02-16T03:02:23Z",
     "closed_at": null,
     "body": "There's currently no behavior defined for the case of a connection ID collision.\r\nThe probability for a collision of two 64 bit numbers is *really small*, if connections IDs are chosen randomly. For example, for a server handling 100,000 concurrent connections, the collision probability is about 3*10^-10.\r\nIt might therefore be justified to completely neglect this issue.\r\n\r\nAccording to the current draft, if a client initiates a handshake and chooses an existing connection ID, the server would just silently discard those packets, because it already switched to an encrypted connection and will regard them as undecryptable."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/169",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7785,8 +7527,7 @@
     "updated_at": "2017-02-09T08:41:01Z",
     "closed_at": null,
     "body": "Shout out to @davidben and the recently adopted draft-davidben-tls-grease."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/109",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -8017,7 +7758,8 @@
     "updated_at": "2017-01-10T04:40:58Z",
     "closed_at": null,
     "body": "NumTimestamps is supposed to specify the \"total number of pairs following, including the First Timestamp.\"  If this is zero, presumably the Delta Largest Acked and First Timestamp fields are absent.  If this is one, presumably these fields are present, but no others are.\r\n\r\nThe *subsequent* fields then say they are repeated \"Num Timestamps\" times, which contradicts my logic above.  I'm guessing this should actually be \"Num Timestamps - 1\" times?"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/97",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -10009,8 +9751,7 @@
     "updated_at": "2017-02-01T10:20:04Z",
     "closed_at": null,
     "body": "If we consider cleartext << 0-RTT << 1-RTT, then we might be able to establish a clear rule regarding acknowledgments.\r\n\r\nThe desired rule is that an ACK MUST be sent with the same or higher protection.\r\n\r\nHowever: This rule would mean that a server is required to ACK 0-RTT data with 1-RTT keys.  That's tricky, because loss or delay of the server's first flight also delays the server's ACKs of 0-RTT data (the server can't use 0-RTT keys)."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/33",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -10184,7 +9925,8 @@
     "updated_at": "2017-01-25T02:03:15Z",
     "closed_at": null,
     "body": "The design for TLS 1.3 KeyUpdate ensures that a compromise of keys after a KeyUpdate has been completed doesn't result in a compromise of all prior keys on that connection.\r\n\r\nThis is not true in QUIC.  QUIC uses a TLS exporter to obtain its initial seed keys.  As long as the exporter secret remains viable (and it will by default in most TLS stacks), then it will be able to compromise any QUIC packet protection keys.\r\n\r\nWe can't close the TLS connection on stream 1 early because it is desirable to have new session tickets issued to clients over time, especially if a server wants to update keys in response to mobility or other significant events.\r\n\r\nWe could recommend that TLS stacks provide an API for destroying an exporter secret, but that would interact poorly with things like token binding which use the exporter secret constantly."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/23",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
