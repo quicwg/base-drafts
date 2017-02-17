@@ -52,7 +52,7 @@ normative:
         org: Mozilla
         role: editor
       -
-        ins: S. Turner, Ed.
+        ins: S. Turner
         name: Sean Turner
         org: sn3rd
         role: editor
@@ -475,8 +475,8 @@ The fields in a Regular packet past the Common Header are the following:
 
 * Packet Number: The lower 8, 16, 32, or 48 bits of the packet number, based on
   the PACKET_NUMBER_SIZE flag.  Each Regular packet is assigned a packet number
-  by the sender.  The first packet sent by an endpoint MUST have a packet number
-  of 1.
+  by the sender.  The first packet number is randomized (see
+  {{initial-packet-number}}.
 
 * Encrypted Payload: The remainder of a Regular packet is both authenticated and
   encrypted once packet protection keys are available.  {{QUIC-TLS}} describes
@@ -534,6 +534,17 @@ at any point in the connection.  In other words,
   value closest to the next expected packet number from that peer.
 
 (TODO: Clarify how packet number size can change mid-connection.)
+
+
+### Initial Packet Number
+
+The initial value for packet number MUST be a 31-bit random number.  That is,
+the value is selected from an uniform random distribution between 0 and 2^31-1.
+
+The first set of packets sent by an endpoint MUST include the low 32-bits of the
+packet number.  Once any packet has been acknowledged, subsequent packets can
+use a shorter packet number encoding.
+
 
 ### Frames and Frame Types {#frames}
 
@@ -920,11 +931,11 @@ A STREAM frame is shown below.
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|       [Data Length (16)]      |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                    Stream ID (8/16/24/32)                   ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                Offset (0/16/24/32/40/48/56/64)              ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                      [Data Length (16)]                       |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                        Stream Data (*)                      ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -933,14 +944,15 @@ A STREAM frame is shown below.
 
 The STREAM frame contains the following fields:
 
+* Data Length: An optional 16-bit unsigned number specifying the length of the
+  Stream Data field in this STREAM frame.  This field is present when the `D`
+  bit is set to 1.
+
 * Stream ID: A variable-sized unsigned ID unique to this stream.
 
 * Offset: A variable-sized unsigned number specifying the byte offset in the
   stream for the data in this STREAM frame.  The first byte in the stream has an
   offset of 0.
-
-* Data Length: An optional 16-bit unsigned number specifying the length of the
-  Stream Data field in this STREAM frame.
 
 * Stream Data: The bytes from the designated stream to be delivered.
 
@@ -1007,18 +1019,25 @@ An ACK frame is shown below.
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                  Largest Acked (8/16/32/48)                 ...
+|[Num Blocks(8)]|   NumTS (8)   |  Largest Acked (8/16/32/48) ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |        Ack Delay (16)         |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|[Num Blocks(8)]|             Ack Block Section (*)           ...
+|                     Ack Block Section (*)                   ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|   NumTS (8)   |             Timestamp Section (*)           ...
+|                     Timestamp Section (*)                   ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
 {: #ack-format title="ACK Frame Format"}
 
 The fields in the ACK frame are as follows:
+
+* Num Blocks (opt): An optional 8-bit unsigned value specifying the number of
+  additional ack blocks (besides the required First Ack Block) in this ACK
+  frame.  Only present if the 'N' flag bit is 1.
+
+* Num Timestamps: An unsigned 8-bit number specifying the total number of
+  <packet number, timestamp> pairs in the Timestamp Section.
 
 * Largest Acked: A variable-sized unsigned value representing the largest packet
   number the peer is acking in this packet (typically the largest that the peer
@@ -1027,15 +1046,8 @@ The fields in the ACK frame are as follows:
 * Ack Delay: Time from when the largest acked packet, as indicated in the
   Largest Acked field, was received by this peer to when this ack was sent.
 
-* Num Blocks (opt): An optional 8-bit unsigned value specifying the number of
-  additional ack blocks (besides the required First Ack Block) in this ACK
-  frame.  Only present if the 'N' flag bit is 1.
-
 * Ack Block Section: Contains one or more blocks of packet numbers which have
   been successfully received.  See {{ack-block-section}}.
-
-* Num Timestamps: An unsigned 8-bit number specifying the total number of
-  <packet number, timestamp> pairs in the Timestamp Section.
 
 * Timestamp Section: Contains zero or more timestamps reporting transit delay of
   received packets.  See {{timestamp-section}}.
@@ -1387,9 +1399,7 @@ bundle any set of frames in a packet.  All QUIC packets MUST contain a packet
 number and MAY contain one or more frames ({{frames}}).  Packet numbers MUST be
 unique within a connection and MUST NOT be reused within the same connection.
 Packet numbers MUST be assigned to packets in a strictly monotonically
-increasing order.  The initial packet number used, at both the client and the
-server, MUST be 0.  That is, the first packet in both directions of the
-connection MUST have a packet number of 0.
+increasing order.
 
 A sender SHOULD minimize per-packet bandwidth and computational costs by
 bundling as many frames as possible within a QUIC packet.  A sender MAY wait for
@@ -1532,8 +1542,8 @@ shown in the following figure and described below.
 
        app: application API signals to QUIC
        reserve_stream: causes a StreamID to be reserved for later use
-       read_close: causes stream to be half-closed without receiving a FIN
-       write_close: causes stream to be half-closed without sending a FIN
+       read_close: causes stream to be half-closed without a FIN
+       write_close: causes stream to be half-closed without a FIN
 ~~~
 {: #stream-lifecycle title="Lifecycle of a stream"}
 
@@ -1707,6 +1717,15 @@ Endpoints MUST NOT exceed the limit set by their peer.  An endpoint that
 receives a STREAM frame that causes its advertised concurrent stream limit to be
 exceeded MUST treat this as a stream error of type QUIC_TOO_MANY_OPEN_STREAMS
 ({{error-handling}}).
+
+All streams, including stream 1, count toward this limit.  Thus, a concurrent
+stream limit of 0 will cause a connection to be unusable.  Application protocols
+that use QUIC might require a certain minimum number of streams to function
+correctly.  If a peer advertises an MSPC value that is too small for the
+selected application protocol to function, an endpoint MUST terminate the
+connection with an error of type QUIC_TOO_MANY_OPEN_STREAMS
+({{error-handling}}).
+
 
 ## Sending and Receiving Data
 

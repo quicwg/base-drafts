@@ -10,6 +10,13 @@ endif
 
 latest::
 	@if grep -l ' $$' *.md; then ! echo "Trailing whitespace found"; fi
-	@wc -L draft-*.md | head -n -1 | while read l f; do \
-	  [ "$$l" -le 80 ] || ! echo "$$f is contains a line with $$l characters"; \
-	done
+	@err=0; for f in draft-*.md ; do \
+	  line=$$(cat "$$f" | wc -L); \
+	  if [ "$$line" -gt 80 ]; then \
+	    echo "$$f contains a line with >80 ($$line) characters"; err=1; \
+	  fi; \
+	  figure=$$(sed -e '/^~~~/,/^~~~/p;d' "$$f" | wc -L); \
+	  if [ "$$figure" -gt 69 ]; then \
+	    echo "$$f contains a figure with >69 ($$figure) characters"; err=1; \
+	  fi; \
+	done; [ "$$err" -eq 0 ]
