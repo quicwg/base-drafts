@@ -183,14 +183,14 @@ the HTTP framing layer. A QUIC receiver buffers and orders received STREAM
 frames, exposing the data contained within as a reliable byte stream to the
 application.
 
-QUIC reserves Stream 1 for crypto operations (the handshake, crypto config
-updates). Stream 3 is reserved for sending and receiving HTTP control frames,
+QUIC reserves Stream 0 for crypto operations (the handshake, crypto config
+updates). Stream 1 is reserved for sending and receiving HTTP control frames,
 and is analogous to HTTP/2's Stream 0.
 
 When HTTP headers and data are sent over QUIC, the QUIC layer handles most of
 the stream management. An HTTP request/response consumes a pair of streams: This
-means that the client's first request occurs on QUIC streams 5 and 7, the second
-on stream 9 and 11, and so on. The server's first push consumes streams 2 and 4.
+means that the client's first request occurs on QUIC streams 3 and 5, the second
+on stream 7 and 9, and so on. The server's first push consumes streams 2 and 4.
 This amounts to the second least-significant bit differentiating the two streams
 in a request.
 

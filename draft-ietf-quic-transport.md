@@ -206,10 +206,10 @@ QUIC relies on a combined crypto and transport handshake for setting up a secure
 transport connection.  QUIC connections are expected to commonly use 0-RTT
 handshakes, meaning that for most QUIC connections, data can be sent immediately
 following the client handshake packet, without waiting for a reply from the
-server.  QUIC provides a dedicated stream (Stream ID 1) to be used for
+server.  QUIC provides a dedicated stream (Stream ID 0) to be used for
 performing the crypto handshake and QUIC options negotiation.  The format of the
 QUIC options and parameters used during negotiation are described in this
-document, but the handshake protocol that runs on Stream ID 1 is described in
+document, but the handshake protocol that runs on Stream ID 0 is described in
 the accompanying crypto handshake draft {{QUIC-TLS}}.
 
 ## Stream Multiplexing
@@ -680,12 +680,12 @@ be revalidated once the cryptographic handshake has completed (see
 ## Crypto and Transport Handshake {#handshake}
 
 QUIC relies on a combined crypto and transport handshake to minimize connection
-establishment latency.  QUIC provides a dedicated stream (Stream ID 1) to be
+establishment latency.  QUIC provides a dedicated stream (Stream ID 0) to be
 used for performing a combined connection and security handshake (streams are
 described in detail in {{streams}}).  The crypto handshake protocol encapsulates
 and delivers QUIC's transport handshake to the peer on the crypto stream.  The
 first QUIC packet sent by client to the server MUST carry handshake information
-as data on Stream ID 1.
+as data on Stream ID 0.
 
 ### Transport Parameters and Options
 
@@ -1746,10 +1746,9 @@ as an ordered byte-stream.  Data received out of order MUST be buffered for
 later delivery, as long as it is not in violation of the receiver's flow control
 limits.
 
-The crypto handshake stream, Stream 1, MUST NOT be subject to congestion control
-or connection-level flow control, but MUST be subject to stream-level flow
-control. An endpoint MUST NOT send data on any other stream without consulting
-the congestion controller and the flow controller.
+The crypto handshake stream, Stream 0, MUST NOT be subject to congestion control
+or flow control. An endpoint MUST NOT send data on any other stream without
+consulting the congestion controller and the flow controller.
 
 Flow control is described in detail in {{flow-control}}, and congestion control
 is described in the companion document {{QUIC-RECOVERY}}.
@@ -2169,6 +2168,13 @@ thanks to all.
 
 > **RFC Editor's Note:**  Please remove this section prior to publication of a
 > final version of this document.
+
+## Since draft-ietf-quic-transport-01:
+
+- Moved crypto handshake to Stream 0
+
+- Removed ability to exclude application streams from connection-level
+  flow-control
 
 ## Since draft-ietf-quic-transport-00:
 
