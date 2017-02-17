@@ -1700,6 +1700,15 @@ Streams MUST be created or reserved in sequential order, but MAY be used in
 arbitrary order.  A QUIC endpoint MUST NOT reuse a StreamID on a given
 connection.
 
+All streams, including stream 1, count toward this limit.  Thus, a concurrent
+stream limit of 0 will cause a connection to be unusable.  Application protocols
+that use QUIC might require a certain minimum number of streams to function
+correctly.  If a peer advertises an MSPC value that is too small for the
+selected application protocol to function, an endpoint MUST terminate the
+connection with an error of type QUIC_TOO_MANY_OPEN_STREAMS
+({{error-handling}}).
+
+
 ## Stream Concurrency
 
 An endpoint can limit the number of concurrently active incoming streams by
@@ -1718,14 +1727,6 @@ the MSPC setting.
 Endpoints MUST NOT exceed the limit set by their peer.  An endpoint that
 receives a STREAM frame that causes its advertised concurrent stream limit to be
 exceeded MUST treat this as a stream error of type QUIC_TOO_MANY_OPEN_STREAMS
-({{error-handling}}).
-
-All streams, including stream 1, count toward this limit.  Thus, a concurrent
-stream limit of 0 will cause a connection to be unusable.  Application protocols
-that use QUIC might require a certain minimum number of streams to function
-correctly.  If a peer advertises an MSPC value that is too small for the
-selected application protocol to function, an endpoint MUST terminate the
-connection with an error of type QUIC_TOO_MANY_OPEN_STREAMS
 ({{error-handling}}).
 
 
@@ -1753,6 +1754,46 @@ the congestion controller and the flow controller.
 
 Flow control is described in detail in {{flow-control}}, and congestion control
 is described in the companion document {{QUIC-RECOVERY}}.
+
+
+## Stream Prioritization
+
+Stream multiplexing has a significant effect on application performance if
+resources allocated to streams are correctly prioritized.  Experience with other
+multiplexed protocols, such as HTTP/2 {{?RFC7540}}, shows that effective
+prioritization strategies have a significant positive impact on performance.
+
+QUIC does not provide frames for exchanging priotization information.  Instead
+it relies on receiving priority information from the application that uses QUIC.
+Protocols that use QUIC are able to define any prioritization scheme that suits
+their application semantics.  A protocol might define explicit messages for
+signaling priority, such as those defined in HTTP/2; it could define rules that
+allow an endpoint to determine priority based on context; or it could leave the
+determination to the application.
+
+A QUIC implementation SHOULD provide ways in which an application can indicate
+the relative priority of streams.  When deciding which streams to dedicate
+resources to, QUIC SHOULD use the information provided by the application.
+Failure to account for priority of streams can result in suboptimal performance.
+
+Stream priority is most relevant when deciding which stream data will be
+transmitted.  Often, there will be limits on what can be transmitted as a result
+of connection flow control or the current congestion controller state.
+
+Giving preference to the transmission of its own management frames ensures that
+the protocol functions efficiently.  That is, prioritizing frames other than
+STREAM frames ensures that loss recovery, congestion control, and flow control
+operate effectively.
+
+Stream 1 MUST be prioritized over other streams prior to the completion of the
+cryptographic handshake.  This includes the retransmission of the second flight
+of client handshake messages, that is, the TLS Finished and any client
+authentication messages.
+
+STREAM frames that are determined to be lost SHOULD be retransmitted before
+sending new data, unless application priorities indicate otherwise.
+Retransmitting lost STREAM frames can fill in gaps, which allows the peer to
+consume already received data and free up flow control window.
 
 
 # Flow Control {#flow-control}
