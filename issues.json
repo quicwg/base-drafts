@@ -1,5 +1,69 @@
 [
   {
+    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/312",
+    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
+    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/312/labels{/name}",
+    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/312/comments",
+    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/312/events",
+    "html_url": "https://github.com/quicwg/base-drafts/pull/312",
+    "id": 208442925,
+    "number": 312,
+    "title": "Adding an informative reference for MPTCP.",
+    "user": {
+      "login": "seanturner",
+      "id": 4488966,
+      "avatar_url": "https://avatars.githubusercontent.com/u/4488966?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/seanturner",
+      "html_url": "https://github.com/seanturner",
+      "followers_url": "https://api.github.com/users/seanturner/followers",
+      "following_url": "https://api.github.com/users/seanturner/following{/other_user}",
+      "gists_url": "https://api.github.com/users/seanturner/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/seanturner/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/seanturner/subscriptions",
+      "organizations_url": "https://api.github.com/users/seanturner/orgs",
+      "repos_url": "https://api.github.com/users/seanturner/repos",
+      "events_url": "https://api.github.com/users/seanturner/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/seanturner/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 481871311,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/editorial",
+        "name": "editorial",
+        "color": "0e8a16",
+        "default": false
+      },
+      {
+        "id": 481871399,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
+        "name": "transport",
+        "color": "fbca04",
+        "default": false
+      }
+    ],
+    "state": "open",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 0,
+    "created_at": "2017-02-17T13:33:05Z",
+    "updated_at": "2017-02-17T13:33:05Z",
+    "closed_at": null,
+    "pull_request": {
+      "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/312",
+      "html_url": "https://github.com/quicwg/base-drafts/pull/312",
+      "diff_url": "https://github.com/quicwg/base-drafts/pull/312.diff",
+      "patch_url": "https://github.com/quicwg/base-drafts/pull/312.patch"
+    },
+    "body": "Saving us a GENART comment about a missing reference for MPTCP."
+  },
+  {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/311",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
     "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/311/labels{/name}",
@@ -29,7 +93,20 @@
       "site_admin": false
     },
     "labels": [
-
+      {
+        "id": 481871361,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/design",
+        "name": "design",
+        "color": "1d76db",
+        "default": false
+      },
+      {
+        "id": 481871399,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
+        "name": "transport",
+        "color": "fbca04",
+        "default": false
+      }
     ],
     "state": "open",
     "locked": false,
@@ -40,7 +117,7 @@
     "milestone": null,
     "comments": 7,
     "created_at": "2017-02-15T13:00:20Z",
-    "updated_at": "2017-02-16T22:27:25Z",
+    "updated_at": "2017-02-17T09:00:05Z",
     "closed_at": null,
     "body": "Google-QUIC had an issue where post-handshake QUIC packets were being dropped, because a bit changed in the public flags, and a middlebox no longer identified it as QUIC.\r\n\r\nIn order to ensure the entire public flags byte is usable, I suggest we GREASE it by defining the entire space as valid.\r\n\r\nBuilding on Jana's proposal for the public header with a flags byte as a set of codepoints: https://gist.github.com/janaiyengar/b05acb3af17d6e938d25befc69c11eae\r\n\r\nThe goal is to provide a simple mathematical mapping from any value of the public flags onto a frame type.  \r\n\r\nMy suggestion is to lookup the frame type, and if it's not defined, mod the flags value by the number of frame types defined in that phase(short or long form) and pick the type with that index when ordering the frame types by value.\r\n\r\nIf an initial packet number is chosen randomly, and the connection ID is as well, greasing the flags byte and version (#112 and #296) covers everything that is not encrypted."
   },
@@ -1966,7 +2043,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/271.patch"
     },
     "body": "Fixes #127, but we may want to go further."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/269",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -2024,8 +2102,7 @@
     "updated_at": "2017-02-10T02:36:51Z",
     "closed_at": null,
     "body": "In Mirja's Management draft:\r\n[https://tools.ietf.org/html/draft-kuehlewind-quic-appman-00#section-3](url)\r\n\r\n> [EDITOR'S NOTE: the addition of a simple packet number echo would\r\n   allow passive RTT measurement and partial passive downstream loss/\r\n   reordering measurement.  Packet number echo can be sampled at the\r\n   echo-side (i.e. one-in-N packets or 1/p packets can carry an echo)\r\n   for efficiency tradeoff, if necessary.]\r\n\r\nI endorse this idea. Service providers are very interesting in measuring their users' quality of experience and this is one key thing we can expose to enable that. On the face of it, it seems that the privacy hit is marginal."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/267",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -2076,63 +2153,6 @@
     "updated_at": "2017-02-08T04:53:08Z",
     "closed_at": null,
     "body": "PR #106 added the following requirement on servers:\r\n\r\n> Servers MUST reject the first plaintext packet received from a client if it its total size is less than 1280 octets, to mitigate amplification attacks.\r\n\r\nHowever, this runs into an issue in the case where there are IP header extensions that the client knows about but the server doesn't.  If the client is aware of the IP header extensions and constructs a packet with a smaller payload in order to comply with our recommendation to create a packet of exactly 1280 octets, the server will receive a packet that it thinks is too small.\r\n\r\nI see a few options:\r\n1. loosen the enforcement constraint on the server\r\n2. specify that the server only enforce the constraint if it sees the entire IP packet\r\n3. specify the minimum size and its enforcement in terms of payload size (we could set different values here to allow for header extensions)"
-  },
-  {
-    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/266",
-    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
-    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/266/labels{/name}",
-    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/266/comments",
-    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/266/events",
-    "html_url": "https://github.com/quicwg/base-drafts/pull/266",
-    "id": 205977038,
-    "number": 266,
-    "title": "Add handshake retransmissions",
-    "user": {
-      "login": "ianswett",
-      "id": 20072817,
-      "avatar_url": "https://avatars.githubusercontent.com/u/20072817?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/ianswett",
-      "html_url": "https://github.com/ianswett",
-      "followers_url": "https://api.github.com/users/ianswett/followers",
-      "following_url": "https://api.github.com/users/ianswett/following{/other_user}",
-      "gists_url": "https://api.github.com/users/ianswett/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/ianswett/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/ianswett/subscriptions",
-      "organizations_url": "https://api.github.com/users/ianswett/orgs",
-      "repos_url": "https://api.github.com/users/ianswett/repos",
-      "events_url": "https://api.github.com/users/ianswett/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/ianswett/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "labels": [
-      {
-        "id": 481873040,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/recovery",
-        "name": "recovery",
-        "color": "fbca04",
-        "default": false
-      }
-    ],
-    "state": "open",
-    "locked": false,
-    "assignee": null,
-    "assignees": [
-
-    ],
-    "milestone": null,
-    "comments": 7,
-    "created_at": "2017-02-07T18:39:04Z",
-    "updated_at": "2017-02-17T03:55:38Z",
-    "closed_at": null,
-    "pull_request": {
-      "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/266",
-      "html_url": "https://github.com/quicwg/base-drafts/pull/266",
-      "diff_url": "https://github.com/quicwg/base-drafts/pull/266.diff",
-      "patch_url": "https://github.com/quicwg/base-drafts/pull/266.patch"
-    },
-    "body": "Add details about handshake retransmissions for issue #169 "
   },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/265",
@@ -8113,9 +8133,9 @@
 
     ],
     "milestone": null,
-    "comments": 3,
+    "comments": 4,
     "created_at": "2016-12-19T04:12:29Z",
-    "updated_at": "2017-02-17T04:18:45Z",
+    "updated_at": "2017-02-17T13:41:56Z",
     "closed_at": null,
     "pull_request": {
       "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/92",
