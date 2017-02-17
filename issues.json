@@ -1,5 +1,178 @@
 [
   {
+    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/315",
+    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
+    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/315/labels{/name}",
+    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/315/comments",
+    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/315/events",
+    "html_url": "https://github.com/quicwg/base-drafts/pull/315",
+    "id": 208467128,
+    "number": 315,
+    "title": "Adding an informative reference for randomness requirements.",
+    "user": {
+      "login": "seanturner",
+      "id": 4488966,
+      "avatar_url": "https://avatars.githubusercontent.com/u/4488966?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/seanturner",
+      "html_url": "https://github.com/seanturner",
+      "followers_url": "https://api.github.com/users/seanturner/followers",
+      "following_url": "https://api.github.com/users/seanturner/following{/other_user}",
+      "gists_url": "https://api.github.com/users/seanturner/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/seanturner/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/seanturner/subscriptions",
+      "organizations_url": "https://api.github.com/users/seanturner/orgs",
+      "repos_url": "https://api.github.com/users/seanturner/repos",
+      "events_url": "https://api.github.com/users/seanturner/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/seanturner/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 481871311,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/editorial",
+        "name": "editorial",
+        "color": "0e8a16",
+        "default": false
+      },
+      {
+        "id": 481871399,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
+        "name": "transport",
+        "color": "fbca04",
+        "default": false
+      }
+    ],
+    "state": "open",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 0,
+    "created_at": "2017-02-17T15:02:59Z",
+    "updated_at": "2017-02-17T15:02:59Z",
+    "closed_at": null,
+    "pull_request": {
+      "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/315",
+      "html_url": "https://github.com/quicwg/base-drafts/pull/315",
+      "diff_url": "https://github.com/quicwg/base-drafts/pull/315.diff",
+      "patch_url": "https://github.com/quicwg/base-drafts/pull/315.patch"
+    },
+    "body": "Say there word \"random\" add a reference to RFC4086/BCP106."
+  },
+  {
+    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/314",
+    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
+    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/314/labels{/name}",
+    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/314/comments",
+    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/314/events",
+    "html_url": "https://github.com/quicwg/base-drafts/issues/314",
+    "id": 208464140,
+    "number": 314,
+    "title": "Rephrase \"under crypto cover\"",
+    "user": {
+      "login": "seanturner",
+      "id": 4488966,
+      "avatar_url": "https://avatars.githubusercontent.com/u/4488966?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/seanturner",
+      "html_url": "https://github.com/seanturner",
+      "followers_url": "https://api.github.com/users/seanturner/followers",
+      "following_url": "https://api.github.com/users/seanturner/following{/other_user}",
+      "gists_url": "https://api.github.com/users/seanturner/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/seanturner/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/seanturner/subscriptions",
+      "organizations_url": "https://api.github.com/users/seanturner/orgs",
+      "repos_url": "https://api.github.com/users/seanturner/repos",
+      "events_url": "https://api.github.com/users/seanturner/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/seanturner/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 481871311,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/editorial",
+        "name": "editorial",
+        "color": "0e8a16",
+        "default": false
+      },
+      {
+        "id": 481871399,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
+        "name": "transport",
+        "color": "fbca04",
+        "default": false
+      }
+    ],
+    "state": "open",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 0,
+    "created_at": "2017-02-17T14:51:48Z",
+    "updated_at": "2017-02-17T14:53:33Z",
+    "closed_at": null,
+    "body": "For some of the non-security folks, I could see that the phase \"under crypto cover\" might not make sense (from s3.5:\r\n\r\n    Some early handshake packets, such as the Version Negotiation packet, are not encrypted, but information sent in these unencrypted handshake packets is later verified under crypto cover.\r\n\r\nMaybe:\r\n\r\n  Some early handshake packets, such as the Version Negotiation packet, are not encrypted, but information sent in these unencrypted handshake packets are later verified as part of the cryptographic processing."
+  },
+  {
+    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/313",
+    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
+    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/313/labels{/name}",
+    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/313/comments",
+    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/313/events",
+    "html_url": "https://github.com/quicwg/base-drafts/pull/313",
+    "id": 208451513,
+    "number": 313,
+    "title": "Fix recovery formatting",
+    "user": {
+      "login": "ianswett",
+      "id": 20072817,
+      "avatar_url": "https://avatars.githubusercontent.com/u/20072817?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/ianswett",
+      "html_url": "https://github.com/ianswett",
+      "followers_url": "https://api.github.com/users/ianswett/followers",
+      "following_url": "https://api.github.com/users/ianswett/following{/other_user}",
+      "gists_url": "https://api.github.com/users/ianswett/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/ianswett/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/ianswett/subscriptions",
+      "organizations_url": "https://api.github.com/users/ianswett/orgs",
+      "repos_url": "https://api.github.com/users/ianswett/repos",
+      "events_url": "https://api.github.com/users/ianswett/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/ianswett/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+
+    ],
+    "state": "open",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 0,
+    "created_at": "2017-02-17T14:05:56Z",
+    "updated_at": "2017-02-17T14:05:56Z",
+    "closed_at": null,
+    "pull_request": {
+      "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/313",
+      "html_url": "https://github.com/quicwg/base-drafts/pull/313",
+      "diff_url": "https://github.com/quicwg/base-drafts/pull/313.diff",
+      "patch_url": "https://github.com/quicwg/base-drafts/pull/313.patch"
+    },
+    "body": "* Replace uses of encrypted with protected.\r\n* Constistenly use * instead of x everywhere for multiplication\r\n* Remove trailing ;\r\n* Convert the constants and variables into Kramdown definition lists."
+  },
+  {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/312",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
     "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/312/labels{/name}",
@@ -838,7 +1011,7 @@
     "milestone": null,
     "comments": 2,
     "created_at": "2017-02-14T01:09:37Z",
-    "updated_at": "2017-02-17T08:53:01Z",
+    "updated_at": "2017-02-17T14:10:58Z",
     "closed_at": null,
     "pull_request": {
       "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/299",
@@ -1835,7 +2008,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/274.patch"
     },
     "body": "Fixes #176, but I'm hoping we can find a cleaner way to do this."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/273",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -2043,8 +2217,7 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/271.patch"
     },
     "body": "Fixes #127, but we may want to go further."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/269",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3645,7 +3818,8 @@
     "updated_at": "2017-01-25T00:59:17Z",
     "closed_at": null,
     "body": "We've assumed that this is the case, but we really need to write it down."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/222",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3819,8 +3993,7 @@
     "updated_at": "2017-01-24T23:45:10Z",
     "closed_at": null,
     "body": "It may be desirable for the client to increase the flow control window mid-connection (it observes that client actually has very high BDP; it decides based on application request by peer that it will send a lot of data; it decides that it trusts the peer for some reason; potentially other options).  Currently, we can bump connection flow control window without an issue, but any new individual streams are stuck with whatever was initially negotiated.  We may want to add a mechanism to increase initial stream flow control window mid-connection."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/217",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5478,7 +5651,8 @@
     "updated_at": "2017-02-08T00:46:07Z",
     "closed_at": null,
     "body": "QUIC borrows the HTTP/2 state machine, or tries to replicate it as much as it can.  Part of that replication is the idea that a stream is bidirectional.  The state related to outgoing data and the state related to inbound data are tied.\r\n\r\n#174 suggests a simplification that could open up a more dramatic simplification: independent state for each direction.  #171 moves in that direction also.\r\n\r\nThe state machine that results from that is dramatically simpler: idle -> open -> closed.  That is, before packets, packets and after packets.\r\n\r\nThe consequence for the HTTP mapping is largely that it needs a different method for correlating request and response.\r\n\r\n## Correlating request and response\r\n\r\nCurrently, request and response are correlated by matching the stream identifier.  However, unidirectional streams would allow for cases where streams are not created symmetrically.  For instance, server push would only require streams from the server.  Similarly, the server would not be obligated to respond to requests in the order in which they were received (if at all, since it could reset request streams).\r\n\r\nThat implies that this would add a requirement for the server to identify which request a given stream is answering.  This is an extension of the requirement in #174, which only required that the server identify a push promise (actually, it's less onerous, because you only have one request per stream).\r\n\r\nI can imagine an arrangement where a stream containing headers identifies the stream containing the request headers from the client.  Then the stream containing the body identifies the stream that contained the headers.\r\n\r\n## Saving stream identifiers\r\n\r\nThis is a minor point, though it could be relevant for very long-lived connections.\r\n\r\nQUIC currently insists on a strictly monotonically increasing stream identifier: stream N is followed by stream N+2 always, no skipping of streams is permitted.  Aside from wasting every other stream identifier, other streams are wasted by the mapping. \r\n\r\nGET requests don't include a body, but nonetheless require that the client send a HEADERS on stream N, then a FIN on stream N+2.  Including a reference to the initiating stream at the start of the body of a message would use some octets, but potentially fewer than would be used otherwise (particularly if the reference was a varlen encoding of the difference in stream numbers, which would rarely be anything other than 1).\r\n\r\nObviously, this is an optimization for the case where there are no bodies, but that is a case where the optimization is particularly valuable.  Making more requests (which more frequently have no bodies) during the early stages of a connection is critical to performance."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/174",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5665,8 +5839,7 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/171.patch"
     },
     "body": "A rough draft of a fix for #165.  Key changes:\r\n\r\n- RST_STREAM kills only the sender's direction, not both.  (Retains the existing requirement to respond with RST_STREAM with another RST_STREAM if the stream isn't already closed, which eventually leads to the same result.)\r\n- New REQUEST_RST frame allows peer to solicit a RST_STREAM; text states that this reflects an app recv_close, and that received data is being discarded\r\n\r\nThis should solve the scenarios outlined in #165; a server can ask a client to RST_STREAM its own direction after having sent an early response.  Feedback welcome, of course -- please point out anything I've missed."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/170",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7624,7 +7797,8 @@
     "updated_at": "2017-02-14T06:54:34Z",
     "closed_at": null,
     "body": "When talking about priority in #104, the question arose.  Say you have two streams and a STREAM frame to send on each, but only enough capacity to send one (due to flow control, congestion, or whatever).  Prioritization information helps us answer this question.  But what if the message is a retransmission of a packet that was determined to be lost.\r\n\r\nI think that the right answer has to do with tracking how long since a packet was originally given to QUIC to send.  And that we don't necessarily need to concern ourselves with whether it was sent previously or not - that will shake out in time anyway.  If it was sent before, it was obviously high enough priority to be worth sending once already.\r\n\r\nThat said, the value of repairing a gap in a stream is pretty high in terms of the ration of bytes delivered to bytes transmitted, so that might have some say."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/112",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7898,8 +8072,7 @@
     "updated_at": "2017-01-25T06:51:02Z",
     "closed_at": null,
     "body": "The way HTTP/2 Priority is generally implemented is to keep a minimal amount in the TLS pipeline / TCP send buffer, retaining as much flexibility as possible to insert frames from high-priority streams ahead of those from lower-priority streams if they become available before the low-priority frames have been \"committed\".  Once data has been encrypted or sent to TCP, it must be sent even if higher-priority data has become available.\r\n\r\nIf the QUIC transport layer has no notion of priority, HTTP may have to do the same on each stream.  It might be preferable to provide the data for each stream into the transport as it becomes available, since the transport is already performing the framing functionality, but that would require the transport to take priority into account when deciding which stream's data to put on the wire next.\r\n\r\nThis need not be a wire format change (HTTP can continue to communicate priority at its layer), but should perhaps be noted as a useful property of an implementation and part of the defined interface with the application layer."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/102",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -9855,7 +10028,8 @@
     "updated_at": "2017-02-14T03:53:20Z",
     "closed_at": null,
     "body": "We might be able to randomize the starting packet number and thereby avoid having it as a point of ossification.  It also increases the entropy for an off-path attacker who wishes to guess connection IDs because now they have to guess packet number as well."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/34",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -10065,8 +10239,7 @@
     "updated_at": "2016-11-28T05:20:46Z",
     "closed_at": null,
     "body": "From @janaiyengar:\r\n\r\n> We need rules using\r\n> packet numbers, such that an old packet with a key phase matching the\r\n> current expected should not cause the connection to blow up.\r\n\r\nWith multiple key updates, there is a possibility that packets from epoch n could collide with packets that were sent in epoch n+2.  This is unlikely, but still something implementations need to handle.  It's not a problem as such unless you insist that connections blow up on decryption failure (which we shouldn't, that's a DoS vector).\r\n\r\nIt's also not a really bad problem because we have packet numbers that should identify the reordered packet as belonging to the older epoch.  We know what the keys were at that time (if we chose to retain them), so it's not even the case that we need to discard the packet every time.\r\n\r\n\r\n"
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/25",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
