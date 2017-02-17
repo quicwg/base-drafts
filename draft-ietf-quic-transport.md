@@ -499,41 +499,41 @@ The fields in a Regular packet past the Common Header are the following:
 ~~~
 {: #regular-packet-frames title="Contents of Encrypted Payload"}
 
-### Packet Number Compression and Reconstruction
 
-The complete packet number is a 64-bit unsigned number and is used as part of a
-cryptographic nonce for packet encryption.  To reduce the number of bits
-required to represent the packet number over the wire, at most 48 bits of the
-packet number are transmitted over the wire.  A QUIC endpoint MUST NOT reuse a
-complete packet number within the same connection (that is, under the same
-cryptographic keys).  If the total number of packets transmitted in this
-connection reaches 2^64 - 1, the sender MUST close the connection by sending a
+## Packet Numbers
+
+The packet number is a 64-bit unsigned number and is used as part of a
+cryptographic nonce for packet encryption.  Each endpoint maintains a separate
+packet number for sending and receiving.  The packet number for sending MUST
+increase by at least one after sending any packet.
+
+A QUIC endpoint MUST NOT reuse a packet number within the same connection (that
+is, under the same cryptographic keys).  If the packet number for sending
+reaches 2^64 - 1, the sender MUST close the connection by sending a
 CONNECTION_CLOSE frame with the error code QUIC_SEQUENCE_NUMBER_LIMIT_REACHED
-(connection termination is described in {{termination}}.)  For unambiguous
-reconstruction of the complete packet number by a receiver from the lower-order
-bits, a QUIC sender MUST NOT have more than 2^(packet_number_size - 2) in flight
-at any point in the connection.  In other words,
+(connection termination is described in {{termination}}.)
 
-* If a sender sets PACKET_NUMBER_SIZE bits to 11, it MUST NOT have more than
-  (2^46) packets in flight.
+To reduce the number of bits required to represent the packet number over the
+wire, only the least significant bits of the packet number are transmitted over
+the wire, up to 48 bits.  The actual packet number for each packet is
+reconstructed at the receiver based on the largest packet number received on a
+successfully authenticated packet.
 
-* If a sender sets PACKET_NUMBER_SIZE bits to 10, it MUST NOT have more than
-  (2^30) packets in flight.
+A packet number is decoded by finding the packet number value that is closest to
+the next expected packet.  The next expected packet is the highest received
+packet number plus one.  For example, if the highest successfully authenticated
+packet had a packet number of 0xaa82f30e, then a packet containing a 16-bit
+value of 0x1f94 will be decoded as 0xaa831f94.
 
-* If a sender sets PACKET_NUMBER_SIZE bits to 01, it MUST NOT have more than
-  (2^14) packets in flight.
-
-* If a sender sets PACKET_NUMBER_SIZE bits to 00, it MUST NOT have more than
-  (2^6) packets in flight.
-
-  DISCUSS: Should the receiver be required to enforce this rule that the sender
-  MUST NOT exceed the inflight limit?  Specifically, should the receiver drop
-  packets that are received outside this window?
-
-  Any truncated packet number received from a peer MUST be reconstructed as the
-  value closest to the next expected packet number from that peer.
-
-(TODO: Clarify how packet number size can change mid-connection.)
+To enable unambiguous reconstruction of the packet number, an endpoint MUST use
+a packet number size that is able to represent 4 times more packet numbers than
+the endpoint has currently outstanding.  A packet is outstanding if it sent but
+has neither been acknowledged nor been marked as lost (see {{QUIC-RECOVERY}}).
+As a result, the size of the packet number encoding is at least two more bits
+than the base 2 logarithm of the number of outstanding packets, rounded up.  For
+example, if an endpoint has 14,389 packets outstanding, the next packet uses a
+16-bit or larger packet number encoding; a 32-bit packet number is needed if
+there are 20,000 packets outstanding.
 
 
 ### Initial Packet Number
@@ -546,7 +546,7 @@ packet number.  Once any packet has been acknowledged, subsequent packets can
 use a shorter packet number encoding.
 
 
-### Frames and Frame Types {#frames}
+## Frames and Frame Types {#frames}
 
 A Regular packet MUST contain at least one frame, and MAY contain multiple
 frames and multiple frame types.  Frames MUST fit within a single QUIC packet
@@ -657,10 +657,11 @@ that the client selected.
 
 When the client receives a Version Negotiation packet from the server, it should
 select an acceptable protocol version.  If the server lists an acceptable
-version, the client selects that version and resends all packets using that
-version. The resent packets MUST use new packet numbers.  These packets MUST
-continue to have the VERSION flag set and MUST include the new negotiated
-protocol version.
+version, the client selects that version and reattempts to created a connection
+using that version.  Though the contents of a packet might not change in
+response to version negotiation, a client MUST increase the packet number it
+uses on every packet it sends.  Packets MUST continue to have the VERSION flag
+set and MUST include the new negotiated protocol version.
 
 The client MUST set the VERSION flag and include its selected version on all
 packets until it has 1-RTT keys and it has received a packet from the server
@@ -1394,12 +1395,7 @@ of the connection if all pairs are affected. In this case, an endpoint SHOULD
 send a Public Reset packet to indicate the failure. The application SHOULD
 attempt to use TLS over TCP instead.
 
-A sender bundles one or more frames in a Regular QUIC packet.  A sender MAY
-bundle any set of frames in a packet.  All QUIC packets MUST contain a packet
-number and MAY contain one or more frames ({{frames}}).  Packet numbers MUST be
-unique within a connection and MUST NOT be reused within the same connection.
-Packet numbers MUST be assigned to packets in a strictly monotonically
-increasing order.
+A sender bundles one or more frames in a Regular QUIC packet (see {{frames}}).
 
 A sender SHOULD minimize per-packet bandwidth and computational costs by
 bundling as many frames as possible within a QUIC packet.  A sender MAY wait for
