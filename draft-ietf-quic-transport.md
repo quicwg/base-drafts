@@ -704,7 +704,7 @@ protocol to be transmitted to the peer.
 (TODO: Describe format with example)
 
 QUIC encodes the transport parameters and options as tag-value pairs, all as
-7-bit ASCII strings.  QUIC parameter tags are listed below.
+7-bit ASCII strings {{!RFC0020}}.  QUIC parameter tags are listed below.
 
 #### Required Transport Parameters {#required-transport-parameters}
 
