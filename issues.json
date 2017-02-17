@@ -428,99 +428,6 @@
     "body": "> skipping packet numbers between 1 and 255 effectively provides up to 8 bits of efficient entropy on  demand, which should be adequate protection against most opportunistic acknowledgement attacks.\r\n\r\nAside from the odd phrasing, I think that this is incorrect.  Aside from the obvious point that 1-255 is only  7.994 bits of entropy, you also have to take into account the probability that a sender chooses to skip (a probability of 2^-8 would give the answer here).  Add to that the fact that any entropy accumulates with every packet sent.  Choosing to send or withhold each packet number could add up to a bit of entropy over time, so the difficulty in guessing could be higher over time.\r\n\r\nNo matter what strategy it's always safe for an attacker to guess high, so the amount of effective entropy against an attacker is probably less than claimed.  Of course, guessing high has an effect on congestion control, because that is marked by the sender as loss.  That could be as effective in mitigating the optimistic acknowledgment attack as the gap itself.\r\n\r\nThen there is real packet loss.  If you randomly decide to skip 255 numbers, then real packet loss on the packet after the gap makes it difficult to acknowledge (you have to send two ACK frames if there is a gap >255).  Burst loss makes that even more likely.\r\n\r\nIn any case, I'd recommend removing any claim about entropy.  I also recommend removing any mention of specific numbers.  Skipping more packets is fine, but it means that you run the packet number space down faster and you get less efficiency in ACK packets."
   },
   {
-    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/304",
-    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
-    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/304/labels{/name}",
-    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/304/comments",
-    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/304/events",
-    "html_url": "https://github.com/quicwg/base-drafts/pull/304",
-    "id": 207675238,
-    "number": 304,
-    "title": "Add a check for excessive line length in figures",
-    "user": {
-      "login": "martinthomson",
-      "id": 67641,
-      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/martinthomson",
-      "html_url": "https://github.com/martinthomson",
-      "followers_url": "https://api.github.com/users/martinthomson/followers",
-      "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
-      "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
-      "organizations_url": "https://api.github.com/users/martinthomson/orgs",
-      "repos_url": "https://api.github.com/users/martinthomson/repos",
-      "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/martinthomson/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "labels": [
-      {
-        "id": 481871311,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/editorial",
-        "name": "editorial",
-        "color": "0e8a16",
-        "default": false
-      }
-    ],
-    "state": "open",
-    "locked": false,
-    "assignee": {
-      "login": "ianswett",
-      "id": 20072817,
-      "avatar_url": "https://avatars.githubusercontent.com/u/20072817?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/ianswett",
-      "html_url": "https://github.com/ianswett",
-      "followers_url": "https://api.github.com/users/ianswett/followers",
-      "following_url": "https://api.github.com/users/ianswett/following{/other_user}",
-      "gists_url": "https://api.github.com/users/ianswett/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/ianswett/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/ianswett/subscriptions",
-      "organizations_url": "https://api.github.com/users/ianswett/orgs",
-      "repos_url": "https://api.github.com/users/ianswett/repos",
-      "events_url": "https://api.github.com/users/ianswett/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/ianswett/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "assignees": [
-      {
-        "login": "ianswett",
-        "id": 20072817,
-        "avatar_url": "https://avatars.githubusercontent.com/u/20072817?v=3",
-        "gravatar_id": "",
-        "url": "https://api.github.com/users/ianswett",
-        "html_url": "https://github.com/ianswett",
-        "followers_url": "https://api.github.com/users/ianswett/followers",
-        "following_url": "https://api.github.com/users/ianswett/following{/other_user}",
-        "gists_url": "https://api.github.com/users/ianswett/gists{/gist_id}",
-        "starred_url": "https://api.github.com/users/ianswett/starred{/owner}{/repo}",
-        "subscriptions_url": "https://api.github.com/users/ianswett/subscriptions",
-        "organizations_url": "https://api.github.com/users/ianswett/orgs",
-        "repos_url": "https://api.github.com/users/ianswett/repos",
-        "events_url": "https://api.github.com/users/ianswett/events{/privacy}",
-        "received_events_url": "https://api.github.com/users/ianswett/received_events",
-        "type": "User",
-        "site_admin": false
-      }
-    ],
-    "milestone": null,
-    "comments": 0,
-    "created_at": "2017-02-15T00:18:50Z",
-    "updated_at": "2017-02-16T15:43:53Z",
-    "closed_at": null,
-    "pull_request": {
-      "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/304",
-      "html_url": "https://github.com/quicwg/base-drafts/pull/304",
-      "diff_url": "https://github.com/quicwg/base-drafts/pull/304.diff",
-      "patch_url": "https://github.com/quicwg/base-drafts/pull/304.patch"
-    },
-    "body": "@ianswett, this is for your benefit largely.  It can't fix the problems it finds, but it should help you identify them early.  Can you double-check that my refactoring of your algorithm is correct?"
-  },
-  {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/303",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
     "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/303/labels{/name}",
@@ -2128,8 +2035,7 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/274.patch"
     },
     "body": "Fixes #176, but I'm hoping we can find a cleaner way to do this."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/273",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -2186,7 +2092,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/273.patch"
     },
     "body": "Fixes #173, though I would like to ultimately get rid of the Sequence number altogether."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/272",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3937,8 +3844,7 @@
     "updated_at": "2017-02-03T03:51:15Z",
     "closed_at": null,
     "body": "QUIC AEAD usage in quic-tls draft currently says \"associated data, A,  for the AEAD is an empty sequence.\" The current rationale is that the public header fields do not need to be authenticated since the connection ID, flags, packet number, and version number are all effectively covered by  encryption/decryption. \r\n\r\nWe have at least 1 public flags field that is as yet unused. Since we do not know its use yet, we may want to authenticate the header to future-proof."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/224",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3996,7 +3902,8 @@
     "updated_at": "2017-01-25T00:59:17Z",
     "closed_at": null,
     "body": "We've assumed that this is the case, but we really need to write it down."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/222",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5770,8 +5677,7 @@
     "updated_at": "2017-01-23T21:31:40Z",
     "closed_at": null,
     "body": "@martinthomson noticed an issue in the QPACK draft that's equally true with HPACK in -01:\r\n\r\nIf you RST_STREAM a stream with a missing QUIC STREAM frame that contains an HPACK frame (HEADERS, PUSH_PROMISE), that missing frame never gets retransmitted.  That, in turn, means that no future HPACK frame can be interpreted, ever, because you're missing part of your history.\r\n\r\nOops.\r\n\r\nMy first inclination is to change the HTTP draft to say that message control streams MUST NOT be reset.  If you don't want the message body, reset the data stream, but you MUST read the message headers.  If, for some reason, you cannot do so, then terminate the connection.\r\n\r\nAnyone see a barrier to that (other than the price of ginormous headers)?"
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/175",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5829,7 +5735,8 @@
     "updated_at": "2017-02-08T00:46:07Z",
     "closed_at": null,
     "body": "QUIC borrows the HTTP/2 state machine, or tries to replicate it as much as it can.  Part of that replication is the idea that a stream is bidirectional.  The state related to outgoing data and the state related to inbound data are tied.\r\n\r\n#174 suggests a simplification that could open up a more dramatic simplification: independent state for each direction.  #171 moves in that direction also.\r\n\r\nThe state machine that results from that is dramatically simpler: idle -> open -> closed.  That is, before packets, packets and after packets.\r\n\r\nThe consequence for the HTTP mapping is largely that it needs a different method for correlating request and response.\r\n\r\n## Correlating request and response\r\n\r\nCurrently, request and response are correlated by matching the stream identifier.  However, unidirectional streams would allow for cases where streams are not created symmetrically.  For instance, server push would only require streams from the server.  Similarly, the server would not be obligated to respond to requests in the order in which they were received (if at all, since it could reset request streams).\r\n\r\nThat implies that this would add a requirement for the server to identify which request a given stream is answering.  This is an extension of the requirement in #174, which only required that the server identify a push promise (actually, it's less onerous, because you only have one request per stream).\r\n\r\nI can imagine an arrangement where a stream containing headers identifies the stream containing the request headers from the client.  Then the stream containing the body identifies the stream that contained the headers.\r\n\r\n## Saving stream identifiers\r\n\r\nThis is a minor point, though it could be relevant for very long-lived connections.\r\n\r\nQUIC currently insists on a strictly monotonically increasing stream identifier: stream N is followed by stream N+2 always, no skipping of streams is permitted.  Aside from wasting every other stream identifier, other streams are wasted by the mapping. \r\n\r\nGET requests don't include a body, but nonetheless require that the client send a HEADERS on stream N, then a FIN on stream N+2.  Including a reference to the initiating stream at the start of the body of a message would use some octets, but potentially fewer than would be used otherwise (particularly if the reference was a varlen encoding of the difference in stream numbers, which would rarely be anything other than 1).\r\n\r\nObviously, this is an optimization for the case where there are no bodies, but that is a case where the optimization is particularly valuable.  Making more requests (which more frequently have no bodies) during the early stages of a connection is critical to performance."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/174",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7873,8 +7780,7 @@
     "updated_at": "2017-01-25T08:02:05Z",
     "closed_at": null,
     "body": "There are a bunch of things that need to be addressed here.  What is likely to happen is that this issue will turn into many smaller issues and this will eventually get closed as those become better understood.\r\n\r\n1. Reasons migration might be needed (mobility, NAT rebinding, routing changes, etc...)\r\n2. Routing considerations when migration occurs\r\n3. Privacy implications of linkability across migrations\r\n4. Verifying consent to send on a new path\r\n5. Establishing any desired middlebox state along the path\r\n"
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/114",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7975,7 +7881,8 @@
     "updated_at": "2017-02-14T06:54:34Z",
     "closed_at": null,
     "body": "When talking about priority in #104, the question arose.  Say you have two streams and a STREAM frame to send on each, but only enough capacity to send one (due to flow control, congestion, or whatever).  Prioritization information helps us answer this question.  But what if the message is a retransmission of a packet that was determined to be lost.\r\n\r\nI think that the right answer has to do with tracking how long since a packet was originally given to QUIC to send.  And that we don't necessarily need to concern ourselves with whether it was sent previously or not - that will shake out in time anyway.  If it was sent before, it was obviously high enough priority to be worth sending once already.\r\n\r\nThat said, the value of repairing a gap in a stream is pretty high in terms of the ration of bytes delivered to bytes transmitted, so that might have some say."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/112",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -10104,8 +10011,7 @@
     "updated_at": "2016-11-28T06:00:20Z",
     "closed_at": null,
     "body": "The attacker needs to be on path to create a valid-looking unprotected packet.  \r\n\r\nAlso, randomization doesn't help much if the attacker is on-path."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/35",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -10206,7 +10112,8 @@
     "updated_at": "2017-02-14T03:53:20Z",
     "closed_at": null,
     "body": "We might be able to randomize the starting packet number and thereby avoid having it as a point of ossification.  It also increases the entropy for an off-path attacker who wishes to guess connection IDs because now they have to guess packet number as well."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/34",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
