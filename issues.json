@@ -1,5 +1,63 @@
 [
   {
+    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/323",
+    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
+    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/323/labels{/name}",
+    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/323/comments",
+    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/323/events",
+    "html_url": "https://github.com/quicwg/base-drafts/issues/323",
+    "id": 208569921,
+    "number": 323,
+    "title": "Allow smaller packet number representations",
+    "user": {
+      "login": "martinthomson",
+      "id": 67641,
+      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/martinthomson",
+      "html_url": "https://github.com/martinthomson",
+      "followers_url": "https://api.github.com/users/martinthomson/followers",
+      "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
+      "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
+      "organizations_url": "https://api.github.com/users/martinthomson/orgs",
+      "repos_url": "https://api.github.com/users/martinthomson/repos",
+      "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/martinthomson/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 481871361,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/design",
+        "name": "design",
+        "color": "1d76db",
+        "default": false
+      },
+      {
+        "id": 481871399,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
+        "name": "transport",
+        "color": "fbca04",
+        "default": false
+      }
+    ],
+    "state": "open",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 0,
+    "created_at": "2017-02-17T22:02:06Z",
+    "updated_at": "2017-02-17T22:02:06Z",
+    "closed_at": null,
+    "body": "The text currently mandates (MUST!) a 4 times safety margin against reordering when picking the packet number size.  This is purely a safety margin feature, so mandating a value isn't justified.\r\n\r\nAn implementation could, though perhaps it is unwise, use a much smaller packet number than this.  The risk is that there is reordering greater than 2^size and the packets are delivered but cannot be recovered at the receiver.  That's terrible, it will trigger loss recovery and send bad signals.  However, the protocol doesn't actually break.\r\n\r\nAt a minimum, we should make this a recommendation.  Setting a mandatory floor on the value might be reasonable, but I'd be reluctant to do that unless it was pretty low, or if the value were different for different packet number sizes (smaller margins are probably more justifiable for larger packet number encodings).\r\n\r\nIdeally, we should science this and try to measure probabilities of reordering.  Ideally reordering probability as a function of outstanding packets."
+  },
+  {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/322",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
     "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/322/labels{/name}",
@@ -126,128 +184,6 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/321.patch"
     },
     "body": ""
-  },
-  {
-    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/320",
-    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
-    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/320/labels{/name}",
-    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/320/comments",
-    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/320/events",
-    "html_url": "https://github.com/quicwg/base-drafts/pull/320",
-    "id": 208555616,
-    "number": 320,
-    "title": "Some minor editorial tweaks for s6.2.1.2.",
-    "user": {
-      "login": "seanturner",
-      "id": 4488966,
-      "avatar_url": "https://avatars.githubusercontent.com/u/4488966?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/seanturner",
-      "html_url": "https://github.com/seanturner",
-      "followers_url": "https://api.github.com/users/seanturner/followers",
-      "following_url": "https://api.github.com/users/seanturner/following{/other_user}",
-      "gists_url": "https://api.github.com/users/seanturner/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/seanturner/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/seanturner/subscriptions",
-      "organizations_url": "https://api.github.com/users/seanturner/orgs",
-      "repos_url": "https://api.github.com/users/seanturner/repos",
-      "events_url": "https://api.github.com/users/seanturner/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/seanturner/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "labels": [
-      {
-        "id": 481871311,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/editorial",
-        "name": "editorial",
-        "color": "0e8a16",
-        "default": false
-      },
-      {
-        "id": 481871399,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
-        "name": "transport",
-        "color": "fbca04",
-        "default": false
-      }
-    ],
-    "state": "open",
-    "locked": false,
-    "assignee": null,
-    "assignees": [
-
-    ],
-    "milestone": null,
-    "comments": 0,
-    "created_at": "2017-02-17T21:07:10Z",
-    "updated_at": "2017-02-17T21:29:50Z",
-    "closed_at": null,
-    "pull_request": {
-      "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/320",
-      "html_url": "https://github.com/quicwg/base-drafts/pull/320",
-      "diff_url": "https://github.com/quicwg/base-drafts/pull/320.diff",
-      "patch_url": "https://github.com/quicwg/base-drafts/pull/320.patch"
-    },
-    "body": "Resolves #319."
-  },
-  {
-    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/319",
-    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
-    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/319/labels{/name}",
-    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/319/comments",
-    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/319/events",
-    "html_url": "https://github.com/quicwg/base-drafts/issues/319",
-    "id": 208555486,
-    "number": 319,
-    "title": "Consistency for s6.2.1.2",
-    "user": {
-      "login": "seanturner",
-      "id": 4488966,
-      "avatar_url": "https://avatars.githubusercontent.com/u/4488966?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/seanturner",
-      "html_url": "https://github.com/seanturner",
-      "followers_url": "https://api.github.com/users/seanturner/followers",
-      "following_url": "https://api.github.com/users/seanturner/following{/other_user}",
-      "gists_url": "https://api.github.com/users/seanturner/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/seanturner/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/seanturner/subscriptions",
-      "organizations_url": "https://api.github.com/users/seanturner/orgs",
-      "repos_url": "https://api.github.com/users/seanturner/repos",
-      "events_url": "https://api.github.com/users/seanturner/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/seanturner/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "labels": [
-      {
-        "id": 481871311,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/editorial",
-        "name": "editorial",
-        "color": "0e8a16",
-        "default": false
-      },
-      {
-        "id": 481871399,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
-        "name": "transport",
-        "color": "fbca04",
-        "default": false
-      }
-    ],
-    "state": "open",
-    "locked": false,
-    "assignee": null,
-    "assignees": [
-
-    ],
-    "milestone": null,
-    "comments": 0,
-    "created_at": "2017-02-17T21:06:36Z",
-    "updated_at": "2017-02-17T21:06:36Z",
-    "closed_at": null,
-    "body": "Some of the acronyms are spelled out and some aren't.  We should make it matchy-matchy."
   },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/316",
@@ -1888,8 +1824,7 @@
     "updated_at": "2017-02-15T05:17:41Z",
     "closed_at": null,
     "body": "This needs to be written down.  I think that the best outcome would be to include BOTH a TLS alert and a QUIC error code (in a CONNECTION_CLOSE frame)."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/271",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -1946,7 +1881,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/271.patch"
     },
     "body": "Fixes #127, but we may want to go further."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/269",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3627,8 +3563,7 @@
     "updated_at": "2017-01-24T23:45:10Z",
     "closed_at": null,
     "body": "It may be desirable for the client to increase the flow control window mid-connection (it observes that client actually has very high BDP; it decides based on application request by peer that it will send a lot of data; it decides that it trusts the peer for some reason; potentially other options).  Currently, we can bump connection flow control window without an issue, but any new individual streams are stuck with whatever was initially negotiated.  We may want to add a mechanism to increase initial stream flow control window mid-connection."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/217",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3686,7 +3621,8 @@
     "updated_at": "2017-01-24T23:34:14Z",
     "closed_at": null,
     "body": "For illustrative purposes, consider a server with an max open stream limit of 2.  The client sends packets with frames in the following order:\r\n\r\n1. Open stream 3\r\n2. Open stream 5\r\n3. Close stream 5\r\n4. Open stream 7\r\n\r\nThe network reorders packets 3 and 4. From the server's perspective, the client has violated the maximum.  In order to deal with this, the server will presumably need something more complicated than just \"if violated, kill\" -- maybe kill the connection if it *remains* violated for more than 1-2 RTT?"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/215",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5473,8 +5409,7 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/171.patch"
     },
     "body": "A rough draft of a fix for #165.  Key changes:\r\n\r\n- RST_STREAM kills only the sender's direction, not both.  (Retains the existing requirement to respond with RST_STREAM with another RST_STREAM if the stream isn't already closed, which eventually leads to the same result.)\r\n- New REQUEST_RST frame allows peer to solicit a RST_STREAM; text states that this reflects an app recv_close, and that received data is being discarded\r\n\r\nThis should solve the scenarios outlined in #165; a server can ask a client to RST_STREAM its own direction after having sent an early response.  Feedback welcome, of course -- please point out anything I've missed."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/170",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5532,7 +5467,8 @@
     "updated_at": "2017-02-16T03:02:23Z",
     "closed_at": null,
     "body": "There's currently no behavior defined for the case of a connection ID collision.\r\nThe probability for a collision of two 64 bit numbers is *really small*, if connections IDs are chosen randomly. For example, for a server handling 100,000 concurrent connections, the collision probability is about 3*10^-10.\r\nIt might therefore be justified to completely neglect this issue.\r\n\r\nAccording to the current draft, if a client initiates a handshake and chooses an existing connection ID, the server would just silently discard those packets, because it already switched to an encrypted connection and will regard them as undecryptable."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/169",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7663,8 +7599,7 @@
     "updated_at": "2017-01-10T04:40:58Z",
     "closed_at": null,
     "body": "NumTimestamps is supposed to specify the \"total number of pairs following, including the First Timestamp.\"  If this is zero, presumably the Delta Largest Acked and First Timestamp fields are absent.  If this is one, presumably these fields are present, but no others are.\r\n\r\nThe *subsequent* fields then say they are repeated \"Num Timestamps\" times, which contradicts my logic above.  I'm guessing this should actually be \"Num Timestamps - 1\" times?"
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/97",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7729,7 +7664,8 @@
     "updated_at": "2017-01-25T02:07:58Z",
     "closed_at": null,
     "body": "The QUIC-TLS spec currently says that the server should select a protocol without regard to the current QUIC version, and MAY (not MUST?) do Version Negotiation if the selected protocol can't be carried by the current QUIC version.  However, if the server does Version Negotiation, the client's ClientHello gets thrown away, and the client has to resend the ClientHello anyway.\r\n\r\nI'd be more inclined to say that servers select application protocols compatible with the current version if it can.  There are then two possibilities:\r\n\r\n  - Client learns that server supports a newer version in the response.  Then the client can try again (in parallel or in the future) over the newer version.  Same RTTs to reach the new version/protocol, but able to exchange some data on the initial connection 1 RTT sooner.\r\n  - Server supports no protocol compatible with the client's supported version, and triggers Version Negotiation anyway.  Same RTTs to reach the new version/protocol."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/95",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -9824,8 +9760,7 @@
     "updated_at": "2016-11-25T02:07:58Z",
     "closed_at": null,
     "body": "There are probably lots of these, which we should include in the transport doc.\r\n\r\nOff the top of my head: client, server, peer, endpoint, stream, frame, packet, packet number, stream error, connection error, outstanding/unacknowledged.\r\n\r\nMore complicated concepts belong in requisite documents: e.g., loss detection, retransmission, and congestion; flights, etc..."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/20",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -9889,7 +9824,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/20.patch"
     },
     "body": "The model here is that neither on-path nor off-path attackers should be able to forge one, but\r\nthat on-path elements should be able to validate the public reset."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/9",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
