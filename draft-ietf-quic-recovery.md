@@ -210,7 +210,7 @@ kReorderingThreshold (default 3):
 
 kTimeReorderingThreshold (default 1/8):
 : Maximum reordering in time sapce before time based loss detection considers
-   a packet lost.  In fraction of an RTT.
+  a packet lost.  In fraction of an RTT.
 
 kMinTLPTimeout (default 10ms):
 : Minimum time in the future a tail loss probe alarm may be set for.
@@ -229,19 +229,19 @@ kDefaultInitialRtt (default 200ms):
 We first describe the variables required to implement the loss detection
 mechanisms described in this section.
 
-loss_detection_alarm: 
+loss_detection_alarm:
 : Multi-modal alarm used for loss detection.
 
-alarm_mode: 
+alarm_mode:
 : QUIC maintains a single loss detection alarm, which switches
   between various modes.  This mode is used to determine the duration of the
   alarm.
 
-handshake_count: 
+handshake_count:
 : The number of times the handshake packets have been
   retransmitted without receiving an ack.
 
-tlp_count: 
+tlp_count:
 : The number of times a tail loss probe has been sent without
   receiving an ack.
 
