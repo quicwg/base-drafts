@@ -501,99 +501,6 @@
     "body": "> skipping packet numbers between 1 and 255 effectively provides up to 8 bits of efficient entropy on  demand, which should be adequate protection against most opportunistic acknowledgement attacks.\r\n\r\nAside from the odd phrasing, I think that this is incorrect.  Aside from the obvious point that 1-255 is only  7.994 bits of entropy, you also have to take into account the probability that a sender chooses to skip (a probability of 2^-8 would give the answer here).  Add to that the fact that any entropy accumulates with every packet sent.  Choosing to send or withhold each packet number could add up to a bit of entropy over time, so the difficulty in guessing could be higher over time.\r\n\r\nNo matter what strategy it's always safe for an attacker to guess high, so the amount of effective entropy against an attacker is probably less than claimed.  Of course, guessing high has an effect on congestion control, because that is marked by the sender as loss.  That could be as effective in mitigating the optimistic acknowledgment attack as the gap itself.\r\n\r\nThen there is real packet loss.  If you randomly decide to skip 255 numbers, then real packet loss on the packet after the gap makes it difficult to acknowledge (you have to send two ACK frames if there is a gap >255).  Burst loss makes that even more likely.\r\n\r\nIn any case, I'd recommend removing any claim about entropy.  I also recommend removing any mention of specific numbers.  Skipping more packets is fine, but it means that you run the packet number space down faster and you get less efficiency in ACK packets."
   },
   {
-    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/303",
-    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
-    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/303/labels{/name}",
-    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/303/comments",
-    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/303/events",
-    "html_url": "https://github.com/quicwg/base-drafts/pull/303",
-    "id": 207432908,
-    "number": 303,
-    "title": "Add a section on stream prioritization",
-    "user": {
-      "login": "martinthomson",
-      "id": 67641,
-      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/martinthomson",
-      "html_url": "https://github.com/martinthomson",
-      "followers_url": "https://api.github.com/users/martinthomson/followers",
-      "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
-      "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
-      "organizations_url": "https://api.github.com/users/martinthomson/orgs",
-      "repos_url": "https://api.github.com/users/martinthomson/repos",
-      "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/martinthomson/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "labels": [
-      {
-        "id": 481871399,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
-        "name": "transport",
-        "color": "fbca04",
-        "default": false
-      }
-    ],
-    "state": "open",
-    "locked": false,
-    "assignee": {
-      "login": "janaiyengar",
-      "id": 11067604,
-      "avatar_url": "https://avatars.githubusercontent.com/u/11067604?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/janaiyengar",
-      "html_url": "https://github.com/janaiyengar",
-      "followers_url": "https://api.github.com/users/janaiyengar/followers",
-      "following_url": "https://api.github.com/users/janaiyengar/following{/other_user}",
-      "gists_url": "https://api.github.com/users/janaiyengar/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/janaiyengar/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/janaiyengar/subscriptions",
-      "organizations_url": "https://api.github.com/users/janaiyengar/orgs",
-      "repos_url": "https://api.github.com/users/janaiyengar/repos",
-      "events_url": "https://api.github.com/users/janaiyengar/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/janaiyengar/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "assignees": [
-      {
-        "login": "janaiyengar",
-        "id": 11067604,
-        "avatar_url": "https://avatars.githubusercontent.com/u/11067604?v=3",
-        "gravatar_id": "",
-        "url": "https://api.github.com/users/janaiyengar",
-        "html_url": "https://github.com/janaiyengar",
-        "followers_url": "https://api.github.com/users/janaiyengar/followers",
-        "following_url": "https://api.github.com/users/janaiyengar/following{/other_user}",
-        "gists_url": "https://api.github.com/users/janaiyengar/gists{/gist_id}",
-        "starred_url": "https://api.github.com/users/janaiyengar/starred{/owner}{/repo}",
-        "subscriptions_url": "https://api.github.com/users/janaiyengar/subscriptions",
-        "organizations_url": "https://api.github.com/users/janaiyengar/orgs",
-        "repos_url": "https://api.github.com/users/janaiyengar/repos",
-        "events_url": "https://api.github.com/users/janaiyengar/events{/privacy}",
-        "received_events_url": "https://api.github.com/users/janaiyengar/received_events",
-        "type": "User",
-        "site_admin": false
-      }
-    ],
-    "milestone": null,
-    "comments": 2,
-    "created_at": "2017-02-14T06:50:47Z",
-    "updated_at": "2017-02-17T08:54:38Z",
-    "closed_at": null,
-    "pull_request": {
-      "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/303",
-      "html_url": "https://github.com/quicwg/base-drafts/pull/303",
-      "diff_url": "https://github.com/quicwg/base-drafts/pull/303.diff",
-      "patch_url": "https://github.com/quicwg/base-drafts/pull/303.patch"
-    },
-    "body": "We decided that the transport would need priority but that it would rely on the application (protocol) to provide that information.  This attempts to capture that decision and provides a little guidance on what to prioritize (management stuff over STREAM, STREAM 1 over other streams, retransmissions, and then the rest of the streams according to application-layer priority).\r\n\r\nCloses #114, #104."
-  },
-  {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/300",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
     "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/300/labels{/name}",
@@ -1939,8 +1846,7 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/271.patch"
     },
     "body": "Fixes #127, but we may want to go further."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/269",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -1998,7 +1904,8 @@
     "updated_at": "2017-02-10T02:36:51Z",
     "closed_at": null,
     "body": "In Mirja's Management draft:\r\n[https://tools.ietf.org/html/draft-kuehlewind-quic-appman-00#section-3](url)\r\n\r\n> [EDITOR'S NOTE: the addition of a simple packet number echo would\r\n   allow passive RTT measurement and partial passive downstream loss/\r\n   reordering measurement.  Packet number echo can be sampled at the\r\n   echo-side (i.e. one-in-N packets or 1/p packets can carry an echo)\r\n   for efficiency tradeoff, if necessary.]\r\n\r\nI endorse this idea. Service providers are very interesting in measuring their users' quality of experience and this is one key thing we can expose to enable that. On the face of it, it seems that the privacy hit is marginal."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/267",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3679,8 +3586,7 @@
     "updated_at": "2017-01-24T23:34:14Z",
     "closed_at": null,
     "body": "For illustrative purposes, consider a server with an max open stream limit of 2.  The client sends packets with frames in the following order:\r\n\r\n1. Open stream 3\r\n2. Open stream 5\r\n3. Close stream 5\r\n4. Open stream 7\r\n\r\nThe network reorders packets 3 and 4. From the server's perspective, the client has violated the maximum.  In order to deal with this, the server will presumably need something more complicated than just \"if violated, kill\" -- maybe kill the connection if it *remains* violated for more than 1-2 RTT?"
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/215",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3738,7 +3644,8 @@
     "updated_at": "2017-01-25T04:24:39Z",
     "closed_at": null,
     "body": "There is some sadness about public reset. See PR #20"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/211",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5525,8 +5432,7 @@
     "updated_at": "2017-02-16T03:02:23Z",
     "closed_at": null,
     "body": "There's currently no behavior defined for the case of a connection ID collision.\r\nThe probability for a collision of two 64 bit numbers is *really small*, if connections IDs are chosen randomly. For example, for a server handling 100,000 concurrent connections, the collision probability is about 3*10^-10.\r\nIt might therefore be justified to completely neglect this issue.\r\n\r\nAccording to the current draft, if a client initiates a handshake and chooses an existing connection ID, the server would just silently discard those packets, because it already switched to an encrypted connection and will regard them as undecryptable."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/169",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5627,7 +5533,8 @@
     "updated_at": "2017-01-26T07:24:42Z",
     "closed_at": null,
     "body": "I would like to see some language in the loss recovery document about client actions when the first handshake message is lost. We have overloaded this loss signal with multiple meanings/responses:\r\n\r\n(1) Retransmit (due to garden-variety network loss)\r\n(2) Change MTU and retransmit (due to MTU problems, though we might see ICMP here?)\r\n(3) Failover to TCP (middleboxes eating QUIC)\r\n(4) Give up (path failure)\r\n\r\nIf I were implementing a client using these documents, I am not sure how I would handle a CHLO loss given these conflicting imperatives. I could accept having SHOULDs instead of MUSTs, but there ought to be something."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/167",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7327,107 +7234,6 @@
     "body": "There are a bunch of things that need to be addressed here.  What is likely to happen is that this issue will turn into many smaller issues and this will eventually get closed as those become better understood.\r\n\r\n1. Reasons migration might be needed (mobility, NAT rebinding, routing changes, etc...)\r\n2. Routing considerations when migration occurs\r\n3. Privacy implications of linkability across migrations\r\n4. Verifying consent to send on a new path\r\n5. Establishing any desired middlebox state along the path\r\n"
   },
   {
-    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/114",
-    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
-    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/114/labels{/name}",
-    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/114/comments",
-    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/114/events",
-    "html_url": "https://github.com/quicwg/base-drafts/issues/114",
-    "id": 198631619,
-    "number": 114,
-    "title": "STREAM retransmission priority",
-    "user": {
-      "login": "martinthomson",
-      "id": 67641,
-      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/martinthomson",
-      "html_url": "https://github.com/martinthomson",
-      "followers_url": "https://api.github.com/users/martinthomson/followers",
-      "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
-      "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
-      "organizations_url": "https://api.github.com/users/martinthomson/orgs",
-      "repos_url": "https://api.github.com/users/martinthomson/repos",
-      "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/martinthomson/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "labels": [
-      {
-        "id": 481871361,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/design",
-        "name": "design",
-        "color": "1d76db",
-        "default": false
-      },
-      {
-        "id": 489929683,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/editor-ready",
-        "name": "editor-ready",
-        "color": "0e8a16",
-        "default": false
-      },
-      {
-        "id": 481871399,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
-        "name": "transport",
-        "color": "fbca04",
-        "default": false
-      }
-    ],
-    "state": "open",
-    "locked": false,
-    "assignee": {
-      "login": "martinthomson",
-      "id": 67641,
-      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/martinthomson",
-      "html_url": "https://github.com/martinthomson",
-      "followers_url": "https://api.github.com/users/martinthomson/followers",
-      "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
-      "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
-      "organizations_url": "https://api.github.com/users/martinthomson/orgs",
-      "repos_url": "https://api.github.com/users/martinthomson/repos",
-      "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/martinthomson/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "assignees": [
-      {
-        "login": "martinthomson",
-        "id": 67641,
-        "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
-        "gravatar_id": "",
-        "url": "https://api.github.com/users/martinthomson",
-        "html_url": "https://github.com/martinthomson",
-        "followers_url": "https://api.github.com/users/martinthomson/followers",
-        "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
-        "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
-        "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
-        "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
-        "organizations_url": "https://api.github.com/users/martinthomson/orgs",
-        "repos_url": "https://api.github.com/users/martinthomson/repos",
-        "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
-        "received_events_url": "https://api.github.com/users/martinthomson/received_events",
-        "type": "User",
-        "site_admin": false
-      }
-    ],
-    "milestone": null,
-    "comments": 10,
-    "created_at": "2017-01-04T05:15:00Z",
-    "updated_at": "2017-02-14T06:54:34Z",
-    "closed_at": null,
-    "body": "When talking about priority in #104, the question arose.  Say you have two streams and a STREAM frame to send on each, but only enough capacity to send one (due to flow control, congestion, or whatever).  Prioritization information helps us answer this question.  But what if the message is a retransmission of a packet that was determined to be lost.\r\n\r\nI think that the right answer has to do with tracking how long since a packet was originally given to QUIC to send.  And that we don't necessarily need to concern ourselves with whether it was sent previously or not - that will shake out in time anyway.  If it was sent before, it was obviously high enough priority to be worth sending once already.\r\n\r\nThat said, the value of repairing a gap in a stream is pretty high in terms of the ration of bytes delivered to bytes transmitted, so that might have some say."
-  },
-  {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/112",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
     "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/112/labels{/name}",
@@ -7758,8 +7564,7 @@
     "updated_at": "2017-01-10T04:40:58Z",
     "closed_at": null,
     "body": "NumTimestamps is supposed to specify the \"total number of pairs following, including the First Timestamp.\"  If this is zero, presumably the Delta Largest Acked and First Timestamp fields are absent.  If this is one, presumably these fields are present, but no others are.\r\n\r\nThe *subsequent* fields then say they are repeated \"Num Timestamps\" times, which contradicts my logic above.  I'm guessing this should actually be \"Num Timestamps - 1\" times?"
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/97",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7882,7 +7687,8 @@
     "updated_at": "2017-01-25T04:47:27Z",
     "closed_at": null,
     "body": "Need discussion of how CONNECT works.  Initial thought:\r\n\r\n - Client does not close data stream after sending request\r\n - If server responds (on the message control stream) with success, the data stream is being relayed into a TCP connection by the server.\r\n\r\nIs there a QUIC-CONNECT?  (Probably not, and almost certainly not in this document.)"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/92",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -9925,8 +9731,7 @@
     "updated_at": "2017-01-25T02:03:15Z",
     "closed_at": null,
     "body": "The design for TLS 1.3 KeyUpdate ensures that a compromise of keys after a KeyUpdate has been completed doesn't result in a compromise of all prior keys on that connection.\r\n\r\nThis is not true in QUIC.  QUIC uses a TLS exporter to obtain its initial seed keys.  As long as the exporter secret remains viable (and it will by default in most TLS stacks), then it will be able to compromise any QUIC packet protection keys.\r\n\r\nWe can't close the TLS connection on stream 1 early because it is desirable to have new session tickets issued to clients over time, especially if a server wants to update keys in response to mobility or other significant events.\r\n\r\nWe could recommend that TLS stacks provide an API for destroying an exporter secret, but that would interact poorly with things like token binding which use the exporter secret constantly."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/23",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -10048,7 +9853,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/20.patch"
     },
     "body": "The model here is that neither on-path nor off-path attackers should be able to forge one, but\r\nthat on-path elements should be able to validate the public reset."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/9",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
