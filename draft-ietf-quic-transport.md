@@ -471,7 +471,7 @@ The fields in a Regular packet past the Common Header are the following:
 * Packet Number: The lower 8, 16, 32, or 48 bits of the packet number, based on
   the PACKET_NUMBER_SIZE flag.  Each Regular packet is assigned a packet number
   by the sender.  The first packet number is randomized (see
-  {{initial-packet-number}}.
+  {{initial-packet-number}}).
 
 * Encrypted Payload: The remainder of a Regular packet is both authenticated and
   encrypted once packet protection keys are available.  {{QUIC-TLS}} describes
