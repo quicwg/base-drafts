@@ -644,10 +644,10 @@ When the server receives a packet from a client with the VERSION flag set, it
 compares the client's version to the versions it supports.
 
 If the version selected by the client is not acceptable to the server, the
-server discards the incoming packet and responds with a version negotiation
+server discards the incoming packet and responds with a Version Negotiation
 packet ({{version-negotiation-packet}}).  This includes the VERSION flag and a
-list of versions that the server will accept.  A server MUST send a version
-negotiation packet for every packet that it receives with an unacceptable
+list of versions that the server will accept.  A server MUST send a Version
+Negotiation packet for every packet that it receives with an unacceptable
 version.
 
 If the packet contains a version that is acceptable to the server, the server
@@ -666,10 +666,10 @@ set and MUST include the new negotiated protocol version.
 The client MUST set the VERSION flag and include its selected version on all
 packets until it has 1-RTT keys and it has received a packet from the server
 that does not have the VERSION flag set.  With TLS, this means that unprotected
-packets and 0-RTT protected packets all include a version field.
+packets and 0-RTT protected packets all include a VERSION flag.
 
 A client MUST NOT change the version it uses unless it is in response to a
-version negotiation packet from the server.  Once a client receives a packet
+Version Negotiation packet from the server.  Once a client receives a packet
 from the server with the VERSION flag unset, it MUST ignore the flag in
 subsequently received packets.
 
