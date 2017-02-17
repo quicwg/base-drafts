@@ -40,7 +40,7 @@
     "milestone": null,
     "comments": 0,
     "created_at": "2017-02-17T17:05:27Z",
-    "updated_at": "2017-02-17T17:05:27Z",
+    "updated_at": "2017-02-17T17:07:22Z",
     "closed_at": null,
     "pull_request": {
       "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/316",
@@ -48,71 +48,7 @@
       "diff_url": "https://github.com/quicwg/base-drafts/pull/316.diff",
       "patch_url": "https://github.com/quicwg/base-drafts/pull/316.patch"
     },
-    "body": "Replaces with cryptographic, and replaces \"crypto cover\" with \"cryptographic processing\""
-  },
-  {
-    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/315",
-    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
-    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/315/labels{/name}",
-    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/315/comments",
-    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/315/events",
-    "html_url": "https://github.com/quicwg/base-drafts/pull/315",
-    "id": 208467128,
-    "number": 315,
-    "title": "Adding an informative reference for randomness requirements.",
-    "user": {
-      "login": "seanturner",
-      "id": 4488966,
-      "avatar_url": "https://avatars.githubusercontent.com/u/4488966?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/seanturner",
-      "html_url": "https://github.com/seanturner",
-      "followers_url": "https://api.github.com/users/seanturner/followers",
-      "following_url": "https://api.github.com/users/seanturner/following{/other_user}",
-      "gists_url": "https://api.github.com/users/seanturner/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/seanturner/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/seanturner/subscriptions",
-      "organizations_url": "https://api.github.com/users/seanturner/orgs",
-      "repos_url": "https://api.github.com/users/seanturner/repos",
-      "events_url": "https://api.github.com/users/seanturner/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/seanturner/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "labels": [
-      {
-        "id": 481871311,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/editorial",
-        "name": "editorial",
-        "color": "0e8a16",
-        "default": false
-      },
-      {
-        "id": 481871399,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
-        "name": "transport",
-        "color": "fbca04",
-        "default": false
-      }
-    ],
-    "state": "open",
-    "locked": false,
-    "assignee": null,
-    "assignees": [
-
-    ],
-    "milestone": null,
-    "comments": 0,
-    "created_at": "2017-02-17T15:02:59Z",
-    "updated_at": "2017-02-17T15:02:59Z",
-    "closed_at": null,
-    "pull_request": {
-      "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/315",
-      "html_url": "https://github.com/quicwg/base-drafts/pull/315",
-      "diff_url": "https://github.com/quicwg/base-drafts/pull/315.diff",
-      "patch_url": "https://github.com/quicwg/base-drafts/pull/315.patch"
-    },
-    "body": "Say there word \"random\" add a reference to RFC4086/BCP106."
+    "body": "Replaces with cryptographic, and replaces \"crypto cover\" with \"cryptographic processing\".\r\nCloses issue #314. "
   },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/314",
@@ -569,106 +505,6 @@
     "updated_at": "2017-02-15T16:10:06Z",
     "closed_at": null,
     "body": "The definition of \"Delta Last Acked\" is the same for all of the timestamp entries.  This implies that every packet number in the timestamp block is expressed relative to the \"Last Acked\".  That would make it impossible to provide timestamps for packets more than 255 packet numbers behind the last acknowledged packet and multiple ACK frames would be needed to do that.\r\n\r\nI don't think that's right, but that subsequent deltas apply to the last timestamp.  That is:\r\n```diff\r\n  packet_number[0] = last_acknowledged - delta_last[0]\r\n- packet_number[n] = last_acknowledged - delta_last[n]\r\n+ packet_number[n] = last_acknowledged - sum(1, n, delta_last[i])\r\n```"
-  },
-  {
-    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/306",
-    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
-    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/306/labels{/name}",
-    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/306/comments",
-    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/306/events",
-    "html_url": "https://github.com/quicwg/base-drafts/pull/306",
-    "id": 207681557,
-    "number": 306,
-    "title": "Use the word \"acknowledge\" in full when used in prose",
-    "user": {
-      "login": "martinthomson",
-      "id": 67641,
-      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/martinthomson",
-      "html_url": "https://github.com/martinthomson",
-      "followers_url": "https://api.github.com/users/martinthomson/followers",
-      "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
-      "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
-      "organizations_url": "https://api.github.com/users/martinthomson/orgs",
-      "repos_url": "https://api.github.com/users/martinthomson/repos",
-      "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/martinthomson/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "labels": [
-      {
-        "id": 481871311,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/editorial",
-        "name": "editorial",
-        "color": "0e8a16",
-        "default": false
-      },
-      {
-        "id": 481871399,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
-        "name": "transport",
-        "color": "fbca04",
-        "default": false
-      }
-    ],
-    "state": "open",
-    "locked": false,
-    "assignee": {
-      "login": "janaiyengar",
-      "id": 11067604,
-      "avatar_url": "https://avatars.githubusercontent.com/u/11067604?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/janaiyengar",
-      "html_url": "https://github.com/janaiyengar",
-      "followers_url": "https://api.github.com/users/janaiyengar/followers",
-      "following_url": "https://api.github.com/users/janaiyengar/following{/other_user}",
-      "gists_url": "https://api.github.com/users/janaiyengar/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/janaiyengar/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/janaiyengar/subscriptions",
-      "organizations_url": "https://api.github.com/users/janaiyengar/orgs",
-      "repos_url": "https://api.github.com/users/janaiyengar/repos",
-      "events_url": "https://api.github.com/users/janaiyengar/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/janaiyengar/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "assignees": [
-      {
-        "login": "janaiyengar",
-        "id": 11067604,
-        "avatar_url": "https://avatars.githubusercontent.com/u/11067604?v=3",
-        "gravatar_id": "",
-        "url": "https://api.github.com/users/janaiyengar",
-        "html_url": "https://github.com/janaiyengar",
-        "followers_url": "https://api.github.com/users/janaiyengar/followers",
-        "following_url": "https://api.github.com/users/janaiyengar/following{/other_user}",
-        "gists_url": "https://api.github.com/users/janaiyengar/gists{/gist_id}",
-        "starred_url": "https://api.github.com/users/janaiyengar/starred{/owner}{/repo}",
-        "subscriptions_url": "https://api.github.com/users/janaiyengar/subscriptions",
-        "organizations_url": "https://api.github.com/users/janaiyengar/orgs",
-        "repos_url": "https://api.github.com/users/janaiyengar/repos",
-        "events_url": "https://api.github.com/users/janaiyengar/events{/privacy}",
-        "received_events_url": "https://api.github.com/users/janaiyengar/received_events",
-        "type": "User",
-        "site_admin": false
-      }
-    ],
-    "milestone": null,
-    "comments": 1,
-    "created_at": "2017-02-15T01:02:49Z",
-    "updated_at": "2017-02-17T08:58:40Z",
-    "closed_at": null,
-    "pull_request": {
-      "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/306",
-      "html_url": "https://github.com/quicwg/base-drafts/pull/306",
-      "diff_url": "https://github.com/quicwg/base-drafts/pull/306.diff",
-      "patch_url": "https://github.com/quicwg/base-drafts/pull/306.patch"
-    },
-    "body": "\"acked\", \"acking\" and variations thereof are fine in colloquial use, but it doesn't hurt to use real words.\r\n\r\nThis expands those uses and uses the capitalized ACK in other places."
   },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/305",
@@ -2002,8 +1838,7 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/275.patch"
     },
     "body": "This completes the changes that were started in #120.  As agreed at the interim, TLS will host the source address validation packets, but the transport will be responsible for constructing and validating the token.  I've expanded the detailed interface section to cover this.\r\n\r\nThere's some finessing in the text around which part adds the integrity check, with the recognition that - because the token will likely be put alongside other TLS information that needs integrity checks - TLS is probably the best place to do that.\r\n\r\nThis builds on #122 because to do otherwise would be to invite merge conflict hell.  Once that is merged, this will be much easier to review.\r\n\r\nCloses #52."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/274",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -2117,7 +1952,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/273.patch"
     },
     "body": "Fixes #173, though I would like to ultimately get rid of the Sequence number altogether."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/272",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3811,8 +3647,7 @@
     "updated_at": "2017-02-03T03:51:15Z",
     "closed_at": null,
     "body": "QUIC AEAD usage in quic-tls draft currently says \"associated data, A,  for the AEAD is an empty sequence.\" The current rationale is that the public header fields do not need to be authenticated since the connection ID, flags, packet number, and version number are all effectively covered by  encryption/decryption. \r\n\r\nWe have at least 1 public flags field that is as yet unused. Since we do not know its use yet, we may want to authenticate the header to future-proof."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/224",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3928,7 +3763,8 @@
     "updated_at": "2017-01-25T02:22:52Z",
     "closed_at": null,
     "body": "S 8.3 says:\r\n```\r\nA source address token is opaque and consumed only by the server.  Therefore it\r\ncan be included in the TLS 1.3 pre-shared key identifier for 0-RTT handshakes.\r\nServers that use 0-RTT are advised to provide new pre-shared key identifiers\r\nafter every handshake to avoid linkability of connections by passive observers.\r\nClients MUST use a new pre-shared key identifier for every connection that they\r\ninitiate; if no pre-shared key identifier is available, then resumption is not\r\npossible.\r\n```\r\n\r\nThis seem like an unnecessary requirement. Reusing the same PSK ID seems fine here."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/221",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5644,8 +5480,7 @@
     "updated_at": "2017-01-23T21:31:40Z",
     "closed_at": null,
     "body": "@martinthomson noticed an issue in the QPACK draft that's equally true with HPACK in -01:\r\n\r\nIf you RST_STREAM a stream with a missing QUIC STREAM frame that contains an HPACK frame (HEADERS, PUSH_PROMISE), that missing frame never gets retransmitted.  That, in turn, means that no future HPACK frame can be interpreted, ever, because you're missing part of your history.\r\n\r\nOops.\r\n\r\nMy first inclination is to change the HTTP draft to say that message control streams MUST NOT be reset.  If you don't want the message body, reset the data stream, but you MUST read the message headers.  If, for some reason, you cannot do so, then terminate the connection.\r\n\r\nAnyone see a barrier to that (other than the price of ginormous headers)?"
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/175",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5761,7 +5596,8 @@
     "updated_at": "2017-01-25T22:29:19Z",
     "closed_at": null,
     "body": "QUIC borrows the concept of stream reservation from HTTP/2.  However, there is a small difference between those state machines in that a reserved stream becomes open when data is sent on it.  HTTP/2 reserved streams become half-closed in this case (basically, only the server can send on a reserved stream).\r\n\r\nThe reason we have reservation is that we use stream numbers to identify requests at the HTTP mapping.  We reserve the stream number so that we can use its number in the PUSH_PROMISE frame.  That ties the PUSH_PROMISE - which contains a request - to the stream containing the response.  We need to create streams sequentially, so reservation allows us to \"create\" the stream in the right order and still be able to reference it.\r\n\r\nIn practice, however, this is a nuisance.  Reserved streams don't count toward concurrency limits and so they represent an unbounded state exposure.  Reserved streams might be created in order, but they can be used in any order.  Of course, this is a minor annoyance at best because there is always application state, and maybe priority information for these streams.\r\n\r\nI believe that QUIC has the opportunity to address this annoyance and in the process make the state machine simpler.  If QUIC removed the concept of stream reservation and instead required that application protocols create their correlators for use with talking about future streams, that would greatly simplify things.\r\n\r\nFor instance, we could remove the promised stream identifier from PUSH_PROMISE.  Instead, the stream that carries a push promise response could start with a frame that identified the PUSH_PROMISE by stream and number: \"this stream contains the response for promised request number P on stream N\".  Or, we could mint a new PUSH_PROMISE identifier that could be carried at the start of the stream."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/173",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7747,8 +7583,7 @@
     "updated_at": "2017-01-25T08:02:05Z",
     "closed_at": null,
     "body": "There are a bunch of things that need to be addressed here.  What is likely to happen is that this issue will turn into many smaller issues and this will eventually get closed as those become better understood.\r\n\r\n1. Reasons migration might be needed (mobility, NAT rebinding, routing changes, etc...)\r\n2. Routing considerations when migration occurs\r\n3. Privacy implications of linkability across migrations\r\n4. Verifying consent to send on a new path\r\n5. Establishing any desired middlebox state along the path\r\n"
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/114",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7950,7 +7785,8 @@
     "updated_at": "2017-02-09T08:41:01Z",
     "closed_at": null,
     "body": "Shout out to @davidben and the recently adopted draft-davidben-tls-grease."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/109",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -9978,8 +9814,7 @@
     "updated_at": "2016-11-28T06:00:20Z",
     "closed_at": null,
     "body": "The attacker needs to be on path to create a valid-looking unprotected packet.  \r\n\r\nAlso, randomization doesn't help much if the attacker is on-path."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/35",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -10174,7 +10009,8 @@
     "updated_at": "2017-02-01T10:20:04Z",
     "closed_at": null,
     "body": "If we consider cleartext << 0-RTT << 1-RTT, then we might be able to establish a clear rule regarding acknowledgments.\r\n\r\nThe desired rule is that an ACK MUST be sent with the same or higher protection.\r\n\r\nHowever: This rule would mean that a server is required to ACK 0-RTT data with 1-RTT keys.  That's tricky, because loss or delay of the server's first flight also delays the server's ACKs of 0-RTT data (the server can't use 0-RTT keys)."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/33",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
