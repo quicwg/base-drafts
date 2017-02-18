@@ -900,7 +900,7 @@ list.
 
 # Frame Types and Formats
 
-As described in {{packetization}}, Regular packets contain one or more frames.
+As described in {{frames}}, Regular packets contain one or more frames.
 We now describe the various QUIC frame types that can be present in a Regular
 packet. The use of these frames and various frame header bits are described in
 subsequent sections.
