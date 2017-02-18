@@ -2286,7 +2286,7 @@ registrations unless they are abusive, frivolous, or actively harmful (not
 merely aesthetically displeasing, or architecturally dubious).
 
 The initial contents of this registry are shown in
-{{iana-transport-parameters-initial}}.
+{{iana-tp-table}}.
 
 | Value | Parameter Name | Specification |
 |:-|:-|:-|
@@ -2295,7 +2295,7 @@ The initial contents of this registry are shown in
 | 0x0002 | MSPC | {{transport-parameter-definitions}} |
 | 0x0003 | ICSL | {{transport-parameter-definitions}} |
 | 0x0004 | TCID | {{transport-parameter-definitions}} |
-{: #iana-transport-parameters-initial title="Initial QUIC Transport Parameters Entries"}
+{: #iana-tp-table title="Initial QUIC Transport Parameters Entries"}
 
 
 --- back
