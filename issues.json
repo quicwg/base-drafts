@@ -1,5 +1,50 @@
 [
   {
+    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/325",
+    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
+    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/325/labels{/name}",
+    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/325/comments",
+    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/325/events",
+    "html_url": "https://github.com/quicwg/base-drafts/issues/325",
+    "id": 208612123,
+    "number": 325,
+    "title": "clarify when a client needs to include the version",
+    "user": {
+      "login": "marten-seemann",
+      "id": 1478487,
+      "avatar_url": "https://avatars.githubusercontent.com/u/1478487?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/marten-seemann",
+      "html_url": "https://github.com/marten-seemann",
+      "followers_url": "https://api.github.com/users/marten-seemann/followers",
+      "following_url": "https://api.github.com/users/marten-seemann/following{/other_user}",
+      "gists_url": "https://api.github.com/users/marten-seemann/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/marten-seemann/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/marten-seemann/subscriptions",
+      "organizations_url": "https://api.github.com/users/marten-seemann/orgs",
+      "repos_url": "https://api.github.com/users/marten-seemann/repos",
+      "events_url": "https://api.github.com/users/marten-seemann/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/marten-seemann/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+
+    ],
+    "state": "open",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 0,
+    "created_at": "2017-02-18T04:37:30Z",
+    "updated_at": "2017-02-18T04:37:30Z",
+    "closed_at": null,
+    "body": "There's conflicting information in Section 6.1:\r\n\r\nFirst it says\r\n\r\n> If the packet contains a version that is acceptable to the server, the server proceeds with the handshake (Section 6.2). All subsequent packets sent by the server MUST have the VERSION flag unset.\r\n\r\nTwo paragraphs later it says\r\n\r\n> The client MUST set the VERSION flag and include its selected version on all packets until it has 1-RTT keys and it has received a packet from the server that does not have the VERSION flag set.\r\n\r\nThis is conflicting, because the client may receive a packet from the server (which is not a Version Negotiation Packet, meaning that the server accepted the proposed version) before having the 1-RTT keys.\r\n\r\nFurthermore, the last part of the last sentence makes little sense anyway. It's impossible for the client to have 1-RTT keys unless the server already accepted the version."
+  },
+  {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/323",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
     "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/323/labels{/name}",
@@ -51,9 +96,9 @@
 
     ],
     "milestone": null,
-    "comments": 1,
+    "comments": 2,
     "created_at": "2017-02-17T22:02:06Z",
-    "updated_at": "2017-02-17T23:26:36Z",
+    "updated_at": "2017-02-18T02:19:20Z",
     "closed_at": null,
     "body": "The text currently mandates (MUST!) a 4 times safety margin against reordering when picking the packet number size.  This is purely a safety margin feature, so mandating a value isn't justified.\r\n\r\nAn implementation could, though perhaps it is unwise, use a much smaller packet number than this.  The risk is that there is reordering greater than 2^size and the packets are delivered but cannot be recovered at the receiver.  That's terrible, it will trigger loss recovery and send bad signals.  However, the protocol doesn't actually break.\r\n\r\nAt a minimum, we should make this a recommendation.  Setting a mandatory floor on the value might be reasonable, but I'd be reluctant to do that unless it was pretty low, or if the value were different for different packet number sizes (smaller margins are probably more justifiable for larger packet number encodings).\r\n\r\nIdeally, we should science this and try to measure probabilities of reordering.  Ideally reordering probability as a function of outstanding packets."
   },
@@ -1811,7 +1856,8 @@
     "updated_at": "2017-02-10T02:36:51Z",
     "closed_at": null,
     "body": "In Mirja's Management draft:\r\n[https://tools.ietf.org/html/draft-kuehlewind-quic-appman-00#section-3](url)\r\n\r\n> [EDITOR'S NOTE: the addition of a simple packet number echo would\r\n   allow passive RTT measurement and partial passive downstream loss/\r\n   reordering measurement.  Packet number echo can be sampled at the\r\n   echo-side (i.e. one-in-N packets or 1/p packets can carry an echo)\r\n   for efficiency tradeoff, if necessary.]\r\n\r\nI endorse this idea. Service providers are very interesting in measuring their users' quality of experience and this is one key thing we can expose to enable that. On the face of it, it seems that the privacy hit is marginal."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/267",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -1862,8 +1908,7 @@
     "updated_at": "2017-02-08T04:53:08Z",
     "closed_at": null,
     "body": "PR #106 added the following requirement on servers:\r\n\r\n> Servers MUST reject the first plaintext packet received from a client if it its total size is less than 1280 octets, to mitigate amplification attacks.\r\n\r\nHowever, this runs into an issue in the case where there are IP header extensions that the client knows about but the server doesn't.  If the client is aware of the IP header extensions and constructs a packet with a smaller payload in order to comply with our recommendation to create a packet of exactly 1280 octets, the server will receive a packet that it thinks is too small.\r\n\r\nI see a few options:\r\n1. loosen the enforcement constraint on the server\r\n2. specify that the server only enforce the constraint if it sees the entire IP packet\r\n3. specify the minimum size and its enforcement in terms of payload size (we could set different values here to allow for header extensions)"
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/265",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3551,7 +3596,8 @@
     "updated_at": "2017-01-25T04:24:39Z",
     "closed_at": null,
     "body": "There is some sadness about public reset. See PR #20"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/211",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3609,8 +3655,7 @@
     "updated_at": "2017-01-24T01:29:57Z",
     "closed_at": null,
     "body": "There are LOTS of error codes.  The only sensible thing to do is use those code to steer the receiver in the direction of the right logic for recovering from the error.  There is a different piece of information that might be provided to an application for diagnostic purposes (the reason phrase helps if it goes across the wire) and there might be other needs for an API, but across the wire we can probably cut this down a lot."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/210",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5440,7 +5485,8 @@
     "updated_at": "2017-01-26T07:24:42Z",
     "closed_at": null,
     "body": "I would like to see some language in the loss recovery document about client actions when the first handshake message is lost. We have overloaded this loss signal with multiple meanings/responses:\r\n\r\n(1) Retransmit (due to garden-variety network loss)\r\n(2) Change MTU and retransmit (due to MTU problems, though we might see ICMP here?)\r\n(3) Failover to TCP (middleboxes eating QUIC)\r\n(4) Give up (path failure)\r\n\r\nIf I were implementing a client using these documents, I am not sure how I would handle a CHLO loss given these conflicting imperatives. I could accept having SHOULDs instead of MUSTs, but there ought to be something."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/167",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5512,8 +5558,7 @@
     "updated_at": "2017-01-25T01:44:32Z",
     "closed_at": null,
     "body": "QUIC originally specified a 12 byte hash for unencrypted packets.  This was dropped when QUIC crypto was swapped for the TLS 1.3 mapping.\r\n\r\nWe should add it back, since it is useful in eliminating corrupted packets and random internet junk.  And possibly in preventing reflection attacks mentioned in #147 "
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/166",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -6783,7 +6828,7 @@
     "milestone": null,
     "comments": 3,
     "created_at": "2017-01-04T10:43:45Z",
-    "updated_at": "2017-02-17T23:00:42Z",
+    "updated_at": "2017-02-18T09:52:50Z",
     "closed_at": null,
     "pull_request": {
       "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/122",
@@ -7594,7 +7639,8 @@
     "updated_at": "2017-01-25T04:47:27Z",
     "closed_at": null,
     "body": "Need discussion of how CONNECT works.  Initial thought:\r\n\r\n - Client does not close data stream after sending request\r\n - If server responds (on the message control stream) with success, the data stream is being relayed into a TCP connection by the server.\r\n\r\nIs there a QUIC-CONNECT?  (Probably not, and almost certainly not in this document.)"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/89",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7652,8 +7698,7 @@
     "updated_at": "2017-01-14T02:13:43Z",
     "closed_at": null,
     "body": "#87 covers improving the current use of ALPN and the Alt-Svc v= parameter for HTTP.  However, I think this is something that QUIC needs to solve generically, so forking off a separate issue for that.\r\n\r\nHere are the paths I see that we need to support:\r\n\r\n- **Client to server, first time:** This is inherently a 1-RTT handshake *if* the client guesses the version correctly; 2 RTTs if it's wrong.  This incents clients to attempt the most widely-deployed version of QUIC rather than their highest version.  Consequently, there needs to be a way for a conservative client to discover that a server supports a more advanced version.\r\n- **Client to server, subsequent:** The cached information should contain information about the server's supported versions so the client can come back with the same version as last time. The scenarios where one side has changed need consideration, though:\r\n    - **Client upgraded:** Would require client to cache server's full set of supported versions and compare against the client's supported set at connect time, not just caching the selected version.\r\n    - **Server upgraded:** The current mechanism offers no way for a client to discover that the server would have accepted a version it didn't initially offer, whether because the server didn't previously support it or the client is being conservative.\r\n\r\nIdeally, I'd like to see these solved for QUIC independent of Alt-Svc -- there will be other users besides HTTP.\r\n\r\nI think this could be solved by requiring the server to always send its Version Negotiation list in the crypto handshake, not just if a Version Negotiation packet was actually sent.  Clients can discover when the server supports a newer version than they attempted, and either know what to offer next time or actively open a new connection with the new version in parallel."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/81",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -9754,7 +9799,8 @@
     "updated_at": "2016-11-28T23:54:32Z",
     "closed_at": null,
     "body": "...and as in #8, anything else that isn't relevant."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/8",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -9812,8 +9858,7 @@
     "updated_at": "2016-11-22T23:13:22Z",
     "closed_at": null,
     "body": "This isn't relevant for a specification."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/7",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
