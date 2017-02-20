@@ -671,14 +671,14 @@ be revalidated once the cryptographic handshake has completed (see
 {{version-validation}}).
 
 
-## Crypto and Transport Handshake {#handshake}
+## Cryptographic and Transport Handshake {#handshake}
 
-QUIC relies on a combined crypto and transport handshake to minimize connection
-establishment latency.  QUIC allocates stream 1 for the cryptographic handshake.
-This version of QUIC uses TLS.
+QUIC relies on a combined cryptographic and transport handshake to minimize
+connection establishment latency.  QUIC allocates stream 1 for the cryptographic
+handshake.  This version of QUIC uses TLS 1.3 {{QUIC-TLS}}.
 
 QUIC provides this stream with reliable, ordered delivery of data.  In return,
-TLS provides QUIC with:
+The cryptographic handshake provides QUIC with:
 
 * authenticated key exchange, where
 
@@ -1809,8 +1809,8 @@ A StreamID of zero (0x0) is reserved and used for connection-level flow control
 frames ({{flow-control}}); the StreamID of zero cannot be used to establish a
 new stream.
 
-StreamID 1 (0x1) is reserved for the crypto handshake.  StreamID 1 MUST NOT be
-used for application data, and MUST be the first client-initiated stream.
+StreamID 1 (0x1) is reserved for the cryptographic handshake.  StreamID 1 MUST
+NOT be used for application data, and MUST be the first client-initiated stream.
 
 Streams MUST be created or reserved in sequential order, but MAY be used in
 arbitrary order.  A QUIC endpoint MUST NOT reuse a StreamID on a given
@@ -1863,10 +1863,10 @@ as an ordered byte-stream.  Data received out of order MUST be buffered for
 later delivery, as long as it is not in violation of the receiver's flow control
 limits.
 
-The crypto handshake stream, Stream 1, MUST NOT be subject to congestion control
-or connection-level flow control, but MUST be subject to stream-level flow
-control. An endpoint MUST NOT send data on any other stream without consulting
-the congestion controller and the flow controller.
+The cryptographic handshake stream, Stream 1, MUST NOT be subject to congestion
+control or connection-level flow control, but MUST be subject to stream-level
+flow control. An endpoint MUST NOT send data on any other stream without
+consulting the congestion controller and the flow controller.
 
 Flow control is described in detail in {{flow-control}}, and congestion control
 is described in the companion document {{QUIC-RECOVERY}}.
