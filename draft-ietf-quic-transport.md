@@ -725,11 +725,11 @@ language from Section 3 of {{!I-D.ietf-tls-tls13}}.
    uint32 QuicVersion;
 
    enum {
-      SFCW(0),
-      CFCW(1),
-      MSPC(2),
-      ICSL(3),
-      TCID(4),
+      stream_fc_offset(0),
+      connection_fc_offset(1),
+      concurrent_streams(2),
+      idle_timeout(3),
+      truncate_connection_id(4),
       (65535)
    } TransportParameterId;
 
@@ -772,34 +772,34 @@ Definitions for each of the defined transport parameters are included in
 An endpoint MUST include the following parameters in its encoded
 TransportParameters:
 
-SFCW (0x0000):
+stream_fc_offset (0x0000):
 
-: The initial stream level flow control parameter is encoded as an unsigned
-  32-bit integer.  The sender of this parameter indicates that the flow control
-  offset for all stream data sent toward it is this value.
+: The initial stream level flow control offset parameter is encoded as an
+  unsigned 32-bit integer.  The sender of this parameter indicates that the flow
+  control offset for all stream data sent toward it is this value.
 
-CFCW (0x0001):
+connection_fc_offset (0x0001):
 
-: The connection level flow control parameter contains the initial connection
+: The connection level flow control offset parameter contains the initial connection
   flow control window encoded as an unsigned 32-bit integer.  The sender of this
   parameter sets the byte offset for connection level flow control to this
   value.  This is equivalent to sending a WINDOW_UPDATE
   ({{frame-window-update}}) for stream 0 immediately after completing the
   handshake.
 
-MSPC (0x0002):
+concurrent_streams (0x0002):
 
 : The maximum number of concurrent streams parameter is encoded as an unsigned
   32-bit integer.
 
-ICSL (0x0003):
+idle_timeout (0x0003):
 
 : The idle timeout is a value in seconds that is encoded as an unsigned 16-bit
   integer.  The maximum value is 600 seconds (10 minutes).
 
 An endpoint MAY use the following transport parameters:
 
-TCID (0x0004):
+truncate_connection_id (0x0004):
 
 : The truncated connection identifier parameter indicates that packets sent to
   the peer can omit the connection ID.  This can be used by an endpoint where
@@ -812,8 +812,9 @@ TCID (0x0004):
 
 Transport parameters from the server SHOULD be remembered by the client for use
 with 0-RTT data.  A client that doesn't remember values from a previous
-connection can instead assume the following values: SFCW (65535), CFCW (65535),
-MSPC (10), ICSL (600), TCID (absent).
+connection can instead assume the following values: stream_fc_offset (65535),
+connection_fc_offset (65535), concurrent_streams (10), idle_timeout (600),
+truncate_connection_id (absent).
 
 If assumed values change as a result of completing the handshake, the client is
 expected to respect the new values.  This introduces some potential problems,
@@ -825,10 +826,10 @@ particularly with respect to transport parameters that establish limits:
   increase to the affected flow control offsets is received, the client can
   recommence sending.
 
-* Similarly, a client might exceed the concurrent stream limit (MSPC) declared
-  by the server.  A client MUST reset any streams that exceed this limit.  A
-  server SHOULD reset any streams it cannot handle with a code that allows the
-  client to retry any application action bound to those streams.
+* Similarly, a client might exceed the concurrent stream limit declared by the
+  server.  A client MUST reset any streams that exceed this limit.  A server
+  SHOULD reset any streams it cannot handle with a code that allows the client
+  to retry any application action bound to those streams.
 
 A server MAY close a connection if remembered or assumed 0-RTT transport
 parameters cannot be supported, using an error code that is appropriate to the
@@ -992,12 +993,11 @@ of three ways:
    abnormally terminated.
 
 2. Implicit Shutdown: The default idle timeout for a QUIC connection is 30
-   seconds, and is a required parameter (ICSL) in connection negotiation.  The
-   maximum is 10 minutes.  If there is no network activity for the duration of
-   the idle timeout, the connection is closed.  By default a CONNECTION_CLOSE
-   frame will be sent.  A silent close option can be enabled when it is
-   expensive to send an explicit close, such as mobile networks that must wake
-   up the radio.
+   seconds, and is a required parameter in connection negotiation.  The maximum
+   is 10 minutes.  If there is no network activity for the duration of the idle
+   timeout, the connection is closed.  By default a CONNECTION_CLOSE frame will
+   be sent.  A silent close option can be enabled when it is expensive to send
+   an explicit close, such as mobile networks that must wake up the radio.
 
 3. Abrupt Shutdown: An endpoint may send a Public Reset packet at any time
    during the connection to abruptly terminate an active connection.  A Public
@@ -1819,25 +1819,26 @@ connection.
 All streams, including stream 1, count toward this limit.  Thus, a concurrent
 stream limit of 0 will cause a connection to be unusable.  Application protocols
 that use QUIC might require a certain minimum number of streams to function
-correctly.  If a peer advertises an MSPC value that is too small for the
-selected application protocol to function, an endpoint MUST terminate the
-connection with an error of type QUIC_TOO_MANY_OPEN_STREAMS
+correctly.  If a peer advertises an concurrent stream limit (concurrent_streams)
+that is too small for the selected application protocol to function, an endpoint
+MUST terminate the connection with an error of type QUIC_TOO_MANY_OPEN_STREAMS
 ({{error-handling}}).
 
 
 ## Stream Concurrency
 
 An endpoint limits the number of concurrently active incoming streams by setting
-the MSPC parameter (see {{transport-parameter-definitions}}) in the transport
-parameters. The maximum concurrent streams setting is specific to each endpoint
-and applies only to the peer that receives the setting. That is, clients specify
-the maximum number of concurrent streams the server can initiate, and servers
-specify the maximum number of concurrent streams the client can initiate.
+the concurrent stream limit (see {{transport-parameter-definitions}}) in the
+transport parameters. The maximum concurrent streams setting is specific to each
+endpoint and applies only to the peer that receives the setting. That is,
+clients specify the maximum number of concurrent streams the server can
+initiate, and servers specify the maximum number of concurrent streams the
+client can initiate.
 
 Streams that are in the "open" state or in either of the "half-closed" states
 count toward the maximum number of streams that an endpoint is permitted to
 open.  Streams in any of these three states count toward the limit advertised in
-the MSPC setting.
+the concurrent stream limit.
 
 Endpoints MUST NOT exceed the limit set by their peer.  An endpoint that
 receives a STREAM frame that causes its advertised concurrent stream limit to be
@@ -2290,11 +2291,11 @@ The initial contents of this registry are shown in
 
 | Value | Parameter Name | Specification |
 |:-|:-|:-|
-| 0x0000 | SFCW | {{transport-parameter-definitions}} |
-| 0x0001 | CFCW | {{transport-parameter-definitions}} |
-| 0x0002 | MSPC | {{transport-parameter-definitions}} |
-| 0x0003 | ICSL | {{transport-parameter-definitions}} |
-| 0x0004 | TCID | {{transport-parameter-definitions}} |
+| 0x0000 | stream_fc_offset | {{transport-parameter-definitions}} |
+| 0x0001 | connection_fc_offset | {{transport-parameter-definitions}} |
+| 0x0002 | concurrent_streams | {{transport-parameter-definitions}} |
+| 0x0003 | idle_timeout | {{transport-parameter-definitions}} |
+| 0x0004 | truncate_connection_id | {{transport-parameter-definitions}} |
 {: #iana-tp-table title="Initial QUIC Transport Parameters Entries"}
 
 
