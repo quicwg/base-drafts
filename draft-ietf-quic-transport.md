@@ -870,8 +870,8 @@ The client includes two fields in the transport parameters:
 * The negotiated_version is the version that was finally selected for use.  This
   MUST be identical to the value that is on the packet that carries the
   ClientHello.  A server that receives a negotiated_version that does not match
-  the version of QUIC that is in use MUST terminate the connection with a TBD
-  error code.
+  the version of QUIC that is in use MUST terminate the connection with a
+  QUIC_VERSION_NEGOTIATION_MISMATCH error code.
 
 * The initial_version is the version that the client initially attempted to use.
   If the server did not send a version negotiation packet
