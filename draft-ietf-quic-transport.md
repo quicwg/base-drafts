@@ -780,10 +780,10 @@ stream_fc_offset (0x0000):
 
 connection_fc_offset (0x0001):
 
-: The connection level flow control offset parameter contains the initial connection
-  flow control window encoded as an unsigned 32-bit integer.  The sender of this
-  parameter sets the byte offset for connection level flow control to this
-  value.  This is equivalent to sending a WINDOW_UPDATE
+: The connection level flow control offset parameter contains the initial
+  connection flow control window encoded as an unsigned 32-bit integer.  The
+  sender of this parameter sets the byte offset for connection level flow
+  control to this value.  This is equivalent to sending a WINDOW_UPDATE
   ({{frame-window-update}}) for stream 0 immediately after completing the
   handshake.
 
