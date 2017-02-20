@@ -1,5 +1,108 @@
 [
   {
+    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/327",
+    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
+    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/327/labels{/name}",
+    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/327/comments",
+    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/327/events",
+    "html_url": "https://github.com/quicwg/base-drafts/issues/327",
+    "id": 208778914,
+    "number": 327,
+    "title": "Does PMTU fail really want unauthenticated PUBLIC_RESET?",
+    "user": {
+      "login": "mcmanus",
+      "id": 260531,
+      "avatar_url": "https://avatars.githubusercontent.com/u/260531?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/mcmanus",
+      "html_url": "https://github.com/mcmanus",
+      "followers_url": "https://api.github.com/users/mcmanus/followers",
+      "following_url": "https://api.github.com/users/mcmanus/following{/other_user}",
+      "gists_url": "https://api.github.com/users/mcmanus/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/mcmanus/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/mcmanus/subscriptions",
+      "organizations_url": "https://api.github.com/users/mcmanus/orgs",
+      "repos_url": "https://api.github.com/users/mcmanus/repos",
+      "events_url": "https://api.github.com/users/mcmanus/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/mcmanus/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+
+    ],
+    "state": "open",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 0,
+    "created_at": "2017-02-20T04:01:15Z",
+    "updated_at": "2017-02-20T04:01:15Z",
+    "closed_at": null,
+    "body": "section 8 of transport:`\r\n\r\n>  If a QUIC endpoint determines that the PMTU between any pair of local and remote IP addresses has fallen below 1280 octets, it MUST immediately cease sending QUIC packets between those IP addresses. This may result in abrupt termination of the connection if all pairs are affected. In this case, an endpoint SHOULD send a Public Reset packet to indicate the failure. \r\n\r\nbut PR is defined as being a last resort and it is of course not authenticated.. while it is short, a CONNECTION_CLOSE only packet would also be below minimum MTUs for IPvmumble, and is authenticated and could carry some diagnostic information.\r\n\r\nIt seems like this error can be authenticated and therefore should be.. and more generally we shouldn't promote error reporting to RST as its interaction with already sent data is very unclear if TCP RST is any kind of corollary.\r\n`"
+  },
+  {
+    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/326",
+    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
+    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/326/labels{/name}",
+    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/326/comments",
+    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/326/events",
+    "html_url": "https://github.com/quicwg/base-drafts/issues/326",
+    "id": 208774850,
+    "number": 326,
+    "title": "Default idle timeout",
+    "user": {
+      "login": "martinthomson",
+      "id": 67641,
+      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/martinthomson",
+      "html_url": "https://github.com/martinthomson",
+      "followers_url": "https://api.github.com/users/martinthomson/followers",
+      "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
+      "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
+      "organizations_url": "https://api.github.com/users/martinthomson/orgs",
+      "repos_url": "https://api.github.com/users/martinthomson/repos",
+      "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/martinthomson/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 481871311,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/editorial",
+        "name": "editorial",
+        "color": "0e8a16",
+        "default": false
+      },
+      {
+        "id": 481871399,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
+        "name": "transport",
+        "color": "fbca04",
+        "default": false
+      }
+    ],
+    "state": "open",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 0,
+    "created_at": "2017-02-20T03:19:39Z",
+    "updated_at": "2017-02-20T03:19:39Z",
+    "closed_at": null,
+    "body": "The draft declares:\r\n> The default idle timeout for a QUIC connection is 30 seconds\r\n\r\nBut there are no situations in which a default is actually needed, since the parameter is mandatory to signal."
+  },
+  {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/325",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
     "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/325/labels{/name}",
@@ -29,7 +132,20 @@
       "site_admin": false
     },
     "labels": [
-
+      {
+        "id": 481871311,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/editorial",
+        "name": "editorial",
+        "color": "0e8a16",
+        "default": false
+      },
+      {
+        "id": 481871399,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
+        "name": "transport",
+        "color": "fbca04",
+        "default": false
+      }
     ],
     "state": "open",
     "locked": false,
@@ -38,9 +154,9 @@
 
     ],
     "milestone": null,
-    "comments": 0,
+    "comments": 2,
     "created_at": "2017-02-18T04:37:30Z",
-    "updated_at": "2017-02-18T04:37:30Z",
+    "updated_at": "2017-02-20T04:21:22Z",
     "closed_at": null,
     "body": "There's conflicting information in Section 6.1:\r\n\r\nFirst it says\r\n\r\n> If the packet contains a version that is acceptable to the server, the server proceeds with the handshake (Section 6.2). All subsequent packets sent by the server MUST have the VERSION flag unset.\r\n\r\nTwo paragraphs later it says\r\n\r\n> The client MUST set the VERSION flag and include its selected version on all packets until it has 1-RTT keys and it has received a packet from the server that does not have the VERSION flag set.\r\n\r\nThis is conflicting, because the client may receive a packet from the server (which is not a Version Negotiation Packet, meaning that the server accepted the proposed version) before having the 1-RTT keys.\r\n\r\nFurthermore, the last part of the last sentence makes little sense anyway. It's impossible for the client to have 1-RTT keys unless the server already accepted the version."
   },
@@ -96,9 +212,9 @@
 
     ],
     "milestone": null,
-    "comments": 2,
+    "comments": 5,
     "created_at": "2017-02-17T22:02:06Z",
-    "updated_at": "2017-02-18T02:19:20Z",
+    "updated_at": "2017-02-20T06:44:15Z",
     "closed_at": null,
     "body": "The text currently mandates (MUST!) a 4 times safety margin against reordering when picking the packet number size.  This is purely a safety margin feature, so mandating a value isn't justified.\r\n\r\nAn implementation could, though perhaps it is unwise, use a much smaller packet number than this.  The risk is that there is reordering greater than 2^size and the packets are delivered but cannot be recovered at the receiver.  That's terrible, it will trigger loss recovery and send bad signals.  However, the protocol doesn't actually break.\r\n\r\nAt a minimum, we should make this a recommendation.  Setting a mandatory floor on the value might be reasonable, but I'd be reluctant to do that unless it was pretty low, or if the value were different for different packet number sizes (smaller margins are probably more justifiable for larger packet number encodings).\r\n\r\nIdeally, we should science this and try to measure probabilities of reordering.  Ideally reordering probability as a function of outstanding packets."
   },
@@ -143,7 +259,7 @@
     "milestone": null,
     "comments": 0,
     "created_at": "2017-02-17T17:05:27Z",
-    "updated_at": "2017-02-17T17:07:22Z",
+    "updated_at": "2017-02-20T00:37:06Z",
     "closed_at": null,
     "pull_request": {
       "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/316",
@@ -252,7 +368,7 @@
     "milestone": null,
     "comments": 0,
     "created_at": "2017-02-17T14:05:56Z",
-    "updated_at": "2017-02-17T15:42:12Z",
+    "updated_at": "2017-02-20T00:32:18Z",
     "closed_at": null,
     "pull_request": {
       "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/313",
@@ -314,9 +430,9 @@
 
     ],
     "milestone": null,
-    "comments": 9,
+    "comments": 10,
     "created_at": "2017-02-15T13:00:20Z",
-    "updated_at": "2017-02-17T17:52:57Z",
+    "updated_at": "2017-02-20T00:43:23Z",
     "closed_at": null,
     "body": "Google-QUIC had an issue where post-handshake QUIC packets were being dropped, because a bit changed in the public flags, and a middlebox no longer identified it as QUIC.\r\n\r\nIn order to ensure the entire public flags byte is usable, I suggest we GREASE it by defining the entire space as valid.\r\n\r\nBuilding on Jana's proposal for the public header with a flags byte as a set of codepoints: https://gist.github.com/janaiyengar/b05acb3af17d6e938d25befc69c11eae\r\n\r\nThe goal is to provide a simple mathematical mapping from any value of the public flags onto a frame type.  \r\n\r\nMy suggestion is to lookup the frame type, and if it's not defined, mod the flags value by the number of frame types defined in that phase(short or long form) and pick the type with that index when ordering the frame types by value.\r\n\r\nIf an initial packet number is chosen randomly, and the connection ID is as well, greasing the flags byte and version (#112 and #296) covers everything that is not encrypted."
   },
@@ -1524,7 +1640,7 @@
     "milestone": null,
     "comments": 0,
     "created_at": "2017-02-09T00:00:04Z",
-    "updated_at": "2017-02-09T00:23:05Z",
+    "updated_at": "2017-02-20T06:46:32Z",
     "closed_at": null,
     "pull_request": {
       "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/275",
@@ -1741,7 +1857,8 @@
     "updated_at": "2017-02-15T05:17:41Z",
     "closed_at": null,
     "body": "This needs to be written down.  I think that the best outcome would be to include BOTH a TLS alert and a QUIC error code (in a CONNECTION_CLOSE frame)."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/271",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -1856,8 +1973,7 @@
     "updated_at": "2017-02-10T02:36:51Z",
     "closed_at": null,
     "body": "In Mirja's Management draft:\r\n[https://tools.ietf.org/html/draft-kuehlewind-quic-appman-00#section-3](url)\r\n\r\n> [EDITOR'S NOTE: the addition of a simple packet number echo would\r\n   allow passive RTT measurement and partial passive downstream loss/\r\n   reordering measurement.  Packet number echo can be sampled at the\r\n   echo-side (i.e. one-in-N packets or 1/p packets can carry an echo)\r\n   for efficiency tradeoff, if necessary.]\r\n\r\nI endorse this idea. Service providers are very interesting in measuring their users' quality of experience and this is one key thing we can expose to enable that. On the face of it, it seems that the privacy hit is marginal."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/267",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3480,7 +3596,8 @@
     "updated_at": "2017-01-24T23:45:10Z",
     "closed_at": null,
     "body": "It may be desirable for the client to increase the flow control window mid-connection (it observes that client actually has very high BDP; it decides based on application request by peer that it will send a lot of data; it decides that it trusts the peer for some reason; potentially other options).  Currently, we can bump connection flow control window without an issue, but any new individual streams are stuck with whatever was initially negotiated.  We may want to add a mechanism to increase initial stream flow control window mid-connection."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/217",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3596,8 +3713,7 @@
     "updated_at": "2017-01-25T04:24:39Z",
     "closed_at": null,
     "body": "There is some sadness about public reset. See PR #20"
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/211",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5326,7 +5442,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/171.patch"
     },
     "body": "A rough draft of a fix for #165.  Key changes:\r\n\r\n- RST_STREAM kills only the sender's direction, not both.  (Retains the existing requirement to respond with RST_STREAM with another RST_STREAM if the stream isn't already closed, which eventually leads to the same result.)\r\n- New REQUEST_RST frame allows peer to solicit a RST_STREAM; text states that this reflects an app recv_close, and that received data is being discarded\r\n\r\nThis should solve the scenarios outlined in #165; a server can ask a client to RST_STREAM its own direction after having sent an early response.  Feedback welcome, of course -- please point out anything I've missed."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/170",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5485,8 +5602,7 @@
     "updated_at": "2017-01-26T07:24:42Z",
     "closed_at": null,
     "body": "I would like to see some language in the loss recovery document about client actions when the first handshake message is lost. We have overloaded this loss signal with multiple meanings/responses:\r\n\r\n(1) Retransmit (due to garden-variety network loss)\r\n(2) Change MTU and retransmit (due to MTU problems, though we might see ICMP here?)\r\n(3) Failover to TCP (middleboxes eating QUIC)\r\n(4) Give up (path failure)\r\n\r\nIf I were implementing a client using these documents, I am not sure how I would handle a CHLO loss given these conflicting imperatives. I could accept having SHOULDs instead of MUSTs, but there ought to be something."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/167",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -6828,7 +6944,7 @@
     "milestone": null,
     "comments": 3,
     "created_at": "2017-01-04T10:43:45Z",
-    "updated_at": "2017-02-18T09:52:50Z",
+    "updated_at": "2017-02-20T06:46:11Z",
     "closed_at": null,
     "pull_request": {
       "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/122",
@@ -7516,7 +7632,8 @@
     "updated_at": "2017-01-10T04:40:58Z",
     "closed_at": null,
     "body": "NumTimestamps is supposed to specify the \"total number of pairs following, including the First Timestamp.\"  If this is zero, presumably the Delta Largest Acked and First Timestamp fields are absent.  If this is one, presumably these fields are present, but no others are.\r\n\r\nThe *subsequent* fields then say they are repeated \"Num Timestamps\" times, which contradicts my logic above.  I'm guessing this should actually be \"Num Timestamps - 1\" times?"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/97",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7639,8 +7756,7 @@
     "updated_at": "2017-01-25T04:47:27Z",
     "closed_at": null,
     "body": "Need discussion of how CONNECT works.  Initial thought:\r\n\r\n - Client does not close data stream after sending request\r\n - If server responds (on the message control stream) with success, the data stream is being relayed into a TCP connection by the server.\r\n\r\nIs there a QUIC-CONNECT?  (Probably not, and almost certainly not in this document.)"
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/89",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -9677,7 +9793,8 @@
     "updated_at": "2016-11-25T02:07:58Z",
     "closed_at": null,
     "body": "There are probably lots of these, which we should include in the transport doc.\r\n\r\nOff the top of my head: client, server, peer, endpoint, stream, frame, packet, packet number, stream error, connection error, outstanding/unacknowledged.\r\n\r\nMore complicated concepts belong in requisite documents: e.g., loss detection, retransmission, and congestion; flights, etc..."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/20",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -9799,8 +9916,7 @@
     "updated_at": "2016-11-28T23:54:32Z",
     "closed_at": null,
     "body": "...and as in #8, anything else that isn't relevant."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/8",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
