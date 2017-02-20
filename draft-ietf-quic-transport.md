@@ -936,9 +936,9 @@ validation is performed by the core transport protocol.
 ### Client Address Validation Procedure
 
 QUIC uses token-based address validation.  Any time the server wishes to
-validate a client address, it provides the client with a token.  If the client
-is able to return that token, it proves to the server that it received the
-token.
+validate a client address, it provides the client with a token.  As long as the
+token cannot be easily guessed (see {{token-integrity}}), if the client is able
+to return that token, it proves to the server that it received the token.
 
 During the processing of the cryptographic handshake messages from a client, TLS
 will request that the transport make a decision about whether to proceed based
@@ -988,12 +988,18 @@ client with the token.  In TLS the token is included in the ticket that is used
 for resumption and 0-RTT, which is carried in a NewSessionTicket message.
 
 
-### Address Validation Token Integrity
+### Address Validation Token Integrity {#token-integrity}
+
+An address validation token MUST be difficult to guess.  Including a large
+enough random value in the token would be sufficient, but this depends on the
+server remembering the value it sends to clients.
 
 A token-based scheme allows the server to offload any state associated with
 validation to the client.  For this design to work, the token MUST be covered by
-integrity protection.  Without integrity protection, malicious clients could
-generate or guess values for tokens that would be accepted by the server.
+integrity protection against modification or falsification by clients.  Without
+integrity protection, malicious clients could generate or guess values for
+tokens that would be accepted by the server.  Only the server requires access to
+the integrity protection key for tokens.
 
 In TLS the address validation token is often bundled with the information that
 TLS requires, such as the resumption secret.  In this case, adding integrity
