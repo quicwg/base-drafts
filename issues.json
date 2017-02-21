@@ -103,64 +103,6 @@
     "body": "The draft declares:\r\n> The default idle timeout for a QUIC connection is 30 seconds\r\n\r\nBut there are no situations in which a default is actually needed, since the parameter is mandatory to signal."
   },
   {
-    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/325",
-    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
-    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/325/labels{/name}",
-    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/325/comments",
-    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/325/events",
-    "html_url": "https://github.com/quicwg/base-drafts/issues/325",
-    "id": 208612123,
-    "number": 325,
-    "title": "clarify when a client needs to include the version",
-    "user": {
-      "login": "marten-seemann",
-      "id": 1478487,
-      "avatar_url": "https://avatars.githubusercontent.com/u/1478487?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/marten-seemann",
-      "html_url": "https://github.com/marten-seemann",
-      "followers_url": "https://api.github.com/users/marten-seemann/followers",
-      "following_url": "https://api.github.com/users/marten-seemann/following{/other_user}",
-      "gists_url": "https://api.github.com/users/marten-seemann/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/marten-seemann/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/marten-seemann/subscriptions",
-      "organizations_url": "https://api.github.com/users/marten-seemann/orgs",
-      "repos_url": "https://api.github.com/users/marten-seemann/repos",
-      "events_url": "https://api.github.com/users/marten-seemann/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/marten-seemann/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "labels": [
-      {
-        "id": 481871311,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/editorial",
-        "name": "editorial",
-        "color": "0e8a16",
-        "default": false
-      },
-      {
-        "id": 481871399,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
-        "name": "transport",
-        "color": "fbca04",
-        "default": false
-      }
-    ],
-    "state": "open",
-    "locked": false,
-    "assignee": null,
-    "assignees": [
-
-    ],
-    "milestone": null,
-    "comments": 3,
-    "created_at": "2017-02-18T04:37:30Z",
-    "updated_at": "2017-02-20T23:25:51Z",
-    "closed_at": null,
-    "body": "There's conflicting information in Section 6.1:\r\n\r\nFirst it says\r\n\r\n> If the packet contains a version that is acceptable to the server, the server proceeds with the handshake (Section 6.2). All subsequent packets sent by the server MUST have the VERSION flag unset.\r\n\r\nTwo paragraphs later it says\r\n\r\n> The client MUST set the VERSION flag and include its selected version on all packets until it has 1-RTT keys and it has received a packet from the server that does not have the VERSION flag set.\r\n\r\nThis is conflicting, because the client may receive a packet from the server (which is not a Version Negotiation Packet, meaning that the server accepted the proposed version) before having the 1-RTT keys.\r\n\r\nFurthermore, the last part of the last sentence makes little sense anyway. It's impossible for the client to have 1-RTT keys unless the server already accepted the version."
-  },
-  {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/323",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
     "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/323/labels{/name}",
@@ -326,57 +268,6 @@
     "updated_at": "2017-02-17T14:53:33Z",
     "closed_at": null,
     "body": "For some of the non-security folks, I could see that the phase \"under crypto cover\" might not make sense (from s3.5:\r\n\r\n    Some early handshake packets, such as the Version Negotiation packet, are not encrypted, but information sent in these unencrypted handshake packets is later verified under crypto cover.\r\n\r\nMaybe:\r\n\r\n  Some early handshake packets, such as the Version Negotiation packet, are not encrypted, but information sent in these unencrypted handshake packets are later verified as part of the cryptographic processing."
-  },
-  {
-    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/313",
-    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
-    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/313/labels{/name}",
-    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/313/comments",
-    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/313/events",
-    "html_url": "https://github.com/quicwg/base-drafts/pull/313",
-    "id": 208451513,
-    "number": 313,
-    "title": "Fix recovery formatting",
-    "user": {
-      "login": "ianswett",
-      "id": 20072817,
-      "avatar_url": "https://avatars.githubusercontent.com/u/20072817?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/ianswett",
-      "html_url": "https://github.com/ianswett",
-      "followers_url": "https://api.github.com/users/ianswett/followers",
-      "following_url": "https://api.github.com/users/ianswett/following{/other_user}",
-      "gists_url": "https://api.github.com/users/ianswett/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/ianswett/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/ianswett/subscriptions",
-      "organizations_url": "https://api.github.com/users/ianswett/orgs",
-      "repos_url": "https://api.github.com/users/ianswett/repos",
-      "events_url": "https://api.github.com/users/ianswett/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/ianswett/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "labels": [
-
-    ],
-    "state": "open",
-    "locked": false,
-    "assignee": null,
-    "assignees": [
-
-    ],
-    "milestone": null,
-    "comments": 0,
-    "created_at": "2017-02-17T14:05:56Z",
-    "updated_at": "2017-02-21T13:20:23Z",
-    "closed_at": null,
-    "pull_request": {
-      "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/313",
-      "html_url": "https://github.com/quicwg/base-drafts/pull/313",
-      "diff_url": "https://github.com/quicwg/base-drafts/pull/313.diff",
-      "patch_url": "https://github.com/quicwg/base-drafts/pull/313.patch"
-    },
-    "body": "* Replace uses of encrypted with protected.\r\n* Constistenly use * instead of x everywhere for multiplication\r\n* Remove trailing ;\r\n* Convert the constants and variables into Kramdown definition lists."
   },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/311",
@@ -1177,9 +1068,9 @@
 
     ],
     "milestone": null,
-    "comments": 2,
+    "comments": 3,
     "created_at": "2017-02-10T08:41:14Z",
-    "updated_at": "2017-02-21T02:15:01Z",
+    "updated_at": "2017-02-21T14:18:22Z",
     "closed_at": null,
     "body": "The draft currently says:\r\n\r\n> In this case, an endpoint SHOULD send a Public Reset packet to indicate the failure. \r\n\r\n(This is in the context of discovering that the MTU is too small.)\r\n\r\nGiven that it doesn't take much to send an authenticated CONNECTION_CLOSE in a packet that won't risk breaking even the minimum IPv4 MTU, I think that this suggestion too much.  I would change this to \"treat this as a connection error of SOME_ERROR_CODE\" either defining a new MTU_TOO_SMALL error code, or reusing an existing one."
   },
@@ -1857,8 +1748,7 @@
     "updated_at": "2017-02-15T05:17:41Z",
     "closed_at": null,
     "body": "This needs to be written down.  I think that the best outcome would be to include BOTH a TLS alert and a QUIC error code (in a CONNECTION_CLOSE frame)."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/271",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -1973,7 +1863,8 @@
     "updated_at": "2017-02-10T02:36:51Z",
     "closed_at": null,
     "body": "In Mirja's Management draft:\r\n[https://tools.ietf.org/html/draft-kuehlewind-quic-appman-00#section-3](url)\r\n\r\n> [EDITOR'S NOTE: the addition of a simple packet number echo would\r\n   allow passive RTT measurement and partial passive downstream loss/\r\n   reordering measurement.  Packet number echo can be sampled at the\r\n   echo-side (i.e. one-in-N packets or 1/p packets can carry an echo)\r\n   for efficiency tradeoff, if necessary.]\r\n\r\nI endorse this idea. Service providers are very interesting in measuring their users' quality of experience and this is one key thing we can expose to enable that. On the face of it, it seems that the privacy hit is marginal."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/267",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3596,8 +3487,7 @@
     "updated_at": "2017-01-24T23:45:10Z",
     "closed_at": null,
     "body": "It may be desirable for the client to increase the flow control window mid-connection (it observes that client actually has very high BDP; it decides based on application request by peer that it will send a lot of data; it decides that it trusts the peer for some reason; potentially other options).  Currently, we can bump connection flow control window without an issue, but any new individual streams are stuck with whatever was initially negotiated.  We may want to add a mechanism to increase initial stream flow control window mid-connection."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/217",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3713,7 +3603,8 @@
     "updated_at": "2017-01-25T04:24:39Z",
     "closed_at": null,
     "body": "There is some sadness about public reset. See PR #20"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/211",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5442,8 +5333,7 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/171.patch"
     },
     "body": "A rough draft of a fix for #165.  Key changes:\r\n\r\n- RST_STREAM kills only the sender's direction, not both.  (Retains the existing requirement to respond with RST_STREAM with another RST_STREAM if the stream isn't already closed, which eventually leads to the same result.)\r\n- New REQUEST_RST frame allows peer to solicit a RST_STREAM; text states that this reflects an app recv_close, and that received data is being discarded\r\n\r\nThis should solve the scenarios outlined in #165; a server can ask a client to RST_STREAM its own direction after having sent an early response.  Feedback welcome, of course -- please point out anything I've missed."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/170",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5602,7 +5492,8 @@
     "updated_at": "2017-01-26T07:24:42Z",
     "closed_at": null,
     "body": "I would like to see some language in the loss recovery document about client actions when the first handshake message is lost. We have overloaded this loss signal with multiple meanings/responses:\r\n\r\n(1) Retransmit (due to garden-variety network loss)\r\n(2) Change MTU and retransmit (due to MTU problems, though we might see ICMP here?)\r\n(3) Failover to TCP (middleboxes eating QUIC)\r\n(4) Give up (path failure)\r\n\r\nIf I were implementing a client using these documents, I am not sure how I would handle a CHLO loss given these conflicting imperatives. I could accept having SHOULDs instead of MUSTs, but there ought to be something."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/167",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7668,8 +7559,7 @@
     "updated_at": "2017-02-20T18:50:14Z",
     "closed_at": null,
     "body": "NumTimestamps is supposed to specify the \"total number of pairs following, including the First Timestamp.\"  If this is zero, presumably the Delta Largest Acked and First Timestamp fields are absent.  If this is one, presumably these fields are present, but no others are.\r\n\r\nThe *subsequent* fields then say they are repeated \"Num Timestamps\" times, which contradicts my logic above.  I'm guessing this should actually be \"Num Timestamps - 1\" times?"
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/97",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7792,7 +7682,8 @@
     "updated_at": "2017-01-25T04:47:27Z",
     "closed_at": null,
     "body": "Need discussion of how CONNECT works.  Initial thought:\r\n\r\n - Client does not close data stream after sending request\r\n - If server responds (on the message control stream) with success, the data stream is being relayed into a TCP connection by the server.\r\n\r\nIs there a QUIC-CONNECT?  (Probably not, and almost certainly not in this document.)"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/89",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -9829,8 +9720,7 @@
     "updated_at": "2016-11-25T02:07:58Z",
     "closed_at": null,
     "body": "There are probably lots of these, which we should include in the transport doc.\r\n\r\nOff the top of my head: client, server, peer, endpoint, stream, frame, packet, packet number, stream error, connection error, outstanding/unacknowledged.\r\n\r\nMore complicated concepts belong in requisite documents: e.g., loss detection, retransmission, and congestion; flights, etc..."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/20",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -9952,7 +9842,8 @@
     "updated_at": "2016-11-28T23:54:32Z",
     "closed_at": null,
     "body": "...and as in #8, anything else that isn't relevant."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/8",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
