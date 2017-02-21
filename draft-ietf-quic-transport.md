@@ -678,7 +678,7 @@ connection establishment latency.  QUIC allocates stream 1 for the cryptographic
 handshake.  This version of QUIC uses TLS 1.3 {{QUIC-TLS}}.
 
 QUIC provides this stream with reliable, ordered delivery of data.  In return,
-The cryptographic handshake provides QUIC with:
+the cryptographic handshake provides QUIC with:
 
 * authenticated key exchange, where
 
