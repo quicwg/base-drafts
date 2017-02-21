@@ -1418,7 +1418,7 @@
     "milestone": null,
     "comments": 0,
     "created_at": "2017-02-09T04:08:26Z",
-    "updated_at": "2017-02-09T04:08:26Z",
+    "updated_at": "2017-02-21T23:50:48Z",
     "closed_at": null,
     "pull_request": {
       "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/278",
@@ -1518,7 +1518,7 @@
     "milestone": null,
     "comments": 0,
     "created_at": "2017-02-09T00:00:04Z",
-    "updated_at": "2017-02-21T23:20:43Z",
+    "updated_at": "2017-02-21T23:40:07Z",
     "closed_at": null,
     "pull_request": {
       "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/275",
@@ -1526,7 +1526,7 @@
       "diff_url": "https://github.com/quicwg/base-drafts/pull/275.diff",
       "patch_url": "https://github.com/quicwg/base-drafts/pull/275.patch"
     },
-    "body": "This completes the changes that were started in #120.  As agreed at the interim, TLS will host the source address validation packets, but the transport will be responsible for constructing and validating the token.  I've expanded the detailed interface section to cover this.\r\n\r\nThere's some finessing in the text around which part adds the integrity check, with the recognition that - because the token will likely be put alongside other TLS information that needs integrity checks - TLS is probably the best place to do that.\r\n\r\nThis builds on #122 because to do otherwise would be to invite merge conflict hell.  Once that is merged, this will be much easier to review.\r\n\r\nCloses #52."
+    "body": "This completes the changes that were started in #120.  As agreed at the interim, TLS will host the source address validation packets, but the transport will be responsible for constructing and validating the token.  I've expanded the detailed interface section to cover this.\r\n\r\nThere's some finessing in the text around which part adds the integrity check, with the recognition that - because the token will likely be put alongside other TLS information that needs integrity checks - TLS is probably the best place to do that.\r\n\r\nThis builds on #122 because to do otherwise would be to invite merge conflict hell.  Once that is merged, this will be much easier to review.\r\n\r\nCloses #174, #52, #118."
   },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/274",
@@ -4710,13 +4710,6 @@
         "default": false
       },
       {
-        "id": 517015633,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/needs-discussion",
-        "name": "needs-discussion",
-        "color": "d93f0b",
-        "default": false
-      },
-      {
         "id": 481871399,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
         "name": "transport",
@@ -4733,7 +4726,7 @@
     "milestone": null,
     "comments": 1,
     "created_at": "2017-01-20T07:47:21Z",
-    "updated_at": "2017-01-20T15:44:47Z",
+    "updated_at": "2017-02-21T23:39:08Z",
     "closed_at": null,
     "body": "The question is whether we maintain TLS as some abstract concept or not.\r\n\r\nWe could talk about \"the cryptographic handshake\" and features that it provides in the abstract when referring to them in the transport document.  Or we could just describe how this protocol works in concrete terms.\r\n\r\nProponents of the first seem to think that would make replacing TLS easier.  Others disagree.  Others think that replacing TLS would be a bad idea.  Others think that replacing TLS is the only rational choice.  Some people think that people who hold opposing opinions are completely nuts."
   },
@@ -7599,13 +7592,6 @@
         "name": "http",
         "color": "fbca04",
         "default": false
-      },
-      {
-        "id": 517015633,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/needs-discussion",
-        "name": "needs-discussion",
-        "color": "d93f0b",
-        "default": false
       }
     ],
     "state": "open",
@@ -7617,7 +7603,7 @@
     "milestone": null,
     "comments": 5,
     "created_at": "2016-12-09T23:34:28Z",
-    "updated_at": "2017-01-14T00:54:54Z",
+    "updated_at": "2017-02-21T23:41:03Z",
     "closed_at": null,
     "body": "Because of a stated goal from some implementers to reuse HTTP/2 framing as much as possible, the draft currently augments the HTTP/2 Frame Type Registry with a \"Supported Protocol\" column, allowing a frame to be defined for HTTP/2, HTTP/QUIC, or both.  A specification is required for each supported protocol.\r\n\r\nHowever, in the current draft, all but one \"Both\" frames are *different* between HTTP/2 and HTTP/QUIC.  Small or large, nearly every frame has required some modification to work over QUIC.  If we accept #80 , *all* frames will be different between HTTP/2 and HTTP/QUIC.\r\n\r\nAt that point, is there really a point in continuing to define HTTP/QUIC in relation to HTTP/2, or should we just admit that it's a new, separate thing that's heavily inspired by HTTP/2?  Separate registry, etc., and future extensions can register themselves with both if appropriate?  Or do we keep the same registry anyway to enforce that you'll never wind up with totally unrelated frames sharing the same value across the two protocols?"
   }
