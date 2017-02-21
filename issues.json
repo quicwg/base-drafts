@@ -1,14 +1,14 @@
 [
   {
-    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/327",
+    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/328",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
-    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/327/labels{/name}",
-    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/327/comments",
-    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/327/events",
-    "html_url": "https://github.com/quicwg/base-drafts/issues/327",
-    "id": 208778914,
-    "number": 327,
-    "title": "Does PMTU fail really want unauthenticated PUBLIC_RESET?",
+    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/328/labels{/name}",
+    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/328/comments",
+    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/328/events",
+    "html_url": "https://github.com/quicwg/base-drafts/issues/328",
+    "id": 208948748,
+    "number": 328,
+    "title": "TIME_WAIT",
     "user": {
       "login": "mcmanus",
       "id": 260531,
@@ -38,11 +38,11 @@
 
     ],
     "milestone": null,
-    "comments": 0,
-    "created_at": "2017-02-20T04:01:15Z",
-    "updated_at": "2017-02-20T04:01:15Z",
+    "comments": 2,
+    "created_at": "2017-02-20T17:57:59Z",
+    "updated_at": "2017-02-21T02:10:57Z",
     "closed_at": null,
-    "body": "section 8 of transport:`\r\n\r\n>  If a QUIC endpoint determines that the PMTU between any pair of local and remote IP addresses has fallen below 1280 octets, it MUST immediately cease sending QUIC packets between those IP addresses. This may result in abrupt termination of the connection if all pairs are affected. In this case, an endpoint SHOULD send a Public Reset packet to indicate the failure. \r\n\r\nbut PR is defined as being a last resort and it is of course not authenticated.. while it is short, a CONNECTION_CLOSE only packet would also be below minimum MTUs for IPvmumble, and is authenticated and could carry some diagnostic information.\r\n\r\nIt seems like this error can be authenticated and therefore should be.. and more generally we shouldn't promote error reporting to RST as its interaction with already sent data is very unclear if TCP RST is any kind of corollary.\r\n`"
+    "body": "6.4 currently has\r\n`TODO: Connections that are terminated are added to a TIME_WAIT list at the server, so as to absorb any straggler packets in the network. Discuss TIME_WAIT list.`\r\n\r\nthis is an open issue for the TODO.\r\n\r\nSome initial thoughts: is it always the server that is in TIME_WAIT as opposed to the TCP active close behavior? (seems fine at first blush, but asking for a friend who is less sure :)).\r\n\r\nwhat happens in the TIME_WAIT state.. retransmissions? What happens when you receive packets (ignored - trigger retrrans, RST?)"
   },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/326",
@@ -154,9 +154,9 @@
 
     ],
     "milestone": null,
-    "comments": 2,
+    "comments": 3,
     "created_at": "2017-02-18T04:37:30Z",
-    "updated_at": "2017-02-20T04:21:22Z",
+    "updated_at": "2017-02-20T23:25:51Z",
     "closed_at": null,
     "body": "There's conflicting information in Section 6.1:\r\n\r\nFirst it says\r\n\r\n> If the packet contains a version that is acceptable to the server, the server proceeds with the handshake (Section 6.2). All subsequent packets sent by the server MUST have the VERSION flag unset.\r\n\r\nTwo paragraphs later it says\r\n\r\n> The client MUST set the VERSION flag and include its selected version on all packets until it has 1-RTT keys and it has received a packet from the server that does not have the VERSION flag set.\r\n\r\nThis is conflicting, because the client may receive a packet from the server (which is not a Version Negotiation Packet, meaning that the server accepted the proposed version) before having the 1-RTT keys.\r\n\r\nFurthermore, the last part of the last sentence makes little sense anyway. It's impossible for the client to have 1-RTT keys unless the server already accepted the version."
   },
@@ -212,9 +212,9 @@
 
     ],
     "milestone": null,
-    "comments": 5,
+    "comments": 11,
     "created_at": "2017-02-17T22:02:06Z",
-    "updated_at": "2017-02-20T06:44:15Z",
+    "updated_at": "2017-02-21T11:43:58Z",
     "closed_at": null,
     "body": "The text currently mandates (MUST!) a 4 times safety margin against reordering when picking the packet number size.  This is purely a safety margin feature, so mandating a value isn't justified.\r\n\r\nAn implementation could, though perhaps it is unwise, use a much smaller packet number than this.  The risk is that there is reordering greater than 2^size and the packets are delivered but cannot be recovered at the receiver.  That's terrible, it will trigger loss recovery and send bad signals.  However, the protocol doesn't actually break.\r\n\r\nAt a minimum, we should make this a recommendation.  Setting a mandatory floor on the value might be reasonable, but I'd be reluctant to do that unless it was pretty low, or if the value were different for different packet number sizes (smaller margins are probably more justifiable for larger packet number encodings).\r\n\r\nIdeally, we should science this and try to measure probabilities of reordering.  Ideally reordering probability as a function of outstanding packets."
   },
@@ -368,7 +368,7 @@
     "milestone": null,
     "comments": 0,
     "created_at": "2017-02-17T14:05:56Z",
-    "updated_at": "2017-02-20T00:32:18Z",
+    "updated_at": "2017-02-21T13:20:23Z",
     "closed_at": null,
     "pull_request": {
       "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/313",
@@ -1177,9 +1177,9 @@
 
     ],
     "milestone": null,
-    "comments": 1,
+    "comments": 2,
     "created_at": "2017-02-10T08:41:14Z",
-    "updated_at": "2017-02-15T05:22:13Z",
+    "updated_at": "2017-02-21T02:15:01Z",
     "closed_at": null,
     "body": "The draft currently says:\r\n\r\n> In this case, an endpoint SHOULD send a Public Reset packet to indicate the failure. \r\n\r\n(This is in the context of discovering that the MTU is too small.)\r\n\r\nGiven that it doesn't take much to send an authenticated CONNECTION_CLOSE in a packet that won't risk breaking even the minimum IPv4 MTU, I think that this suggestion too much.  I would change this to \"treat this as a connection error of SOME_ERROR_CODE\" either defining a new MTU_TOO_SMALL error code, or reusing an existing one."
   },
@@ -7622,14 +7622,50 @@
     ],
     "state": "open",
     "locked": false,
-    "assignee": null,
+    "assignee": {
+      "login": "ianswett",
+      "id": 20072817,
+      "avatar_url": "https://avatars.githubusercontent.com/u/20072817?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/ianswett",
+      "html_url": "https://github.com/ianswett",
+      "followers_url": "https://api.github.com/users/ianswett/followers",
+      "following_url": "https://api.github.com/users/ianswett/following{/other_user}",
+      "gists_url": "https://api.github.com/users/ianswett/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/ianswett/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/ianswett/subscriptions",
+      "organizations_url": "https://api.github.com/users/ianswett/orgs",
+      "repos_url": "https://api.github.com/users/ianswett/repos",
+      "events_url": "https://api.github.com/users/ianswett/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/ianswett/received_events",
+      "type": "User",
+      "site_admin": false
+    },
     "assignees": [
-
+      {
+        "login": "ianswett",
+        "id": 20072817,
+        "avatar_url": "https://avatars.githubusercontent.com/u/20072817?v=3",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/ianswett",
+        "html_url": "https://github.com/ianswett",
+        "followers_url": "https://api.github.com/users/ianswett/followers",
+        "following_url": "https://api.github.com/users/ianswett/following{/other_user}",
+        "gists_url": "https://api.github.com/users/ianswett/gists{/gist_id}",
+        "starred_url": "https://api.github.com/users/ianswett/starred{/owner}{/repo}",
+        "subscriptions_url": "https://api.github.com/users/ianswett/subscriptions",
+        "organizations_url": "https://api.github.com/users/ianswett/orgs",
+        "repos_url": "https://api.github.com/users/ianswett/repos",
+        "events_url": "https://api.github.com/users/ianswett/events{/privacy}",
+        "received_events_url": "https://api.github.com/users/ianswett/received_events",
+        "type": "User",
+        "site_admin": false
+      }
     ],
     "milestone": null,
-    "comments": 0,
+    "comments": 3,
     "created_at": "2016-12-26T23:21:00Z",
-    "updated_at": "2017-01-10T04:40:58Z",
+    "updated_at": "2017-02-20T18:50:14Z",
     "closed_at": null,
     "body": "NumTimestamps is supposed to specify the \"total number of pairs following, including the First Timestamp.\"  If this is zero, presumably the Delta Largest Acked and First Timestamp fields are absent.  If this is one, presumably these fields are present, but no others are.\r\n\r\nThe *subsequent* fields then say they are repeated \"Num Timestamps\" times, which contradicts my logic above.  I'm guessing this should actually be \"Num Timestamps - 1\" times?"
   }
@@ -7932,9 +7968,9 @@
 
     ],
     "milestone": null,
-    "comments": 4,
+    "comments": 8,
     "created_at": "2016-12-08T18:26:10Z",
-    "updated_at": "2017-01-20T02:59:38Z",
+    "updated_at": "2017-02-21T08:48:55Z",
     "closed_at": null,
     "body": "In HTTP/2, the CONTINUATION frame was [much loathed](https://github.com/http2/http2-spec/pull/548), but ultimately deemed a necessary evil since there are some truly, ridiculously large headers out there (*\\*cough\\** Kerberos *\\*cough\\**).  The current HTTP/QUIC draft allows a frame to be 64KB long before decoding the HPACK.  Is this large enough?  That was the boundary we'd said it would take in HTTP/2 to require a single frame.\r\n\r\nIf not, the current draft uses the END_HEADERS bit to indicate that another HEADERS frame will follow, which is effectively the same as CONTINUATION.  The same is not currently defined for PUSH_PROMISE (which really ought to be much smaller).\r\n\r\nIf so, could we drop the END_HEADERS thing entirely and say that HPACK-bearing frames are fully self-contained?  It would simplify a lot of client mechanics."
   },
@@ -7997,9 +8033,9 @@
 
     ],
     "milestone": null,
-    "comments": 2,
+    "comments": 3,
     "created_at": "2016-12-03T15:38:48Z",
-    "updated_at": "2017-02-08T19:11:56Z",
+    "updated_at": "2017-02-20T13:27:21Z",
     "closed_at": null,
     "body": "ECN is not currently mentioned in the recovery draft, but it should be included.\r\n\r\nMore importantly, the transport draft has no ability for the peer to communicate ECN marks back to the sender.  I suspect, like ECN, the use of this in the transport would be negotiable in the QUIC handshake.\r\n\r\nIn practice, there most userspace network stacks also cannot see if those marks are set when packets are read."
   },
