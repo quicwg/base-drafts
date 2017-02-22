@@ -1,5 +1,158 @@
 [
   {
+    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/334",
+    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
+    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/334/labels{/name}",
+    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/334/comments",
+    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/334/events",
+    "html_url": "https://github.com/quicwg/base-drafts/pull/334",
+    "id": 209379757,
+    "number": 334,
+    "title": "http-unused-reference",
+    "user": {
+      "login": "reschke",
+      "id": 332994,
+      "avatar_url": "https://avatars.githubusercontent.com/u/332994?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/reschke",
+      "html_url": "https://github.com/reschke",
+      "followers_url": "https://api.github.com/users/reschke/followers",
+      "following_url": "https://api.github.com/users/reschke/following{/other_user}",
+      "gists_url": "https://api.github.com/users/reschke/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/reschke/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/reschke/subscriptions",
+      "organizations_url": "https://api.github.com/users/reschke/orgs",
+      "repos_url": "https://api.github.com/users/reschke/repos",
+      "events_url": "https://api.github.com/users/reschke/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/reschke/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+
+    ],
+    "state": "open",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 0,
+    "created_at": "2017-02-22T08:06:18Z",
+    "updated_at": "2017-02-22T08:06:18Z",
+    "closed_at": null,
+    "pull_request": {
+      "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/334",
+      "html_url": "https://github.com/quicwg/base-drafts/pull/334",
+      "diff_url": "https://github.com/quicwg/base-drafts/pull/334.diff",
+      "patch_url": "https://github.com/quicwg/base-drafts/pull/334.patch"
+    },
+    "body": "This reference is unused."
+  },
+  {
+    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/333",
+    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
+    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/333/labels{/name}",
+    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/333/comments",
+    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/333/events",
+    "html_url": "https://github.com/quicwg/base-drafts/pull/333",
+    "id": 209377948,
+    "number": 333,
+    "title": "improve-sst-reference",
+    "user": {
+      "login": "reschke",
+      "id": 332994,
+      "avatar_url": "https://avatars.githubusercontent.com/u/332994?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/reschke",
+      "html_url": "https://github.com/reschke",
+      "followers_url": "https://api.github.com/users/reschke/followers",
+      "following_url": "https://api.github.com/users/reschke/following{/other_user}",
+      "gists_url": "https://api.github.com/users/reschke/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/reschke/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/reschke/subscriptions",
+      "organizations_url": "https://api.github.com/users/reschke/orgs",
+      "repos_url": "https://api.github.com/users/reschke/repos",
+      "events_url": "https://api.github.com/users/reschke/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/reschke/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+
+    ],
+    "state": "open",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 0,
+    "created_at": "2017-02-22T07:55:56Z",
+    "updated_at": "2017-02-22T08:13:36Z",
+    "closed_at": null,
+    "pull_request": {
+      "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/333",
+      "html_url": "https://github.com/quicwg/base-drafts/pull/333",
+      "diff_url": "https://github.com/quicwg/base-drafts/pull/333.diff",
+      "patch_url": "https://github.com/quicwg/base-drafts/pull/333.patch"
+    },
+    "body": ""
+  },
+  {
+    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/331",
+    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
+    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/331/labels{/name}",
+    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/331/comments",
+    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/331/events",
+    "html_url": "https://github.com/quicwg/base-drafts/pull/331",
+    "id": 209375364,
+    "number": 331,
+    "title": "recovery-unused-references",
+    "user": {
+      "login": "reschke",
+      "id": 332994,
+      "avatar_url": "https://avatars.githubusercontent.com/u/332994?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/reschke",
+      "html_url": "https://github.com/reschke",
+      "followers_url": "https://api.github.com/users/reschke/followers",
+      "following_url": "https://api.github.com/users/reschke/following{/other_user}",
+      "gists_url": "https://api.github.com/users/reschke/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/reschke/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/reschke/subscriptions",
+      "organizations_url": "https://api.github.com/users/reschke/orgs",
+      "repos_url": "https://api.github.com/users/reschke/repos",
+      "events_url": "https://api.github.com/users/reschke/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/reschke/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+
+    ],
+    "state": "open",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 0,
+    "created_at": "2017-02-22T07:40:26Z",
+    "updated_at": "2017-02-22T07:40:26Z",
+    "closed_at": null,
+    "pull_request": {
+      "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/331",
+      "html_url": "https://github.com/quicwg/base-drafts/pull/331",
+      "diff_url": "https://github.com/quicwg/base-drafts/pull/331.diff",
+      "patch_url": "https://github.com/quicwg/base-drafts/pull/331.patch"
+    },
+    "body": "These references are unused."
+  },
+  {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/330",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
     "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/330/labels{/name}",
@@ -1684,7 +1837,8 @@
     "updated_at": "2017-02-15T05:17:41Z",
     "closed_at": null,
     "body": "This needs to be written down.  I think that the best outcome would be to include BOTH a TLS alert and a QUIC error code (in a CONNECTION_CLOSE frame)."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/271",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -1850,8 +2004,7 @@
     "updated_at": "2017-02-08T04:53:08Z",
     "closed_at": null,
     "body": "PR #106 added the following requirement on servers:\r\n\r\n> Servers MUST reject the first plaintext packet received from a client if it its total size is less than 1280 octets, to mitigate amplification attacks.\r\n\r\nHowever, this runs into an issue in the case where there are IP header extensions that the client knows about but the server doesn't.  If the client is aware of the IP header extensions and constructs a packet with a smaller payload in order to comply with our recommendation to create a packet of exactly 1280 octets, the server will receive a packet that it thinks is too small.\r\n\r\nI see a few options:\r\n1. loosen the enforcement constraint on the server\r\n2. specify that the server only enforce the constraint if it sees the entire IP packet\r\n3. specify the minimum size and its enforcement in terms of payload size (we could set different values here to allow for header extensions)"
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/265",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3423,7 +3576,8 @@
     "updated_at": "2017-01-24T23:45:10Z",
     "closed_at": null,
     "body": "It may be desirable for the client to increase the flow control window mid-connection (it observes that client actually has very high BDP; it decides based on application request by peer that it will send a lot of data; it decides that it trusts the peer for some reason; potentially other options).  Currently, we can bump connection flow control window without an issue, but any new individual streams are stuck with whatever was initially negotiated.  We may want to add a mechanism to increase initial stream flow control window mid-connection."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/217",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3597,8 +3751,7 @@
     "updated_at": "2017-01-24T01:29:57Z",
     "closed_at": null,
     "body": "There are LOTS of error codes.  The only sensible thing to do is use those code to steer the receiver in the direction of the right logic for recovering from the error.  There is a different piece of information that might be provided to an application for diagnostic purposes (the reason phrase helps if it goes across the wire) and there might be other needs for an API, but across the wire we can probably cut this down a lot."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/210",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5262,7 +5415,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/171.patch"
     },
     "body": "A rough draft of a fix for #165.  Key changes:\r\n\r\n- RST_STREAM kills only the sender's direction, not both.  (Retains the existing requirement to respond with RST_STREAM with another RST_STREAM if the stream isn't already closed, which eventually leads to the same result.)\r\n- New REQUEST_RST frame allows peer to solicit a RST_STREAM; text states that this reflects an app recv_close, and that received data is being discarded\r\n\r\nThis should solve the scenarios outlined in #165; a server can ask a client to RST_STREAM its own direction after having sent an early response.  Feedback welcome, of course -- please point out anything I've missed."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/170",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5493,8 +5647,7 @@
     "updated_at": "2017-01-25T01:44:32Z",
     "closed_at": null,
     "body": "QUIC originally specified a 12 byte hash for unencrypted packets.  This was dropped when QUIC crypto was swapped for the TLS 1.3 mapping.\r\n\r\nWe should add it back, since it is useful in eliminating corrupted packets and random internet junk.  And possibly in preventing reflection attacks mentioned in #147 "
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/166",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7439,7 +7592,8 @@
     "updated_at": "2017-01-25T04:47:27Z",
     "closed_at": null,
     "body": "Need discussion of how CONNECT works.  Initial thought:\r\n\r\n - Client does not close data stream after sending request\r\n - If server responds (on the message control stream) with success, the data stream is being relayed into a TCP connection by the server.\r\n\r\nIs there a QUIC-CONNECT?  (Probably not, and almost certainly not in this document.)"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/89",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7613,8 +7767,7 @@
     "updated_at": "2017-02-21T08:48:55Z",
     "closed_at": null,
     "body": "In HTTP/2, the CONTINUATION frame was [much loathed](https://github.com/http2/http2-spec/pull/548), but ultimately deemed a necessary evil since there are some truly, ridiculously large headers out there (*\\*cough\\** Kerberos *\\*cough\\**).  The current HTTP/QUIC draft allows a frame to be 64KB long before decoding the HPACK.  Is this large enough?  That was the boundary we'd said it would take in HTTP/2 to require a single frame.\r\n\r\nIf not, the current draft uses the END_HEADERS bit to indicate that another HEADERS frame will follow, which is effectively the same as CONTINUATION.  The same is not currently defined for PUSH_PROMISE (which really ought to be much smaller).\r\n\r\nIf so, could we drop the END_HEADERS thing entirely and say that HPACK-bearing frames are fully self-contained?  It would simplify a lot of client mechanics."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/68",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -8944,107 +9097,6 @@
     "body": "The attacker needs to be on path to create a valid-looking unprotected packet.  \r\n\r\nAlso, randomization doesn't help much if the attacker is on-path."
   },
   {
-    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/35",
-    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
-    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/35/labels{/name}",
-    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/35/comments",
-    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/35/events",
-    "html_url": "https://github.com/quicwg/base-drafts/issues/35",
-    "id": 191925330,
-    "number": 35,
-    "title": "Starting packet number",
-    "user": {
-      "login": "martinthomson",
-      "id": 67641,
-      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/martinthomson",
-      "html_url": "https://github.com/martinthomson",
-      "followers_url": "https://api.github.com/users/martinthomson/followers",
-      "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
-      "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
-      "organizations_url": "https://api.github.com/users/martinthomson/orgs",
-      "repos_url": "https://api.github.com/users/martinthomson/repos",
-      "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/martinthomson/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "labels": [
-      {
-        "id": 481871361,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/design",
-        "name": "design",
-        "color": "1d76db",
-        "default": false
-      },
-      {
-        "id": 489929683,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/editor-ready",
-        "name": "editor-ready",
-        "color": "0e8a16",
-        "default": false
-      },
-      {
-        "id": 481871399,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
-        "name": "transport",
-        "color": "fbca04",
-        "default": false
-      }
-    ],
-    "state": "open",
-    "locked": false,
-    "assignee": {
-      "login": "martinthomson",
-      "id": 67641,
-      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/martinthomson",
-      "html_url": "https://github.com/martinthomson",
-      "followers_url": "https://api.github.com/users/martinthomson/followers",
-      "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
-      "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
-      "organizations_url": "https://api.github.com/users/martinthomson/orgs",
-      "repos_url": "https://api.github.com/users/martinthomson/repos",
-      "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/martinthomson/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "assignees": [
-      {
-        "login": "martinthomson",
-        "id": 67641,
-        "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
-        "gravatar_id": "",
-        "url": "https://api.github.com/users/martinthomson",
-        "html_url": "https://github.com/martinthomson",
-        "followers_url": "https://api.github.com/users/martinthomson/followers",
-        "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
-        "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
-        "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
-        "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
-        "organizations_url": "https://api.github.com/users/martinthomson/orgs",
-        "repos_url": "https://api.github.com/users/martinthomson/repos",
-        "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
-        "received_events_url": "https://api.github.com/users/martinthomson/received_events",
-        "type": "User",
-        "site_admin": false
-      }
-    ],
-    "milestone": null,
-    "comments": 5,
-    "created_at": "2016-11-28T05:57:04Z",
-    "updated_at": "2017-02-14T03:53:20Z",
-    "closed_at": null,
-    "body": "We might be able to randomize the starting packet number and thereby avoid having it as a point of ossification.  It also increases the entropy for an off-path attacker who wishes to guess connection IDs because now they have to guess packet number as well."
-  },
-  {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/34",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
     "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/34/labels{/name}",
@@ -9607,7 +9659,8 @@
     "updated_at": "2016-11-22T23:04:48Z",
     "closed_at": null,
     "body": "The section on Hybrid Slow Start ends in the mi"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/6",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
