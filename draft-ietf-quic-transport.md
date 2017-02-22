@@ -59,16 +59,6 @@ normative:
 
 informative:
 
-  QUIC-HTTP:
-    title: "Hypertext Transfer Protocol (HTTP) over QUIC"
-    date: {DATE}
-    author:
-      -
-        ins: M. Bishop
-        name: Mike Bishop
-        org: Microsoft
-        role: editor
-
   SST:
     title: "Structured Streams: A New Transport Abstraction"
     author:
