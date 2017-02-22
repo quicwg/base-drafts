@@ -194,15 +194,17 @@ strengths of QUIC include:
 
 ## Low-Latency Connection Establishment
 
-QUIC relies on a combined crypto and transport handshake for setting up a secure
-transport connection.  QUIC connections are expected to commonly use 0-RTT
-handshakes, meaning that for most QUIC connections, data can be sent immediately
-following the client handshake packet, without waiting for a reply from the
-server.  QUIC provides a dedicated stream (Stream ID 1) to be used for
-performing the crypto handshake and QUIC options negotiation.  The format of the
-QUIC options and parameters used during negotiation are described in this
-document, but the handshake protocol that runs on Stream ID 1 is described in
-the accompanying crypto handshake draft {{QUIC-TLS}}.
+QUIC relies on a combined cryptographic and transport handshake for
+setting up a secure transport connection.  QUIC connections are
+expected to commonly use 0-RTT handshakes, meaning that for most QUIC
+connections, data can be sent immediately following the client
+handshake packet, without waiting for a reply from the server.  QUIC
+provides a dedicated stream (Stream ID 1) to be used for performing
+the cryptographic handshake and QUIC options negotiation.  The format
+of the QUIC options and parameters used during negotiation are
+described in this document, but the handshake protocol that runs on
+Stream ID 1 is described in the accompanying cryptographic handshake
+draft {{QUIC-TLS}}.
 
 ## Stream Multiplexing
 
@@ -615,12 +617,12 @@ full 64-bit connection ID.  The content of the Public Reset packet is TBD.
 # Life of a Connection
 
 A QUIC connection is a single conversation between two QUIC endpoints.  QUIC's
-connection establishment intertwines version negotiation with the crypto and
-transport handshakes to reduce connection establishment latency, as described in
-{{handshake}}.  Once established, a connection may migrate to a different IP or
-port at either endpoint, due to NAT rebinding or mobility, as described in
-{{migration}}.  Finally a connection may be terminated by either endpoint, as
-described in {{termination}}.
+connection establishment intertwines version negotiation with the cryptographic
+and transport handshakes to reduce connection establishment latency, as
+described in {{handshake}}.  Once established, a connection may migrate to a
+different IP or port at either endpoint, due to NAT rebinding or mobility, as
+described in {{migration}}.  Finally a connection may be terminated by either
+endpoint, as described in {{termination}}.
 
 ## Version Negotiation {#version-negotiation}
 
