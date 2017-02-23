@@ -1462,6 +1462,41 @@ actual exponent is one-less than the explicit exponent, and the value represents
 to 0xFFFF.
 
 
+### ACK Frames and Packet Protection
+
+ACK frames that acknowledge protected packets MUST be carried in a packet that
+has an equivalent level of packet protection.  Functionally, this means:
+
+* Unprotected packets, such as those that carry the initial cryptographic
+  handshake messages, can be acknowledged in unprotected packets.  This has
+  several consequences:
+
+  * Acknowledgments for packets containing cryptographic handshake messages
+    SHOULD be included in packets carrying the next cryptographic handshake
+    message.  For instance, a server can acknowledge a TLS ClientHello in the
+    packet that carries the TLS ServerHello; similarly, a client can acknowledge
+    a TLS HelloRetryRequest in the packet containing a second TLS ClientHello.
+
+  * The initial set of server handshake messages, which could span multiple
+    packets, SHOULD be acknowledged in unprotected packets even if the client
+    uses 0-RTT keys to protect other packets that are sent at the same time.  A
+    server might decide to reject and ignore 0-RTT data, making it unable to use
+    any acknowledgments that are protected with 0-RTT keys.
+
+* Packets that a client sends with 0-RTT packet protection MUST be acknowledged
+  by the server in packets protected by 1-RTT keys.  This can mean that the
+  client is unable to use these acknowledgments if the server cryptographic
+  handshake messages are delayed or lost.  However, the same limitation applies
+  to other data sent by the server protected by the 1-RTT keys.
+
+* Packets that are protected with 1-RTT keys MUST be acknowledged in packets
+  that are also protected with 1-RTT keys.
+
+A packet that is not protected and claims to acknowledge a packet number that
+was sent with packet protection is not valid.  An unprotected packet that
+carries acknowledgments for protected packets MUST be discarded in its entirety.
+
+
 ## WINDOW_UPDATE Frame {#frame-window-update}
 
 The WINDOW_UPDATE frame (type=0x04) informs the peer of an increase in an
