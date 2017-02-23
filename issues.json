@@ -89,7 +89,7 @@
     "milestone": null,
     "comments": 0,
     "created_at": "2017-02-23T00:26:45Z",
-    "updated_at": "2017-02-23T01:34:38Z",
+    "updated_at": "2017-02-23T01:43:35Z",
     "closed_at": null,
     "pull_request": {
       "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/335",
@@ -253,9 +253,9 @@
 
     ],
     "milestone": null,
-    "comments": 1,
+    "comments": 2,
     "created_at": "2017-02-21T19:53:52Z",
-    "updated_at": "2017-02-23T00:43:33Z",
+    "updated_at": "2017-02-23T02:55:38Z",
     "closed_at": null,
     "body": "From discussion on the list, we could clarify the meaning of CONNECTION_CLOSE. Specifically, it would be good to clarify if it acts more like a TCP FIN or a TCP RST. I would suggest that the analog of a TCP FIN is a FIN on a QUIC stream as they both gracefully half-close a single bidirectional communication channel. After a FIN, retransmission of data may still occur to deal with packet loss.\r\n\r\nA QUIC CONNECTION_CLOSE, on the other hand, is an immediate termination of the connection. No more data is retransmitted. As such it is more like a TCP RST."
   },
@@ -1442,9 +1442,9 @@
       }
     ],
     "milestone": null,
-    "comments": 1,
+    "comments": 2,
     "created_at": "2017-02-10T03:12:49Z",
-    "updated_at": "2017-02-17T22:58:12Z",
+    "updated_at": "2017-02-23T02:58:36Z",
     "closed_at": null,
     "pull_request": {
       "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/280",
