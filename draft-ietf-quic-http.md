@@ -418,21 +418,12 @@ using HPACK {{!RFC7541}}. Because HEADERS frames from different streams will be
 delivered out-of-order and priority-changes are not commutative, the PRIORITY
 region of HEADERS is not supported. A separate PRIORITY frame MUST be used.
 
-Padding MUST NOT be used.  The flags defined are:
-
-  Reserved (0x1):
-  : Reserved for HTTP/2 compatibility.
+HTTP/2 padding is not defined and MUST NOT be used.  One flag is defined:
 
   End Header Block (0x4):
   : This frame concludes a header block.
 
-  Reserved (0x8):
-  : Reserved for HTTP/2 compatibility.
-
-  Reserved (0x20):
-  : Reserved for HTTP/2 compatibility.
-
-A HEADERS frame with the Reserved bits set MUST be treated as a connection error
+A HEADERS frame with any other flags set MUST be treated as a connection error
 of type HTTP_MALFORMED_HEADERS.
 
 ~~~~~~~~~~
