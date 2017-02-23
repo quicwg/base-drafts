@@ -666,16 +666,22 @@ functional.  Such a Public Reset does not include a Public Reset Proof, it
 includes only the connection ID, which provides an assurance that the middlebox
 received packets on the flow.
 
-After receiving a Public Reset that omits the Public Reset Proof, an endpoint
-SHOULD stop sending on the path on which the Public Reset was received.  Packets
-that are received on the path MAY be discarded.  Without support for multipath,
-this means that the connection could become unusable.
+An endpoint MAY ignore a Public Reset that does not include a proof.  A
+middlebox might send a packet in an attempt to attack a connection.  If packets
+continue to arrive after a Public Reset, this could indicate an attack.  Delays
+could mean that a few packets arrive after a Public Reset.  However, if valid
+packets continue to arrive more than twice the RTT variance (see
+{{QUIC-RECOVERY}}) after the Public Reset, the endpoint SHOULD consider the
+Public Reset to have been spurious and continue the connection.  Endpoints that
+detect a spurious Public Reset SHOULD ignore any further unauthenticated Public
+Reset packets that arrive from the same path.
 
-A middlebox might send a packet in an attempt to attack a connection.  If
-packets continue to arrive after a Public Reset, this could indicate an attack.
-Delays could mean that a few packets arrive after a Public Reset, but if this
-continues well beyond the observed bounds on jitter, an endpoint MAY consider
-the Public Reset to have been spurious.
+An endpoint that chooses to accept a Public Reset without a Public Reset Proof
+SHOULD stop sending on the path on which the Public Reset was received.  Packets
+that are received on the path MAY then be discarded.  Unless the endpoint is
+able to use alternative paths to continue the connection, this means that the
+connection could become unusable.
+
 
 
 ### Public Reset Proof
