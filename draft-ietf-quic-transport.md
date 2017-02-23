@@ -2251,7 +2251,7 @@ QUIC_STREAM_CANCELLED (0x80000006):
 : The stream was cancelled
 
 QUIC_CLOSED_CRITICAL_STREAM (0x80000007):
-: A stream that is critical to the protocol was closed or reset.
+: A stream that is critical to the protocol was closed.
 
 QUIC_MISSING_PAYLOAD (0x80000030):
 : The packet contained no payload.
