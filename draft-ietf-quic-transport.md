@@ -898,7 +898,7 @@ version negotiation occurred but it would have selected a different version
 based on the value of the supported_versions list.
 
 
-### Proof of Source Address Ownership {#source-address-token}
+## Proof of Source Address Ownership {#source-address-token}
 
 Transport protocols commonly spend a round trip checking that a client owns the
 transport address (IP and port) that it claims.  Verifying that a client can
@@ -928,28 +928,87 @@ request - in response to the data carried in the early data from the client.
 To send additional data prior to completing the cryptographic handshake, the
 server then needs to validate that the client owns the address that it claims.
 
-Two tools are provided by TLS to enable validation of client source addresses:
-the cookie in the HelloRetryRequest message, and the ticket in the
-NewSessionTicket message.
+Source address validation is therefore performed during the establishment of a
+connection.  TLS provides the tools that support the feature, but basic
+validation is performed by the core transport protocol.
 
-The cookie extension in the TLS HelloRetryRequest message allows a server to
-perform source address validation during the handshake.  As long as the cookie
-cannot be successfully guessed by a client, the server can be assured that the
-client received the HelloRetryRequest.
 
-A server can use the HelloRetryRequest cookie in a stateless fashion by
-encrypting the state it needs to verify ownership of the client address and
-continue the handshake into the cookie.
+### Client Address Validation Procedure
 
-The ticket in the TLS NewSessionTicket message allows a server to provide a
-client with a similar sort of token.  When a client resumes a TLS connection -
-whether or not 0-RTT is attempted - it includes the ticket in the handshake
-message.  As with the HelloRetryRequest cookie, the server can include the state
-in the ticket it needs to validate that the client owns the address.
+QUIC uses token-based address validation.  Any time the server wishes to
+validate a client address, it provides the client with a token.  As long as the
+token cannot be easily guessed (see {{token-integrity}}), if the client is able
+to return that token, it proves to the server that it received the token.
 
-A server can send a NewSessionTicket message at any time.  This allows it to
-update the state that is included in the ticket.  This might be done to refresh
-the ticket, or in response to changes in the state of a connection.
+During the processing of the cryptographic handshake messages from a client, TLS
+will request that QUIC make a decision about whether to proceed based on the
+information it has.  TLS will provide QUIC with any token that was provided by
+the client.  For an initial packet, QUIC can decide to abort the connection,
+allow it to proceed, or request address validation.
+
+If QUIC decides to request address validation, it provides the cryptographic
+handshake with a token.  The contents of this token are consumed by the server
+that generates the token, so there is no need for a single well-defined format.
+A token could include information about the claimed client address (IP and
+port), a timestamp, and any other supplementary information the server will need
+to validate the token in the future.
+
+The cryptographic handshake is responsible for enacting validation by sending
+the address validation token to the client.  A legitimate client will include a
+copy of the token when it attempts to continue the handshake.  The cryptographic
+handshake extracts the token then asks QUIC a second time whether the token is
+acceptable.  In response, QUIC can either abort the connection or permit it to
+proceed.
+
+A connection MAY be accepted without address validation - or with only limited
+validation - but a server SHOULD limit the data it sends toward an unvalidated
+address.  Successful completion of the cryptographic handshake implicitly
+provides proof that the client has received packets from the server.
+
+
+### Address Validation on Session Resumption
+
+A server MAY provide clients with an address validation token during one
+connection that can be used on a subsequent connection.  Address validation is
+especially important with 0-RTT because a server potentially sends a significant
+amount of data to a client in response to 0-RTT data.
+
+A different type of token is needed when resuming.  Unlike the token that is
+created during a handshake, there might be some time between when the token is
+created and when the token is subsequently used.  Thus, a resumption token
+SHOULD include an expiration time.  It is also unlikely that the client port
+number is the same on two different connections; validating the port is
+therefore unlikely to be successful.
+
+This token can be provided to the cryptographic handshake immediately after
+establishing a connection.  QUIC might also generate an updated token if
+significant time passes or the client address changes for any reason (see
+{{migration}}).  The cryptographic handshake is responsible for providing the
+client with the token.  In TLS the token is included in the ticket that is used
+for resumption and 0-RTT, which is carried in a NewSessionTicket message.
+
+
+### Address Validation Token Integrity {#token-integrity}
+
+An address validation token MUST be difficult to guess.  Including a large
+enough random value in the token would be sufficient, but this depends on the
+server remembering the value it sends to clients.
+
+A token-based scheme allows the server to offload any state associated with
+validation to the client.  For this design to work, the token MUST be covered by
+integrity protection against modification or falsification by clients.  Without
+integrity protection, malicious clients could generate or guess values for
+tokens that would be accepted by the server.  Only the server requires access to
+the integrity protection key for tokens.
+
+In TLS the address validation token is often bundled with the information that
+TLS requires, such as the resumption secret.  In this case, adding integrity
+protection can be delegated to the cryptographic handshake protocol, avoiding
+redundant protection.  If integrity protection is delegated to the cryptographic
+handshake, an integrity failure will result in immediate cryptographic handshake
+failure.  If integrity protection is performed by QUIC, QUIC MUST abort the
+connection if the integrity check fails with a QUIC_ADDRESS_VALIDATION_FAILURE
+error code.
 
 
 ## Connection Migration {#migration}
@@ -2199,6 +2258,9 @@ QUIC_VERSION_NEGOTIATION_MISMATCH (0x80000037):
 
 QUIC_IP_ADDRESS_CHANGED (0x80000050):
 : IP address changed causing connection close.
+
+QUIC_ADDRESS_VALIDATION_FAILURE (0x80000051):
+: Client address validation failed.
 
 QUIC_TOO_MANY_FRAME_GAPS (0x8000005d):
 : Stream frames arrived too discontiguously so that stream sequencer buffer
