@@ -2194,13 +2194,17 @@ recoverable state, the endpoint can sent a RST_STREAM frame
 ({{frame-rst-stream}}) with an appropriate error code to terminate just the
 affected stream.
 
-An error on stream 1 MUST be handled as a connection error.  Stream 1 is
-critical to the functioning of the entire connection.  Furthermore, some
-application protocols place constraints on how streams are used that makes
-certain streams critical to the functioning of the protocol.  Termination of a
-critical stream could result in a fatal error in an application protocol.
-Errors in such critical streams MUST be changed into a error that closes the
-entire connection.
+Stream 1 is critical to the functioning of the entire connection.  If stream 1
+is closed with either a RST_STREAM or STREAM frame bearing the FIN flag, an
+endpoint MUST generate a connection error of type QUIC_CLOSED_CRITICAL_STREAM.
+
+Some application protocols make other streams critical to that protocol.  An
+application protocol does not need to inform the transport that a stream is
+critical; it can instead generate appropriate errors in response to being
+notified that the critical stream is closed.
+
+An endpoint MAY send a RST_STREAM frame in the same packet as a CONNECTION_CLOSE
+frame.
 
 
 ## Error Codes
@@ -2245,6 +2249,9 @@ QUIC_MULTIPLE_TERMINATION_OFFSETS (0x80000005):
 
 QUIC_STREAM_CANCELLED (0x80000006):
 : The stream was cancelled
+
+QUIC_CLOSED_CRITICAL_STREAM (0x80000007):
+: A stream that is critical to the protocol was closed or reset.
 
 QUIC_MISSING_PAYLOAD (0x80000030):
 : The packet contained no payload.
