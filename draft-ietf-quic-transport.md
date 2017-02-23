@@ -759,9 +759,9 @@ the cryptographic handshake provides QUIC with:
   is claimed by the client (see {{source-address-token}})
 
 The initial cryptographic handshake message needs to be sent in a single packet.
-This avoids having toreassemble a message from multiple packets, which would
-require that servers maintain state prior to establishing a connection.  This
-would expose servers to a denial of service risk.
+This avoids having to reassemble a message from multiple packets. This would
+require that servers maintain state prior to establishing a connection, exposing
+servers to a denial of service risk.
 
 The first client packet of the cryptographic handshake protocol MUST fit within
 a 1280 octet QUIC packet.  this includes overheads that reduce the space
