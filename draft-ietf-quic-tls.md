@@ -529,6 +529,29 @@ version of TLS.  An endpoint MUST terminate the connection if a version of TLS
 older than 1.3 is negotiated.
 
 
+## ClientHello Size
+
+QUIC requires that the initial handshake packet from a client fit within a
+single packet of 1280 octets.  With framing and packet overheads this value
+could be reduced.
+
+A TLS ClientHello can fit within this limit with ample space remaining.
+However, there are several variables that could cause this limit to be exceeded.
+Implementations are reminded that large session tickets or HelloRetryRequest
+cookies, multiple or large key shares, and long lists of supported ciphers,
+signature algorithms, versions, and other negotiable parameters and extensions
+could cause this message to grow.
+
+For servers, the size of the session tickets and HelloRetryRequest cookie
+extension can have an effect on a client's ability to connect.  Choosing a small
+value increases the probability that these values can be successfully used by a
+client.
+
+A TLS implementation does not need to enforce this size constraint.  QUIC
+padding can be used to reach this size, meaning that a TLS server is unlikely to
+receive a large ClientHello message.
+
+
 ## Peer Authentication
 
 The requirements for authentication depend on the application protocol that is
@@ -1344,11 +1367,11 @@ by an attacker.
 Certificate caching {{?RFC7924}} can reduce the size of the server's handshake
 messages significantly.
 
-A client SHOULD also pad {{!RFC7685}} its ClientHello to at least 1024 octets.
+QUIC requires that the packet containing a ClientHello be padded to 1280 octets.
 A server is less likely to generate a packet reflection attack if the data it
-sends is a small multiple of the data it receives.  A server SHOULD use a
-HelloRetryRequest if the size of the handshake messages it sends is likely to
-exceed the size of the ClientHello.
+sends is a small multiple of this size.  A server SHOULD use a HelloRetryRequest
+if the size of the handshake messages it sends is likely to significantly exceed
+the size of the packet containing the ClientHello.
 
 
 ## Peer Denial of Service {#useless}

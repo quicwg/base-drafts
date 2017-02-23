@@ -758,6 +758,16 @@ the cryptographic handshake provides QUIC with:
   client can receive packets that are addressed with the transport address that
   is claimed by the client (see {{source-address-token}})
 
+The initial cryptographic handshake message needs to be sent in a single packet.
+This avoids having toreassemble a message from multiple packets, which would
+require that servers maintain state prior to establishing a connection.  This
+would expose servers to a denial of service risk.
+
+The first client packet of the cryptographic handshake protocol MUST fit within
+a 1280 octet QUIC packet.  this includes overheads that reduce the space
+available to the cryptographic handshake protocol.  Any second attempt that is
+triggered by address validation MUST also fit within a single packet.
+
 Details of how TLS is integrated with QUIC is provided in more detail in
 {{QUIC-TLS}}.
 
