@@ -7363,71 +7363,6 @@
     "body": "NumTimestamps is supposed to specify the \"total number of pairs following, including the First Timestamp.\"  If this is zero, presumably the Delta Largest Acked and First Timestamp fields are absent.  If this is one, presumably these fields are present, but no others are.\r\n\r\nThe *subsequent* fields then say they are repeated \"Num Timestamps\" times, which contradicts my logic above.  I'm guessing this should actually be \"Num Timestamps - 1\" times?"
   },
   {
-    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/97",
-    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
-    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/97/labels{/name}",
-    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/97/comments",
-    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/97/events",
-    "html_url": "https://github.com/quicwg/base-drafts/issues/97",
-    "id": 197412402,
-    "number": 97,
-    "title": "Version Negotiation + TLS",
-    "user": {
-      "login": "MikeBishop",
-      "id": 4273797,
-      "avatar_url": "https://avatars.githubusercontent.com/u/4273797?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/MikeBishop",
-      "html_url": "https://github.com/MikeBishop",
-      "followers_url": "https://api.github.com/users/MikeBishop/followers",
-      "following_url": "https://api.github.com/users/MikeBishop/following{/other_user}",
-      "gists_url": "https://api.github.com/users/MikeBishop/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/MikeBishop/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/MikeBishop/subscriptions",
-      "organizations_url": "https://api.github.com/users/MikeBishop/orgs",
-      "repos_url": "https://api.github.com/users/MikeBishop/repos",
-      "events_url": "https://api.github.com/users/MikeBishop/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/MikeBishop/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "labels": [
-      {
-        "id": 481871361,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/design",
-        "name": "design",
-        "color": "1d76db",
-        "default": false
-      },
-      {
-        "id": 489929683,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/editor-ready",
-        "name": "editor-ready",
-        "color": "0e8a16",
-        "default": false
-      },
-      {
-        "id": 481871604,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/tls",
-        "name": "tls",
-        "color": "fbca04",
-        "default": false
-      }
-    ],
-    "state": "open",
-    "locked": false,
-    "assignee": null,
-    "assignees": [
-
-    ],
-    "milestone": null,
-    "comments": 2,
-    "created_at": "2016-12-23T18:41:56Z",
-    "updated_at": "2017-01-25T02:07:58Z",
-    "closed_at": null,
-    "body": "The QUIC-TLS spec currently says that the server should select a protocol without regard to the current QUIC version, and MAY (not MUST?) do Version Negotiation if the selected protocol can't be carried by the current QUIC version.  However, if the server does Version Negotiation, the client's ClientHello gets thrown away, and the client has to resend the ClientHello anyway.\r\n\r\nI'd be more inclined to say that servers select application protocols compatible with the current version if it can.  There are then two possibilities:\r\n\r\n  - Client learns that server supports a newer version in the response.  Then the client can try again (in parallel or in the future) over the newer version.  Same RTTs to reach the new version/protocol, but able to exchange some data on the initial connection 1 RTT sooner.\r\n  - Server supports no protocol compatible with the client's supported version, and triggers Version Negotiation anyway.  Same RTTs to reach the new version/protocol."
-  },
-  {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/95",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
     "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/95/labels{/name}",
@@ -7723,8 +7658,7 @@
     "updated_at": "2017-02-20T13:27:21Z",
     "closed_at": null,
     "body": "ECN is not currently mentioned in the recovery draft, but it should be included.\r\n\r\nMore importantly, the transport draft has no ability for the peer to communicate ECN marks back to the sender.  I suspect, like ECN, the use of this in the transport would be negotiable in the QUIC handshake.\r\n\r\nIn practice, there most userspace network stacks also cannot see if those marks are set when packets are read."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/67",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7818,7 +7752,8 @@
     "updated_at": "2016-12-02T00:25:36Z",
     "closed_at": null,
     "body": "The algorithm for picking the length of the packet number needs much better explanation, and probably a bunch of rationale to support that.\r\n\r\n(Marked as design so that any change gets proper discussion and review.)"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/66",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
