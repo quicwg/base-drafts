@@ -1572,9 +1572,10 @@ STREAM frame can also cause a stream to immediately become "half-closed".
 
 Receiving a STREAM frame on a peer-initiated stream (that is, a packet sent by a
 server on an even-numbered stream or a client packet on an odd-numbered stream)
-also causes all idle streams with lower numbers to become "open".  This could
-occur if a peer begins sending on streams in a different order to their
-creation, or it could happen if packets are lost or reordered in transit.
+also causes all lower-numbered "idle" streams in the same direction to become
+"open".  This could occur if a peer begins sending on streams in a different
+order to their creation, or it could happen if packets are lost or reordered in
+transit.
 
 Receiving any frame other than STREAM or RST_STREAM on a stream in this state
 MUST be treated as a connection error ({{error-handling}}) of type YYYY.
@@ -1689,8 +1690,8 @@ used for application data, and MUST be the first client-initiated stream.
 
 A QUIC endpoint cannot reuse a StreamID on a given connection.  Streams MUST be
 created in sequential order.  Open streams can be used in any order.  Streams
-that are used out of order result in lower-numbered streams being counted as
-open.
+that are used out of order result in lower-numbered streams in the same
+direction being counted as open.
 
 All streams, including stream 1, count toward this limit.  Thus, a concurrent
 stream limit of 0 will cause a connection to be unusable.  Application protocols
