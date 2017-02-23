@@ -52,22 +52,12 @@ normative:
         org: Mozilla
         role: editor
       -
-        ins: S. Turner, Ed.
+        ins: S. Turner
         name: Sean Turner
         org: sn3rd
         role: editor
 
 informative:
-
-  QUIC-HTTP:
-    title: "Hypertext Transfer Protocol (HTTP) over QUIC"
-    date: {DATE}
-    author:
-      -
-        ins: M. Bishop
-        name: Mike Bishop
-        org: Microsoft
-        role: editor
 
   SST:
     title: "Structured Streams: A New Transport Abstraction"
@@ -76,14 +66,6 @@ informative:
     date: 2007-08
     seriesinfo:
       ACM SIGCOMM 2007
-
-  QUICCrypto:
-    title: "QUIC Crypto"
-    author:
-      - ins: A. Langley
-      - ins: W. Chang
-    date: 2016-05-26
-    target: "http://goo.gl/OuVSxa"
 
   EARLY-DESIGN:
     title: "QUIC: Multiplexed Transport Over UDP"
@@ -95,19 +77,10 @@ informative:
 
 --- abstract
 
-QUIC is a multiplexed and secure transport protocol that runs on top of UDP.
-QUIC builds on past transport experience, and implements mechanisms that make it
-useful as a modern general-purpose transport protocol.  Using UDP as the basis
-of QUIC is intended to address compatibility issues with legacy clients and
-middleboxes.  QUIC authenticates all of its headers, preventing third parties
-from changing them.  QUIC encrypts most of its headers, thereby limiting
-protocol evolution to QUIC endpoints only.  Therefore, middleboxes, in large
-part, are not required to be updated as new protocol versions are deployed.
-This document describes the core QUIC protocol, including the conceptual design,
-wire format, and mechanisms of the QUIC protocol for connection establishment,
-stream multiplexing, stream and connection-level flow control, and data
-reliability.  Accompanying documents describe QUIC's loss recovery and
-congestion control, and the use of TLS 1.3 for key negotiation.
+This document defines the core of the QUIC transport protocol.  This document
+describes connection establishment, packet format, multiplexing and reliability.
+Accompanying documents describe the cryptographic handshake and loss detection.
+
 
 --- note_Note_to_Readers
 
@@ -124,19 +97,23 @@ code and issues list for this draft can be found at
 # Introduction
 
 QUIC is a multiplexed and secure transport protocol that runs on top of UDP.
-QUIC builds on past transport experience and implements mechanisms that make it
-useful as a modern general-purpose transport protocol.  Using UDP as the
-substrate, QUIC seeks to be compatible with legacy clients and middleboxes.
-QUIC authenticates all of its headers, preventing middleboxes and other third
-parties from changing them, and encrypts most of its headers, limiting protocol
-evolution largely to QUIC endpoints only.
+QUIC aims to provide a flexible set of features that allow it to be a
+general-purpose transport for multiple applications.
+
+QUIC implements techniques learned from experience with TCP, SCTP and other
+transport protocols.  Using UDP as the substrate, QUIC seeks to be compatible
+with legacy clients and middleboxes.  QUIC authenticates all of its headers and
+encrypts most of the data it exchanges, including its signaling.  This allows
+the protocol to evolve without incurring a dependency on upgrades to
+middleboxes.
 
 This document describes the core QUIC protocol, including the conceptual design,
 wire format, and mechanisms of the QUIC protocol for connection establishment,
 stream multiplexing, stream and connection-level flow control, and data
-reliability.  Accompanying documents describe QUIC's loss detection and
-congestion control {{QUIC-RECOVERY}}, and the use of TLS 1.3 for key negotiation
-{{QUIC-TLS}}.
+reliability.
+
+Accompanying documents describe QUIC's loss detection and congestion control
+{{QUIC-RECOVERY}}, and the use of TLS 1.3 for key negotiation {{QUIC-TLS}}.
 
 
 # Conventions and Definitions
@@ -207,15 +184,17 @@ strengths of QUIC include:
 
 ## Low-Latency Connection Establishment
 
-QUIC relies on a combined crypto and transport handshake for setting up a secure
-transport connection.  QUIC connections are expected to commonly use 0-RTT
-handshakes, meaning that for most QUIC connections, data can be sent immediately
-following the client handshake packet, without waiting for a reply from the
-server.  QUIC provides a dedicated stream (Stream ID 1) to be used for
-performing the crypto handshake and QUIC options negotiation.  The format of the
-QUIC options and parameters used during negotiation are described in this
-document, but the handshake protocol that runs on Stream ID 1 is described in
-the accompanying crypto handshake draft {{QUIC-TLS}}.
+QUIC relies on a combined cryptographic and transport handshake for
+setting up a secure transport connection.  QUIC connections are
+expected to commonly use 0-RTT handshakes, meaning that for most QUIC
+connections, data can be sent immediately following the client
+handshake packet, without waiting for a reply from the server.  QUIC
+provides a dedicated stream (Stream ID 1) to be used for performing
+the cryptographic handshake and QUIC options negotiation.  The format
+of the QUIC options and parameters used during negotiation are
+described in this document, but the handshake protocol that runs on
+Stream ID 1 is described in the accompanying cryptographic handshake
+draft {{QUIC-TLS}}.
 
 ## Stream Multiplexing
 
@@ -233,13 +212,13 @@ to be reassembled and delivered to the application.
 QUIC's packet framing and acknowledgments carry rich information that help both
 congestion control and loss recovery in fundamental ways.  Each QUIC packet
 carries a new packet number, including those carrying retransmitted data.  This
-obviates the need for a separate mechanism to distinguish acks for
+obviates the need for a separate mechanism to distinguish acknowledgments for
 retransmissions from those for original transmissions, avoiding TCP's
 retransmission ambiguity problem.  QUIC acknowledgments also explicitly encode
 the delay between the receipt of a packet and its acknowledgment being sent, and
 together with the monotonically-increasing packet numbers, this allows for
 precise network roundtrip-time (RTT) calculation.  QUIC's ACK frames support up
-to 256 ack blocks, so QUIC is more resilient to reordering than TCP with SACK
+to 256 ACK blocks, so QUIC is more resilient to reordering than TCP with SACK
 support, as well as able to keep more bytes on the wire when there is reordering
 or loss.
 
@@ -265,15 +244,16 @@ receive-window manipulation and sequence-number overwriting.  While some of
 these are mechanisms used by middleboxes to improve TCP performance, others are
 active attacks.  Even "performance-enhancing" middleboxes that routinely
 interpose on the transport state machine end up limiting the evolvability of the
-transport protocol, as has been observed in the design of MPTCP and in its
-subsequent deployability issues.
+transport protocol, as has been observed in the design of MPTCP {{?RFC6824}} and
+in its subsequent deployability issues.
 
 Generally, QUIC packets are always authenticated and the payload is typically
 fully encrypted.  The parts of the packet header which are not encrypted are
 still authenticated by the receiver, so as to thwart any packet injection or
 manipulation by third parties.  Some early handshake packets, such as the
 Version Negotiation packet, are not encrypted, but information sent in these
-unencrypted handshake packets is later verified under crypto cover.
+unencrypted handshake packets is later verified as part of cryptographic
+processing.
 
 PUBLIC_RESET packets that reset a connection are currently not authenticated.
 
@@ -373,7 +353,7 @@ The fields in the Common Header are the following:
      value for a given direction.  For instance, if a client indicates that the
      5-tuple fully identifies the connection at the client, the connection ID is
      optional in the server-to-client direction. The negotiation is described in
-     {{optional-transport-parameters}}.
+     {{transport-parameter-definitions}}.
 
    * 0x30 = PACKET_NUMBER_SIZE.  These two bits indicate the number of
      low-order-bytes of the packet number that are present in each packet.
@@ -475,8 +455,8 @@ The fields in a Regular packet past the Common Header are the following:
 
 * Packet Number: The lower 8, 16, 32, or 48 bits of the packet number, based on
   the PACKET_NUMBER_SIZE flag.  Each Regular packet is assigned a packet number
-  by the sender.  The first packet sent by an endpoint MUST have a packet number
-  of 1.
+  by the sender.  The first packet number is randomized (see
+  {{initial-packet-number}}).
 
 * Encrypted Payload: The remainder of a Regular packet is both authenticated and
   encrypted once packet protection keys are available.  {{QUIC-TLS}} describes
@@ -499,43 +479,59 @@ The fields in a Regular packet past the Common Header are the following:
 ~~~
 {: #regular-packet-frames title="Contents of Encrypted Payload"}
 
-### Packet Number Compression and Reconstruction
 
-The complete packet number is a 64-bit unsigned number and is used as part of a
-cryptographic nonce for packet encryption.  To reduce the number of bits
-required to represent the packet number over the wire, at most 48 bits of the
-packet number are transmitted over the wire.  A QUIC endpoint MUST NOT reuse a
-complete packet number within the same connection (that is, under the same
-cryptographic keys).  If the total number of packets transmitted in this
-connection reaches 2^64 - 1, the sender MUST close the connection by sending a
+## Packet Numbers
+
+The packet number is a 64-bit unsigned number and is used as part of a
+cryptographic nonce for packet encryption.  Each endpoint maintains a separate
+packet number for sending and receiving.  The packet number for sending MUST
+increase by at least one after sending any packet.
+
+A QUIC endpoint MUST NOT reuse a packet number within the same connection (that
+is, under the same cryptographic keys).  If the packet number for sending
+reaches 2^64 - 1, the sender MUST close the connection by sending a
 CONNECTION_CLOSE frame with the error code QUIC_SEQUENCE_NUMBER_LIMIT_REACHED
-(connection termination is described in {{termination}}.)  For unambiguous
-reconstruction of the complete packet number by a receiver from the lower-order
-bits, a QUIC sender MUST NOT have more than 2^(packet_number_size - 2) in flight
-at any point in the connection.  In other words,
+(connection termination is described in {{termination}}.)
 
-* If a sender sets PACKET_NUMBER_SIZE bits to 11, it MUST NOT have more than
-  (2^46) packets in flight.
+To reduce the number of bits required to represent the packet number over the
+wire, only the least significant bits of the packet number are transmitted over
+the wire, up to 48 bits.  The actual packet number for each packet is
+reconstructed at the receiver based on the largest packet number received on a
+successfully authenticated packet.
 
-* If a sender sets PACKET_NUMBER_SIZE bits to 10, it MUST NOT have more than
-  (2^30) packets in flight.
+A packet number is decoded by finding the packet number value that is closest to
+the next expected packet.  The next expected packet is the highest received
+packet number plus one.  For example, if the highest successfully authenticated
+packet had a packet number of 0xaa82f30e, then a packet containing a 16-bit
+value of 0x1f94 will be decoded as 0xaa831f94.
 
-* If a sender sets PACKET_NUMBER_SIZE bits to 01, it MUST NOT have more than
-  (2^14) packets in flight.
+To enable unambiguous reconstruction of the packet number, an endpoint MUST use
+a packet number size that is able to represent 4 times more packet numbers than
+the numerical difference between the current packet number and the lowest packet
+number on an outstanding packet, plus one.  A packet is outstanding if it has
+been sent but has neither been acknowledged nor been marked as lost (see
+{{QUIC-RECOVERY}}).  As a result, the size of the packet number encoding is at
+least two more than the base 2 logarithm of the range of outstanding packet
+numbers including the new packet, rounded up.
 
-* If a sender sets PACKET_NUMBER_SIZE bits to 00, it MUST NOT have more than
-  (2^6) packets in flight.
+For example, if an endpoint has is sending packet 0x6B4264 and 0x6B0A2F is the
+lowest outstanding packet number, the next packet uses a 16-bit or larger packet
+number encoding; whereas a 32-bit packet number is needed if packet 0x6AF0F7 is
+outstanding.
 
-  DISCUSS: Should the receiver be required to enforce this rule that the sender
-  MUST NOT exceed the inflight limit?  Specifically, should the receiver drop
-  packets that are received outside this window?
 
-  Any truncated packet number received from a peer MUST be reconstructed as the
-  value closest to the next expected packet number from that peer.
+### Initial Packet Number
 
-(TODO: Clarify how packet number size can change mid-connection.)
+The initial value for packet number MUST be a 31-bit random number.  That is,
+the value is selected from an uniform random distribution between 0 and 2^31-1.
+{{?RFC4086}} provides guidance on the generation of random values.
 
-### Frames and Frame Types {#frames}
+The first set of packets sent by an endpoint MUST include the low 32-bits of the
+packet number.  Once any packet has been acknowledged, subsequent packets can
+use a shorter packet number encoding.
+
+
+## Frames and Frame Types {#frames}
 
 A Regular packet MUST contain at least one frame, and MAY contain multiple
 frames and multiple frame types.  Frames MUST fit within a single QUIC packet
@@ -557,9 +553,9 @@ For all other frames, the Frame Type byte simply identifies the frame.  These
 frames are explained in more detail as they are referenced later in the
 document.
 
-+------------------|--------------------|----------------------------+
+|------------------|--------------------|----------------------------|
 | Type-field value |     Frame type     | Definition                 |
-+------------------|--------------------|----------------------------+
+|------------------|--------------------|----------------------------|
 | 0x00             |  PADDING           | {{frame-padding}}          |
 | 0x01             |  RST_STREAM        | {{frame-rst-stream}}       |
 | 0x02             |  CONNECTION_CLOSE  | {{frame-connection-close}} |
@@ -570,7 +566,7 @@ document.
 | 0x07             |  PING              | {{frame-ping}}             |
 | 0x40 - 0x7f      |  ACK               | {{frame-ack}}              |
 | 0x80 - 0xff      |  STREAM            | {{frame-stream}}           |
-+------------------|--------------------|----------------------------+
+|------------------|--------------------|----------------------------|
 
 ## Version Negotiation Packet
 
@@ -611,12 +607,12 @@ full 64-bit connection ID.  The content of the Public Reset packet is TBD.
 # Life of a Connection
 
 A QUIC connection is a single conversation between two QUIC endpoints.  QUIC's
-connection establishment intertwines version negotiation with the crypto and
-transport handshakes to reduce connection establishment latency, as described in
-{{handshake}}.  Once established, a connection may migrate to a different IP or
-port at either endpoint, due to NAT rebinding or mobility, as described in
-{{migration}}.  Finally a connection may be terminated by either endpoint, as
-described in {{termination}}.
+connection establishment intertwines version negotiation with the cryptographic
+and transport handshakes to reduce connection establishment latency, as
+described in {{handshake}}.  Once established, a connection may migrate to a
+different IP or port at either endpoint, due to NAT rebinding or mobility, as
+described in {{migration}}.  Finally a connection may be terminated by either
+endpoint, as described in {{termination}}.
 
 ## Version Negotiation {#version-negotiation}
 
@@ -633,10 +629,10 @@ When the server receives a packet from a client with the VERSION flag set, it
 compares the client's version to the versions it supports.
 
 If the version selected by the client is not acceptable to the server, the
-server discards the incoming packet and responds with a version negotiation
+server discards the incoming packet and responds with a Version Negotiation
 packet ({{version-negotiation-packet}}).  This includes the VERSION flag and a
-list of versions that the server will accept.  A server MUST send a version
-negotiation packet for every packet that it receives with an unacceptable
+list of versions that the server will accept.  A server MUST send a Version
+Negotiation packet for every packet that it receives with an unacceptable
 version.
 
 If the packet contains a version that is acceptable to the server, the server
@@ -646,18 +642,19 @@ that the client selected.
 
 When the client receives a Version Negotiation packet from the server, it should
 select an acceptable protocol version.  If the server lists an acceptable
-version, the client selects that version and resends all packets using that
-version. The resent packets MUST use new packet numbers.  These packets MUST
-continue to have the VERSION flag set and MUST include the new negotiated
-protocol version.
+version, the client selects that version and reattempts to created a connection
+using that version.  Though the contents of a packet might not change in
+response to version negotiation, a client MUST increase the packet number it
+uses on every packet it sends.  Packets MUST continue to have the VERSION flag
+set and MUST include the new negotiated protocol version.
 
 The client MUST set the VERSION flag and include its selected version on all
 packets until it has 1-RTT keys and it has received a packet from the server
 that does not have the VERSION flag set.  With TLS, this means that unprotected
-packets and 0-RTT protected packets all include a version field.
+packets and 0-RTT protected packets all include a VERSION flag.
 
 A client MUST NOT change the version it uses unless it is in response to a
-version negotiation packet from the server.  Once a client receives a packet
+Version Negotiation packet from the server.  Once a client receives a packet
 from the server with the VERSION flag unset, it MUST ignore the flag in
 subsequently received packets.
 
@@ -665,64 +662,243 @@ Version negotiation uses unprotected data. The result of the negotiation MUST
 be revalidated once the cryptographic handshake has completed (see
 {{version-validation}}).
 
-## Crypto and Transport Handshake {#handshake}
 
-QUIC relies on a combined crypto and transport handshake to minimize connection
-establishment latency.  QUIC provides a dedicated stream (Stream ID 1) to be
-used for performing a combined connection and security handshake (streams are
-described in detail in {{streams}}).  The crypto handshake protocol encapsulates
-and delivers QUIC's transport handshake to the peer on the crypto stream.  The
-first QUIC packet sent by client to the server MUST carry handshake information
-as data on Stream ID 1.
+## Cryptographic and Transport Handshake {#handshake}
 
-### Transport Parameters and Options
+QUIC relies on a combined cryptographic and transport handshake to minimize
+connection establishment latency.  QUIC allocates stream 1 for the cryptographic
+handshake.  This version of QUIC uses TLS 1.3 {{QUIC-TLS}}.
 
-During connection establishment, the handshake must negotiate various transport
-parameters.  The currently defined transport parameters are described later in
-the document.
+QUIC provides this stream with reliable, ordered delivery of data.  In return,
+the cryptographic handshake provides QUIC with:
 
-The transport component of the handshake is responsible for exchanging and
-negotiating the following parameters for a QUIC connection.  Not all parameters
-are negotiated; some parameters are sent in just one direction.  These
-parameters and options are encoded and handed off to the crypto handshake
-protocol to be transmitted to the peer.
+* authenticated key exchange, where
 
-#### Encoding
+   * a server is always authenticated,
 
-(TODO: Describe format with example)
+   * a client is optionally authenticated,
 
-QUIC encodes the transport parameters and options as tag-value pairs, all as
-7-bit ASCII strings.  QUIC parameter tags are listed below.
+   * every connection produces distinct and unrelated keys,
 
-#### Required Transport Parameters {#required-transport-parameters}
+   * keying material is usable for packet protection for both 0-RTT and 1-RTT
+     packets, and
 
-* SFCW: Stream Flow Control Window.  The stream level flow control
-  byte offset advertised by the sender of this parameter.
+   * 1-RTT keys have forward secrecy
 
-* CFCW: Connection Flow Control Window.  The connection level flow
-  control byte offset advertised by the sender of this parameter.
+* authenticated values for the transport parameters of the peer (see
+  {{transport-parameters}})
 
-* MSPC: Maximum number of incoming streams per connection.
+* authenticated confirmation of version negotiation (see {{version-validation}})
 
-* ICSL: Idle timeout in seconds.  The maximum value is 600 seconds (10 minutes).
+* authenticated negotiation of an application protocol (TLS uses ALPN
+  {{?RFC7301}} for this purpose)
 
-#### Optional Transport Parameters {#optional-transport-parameters}
+* for the server, the ability to carry data that provides assurance that the
+  client can receive packets that are addressed with the transport address that
+  is claimed by the client (see {{source-address-token}})
 
-* TCID: Indicates support for truncated Connection IDs.  If sent by a peer,
-  indicates that connection IDs sent to the peer should be truncated to 0 bytes.
-  This is expected to commonly be used by an endpoint where the 5-tuple is
-  sufficient to identify a connection.  For instance, if the 5-tuple is unique
-  at the client, the client MAY send a TCID parameter to the server.  When a
-  TCID parameter is received, an endpoint MAY choose to not send the connection
-  ID on subsequent packets.
+Details of how TLS is integrated with QUIC is provided in more detail in
+{{QUIC-TLS}}.
 
-* COPT: Connection Options are a repeated tag field.  The field contains any
-  connection options being requested by the client or server.  These are
-  typically used for experimentation and will evolve over time.  Example use
-  cases include changing congestion control algorithms and parameters such as
-  initial window.  (TODO: List connection options.)
 
-### Proof of Source Address Ownership
+## Transport Parameters
+
+During connection establishment, both endpoints make authenticated declarations
+of their transport parameters.  These declarations are made unilaterally by each
+endpoint.  Endpoints are required to comply with the restrictions implied by
+these parameters; the description of each parameter includes rules for its
+handling.
+
+The format of the transport parameters is the TransportParameters struct from
+{{figure-transport-parameters}}.  This is described using the presentation
+language from Section 3 of {{!I-D.ietf-tls-tls13}}.
+
+~~~
+   uint32 QuicVersion;
+
+   enum {
+      stream_fc_offset(0),
+      connection_fc_offset(1),
+      concurrent_streams(2),
+      idle_timeout(3),
+      truncate_connection_id(4),
+      (65535)
+   } TransportParameterId;
+
+   struct {
+      TransportParameterId parameter;
+      opaque value<0..2^16-1>;
+   } TransportParameter;
+
+   struct {
+      select (Handshake.msg_type) {
+         case client_hello:
+            QuicVersion negotiated_version;
+            QuicVersion initial_version;
+
+         case encrypted_extensions:
+            QuicVersion supported_versions<2..2^8-4>;
+      };
+      TransportParameter parameters<30..2^16-1>;
+   } TransportParameters;
+~~~
+{: #figure-transport-parameters title="Definition of TransportParameters"}
+
+The `extension_data` field of the quic_transport_parameters extension defined in
+{{QUIC-TLS}} contains a TransportParameters value.  TLS encoding rules are
+therefore used to encode the transport parameters.
+
+QUIC encodes transport parameters into a sequence of octets, which are then
+included in the cryptographic handshake.  Once the handshake completes, the
+transport parameters declared by the peer are available.  Each endpoint
+validates the value provided by its peer.  In particular, version negotiation
+MUST be validated (see {{version-validation}}) before the connection
+establishment is considered properly complete.
+
+Definitions for each of the defined transport parameters are included in
+{{transport-parameter-definitions}}.
+
+
+### Transport Parameter Definitions
+
+An endpoint MUST include the following parameters in its encoded
+TransportParameters:
+
+stream_fc_offset (0x0000):
+
+: The initial stream level flow control offset parameter is encoded as an
+  unsigned 32-bit integer.  The sender of this parameter indicates that the flow
+  control offset for all stream data sent toward it is this value.
+
+connection_fc_offset (0x0001):
+
+: The connection level flow control offset parameter contains the initial
+  connection flow control window encoded as an unsigned 32-bit integer.  The
+  sender of this parameter sets the byte offset for connection level flow
+  control to this value.  This is equivalent to sending a WINDOW_UPDATE
+  ({{frame-window-update}}) for stream 0 immediately after completing the
+  handshake.
+
+concurrent_streams (0x0002):
+
+: The maximum number of concurrent streams parameter is encoded as an unsigned
+  32-bit integer.
+
+idle_timeout (0x0003):
+
+: The idle timeout is a value in seconds that is encoded as an unsigned 16-bit
+  integer.  The maximum value is 600 seconds (10 minutes).
+
+An endpoint MAY use the following transport parameters:
+
+truncate_connection_id (0x0004):
+
+: The truncated connection identifier parameter indicates that packets sent to
+  the peer can omit the connection ID.  This can be used by an endpoint where
+  the 5-tuple is sufficient to identify a connection.  This parameter is zero
+  length.  Omitting the parameter indicates that the endpoint relies on the
+  connection ID being present in every packet.
+
+
+### Values of Transport Parameters for 0-RTT
+
+Transport parameters from the server SHOULD be remembered by the client for use
+with 0-RTT data.  A client that doesn't remember values from a previous
+connection can instead assume the following values: stream_fc_offset (65535),
+connection_fc_offset (65535), concurrent_streams (10), idle_timeout (600),
+truncate_connection_id (absent).
+
+If assumed values change as a result of completing the handshake, the client is
+expected to respect the new values.  This introduces some potential problems,
+particularly with respect to transport parameters that establish limits:
+
+* A client might exceed a newly declared connection or stream flow control limit
+  with 0-RTT data.  If this occurs, the client ceases transmission as though the
+  flow control limit was reached.  Once WINDOW_UPDATE frames indicating an
+  increase to the affected flow control offsets is received, the client can
+  recommence sending.
+
+* Similarly, a client might exceed the concurrent stream limit declared by the
+  server.  A client MUST reset any streams that exceed this limit.  A server
+  SHOULD reset any streams it cannot handle with a code that allows the client
+  to retry any application action bound to those streams.
+
+A server MAY close a connection if remembered or assumed 0-RTT transport
+parameters cannot be supported, using an error code that is appropriate to the
+specific condition.  For example, a QUIC_FLOW_CONTROL_SENT_TOO_MUCH_DATA might
+be used to indicate that exceeding flow control limits caused the error.  A
+client that has a connection closed due to an error condition SHOULD NOT attempt
+0-RTT when attempting to create a new connection.
+
+
+### New Transport Parameters
+
+New transport parameters can be used to negotiate new protocol behavior.  An
+endpoint MUST ignore transport parameters that it does not support.  Absence of
+a transport parameter therefore disables any optional protocol feature that is
+negotiated using the parameter.
+
+The definition of a transport parameter SHOULD include a default value that a
+client can use when establishing a new connection.  If no default is specified,
+the value can be assumed to be absent when attempting 0-RTT.
+
+New transport parameters can be registered according to the rules in
+{{iana-transport-parameters}}.
+
+
+### Version Negotiation Validation {#version-validation}
+
+The transport parameters include three fields that encode version information.
+These retroactively authenticate the version negotiation (see
+{{version-negotiation}}) that is performed prior to the cryptographic handshake.
+
+The cryptographic handshake provides integrity protection for the negotiated
+version as part of the transport parameters (see {{transport-parameters}}).  As
+a result, modification of version negotiation packets by an attacker can be
+detected.
+
+The client includes two fields in the transport parameters:
+
+* The negotiated_version is the version that was finally selected for use.  This
+  MUST be identical to the value that is on the packet that carries the
+  ClientHello.  A server that receives a negotiated_version that does not match
+  the version of QUIC that is in use MUST terminate the connection with a
+  QUIC_VERSION_NEGOTIATION_MISMATCH error code.
+
+* The initial_version is the version that the client initially attempted to use.
+  If the server did not send a version negotiation packet
+  {{version-negotiation-packet}}, this will be identical to the
+  negotiated_version.
+
+A server that processes all packets in a stateful fashion can remember how
+version negotiation was performed and validate the initial_version value.
+
+A server that does not maintain state for every packet it receives (i.e., a
+stateless server) uses a different process. If the initial and negotiated
+versions are the same, a stateless server can accept the value.
+
+If the initial version is different from the negotiated_version, a stateless
+server MUST check that it would have sent a version negotiation packet if it had
+received a packet with the indicated initial_version.  If a server would have
+accepted the version included in the initial_version and the value differs from
+the value of negotiated_version, the server MUST terminate the connection with a
+QUIC_VERSION_NEGOTIATION_MISMATCH error.
+
+The server includes a list of versions that it would send in any version
+negotiation packet ({{version-negotiation-packet}}) in supported_versions.  This
+value is set even if it did not send a version negotiation packet.
+
+The client can validate that the negotiated_version is included in the
+supported_versions list and - if version negotiation was performed - that it
+would have selected the negotiated version.  A client MUST terminate the
+connection with a QUIC_VERSION_NEGOTIATION_MISMATCH error code if the
+negotiated_version value is not included in the supported_versions list.  A
+client MUST terminate with a QUIC_VERSION_NEGOTIATION_MISMATCH error code if
+version negotiation occurred but it would have selected a different version
+based on the value of the supported_versions list.
+
+
+### Proof of Source Address Ownership {#source-address-token}
 
 Transport protocols commonly spend a round trip checking that a client owns the
 transport address (IP and port) that it claims.  Verifying that a client can
@@ -737,18 +913,17 @@ use the server to send more data toward the victim than it would be able to send
 on its own.
 
 Several methods are used in QUIC to mitigate this attack.  Firstly, the initial
-handshake packet from a client is padded to a moderately large size (TBD:
-describe/reference how this size is selected).  This allows a server to send a
-similar amount of data without validating ownership of an address (TBD: provide
-limits on what amount of amplification is enough).
+handshake packet from a client is padded to at least 1280 octets.  This allows a
+server to send a similar amount of data without risking causing an amplication
+attack toward an unproven remote address.
 
 A server eventually confirms that a client has received its messages when the
-cryptographic handshake successfully completes.  This might be either because
-the server wishes to avoid the computational cost of completing the handshake,
-or it might be that the size of the packets that are sent during the handshake
-is too large.  This is especially important for 0-RTT, where the server might
-wish to provide application data traffic - such as a response to a request - in
-response to the data carried in the early data from the client.
+cryptographic handshake successfully completes.  This might be insufficient,
+either because the server wishes to avoid the computational cost of completing
+the handshake, or it might be that the size of the packets that are sent during
+the handshake is too large.  This is especially important for 0-RTT, where the
+server might wish to provide application data traffic - such as a response to a
+request - in response to the data carried in the early data from the client.
 
 To send additional data prior to completing the cryptographic handshake, the
 server then needs to validate that the client owns the address that it claims.
@@ -775,59 +950,6 @@ in the ticket it needs to validate that the client owns the address.
 A server can send a NewSessionTicket message at any time.  This allows it to
 update the state that is included in the ticket.  This might be done to refresh
 the ticket, or in response to changes in the state of a connection.
-
-### Crypto Handshake Protocol Features
-
-QUIC's current crypto handshake mechanism is documented in {{QUICCrypto}}.  QUIC
-does not restrict itself to using a specific handshake protocol, so the details
-of a specific handshake protocol are out of this document's scope.  If not
-explicitly specified in the application mapping, TLS is assumed to be the
-default crypto handshake protocol, as described in {{QUIC-TLS}}.  An application
-that maps to QUIC MAY however specify an alternative crypto handshake protocol
-to be used.
-
-The following list of requirements and recommendations documents properties of
-the current prototype handshake which should be provided by any handshake
-protocol.
-
-* The crypto handshake MUST ensure that the final negotiated key is distinct for
-  every connection between two endpoints.
-
-* Transport Negotiation: The crypto handshake MUST provide a mechanism for the
-  transport component to exchange transport parameters and Source Address
-  Tokens.  To avoid downgrade attacks, the transport parameters sent and
-  received MUST be verified before the handshake completes successfully.
-
-* Connection Establishment in 0-RTT: Since low-latency connection establishment
-  is a critical feature of QUIC, the QUIC handshake protocol SHOULD attempt to
-  achieve 0-RTT connection establishment latency for repeated connections
-  between the same endpoints.
-
-* Source Address Spoofing Defense: Since QUIC handles source address
-  verification, the crypto protocol SHOULD NOT impose a separate source address
-  verification mechanism.
-
-* Server Config Update: A QUIC server may refresh the source-address token (STK)
-  mid-connection, to update the information stored in the STK at the client and
-  to extend the period over which 0-RTT connections can be established by the
-  client.
-
-* Certificate Compression: Early QUIC experience demonstrated that compressing
-  certificates exchanged during a handshake is valuable in reducing latency.
-  This additionally helps to reduce the amplification attack footprint when a
-  server sends a large set of certificates, which is not uncommon with TLS.  The
-  crypto protocol SHOULD compress certificates and any other information to
-  minimize the number of packets sent during a handshake.
-
-
-### Version Negotiation Validation {#version-validation}
-
-The following information used during the QUIC handshake MUST be
-cryptographically verified by the crypto handshake protocol:
-
-* Client's originally proposed version in its first packet.
-
-* Server's version list in it's Version Negotiation packet, if one was sent.
 
 
 ## Connection Migration {#migration}
@@ -863,12 +985,11 @@ of three ways:
    abnormally terminated.
 
 2. Implicit Shutdown: The default idle timeout for a QUIC connection is 30
-   seconds, and is a required parameter (ICSL) in connection negotiation.  The
-   maximum is 10 minutes.  If there is no network activity for the duration of
-   the idle timeout, the connection is closed.  By default a CONNECTION_CLOSE
-   frame will be sent.  A silent close option can be enabled when it is
-   expensive to send an explicit close, such as mobile networks that must wake
-   up the radio.
+   seconds, and is a required parameter in connection negotiation.  The maximum
+   is 10 minutes.  If there is no network activity for the duration of the idle
+   timeout, the connection is closed.  By default a CONNECTION_CLOSE frame will
+   be sent.  A silent close option can be enabled when it is expensive to send
+   an explicit close, such as mobile networks that must wake up the radio.
 
 3. Abrupt Shutdown: An endpoint may send a Public Reset packet at any time
    during the connection to abruptly terminate an active connection.  A Public
@@ -886,7 +1007,7 @@ list.
 
 # Frame Types and Formats
 
-As described in {{packetization}}, Regular packets contain one or more frames.
+As described in {{frames}}, Regular packets contain one or more frames.
 We now describe the various QUIC frame types that can be present in a Regular
 packet. The use of these frames and various frame header bits are described in
 subsequent sections.
@@ -920,11 +1041,11 @@ A STREAM frame is shown below.
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|       [Data Length (16)]      |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                    Stream ID (8/16/24/32)                   ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                Offset (0/16/24/32/40/48/56/64)              ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                      [Data Length (16)]                       |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                        Stream Data (*)                      ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -933,14 +1054,15 @@ A STREAM frame is shown below.
 
 The STREAM frame contains the following fields:
 
+* Data Length: An optional 16-bit unsigned number specifying the length of the
+  Stream Data field in this STREAM frame.  This field is present when the `D`
+  bit is set to 1.
+
 * Stream ID: A variable-sized unsigned ID unique to this stream.
 
 * Offset: A variable-sized unsigned number specifying the byte offset in the
   stream for the data in this STREAM frame.  The first byte in the stream has an
   offset of 0.
-
-* Data Length: An optional 16-bit unsigned number specifying the length of the
-  Stream Data field in this STREAM frame.
 
 * Stream Data: The bytes from the designated stream to be delivered.
 
@@ -963,42 +1085,43 @@ transmission efficiency to underfilled packets.
 
 Receivers send ACK frames to inform senders which packets they have received, as
 well as which packets are considered missing.  The ACK frame contains between 1
-and 256 ack blocks.  Ack blocks are ranges of acknowledged packets.
+and 256 ACK blocks.  ACK blocks are ranges of acknowledged packets.
 
 To limit the ACK blocks to the ones that haven't yet been received by the
 sender, the sender periodically sends STOP_WAITING frames that signal the
-receiver to stop acking packets below a specified sequence number, raising the
-Least Unacked packet number at the receiver.  A sender of an ACK frame thus
-reports only those ACK blocks between the received Least Unacked and the
-reported Largest Acked packet numbers.  The endpoint SHOULD raise the Least
-Unacked communicated via future STOP_WAITING frames to the most recently
-received Largest Acked.
+receiver to stop acknowledging packets below a specified sequence number,
+raising the Least Unacked packet number at the receiver.  A sender of an ACK
+frame thus reports only those ACK blocks between the received Least Unacked and
+the reported Largest Acknowledged packet numbers.  The endpoint SHOULD raise the
+Least Unacked communicated via future STOP_WAITING frames to the most recently
+received Largest Acknowledged.
 
-Unlike TCP SACKs, QUIC ACK blocks are irrevocable.  Once a packet is acked, even
-if it does not appear in a future ACK frame, it is assumed to be acked.
+Unlike TCP SACKs, QUIC ACK blocks are cumulative and therefore irrevocable.
+Once a packet has been acknowledged, even if it does not appear in a future ACK
+frame, it is assumed to be acknowledged.
 
 A sender MAY intentionally skip packet numbers to introduce entropy into the
-connection, to avoid opportunistic ack attacks.  The sender MUST close the
-connection if an unsent packet number is acked.  The format of the ACK frame is
-efficient at expressing blocks of missing packets; skipping packet numbers
-between 1 and 255 effectively provides up to 8 bits of efficient entropy on
-demand, which should be adequate protection against most opportunistic ack
-attacks.
+connection, to avoid opportunistic acknowledgement attacks.  The sender MUST
+close the connection if an unsent packet number is acknowledged.  The format of
+the ACK frame is efficient at expressing blocks of missing packets; skipping
+packet numbers between 1 and 255 effectively provides up to 8 bits of efficient
+entropy on demand, which should be adequate protection against most
+opportunistic acknowledgement attacks.
 
 The type byte for a ACK frame contains embedded flags, and is formatted as
 `01NULLMM`.  These bits are parsed as follows:
 
 * The first two bits must be set to 01 indicating that this is an ACK frame.
 
-* The `N` bit indicates whether the frame has more than 1 ack range (i.e.,
-  whether the Ack Block Section contains a Num Blocks field).
+* The `N` bit indicates whether the frame has more than 1 range of acknowledged
+  packets (i.e., whether the ACK Block Section contains a Num Blocks field).
 
 * The `U` bit is unused and MUST be set to zero.
 
-* The two `LL` bits encode the length of the Largest Acked field as 1, 2, 4,
-  or 6 bytes long.
+* The two `LL` bits encode the length of the Largest Acknowledged field as 1, 2,
+  4, or 6 bytes long.
 
-* The two `MM` bits encode the length of the Ack Block Length fields as 1, 2,
+* The two `MM` bits encode the length of the ACK Block Length fields as 1, 2,
   4, or 6 bytes long.
 
 An ACK frame is shown below.
@@ -1007,78 +1130,81 @@ An ACK frame is shown below.
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                  Largest Acked (8/16/32/48)                 ...
+|[Num Blocks(8)]|   NumTS (8)   |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|        Ack Delay (16)         |
+|                Largest Acknowledged (8/16/32/48)            ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|[Num Blocks(8)]|             Ack Block Section (*)           ...
+|        ACK Delay (16)         |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|   NumTS (8)   |             Timestamp Section (*)           ...
+|                     ACK Block Section (*)                   ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                     Timestamp Section (*)                   ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
 {: #ack-format title="ACK Frame Format"}
 
 The fields in the ACK frame are as follows:
 
-* Largest Acked: A variable-sized unsigned value representing the largest packet
-  number the peer is acking in this packet (typically the largest that the peer
-  has seen thus far.)
-
-* Ack Delay: Time from when the largest acked packet, as indicated in the Largest Acked
-  field, was received by this peer to when this ack was sent.
-
 * Num Blocks (opt): An optional 8-bit unsigned value specifying the number of
-  additional ack blocks (besides the required First Ack Block) in this ACK
+  additional ACK blocks (besides the required First ACK Block) in this ACK
   frame.  Only present if the 'N' flag bit is 1.
-
-* Ack Block Section: Contains one or more blocks of packet numbers which have
-  been successfully received.  See {{ack-block-section}}.
 
 * Num Timestamps: An unsigned 8-bit number specifying the total number of
   <packet number, timestamp> pairs in the Timestamp Section.
+
+* Largest Acknowledged: A variable-sized unsigned value representing the largest
+  packet number the peer is acknowledging in this packet (typically the largest
+  that the peer has seen thus far.)
+
+* ACK Delay: The time from when the largest acknowledged packet, as indicated in
+  the Largest Acknowledged field, was received by this peer to when this ACK was
+  sent.
+
+* ACK Block Section: Contains one or more blocks of packet numbers which have
+  been successfully received, see {{ack-block-section}}.
 
 * Timestamp Section: Contains zero or more timestamps reporting transit delay of
   received packets.  See {{timestamp-section}}.
 
 
-### Ack Block Section {#ack-block-section}
+### ACK Block Section {#ack-block-section}
 
-The Ack Block Section contains between one and 256 blocks of packet numbers
+The ACK Block Section contains between one and 256 blocks of packet numbers
 which have been successfully received. If the Num Blocks field is absent, only
-the First Ack Block length is present in this section. Otherwise, the Num Blocks
-field indicates how many additional blocks follow the First Ack Block Length
+the First ACK Block length is present in this section. Otherwise, the Num Blocks
+field indicates how many additional blocks follow the First ACK Block Length
 field.
 
 ~~~
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|              First Ack Block Length (8/16/32/48)            ...
+|              First ACK Block Length (8/16/32/48)            ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|  [Gap 1 (8)]  |       [Ack Block 1 Length (8/16/32/48)]     ...
+|  [Gap 1 (8)]  |       [ACK Block 1 Length (8/16/32/48)]     ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|  [Gap 2 (8)]  |       [Ack Block 2 Length (8/16/32/48)]     ...
+|  [Gap 2 (8)]  |       [ACK Block 2 Length (8/16/32/48)]     ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
                              ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|  [Gap N (8)]  |       [Ack Block N Length (8/16/32/48)]     ...
+|  [Gap N (8)]  |       [ACK Block N Length (8/16/32/48)]     ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
-{: #ack-block-format title="Ack Block Section"}
+{: #ack-block-format title="ACK Block Section"}
 
-The fields in the Ack Block Section are:
+The fields in the ACK Block Section are:
 
-* First Ack Block Length: An unsigned packet number delta that indicates the
-  number of contiguous additional packets being acked starting at the Largest
-  Acked.
+* First ACK Block Length: An unsigned packet number delta that indicates the
+  number of contiguous additional packets being acknowledged starting at the
+  Largest Acknowledged.
 
 * Gap To Next Block (opt, repeated): An unsigned number specifying the number
-  of contiguous missing packets from the end of the previous ack block to the
+  of contiguous missing packets from the end of the previous ACK block to the
   start of the next.
 
-* Ack Block Length (opt, repeated): An unsigned packet number delta that
-  indicates the number of contiguous packets being acked starting after the
-  end of the previous gap.  Along with the previous field, this field is
+* ACK Block Length (opt, repeated): An unsigned packet number delta that
+  indicates the number of contiguous packets being acknowledged starting after
+  the end of the previous gap.  Along with the previous field, this field is
   repeated "Num Blocks" times.
 
 ### Timestamp Section {#timestamp-section}
@@ -1107,20 +1233,20 @@ receive times relative to the beginning of the connection.
 
 The fields in the Timestamp Section are:
 
-* Delta Largest Acked (opt): An optional 8-bit unsigned packet number delta
-  specifying the delta between the largest acked and the first packet whose
-  timestamp is being reported.  In other words, this first packet number may
-  be computed as (Largest Acked - Delta Largest Acked.)
+* Delta Largest Acknowledged (opt): An optional 8-bit unsigned packet number
+  delta specifying the delta between the largest acknowledged and the first
+  packet whose timestamp is being reported.  In other words, this first packet
+  number may be computed as (Largest Acknowledged - Delta Largest Acknowledged.)
 
 * First Timestamp (opt): An optional 32-bit unsigned value specifying the time
   delta in microseconds, from the beginning of the connection to the arrival
-  of the packet indicated by Delta Largest Acked.
+  of the packet indicated by Delta Largest Acknowledged.
 
 * Delta Largest Acked 1..N (opt, repeated): (Same as above.)
 
 * Time Since Previous Timestamp 1..N(opt, repeated): An optional 16-bit unsigned
   value specifying time delta from the previous reported timestamp.  It is
-  encoded in the same format as the Ack Delay.  Along with the previous field,
+  encoded in the same format as the ACK Delay.  Along with the previous field,
   this field is repeated "Num Timestamps" times.
 
 #### Time Format
@@ -1163,10 +1289,10 @@ The STOP_WAITING frame contains a single field:
   length as the packet header's packet number.  Subtract it from the complete
   packet number of the enclosing packet to determine the least unacked packet
   number.  The resulting least unacked packet number is the earliest packet for
-  which the sender is still awaiting an ack.  If the receiver is missing any
+  which the sender is still awaiting an ACK.  If the receiver is missing any
   packets earlier than this packet, the receiver SHOULD consider those packets
   to be irrecoverably lost and MUST NOT report those packets as missing in
-  subsequent acks.
+  subsequent ACKs.
 
 ## WINDOW_UPDATE Frame {#frame-window-update}
 
@@ -1253,20 +1379,23 @@ The fields are:
 
 ## PADDING Frame {#frame-padding}
 
-The PADDING frame (type=0x00) pads a packet with 0x00 bytes. When this frame is
-encountered, the rest of the packet is expected to be padding bytes. The frame
-contains 0x00 bytes and extends to the end of the QUIC packet. A PADDING frame
-has no additional fields.
+The PADDING frame (type=0x00) has no semantic value.  PADDING frames can be used
+to increase the size of a packet.  Padding can be used to increase an initial
+client packet to the minimum required size, or to provide protection against
+traffic analysis for protected packets.
+
+A PADDING frame has no content.  That is, a PADDING frame consists of the single
+octet that identifies the frame as a PADDING frame.
 
 
 ## PING frame {#frame-ping}
 
 Endpoints can use PING frames (type=0x07) to verify that their peers are still
 alive or to check reachability to the peer. The PING frame contains no
-additional fields. The receiver of a PING frame simply needs to ACK the packet
-containing this frame. The PING frame SHOULD be used to keep a connection alive
-when a stream is open. The default is to send a PING frame after 15 seconds of
-quiescence. A PING frame has no additional fields.
+additional fields. The receiver of a PING frame simply needs to acknowledge the
+packet containing this frame. The PING frame SHOULD be used to keep a connection
+alive when a stream is open. The default is to send a PING frame after 15
+seconds of quiescence. A PING frame has no additional fields.
 
 
 ## CONNECTION_CLOSE frame {#frame-connection-close}
@@ -1362,7 +1491,7 @@ signals that indicate a smaller limit might exist.
 
 Clients MUST ensure that the first packet in a connection, and any
 retransmissions of those octets, has a total size (including IP and UDP headers)
-of at least 1280 bytes. This might require inclusion of a PADDING frame. It is
+of at least 1280 bytes. This might require inclusion of PADDING frames. It is
 RECOMMENDED that a packet be padded to exactly 1280 octets unless the client has
 a reasonable assurance that the PMTU is larger. Sending a packet of this size
 ensures that the network path supports an MTU of this size and helps mitigate
@@ -1379,14 +1508,7 @@ of the connection if all pairs are affected. In this case, an endpoint SHOULD
 send a Public Reset packet to indicate the failure. The application SHOULD
 attempt to use TLS over TCP instead.
 
-A sender bundles one or more frames in a Regular QUIC packet.  A sender MAY
-bundle any set of frames in a packet.  All QUIC packets MUST contain a packet
-number and MAY contain one or more frames ({{frames}}).  Packet numbers MUST be
-unique within a connection and MUST NOT be reused within the same connection.
-Packet numbers MUST be assigned to packets in a strictly monotonically
-increasing order.  The initial packet number used, at both the client and the
-server, MUST be 0.  That is, the first packet in both directions of the
-connection MUST have a packet number of 0.
+A sender bundles one or more frames in a Regular QUIC packet (see {{frames}}).
 
 A sender SHOULD minimize per-packet bandwidth and computational costs by
 bundling as many frames as possible within a QUIC packet.  A sender MAY wait for
@@ -1399,20 +1521,21 @@ conservatively, since any delay is likely to increase application-visible
 latency.
 
 Regular QUIC packets are "containers" of frames; a packet is never retransmitted
-whole, but frames in a lost packet may be rebundled and transmitted in a
-subsequent packet as necessary.
+whole.  How an endpoint handles the loss of the frame depends on the type of the
+frame.  Some frames are simply retransmitted, some have their contents moved to
+new frames, and others are never retransmitted.
 
-A packet may contain frames and/or application data, only some of which may
-require reliability.  When a packet is detected as lost, the sender re-sends any
-frames as necessary:
+When a packet is detected as lost, the sender re-sends any frames as necessary:
 
-* All application data sent in STREAM frames MUST be retransmitted, with one
-  exception.  When an endpoint sends a RST_STREAM frame, data outstanding on
-  that stream SHOULD NOT be retransmitted, since subsequent data on this stream
-  is expected to not be delivered by the receiver.
+* All application data sent in STREAM frames MUST be retransmitted, unless the
+  endpoint has sent a RST_STREAM for that stream.  When an endpoint sends a
+  RST_STREAM frame, data outstanding on that stream SHOULD NOT be retransmitted,
+  since subsequent data on this stream is expected to not be delivered by the
+  receiver.
 
-* ACK, STOP_WAITING, and PADDING frames MUST NOT be retransmitted.  New frames
-  of these types may however be bundled with any outgoing packet.
+* ACK, STOP_WAITING, and PADDING frames MUST NOT be retransmitted.  ACK and
+  STOP_WAITING frames are cumulative, so new frames containing updated
+  information will be sent as described in {{frame-ack}}.
 
 * All other frames MUST be retransmitted.
 
@@ -1422,11 +1545,11 @@ The details of loss detection and congestion control are described in
 
 A receiver acknowledges receipt of a received packet by sending one or more ACK
 frames containing the packet number of the received packet.  To avoid perpetual
-acking between endpoints, a receiver MUST NOT generate an ack in response to
-every packet containing only ACK frames.  However, since it is possible that an
-endpoint might only send packets containing ACK frames (or other
-non-retransmittable frames), the receiving peer MAY send an ACK frame after a
-reasonable number (currently 20) of such packets have been received.
+acknowledgment between endpoints, a receiver MUST NOT generate an ACK frame in
+response to every packet containing only ACK frames.  However, since it is
+possible that an endpoint might only send packets containing ACK frames (or
+other non-retransmittable frames), the receiving peer MAY send an ACK frame
+after a reasonable number (currently 20) of such packets have been received.
 
 Strategies and implications of the frequency of generating acknowledgments are
 discussed in more detail in {{QUIC-RECOVERY}}.
@@ -1442,8 +1565,8 @@ connection. However, as QUIC operates over UDP, in IPv4 the echoed information
 could consist only of the IP and UDP headers, which usually has insufficient
 entropy to mitigate off-path attacks.
 
-As a result, endpoints that implement PMTUD in IPv4 SHOULD take steps to mitigate
-this risk. For instance, an application could:
+As a result, endpoints that implement PMTUD in IPv4 SHOULD take steps to
+mitigate this risk. For instance, an application could:
 
 * Set the IPv4 Don't Fragment (DF) bit on a small proportion of packets, so that
 most invalid ICMP messages arrive when there are no DF packets outstanding, and
@@ -1529,8 +1652,8 @@ shown in the following figure and described below.
 
        app: application API signals to QUIC
        reserve_stream: causes a StreamID to be reserved for later use
-       read_close: causes stream to be half-closed without receiving a FIN
-       write_close: causes stream to be half-closed without sending a FIN
+       read_close: causes stream to be half-closed without a FIN
+       write_close: causes stream to be half-closed without a FIN
 ~~~
 {: #stream-lifecycle title="Lifecycle of a stream"}
 
@@ -1678,17 +1801,26 @@ A StreamID of zero (0x0) is reserved and used for connection-level flow control
 frames ({{flow-control}}); the StreamID of zero cannot be used to establish a
 new stream.
 
-StreamID 1 (0x1) is reserved for the crypto handshake.  StreamID 1 MUST NOT be
-used for application data, and MUST be the first client-initiated stream.
+StreamID 1 (0x1) is reserved for the cryptographic handshake.  StreamID 1 MUST
+NOT be used for application data, and MUST be the first client-initiated stream.
 
 Streams MUST be created or reserved in sequential order, but MAY be used in
 arbitrary order.  A QUIC endpoint MUST NOT reuse a StreamID on a given
 connection.
 
+All streams, including stream 1, count toward this limit.  Thus, a concurrent
+stream limit of 0 will cause a connection to be unusable.  Application protocols
+that use QUIC might require a certain minimum number of streams to function
+correctly.  If a peer advertises an concurrent stream limit (concurrent_streams)
+that is too small for the selected application protocol to function, an endpoint
+MUST terminate the connection with an error of type QUIC_TOO_MANY_OPEN_STREAMS
+({{error-handling}}).
+
+
 ## Stream Concurrency
 
-An endpoint can limit the number of concurrently active incoming streams by
-setting the MSPC parameter (see {{required-transport-parameters}}) in the
+An endpoint limits the number of concurrently active incoming streams by setting
+the concurrent stream limit (see {{transport-parameter-definitions}}) in the
 transport parameters. The maximum concurrent streams setting is specific to each
 endpoint and applies only to the peer that receives the setting. That is,
 clients specify the maximum number of concurrent streams the server can
@@ -1698,12 +1830,13 @@ client can initiate.
 Streams that are in the "open" state or in either of the "half-closed" states
 count toward the maximum number of streams that an endpoint is permitted to
 open.  Streams in any of these three states count toward the limit advertised in
-the MSPC setting.
+the concurrent stream limit.
 
 Endpoints MUST NOT exceed the limit set by their peer.  An endpoint that
 receives a STREAM frame that causes its advertised concurrent stream limit to be
 exceeded MUST treat this as a stream error of type QUIC_TOO_MANY_OPEN_STREAMS
 ({{error-handling}}).
+
 
 ## Sending and Receiving Data
 
@@ -1722,13 +1855,53 @@ as an ordered byte-stream.  Data received out of order MUST be buffered for
 later delivery, as long as it is not in violation of the receiver's flow control
 limits.
 
-The crypto handshake stream, Stream 1, MUST NOT be subject to congestion control
-or connection-level flow control, but MUST be subject to stream-level flow
-control. An endpoint MUST NOT send data on any other stream without consulting
-the congestion controller and the flow controller.
+The cryptographic handshake stream, Stream 1, MUST NOT be subject to congestion
+control or connection-level flow control, but MUST be subject to stream-level
+flow control. An endpoint MUST NOT send data on any other stream without
+consulting the congestion controller and the flow controller.
 
 Flow control is described in detail in {{flow-control}}, and congestion control
 is described in the companion document {{QUIC-RECOVERY}}.
+
+
+## Stream Prioritization
+
+Stream multiplexing has a significant effect on application performance if
+resources allocated to streams are correctly prioritized.  Experience with other
+multiplexed protocols, such as HTTP/2 {{?RFC7540}}, shows that effective
+prioritization strategies have a significant positive impact on performance.
+
+QUIC does not provide frames for exchanging priotization information.  Instead
+it relies on receiving priority information from the application that uses QUIC.
+Protocols that use QUIC are able to define any prioritization scheme that suits
+their application semantics.  A protocol might define explicit messages for
+signaling priority, such as those defined in HTTP/2; it could define rules that
+allow an endpoint to determine priority based on context; or it could leave the
+determination to the application.
+
+A QUIC implementation SHOULD provide ways in which an application can indicate
+the relative priority of streams.  When deciding which streams to dedicate
+resources to, QUIC SHOULD use the information provided by the application.
+Failure to account for priority of streams can result in suboptimal performance.
+
+Stream priority is most relevant when deciding which stream data will be
+transmitted.  Often, there will be limits on what can be transmitted as a result
+of connection flow control or the current congestion controller state.
+
+Giving preference to the transmission of its own management frames ensures that
+the protocol functions efficiently.  That is, prioritizing frames other than
+STREAM frames ensures that loss recovery, congestion control, and flow control
+operate effectively.
+
+Stream 1 MUST be prioritized over other streams prior to the completion of the
+cryptographic handshake.  This includes the retransmission of the second flight
+of client handshake messages, that is, the TLS Finished and any client
+authentication messages.
+
+STREAM frames that are determined to be lost SHOULD be retransmitted before
+sending new data, unless application priorities indicate otherwise.
+Retransmitting lost STREAM frames can fill in gaps, which allows the peer to
+consume already received data and free up flow control window.
 
 
 # Flow Control {#flow-control}
@@ -1866,7 +2039,8 @@ the error code:
   all uses of QUIC.
 
 0xC0000000-0xFFFFFFFF:
-: Cryptographic error codes.  Defined by the crypto handshake protocol in use.
+: Cryptographic error codes.  Defined by the cryptographic handshake protocol
+  in use.
 
 This section lists the defined QUIC transport error codes that may be used in a
 CONNECTION_CLOSE or RST_STREAM frame. Error codes share a common code space.
@@ -2044,7 +2218,7 @@ QUIC_TOO_MANY_SESSIONS_ON_SERVER (0x80000060):
 
 # Security and Privacy Considerations
 
-## Spoofed Ack Attack
+## Spoofed ACK Attack
 
 An attacker receives an STK from the server and then releases the IP address on
 which it received the STK.  The attacker may, in the future, spoof this same
@@ -2055,22 +2229,66 @@ in data.
 
 There are two possible mitigations to this attack.  The simplest one is that a
 server can unilaterally create a gap in packet-number space.  In the non-attack
-scenario, the client will send an ack with a larger largest acked.  In the
-attack scenario, the attacker may ack a packet in the gap.  If the server sees
-an ack for a packet that was never sent, the connection can be aborted.
+scenario, the client will send an ACK frame with the larger value for largest
+acknowledged.  In the attack scenario, the attacker could acknowledge a packet
+in the gap.  If the server sees an acknowledgment for a packet that was never
+sent, the connection can be aborted.
 
-The second mitigation is that the server can require that acks for sent packets
-match the encryption level of the sent packet.  This mitigation is useful if the
-connection has an ephemeral forward-secure key that is generated and used for
-every new connection.  If a packet sent is encrypted with a forward-secure key,
-then any acks that are received for them must also be forward-secure encrypted.
-Since the attacker will not have the forward secure key, the attacker will not
-be able to generate forward-secure encrypted ack packets.
+The second mitigation is that the server can require that acknowledgments for
+sent packets match the encryption level of the sent packet.  This mitigation is
+useful if the connection has an ephemeral forward-secure key that is generated
+and used for every new connection.  If a packet sent is encrypted with a
+forward-secure key, then any acknowledgments that are received for them MUST
+also be forward-secure encrypted.  Since the attacker will not have the forward
+secure key, the attacker will not be able to generate forward-secure encrypted
+packets with ACK frames.
 
 
 # IANA Considerations
 
-This document has no IANA actions yet.
+## QUIC Transport Parameter Registry {#iana-transport-parameters}
+
+IANA \[SHALL add/has added] a registry for "QUIC Transport Parameters" under a
+"QUIC Protocol" heading.
+
+The "QUIC Transport Parameters" registry governs a 16-bit space.  This space is
+split into two spaces that are governed by different policies.  Values with the
+first byte in the range 0x00 to 0xfe (in hexadecimal) are assigned via the
+Specification Required policy {{!RFC5226}}.  Values with the first byte 0xff are
+reserved for Private Use {{!RFC5226}}.
+
+Registrations MUST include the following fields:
+
+Value:
+
+: The numeric value of the assignment (registrations will be between 0x0000 and
+  0xfeff).
+
+Parameter Name:
+
+: A short mnemonic for the parameter.
+
+Specification:
+
+: A reference to a publicly available specification for the value.
+
+
+The nominated expert(s) verify that a specification exists and is readily
+accessible.  The expert(s) are encouraged to be biased towards approving
+registrations unless they are abusive, frivolous, or actively harmful (not
+merely aesthetically displeasing, or architecturally dubious).
+
+The initial contents of this registry are shown in
+{{iana-tp-table}}.
+
+| Value | Parameter Name | Specification |
+|:-|:-|:-|
+| 0x0000 | stream_fc_offset | {{transport-parameter-definitions}} |
+| 0x0001 | connection_fc_offset | {{transport-parameter-definitions}} |
+| 0x0002 | concurrent_streams | {{transport-parameter-definitions}} |
+| 0x0003 | idle_timeout | {{transport-parameter-definitions}} |
+| 0x0004 | truncate_connection_id | {{transport-parameter-definitions}} |
+{: #iana-tp-table title="Initial QUIC Transport Parameters Entries"}
 
 
 --- back
@@ -2103,6 +2321,12 @@ thanks to all.
 
 > **RFC Editor's Note:**  Please remove this section prior to publication of a
 > final version of this document.
+
+
+## Since draft-ietf-quic-transport-01:
+
+- Defined transport parameters
+
 
 ## Since draft-ietf-quic-transport-00:
 

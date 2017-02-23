@@ -21,21 +21,6 @@ author:
 
 normative:
 
-  QUIC-TLS:
-    title: "Using Transport Layer Security (TLS) to Secure QUIC"
-    date: {DATE}
-    author:
-      -
-        ins: M. Thomson
-        name: Martin Thomson
-        org: Mozilla
-        role: editor
-      -
-        ins: S. Turner, Ed.
-        name: Sean Turner
-        org: sn3rd
-        role: editor
-
   QUIC-TRANSPORT:
     title: "QUIC: A UDP-Based Multiplexed and Secure Transport"
     date: {DATE}
@@ -418,7 +403,7 @@ All frames have the following format:
    |                       Frame Payload (*)                     ...
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~~~~~~~~
-{: title="HTTP/QUIC frame format"}
+{: #fig-frame title="HTTP/QUIC frame format"}
 
 ## Frame Definitions {#frames}
 
@@ -448,7 +433,7 @@ of type HTTP_MALFORMED_HEADERS.
    |       Sequence? (16)          |    Header Block Fragment (*)...
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~~~~~~~~
-{: title="HEADERS frame payload"}
+{: #fig-headers title="HEADERS frame payload"}
 
 The HEADERS frame payload has the following fields:
 
@@ -469,6 +454,10 @@ without EHB set, followed by a HEADERS frame with EHB set.
 On receipt, header blocks (HEADERS, PUSH_PROMISE) MUST be processed by the HPACK
 decoder in sequence. If a block is missing, all subsequent HPACK frames MUST be
 held until it arrives, or the connection terminated.
+
+When the Sequence counter reaches its maximum value (0xFFFF), the next increment
+returns it to zero.  An endpoint MUST NOT wrap the Sequence counter to zero
+until the previous zero-value header block has been confirmed received.
 
 
 ### PRIORITY {#frame-priority}
@@ -496,7 +485,7 @@ The flags defined are:
    |   Weight (8)  |
    +-+-+-+-+-+-+-+-+
 ~~~~~~~~~~
-{: title="HEADERS frame payload"}
+{: #fig-priority title="PRIORITY frame payload"}
 
 The HEADERS frame payload has the following fields:
 
@@ -640,8 +629,8 @@ following values:
   - SETTINGS_MAX_HEADER_LIST_SIZE:  16,384 octets
 
 Servers MAY continue processing data from clients which exceed its current
-configuration during the initial flight.  In this case, the client MUST apply the new
-settings immediately upon receipt.
+configuration during the initial flight.  In this case, the client MUST apply
+the new settings immediately upon receipt.
 
 If the connection is closed because these or other constraints were violated
 during the 0-RTT flight (e.g. with HTTP_HPACK_DECOMPRESSION_FAILED), clients MAY
@@ -665,7 +654,7 @@ server to client, as in HTTP/2.  It defines no flags.
    |       Sequence? (16)          |         Header Block (*)    ...
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~~~~~~~~
-{: title="PUSH_PROMISE frame payload"}
+{: #fig-push-promise title="PUSH_PROMISE frame payload"}
 
 The payload consists of:
 
@@ -888,7 +877,7 @@ in {{!RFC7540}}:
 
 Values for existing registrations are assigned by this document:
 
-  +---------------|---------------------|-------------------------+
+  |---------------|---------------------|-------------------------|
   | Frame Type    | Supported Protocols | HTTP/QUIC Specification |
   |---------------|:-------------------:|-------------------------|
   | DATA          | HTTP/2 only         | N/A                     |
@@ -901,7 +890,7 @@ Values for existing registrations are assigned by this document:
   | GOAWAY        | HTTP/2 only         | N/A                     |
   | WINDOW_UPDATE | HTTP/2 only         | N/A                     |
   | CONTINUATION  | HTTP/2 only         | N/A                     |
-  +---------------|---------------------|-------------------------+
+  |---------------|---------------------|-------------------------|
 
 The "Specification" column is renamed to "HTTP/2 specification" and is only
 required if the frame is supported over HTTP/2.

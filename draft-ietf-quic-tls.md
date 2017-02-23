@@ -370,6 +370,9 @@ handshake messages on stream 1.  There are two basic functions on this
 interface: one where QUIC requests handshake messages and one where QUIC
 provides handshake packets.
 
+Before starting the handshake QUIC provides TLS with the transport parameters
+(see {{quic_parameters}}) that it wishes to carry.
+
 A QUIC client starts TLS by requesting TLS handshake octets from
 TLS.  The client acquires handshake octets before sending its first packet.
 
@@ -381,12 +384,14 @@ octets are requested from TLS.  TLS might not provide any octets if the
 handshake messages it has received are incomplete or it has no data to send.
 
 Once the TLS handshake is complete, this is indicated to QUIC along with any
-final handshake octets that TLS needs to send.  Once the handshake is complete,
-TLS becomes passive.  TLS can still receive data from its peer and respond in
-kind that data, but it will not need to send more data unless specifically
-requested - either by an application or QUIC.  One reason to send data is that
-the server might wish to provide additional or updated session tickets to a
-client.
+final handshake octets that TLS needs to send.  TLS also provides QUIC with the
+transport parameters that the peer advertised during the handshake.
+
+Once the handshake is complete, TLS becomes passive.  TLS can still receive data
+from its peer and respond in kind, but it will not need to send more data unless
+specifically requested - either by an application or QUIC.  One reason to send
+data is that the server might wish to provide additional or updated session
+tickets to a client.
 
 When the handshake is complete, QUIC only needs to provide TLS with any data
 that arrives on stream 1.  In the same way that is done during the handshake,
@@ -692,7 +697,8 @@ of the reconstructed QUIC packet number in network byte order is left-padded
 with zeros to the size of the IV.  The exclusive OR of the padded packet number
 and the IV forms the AEAD nonce.
 
-The associated data, A, for the AEAD is an empty sequence.
+The associated data, A, for the AEAD is the contents of the QUIC header,
+starting from the flags octet in the common header.
 
 The input plaintext, P, for the AEAD is the contents of the QUIC frame following
 the packet number, as described in {{QUIC-TRANSPORT}}.
@@ -972,11 +978,13 @@ prior to handshake completion:
 Different strategies are appropriate for different types of data.  This document
 proposes that all strategies are possible depending on the type of message.
 
-* Transport parameters and options are made usable and authenticated as part of
-  the TLS handshake (see {{quic_parameters}}).
+* Transport parameters are made usable and authenticated as part of the TLS
+  handshake (see {{quic_parameters}}).
+
 * Most unprotected messages are treated as fatal errors when received except for
   the small number necessary to permit the handshake to complete (see
   {{pre-hs-unprotected}}).
+
 * Protected packets can either be discarded or saved and later used (see
   {{pre-hs-protected}}).
 
@@ -1140,31 +1148,35 @@ protection for the QUIC negotiation.  This does not prevent version downgrade
 during the handshake, though it means that such a downgrade causes a handshake
 failure.
 
-Protocols that use the QUIC transport MUST use Application Layer Protocol
-Negotiation (ALPN) {{!RFC7301}}.  The ALPN identifier for the protocol MUST be
-specific to the QUIC version that it operates over.  When constructing a
-ClientHello, clients MUST include a list of all the ALPN identifiers that they
-support, regardless of whether the QUIC version that they have currently
-selected supports that protocol.
+TLS uses Application Layer Protocol Negotiation (ALPN) {{!RFC7301}} to select an
+application protocol.  The application-layer protocol MAY restrict the QUIC
+versions that it can operate over.  Servers MUST select an application protocol
+compatible with the QUIC version that the client has selected.
 
-Servers SHOULD select an application protocol based solely on the information in
-the ClientHello, not using the QUIC version that the client has selected.  If
-the protocol that is selected is not supported with the QUIC version that is in
-use, the server MAY send a QUIC version negotiation packet to select a
-compatible version.
-
-If the server cannot select a combination of ALPN identifier and QUIC version it
-MUST abort the connection.  A client MUST abort a connection if the server picks
-an incompatible version of QUIC version and ALPN.
+If the server cannot select a compatible combination of application protocol and
+QUIC version, it MUST abort the connection. A client MUST abort a connection if
+the server picks an incompatible combination of QUIC version and ALPN
+identifier.
 
 
-## QUIC Extension {#quic_parameters}
+## QUIC Transport Parameters Extension {#quic_parameters}
 
-QUIC defines an extension for use with TLS.  That extension defines
-transport-related parameters.  This provides integrity protection for these
-values.  Including these in the TLS handshake also make the values that a client
-sets available to a server one-round trip earlier than parameters that are
-carried in QUIC packets.  This document does not define that extension.
+QUIC transport parameters are carried in a TLS extension. Different versions of
+QUIC might define a different format for this struct.
+
+Including transport parameters in the TLS handshake provides integrity
+protection for these values.
+
+~~~
+   enum {
+      quic_transport_parameters(26), (65535)
+   } ExtensionType;
+~~~
+
+The `extension_data` field of the quic_transport_parameters extension contains a
+value that is defined by the version of QUIC that is in use.  The
+quic_transport_parameters extension carries a TransportParameters when the
+version of QUIC defined in {{QUIC-TRANSPORT}} is used.
 
 
 ## Priming 0-RTT
@@ -1247,8 +1259,8 @@ packets as indicative of an attack.
 # Error codes {#errors}
 
 The portion of the QUIC error code space allocated for the crypto handshake is
-0xC0000000-0xFFFFFFFF. The following error codes are defined when TLS is used for the
-crypto handshake:
+0xC0000000-0xFFFFFFFF. The following error codes are defined when TLS is used
+for the crypto handshake:
 
 TLS_HANDSHAKE_FAILED (0xC000001C):
 : Crypto errors. Handshake failed.
