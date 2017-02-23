@@ -557,9 +557,9 @@ For all other frames, the Frame Type byte simply identifies the frame.  These
 frames are explained in more detail as they are referenced later in the
 document.
 
-+------------------|--------------------|----------------------------+
+|------------------|--------------------|----------------------------|
 | Type-field value |     Frame type     | Definition                 |
-+------------------|--------------------|----------------------------+
+|------------------|--------------------|----------------------------|
 | 0x00             |  PADDING           | {{frame-padding}}          |
 | 0x01             |  RST_STREAM        | {{frame-rst-stream}}       |
 | 0x02             |  CONNECTION_CLOSE  | {{frame-connection-close}} |
@@ -570,7 +570,7 @@ document.
 | 0x07             |  PING              | {{frame-ping}}             |
 | 0x40 - 0x7f      |  ACK               | {{frame-ack}}              |
 | 0x80 - 0xff      |  STREAM            | {{frame-stream}}           |
-+------------------|--------------------|----------------------------+
+|------------------|--------------------|----------------------------|
 
 ## Version Negotiation Packet
 
@@ -1253,10 +1253,13 @@ The fields are:
 
 ## PADDING Frame {#frame-padding}
 
-The PADDING frame (type=0x00) pads a packet with 0x00 bytes. When this frame is
-encountered, the rest of the packet is expected to be padding bytes. The frame
-contains 0x00 bytes and extends to the end of the QUIC packet. A PADDING frame
-has no additional fields.
+The PADDING frame (type=0x00) has no semantic value.  PADDING frames can be used
+to increase the size of a packet.  Padding can be used to increase an initial
+client packet to the minimum required size, or to provide protection against
+traffic analysis for protected packets.
+
+A PADDING frame has no content.  That is, a PADDING frame consists of the single
+octet that identifies the frame as a PADDING frame.
 
 
 ## PING frame {#frame-ping}
@@ -1362,7 +1365,7 @@ signals that indicate a smaller limit might exist.
 
 Clients MUST ensure that the first packet in a connection, and any
 retransmissions of those octets, has a total size (including IP and UDP headers)
-of at least 1280 bytes. This might require inclusion of a PADDING frame. It is
+of at least 1280 bytes. This might require inclusion of PADDING frames. It is
 RECOMMENDED that a packet be padded to exactly 1280 octets unless the client has
 a reasonable assurance that the PMTU is larger. Sending a packet of this size
 ensures that the network path supports an MTU of this size and helps mitigate

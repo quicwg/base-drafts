@@ -901,7 +901,7 @@ in {{!RFC7540}}:
 
 Values for existing registrations are assigned by this document:
 
-  +---------------|---------------------|-------------------------+
+  |---------------|---------------------|-------------------------|
   | Frame Type    | Supported Protocols | HTTP/QUIC Specification |
   |---------------|:-------------------:|-------------------------|
   | DATA          | HTTP/2 only         | N/A                     |
@@ -914,7 +914,7 @@ Values for existing registrations are assigned by this document:
   | GOAWAY        | HTTP/2 only         | N/A                     |
   | WINDOW_UPDATE | HTTP/2 only         | N/A                     |
   | CONTINUATION  | HTTP/2 only         | N/A                     |
-  +---------------|---------------------|-------------------------+
+  |---------------|---------------------|-------------------------|
 
 The "Specification" column is renamed to "HTTP/2 specification" and is only
 required if the frame is supported over HTTP/2.
