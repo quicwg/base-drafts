@@ -1673,7 +1673,7 @@ actually lost.
 # Streams: QUIC's Data Structuring Abstraction {#streams}
 
 Streams in QUIC provide a lightweight, ordered, and bidirectional byte-stream
-abstraction modeled closely on HTTP/2 streams {{?RFC7540}}
+abstraction modeled closely on HTTP/2 streams {{?RFC7540}}.
 
 Streams can be created either by the client or the server, can concurrently send
 data interleaved with other streams, and can be cancelled.
