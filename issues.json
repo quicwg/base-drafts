@@ -1763,63 +1763,6 @@
     "body": "Fixes #176, but I'm hoping we can find a cleaner way to do this."
   },
   {
-    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/273",
-    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
-    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/273/labels{/name}",
-    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/273/comments",
-    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/273/events",
-    "html_url": "https://github.com/quicwg/base-drafts/pull/273",
-    "id": 206342919,
-    "number": 273,
-    "title": "Wrap Sequence, for now",
-    "user": {
-      "login": "MikeBishop",
-      "id": 4273797,
-      "avatar_url": "https://avatars.githubusercontent.com/u/4273797?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/MikeBishop",
-      "html_url": "https://github.com/MikeBishop",
-      "followers_url": "https://api.github.com/users/MikeBishop/followers",
-      "following_url": "https://api.github.com/users/MikeBishop/following{/other_user}",
-      "gists_url": "https://api.github.com/users/MikeBishop/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/MikeBishop/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/MikeBishop/subscriptions",
-      "organizations_url": "https://api.github.com/users/MikeBishop/orgs",
-      "repos_url": "https://api.github.com/users/MikeBishop/repos",
-      "events_url": "https://api.github.com/users/MikeBishop/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/MikeBishop/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "labels": [
-      {
-        "id": 481871627,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/http",
-        "name": "http",
-        "color": "fbca04",
-        "default": false
-      }
-    ],
-    "state": "open",
-    "locked": false,
-    "assignee": null,
-    "assignees": [
-
-    ],
-    "milestone": null,
-    "comments": 0,
-    "created_at": "2017-02-08T22:19:44Z",
-    "updated_at": "2017-02-09T02:51:23Z",
-    "closed_at": null,
-    "pull_request": {
-      "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/273",
-      "html_url": "https://github.com/quicwg/base-drafts/pull/273",
-      "diff_url": "https://github.com/quicwg/base-drafts/pull/273.diff",
-      "patch_url": "https://github.com/quicwg/base-drafts/pull/273.patch"
-    },
-    "body": "Fixes #173, though I would like to ultimately get rid of the Sequence number altogether."
-  },
-  {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/272",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
     "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/272/labels{/name}",
@@ -1912,8 +1855,7 @@
     "updated_at": "2017-02-15T05:17:41Z",
     "closed_at": null,
     "body": "This needs to be written down.  I think that the best outcome would be to include BOTH a TLS alert and a QUIC error code (in a CONNECTION_CLOSE frame)."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/271",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -1970,7 +1912,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/271.patch"
     },
     "body": "Fixes #127, but we may want to go further."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/269",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3651,8 +3594,7 @@
     "updated_at": "2017-01-24T23:45:10Z",
     "closed_at": null,
     "body": "It may be desirable for the client to increase the flow control window mid-connection (it observes that client actually has very high BDP; it decides based on application request by peer that it will send a lot of data; it decides that it trusts the peer for some reason; potentially other options).  Currently, we can bump connection flow control window without an issue, but any new individual streams are stuck with whatever was initially negotiated.  We may want to add a mechanism to increase initial stream flow control window mid-connection."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/217",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3710,7 +3652,8 @@
     "updated_at": "2017-01-24T23:34:14Z",
     "closed_at": null,
     "body": "For illustrative purposes, consider a server with an max open stream limit of 2.  The client sends packets with frames in the following order:\r\n\r\n1. Open stream 3\r\n2. Open stream 5\r\n3. Close stream 5\r\n4. Open stream 7\r\n\r\nThe network reorders packets 3 and 4. From the server's perspective, the client has violated the maximum.  In order to deal with this, the server will presumably need something more complicated than just \"if violated, kill\" -- maybe kill the connection if it *remains* violated for more than 1-2 RTT?"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/215",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5363,64 +5306,6 @@
     "body": "QUIC borrows the concept of stream reservation from HTTP/2.  However, there is a small difference between those state machines in that a reserved stream becomes open when data is sent on it.  HTTP/2 reserved streams become half-closed in this case (basically, only the server can send on a reserved stream).\r\n\r\nThe reason we have reservation is that we use stream numbers to identify requests at the HTTP mapping.  We reserve the stream number so that we can use its number in the PUSH_PROMISE frame.  That ties the PUSH_PROMISE - which contains a request - to the stream containing the response.  We need to create streams sequentially, so reservation allows us to \"create\" the stream in the right order and still be able to reference it.\r\n\r\nIn practice, however, this is a nuisance.  Reserved streams don't count toward concurrency limits and so they represent an unbounded state exposure.  Reserved streams might be created in order, but they can be used in any order.  Of course, this is a minor annoyance at best because there is always application state, and maybe priority information for these streams.\r\n\r\nI believe that QUIC has the opportunity to address this annoyance and in the process make the state machine simpler.  If QUIC removed the concept of stream reservation and instead required that application protocols create their correlators for use with talking about future streams, that would greatly simplify things.\r\n\r\nFor instance, we could remove the promised stream identifier from PUSH_PROMISE.  Instead, the stream that carries a push promise response could start with a frame that identified the PUSH_PROMISE by stream and number: \"this stream contains the response for promised request number P on stream N\".  Or, we could mint a new PUSH_PROMISE identifier that could be carried at the start of the stream."
   },
   {
-    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/173",
-    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
-    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/173/labels{/name}",
-    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/173/comments",
-    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/173/events",
-    "html_url": "https://github.com/quicwg/base-drafts/issues/173",
-    "id": 201708147,
-    "number": 173,
-    "title": "Size of HTTP Headers Sequence Numbers",
-    "user": {
-      "login": "krasic",
-      "id": 6422662,
-      "avatar_url": "https://avatars.githubusercontent.com/u/6422662?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/krasic",
-      "html_url": "https://github.com/krasic",
-      "followers_url": "https://api.github.com/users/krasic/followers",
-      "following_url": "https://api.github.com/users/krasic/following{/other_user}",
-      "gists_url": "https://api.github.com/users/krasic/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/krasic/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/krasic/subscriptions",
-      "organizations_url": "https://api.github.com/users/krasic/orgs",
-      "repos_url": "https://api.github.com/users/krasic/repos",
-      "events_url": "https://api.github.com/users/krasic/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/krasic/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "labels": [
-      {
-        "id": 481871361,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/design",
-        "name": "design",
-        "color": "1d76db",
-        "default": false
-      },
-      {
-        "id": 481871627,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/http",
-        "name": "http",
-        "color": "fbca04",
-        "default": false
-      }
-    ],
-    "state": "open",
-    "locked": false,
-    "assignee": null,
-    "assignees": [
-
-    ],
-    "milestone": null,
-    "comments": 1,
-    "created_at": "2017-01-18T22:16:43Z",
-    "updated_at": "2017-02-08T22:14:21Z",
-    "closed_at": null,
-    "body": "Re: 5.2.2. HEADERS\r\n\r\nDefines the sequence number as 16 bits.  \r\n\r\nUnder the HTTP mapping, with stream ids being 32 bit, and 2 streams per request, the limit would be ~ 2^30 requests per connection.   The 16 bit HEADERs sequence number will run out much sooner.\r\n\r\nUnless the assumption is that these HEADERs sequence numbers can wrap around, and the active range constrained, ala TCP sequence numbers.\r\n\r\nOr a third alternative might be to go with compressed, ala issue #154.\r\n\r\nMaybe sequence numbers could adopt the integer encoding scheme of HPACK?\r\n\r\n\r\n"
-  },
-  {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/171",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
     "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/171/labels{/name}",
@@ -5490,8 +5375,7 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/171.patch"
     },
     "body": "A rough draft of a fix for #165.  Key changes:\r\n\r\n- RST_STREAM kills only the sender's direction, not both.  (Retains the existing requirement to respond with RST_STREAM with another RST_STREAM if the stream isn't already closed, which eventually leads to the same result.)\r\n- New REQUEST_RST frame allows peer to solicit a RST_STREAM; text states that this reflects an app recv_close, and that received data is being discarded\r\n\r\nThis should solve the scenarios outlined in #165; a server can ask a client to RST_STREAM its own direction after having sent an early response.  Feedback welcome, of course -- please point out anything I've missed."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/170",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5650,7 +5534,8 @@
     "updated_at": "2017-01-26T07:24:42Z",
     "closed_at": null,
     "body": "I would like to see some language in the loss recovery document about client actions when the first handshake message is lost. We have overloaded this loss signal with multiple meanings/responses:\r\n\r\n(1) Retransmit (due to garden-variety network loss)\r\n(2) Change MTU and retransmit (due to MTU problems, though we might see ICMP here?)\r\n(3) Failover to TCP (middleboxes eating QUIC)\r\n(4) Give up (path failure)\r\n\r\nIf I were implementing a client using these documents, I am not sure how I would handle a CHLO loss given these conflicting imperatives. I could accept having SHOULDs instead of MUSTs, but there ought to be something."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/167",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7667,8 +7552,7 @@
     "updated_at": "2017-01-25T04:47:27Z",
     "closed_at": null,
     "body": "Need discussion of how CONNECT works.  Initial thought:\r\n\r\n - Client does not close data stream after sending request\r\n - If server responds (on the message control stream) with success, the data stream is being relayed into a TCP connection by the server.\r\n\r\nIs there a QUIC-CONNECT?  (Probably not, and almost certainly not in this document.)"
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/89",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7784,7 +7668,8 @@
     "updated_at": "2017-02-21T23:41:03Z",
     "closed_at": null,
     "body": "Because of a stated goal from some implementers to reuse HTTP/2 framing as much as possible, the draft currently augments the HTTP/2 Frame Type Registry with a \"Supported Protocol\" column, allowing a frame to be defined for HTTP/2, HTTP/QUIC, or both.  A specification is required for each supported protocol.\r\n\r\nHowever, in the current draft, all but one \"Both\" frames are *different* between HTTP/2 and HTTP/QUIC.  Small or large, nearly every frame has required some modification to work over QUIC.  If we accept #80 , *all* frames will be different between HTTP/2 and HTTP/QUIC.\r\n\r\nAt that point, is there really a point in continuing to define HTTP/QUIC in relation to HTTP/2, or should we just admit that it's a new, separate thing that's heavily inspired by HTTP/2?  Separate registry, etc., and future extensions can register themselves with both if appropriate?  Or do we keep the same registry anyway to enforce that you'll never wind up with totally unrelated frames sharing the same value across the two protocols?"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/76",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -9734,8 +9619,7 @@
     "updated_at": "2016-11-22T23:04:48Z",
     "closed_at": null,
     "body": "The section on Hybrid Slow Start ends in the mi"
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/6",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
