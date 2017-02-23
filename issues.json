@@ -51,9 +51,9 @@
 
     ],
     "milestone": null,
-    "comments": 1,
+    "comments": 2,
     "created_at": "2017-02-23T22:27:10Z",
-    "updated_at": "2017-02-23T22:38:28Z",
+    "updated_at": "2017-02-23T22:42:26Z",
     "closed_at": null,
     "body": "We're starting to see a few cases where ACK frames are being used to close the loop on things.  But that raises questions like \"if a peer acknowledges a packet containing a GOAWAY, does that mean I can assume that stream above the mentioned number are now closed at their end?\"\r\n\r\nI think that we need to state what the rule is, and it should be simple.  An acknowledgement for a packet implies that all QUIC-level control messages have been read and processed.\r\n\r\nThis includes PING, ACK, RST_STREAM, GOAWAY, etc...  I think that it also has to include FIN bits on STREAM frames.  That implies that the *transport* must have finished handling all the messages.\r\n\r\nThe application protocol might not have consumed the data from STREAM frames, but that is the only thing that is considered outstanding when a packet is acknowledged.  We have a special sort of acknowledgment for data: flow control credits.\r\n\r\nIf we add features that include special acknowledgement (like flow control), then those would be excluded, but that would be explicitly stated.  Otherwise, if it is in the transport and it is acknowledged, then it has been processed by the receiver."
   },
