@@ -941,24 +941,24 @@ token cannot be easily guessed (see {{token-integrity}}), if the client is able
 to return that token, it proves to the server that it received the token.
 
 During the processing of the cryptographic handshake messages from a client, TLS
-will request that the transport make a decision about whether to proceed based
-on the information it has.  TLS will provide the transport with any token that
-was provided by the client.  For an initial packet, the transport can decide to
-abort the connection, allow it to proceed, or request address validation.
+will request that QUIC make a decision about whether to proceed based on the
+information it has.  TLS will provide QUIC with any token that was provided by
+the client.  For an initial packet, QUIC can decide to abort the connection,
+allow it to proceed, or request address validation.
 
-If the transport decides to request address validation, it provides the
-cryptographic handshake with a token.  The contents of this token are consumed
-by the server that generates the token, so there is no need for a single
-well-defined format.  A token could include information about the claimed client
-address (IP and port), and any other supplementary information the server will
-need to validate the token in the future.
+If QUIC decides to request address validation, it provides the cryptographic
+handshake with a token.  The contents of this token are consumed by the server
+that generates the token, so there is no need for a single well-defined format.
+A token could include information about the claimed client address (IP and
+port), a timestamp, and any other supplementary information the server will need
+to validate the token in the future.
 
 The cryptographic handshake is responsible for enacting validation by sending
 the address validation token to the client.  A legitimate client will include a
-copy of the token when they attempt to continue the handshake.  The
-cryptographic handshake extracts the token then asks the transport a second time
-whether the token is acceptable.  In response, the transport can either abort
-the connection or permit it to proceed.
+copy of the token when it attempts to continue the handshake.  The cryptographic
+handshake extracts the token then asks QUIC a second time whether the token is
+acceptable.  In response, QUIC can either abort the connection or permit it to
+proceed.
 
 A connection MAY be accepted without address validation - or with only limited
 validation - but a server SHOULD limit the data it sends toward an unvalidated
@@ -981,8 +981,8 @@ number is the same on two different connections; validating the port is
 therefore unlikely to be successful.
 
 This token can be provided to the cryptographic handshake immediately after
-establishing a connection.  The transport might also generate an updated token
-if significant time passes or the client address changes for any reason (see
+establishing a connection.  QUIC might also generate an updated token if
+significant time passes or the client address changes for any reason (see
 {{migration}}).  The cryptographic handshake is responsible for providing the
 client with the token.  In TLS the token is included in the ticket that is used
 for resumption and 0-RTT, which is carried in a NewSessionTicket message.
@@ -1006,8 +1006,9 @@ TLS requires, such as the resumption secret.  In this case, adding integrity
 protection can be delegated to the cryptographic handshake protocol, avoiding
 redundant protection.  If integrity protection is delegated to the cryptographic
 handshake, an integrity failure will result in immediate cryptographic handshake
-failure.  If integrity protection is performed by the transport, the transport
-MUST abort the connection if the integrity check fails with a TBD error code.
+failure.  If integrity protection is performed by QUIC, QUIC MUST abort the
+connection if the integrity check fails with a QUIC_ADDRESS_VALIDATION_FAILURE
+error code.
 
 
 ## Connection Migration {#migration}
@@ -2265,6 +2266,9 @@ QUIC_VERSION_NEGOTIATION_MISMATCH (0x80000037):
 
 QUIC_IP_ADDRESS_CHANGED (0x80000050):
 : IP address changed causing connection close.
+
+QUIC_ADDRESS_VALIDATION_FAILURE (0x80000051):
+: Client address validation failed.
 
 QUIC_TOO_MANY_FRAME_GAPS (0x8000005d):
 : Stream frames arrived too discontiguously so that stream sequencer buffer
