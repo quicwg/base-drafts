@@ -2117,17 +2117,12 @@ controller.
 
 ### Response to a RST_STREAM
 
-RST_STREAM terminates a stream abruptly.  Whether any action or response can
-or should be taken on the data already received is an application-specific
-issue.  If the sender of a RST_STREAM wishes to explicitly state that no future
-data will be processed, that endpoint MAY send a REQUEST_RST frame at the same
-time.
-
-Regardless, it will often be the case that upon receipt of a RST_STREAM, an
-endpoint will choose to stop sending data in its own direction. An endpoint that
-receives a RST_STREAM frame MUST still close the stream for sending in the other
-direction, either with a STREAM frame containing the FIN bit or a RST_STREAM
-frame of its own, but MAY choose not to do so immediately.
+RST_STREAM terminates a stream abruptly.  Whether any action or response can or
+should be taken on the data already received is an application-specific issue,
+but it will often be the case that upon receipt of a RST_STREAM an endpoint
+will choose to stop sending data in its own direction. If the sender of a
+RST_STREAM wishes to explicitly state that no future data will be processed,
+that endpoint MAY send a REQUEST_RST frame at the same time.
 
 ### Offset Increment
 
