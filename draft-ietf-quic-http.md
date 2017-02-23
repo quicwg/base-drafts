@@ -464,6 +464,10 @@ On receipt, header blocks (HEADERS, PUSH_PROMISE) MUST be processed by the HPACK
 decoder in sequence. If a block is missing, all subsequent HPACK frames MUST be
 held until it arrives, or the connection terminated.
 
+When the Sequence counter reaches its maximum value (0xFFFF), the next increment
+returns it to zero.  An endpoint MUST NOT wrap the Sequence counter to zero
+until the previous zero-value header block has been confirmed received.
+
 
 ### PRIORITY {#frame-priority}
 
