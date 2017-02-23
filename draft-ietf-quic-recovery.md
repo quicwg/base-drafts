@@ -61,10 +61,8 @@ informative:
 
   RFC3782:
   RFC6582:
-  RFC5827:
   RFC5682:
   RFC6937:
-  I-D.dukkipati-tcpm-tcp-loss-probe:
 
 --- abstract
 
@@ -195,6 +193,10 @@ latency before a userspace QUIC receiver processes a received packet.
 We now describe QUIC's loss detection as functions that should be called on
 packet transmission, when a packet is acked, and timer expiration events.
 
+TODO need an extended discussion of
+{{?I-D.dukkipati-tcpm-tcp-loss-probe LOSS-PROBE}}.
+
+
 ## Constants of interest
 
 Constants used in loss recovery and congestion control are based on a
@@ -308,7 +310,7 @@ Pseudocode for SetLossDetectionAlarm follows:
                          << handshake_count
       handshake_count++;
     else if (largest sent packet is acked):
-      // Early retransmit {{!RFC 5827}}
+      // Early retransmit {{!RFC5827}}
       // with an alarm to reduce spurious retransmits.
       alarm_duration = 0.25 * smoothed_rtt
     else if (tlp_count < kMaxTLPs):
@@ -465,7 +467,7 @@ Pseudocode for SetLossDetectionAlarm follows:
       alarm_duration = alarm_duration << handshake_count
       handshake_count++;
     else if (largest sent packet is acked):
-      // Early retransmit {{!RFC 5827}}
+      // Early retransmit {{!RFC5827}}
       // with an alarm to reduce spurious retransmits.
       alarm_duration = 0.25 * smoothed_rtt
     else if (tlp_count < kMaxTLPs):
