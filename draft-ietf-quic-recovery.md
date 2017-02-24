@@ -220,7 +220,7 @@ kMinRTOTimeout (default 200ms):
 kDelayedAckTimeout (default 25ms):
 : The length of the peer's delayed ack timer.
 
-kDefaultInitialRtt (default 200ms):
+kDefaultInitialRtt (default 100ms):
 : The default RTT used before an RTT sample is taken.
 
 ## Variables of interest
