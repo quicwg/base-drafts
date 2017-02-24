@@ -680,7 +680,7 @@
     "milestone": null,
     "comments": 6,
     "created_at": "2017-02-23T00:26:45Z",
-    "updated_at": "2017-02-23T21:04:44Z",
+    "updated_at": "2017-02-24T03:11:39Z",
     "closed_at": null,
     "pull_request": {
       "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/335",
@@ -5656,9 +5656,9 @@
       }
     ],
     "milestone": null,
-    "comments": 4,
+    "comments": 5,
     "created_at": "2017-01-17T18:33:39Z",
-    "updated_at": "2017-01-26T07:24:42Z",
+    "updated_at": "2017-02-24T03:06:42Z",
     "closed_at": null,
     "body": "I would like to see some language in the loss recovery document about client actions when the first handshake message is lost. We have overloaded this loss signal with multiple meanings/responses:\r\n\r\n(1) Retransmit (due to garden-variety network loss)\r\n(2) Change MTU and retransmit (due to MTU problems, though we might see ICMP here?)\r\n(3) Failover to TCP (middleboxes eating QUIC)\r\n(4) Give up (path failure)\r\n\r\nIf I were implementing a client using these documents, I am not sure how I would handle a CHLO loss given these conflicting imperatives. I could accept having SHOULDs instead of MUSTs, but there ought to be something."
   },
