@@ -656,32 +656,8 @@ include the fields that prove that it originally participated in the connection
 Upon receipt of a Public Reset packet that contains a valid proof, an endpoint
 MUST tear down state associated with the connection.  The endpoint MUST then
 cease sending packets on the connection and SHOULD discard any subsequent
-packets that arrive.  A Public Reset that contains an invalid proof MUST be
+packets that arrive.  A Public Reset that does not contain a valid proof MUST be
 ignored.
-
-A Public Reset packet sent by an on-path intermediary will not - and cannot -
-include proof that the sender participated in the initial connection handshake.
-It is sent by a middlebox to notify an endpoint that the path is no longer
-functional.  Such a Public Reset does not include a Public Reset Proof, it
-includes only the connection ID, which provides an assurance that the middlebox
-received packets on the flow.
-
-An endpoint MAY ignore a Public Reset that does not include a proof.  A
-middlebox might send a packet in an attempt to attack a connection.  If packets
-continue to arrive after a Public Reset, this could indicate an attack.  Delays
-could mean that a few packets arrive after a Public Reset.  However, if valid
-packets continue to arrive more than twice the RTT variance (see
-{{QUIC-RECOVERY}}) after the Public Reset, the endpoint SHOULD consider the
-Public Reset to have been spurious and continue the connection.  Endpoints that
-detect a spurious Public Reset SHOULD ignore any further unauthenticated Public
-Reset packets that arrive from the same path.
-
-An endpoint that chooses to accept a Public Reset without a Public Reset Proof
-SHOULD stop sending on the path on which the Public Reset was received.  Packets
-that are received on the path MAY then be discarded.  Unless the endpoint is
-able to use alternative paths to continue the connection, this means that the
-connection could become unusable.
-
 
 
 ### Public Reset Proof
