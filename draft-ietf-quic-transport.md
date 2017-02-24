@@ -1465,36 +1465,47 @@ to 0xFFFF.
 ### ACK Frames and Packet Protection
 
 ACK frames that acknowledge protected packets MUST be carried in a packet that
-has an equivalent level of packet protection.  Functionally, this means:
+has an equivalent level of packet protection.
 
-* Unprotected packets, such as those that carry the initial cryptographic
-  handshake messages, can be acknowledged in unprotected packets.  This has
-  several consequences:
-
-  * Acknowledgments for packets containing cryptographic handshake messages
-    SHOULD be included in packets carrying the next cryptographic handshake
-    message.  For instance, a server can acknowledge a TLS ClientHello in the
-    packet that carries the TLS ServerHello; similarly, a client can acknowledge
-    a TLS HelloRetryRequest in the packet containing a second TLS ClientHello.
-
-  * The initial set of server handshake messages, which could span multiple
-    packets, SHOULD be acknowledged in unprotected packets even if the client
-    uses 0-RTT keys to protect other packets that are sent at the same time.  A
-    server might decide to reject and ignore 0-RTT data, making it unable to use
-    any acknowledgments that are protected with 0-RTT keys.
-
-* Packets that a client sends with 0-RTT packet protection MUST be acknowledged
-  by the server in packets protected by 1-RTT keys.  This can mean that the
-  client is unable to use these acknowledgments if the server cryptographic
-  handshake messages are delayed or lost.  However, the same limitation applies
-  to other data sent by the server protected by the 1-RTT keys.
-
-* Packets that are protected with 1-RTT keys MUST be acknowledged in packets
-  that are also protected with 1-RTT keys.
+Packets that are protected with 1-RTT keys MUST be acknowledged in packets that
+are also protected with 1-RTT keys.
 
 A packet that is not protected and claims to acknowledge a packet number that
 was sent with packet protection is not valid.  An unprotected packet that
 carries acknowledgments for protected packets MUST be discarded in its entirety.
+
+Packets that a client sends with 0-RTT packet protection MUST be acknowledged by
+the server in packets protected by 1-RTT keys.  This can mean that the client is
+unable to use these acknowledgments if the server cryptographic handshake
+messages are delayed or lost.  Note that the same limitation applies to other
+data sent by the server protected by the 1-RTT keys.
+
+Unprotected packets, such as those that carry the initial cryptographic
+handshake messages, MAY be acknowledged in unprotected packets.  Unprotected
+packets are vulnerable to falsification or modification.  Unprotected packets
+can be acknowledged along with protected packets in cases where the peer has
+packet protection keys.
+
+An endpoint SHOULD acknowledge packets containing cryptographic handshake
+messages in the next unprotected packet that is sends, unless it is able to
+acknowledge those packets in later packets.  Those later packets might be
+protected by 1-RTT keys.  At the completion of the cryptographic handshake, both
+peers send unprotected packets containing cryptographic handshake messages
+followed by packets protected by 1-RTT keys.  An endpoint can acknowledge the
+unprotected packets in a protected packet, because the peer has access to 1-RTT
+packet protection keys.
+
+For instance, a server acknowledges a TLS ClientHello in the packet that carries
+the TLS ServerHello; similarly, a client can acknowledge a TLS HelloRetryRequest
+in the packet containing a second TLS ClientHello.  The complete set of server
+handshake messages (TLS ServerHello through to Finished) might be acknowledged
+by a client in protected packets, because it is certain that the server is able
+to decipher the packet.
+
+It is critical to use unprotected packets to acknowledge packets containing
+cryptographic handshake messages from a server, even if the client has access to
+0-RTT keys.  A server could decide to reject and ignore 0-RTT data, making any
+acknowledgments that are protected with 0-RTT keys unusable.
 
 
 ## WINDOW_UPDATE Frame {#frame-window-update}
