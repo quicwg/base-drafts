@@ -1,5 +1,92 @@
 [
   {
+    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/345",
+    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
+    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/345/labels{/name}",
+    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/345/comments",
+    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/345/events",
+    "html_url": "https://github.com/quicwg/base-drafts/pull/345",
+    "id": 209964162,
+    "number": 345,
+    "title": "Add a section on what to do when unprotecting a packet fails",
+    "user": {
+      "login": "martinthomson",
+      "id": 67641,
+      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/martinthomson",
+      "html_url": "https://github.com/martinthomson",
+      "followers_url": "https://api.github.com/users/martinthomson/followers",
+      "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
+      "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
+      "organizations_url": "https://api.github.com/users/martinthomson/orgs",
+      "repos_url": "https://api.github.com/users/martinthomson/repos",
+      "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/martinthomson/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+
+    ],
+    "state": "open",
+    "locked": false,
+    "assignee": {
+      "login": "seanturner",
+      "id": 4488966,
+      "avatar_url": "https://avatars.githubusercontent.com/u/4488966?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/seanturner",
+      "html_url": "https://github.com/seanturner",
+      "followers_url": "https://api.github.com/users/seanturner/followers",
+      "following_url": "https://api.github.com/users/seanturner/following{/other_user}",
+      "gists_url": "https://api.github.com/users/seanturner/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/seanturner/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/seanturner/subscriptions",
+      "organizations_url": "https://api.github.com/users/seanturner/orgs",
+      "repos_url": "https://api.github.com/users/seanturner/repos",
+      "events_url": "https://api.github.com/users/seanturner/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/seanturner/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "assignees": [
+      {
+        "login": "seanturner",
+        "id": 4488966,
+        "avatar_url": "https://avatars.githubusercontent.com/u/4488966?v=3",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/seanturner",
+        "html_url": "https://github.com/seanturner",
+        "followers_url": "https://api.github.com/users/seanturner/followers",
+        "following_url": "https://api.github.com/users/seanturner/following{/other_user}",
+        "gists_url": "https://api.github.com/users/seanturner/gists{/gist_id}",
+        "starred_url": "https://api.github.com/users/seanturner/starred{/owner}{/repo}",
+        "subscriptions_url": "https://api.github.com/users/seanturner/subscriptions",
+        "organizations_url": "https://api.github.com/users/seanturner/orgs",
+        "repos_url": "https://api.github.com/users/seanturner/repos",
+        "events_url": "https://api.github.com/users/seanturner/events{/privacy}",
+        "received_events_url": "https://api.github.com/users/seanturner/received_events",
+        "type": "User",
+        "site_admin": false
+      }
+    ],
+    "milestone": null,
+    "comments": 0,
+    "created_at": "2017-02-24T05:36:40Z",
+    "updated_at": "2017-02-24T06:10:37Z",
+    "closed_at": null,
+    "pull_request": {
+      "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/345",
+      "html_url": "https://github.com/quicwg/base-drafts/pull/345",
+      "diff_url": "https://github.com/quicwg/base-drafts/pull/345.diff",
+      "patch_url": "https://github.com/quicwg/base-drafts/pull/345.patch"
+    },
+    "body": "Closes #32, #33."
+  },
+  {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/344",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
     "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/344/labels{/name}",
@@ -56,134 +143,6 @@
     "updated_at": "2017-02-24T03:24:15Z",
     "closed_at": null,
     "body": "A lost handshake packet is retransmitted after 400ms (assuming that you don't have prior knowledge of the RTT, if you do then it is 2xRTT).  I realize that this is probably shorter than in TCP, but it's still a damned long time to wait.\r\n\r\nWe are far more aggressive in this in WebRTC with DTLS.  For example, NSS retransmits three times before QUIC even sends its first: at 50ms, 150ms, and 350ms.  We haven't seen much evidence that this is bring the Internet to its knees.  It's certainly good for latency to retransmit more aggressively.  Separately, we also send ICE probes much faster, without the back-off, though those are typically much smaller.\r\n\r\nThat said, if retransmitting at this pace is somehow doing damage to something, it would be good to understand why this is the case.  We're definitely interested in avoiding an inadvertent damage that we're doing and changing the above numbers could happen pretty quickly with proper justification."
-  },
-  {
-    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/343",
-    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
-    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/343/labels{/name}",
-    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/343/comments",
-    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/343/events",
-    "html_url": "https://github.com/quicwg/base-drafts/pull/343",
-    "id": 209947437,
-    "number": 343,
-    "title": "Reference 5827 correctly",
-    "user": {
-      "login": "martinthomson",
-      "id": 67641,
-      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/martinthomson",
-      "html_url": "https://github.com/martinthomson",
-      "followers_url": "https://api.github.com/users/martinthomson/followers",
-      "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
-      "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
-      "organizations_url": "https://api.github.com/users/martinthomson/orgs",
-      "repos_url": "https://api.github.com/users/martinthomson/repos",
-      "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/martinthomson/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "labels": [
-      {
-        "id": 481871311,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/editorial",
-        "name": "editorial",
-        "color": "0e8a16",
-        "default": false
-      },
-      {
-        "id": 481873040,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/recovery",
-        "name": "recovery",
-        "color": "fbca04",
-        "default": false
-      }
-    ],
-    "state": "open",
-    "locked": false,
-    "assignee": null,
-    "assignees": [
-
-    ],
-    "milestone": null,
-    "comments": 0,
-    "created_at": "2017-02-24T03:02:26Z",
-    "updated_at": "2017-02-24T03:02:26Z",
-    "closed_at": null,
-    "pull_request": {
-      "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/343",
-      "html_url": "https://github.com/quicwg/base-drafts/pull/343",
-      "diff_url": "https://github.com/quicwg/base-drafts/pull/343.diff",
-      "patch_url": "https://github.com/quicwg/base-drafts/pull/343.patch"
-    },
-    "body": ""
-  },
-  {
-    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/342",
-    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
-    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/342/labels{/name}",
-    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/342/comments",
-    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/342/events",
-    "html_url": "https://github.com/quicwg/base-drafts/pull/342",
-    "id": 209947399,
-    "number": 342,
-    "title": "s/psuedo/pseudo",
-    "user": {
-      "login": "martinthomson",
-      "id": 67641,
-      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/martinthomson",
-      "html_url": "https://github.com/martinthomson",
-      "followers_url": "https://api.github.com/users/martinthomson/followers",
-      "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
-      "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
-      "organizations_url": "https://api.github.com/users/martinthomson/orgs",
-      "repos_url": "https://api.github.com/users/martinthomson/repos",
-      "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/martinthomson/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "labels": [
-      {
-        "id": 481871311,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/editorial",
-        "name": "editorial",
-        "color": "0e8a16",
-        "default": false
-      },
-      {
-        "id": 481873040,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/recovery",
-        "name": "recovery",
-        "color": "fbca04",
-        "default": false
-      }
-    ],
-    "state": "open",
-    "locked": false,
-    "assignee": null,
-    "assignees": [
-
-    ],
-    "milestone": null,
-    "comments": 0,
-    "created_at": "2017-02-24T03:02:04Z",
-    "updated_at": "2017-02-24T03:02:04Z",
-    "closed_at": null,
-    "pull_request": {
-      "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/342",
-      "html_url": "https://github.com/quicwg/base-drafts/pull/342",
-      "diff_url": "https://github.com/quicwg/base-drafts/pull/342.diff",
-      "patch_url": "https://github.com/quicwg/base-drafts/pull/342.patch"
-    },
-    "body": ""
   },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/341",
@@ -902,9 +861,9 @@
 
     ],
     "milestone": null,
-    "comments": 2,
+    "comments": 3,
     "created_at": "2017-02-21T19:53:52Z",
-    "updated_at": "2017-02-23T02:55:38Z",
+    "updated_at": "2017-02-24T05:01:54Z",
     "closed_at": null,
     "body": "From discussion on the list, we could clarify the meaning of CONNECTION_CLOSE. Specifically, it would be good to clarify if it acts more like a TCP FIN or a TCP RST. I would suggest that the analog of a TCP FIN is a FIN on a QUIC stream as they both gracefully half-close a single bidirectional communication channel. After a FIN, retransmission of data may still occur to deal with packet loss.\r\n\r\nA QUIC CONNECTION_CLOSE, on the other hand, is an immediate termination of the connection. No more data is retransmitted. As such it is more like a TCP RST."
   },
@@ -1886,8 +1845,7 @@
     "updated_at": "2017-02-21T14:18:22Z",
     "closed_at": null,
     "body": "The draft currently says:\r\n\r\n> In this case, an endpoint SHOULD send a Public Reset packet to indicate the failure. \r\n\r\n(This is in the context of discovering that the MTU is too small.)\r\n\r\nGiven that it doesn't take much to send an authenticated CONNECTION_CLOSE in a packet that won't risk breaking even the minimum IPv4 MTU, I think that this suggestion too much.  I would change this to \"treat this as a connection error of SOME_ERROR_CODE\" either defining a new MTU_TOO_SMALL error code, or reusing an existing one."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/284",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -1945,7 +1903,8 @@
     "updated_at": "2017-02-15T05:20:55Z",
     "closed_at": null,
     "body": "The text currently says:\r\n\r\n> Once a client receives a packet from the server with the VERSION flag unset, it MUST ignore the flag in subsequently received packets.\r\n\r\nI don't know how to interpret this.  What should a client do if it receives a packet with the VERSION flag set after completing version negotiation?  Maybe should should mandate ignoring the packet not just the flag."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/281",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3668,8 +3627,7 @@
     "updated_at": "2017-01-25T04:43:48Z",
     "closed_at": null,
     "body": "This is an alternative to #167: We could just encrypt the cleartext data in the initial handshake packets with a deterministic key (e.g. a mixture of a version-dependent key and the initial packet number). The AEAD used there would have to be fixed in the spec.\r\n\r\nThe goal would be to make it harder for middleboxes to ossify on stuff in the client hello, e.g. SNI, and to detect initial packets (#203). On the other hand, there's additional computational cost for decrypting packets server-side."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/224",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3727,7 +3685,8 @@
     "updated_at": "2017-01-25T00:59:17Z",
     "closed_at": null,
     "body": "We've assumed that this is the case, but we really need to write it down."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/222",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5488,8 +5447,7 @@
     "updated_at": "2017-02-24T00:38:37Z",
     "closed_at": null,
     "body": "QUIC borrows the HTTP/2 state machine, or tries to replicate it as much as it can.  Part of that replication is the idea that a stream is bidirectional.  The state related to outgoing data and the state related to inbound data are tied.\r\n\r\n#174 suggests a simplification that could open up a more dramatic simplification: independent state for each direction.  #171 moves in that direction also.\r\n\r\nThe state machine that results from that is dramatically simpler: idle -> open -> closed.  That is, before packets, packets and after packets.\r\n\r\nThe consequence for the HTTP mapping is largely that it needs a different method for correlating request and response.\r\n\r\n## Correlating request and response\r\n\r\nCurrently, request and response are correlated by matching the stream identifier.  However, unidirectional streams would allow for cases where streams are not created symmetrically.  For instance, server push would only require streams from the server.  Similarly, the server would not be obligated to respond to requests in the order in which they were received (if at all, since it could reset request streams).\r\n\r\nThat implies that this would add a requirement for the server to identify which request a given stream is answering.  This is an extension of the requirement in #174, which only required that the server identify a push promise (actually, it's less onerous, because you only have one request per stream).\r\n\r\nI can imagine an arrangement where a stream containing headers identifies the stream containing the request headers from the client.  Then the stream containing the body identifies the stream that contained the headers.\r\n\r\n## Saving stream identifiers\r\n\r\nThis is a minor point, though it could be relevant for very long-lived connections.\r\n\r\nQUIC currently insists on a strictly monotonically increasing stream identifier: stream N is followed by stream N+2 always, no skipping of streams is permitted.  Aside from wasting every other stream identifier, other streams are wasted by the mapping. \r\n\r\nGET requests don't include a body, but nonetheless require that the client send a HEADERS on stream N, then a FIN on stream N+2.  Including a reference to the initiating stream at the start of the body of a message would use some octets, but potentially fewer than would be used otherwise (particularly if the reference was a varlen encoding of the difference in stream numbers, which would rarely be anything other than 1).\r\n\r\nObviously, this is an optimization for the case where there are no bodies, but that is a case where the optimization is particularly valuable.  Making more requests (which more frequently have no bodies) during the early stages of a connection is critical to performance."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/171",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5560,7 +5518,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/171.patch"
     },
     "body": "A rough draft of a fix for #165.  Key changes:\r\n\r\n- RST_STREAM kills only the sender's direction, not both.  (Retains the existing requirement to respond with RST_STREAM with another RST_STREAM if the stream isn't already closed, which eventually leads to the same result.)\r\n- New REQUEST_RST frame allows peer to solicit a RST_STREAM; text states that this reflects an app recv_close, and that received data is being discarded\r\n\r\nThis should solve the scenarios outlined in #165; a server can ask a client to RST_STREAM its own direction after having sent an early response.  Feedback welcome, of course -- please point out anything I've missed."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/170",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7578,8 +7537,7 @@
     "updated_at": "2017-02-20T13:27:21Z",
     "closed_at": null,
     "body": "ECN is not currently mentioned in the recovery draft, but it should be included.\r\n\r\nMore importantly, the transport draft has no ability for the peer to communicate ECN marks back to the sender.  I suspect, like ECN, the use of this in the transport would be negotiable in the QUIC handshake.\r\n\r\nIn practice, there most userspace network stacks also cannot see if those marks are set when packets are read."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/67",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7673,7 +7631,8 @@
     "updated_at": "2016-12-02T00:25:36Z",
     "closed_at": null,
     "body": "The algorithm for picking the length of the packet number needs much better explanation, and probably a bunch of rationale to support that.\r\n\r\n(Marked as design so that any change gets proper discussion and review.)"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/66",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -9232,121 +9191,5 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/20.patch"
     },
     "body": "The model here is that neither on-path nor off-path attackers should be able to forge one, but\r\nthat on-path elements should be able to validate the public reset."
-  },
-  {
-    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/9",
-    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
-    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/9/labels{/name}",
-    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/9/comments",
-    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/9/events",
-    "html_url": "https://github.com/quicwg/base-drafts/issues/9",
-    "id": 191152377,
-    "number": 9,
-    "title": "Remove references to QUIC Crypto",
-    "user": {
-      "login": "martinthomson",
-      "id": 67641,
-      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/martinthomson",
-      "html_url": "https://github.com/martinthomson",
-      "followers_url": "https://api.github.com/users/martinthomson/followers",
-      "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
-      "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
-      "organizations_url": "https://api.github.com/users/martinthomson/orgs",
-      "repos_url": "https://api.github.com/users/martinthomson/repos",
-      "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/martinthomson/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "labels": [
-      {
-        "id": 481871311,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/editorial",
-        "name": "editorial",
-        "color": "0e8a16",
-        "default": false
-      },
-      {
-        "id": 481871399,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
-        "name": "transport",
-        "color": "fbca04",
-        "default": false
-      }
-    ],
-    "state": "open",
-    "locked": false,
-    "assignee": null,
-    "assignees": [
-
-    ],
-    "milestone": null,
-    "comments": 4,
-    "created_at": "2016-11-22T23:23:13Z",
-    "updated_at": "2016-11-28T23:54:32Z",
-    "closed_at": null,
-    "body": "...and as in #8, anything else that isn't relevant."
-  },
-  {
-    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/8",
-    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
-    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/8/labels{/name}",
-    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/8/comments",
-    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/8/events",
-    "html_url": "https://github.com/quicwg/base-drafts/issues/8",
-    "id": 191150746,
-    "number": 8,
-    "title": "Remove descriptions of what Google has implemented",
-    "user": {
-      "login": "martinthomson",
-      "id": 67641,
-      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/martinthomson",
-      "html_url": "https://github.com/martinthomson",
-      "followers_url": "https://api.github.com/users/martinthomson/followers",
-      "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
-      "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
-      "organizations_url": "https://api.github.com/users/martinthomson/orgs",
-      "repos_url": "https://api.github.com/users/martinthomson/repos",
-      "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/martinthomson/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "labels": [
-      {
-        "id": 481871311,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/editorial",
-        "name": "editorial",
-        "color": "0e8a16",
-        "default": false
-      },
-      {
-        "id": 481873040,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/recovery",
-        "name": "recovery",
-        "color": "fbca04",
-        "default": false
-      }
-    ],
-    "state": "open",
-    "locked": false,
-    "assignee": null,
-    "assignees": [
-
-    ],
-    "milestone": null,
-    "comments": 0,
-    "created_at": "2016-11-22T23:13:22Z",
-    "updated_at": "2016-11-22T23:13:22Z",
-    "closed_at": null,
-    "body": "This isn't relevant for a specification."
   }
 ]
