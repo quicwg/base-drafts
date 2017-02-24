@@ -63,7 +63,6 @@ informative:
   RFC6582:
   RFC5682:
   RFC6937:
-  I-D.dukkipati-tcpm-tcp-loss-probe:
 
 --- abstract
 
@@ -193,6 +192,10 @@ latency before a userspace QUIC receiver processes a received packet.
 
 We now describe QUIC's loss detection as functions that should be called on
 packet transmission, when a packet is acked, and timer expiration events.
+
+TODO need an extended discussion of
+{{?I-D.dukkipati-tcpm-tcp-loss-probe LOSS-PROBE}}.
+
 
 ## Constants of interest
 
