@@ -539,8 +539,8 @@ A TLS ClientHello can fit within this limit with ample space remaining.
 However, there are several variables that could cause this limit to be exceeded.
 Implementations are reminded that large session tickets or HelloRetryRequest
 cookies, multiple or large key shares, and long lists of supported ciphers,
-signature algorithms, versions, and other negotiable parameters and extensions
-could cause this message to grow.
+signature algorithms, versions, QUIC transport parameters, and other negotiable
+parameters and extensions could cause this message to grow.
 
 For servers, the size of the session tickets and HelloRetryRequest cookie
 extension can have an effect on a client's ability to connect.  Choosing a small
@@ -1367,11 +1367,11 @@ by an attacker.
 Certificate caching {{?RFC7924}} can reduce the size of the server's handshake
 messages significantly.
 
-QUIC requires that the packet containing a ClientHello be padded to 1280 octets.
-A server is less likely to generate a packet reflection attack if the data it
-sends is a small multiple of this size.  A server SHOULD use a HelloRetryRequest
-if the size of the handshake messages it sends is likely to significantly exceed
-the size of the packet containing the ClientHello.
+QUIC requires that the packet containing a ClientHello be padded to at least
+1280 octets.  A server is less likely to generate a packet reflection attack if
+the data it sends is a small multiple of this size.  A server SHOULD use a
+HelloRetryRequest if the size of the handshake messages it sends is likely to
+significantly exceed the size of the packet containing the ClientHello.
 
 
 ## Peer Denial of Service {#useless}
