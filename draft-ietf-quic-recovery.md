@@ -445,7 +445,7 @@ in response to 0RTT packets.
 
 (Add sections for early retransmit and TLP/RTO here)
 
-### Psuedocode
+### Pseudocode
 
 Pseudocode for SetLossDetectionAlarm follows:
 
@@ -517,7 +517,7 @@ The receiver MUST trust protected acks for unprotected packets, however.  Aside
 from this, loss detection for handshake packets when an ack is processed is
 identical to other packets.
 
-### Psuedocode
+### Pseudocode
 
 DetectLostPackets takes one parameter, acked, which is the largest acked packet,
 and returns a list of packets detected as lost.
