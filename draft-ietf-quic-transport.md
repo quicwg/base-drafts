@@ -1465,7 +1465,7 @@ to 0xFFFF.
 ### ACK Frames and Packet Protection
 
 ACK frames that acknowledge protected packets MUST be carried in a packet that
-has an equivalent level of packet protection.
+has an equivalent or greater level of packet protection.
 
 Packets that are protected with 1-RTT keys MUST be acknowledged in packets that
 are also protected with 1-RTT keys.
@@ -1487,7 +1487,7 @@ can be acknowledged along with protected packets in cases where the peer has
 packet protection keys.
 
 An endpoint SHOULD acknowledge packets containing cryptographic handshake
-messages in the next unprotected packet that is sends, unless it is able to
+messages in the next unprotected packet that it sends, unless it is able to
 acknowledge those packets in later packets.  Those later packets might be
 protected by 1-RTT keys.  At the completion of the cryptographic handshake, both
 peers send unprotected packets containing cryptographic handshake messages
@@ -1502,10 +1502,9 @@ handshake messages (TLS ServerHello through to Finished) might be acknowledged
 by a client in protected packets, because it is certain that the server is able
 to decipher the packet.
 
-It is critical to use unprotected packets to acknowledge packets containing
-cryptographic handshake messages from a server, even if the client has access to
-0-RTT keys.  A server could decide to reject and ignore 0-RTT data, making any
-acknowledgments that are protected with 0-RTT keys unusable.
+It is critical to not protect packets containing acknowledgements for handshake
+messages with 0-RTT keys.  A server could decide to reject and ignore 0-RTT
+data, making any acknowledgments that are protected with 0-RTT keys unusable.
 
 
 ## WINDOW_UPDATE Frame {#frame-window-update}
