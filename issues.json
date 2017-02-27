@@ -717,106 +717,6 @@
     "body": "This is - at the moment - a little redundant with text in the -tls document.  That's probably OK until we sort out where that text belongs.\r\n\r\nCloses #34."
   },
   {
-    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/335",
-    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
-    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/335/labels{/name}",
-    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/335/comments",
-    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/335/events",
-    "html_url": "https://github.com/quicwg/base-drafts/pull/335",
-    "id": 209625554,
-    "number": 335,
-    "title": "Add real text on error handling",
-    "user": {
-      "login": "martinthomson",
-      "id": 67641,
-      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/martinthomson",
-      "html_url": "https://github.com/martinthomson",
-      "followers_url": "https://api.github.com/users/martinthomson/followers",
-      "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
-      "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
-      "organizations_url": "https://api.github.com/users/martinthomson/orgs",
-      "repos_url": "https://api.github.com/users/martinthomson/repos",
-      "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/martinthomson/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "labels": [
-      {
-        "id": 481871361,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/design",
-        "name": "design",
-        "color": "1d76db",
-        "default": false
-      },
-      {
-        "id": 481871399,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
-        "name": "transport",
-        "color": "fbca04",
-        "default": false
-      }
-    ],
-    "state": "open",
-    "locked": false,
-    "assignee": {
-      "login": "janaiyengar",
-      "id": 11067604,
-      "avatar_url": "https://avatars.githubusercontent.com/u/11067604?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/janaiyengar",
-      "html_url": "https://github.com/janaiyengar",
-      "followers_url": "https://api.github.com/users/janaiyengar/followers",
-      "following_url": "https://api.github.com/users/janaiyengar/following{/other_user}",
-      "gists_url": "https://api.github.com/users/janaiyengar/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/janaiyengar/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/janaiyengar/subscriptions",
-      "organizations_url": "https://api.github.com/users/janaiyengar/orgs",
-      "repos_url": "https://api.github.com/users/janaiyengar/repos",
-      "events_url": "https://api.github.com/users/janaiyengar/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/janaiyengar/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "assignees": [
-      {
-        "login": "janaiyengar",
-        "id": 11067604,
-        "avatar_url": "https://avatars.githubusercontent.com/u/11067604?v=3",
-        "gravatar_id": "",
-        "url": "https://api.github.com/users/janaiyengar",
-        "html_url": "https://github.com/janaiyengar",
-        "followers_url": "https://api.github.com/users/janaiyengar/followers",
-        "following_url": "https://api.github.com/users/janaiyengar/following{/other_user}",
-        "gists_url": "https://api.github.com/users/janaiyengar/gists{/gist_id}",
-        "starred_url": "https://api.github.com/users/janaiyengar/starred{/owner}{/repo}",
-        "subscriptions_url": "https://api.github.com/users/janaiyengar/subscriptions",
-        "organizations_url": "https://api.github.com/users/janaiyengar/orgs",
-        "repos_url": "https://api.github.com/users/janaiyengar/repos",
-        "events_url": "https://api.github.com/users/janaiyengar/events{/privacy}",
-        "received_events_url": "https://api.github.com/users/janaiyengar/received_events",
-        "type": "User",
-        "site_admin": false
-      }
-    ],
-    "milestone": null,
-    "comments": 11,
-    "created_at": "2017-02-23T00:26:45Z",
-    "updated_at": "2017-02-27T01:12:30Z",
-    "closed_at": null,
-    "pull_request": {
-      "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/335",
-      "html_url": "https://github.com/quicwg/base-drafts/pull/335",
-      "diff_url": "https://github.com/quicwg/base-drafts/pull/335.diff",
-      "patch_url": "https://github.com/quicwg/base-drafts/pull/335.patch"
-    },
-    "body": "This covers two things:\r\n\r\n1. the general operation of Public Reset packets and their role in the protocol, including two separate admonishments not to use Public Reset unless you don't have connection state\r\n\r\n2. how to generate errors for the connection and for streams\r\n\r\nOn the former, I want to add ekr's proposed public reset design in a separate PR.\r\n\r\nOn the latter, I've cribbed from HTTP/2 a little, but the advice here turns out to be subtly different.\r\n\r\nCloses #289, #47."
-  },
-  {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/333",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
     "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/333/labels{/name}",
@@ -1896,65 +1796,6 @@
     "updated_at": "2017-02-16T13:44:04Z",
     "closed_at": null,
     "body": "> The application SHOULD attempt to use TLS over TCP instead.\r\n\r\n(This is in the context of finding that the MTU is too small.)\r\n\r\nThe text includes a very specific recommendation to use TLS over TCP for one particular case.  This is unwise for two reasons:\r\n1. we don't know if all protocols that build on QUIC will have a TCP over TLS option available to them; DNS over QUIC might be an example of where TLS over TCP is an inadvisable fallback option\r\n2. we should rely on a generic error handling section that includes generic advice about things like falling back to a backup protocol\r\n\r\nMarked as editorial, I hope that's not controversial."
-  }
-,
-  {
-    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/289",
-    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
-    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/289/labels{/name}",
-    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/289/comments",
-    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/289/events",
-    "html_url": "https://github.com/quicwg/base-drafts/issues/289",
-    "id": 206738085,
-    "number": 289,
-    "title": "Avoid using Public Reset where possible",
-    "user": {
-      "login": "martinthomson",
-      "id": 67641,
-      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/martinthomson",
-      "html_url": "https://github.com/martinthomson",
-      "followers_url": "https://api.github.com/users/martinthomson/followers",
-      "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
-      "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
-      "organizations_url": "https://api.github.com/users/martinthomson/orgs",
-      "repos_url": "https://api.github.com/users/martinthomson/repos",
-      "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/martinthomson/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "labels": [
-      {
-        "id": 481871361,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/design",
-        "name": "design",
-        "color": "1d76db",
-        "default": false
-      },
-      {
-        "id": 481871399,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
-        "name": "transport",
-        "color": "fbca04",
-        "default": false
-      }
-    ],
-    "state": "open",
-    "locked": false,
-    "assignee": null,
-    "assignees": [
-
-    ],
-    "milestone": null,
-    "comments": 3,
-    "created_at": "2017-02-10T08:41:14Z",
-    "updated_at": "2017-02-21T14:18:22Z",
-    "closed_at": null,
-    "body": "The draft currently says:\r\n\r\n> In this case, an endpoint SHOULD send a Public Reset packet to indicate the failure. \r\n\r\n(This is in the context of discovering that the MTU is too small.)\r\n\r\nGiven that it doesn't take much to send an authenticated CONNECTION_CLOSE in a packet that won't risk breaking even the minimum IPv4 MTU, I think that this suggestion too much.  I would change this to \"treat this as a connection error of SOME_ERROR_CODE\" either defining a new MTU_TOO_SMALL error code, or reusing an existing one."
   },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/284",
@@ -2013,7 +1854,8 @@
     "updated_at": "2017-02-15T05:20:55Z",
     "closed_at": null,
     "body": "The text currently says:\r\n\r\n> Once a client receives a packet from the server with the VERSION flag unset, it MUST ignore the flag in subsequently received packets.\r\n\r\nI don't know how to interpret this.  What should a client do if it receives a packet with the VERSION flag set after completing version negotiation?  Maybe should should mandate ignoring the packet not just the flag."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/281",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3678,8 +3520,7 @@
     "updated_at": "2017-01-26T01:55:17Z",
     "closed_at": null,
     "body": "QUIC doesn't make order guarantees between streams.  The options on the table currently are:\r\n\r\n- Current (-01) draft puts a sequence number in the frames; HPACK data MUST be handled in order, and will HOL-block.  HPACK is exactly the same as HTTP/2.\r\n- Buck's proposal (draft forthcoming) puts two sequence numbers in the frames and modifies the HPACK encoder to prevent blocking references.  Partially-received HPACK frames must block until fully received.  The new encoder could also be used in HTTP/2, but would require changes to existing code.\r\n- [QPACK](https://tools.ietf.org/html/draft-bishop-quic-http-and-qpack) modifies HPACK to be order-resilient and permit partial frames to be processed, but breaks from the HPACK encoding enough that you'd have at least some separate code paths.\r\n\r\nAlso agreed to put a \"hard-hat warning\" in this section of the HTTP draft, to warn readers this is still work-in-progress."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/227",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3795,7 +3636,8 @@
     "updated_at": "2017-01-25T00:59:17Z",
     "closed_at": null,
     "body": "We've assumed that this is the case, but we really need to write it down."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/222",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5498,8 +5340,7 @@
     "updated_at": "2017-01-23T21:31:40Z",
     "closed_at": null,
     "body": "@martinthomson noticed an issue in the QPACK draft that's equally true with HPACK in -01:\r\n\r\nIf you RST_STREAM a stream with a missing QUIC STREAM frame that contains an HPACK frame (HEADERS, PUSH_PROMISE), that missing frame never gets retransmitted.  That, in turn, means that no future HPACK frame can be interpreted, ever, because you're missing part of your history.\r\n\r\nOops.\r\n\r\nMy first inclination is to change the HTTP draft to say that message control streams MUST NOT be reset.  If you don't want the message body, reset the data stream, but you MUST read the message headers.  If, for some reason, you cannot do so, then terminate the connection.\r\n\r\nAnyone see a barrier to that (other than the price of ginormous headers)?"
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/175",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5628,7 +5469,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/171.patch"
     },
     "body": "A rough draft of a fix for #165.  Key changes:\r\n\r\n- RST_STREAM kills only the sender's direction, not both.  (Retains the existing requirement to respond with RST_STREAM with another RST_STREAM if the stream isn't already closed, which eventually leads to the same result.)\r\n- New REQUEST_RST frame allows peer to solicit a RST_STREAM; text states that this reflects an app recv_close, and that received data is being discarded\r\n\r\nThis should solve the scenarios outlined in #165; a server can ask a client to RST_STREAM its own direction after having sent an early response.  Feedback welcome, of course -- please point out anything I've missed."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/170",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7545,8 +7387,7 @@
     "updated_at": "2017-02-20T13:27:21Z",
     "closed_at": null,
     "body": "ECN is not currently mentioned in the recovery draft, but it should be included.\r\n\r\nMore importantly, the transport draft has no ability for the peer to communicate ECN marks back to the sender.  I suspect, like ECN, the use of this in the transport would be negotiable in the QUIC handshake.\r\n\r\nIn practice, there most userspace network stacks also cannot see if those marks are set when packets are read."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/67",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7741,7 +7582,8 @@
     "updated_at": "2017-02-09T21:26:32Z",
     "closed_at": null,
     "body": "@ianswett suggests that maybe this can be removed.  He didn't say why."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/65",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
