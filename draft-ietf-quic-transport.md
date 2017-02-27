@@ -630,10 +630,40 @@ full 64-bit connection ID.  The content of the Public Reset packet is TBD.
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                    Public Reset Fields (*)                  ...
+|                    Public Reset Proof (*)                   ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
 {: #public-reset-format title="Public Reset Packet"}
+
+A Public Reset packet is used to abruptly terminate communications.  Public
+Reset is provided as an option of last resort for endpoints that do not have
+access to the state of a connection.  This is intended for use by an endpoint
+that has lost state (for example, through a crash or outage), or middleboxes
+that wish to indicate that a path is no longer usable.
+
+Endpoints that wish to indicate fatal errors with a connection MUST use a
+CONNECTION_CLOSE frame in preference to Public Reset if they have sufficient
+state to do so.
+
+Whether the Public Reset Proof field is included in a Public Reset packet
+depends on the entity that generates the packet.
+
+A Public Reset packet sent by an endpoint indicates that it does not have the
+state necessary to continue with a connection.  In this case, the endpoint will
+include the fields that prove that it originally participated in the connection
+(see {{public-reset-proof}} for details).
+
+Upon receipt of a Public Reset packet that contains a valid proof, an endpoint
+MUST tear down state associated with the connection.  The endpoint MUST then
+cease sending packets on the connection and SHOULD discard any subsequent
+packets that arrive.  A Public Reset that does not contain a valid proof MUST be
+ignored.
+
+
+### Public Reset Proof
+
+Details to be added.
+
 
 # Life of a Connection
 
@@ -2104,7 +2134,62 @@ send a WINDOW_UPDATE frame at least two roundtrips before it expects the sender
 to get blocked.
 
 
-# Error Codes {#error-handling}
+# Error Handling
+
+An endpoint that detects an error SHOULD signal the existence of that error to
+its peer.  Errors can affect an entire connection (see {{connection-errors}}),
+or a single stream (see {{stream-errors}}).
+
+The most appropriate error code ({{error-codes}}) SHOULD be included in the
+frame that signals the error.  Where this specification identifies error
+conditions, it also identifies the error code that is used.
+
+Public Reset is not suitable for any error that can be signaled with a
+CONNECTION_CLOSE or RST_STREAM frame.  Public Reset MUST NOT be sent by an
+endpoint that has the state necessary to send a frame on the connection.
+
+
+## Connection Errors
+
+Errors that result in the connection being unusable, such as an obvious
+violation of protocol semantics or corruption of state that affects an entire
+connection, MUST be signaled using a CONNECTION_CLOSE frame
+({{frame-connection-close}}). An endpoint MAY close the connection in this
+manner, even if the error only affects a single stream.
+
+A CONNECTION_CLOSE frame could be sent in a packet that is lost.  An endpoint
+SHOULD be prepared to retransmit a packet containing a CONNECTION_CLOSE frame if
+it receives more packets on a terminated connection.  Limiting the number of
+retransmissions and the time over which this final packet is sent limits the
+effort expended on terminated connections.
+
+An endpoint that chooses not to retransmit packets containing CONNECTION_CLOSE
+risks a peer missing the first such packet.  The only mechanism available to an
+endpoint that continues to receive data for a terminated connection is to send a
+Public Reset packet.
+
+
+## Stream Errors
+
+If the error affects a single stream, but otherwise leaves the connection in a
+recoverable state, the endpoint can sent a RST_STREAM frame
+({{frame-rst-stream}}) with an appropriate error code to terminate just the
+affected stream.
+
+Stream 1 is critical to the functioning of the entire connection.  If stream 1
+is closed with either a RST_STREAM or STREAM frame bearing the FIN flag, an
+endpoint MUST generate a connection error of type QUIC_CLOSED_CRITICAL_STREAM.
+
+Some application protocols make other streams critical to that protocol.  An
+application protocol does not need to inform the transport that a stream is
+critical; it can instead generate appropriate errors in response to being
+notified that the critical stream is closed.
+
+An endpoint MAY send a RST_STREAM frame in the same packet as a CONNECTION_CLOSE
+frame.
+
+
+## Error Codes
 
 Error codes are 32 bits long, with the first two bits indicating the source of
 the error code:
@@ -2146,6 +2231,9 @@ QUIC_MULTIPLE_TERMINATION_OFFSETS (0x80000005):
 
 QUIC_STREAM_CANCELLED (0x80000006):
 : The stream was cancelled
+
+QUIC_CLOSED_CRITICAL_STREAM (0x80000007):
+: A stream that is critical to the protocol was closed.
 
 QUIC_MISSING_PAYLOAD (0x80000030):
 : The packet contained no payload.
