@@ -1,5 +1,69 @@
 [
   {
+    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/348",
+    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
+    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/348/labels{/name}",
+    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/348/comments",
+    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/348/events",
+    "html_url": "https://github.com/quicwg/base-drafts/pull/348",
+    "id": 210146698,
+    "number": 348,
+    "title": "Define \"httpq\"",
+    "user": {
+      "login": "MikeBishop",
+      "id": 4273797,
+      "avatar_url": "https://avatars.githubusercontent.com/u/4273797?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/MikeBishop",
+      "html_url": "https://github.com/MikeBishop",
+      "followers_url": "https://api.github.com/users/MikeBishop/followers",
+      "following_url": "https://api.github.com/users/MikeBishop/following{/other_user}",
+      "gists_url": "https://api.github.com/users/MikeBishop/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/MikeBishop/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/MikeBishop/subscriptions",
+      "organizations_url": "https://api.github.com/users/MikeBishop/orgs",
+      "repos_url": "https://api.github.com/users/MikeBishop/repos",
+      "events_url": "https://api.github.com/users/MikeBishop/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/MikeBishop/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 481871627,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/http",
+        "name": "http",
+        "color": "fbca04",
+        "default": false
+      },
+      {
+        "id": 517015633,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/needs-discussion",
+        "name": "needs-discussion",
+        "color": "d93f0b",
+        "default": false
+      }
+    ],
+    "state": "open",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 0,
+    "created_at": "2017-02-24T20:12:33Z",
+    "updated_at": "2017-02-24T20:12:33Z",
+    "closed_at": null,
+    "pull_request": {
+      "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/348",
+      "html_url": "https://github.com/quicwg/base-drafts/pull/348",
+      "diff_url": "https://github.com/quicwg/base-drafts/pull/348.diff",
+      "patch_url": "https://github.com/quicwg/base-drafts/pull/348.patch"
+    },
+    "body": "Closes #253.  I think there's value in having a way to specify a QUIC-only (or QUIC-first, though less so) endpoint for the reasons described in the issue."
+  },
+  {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/347",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
     "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/347/labels{/name}",
@@ -38,62 +102,11 @@
 
     ],
     "milestone": null,
-    "comments": 0,
+    "comments": 1,
     "created_at": "2017-02-24T15:11:01Z",
-    "updated_at": "2017-02-24T15:11:01Z",
+    "updated_at": "2017-02-24T21:09:06Z",
     "closed_at": null,
     "body": "GOAWAY has a \"Last Good Stream ID\", which is \"The last Stream ID which was accepted by the sender of the GOAWAY message. If no streams were replied to, this value must be set to 0.\"\r\n\r\nThe sender does not specify the last stream id it will use, which I think it should.\r\n\r\nI also think the text in \"6.6 Connection Termination\" should specify that all streams <= the Last Good Stream ID will be completed(fin'd or reset), including delivering any outstanding data. \r\n\r\n"
-  },
-  {
-    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/346",
-    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
-    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/346/labels{/name}",
-    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/346/comments",
-    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/346/events",
-    "html_url": "https://github.com/quicwg/base-drafts/pull/346",
-    "id": 210053051,
-    "number": 346,
-    "title": "Change default initial RTT to 100ms",
-    "user": {
-      "login": "ianswett",
-      "id": 20072817,
-      "avatar_url": "https://avatars.githubusercontent.com/u/20072817?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/ianswett",
-      "html_url": "https://github.com/ianswett",
-      "followers_url": "https://api.github.com/users/ianswett/followers",
-      "following_url": "https://api.github.com/users/ianswett/following{/other_user}",
-      "gists_url": "https://api.github.com/users/ianswett/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/ianswett/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/ianswett/subscriptions",
-      "organizations_url": "https://api.github.com/users/ianswett/orgs",
-      "repos_url": "https://api.github.com/users/ianswett/repos",
-      "events_url": "https://api.github.com/users/ianswett/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/ianswett/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "labels": [
-
-    ],
-    "state": "open",
-    "locked": false,
-    "assignee": null,
-    "assignees": [
-
-    ],
-    "milestone": null,
-    "comments": 0,
-    "created_at": "2017-02-24T13:51:16Z",
-    "updated_at": "2017-02-24T13:51:16Z",
-    "closed_at": null,
-    "pull_request": {
-      "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/346",
-      "html_url": "https://github.com/quicwg/base-drafts/pull/346",
-      "diff_url": "https://github.com/quicwg/base-drafts/pull/346.diff",
-      "patch_url": "https://github.com/quicwg/base-drafts/pull/346.patch"
-    },
-    "body": ""
   },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/345",
@@ -234,9 +247,9 @@
 
     ],
     "milestone": null,
-    "comments": 3,
+    "comments": 4,
     "created_at": "2017-02-24T03:24:15Z",
-    "updated_at": "2017-02-24T16:57:48Z",
+    "updated_at": "2017-02-25T16:32:14Z",
     "closed_at": null,
     "body": "A lost handshake packet is retransmitted after 400ms (assuming that you don't have prior knowledge of the RTT, if you do then it is 2xRTT).  I realize that this is probably shorter than in TCP, but it's still a damned long time to wait.\r\n\r\nWe are far more aggressive in this in WebRTC with DTLS.  For example, NSS retransmits three times before QUIC even sends its first: at 50ms, 150ms, and 350ms.  We haven't seen much evidence that this is bring the Internet to its knees.  It's certainly good for latency to retransmit more aggressively.  Separately, we also send ICE probes much faster, without the back-off, though those are typically much smaller.\r\n\r\nThat said, if retransmitting at this pace is somehow doing damage to something, it would be good to understand why this is the case.  We're definitely interested in avoiding an inadvertent damage that we're doing and changing the above numbers could happen pretty quickly with proper justification."
   },
@@ -791,9 +804,9 @@
       }
     ],
     "milestone": null,
-    "comments": 7,
+    "comments": 10,
     "created_at": "2017-02-23T00:26:45Z",
-    "updated_at": "2017-02-24T06:41:11Z",
+    "updated_at": "2017-02-25T00:16:25Z",
     "closed_at": null,
     "pull_request": {
       "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/335",
@@ -957,9 +970,9 @@
 
     ],
     "milestone": null,
-    "comments": 3,
+    "comments": 8,
     "created_at": "2017-02-21T19:53:52Z",
-    "updated_at": "2017-02-24T05:01:54Z",
+    "updated_at": "2017-02-25T23:10:15Z",
     "closed_at": null,
     "body": "From discussion on the list, we could clarify the meaning of CONNECTION_CLOSE. Specifically, it would be good to clarify if it acts more like a TCP FIN or a TCP RST. I would suggest that the analog of a TCP FIN is a FIN on a QUIC stream as they both gracefully half-close a single bidirectional communication channel. After a FIN, retransmission of data may still occur to deal with packet loss.\r\n\r\nA QUIC CONNECTION_CLOSE, on the other hand, is an immediate termination of the connection. No more data is retransmitted. As such it is more like a TCP RST."
   },
