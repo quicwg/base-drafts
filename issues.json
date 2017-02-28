@@ -1,5 +1,50 @@
 [
   {
+    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/349",
+    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
+    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/349/labels{/name}",
+    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/349/comments",
+    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/349/events",
+    "html_url": "https://github.com/quicwg/base-drafts/issues/349",
+    "id": 210650205,
+    "number": 349,
+    "title": "When should server-chosen connection IDs be sent and how are they indicated?",
+    "user": {
+      "login": "RyanAtGoogle",
+      "id": 19561162,
+      "avatar_url": "https://avatars0.githubusercontent.com/u/19561162?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/RyanAtGoogle",
+      "html_url": "https://github.com/RyanAtGoogle",
+      "followers_url": "https://api.github.com/users/RyanAtGoogle/followers",
+      "following_url": "https://api.github.com/users/RyanAtGoogle/following{/other_user}",
+      "gists_url": "https://api.github.com/users/RyanAtGoogle/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/RyanAtGoogle/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/RyanAtGoogle/subscriptions",
+      "organizations_url": "https://api.github.com/users/RyanAtGoogle/orgs",
+      "repos_url": "https://api.github.com/users/RyanAtGoogle/repos",
+      "events_url": "https://api.github.com/users/RyanAtGoogle/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/RyanAtGoogle/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+
+    ],
+    "state": "open",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 1,
+    "created_at": "2017-02-28T00:27:13Z",
+    "updated_at": "2017-02-28T01:18:02Z",
+    "closed_at": null,
+    "body": "My sense is that we'd like the server to chose the \"real\" connection ID to be used for a connection. Among other things, this enables servers to embed routing/load balancing information into connection IDs.\r\n\r\nI have heard two options for what the client should do before it has a server-chosen connection ID.\r\n\r\n1) Send a random connection ID\r\n2) Send a connection ID of 0\r\n\r\nIf we go with approach 1, then we need some mechanism that load balancers can use to detect if a packet's connection ID is server-chosen or not. It seems likely that all packets encrypted with 1-RTT keys could use server generated connection IDs. But other packets it's not so clear. Consider the case of a non-0-RTT handshake. The initial client handshake packet would include a client-chosen connection ID. When the server replies, it could use a server-chosen connection ID. If so then when the client sends the next handshake packet it could use the server-chosen connection ID as well. But that means that we'd need a mechanism to disambiguate client handshake packets with client-chosen connection IDs from client handshake packets with server-chosen connection IDs. We could devote bits or packet types to indicate this. I suspect the same argument might hold for server handshake packets. We might not want the server to chose a connection ID until it is ready to accept the handshake.\r\n\r\nOne benefit of this approach, however, is that a QUIC server could chose to simply use the client's connection ID for the duration of the connection. This would mean that it would not need to be able to generate a new connection ID that is guaranteed to be sent by the load balancer back to itself. In cases where the vendor of the load balancer and the server are not the same, this might be valuable.\r\n\r\nIf we go with approach 2, then it's obvious that any packet with a non-zero connection ID has a server-chosen connection ID (though the server still may want to verify that it's a \"valid\" connection ID according to the algorithm it uses). \r\n\r\nOn the other hand, this requires QUIC servers which are behind load balancers to be able to generate connection IDs which the load balancer will route back to them. If the server and load balancers are from different vendors, this might be challenging.\r\n\r\n"
+  },
+  {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/348",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
     "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/348/labels{/name}",
@@ -12,7 +57,7 @@
     "user": {
       "login": "MikeBishop",
       "id": 4273797,
-      "avatar_url": "https://avatars.githubusercontent.com/u/4273797?v=3",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/4273797?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/MikeBishop",
       "html_url": "https://github.com/MikeBishop",
@@ -51,9 +96,9 @@
 
     ],
     "milestone": null,
-    "comments": 1,
+    "comments": 2,
     "created_at": "2017-02-24T20:12:33Z",
-    "updated_at": "2017-02-27T01:04:58Z",
+    "updated_at": "2017-02-27T05:57:35Z",
     "closed_at": null,
     "pull_request": {
       "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/348",
@@ -76,7 +121,7 @@
     "user": {
       "login": "ianswett",
       "id": 20072817,
-      "avatar_url": "https://avatars.githubusercontent.com/u/20072817?v=3",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/20072817?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/ianswett",
       "html_url": "https://github.com/ianswett",
@@ -121,7 +166,7 @@
     "user": {
       "login": "martinthomson",
       "id": 67641,
-      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/martinthomson",
       "html_url": "https://github.com/martinthomson",
@@ -145,7 +190,7 @@
     "assignee": {
       "login": "seanturner",
       "id": 4488966,
-      "avatar_url": "https://avatars.githubusercontent.com/u/4488966?v=3",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/4488966?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/seanturner",
       "html_url": "https://github.com/seanturner",
@@ -165,7 +210,7 @@
       {
         "login": "seanturner",
         "id": 4488966,
-        "avatar_url": "https://avatars.githubusercontent.com/u/4488966?v=3",
+        "avatar_url": "https://avatars3.githubusercontent.com/u/4488966?v=3",
         "gravatar_id": "",
         "url": "https://api.github.com/users/seanturner",
         "html_url": "https://github.com/seanturner",
@@ -208,7 +253,7 @@
     "user": {
       "login": "martinthomson",
       "id": 67641,
-      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/martinthomson",
       "html_url": "https://github.com/martinthomson",
@@ -266,7 +311,7 @@
     "user": {
       "login": "martinthomson",
       "id": 67641,
-      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/martinthomson",
       "html_url": "https://github.com/martinthomson",
@@ -324,7 +369,7 @@
     "user": {
       "login": "martinthomson",
       "id": 67641,
-      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/martinthomson",
       "html_url": "https://github.com/martinthomson",
@@ -382,7 +427,7 @@
     "user": {
       "login": "martinthomson",
       "id": 67641,
-      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/martinthomson",
       "html_url": "https://github.com/martinthomson",
@@ -439,7 +484,7 @@
     "user": {
       "login": "martinthomson",
       "id": 67641,
-      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/martinthomson",
       "html_url": "https://github.com/martinthomson",
@@ -510,7 +555,7 @@
     "user": {
       "login": "martinthomson",
       "id": 67641,
-      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/martinthomson",
       "html_url": "https://github.com/martinthomson",
@@ -547,7 +592,7 @@
     "assignee": {
       "login": "seanturner",
       "id": 4488966,
-      "avatar_url": "https://avatars.githubusercontent.com/u/4488966?v=3",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/4488966?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/seanturner",
       "html_url": "https://github.com/seanturner",
@@ -567,7 +612,7 @@
       {
         "login": "seanturner",
         "id": 4488966,
-        "avatar_url": "https://avatars.githubusercontent.com/u/4488966?v=3",
+        "avatar_url": "https://avatars3.githubusercontent.com/u/4488966?v=3",
         "gravatar_id": "",
         "url": "https://api.github.com/users/seanturner",
         "html_url": "https://github.com/seanturner",
@@ -610,7 +655,7 @@
     "user": {
       "login": "martinthomson",
       "id": 67641,
-      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/martinthomson",
       "html_url": "https://github.com/martinthomson",
@@ -647,7 +692,7 @@
     "assignee": {
       "login": "janaiyengar",
       "id": 11067604,
-      "avatar_url": "https://avatars.githubusercontent.com/u/11067604?v=3",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/11067604?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/janaiyengar",
       "html_url": "https://github.com/janaiyengar",
@@ -667,7 +712,7 @@
       {
         "login": "janaiyengar",
         "id": 11067604,
-        "avatar_url": "https://avatars.githubusercontent.com/u/11067604?v=3",
+        "avatar_url": "https://avatars1.githubusercontent.com/u/11067604?v=3",
         "gravatar_id": "",
         "url": "https://api.github.com/users/janaiyengar",
         "html_url": "https://github.com/janaiyengar",
@@ -686,7 +731,7 @@
       {
         "login": "ianswett",
         "id": 20072817,
-        "avatar_url": "https://avatars.githubusercontent.com/u/20072817?v=3",
+        "avatar_url": "https://avatars2.githubusercontent.com/u/20072817?v=3",
         "gravatar_id": "",
         "url": "https://api.github.com/users/ianswett",
         "html_url": "https://github.com/ianswett",
@@ -706,7 +751,7 @@
     "milestone": null,
     "comments": 0,
     "created_at": "2017-02-23T04:10:54Z",
-    "updated_at": "2017-02-27T01:23:50Z",
+    "updated_at": "2017-02-27T14:11:04Z",
     "closed_at": null,
     "pull_request": {
       "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/336",
@@ -729,7 +774,7 @@
     "user": {
       "login": "reschke",
       "id": 332994,
-      "avatar_url": "https://avatars.githubusercontent.com/u/332994?v=3",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/332994?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/reschke",
       "html_url": "https://github.com/reschke",
@@ -780,7 +825,7 @@
     "user": {
       "login": "reschke",
       "id": 332994,
-      "avatar_url": "https://avatars.githubusercontent.com/u/332994?v=3",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/332994?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/reschke",
       "html_url": "https://github.com/reschke",
@@ -831,7 +876,7 @@
     "user": {
       "login": "RyanAtGoogle",
       "id": 19561162,
-      "avatar_url": "https://avatars.githubusercontent.com/u/19561162?v=3",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/19561162?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/RyanAtGoogle",
       "html_url": "https://github.com/RyanAtGoogle",
@@ -870,9 +915,9 @@
 
     ],
     "milestone": null,
-    "comments": 8,
+    "comments": 9,
     "created_at": "2017-02-21T19:53:52Z",
-    "updated_at": "2017-02-25T23:10:15Z",
+    "updated_at": "2017-02-28T11:04:23Z",
     "closed_at": null,
     "body": "From discussion on the list, we could clarify the meaning of CONNECTION_CLOSE. Specifically, it would be good to clarify if it acts more like a TCP FIN or a TCP RST. I would suggest that the analog of a TCP FIN is a FIN on a QUIC stream as they both gracefully half-close a single bidirectional communication channel. After a FIN, retransmission of data may still occur to deal with packet loss.\r\n\r\nA QUIC CONNECTION_CLOSE, on the other hand, is an immediate termination of the connection. No more data is retransmitted. As such it is more like a TCP RST."
   },
@@ -889,7 +934,7 @@
     "user": {
       "login": "mcmanus",
       "id": 260531,
-      "avatar_url": "https://avatars.githubusercontent.com/u/260531?v=3",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/260531?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/mcmanus",
       "html_url": "https://github.com/mcmanus",
@@ -928,9 +973,9 @@
 
     ],
     "milestone": null,
-    "comments": 2,
+    "comments": 3,
     "created_at": "2017-02-20T17:57:59Z",
-    "updated_at": "2017-02-23T00:43:07Z",
+    "updated_at": "2017-02-27T19:01:40Z",
     "closed_at": null,
     "body": "6.4 currently has\r\n`TODO: Connections that are terminated are added to a TIME_WAIT list at the server, so as to absorb any straggler packets in the network. Discuss TIME_WAIT list.`\r\n\r\nthis is an open issue for the TODO.\r\n\r\nSome initial thoughts: is it always the server that is in TIME_WAIT as opposed to the TCP active close behavior? (seems fine at first blush, but asking for a friend who is less sure :)).\r\n\r\nwhat happens in the TIME_WAIT state.. retransmissions? What happens when you receive packets (ignored - trigger retrrans, RST?)"
   },
@@ -947,7 +992,7 @@
     "user": {
       "login": "martinthomson",
       "id": 67641,
-      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/martinthomson",
       "html_url": "https://github.com/martinthomson",
@@ -1005,7 +1050,7 @@
     "user": {
       "login": "martinthomson",
       "id": 67641,
-      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/martinthomson",
       "html_url": "https://github.com/martinthomson",
@@ -1063,7 +1108,7 @@
     "user": {
       "login": "seanturner",
       "id": 4488966,
-      "avatar_url": "https://avatars.githubusercontent.com/u/4488966?v=3",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/4488966?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/seanturner",
       "html_url": "https://github.com/seanturner",
@@ -1121,7 +1166,7 @@
     "user": {
       "login": "ianswett",
       "id": 20072817,
-      "avatar_url": "https://avatars.githubusercontent.com/u/20072817?v=3",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/20072817?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/ianswett",
       "html_url": "https://github.com/ianswett",
@@ -1179,7 +1224,7 @@
     "user": {
       "login": "martinthomson",
       "id": 67641,
-      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/martinthomson",
       "html_url": "https://github.com/martinthomson",
@@ -1237,7 +1282,7 @@
     "user": {
       "login": "martinthomson",
       "id": 67641,
-      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/martinthomson",
       "html_url": "https://github.com/martinthomson",
@@ -1295,7 +1340,7 @@
     "user": {
       "login": "martinthomson",
       "id": 67641,
-      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/martinthomson",
       "html_url": "https://github.com/martinthomson",
@@ -1353,7 +1398,7 @@
     "user": {
       "login": "martinthomson",
       "id": 67641,
-      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/martinthomson",
       "html_url": "https://github.com/martinthomson",
@@ -1404,7 +1449,7 @@
     "user": {
       "login": "martinthomson",
       "id": 67641,
-      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/martinthomson",
       "html_url": "https://github.com/martinthomson",
@@ -1462,7 +1507,7 @@
     "user": {
       "login": "MikeBishop",
       "id": 4273797,
-      "avatar_url": "https://avatars.githubusercontent.com/u/4273797?v=3",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/4273797?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/MikeBishop",
       "html_url": "https://github.com/MikeBishop",
@@ -1520,7 +1565,7 @@
     "user": {
       "login": "martinthomson",
       "id": 67641,
-      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/martinthomson",
       "html_url": "https://github.com/martinthomson",
@@ -1578,7 +1623,7 @@
     "user": {
       "login": "martinthomson",
       "id": 67641,
-      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/martinthomson",
       "html_url": "https://github.com/martinthomson",
@@ -1636,7 +1681,7 @@
     "user": {
       "login": "ianswett",
       "id": 20072817,
-      "avatar_url": "https://avatars.githubusercontent.com/u/20072817?v=3",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/20072817?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/ianswett",
       "html_url": "https://github.com/ianswett",
@@ -1694,7 +1739,7 @@
     "user": {
       "login": "martinthomson",
       "id": 67641,
-      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/martinthomson",
       "html_url": "https://github.com/martinthomson",
@@ -1752,7 +1797,7 @@
     "user": {
       "login": "martinthomson",
       "id": 67641,
-      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/martinthomson",
       "html_url": "https://github.com/martinthomson",
@@ -1796,7 +1841,8 @@
     "updated_at": "2017-02-16T13:44:04Z",
     "closed_at": null,
     "body": "> The application SHOULD attempt to use TLS over TCP instead.\r\n\r\n(This is in the context of finding that the MTU is too small.)\r\n\r\nThe text includes a very specific recommendation to use TLS over TCP for one particular case.  This is unwise for two reasons:\r\n1. we don't know if all protocols that build on QUIC will have a TCP over TLS option available to them; DNS over QUIC might be an example of where TLS over TCP is an inadvisable fallback option\r\n2. we should rely on a generic error handling section that includes generic advice about things like falling back to a backup protocol\r\n\r\nMarked as editorial, I hope that's not controversial."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/284",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -1810,7 +1856,7 @@
     "user": {
       "login": "martinthomson",
       "id": 67641,
-      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/martinthomson",
       "html_url": "https://github.com/martinthomson",
@@ -1854,8 +1900,7 @@
     "updated_at": "2017-02-15T05:20:55Z",
     "closed_at": null,
     "body": "The text currently says:\r\n\r\n> Once a client receives a packet from the server with the VERSION flag unset, it MUST ignore the flag in subsequently received packets.\r\n\r\nI don't know how to interpret this.  What should a client do if it receives a packet with the VERSION flag set after completing version negotiation?  Maybe should should mandate ignoring the packet not just the flag."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/281",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -1869,7 +1914,7 @@
     "user": {
       "login": "martinthomson",
       "id": 67641,
-      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/martinthomson",
       "html_url": "https://github.com/martinthomson",
@@ -1934,7 +1979,7 @@
     "user": {
       "login": "martinduke",
       "id": 24398865,
-      "avatar_url": "https://avatars.githubusercontent.com/u/24398865?v=3",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/24398865?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/martinduke",
       "html_url": "https://github.com/martinduke",
@@ -1992,7 +2037,7 @@
     "user": {
       "login": "MikeBishop",
       "id": 4273797,
-      "avatar_url": "https://avatars.githubusercontent.com/u/4273797?v=3",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/4273797?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/MikeBishop",
       "html_url": "https://github.com/MikeBishop",
@@ -2049,7 +2094,7 @@
     "user": {
       "login": "martinthomson",
       "id": 67641,
-      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/martinthomson",
       "html_url": "https://github.com/martinthomson",
@@ -2086,7 +2131,7 @@
     "assignee": {
       "login": "martinthomson",
       "id": 67641,
-      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/martinthomson",
       "html_url": "https://github.com/martinthomson",
@@ -2106,7 +2151,7 @@
       {
         "login": "martinthomson",
         "id": 67641,
-        "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
+        "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
         "gravatar_id": "",
         "url": "https://api.github.com/users/martinthomson",
         "html_url": "https://github.com/martinthomson",
@@ -2143,7 +2188,7 @@
     "user": {
       "login": "martinduke",
       "id": 24398865,
-      "avatar_url": "https://avatars.githubusercontent.com/u/24398865?v=3",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/24398865?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/martinduke",
       "html_url": "https://github.com/martinduke",
@@ -2201,7 +2246,7 @@
     "user": {
       "login": "martinthomson",
       "id": 67641,
-      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/martinthomson",
       "html_url": "https://github.com/martinthomson",
@@ -2252,7 +2297,7 @@
     "user": {
       "login": "martinthomson",
       "id": 67641,
-      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/martinthomson",
       "html_url": "https://github.com/martinthomson",
@@ -2310,7 +2355,7 @@
     "user": {
       "login": "martinthomson",
       "id": 67641,
-      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/martinthomson",
       "html_url": "https://github.com/martinthomson",
@@ -2368,7 +2413,7 @@
     "user": {
       "login": "marten-seemann",
       "id": 1478487,
-      "avatar_url": "https://avatars.githubusercontent.com/u/1478487?v=3",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/1478487?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/marten-seemann",
       "html_url": "https://github.com/marten-seemann",
@@ -2426,7 +2471,7 @@
     "user": {
       "login": "martinthomson",
       "id": 67641,
-      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/martinthomson",
       "html_url": "https://github.com/martinthomson",
@@ -2491,7 +2536,7 @@
     "user": {
       "login": "mcmanus",
       "id": 260531,
-      "avatar_url": "https://avatars.githubusercontent.com/u/260531?v=3",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/260531?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/mcmanus",
       "html_url": "https://github.com/mcmanus",
@@ -2548,7 +2593,7 @@
     "user": {
       "login": "martinthomson",
       "id": 67641,
-      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/martinthomson",
       "html_url": "https://github.com/martinthomson",
@@ -2606,7 +2651,7 @@
     "user": {
       "login": "MikeBishop",
       "id": 4273797,
-      "avatar_url": "https://avatars.githubusercontent.com/u/4273797?v=3",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/4273797?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/MikeBishop",
       "html_url": "https://github.com/MikeBishop",
@@ -2664,7 +2709,7 @@
     "user": {
       "login": "mcmanus",
       "id": 260531,
-      "avatar_url": "https://avatars.githubusercontent.com/u/260531?v=3",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/260531?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/mcmanus",
       "html_url": "https://github.com/mcmanus",
@@ -2715,7 +2760,7 @@
     "user": {
       "login": "martinthomson",
       "id": 67641,
-      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/martinthomson",
       "html_url": "https://github.com/martinthomson",
@@ -2780,7 +2825,7 @@
     "user": {
       "login": "MikeBishop",
       "id": 4273797,
-      "avatar_url": "https://avatars.githubusercontent.com/u/4273797?v=3",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/4273797?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/MikeBishop",
       "html_url": "https://github.com/MikeBishop",
@@ -2838,7 +2883,7 @@
     "user": {
       "login": "igorlord",
       "id": 25256216,
-      "avatar_url": "https://avatars.githubusercontent.com/u/25256216?v=3",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/25256216?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/igorlord",
       "html_url": "https://github.com/igorlord",
@@ -2896,7 +2941,7 @@
     "user": {
       "login": "LPardue",
       "id": 6571445,
-      "avatar_url": "https://avatars.githubusercontent.com/u/6571445?v=3",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/6571445?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/LPardue",
       "html_url": "https://github.com/LPardue",
@@ -2954,7 +2999,7 @@
     "user": {
       "login": "siyengar",
       "id": 1054756,
-      "avatar_url": "https://avatars.githubusercontent.com/u/1054756?v=3",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/1054756?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/siyengar",
       "html_url": "https://github.com/siyengar",
@@ -3012,7 +3057,7 @@
     "user": {
       "login": "martinthomson",
       "id": 67641,
-      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/martinthomson",
       "html_url": "https://github.com/martinthomson",
@@ -3070,7 +3115,7 @@
     "user": {
       "login": "vasilvv",
       "id": 123512,
-      "avatar_url": "https://avatars.githubusercontent.com/u/123512?v=3",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/123512?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/vasilvv",
       "html_url": "https://github.com/vasilvv",
@@ -3128,7 +3173,7 @@
     "user": {
       "login": "martinthomson",
       "id": 67641,
-      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/martinthomson",
       "html_url": "https://github.com/martinthomson",
@@ -3186,7 +3231,7 @@
     "user": {
       "login": "martinthomson",
       "id": 67641,
-      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/martinthomson",
       "html_url": "https://github.com/martinthomson",
@@ -3244,7 +3289,7 @@
     "user": {
       "login": "martinthomson",
       "id": 67641,
-      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/martinthomson",
       "html_url": "https://github.com/martinthomson",
@@ -3302,7 +3347,7 @@
     "user": {
       "login": "martinthomson",
       "id": 67641,
-      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/martinthomson",
       "html_url": "https://github.com/martinthomson",
@@ -3360,7 +3405,7 @@
     "user": {
       "login": "ekr",
       "id": 1111457,
-      "avatar_url": "https://avatars.githubusercontent.com/u/1111457?v=3",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/1111457?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/ekr",
       "html_url": "https://github.com/ekr",
@@ -3418,7 +3463,7 @@
     "user": {
       "login": "mirjak",
       "id": 8420764,
-      "avatar_url": "https://avatars.githubusercontent.com/u/8420764?v=3",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/8420764?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/mirjak",
       "html_url": "https://github.com/mirjak",
@@ -3476,7 +3521,7 @@
     "user": {
       "login": "MikeBishop",
       "id": 4273797,
-      "avatar_url": "https://avatars.githubusercontent.com/u/4273797?v=3",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/4273797?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/MikeBishop",
       "html_url": "https://github.com/MikeBishop",
@@ -3534,7 +3579,7 @@
     "user": {
       "login": "lucas-clemente",
       "id": 918034,
-      "avatar_url": "https://avatars.githubusercontent.com/u/918034?v=3",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/918034?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/lucas-clemente",
       "html_url": "https://github.com/lucas-clemente",
@@ -3578,7 +3623,8 @@
     "updated_at": "2017-01-25T04:43:48Z",
     "closed_at": null,
     "body": "This is an alternative to #167: We could just encrypt the cleartext data in the initial handshake packets with a deterministic key (e.g. a mixture of a version-dependent key and the initial packet number). The AEAD used there would have to be fixed in the spec.\r\n\r\nThe goal would be to make it harder for middleboxes to ossify on stuff in the client hello, e.g. SNI, and to detect initial packets (#203). On the other hand, there's additional computational cost for decrypting packets server-side."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/224",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3592,7 +3638,7 @@
     "user": {
       "login": "martinthomson",
       "id": 67641,
-      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/martinthomson",
       "html_url": "https://github.com/martinthomson",
@@ -3636,8 +3682,7 @@
     "updated_at": "2017-01-25T00:59:17Z",
     "closed_at": null,
     "body": "We've assumed that this is the case, but we really need to write it down."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/222",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3651,7 +3696,7 @@
     "user": {
       "login": "ekr",
       "id": 1111457,
-      "avatar_url": "https://avatars.githubusercontent.com/u/1111457?v=3",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/1111457?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/ekr",
       "html_url": "https://github.com/ekr",
@@ -3709,7 +3754,7 @@
     "user": {
       "login": "ekr",
       "id": 1111457,
-      "avatar_url": "https://avatars.githubusercontent.com/u/1111457?v=3",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/1111457?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/ekr",
       "html_url": "https://github.com/ekr",
@@ -3767,7 +3812,7 @@
     "user": {
       "login": "vasilvv",
       "id": 123512,
-      "avatar_url": "https://avatars.githubusercontent.com/u/123512?v=3",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/123512?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/vasilvv",
       "html_url": "https://github.com/vasilvv",
@@ -3825,7 +3870,7 @@
     "user": {
       "login": "MikeBishop",
       "id": 4273797,
-      "avatar_url": "https://avatars.githubusercontent.com/u/4273797?v=3",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/4273797?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/MikeBishop",
       "html_url": "https://github.com/MikeBishop",
@@ -3883,7 +3928,7 @@
     "user": {
       "login": "ekr",
       "id": 1111457,
-      "avatar_url": "https://avatars.githubusercontent.com/u/1111457?v=3",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/1111457?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/ekr",
       "html_url": "https://github.com/ekr",
@@ -3941,7 +3986,7 @@
     "user": {
       "login": "martinthomson",
       "id": 67641,
-      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/martinthomson",
       "html_url": "https://github.com/martinthomson",
@@ -3999,7 +4044,7 @@
     "user": {
       "login": "ekr",
       "id": 1111457,
-      "avatar_url": "https://avatars.githubusercontent.com/u/1111457?v=3",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/1111457?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/ekr",
       "html_url": "https://github.com/ekr",
@@ -4057,7 +4102,7 @@
     "user": {
       "login": "martinthomson",
       "id": 67641,
-      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/martinthomson",
       "html_url": "https://github.com/martinthomson",
@@ -4115,7 +4160,7 @@
     "user": {
       "login": "igorlord",
       "id": 25256216,
-      "avatar_url": "https://avatars.githubusercontent.com/u/25256216?v=3",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/25256216?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/igorlord",
       "html_url": "https://github.com/igorlord",
@@ -4173,7 +4218,7 @@
     "user": {
       "login": "lucas-clemente",
       "id": 918034,
-      "avatar_url": "https://avatars.githubusercontent.com/u/918034?v=3",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/918034?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/lucas-clemente",
       "html_url": "https://github.com/lucas-clemente",
@@ -4231,7 +4276,7 @@
     "user": {
       "login": "ekr",
       "id": 1111457,
-      "avatar_url": "https://avatars.githubusercontent.com/u/1111457?v=3",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/1111457?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/ekr",
       "html_url": "https://github.com/ekr",
@@ -4289,7 +4334,7 @@
     "user": {
       "login": "ekr",
       "id": 1111457,
-      "avatar_url": "https://avatars.githubusercontent.com/u/1111457?v=3",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/1111457?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/ekr",
       "html_url": "https://github.com/ekr",
@@ -4347,7 +4392,7 @@
     "user": {
       "login": "ekr",
       "id": 1111457,
-      "avatar_url": "https://avatars.githubusercontent.com/u/1111457?v=3",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/1111457?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/ekr",
       "html_url": "https://github.com/ekr",
@@ -4405,7 +4450,7 @@
     "user": {
       "login": "ekr",
       "id": 1111457,
-      "avatar_url": "https://avatars.githubusercontent.com/u/1111457?v=3",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/1111457?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/ekr",
       "html_url": "https://github.com/ekr",
@@ -4463,7 +4508,7 @@
     "user": {
       "login": "ekr",
       "id": 1111457,
-      "avatar_url": "https://avatars.githubusercontent.com/u/1111457?v=3",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/1111457?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/ekr",
       "html_url": "https://github.com/ekr",
@@ -4521,7 +4566,7 @@
     "user": {
       "login": "ekr",
       "id": 1111457,
-      "avatar_url": "https://avatars.githubusercontent.com/u/1111457?v=3",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/1111457?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/ekr",
       "html_url": "https://github.com/ekr",
@@ -4579,7 +4624,7 @@
     "user": {
       "login": "ekr",
       "id": 1111457,
-      "avatar_url": "https://avatars.githubusercontent.com/u/1111457?v=3",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/1111457?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/ekr",
       "html_url": "https://github.com/ekr",
@@ -4616,7 +4661,7 @@
     "assignee": {
       "login": "ekr",
       "id": 1111457,
-      "avatar_url": "https://avatars.githubusercontent.com/u/1111457?v=3",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/1111457?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/ekr",
       "html_url": "https://github.com/ekr",
@@ -4636,7 +4681,7 @@
       {
         "login": "ekr",
         "id": 1111457,
-        "avatar_url": "https://avatars.githubusercontent.com/u/1111457?v=3",
+        "avatar_url": "https://avatars3.githubusercontent.com/u/1111457?v=3",
         "gravatar_id": "",
         "url": "https://api.github.com/users/ekr",
         "html_url": "https://github.com/ekr",
@@ -4673,7 +4718,7 @@
     "user": {
       "login": "ekr",
       "id": 1111457,
-      "avatar_url": "https://avatars.githubusercontent.com/u/1111457?v=3",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/1111457?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/ekr",
       "html_url": "https://github.com/ekr",
@@ -4731,7 +4776,7 @@
     "user": {
       "login": "igorlord",
       "id": 25256216,
-      "avatar_url": "https://avatars.githubusercontent.com/u/25256216?v=3",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/25256216?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/igorlord",
       "html_url": "https://github.com/igorlord",
@@ -4789,7 +4834,7 @@
     "user": {
       "login": "igorlord",
       "id": 25256216,
-      "avatar_url": "https://avatars.githubusercontent.com/u/25256216?v=3",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/25256216?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/igorlord",
       "html_url": "https://github.com/igorlord",
@@ -4847,7 +4892,7 @@
     "user": {
       "login": "igorlord",
       "id": 25256216,
-      "avatar_url": "https://avatars.githubusercontent.com/u/25256216?v=3",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/25256216?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/igorlord",
       "html_url": "https://github.com/igorlord",
@@ -4905,7 +4950,7 @@
     "user": {
       "login": "igorlord",
       "id": 25256216,
-      "avatar_url": "https://avatars.githubusercontent.com/u/25256216?v=3",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/25256216?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/igorlord",
       "html_url": "https://github.com/igorlord",
@@ -4963,7 +5008,7 @@
     "user": {
       "login": "LPardue",
       "id": 6571445,
-      "avatar_url": "https://avatars.githubusercontent.com/u/6571445?v=3",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/6571445?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/LPardue",
       "html_url": "https://github.com/LPardue",
@@ -5021,7 +5066,7 @@
     "user": {
       "login": "martinthomson",
       "id": 67641,
-      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/martinthomson",
       "html_url": "https://github.com/martinthomson",
@@ -5079,7 +5124,7 @@
     "user": {
       "login": "ddragana",
       "id": 10529034,
-      "avatar_url": "https://avatars.githubusercontent.com/u/10529034?v=3",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/10529034?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/ddragana",
       "html_url": "https://github.com/ddragana",
@@ -5137,7 +5182,7 @@
     "user": {
       "login": "ddragana",
       "id": 10529034,
-      "avatar_url": "https://avatars.githubusercontent.com/u/10529034?v=3",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/10529034?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/ddragana",
       "html_url": "https://github.com/ddragana",
@@ -5174,7 +5219,7 @@
     "assignee": {
       "login": "ianswett",
       "id": 20072817,
-      "avatar_url": "https://avatars.githubusercontent.com/u/20072817?v=3",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/20072817?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/ianswett",
       "html_url": "https://github.com/ianswett",
@@ -5194,7 +5239,7 @@
       {
         "login": "ianswett",
         "id": 20072817,
-        "avatar_url": "https://avatars.githubusercontent.com/u/20072817?v=3",
+        "avatar_url": "https://avatars2.githubusercontent.com/u/20072817?v=3",
         "gravatar_id": "",
         "url": "https://api.github.com/users/ianswett",
         "html_url": "https://github.com/ianswett",
@@ -5231,7 +5276,7 @@
     "user": {
       "login": "ddragana",
       "id": 10529034,
-      "avatar_url": "https://avatars.githubusercontent.com/u/10529034?v=3",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/10529034?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/ddragana",
       "html_url": "https://github.com/ddragana",
@@ -5296,7 +5341,7 @@
     "user": {
       "login": "MikeBishop",
       "id": 4273797,
-      "avatar_url": "https://avatars.githubusercontent.com/u/4273797?v=3",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/4273797?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/MikeBishop",
       "html_url": "https://github.com/MikeBishop",
@@ -5354,7 +5399,7 @@
     "user": {
       "login": "martinthomson",
       "id": 67641,
-      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/martinthomson",
       "html_url": "https://github.com/martinthomson",
@@ -5398,7 +5443,8 @@
     "updated_at": "2017-02-24T18:00:06Z",
     "closed_at": null,
     "body": "QUIC borrows the HTTP/2 state machine, or tries to replicate it as much as it can.  Part of that replication is the idea that a stream is bidirectional.  The state related to outgoing data and the state related to inbound data are tied.\r\n\r\n#174 suggests a simplification that could open up a more dramatic simplification: independent state for each direction.  #171 moves in that direction also.\r\n\r\nThe state machine that results from that is dramatically simpler: idle -> open -> closed.  That is, before packets, packets and after packets.\r\n\r\nThe consequence for the HTTP mapping is largely that it needs a different method for correlating request and response.\r\n\r\n## Correlating request and response\r\n\r\nCurrently, request and response are correlated by matching the stream identifier.  However, unidirectional streams would allow for cases where streams are not created symmetrically.  For instance, server push would only require streams from the server.  Similarly, the server would not be obligated to respond to requests in the order in which they were received (if at all, since it could reset request streams).\r\n\r\nThat implies that this would add a requirement for the server to identify which request a given stream is answering.  This is an extension of the requirement in #174, which only required that the server identify a push promise (actually, it's less onerous, because you only have one request per stream).\r\n\r\nI can imagine an arrangement where a stream containing headers identifies the stream containing the request headers from the client.  Then the stream containing the body identifies the stream that contained the headers.\r\n\r\n## Saving stream identifiers\r\n\r\nThis is a minor point, though it could be relevant for very long-lived connections.\r\n\r\nQUIC currently insists on a strictly monotonically increasing stream identifier: stream N is followed by stream N+2 always, no skipping of streams is permitted.  Aside from wasting every other stream identifier, other streams are wasted by the mapping. \r\n\r\nGET requests don't include a body, but nonetheless require that the client send a HEADERS on stream N, then a FIN on stream N+2.  Including a reference to the initiating stream at the start of the body of a message would use some octets, but potentially fewer than would be used otherwise (particularly if the reference was a varlen encoding of the difference in stream numbers, which would rarely be anything other than 1).\r\n\r\nObviously, this is an optimization for the case where there are no bodies, but that is a case where the optimization is particularly valuable.  Making more requests (which more frequently have no bodies) during the early stages of a connection is critical to performance."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/171",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5412,7 +5458,7 @@
     "user": {
       "login": "MikeBishop",
       "id": 4273797,
-      "avatar_url": "https://avatars.githubusercontent.com/u/4273797?v=3",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/4273797?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/MikeBishop",
       "html_url": "https://github.com/MikeBishop",
@@ -5469,8 +5515,7 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/171.patch"
     },
     "body": "A rough draft of a fix for #165.  Key changes:\r\n\r\n- RST_STREAM kills only the sender's direction, not both.  (Retains the existing requirement to respond with RST_STREAM with another RST_STREAM if the stream isn't already closed, which eventually leads to the same result.)\r\n- New REQUEST_RST frame allows peer to solicit a RST_STREAM; text states that this reflects an app recv_close, and that received data is being discarded\r\n\r\nThis should solve the scenarios outlined in #165; a server can ask a client to RST_STREAM its own direction after having sent an early response.  Feedback welcome, of course -- please point out anything I've missed."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/170",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5484,7 +5529,7 @@
     "user": {
       "login": "marten-seemann",
       "id": 1478487,
-      "avatar_url": "https://avatars.githubusercontent.com/u/1478487?v=3",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/1478487?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/marten-seemann",
       "html_url": "https://github.com/marten-seemann",
@@ -5542,7 +5587,7 @@
     "user": {
       "login": "ianswett",
       "id": 20072817,
-      "avatar_url": "https://avatars.githubusercontent.com/u/20072817?v=3",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/20072817?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/ianswett",
       "html_url": "https://github.com/ianswett",
@@ -5614,7 +5659,7 @@
     "user": {
       "login": "emile22",
       "id": 4004607,
-      "avatar_url": "https://avatars.githubusercontent.com/u/4004607?v=3",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/4004607?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/emile22",
       "html_url": "https://github.com/emile22",
@@ -5672,7 +5717,7 @@
     "user": {
       "login": "marten-seemann",
       "id": 1478487,
-      "avatar_url": "https://avatars.githubusercontent.com/u/1478487?v=3",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/1478487?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/marten-seemann",
       "html_url": "https://github.com/marten-seemann",
@@ -5737,7 +5782,7 @@
     "user": {
       "login": "martinthomson",
       "id": 67641,
-      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/martinthomson",
       "html_url": "https://github.com/martinthomson",
@@ -5795,7 +5840,7 @@
     "user": {
       "login": "martinthomson",
       "id": 67641,
-      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/martinthomson",
       "html_url": "https://github.com/martinthomson",
@@ -5853,7 +5898,7 @@
     "user": {
       "login": "janaiyengar",
       "id": 11067604,
-      "avatar_url": "https://avatars.githubusercontent.com/u/11067604?v=3",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/11067604?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/janaiyengar",
       "html_url": "https://github.com/janaiyengar",
@@ -5890,7 +5935,7 @@
     "assignee": {
       "login": "janaiyengar",
       "id": 11067604,
-      "avatar_url": "https://avatars.githubusercontent.com/u/11067604?v=3",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/11067604?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/janaiyengar",
       "html_url": "https://github.com/janaiyengar",
@@ -5910,7 +5955,7 @@
       {
         "login": "janaiyengar",
         "id": 11067604,
-        "avatar_url": "https://avatars.githubusercontent.com/u/11067604?v=3",
+        "avatar_url": "https://avatars1.githubusercontent.com/u/11067604?v=3",
         "gravatar_id": "",
         "url": "https://api.github.com/users/janaiyengar",
         "html_url": "https://github.com/janaiyengar",
@@ -5947,7 +5992,7 @@
     "user": {
       "login": "britram",
       "id": 1884116,
-      "avatar_url": "https://avatars.githubusercontent.com/u/1884116?v=3",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/1884116?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/britram",
       "html_url": "https://github.com/britram",
@@ -5984,7 +6029,7 @@
     "assignee": {
       "login": "ekr",
       "id": 1111457,
-      "avatar_url": "https://avatars.githubusercontent.com/u/1111457?v=3",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/1111457?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/ekr",
       "html_url": "https://github.com/ekr",
@@ -6004,7 +6049,7 @@
       {
         "login": "ekr",
         "id": 1111457,
-        "avatar_url": "https://avatars.githubusercontent.com/u/1111457?v=3",
+        "avatar_url": "https://avatars3.githubusercontent.com/u/1111457?v=3",
         "gravatar_id": "",
         "url": "https://api.github.com/users/ekr",
         "html_url": "https://github.com/ekr",
@@ -6041,7 +6086,7 @@
     "user": {
       "login": "britram",
       "id": 1884116,
-      "avatar_url": "https://avatars.githubusercontent.com/u/1884116?v=3",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/1884116?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/britram",
       "html_url": "https://github.com/britram",
@@ -6099,7 +6144,7 @@
     "user": {
       "login": "marten-seemann",
       "id": 1478487,
-      "avatar_url": "https://avatars.githubusercontent.com/u/1478487?v=3",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/1478487?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/marten-seemann",
       "html_url": "https://github.com/marten-seemann",
@@ -6136,7 +6181,7 @@
     "assignee": {
       "login": "ianswett",
       "id": 20072817,
-      "avatar_url": "https://avatars.githubusercontent.com/u/20072817?v=3",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/20072817?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/ianswett",
       "html_url": "https://github.com/ianswett",
@@ -6156,7 +6201,7 @@
       {
         "login": "ianswett",
         "id": 20072817,
-        "avatar_url": "https://avatars.githubusercontent.com/u/20072817?v=3",
+        "avatar_url": "https://avatars2.githubusercontent.com/u/20072817?v=3",
         "gravatar_id": "",
         "url": "https://api.github.com/users/ianswett",
         "html_url": "https://github.com/ianswett",
@@ -6193,7 +6238,7 @@
     "user": {
       "login": "martinthomson",
       "id": 67641,
-      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/martinthomson",
       "html_url": "https://github.com/martinthomson",
@@ -6251,7 +6296,7 @@
     "user": {
       "login": "martinduke",
       "id": 24398865,
-      "avatar_url": "https://avatars.githubusercontent.com/u/24398865?v=3",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/24398865?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/martinduke",
       "html_url": "https://github.com/martinduke",
@@ -6288,7 +6333,7 @@
     "assignee": {
       "login": "ianswett",
       "id": 20072817,
-      "avatar_url": "https://avatars.githubusercontent.com/u/20072817?v=3",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/20072817?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/ianswett",
       "html_url": "https://github.com/ianswett",
@@ -6308,7 +6353,7 @@
       {
         "login": "ianswett",
         "id": 20072817,
-        "avatar_url": "https://avatars.githubusercontent.com/u/20072817?v=3",
+        "avatar_url": "https://avatars2.githubusercontent.com/u/20072817?v=3",
         "gravatar_id": "",
         "url": "https://api.github.com/users/ianswett",
         "html_url": "https://github.com/ianswett",
@@ -6345,7 +6390,7 @@
     "user": {
       "login": "marten-seemann",
       "id": 1478487,
-      "avatar_url": "https://avatars.githubusercontent.com/u/1478487?v=3",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/1478487?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/marten-seemann",
       "html_url": "https://github.com/marten-seemann",
@@ -6410,7 +6455,7 @@
     "user": {
       "login": "martinthomson",
       "id": 67641,
-      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/martinthomson",
       "html_url": "https://github.com/martinthomson",
@@ -6475,7 +6520,7 @@
     "user": {
       "login": "martinthomson",
       "id": 67641,
-      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/martinthomson",
       "html_url": "https://github.com/martinthomson",
@@ -6533,7 +6578,7 @@
     "user": {
       "login": "martinthomson",
       "id": 67641,
-      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/martinthomson",
       "html_url": "https://github.com/martinthomson",
@@ -6605,7 +6650,7 @@
     "user": {
       "login": "janaiyengar",
       "id": 11067604,
-      "avatar_url": "https://avatars.githubusercontent.com/u/11067604?v=3",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/11067604?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/janaiyengar",
       "html_url": "https://github.com/janaiyengar",
@@ -6663,7 +6708,7 @@
     "user": {
       "login": "martinthomson",
       "id": 67641,
-      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/martinthomson",
       "html_url": "https://github.com/martinthomson",
@@ -6728,7 +6773,7 @@
     "user": {
       "login": "martinthomson",
       "id": 67641,
-      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/martinthomson",
       "html_url": "https://github.com/martinthomson",
@@ -6793,7 +6838,7 @@
     "user": {
       "login": "martinthomson",
       "id": 67641,
-      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/martinthomson",
       "html_url": "https://github.com/martinthomson",
@@ -6851,7 +6896,7 @@
     "user": {
       "login": "martinthomson",
       "id": 67641,
-      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/martinthomson",
       "html_url": "https://github.com/martinthomson",
@@ -6909,7 +6954,7 @@
     "user": {
       "login": "martinthomson",
       "id": 67641,
-      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/martinthomson",
       "html_url": "https://github.com/martinthomson",
@@ -6953,7 +6998,7 @@
     "assignee": {
       "login": "janaiyengar",
       "id": 11067604,
-      "avatar_url": "https://avatars.githubusercontent.com/u/11067604?v=3",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/11067604?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/janaiyengar",
       "html_url": "https://github.com/janaiyengar",
@@ -6973,7 +7018,7 @@
       {
         "login": "janaiyengar",
         "id": 11067604,
-        "avatar_url": "https://avatars.githubusercontent.com/u/11067604?v=3",
+        "avatar_url": "https://avatars1.githubusercontent.com/u/11067604?v=3",
         "gravatar_id": "",
         "url": "https://api.github.com/users/janaiyengar",
         "html_url": "https://github.com/janaiyengar",
@@ -7010,7 +7055,7 @@
     "user": {
       "login": "MikeBishop",
       "id": 4273797,
-      "avatar_url": "https://avatars.githubusercontent.com/u/4273797?v=3",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/4273797?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/MikeBishop",
       "html_url": "https://github.com/MikeBishop",
@@ -7047,7 +7092,7 @@
     "assignee": {
       "login": "ianswett",
       "id": 20072817,
-      "avatar_url": "https://avatars.githubusercontent.com/u/20072817?v=3",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/20072817?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/ianswett",
       "html_url": "https://github.com/ianswett",
@@ -7067,7 +7112,7 @@
       {
         "login": "ianswett",
         "id": 20072817,
-        "avatar_url": "https://avatars.githubusercontent.com/u/20072817?v=3",
+        "avatar_url": "https://avatars2.githubusercontent.com/u/20072817?v=3",
         "gravatar_id": "",
         "url": "https://api.github.com/users/ianswett",
         "html_url": "https://github.com/ianswett",
@@ -7104,7 +7149,7 @@
     "user": {
       "login": "MikeBishop",
       "id": 4273797,
-      "avatar_url": "https://avatars.githubusercontent.com/u/4273797?v=3",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/4273797?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/MikeBishop",
       "html_url": "https://github.com/MikeBishop",
@@ -7162,7 +7207,7 @@
     "user": {
       "login": "MikeBishop",
       "id": 4273797,
-      "avatar_url": "https://avatars.githubusercontent.com/u/4273797?v=3",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/4273797?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/MikeBishop",
       "html_url": "https://github.com/MikeBishop",
@@ -7220,7 +7265,7 @@
     "user": {
       "login": "MikeBishop",
       "id": 4273797,
-      "avatar_url": "https://avatars.githubusercontent.com/u/4273797?v=3",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/4273797?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/MikeBishop",
       "html_url": "https://github.com/MikeBishop",
@@ -7278,7 +7323,7 @@
     "user": {
       "login": "MikeBishop",
       "id": 4273797,
-      "avatar_url": "https://avatars.githubusercontent.com/u/4273797?v=3",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/4273797?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/MikeBishop",
       "html_url": "https://github.com/MikeBishop",
@@ -7336,7 +7381,7 @@
     "user": {
       "login": "ianswett",
       "id": 20072817,
-      "avatar_url": "https://avatars.githubusercontent.com/u/20072817?v=3",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/20072817?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/ianswett",
       "html_url": "https://github.com/ianswett",
@@ -7401,7 +7446,7 @@
     "user": {
       "login": "martinthomson",
       "id": 67641,
-      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/martinthomson",
       "html_url": "https://github.com/martinthomson",
@@ -7438,7 +7483,7 @@
     "assignee": {
       "login": "ianswett",
       "id": 20072817,
-      "avatar_url": "https://avatars.githubusercontent.com/u/20072817?v=3",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/20072817?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/ianswett",
       "html_url": "https://github.com/ianswett",
@@ -7458,7 +7503,7 @@
       {
         "login": "ianswett",
         "id": 20072817,
-        "avatar_url": "https://avatars.githubusercontent.com/u/20072817?v=3",
+        "avatar_url": "https://avatars2.githubusercontent.com/u/20072817?v=3",
         "gravatar_id": "",
         "url": "https://api.github.com/users/ianswett",
         "html_url": "https://github.com/ianswett",
@@ -7481,7 +7526,8 @@
     "updated_at": "2016-12-02T00:25:36Z",
     "closed_at": null,
     "body": "The algorithm for picking the length of the packet number needs much better explanation, and probably a bunch of rationale to support that.\r\n\r\n(Marked as design so that any change gets proper discussion and review.)"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/66",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7495,7 +7541,7 @@
     "user": {
       "login": "martinthomson",
       "id": 67641,
-      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/martinthomson",
       "html_url": "https://github.com/martinthomson",
@@ -7539,7 +7585,7 @@
     "assignee": {
       "login": "ianswett",
       "id": 20072817,
-      "avatar_url": "https://avatars.githubusercontent.com/u/20072817?v=3",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/20072817?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/ianswett",
       "html_url": "https://github.com/ianswett",
@@ -7559,7 +7605,7 @@
       {
         "login": "ianswett",
         "id": 20072817,
-        "avatar_url": "https://avatars.githubusercontent.com/u/20072817?v=3",
+        "avatar_url": "https://avatars2.githubusercontent.com/u/20072817?v=3",
         "gravatar_id": "",
         "url": "https://api.github.com/users/ianswett",
         "html_url": "https://github.com/ianswett",
@@ -7582,8 +7628,7 @@
     "updated_at": "2017-02-09T21:26:32Z",
     "closed_at": null,
     "body": "@ianswett suggests that maybe this can be removed.  He didn't say why."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/65",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7597,7 +7642,7 @@
     "user": {
       "login": "martinthomson",
       "id": 67641,
-      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/martinthomson",
       "html_url": "https://github.com/martinthomson",
@@ -7655,7 +7700,7 @@
     "user": {
       "login": "martinthomson",
       "id": 67641,
-      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/martinthomson",
       "html_url": "https://github.com/martinthomson",
@@ -7699,7 +7744,7 @@
     "assignee": {
       "login": "ianswett",
       "id": 20072817,
-      "avatar_url": "https://avatars.githubusercontent.com/u/20072817?v=3",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/20072817?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/ianswett",
       "html_url": "https://github.com/ianswett",
@@ -7719,7 +7764,7 @@
       {
         "login": "ianswett",
         "id": 20072817,
-        "avatar_url": "https://avatars.githubusercontent.com/u/20072817?v=3",
+        "avatar_url": "https://avatars2.githubusercontent.com/u/20072817?v=3",
         "gravatar_id": "",
         "url": "https://api.github.com/users/ianswett",
         "html_url": "https://github.com/ianswett",
@@ -7756,7 +7801,7 @@
     "user": {
       "login": "martinthomson",
       "id": 67641,
-      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/martinthomson",
       "html_url": "https://github.com/martinthomson",
@@ -7814,7 +7859,7 @@
     "user": {
       "login": "martinthomson",
       "id": 67641,
-      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/martinthomson",
       "html_url": "https://github.com/martinthomson",
@@ -7879,7 +7924,7 @@
     "user": {
       "login": "martinthomson",
       "id": 67641,
-      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/martinthomson",
       "html_url": "https://github.com/martinthomson",
@@ -7937,7 +7982,7 @@
     "user": {
       "login": "martinthomson",
       "id": 67641,
-      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/martinthomson",
       "html_url": "https://github.com/martinthomson",
@@ -7995,7 +8040,7 @@
     "user": {
       "login": "janaiyengar",
       "id": 11067604,
-      "avatar_url": "https://avatars.githubusercontent.com/u/11067604?v=3",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/11067604?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/janaiyengar",
       "html_url": "https://github.com/janaiyengar",
@@ -8032,7 +8077,7 @@
     "assignee": {
       "login": "janaiyengar",
       "id": 11067604,
-      "avatar_url": "https://avatars.githubusercontent.com/u/11067604?v=3",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/11067604?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/janaiyengar",
       "html_url": "https://github.com/janaiyengar",
@@ -8052,7 +8097,7 @@
       {
         "login": "janaiyengar",
         "id": 11067604,
-        "avatar_url": "https://avatars.githubusercontent.com/u/11067604?v=3",
+        "avatar_url": "https://avatars1.githubusercontent.com/u/11067604?v=3",
         "gravatar_id": "",
         "url": "https://api.github.com/users/janaiyengar",
         "html_url": "https://github.com/janaiyengar",
@@ -8089,7 +8134,7 @@
     "user": {
       "login": "martinthomson",
       "id": 67641,
-      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/martinthomson",
       "html_url": "https://github.com/martinthomson",
@@ -8133,7 +8178,7 @@
     "assignee": {
       "login": "martinthomson",
       "id": 67641,
-      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/martinthomson",
       "html_url": "https://github.com/martinthomson",
@@ -8153,7 +8198,7 @@
       {
         "login": "martinthomson",
         "id": 67641,
-        "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
+        "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
         "gravatar_id": "",
         "url": "https://api.github.com/users/martinthomson",
         "html_url": "https://github.com/martinthomson",
@@ -8190,7 +8235,7 @@
     "user": {
       "login": "MikeBishop",
       "id": 4273797,
-      "avatar_url": "https://avatars.githubusercontent.com/u/4273797?v=3",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/4273797?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/MikeBishop",
       "html_url": "https://github.com/MikeBishop",
@@ -8248,7 +8293,7 @@
     "user": {
       "login": "MikeBishop",
       "id": 4273797,
-      "avatar_url": "https://avatars.githubusercontent.com/u/4273797?v=3",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/4273797?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/MikeBishop",
       "html_url": "https://github.com/MikeBishop",
@@ -8313,7 +8358,7 @@
     "user": {
       "login": "MikeBishop",
       "id": 4273797,
-      "avatar_url": "https://avatars.githubusercontent.com/u/4273797?v=3",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/4273797?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/MikeBishop",
       "html_url": "https://github.com/MikeBishop",
@@ -8371,7 +8416,7 @@
     "user": {
       "login": "larseggert",
       "id": 200328,
-      "avatar_url": "https://avatars.githubusercontent.com/u/200328?v=3",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/200328?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/larseggert",
       "html_url": "https://github.com/larseggert",
@@ -8415,7 +8460,7 @@
     "assignee": {
       "login": "martinthomson",
       "id": 67641,
-      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/martinthomson",
       "html_url": "https://github.com/martinthomson",
@@ -8435,7 +8480,7 @@
       {
         "login": "martinthomson",
         "id": 67641,
-        "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
+        "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
         "gravatar_id": "",
         "url": "https://api.github.com/users/martinthomson",
         "html_url": "https://github.com/martinthomson",
@@ -8454,7 +8499,7 @@
       {
         "login": "janaiyengar",
         "id": 11067604,
-        "avatar_url": "https://avatars.githubusercontent.com/u/11067604?v=3",
+        "avatar_url": "https://avatars1.githubusercontent.com/u/11067604?v=3",
         "gravatar_id": "",
         "url": "https://api.github.com/users/janaiyengar",
         "html_url": "https://github.com/janaiyengar",
@@ -8491,7 +8536,7 @@
     "user": {
       "login": "martinthomson",
       "id": 67641,
-      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/martinthomson",
       "html_url": "https://github.com/martinthomson",
@@ -8549,7 +8594,7 @@
     "user": {
       "login": "martinthomson",
       "id": 67641,
-      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/martinthomson",
       "html_url": "https://github.com/martinthomson",
@@ -8607,7 +8652,7 @@
     "user": {
       "login": "martinthomson",
       "id": 67641,
-      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/martinthomson",
       "html_url": "https://github.com/martinthomson",
@@ -8665,7 +8710,7 @@
     "user": {
       "login": "martinthomson",
       "id": 67641,
-      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/martinthomson",
       "html_url": "https://github.com/martinthomson",
@@ -8702,7 +8747,7 @@
     "assignee": {
       "login": "martinthomson",
       "id": 67641,
-      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/martinthomson",
       "html_url": "https://github.com/martinthomson",
@@ -8722,7 +8767,7 @@
       {
         "login": "martinthomson",
         "id": 67641,
-        "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
+        "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
         "gravatar_id": "",
         "url": "https://api.github.com/users/martinthomson",
         "html_url": "https://github.com/martinthomson",
@@ -8759,7 +8804,7 @@
     "user": {
       "login": "martinthomson",
       "id": 67641,
-      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/martinthomson",
       "html_url": "https://github.com/martinthomson",
@@ -8817,7 +8862,7 @@
     "user": {
       "login": "martinthomson",
       "id": 67641,
-      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/martinthomson",
       "html_url": "https://github.com/martinthomson",
@@ -8875,7 +8920,7 @@
     "user": {
       "login": "martinthomson",
       "id": 67641,
-      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/martinthomson",
       "html_url": "https://github.com/martinthomson",
@@ -8933,7 +8978,7 @@
     "user": {
       "login": "martinthomson",
       "id": 67641,
-      "avatar_url": "https://avatars.githubusercontent.com/u/67641?v=3",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/martinthomson",
       "html_url": "https://github.com/martinthomson",
@@ -8991,7 +9036,7 @@
     "user": {
       "login": "ekr",
       "id": 1111457,
-      "avatar_url": "https://avatars.githubusercontent.com/u/1111457?v=3",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/1111457?v=3",
       "gravatar_id": "",
       "url": "https://api.github.com/users/ekr",
       "html_url": "https://github.com/ekr",
