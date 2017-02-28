@@ -336,114 +336,170 @@ all field sizes are in bits.  When discussing individual bits of fields, the
 least significant bit is referred to as bit 0.  Hexadecimal notation is used for
 describing the value of fields.
 
+QUIC packet headers can be separated into long and short headers. Long headers
+are expected to be used for the initial phase of the connection and are used for
+version negotiation, connection establishment, 0-RTT, and public reset
+packets. Short headers are minimal version-specific headers, which MAY be used
+after version negotiation and 1-RTT keys are established, and MUST NOT be used
+earlier.
 
-## Common Header
+## Long Header
 
-All QUIC packets begin with a QUIC Common header, as shown below.
-
-~~~
+```
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+
-|   Flags (8)   |
+|1|   Type      |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                                                               |
-+                     [Connection ID (64)]                      +
++                        Connection ID                          +
 |                                                               |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                   Type-Dependent Fields (*)                 ...
+|                  Packet Number / Proof                        |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-~~~
+|                           Version                             |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                            Payload                          ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+```
 
-The fields in the Common Header are the following:
+Long headers are used for packets that are sent prior to the completion of
+version negotiation or are not encrypted with 1-RTT keys. Once both conditions
+are met, a sender SHOULD switch to sending short-form headers. While
+inefficient, long headers MAY be used for 1-RTT packets. The long form allows
+for special packets, such as the version negotiation and the public reset
+packets to be represented in this uniform fixed-length packet format.
 
-* Flags:
+The first octet (octet 0) contains the following fields.
+* Bit 0 (0x80): Header form. Set to 1 for long headers.
+* Bits 1-7: Packet Type, indicating one of 128 packet types. The following types
+  are currently defined.
+  * 01: Version Negotiation packet
+  * 02: Public Reset packet
+  * 03: 0-RTT packet
+  * 04: Server cleartext packet
+  * 05: Client cleartext packet
+  * 06: 1-RTT packet with version field, connection ID,
+        and 2-byte packet number
 
-   * 0x01 = VERSION.  The semantics of this flag depends on whether the packet
-     is sent by the server or the client.  A client MAY set this flag and
-     include exactly one proposed version.  A server may set this flag when the
-     client-proposed version was unsupported, and may then provide a list (0 or
-     more) of acceptable versions as a part of version negotiation (described in
-     {{version-negotiation}}.)
+The remainder of the packet layout is the same regardless of type, but the
+semantics of the fields are specific to each type, as described next.
 
-   * 0x02 = PUBLIC_RESET.  Set to indicate that the packet is a Public Reset
-     packet.
+### Version Negotiation Packet
 
-   * 0x04 = KEY_PHASE.  This is used by the QUIC packet protection to identify
-     the correct packet protection keys, see {{QUIC-TLS}}.
+A Version Negotiation packet is sent by the server in response to a client
+packet of an unsupported version. It contains:
 
-   * 0x08 = CONNECTION_ID.  Indicates the Connection ID is present in the
-     packet.  This must be set in all packets until negotiated to a different
-     value for a given direction.  For instance, if a client indicates that the
-     5-tuple fully identifies the connection at the client, the connection ID is
-     optional in the server-to-client direction. The negotiation is described in
-     {{transport-parameter-definitions}}.
+* Octets 1-8: Connection ID (server-selected value, may be used in a subsequent
+  connection to reach the same server)
+* Octets 9-12: Proof (first 4 octets of client-selected connection ID)
+* Octets 13-16: Version (echoed)
+* Octets 17+: Payload (version list, containing 0 or more acceptable versions)
 
-   * 0x30 = PACKET_NUMBER_SIZE.  These two bits indicate the number of
-     low-order-bytes of the packet number that are present in each packet.
+See {{version-negotiation}} for a description of the version negotiation
+process.
 
-     + 11 indicates that 6 bytes of the packet number are present
-     + 10 indicates that 4 bytes of the packet number are present
-     + 01 indicates that 2 bytes of the packet number are present
-     + 00 indicates that 1 byte of the packet number is present
+### Public Reset Packet
 
-   * 0x40 = MULTIPATH.  This bit is reserved for multipath use.
+A Public Reset packet is sent when the server has no state for a received
+packet. A server may therefore have to respond to either a long-form or a
+short-form packet. A public reset packet contains:
 
-   * 0x80 is currently unused, and must be set to 0.
+* Octets 1-12: Proof (octets 1-12 of received packet)
+* Octets 13-16: Version (server version)
 
-* Connection ID: An unsigned 64-bit random number chosen by the client, used as
-  the identifier of the connection.  Connection ID is tied to a QUIC connection,
-  and remains consistent across client and/or server IP and port changes.
+For a client that sends a connection ID on every packet, a Public Reset
+packet received in response can be simply interpreted as:
 
+* Octets 1-8: Connection ID (echoed)
+* Octets 9-12: Proof (echoed packet number, which could be 1, 2, or 4 bytes
+  depending on the packet number size used by the client, followed by 0, 2, or 3
+  subsequent bytes from the client packet)
+* Octets 13-16: Version (server version)
 
-### Identifying Packet Types
+### Client Cleartext Packet
 
-While all QUIC packets have the same common header, there are three types of
-packets: Regular packets, Version Negotiation packets, and Public Reset packets.
-The flowchart below shows how a packet is classified into one of these three
-packet types:
+A client cleartext packet may be sent during the handshake. It contains:
+* Octets 1-8: Connection ID (randomly chosen)
+* Octets 9-12: Packet number (low 4 octets, starts at a random 31-bit value)
+* Octets 13-16: Version
+* Octets 17+: Payload
 
-~~~
-Check the flags in the common header
-              |
-              |
-              V
-        +--------------+
-        | PUBLIC_RESET |  YES
-        | flag set?    |-------> Public Reset packet
-        +--------------+
-              |
-              | NO
-              V
-        +------------+         +-------------+
-        | VERSION    |  YES    | Packet sent |  YES     Version
-        | flag set?  |-------->| by server?  |--------> Negotiation
-        +------------+         +-------------+          packet
-              |                       |
-              | NO                    | NO
-              V                       V
-      Regular packet with       Regular packet with
-  no QUIC Version in header    QUIC Version in header
-~~~
-{: #packet-types title="Types of QUIC Packets"}
+The client MUST choose a random value and use it as the Connection ID until the
+server replies with a server-selected Connection ID. The client's Connection ID
+is a suggestion to the server, as described further in {{connection-id}}.
+
+### Server Cleartext Packet
+
+A server cleartext packet may be sent during the handshake. It contains:
+* Octets 1-8: Connection ID (server-selected value)
+* Octets 9-12: Packet Number (low 4 octets, random 31-bit initial value)
+* Octets 13-16: Version (echoed)
+* Octets 17+: Payload
+
+### Encrypted Packet Types
+
+Packets encrypted with either 0-RTT or 1-RTT keys may be sent with long headers.
+Different packet types explicitly indicate the encryption level for ease of
+decryption. These packets contain:
+* Octets 1-8: Connection ID (client or server-selected, see {{connectionid}})
+* Octets 9-12: Packet Number (low 4 octets)
+* Octets 13-16: Version
+* Octets 17+: Payload
+
+## Short Header
+
+```
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+
+|0|C|K|  Type   |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                                                               |
++                   Connection ID (optional)                    +
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                     Packet Number (1/2/4)                     |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                            Payload                          ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+```
+
+The short header is used after the version and 1-RTT keys are negotiated. This
+header has the following version-independent fields:
+* Octet 0: Flags
+  * Bit 0 (0x80): Header form, set to 0 for short headers.
+  * Bit 1: CONNECTION_ID. Indicates presence of Connection ID field following
+    the Flags byte.
+* Octets 1-8: Connection ID (optional)
+
+The remainder of the short header is defined to be specific to a version. In
+this version, it contains:
+* Octet 0: Flags
+  * Bit 2: KEY_PHASE. Used by the QUIC packet protection to identify
+    the correct packet protection keys after the 1-RTT keys are initially
+    established. See {{QUIC-TLS}}.
+  * Bit 3-7: Packet Type, indicating one of 32 packet types. The following types
+    are currently defined.
+  * 01: 1-RTT packet (packet number size = 1)
+  * 02: 1-RTT packet (packet number size = 2)
+  * 03: 1-RTT packet (packet number size = 4)
+* Octets 1-2/3/4 or 9-10/11/12: Packet Number (lower 8, 16, or 32 bits)
+* Remainder of this packet: Payload.
 
 
 ### Handling Packets from Different Versions
 
-Version negotiation ({{version-negotiation}}) is performed using packets that
-have the VERSION bit set.  This bit is always set on packets that are sent prior
-to connection establishment.  When receiving a packet that is not associated
-with an existing connection, packets without a VERSION bit MUST be discarded.
+When receiving a packet that is not associated with an existing connection,
+packets with a short header MUST be discarded.
 
 Implementations MUST assume that an unsupported version uses an unknown packet
-format.
-
-Between different versions the following things are guaranteed to remain
-constant are:
+format with the exception of the following. Between different versions the
+following things are guaranteed to remain constant are:
 
 * the location and size of the Flags field,
 
-* the location and value of the VERSION bit in the Flags field,
+* the location and value of the Version Field
 
 * the location and size of the Connection ID field, and
 
