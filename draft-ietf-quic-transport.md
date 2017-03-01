@@ -447,6 +447,8 @@ decryption. These packets contain:
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                     Packet Number (1/2/4)                     |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                  Packet Number Echo (optional)                |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                            Payload                          ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ```
@@ -470,7 +472,9 @@ this version, it contains:
   * 01: 1-RTT packet (packet number size = 1)
   * 02: 1-RTT packet (packet number size = 2)
   * 03: 1-RTT packet (packet number size = 4)
+  * 07: 1-RTT packet (packet number size = 4, with packet number echo)
 * Octets 1-2/3/4 or 9-10/11/12: Packet Number (lower 8, 16, or 32 bits)
+* Octets 13-16, if present: Packet Number Echo
 * Remainder of this packet: Payload.
 
 
@@ -595,6 +599,20 @@ the value is selected from an uniform random distribution between 0 and 2^31-1.
 The first set of packets sent by an endpoint MUST include the low 32-bits of the
 packet number.  Once any packet has been acknowledged, subsequent packets can
 use a shorter packet number encoding.
+
+### Packet Number Echo
+
+If present, the Packet Number Echo field contains the least significant 32 bits
+of the highest packet number seen in the opposite direction before this packet
+was sent. This allows devices along the path to estimate round-trip times and
+observe indications of loss, for passive performance measurement of QUIC flows
+equivalent to present techniques using TCP sequence and acknowledgement numbers
+and/or timestamps.
+
+The Packet Number Echo field SHOULD be present on 1-RTT packets containing at
+least one ACK frame (see {{frame-ack}}); if no packet with a Packet Number Echo
+field has been sent within the last round-trip time, the Packet Number Echo
+field MUST be present.
 
 
 ## Frames and Frame Types {#frames}
