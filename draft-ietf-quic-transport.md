@@ -1631,15 +1631,15 @@ Error Code:
 Last Client Stream ID:
 
 : The last client-initiated Stream ID which was accepted by the sender of the
-  GOAWAY frame.  All higher-numbered, client-initiated streams (that is, odd
-  numbered streams) are implicitly reset by sending or receiving the GOAWAY
+  GOAWAY frame.  All higher-numbered, client-initiated streams (that is,
+  odd-numbered streams) are implicitly reset by sending or receiving the GOAWAY
   frame.
 
 Last Server Stream ID:
 
 : The last server-initiated Stream ID which was accepted by the sender of the
-  GOAWAY frame.  All higher-numbered, server-initiated streams (that is, even
-  numbered streams) are implicitly reset by sending or receiving the GOAWAY
+  GOAWAY frame.  All higher-numbered, server-initiated streams (that is,
+  even-numbered streams) are implicitly reset by sending or receiving the GOAWAY
   frame.
 
 Reason Phrase Length:
