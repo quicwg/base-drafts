@@ -1657,6 +1657,11 @@ data.  A GOAWAY frame indicates that any application layer actions on streams
 with higher numbers than those indicated can be safely retried because no data
 was exchanged.
 
+In addition to initiating a graceful shutdown of a connection, GOAWAY MAY be
+sent immediately prior to sending a CONNECTION_CLOSE frame that is sent as a
+result of detecting a fatal error.  Higher-numbered streams than those indicated
+in the GOAWAY frame can then be retried.
+
 For peer-initiated streams, an endpoint might indicate a lower value for the
 highest stream number than the value that might be sent by a peer.  After
 receiving a GOAWAY frame, an endpoint SHOULD send a GOAWAY frame in response to
