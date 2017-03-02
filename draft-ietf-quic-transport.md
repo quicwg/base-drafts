@@ -515,19 +515,21 @@ packet number plus one.  For example, if the highest successfully authenticated
 packet had a packet number of 0xaa82f30e, then a packet containing a 16-bit
 value of 0x1f94 will be decoded as 0xaa831f94.
 
-To enable unambiguous reconstruction of the packet number, an endpoint MUST use
-a packet number size that is able to represent 4 times more packet numbers than
-the numerical difference between the current packet number and the lowest packet
-number on an outstanding packet, plus one.  A packet is outstanding if it has
-been sent but has neither been acknowledged nor been marked as lost (see
-{{QUIC-RECOVERY}}).  As a result, the size of the packet number encoding is at
-least two more than the base 2 logarithm of the range of outstanding packet
-numbers including the new packet, rounded up.
+The sender MUST use a packet number size able to represent more than twice as
+large a range than the difference between the largest acknowledged packet and
+packet number being sent.  A peer receiving the packet will then correctly
+decode the packet number, unless the packet is delayed in transit such that it
+arrives after many higher-numbered packets have been received.  An endpoint MAY
+use a larger packet number size to safeguard against such reordering.
 
-For example, if an endpoint has is sending packet 0x6B4264 and 0x6B0A2F is the
-lowest outstanding packet number, the next packet uses a 16-bit or larger packet
-number encoding; whereas a 32-bit packet number is needed if packet 0x6AF0F7 is
-outstanding.
+As a result, the size of the packet number encoding is at least one more than
+the base 2 logarithm of the number of contiguous unacknowledged packet numbers,
+including the new packet.
+
+For example, if an endpoint has received an acknowledgment for packet 0x6afa2f,
+sending a packet with a number of 0x6b4264 requires a 16-bit or larger packet
+number encoding; whereas a 32-bit packet number is needed to send a packet with
+a number of 0x6bc107.
 
 
 ### Initial Packet Number
