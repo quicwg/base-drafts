@@ -1600,6 +1600,7 @@ Reason Phrase:
 : An optional human-readable explanation for why the connection was closed.
 
 
+
 ## GOAWAY Frame {#frame-goaway}
 
 An endpoint uses a GOAWAY frame (type=0x03) to initiate a graceful shutdown of a
@@ -1611,22 +1612,13 @@ those indicated.  The GOAWAY frame is as follows:
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                        Error Code (32)                        |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                  Largest Client Stream ID (32)                |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                  Largest Server Stream ID (32)                |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|   Reason Phrase Length (16)   |      [Reason Phrase (*)]    ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
 
 The fields of a GOAWAY frame are:
-
-Error Code:
-
-: A 32-bit field error code which indicates the reason for closing this
-  connection.
 
 Largest Client Stream ID:
 
@@ -1641,15 +1633,6 @@ Largest Server Stream ID:
   the GOAWAY frame either sent data, or received and delivered data.  All
   higher-numbered, server-initiated streams (that is, even-numbered streams) are
   implicitly reset by sending or receiving the GOAWAY frame.
-
-Reason Phrase Length:
-
-: A 16-bit unsigned number specifying the length of the reason phrase.  This may
-  be zero if the sender chooses to not give details beyond the error code.
-
-Reason Phrase:
-
-: An optional, human-readable explanation for why the connection was closed.
 
 A GOAWAY frame indicates that any application layer actions on streams with
 higher numbers than those indicated can be safely retried because no data was
