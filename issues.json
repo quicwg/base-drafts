@@ -1477,64 +1477,6 @@
     "body": "The text currently mandates (MUST!) a 4 times safety margin against reordering when picking the packet number size.  This is purely a safety margin feature, so mandating a value isn't justified.\r\n\r\nAn implementation could, though perhaps it is unwise, use a much smaller packet number than this.  The risk is that there is reordering greater than 2^size and the packets are delivered but cannot be recovered at the receiver.  That's terrible, it will trigger loss recovery and send bad signals.  However, the protocol doesn't actually break.\r\n\r\nAt a minimum, we should make this a recommendation.  Setting a mandatory floor on the value might be reasonable, but I'd be reluctant to do that unless it was pretty low, or if the value were different for different packet number sizes (smaller margins are probably more justifiable for larger packet number encodings).\r\n\r\nIdeally, we should science this and try to measure probabilities of reordering.  Ideally reordering probability as a function of outstanding packets."
   },
   {
-    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/314",
-    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
-    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/314/labels{/name}",
-    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/314/comments",
-    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/314/events",
-    "html_url": "https://github.com/quicwg/base-drafts/issues/314",
-    "id": 208464140,
-    "number": 314,
-    "title": "Rephrase \"under crypto cover\"",
-    "user": {
-      "login": "seanturner",
-      "id": 4488966,
-      "avatar_url": "https://avatars3.githubusercontent.com/u/4488966?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/seanturner",
-      "html_url": "https://github.com/seanturner",
-      "followers_url": "https://api.github.com/users/seanturner/followers",
-      "following_url": "https://api.github.com/users/seanturner/following{/other_user}",
-      "gists_url": "https://api.github.com/users/seanturner/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/seanturner/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/seanturner/subscriptions",
-      "organizations_url": "https://api.github.com/users/seanturner/orgs",
-      "repos_url": "https://api.github.com/users/seanturner/repos",
-      "events_url": "https://api.github.com/users/seanturner/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/seanturner/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "labels": [
-      {
-        "id": 481871311,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/editorial",
-        "name": "editorial",
-        "color": "0e8a16",
-        "default": false
-      },
-      {
-        "id": 481871399,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
-        "name": "transport",
-        "color": "fbca04",
-        "default": false
-      }
-    ],
-    "state": "open",
-    "locked": false,
-    "assignee": null,
-    "assignees": [
-
-    ],
-    "milestone": null,
-    "comments": 0,
-    "created_at": "2017-02-17T14:51:48Z",
-    "updated_at": "2017-02-17T14:53:33Z",
-    "closed_at": null,
-    "body": "For some of the non-security folks, I could see that the phase \"under crypto cover\" might not make sense (from s3.5:\r\n\r\n    Some early handshake packets, such as the Version Negotiation packet, are not encrypted, but information sent in these unencrypted handshake packets is later verified under crypto cover.\r\n\r\nMaybe:\r\n\r\n  Some early handshake packets, such as the Version Negotiation packet, are not encrypted, but information sent in these unencrypted handshake packets are later verified as part of the cryptographic processing."
-  },
-  {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/311",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
     "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/311/labels{/name}",
@@ -1874,8 +1816,7 @@
     "updated_at": "2017-02-15T00:53:41Z",
     "closed_at": null,
     "body": "> skipping packet numbers between 1 and 255 effectively provides up to 8 bits of efficient entropy on  demand, which should be adequate protection against most opportunistic acknowledgement attacks.\r\n\r\nAside from the odd phrasing, I think that this is incorrect.  Aside from the obvious point that 1-255 is only  7.994 bits of entropy, you also have to take into account the probability that a sender chooses to skip (a probability of 2^-8 would give the answer here).  Add to that the fact that any entropy accumulates with every packet sent.  Choosing to send or withhold each packet number could add up to a bit of entropy over time, so the difficulty in guessing could be higher over time.\r\n\r\nNo matter what strategy it's always safe for an attacker to guess high, so the amount of effective entropy against an attacker is probably less than claimed.  Of course, guessing high has an effect on congestion control, because that is marked by the sender as loss.  That could be as effective in mitigating the optimistic acknowledgment attack as the gap itself.\r\n\r\nThen there is real packet loss.  If you randomly decide to skip 255 numbers, then real packet loss on the packet after the gap makes it difficult to acknowledge (you have to send two ACK frames if there is a gap >255).  Burst loss makes that even more likely.\r\n\r\nIn any case, I'd recommend removing any claim about entropy.  I also recommend removing any mention of specific numbers.  Skipping more packets is fine, but it means that you run the packet number space down faster and you get less efficiency in ACK packets."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/296",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -1933,7 +1874,8 @@
     "updated_at": "2017-02-15T05:24:00Z",
     "closed_at": null,
     "body": "In #278, @martinthomson says that clients MAY choose a GREASE value for their initial packet to force version negotiation.  I would argue that no self-interested client will do so if the connection is latency-sensitive, since you incur an RTT, unless the spec has this at a higher level than MAY and with specific timing.\r\n\r\nHowever, for HTTP, bringing up a connection to a new Alternative is not latency-sensitive (because you still have your connection to the original host).  In the case where you're bringing up a connection to an alternative instead of to the origin, you've likely talked to the alternative before.\r\n\r\nWe could consider dropping the Alt-Svc version hint entirely, and saying that clients SHOULD open with a reserved version unless it has previously connected to the server and remembers a version list."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/295",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3656,8 +3598,7 @@
     "updated_at": "2017-01-26T04:11:47Z",
     "closed_at": null,
     "body": "@ianswett says that we need a hard line recommendation on when a WINDOW_UPDATE is required.  He suggests that once you get to 1/3 of the space you have allocated to flow control remaining, you SHOULD send a WINDOW_UPDATE along with the next ACK."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/233",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3715,7 +3656,8 @@
     "updated_at": "2017-01-25T23:17:08Z",
     "closed_at": null,
     "body": "The draft currently says:\r\n\r\n> Frames of unknown types are ignored.\r\n\r\nWhich is basically impossible. The only option an endpoint has when it encounters an unknown frame type is to throw out the entire frame or terminate the connection.  We should pick the latter."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/232",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3884,9 +3826,9 @@
 
     ],
     "milestone": null,
-    "comments": 6,
+    "comments": 7,
     "created_at": "2017-01-25T07:03:42Z",
-    "updated_at": "2017-03-02T00:57:05Z",
+    "updated_at": "2017-03-02T03:40:05Z",
     "closed_at": null,
     "body": "The spec just doesn't say anything about this so far. You at least want to put in some minumum requirement (like MUST send at least X ACKs per RTT).\r\n\r\nAlso related but might be a separate issue that I'm not sure about yet: Is there a value in having a mechanism for the sender to tell the receiver how often it would like to receive ACKs?"
   },
@@ -5433,8 +5375,7 @@
     "updated_at": "2017-02-08T19:47:58Z",
     "closed_at": null,
     "body": "QUIC-TRANSPORT defines the syntax of QUIC error codes and defines some values for the QUIC transport. The section says:\r\n\r\n> This section lists the defined QUIC transport error codes that may be used in a CONNECTION_CLOSE or RST_STREAM frame. Error codes share a common code space. Some error codes apply only to either streams or the entire connection and have no defined semantics in the other context.\r\n\r\nSince the error space is shared, it is not clear what error codes are appropriate to use with which frame types. There is the possibility for endpoints to send a semantically incorrect error code in a frame. How should a receiver handle such an occurrence?\r\n\r\nThis possibility exists only for the Application-specific, QUIC transport or Cryptographic error codes. Host-local error codes must not be sent.  \r\n\r\nAs an example, an client sends a `RST_STREAM` frame with the error code `QUIC_TOO_MANY_SESSIONS_ON_SERVER`.  Is this actually allowed and what should the server do (close the connection, igore it, ...)?"
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/183",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5492,7 +5433,8 @@
     "updated_at": "2017-02-21T23:39:08Z",
     "closed_at": null,
     "body": "The question is whether we maintain TLS as some abstract concept or not.\r\n\r\nWe could talk about \"the cryptographic handshake\" and features that it provides in the abstract when referring to them in the transport document.  Or we could just describe how this protocol works in concrete terms.\r\n\r\nProponents of the first seem to think that would make replacing TLS easier.  Others disagree.  Others think that replacing TLS would be a bad idea.  Others think that replacing TLS is the only rational choice.  Some people think that people who hold opposing opinions are completely nuts."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/179",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7516,8 +7458,7 @@
     "updated_at": "2017-02-20T18:50:14Z",
     "closed_at": null,
     "body": "NumTimestamps is supposed to specify the \"total number of pairs following, including the First Timestamp.\"  If this is zero, presumably the Delta Largest Acked and First Timestamp fields are absent.  If this is one, presumably these fields are present, but no others are.\r\n\r\nThe *subsequent* fields then say they are repeated \"Num Timestamps\" times, which contradicts my logic above.  I'm guessing this should actually be \"Num Timestamps - 1\" times?"
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/95",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7575,7 +7516,8 @@
     "updated_at": "2017-01-25T04:47:27Z",
     "closed_at": null,
     "body": "Need discussion of how CONNECT works.  Initial thought:\r\n\r\n - Client does not close data stream after sending request\r\n - If server responds (on the message control stream) with success, the data stream is being relayed into a TCP connection by the server.\r\n\r\nIs there a QUIC-CONNECT?  (Probably not, and almost certainly not in this document.)"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/89",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -8762,13 +8704,6 @@
         "name": "editorial",
         "color": "0e8a16",
         "default": false
-      },
-      {
-        "id": 517015633,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/needs-discussion",
-        "name": "needs-discussion",
-        "color": "d93f0b",
-        "default": false
       }
     ],
     "state": "open",
@@ -8778,9 +8713,9 @@
 
     ],
     "milestone": null,
-    "comments": 3,
+    "comments": 4,
     "created_at": "2016-11-29T21:21:59Z",
-    "updated_at": "2017-01-12T23:52:17Z",
+    "updated_at": "2017-03-02T03:41:35Z",
     "closed_at": null,
     "body": "The submission was complicated by the fact that the documents cross-reference each other, which makes for some difficulty during the build/submission process.  Martin worked around that initially by just changing the references to be by title instead of by I-D name.  For the future, however, should we make the documents acyclic?  That would require clarifying the interfaces between the components we intend to make separable, which I think is a strictly good thing.\r\n\r\nMy initial inclination is that the core spec should reference none of the others, and each of the others should reference only the core spec.  The HTTP mapping doesn’t care what loss detection or security handshake is used, only that they provide the features needed by QUIC.  Currently, we explicitly require that the TLS handshake be used, but I’m not convinced that’s necessary.  (Alternately, we could reference the actual TLS RFC and require that “a handshake using TLS” be employed, rather than the particular handshake we’re currently defining.)  The loss detection and security components shouldn’t care about each other either, so long as they can trust that the jobs are getting done.  The core spec should contain the interfaces for all these intersection points.\r\n\r\nGiven that we’ve already agreed that we intend these pieces to be modular, I think this is *probably* an editorial-class change, albeit a big one."
   },
