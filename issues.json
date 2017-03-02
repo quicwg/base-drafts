@@ -146,7 +146,7 @@
     "milestone": null,
     "comments": 0,
     "created_at": "2017-03-02T03:33:10Z",
-    "updated_at": "2017-03-02T03:33:10Z",
+    "updated_at": "2017-03-02T22:16:58Z",
     "closed_at": null,
     "pull_request": {
       "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/355",
@@ -239,7 +239,7 @@
     "milestone": null,
     "comments": 0,
     "created_at": "2017-03-02T03:20:21Z",
-    "updated_at": "2017-03-02T03:20:21Z",
+    "updated_at": "2017-03-02T23:15:42Z",
     "closed_at": null,
     "pull_request": {
       "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/354",
@@ -301,9 +301,9 @@
 
     ],
     "milestone": null,
-    "comments": 2,
+    "comments": 9,
     "created_at": "2017-03-02T00:42:38Z",
-    "updated_at": "2017-03-02T03:08:20Z",
+    "updated_at": "2017-03-02T23:11:50Z",
     "closed_at": null,
     "body": "@martinduke suggested that we might remove CONNECTION_CLOSE in favour of using a Public Reset packet.  That would require that the error code be made public knowledge.\r\n\r\nI can see a few advantages for a middlebox, primary of these being a clear signal that a connection is done (though that would not be something that could be strongly authenticated).  It would also simplify state on servers that decide to terminate a connection: they only have to keep whatever information they need to generate a Public Reset, which is a single piece of global state. \r\n\r\nThe downside is the insights that the error code give into the otherwise confidential operations of the protocol (we'd likely want to tighten the level of detail in error codes).  Also, it means that a server that wants to permit retries would have to send two packets: a GOAWAY packet in addition to the Public Reset."
   },
@@ -406,7 +406,7 @@
     "milestone": null,
     "comments": 0,
     "created_at": "2017-03-01T20:22:58Z",
-    "updated_at": "2017-03-01T20:22:58Z",
+    "updated_at": "2017-03-02T18:46:34Z",
     "closed_at": null,
     "pull_request": {
       "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/351",
@@ -519,9 +519,9 @@
 
     ],
     "milestone": null,
-    "comments": 2,
+    "comments": 3,
     "created_at": "2017-02-28T00:27:13Z",
-    "updated_at": "2017-03-02T04:49:35Z",
+    "updated_at": "2017-03-02T22:40:30Z",
     "closed_at": null,
     "body": "My sense is that we'd like the server to chose the \"real\" connection ID to be used for a connection. Among other things, this enables servers to embed routing/load balancing information into connection IDs.\r\n\r\nI have heard two options for what the client should do before it has a server-chosen connection ID.\r\n\r\n1) Send a random connection ID\r\n2) Send a connection ID of 0\r\n\r\nIf we go with approach 1, then we need some mechanism that load balancers can use to detect if a packet's connection ID is server-chosen or not. It seems likely that all packets encrypted with 1-RTT keys could use server generated connection IDs. But other packets it's not so clear. Consider the case of a non-0-RTT handshake. The initial client handshake packet would include a client-chosen connection ID. When the server replies, it could use a server-chosen connection ID. If so then when the client sends the next handshake packet it could use the server-chosen connection ID as well. But that means that we'd need a mechanism to disambiguate client handshake packets with client-chosen connection IDs from client handshake packets with server-chosen connection IDs. We could devote bits or packet types to indicate this. I suspect the same argument might hold for server handshake packets. We might not want the server to chose a connection ID until it is ready to accept the handshake.\r\n\r\nOne benefit of this approach, however, is that a QUIC server could chose to simply use the client's connection ID for the duration of the connection. This would mean that it would not need to be able to generate a new connection ID that is guaranteed to be sent by the load balancer back to itself. In cases where the vendor of the load balancer and the server are not the same, this might be valuable.\r\n\r\nIf we go with approach 2, then it's obvious that any packet with a non-zero connection ID has a server-chosen connection ID (though the server still may want to verify that it's a \"valid\" connection ID according to the algorithm it uses). \r\n\r\nOn the other hand, this requires QUIC servers which are behind load balancers to be able to generate connection IDs which the load balancer will route back to them. If the server and load balancers are from different vendors, this might be challenging.\r\n\r\n"
   },
@@ -2663,9 +2663,9 @@
 
     ],
     "milestone": null,
-    "comments": 10,
+    "comments": 18,
     "created_at": "2017-02-08T19:24:35Z",
-    "updated_at": "2017-03-02T01:53:59Z",
+    "updated_at": "2017-03-02T18:30:54Z",
     "closed_at": null,
     "body": "In Mirja's Management draft:\r\n[https://tools.ietf.org/html/draft-kuehlewind-quic-appman-00#section-3](url)\r\n\r\n> [EDITOR'S NOTE: the addition of a simple packet number echo would\r\n   allow passive RTT measurement and partial passive downstream loss/\r\n   reordering measurement.  Packet number echo can be sampled at the\r\n   echo-side (i.e. one-in-N packets or 1/p packets can carry an echo)\r\n   for efficiency tradeoff, if necessary.]\r\n\r\nI endorse this idea. Service providers are very interesting in measuring their users' quality of experience and this is one key thing we can expose to enable that. On the face of it, it seems that the privacy hit is marginal."
   },
@@ -3939,9 +3939,9 @@
 
     ],
     "milestone": null,
-    "comments": 7,
+    "comments": 9,
     "created_at": "2017-01-25T07:03:42Z",
-    "updated_at": "2017-03-02T03:40:05Z",
+    "updated_at": "2017-03-02T22:29:49Z",
     "closed_at": null,
     "body": "The spec just doesn't say anything about this so far. You at least want to put in some minumum requirement (like MUST send at least X ACKs per RTT).\r\n\r\nAlso related but might be a separate issue that I'm not sure about yet: Is there a value in having a mechanism for the sender to tell the receiver how often it would like to receive ACKs?"
   },
