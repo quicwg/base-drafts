@@ -1,5 +1,121 @@
 [
   {
+    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/353",
+    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
+    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/353/labels{/name}",
+    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/353/comments",
+    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/353/events",
+    "html_url": "https://github.com/quicwg/base-drafts/issues/353",
+    "id": 211254850,
+    "number": 353,
+    "title": "Replace CONNECTION_CLOSE with Public Reset",
+    "user": {
+      "login": "martinthomson",
+      "id": 67641,
+      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/martinthomson",
+      "html_url": "https://github.com/martinthomson",
+      "followers_url": "https://api.github.com/users/martinthomson/followers",
+      "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
+      "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
+      "organizations_url": "https://api.github.com/users/martinthomson/orgs",
+      "repos_url": "https://api.github.com/users/martinthomson/repos",
+      "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/martinthomson/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 481871361,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/design",
+        "name": "design",
+        "color": "1d76db",
+        "default": false
+      },
+      {
+        "id": 481871399,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
+        "name": "transport",
+        "color": "fbca04",
+        "default": false
+      }
+    ],
+    "state": "open",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 2,
+    "created_at": "2017-03-02T00:42:38Z",
+    "updated_at": "2017-03-02T03:08:20Z",
+    "closed_at": null,
+    "body": "@martinduke suggested that we might remove CONNECTION_CLOSE in favour of using a Public Reset packet.  That would require that the error code be made public knowledge.\r\n\r\nI can see a few advantages for a middlebox, primary of these being a clear signal that a connection is done (though that would not be something that could be strongly authenticated).  It would also simplify state on servers that decide to terminate a connection: they only have to keep whatever information they need to generate a Public Reset, which is a single piece of global state. \r\n\r\nThe downside is the insights that the error code give into the otherwise confidential operations of the protocol (we'd likely want to tighten the level of detail in error codes).  Also, it means that a server that wants to permit retries would have to send two packets: a GOAWAY packet in addition to the Public Reset."
+  },
+  {
+    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/352",
+    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
+    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/352/labels{/name}",
+    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/352/comments",
+    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/352/events",
+    "html_url": "https://github.com/quicwg/base-drafts/issues/352",
+    "id": 211254055,
+    "number": 352,
+    "title": "Does GOAWAY need an error code",
+    "user": {
+      "login": "martinthomson",
+      "id": 67641,
+      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/martinthomson",
+      "html_url": "https://github.com/martinthomson",
+      "followers_url": "https://api.github.com/users/martinthomson/followers",
+      "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
+      "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
+      "organizations_url": "https://api.github.com/users/martinthomson/orgs",
+      "repos_url": "https://api.github.com/users/martinthomson/repos",
+      "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/martinthomson/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 481871361,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/design",
+        "name": "design",
+        "color": "1d76db",
+        "default": false
+      },
+      {
+        "id": 481871399,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
+        "name": "transport",
+        "color": "fbca04",
+        "default": false
+      }
+    ],
+    "state": "open",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 1,
+    "created_at": "2017-03-02T00:38:07Z",
+    "updated_at": "2017-03-02T01:50:01Z",
+    "closed_at": null,
+    "body": "In writing up a change for GOAWAY, I realize that it doesn't need to signal the error condition that triggered it.  An endpoint that wants to kill a connection can use CONNECTION_CLOSE and the error code that carries.  The purpose of GOAWAY is to signal graceful shutdown and to mark multiple streams as being safe to retry.\r\n\r\nIf it doesn't need an error code, then the reason phrase can go away as well.\r\n\r\n(This might depend on the outcome of discussions that suggest that CONNECTION_CLOSE could be replaced by Public Reset.  Or, it might influence the outcome of that discussion...)"
+  },
+  {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/351",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
     "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/351/labels{/name}",
@@ -343,9 +459,9 @@
       }
     ],
     "milestone": null,
-    "comments": 0,
+    "comments": 1,
     "created_at": "2017-02-24T05:36:40Z",
-    "updated_at": "2017-03-02T00:04:21Z",
+    "updated_at": "2017-03-02T00:07:48Z",
     "closed_at": null,
     "pull_request": {
       "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/345",
@@ -1724,7 +1840,8 @@
     "updated_at": "2017-02-14T00:07:54Z",
     "closed_at": null,
     "body": "Given that we have opted to go with #119 universally, it might be reasonable to think that the server could make a proposal for the connection ID on a version negotiation packet.  However, it probably isn't a good idea.  Since version negotiation is stateless, there is less need to have stable routing for this packet.  Echoing the connection ID gives the client better assurance that its initial packet was what generated the response."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/294",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -1840,8 +1957,7 @@
     "updated_at": "2017-02-15T05:23:04Z",
     "closed_at": null,
     "body": "@martinthomson created a header proposal that provides a fixed 8 byte connection id in a fixed location.  \r\n\r\nWe need to decide if this is a requirement or a nice to have.\r\n\r\nI haven't found any environments it needed to be in a fixed location for all packets, as long as it's easy to determine where it will be from the first byte of the packet."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/291",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -2342,9 +2458,9 @@
 
     ],
     "milestone": null,
-    "comments": 8,
+    "comments": 10,
     "created_at": "2017-02-08T19:24:35Z",
-    "updated_at": "2017-03-01T23:50:44Z",
+    "updated_at": "2017-03-02T01:53:59Z",
     "closed_at": null,
     "body": "In Mirja's Management draft:\r\n[https://tools.ietf.org/html/draft-kuehlewind-quic-appman-00#section-3](url)\r\n\r\n> [EDITOR'S NOTE: the addition of a simple packet number echo would\r\n   allow passive RTT measurement and partial passive downstream loss/\r\n   reordering measurement.  Packet number echo can be sampled at the\r\n   echo-side (i.e. one-in-N packets or 1/p packets can carry an echo)\r\n   for efficiency tradeoff, if necessary.]\r\n\r\nI endorse this idea. Service providers are very interesting in measuring their users' quality of experience and this is one key thing we can expose to enable that. On the face of it, it seems that the privacy hit is marginal."
   },
@@ -3506,7 +3622,8 @@
     "updated_at": "2017-01-25T08:02:34Z",
     "closed_at": null,
     "body": "In order to break linkability across events that are known to an endpoint, we should explore the possibility of having each endpoint provide the other with a new connection identifier AND a number of packet numbers that should be skipped.  This allows an endpoint to continue using the same connection on a new path without linking use of that new path to use of the old path.\r\n\r\nYou need to change connection ID and packet numbers or they can be used for linking.  That doesn't preclude the use of other signals for linking, but it removes obvious ones.\r\n\r\nThis wouldn't address all of the potential linkability issues we identified, but would help in cases where an endpoint is aware of the need - or even potential need - for a gap in linkability."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/231",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3617,13 +3734,12 @@
 
     ],
     "milestone": null,
-    "comments": 3,
+    "comments": 6,
     "created_at": "2017-01-25T07:03:42Z",
-    "updated_at": "2017-02-03T03:01:45Z",
+    "updated_at": "2017-03-02T00:57:05Z",
     "closed_at": null,
     "body": "The spec just doesn't say anything about this so far. You at least want to put in some minumum requirement (like MUST send at least X ACKs per RTT).\r\n\r\nAlso related but might be a separate issue that I'm not sure about yet: Is there a value in having a mechanism for the sender to tell the receiver how often it would like to receive ACKs?"
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/228",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5283,7 +5399,8 @@
     "updated_at": "2017-01-19T23:14:00Z",
     "closed_at": null,
     "body": "> A stream that is \"half-closed (remote)\" is no longer being used by\r\n>    the peer to send any data.  In this state, a sender is no longer\r\n>    obligated to maintain a receiver stream-level flow-control window.\r\n> \r\n>    If an endpoint receives any STREAM frames for a stream that is in\r\n>    this state, it MUST close the connection with a\r\n>    QUIC_STREAM_DATA_AFTER_TERMINATION error (Section 11).\r\n\r\nIf a packet sent before the packet with FIN bit set gets lost and is retransmitted is going to cause close of the connection.\r\nThe text needs to change to say if a frame with offset  larger than the offset + size of the frame with FIN bit set is received. (or a better wording)\r\n\r\n(An editorial remark: In the \"Lifecycle of a stream\" diagram going from \"half-closed(remote)\" to \"closed\" should be cause by \"send FIN\" not \"recv FIN\" and from \"half-closed(local)\" to \"closed\" should be cause by \"recv FIN\")\r\n"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/178",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5442,8 +5559,7 @@
     "updated_at": "2017-01-24T06:11:08Z",
     "closed_at": null,
     "body": ">  If the total number of packets transmitted in this connection reaches 2^64 - 1, the sender MUST close the connection by sending a CONNECTION_CLOSE frame with the error code QUIC_SEQUENCE_NUMBER_LIMIT_REACHED\r\n\r\nIf this packet is lost there is not packet number available for its retransmission. CONNECTION_CLOSE should be reliably transmitted."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/176",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7366,7 +7482,8 @@
     "updated_at": "2017-01-14T02:13:43Z",
     "closed_at": null,
     "body": "#87 covers improving the current use of ALPN and the Alt-Svc v= parameter for HTTP.  However, I think this is something that QUIC needs to solve generically, so forking off a separate issue for that.\r\n\r\nHere are the paths I see that we need to support:\r\n\r\n- **Client to server, first time:** This is inherently a 1-RTT handshake *if* the client guesses the version correctly; 2 RTTs if it's wrong.  This incents clients to attempt the most widely-deployed version of QUIC rather than their highest version.  Consequently, there needs to be a way for a conservative client to discover that a server supports a more advanced version.\r\n- **Client to server, subsequent:** The cached information should contain information about the server's supported versions so the client can come back with the same version as last time. The scenarios where one side has changed need consideration, though:\r\n    - **Client upgraded:** Would require client to cache server's full set of supported versions and compare against the client's supported set at connect time, not just caching the selected version.\r\n    - **Server upgraded:** The current mechanism offers no way for a client to discover that the server would have accepted a version it didn't initially offer, whether because the server didn't previously support it or the client is being conservative.\r\n\r\nIdeally, I'd like to see these solved for QUIC independent of Alt-Svc -- there will be other users besides HTTP.\r\n\r\nI think this could be solved by requiring the server to always send its Version Negotiation list in the crypto handshake, not just if a Version Negotiation packet was actually sent.  Clients can discover when the server supports a newer version than they attempted, and either know what to offer next time or actively open a new connection with the new version in parallel."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/81",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7482,8 +7599,7 @@
     "updated_at": "2017-02-21T08:48:55Z",
     "closed_at": null,
     "body": "In HTTP/2, the CONTINUATION frame was [much loathed](https://github.com/http2/http2-spec/pull/548), but ultimately deemed a necessary evil since there are some truly, ridiculously large headers out there (*\\*cough\\** Kerberos *\\*cough\\**).  The current HTTP/QUIC draft allows a frame to be 64KB long before decoding the HPACK.  Is this large enough?  That was the boundary we'd said it would take in HTTP/2 to require a single frame.\r\n\r\nIf not, the current draft uses the END_HEADERS bit to indicate that another HEADERS frame will follow, which is effectively the same as CONTINUATION.  The same is not currently defined for PUSH_PROMISE (which really ought to be much smaller).\r\n\r\nIf so, could we drop the END_HEADERS thing entirely and say that HPACK-bearing frames are fully self-contained?  It would simplify a lot of client mechanics."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/68",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
