@@ -1004,6 +1004,12 @@ confused for retransmissions of handshake messages.  A client cannot initiate a
 key update until all of its handshake messages have been acknowledged by the
 server.
 
+A packet that triggers a key update could arrive after successfully processing a
+packet with a higher packet number.  This is only possible if there is a key
+compromise and an attack, or if the peer is incorrectly reverting to use of old
+keys.  An endpoint MUST immediately terminate the connection if it detects this
+condition.
+
 
 # Client Address Validation {#client-address-validation}
 
