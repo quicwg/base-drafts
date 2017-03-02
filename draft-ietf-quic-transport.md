@@ -447,7 +447,7 @@ decryption. These packets contain:
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                     Packet Number (1/2/4)                     |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                  Packet Number Echo (optional)                |
+|                 [Packet Number Echo (1/2/4)]                  |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                            Payload                          ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -472,7 +472,9 @@ this version, it contains:
   * 01: 1-RTT packet (packet number size = 1)
   * 02: 1-RTT packet (packet number size = 2)
   * 03: 1-RTT packet (packet number size = 4)
-  * 07: 1-RTT packet (packet number size = 4, with packet number echo)
+  * 05: 1-RTT packet (packet number size = 1, packet number echo size = 1)
+  * 06: 1-RTT packet (packet number size = 2, packet number echo size = 2)
+  * 07: 1-RTT packet (packet number size = 4, packet number echo size = 4)
 * Octets 1-2/3/4 or 9-10/11/12: Packet Number (lower 8, 16, or 32 bits)
 * Octets 13-16, if present: Packet Number Echo
 * Remainder of this packet: Payload.
@@ -610,10 +612,11 @@ equivalent to present techniques using TCP sequence and acknowledgement numbers
 and/or timestamps.
 
 The Packet Number Echo field SHOULD be present on 1-RTT packets containing at
-least one ACK frame (see {{frame-ack}}); if no packet with a Packet Number Echo
+least one ACK frame (see {{frame-ack}}). If no packet with a Packet Number Echo
 field has been sent within the last round-trip time, the Packet Number Echo
-field MUST be present.
-
+field MUST be present. When present, the Packet Number Echo field MUST be at
+least the size of the Packet Number field on the packet whose Packet Number is
+being echoed.
 
 ## Frames and Frame Types {#frames}
 
