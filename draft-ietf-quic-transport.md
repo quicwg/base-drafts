@@ -1182,8 +1182,8 @@ The STREAM frame contains the following fields:
 
 * Offset: A variable-sized unsigned number specifying the byte offset in the
   stream for the data in this STREAM frame.  The first byte in the stream has an
-  offset of 0. The largest offset delivered on a stream---the sum of the
-  re-constructed offset and data length---MUST be lesser than 2^64.
+  offset of 0. The largest offset delivered on a stream - the sum of the
+  re-constructed offset and data length - MUST be less than 2^64.
 
 * Stream Data: The bytes from the designated stream to be delivered.
 
@@ -1963,7 +1963,7 @@ sender or during delivery to the application at the receiver.
 When new data is to be sent on a stream, a sender MUST set the encapsulating
 STREAM frame's offset field to the stream offset of the first byte of this new
 data.  The first byte of data that is sent on a stream has the stream offset 0.
-The largest offset delivered on a stream MUST be lesser than 2^64. A receiver
+The largest offset delivered on a stream MUST be less than 2^64. A receiver
 MUST ensure that received stream data is delivered to the application as an
 ordered byte-stream.  Data received out of order MUST be buffered for later
 delivery, as long as it is not in violation of the receiver's flow control
