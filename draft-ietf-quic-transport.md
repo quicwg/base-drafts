@@ -2530,13 +2530,13 @@ merely aesthetically displeasing, or architecturally dubious).
 The initial contents of this registry are shown in
 {{iana-tp-table}}.
 
-| Value | Parameter Name | Specification |
-|:-|:-|:-|
-| 0x0000 | stream_fc_offset | {{transport-parameter-definitions}} |
-| 0x0001 | connection_fc_offset | {{transport-parameter-definitions}} |
-| 0x0002 | concurrent_streams | {{transport-parameter-definitions}} |
-| 0x0003 | idle_timeout | {{transport-parameter-definitions}} |
-| 0x0004 | truncate_connection_id | {{transport-parameter-definitions}} |
+| Value  | Parameter Name            | Specification                       |
+|:-------|:--------------------------|:------------------------------------|
+| 0x0000 | stream_fc_offset          | {{transport-parameter-definitions}} |
+| 0x0001 | connection_fc_offset      | {{transport-parameter-definitions}} |
+| 0x0002 | concurrent_streams        | {{transport-parameter-definitions}} |
+| 0x0003 | idle_timeout              | {{transport-parameter-definitions}} |
+| 0x0004 | truncate_connection_id    | {{transport-parameter-definitions}} |
 {: #iana-tp-table title="Initial QUIC Transport Parameters Entries"}
 
 
