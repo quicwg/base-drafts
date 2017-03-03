@@ -532,8 +532,8 @@ older than 1.3 is negotiated.
 ## ClientHello Size
 
 QUIC requires that the initial handshake packet from a client fit within a
-single packet of 1280 octets.  With framing and packet overheads this value
-could be reduced.
+single packet of at least 1280 octets.  With framing and packet overheads this
+value could be reduced.
 
 A TLS ClientHello can fit within this limit with ample space remaining.
 However, there are several variables that could cause this limit to be exceeded.
@@ -1367,11 +1367,12 @@ by an attacker.
 Certificate caching {{?RFC7924}} can reduce the size of the server's handshake
 messages significantly.
 
-QUIC requires that the packet containing a ClientHello be padded to at least
-1280 octets.  A server is less likely to generate a packet reflection attack if
-the data it sends is a small multiple of this size.  A server SHOULD use a
-HelloRetryRequest if the size of the handshake messages it sends is likely to
-significantly exceed the size of the packet containing the ClientHello.
+QUIC requires that the packet containing a ClientHello be padded to the size of
+the maximum transmission unit (MTU).  A server is less likely to generate a
+packet reflection attack if the data it sends is a small multiple of this size.
+A server SHOULD use a HelloRetryRequest if the size of the handshake messages it
+sends is likely to significantly exceed the size of the packet containing the
+ClientHello.
 
 
 ## Peer Denial of Service {#useless}
