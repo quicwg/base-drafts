@@ -124,23 +124,36 @@ defined in {{!RFC2119}}.
 
 Definitions of terms that are used in this document:
 
-* Client: The endpoint initiating a QUIC connection.
+Client:
 
-* Server: The endpoint accepting incoming QUIC connections.
+: The endpoint initiating a QUIC connection.
 
-* Endpoint: The client or server end of a connection.
+Server:
 
-* Stream: A logical, bi-directional channel of ordered bytes within
-  a QUIC connection.
+: The endpoint accepting incoming QUIC connections.
 
-* Connection: A conversation between two QUIC endpoints with a
-  single encryption context that multiplexes streams within it.
+Endpoint:
 
-* Connection ID: The identifier for a QUIC connection.
+: The client or server end of a connection.
 
-* QUIC packet: A well-formed UDP payload that can be parsed by a
-  QUIC receiver.  QUIC packet size in this document refers to the
-  UDP payload size.
+Stream:
+
+: A logical, bi-directional channel of ordered bytes within a QUIC connection.
+
+Connection:
+
+: A conversation between two QUIC endpoints with a single encryption context
+  that multiplexes streams within it.
+
+Connection ID:
+
+: The identifier for a QUIC connection.
+
+QUIC packet:
+
+: A well-formed UDP payload that can be parsed by a QUIC receiver.  QUIC packet
+  size in this document refers to the UDP payload size.
+
 
 ## Notational Conventions
 
@@ -161,6 +174,7 @@ x (A/B/C) ...
 
 x (*) ...
 : Indicates that x is variable-length
+
 
 # A QUIC Overview
 
