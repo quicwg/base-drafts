@@ -417,57 +417,6 @@
     "body": "Initial suggestion to address #269, based on alternate header proposal from @janaiyengar "
   },
   {
-    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/350",
-    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
-    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/350/labels{/name}",
-    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/350/comments",
-    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/350/events",
-    "html_url": "https://github.com/quicwg/base-drafts/pull/350",
-    "id": 210852922,
-    "number": 350,
-    "title": "Add stream offset limit of 2^64.",
-    "user": {
-      "login": "janaiyengar",
-      "id": 11067604,
-      "avatar_url": "https://avatars1.githubusercontent.com/u/11067604?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/janaiyengar",
-      "html_url": "https://github.com/janaiyengar",
-      "followers_url": "https://api.github.com/users/janaiyengar/followers",
-      "following_url": "https://api.github.com/users/janaiyengar/following{/other_user}",
-      "gists_url": "https://api.github.com/users/janaiyengar/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/janaiyengar/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/janaiyengar/subscriptions",
-      "organizations_url": "https://api.github.com/users/janaiyengar/orgs",
-      "repos_url": "https://api.github.com/users/janaiyengar/repos",
-      "events_url": "https://api.github.com/users/janaiyengar/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/janaiyengar/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "labels": [
-
-    ],
-    "state": "open",
-    "locked": false,
-    "assignee": null,
-    "assignees": [
-
-    ],
-    "milestone": null,
-    "comments": 0,
-    "created_at": "2017-02-28T17:19:31Z",
-    "updated_at": "2017-03-02T04:51:55Z",
-    "closed_at": null,
-    "pull_request": {
-      "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/350",
-      "html_url": "https://github.com/quicwg/base-drafts/pull/350",
-      "diff_url": "https://github.com/quicwg/base-drafts/pull/350.diff",
-      "patch_url": "https://github.com/quicwg/base-drafts/pull/350.patch"
-    },
-    "body": ""
-  },
-  {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/349",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
     "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/349/labels{/name}",
@@ -1929,8 +1878,7 @@
     "updated_at": "2017-02-15T00:53:41Z",
     "closed_at": null,
     "body": "> skipping packet numbers between 1 and 255 effectively provides up to 8 bits of efficient entropy on  demand, which should be adequate protection against most opportunistic acknowledgement attacks.\r\n\r\nAside from the odd phrasing, I think that this is incorrect.  Aside from the obvious point that 1-255 is only  7.994 bits of entropy, you also have to take into account the probability that a sender chooses to skip (a probability of 2^-8 would give the answer here).  Add to that the fact that any entropy accumulates with every packet sent.  Choosing to send or withhold each packet number could add up to a bit of entropy over time, so the difficulty in guessing could be higher over time.\r\n\r\nNo matter what strategy it's always safe for an attacker to guess high, so the amount of effective entropy against an attacker is probably less than claimed.  Of course, guessing high has an effect on congestion control, because that is marked by the sender as loss.  That could be as effective in mitigating the optimistic acknowledgment attack as the gap itself.\r\n\r\nThen there is real packet loss.  If you randomly decide to skip 255 numbers, then real packet loss on the packet after the gap makes it difficult to acknowledge (you have to send two ACK frames if there is a gap >255).  Burst loss makes that even more likely.\r\n\r\nIn any case, I'd recommend removing any claim about entropy.  I also recommend removing any mention of specific numbers.  Skipping more packets is fine, but it means that you run the packet number space down faster and you get less efficiency in ACK packets."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/296",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -1988,7 +1936,8 @@
     "updated_at": "2017-02-15T05:24:00Z",
     "closed_at": null,
     "body": "In #278, @martinthomson says that clients MAY choose a GREASE value for their initial packet to force version negotiation.  I would argue that no self-interested client will do so if the connection is latency-sensitive, since you incur an RTT, unless the spec has this at a higher level than MAY and with specific timing.\r\n\r\nHowever, for HTTP, bringing up a connection to a new Alternative is not latency-sensitive (because you still have your connection to the original host).  In the case where you're bringing up a connection to an alternative instead of to the origin, you've likely talked to the alternative before.\r\n\r\nWe could consider dropping the Alt-Svc version hint entirely, and saying that clients SHOULD open with a reserved version unless it has previously connected to the server and remembers a version list."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/295",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3711,8 +3660,7 @@
     "updated_at": "2017-01-26T04:11:47Z",
     "closed_at": null,
     "body": "@ianswett says that we need a hard line recommendation on when a WINDOW_UPDATE is required.  He suggests that once you get to 1/3 of the space you have allocated to flow control remaining, you SHOULD send a WINDOW_UPDATE along with the next ACK."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/233",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3770,7 +3718,8 @@
     "updated_at": "2017-01-25T23:17:08Z",
     "closed_at": null,
     "body": "The draft currently says:\r\n\r\n> Frames of unknown types are ignored.\r\n\r\nWhich is basically impossible. The only option an endpoint has when it encounters an unknown frame type is to throw out the entire frame or terminate the connection.  We should pick the latter."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/232",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5488,8 +5437,7 @@
     "updated_at": "2017-02-08T19:47:58Z",
     "closed_at": null,
     "body": "QUIC-TRANSPORT defines the syntax of QUIC error codes and defines some values for the QUIC transport. The section says:\r\n\r\n> This section lists the defined QUIC transport error codes that may be used in a CONNECTION_CLOSE or RST_STREAM frame. Error codes share a common code space. Some error codes apply only to either streams or the entire connection and have no defined semantics in the other context.\r\n\r\nSince the error space is shared, it is not clear what error codes are appropriate to use with which frame types. There is the possibility for endpoints to send a semantically incorrect error code in a frame. How should a receiver handle such an occurrence?\r\n\r\nThis possibility exists only for the Application-specific, QUIC transport or Cryptographic error codes. Host-local error codes must not be sent.  \r\n\r\nAs an example, an client sends a `RST_STREAM` frame with the error code `QUIC_TOO_MANY_SESSIONS_ON_SERVER`.  Is this actually allowed and what should the server do (close the connection, igore it, ...)?"
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/183",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5547,7 +5495,8 @@
     "updated_at": "2017-02-21T23:39:08Z",
     "closed_at": null,
     "body": "The question is whether we maintain TLS as some abstract concept or not.\r\n\r\nWe could talk about \"the cryptographic handshake\" and features that it provides in the abstract when referring to them in the transport document.  Or we could just describe how this protocol works in concrete terms.\r\n\r\nProponents of the first seem to think that would make replacing TLS easier.  Others disagree.  Others think that replacing TLS would be a bad idea.  Others think that replacing TLS is the only rational choice.  Some people think that people who hold opposing opinions are completely nuts."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/179",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7571,8 +7520,7 @@
     "updated_at": "2017-02-20T18:50:14Z",
     "closed_at": null,
     "body": "NumTimestamps is supposed to specify the \"total number of pairs following, including the First Timestamp.\"  If this is zero, presumably the Delta Largest Acked and First Timestamp fields are absent.  If this is one, presumably these fields are present, but no others are.\r\n\r\nThe *subsequent* fields then say they are repeated \"Num Timestamps\" times, which contradicts my logic above.  I'm guessing this should actually be \"Num Timestamps - 1\" times?"
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/95",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7630,7 +7578,8 @@
     "updated_at": "2017-01-25T04:47:27Z",
     "closed_at": null,
     "body": "Need discussion of how CONNECT works.  Initial thought:\r\n\r\n - Client does not close data stream after sending request\r\n - If server responds (on the message control stream) with success, the data stream is being relayed into a TCP connection by the server.\r\n\r\nIs there a QUIC-CONNECT?  (Probably not, and almost certainly not in this document.)"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/89",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -9393,64 +9342,6 @@
     "updated_at": "2017-01-25T02:03:15Z",
     "closed_at": null,
     "body": "The design for TLS 1.3 KeyUpdate ensures that a compromise of keys after a KeyUpdate has been completed doesn't result in a compromise of all prior keys on that connection.\r\n\r\nThis is not true in QUIC.  QUIC uses a TLS exporter to obtain its initial seed keys.  As long as the exporter secret remains viable (and it will by default in most TLS stacks), then it will be able to compromise any QUIC packet protection keys.\r\n\r\nWe can't close the TLS connection on stream 1 early because it is desirable to have new session tickets issued to clients over time, especially if a server wants to update keys in response to mobility or other significant events.\r\n\r\nWe could recommend that TLS stacks provide an API for destroying an exporter secret, but that would interact poorly with things like token binding which use the exporter secret constantly."
-  },
-  {
-    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/23",
-    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
-    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/23/labels{/name}",
-    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/23/comments",
-    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/23/events",
-    "html_url": "https://github.com/quicwg/base-drafts/issues/23",
-    "id": 191611618,
-    "number": 23,
-    "title": "Establish terminology",
-    "user": {
-      "login": "martinthomson",
-      "id": 67641,
-      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/martinthomson",
-      "html_url": "https://github.com/martinthomson",
-      "followers_url": "https://api.github.com/users/martinthomson/followers",
-      "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
-      "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
-      "organizations_url": "https://api.github.com/users/martinthomson/orgs",
-      "repos_url": "https://api.github.com/users/martinthomson/repos",
-      "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/martinthomson/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "labels": [
-      {
-        "id": 481871311,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/editorial",
-        "name": "editorial",
-        "color": "0e8a16",
-        "default": false
-      },
-      {
-        "id": 481871399,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
-        "name": "transport",
-        "color": "fbca04",
-        "default": false
-      }
-    ],
-    "state": "open",
-    "locked": false,
-    "assignee": null,
-    "assignees": [
-
-    ],
-    "milestone": null,
-    "comments": 0,
-    "created_at": "2016-11-25T01:55:23Z",
-    "updated_at": "2016-11-25T02:07:58Z",
-    "closed_at": null,
-    "body": "There are probably lots of these, which we should include in the transport doc.\r\n\r\nOff the top of my head: client, server, peer, endpoint, stream, frame, packet, packet number, stream error, connection error, outstanding/unacknowledged.\r\n\r\nMore complicated concepts belong in requisite documents: e.g., loss detection, retransmission, and congestion; flights, etc..."
   },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/20",
