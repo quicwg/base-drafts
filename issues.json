@@ -975,7 +975,7 @@
     "milestone": null,
     "comments": 0,
     "created_at": "2017-02-23T05:18:25Z",
-    "updated_at": "2017-02-24T17:01:39Z",
+    "updated_at": "2017-03-03T00:28:26Z",
     "closed_at": null,
     "pull_request": {
       "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/338",
@@ -8696,13 +8696,6 @@
     },
     "labels": [
       {
-        "id": 517015527,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/confirm-consensus",
-        "name": "confirm-consensus",
-        "color": "c5def5",
-        "default": false
-      },
-      {
         "id": 481871361,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/design",
         "name": "design",
@@ -8726,7 +8719,7 @@
     "milestone": null,
     "comments": 8,
     "created_at": "2016-11-29T21:28:11Z",
-    "updated_at": "2017-02-07T15:37:58Z",
+    "updated_at": "2017-03-03T00:29:35Z",
     "closed_at": null,
     "body": "It's currently unclear how two QUIC peers opening a connection know which handshake protocol to expect on Stream 1.\r\n\r\nSince the client has to include the opening handshake in its first flight, it has to at least be able to guess *a* handshake protocol that's acceptable to the server and include enough information for the server to know which one it's attempting.  Currently all the mechanisms for telling the client to retry with different options are at the TLS layer, which is too late.\r\n\r\nHow is this negotiated?  Is it baked into the QUIC version?  Is it specified as part of the application mapping (e.g. the HTTP mapping currently requires the TLS 1.3 handshake to be used) and therefore either supplied as part of the Alt-Svc record or implied by the port?"
   },
