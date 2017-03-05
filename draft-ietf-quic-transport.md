@@ -1668,14 +1668,6 @@ sent immediately prior to sending a CONNECTION_CLOSE frame that is sent as a
 result of detecting a fatal error.  Higher-numbered streams than those indicated
 in the GOAWAY frame can then be retried.
 
-For peer-initiated streams, an endpoint might indicate a lower value for the
-highest stream number than the value that might be sent by a peer.  After
-receiving a GOAWAY frame, an endpoint SHOULD send a GOAWAY frame in response and
-update the value for streams that it initiates, if the value is lower than the
-one it receives.  If an endpoint does send a GOAWAY in response to another
-GOAWAY, it SHOULD NOT update the value for peer-initiated streams, unless it
-wishes to cancel those streams.
-
 
 # Packetization and Reliability {#packetization}
 
