@@ -1613,9 +1613,9 @@ those indicated.  The GOAWAY frame is as follows:
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                        Error Code (32)                        |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                    Last Client Stream ID (32)                 |
+|                  Largest Client Stream ID (32)                |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                    Last Server Stream ID (32)                 |
+|                  Largest Server Stream ID (32)                |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |   Reason Phrase Length (16)   |      [Reason Phrase (*)]    ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -1628,14 +1628,14 @@ Error Code:
 : A 32-bit field error code which indicates the reason for closing this
   connection.
 
-Last Client Stream ID:
+Largest Client Stream ID:
 
 : The highest-numbered, client-initiated stream on which the endpoint sending
   the GOAWAY frame either sent data, or received and delivered data.  All
   higher-numbered, client-initiated streams (that is, odd-numbered streams) are
   implicitly reset by sending or receiving the GOAWAY frame.
 
-Last Server Stream ID:
+Largest Server Stream ID:
 
 : The highest-numbered, server-initiated stream on which the endpoint sending
   the GOAWAY frame either sent data, or received and delivered data.  All
@@ -1653,9 +1653,10 @@ Reason Phrase:
 
 A GOAWAY frame indicates that any application layer actions on streams with
 higher numbers than those indicated can be safely retried because no data was
-exchanged.  An endpoint MUST set the value of the Last Client or Server Stream
-ID to be at least as high as the highest-numbered stream on which it either sent
-data or received and delivered data to the application protocol that uses QUIC.
+exchanged.  An endpoint MUST set the value of the Largest Client or Server
+Stream ID to be at least as high as the highest-numbered stream on which it
+either sent data or received and delivered data to the application protocol that
+uses QUIC.
 
 An endpoint MAY choose a larger stream identifier if it wishes to allow for a
 number of streams to be created.  This is especially valuable for peer-initiated
@@ -1669,8 +1670,11 @@ in the GOAWAY frame can then be retried.
 
 For peer-initiated streams, an endpoint might indicate a lower value for the
 highest stream number than the value that might be sent by a peer.  After
-receiving a GOAWAY frame, an endpoint SHOULD send a GOAWAY frame in response to
-indicate its own view of which streams are unused.
+receiving a GOAWAY frame, an endpoint SHOULD send a GOAWAY frame in response and
+update the value for streams that it initiates, if the value is lower than the
+one it receives.  If an endpoint does send a GOAWAY in response to another
+GOAWAY, it SHOULD NOT update the value for peer-initiated streams, unless it
+wishes to cancel those streams.
 
 
 # Packetization and Reliability {#packetization}
