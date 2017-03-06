@@ -441,8 +441,7 @@ client packet of an unsupported version. It uses a long header and contains:
 
 * Octet 0: 0x81 (Flags indicating long header and Version Negotiation packet 
   type)
-* Octets 1-8: Connection ID (server-selected value, may be used in a subsequent
-  connection to reach the same server)
+* Octets 1-8: Connection ID (echoed)
 * Octets 9-12: Proof (first 4 octets of client-selected connection ID)
 * Octets 13-16: Version (echoed)
 * Octets 17+: Payload (version list, containing 0 or more acceptable versions)
@@ -498,10 +497,11 @@ outage). A server that wishes to indicate fatal errors with a connection MUST
 use a CONNECTION_CLOSE frame in preference to Public Reset if it has sufficient
 state to do so.
 
-A public reset packet contains:
+A Public Reset packet contains:
 
 * Octet 0: 0x82 (Flags indicating long header and Public Reset packet type) 
-* Octets 1-12: Echoed data (octets 1-12 of received packet)
+* Octets 1-8: Echoed data (octets 1-8 of received packet)
+* Octets 9-12: Echoed data (octets 9-12 of received packet)
 * Octets 13-16: Version (server version)
 * Octets 17+: Public Reset Proof (optional, TBD)
 
@@ -559,7 +559,7 @@ Other server Cleartext packets contain:
 
 * Octet 0: 0x85 (Flags indicating Long header and appropriate server Cleartext 
   packet type)
-* Octets 1-8: Connection ID (client-selected value)
+* Octets 1-8: Connection ID (echoed)
 * Octets 9-12: Packet Number (low 4 octets, random 31-bit initial value)
 * Octets 13-16: Version (echoed)
 * Octets 17+: Payload
