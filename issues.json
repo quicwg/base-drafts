@@ -2554,9 +2554,9 @@
 
     ],
     "milestone": null,
-    "comments": 0,
+    "comments": 1,
     "created_at": "2017-02-08T22:33:40Z",
-    "updated_at": "2017-03-06T20:19:07Z",
+    "updated_at": "2017-03-06T20:22:45Z",
     "closed_at": null,
     "pull_request": {
       "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/274",
@@ -4046,9 +4046,9 @@
 
     ],
     "milestone": null,
-    "comments": 2,
+    "comments": 3,
     "created_at": "2017-01-25T05:15:45Z",
-    "updated_at": "2017-01-26T01:55:17Z",
+    "updated_at": "2017-03-06T20:24:54Z",
     "closed_at": null,
     "body": "QUIC doesn't make order guarantees between streams.  The options on the table currently are:\r\n\r\n- Current (-01) draft puts a sequence number in the frames; HPACK data MUST be handled in order, and will HOL-block.  HPACK is exactly the same as HTTP/2.\r\n- Buck's proposal (draft forthcoming) puts two sequence numbers in the frames and modifies the HPACK encoder to prevent blocking references.  Partially-received HPACK frames must block until fully received.  The new encoder could also be used in HTTP/2, but would require changes to existing code.\r\n- [QPACK](https://tools.ietf.org/html/draft-bishop-quic-http-and-qpack) modifies HPACK to be order-resilient and permit partial frames to be processed, but breaks from the HPACK encoding enough that you'd have at least some separate code paths.\r\n\r\nAlso agreed to put a \"hard-hat warning\" in this section of the HTTP draft, to warn readers this is still work-in-progress."
   },
