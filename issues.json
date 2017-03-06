@@ -1,5 +1,128 @@
 [
   {
+    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/359",
+    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
+    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/359/labels{/name}",
+    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/359/comments",
+    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/359/events",
+    "html_url": "https://github.com/quicwg/base-drafts/issues/359",
+    "id": 212251457,
+    "number": 359,
+    "title": "IANA registries for error codes",
+    "user": {
+      "login": "MikeBishop",
+      "id": 4273797,
+      "avatar_url": "https://avatars3.githubusercontent.com/u/4273797?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/MikeBishop",
+      "html_url": "https://github.com/MikeBishop",
+      "followers_url": "https://api.github.com/users/MikeBishop/followers",
+      "following_url": "https://api.github.com/users/MikeBishop/following{/other_user}",
+      "gists_url": "https://api.github.com/users/MikeBishop/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/MikeBishop/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/MikeBishop/subscriptions",
+      "organizations_url": "https://api.github.com/users/MikeBishop/orgs",
+      "repos_url": "https://api.github.com/users/MikeBishop/repos",
+      "events_url": "https://api.github.com/users/MikeBishop/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/MikeBishop/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 481871311,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/editorial",
+        "name": "editorial",
+        "color": "0e8a16",
+        "default": false
+      },
+      {
+        "id": 481871627,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/http",
+        "name": "http",
+        "color": "fbca04",
+        "default": false
+      },
+      {
+        "id": 481871604,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/tls",
+        "name": "tls",
+        "color": "fbca04",
+        "default": false
+      },
+      {
+        "id": 481871399,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
+        "name": "transport",
+        "color": "fbca04",
+        "default": false
+      }
+    ],
+    "state": "open",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 0,
+    "created_at": "2017-03-06T21:12:58Z",
+    "updated_at": "2017-03-06T21:12:58Z",
+    "closed_at": null,
+    "body": "Since we've split these up and they're composable, we probably need three registries here.  (Host-local doesn't get a registry, obviously.)"
+  },
+  {
+    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/358",
+    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
+    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/358/labels{/name}",
+    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/358/comments",
+    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/358/events",
+    "html_url": "https://github.com/quicwg/base-drafts/pull/358",
+    "id": 212251310,
+    "number": 358,
+    "title": "Remove STOP_WAITING frame",
+    "user": {
+      "login": "ianswett",
+      "id": 20072817,
+      "avatar_url": "https://avatars2.githubusercontent.com/u/20072817?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/ianswett",
+      "html_url": "https://github.com/ianswett",
+      "followers_url": "https://api.github.com/users/ianswett/followers",
+      "following_url": "https://api.github.com/users/ianswett/following{/other_user}",
+      "gists_url": "https://api.github.com/users/ianswett/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/ianswett/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/ianswett/subscriptions",
+      "organizations_url": "https://api.github.com/users/ianswett/orgs",
+      "repos_url": "https://api.github.com/users/ianswett/repos",
+      "events_url": "https://api.github.com/users/ianswett/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/ianswett/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+
+    ],
+    "state": "open",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 0,
+    "created_at": "2017-03-06T21:12:22Z",
+    "updated_at": "2017-03-06T21:12:22Z",
+    "closed_at": null,
+    "pull_request": {
+      "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/358",
+      "html_url": "https://github.com/quicwg/base-drafts/pull/358",
+      "diff_url": "https://github.com/quicwg/base-drafts/pull/358.diff",
+      "patch_url": "https://github.com/quicwg/base-drafts/pull/358.patch"
+    },
+    "body": "First pass at removing the STOP_WAITING frame.  Intends to resolve #66 ."
+  },
+  {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/357",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
     "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/357/labels{/name}",
@@ -1869,7 +1992,8 @@
     "updated_at": "2017-02-15T01:12:19Z",
     "closed_at": null,
     "body": "We need to include advice on the creation of ACK frames when an ACK frame was lost.  The advice from @ianswett is that new timing information isn't valuable.  Both endpoints only need to maintain timing information for individual packets for a short period, so retransmission of old timing information isn't valuable.\r\n\r\nThus, we should recommend that endpoints do just that: maintain a short list of packets that they want to provide timing for.  They should then not worry about re-sending any timestamps from lost packets."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/307",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -1978,8 +2102,7 @@
     "updated_at": "2017-02-15T00:53:41Z",
     "closed_at": null,
     "body": "> skipping packet numbers between 1 and 255 effectively provides up to 8 bits of efficient entropy on  demand, which should be adequate protection against most opportunistic acknowledgement attacks.\r\n\r\nAside from the odd phrasing, I think that this is incorrect.  Aside from the obvious point that 1-255 is only  7.994 bits of entropy, you also have to take into account the probability that a sender chooses to skip (a probability of 2^-8 would give the answer here).  Add to that the fact that any entropy accumulates with every packet sent.  Choosing to send or withhold each packet number could add up to a bit of entropy over time, so the difficulty in guessing could be higher over time.\r\n\r\nNo matter what strategy it's always safe for an attacker to guess high, so the amount of effective entropy against an attacker is probably less than claimed.  Of course, guessing high has an effect on congestion control, because that is marked by the sender as loss.  That could be as effective in mitigating the optimistic acknowledgment attack as the gap itself.\r\n\r\nThen there is real packet loss.  If you randomly decide to skip 255 numbers, then real packet loss on the packet after the gap makes it difficult to acknowledge (you have to send two ACK frames if there is a gap >255).  Burst loss makes that even more likely.\r\n\r\nIn any case, I'd recommend removing any claim about entropy.  I also recommend removing any mention of specific numbers.  Skipping more packets is fine, but it means that you run the packet number space down faster and you get less efficiency in ACK packets."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/296",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3644,7 +3767,8 @@
     "updated_at": "2017-02-03T03:01:28Z",
     "closed_at": null,
     "body": "My understanding of the way the mechanism is supposed to work is that once the handshake is finished, QUIC takes over the encryption;  if server wants to send an NST, it needs to send it on stream 1, using TLS record layer on said stream, and said TLS record shall not be encrypted.  If that is so, this should be clarified, because otherwise this can be interpreted as a requirement to double-encrypt streams (on QUIC packet layer with QUIC key, and on TLS record layer with TLS traffic keys)."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/238",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3760,8 +3884,7 @@
     "updated_at": "2017-01-26T04:11:47Z",
     "closed_at": null,
     "body": "@ianswett says that we need a hard line recommendation on when a WINDOW_UPDATE is required.  He suggests that once you get to 1/3 of the space you have allocated to flow control remaining, you SHOULD send a WINDOW_UPDATE along with the next ACK."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/233",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -4046,9 +4169,9 @@
 
     ],
     "milestone": null,
-    "comments": 3,
+    "comments": 4,
     "created_at": "2017-01-25T05:15:45Z",
-    "updated_at": "2017-03-06T20:24:54Z",
+    "updated_at": "2017-03-06T20:54:15Z",
     "closed_at": null,
     "body": "QUIC doesn't make order guarantees between streams.  The options on the table currently are:\r\n\r\n- Current (-01) draft puts a sequence number in the frames; HPACK data MUST be handled in order, and will HOL-block.  HPACK is exactly the same as HTTP/2.\r\n- Buck's proposal (draft forthcoming) puts two sequence numbers in the frames and modifies the HPACK encoder to prevent blocking references.  Partially-received HPACK frames must block until fully received.  The new encoder could also be used in HTTP/2, but would require changes to existing code.\r\n- [QPACK](https://tools.ietf.org/html/draft-bishop-quic-http-and-qpack) modifies HPACK to be order-resilient and permit partial frames to be processed, but breaks from the HPACK encoding enough that you'd have at least some separate code paths.\r\n\r\nAlso agreed to put a \"hard-hat warning\" in this section of the HTTP draft, to warn readers this is still work-in-progress."
   },
@@ -5421,7 +5544,8 @@
     "updated_at": "2017-01-24T01:03:19Z",
     "closed_at": null,
     "body": "The specification allows endpoints to specify the maximum number of concurrent streams (MSPC), but should not the spec provide for the minimum value of MSPC that all endpoints must support?  If the minimum is 1 (excluding \"service\" streams), it would be good for the spec to state so explicitly."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/185",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5537,8 +5661,7 @@
     "updated_at": "2017-02-08T19:47:58Z",
     "closed_at": null,
     "body": "QUIC-TRANSPORT defines the syntax of QUIC error codes and defines some values for the QUIC transport. The section says:\r\n\r\n> This section lists the defined QUIC transport error codes that may be used in a CONNECTION_CLOSE or RST_STREAM frame. Error codes share a common code space. Some error codes apply only to either streams or the entire connection and have no defined semantics in the other context.\r\n\r\nSince the error space is shared, it is not clear what error codes are appropriate to use with which frame types. There is the possibility for endpoints to send a semantically incorrect error code in a frame. How should a receiver handle such an occurrence?\r\n\r\nThis possibility exists only for the Application-specific, QUIC transport or Cryptographic error codes. Host-local error codes must not be sent.  \r\n\r\nAs an example, an client sends a `RST_STREAM` frame with the error code `QUIC_TOO_MANY_SESSIONS_ON_SERVER`.  Is this actually allowed and what should the server do (close the connection, igore it, ...)?"
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/183",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7425,7 +7548,8 @@
     "updated_at": "2017-01-25T08:02:05Z",
     "closed_at": null,
     "body": "There are a bunch of things that need to be addressed here.  What is likely to happen is that this issue will turn into many smaller issues and this will eventually get closed as those become better understood.\r\n\r\n1. Reasons migration might be needed (mobility, NAT rebinding, routing changes, etc...)\r\n2. Routing considerations when migration occurs\r\n3. Privacy implications of linkability across migrations\r\n4. Verifying consent to send on a new path\r\n5. Establishing any desired middlebox state along the path\r\n"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/109",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7620,8 +7744,7 @@
     "updated_at": "2017-02-20T18:50:14Z",
     "closed_at": null,
     "body": "NumTimestamps is supposed to specify the \"total number of pairs following, including the First Timestamp.\"  If this is zero, presumably the Delta Largest Acked and First Timestamp fields are absent.  If this is one, presumably these fields are present, but no others are.\r\n\r\nThe *subsequent* fields then say they are repeated \"Num Timestamps\" times, which contradicts my logic above.  I'm guessing this should actually be \"Num Timestamps - 1\" times?"
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/95",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
