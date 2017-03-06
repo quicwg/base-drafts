@@ -1221,6 +1221,13 @@ Unlike TCP SACKs, QUIC ACK blocks are cumulative and therefore irrevocable.
 Once a packet has been acknowledged, even if it does not appear in a future ACK
 frame, it is assumed to be acknowledged.
 
+QUIC ack frames contain a timestamp section with up to 255 timestamps.
+Timestamps enable better congestion control, but are not required for correct
+loss recovery, and old timestamps are less valuable, so it is not guaranteed
+every timestamp will be received by the sender.  A receiver SHOULD send a 
+timestamp exactly once for each retransmittable packet recevied. A receiver
+MAY send timestamps for non-retransmittable packets.
+
 A sender MAY intentionally skip packet numbers to introduce entropy into the
 connection, to avoid opportunistic acknowledgement attacks.  The sender MUST
 close the connection if an unsent packet number is acknowledged.  The format of
@@ -1326,7 +1333,7 @@ The fields in the ACK Block Section are:
 * ACK Block Length (opt, repeated): An unsigned packet number delta that
   indicates the number of contiguous packets being acknowledged starting after
   the end of the previous gap.  Along with the previous field, this field is
-  repeated "Num Blocks" times.
+  repeated "Num Blocks - 1" times.
 
 ### Timestamp Section {#timestamp-section}
 
@@ -1368,7 +1375,7 @@ The fields in the Timestamp Section are:
 * Time Since Previous Timestamp 1..N(opt, repeated): An optional 16-bit unsigned
   value specifying time delta from the previous reported timestamp.  It is
   encoded in the same format as the ACK Delay.  Along with the previous field,
-  this field is repeated "Num Timestamps" times.
+  this field is repeated "Num Timestamps - 1" times.
 
 #### Time Format
 
