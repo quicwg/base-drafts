@@ -185,7 +185,10 @@ application.
 
 QUIC reserves Stream 1 for crypto operations (the handshake, crypto config
 updates). Stream 3 is reserved for sending and receiving HTTP control frames,
-and is analogous to HTTP/2's Stream 0.
+and is analogous to HTTP/2's Stream 0.  This connection control stream is
+considered critical to the HTTP connection.  If the connection control stream is
+closed for any reason, this MUST be treated as a connection error of type
+QUIC_CLOSED_CRITICAL_STREAM.
 
 When HTTP headers and data are sent over QUIC, the QUIC layer handles most of
 the stream management. An HTTP request/response consumes a pair of streams: This
@@ -204,17 +207,14 @@ transferring data.
 Because the message control stream contains HPACK data which manipulates
 connection-level state, the message control stream MUST NOT be closed with a
 stream-level error.  If an implementation chooses to reject a request with a
-QUIC error code, it MUST trigger a RST_STREAM on the data stream only.  An
+QUIC error code, it MUST trigger a QUIC RST_STREAM on the data stream only.  An
 implementation MAY close (FIN) a message control stream without completing a
 full HTTP message if the data stream has been abruptly closed.  Data on message
 control streams MUST be fully consumed, or the connection terminated.
 
-If a message control stream is terminated abruptly by the transport layer (e.g.
-with QUIC_TOO_MANY_OPEN_STREAMS), any frames already sent on that stream MUST
-be re-played on another message control stream as soon as the maximum number of
-streams permits.  If the implementation no longer requires the response to this
-request, it MAY abruptly terminate the corresponding data stream at the same
-time.
+All message control streams are considered critical to the HTTP connection.  If
+a message control stream is terminated abruptly for any reason, this MUST be
+treated as a connection error of type HTTP_RST_CONTROL_STREAM.
 
 Pairs of streams must be utilized sequentially, with no gaps.  The data stream
 MUST be reserved with the QUIC implementation when the message control stream
@@ -795,6 +795,9 @@ HTTP_SETTINGS_ON_WRONG_STREAM (0x0F):
 
 HTTP_MULTIPLE_SETTINGS (0x10):
 : More than one SETTINGS frame was received.
+
+HTTP_RST_CONTROL_STREAM (0x11):
+: A message control stream closed abruptly.
 
 ## Mapping HTTP/2 Error Codes
 
