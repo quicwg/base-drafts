@@ -339,7 +339,7 @@ describing the value of fields.
 QUIC packet headers can be separated into long and short headers. Long headers
 are expected to be used for the initial phase of the connection and are used for
 version negotiation, connection establishment, 0-RTT, and public reset
-packets. Short headers are minimal version-specific headers, which MAY be used
+packets. Short headers are minimal version-specific headers, which can be used
 after version negotiation and 1-RTT keys are established, and MUST NOT be used
 earlier.
 
@@ -381,7 +381,8 @@ The first octet (octet 0) contains the following fields.
   {{cleartext-packet}}.)
   * 05: Other Server Cleartext packet (see {{cleartext-packet}}.)
   * 06: 0-RTT Encrypted packet (see {{encrypted-packet}}.)
-  * 07: 1-RTT Encrypted packet (see {{encrypted-packet}}.)
+  * 07: 1-RTT Encrypted packet with key phase 0 (see {{encrypted-packet}}.)
+  * 08: 1-RTT Encrypted packet with key phase 1 (see {{encrypted-packet}}.)
 
 The remainder of the packet layout is the same regardless of type, but the
 semantics of the fields are specific to each type (see corresponding sections
@@ -409,8 +410,8 @@ assigned a packet number by the sender, as described further in
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ```
 
-The short header is used after the version and 1-RTT keys are negotiated. This
-header has the following version-independent fields:
+The short header can be used after the version and 1-RTT keys are negotiated.
+This header has the following version-independent fields:
 * Octet 0: Flags
   * Bit 0 (0x80): HEADER_FORM, set to 0 for short headers.
   * Bit 1: CONNECTION_ID. Indicates presence of Connection ID field following
@@ -421,8 +422,8 @@ The remainder of the short header is defined to be specific to a version. In
 this version, it contains:
 * Octet 0: Flags
   * Bit 2: KEY_PHASE. Used by the QUIC packet protection to identify
-    the correct packet protection keys after the 1-RTT keys are initially
-    established. See {{QUIC-TLS}}.
+    the correct packet protection keys after the 1-RTT keys are established. 
+    See {{QUIC-TLS}} for more details.
   * Bit 3-7: Packet Type, indicating one of 32 packet types. The following types
     are currently defined.
   * 01: 1-RTT packet (packet number size = 1)
@@ -578,12 +579,17 @@ The payload of Cleartext packets contains frames, as described in {{frames}}.
 Packets encrypted with either 0-RTT or 1-RTT keys may be sent with long headers.
 Different packet types explicitly indicate the encryption level for ease of
 decryption. These packets contain:
-* Octet 0: 0x86 or 0x87 (Flags indicating long header and one of the two 
-  encrypted packet types)
+* Octet 0: 0x86, 0x87 or 0x88 (Flags indicating long header and an encrypted 
+  packet type)
 * Octets 1-8: Connection ID (client or server-selected, see {{connectionid}})
 * Octets 9-12: Packet Number (low 4 octets)
 * Octets 13-16: Version
 * Octets 17+: Encrypted Payload (see {{encrypted-payload}}.)
+
+A flags octet of 0x86 indicates a 0-RTT packet. Key phases are used by the QUIC
+packet protection to identify the correct packet protection keys after the 1-RTT
+keys are established. The default initial value key phase is 0. See {{QUIC-TLS}}
+for more details.
 
 The encrypted payload is both authenticated and encrypted using packet
 protection keys. {{QUIC-TLS}} describes packet protection in detail.  After
