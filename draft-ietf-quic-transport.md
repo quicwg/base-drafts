@@ -362,10 +362,12 @@ The first octet (octet 0) contains the following fields.
   are currently defined.
   * 01: Version Negotiation packet (see {{version-negotiation-packet}}.)
   * 02: Public Reset packet (see {{public-reset-packet}}.)
-  * 03: Server Cleartext packet (see {{cleartext-packet}}.)
-  * 04: Client Cleartext packet (see {{cleartext-packet}}.)
-  * 05: 0-RTT encrypted packet (see {{encrypted-packet}}.)
-  * 06: 1-RTT encrypted packet (see {{encrypted-packet}}.)
+  * 03: Client Cleartext packet (see {{cleartext-packet}}.)
+  * 04: Server Cleartext packet indicating successful handshake (see 
+  {{cleartext-packet}}.)
+  * 05: Other Server Cleartext packet (see {{cleartext-packet}}.)
+  * 06: 0-RTT Encrypted packet (see {{encrypted-packet}}.)
+  * 07: 1-RTT Encrypted packet (see {{encrypted-packet}}.)
 
 The remainder of the packet layout is the same regardless of type, but the
 semantics of the fields are specific to each type (see corresponding sections
@@ -521,32 +523,48 @@ Details to be added.
 ## Cleartext Packets {#cleartext-packet}
 
 Cleartext packets are sent during the handshake prior to key negotiation. A 
-server cleartext packet contains:
+client Cleartext packet contains:
 
-* Octet 0: 0x83 (Flags indicating Long header and server cleartext packet type)
-* Octets 1-8: Connection ID (server-selected value)
-* Octets 9-12: Packet Number (low 4 octets, random 31-bit initial value)
-* Octets 13-16: Version (echoed)
-* Octets 17+: Payload
-
-A client cleartext packet contains:
-* Octet 0: 0x84 (Flags indicating long header and client cleartext packet type)
+* Octet 0: 0x83 (Flags indicating long header and client Cleartext packet type)
 * Octets 1-8: Connection ID (randomly chosen)
 * Octets 9-12: Packet number (low 4 octets, starts at a random 31-bit value)
 * Octets 13-16: Version
 * Octets 17+: Payload
 
+A server Cleartext packet indicating a successful handshake contains:
+
+* Octet 0: 0x84 (Flags indicating Long header and appropriate server Cleartext 
+  packet type)
+* Octets 1-8: Connection ID (server-selected value)
+* Octets 9-12: Packet Number (low 4 octets, random 31-bit initial value)
+* Octets 13-16: Version (echoed)
+* Octets 17+: Payload
+
+Other server Cleartext packets contain:
+
+* Octet 0: 0x85 (Flags indicating Long header and appropriate server Cleartext 
+  packet type)
+* Octets 1-8: Connection ID (client-selected value)
+* Octets 9-12: Packet Number (low 4 octets, random 31-bit initial value)
+* Octets 13-16: Version (echoed)
+* Octets 17+: Payload
+
+
 The client MUST choose a random value and use it as the Connection ID until the
 server replies with a server-selected Connection ID. The client's Connection ID
-is a suggestion to the server, as described further in {{connection-id}}. The
-payload of cleartext packets contains frames, as described in {{frames}}.
+is a suggestion to the server, as described further in {{connection-id}}. A
+server may respond to a client Cleartext packet with one of the two server
+Cleartext packets, using the server-selected Connection ID on only the final
+Cleartext packet that indicates successful handshake completion.
+
+The payload of Cleartext packets contains frames, as described in {{frames}}.
 
 ## Encrypted Packets {#encrypted-packet}
 
 Packets encrypted with either 0-RTT or 1-RTT keys may be sent with long headers.
 Different packet types explicitly indicate the encryption level for ease of
 decryption. These packets contain:
-* Octet 0: 0x85 or 0x86 (Flags indicating long header and one of the two 
+* Octet 0: 0x86 or 0x87 (Flags indicating long header and one of the two 
   encrypted packet types)
 * Octets 1-8: Connection ID (client or server-selected, see {{connectionid}})
 * Octets 9-12: Packet Number (low 4 octets)
@@ -559,8 +577,26 @@ decryption, the plaintext consists of a sequence of frames, as described in
 {{frames}}.
 
 ## Connection ID {#connection-id}
-Describe how to distinguish between client-generated and server-generated
-connection IDs.
+QUIC connections are identified by their 64-bit Connection ID. All long headers
+contain a Connection ID. Short headers indicate the presence of a Connection ID
+using the CONNECTION_ID flag. When present, the Connection ID is in the same 
+location in all packet headers, making it straightforward for middleboxes, such
+as load balancers, to locate and use it.
+
+When a connection is initiated, the client MUST choose a random value and use it
+as the Connection ID in all Cleartext packets and all 0-RTT Encrypted
+packets. The client's Connection ID is a suggestion to the server. The server
+echoes this value in all packets until the handshake is successful (see
+{{QUIC-TLS}}. In its final successful handshake completion packet, the server
+MUST use a server-selected Connection ID. All subsequent packets from the server
+MUST contain this value.
+
+When a server's successful handshake completion packet is received by the
+client, it MUST switch to using the server-selected Connection ID for all
+subsequent packets. 
+
+The Connection ID in all packets following a successful handshake---all 1-RTT
+encrypted packets---is the server-selected value.
 
 ## Packet Numbers {#packet-numbers}
 
