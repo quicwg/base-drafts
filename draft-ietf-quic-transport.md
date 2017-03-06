@@ -357,81 +357,23 @@ for special packets, such as the version negotiation and the public reset
 packets to be represented in this uniform fixed-length packet format.
 
 The first octet (octet 0) contains the following fields.
-* Bit 0 (0x80): Header form. Set to 1 for long headers.
+* Bit 0 (0x80): HEADER_FORM, set to 1 for long headers.
 * Bits 1-7: Packet Type, indicating one of 128 packet types. The following types
   are currently defined.
-  * 01: Version Negotiation packet
-  * 02: Public Reset packet
-  * 03: 0-RTT packet
-  * 04: Server cleartext packet
-  * 05: Client cleartext packet
-  * 06: 1-RTT packet with version field, connection ID,
-        and 2-byte packet number
+  * 01: Version Negotiation packet (see {{version-negotiation-packet}}.)
+  * 02: Public Reset packet (see {{public-reset-packet}}.)
+  * 03: Server Cleartext packet (see {{cleartext-packet}}.)
+  * 04: Client Cleartext packet (see {{cleartext-packet}}.)
+  * 05: 0-RTT encrypted packet (see {{encrypted-packet}}.)
+  * 06: 1-RTT encrypted packet (see {{encrypted-packet}}.)
 
 The remainder of the packet layout is the same regardless of type, but the
-semantics of the fields are specific to each type, as described next.
+semantics of the fields are specific to each type (see corresponding sections
+for type-specific semantics.)
 
-### Version Negotiation Packet
-
-A Version Negotiation packet is sent by the server in response to a client
-packet of an unsupported version. It contains:
-
-* Octets 1-8: Connection ID (server-selected value, may be used in a subsequent
-  connection to reach the same server)
-* Octets 9-12: Proof (first 4 octets of client-selected connection ID)
-* Octets 13-16: Version (echoed)
-* Octets 17+: Payload (version list, containing 0 or more acceptable versions)
-
-See {{version-negotiation}} for a description of the version negotiation
-process.
-
-### Public Reset Packet
-
-A Public Reset packet is sent when the server has no state for a received
-packet. A server may therefore have to respond to either a long-form or a
-short-form packet. A public reset packet contains:
-
-* Octets 1-12: Proof (octets 1-12 of received packet)
-* Octets 13-16: Version (server version)
-
-For a client that sends a connection ID on every packet, a Public Reset
-packet received in response can be simply interpreted as:
-
-* Octets 1-8: Connection ID (echoed)
-* Octets 9-12: Proof (echoed packet number, which could be 1, 2, or 4 bytes
-  depending on the packet number size used by the client, followed by 0, 2, or 3
-  subsequent bytes from the client packet)
-* Octets 13-16: Version (server version)
-
-### Client Cleartext Packet
-
-A client cleartext packet may be sent during the handshake. It contains:
-* Octets 1-8: Connection ID (randomly chosen)
-* Octets 9-12: Packet number (low 4 octets, starts at a random 31-bit value)
-* Octets 13-16: Version
-* Octets 17+: Payload
-
-The client MUST choose a random value and use it as the Connection ID until the
-server replies with a server-selected Connection ID. The client's Connection ID
-is a suggestion to the server, as described further in {{connection-id}}.
-
-### Server Cleartext Packet
-
-A server cleartext packet may be sent during the handshake. It contains:
-* Octets 1-8: Connection ID (server-selected value)
-* Octets 9-12: Packet Number (low 4 octets, random 31-bit initial value)
-* Octets 13-16: Version (echoed)
-* Octets 17+: Payload
-
-### Encrypted Packet Types
-
-Packets encrypted with either 0-RTT or 1-RTT keys may be sent with long headers.
-Different packet types explicitly indicate the encryption level for ease of
-decryption. These packets contain:
-* Octets 1-8: Connection ID (client or server-selected, see {{connectionid}})
-* Octets 9-12: Packet Number (low 4 octets)
-* Octets 13-16: Version
-* Octets 17+: Payload
+Connection ID considerations are discussed in {{connection-id}}. Each packet is
+assigned a packet number by the sender, as described further in
+{{packet-number}}.
 
 ## Short Header
 
@@ -447,14 +389,14 @@ decryption. These packets contain:
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                     Packet Number (1/2/4)                     |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                            Payload                          ...
+|                       Encrypted Payload                     ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ```
 
 The short header is used after the version and 1-RTT keys are negotiated. This
 header has the following version-independent fields:
 * Octet 0: Flags
-  * Bit 0 (0x80): Header form, set to 0 for short headers.
+  * Bit 0 (0x80): HEADER_FORM, set to 0 for short headers.
   * Bit 1: CONNECTION_ID. Indicates presence of Connection ID field following
     the Flags byte.
 * Octets 1-8: Connection ID (optional)
@@ -470,83 +412,157 @@ this version, it contains:
   * 01: 1-RTT packet (packet number size = 1)
   * 02: 1-RTT packet (packet number size = 2)
   * 03: 1-RTT packet (packet number size = 4)
-* Octets 1-2/3/4 or 9-10/11/12: Packet Number (lower 8, 16, or 32 bits)
-* Remainder of this packet: Payload.
+* Octets 1 (if C bit is 0) or 8 (otherwise) onwards: Packet Number (lower 8, 
+  16, or 32 bits)
+* Remainder of this packet: Encrypted Payload (see {{encrypted-payload}}.)
 
 
-### Handling Packets from Different Versions
+## Version Negotiation Packet {version-negotiation-packet}
 
-When receiving a packet that is not associated with an existing connection,
-packets with a short header MUST be discarded.
+A Version Negotiation packet is sent by only the server and is a response to a
+client packet of an unsupported version. It uses a long header and contains:
 
-Implementations MUST assume that an unsupported version uses an unknown packet
-format with the exception of the following. Between different versions the
-following things are guaranteed to remain constant are:
+* Octet 0: 0x81 (Flags indicating long header and Version Negotiation packet 
+  type)
+* Octets 1-8: Connection ID (server-selected value, may be used in a subsequent
+  connection to reach the same server)
+* Octets 9-12: Proof (first 4 octets of client-selected connection ID)
+* Octets 13-16: Version (echoed)
+* Octets 17+: Payload (version list, containing 0 or more acceptable versions)
 
-* the location and size of the Flags field,
-
-* the location and value of the Version Field
-
-* the location and size of the Connection ID field, and
-
-* the Version (or Supported Versions, {{version-negotiation-packet}}) field.
-
-All other values MUST be ignored when processing a packet that contains an
-unsupported version.
-
-
-## Regular Packets
-
-Each Regular packet contains additional header fields followed by an encrypted
-payload, as shown below:
+The payload of the Version Negotiation packet is a list of 32-bit versions which
+the server supports, as shown below.
 
 ~~~
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                        [Version (32)]                         |
+|                    Supported Version 1 (32)                 ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                  Packet Number (8/16/32/48)                 ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                    {Encrypted Payload (*)}                  ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-~~~
-{: #regular-packet-format title="Regular Packet"}
-
-The fields in a Regular packet past the Common Header are the following:
-
-* QUIC Version: A 32-bit opaque tag that represents the version of the QUIC
-  protocol.  Only present in the client-to-server direction, and if the VERSION
-  flag is set.  Version Negotiation is described in {{version-negotiation}}.
-
-* Packet Number: The lower 8, 16, 32, or 48 bits of the packet number, based on
-  the PACKET_NUMBER_SIZE flag.  Each Regular packet is assigned a packet number
-  by the sender.  The first packet number is randomized (see
-  {{initial-packet-number}}).
-
-* Encrypted Payload: The remainder of a Regular packet is both authenticated and
-  encrypted once packet protection keys are available.  {{QUIC-TLS}} describes
-  packet protection in detail.  After decryption, the plaintext consists of a
-  sequence of frames, as shown in {{regular-packet-frames}}.  Frames are
-  described in {{frames}}.
-
-~~~
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                          Frame 1 (*)                        ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                          Frame 2 (*)                        ...
+|                    Supported Version 2 (32)                 ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
                                ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                          Frame N (*)                        ...
+|                    Supported Version N (32)                 ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
-{: #regular-packet-frames title="Contents of Encrypted Payload"}
+{: #version-negotiation-format title="Version Negotiation Packet"}
+
+A server that generates a version negotiation packet SHOULD include one of the
+reserved version numbers (those following the pattern 0x?a?a?a?a).  This ensures
+that clients are able to correctly handle an unsupported version.
+
+The design of version negotiation permits a server to avoid maintaining state
+for packets that it rejects in this fashion.  However, when the server generates
+a version negotiation packet, it cannot randomly generate a reserved version
+number.  This is because the server is required to include the same value in its
+transport parameters (see {{version-validation}}).  To avoid the selected
+version number changing during connection establishment, the reserved version
+can be generated as a function of values that will be available to the server
+when later generating its handshake packets.
+
+A pseudorandom function that takes client address information (IP and port) and
+the client selected version as input would ensure that there is sufficient
+variability in the values that a server uses.
+
+A client MAY send a packet using a reserved version number.  This can be used to
+solicit a list of supported versions from a server.
+
+See {{version-negotiation}} for a description of the version negotiation
+process.
+
+## Public Reset Packet {#public-reset-packet}
+
+A Public Reset packet is sent by only a server and is used to abruptly terminate
+communications. Public Reset is provided as an option of last resort for a
+server that does not have access to the state of a connection.  This is intended
+for use by a server that has lost state (for example, through a crash or
+outage). A server that wishes to indicate fatal errors with a connection MUST
+use a CONNECTION_CLOSE frame in preference to Public Reset if it has sufficient
+state to do so.
+
+A public reset packet contains:
+
+* Octet 0: 0x82 (Flags indicating long header and Public Reset packet type) 
+* Octets 1-12: Echoed data (octets 1-12 of received packet)
+* Octets 13-16: Version (server version)
+* Octets 17+: Public Reset Proof (optional, TBD)
+
+For a client that sends a connection ID on every packet, a Public Reset
+packet received in response can be simply interpreted as:
+
+* Octets 1-8: Connection ID (echoed)
+* Octets 9-12: Echoed packet number, which could be 1, 2, or 4 bytes depending
+  on the packet number size used by the client, followed by 0, 2, or 3
+  subsequent bytes from the client packet.
+* Octets 13-16: Version (server version)
+* Octets 17+: Public Reset Proof (optional, TBD)
+
+Whether the Public Reset Proof field is included in a Public Reset packet
+depends on the entity that generates the packet.
+
+A Public Reset packet sent by an endpoint indicates that it does not have the
+state necessary to continue with a connection.  In this case, the endpoint will
+include the fields that prove that it originally participated in the connection
+(see {{public-reset-proof}} for details).
+
+Upon receipt of a Public Reset packet that contains a valid proof, an endpoint
+MUST tear down state associated with the connection.  The endpoint MUST then
+cease sending packets on the connection and SHOULD discard any subsequent
+packets that arrive. A Public Reset that does not contain a valid proof MUST be
+ignored.
 
 
-## Packet Numbers
+### Public Reset Proof
+
+Details to be added.
+
+
+## Cleartext Packets {#cleartext-packet}
+
+Cleartext packets are sent during the handshake prior to key negotiation. A 
+server cleartext packet contains:
+
+* Octet 0: 0x83 (Flags indicating Long header and server cleartext packet type)
+* Octets 1-8: Connection ID (server-selected value)
+* Octets 9-12: Packet Number (low 4 octets, random 31-bit initial value)
+* Octets 13-16: Version (echoed)
+* Octets 17+: Payload
+
+A client cleartext packet contains:
+* Octet 0: 0x84 (Flags indicating long header and client cleartext packet type)
+* Octets 1-8: Connection ID (randomly chosen)
+* Octets 9-12: Packet number (low 4 octets, starts at a random 31-bit value)
+* Octets 13-16: Version
+* Octets 17+: Payload
+
+The client MUST choose a random value and use it as the Connection ID until the
+server replies with a server-selected Connection ID. The client's Connection ID
+is a suggestion to the server, as described further in {{connection-id}}. The
+payload of cleartext packets contains frames, as described in {{frames}}.
+
+## Encrypted Packets {#encrypted-packet}
+
+Packets encrypted with either 0-RTT or 1-RTT keys may be sent with long headers.
+Different packet types explicitly indicate the encryption level for ease of
+decryption. These packets contain:
+* Octet 0: 0x85 or 0x86 (Flags indicating long header and one of the two 
+  encrypted packet types)
+* Octets 1-8: Connection ID (client or server-selected, see {{connectionid}})
+* Octets 9-12: Packet Number (low 4 octets)
+* Octets 13-16: Version
+* Octets 17+: Encrypted Payload (see {{encrypted-payload}}.)
+
+The encrypted payload is both authenticated and encrypted using packet
+protection keys. {{QUIC-TLS}} describes packet protection in detail.  After
+decryption, the plaintext consists of a sequence of frames, as described in
+{{frames}}.
+
+## Connection ID {#connection-id}
+Describe how to distinguish between client-generated and server-generated
+connection IDs.
+
+## Packet Numbers {#packet-numbers}
 
 The packet number is a 64-bit unsigned number and is used as part of a
 cryptographic nonce for packet encryption.  Each endpoint maintains a separate
@@ -585,7 +601,6 @@ lowest outstanding packet number, the next packet uses a 16-bit or larger packet
 number encoding; whereas a 32-bit packet number is needed if packet 0x6AF0F7 is
 outstanding.
 
-
 ### Initial Packet Number
 
 The initial value for packet number MUST be a 31-bit random number.  That is,
@@ -597,12 +612,54 @@ packet number.  Once any packet has been acknowledged, subsequent packets can
 use a shorter packet number encoding.
 
 
-## Frames and Frame Types {#frames}
+## Handling Packets from Different Versions
 
-A Regular packet MUST contain at least one frame, and MAY contain multiple
-frames and multiple frame types.  Frames MUST fit within a single QUIC packet
-and MUST NOT span a QUIC packet boundary.  Each frame begins with a Frame Type
-byte, indicating its type, followed by additional type-dependent fields:
+Between different versions the following things are guaranteed to remain
+constant:
+
+* the location and size of the Flags field in both header forms,
+
+* the location of the HEADER_FORM bit in the Flags field in both header forms,
+
+* the location of the CONNECTION_ID bit in the Flags field in short headers,
+
+* the location and size of the Connection ID field in both header forms,
+
+* the location and value of the Version field in long headers, and
+
+* the location and value of the Packet Number field in long headers.
+
+Implementations MUST assume that an unsupported version uses an unknown packet
+format. All other values MUST be ignored when processing a packet that contains
+an unsupported version.
+
+
+# Frames and Frame Types {#frames}
+
+The payload of cleartext packets and the plaintext after decryption of encrypted
+packets consists of a sequence of frames, as shown in {{packet-frames}}.
+
+~~~
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                          Frame 1 (*)                        ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                          Frame 2 (*)                        ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+                               ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                          Frame N (*)                        ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~
+{: #packet-frames title="Contents of Encrypted Payload"}
+
+Encrypted payload MUST contain at least one frame, and MAY contain multiple
+frames and multiple frame types.
+
+Frames MUST fit within a single QUIC packet and MUST NOT span a QUIC packet
+boundary. Each frame begins with a Frame Type byte, indicating its type,
+followed by additional type-dependent fields:
 
 ~~~
  0                   1                   2                   3
@@ -633,92 +690,6 @@ document.
 | 0x40 - 0x7f      |  ACK               | {{frame-ack}}              |
 | 0x80 - 0xff      |  STREAM            | {{frame-stream}}           |
 |------------------|--------------------|----------------------------|
-
-## Version Negotiation Packet
-
-A Version Negotiation packet is only sent by the server, MUST have the VERSION
-flag set, and MUST include the full 64-bit Connection ID.  The remainder of the
-Version Negotiation packet is a list of 32-bit versions which the server
-supports, as shown below.
-
-~~~
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                    Supported Version 1 (32)                 ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                    Supported Version 2 (32)                 ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-                               ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                    Supported Version N (32)                 ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-~~~
-{: #version-negotiation-format title="Version Negotiation Packet"}
-
-A server that generates a version negotiation packet SHOULD include one of the
-reserved version numbers (those following the pattern 0x?a?a?a?a).  This ensures
-that clients are able to correctly handle an unsupported version.
-
-The design of version negotiation permits a server to avoid maintaining state
-for packets that it rejects in this fashion.  However, when the server generates
-a version negotiation packet, it cannot randomly generate a reserved version
-number.  This is because the server is required to include the same value in its
-transport parameters (see {{version-validation}}).  To avoid the selected
-version number changing during connection establishment, the reserved version
-can be generated as a function of values that will be available to the server
-when later generating its handshake packets.
-
-A pseudorandom function that takes client address information (IP and port) and
-the client selected version as input would ensure that there is sufficient
-variability in the values that a server uses.
-
-A client MAY send a packet using a reserved version number.  This can be used to
-solicit a list of supported versions from a server.
-
-
-## Public Reset Packet
-
-A Public Reset packet MUST have the PUBLIC_RESET flag set, and MUST include the
-full 64-bit connection ID.  The content of the Public Reset packet is TBD.
-
-~~~
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                    Public Reset Proof (*)                   ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-~~~
-{: #public-reset-format title="Public Reset Packet"}
-
-A Public Reset packet is used to abruptly terminate communications.  Public
-Reset is provided as an option of last resort for endpoints that do not have
-access to the state of a connection.  This is intended for use by an endpoint
-that has lost state (for example, through a crash or outage), or middleboxes
-that wish to indicate that a path is no longer usable.
-
-Endpoints that wish to indicate fatal errors with a connection MUST use a
-CONNECTION_CLOSE frame in preference to Public Reset if they have sufficient
-state to do so.
-
-Whether the Public Reset Proof field is included in a Public Reset packet
-depends on the entity that generates the packet.
-
-A Public Reset packet sent by an endpoint indicates that it does not have the
-state necessary to continue with a connection.  In this case, the endpoint will
-include the fields that prove that it originally participated in the connection
-(see {{public-reset-proof}} for details).
-
-Upon receipt of a Public Reset packet that contains a valid proof, an endpoint
-MUST tear down state associated with the connection.  The endpoint MUST then
-cease sending packets on the connection and SHOULD discard any subsequent
-packets that arrive.  A Public Reset that does not contain a valid proof MUST be
-ignored.
-
-
-### Public Reset Proof
-
-Details to be added.
 
 
 # Life of a Connection
