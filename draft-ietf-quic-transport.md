@@ -1233,9 +1233,9 @@ and 256 ACK blocks.  ACK blocks are ranges of acknowledged packets.
 
 To limit the ACK blocks to the ones that haven't yet been received by the
 sender, the sender SHOULD track the ack ranges in acks that have been
-acked and no longer includes them in the ACK.  In order to handle cases where
-the receiver is not sending data, and hence does not expect it's acks to be
-acked, it may bundle a PING frame with an ack approximately once per RTT to
+acked and no longer include them in future ACKs.  In order to handle cases
+where the receiver is not sending data, and hence does not expect it's acks to
+be acked, it may bundle a PING frame with an ack approximately once per RTT to
 gain confirmation of it's ACKs being delivered.  The receiver SHOULD track no
 more than 255 ack ranges because they are not expressible on the wire, and 
 MAY limit the number of ack ranges to a smaller value.
