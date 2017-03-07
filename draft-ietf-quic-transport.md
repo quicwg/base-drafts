@@ -1373,7 +1373,7 @@ The fields in the Timestamp Section are:
   delta in microseconds, from the beginning of the connection to the arrival
   of the packet indicated by Delta Largest Acknowledged.
 
-* Delta Largest Acked 1..N (opt, repeated): (Same as above.)  Repeated 
+* Delta Largest Acked 1..N (opt, repeated): (Same as above.)  Repeated
   "Num Timestamps - 1" times.
 
 * Time Since Previous Timestamp 1..N(opt, repeated): An optional 16-bit unsigned
