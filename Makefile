@@ -9,8 +9,10 @@ else
 endif
 
 latest::
-	@if grep -l ' $$' *.md; then ! echo "Trailing whitespace found"; fi
 	@err=0; for f in draft-*.md ; do \
+	  if grep -n ' $$' "$$f"; then \
+	    echo "$$f contains trailing whitespace"; err=1; \
+	  fi; \
 	  if grep -n '^.\{81\}' "$$f"; then \
 	    echo "$$f contains a line with >80 characters"; err=1; \
 	  fi; \
