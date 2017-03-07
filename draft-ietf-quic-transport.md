@@ -355,7 +355,7 @@ earlier.
 +                        Connection ID                          +
 |                                                               |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                  Packet Number / Proof                        |
+|                        Packet Number                          |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                           Version                             |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -370,27 +370,35 @@ inefficient, long headers MAY be used for 1-RTT packets. The long form allows
 for special packets, such as the version negotiation and the public reset
 packets to be represented in this uniform fixed-length packet format.
 
-The first octet (octet 0) contains the following fields.
+The Flags field (octet 0) contains the following version-independent fields.
 * Bit 0 (0x80): HEADER_FORM, set to 1 for long headers.
 * Bits 1-7: Packet Type, indicating one of 128 packet types. The following types
   are currently defined.
   * 01: Version Negotiation packet (see {{version-negotiation-packet}}.)
   * 02: Public Reset packet (see {{public-reset-packet}}.)
   * 03: Client Cleartext packet (see {{cleartext-packet}}.)
-  * 04: Server Cleartext packet indicating successful handshake (see 
-  {{cleartext-packet}}.)
+  * 04: Server Cleartext End-of-Handshake packet (see {{cleartext-packet}}.)
   * 05: Other Server Cleartext packet (see {{cleartext-packet}}.)
   * 06: 0-RTT Encrypted packet (see {{encrypted-packet}}.)
   * 07: 1-RTT Encrypted packet with key phase 0 (see {{encrypted-packet}}.)
   * 08: 1-RTT Encrypted packet with key phase 1 (see {{encrypted-packet}}.)
 
-The remainder of the packet layout is the same regardless of type, but the
-semantics of the fields are specific to each type (see corresponding sections
-for type-specific semantics.)
+A long-header packet has the following version-independent fields:
+* Octets 1-9: Connection ID
+* Octets 10-14: Packet Number
+* Octets 15-19: Version
 
-Connection ID considerations are discussed in {{connection-id}}. Each packet is
-assigned a packet number by the sender, as described further in
-{{packet-number}}.
+The remainder of the long-header packet is defined to be specific to a version.
+In this version, the rest of the packet contains:
+* Octets 20+: Payload
+
+The packet layout is the same for all long-header packet types, but the
+semantics of the fields are specific to each packet type. Type-specific
+semantics are described in {{version-negotiation-packet}},
+{{public-reset-packet}}, {{cleartext-packet}}, and {{encrypted-packet}}.
+
+Connection ID considerations are discussed in {{connection-id}} and packet
+number considerations in {{packet-number}}.
 
 ## Short Header
 
@@ -434,7 +442,7 @@ this version, it contains:
 * Remainder of this packet: Encrypted Payload (see {{encrypted-payload}}.)
 
 
-## Version Negotiation Packet {version-negotiation-packet}
+## Version Negotiation Packet {#version-negotiation-packet}
 
 A Version Negotiation packet is sent by only the server and is a response to a
 client packet of an unsupported version. It uses a long header and contains:
@@ -442,7 +450,7 @@ client packet of an unsupported version. It uses a long header and contains:
 * Octet 0: 0x81 (Flags indicating long header and Version Negotiation packet 
   type)
 * Octets 1-8: Connection ID (echoed)
-* Octets 9-12: Proof (first 4 octets of client-selected connection ID)
+* Octets 9-12: Packet Number (echoed)
 * Octets 13-16: Version (echoed)
 * Octets 17+: Payload (version list, containing 0 or more acceptable versions)
 
@@ -538,7 +546,7 @@ Details to be added.
 ## Cleartext Packets {#cleartext-packet}
 
 Cleartext packets are sent during the handshake prior to key negotiation. A 
-client Cleartext packet contains:
+Client Cleartext packet contains:
 
 * Octet 0: 0x83 (Flags indicating long header and client Cleartext packet type)
 * Octets 1-8: Connection ID (randomly chosen)
@@ -546,7 +554,7 @@ client Cleartext packet contains:
 * Octets 13-16: Version
 * Octets 17+: Payload
 
-A server Cleartext packet indicating a successful handshake contains:
+A Server Cleartext End-of-Handshake packet contains:
 
 * Octet 0: 0x84 (Flags indicating Long header and appropriate server Cleartext 
   packet type)
@@ -555,7 +563,7 @@ A server Cleartext packet indicating a successful handshake contains:
 * Octets 13-16: Version (echoed)
 * Octets 17+: Payload
 
-Other server Cleartext packets contain:
+Other Server Cleartext packets contain:
 
 * Octet 0: 0x85 (Flags indicating Long header and appropriate server Cleartext 
   packet type)
@@ -564,15 +572,15 @@ Other server Cleartext packets contain:
 * Octets 13-16: Version (echoed)
 * Octets 17+: Payload
 
-
 The client MUST choose a random value and use it as the Connection ID until the
-server replies with a server-selected Connection ID. The client's Connection ID
-is a suggestion to the server, as described further in {{connection-id}}. A
-server may respond to a client Cleartext packet with one of the two server
-Cleartext packets, using the server-selected Connection ID on only the final
-Cleartext packet that indicates successful handshake completion.
+server replies with a server-selected Connection ID. Server-selected Connection
+IDs are used after a successful handshake, cleanly distinguishing packets that
+use them from packets using client-selected Connection IDs. All packets
+including and following a Server Cleartext End-of-Handshake packet use a
+server-selected Connection ID, as described in {{connection-id}}.
 
 The payload of Cleartext packets contains frames, as described in {{frames}}.
+(TODO: Add hash before frames.)
 
 ## Encrypted Packets {#encrypted-packet}
 
