@@ -244,8 +244,8 @@ A server can send a complete response prior to the client sending an entire
 request if the response does not depend on any portion of the request that has
 not been sent and received. When this is true, a server MAY request that the
 client abort transmission of a request without error by triggering a QUIC
-REQUEST_RST after sending a complete response and closing its stream. Clients
-MUST NOT discard complete responses as a result of receiving a REQUEST_RST,
+DISINTEREST after sending a complete response and closing its stream. Clients
+MUST NOT discard complete responses as a result of receiving a DISINTEREST,
 though clients can always discard responses at their discretion for other
 reasons.  Servers SHOULD NOT abort a response in progress as a result of
 receiving a solicited RST_STREAM.
@@ -367,7 +367,7 @@ frames sent on the control stream, and response body (if any) sent via the
 corresponding data stream.
 
 If a promised push stream is not needed by the client, the client SHOULD send a
-QUIC REQUEST_RST on the promised stream with an appropriate error code (e.g.
+QUIC DISINTEREST on the promised stream with an appropriate error code (e.g.
 HTTP_PUSH_REFUSED, HTTP_PUSH_ALREADY_IN_CACHE; see {{errors}}).  This asks the
 server not to transfer the data and indicates that it will be discarded upon
 receipt.

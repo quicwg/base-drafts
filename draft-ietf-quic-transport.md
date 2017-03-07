@@ -574,7 +574,7 @@ document.
 | 0x05             |  BLOCKED           | {{frame-blocked}}          |
 | 0x06             |  STOP_WAITING      | {{frame-stop-waiting}}     |
 | 0x07             |  PING              | {{frame-ping}}             |
-| 0x08             |  REQUEST_RST       | {{frame-request-rst}}      |
+| 0x08             |  DISINTEREST       | {{frame-disinterest}}      |
 | 0x40 - 0x7f      |  ACK               | {{frame-ack}}              |
 | 0x80 - 0xff      |  STREAM            | {{frame-stream}}           |
 |------------------|--------------------|----------------------------|
@@ -1471,10 +1471,11 @@ The fields are:
 
 
 
-## REQUEST_RST Frame {#frame-request-rst}
+## DISINTEREST Frame {#frame-disinterest}
 
-An endpoint may use a REQUEST_RST frame (type=0x08) to request a peer to
-abruptly terminate transmission on a stream.  The frame is as follows:
+An endpoint may use a DISINTEREST frame (type=0x08) to communicate that incoming
+data is being discarded on receipt at application request.  This signals a peer
+to abruptly terminate transmission on a stream.  The frame is as follows:
 
 ~~~
  0                   1                   2                   3
@@ -1488,10 +1489,10 @@ abruptly terminate transmission on a stream.  The frame is as follows:
 
 The fields are:
 
-* Error code: A 32-bit error code which indicates why the stream should be
-  closed.
+* Error code: A 32-bit error code which indicates why the data is being
+  discarded.
 
-* Stream ID: The 32-bit Stream ID of the stream being terminated.
+* Stream ID: The 32-bit Stream ID of the stream being ignored.
 
 
 ## PADDING Frame {#frame-padding}
@@ -1824,7 +1825,7 @@ An endpoint receiving a RST_STREAM frame causes the stream state to become
 ### half-closed (local)
 
 A stream that is in the "half-closed (local)" state MUST NOT be used for sending
-STREAM frames; WINDOW_UPDATE, RST_STREAM, and REQUEST_RST MAY be sent in this
+STREAM frames; WINDOW_UPDATE, RST_STREAM, and DISINTEREST MAY be sent in this
 state.
 
 A stream transitions from this state to "closed" when a STREAM frame that
@@ -1901,18 +1902,18 @@ permitted in the description of a state as a connection error
 ## Solicited State Transitions
 
 If an endpoint is no longer interested in the data being received, it MAY send a
-REQUEST_RST frame on a stream in the "open" or "half-closed (local)" state to
+DISINTEREST frame on a stream in the "open" or "half-closed (local)" state to
 request closure of the stream in the opposite direction.  This typically
 indicates that the receiving application is no longer reading from the stream
 and all future data will be discarded upon receipt.
 
-STREAM frames received after sending REQUEST_RST are still counted toward the
+STREAM frames received after sending DISINTEREST are still counted toward the
 connection and stream flow-control windows.  Even though these frames will be
-discarded, because they are sent before their sender receives the REQUEST_RST,
+discarded, because they are sent before their sender receives the DISINTEREST,
 the sender will consider the frames to count against its flow-control windows.
 
-Upon receipt of a REQUEST_RST frame, an endpoint SHOULD send a RST_STREAM with
-an error code of QUIC_RECEIVED_RST.  If the REQUEST_RST frame is received on a
+Upon receipt of a DISINTEREST frame, an endpoint SHOULD send a RST_STREAM with
+an error code of QUIC_RECEIVED_RST.  If the DISINTEREST frame is received on a
 stream that is already in the "half-closed (local)" or "closed" states, a
 RST_STREAM frame SHOULD still be sent and retransmission of previously-sent
 STREAM frames SHOULD be cancelled.
@@ -2122,7 +2123,7 @@ should be taken on the data already received is an application-specific issue,
 but it will often be the case that upon receipt of a RST_STREAM an endpoint
 will choose to stop sending data in its own direction. If the sender of a
 RST_STREAM wishes to explicitly state that no future data will be processed,
-that endpoint MAY send a REQUEST_RST frame at the same time.
+that endpoint MAY send a DISINTEREST frame at the same time.
 
 ### Offset Increment
 
@@ -2199,7 +2200,7 @@ QUIC_MISSING_PAYLOAD (0x80000030):
 : The packet contained no payload.
 
 QUIC_RECEIVED_RST (0x80000035):
-: Terminating stream because peer sent a RST_STREAM or REQUEST_RST.
+: Terminating stream because peer sent a RST_STREAM or DISINTEREST.
 
 QUIC_INVALID_STREAM_DATA (0x8000002E):
 : STREAM frame data is malformed.
