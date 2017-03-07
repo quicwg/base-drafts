@@ -59,10 +59,6 @@ normative:
 
 informative:
 
-  RFC3782:
-  RFC6582:
-  RFC5682:
-  RFC6937:
   I-D.dukkipati-tcpm-tcp-loss-probe:
 
 --- abstract
@@ -401,10 +397,9 @@ in response to 0RTT packets.
 
 ### Tail Loss Probe and Retransmission Timeout
 
-Tail loss probes and retransmission timeouts are an alarm based mechanism
-to recover from cases when there are outstanding retransmittable packets,
-but an acknowledgement has not been received in a timely manner.   
-
+Tail loss probes and retransmission timeouts{{!RFC6298}} are an alarm based
+mechanism to recover from cases when there are outstanding retransmittable
+packets, but an acknowledgement has not been received in a timely manner.
 
 ### Pseudocode
 
@@ -515,11 +510,12 @@ Pseudocode for DetectLostPackets follows:
 
 # Congestion Control
 
-(describe NewReno-style congestion control for QUIC.)
+(describe NewReno-style congestion control {{!RFC6582}} and {{!RFC3782}} for QUIC.)
 (describe appropriate byte counting.)
 (define recovery based on packet numbers.)
 (describe min_rtt based hystart.)
-(describe how QUIC's F-RTO delays reducing CWND until an ack is received.)
+(describe how QUIC's F-RTO {{!RFC5682}} delays reducing CWND until an ack is received.)
+(describe PRR {{!RFC6937}})
 
 
 # IANA Considerations
