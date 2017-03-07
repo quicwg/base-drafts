@@ -510,7 +510,7 @@ Pseudocode for DetectLostPackets follows:
 
 # Congestion Control
 
-(describe NewReno-style congestion control {{!RFC6582}} and {{!RFC3782}} for QUIC.)
+(describe NewReno-style congestion control {{!RFC6582}} for QUIC.)
 (describe appropriate byte counting.)
 (define recovery based on packet numbers.)
 (describe min_rtt based hystart.)
