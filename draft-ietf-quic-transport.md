@@ -1665,12 +1665,9 @@ The details of loss detection and congestion control are described in
 {{QUIC-RECOVERY}}.
 
 A receiver acknowledges receipt of a received packet by sending one or more ACK
-frames containing the packet number of the received packet.  To avoid perpetual
-acknowledgment between endpoints, a receiver MUST NOT generate an ACK frame in
-response to every packet containing only ACK frames.  However, since it is
-possible that an endpoint might only send packets containing ACK frames (or
-other non-retransmittable frames), the receiving peer MAY send an ACK frame
-after a reasonable number (currently 20) of such packets have been received.
+frames containing the packet number of the received packet.  To avoid creating
+an indefinite feedback loop, an endpoint MUST NOT generate an ACK frame in
+response to a packet containing only ACK or PADDING frames.
 
 Strategies and implications of the frequency of generating acknowledgments are
 discussed in more detail in {{QUIC-RECOVERY}}.
