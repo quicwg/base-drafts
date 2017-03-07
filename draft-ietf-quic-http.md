@@ -214,7 +214,10 @@ control streams MUST be fully consumed, or the connection terminated.
 
 All message control streams are considered critical to the HTTP connection.  If
 a message control stream is terminated abruptly for any reason, this MUST be
-treated as a connection error of type HTTP_RST_CONTROL_STREAM.
+treated as a connection error of type HTTP_RST_CONTROL_STREAM.  When a message
+control stream terminates cleanly, if the last frame on the stream was
+truncated, this MUST be treated as a connection error (see HTTP_MALFORMED_* in
+{{http-error-codes}}).
 
 Pairs of streams must be utilized sequentially, with no gaps.  The data stream
 MUST be reserved with the QUIC implementation when the message control stream
