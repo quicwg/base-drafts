@@ -247,7 +247,8 @@ client abort transmission of a request without error by triggering a QUIC
 REQUEST_RST after sending a complete response and closing its stream. Clients
 MUST NOT discard complete responses as a result of receiving a REQUEST_RST,
 though clients can always discard responses at their discretion for other
-reasons.
+reasons.  Servers SHOULD NOT abort a response in progress as a result of
+receiving a solicited RST_STREAM.
 
 ### Header Compression
 
