@@ -1,5 +1,62 @@
 [
   {
+    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/363",
+    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
+    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/363/labels{/name}",
+    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/363/comments",
+    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/363/events",
+    "html_url": "https://github.com/quicwg/base-drafts/pull/363",
+    "id": 212306824,
+    "number": 363,
+    "title": "HTTP/2 Guidance and Extensions",
+    "user": {
+      "login": "MikeBishop",
+      "id": 4273797,
+      "avatar_url": "https://avatars3.githubusercontent.com/u/4273797?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/MikeBishop",
+      "html_url": "https://github.com/MikeBishop",
+      "followers_url": "https://api.github.com/users/MikeBishop/followers",
+      "following_url": "https://api.github.com/users/MikeBishop/following{/other_user}",
+      "gists_url": "https://api.github.com/users/MikeBishop/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/MikeBishop/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/MikeBishop/subscriptions",
+      "organizations_url": "https://api.github.com/users/MikeBishop/orgs",
+      "repos_url": "https://api.github.com/users/MikeBishop/repos",
+      "events_url": "https://api.github.com/users/MikeBishop/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/MikeBishop/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 481871627,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/http",
+        "name": "http",
+        "color": "fbca04",
+        "default": false
+      }
+    ],
+    "state": "open",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 0,
+    "created_at": "2017-03-07T01:54:03Z",
+    "updated_at": "2017-03-07T01:54:03Z",
+    "closed_at": null,
+    "pull_request": {
+      "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/363",
+      "html_url": "https://github.com/quicwg/base-drafts/pull/363",
+      "diff_url": "https://github.com/quicwg/base-drafts/pull/363.diff",
+      "patch_url": "https://github.com/quicwg/base-drafts/pull/363.patch"
+    },
+    "body": "Collates the HTTP/2 migration guidance from various places into a single section, and expands on details about how HTTP/2 extensions can be used/ported.  In the process, I added more IANA stuff, which should address the HTTP portion of #359.\r\n\r\nBuilds on #274; Closes #242."
+  },
+  {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/361",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
     "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/361/labels{/name}",
@@ -40,7 +97,7 @@
     "milestone": null,
     "comments": 0,
     "created_at": "2017-03-07T00:52:24Z",
-    "updated_at": "2017-03-07T01:50:21Z",
+    "updated_at": "2017-03-07T01:52:45Z",
     "closed_at": null,
     "pull_request": {
       "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/361",
@@ -1920,7 +1977,8 @@
     "updated_at": "2017-02-20T00:43:23Z",
     "closed_at": null,
     "body": "Google-QUIC had an issue where post-handshake QUIC packets were being dropped, because a bit changed in the public flags, and a middlebox no longer identified it as QUIC.\r\n\r\nIn order to ensure the entire public flags byte is usable, I suggest we GREASE it by defining the entire space as valid.\r\n\r\nBuilding on Jana's proposal for the public header with a flags byte as a set of codepoints: https://gist.github.com/janaiyengar/b05acb3af17d6e938d25befc69c11eae\r\n\r\nThe goal is to provide a simple mathematical mapping from any value of the public flags onto a frame type.  \r\n\r\nMy suggestion is to lookup the frame type, and if it's not defined, mod the flags value by the number of frame types defined in that phase(short or long form) and pick the type with that index when ordering the frame types by value.\r\n\r\nIf an initial packet number is chosen randomly, and the connection ID is as well, greasing the flags byte and version (#112 and #296) covers everything that is not encrypted."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/310",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -1978,8 +2036,7 @@
     "updated_at": "2017-02-16T03:03:32Z",
     "closed_at": null,
     "body": "The text for `DetectLostPackets` claims that `acked_packet` is a packet number, but the code shows it as having a `packet_number` field, as well as a `time_sent` field.  Maybe a TimeSent() lookup function would work, but at the level that this code operates, I think that it would be better to talk about packets in the abstract.  A real implementation might not carry around all the information a packet might accumulate, but that's for real implementations to worry about."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/309",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3767,7 +3824,8 @@
     "updated_at": "2017-02-01T01:50:29Z",
     "closed_at": null,
     "body": "The HTTP/QUIC mapping document is missing consideration for HTTP/2 extension mechanisms. This is part of the charter text:\r\n\r\n> This mapping will accommodate the extension mechanisms defined in the HTTP/2 specification.\r\n\r\nRFC 7540 (https://tools.ietf.org/html/rfc7540#section-5.5) defines three extension mechanisms, lets order these as:\r\n\r\n1. New frame types\r\n2. New error codes\r\n3. New settings\r\n\r\nI can see how 1 and 2 might work out, following Mike's example of augmenting existing definitions and allowing for things that exist in the HTTP/2 and HTTP/QUIC spaces to be managed somewhat independently. A concrete use case I have is the ALTSVC frame (especially when used on stream 0), so I'm happy to contribute towards this issue with some guidance.\r\n\r\n3 has some problems related to proposed SETTINGS changes.\r\n\r\nFinally, extensions that could change of semantics are a bit problematic (does it change the HTTP or the QUIC semantic, if that either of those is even possible). Additionally,  the negotiation of these is trickier given the additional negotation concerns of QUIC (0-RTT etc).\r\n"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/241",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3825,8 +3883,7 @@
     "updated_at": "2017-02-03T03:00:54Z",
     "closed_at": null,
     "body": "For example if the version negotiation packet is lost, there's no ACK frame for the receiver to signal anything to the sender, we should specify what the loss recovery behavior for version negotiation and other special packets is."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/240",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5544,7 +5601,8 @@
     "updated_at": "2017-01-24T04:29:04Z",
     "closed_at": null,
     "body": "S 5.2.1 contains a bunch of instructions for how to deal with packet number 2^64 but (for instance) the connection flow control window is 64-bits in absolute values, so given that we're mostly sending data, it seems improbable you will get to 2^64 packets."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/188",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5602,8 +5660,7 @@
     "updated_at": "2017-01-24T00:55:49Z",
     "closed_at": null,
     "body": "> **9.1.1. idle**\r\nAll streams start in the “idle” state.\r\n...\r\nReceiving any frame other than STREAM or RST_STREAM on a stream in this state MUST be treated as a connection error (Section 11) of type YYYY.\r\n\r\nReceiving a WINDOW_UPDATE frame (or probably any other frame) for a stream before the first STREAM frame for that stream due to packet reordering/loss should not be treated as a connection error (causing a connection reset)."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/187",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7541,7 +7598,8 @@
     "updated_at": "2017-01-15T21:33:34Z",
     "closed_at": null,
     "body": "If we do this badly, there might be two versions of QUIC for which the transport parameters are confusable in a way that confounds the validation of version negotiation because the transport parameters are interpreted differently for different QUIC versions.\r\n\r\nWe need to write that into the security considerations.  We might recommend preserving the initial part of the transport parameters extension, or - better yet - using a new extension codepoint when the format needs to change."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/119",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7606,8 +7664,7 @@
     "updated_at": "2017-02-15T17:30:17Z",
     "closed_at": null,
     "body": "QUIC currently has the ability to embed this in the source address token.  I guess that this is primarily because they both happen at the same time (during a stateless reject).\r\n\r\nWe could turn this into a transport parameter, I guess, but that doesn't work for HelloRetryRequest."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/116",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -9674,7 +9731,8 @@
     "updated_at": "2016-11-28T05:20:46Z",
     "closed_at": null,
     "body": "From @janaiyengar:\r\n\r\n> We need rules using\r\n> packet numbers, such that an old packet with a key phase matching the\r\n> current expected should not cause the connection to blow up.\r\n\r\nWith multiple key updates, there is a possibility that packets from epoch n could collide with packets that were sent in epoch n+2.  This is unlikely, but still something implementations need to handle.  It's not a problem as such unless you insist that connections blow up on decryption failure (which we shouldn't, that's a DoS vector).\r\n\r\nIt's also not a really bad problem because we have packet numbers that should identify the reordered packet as belonging to the older epoch.  We know what the keys were at that time (if we chose to retain them), so it's not even the case that we need to discard the packet every time.\r\n\r\n\r\n"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/25",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -9732,8 +9790,7 @@
     "updated_at": "2017-01-25T02:03:15Z",
     "closed_at": null,
     "body": "The design for TLS 1.3 KeyUpdate ensures that a compromise of keys after a KeyUpdate has been completed doesn't result in a compromise of all prior keys on that connection.\r\n\r\nThis is not true in QUIC.  QUIC uses a TLS exporter to obtain its initial seed keys.  As long as the exporter secret remains viable (and it will by default in most TLS stacks), then it will be able to compromise any QUIC packet protection keys.\r\n\r\nWe can't close the TLS connection on stream 1 early because it is desirable to have new session tickets issued to clients over time, especially if a server wants to update keys in response to mobility or other significant events.\r\n\r\nWe could recommend that TLS stacks provide an API for destroying an exporter secret, but that would interact poorly with things like token binding which use the exporter secret constantly."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/20",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
