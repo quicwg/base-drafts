@@ -699,8 +699,8 @@ authenticated packet.
 A packet number is decoded by finding the packet number value that is closest to
 the next expected packet.  The next expected packet is the highest received
 packet number plus one.  For example, if the highest successfully authenticated
-packet had a packet number of 0x00000017aa82f30e, then a packet containing a 16-bit
-value of 0xaa821f94 will be decoded as 0x7aa831f94.
+packet had a packet number of 0x00000017aa82f30e, then a packet containing a
+16-bit value of 0xaa821f94 will be decoded as 0x7aa831f94.
 
 ### Initial Packet Number
 
@@ -711,11 +711,11 @@ the value is selected from an uniform random distribution between 0 and 2^31-1.
 ### Packet Number Echo {#packet-number-echo}
 
 If present, the Packet Number Echo field contains the least significant 32 bits
-of the highest packet number seen in the opposite direction before
-this packet was sent. This allows devices along the path to estimate round-trip
-times and observe indications of loss, for passive performance measurement of
-QUIC flows equivalent to present techniques using TCP sequence and
-acknowledgement numbers and/or timestamps.
+of the highest packet number seen in the opposite direction before this packet
+was sent. This allows devices along the path to estimate round-trip times and
+observe indications of loss, for passive performance measurement of QUIC flows
+equivalent to present techniques using TCP sequence and acknowledgement numbers
+and/or timestamps.
 
 The Packet Number Echo field SHOULD be present on 1-RTT packets containing at
 least one ACK frame (see {{frame-ack}}). For efficiency's sake, it MAY be
