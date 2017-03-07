@@ -442,106 +442,6 @@
     "body": "First pass at removing the STOP_WAITING frame.  Intends to resolve #66 ."
   },
   {
-    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/357",
-    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
-    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/357/labels{/name}",
-    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/357/comments",
-    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/357/events",
-    "html_url": "https://github.com/quicwg/base-drafts/pull/357",
-    "id": 211586432,
-    "number": 357,
-    "title": "Use definition lists more",
-    "user": {
-      "login": "martinthomson",
-      "id": 67641,
-      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/martinthomson",
-      "html_url": "https://github.com/martinthomson",
-      "followers_url": "https://api.github.com/users/martinthomson/followers",
-      "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
-      "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
-      "organizations_url": "https://api.github.com/users/martinthomson/orgs",
-      "repos_url": "https://api.github.com/users/martinthomson/repos",
-      "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/martinthomson/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "labels": [
-      {
-        "id": 481871311,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/editorial",
-        "name": "editorial",
-        "color": "0e8a16",
-        "default": false
-      },
-      {
-        "id": 481871399,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
-        "name": "transport",
-        "color": "fbca04",
-        "default": false
-      }
-    ],
-    "state": "open",
-    "locked": false,
-    "assignee": {
-      "login": "janaiyengar",
-      "id": 11067604,
-      "avatar_url": "https://avatars1.githubusercontent.com/u/11067604?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/janaiyengar",
-      "html_url": "https://github.com/janaiyengar",
-      "followers_url": "https://api.github.com/users/janaiyengar/followers",
-      "following_url": "https://api.github.com/users/janaiyengar/following{/other_user}",
-      "gists_url": "https://api.github.com/users/janaiyengar/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/janaiyengar/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/janaiyengar/subscriptions",
-      "organizations_url": "https://api.github.com/users/janaiyengar/orgs",
-      "repos_url": "https://api.github.com/users/janaiyengar/repos",
-      "events_url": "https://api.github.com/users/janaiyengar/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/janaiyengar/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "assignees": [
-      {
-        "login": "janaiyengar",
-        "id": 11067604,
-        "avatar_url": "https://avatars1.githubusercontent.com/u/11067604?v=3",
-        "gravatar_id": "",
-        "url": "https://api.github.com/users/janaiyengar",
-        "html_url": "https://github.com/janaiyengar",
-        "followers_url": "https://api.github.com/users/janaiyengar/followers",
-        "following_url": "https://api.github.com/users/janaiyengar/following{/other_user}",
-        "gists_url": "https://api.github.com/users/janaiyengar/gists{/gist_id}",
-        "starred_url": "https://api.github.com/users/janaiyengar/starred{/owner}{/repo}",
-        "subscriptions_url": "https://api.github.com/users/janaiyengar/subscriptions",
-        "organizations_url": "https://api.github.com/users/janaiyengar/orgs",
-        "repos_url": "https://api.github.com/users/janaiyengar/repos",
-        "events_url": "https://api.github.com/users/janaiyengar/events{/privacy}",
-        "received_events_url": "https://api.github.com/users/janaiyengar/received_events",
-        "type": "User",
-        "site_admin": false
-      }
-    ],
-    "milestone": null,
-    "comments": 0,
-    "created_at": "2017-03-03T03:33:41Z",
-    "updated_at": "2017-03-03T03:33:41Z",
-    "closed_at": null,
-    "pull_request": {
-      "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/357",
-      "html_url": "https://github.com/quicwg/base-drafts/pull/357",
-      "diff_url": "https://github.com/quicwg/base-drafts/pull/357.diff",
-      "patch_url": "https://github.com/quicwg/base-drafts/pull/357.patch"
-    },
-    "body": "There were a few places where bullet lists were used to carry definitions.  This switches to using definition lists.  I also aligned the transport parameter table."
-  },
-  {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/356",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
     "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/356/labels{/name}",
@@ -1970,8 +1870,7 @@
     "updated_at": "2017-02-20T03:19:39Z",
     "closed_at": null,
     "body": "The draft declares:\r\n> The default idle timeout for a QUIC connection is 30 seconds\r\n\r\nBut there are no situations in which a default is actually needed, since the parameter is mandatory to signal."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/323",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -2029,7 +1928,8 @@
     "updated_at": "2017-02-21T11:43:58Z",
     "closed_at": null,
     "body": "The text currently mandates (MUST!) a 4 times safety margin against reordering when picking the packet number size.  This is purely a safety margin feature, so mandating a value isn't justified.\r\n\r\nAn implementation could, though perhaps it is unwise, use a much smaller packet number than this.  The risk is that there is reordering greater than 2^size and the packets are delivered but cannot be recovered at the receiver.  That's terrible, it will trigger loss recovery and send bad signals.  However, the protocol doesn't actually break.\r\n\r\nAt a minimum, we should make this a recommendation.  Setting a mandatory floor on the value might be reasonable, but I'd be reluctant to do that unless it was pretty low, or if the value were different for different packet number sizes (smaller margins are probably more justifiable for larger packet number encodings).\r\n\r\nIdeally, we should science this and try to measure probabilities of reordering.  Ideally reordering probability as a function of outstanding packets."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/311",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3781,8 +3681,7 @@
     "updated_at": "2017-02-01T01:50:29Z",
     "closed_at": null,
     "body": "The HTTP/QUIC mapping document is missing consideration for HTTP/2 extension mechanisms. This is part of the charter text:\r\n\r\n> This mapping will accommodate the extension mechanisms defined in the HTTP/2 specification.\r\n\r\nRFC 7540 (https://tools.ietf.org/html/rfc7540#section-5.5) defines three extension mechanisms, lets order these as:\r\n\r\n1. New frame types\r\n2. New error codes\r\n3. New settings\r\n\r\nI can see how 1 and 2 might work out, following Mike's example of augmenting existing definitions and allowing for things that exist in the HTTP/2 and HTTP/QUIC spaces to be managed somewhat independently. A concrete use case I have is the ALTSVC frame (especially when used on stream 0), so I'm happy to contribute towards this issue with some guidance.\r\n\r\n3 has some problems related to proposed SETTINGS changes.\r\n\r\nFinally, extensions that could change of semantics are a bit problematic (does it change the HTTP or the QUIC semantic, if that either of those is even possible). Additionally,  the negotiation of these is trickier given the additional negotation concerns of QUIC (0-RTT etc).\r\n"
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/241",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3840,7 +3739,8 @@
     "updated_at": "2017-02-03T03:00:54Z",
     "closed_at": null,
     "body": "For example if the version negotiation packet is lost, there's no ACK frame for the receiver to signal anything to the sender, we should specify what the loss recovery behavior for version negotiation and other special packets is."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/240",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5558,8 +5458,7 @@
     "updated_at": "2017-01-24T04:29:04Z",
     "closed_at": null,
     "body": "S 5.2.1 contains a bunch of instructions for how to deal with packet number 2^64 but (for instance) the connection flow control window is 64-bits in absolute values, so given that we're mostly sending data, it seems improbable you will get to 2^64 packets."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/188",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5617,7 +5516,8 @@
     "updated_at": "2017-01-24T00:55:49Z",
     "closed_at": null,
     "body": "> **9.1.1. idle**\r\nAll streams start in the “idle” state.\r\n...\r\nReceiving any frame other than STREAM or RST_STREAM on a stream in this state MUST be treated as a connection error (Section 11) of type YYYY.\r\n\r\nReceiving a WINDOW_UPDATE frame (or probably any other frame) for a stream before the first STREAM frame for that stream due to packet reordering/loss should not be treated as a connection error (causing a connection reset)."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/187",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7555,8 +7455,7 @@
     "updated_at": "2017-01-15T21:33:34Z",
     "closed_at": null,
     "body": "If we do this badly, there might be two versions of QUIC for which the transport parameters are confusable in a way that confounds the validation of version negotiation because the transport parameters are interpreted differently for different QUIC versions.\r\n\r\nWe need to write that into the security considerations.  We might recommend preserving the initial part of the transport parameters extension, or - better yet - using a new extension codepoint when the format needs to change."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/119",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7621,7 +7520,8 @@
     "updated_at": "2017-02-15T17:30:17Z",
     "closed_at": null,
     "body": "QUIC currently has the ability to embed this in the source address token.  I guess that this is primarily because they both happen at the same time (during a stateless reject).\r\n\r\nWe could turn this into a transport parameter, I guess, but that doesn't work for HelloRetryRequest."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/116",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -9688,8 +9588,7 @@
     "updated_at": "2016-11-28T05:20:46Z",
     "closed_at": null,
     "body": "From @janaiyengar:\r\n\r\n> We need rules using\r\n> packet numbers, such that an old packet with a key phase matching the\r\n> current expected should not cause the connection to blow up.\r\n\r\nWith multiple key updates, there is a possibility that packets from epoch n could collide with packets that were sent in epoch n+2.  This is unlikely, but still something implementations need to handle.  It's not a problem as such unless you insist that connections blow up on decryption failure (which we shouldn't, that's a DoS vector).\r\n\r\nIt's also not a really bad problem because we have packet numbers that should identify the reordered packet as belonging to the older epoch.  We know what the keys were at that time (if we chose to retain them), so it's not even the case that we need to discard the packet every time.\r\n\r\n\r\n"
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/20",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
