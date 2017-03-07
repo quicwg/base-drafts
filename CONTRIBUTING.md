@@ -59,13 +59,13 @@ commits will only be responded to with best effort, and may not be seen.
 
 ## Resolving Issues
 
-The `open` issues in the issues list are those that we are currently or plan to discuss. When an issue is `closed`, it implies that the group has consensus and it is reflected in the draft(s). If substantive new information is brought to our attention, issues can be reopened by the Chairs.
-
-Issues will be labeled by the Chairs as either `editorial` or `design`.
+Issues will be labeled by the Chairs as either `editorial` or `design`:
 
 * **Design** issues require discussion and consensus in the Working Group. This discussion can happen both in the issue and on the [Working Group mailing list](https://www.ietf.org/mailman/listinfo/quic), as outlined below.
 
 * **Editorial** issues can be dealt with by the editor(s) without consensus or notification. Typically, any discussion will take place on the issue itself.
+
+The `open` design issues in the issues list are those that we are currently or plan to discuss. When a design issue is `closed`, it implies that the issue has a proposed resolution that is reflected in the drafts; if a `closed` design issue is labeled with `has-consensus`, it means that the incorporated resolution has Working Group consensus.
 
 Design issues can be discussed on the mailing list or the issues list. The editors can also propose resolutions to design issues for the group's consideration by incorporating them into the draft(s).
 
