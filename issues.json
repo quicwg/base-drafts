@@ -1,5 +1,194 @@
 [
   {
+    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/368",
+    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
+    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/368/labels{/name}",
+    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/368/comments",
+    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/368/events",
+    "html_url": "https://github.com/quicwg/base-drafts/pull/368",
+    "id": 212368155,
+    "number": 368,
+    "title": "Packet number echo with fixed-length, 32-bit packet and echo numbers",
+    "user": {
+      "login": "britram",
+      "id": 1884116,
+      "avatar_url": "https://avatars3.githubusercontent.com/u/1884116?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/britram",
+      "html_url": "https://github.com/britram",
+      "followers_url": "https://api.github.com/users/britram/followers",
+      "following_url": "https://api.github.com/users/britram/following{/other_user}",
+      "gists_url": "https://api.github.com/users/britram/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/britram/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/britram/subscriptions",
+      "organizations_url": "https://api.github.com/users/britram/orgs",
+      "repos_url": "https://api.github.com/users/britram/repos",
+      "events_url": "https://api.github.com/users/britram/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/britram/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+
+    ],
+    "state": "open",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 0,
+    "created_at": "2017-03-07T08:57:08Z",
+    "updated_at": "2017-03-07T13:23:45Z",
+    "closed_at": null,
+    "pull_request": {
+      "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/368",
+      "html_url": "https://github.com/quicwg/base-drafts/pull/368",
+      "diff_url": "https://github.com/quicwg/base-drafts/pull/368.diff",
+      "patch_url": "https://github.com/quicwg/base-drafts/pull/368.patch"
+    },
+    "body": "This is a version of #367 (replacing #351 manually rebased on #361), that sets packet numbers and packet number echoes in short headers to 32-bits, mainly by cutting complexity out of #367."
+  },
+  {
+    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/367",
+    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
+    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/367/labels{/name}",
+    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/367/comments",
+    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/367/events",
+    "html_url": "https://github.com/quicwg/base-drafts/pull/367",
+    "id": 212367580,
+    "number": 367,
+    "title": "Packet number echo with variable-length numbering",
+    "user": {
+      "login": "britram",
+      "id": 1884116,
+      "avatar_url": "https://avatars3.githubusercontent.com/u/1884116?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/britram",
+      "html_url": "https://github.com/britram",
+      "followers_url": "https://api.github.com/users/britram/followers",
+      "following_url": "https://api.github.com/users/britram/following{/other_user}",
+      "gists_url": "https://api.github.com/users/britram/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/britram/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/britram/subscriptions",
+      "organizations_url": "https://api.github.com/users/britram/orgs",
+      "repos_url": "https://api.github.com/users/britram/repos",
+      "events_url": "https://api.github.com/users/britram/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/britram/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+
+    ],
+    "state": "open",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 0,
+    "created_at": "2017-03-07T08:54:29Z",
+    "updated_at": "2017-03-07T13:24:32Z",
+    "closed_at": null,
+    "pull_request": {
+      "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/367",
+      "html_url": "https://github.com/quicwg/base-drafts/pull/367",
+      "diff_url": "https://github.com/quicwg/base-drafts/pull/367.diff",
+      "patch_url": "https://github.com/quicwg/base-drafts/pull/367.patch"
+    },
+    "body": "This PR replaces #351, (manually) rebased on #361. It adds packet number echo with the echo taking the same size as the number, with correct guidance as to the packet number echo size (thanks @martinthomson)."
+  },
+  {
+    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/366",
+    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
+    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/366/labels{/name}",
+    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/366/comments",
+    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/366/events",
+    "html_url": "https://github.com/quicwg/base-drafts/pull/366",
+    "id": 212328908,
+    "number": 366,
+    "title": "Don't ACK the ACK",
+    "user": {
+      "login": "martinthomson",
+      "id": 67641,
+      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/martinthomson",
+      "html_url": "https://github.com/martinthomson",
+      "followers_url": "https://api.github.com/users/martinthomson/followers",
+      "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
+      "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
+      "organizations_url": "https://api.github.com/users/martinthomson/orgs",
+      "repos_url": "https://api.github.com/users/martinthomson/repos",
+      "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/martinthomson/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+
+    ],
+    "state": "open",
+    "locked": false,
+    "assignee": {
+      "login": "janaiyengar",
+      "id": 11067604,
+      "avatar_url": "https://avatars1.githubusercontent.com/u/11067604?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/janaiyengar",
+      "html_url": "https://github.com/janaiyengar",
+      "followers_url": "https://api.github.com/users/janaiyengar/followers",
+      "following_url": "https://api.github.com/users/janaiyengar/following{/other_user}",
+      "gists_url": "https://api.github.com/users/janaiyengar/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/janaiyengar/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/janaiyengar/subscriptions",
+      "organizations_url": "https://api.github.com/users/janaiyengar/orgs",
+      "repos_url": "https://api.github.com/users/janaiyengar/repos",
+      "events_url": "https://api.github.com/users/janaiyengar/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/janaiyengar/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "assignees": [
+      {
+        "login": "janaiyengar",
+        "id": 11067604,
+        "avatar_url": "https://avatars1.githubusercontent.com/u/11067604?v=3",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/janaiyengar",
+        "html_url": "https://github.com/janaiyengar",
+        "followers_url": "https://api.github.com/users/janaiyengar/followers",
+        "following_url": "https://api.github.com/users/janaiyengar/following{/other_user}",
+        "gists_url": "https://api.github.com/users/janaiyengar/gists{/gist_id}",
+        "starred_url": "https://api.github.com/users/janaiyengar/starred{/owner}{/repo}",
+        "subscriptions_url": "https://api.github.com/users/janaiyengar/subscriptions",
+        "organizations_url": "https://api.github.com/users/janaiyengar/orgs",
+        "repos_url": "https://api.github.com/users/janaiyengar/repos",
+        "events_url": "https://api.github.com/users/janaiyengar/events{/privacy}",
+        "received_events_url": "https://api.github.com/users/janaiyengar/received_events",
+        "type": "User",
+        "site_admin": false
+      }
+    ],
+    "milestone": null,
+    "comments": 0,
+    "created_at": "2017-03-07T04:40:10Z",
+    "updated_at": "2017-03-07T14:00:42Z",
+    "closed_at": null,
+    "pull_request": {
+      "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/366",
+      "html_url": "https://github.com/quicwg/base-drafts/pull/366",
+      "diff_url": "https://github.com/quicwg/base-drafts/pull/366.diff",
+      "patch_url": "https://github.com/quicwg/base-drafts/pull/366.patch"
+    },
+    "body": "Closes #291.\r\n\r\nNote that #358 contains advice on using PING to elicit an ACK if the endpoint wants to reduce the range of packet numbers that its acknowledgments cover.  We can rely on that same advice.\r\n\r\n@ianswett, I don't know how you want to manage this and #358.  If you want to fold this into #358, that might be best."
+  },
+  {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/364",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
     "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/364/labels{/name}",
@@ -153,9 +342,9 @@
 
     ],
     "milestone": null,
-    "comments": 0,
+    "comments": 1,
     "created_at": "2017-03-07T00:52:24Z",
-    "updated_at": "2017-03-07T01:54:54Z",
+    "updated_at": "2017-03-07T07:50:11Z",
     "closed_at": null,
     "pull_request": {
       "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/361",
@@ -206,7 +395,7 @@
     "milestone": null,
     "comments": 0,
     "created_at": "2017-03-06T22:00:37Z",
-    "updated_at": "2017-03-07T03:56:16Z",
+    "updated_at": "2017-03-07T15:00:30Z",
     "closed_at": null,
     "pull_request": {
       "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/360",
@@ -329,7 +518,7 @@
     "milestone": null,
     "comments": 0,
     "created_at": "2017-03-06T21:12:22Z",
-    "updated_at": "2017-03-06T23:56:51Z",
+    "updated_at": "2017-03-07T04:50:01Z",
     "closed_at": null,
     "pull_request": {
       "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/358",
@@ -804,57 +993,6 @@
     "updated_at": "2017-03-02T01:50:01Z",
     "closed_at": null,
     "body": "In writing up a change for GOAWAY, I realize that it doesn't need to signal the error condition that triggered it.  An endpoint that wants to kill a connection can use CONNECTION_CLOSE and the error code that carries.  The purpose of GOAWAY is to signal graceful shutdown and to mark multiple streams as being safe to retry.\r\n\r\nIf it doesn't need an error code, then the reason phrase can go away as well.\r\n\r\n(This might depend on the outcome of discussions that suggest that CONNECTION_CLOSE could be replaced by Public Reset.  Or, it might influence the outcome of that discussion...)"
-  },
-  {
-    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/351",
-    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
-    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/351/labels{/name}",
-    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/351/comments",
-    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/351/events",
-    "html_url": "https://github.com/quicwg/base-drafts/pull/351",
-    "id": 211197045,
-    "number": 351,
-    "title": "Packet number echo",
-    "user": {
-      "login": "britram",
-      "id": 1884116,
-      "avatar_url": "https://avatars3.githubusercontent.com/u/1884116?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/britram",
-      "html_url": "https://github.com/britram",
-      "followers_url": "https://api.github.com/users/britram/followers",
-      "following_url": "https://api.github.com/users/britram/following{/other_user}",
-      "gists_url": "https://api.github.com/users/britram/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/britram/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/britram/subscriptions",
-      "organizations_url": "https://api.github.com/users/britram/orgs",
-      "repos_url": "https://api.github.com/users/britram/repos",
-      "events_url": "https://api.github.com/users/britram/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/britram/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "labels": [
-
-    ],
-    "state": "open",
-    "locked": false,
-    "assignee": null,
-    "assignees": [
-
-    ],
-    "milestone": null,
-    "comments": 2,
-    "created_at": "2017-03-01T20:22:58Z",
-    "updated_at": "2017-03-03T19:57:22Z",
-    "closed_at": null,
-    "pull_request": {
-      "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/351",
-      "html_url": "https://github.com/quicwg/base-drafts/pull/351",
-      "diff_url": "https://github.com/quicwg/base-drafts/pull/351.diff",
-      "patch_url": "https://github.com/quicwg/base-drafts/pull/351.patch"
-    },
-    "body": "Initial suggestion to address #269, based on alternate header proposal from @janaiyengar "
   },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/349",
@@ -1861,7 +1999,8 @@
     "updated_at": "2017-02-27T19:01:40Z",
     "closed_at": null,
     "body": "6.4 currently has\r\n`TODO: Connections that are terminated are added to a TIME_WAIT list at the server, so as to absorb any straggler packets in the network. Discuss TIME_WAIT list.`\r\n\r\nthis is an open issue for the TODO.\r\n\r\nSome initial thoughts: is it always the server that is in TIME_WAIT as opposed to the TCP active close behavior? (seems fine at first blush, but asking for a friend who is less sure :)).\r\n\r\nwhat happens in the TIME_WAIT state.. retransmissions? What happens when you receive packets (ignored - trigger retrrans, RST?)"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/326",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -1977,8 +2116,7 @@
     "updated_at": "2017-02-21T11:43:58Z",
     "closed_at": null,
     "body": "The text currently mandates (MUST!) a 4 times safety margin against reordering when picking the packet number size.  This is purely a safety margin feature, so mandating a value isn't justified.\r\n\r\nAn implementation could, though perhaps it is unwise, use a much smaller packet number than this.  The risk is that there is reordering greater than 2^size and the packets are delivered but cannot be recovered at the receiver.  That's terrible, it will trigger loss recovery and send bad signals.  However, the protocol doesn't actually break.\r\n\r\nAt a minimum, we should make this a recommendation.  Setting a mandatory floor on the value might be reasonable, but I'd be reluctant to do that unless it was pretty low, or if the value were different for different packet number sizes (smaller margins are probably more justifiable for larger packet number encodings).\r\n\r\nIdeally, we should science this and try to measure probabilities of reordering.  Ideally reordering probability as a function of outstanding packets."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/311",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -2676,9 +2814,9 @@
 
     ],
     "milestone": null,
-    "comments": 6,
+    "comments": 7,
     "created_at": "2017-02-10T09:02:27Z",
-    "updated_at": "2017-03-07T04:33:52Z",
+    "updated_at": "2017-03-07T13:04:47Z",
     "closed_at": null,
     "body": "The text says:\r\n\r\n> However, since it is possible that an endpoint might only send packets containing ACK frames (or other non-retransmittable frames), the receiving peer MAY send an ACK frame after a reasonable number (currently 20) of such packets have been received.\r\n\r\n\"currently 20\" seems pretty arbitrary.  That smells like something from the Google QUIC implementation.  We should be more concrete about this, if that behaviour even makes sense.\r\n\r\nIf an endpoint is receiving nothing but ACKs but is sending itself, then acknowledging those ACKs is probably fine.\r\n\r\nAn endpoint with nothing to say can generate a lot of ACKs over time, but if both endpoints are being quiet other than ACKs, it's probably time to shut up entirely.  Maybe we should say that the peer SHOULD generate an ACK frame only if it has other frame types to send.\r\n\r\nLimiting the number of PING frames that a peer will respond to is a separate issue, and may motivate a limit with a number attached to it.\r\n"
   },
@@ -3708,7 +3846,8 @@
     "updated_at": "2017-01-30T02:05:39Z",
     "closed_at": null,
     "body": "The current transport doc exempts stream 1 from *congestion control*.  That seems to be unnecessary, potentially hard to implement, and maybe even dangerous."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/245",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3824,8 +3963,7 @@
     "updated_at": "2017-01-30T15:45:35Z",
     "closed_at": null,
     "body": "Now that the client does not send a connection id in its version negotiation (see #119), client needs a public nonce in the packets. That prevents an off-path attacker guessing client source port and interfering with the client establishing connections with a given sever by spoofing version negotiation failure packets as if coming from that sever. That nonce should be returned by the sever in its version negotiation packets. Previously, client's connection id served such a purpose."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/242",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5449,7 +5587,8 @@
     "updated_at": "2017-01-24T13:26:05Z",
     "closed_at": null,
     "body": "\"\r\n   When the client receives a Version Negotiation packet from the\r\n   server, it should select an acceptable protocol version.  If the\r\n   server lists an acceptable version, the client selects that version\r\n   and resends all packets using that version.  The resent packets MUST\r\n   use new packet numbers.  These packets MUST continue to have the\r\n   VERSION flag set and MUST include the new negotiated protocol\r\n   version.\"\r\n\r\nThere might be some packets which should not be re-sent if, for instance, they are not relevant for this version of QUIC"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/194",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5601,8 +5740,7 @@
     "updated_at": "2017-01-24T01:30:41Z",
     "closed_at": null,
     "body": "The formatting of the flags word section is kind of confusing. Rather than presenting things as hex, I think I would just do a bit diagram like in other flags sections. I can provide a PR if the editors want.\r\n\r\n"
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/192",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -6509,10 +6647,10 @@
         "default": false
       },
       {
-        "id": 489929683,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/editor-ready",
-        "name": "editor-ready",
-        "color": "0e8a16",
+        "id": 517015633,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/needs-discussion",
+        "name": "needs-discussion",
+        "color": "d93f0b",
         "default": false
       },
       {
@@ -6537,9 +6675,9 @@
 
     ],
     "milestone": null,
-    "comments": 1,
+    "comments": 2,
     "created_at": "2017-01-17T14:28:16Z",
-    "updated_at": "2017-01-25T01:44:32Z",
+    "updated_at": "2017-03-07T04:46:54Z",
     "closed_at": null,
     "body": "QUIC originally specified a 12 byte hash for unencrypted packets.  This was dropped when QUIC crypto was swapped for the TLS 1.3 mapping.\r\n\r\nWe should add it back, since it is useful in eliminating corrupted packets and random internet junk.  And possibly in preventing reflection attacks mentioned in #147 "
   },
@@ -7461,7 +7599,8 @@
     "updated_at": "2017-01-26T04:51:36Z",
     "closed_at": null,
     "body": "When I wrote the section on what can change in different versions, I originally just left an unlabelled slot for the connection ID.  But @marten-seemann observed that the server is required to echo the connection ID in a version negotiation packet.\r\n\r\nI don't think that we need the server to echo the connection ID in this case.  That would allow us to restore the 8 octets to a version-specific field."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/128",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7591,8 +7730,7 @@
     "updated_at": "2017-01-26T07:12:12Z",
     "closed_at": null,
     "body": "It may be possible to simplify the ACK frame, in particular, the timestamp section. We could conceivably make the \"Time from Largest Acked\" 16 bits, and simply have N-Timestamp-blocks, including this one. I think this is plausible."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/121",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -9579,7 +9717,8 @@
     "updated_at": "2016-11-28T06:00:20Z",
     "closed_at": null,
     "body": "The attacker needs to be on path to create a valid-looking unprotected packet.  \r\n\r\nAlso, randomization doesn't help much if the attacker is on-path."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/34",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -9731,8 +9870,7 @@
     "updated_at": "2016-11-28T05:23:07Z",
     "closed_at": null,
     "body": "We need to be absolutely explicit here: if unprotecting a packet fails, drop it.  \r\n\r\nIt's important that we have this rule to prevent trivial DoS attacks on connections.  Also, we need to make it clear that unauthenticated data does not get fed into the system unless we have very careful rules around how we handle that data."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/32",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -9790,64 +9928,6 @@
     "updated_at": "2016-11-28T05:20:46Z",
     "closed_at": null,
     "body": "From @janaiyengar:\r\n\r\n> We need rules using\r\n> packet numbers, such that an old packet with a key phase matching the\r\n> current expected should not cause the connection to blow up.\r\n\r\nWith multiple key updates, there is a possibility that packets from epoch n could collide with packets that were sent in epoch n+2.  This is unlikely, but still something implementations need to handle.  It's not a problem as such unless you insist that connections blow up on decryption failure (which we shouldn't, that's a DoS vector).\r\n\r\nIt's also not a really bad problem because we have packet numbers that should identify the reordered packet as belonging to the older epoch.  We know what the keys were at that time (if we chose to retain them), so it's not even the case that we need to discard the packet every time.\r\n\r\n\r\n"
-  },
-  {
-    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/25",
-    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
-    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/25/labels{/name}",
-    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/25/comments",
-    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/25/events",
-    "html_url": "https://github.com/quicwg/base-drafts/issues/25",
-    "id": 191635607,
-    "number": 25,
-    "title": "Key update forward secrecy",
-    "user": {
-      "login": "martinthomson",
-      "id": 67641,
-      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/martinthomson",
-      "html_url": "https://github.com/martinthomson",
-      "followers_url": "https://api.github.com/users/martinthomson/followers",
-      "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
-      "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
-      "organizations_url": "https://api.github.com/users/martinthomson/orgs",
-      "repos_url": "https://api.github.com/users/martinthomson/repos",
-      "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/martinthomson/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "labels": [
-      {
-        "id": 481871361,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/design",
-        "name": "design",
-        "color": "1d76db",
-        "default": false
-      },
-      {
-        "id": 481871604,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/tls",
-        "name": "tls",
-        "color": "fbca04",
-        "default": false
-      }
-    ],
-    "state": "open",
-    "locked": false,
-    "assignee": null,
-    "assignees": [
-
-    ],
-    "milestone": null,
-    "comments": 0,
-    "created_at": "2016-11-25T06:50:08Z",
-    "updated_at": "2017-01-25T02:03:15Z",
-    "closed_at": null,
-    "body": "The design for TLS 1.3 KeyUpdate ensures that a compromise of keys after a KeyUpdate has been completed doesn't result in a compromise of all prior keys on that connection.\r\n\r\nThis is not true in QUIC.  QUIC uses a TLS exporter to obtain its initial seed keys.  As long as the exporter secret remains viable (and it will by default in most TLS stacks), then it will be able to compromise any QUIC packet protection keys.\r\n\r\nWe can't close the TLS connection on stream 1 early because it is desirable to have new session tickets issued to clients over time, especially if a server wants to update keys in response to mobility or other significant events.\r\n\r\nWe could recommend that TLS stacks provide an API for destroying an exporter secret, but that would interact poorly with things like token binding which use the exporter secret constantly."
   },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/20",
