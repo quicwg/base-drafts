@@ -1,5 +1,62 @@
 [
   {
+    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/365",
+    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
+    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/365/labels{/name}",
+    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/365/comments",
+    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/365/events",
+    "html_url": "https://github.com/quicwg/base-drafts/pull/365",
+    "id": 212319729,
+    "number": 365,
+    "title": "Count line length differently",
+    "user": {
+      "login": "martinthomson",
+      "id": 67641,
+      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/martinthomson",
+      "html_url": "https://github.com/martinthomson",
+      "followers_url": "https://api.github.com/users/martinthomson/followers",
+      "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
+      "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
+      "organizations_url": "https://api.github.com/users/martinthomson/orgs",
+      "repos_url": "https://api.github.com/users/martinthomson/repos",
+      "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/martinthomson/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 481871311,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/editorial",
+        "name": "editorial",
+        "color": "0e8a16",
+        "default": false
+      }
+    ],
+    "state": "open",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 0,
+    "created_at": "2017-03-07T03:22:39Z",
+    "updated_at": "2017-03-07T03:22:39Z",
+    "closed_at": null,
+    "pull_request": {
+      "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/365",
+      "html_url": "https://github.com/quicwg/base-drafts/pull/365",
+      "diff_url": "https://github.com/quicwg/base-drafts/pull/365.diff",
+      "patch_url": "https://github.com/quicwg/base-drafts/pull/365.patch"
+    },
+    "body": "I need to check this on my mac."
+  },
+  {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/364",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
     "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/364/labels{/name}",
@@ -1919,7 +1976,8 @@
     "updated_at": "2017-02-20T03:19:39Z",
     "closed_at": null,
     "body": "The draft declares:\r\n> The default idle timeout for a QUIC connection is 30 seconds\r\n\r\nBut there are no situations in which a default is actually needed, since the parameter is mandatory to signal."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/323",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -1977,8 +2035,7 @@
     "updated_at": "2017-02-21T11:43:58Z",
     "closed_at": null,
     "body": "The text currently mandates (MUST!) a 4 times safety margin against reordering when picking the packet number size.  This is purely a safety margin feature, so mandating a value isn't justified.\r\n\r\nAn implementation could, though perhaps it is unwise, use a much smaller packet number than this.  The risk is that there is reordering greater than 2^size and the packets are delivered but cannot be recovered at the receiver.  That's terrible, it will trigger loss recovery and send bad signals.  However, the protocol doesn't actually break.\r\n\r\nAt a minimum, we should make this a recommendation.  Setting a mandatory floor on the value might be reasonable, but I'd be reluctant to do that unless it was pretty low, or if the value were different for different packet number sizes (smaller margins are probably more justifiable for larger packet number encodings).\r\n\r\nIdeally, we should science this and try to measure probabilities of reordering.  Ideally reordering probability as a function of outstanding packets."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/311",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3766,7 +3823,8 @@
     "updated_at": "2017-01-30T13:53:51Z",
     "closed_at": null,
     "body": "In Tokyo, we agreed that headers streams would no longer be exempt from connection-level flow control.  But the reason that headers and data streams are separate is so that one can be exempt and the other not.  So.... why are we keeping them separate again?\r\n\r\nIt might be simpler, particularly with the specter of #175 around, to bring back DATA frames and say everything's on one stream."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/244",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3824,8 +3882,7 @@
     "updated_at": "2017-01-30T15:45:35Z",
     "closed_at": null,
     "body": "Now that the client does not send a connection id in its version negotiation (see #119), client needs a public nonce in the packets. That prevents an off-path attacker guessing client source port and interfering with the client establishing connections with a given sever by spoofing version negotiation failure packets as if coming from that sever. That nonce should be returned by the sever in its version negotiation packets. Previously, client's connection id served such a purpose."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/242",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5507,7 +5564,8 @@
     "updated_at": "2017-01-25T05:35:30Z",
     "closed_at": null,
     "body": "In S 5.2.2 QUIC frames are currently specified without any length field. This means that it's not possible to skip over unknown frame types.\r\n\r\nThere are at least two reasons why this is inconvenient:\r\n\r\n- It makes it hard to write passive analysis tools because those tools will just choke if they encounter unrecognized frames (they cannot process the rest of the packet).\r\n- It makes it hard to skip over frames you don't care about without parsing them. BLOCKED is a good example of such a frame currently"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/193",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5601,8 +5659,7 @@
     "updated_at": "2017-01-24T01:30:41Z",
     "closed_at": null,
     "body": "The formatting of the flags word section is kind of confusing. Rather than presenting things as hex, I think I would just do a bit diagram like in other flags sections. I can provide a PR if the editors want.\r\n\r\n"
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/192",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7533,7 +7590,8 @@
     "updated_at": "2017-03-06T23:41:36Z",
     "closed_at": null,
     "body": "The transport protocol has frames, and STREAM frames can contain frames for the HTTP mapping.  It's confusing.  We should work out how to deal with that."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/123",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7591,8 +7649,7 @@
     "updated_at": "2017-01-26T07:12:12Z",
     "closed_at": null,
     "body": "It may be possible to simplify the ACK frame, in particular, the timestamp section. We could conceivably make the \"Time from Largest Acked\" 16 bits, and simply have N-Timestamp-blocks, including this one. I think this is plausible."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/121",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -9673,7 +9730,8 @@
     "updated_at": "2017-02-01T10:20:04Z",
     "closed_at": null,
     "body": "If we consider cleartext << 0-RTT << 1-RTT, then we might be able to establish a clear rule regarding acknowledgments.\r\n\r\nThe desired rule is that an ACK MUST be sent with the same or higher protection.\r\n\r\nHowever: This rule would mean that a server is required to ACK 0-RTT data with 1-RTT keys.  That's tricky, because loss or delay of the server's first flight also delays the server's ACKs of 0-RTT data (the server can't use 0-RTT keys)."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/33",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -9731,8 +9789,7 @@
     "updated_at": "2016-11-28T05:23:07Z",
     "closed_at": null,
     "body": "We need to be absolutely explicit here: if unprotecting a packet fails, drop it.  \r\n\r\nIt's important that we have this rule to prevent trivial DoS attacks on connections.  Also, we need to make it clear that unauthenticated data does not get fed into the system unless we have very careful rules around how we handle that data."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/32",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
