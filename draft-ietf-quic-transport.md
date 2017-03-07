@@ -466,8 +466,9 @@ Connection ID:
 
 Packet Number:
 
-: The length of the packet number field depends on the packet type.  This field
-  can be 1, 2 or 4 octets long depending on the short packet type; see {{packet-numbers}}.
+: The length of the packet number field depends on the packet type.
+  This field can be 1, 2 or 4 octets long depending on the short packet type; 
+  see {{packet-numbers}}.
 
 Packet Number Echo:
 
@@ -746,12 +747,18 @@ omitted if a 1-RTT packet containing an ACK frame has already been sent during a
 time interval equal to the sender's current estimate of the RTT.
 
 Since the Packet Number and Packet Number Echo fielda are of the same size, a
-sender sending a packet containing a Packet Number Echo determines the size to use as follows:
+sender sending a packet containing a Packet Number Echo determines the size to
+use as follows:
 
-- Let `SIZE_P` be the size of the packet number to be sent, as determined in {{packet-numbers}} above.
-- Let `SIZE_E` be the size of the packet number sent in the packet whose packet number is to be echoed.
-- Let `SIZE_S` be the size of the packet number dictated by the difference between the packet number echo to be sent and the last packet number echo sent; if no packet number echo has yet been sent, then let SIZE_S be 4.
-- Choose the packet number and packet number echo size to send as `max(SIZE_P, SIZE_E, SIZE_S).
+- Let `SIZE_P` be the size of the packet number to be sent, as determined in
+  {{packet-numbers}} above.
+- Let `SIZE_E` be the size of the packet number sent in the packet whose packet
+  number is to be echoed.
+- Let `SIZE_S` be the size of the packet number dictated by the difference
+  between the packet number echo to be sent and the last packet number echo
+  sent; if no packet number echo has yet been sent, then let SIZE_S be 4.
+- Choose the packet number and packet number echo size to send as `max(SIZE_P,
+  SIZE_E, SIZE_S).
 
 ## Handling Packets from Different Versions {#version-specific}
 
