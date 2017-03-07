@@ -1,5 +1,56 @@
 [
   {
+    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/369",
+    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
+    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/369/labels{/name}",
+    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/369/comments",
+    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/369/events",
+    "html_url": "https://github.com/quicwg/base-drafts/pull/369",
+    "id": 212565349,
+    "number": 369,
+    "title": "Make loss detection make more sense",
+    "user": {
+      "login": "ianswett",
+      "id": 20072817,
+      "avatar_url": "https://avatars2.githubusercontent.com/u/20072817?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/ianswett",
+      "html_url": "https://github.com/ianswett",
+      "followers_url": "https://api.github.com/users/ianswett/followers",
+      "following_url": "https://api.github.com/users/ianswett/following{/other_user}",
+      "gists_url": "https://api.github.com/users/ianswett/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/ianswett/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/ianswett/subscriptions",
+      "organizations_url": "https://api.github.com/users/ianswett/orgs",
+      "repos_url": "https://api.github.com/users/ianswett/repos",
+      "events_url": "https://api.github.com/users/ianswett/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/ianswett/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+
+    ],
+    "state": "open",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 0,
+    "created_at": "2017-03-07T21:32:53Z",
+    "updated_at": "2017-03-07T22:10:53Z",
+    "closed_at": null,
+    "pull_request": {
+      "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/369",
+      "html_url": "https://github.com/quicwg/base-drafts/pull/369",
+      "diff_url": "https://github.com/quicwg/base-drafts/pull/369.diff",
+      "patch_url": "https://github.com/quicwg/base-drafts/pull/369.patch"
+    },
+    "body": "It isn't complete now, but does make more sense hopefully."
+  },
+  {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/368",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
     "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/368/labels{/name}",
@@ -344,7 +395,7 @@
     "milestone": null,
     "comments": 1,
     "created_at": "2017-03-07T00:52:24Z",
-    "updated_at": "2017-03-07T19:07:42Z",
+    "updated_at": "2017-03-07T21:11:33Z",
     "closed_at": null,
     "pull_request": {
       "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/361",
@@ -395,7 +446,7 @@
     "milestone": null,
     "comments": 1,
     "created_at": "2017-03-06T22:00:37Z",
-    "updated_at": "2017-03-07T15:05:03Z",
+    "updated_at": "2017-03-07T21:48:01Z",
     "closed_at": null,
     "pull_request": {
       "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/360",
@@ -516,9 +567,9 @@
 
     ],
     "milestone": null,
-    "comments": 0,
+    "comments": 1,
     "created_at": "2017-03-06T21:12:22Z",
-    "updated_at": "2017-03-07T16:40:23Z",
+    "updated_at": "2017-03-07T22:03:00Z",
     "closed_at": null,
     "pull_request": {
       "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/358",
@@ -1941,7 +1992,8 @@
     "updated_at": "2017-02-28T11:04:23Z",
     "closed_at": null,
     "body": "From discussion on the list, we could clarify the meaning of CONNECTION_CLOSE. Specifically, it would be good to clarify if it acts more like a TCP FIN or a TCP RST. I would suggest that the analog of a TCP FIN is a FIN on a QUIC stream as they both gracefully half-close a single bidirectional communication channel. After a FIN, retransmission of data may still occur to deal with packet loss.\r\n\r\nA QUIC CONNECTION_CLOSE, on the other hand, is an immediate termination of the connection. No more data is retransmitted. As such it is more like a TCP RST."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/328",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -1999,8 +2051,7 @@
     "updated_at": "2017-02-27T19:01:40Z",
     "closed_at": null,
     "body": "6.4 currently has\r\n`TODO: Connections that are terminated are added to a TIME_WAIT list at the server, so as to absorb any straggler packets in the network. Discuss TIME_WAIT list.`\r\n\r\nthis is an open issue for the TODO.\r\n\r\nSome initial thoughts: is it always the server that is in TIME_WAIT as opposed to the TCP active close behavior? (seems fine at first blush, but asking for a friend who is less sure :)).\r\n\r\nwhat happens in the TIME_WAIT state.. retransmissions? What happens when you receive packets (ignored - trigger retrrans, RST?)"
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/326",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -2232,100 +2283,6 @@
     "updated_at": "2017-02-16T03:03:32Z",
     "closed_at": null,
     "body": "The text for `DetectLostPackets` claims that `acked_packet` is a packet number, but the code shows it as having a `packet_number` field, as well as a `time_sent` field.  Maybe a TimeSent() lookup function would work, but at the level that this code operates, I think that it would be better to talk about packets in the abstract.  A real implementation might not carry around all the information a packet might accumulate, but that's for real implementations to worry about."
-  },
-  {
-    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/309",
-    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
-    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/309/labels{/name}",
-    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/309/comments",
-    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/309/events",
-    "html_url": "https://github.com/quicwg/base-drafts/issues/309",
-    "id": 207705123,
-    "number": 309,
-    "title": "Missing return statements",
-    "user": {
-      "login": "martinthomson",
-      "id": 67641,
-      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/martinthomson",
-      "html_url": "https://github.com/martinthomson",
-      "followers_url": "https://api.github.com/users/martinthomson/followers",
-      "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
-      "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
-      "organizations_url": "https://api.github.com/users/martinthomson/orgs",
-      "repos_url": "https://api.github.com/users/martinthomson/repos",
-      "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/martinthomson/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "labels": [
-      {
-        "id": 481871361,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/design",
-        "name": "design",
-        "color": "1d76db",
-        "default": false
-      },
-      {
-        "id": 481873040,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/recovery",
-        "name": "recovery",
-        "color": "fbca04",
-        "default": false
-      }
-    ],
-    "state": "open",
-    "locked": false,
-    "assignee": {
-      "login": "ianswett",
-      "id": 20072817,
-      "avatar_url": "https://avatars2.githubusercontent.com/u/20072817?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/ianswett",
-      "html_url": "https://github.com/ianswett",
-      "followers_url": "https://api.github.com/users/ianswett/followers",
-      "following_url": "https://api.github.com/users/ianswett/following{/other_user}",
-      "gists_url": "https://api.github.com/users/ianswett/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/ianswett/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/ianswett/subscriptions",
-      "organizations_url": "https://api.github.com/users/ianswett/orgs",
-      "repos_url": "https://api.github.com/users/ianswett/repos",
-      "events_url": "https://api.github.com/users/ianswett/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/ianswett/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "assignees": [
-      {
-        "login": "ianswett",
-        "id": 20072817,
-        "avatar_url": "https://avatars2.githubusercontent.com/u/20072817?v=3",
-        "gravatar_id": "",
-        "url": "https://api.github.com/users/ianswett",
-        "html_url": "https://github.com/ianswett",
-        "followers_url": "https://api.github.com/users/ianswett/followers",
-        "following_url": "https://api.github.com/users/ianswett/following{/other_user}",
-        "gists_url": "https://api.github.com/users/ianswett/gists{/gist_id}",
-        "starred_url": "https://api.github.com/users/ianswett/starred{/owner}{/repo}",
-        "subscriptions_url": "https://api.github.com/users/ianswett/subscriptions",
-        "organizations_url": "https://api.github.com/users/ianswett/orgs",
-        "repos_url": "https://api.github.com/users/ianswett/repos",
-        "events_url": "https://api.github.com/users/ianswett/events{/privacy}",
-        "received_events_url": "https://api.github.com/users/ianswett/received_events",
-        "type": "User",
-        "site_admin": false
-      }
-    ],
-    "milestone": null,
-    "comments": 0,
-    "created_at": "2017-02-15T04:22:58Z",
-    "updated_at": "2017-03-06T21:31:54Z",
-    "closed_at": null,
-    "body": "The descriptions for `OnAlarm` and `OnPacketAcked` both claim a return value.  The pseudocode doesn't show any return value."
   },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/308",
