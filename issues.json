@@ -1,56 +1,5 @@
 [
   {
-    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/369",
-    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
-    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/369/labels{/name}",
-    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/369/comments",
-    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/369/events",
-    "html_url": "https://github.com/quicwg/base-drafts/pull/369",
-    "id": 212565349,
-    "number": 369,
-    "title": "Make loss detection make more sense",
-    "user": {
-      "login": "ianswett",
-      "id": 20072817,
-      "avatar_url": "https://avatars2.githubusercontent.com/u/20072817?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/ianswett",
-      "html_url": "https://github.com/ianswett",
-      "followers_url": "https://api.github.com/users/ianswett/followers",
-      "following_url": "https://api.github.com/users/ianswett/following{/other_user}",
-      "gists_url": "https://api.github.com/users/ianswett/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/ianswett/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/ianswett/subscriptions",
-      "organizations_url": "https://api.github.com/users/ianswett/orgs",
-      "repos_url": "https://api.github.com/users/ianswett/repos",
-      "events_url": "https://api.github.com/users/ianswett/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/ianswett/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "labels": [
-
-    ],
-    "state": "open",
-    "locked": false,
-    "assignee": null,
-    "assignees": [
-
-    ],
-    "milestone": null,
-    "comments": 0,
-    "created_at": "2017-03-07T21:32:53Z",
-    "updated_at": "2017-03-07T22:10:53Z",
-    "closed_at": null,
-    "pull_request": {
-      "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/369",
-      "html_url": "https://github.com/quicwg/base-drafts/pull/369",
-      "diff_url": "https://github.com/quicwg/base-drafts/pull/369.diff",
-      "patch_url": "https://github.com/quicwg/base-drafts/pull/369.patch"
-    },
-    "body": "It isn't complete now, but does make more sense hopefully."
-  },
-  {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/368",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
     "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/368/labels{/name}",
@@ -1992,8 +1941,7 @@
     "updated_at": "2017-02-28T11:04:23Z",
     "closed_at": null,
     "body": "From discussion on the list, we could clarify the meaning of CONNECTION_CLOSE. Specifically, it would be good to clarify if it acts more like a TCP FIN or a TCP RST. I would suggest that the analog of a TCP FIN is a FIN on a QUIC stream as they both gracefully half-close a single bidirectional communication channel. After a FIN, retransmission of data may still occur to deal with packet loss.\r\n\r\nA QUIC CONNECTION_CLOSE, on the other hand, is an immediate termination of the connection. No more data is retransmitted. As such it is more like a TCP RST."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/328",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -2051,7 +1999,8 @@
     "updated_at": "2017-02-27T19:01:40Z",
     "closed_at": null,
     "body": "6.4 currently has\r\n`TODO: Connections that are terminated are added to a TIME_WAIT list at the server, so as to absorb any straggler packets in the network. Discuss TIME_WAIT list.`\r\n\r\nthis is an open issue for the TODO.\r\n\r\nSome initial thoughts: is it always the server that is in TIME_WAIT as opposed to the TCP active close behavior? (seems fine at first blush, but asking for a friend who is less sure :)).\r\n\r\nwhat happens in the TIME_WAIT state.. retransmissions? What happens when you receive packets (ignored - trigger retrrans, RST?)"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/326",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3803,8 +3752,7 @@
     "updated_at": "2017-01-30T02:05:39Z",
     "closed_at": null,
     "body": "The current transport doc exempts stream 1 from *congestion control*.  That seems to be unnecessary, potentially hard to implement, and maybe even dangerous."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/245",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3862,7 +3810,8 @@
     "updated_at": "2017-01-30T13:53:51Z",
     "closed_at": null,
     "body": "In Tokyo, we agreed that headers streams would no longer be exempt from connection-level flow control.  But the reason that headers and data streams are separate is so that one can be exempt and the other not.  So.... why are we keeping them separate again?\r\n\r\nIt might be simpler, particularly with the specter of #175 around, to bring back DATA frames and say everything's on one stream."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/244",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5544,8 +5493,7 @@
     "updated_at": "2017-01-24T13:26:05Z",
     "closed_at": null,
     "body": "\"\r\n   When the client receives a Version Negotiation packet from the\r\n   server, it should select an acceptable protocol version.  If the\r\n   server lists an acceptable version, the client selects that version\r\n   and resends all packets using that version.  The resent packets MUST\r\n   use new packet numbers.  These packets MUST continue to have the\r\n   VERSION flag set and MUST include the new negotiated protocol\r\n   version.\"\r\n\r\nThere might be some packets which should not be re-sent if, for instance, they are not relevant for this version of QUIC"
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/194",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5603,7 +5551,8 @@
     "updated_at": "2017-01-25T05:35:30Z",
     "closed_at": null,
     "body": "In S 5.2.2 QUIC frames are currently specified without any length field. This means that it's not possible to skip over unknown frame types.\r\n\r\nThere are at least two reasons why this is inconvenient:\r\n\r\n- It makes it hard to write passive analysis tools because those tools will just choke if they encounter unrecognized frames (they cannot process the rest of the packet).\r\n- It makes it hard to skip over frames you don't care about without parsing them. BLOCKED is a good example of such a frame currently"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/193",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7556,8 +7505,7 @@
     "updated_at": "2017-01-26T04:51:36Z",
     "closed_at": null,
     "body": "When I wrote the section on what can change in different versions, I originally just left an unlabelled slot for the connection ID.  But @marten-seemann observed that the server is required to echo the connection ID in a version negotiation packet.\r\n\r\nI don't think that we need the server to echo the connection ID in this case.  That would allow us to restore the 8 octets to a version-specific field."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/128",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7629,7 +7577,8 @@
     "updated_at": "2017-03-06T23:41:36Z",
     "closed_at": null,
     "body": "The transport protocol has frames, and STREAM frames can contain frames for the HTTP mapping.  It's confusing.  We should work out how to deal with that."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/123",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -9674,8 +9623,7 @@
     "updated_at": "2016-11-28T06:00:20Z",
     "closed_at": null,
     "body": "The attacker needs to be on path to create a valid-looking unprotected packet.  \r\n\r\nAlso, randomization doesn't help much if the attacker is on-path."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/34",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -9769,7 +9717,8 @@
     "updated_at": "2017-02-01T10:20:04Z",
     "closed_at": null,
     "body": "If we consider cleartext << 0-RTT << 1-RTT, then we might be able to establish a clear rule regarding acknowledgments.\r\n\r\nThe desired rule is that an ACK MUST be sent with the same or higher protection.\r\n\r\nHowever: This rule would mean that a server is required to ACK 0-RTT data with 1-RTT keys.  That's tricky, because loss or delay of the server's first flight also delays the server's ACKs of 0-RTT data (the server can't use 0-RTT keys)."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/33",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
