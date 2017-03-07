@@ -1379,13 +1379,14 @@ First ACK Block Length:
 Gap To Next Block (opt, repeated):
 
 : An unsigned number specifying the number of contiguous missing packets from
-  the end of the previous ACK block to the start of the next.
+  the end of the previous ACK block to the start of the next.  Repeated "Num
+  Blocks" times.
 
 ACK Block Length (opt, repeated):
 
 : An unsigned packet number delta that indicates the number of contiguous
-  packets being acknowledged starting after the end of the previous gap.  Along
-  with the previous field, this field is repeated "Num Blocks - 1" times.
+  packets being acknowledged starting after the end of the previous gap.
+  Repeated "Num Blocks" times.
 
 
 ### Timestamp Section {#timestamp-section}
@@ -1412,6 +1413,10 @@ receive times relative to the beginning of the connection.
 ~~~
 {: #timestamp-format title="Timestamp Section"}
 
+The timestamp section is time-ordered, so the 1 byte Delta Largest
+Acknowledged is always relative to the Largest Acknowleged, but the Time
+Since Previous Timestamp fields are relative.
+
 The fields in the Timestamp Section are:
 
 Delta Largest Acknowledged (opt):
@@ -1429,13 +1434,15 @@ First Timestamp (opt):
 
 Delta Largest Acked 1..N (opt, repeated):
 
-: (Same as above.)
+: This field has the same semantics and format as "Delta Largest Acknowledged".
+  Repeated "Num Timestamps - 1" times.
 
 Time Since Previous Timestamp 1..N(opt, repeated):
 
 : An optional 16-bit unsigned value specifying time delta from the previous
-  reported timestamp.  It is encoded in the same format as the ACK Delay.  Along
-  with the previous field, this field is repeated "Num Timestamps - 1" times.
+  reported timestamp.  It is encoded in the same format as the ACK Delay.
+  Repeated "Num Timestamps - 1" times.
+
 
 #### Time Format
 
