@@ -1231,14 +1231,16 @@ Receivers send ACK frames to inform senders which packets they have received, as
 well as which packets are considered missing.  The ACK frame contains between 1
 and 256 ACK blocks.  ACK blocks are ranges of acknowledged packets.
 
-To limit the ACK blocks to the ones that haven't yet been received by the
-sender, the sender SHOULD track the ack ranges in acks that have been
-acked and no longer include them in future ACKs.  In order to handle cases
-where the receiver is not sending data, and hence does not expect it's acks to
-be acked, it may bundle a PING frame with an ack approximately once per RTT to
-gain confirmation of it's ACKs being delivered.  The receiver SHOULD track no
-more than 255 ack ranges because they are not expressible on the wire, and 
-MAY limit the number of ack ranges to a smaller value.
+To limit ACK blocks to those that haven't yet been received by the sender,
+the receiver SHOULD track which ACK frames have been acknowledged by its peer.
+Once an ACK frame has been acknowledged, the packets it acknowledges SHOULD not
+be acknowledged again.  In order to handle cases where the receiver is not
+sending retransmittable data, and hence does not expect to receive acks, it
+MAY bundle a PING frame with an ack at most once per RTT to gain confirmation
+of ACKs being delivered.  In order to limit receiver state or the size of ACK
+frames, a receiver MAY limit the number of ack ranges and stop acknowledging
+packets without getting an ACK acked, with the knowledge this may slightly
+increase spurious retransmits.
 
 Unlike TCP SACKs, QUIC ACK blocks are cumulative and therefore irrevocable.
 Once a packet has been acknowledged, even if it does not appear in a future ACK
