@@ -1258,7 +1258,7 @@ Unlike TCP SACKs, QUIC ACK blocks are cumulative and therefore irrevocable.
 Once a packet has been acknowledged, even if it does not appear in a future ACK
 frame, it is assumed to be acknowledged.
 
-QUIC ack frames contain a timestamp section with up to 255 timestamps.
+QUIC ACK frames contain a timestamp section with up to 255 timestamps.
 Timestamps enable better congestion control, but are not required for correct
 loss recovery, and old timestamps are less valuable, so it is not guaranteed
 every timestamp will be received by the sender.  A receiver SHOULD send a
