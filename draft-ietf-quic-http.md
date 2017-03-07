@@ -244,11 +244,11 @@ A server can send a complete response prior to the client sending an entire
 request if the response does not depend on any portion of the request that has
 not been sent and received. When this is true, a server MAY request that the
 client abort transmission of a request without error by triggering a QUIC
-DISINTEREST after sending a complete response and closing its stream. Clients
-MUST NOT discard complete responses as a result of receiving a DISINTEREST,
-though clients can always discard responses at their discretion for other
-reasons.  Servers SHOULD NOT abort a response in progress as a result of
-receiving a solicited RST_STREAM.
+DISINTEREST with error code HTTP_EARLY_RESPONSE, sending a complete response,
+and cleanly closing its streams. Clients MUST NOT discard complete responses as
+a result of receiving a DISINTEREST, though clients can always discard responses
+at their discretion for other reasons.  Servers SHOULD NOT abort a response in
+progress as a result of receiving a solicited RST_STREAM.
 
 ### Header Compression
 
@@ -766,6 +766,10 @@ HTTP_SETTINGS_ON_WRONG_STREAM (0x0F):
 
 HTTP_MULTIPLE_SETTINGS (0x10):
 : More than one SETTINGS frame was received.
+
+HTTP_EARLY_RESPONSE (0x11):
+: Server is able to generate a response to the client request without selecting
+  the complete request body.
 
 ## Mapping HTTP/2 Error Codes
 
