@@ -65,27 +65,21 @@ Issues will be labeled by the Chairs as either `editorial` or `design`.
 
 * **Design** issues require discussion and consensus in the Working Group. This discussion can happen both in the issue and on the [Working Group mailing list](https://www.ietf.org/mailman/listinfo/quic), as outlined below.
 
-* **Editorial** issues can be closed by the editor(s) without consensus or notification. Typically, any discussion will take place on the issue itself.
+* **Editorial** issues can be dealt with by the editor(s) without consensus or notification. Typically, any discussion will take place on the issue itself.
 
-Consensus for the resolution of a design issue can be established in a few different ways:
+Design issues can be discussed on the mailing list or the issues list. The editors can also propose resolutions to design issues for the group's consideration by incorporating them into the draft(s).
 
-* Through discussion on the mailing list. Once a resolution is found, it will be recorded in the issue.
+When a new draft is published, the design issues that have been closed since the last draft will be highlighted on the mailing list, to aid reviewers. Once consensus is confirmed, those issues will be labeled with [`has-consensus`](https://github.com/quicwg/base-drafts/issues?utf8=✓&q=label%3Ahas-consensus%20).
 
-* Through discussion on the issues list. Once a resolution is found, it will be confirmed on the mailing list before consensus is declared.
-
-The editors can also propose resolutions for the group's consideration by incorporating them into the draft(s); when doing so, the issue should not be closed until consensus is declared.
-
-Issues that have consensus but which aren't yet reflected in text will be labelled as `editor-ready`. After the editors have incorporated a resolution into the specification, the issue can be closed.
-
-When a new draft is published, the design issues that have been closed since the last draft will be highlighted on the mailing list, to aid reviewers.
+Note that whether or not a design issue is closed does **not** reflect consensus of the Working Group; an issue's `open`/`closed` state is only used to organise our discussions. If you have a question or problem with an issue in the `closed` state, please comment on it (either in the issues list or mailing list), and we'll adjust its state accordingly. Note that reopening issues with `has-consensus` requires new information.
 
 ### Discretionary Design Issue Labels
 
 We also use the following labels to help understand the state of our design issues:
 
-* **Needs Discussion**: The issue needs significant Working Group discussion before it can progress.
-* **Confirm Consensus**: There is a resolution that the proponents believe reflects a consensus position, needs to be confirmed with the WG.
-* **Notify Consensus**: The WG has achieved consensus in a meeting, needs to be confirmed on the mailing list.
+* [`needs-discussion`](https://github.com/quicwg/base-drafts/labels/needs-discussion): The issue needs significant Working Group discussion before it can progress.
+* [`has-proposal`](https://github.com/quicwg/base-drafts/labels/has-proposal): The issue has a proposal for resolution.
+* [`editor-ready`](https://github.com/quicwg/base-drafts/labels/editor-ready): The Working Group believes it has a viable resolution, but the editors need to incorporate that into the document so we can see it in situ.
 
 
 ## Pull Requests
