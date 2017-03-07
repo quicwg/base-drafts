@@ -970,11 +970,87 @@ required if the frame is supported over HTTP/2.
 
 ## Settings Parameters {#iana-settings}
 
-TODO:  Register settings
+This document adds two new columns to the "HTTP/2 Settings" registry defined
+in {{!RFC7540}}:
+
+  Supported Protocols:
+  : Indicates which associated protocols use the setting.  Values MUST be one
+    of:
+
+    - "HTTP/2 only"
+    - "HTTP/QUIC only"
+    - "Both"
+
+  HTTP/QUIC Specification:
+  : Indicates where this setting's behavior over QUIC is defined; required
+    if the frame is supported over QUIC.
+
+Values for existing registrations are assigned by this document:
+
+|----------------------------|---------------------|-------------------------|
+| Setting Name               | Supported Protocols | HTTP/QUIC Specification |
+|----------------------------|:-------------------:|-------------------------|
+| HEADER_TABLE_SIZE          | Both                | {{settings-parameters}} |
+| ENABLE_PUSH / DISABLE_PUSH | Both                | {{settings-parameters}} |
+| MAX_CONCURRENT_STREAMS     | HTTP/2 Only         | N/A                     |
+| INITIAL_WINDOW_SIZE        | HTTP/2 Only         | N/A                     |
+| MAX_FRAME_SIZE             | HTTP/2 Only         | N/A                     |
+| MAX_HEADER_LIST_SIZE       | Both                | {{settings-parameters}} |
+|----------------------------|---------------------|-------------------------|
+
+The "Specification" column is renamed to "HTTP/2 Specification" and is only
+required if the setting is supported over HTTP/2.
 
 ## Error Codes {#iana-error-codes}
 
-TODO:  Register error codes
+This document establishes a registry for HTTP/QUIC error codes.  The
+"HTTP/QUIC Error Code" registry manages a 30-bit space.  The "HTTP/QUIC
+Error Code" registry operates under the "Expert Review" policy
+{{?RFC5226}}.
+
+Registrations for error codes are required to include a description
+of the error code.  An expert reviewer is advised to examine new
+registrations for possible duplication with existing error codes.
+Use of existing registrations is to be encouraged, but not mandated.
+
+New registrations are advised to provide the following information:
+
+Name:
+: A name for the error code.  Specifying an error code name is optional.
+
+Code:
+: The 30-bit error code value.
+
+Description:
+: A brief description of the error code semantics, longer if no detailed
+  specification is provided.
+
+Specification:
+: An optional reference for a specification that defines the error code.
+
+The entries in the following table are registered by this document.
+
+|-----------------------------------|--------|----------------------------------------------|------------------------|
+| Name                              | Code   | Description                                  | Specification          |
+|-----------------------------------|--------|----------------------------------------------|------------------------|
+|  HTTP_PUSH_REFUSED                |  0x01  |  Client refused pushed content               |  {{http-error-codes}}  |
+|  HTTP_INTERNAL_ERROR              |  0x02  |  Internal error                              |  {{http-error-codes}}  |
+|  HTTP_PUSH_ALREADY_IN_CACHE       |  0x03  |  Pushed content already cached               |  {{http-error-codes}}  |
+|  HTTP_REQUEST_CANCELLED           |  0x04  |  Data no longer needed                       |  {{http-error-codes}}  |
+|  HTTP_HPACK_DECOMPRESSION_FAILED  |  0x05  |  HPACK cannot continue                       |  {{http-error-codes}}  |
+|  HTTP_CONNECT_ERROR               |  0x06  |  TCP reset or error on CONNECT request       |  {{http-error-codes}}  |
+|  HTTP_EXCESSIVE_LOAD              |  0x07  |  Peer generating excessive load              |  {{http-error-codes}}  |
+|  HTTP_VERSION_FALLBACK            |  0x08  |  Retry over HTTP/2                           |  {{http-error-codes}}  |
+|  HTTP_MALFORMED_HEADERS           |  0x09  |  Invalid HEADERS frame                       |  {{http-error-codes}}  |
+|  HTTP_MALFORMED_PRIORITY          |  0x0A  |  Invalid PRIORITY frame                      |  {{http-error-codes}}  |
+|  HTTP_MALFORMED_SETTINGS          |  0x0B  |  Invalid SETTINGS frame                      |  {{http-error-codes}}  |
+|  HTTP_MALFORMED_PUSH_PROMISE      |  0x0C  |  Invalid PUSH_PROMISE frame                  |  {{http-error-codes}}  |
+|  HTTP_INTERRUPTED_HEADERS         |  0x0E  |  Incomplete HEADERS block                    |  {{http-error-codes}}  |
+|  HTTP_SETTINGS_ON_WRONG_STREAM    |  0x0F  |  SETTINGS frame on a request control stream  |  {{http-error-codes}}  |
+|  HTTP_MULTIPLE_SETTINGS           |  0x10  |  Multiple SETTINGS frames                    |  {{http-error-codes}}  |
+|  HTTP_RST_CONTROL_STREAM          |  0x11  |  Message control stream was RST              |  {{http-error-codes}}  |
+|-----------------------------------|--------|----------------------------------------------|------------------------|
+
 
 --- back
 
