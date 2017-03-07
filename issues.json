@@ -2676,9 +2676,9 @@
 
     ],
     "milestone": null,
-    "comments": 5,
+    "comments": 6,
     "created_at": "2017-02-10T09:02:27Z",
-    "updated_at": "2017-02-16T16:27:51Z",
+    "updated_at": "2017-03-07T04:33:52Z",
     "closed_at": null,
     "body": "The text says:\r\n\r\n> However, since it is possible that an endpoint might only send packets containing ACK frames (or other non-retransmittable frames), the receiving peer MAY send an ACK frame after a reasonable number (currently 20) of such packets have been received.\r\n\r\n\"currently 20\" seems pretty arbitrary.  That smells like something from the Google QUIC implementation.  We should be more concrete about this, if that behaviour even makes sense.\r\n\r\nIf an endpoint is receiving nothing but ACKs but is sending itself, then acknowledging those ACKs is probably fine.\r\n\r\nAn endpoint with nothing to say can generate a lot of ACKs over time, but if both endpoints are being quiet other than ACKs, it's probably time to shut up entirely.  Maybe we should say that the peer SHOULD generate an ACK frame only if it has other frame types to send.\r\n\r\nLimiting the number of PING frames that a peer will respond to is a separate issue, and may motivate a limit with a number attached to it.\r\n"
   },
