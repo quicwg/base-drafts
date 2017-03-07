@@ -383,24 +383,9 @@ corresponding data stream.
 
 # HTTP Framing Layer
 
-Many framing concepts from HTTP/2 can be elided away on QUIC, because the
-transport deals with them. Because frames are already on a stream, they can omit
-the stream number. Because frames do not block multiplexing (QUIC's multiplexing
-occurs below this layer), the support for variable-maximum-length packets can be
-removed. Because stream termination is handled by QUIC, an END_STREAM flag is
-not required.
-
 Frames are used only on the connection (stream 3) and message (streams 5, 9,
 etc.) control streams. Other streams carry data payload and are not framed at
 the HTTP layer.
-
-Frame payloads are largely drawn from {{!RFC7540}}. However, QUIC includes some
-features (e.g. flow control) which are also present in HTTP/2. In these cases,
-the HTTP mapping need not re-implement them. As a result, some frame types are
-not required when using QUIC. Where an HTTP/2-defined frame is no longer used,
-the frame ID is reserved in order to maximize portability between HTTP/2 and
-HTTP/QUIC implementations. However, equivalent frames between the two mappings
-are not necessarily identical.
 
 This section describes HTTP framing in QUIC and highlights differences from
 HTTP/2 framing.
@@ -597,34 +582,17 @@ zero octets are permitted, but implementations SHOULD use only as many bytes as
 are needed to represent the value.  An integer MUST NOT be represented in more
 bytes than would be used to transfer the maximum permitted value.
 
-#### Defined SETTINGS Parameters
+#### Defined SETTINGS Parameters {#settings-parameters}
 
-Some transport-level options that HTTP/2 specifies via the SETTINGS frame are
-superseded by QUIC transport parameters in HTTP/QUIC. Below is a listing of how
-each HTTP/2 SETTINGS parameter is mapped:
+The following settings are defined in HTTP/QUIC:
 
-  SETTINGS_HEADER_TABLE_SIZE:
+  SETTINGS_HEADER_TABLE_SIZE (0x1):
   : An integer with a maximum value of 2^32 - 1.
 
-  SETTINGS_DISABLE_PUSH:
+  SETTINGS_DISABLE_PUSH (0x2):
   : Transmitted as a Boolean; replaces SETTINGS_ENABLE_PUSH
 
-  SETTINGS_MAX_CONCURRENT_STREAMS:
-  : QUIC requires the maximum number of incoming streams per connection to be
-    specified in the initial crypto handshake, using the "MSPC" tag.  Specifying
-    SETTINGS_MAX_CONCURRENT_STREAMS in the SETTINGS frame is an error.
-
-  SETTINGS_INITIAL_WINDOW_SIZE:
-  : QUIC requires both stream and connection flow control window sizes to be
-    specified in the initial crypto handshake, using the "SFCW" and "CFCW" tags,
-    respectively.  Specifying SETTINGS_INITIAL_WINDOW_SIZE in the SETTINGS
-    frame is an error.
-
-  SETTINGS_MAX_FRAME_SIZE:
-  : This setting has no equivalent in QUIC.  Specifying it in the SETTINGS
-    frame is an error.
-
-  SETTINGS_MAX_HEADER_LIST_SIZE:
+  SETTINGS_MAX_HEADER_LIST_SIZE (0x6):
   : An integer with a maximum value of 2^32 - 1.
 
 #### Usage in 0-RTT
@@ -717,8 +685,16 @@ frames provide equivalent functionality. Frame type 0x9 is reserved.
 
 # Error Handling {#errors}
 
-This section describes the specific error codes defined by HTTP and the mapping
-of HTTP/2 error codes into the QUIC error code space.
+QUIC allows the application to abruptly terminate individual streams or the
+entire connection when an error is encountered.  These are referred to as
+"stream errors" or "connection errors" and are described in more detail in
+[QUIC-TRANSPORT].
+
+HTTP/QUIC requires that only data streams be terminated abruptly.  Terminating a
+message control stream will result in an error of type HTTP_RST_CONTROL_STREAM.
+
+This section describes HTTP-specific error codes which can be used to express
+the cause of a connection or stream error.
 
 ## HTTP-Defined QUIC Error Codes {#http-error-codes}
 
@@ -779,7 +755,86 @@ HTTP_MULTIPLE_SETTINGS (0x10):
 HTTP_RST_CONTROL_STREAM (0x11):
 : A message control stream closed abruptly.
 
-## Mapping HTTP/2 Error Codes
+
+# Considerations for Transitioning from HTTP/2
+
+HTTP/QUIC is strongly informed by HTTP/2, and bears many similarities.  This
+section points out useful differences from HTTP/2 and describes how to map
+HTTP/2 extensions into HTTP/QUIC.
+
+## HTTP Frame Types
+
+Many framing concepts from HTTP/2 can be elided away on QUIC, because the
+transport deals with them. Because frames are already on a stream, they can omit
+the stream number. Because frames do not block multiplexing (QUIC's multiplexing
+occurs below this layer), the support for variable-maximum-length packets can be
+removed. Because stream termination is handled by QUIC, an END_STREAM flag is
+not required.
+
+Frame payloads are largely drawn from {{!RFC7540}}. However, QUIC includes some
+features (e.g. flow control) which are also present in HTTP/2. In these cases,
+the HTTP mapping does not re-implement them. As a result, some frame types are
+not required in HTTP/QUIC. Where an HTTP/2-defined frame is no longer used, the
+frame ID has been reserved in order to maximize portability between HTTP/2 and
+HTTP/QUIC implementations. However, equivalent frames between the two mappings
+are not identical.
+
+Frame type extensions which apply to HTTP/2 are typically portable to QUIC with
+a few minimal changes:
+
+- HTTP/QUIC uses Stream 3 as the connection control stream, rather than Stream 0
+  in HTTP/2.
+- If there are assumptions that frames from different streams will still be
+  received in the order sent, HTTP/QUIC will break them.  (This is most easily
+  solved by sending all frames on the connection control stream and including
+  the affected stream number, but could also be solved in a frame-local method.)
+
+The IANA registry of frame types has been updated in {{iana-frames}} to include
+references to the definition for each frame type in HTTP/2 and in HTTP/QUIC.
+Frames not defined as available in HTTP/QUIC SHOULD NOT be sent and SHOULD be
+ignored as unknown on receipt.
+
+## HTTP/2 SETTINGS Parameters
+
+Some transport-level options that HTTP/2 specifies via the SETTINGS frame are
+superseded by QUIC transport parameters in HTTP/QUIC. The HTTP-level options
+that are retained in HTTP/QUIC have the same value as in HTTP/2.
+
+Below is a listing of how each HTTP/2 SETTINGS parameter is mapped:
+
+SETTINGS_HEADER_TABLE_SIZE:
+: See {{settings-parameters}}.
+
+SETTINGS_ENABLE_PUSH:
+: See SETTINGS_DISABLE_PUSH in {{settings-parameters}}.
+
+SETTINGS_MAX_CONCURRENT_STREAMS:
+: QUIC requires the maximum number of incoming streams per connection to be
+  specified in the initial transport handshake.  Specifying
+  SETTINGS_MAX_CONCURRENT_STREAMS in the SETTINGS frame is an error.
+
+SETTINGS_INITIAL_WINDOW_SIZE:
+: QUIC requires both stream and connection flow control window sizes to be
+  specified in the initial transport handshake.  Specifying
+  SETTINGS_INITIAL_WINDOW_SIZE in the SETTINGS frame is an error.
+
+SETTINGS_MAX_FRAME_SIZE:
+: This setting has no equivalent in HTTP/QUIC.  Specifying it in the SETTINGS
+  frame is an error.
+
+SETTINGS_MAX_HEADER_LIST_SIZE:
+: See {{settings-parameters}}.
+
+Settings defined by extensions to HTTP/2 MAY be expressed as integers with a
+maximum value of 2^32-1, if they are applicable to HTTP/QUIC, but SHOULD have a
+specification describing their usage.  Fields for this purpose have been added
+to the IANA registry in {{iana-settings}}.
+
+## HTTP/2 Error Codes
+
+QUIC has the same concepts of "stream" and "connection" errors that HTTP/2
+provides. However, because the error code space is shared between multiple
+components, there is no direct portability of HTTP/2 error codes.
 
 The HTTP/2 error codes defined in Section 7 of {{!RFC7540}} map to QUIC error
 codes as follows:
@@ -831,8 +886,8 @@ INADEQUATE_SECURITY (0xc):
 HTTP_1_1_REQUIRED (0xd):
 : HTTP_VERSION_FALLBACK in {{http-error-codes}}.
 
-TODO: fill in missing error code mappings.
-
+Error codes defined by HTTP/2 extensions need to be re-registered for HTTP/QUIC
+if still applicable.  See {{iana-error-codes}}.
 
 # Security Considerations
 
@@ -876,7 +931,7 @@ This document creates a new registration for version-negotiation hints in the
   Specification:
   : This document, {{alt-svc-version-hint}}
 
-## Existing Frame Types
+## Existing Frame Types {#iana-frames}
 
 This document adds two new columns to the "HTTP/2 Frame Type" registry defined
 in {{!RFC7540}}:
@@ -913,6 +968,13 @@ Values for existing registrations are assigned by this document:
 The "Specification" column is renamed to "HTTP/2 specification" and is only
 required if the frame is supported over HTTP/2.
 
+## Settings Parameters {#iana-settings}
+
+TODO:  Register settings
+
+## Error Codes {#iana-error-codes}
+
+TODO:  Register error codes
 
 --- back
 
