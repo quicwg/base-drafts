@@ -511,7 +511,7 @@ A Public Reset packet contains:
 * Octets 1-8: Echoed data (octets 1-8 of received packet)
 * Octets 9-12: Echoed data (octets 9-12 of received packet)
 * Octets 13-16: Version (server version)
-* Octets 17+: Public Reset Proof (optional, TBD)
+* Octets 17+: Public Reset Proof
 
 For a client that sends a connection ID on every packet, a Public Reset
 packet received in response can be simply interpreted as:
@@ -521,22 +521,18 @@ packet received in response can be simply interpreted as:
   on the packet number size used by the client, followed by 0, 2, or 3
   subsequent bytes from the client packet.
 * Octets 13-16: Version (server version)
-* Octets 17+: Public Reset Proof (optional, TBD)
+* Octets 17+: Public Reset Proof
 
-Whether the Public Reset Proof field is included in a Public Reset packet
-depends on the entity that generates the packet.
-
-A Public Reset packet sent by an endpoint indicates that it does not have the
-state necessary to continue with a connection.  In this case, the endpoint will
+A Public Reset packet sent by a server indicates that it does not have the
+state necessary to continue with a connection.  In this case, the server will
 include the fields that prove that it originally participated in the connection
 (see {{public-reset-proof}} for details).
 
-Upon receipt of a Public Reset packet that contains a valid proof, an endpoint
-MUST tear down state associated with the connection.  The endpoint MUST then
+Upon receipt of a Public Reset packet that contains a valid proof, a client
+MUST tear down state associated with the connection.  The client MUST then
 cease sending packets on the connection and SHOULD discard any subsequent
 packets that arrive. A Public Reset that does not contain a valid proof MUST be
 ignored.
-
 
 ### Public Reset Proof
 
