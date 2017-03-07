@@ -467,7 +467,7 @@ Connection ID:
 Packet Number:
 
 : The length of the packet number field depends on the packet type.
-  This field can be 1, 2 or 4 octets long depending on the short packet type; 
+  This field can be 1, 2 or 4 octets long depending on the short packet type;
   see {{packet-numbers}}.
 
 Packet Number Echo:
