@@ -344,7 +344,7 @@
     "milestone": null,
     "comments": 1,
     "created_at": "2017-03-07T00:52:24Z",
-    "updated_at": "2017-03-07T07:50:11Z",
+    "updated_at": "2017-03-07T17:16:55Z",
     "closed_at": null,
     "pull_request": {
       "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/361",
@@ -518,7 +518,7 @@
     "milestone": null,
     "comments": 0,
     "created_at": "2017-03-06T21:12:22Z",
-    "updated_at": "2017-03-07T16:39:25Z",
+    "updated_at": "2017-03-07T16:40:23Z",
     "closed_at": null,
     "pull_request": {
       "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/358",
@@ -6489,7 +6489,7 @@
     "html_url": "https://github.com/quicwg/base-drafts/pull/171",
     "id": 201644609,
     "number": 171,
-    "title": "First pass at REQUEST_RST",
+    "title": "Independent states and REQUEST_RST",
     "user": {
       "login": "MikeBishop",
       "id": 4273797,
@@ -6541,7 +6541,7 @@
     "milestone": null,
     "comments": 1,
     "created_at": "2017-01-18T17:46:42Z",
-    "updated_at": "2017-02-23T22:38:49Z",
+    "updated_at": "2017-03-07T17:58:44Z",
     "closed_at": null,
     "pull_request": {
       "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/171",
@@ -6798,9 +6798,9 @@
 
     ],
     "milestone": null,
-    "comments": 14,
+    "comments": 16,
     "created_at": "2017-01-17T04:04:39Z",
-    "updated_at": "2017-02-08T22:06:15Z",
+    "updated_at": "2017-03-07T17:59:26Z",
     "closed_at": null,
     "body": "I'm writing this issue because there was some discussion about a change I made in #145, that seemed to be controversial. I spent a lot of time thinking about this, and realized that my changes in that PR were insufficient to address the problem. I think there are multiple issues in the stream state machinery.\r\n\r\n\r\n## Two common scenarios\r\n\r\nI will describe two scenarios where RST_STREAMs will be used regularly when using HTTP/QUIC.\r\n\r\n### Rejected PUSH\r\n\r\nThe sender (in this case a HTTP server) uses HTTP/2 Push to push a resource that the receiver isn't interested in. The receiver therefore sends a RST_STREAM with offset 0 (since it didn't send any data on that stream) to stop the sender from pushing the resource.\r\n\r\nWhen the sender receives the RST_STREAM, there are two options:\r\n\r\n- the transfer hasn't completed yet: The sender then stops sending data and sends a RST_STREAM with a byte offset equal to whatever highest data offset it sent. RST_STREAMs are transmitted reliably, so both sides will *eventually* receive the other side's RST_STREAM and make adjustments to their flow controller. There is no problem here.\r\n- the transfer has already completed (i.e. the sender already sent a STREAM frame with the FIN bit): According to the draft, STREAM frames on reset streams are not retransmitted. If the STREAM frame with the FIN gets lost, and the sender will never be able to make the necessary adjustments to its flow controller. (I'm not sure, but maybe this is what #163 is about).\r\n\r\nA fix for this problem is to **always** send a RST_STREAM as a response to a RST_STREAM, even if the stream already transitioned to the *half closed* state by sending a FIN bit.\r\n\r\n\r\n\r\n### POST to a 404 URI\r\n\r\nThe second example is more involved, since it involves data flowing bidirectionaly (note that for the PUSH case, the receiver never sent any data on the stream):\r\n\r\nThe sender (in this case a HTTP client) performs a POST request to an URI that the receiver is not reading from, e.g. a non-existing site (HTTP status code 404). The receiver will first send the HTTP response header, and then the (non-empty) 404 body. It will send send a RST_STREAM with a offset equivalent to the body length, to stop the sender, to stop it from sending more data.\r\n\r\nOn the sender side, we have the same situation as in the PUSH case, but let's assume we already resolved that issue.\r\n\r\nThere are two more issues here:\r\n\r\n- We must ensure reliable delivery of the response body (the 404 page). Thus, although the stream was reset, STREAM frames need to be retransmitted.\r\n- The receiver can only send the RST_STREAM **after** composing the response body (since the final byte offset has to be included). However, it would make sense to send the RST_STREAM as soon as possible, to stop the unwanted upload.\r\n\r\nThe first issue could be fixed by requiring that the peer that is resetting a stream MUST ensure reliable delivery of stream data it sent, whereas a peer that is receiving the RST_STREAM SHOULD NOT retransmit any stream data.\r\n\r\nThe second issue could be fixed by defining a RST_STREAM frame that doesn't include a byte offset (or introducing an RST error code that indicates that the byte offset is not set). The receiver in the above example would send this RST_STREAM before sending the 404 body. Since stream data is transmitted reliably, the sender would eventually receive a highest byte offset with a STREAM frame carrying the FIN flag.\r\n\r\n\r\n## Open points for discussion\r\n\r\nDo the three changes capture all possible use cases of resetting streams. Or do we need\r\n* a way to reset a stream such that the peer initiating the reset doesn't ensure the reliable transmission of the data it already sent\r\n* a way to reset a stream such that the peer receiving the RST has to ensure the reliable transmission up to a certain (which?) offset\r\n\r\n"
   },
