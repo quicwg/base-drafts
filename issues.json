@@ -1,5 +1,56 @@
 [
   {
+    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/360",
+    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
+    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/360/labels{/name}",
+    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/360/comments",
+    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/360/events",
+    "html_url": "https://github.com/quicwg/base-drafts/pull/360",
+    "id": 212263506,
+    "number": 360,
+    "title": "Clarify the Timestamps section",
+    "user": {
+      "login": "ianswett",
+      "id": 20072817,
+      "avatar_url": "https://avatars2.githubusercontent.com/u/20072817?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/ianswett",
+      "html_url": "https://github.com/ianswett",
+      "followers_url": "https://api.github.com/users/ianswett/followers",
+      "following_url": "https://api.github.com/users/ianswett/following{/other_user}",
+      "gists_url": "https://api.github.com/users/ianswett/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/ianswett/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/ianswett/subscriptions",
+      "organizations_url": "https://api.github.com/users/ianswett/orgs",
+      "repos_url": "https://api.github.com/users/ianswett/repos",
+      "events_url": "https://api.github.com/users/ianswett/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/ianswett/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+
+    ],
+    "state": "open",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 0,
+    "created_at": "2017-03-06T22:00:37Z",
+    "updated_at": "2017-03-06T23:58:22Z",
+    "closed_at": null,
+    "pull_request": {
+      "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/360",
+      "html_url": "https://github.com/quicwg/base-drafts/pull/360",
+      "diff_url": "https://github.com/quicwg/base-drafts/pull/360.diff",
+      "patch_url": "https://github.com/quicwg/base-drafts/pull/360.patch"
+    },
+    "body": "Intends to resolve #308 "
+  },
+  {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/359",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
     "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/359/labels{/name}",
@@ -112,7 +163,7 @@
     "milestone": null,
     "comments": 0,
     "created_at": "2017-03-06T21:12:22Z",
-    "updated_at": "2017-03-06T21:12:22Z",
+    "updated_at": "2017-03-06T23:56:51Z",
     "closed_at": null,
     "pull_request": {
       "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/358",
@@ -1924,17 +1975,54 @@
     ],
     "state": "open",
     "locked": false,
-    "assignee": null,
+    "assignee": {
+      "login": "ianswett",
+      "id": 20072817,
+      "avatar_url": "https://avatars2.githubusercontent.com/u/20072817?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/ianswett",
+      "html_url": "https://github.com/ianswett",
+      "followers_url": "https://api.github.com/users/ianswett/followers",
+      "following_url": "https://api.github.com/users/ianswett/following{/other_user}",
+      "gists_url": "https://api.github.com/users/ianswett/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/ianswett/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/ianswett/subscriptions",
+      "organizations_url": "https://api.github.com/users/ianswett/orgs",
+      "repos_url": "https://api.github.com/users/ianswett/repos",
+      "events_url": "https://api.github.com/users/ianswett/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/ianswett/received_events",
+      "type": "User",
+      "site_admin": false
+    },
     "assignees": [
-
+      {
+        "login": "ianswett",
+        "id": 20072817,
+        "avatar_url": "https://avatars2.githubusercontent.com/u/20072817?v=3",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/ianswett",
+        "html_url": "https://github.com/ianswett",
+        "followers_url": "https://api.github.com/users/ianswett/followers",
+        "following_url": "https://api.github.com/users/ianswett/following{/other_user}",
+        "gists_url": "https://api.github.com/users/ianswett/gists{/gist_id}",
+        "starred_url": "https://api.github.com/users/ianswett/starred{/owner}{/repo}",
+        "subscriptions_url": "https://api.github.com/users/ianswett/subscriptions",
+        "organizations_url": "https://api.github.com/users/ianswett/orgs",
+        "repos_url": "https://api.github.com/users/ianswett/repos",
+        "events_url": "https://api.github.com/users/ianswett/events{/privacy}",
+        "received_events_url": "https://api.github.com/users/ianswett/received_events",
+        "type": "User",
+        "site_admin": false
+      }
     ],
     "milestone": null,
     "comments": 0,
     "created_at": "2017-02-15T04:22:58Z",
-    "updated_at": "2017-02-15T04:22:58Z",
+    "updated_at": "2017-03-06T21:31:54Z",
     "closed_at": null,
     "body": "The descriptions for `OnAlarm` and `OnPacketAcked` both claim a return value.  The pseudocode doesn't show any return value."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/308",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -1982,18 +2070,53 @@
     ],
     "state": "open",
     "locked": false,
-    "assignee": null,
+    "assignee": {
+      "login": "ianswett",
+      "id": 20072817,
+      "avatar_url": "https://avatars2.githubusercontent.com/u/20072817?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/ianswett",
+      "html_url": "https://github.com/ianswett",
+      "followers_url": "https://api.github.com/users/ianswett/followers",
+      "following_url": "https://api.github.com/users/ianswett/following{/other_user}",
+      "gists_url": "https://api.github.com/users/ianswett/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/ianswett/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/ianswett/subscriptions",
+      "organizations_url": "https://api.github.com/users/ianswett/orgs",
+      "repos_url": "https://api.github.com/users/ianswett/repos",
+      "events_url": "https://api.github.com/users/ianswett/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/ianswett/received_events",
+      "type": "User",
+      "site_admin": false
+    },
     "assignees": [
-
+      {
+        "login": "ianswett",
+        "id": 20072817,
+        "avatar_url": "https://avatars2.githubusercontent.com/u/20072817?v=3",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/ianswett",
+        "html_url": "https://github.com/ianswett",
+        "followers_url": "https://api.github.com/users/ianswett/followers",
+        "following_url": "https://api.github.com/users/ianswett/following{/other_user}",
+        "gists_url": "https://api.github.com/users/ianswett/gists{/gist_id}",
+        "starred_url": "https://api.github.com/users/ianswett/starred{/owner}{/repo}",
+        "subscriptions_url": "https://api.github.com/users/ianswett/subscriptions",
+        "organizations_url": "https://api.github.com/users/ianswett/orgs",
+        "repos_url": "https://api.github.com/users/ianswett/repos",
+        "events_url": "https://api.github.com/users/ianswett/events{/privacy}",
+        "received_events_url": "https://api.github.com/users/ianswett/received_events",
+        "type": "User",
+        "site_admin": false
+      }
     ],
     "milestone": null,
     "comments": 0,
     "created_at": "2017-02-15T01:12:19Z",
-    "updated_at": "2017-02-15T01:12:19Z",
+    "updated_at": "2017-03-06T21:32:44Z",
     "closed_at": null,
     "body": "We need to include advice on the creation of ACK frames when an ACK frame was lost.  The advice from @ianswett is that new timing information isn't valuable.  Both endpoints only need to maintain timing information for individual packets for a short period, so retransmission of old timing information isn't valuable.\r\n\r\nThus, we should recommend that endpoints do just that: maintain a short list of packets that they want to provide timing for.  They should then not worry about re-sending any timestamps from lost packets."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/307",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3709,7 +3832,8 @@
     "updated_at": "2017-02-08T20:12:38Z",
     "closed_at": null,
     "body": "There might be a way in which both sides of a connection could agree (by convention, protocol, or explicit signaling) that a particular stream is closed WITHOUT sending a FIN and spending the extra octets.  This could be used by HTTP to avoid the FIN that a client currently has to send when receiving a server push."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/239",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3767,8 +3891,7 @@
     "updated_at": "2017-02-03T03:01:28Z",
     "closed_at": null,
     "body": "My understanding of the way the mechanism is supposed to work is that once the handshake is finished, QUIC takes over the encryption;  if server wants to send an NST, it needs to send it on stream 1, using TLS record layer on said stream, and said TLS record shall not be encrypted.  If that is so, this should be clarified, because otherwise this can be interpreted as a requirement to double-encrypt streams (on QUIC packet layer with QUIC key, and on TLS record layer with TLS traffic keys)."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/238",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -4169,9 +4292,9 @@
 
     ],
     "milestone": null,
-    "comments": 4,
+    "comments": 5,
     "created_at": "2017-01-25T05:15:45Z",
-    "updated_at": "2017-03-06T20:54:15Z",
+    "updated_at": "2017-03-06T23:46:21Z",
     "closed_at": null,
     "body": "QUIC doesn't make order guarantees between streams.  The options on the table currently are:\r\n\r\n- Current (-01) draft puts a sequence number in the frames; HPACK data MUST be handled in order, and will HOL-block.  HPACK is exactly the same as HTTP/2.\r\n- Buck's proposal (draft forthcoming) puts two sequence numbers in the frames and modifies the HPACK encoder to prevent blocking references.  Partially-received HPACK frames must block until fully received.  The new encoder could also be used in HTTP/2, but would require changes to existing code.\r\n- [QPACK](https://tools.ietf.org/html/draft-bishop-quic-http-and-qpack) modifies HPACK to be order-resilient and permit partial frames to be processed, but breaks from the HPACK encoding enough that you'd have at least some separate code paths.\r\n\r\nAlso agreed to put a \"hard-hat warning\" in this section of the HTTP draft, to warn readers this is still work-in-progress."
   },
@@ -5486,7 +5609,8 @@
     "updated_at": "2017-01-24T00:59:21Z",
     "closed_at": null,
     "body": "The inclusion of \"Reason Phrase\" is CONNECTION_CLOSE and GOAWAY frames seems unnecessary and its normative usage uncertain. There is already an error code field (and a robust discussion in #19 and #184 about its values).\r\n\r\n\"Reason Phrase\" seems like optional textual debug information (in what language?). This is actually another case for a generalized DEBUG frame (see #65)."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/186",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5544,8 +5668,7 @@
     "updated_at": "2017-01-24T01:03:19Z",
     "closed_at": null,
     "body": "The specification allows endpoints to specify the maximum number of concurrent streams (MSPC), but should not the spec provide for the minimum value of MSPC that all endpoints must support?  If the minimum is 1 (excluding \"service\" streams), it would be good for the spec to state so explicitly."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/185",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7239,9 +7362,9 @@
 
     ],
     "milestone": null,
-    "comments": 1,
+    "comments": 2,
     "created_at": "2017-01-06T04:18:17Z",
-    "updated_at": "2017-03-06T20:05:12Z",
+    "updated_at": "2017-03-06T23:41:36Z",
     "closed_at": null,
     "body": "The transport protocol has frames, and STREAM frames can contain frames for the HTTP mapping.  It's confusing.  We should work out how to deal with that."
   },
@@ -7490,7 +7613,8 @@
     "updated_at": "2017-02-07T00:22:29Z",
     "closed_at": null,
     "body": "COPT is apparently repeated, once for each option.  \r\n\r\nOne thing that TLS implementations do is validate that there is only one instance of each extension.  This isn't possible for transport parameters if we require that COPT be used for a list of options.\r\n\r\nAlso, we can reduce the number of extension points in the protocol, we shouldn't pack a list of options into COPT when we have transport parameters for that."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/115",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7548,8 +7672,7 @@
     "updated_at": "2017-01-25T08:02:05Z",
     "closed_at": null,
     "body": "There are a bunch of things that need to be addressed here.  What is likely to happen is that this issue will turn into many smaller issues and this will eventually get closed as those become better understood.\r\n\r\n1. Reasons migration might be needed (mobility, NAT rebinding, routing changes, etc...)\r\n2. Routing considerations when migration occurs\r\n3. Privacy implications of linkability across migrations\r\n4. Verifying consent to send on a new path\r\n5. Establishing any desired middlebox state along the path\r\n"
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/109",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
