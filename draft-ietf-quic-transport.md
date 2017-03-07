@@ -376,8 +376,8 @@ Connection ID:
 
 Packet Number:
 
-: Octets 9 to 12 contain a packet number.  {{packet-numbers} describes the use of
-  packet numbers.
+: Octets 9 to 12 contain a packet number.  {{packet-numbers} describes the use
+  of packet numbers.
 
 Version:
 
@@ -404,9 +404,9 @@ The following packet types are defined:
 {: #long-packet-types title="Long Header Packet Types"}
 
 The header form, long packet type, connection ID, packet number and version
-fields of a long header packet are version independent.  The payload is specific
-to a version.  See {{version-specific}} for details on how packets from
-different versions of QUIC are interpreted.
+fields of a long header packet are version independent. The rest of the packet
+is specific to a version. See {{version-specific}} for details on how packets
+from different versions of QUIC are interpreted.
 
 The packet layout is the same for all long-header packet types, but the
 semantics of the fields are specific to each packet type.  Type-specific
