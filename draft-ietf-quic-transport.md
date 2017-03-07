@@ -403,10 +403,10 @@ The following packet types are defined:
 | 08   | 1-RTT Encrypted (key phase 1) | {{encrypted-packet}}    |
 {: #long-packet-types title="Long Header Packet Types"}
 
-The type, connection ID, packet number and version fields of a long header
-packet are version independent.  The payload is specific to a version.  See
-{{version-specific}} for details on how packets from different versions of QUIC
-are interpreted.
+The header form, long packet type, connection ID, packet number and version
+fields of a long header packet are version independent.  The payload is specific
+to a version.  See {{version-specific}} for details on how packets from
+different versions of QUIC are interpreted.
 
 The packet layout is the same for all long-header packet types, but the
 semantics of the fields are specific to each packet type.  Type-specific
@@ -437,14 +437,14 @@ This header form has the following fields:
 
 Header Form:
 
-: The most significant bit (0x80) of the first octet (octet 0) of a packet is the header form.
-  This bit is set to 0 for the short header.
+: The most significant bit (0x80) of the first octet (octet 0) of a packet is
+  the header form.  This bit is set to 0 for the short header.
 
 Connection ID Flag:
 
-: The second bit (0x40) of octet 0 indicates whether the connection ID field
-  is present.  If set to 1, then the connection ID field is present; if set to
-  0, the connection ID field is zero length.
+: The second bit (0x40) of octet 0 indicates whether the connection ID field is
+  present.  If set to 1, then the connection ID field is present; if set to 0,
+  the connection ID field is zero length.
 
 Key Phase Bit:
 
@@ -481,6 +481,11 @@ other fields.
 | 02   | 2 octets               |
 | 03   | 4 octets               |
 {: #short-packet-types title="Short Header Packet Types"}
+
+The header form, connection ID flag and connection ID of a short header packet
+are version independent.  The remaining fields are specific to the selected QUIC
+version.  See {{version-specific}} for details on how packets from different
+versions of QUIC are interpreted.
 
 
 ## Version Negotiation Packet {#version-negotiation-packet}
