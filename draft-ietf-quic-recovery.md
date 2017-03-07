@@ -514,7 +514,7 @@ Pseudocode for DetectLostPackets follows:
 (describe appropriate byte counting.)
 (define recovery based on packet numbers.)
 (describe min_rtt based hystart.)
-(describe how QUIC's F-RTO {{!RFC5682}} delays reducing CWND until an ack is received.)
+(describe how QUIC's F-RTO {{!RFC5682}} delays reducing CWND.)
 (describe PRR {{!RFC6937}})
 
 
