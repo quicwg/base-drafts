@@ -1829,7 +1829,7 @@ STREAM frames; WINDOW_UPDATE, RST_STREAM, and DISINTEREST MAY be sent in this
 state.
 
 A stream transitions from this state to "closed" when a STREAM frame that
-contains an FIN flag or when a RST_STREAM frame is received.
+contains a FIN flag or when a RST_STREAM frame is received.
 
 An endpoint that closes a stream MUST NOT send data beyond the final offset that
 it has chosen, see {{state-closed}} for details.
