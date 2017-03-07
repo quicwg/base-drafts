@@ -426,9 +426,9 @@ semantics are described in {{version-negotiation-packet}},
 +                        [Connection ID]                        +
 |                                                               |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                     Packet Number (1/2/4)                     |
+|                         Packet Number                         |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                  [Packet Number Echo (1/2/4)]                 |
+|                      [Packet Number Echo]                     |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                       Encrypted Payload                     ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -472,8 +472,7 @@ Packet Number:
 Packet Number Echo:
 
 : The packet number echo field, if present, contains the highest packet number
-seen in the opposite direction. This field can be absent, or 1, 2, or 4 octets
-long depending on the short packet type; see {{packet-number-echo}}.
+seen in the opposite direction. This field is optional; see {{packet-number-echo}}.
 
 Encrypted Payload:
 
@@ -485,11 +484,7 @@ other fields.
 
 | Type | Packet Number Size     | Packet Number Echo Size |
 |:-----|:-----------------------|-------------------------|
-| 01   | 1 octet                | not present             |
-| 02   | 2 octets               | not present             |
 | 03   | 4 octets               | not present             |
-| 05   | 1 octet                | 1 octet                 |
-| 06   | 2 octets               | 2 octets                |
 | 07   | 4 octets               | 4 octets                |
 {: #short-packet-types title="Short Header Packet Types"}
 
@@ -696,30 +691,16 @@ CONNECTION_CLOSE frame with the error code QUIC_SEQUENCE_NUMBER_LIMIT_REACHED
 (connection termination is described in {{termination}}.)
 
 To reduce the number of bits required to represent the packet number over the
-wire, only the least significant bits of the packet number are transmitted over
-the wire, up to 32 bits.  The actual packet number for each packet is
-reconstructed at the receiver based on the largest packet number received on a
-successfully authenticated packet.
+wire, only the 32 least significant bits of the packet number are transmitted
+over the wire. The actual packet number for each packet is reconstructed at the
+receiver based on the largest packet number received on a successfully
+authenticated packet.
 
 A packet number is decoded by finding the packet number value that is closest to
 the next expected packet.  The next expected packet is the highest received
 packet number plus one.  For example, if the highest successfully authenticated
-packet had a packet number of 0xaa82f30e, then a packet containing a 16-bit
-value of 0x1f94 will be decoded as 0xaa831f94.
-
-To enable unambiguous reconstruction of the packet number, an endpoint MUST use
-a packet number size that is able to represent 4 times more packet numbers than
-the numerical difference between the current packet number and the lowest packet
-number on an outstanding packet, plus one.  A packet is outstanding if it has
-been sent but has neither been acknowledged nor been marked as lost (see
-{{QUIC-RECOVERY}}).  As a result, the size of the packet number encoding is at
-least two more than the base 2 logarithm of the range of outstanding packet
-numbers including the new packet, rounded up.
-
-For example, if an endpoint has is sending packet 0x6B4264 and 0x6B0A2F is the
-lowest outstanding packet number, the next packet uses a 16-bit or larger packet
-number encoding; whereas a 32-bit packet number is needed if packet 0x6AF0F7 is
-outstanding.
+packet had a packet number of 0x00000017aa82f30e, then a packet containing a 16-bit
+value of 0xaa821f94 will be decoded as 0x7aa831f94.
 
 ### Initial Packet Number
 
@@ -727,14 +708,10 @@ The initial value for packet number MUST be a 31-bit random number.  That is,
 the value is selected from an uniform random distribution between 0 and 2^31-1.
 {{?RFC4086}} provides guidance on the generation of random values.
 
-The first set of packets sent by an endpoint MUST include the low 32-bits of the
-packet number.  Once any packet has been acknowledged, subsequent packets can
-use a shorter packet number encoding.
-
 ### Packet Number Echo {#packet-number-echo}
 
-If present, the Packet Number Echo field contains the least significant 8, 16,
-or 32 bits of the highest packet number seen in the opposite direction before
+If present, the Packet Number Echo field contains the least significant 32 bits
+of the highest packet number seen in the opposite direction before
 this packet was sent. This allows devices along the path to estimate round-trip
 times and observe indications of loss, for passive performance measurement of
 QUIC flows equivalent to present techniques using TCP sequence and
@@ -744,14 +721,6 @@ The Packet Number Echo field SHOULD be present on 1-RTT packets containing at
 least one ACK frame (see {{frame-ack}}). For efficiency's sake, it MAY be
 omitted if a 1-RTT packet containing an ACK frame has already been sent during a
 time interval equal to the sender's current estimate of the RTT.
-
-Since the Packet Number and Packet Number Echo fielda are of the same size, a
-sender sending a packet containing a Packet Number Echo determines the size to use as follows:
-
-- Let `SIZE_P` be the size of the packet number to be sent, as determined in {{packet-numbers}} above.
-- Let `SIZE_E` be the size of the packet number sent in the packet whose packet number is to be echoed.
-- Let `SIZE_S` be the size of the packet number dictated by the difference between the packet number echo to be sent and the last packet number echo sent; if no packet number echo has yet been sent, then let SIZE_S be 4.
-- Choose the packet number and packet number echo size to send as `max(SIZE_P, SIZE_E, SIZE_S).
 
 ## Handling Packets from Different Versions {#version-specific}
 
