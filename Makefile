@@ -11,7 +11,7 @@ endif
 latest::
 	@if grep -l ' $$' *.md; then ! echo "Trailing whitespace found"; fi
 	@err=0; for f in draft-*.md ; do \
-	  line=$$(cat "$$f" | wc -L); \
+	  line=$$(cat "$$f" | sed -e 's/[|].*[|]//' | wc -L); \
 	  if [ "$$line" -gt 80 ]; then \
 	    echo "$$f contains a line with >80 ($$line) characters"; err=1; \
 	  fi; \

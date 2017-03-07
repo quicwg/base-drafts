@@ -331,7 +331,8 @@ Pseudocode for OnAckReceived and UpdateRtt follow:
      for acked_packet in DetermineNewlyAckedPackets():
        OnPacketAcked(acked_packet)
 
-     DetectLostPackets(ack.largest_acked_packet)
+     lost_packets = DetectLostPackets(ack.largest_acked_packet)
+     MaybeRetransmit(lost_packets)
      SetLossDetectionAlarm()
 
 
