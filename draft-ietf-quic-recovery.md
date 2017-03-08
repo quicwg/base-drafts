@@ -27,21 +27,6 @@ author:
 
 normative:
 
-  QUIC-TLS:
-    title: "Using Transport Layer Security (TLS) to Secure QUIC"
-    date: {DATE}
-    author:
-      -
-        ins: M. Thomson
-        name: Martin Thomson
-        org: Mozilla
-        role: editor
-      -
-        ins: S. Turner
-        name: Sean Turner
-        org: sn3rd
-        role: editor
-
   QUIC-TRANSPORT:
     title: "QUIC: A UDP-Based Multiplexed and Secure Transport"
     date: {DATE}
@@ -56,10 +41,6 @@ normative:
         name: Martin Thomson
         org: Mozilla
         role: editor
-
-informative:
-
-  I-D.dukkipati-tcpm-tcp-loss-probe:
 
 --- abstract
 
@@ -424,7 +405,7 @@ Pseudocode for SetLossDetectionAlarm follows:
       // with an alarm to reduce spurious retransmits.
       alarm_duration = 0.25 * smoothed_rtt
     else if (tlp_count < kMaxTLPs):
-      // Tail Loss Probe alarm.
+      // Tail Loss Probe {{?I-D.dukkipati-tcpm-tcp-loss-probe}}
       if (retransmittable_packets_outstanding = 1):
         alarm_duration = 1.5 * smoothed_rtt + kDelayedAckTimeout
       else:
