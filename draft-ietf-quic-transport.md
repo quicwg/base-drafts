@@ -478,9 +478,8 @@ Encrypted Payload:
 
 : Packets with a short header always include a 1-RTT protected payload.
 
-The packet type in a short header currently determines only the size of the
-packet number field.  Additional types can be used to signal the presence of
-other fields.
+The packet type in a short header is used to deterine the fields that are
+present in a short header and their length.
 
 | Type | Packet Number Size     | Packet Number Echo Size |
 |:-----|:-----------------------|-------------------------|
