@@ -466,13 +466,14 @@ Connection ID:
 
 Packet Number:
 
-: The length of the packet number field depends on the packet type.  This field
-  can be 1, 2 or 4 octets long depending on the short packet type; see {{packet-numbers}}.
+: The packet number field encodes the packet number of this packet; see
+{{packet-numbers}}.
 
 Packet Number Echo:
 
-: The packet number echo field, if present, contains the highest packet number
-seen in the opposite direction. This field is optional; see {{packet-number-echo}}.
+: The packet number echo field, if present, encodes the highest packet number
+seen in the opposite direction. This field is optional; see
+{{packet-number-echo}}.
 
 Encrypted Payload:
 
