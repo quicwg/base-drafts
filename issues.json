@@ -1,56 +1,5 @@
 [
   {
-    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/372",
-    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
-    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/372/labels{/name}",
-    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/372/comments",
-    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/372/events",
-    "html_url": "https://github.com/quicwg/base-drafts/pull/372",
-    "id": 212833831,
-    "number": 372,
-    "title": "Fixing recovery references",
-    "user": {
-      "login": "ianswett",
-      "id": 20072817,
-      "avatar_url": "https://avatars2.githubusercontent.com/u/20072817?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/ianswett",
-      "html_url": "https://github.com/ianswett",
-      "followers_url": "https://api.github.com/users/ianswett/followers",
-      "following_url": "https://api.github.com/users/ianswett/following{/other_user}",
-      "gists_url": "https://api.github.com/users/ianswett/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/ianswett/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/ianswett/subscriptions",
-      "organizations_url": "https://api.github.com/users/ianswett/orgs",
-      "repos_url": "https://api.github.com/users/ianswett/repos",
-      "events_url": "https://api.github.com/users/ianswett/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/ianswett/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "labels": [
-
-    ],
-    "state": "open",
-    "locked": false,
-    "assignee": null,
-    "assignees": [
-
-    ],
-    "milestone": null,
-    "comments": 0,
-    "created_at": "2017-03-08T19:35:17Z",
-    "updated_at": "2017-03-08T19:41:51Z",
-    "closed_at": null,
-    "pull_request": {
-      "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/372",
-      "html_url": "https://github.com/quicwg/base-drafts/pull/372",
-      "diff_url": "https://github.com/quicwg/base-drafts/pull/372.diff",
-      "patch_url": "https://github.com/quicwg/base-drafts/pull/372.patch"
-    },
-    "body": ""
-  },
-  {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/371",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
     "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/371/labels{/name}",
@@ -346,7 +295,7 @@
     "milestone": null,
     "comments": 1,
     "created_at": "2017-03-07T00:52:24Z",
-    "updated_at": "2017-03-08T16:25:10Z",
+    "updated_at": "2017-03-08T20:55:18Z",
     "closed_at": null,
     "pull_request": {
       "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/361",
@@ -1078,7 +1027,7 @@
     "milestone": null,
     "comments": 0,
     "created_at": "2017-02-23T04:10:54Z",
-    "updated_at": "2017-03-08T04:12:35Z",
+    "updated_at": "2017-03-08T21:03:51Z",
     "closed_at": null,
     "pull_request": {
       "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/336",
@@ -1820,8 +1769,7 @@
     "updated_at": "2017-02-15T05:23:04Z",
     "closed_at": null,
     "body": "@martinthomson created a header proposal that provides a fixed 8 byte connection id in a fixed location.  \r\n\r\nWe need to decide if this is a requirement or a nice to have.\r\n\r\nI haven't found any environments it needed to be in a fixed location for all packets, as long as it's easy to determine where it will be from the first byte of the packet."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/290",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -1879,7 +1827,8 @@
     "updated_at": "2017-02-16T13:44:04Z",
     "closed_at": null,
     "body": "> The application SHOULD attempt to use TLS over TCP instead.\r\n\r\n(This is in the context of finding that the MTU is too small.)\r\n\r\nThe text includes a very specific recommendation to use TLS over TCP for one particular case.  This is unwise for two reasons:\r\n1. we don't know if all protocols that build on QUIC will have a TCP over TLS option available to them; DNS over QUIC might be an example of where TLS over TCP is an inadvisable fallback option\r\n2. we should rely on a generic error handling section that includes generic advice about things like falling back to a backup protocol\r\n\r\nMarked as editorial, I hope that's not controversial."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/284",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3603,8 +3552,7 @@
     "updated_at": "2017-01-25T04:43:48Z",
     "closed_at": null,
     "body": "This is an alternative to #167: We could just encrypt the cleartext data in the initial handshake packets with a deterministic key (e.g. a mixture of a version-dependent key and the initial packet number). The AEAD used there would have to be fixed in the spec.\r\n\r\nThe goal would be to make it harder for middleboxes to ossify on stuff in the client hello, e.g. SNI, and to detect initial packets (#203). On the other hand, there's additional computational cost for decrypting packets server-side."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/224",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3662,7 +3610,8 @@
     "updated_at": "2017-01-25T00:59:17Z",
     "closed_at": null,
     "body": "We've assumed that this is the case, but we really need to write it down."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/222",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5400,8 +5349,7 @@
     "updated_at": "2017-02-16T03:02:23Z",
     "closed_at": null,
     "body": "There's currently no behavior defined for the case of a connection ID collision.\r\nThe probability for a collision of two 64 bit numbers is *really small*, if connections IDs are chosen randomly. For example, for a server handling 100,000 concurrent connections, the collision probability is about 3*10^-10.\r\nIt might therefore be justified to completely neglect this issue.\r\n\r\nAccording to the current draft, if a client initiates a handshake and chooses an existing connection ID, the server would just silently discard those packets, because it already switched to an encrypted connection and will regard them as undecryptable."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/167",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5473,7 +5421,8 @@
     "updated_at": "2017-03-07T04:46:54Z",
     "closed_at": null,
     "body": "QUIC originally specified a 12 byte hash for unencrypted packets.  This was dropped when QUIC crypto was swapped for the TLS 1.3 mapping.\r\n\r\nWe should add it back, since it is useful in eliminating corrupted packets and random internet junk.  And possibly in preventing reflection attacks mentioned in #147 "
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/166",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7513,8 +7462,7 @@
     "updated_at": "2017-01-25T06:37:34Z",
     "closed_at": null,
     "body": "We have rules about retransmission of STREAM frames.  ACK has similar properties in terms of what needs to be retransmitted.  Once an ACK has been acked, what should a sender do when constructing future ACK messages?"
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/61",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7572,7 +7520,8 @@
     "updated_at": "2016-12-01T23:45:54Z",
     "closed_at": null,
     "body": "I think that this is one or other peer walking away from a conversation without saying goodbye.  If we're going to talk about silent closes, we need to explain what it is, why a peer might choose to do it, and the consequences for everyone involved if they exist."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/60",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
