@@ -1462,6 +1462,47 @@ actual exponent is one-less than the explicit exponent, and the value represents
 to 0xFFFF.
 
 
+### ACK Frames and Packet Protection
+
+ACK frames that acknowledge protected packets MUST be carried in a packet that
+has an equivalent or greater level of packet protection.
+
+Packets that are protected with 1-RTT keys MUST be acknowledged in packets that
+are also protected with 1-RTT keys.
+
+A packet that is not protected and claims to acknowledge a packet number that
+was sent with packet protection is not valid.  An unprotected packet that
+carries acknowledgments for protected packets MUST be discarded in its entirety.
+
+Packets that a client sends with 0-RTT packet protection MUST be acknowledged by
+the server in packets protected by 1-RTT keys.  This can mean that the client is
+unable to use these acknowledgments if the server cryptographic handshake
+messages are delayed or lost.  Note that the same limitation applies to other
+data sent by the server protected by the 1-RTT keys.
+
+Unprotected packets, such as those that carry the initial cryptographic
+handshake messages, MAY be acknowledged in unprotected packets.  Unprotected
+packets are vulnerable to falsification or modification.  Unprotected packets
+can be acknowledged along with protected packets in a protected packet.
+
+An endpoint SHOULD acknowledge packets containing cryptographic handshake
+messages in the next unprotected packet that it sends, unless it is able to
+acknowledge those packets in later packets protected by 1-RTT keys.  Those later
+packets might be protected by 1-RTT keys.  At the completion of the
+cryptographic handshake, both peers send unprotected packets containing
+cryptographic handshake messages followed by packets protected by 1-RTT keys.
+An endpoint SHOULD acknowledge the unprotected packets that complete the
+cryptographic handshake in a protected packet, because its peer is guaranteed to
+have access to 1-RTT packet protection keys.
+
+For instance, a server acknowledges a TLS ClientHello in the packet that carries
+the TLS ServerHello; similarly, a client can acknowledge a TLS HelloRetryRequest
+in the packet containing a second TLS ClientHello.  The complete set of server
+handshake messages (TLS ServerHello through to Finished) might be acknowledged
+by a client in protected packets, because it is certain that the server is able
+to decipher the packet.
+
+
 ## WINDOW_UPDATE Frame {#frame-window-update}
 
 The WINDOW_UPDATE frame (type=0x04) informs the peer of an increase in an
