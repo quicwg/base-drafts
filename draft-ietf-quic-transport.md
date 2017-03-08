@@ -1413,10 +1413,6 @@ receive times relative to the beginning of the connection.
 ~~~
 {: #timestamp-format title="Timestamp Section"}
 
-The timestamp section is time-ordered, so the 1 byte Delta Largest
-Acknowledged is always relative to the Largest Acknowleged, but the Time
-Since Previous Timestamp fields are relative.
-
 The fields in the Timestamp Section are:
 
 Delta Largest Acknowledged (opt):
@@ -1442,6 +1438,8 @@ Time Since Previous Timestamp 1..N(opt, repeated):
 : An optional 16-bit unsigned value specifying time delta from the previous
   reported timestamp.  It is encoded in the same format as the ACK Delay.
   Repeated "Num Timestamps - 1" times.
+
+The timestamp section lists packet receipt timestamps ordered by timestamp.
 
 
 #### Time Format
