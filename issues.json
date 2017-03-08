@@ -1198,77 +1198,6 @@
     "body": "@ddragana observes that the 64-bit offset value in the WINDOW_UPDATE message is probably the first value that we will run out of (over packet numbers and stream numbers, which should last a bit longer in most cases).  We could avoid this by multiplying these values by a constant (she suggests 1024), which would reduce the granularity with which flow control credits could be granted, but increase the total lifetime of a long-lived connection.\r\n\r\nSo, trade-off time.  The scaling multiplier is now 1.  A larger value allows for longer-lived connections, a shorter value allows finer control over flow control.  I'd suggest that values in the order of 8 are probably easy to justify, can we go as high as 1024?\r\n\r\nWe could also choose a different value for the connection and stream flow control offsets on that basis that connections need more octets, whereas streams do not."
   },
   {
-    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/338",
-    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
-    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/338/labels{/name}",
-    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/338/comments",
-    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/338/events",
-    "html_url": "https://github.com/quicwg/base-drafts/pull/338",
-    "id": 209666673,
-    "number": 338,
-    "title": "ClientHello needs to fit in a single packet",
-    "user": {
-      "login": "martinthomson",
-      "id": 67641,
-      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/martinthomson",
-      "html_url": "https://github.com/martinthomson",
-      "followers_url": "https://api.github.com/users/martinthomson/followers",
-      "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
-      "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
-      "organizations_url": "https://api.github.com/users/martinthomson/orgs",
-      "repos_url": "https://api.github.com/users/martinthomson/repos",
-      "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/martinthomson/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "labels": [
-      {
-        "id": 481871311,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/editorial",
-        "name": "editorial",
-        "color": "0e8a16",
-        "default": false
-      },
-      {
-        "id": 481871604,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/tls",
-        "name": "tls",
-        "color": "fbca04",
-        "default": false
-      },
-      {
-        "id": 481871399,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
-        "name": "transport",
-        "color": "fbca04",
-        "default": false
-      }
-    ],
-    "state": "open",
-    "locked": false,
-    "assignee": null,
-    "assignees": [
-
-    ],
-    "milestone": null,
-    "comments": 0,
-    "created_at": "2017-02-23T05:18:25Z",
-    "updated_at": "2017-03-03T00:28:26Z",
-    "closed_at": null,
-    "pull_request": {
-      "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/338",
-      "html_url": "https://github.com/quicwg/base-drafts/pull/338",
-      "diff_url": "https://github.com/quicwg/base-drafts/pull/338.diff",
-      "patch_url": "https://github.com/quicwg/base-drafts/pull/338.patch"
-    },
-    "body": "I'm marking this as editorial.  It touches both TLS and transport.  Anyone who thinks that this is OK can merge it."
-  },
-  {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/337",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
     "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/337/labels{/name}",
@@ -1936,8 +1865,7 @@
     "updated_at": "2017-02-16T03:03:32Z",
     "closed_at": null,
     "body": "The text for `DetectLostPackets` claims that `acked_packet` is a packet number, but the code shows it as having a `packet_number` field, as well as a `time_sent` field.  Maybe a TimeSent() lookup function would work, but at the level that this code operates, I think that it would be better to talk about packets in the abstract.  A real implementation might not carry around all the information a packet might accumulate, but that's for real implementations to worry about."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/308",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -2031,7 +1959,8 @@
     "updated_at": "2017-03-06T21:32:44Z",
     "closed_at": null,
     "body": "We need to include advice on the creation of ACK frames when an ACK frame was lost.  The advice from @ianswett is that new timing information isn't valuable.  Both endpoints only need to maintain timing information for individual packets for a short period, so retransmission of old timing information isn't valuable.\r\n\r\nThus, we should recommend that endpoints do just that: maintain a short list of packets that they want to provide timing for.  They should then not worry about re-sending any timestamps from lost packets."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/307",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3747,8 +3676,7 @@
     "updated_at": "2017-02-03T03:01:28Z",
     "closed_at": null,
     "body": "My understanding of the way the mechanism is supposed to work is that once the handshake is finished, QUIC takes over the encryption;  if server wants to send an NST, it needs to send it on stream 1, using TLS record layer on said stream, and said TLS record shall not be encrypted.  If that is so, this should be clarified, because otherwise this can be interpreted as a requirement to double-encrypt streams (on QUIC packet layer with QUIC key, and on TLS record layer with TLS traffic keys)."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/238",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3806,7 +3734,8 @@
     "updated_at": "2017-01-26T04:17:41Z",
     "closed_at": null,
     "body": "Parsing all possible header blocks could require a significant number of header parsers operating concurrently.  Since headers tend to be delivered as a single package to applications, that means that the parsers need sufficient space to hold all the partially complete data.\r\n\r\nThis can be addressed by only reading from the streams that an endpoint is able to, but that increases complexity and exposure to head-of-line blocking.\r\n\r\nThis cleaves off the second part of #204."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/237",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5524,8 +5453,7 @@
     "updated_at": "2017-01-24T01:03:19Z",
     "closed_at": null,
     "body": "The specification allows endpoints to specify the maximum number of concurrent streams (MSPC), but should not the spec provide for the minimum value of MSPC that all endpoints must support?  If the minimum is 1 (excluding \"service\" streams), it would be good for the spec to state so explicitly."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/185",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5583,7 +5511,8 @@
     "updated_at": "2017-02-11T01:59:53Z",
     "closed_at": null,
     "body": "Some path elements may need to statelessly identify an initial packet of a connection. These path elements could include load balancers and organization's border security systems.  Ability to identify the initial packet may also be required for systems implementing Stateless Rejects #60.\r\n\r\nSince QUIC allows for packet number truncation, the most straightforward way to identify the initial packet is by checking for packet number 1 and VERSION flag set.\r\n\r\nHence:\r\n\r\n- The language of section 6.1 Version Negotiation would need to change SHOULD to MUST in \"All subsequent packets sent by the client SHOULD have the VERSION flag unset\".\r\n- Section 6.1 Version Negotiation should also gain language like: \"If Version negotiation is not complete in 2^6 packets, any endpoint MAY reset this connection\".  (This is a weaker statement than #143.)\r\n- Proposal in issue #35 is not compatible with this issue. If packet numbers are allowed to be deliberately skipped, we should require that packets with VERSION set MUST NOT be skipped."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/184",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7528,8 +7457,7 @@
     "updated_at": "2017-01-25T08:02:05Z",
     "closed_at": null,
     "body": "There are a bunch of things that need to be addressed here.  What is likely to happen is that this issue will turn into many smaller issues and this will eventually get closed as those become better understood.\r\n\r\n1. Reasons migration might be needed (mobility, NAT rebinding, routing changes, etc...)\r\n2. Routing considerations when migration occurs\r\n3. Privacy implications of linkability across migrations\r\n4. Verifying consent to send on a new path\r\n5. Establishing any desired middlebox state along the path\r\n"
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/109",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7630,7 +7558,8 @@
     "updated_at": "2017-02-08T17:22:30Z",
     "closed_at": null,
     "body": "I note that the IEEE754 reference doesn't help."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/102",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
