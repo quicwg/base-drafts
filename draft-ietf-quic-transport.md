@@ -1483,17 +1483,17 @@ data sent by the server protected by the 1-RTT keys.
 Unprotected packets, such as those that carry the initial cryptographic
 handshake messages, MAY be acknowledged in unprotected packets.  Unprotected
 packets are vulnerable to falsification or modification.  Unprotected packets
-can be acknowledged along with protected packets in cases where the peer has
-packet protection keys.
+can be acknowledged along with protected packets in a protected packet.
 
 An endpoint SHOULD acknowledge packets containing cryptographic handshake
 messages in the next unprotected packet that it sends, unless it is able to
-acknowledge those packets in later packets.  Those later packets might be
-protected by 1-RTT keys.  At the completion of the cryptographic handshake, both
-peers send unprotected packets containing cryptographic handshake messages
-followed by packets protected by 1-RTT keys.  An endpoint can acknowledge the
-unprotected packets in a protected packet, because the peer has access to 1-RTT
-packet protection keys.
+acknowledge those packets in later packets protected by 1-RTT keys.  Those later
+packets might be protected by 1-RTT keys.  At the completion of the
+cryptographic handshake, both peers send unprotected packets containing
+cryptographic handshake messages followed by packets protected by 1-RTT keys.
+An endpoint SHOULD acknowledge the unprotected packets that complete the
+cryptographic handshake in a protected packet, because its peer is guaranteed to
+have access to 1-RTT packet protection keys.
 
 For instance, a server acknowledges a TLS ClientHello in the packet that carries
 the TLS ServerHello; similarly, a client can acknowledge a TLS HelloRetryRequest
@@ -1501,10 +1501,6 @@ in the packet containing a second TLS ClientHello.  The complete set of server
 handshake messages (TLS ServerHello through to Finished) might be acknowledged
 by a client in protected packets, because it is certain that the server is able
 to decipher the packet.
-
-It is critical to not protect packets containing acknowledgements for handshake
-messages with 0-RTT keys.  A server could decide to reject and ignore 0-RTT
-data, making any acknowledgments that are protected with 0-RTT keys unusable.
 
 
 ## WINDOW_UPDATE Frame {#frame-window-update}
