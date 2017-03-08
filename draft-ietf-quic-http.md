@@ -758,7 +758,6 @@ HTTP_MULTIPLE_SETTINGS (0x10):
 HTTP_RST_CONTROL_STREAM (0x11):
 : A message control stream closed abruptly.
 
-<<<<<<< HEAD
 
 # Considerations for Transitioning from HTTP/2
 
@@ -839,9 +838,6 @@ to the IANA registry in {{iana-settings}}.
 QUIC has the same concepts of "stream" and "connection" errors that HTTP/2
 provides. However, because the error code space is shared between multiple
 components, there is no direct portability of HTTP/2 error codes.
-=======
-## Mapping HTTP/2 Error Codes
->>>>>>> origin/master
 
 The HTTP/2 error codes defined in Section 7 of {{!RFC7540}} map to QUIC error
 codes as follows:
