@@ -1613,46 +1613,56 @@ Reason Phrase:
 : An optional human-readable explanation for why the connection was closed.
 
 
+
 ## GOAWAY Frame {#frame-goaway}
 
-An endpoint may use a GOAWAY frame (type=0x03) to notify its peer that the
-connection should stop being used, and will likely be closed in the future. The
-endpoints will continue using any active streams, but the sender of the GOAWAY
-will not initiate any additional streams, and will not accept any new streams.
-The frame is as follows:
+An endpoint uses a GOAWAY frame (type=0x03) to initiate a graceful shutdown of a
+connection.  The endpoints will continue to use any active streams, but the
+sender of the GOAWAY will not initiate or accept any additional streams beyond
+those indicated.  The GOAWAY frame is as follows:
 
 ~~~
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                        Error Code (32)                        |
+|                  Largest Client Stream ID (32)                |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                     Last Good Stream ID (32)                  |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|   Reason Phrase Length (16)   |      [Reason Phrase (*)]    ...
+|                  Largest Server Stream ID (32)                |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
 
-The fields of a GOAWAY frame are as follows:
+The fields of a GOAWAY frame are:
 
-Error Code:
+Largest Client Stream ID:
 
-: A 32-bit field error code which indicates the reason for closing this
-  connection.
+: The highest-numbered, client-initiated stream on which the endpoint sending
+  the GOAWAY frame either sent data, or received and delivered data.  All
+  higher-numbered, client-initiated streams (that is, odd-numbered streams) are
+  implicitly reset by sending or receiving the GOAWAY frame.
 
-Last Good Stream ID:
+Largest Server Stream ID:
 
-: The last Stream ID which was accepted by the sender of the GOAWAY message.  If
-  no streams were replied to, this value must be set to 0.
+: The highest-numbered, server-initiated stream on which the endpoint sending
+  the GOAWAY frame either sent data, or received and delivered data.  All
+  higher-numbered, server-initiated streams (that is, even-numbered streams) are
+  implicitly reset by sending or receiving the GOAWAY frame.
 
-Reason Phrase Length:
+A GOAWAY frame indicates that any application layer actions on streams with
+higher numbers than those indicated can be safely retried because no data was
+exchanged.  An endpoint MUST set the value of the Largest Client or Server
+Stream ID to be at least as high as the highest-numbered stream on which it
+either sent data or received and delivered data to the application protocol that
+uses QUIC.
 
-: A 16-bit unsigned number specifying the length of the reason phrase.  This may
-  be zero if the sender chooses to not give details beyond the error code.
+An endpoint MAY choose a larger stream identifier if it wishes to allow for a
+number of streams to be created.  This is especially valuable for peer-initiated
+streams where packets creating new streams could be in transit; using a larger
+stream number allows those streams to complete.
 
-Reason Phrase:
-
-: An optional human-readable explanation for why the connection was closed.
+In addition to initiating a graceful shutdown of a connection, GOAWAY MAY be
+sent immediately prior to sending a CONNECTION_CLOSE frame that is sent as a
+result of detecting a fatal error.  Higher-numbered streams than those indicated
+in the GOAWAY frame can then be retried.
 
 
 # Packetization and Reliability {#packetization}
