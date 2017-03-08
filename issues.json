@@ -40,7 +40,7 @@
     "milestone": null,
     "comments": 0,
     "created_at": "2017-03-07T08:57:08Z",
-    "updated_at": "2017-03-07T13:23:45Z",
+    "updated_at": "2017-03-08T06:17:28Z",
     "closed_at": null,
     "pull_request": {
       "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/368",
@@ -225,7 +225,7 @@
     "html_url": "https://github.com/quicwg/base-drafts/pull/361",
     "id": 212297288,
     "number": 361,
-    "title": "Alternative header proposal",
+    "title": "Long and short packet header",
     "user": {
       "login": "janaiyengar",
       "id": 11067604,
@@ -257,7 +257,7 @@
     "milestone": null,
     "comments": 1,
     "created_at": "2017-03-07T00:52:24Z",
-    "updated_at": "2017-03-08T02:54:10Z",
+    "updated_at": "2017-03-08T06:43:09Z",
     "closed_at": null,
     "pull_request": {
       "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/361",
@@ -266,57 +266,6 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/361.patch"
     },
     "body": "This PR proposes an alternative header format for QUIC.  It is based on a previous proposal and incorporates feedback received on the list. This PR is unfortunately quite invasive.\r\n\r\nCloses:\r\n#35: Starting packet number\r\n#56: Extending flags\r\n#119: Server-proposed connection ID\r\n#133: Connection ID in version negotiation\r\n#135: DoS using Version Negotiation Packets\r\n#147: Reflection Attack Resistance\r\n#185: Reliable identification of the initial packet for a connection\r\n#193: Flags section is kind of confusing\r\n#244: Need a NONCE in version negotiation packets\r\n#293: Does the connection ID need to be in a consistent location\r\n#295: Connection ID on a version negotiation packet\r\n\r\n(also addresses some of:\r\n#148: QUIC packet header complexity\r\n#170: Connection ID collisions)"
-  },
-  {
-    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/360",
-    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
-    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/360/labels{/name}",
-    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/360/comments",
-    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/360/events",
-    "html_url": "https://github.com/quicwg/base-drafts/pull/360",
-    "id": 212263506,
-    "number": 360,
-    "title": "Clarify the Timestamps section",
-    "user": {
-      "login": "ianswett",
-      "id": 20072817,
-      "avatar_url": "https://avatars2.githubusercontent.com/u/20072817?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/ianswett",
-      "html_url": "https://github.com/ianswett",
-      "followers_url": "https://api.github.com/users/ianswett/followers",
-      "following_url": "https://api.github.com/users/ianswett/following{/other_user}",
-      "gists_url": "https://api.github.com/users/ianswett/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/ianswett/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/ianswett/subscriptions",
-      "organizations_url": "https://api.github.com/users/ianswett/orgs",
-      "repos_url": "https://api.github.com/users/ianswett/repos",
-      "events_url": "https://api.github.com/users/ianswett/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/ianswett/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "labels": [
-
-    ],
-    "state": "open",
-    "locked": false,
-    "assignee": null,
-    "assignees": [
-
-    ],
-    "milestone": null,
-    "comments": 1,
-    "created_at": "2017-03-06T22:00:37Z",
-    "updated_at": "2017-03-07T21:48:01Z",
-    "closed_at": null,
-    "pull_request": {
-      "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/360",
-      "html_url": "https://github.com/quicwg/base-drafts/pull/360",
-      "diff_url": "https://github.com/quicwg/base-drafts/pull/360.diff",
-      "patch_url": "https://github.com/quicwg/base-drafts/pull/360.patch"
-    },
-    "body": "Intends to resolve #308 "
   },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/359",
@@ -530,14 +479,50 @@
     ],
     "state": "open",
     "locked": false,
-    "assignee": null,
+    "assignee": {
+      "login": "janaiyengar",
+      "id": 11067604,
+      "avatar_url": "https://avatars1.githubusercontent.com/u/11067604?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/janaiyengar",
+      "html_url": "https://github.com/janaiyengar",
+      "followers_url": "https://api.github.com/users/janaiyengar/followers",
+      "following_url": "https://api.github.com/users/janaiyengar/following{/other_user}",
+      "gists_url": "https://api.github.com/users/janaiyengar/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/janaiyengar/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/janaiyengar/subscriptions",
+      "organizations_url": "https://api.github.com/users/janaiyengar/orgs",
+      "repos_url": "https://api.github.com/users/janaiyengar/repos",
+      "events_url": "https://api.github.com/users/janaiyengar/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/janaiyengar/received_events",
+      "type": "User",
+      "site_admin": false
+    },
     "assignees": [
-
+      {
+        "login": "janaiyengar",
+        "id": 11067604,
+        "avatar_url": "https://avatars1.githubusercontent.com/u/11067604?v=3",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/janaiyengar",
+        "html_url": "https://github.com/janaiyengar",
+        "followers_url": "https://api.github.com/users/janaiyengar/followers",
+        "following_url": "https://api.github.com/users/janaiyengar/following{/other_user}",
+        "gists_url": "https://api.github.com/users/janaiyengar/gists{/gist_id}",
+        "starred_url": "https://api.github.com/users/janaiyengar/starred{/owner}{/repo}",
+        "subscriptions_url": "https://api.github.com/users/janaiyengar/subscriptions",
+        "organizations_url": "https://api.github.com/users/janaiyengar/orgs",
+        "repos_url": "https://api.github.com/users/janaiyengar/repos",
+        "events_url": "https://api.github.com/users/janaiyengar/events{/privacy}",
+        "received_events_url": "https://api.github.com/users/janaiyengar/received_events",
+        "type": "User",
+        "site_admin": false
+      }
     ],
     "milestone": null,
     "comments": 0,
     "created_at": "2017-03-02T03:33:10Z",
-    "updated_at": "2017-03-08T05:20:20Z",
+    "updated_at": "2017-03-08T06:52:26Z",
     "closed_at": null,
     "pull_request": {
       "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/355",
@@ -1959,8 +1944,7 @@
     "updated_at": "2017-03-06T21:32:44Z",
     "closed_at": null,
     "body": "We need to include advice on the creation of ACK frames when an ACK frame was lost.  The advice from @ianswett is that new timing information isn't valuable.  Both endpoints only need to maintain timing information for individual packets for a short period, so retransmission of old timing information isn't valuable.\r\n\r\nThus, we should recommend that endpoints do just that: maintain a short list of packets that they want to provide timing for.  They should then not worry about re-sending any timestamps from lost packets."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/307",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -2011,7 +1995,8 @@
     "updated_at": "2017-02-15T16:10:06Z",
     "closed_at": null,
     "body": "The definition of \"Delta Last Acked\" is the same for all of the timestamp entries.  This implies that every packet number in the timestamp block is expressed relative to the \"Last Acked\".  That would make it impossible to provide timestamps for packets more than 255 packet numbers behind the last acknowledged packet and multiple ACK frames would be needed to do that.\r\n\r\nI don't think that's right, but that subsequent deltas apply to the last timestamp.  That is:\r\n```diff\r\n  packet_number[0] = last_acknowledged - delta_last[0]\r\n- packet_number[n] = last_acknowledged - delta_last[n]\r\n+ packet_number[n] = last_acknowledged - sum(1, n, delta_last[i])\r\n```"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/305",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3734,8 +3719,7 @@
     "updated_at": "2017-01-26T04:17:41Z",
     "closed_at": null,
     "body": "Parsing all possible header blocks could require a significant number of header parsers operating concurrently.  Since headers tend to be delivered as a single package to applications, that means that the parsers need sufficient space to hold all the partially complete data.\r\n\r\nThis can be addressed by only reading from the streams that an endpoint is able to, but that increases complexity and exposure to head-of-line blocking.\r\n\r\nThis cleaves off the second part of #204."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/237",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3793,7 +3777,8 @@
     "updated_at": "2017-01-26T04:11:47Z",
     "closed_at": null,
     "body": "@ianswett says that we need a hard line recommendation on when a WINDOW_UPDATE is required.  He suggests that once you get to 1/3 of the space you have allocated to flow control remaining, you SHOULD send a WINDOW_UPDATE along with the next ACK."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/233",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5511,8 +5496,7 @@
     "updated_at": "2017-02-11T01:59:53Z",
     "closed_at": null,
     "body": "Some path elements may need to statelessly identify an initial packet of a connection. These path elements could include load balancers and organization's border security systems.  Ability to identify the initial packet may also be required for systems implementing Stateless Rejects #60.\r\n\r\nSince QUIC allows for packet number truncation, the most straightforward way to identify the initial packet is by checking for packet number 1 and VERSION flag set.\r\n\r\nHence:\r\n\r\n- The language of section 6.1 Version Negotiation would need to change SHOULD to MUST in \"All subsequent packets sent by the client SHOULD have the VERSION flag unset\".\r\n- Section 6.1 Version Negotiation should also gain language like: \"If Version negotiation is not complete in 2^6 packets, any endpoint MAY reset this connection\".  (This is a weaker statement than #143.)\r\n- Proposal in issue #35 is not compatible with this issue. If packet numbers are allowed to be deliberately skipped, we should require that packets with VERSION set MUST NOT be skipped."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/184",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5570,7 +5554,8 @@
     "updated_at": "2017-02-08T19:47:58Z",
     "closed_at": null,
     "body": "QUIC-TRANSPORT defines the syntax of QUIC error codes and defines some values for the QUIC transport. The section says:\r\n\r\n> This section lists the defined QUIC transport error codes that may be used in a CONNECTION_CLOSE or RST_STREAM frame. Error codes share a common code space. Some error codes apply only to either streams or the entire connection and have no defined semantics in the other context.\r\n\r\nSince the error space is shared, it is not clear what error codes are appropriate to use with which frame types. There is the possibility for endpoints to send a semantically incorrect error code in a frame. How should a receiver handle such an occurrence?\r\n\r\nThis possibility exists only for the Application-specific, QUIC transport or Cryptographic error codes. Host-local error codes must not be sent.  \r\n\r\nAs an example, an client sends a `RST_STREAM` frame with the error code `QUIC_TOO_MANY_SESSIONS_ON_SERVER`.  Is this actually allowed and what should the server do (close the connection, igore it, ...)?"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/183",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7558,8 +7543,7 @@
     "updated_at": "2017-02-08T17:22:30Z",
     "closed_at": null,
     "body": "I note that the IEEE754 reference doesn't help."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/102",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7653,7 +7637,8 @@
     "updated_at": "2017-02-20T18:50:14Z",
     "closed_at": null,
     "body": "NumTimestamps is supposed to specify the \"total number of pairs following, including the First Timestamp.\"  If this is zero, presumably the Delta Largest Acked and First Timestamp fields are absent.  If this is one, presumably these fields are present, but no others are.\r\n\r\nThe *subsequent* fields then say they are repeated \"Num Timestamps\" times, which contradicts my logic above.  I'm guessing this should actually be \"Num Timestamps - 1\" times?"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/95",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
