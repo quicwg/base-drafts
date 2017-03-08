@@ -124,23 +124,36 @@ defined in {{!RFC2119}}.
 
 Definitions of terms that are used in this document:
 
-* Client: The endpoint initiating a QUIC connection.
+Client:
 
-* Server: The endpoint accepting incoming QUIC connections.
+: The endpoint initiating a QUIC connection.
 
-* Endpoint: The client or server end of a connection.
+Server:
 
-* Stream: A logical, bi-directional channel of ordered bytes within
-  a QUIC connection.
+: The endpoint accepting incoming QUIC connections.
 
-* Connection: A conversation between two QUIC endpoints with a
-  single encryption context that multiplexes streams within it.
+Endpoint:
 
-* Connection ID: The identifier for a QUIC connection.
+: The client or server end of a connection.
 
-* QUIC packet: A well-formed UDP payload that can be parsed by a
-  QUIC receiver.  QUIC packet size in this document refers to the
-  UDP payload size.
+Stream:
+
+: A logical, bi-directional channel of ordered bytes within a QUIC connection.
+
+Connection:
+
+: A conversation between two QUIC endpoints with a single encryption context
+  that multiplexes streams within it.
+
+Connection ID:
+
+: The identifier for a QUIC connection.
+
+QUIC packet:
+
+: A well-formed UDP payload that can be parsed by a QUIC receiver.  QUIC packet
+  size in this document refers to the UDP payload size.
+
 
 ## Notational Conventions
 
@@ -161,6 +174,7 @@ x (A/B/C) ...
 
 x (*) ...
 : Indicates that x is variable-length
+
 
 # A QUIC Overview
 
@@ -515,19 +529,21 @@ packet number plus one.  For example, if the highest successfully authenticated
 packet had a packet number of 0xaa82f30e, then a packet containing a 16-bit
 value of 0x1f94 will be decoded as 0xaa831f94.
 
-To enable unambiguous reconstruction of the packet number, an endpoint MUST use
-a packet number size that is able to represent 4 times more packet numbers than
-the numerical difference between the current packet number and the lowest packet
-number on an outstanding packet, plus one.  A packet is outstanding if it has
-been sent but has neither been acknowledged nor been marked as lost (see
-{{QUIC-RECOVERY}}).  As a result, the size of the packet number encoding is at
-least two more than the base 2 logarithm of the range of outstanding packet
-numbers including the new packet, rounded up.
+The sender MUST use a packet number size able to represent more than twice as
+large a range than the difference between the largest acknowledged packet and
+packet number being sent.  A peer receiving the packet will then correctly
+decode the packet number, unless the packet is delayed in transit such that it
+arrives after many higher-numbered packets have been received.  An endpoint MAY
+use a larger packet number size to safeguard against such reordering.
 
-For example, if an endpoint has is sending packet 0x6B4264 and 0x6B0A2F is the
-lowest outstanding packet number, the next packet uses a 16-bit or larger packet
-number encoding; whereas a 32-bit packet number is needed if packet 0x6AF0F7 is
-outstanding.
+As a result, the size of the packet number encoding is at least one more than
+the base 2 logarithm of the number of contiguous unacknowledged packet numbers,
+including the new packet.
+
+For example, if an endpoint has received an acknowledgment for packet 0x6afa2f,
+sending a packet with a number of 0x6b4264 requires a 16-bit or larger packet
+number encoding; whereas a 32-bit packet number is needed to send a packet with
+a number of 0x6bc107.
 
 
 ### Initial Packet Number
@@ -572,7 +588,6 @@ document.
 | 0x03             |  GOAWAY            | {{frame-goaway}}           |
 | 0x04             |  WINDOW_UPDATE     | {{frame-window-update}}    |
 | 0x05             |  BLOCKED           | {{frame-blocked}}          |
-| 0x06             |  STOP_WAITING      | {{frame-stop-waiting}}     |
 | 0x07             |  PING              | {{frame-ping}}             |
 | 0x40 - 0x7f      |  ACK               | {{frame-ack}}              |
 | 0x80 - 0xff      |  STREAM            | {{frame-stream}}           |
@@ -757,6 +772,17 @@ the cryptographic handshake provides QUIC with:
 * for the server, the ability to carry data that provides assurance that the
   client can receive packets that are addressed with the transport address that
   is claimed by the client (see {{source-address-token}})
+
+The initial cryptographic handshake message MUST be sent in a single packet.
+Any second attempt that is triggered by address validation MUST also be sent
+within a single packet.  This avoids having to reassemble a message from
+multiple packets.  Reassembling messages requires that a server maintain state
+prior to establishing a connection, exposing the server to a denial of service
+risk.
+
+The first client packet of the cryptographic handshake protocol MUST fit within
+a 1280 octet QUIC packet.  This includes overheads that reduce the space
+available to the cryptographic handshake protocol.
 
 Details of how TLS is integrated with QUIC is provided in more detail in
 {{QUIC-TLS}}.
@@ -1132,6 +1158,7 @@ We now describe the various QUIC frame types that can be present in a Regular
 packet. The use of these frames and various frame header bits are described in
 subsequent sections.
 
+
 ## STREAM Frame {#frame-stream}
 
 STREAM frames implicitly create a stream and carry stream data. The type byte
@@ -1174,18 +1201,26 @@ A STREAM frame is shown below.
 
 The STREAM frame contains the following fields:
 
-* Data Length: An optional 16-bit unsigned number specifying the length of the
-  Stream Data field in this STREAM frame.  This field is present when the `D`
-  bit is set to 1.
+Data Length:
 
-* Stream ID: A variable-sized unsigned ID unique to this stream.
+: An optional 16-bit unsigned number specifying the length of the Stream Data
+  field in this STREAM frame.  This field is present when the `D` bit is set to
+  1.
 
-* Offset: A variable-sized unsigned number specifying the byte offset in the
-  stream for the data in this STREAM frame.  The first byte in the stream has an
-  offset of 0. The largest offset delivered on a stream - the sum of the
-  re-constructed offset and data length - MUST be less than 2^64.
+Stream ID:
 
-* Stream Data: The bytes from the designated stream to be delivered.
+: A variable-sized unsigned ID unique to this stream.
+
+Offset:
+
+: A variable-sized unsigned number specifying the byte offset in the stream for
+  the data in this STREAM frame.  The first byte in the stream has an offset of
+  0.  The largest offset delivered on a stream - the sum of the re-constructed
+  offset and data length - MUST be less than 2^64.
+
+Stream Data:
+
+: The bytes from the designated stream to be delivered.
 
 A STREAM frame MUST have either non-zero data length or the FIN bit set.
 
@@ -1202,24 +1237,35 @@ blocks all those streams from making progress.  An implementation is therefore
 advised to bundle as few streams as necessary in outgoing packets without losing
 transmission efficiency to underfilled packets.
 
+
 ## ACK Frame {#frame-ack}
 
 Receivers send ACK frames to inform senders which packets they have received, as
 well as which packets are considered missing.  The ACK frame contains between 1
 and 256 ACK blocks.  ACK blocks are ranges of acknowledged packets.
 
-To limit the ACK blocks to the ones that haven't yet been received by the
-sender, the sender periodically sends STOP_WAITING frames that signal the
-receiver to stop acknowledging packets below a specified sequence number,
-raising the Least Unacked packet number at the receiver.  A sender of an ACK
-frame thus reports only those ACK blocks between the received Least Unacked and
-the reported Largest Acknowledged packet numbers.  The endpoint SHOULD raise the
-Least Unacked communicated via future STOP_WAITING frames to the most recently
-received Largest Acknowledged.
+To limit ACK blocks to those that have not yet been received by the sender, the
+receiver SHOULD track which ACK frames have been acknowledged by its peer.  Once
+an ACK frame has been acknowledged, the packets it acknowledges SHOULD not be
+acknowledged again.  To handle cases where the receiver is only sending ACK
+frames, and hence will not receive acknowledgments for its packets, it MAY send
+a PING frame at most once per RTT to explicitly request acknowledgment.
+
+To limit receiver state or the size of ACK frames, a receiver MAY limit the
+number of ACK blocks it sends.  A receiver can do this even without receiving
+acknowledgment of its ACK frames, with the knowledge this could cause the sender
+to unnecessarily retransmit some data.
 
 Unlike TCP SACKs, QUIC ACK blocks are cumulative and therefore irrevocable.
 Once a packet has been acknowledged, even if it does not appear in a future ACK
 frame, it is assumed to be acknowledged.
+
+QUIC ACK frames contain a timestamp section with up to 255 timestamps.
+Timestamps enable better congestion control, but are not required for correct
+loss recovery, and old timestamps are less valuable, so it is not guaranteed
+every timestamp will be received by the sender.  A receiver SHOULD send a
+timestamp exactly once for each retransmittable packet recevied. A receiver
+MAY send timestamps for non-retransmittable packets.
 
 A sender MAY intentionally skip packet numbers to introduce entropy into the
 connection, to avoid opportunistic acknowledgement attacks.  The sender MUST
@@ -1266,26 +1312,38 @@ An ACK frame is shown below.
 
 The fields in the ACK frame are as follows:
 
-* Num Blocks (opt): An optional 8-bit unsigned value specifying the number of
-  additional ACK blocks (besides the required First ACK Block) in this ACK
-  frame.  Only present if the 'N' flag bit is 1.
+Num Blocks (opt):
 
-* Num Timestamps: An unsigned 8-bit number specifying the total number of
-  <packet number, timestamp> pairs in the Timestamp Section.
+: An optional 8-bit unsigned value specifying the number of additional ACK
+  blocks (besides the required First ACK Block) in this ACK frame.  Only present
+  if the 'N' flag bit is 1.
 
-* Largest Acknowledged: A variable-sized unsigned value representing the largest
-  packet number the peer is acknowledging in this packet (typically the largest
-  that the peer has seen thus far.)
+Num Timestamps:
 
-* ACK Delay: The time from when the largest acknowledged packet, as indicated in
-  the Largest Acknowledged field, was received by this peer to when this ACK was
+: An unsigned 8-bit number specifying the total number of <packet number,
+  timestamp> pairs in the Timestamp Section.
+
+Largest Acknowledged:
+
+: A variable-sized unsigned value representing the largest packet number the
+  peer is acknowledging in this packet (typically the largest that the peer has
+  seen thus far.)
+
+ACK Delay:
+
+: The time from when the largest acknowledged packet, as indicated in the
+  Largest Acknowledged field, was received by this peer to when this ACK was
   sent.
 
-* ACK Block Section: Contains one or more blocks of packet numbers which have
-  been successfully received, see {{ack-block-section}}.
+ACK Block Section:
 
-* Timestamp Section: Contains zero or more timestamps reporting transit delay of
-  received packets.  See {{timestamp-section}}.
+: Contains one or more blocks of packet numbers which have been successfully
+  received, see {{ack-block-section}}.
+
+Timestamp Section:
+
+: Contains zero or more timestamps reporting transit delay of received packets.
+  See {{timestamp-section}}.
 
 
 ### ACK Block Section {#ack-block-section}
@@ -1315,18 +1373,23 @@ field.
 
 The fields in the ACK Block Section are:
 
-* First ACK Block Length: An unsigned packet number delta that indicates the
-  number of contiguous additional packets being acknowledged starting at the
-  Largest Acknowledged.
+First ACK Block Length:
 
-* Gap To Next Block (opt, repeated): An unsigned number specifying the number
-  of contiguous missing packets from the end of the previous ACK block to the
-  start of the next.
+: An unsigned packet number delta that indicates the number of contiguous
+  additional packets being acknowledged starting at the Largest Acknowledged.
 
-* ACK Block Length (opt, repeated): An unsigned packet number delta that
-  indicates the number of contiguous packets being acknowledged starting after
-  the end of the previous gap.  Along with the previous field, this field is
-  repeated "Num Blocks" times.
+Gap To Next Block (opt, repeated):
+
+: An unsigned number specifying the number of contiguous missing packets from
+  the end of the previous ACK block to the start of the next.  Repeated "Num
+  Blocks" times.
+
+ACK Block Length (opt, repeated):
+
+: An unsigned packet number delta that indicates the number of contiguous
+  packets being acknowledged starting after the end of the previous gap.
+  Repeated "Num Blocks" times.
+
 
 ### Timestamp Section {#timestamp-section}
 
@@ -1354,21 +1417,32 @@ receive times relative to the beginning of the connection.
 
 The fields in the Timestamp Section are:
 
-* Delta Largest Acknowledged (opt): An optional 8-bit unsigned packet number
-  delta specifying the delta between the largest acknowledged and the first
-  packet whose timestamp is being reported.  In other words, this first packet
-  number may be computed as (Largest Acknowledged - Delta Largest Acknowledged.)
+Delta Largest Acknowledged (opt):
 
-* First Timestamp (opt): An optional 32-bit unsigned value specifying the time
-  delta in microseconds, from the beginning of the connection to the arrival
-  of the packet indicated by Delta Largest Acknowledged.
+: An optional 8-bit unsigned packet number delta specifying the delta between
+  the largest acknowledged and the first packet whose timestamp is being
+  reported.  In other words, this first packet number may be computed as
+  (Largest Acknowledged - Delta Largest Acknowledged.)
 
-* Delta Largest Acked 1..N (opt, repeated): (Same as above.)
+First Timestamp (opt):
 
-* Time Since Previous Timestamp 1..N(opt, repeated): An optional 16-bit unsigned
-  value specifying time delta from the previous reported timestamp.  It is
-  encoded in the same format as the ACK Delay.  Along with the previous field,
-  this field is repeated "Num Timestamps" times.
+: An optional 32-bit unsigned value specifying the time delta in microseconds,
+  from the beginning of the connection to the arrival of the packet indicated by
+  Delta Largest Acknowledged.
+
+Delta Largest Acked 1..N (opt, repeated):
+
+: This field has the same semantics and format as "Delta Largest Acknowledged".
+  Repeated "Num Timestamps - 1" times.
+
+Time Since Previous Timestamp 1..N(opt, repeated):
+
+: An optional 16-bit unsigned value specifying time delta from the previous
+  reported timestamp.  It is encoded in the same format as the ACK Delay.
+  Repeated "Num Timestamps - 1" times.
+
+The timestamp section lists packet receipt timestamps ordered by timestamp.
+
 
 #### Time Format
 
@@ -1387,33 +1461,6 @@ actual exponent is one-less than the explicit exponent, and the value represents
 4096 microseconds.  Any values larger than the representable range are clamped
 to 0xFFFF.
 
-## STOP_WAITING Frame {#frame-stop-waiting}
-
-The STOP_WAITING frame (type=0x06) is sent to inform the peer that it should not
-continue to wait for packets with packet numbers lower than a specified value.
-The packet number is encoded in 1, 2, 4 or 6 bytes, using the same coding length
-as is specified for the packet number for the enclosing packet's header
-(specified in the QUIC Frame packet's Flags field.) The frame is as follows:
-
-~~~
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|               Least Unacked Delta (8/16/32/48)              ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-~~~
-{: #stop-waiting-format title="STOP_WAITING Frame Format"}
-
-The STOP_WAITING frame contains a single field:
-
-* Least Unacked Delta: A variable-length packet number delta with the same
-  length as the packet header's packet number.  Subtract it from the complete
-  packet number of the enclosing packet to determine the least unacked packet
-  number.  The resulting least unacked packet number is the earliest packet for
-  which the sender is still awaiting an ACK.  If the receiver is missing any
-  packets earlier than this packet, the receiver SHOULD consider those packets
-  to be irrecoverably lost and MUST NOT report those packets as missing in
-  subsequent ACKs.
 
 ## WINDOW_UPDATE Frame {#frame-window-update}
 
@@ -1437,13 +1484,18 @@ window. The frame is as follows:
 
 The fields in the WINDOW_UPDATE frame are as follows:
 
-* Stream ID: ID of the stream whose flow control windows is being updated, or 0
-  to specify the connection-level flow control window.
+Stream ID:
 
-* Byte offset: A 64-bit unsigned integer indicating the absolute byte offset of
-  data which can be sent on the given stream.  In the case of connection-level
-  flow control, the cumulative offset which can be sent on all streams that
+: ID of the stream whose flow control windows is being updated, or 0 to specify
+  the connection-level flow control window.
+
+Byte offset:
+
+: A 64-bit unsigned integer indicating the absolute byte offset of data which
+  can be sent on the given stream.  In the case of connection-level flow
+  control, the cumulative offset which can be sent on all streams that
   contribute to connection-level flow control.
+
 
 ## BLOCKED Frame {#frame-blocked}
 
@@ -1463,10 +1515,13 @@ helpful log message). The frame is as follows:
 
 The BLOCKED frame contains a single field:
 
-* Stream ID: A 32-bit unsigned number indicating the stream which is flow
-  control blocked.  A non-zero Stream ID field specifies the stream that is flow
-  control blocked.  When zero, the Stream ID field indicates that the connection
-  is flow control blocked.
+Stream ID:
+
+: A 32-bit unsigned number indicating the stream which is flow control blocked.
+  A non-zero Stream ID field specifies the stream that is flow control blocked.
+  When zero, the Stream ID field indicates that the connection is flow control
+  blocked.
+
 
 ## RST_STREAM Frame {#frame-rst-stream}
 
@@ -1489,13 +1544,18 @@ stream.  The frame is as follows:
 
 The fields are:
 
-* Error code: A 32-bit error code which indicates why the stream is being
-  closed.
+Error code:
 
-* Stream ID: The 32-bit Stream ID of the stream being terminated.
+: A 32-bit error code which indicates why the stream is being closed.
 
-* Final offset: A 64-bit unsigned integer indicating the absolute byte offset of
-  the end of data written on this stream by the RST_STREAM sender.
+Stream ID:
+
+: The 32-bit Stream ID of the stream being terminated.
+
+Final offset:
+
+: A 64-bit unsigned integer indicating the absolute byte offset of the end of
+  data written on this stream by the RST_STREAM sender.
 
 
 ## PADDING Frame {#frame-padding}
@@ -1539,51 +1599,71 @@ torn down.)  The frame is as follows:
 
 The fields of a CONNECTION_CLOSE frame are as follows:
 
-* Error Code: A 32-bit error code which indicates the reason for closing this
-  connection.
+Error Code:
 
-* Reason Phrase Length: A 16-bit unsigned number specifying the length of the
-  reason phrase.  This may be zero if the sender chooses to not give details
-  beyond the Error Code.
+: A 32-bit error code which indicates the reason for closing this connection.
 
-* Reason Phrase: An optional human-readable explanation for why the connection
-  was closed.
+Reason Phrase Length:
+
+: A 16-bit unsigned number specifying the length of the reason phrase.  This may
+  be zero if the sender chooses to not give details beyond the Error Code.
+
+Reason Phrase:
+
+: An optional human-readable explanation for why the connection was closed.
+
+
 
 ## GOAWAY Frame {#frame-goaway}
 
-An endpoint may use a GOAWAY frame (type=0x03) to notify its peer that the
-connection should stop being used, and will likely be closed in the future. The
-endpoints will continue using any active streams, but the sender of the GOAWAY
-will not initiate any additional streams, and will not accept any new streams.
-The frame is as follows:
+An endpoint uses a GOAWAY frame (type=0x03) to initiate a graceful shutdown of a
+connection.  The endpoints will continue to use any active streams, but the
+sender of the GOAWAY will not initiate or accept any additional streams beyond
+those indicated.  The GOAWAY frame is as follows:
 
 ~~~
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                        Error Code (32)                        |
+|                  Largest Client Stream ID (32)                |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                     Last Good Stream ID (32)                  |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|   Reason Phrase Length (16)   |      [Reason Phrase (*)]    ...
+|                  Largest Server Stream ID (32)                |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
 
-The fields of a GOAWAY frame are as follows:
+The fields of a GOAWAY frame are:
 
-* Error Code: A 32-bit field error code which indicates the reason for closing
-  this connection.
+Largest Client Stream ID:
 
-* Last Good Stream ID: The last Stream ID which was accepted by the sender of
-  the GOAWAY message.  If no streams were replied to, this value must be set to
-  0.
+: The highest-numbered, client-initiated stream on which the endpoint sending
+  the GOAWAY frame either sent data, or received and delivered data.  All
+  higher-numbered, client-initiated streams (that is, odd-numbered streams) are
+  implicitly reset by sending or receiving the GOAWAY frame.
 
-* Reason Phrase Length: A 16-bit unsigned number specifying the length of the
-  reason phrase.  This may be zero if the sender chooses to not give details
-  beyond the error code.
+Largest Server Stream ID:
 
-* Reason Phrase: An optional human-readable explanation for why the connection
-  was closed.
+: The highest-numbered, server-initiated stream on which the endpoint sending
+  the GOAWAY frame either sent data, or received and delivered data.  All
+  higher-numbered, server-initiated streams (that is, even-numbered streams) are
+  implicitly reset by sending or receiving the GOAWAY frame.
+
+A GOAWAY frame indicates that any application layer actions on streams with
+higher numbers than those indicated can be safely retried because no data was
+exchanged.  An endpoint MUST set the value of the Largest Client or Server
+Stream ID to be at least as high as the highest-numbered stream on which it
+either sent data or received and delivered data to the application protocol that
+uses QUIC.
+
+An endpoint MAY choose a larger stream identifier if it wishes to allow for a
+number of streams to be created.  This is especially valuable for peer-initiated
+streams where packets creating new streams could be in transit; using a larger
+stream number allows those streams to complete.
+
+In addition to initiating a graceful shutdown of a connection, GOAWAY MAY be
+sent immediately prior to sending a CONNECTION_CLOSE frame that is sent as a
+result of detecting a fatal error.  Higher-numbered streams than those indicated
+in the GOAWAY frame can then be retried.
+
 
 # Packetization and Reliability {#packetization}
 
@@ -1654,9 +1734,9 @@ When a packet is detected as lost, the sender re-sends any frames as necessary:
   since subsequent data on this stream is expected to not be delivered by the
   receiver.
 
-* ACK, STOP_WAITING, and PADDING frames MUST NOT be retransmitted.  ACK and
-  STOP_WAITING frames are cumulative, so new frames containing updated
-  information will be sent as described in {{frame-ack}}.
+* ACK and PADDING frames MUST NOT be retransmitted.  ACK frames are cumulative,
+  so new frames containing updated information will be sent as described in
+  {{frame-ack}}.
 
 * All other frames MUST be retransmitted.
 
@@ -1665,12 +1745,9 @@ The details of loss detection and congestion control are described in
 {{QUIC-RECOVERY}}.
 
 A receiver acknowledges receipt of a received packet by sending one or more ACK
-frames containing the packet number of the received packet.  To avoid perpetual
-acknowledgment between endpoints, a receiver MUST NOT generate an ACK frame in
-response to every packet containing only ACK frames.  However, since it is
-possible that an endpoint might only send packets containing ACK frames (or
-other non-retransmittable frames), the receiving peer MAY send an ACK frame
-after a reasonable number (currently 20) of such packets have been received.
+frames containing the packet number of the received packet.  To avoid creating
+an indefinite feedback loop, an endpoint MUST NOT generate an ACK frame in
+response to a packet containing only ACK or PADDING frames.
 
 Strategies and implications of the frequency of generating acknowledgments are
 discussed in more detail in {{QUIC-RECOVERY}}.
@@ -2267,9 +2344,6 @@ QUIC_INVALID_WINDOW_UPDATE_DATA (0x80000039):
 QUIC_INVALID_BLOCKED_DATA (0x8000003A):
 : BLOCKED frame data is malformed.
 
-QUIC_INVALID_STOP_WAITING_DATA (0x8000003C):
-: STOP_WAITING frame data is malformed.
-
 QUIC_INVALID_PATH_CLOSE_DATA (0x8000004E):
 : PATH_CLOSE frame data is malformed.
 
@@ -2456,13 +2530,13 @@ merely aesthetically displeasing, or architecturally dubious).
 The initial contents of this registry are shown in
 {{iana-tp-table}}.
 
-| Value | Parameter Name | Specification |
-|:-|:-|:-|
-| 0x0000 | stream_fc_offset | {{transport-parameter-definitions}} |
-| 0x0001 | connection_fc_offset | {{transport-parameter-definitions}} |
-| 0x0002 | concurrent_streams | {{transport-parameter-definitions}} |
-| 0x0003 | idle_timeout | {{transport-parameter-definitions}} |
-| 0x0004 | truncate_connection_id | {{transport-parameter-definitions}} |
+| Value  | Parameter Name            | Specification                       |
+|:-------|:--------------------------|:------------------------------------|
+| 0x0000 | stream_fc_offset          | {{transport-parameter-definitions}} |
+| 0x0001 | connection_fc_offset      | {{transport-parameter-definitions}} |
+| 0x0002 | concurrent_streams        | {{transport-parameter-definitions}} |
+| 0x0003 | idle_timeout              | {{transport-parameter-definitions}} |
+| 0x0004 | truncate_connection_id    | {{transport-parameter-definitions}} |
 {: #iana-tp-table title="Initial QUIC Transport Parameters Entries"}
 
 

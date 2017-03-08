@@ -199,7 +199,10 @@ control streams MUST be fully consumed, or the connection terminated.
 
 All message control streams are considered critical to the HTTP connection.  If
 a message control stream is terminated abruptly for any reason, this MUST be
-treated as a connection error of type HTTP_RST_CONTROL_STREAM.
+treated as a connection error of type HTTP_RST_CONTROL_STREAM.  When a message
+control stream terminates cleanly, if the last frame on the stream was
+truncated, this MUST be treated as a connection error (see HTTP_MALFORMED_* in
+{{http-error-codes}}).
 
 Pairs of streams must be utilized sequentially, with no gaps.  The data stream
 is opened at the same time as the message control stream is opened and is closed
@@ -755,6 +758,7 @@ HTTP_MULTIPLE_SETTINGS (0x10):
 HTTP_RST_CONTROL_STREAM (0x11):
 : A message control stream closed abruptly.
 
+<<<<<<< HEAD
 
 # Considerations for Transitioning from HTTP/2
 
@@ -835,6 +839,9 @@ to the IANA registry in {{iana-settings}}.
 QUIC has the same concepts of "stream" and "connection" errors that HTTP/2
 provides. However, because the error code space is shared between multiple
 components, there is no direct portability of HTTP/2 error codes.
+=======
+## Mapping HTTP/2 Error Codes
+>>>>>>> origin/master
 
 The HTTP/2 error codes defined in Section 7 of {{!RFC7540}} map to QUIC error
 codes as follows:

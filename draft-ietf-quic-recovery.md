@@ -59,10 +59,6 @@ normative:
 
 informative:
 
-  RFC3782:
-  RFC6582:
-  RFC5682:
-  RFC6937:
   I-D.dukkipati-tcpm-tcp-loss-probe:
 
 --- abstract
@@ -267,7 +263,9 @@ use_time_loss:
   threshold in time, rather than in packet number gaps.
 
 sent_packets:
-: An association of packet numbers to information about them.
+: An association of packet numbers to information about them, including a time
+  field indicating the time a packet was sent and a bytes field indicating the
+  packet's size.
 
 ## Initialization
 
@@ -306,7 +304,6 @@ Pseudocode for OnPacketSent follows:
 
 ~~~
  OnPacketSent(packet_number, is_retransmittable, sent_bytes):
-   # TODO: Clarify the data in sent_packets.
    sent_packets[packet_number].time = now
    if is_retransmittable:
      sent_packets[packet_number].bytes = sent_bytes
@@ -398,7 +395,11 @@ Version negotiation packets are always stateless, and MUST be sent once per
 per handshake packet that uses an unsupported QUIC version, and MAY be sent
 in response to 0RTT packets.
 
-(Add sections for early retransmit and TLP/RTO here)
+### Tail Loss Probe and Retransmission Timeout
+
+Tail loss probes and retransmission timeouts{{!RFC6298}} are an alarm based
+mechanism to recover from cases when there are outstanding retransmittable
+packets, but an acknowledgement has not been received in a timely manner.
 
 ### Pseudocode
 
@@ -418,7 +419,6 @@ Pseudocode for SetLossDetectionAlarm follows:
         alarm_duration = 2 * smoothed_rtt
       alarm_duration = max(alarm_duration, kMinTLPTimeout)
       alarm_duration = alarm_duration << handshake_count
-      handshake_count++;
     else if (largest sent packet is acked):
       // Early retransmit {{!RFC5827}}
       // with an alarm to reduce spurious retransmits.
@@ -430,7 +430,6 @@ Pseudocode for SetLossDetectionAlarm follows:
       else:
         alarm_duration = kMinTLPTimeout
       alarm_duration = max(alarm_duration, 2 * smoothed_rtt)
-      tlp_count++
     else:
       // RTO alarm.
       if (rto_count = 0):
@@ -438,7 +437,6 @@ Pseudocode for SetLossDetectionAlarm follows:
         alarm_duration = max(alarm_duration, kMinRTOTimeout)
       else:
         alarm_duration = loss_detection_alarm.get_delay() << 1
-      rto_count++
 
     loss_detection_alarm.set(now + alarm_duration)
 ~~~
@@ -447,14 +445,32 @@ Pseudocode for SetLossDetectionAlarm follows:
 
 QUIC uses one loss recovery alarm, which when set, can be in one of several
 modes.  When the alarm fires, the mode determines the action to be performed.
-OnAlarm returns a list of packet numbers that are detected as lost.
 
-Pseudocode for OnAlarm follows:
+Pseudocode for OnLossDetectionAlarm follows:
 
 ~~~
-   OnAlarm(acked_packet):
-     lost_packets = DetectLostPackets(acked_packet)
-     MaybeRetransmit(lost_packets)
+   OnLossDetectionAlarm():
+     if (handshake packets are outstanding):
+       // Handshake retransmission alarm.
+       RetransmitAllHandshakePackets();
+       handshake_count++;
+     // TODO: Clarify early retransmit and time loss.
+     else if ():
+       // Early retransmit or Time Loss Detection
+       lost_packets = DetectLostPackets(acked_packet)
+       MaybeRetransmit(lost_packets)
+     else if (tlp_count < kMaxTLPs):
+       // Tail Loss Probe alarm.
+       if (HasNewDataToSend()):
+         SendOnePacketOfNewData()
+       else:
+         RetransmitOldestPacket()
+       tlp_count++
+     else:
+       // RTO alarm.
+       RetransmitOldestPacket()
+       rto_count++
+
      SetLossDetectionAlarm()
 ~~~
 
@@ -494,11 +510,12 @@ Pseudocode for DetectLostPackets follows:
 
 # Congestion Control
 
-(describe NewReno-style congestion control for QUIC.)
+(describe NewReno-style congestion control {{!RFC6582}} for QUIC.)
 (describe appropriate byte counting.)
 (define recovery based on packet numbers.)
 (describe min_rtt based hystart.)
-(describe how QUIC's F-RTO delays reducing CWND until an ack is received.)
+(describe how QUIC's F-RTO {{!RFC5682}} delays reducing CWND.)
+(describe PRR {{!RFC6937}})
 
 
 # IANA Considerations
