@@ -27,21 +27,6 @@ author:
 
 normative:
 
-  QUIC-TLS:
-    title: "Using Transport Layer Security (TLS) to Secure QUIC"
-    date: {DATE}
-    author:
-      -
-        ins: M. Thomson
-        name: Martin Thomson
-        org: Mozilla
-        role: editor
-      -
-        ins: S. Turner
-        name: Sean Turner
-        org: sn3rd
-        role: editor
-
   QUIC-TRANSPORT:
     title: "QUIC: A UDP-Based Multiplexed and Secure Transport"
     date: {DATE}
@@ -56,10 +41,6 @@ normative:
         name: Martin Thomson
         org: Mozilla
         role: editor
-
-informative:
-
-  I-D.dukkipati-tcpm-tcp-loss-probe:
 
 --- abstract
 
@@ -397,9 +378,10 @@ in response to 0RTT packets.
 
 ### Tail Loss Probe and Retransmission Timeout
 
-Tail loss probes and retransmission timeouts{{!RFC6298}} are an alarm based
-mechanism to recover from cases when there are outstanding retransmittable
-packets, but an acknowledgement has not been received in a timely manner.
+Tail loss probes {{?I-D.dukkipati-tcpm-tcp-loss-probe}} and retransmission
+timeouts{{?RFC6298}} are an alarm based mechanism to recover from cases when
+there are outstanding retransmittable packets, but an acknowledgement has
+not been received in a timely manner.
 
 ### Pseudocode
 
@@ -420,11 +402,11 @@ Pseudocode for SetLossDetectionAlarm follows:
       alarm_duration = max(alarm_duration, kMinTLPTimeout)
       alarm_duration = alarm_duration << handshake_count
     else if (largest sent packet is acked):
-      // Early retransmit {{!RFC5827}}
+      // Early retransmit {{?RFC5827}}
       // with an alarm to reduce spurious retransmits.
       alarm_duration = 0.25 * smoothed_rtt
     else if (tlp_count < kMaxTLPs):
-      // Tail Loss Probe alarm.
+      // Tail Loss Probe {{?I-D.dukkipati-tcpm-tcp-loss-probe}}
       if (retransmittable_packets_outstanding = 1):
         alarm_duration = 1.5 * smoothed_rtt + kDelayedAckTimeout
       else:
@@ -510,12 +492,12 @@ Pseudocode for DetectLostPackets follows:
 
 # Congestion Control
 
-(describe NewReno-style congestion control {{!RFC6582}} for QUIC.)
+(describe NewReno-style congestion control {{?RFC6582}} for QUIC.)
 (describe appropriate byte counting.)
 (define recovery based on packet numbers.)
 (describe min_rtt based hystart.)
-(describe how QUIC's F-RTO {{!RFC5682}} delays reducing CWND.)
-(describe PRR {{!RFC6937}})
+(describe how QUIC's F-RTO {{?RFC5682}} delays reducing CWND.)
+(describe PRR {{?RFC6937}})
 
 
 # IANA Considerations
