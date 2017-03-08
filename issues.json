@@ -257,7 +257,7 @@
     "milestone": null,
     "comments": 1,
     "created_at": "2017-03-07T00:52:24Z",
-    "updated_at": "2017-03-07T21:11:33Z",
+    "updated_at": "2017-03-08T02:54:10Z",
     "closed_at": null,
     "pull_request": {
       "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/361",
@@ -429,9 +429,9 @@
 
     ],
     "milestone": null,
-    "comments": 1,
+    "comments": 2,
     "created_at": "2017-03-06T21:12:22Z",
-    "updated_at": "2017-03-07T22:03:00Z",
+    "updated_at": "2017-03-08T03:47:01Z",
     "closed_at": null,
     "pull_request": {
       "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/358",
@@ -1249,63 +1249,6 @@
     "body": "@ddragana observes that the 64-bit offset value in the WINDOW_UPDATE message is probably the first value that we will run out of (over packet numbers and stream numbers, which should last a bit longer in most cases).  We could avoid this by multiplying these values by a constant (she suggests 1024), which would reduce the granularity with which flow control credits could be granted, but increase the total lifetime of a long-lived connection.\r\n\r\nSo, trade-off time.  The scaling multiplier is now 1.  A larger value allows for longer-lived connections, a shorter value allows finer control over flow control.  I'd suggest that values in the order of 8 are probably easy to justify, can we go as high as 1024?\r\n\r\nWe could also choose a different value for the connection and stream flow control offsets on that basis that connections need more octets, whereas streams do not."
   },
   {
-    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/339",
-    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
-    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/339/labels{/name}",
-    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/339/comments",
-    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/339/events",
-    "html_url": "https://github.com/quicwg/base-drafts/pull/339",
-    "id": 209732462,
-    "number": 339,
-    "title": "Symbolic labels for some references",
-    "user": {
-      "login": "martinthomson",
-      "id": 67641,
-      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/martinthomson",
-      "html_url": "https://github.com/martinthomson",
-      "followers_url": "https://api.github.com/users/martinthomson/followers",
-      "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
-      "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
-      "organizations_url": "https://api.github.com/users/martinthomson/orgs",
-      "repos_url": "https://api.github.com/users/martinthomson/repos",
-      "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/martinthomson/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "labels": [
-      {
-        "id": 481871311,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/editorial",
-        "name": "editorial",
-        "color": "0e8a16",
-        "default": false
-      }
-    ],
-    "state": "open",
-    "locked": false,
-    "assignee": null,
-    "assignees": [
-
-    ],
-    "milestone": null,
-    "comments": 0,
-    "created_at": "2017-02-23T11:15:08Z",
-    "updated_at": "2017-02-23T11:15:08Z",
-    "closed_at": null,
-    "pull_request": {
-      "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/339",
-      "html_url": "https://github.com/quicwg/base-drafts/pull/339",
-      "diff_url": "https://github.com/quicwg/base-drafts/pull/339.diff",
-      "patch_url": "https://github.com/quicwg/base-drafts/pull/339.patch"
-    },
-    "body": "This depends on https://github.com/cabo/kramdown-rfc2629/pull/35, so it won't build right now."
-  },
-  {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/338",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
     "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/338/labels{/name}",
@@ -1928,8 +1871,7 @@
     "updated_at": "2017-02-21T11:43:58Z",
     "closed_at": null,
     "body": "The text currently mandates (MUST!) a 4 times safety margin against reordering when picking the packet number size.  This is purely a safety margin feature, so mandating a value isn't justified.\r\n\r\nAn implementation could, though perhaps it is unwise, use a much smaller packet number than this.  The risk is that there is reordering greater than 2^size and the packets are delivered but cannot be recovered at the receiver.  That's terrible, it will trigger loss recovery and send bad signals.  However, the protocol doesn't actually break.\r\n\r\nAt a minimum, we should make this a recommendation.  Setting a mandatory floor on the value might be reasonable, but I'd be reluctant to do that unless it was pretty low, or if the value were different for different packet number sizes (smaller margins are probably more justifiable for larger packet number encodings).\r\n\r\nIdeally, we should science this and try to measure probabilities of reordering.  Ideally reordering probability as a function of outstanding packets."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/311",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -1987,7 +1929,8 @@
     "updated_at": "2017-02-20T00:43:23Z",
     "closed_at": null,
     "body": "Google-QUIC had an issue where post-handshake QUIC packets were being dropped, because a bit changed in the public flags, and a middlebox no longer identified it as QUIC.\r\n\r\nIn order to ensure the entire public flags byte is usable, I suggest we GREASE it by defining the entire space as valid.\r\n\r\nBuilding on Jana's proposal for the public header with a flags byte as a set of codepoints: https://gist.github.com/janaiyengar/b05acb3af17d6e938d25befc69c11eae\r\n\r\nThe goal is to provide a simple mathematical mapping from any value of the public flags onto a frame type.  \r\n\r\nMy suggestion is to lookup the frame type, and if it's not defined, mod the flags value by the number of frame types defined in that phase(short or long form) and pick the type with that index when ordering the frame types by value.\r\n\r\nIf an initial packet number is chosen randomly, and the connection ID is as well, greasing the flags byte and version (#112 and #296) covers everything that is not encrypted."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/310",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3739,8 +3682,7 @@
     "updated_at": "2017-02-03T03:00:54Z",
     "closed_at": null,
     "body": "For example if the version negotiation packet is lost, there's no ACK frame for the receiver to signal anything to the sender, we should specify what the loss recovery behavior for version negotiation and other special packets is."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/240",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3798,7 +3740,8 @@
     "updated_at": "2017-02-08T20:12:38Z",
     "closed_at": null,
     "body": "There might be a way in which both sides of a connection could agree (by convention, protocol, or explicit signaling) that a particular stream is closed WITHOUT sending a FIN and spending the extra octets.  This could be used by HTTP to avoid the FIN that a client currently has to send when receiving a server push."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/239",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5516,8 +5459,7 @@
     "updated_at": "2017-01-24T00:55:49Z",
     "closed_at": null,
     "body": "> **9.1.1. idle**\r\nAll streams start in the “idle” state.\r\n...\r\nReceiving any frame other than STREAM or RST_STREAM on a stream in this state MUST be treated as a connection error (Section 11) of type YYYY.\r\n\r\nReceiving a WINDOW_UPDATE frame (or probably any other frame) for a stream before the first STREAM frame for that stream due to packet reordering/loss should not be treated as a connection error (causing a connection reset)."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/187",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5575,7 +5517,8 @@
     "updated_at": "2017-01-24T00:59:21Z",
     "closed_at": null,
     "body": "The inclusion of \"Reason Phrase\" is CONNECTION_CLOSE and GOAWAY frames seems unnecessary and its normative usage uncertain. There is already an error code field (and a robust discussion in #19 and #184 about its values).\r\n\r\n\"Reason Phrase\" seems like optional textual debug information (in what language?). This is actually another case for a generalized DEBUG frame (see #65)."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/186",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7520,8 +7463,7 @@
     "updated_at": "2017-02-15T17:30:17Z",
     "closed_at": null,
     "body": "QUIC currently has the ability to embed this in the source address token.  I guess that this is primarily because they both happen at the same time (during a stateless reject).\r\n\r\nWe could turn this into a transport parameter, I guess, but that doesn't work for HelloRetryRequest."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/116",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7579,7 +7521,8 @@
     "updated_at": "2017-02-07T00:22:29Z",
     "closed_at": null,
     "body": "COPT is apparently repeated, once for each option.  \r\n\r\nOne thing that TLS implementations do is validate that there is only one instance of each extension.  This isn't possible for transport parameters if we require that COPT be used for a list of options.\r\n\r\nAlso, we can reduce the number of extension points in the protocol, we shouldn't pack a list of options into COPT when we have transport parameters for that."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/115",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
