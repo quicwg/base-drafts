@@ -2909,9 +2909,9 @@
 
     ],
     "milestone": null,
-    "comments": 6,
+    "comments": 7,
     "created_at": "2017-01-26T07:41:13Z",
-    "updated_at": "2017-03-08T16:14:21Z",
+    "updated_at": "2017-03-08T21:55:03Z",
     "closed_at": null,
     "body": "The HTTP/QUIC mapping document is missing consideration for HTTP/2 extension mechanisms. This is part of the charter text:\r\n\r\n> This mapping will accommodate the extension mechanisms defined in the HTTP/2 specification.\r\n\r\nRFC 7540 (https://tools.ietf.org/html/rfc7540#section-5.5) defines three extension mechanisms, lets order these as:\r\n\r\n1. New frame types\r\n2. New error codes\r\n3. New settings\r\n\r\nI can see how 1 and 2 might work out, following Mike's example of augmenting existing definitions and allowing for things that exist in the HTTP/2 and HTTP/QUIC spaces to be managed somewhat independently. A concrete use case I have is the ALTSVC frame (especially when used on stream 0), so I'm happy to contribute towards this issue with some guidance.\r\n\r\n3 has some problems related to proposed SETTINGS changes.\r\n\r\nFinally, extensions that could change of semantics are a bit problematic (does it change the HTTP or the QUIC semantic, if that either of those is even possible). Additionally,  the negotiation of these is trickier given the additional negotation concerns of QUIC (0-RTT etc).\r\n"
   },
