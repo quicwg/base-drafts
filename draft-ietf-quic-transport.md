@@ -586,7 +586,6 @@ document.
 | 0x03             |  GOAWAY            | {{frame-goaway}}           |
 | 0x04             |  WINDOW_UPDATE     | {{frame-window-update}}    |
 | 0x05             |  BLOCKED           | {{frame-blocked}}          |
-| 0x06             |  STOP_WAITING      | {{frame-stop-waiting}}     |
 | 0x07             |  PING              | {{frame-ping}}             |
 | 0x40 - 0x7f      |  ACK               | {{frame-ack}}              |
 | 0x80 - 0xff      |  STREAM            | {{frame-stream}}           |
@@ -1232,14 +1231,17 @@ Receivers send ACK frames to inform senders which packets they have received, as
 well as which packets are considered missing.  The ACK frame contains between 1
 and 256 ACK blocks.  ACK blocks are ranges of acknowledged packets.
 
-To limit the ACK blocks to the ones that haven't yet been received by the
-sender, the sender periodically sends STOP_WAITING frames that signal the
-receiver to stop acknowledging packets below a specified sequence number,
-raising the Least Unacked packet number at the receiver.  A sender of an ACK
-frame thus reports only those ACK blocks between the received Least Unacked and
-the reported Largest Acknowledged packet numbers.  The endpoint SHOULD raise the
-Least Unacked communicated via future STOP_WAITING frames to the most recently
-received Largest Acknowledged.
+To limit ACK blocks to those that have not yet been received by the sender, the
+receiver SHOULD track which ACK frames have been acknowledged by its peer.  Once
+an ACK frame has been acknowledged, the packets it acknowledges SHOULD not be
+acknowledged again.  To handle cases where the receiver is only sending ACK
+frames, and hence will not receive acknowledgments for its packets, it MAY send
+a PING frame at most once per RTT to explicitly request acknowledgment.
+
+To limit receiver state or the size of ACK frames, a receiver MAY limit the
+number of ACK blocks it sends.  A receiver can do this even without receiving
+acknowledgment of its ACK frames, with the knowledge this could cause the sender
+to unnecessarily retransmit some data.
 
 Unlike TCP SACKs, QUIC ACK blocks are cumulative and therefore irrevocable.
 Once a packet has been acknowledged, even if it does not appear in a future ACK
@@ -1434,36 +1436,6 @@ effective mantissa of 4096 (12th bit is assumed to be 1).  Additionally, the
 actual exponent is one-less than the explicit exponent, and the value represents
 4096 microseconds.  Any values larger than the representable range are clamped
 to 0xFFFF.
-
-
-## STOP_WAITING Frame {#frame-stop-waiting}
-
-The STOP_WAITING frame (type=0x06) is sent to inform the peer that it should not
-continue to wait for packets with packet numbers lower than a specified value.
-The packet number is encoded in 1, 2, 4 or 6 bytes, using the same coding length
-as is specified for the packet number for the enclosing packet's header
-(specified in the QUIC Frame packet's Flags field.) The frame is as follows:
-
-~~~
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|               Least Unacked Delta (8/16/32/48)              ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-~~~
-{: #stop-waiting-format title="STOP_WAITING Frame Format"}
-
-The STOP_WAITING frame contains a single field:
-
-Least Unacked Delta:
-
-: A variable-length packet number delta with the same length as the packet
-  header's packet number.  Subtract it from the complete packet number of the
-  enclosing packet to determine the least unacked packet number.  The resulting
-  least unacked packet number is the earliest packet for which the sender is
-  still awaiting an ACK.  If the receiver is missing any packets earlier than
-  this packet, the receiver SHOULD consider those packets to be irrecoverably
-  lost and MUST NOT report those packets as missing in subsequent ACKs.
 
 
 ## WINDOW_UPDATE Frame {#frame-window-update}
@@ -1728,9 +1700,9 @@ When a packet is detected as lost, the sender re-sends any frames as necessary:
   since subsequent data on this stream is expected to not be delivered by the
   receiver.
 
-* ACK, STOP_WAITING, and PADDING frames MUST NOT be retransmitted.  ACK and
-  STOP_WAITING frames are cumulative, so new frames containing updated
-  information will be sent as described in {{frame-ack}}.
+* ACK and PADDING frames MUST NOT be retransmitted.  ACK frames are cumulative,
+  so new frames containing updated information will be sent as described in
+  {{frame-ack}}.
 
 * All other frames MUST be retransmitted.
 
@@ -2337,9 +2309,6 @@ QUIC_INVALID_WINDOW_UPDATE_DATA (0x80000039):
 
 QUIC_INVALID_BLOCKED_DATA (0x8000003A):
 : BLOCKED frame data is malformed.
-
-QUIC_INVALID_STOP_WAITING_DATA (0x8000003C):
-: STOP_WAITING frame data is malformed.
 
 QUIC_INVALID_PATH_CLOSE_DATA (0x8000004E):
 : PATH_CLOSE frame data is malformed.
