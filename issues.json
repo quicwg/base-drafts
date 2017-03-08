@@ -1,5 +1,99 @@
 [
   {
+    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/373",
+    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
+    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/373/labels{/name}",
+    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/373/comments",
+    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/373/events",
+    "html_url": "https://github.com/quicwg/base-drafts/issues/373",
+    "id": 212892968,
+    "number": 373,
+    "title": "Lift RFC 5827 reference into text",
+    "user": {
+      "login": "martinthomson",
+      "id": 67641,
+      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/martinthomson",
+      "html_url": "https://github.com/martinthomson",
+      "followers_url": "https://api.github.com/users/martinthomson/followers",
+      "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
+      "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
+      "organizations_url": "https://api.github.com/users/martinthomson/orgs",
+      "repos_url": "https://api.github.com/users/martinthomson/repos",
+      "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/martinthomson/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 481871311,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/editorial",
+        "name": "editorial",
+        "color": "0e8a16",
+        "default": false
+      },
+      {
+        "id": 481873040,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/recovery",
+        "name": "recovery",
+        "color": "fbca04",
+        "default": false
+      }
+    ],
+    "state": "open",
+    "locked": false,
+    "assignee": {
+      "login": "ianswett",
+      "id": 20072817,
+      "avatar_url": "https://avatars2.githubusercontent.com/u/20072817?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/ianswett",
+      "html_url": "https://github.com/ianswett",
+      "followers_url": "https://api.github.com/users/ianswett/followers",
+      "following_url": "https://api.github.com/users/ianswett/following{/other_user}",
+      "gists_url": "https://api.github.com/users/ianswett/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/ianswett/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/ianswett/subscriptions",
+      "organizations_url": "https://api.github.com/users/ianswett/orgs",
+      "repos_url": "https://api.github.com/users/ianswett/repos",
+      "events_url": "https://api.github.com/users/ianswett/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/ianswett/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "assignees": [
+      {
+        "login": "ianswett",
+        "id": 20072817,
+        "avatar_url": "https://avatars2.githubusercontent.com/u/20072817?v=3",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/ianswett",
+        "html_url": "https://github.com/ianswett",
+        "followers_url": "https://api.github.com/users/ianswett/followers",
+        "following_url": "https://api.github.com/users/ianswett/following{/other_user}",
+        "gists_url": "https://api.github.com/users/ianswett/gists{/gist_id}",
+        "starred_url": "https://api.github.com/users/ianswett/starred{/owner}{/repo}",
+        "subscriptions_url": "https://api.github.com/users/ianswett/subscriptions",
+        "organizations_url": "https://api.github.com/users/ianswett/orgs",
+        "repos_url": "https://api.github.com/users/ianswett/repos",
+        "events_url": "https://api.github.com/users/ianswett/events{/privacy}",
+        "received_events_url": "https://api.github.com/users/ianswett/received_events",
+        "type": "User",
+        "site_admin": false
+      }
+    ],
+    "milestone": null,
+    "comments": 0,
+    "created_at": "2017-03-08T23:50:58Z",
+    "updated_at": "2017-03-08T23:50:58Z",
+    "closed_at": null,
+    "body": "An [oddity in kramdown-rfc2629](https://github.com/cabo/kramdown-rfc2629/issues/38) causes references to be busted when they are included in figures.  Let's not tempt fate and instead move the reference to text, where it can be better framed."
+  },
+  {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/371",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
     "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/371/labels{/name}",
@@ -29,7 +123,20 @@
       "site_admin": false
     },
     "labels": [
-
+      {
+        "id": 481871361,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/design",
+        "name": "design",
+        "color": "1d76db",
+        "default": false
+      },
+      {
+        "id": 481871627,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/http",
+        "name": "http",
+        "color": "fbca04",
+        "default": false
+      }
     ],
     "state": "open",
     "locked": false,
@@ -40,7 +147,7 @@
     "milestone": null,
     "comments": 0,
     "created_at": "2017-03-08T18:28:39Z",
-    "updated_at": "2017-03-08T18:28:39Z",
+    "updated_at": "2017-03-08T23:49:39Z",
     "closed_at": null,
     "body": "As @LPardue has pointed out in the thread for #242, the HTTP/QUIC spec claims to update the IANA registry for \"existing\" frames.  It really only updates the frames defined in RFC7540; the ALTSVC frame defined in RFC7838 isn't updated.\r\n\r\nIt would be a simple update, but the question is where it belongs.  Should we:\r\n\r\n- Add text in this document to include that frame, because it is \"existing\"?\r\n- Write a new (very short) document updating RFC7838 with HTTP/QUIC support, following the recommendations in #363?\r\n- Kick it back to the httpbis working group to write exactly the same very short document?\r\n\r\nNote that the latter two options probably differ by nothing but the filename of the I-D in question -- the same people will probably end up writing it."
   },
@@ -89,9 +196,9 @@
 
     ],
     "milestone": null,
-    "comments": 1,
+    "comments": 2,
     "created_at": "2017-03-08T17:52:40Z",
-    "updated_at": "2017-03-08T23:24:28Z",
+    "updated_at": "2017-03-08T23:40:16Z",
     "closed_at": null,
     "body": "ILubashev's suggestion on #171 alludes to this; separating it out as a new issue.\r\n\r\nConnection-level flow control is currently defined as a cumulative sum of all bytes _received_ on all streams.  However, if you receive STREAM frames out of order, you can know that more data is in flight, even if you haven't received it.  Currently, that data implicitly counts against the receiver's stream window (since it's a max offset), but not against the connection window.\r\n\r\nThis would allow the receiver of a DISINTEREST frame to silently stop retransmission if the STREAM w/ FIN had already been acknowledged (without generating a RST_STREAM) since the flow control states on both sides would be consistent.  However, it would also require more logic on STREAM receipt, since it's no longer just a running counter of the size of all received STREAM frames."
   },
@@ -1008,9 +1115,9 @@
 
     ],
     "milestone": null,
-    "comments": 0,
+    "comments": 2,
     "created_at": "2017-02-22T07:40:26Z",
-    "updated_at": "2017-03-08T19:40:20Z",
+    "updated_at": "2017-03-08T23:38:23Z",
     "closed_at": null,
     "pull_request": {
       "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/331",
@@ -1708,7 +1815,8 @@
     "updated_at": "2017-02-16T13:44:04Z",
     "closed_at": null,
     "body": "> The application SHOULD attempt to use TLS over TCP instead.\r\n\r\n(This is in the context of finding that the MTU is too small.)\r\n\r\nThe text includes a very specific recommendation to use TLS over TCP for one particular case.  This is unwise for two reasons:\r\n1. we don't know if all protocols that build on QUIC will have a TCP over TLS option available to them; DNS over QUIC might be an example of where TLS over TCP is an inadvisable fallback option\r\n2. we should rely on a generic error handling section that includes generic advice about things like falling back to a backup protocol\r\n\r\nMarked as editorial, I hope that's not controversial."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/284",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -1766,8 +1874,7 @@
     "updated_at": "2017-02-15T05:20:55Z",
     "closed_at": null,
     "body": "The text currently says:\r\n\r\n> Once a client receives a packet from the server with the VERSION flag unset, it MUST ignore the flag in subsequently received packets.\r\n\r\nI don't know how to interpret this.  What should a client do if it receives a packet with the VERSION flag set after completing version negotiation?  Maybe should should mandate ignoring the packet not just the flag."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/281",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3491,7 +3598,8 @@
     "updated_at": "2017-01-25T00:59:17Z",
     "closed_at": null,
     "body": "We've assumed that this is the case, but we really need to write it down."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/222",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3549,8 +3657,7 @@
     "updated_at": "2017-01-25T02:22:52Z",
     "closed_at": null,
     "body": "S 8.3 says:\r\n```\r\nA source address token is opaque and consumed only by the server.  Therefore it\r\ncan be included in the TLS 1.3 pre-shared key identifier for 0-RTT handshakes.\r\nServers that use 0-RTT are advised to provide new pre-shared key identifiers\r\nafter every handshake to avoid linkability of connections by passive observers.\r\nClients MUST use a new pre-shared key identifier for every connection that they\r\ninitiate; if no pre-shared key identifier is available, then resumption is not\r\npossible.\r\n```\r\n\r\nThis seem like an unnecessary requirement. Reusing the same PSK ID seems fine here."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/221",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5302,7 +5409,8 @@
     "updated_at": "2017-03-07T04:46:54Z",
     "closed_at": null,
     "body": "QUIC originally specified a 12 byte hash for unencrypted packets.  This was dropped when QUIC crypto was swapped for the TLS 1.3 mapping.\r\n\r\nWe should add it back, since it is useful in eliminating corrupted packets and random internet junk.  And possibly in preventing reflection attacks mentioned in #147 "
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/166",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5360,8 +5468,7 @@
     "updated_at": "2017-02-03T03:02:07Z",
     "closed_at": null,
     "body": "Fast troubleshooting of QoS is mandatory to maintain end users high Quality of Experience;\r\nThere are my cases of troubleshooting. A typical example starts by the signaling to the ISP that its end-users are experimenting a significant decrease of QoE when using an Internet application. Typical point of failures are line cards memory errors or overloaded routers located somewhere on the path, either in the ISP domain or outside.\r\n\r\nThe ISP NOC has to localize asap the point of failure. Currently it proceeds by dichotomy (is the point of failure inside ISP domain or outside ?) using passive monitoring of packet lost and congestion. \r\n\r\nFollowing is the description of the parameters in use:\r\n\r\n1. Packet lost downstream (vice versa for upstream): \r\n- Measure of packet lost before the point of measure needs TCP sequence number\r\n- Measure of lost after the point of measure needs TCP ACK + SACK \r\n\r\n1. Congestion: \r\n- Detects that the congestion is located either before or after the point of measure\r\n- Analysis based on TCP ACK+SACK observation\r\n\r\nQUIC packets numbering should be continuous to allow packet loss monitoring. Flows control fields (ACK, SACK) are available in QUIC but encrypted. \r\n\r\nIt should be nice to use the approach of the TCPinc WG (with an integrity check mechanism) to keep visible the fields allowing fast troubleshooting of the network layer.\r\n\r\n\r\n"
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/165",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5788,6 +5895,64 @@
     "updated_at": "2017-01-20T03:11:03Z",
     "closed_at": null,
     "body": "The design of the QUIC packet header should consider the ease of creating an apparently-valid first packet via reflection against existing, widely deployed UDP protocols (DNS and NTP being the top two here). All easily reflectable packets off these services should be trivially droppable by a QUIC server. Otherwise, there exist a variety of possible DDoS attacks (of which #135 is one case).\r\n\r\nFor 1-RTT first packets, the probablity of creating a valid ClientHello would seem to be negligible, though there might be some value in reducing the processing necessary to recognize and reject reflected garbage, or to allow it to be rejected before delivery to the server process.\r\n\r\nFor 0-RTT first packets, the header layout should be defined such that a version number (or other magic pattern, though the version number space is sparse enough that it can do double duty as a magic pattern) has an offset and bit pattern that does not occur in traffic that can be generated via reflection off common UDP services."
+  },
+  {
+    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/146",
+    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
+    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/146/labels{/name}",
+    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/146/comments",
+    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/146/events",
+    "html_url": "https://github.com/quicwg/base-drafts/issues/146",
+    "id": 200565658,
+    "number": 146,
+    "title": "STREAM frame boundaries",
+    "user": {
+      "login": "marten-seemann",
+      "id": 1478487,
+      "avatar_url": "https://avatars0.githubusercontent.com/u/1478487?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/marten-seemann",
+      "html_url": "https://github.com/marten-seemann",
+      "followers_url": "https://api.github.com/users/marten-seemann/followers",
+      "following_url": "https://api.github.com/users/marten-seemann/following{/other_user}",
+      "gists_url": "https://api.github.com/users/marten-seemann/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/marten-seemann/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/marten-seemann/subscriptions",
+      "organizations_url": "https://api.github.com/users/marten-seemann/orgs",
+      "repos_url": "https://api.github.com/users/marten-seemann/repos",
+      "events_url": "https://api.github.com/users/marten-seemann/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/marten-seemann/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 489929683,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/editor-ready",
+        "name": "editor-ready",
+        "color": "0e8a16",
+        "default": false
+      },
+      {
+        "id": 481871399,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
+        "name": "transport",
+        "color": "fbca04",
+        "default": false
+      }
+    ],
+    "state": "open",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 22,
+    "created_at": "2017-01-13T07:35:53Z",
+    "updated_at": "2017-03-08T23:38:19Z",
+    "closed_at": null,
+    "body": "We had a [discussion](https://groups.google.com/a/chromium.org/forum/#!topic/proto-quic/j747iwug-Hg) about this earlier on the proto-quic mailing list, but as far as I remember, we never reached a conclusion or discussed this on the IETF mailing list.\r\n\r\nThere are two options:\r\n\r\n1. STREAM frame boundaries MUST be preserved when retransmitting them, i.e. a STREAM frame that is being retransmitted MAY be split into further pieces, but MUST NOT be combined with other STREAM frames.\r\n2. STREAM frames MAY be reassembled before retransmitting them, and STREAM frame boundaries need not be preserved.\r\n\r\nOption 1. is what Chrome and quic-go are currently implementing. 2. is what the draft is specifying in the current version ([here](https://github.com/quicwg/base-drafts/blob/master/draft-ietf-quic-transport.md#sending-and-receiving-data)).\r\n\r\nIf we decide for 1., this needs to be reflected in the draft. If we decide for 2., we need to remove the QUIC_OVERLAPPING_STREAM_DATA (0x8057) error."
   },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/144",
@@ -7343,7 +7508,8 @@
     "updated_at": "2017-01-25T06:37:34Z",
     "closed_at": null,
     "body": "We have rules about retransmission of STREAM frames.  ACK has similar properties in terms of what needs to be retransmitted.  Once an ACK has been acked, what should a sender do when constructing future ACK messages?"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/61",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7466,8 +7632,7 @@
     "updated_at": "2017-01-24T00:45:35Z",
     "closed_at": null,
     "body": "Also, Martin Duke observes that it's not clear how QUIC would determine that the crypto handshake was incomplete after one message.\r\n\r\nI note that this might be aided by #35."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/58",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
