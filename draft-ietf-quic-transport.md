@@ -418,17 +418,16 @@ The following packet types are defined:
 {: #long-packet-types title="Long Header Packet Types"}
 
 The header form, packet type, connection ID, packet number and version fields of
-a long header packet are version independent. The types of packets defined in
-{{long-packet-types}}, the remaining fields, and the payload are specific to a
-version and packet type. See {{version-specific}} for details on how packets
-from different versions of QUIC are interpreted.
+a long header packet are version-independent. The types of packets defined in
+{{long-packet-types}} are version-specific.  See {{version-specific}} for
+details on how packets from different versions of QUIC are interpreted.
 
 (TODO: Should the list of packet types be version-independent?)
 
-The packet layout is the same for all long-header packet types, but the
-semantics of the fields are specific to each packet type.  Type-specific
-semantics are described in {{version-packet}}, {{public-reset-packet}},
-{{cleartext-packet}}, and {{encrypted-packet}}.
+The interpretation of the fields and the payload are specific to a version and
+packet type.  Type-specific semantics for this version are described in
+{{version-packet}}, {{public-reset-packet}}, {{cleartext-packet}}, and
+{{encrypted-packet}}.
 
 
 ## Short Header
