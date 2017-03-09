@@ -762,7 +762,7 @@ HTTP_RST_CONTROL_STREAM (0x11):
 # Considerations for Transitioning from HTTP/2
 
 HTTP/QUIC is strongly informed by HTTP/2, and bears many similarities.  This
-section points out useful differences from HTTP/2 and describes how to map
+section points out important differences from HTTP/2 and describes how to map
 HTTP/2 extensions into HTTP/QUIC.
 
 ## HTTP Frame Types
@@ -774,23 +774,24 @@ occurs below this layer), the support for variable-maximum-length packets can be
 removed. Because stream termination is handled by QUIC, an END_STREAM flag is
 not required.
 
-Frame payloads are largely drawn from {{!RFC7540}}. However, QUIC includes some
+Frame payloads are largely drawn from {{!RFC7540}}. However, QUIC includes many
 features (e.g. flow control) which are also present in HTTP/2. In these cases,
-the HTTP mapping does not re-implement them. As a result, some frame types are
-not required in HTTP/QUIC. Where an HTTP/2-defined frame is no longer used, the
-frame ID has been reserved in order to maximize portability between HTTP/2 and
-HTTP/QUIC implementations. However, equivalent frames between the two mappings
-are not identical.
+the HTTP mapping does not re-implement them. As a result, several HTTP/2 frame
+types are not required in HTTP/QUIC. Where an HTTP/2-defined frame is no longer
+used, the frame ID has been reserved in order to maximize portability between
+HTTP/2 and HTTP/QUIC implementations. However, even equivalent frames between
+the two mappings are not identical.
 
-Frame type extensions which apply to HTTP/2 are typically portable to QUIC with
-a few minimal changes:
+Many of the differences arise from the fact that HTTP/2 provides an absolute
+ordering between frames across all streams, while QUIC provides this guarantee
+on each stream only.  For example, PRIORITY frames have moved to Stream 3 and
+include the affected stream number because different prioritization operations
+are not commutative.  As a result, if an extension make assumptions that frames
+from different streams will still be received in the order sent, HTTP/QUIC will
+break them.
 
-- HTTP/QUIC uses Stream 3 as the connection control stream, rather than Stream 0
-  in HTTP/2.
-- If there are assumptions that frames from different streams will still be
-  received in the order sent, HTTP/QUIC will break them.  (This is most easily
-  solved by sending all frames on the connection control stream and including
-  the affected stream number, but could also be solved in a frame-local method.)
+Other than this issue, frame type HTTP/2 extensions are typically portable to
+QUIC simply by replacing Stream 0 in HTTP/2 with Stream 3 in HTTP/QUIC.
 
 The IANA registry of frame types has been updated in {{iana-frames}} to include
 references to the definition for each frame type in HTTP/2 and in HTTP/QUIC.
@@ -798,6 +799,10 @@ Frames not defined as available in HTTP/QUIC SHOULD NOT be sent and SHOULD be
 ignored as unknown on receipt.
 
 ## HTTP/2 SETTINGS Parameters
+
+An important difference from HTTP/2 is that settings are sent once, at the
+beginning of the connection, and thereafter cannot change.  This eliminates
+many corner cases around synchronization of changes.
 
 Some transport-level options that HTTP/2 specifies via the SETTINGS frame are
 superseded by QUIC transport parameters in HTTP/QUIC. The HTTP-level options
