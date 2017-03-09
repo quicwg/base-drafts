@@ -833,8 +833,8 @@ response to version negotiation, a client MUST increase the packet number it
 uses on every packet it sends.  Packets MUST continue to use long headers and
 MUST include the new negotiated protocol version.
 
-The client MUST use the long header format and include its selected version on all
-packets until it has 1-RTT keys and it has received a packet from the server
+The client MUST use the long header format and include its selected version on
+all packets until it has 1-RTT keys and it has received a packet from the server
 which is not a Version Negotiation packet.
 
 A client MUST NOT change the version it uses unless it is in response to a
