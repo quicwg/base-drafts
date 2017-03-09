@@ -82,7 +82,7 @@
     "milestone": null,
     "comments": 0,
     "created_at": "2017-03-09T22:05:04Z",
-    "updated_at": "2017-03-09T22:06:19Z",
+    "updated_at": "2017-03-09T22:39:49Z",
     "closed_at": null,
     "pull_request": {
       "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/380",
@@ -175,7 +175,7 @@
     "milestone": null,
     "comments": 0,
     "created_at": "2017-03-09T06:57:00Z",
-    "updated_at": "2017-03-09T07:39:22Z",
+    "updated_at": "2017-03-09T22:30:36Z",
     "closed_at": null,
     "pull_request": {
       "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/378",
@@ -383,7 +383,7 @@
     "milestone": null,
     "comments": 0,
     "created_at": "2017-03-09T01:32:43Z",
-    "updated_at": "2017-03-09T01:32:43Z",
+    "updated_at": "2017-03-09T22:33:46Z",
     "closed_at": null,
     "pull_request": {
       "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/374",
@@ -2241,9 +2241,9 @@
 
     ],
     "milestone": null,
-    "comments": 15,
+    "comments": 16,
     "created_at": "2017-02-09T18:35:01Z",
-    "updated_at": "2017-03-09T21:58:16Z",
+    "updated_at": "2017-03-09T22:35:35Z",
     "closed_at": null,
     "body": "Something that came up in Tokyo was the need for service providers (i.e. middleboxes) to troubleshoot performance issues in the network. Packet Number Echo (#269) could partially address this problem., particularly for RTT measurement. But it is imperfect for measuring other problems.\r\n\r\nAs someone who has spent quite a bit of time debugging TCP packet traces from service providers, there are two other things that would help greatly in answering the question \"why is my QUIC slow\", without significantly compromising privacy. To do both would take two bits in the public flags, which may be available depending on how some other issues turn out.\r\n\r\n(1) QUIC endpoints MAY set the BLOCKED bit if they include a BLOCKED frame in the packet. If you want to get fancy, you could have a different bit for \"stream blocked\" and \"connection blocked\", but flow control issues are a common cause of traffic pauses with no other discernable symptoms.\r\n(2) QUIC endpoints MUST (SHOULD?) set the RETRANS flag in any packet that contains retransmitted data. This would help operators identify that a connection is slowing down because it is responding to loss, and would allow for very reliable loss statistics for the downstream network."
   },
