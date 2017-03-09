@@ -170,7 +170,10 @@ application.
 
 QUIC reserves Stream 1 for crypto operations (the handshake, crypto config
 updates). Stream 3 is reserved for sending and receiving HTTP control frames,
-and is analogous to HTTP/2's Stream 0.
+and is analogous to HTTP/2's Stream 0.  This connection control stream is
+considered critical to the HTTP connection.  If the connection control stream is
+closed for any reason, this MUST be treated as a connection error of type
+QUIC_CLOSED_CRITICAL_STREAM.
 
 When HTTP headers and data are sent over QUIC, the QUIC layer handles most of
 the stream management. An HTTP request/response consumes a pair of streams: This
@@ -185,6 +188,21 @@ stream is the data stream and carries the request/response body with no
 additional framing. Note that a request or response without a body will cause
 this stream to be half-closed in the corresponding direction without
 transferring data.
+
+Because the message control stream contains HPACK data which manipulates
+connection-level state, the message control stream MUST NOT be closed with a
+stream-level error.  If an implementation chooses to reject a request with a
+QUIC error code, it MUST trigger a QUIC RST_STREAM on the data stream only.  An
+implementation MAY close (FIN) a message control stream without completing a
+full HTTP message if the data stream has been abruptly closed.  Data on message
+control streams MUST be fully consumed, or the connection terminated.
+
+All message control streams are considered critical to the HTTP connection.  If
+a message control stream is terminated abruptly for any reason, this MUST be
+treated as a connection error of type HTTP_RST_CONTROL_STREAM.  When a message
+control stream terminates cleanly, if the last frame on the stream was
+truncated, this MUST be treated as a connection error (see HTTP_MALFORMED_* in
+{{http-error-codes}}).
 
 Pairs of streams must be utilized sequentially, with no gaps.  The data stream
 is opened at the same time as the message control stream is opened and is closed
@@ -675,11 +693,6 @@ The payload consists of:
   Payload:
   : HPACK-compressed request headers for the promised response.
 
-TODOs:
-
- - QUIC stream space may be enlarged; would need to redefine Promised Stream
-   field in this case.
- - No CONTINUATION -- HEADERS have EHB; do we need it here?
 
 ### PING
 
@@ -767,9 +780,13 @@ HTTP_SETTINGS_ON_WRONG_STREAM (0x0F):
 HTTP_MULTIPLE_SETTINGS (0x10):
 : More than one SETTINGS frame was received.
 
-HTTP_EARLY_RESPONSE (0x11):
+HTTP_RST_CONTROL_STREAM (0x11):
+: A message control stream closed abruptly.
+
+HTTP_EARLY_RESPONSE (0x12):
 : Server is able to generate a response to the client request without selecting
   the complete request body.
+
 
 ## Mapping HTTP/2 Error Codes
 
