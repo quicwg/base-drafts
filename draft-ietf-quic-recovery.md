@@ -383,6 +383,12 @@ timeouts{{?RFC6298}} are an alarm based mechanism to recover from cases when
 there are outstanding retransmittable packets, but an acknowledgement has
 not been received in a timely manner.
 
+### Early Retransmit
+
+Early retransmit  {{?RFC5827}} is implemented with a 1/4 RTT timer. It is
+part of QUIC's time based loss detection, but is always enabled, even when
+only packet reordering loss detection is enabled.
+
 ### Pseudocode
 
 Pseudocode for SetLossDetectionAlarm follows:
@@ -402,18 +408,18 @@ Pseudocode for SetLossDetectionAlarm follows:
       alarm_duration = max(alarm_duration, kMinTLPTimeout)
       alarm_duration = alarm_duration << handshake_count
     else if (largest sent packet is acked):
-      // Early retransmit {{?RFC5827}}
+      // Early retransmit
       // with an alarm to reduce spurious retransmits.
       alarm_duration = 0.25 * smoothed_rtt
     else if (tlp_count < kMaxTLPs):
-      // Tail Loss Probe {{?I-D.dukkipati-tcpm-tcp-loss-probe}}
+      // Tail Loss Probe
       if (retransmittable_packets_outstanding = 1):
         alarm_duration = 1.5 * smoothed_rtt + kDelayedAckTimeout
       else:
         alarm_duration = kMinTLPTimeout
       alarm_duration = max(alarm_duration, 2 * smoothed_rtt)
     else:
-      // RTO alarm.
+      // RTO alarm
       if (rto_count = 0):
         alarm_duration = smoothed_rtt + 4 * rttvar
         alarm_duration = max(alarm_duration, kMinRTOTimeout)
