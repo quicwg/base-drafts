@@ -782,10 +782,9 @@ CONTINUATION (0x9):
 : CONTINUATION frames do not exist; instead, larger HEADERS/PUSH_PROMISE
   frames than HTTP/2 are permitted, and HEADERS frames can be used in series.
 
-The IANA registry of frame types has been updated in {{iana-frames}} to include
-references to the definition for each frame type in HTTP/2 and in HTTP/QUIC.
-Frames not defined as available in HTTP/QUIC SHOULD NOT be sent and SHOULD be
-ignored as unknown on receipt.
+Frame types defined by extensions to HTTP/2 need to be re-registered for
+HTTP/QUIC if still applicable.  The IDs of frames defined in {{!RFC7540}} have
+been reserved for simplicity.  See {{iana-frames}}.
 
 ## HTTP/2 SETTINGS Parameters {#h2-settings}
 
@@ -822,10 +821,10 @@ SETTINGS_MAX_FRAME_SIZE:
 SETTINGS_MAX_HEADER_LIST_SIZE:
 : See {{settings-parameters}}.
 
-Settings defined by extensions to HTTP/2 MAY be expressed as integers with a
-maximum value of 2^32-1, if they are applicable to HTTP/QUIC, but SHOULD have a
-specification describing their usage.  Fields for this purpose have been added
-to the IANA registry in {{iana-settings}}.
+Settings defined by extensions to HTTP/2 need to be re-registered for HTTP/QUIC
+if still applicable.  The IDs of settings defined in {{!RFC7540}} have been
+reserved for simplicity.  See {{iana-settings}}.
+
 
 ## HTTP/2 Error Codes
 
@@ -928,75 +927,76 @@ This document creates a new registration for version-negotiation hints in the
   Specification:
   : This document, {{alt-svc-version-hint}}
 
-## Existing Frame Types {#iana-frames}
+## Frame Types {#iana-frames}
 
-This document adds two new columns to the "HTTP/2 Frame Type" registry defined
-in {{!RFC7540}}:
+This document establishes a registry for HTTP/QUIC frame type codes. The
+"HTTP/QUIC Frame Type" registry manages an 8-bit space.  The "HTTP/QUIC Frame
+Type" registry operates under either of the "IETF Review" or "IESG Approval"
+policies {{?RFC5226}} for values between 0x00 and 0xef, with values between 0xf0
+and 0xff being reserved for Experimental Use.
 
-  Supported Protocols:
-  : Indicates which associated protocols use the frame type.  Values MUST be one
-    of:
+New entries in this registry require the following information:
 
-    - "HTTP/2 only"
-    - "HTTP/QUIC only"
-    - "Both"
+Frame Type:
+: A name or label for the frame type.
 
-  HTTP/QUIC Specification:
-  : Indicates where this frame's behavior over QUIC is defined; required
-    if the frame is supported over QUIC.
+Code:
+: The 8-bit code assigned to the frame type.
 
-Values for existing registrations are assigned by this document:
+Specification:
+: A reference to a specification that includes a description of the frame
+  layout, its semantics, and flags that the frame type uses, including any parts
+  of the frame that are conditionally present based on the value of flags.
 
-  |---------------|---------------------|-------------------------|
-  | Frame Type    | Supported Protocols | HTTP/QUIC Specification |
-  |---------------|:-------------------:|-------------------------|
-  | DATA          | HTTP/2 only         | N/A                     |
-  | HEADERS       | Both                | {{frame-headers}}       |
-  | PRIORITY      | Both                | {{frame-priority}}      |
-  | RST_STREAM    | HTTP/2 only         | N/A                     |
-  | SETTINGS      | Both                | {{frame-settings}}      |
-  | PUSH_PROMISE  | Both                | {{frame-push-promise}}  |
-  | PING          | HTTP/2 only         | N/A                     |
-  | GOAWAY        | HTTP/2 only         | N/A                     |
-  | WINDOW_UPDATE | HTTP/2 only         | N/A                     |
-  | CONTINUATION  | HTTP/2 only         | N/A                     |
-  |---------------|---------------------|-------------------------|
+The entries in the following table are registered by this document.
 
-The "Specification" column is renamed to "HTTP/2 specification" and is only
-required if the frame is supported over HTTP/2.
+  |---------------|------|-------------------------|
+  | Frame Type    | Code | Specification           |
+  |---------------|:----:|-------------------------|
+  | Reserved      | 0x0  | N/A                     |
+  | HEADERS       | 0x1  | {{frame-headers}}       |
+  | PRIORITY      | 0x2  | {{frame-priority}}      |
+  | Reserved      | 0x3  | N/A                     |
+  | SETTINGS      | 0x4  | {{frame-settings}}      |
+  | PUSH_PROMISE  | 0x5  | {{frame-push-promise}}  |
+  | Reserved      | 0x6  | N/A                     |
+  | Reserved      | 0x7  | N/A                     |
+  | Reserved      | 0x8  | N/A                     |
+  | Reserved      | 0x9  | N/A                     |
+  |---------------|------|-------------------------|
 
 ## Settings Parameters {#iana-settings}
 
-This document adds two new columns to the "HTTP/2 Settings" registry defined
-in {{!RFC7540}}:
+This document establishes a registry for HTTP/QUIC settings.  The "HTTP/QUIC
+Settings" registry manages a 16-bit space.  The "HTTP/QUIC Settings" registry
+operates under the "Expert Review" policy {{?RFC5226}} for values in the range
+from 0x0000 to 0xefff, with values between and 0xf000 and 0xffff being reserved
+for Experimental Use.
 
-  Supported Protocols:
-  : Indicates which associated protocols use the setting.  Values MUST be one
-    of:
+New registrations are advised to provide the following information:
 
-    - "HTTP/2 only"
-    - "HTTP/QUIC only"
-    - "Both"
+Name:
+: A symbolic name for the setting.  Specifying a setting name is optional.
 
-  HTTP/QUIC Specification:
-  : Indicates where this setting's behavior over QUIC is defined; required
-    if the frame is supported over QUIC.
+Code:
+: The 16-bit code assigned to the setting.
 
-Values for existing registrations are assigned by this document:
+Specification:
+: An optional reference to a specification that describes the use of the
+  setting.
 
-|----------------------------|---------------------|-------------------------|
-| Setting Name               | Supported Protocols | HTTP/QUIC Specification |
-|----------------------------|:-------------------:|-------------------------|
-| HEADER_TABLE_SIZE          | Both                | {{settings-parameters}} |
-| ENABLE_PUSH / DISABLE_PUSH | Both                | {{settings-parameters}} |
-| MAX_CONCURRENT_STREAMS     | HTTP/2 Only         | N/A                     |
-| INITIAL_WINDOW_SIZE        | HTTP/2 Only         | N/A                     |
-| MAX_FRAME_SIZE             | HTTP/2 Only         | N/A                     |
-| MAX_HEADER_LIST_SIZE       | Both                | {{settings-parameters}} |
-|----------------------------|---------------------|-------------------------|
+The entries in the following table are registered by this document.
 
-The "Specification" column is renamed to "HTTP/2 Specification" and is only
-required if the setting is supported over HTTP/2.
+|----------------------------|------|-------------------------|
+| Setting Name               | Code | Specification           |
+|----------------------------|:----:|-------------------------|
+| HEADER_TABLE_SIZE          | 0x1  | {{settings-parameters}} |
+| DISABLE_PUSH               | 0x2  | {{settings-parameters}} |
+| Reserved                   | 0x3  | N/A                     |
+| Reserved                   | 0x4  | N/A                     |
+| Reserved                   | 0x5  | N/A                     |
+| MAX_HEADER_LIST_SIZE       | 0x6  | {{settings-parameters}} |
+|----------------------------|------|-------------------------|
 
 ## Error Codes {#iana-error-codes}
 
