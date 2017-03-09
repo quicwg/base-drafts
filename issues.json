@@ -144,9 +144,9 @@
 
     ],
     "milestone": null,
-    "comments": 2,
+    "comments": 3,
     "created_at": "2017-03-09T05:40:06Z",
-    "updated_at": "2017-03-09T06:19:37Z",
+    "updated_at": "2017-03-09T06:57:39Z",
     "closed_at": null,
     "body": "This is related to #353.\r\n\r\nWhat would we expect endpoints to do upon the receipt of ICMP (or ICMPv6) Type=DestinationUnreachable?  For IPv6, that message has a large chunk of the original packet, proving that a path element sent it. For IPv4, there is very little entropy there (just your src port).\r\n\r\nCan this be as trusted as PUBLIC_RESET by Clients? For IPv4 the answer is likely to be \"no\". For ipv6, I am not that sure. But there are real implications for clients that cannot just fall back to tcp.\r\n\r\nIf you ignore ICMP and keep retrying the dead server, you are very likely missing an opportunity to switch the server (switch to another IP offered by DNS).\r\n\r\nIf you do not ignore ICMP (especially ICMPv4) and try reopening the connection (using a different server IP), you are allowing using your client in a highly amplified reflection DDOS attack against the sever. The attacker just needs to send you a slow stream of forged ICMP to get you to keep re-opening/re-negotiating connections and retrying expensive requests."
   },
@@ -607,9 +607,9 @@
 
     ],
     "milestone": null,
-    "comments": 2,
+    "comments": 3,
     "created_at": "2017-03-07T00:52:24Z",
-    "updated_at": "2017-03-09T01:14:56Z",
+    "updated_at": "2017-03-09T07:23:43Z",
     "closed_at": null,
     "pull_request": {
       "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/361",
@@ -5476,9 +5476,9 @@
 
     ],
     "milestone": null,
-    "comments": 4,
+    "comments": 5,
     "created_at": "2017-01-18T17:46:42Z",
-    "updated_at": "2017-03-09T06:14:37Z",
+    "updated_at": "2017-03-09T07:06:46Z",
     "closed_at": null,
     "pull_request": {
       "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/171",
