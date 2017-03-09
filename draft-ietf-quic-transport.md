@@ -809,44 +809,41 @@ on the two endpoints agreeing on a version.
 
 A QUIC connection begins with a client sending a handshake packet. The details
 of the handshake mechanisms are described in {{handshake}}, but all of the
-initial packets sent from the client to the server MUST have the VERSION flag
-set, and MUST specify the version of the protocol being used.
+initial packets sent from the client to the server MUST use the long header
+format and MUST specify the version of the protocol being used.
 
-When the server receives a packet from a client with the VERSION flag set, it
+When the server receives a packet from a client with the long header format, it
 compares the client's version to the versions it supports.
 
 If the version selected by the client is not acceptable to the server, the
 server discards the incoming packet and responds with a Version Negotiation
-packet ({{version-packet}}).  This includes the VERSION flag and a list of
-versions that the server will accept.  A server MUST send a Version Negotiation
-packet for every packet that it receives with an unacceptable version.
+packet ({{version-packet}}).  This includes a list of versions that the server
+will accept.  A server MUST send a Version Negotiation packet for every packet
+that it receives with an unacceptable version.
 
 If the packet contains a version that is acceptable to the server, the server
-proceeds with the handshake ({{handshake}}).  All subsequent packets sent by the
-server MUST have the VERSION flag unset.  This commits the server to the version
-that the client selected.
+proceeds with the handshake ({{handshake}}).  This commits the server to the
+version that the client selected.
 
 When the client receives a Version Negotiation packet from the server, it should
 select an acceptable protocol version.  If the server lists an acceptable
-version, the client selects that version and reattempts to created a connection
+version, the client selects that version and reattempts to create a connection
 using that version.  Though the contents of a packet might not change in
 response to version negotiation, a client MUST increase the packet number it
-uses on every packet it sends.  Packets MUST continue to have the VERSION flag
-set and MUST include the new negotiated protocol version.
+uses on every packet it sends.  Packets MUST continue to use long headers and
+MUST include the new negotiated protocol version.
 
-The client MUST set the VERSION flag and include its selected version on all
+The client MUST use the long header format and include its selected version on all
 packets until it has 1-RTT keys and it has received a packet from the server
-that does not have the VERSION flag set.  With TLS, this means that unprotected
-packets and 0-RTT protected packets all include a VERSION flag.
+which is not a Version Negotiation packet.
 
 A client MUST NOT change the version it uses unless it is in response to a
 Version Negotiation packet from the server.  Once a client receives a packet
-from the server with the VERSION flag unset, it MUST ignore the flag in
-subsequently received packets.
+from the server which is not a Version Negotiation packet, it MUST ignore
+Version Negotiation packets on the same connection.
 
-Version negotiation uses unprotected data. The result of the negotiation MUST
-be revalidated once the cryptographic handshake has completed (see
-{{version-validation}}).
+Version negotiation uses unprotected data. The result of the negotiation MUST be
+revalidated as part of the cryptographic handshake (see {{version-validation}}).
 
 ### Using Reserved Versions
 
