@@ -1364,9 +1364,10 @@ transmission efficiency to underfilled packets.
 
 ## ACK Frame {#frame-ack}
 
-Receivers send ACK frames to inform senders which packets they have received, as
-well as which packets are considered missing.  The ACK frame contains between 1
-and 256 ACK blocks.  ACK blocks are ranges of acknowledged packets.
+Receivers send ACK frames to inform senders which packets they have received and
+processed, as well as which packets are considered missing.  The ACK frame
+contains between 1 and 256 ACK blocks.  ACK blocks are ranges of acknowledged
+packets.
 
 To limit ACK blocks to those that have not yet been received by the sender, the
 receiver SHOULD track which ACK frames have been acknowledged by its peer.  Once
@@ -1611,13 +1612,12 @@ can be acknowledged along with protected packets in a protected packet.
 
 An endpoint SHOULD acknowledge packets containing cryptographic handshake
 messages in the next unprotected packet that it sends, unless it is able to
-acknowledge those packets in later packets protected by 1-RTT keys.  Those later
-packets might be protected by 1-RTT keys.  At the completion of the
-cryptographic handshake, both peers send unprotected packets containing
-cryptographic handshake messages followed by packets protected by 1-RTT keys.
-An endpoint SHOULD acknowledge the unprotected packets that complete the
-cryptographic handshake in a protected packet, because its peer is guaranteed to
-have access to 1-RTT packet protection keys.
+acknowledge those packets in later packets protected by 1-RTT keys.  At the
+completion of the cryptographic handshake, both peers send unprotected packets
+containing cryptographic handshake messages followed by packets protected by
+1-RTT keys. An endpoint SHOULD acknowledge the unprotected packets that complete
+the cryptographic handshake in a protected packet, because its peer is
+guaranteed to have access to 1-RTT packet protection keys.
 
 For instance, a server acknowledges a TLS ClientHello in the packet that carries
 the TLS ServerHello; similarly, a client can acknowledge a TLS HelloRetryRequest
@@ -1909,10 +1909,16 @@ Upon detecting losses, a sender MUST take appropriate congestion control action.
 The details of loss detection and congestion control are described in
 {{QUIC-RECOVERY}}.
 
-A receiver acknowledges receipt of a received packet by sending one or more ACK
-frames containing the packet number of the received packet.  To avoid creating
-an indefinite feedback loop, an endpoint MUST NOT generate an ACK frame in
-response to a packet containing only ACK or PADDING frames.
+A packet MUST NOT be acknowledged until packet protection has been successfully
+removed and all frames contained in the packet have been processed.  For STREAM
+frames, this means the data has been queued (but not necessarily delivered to
+the application).  This also means that any stream state transitions triggered
+by STREAM or RST_STREAM frames have occurred. Once the packet has been fully
+processed, a receiver acknowledges receipt by sending one or more ACK frames
+containing the packet number of the received packet.
+
+To avoid creating an indefinite feedback loop, an endpoint MUST NOT generate an
+ACK frame in response to a packet containing only ACK or PADDING frames.
 
 Strategies and implications of the frequency of generating acknowledgments are
 discussed in more detail in {{QUIC-RECOVERY}}.
@@ -2021,11 +2027,13 @@ frame with the FIN flag set can cause two state transitions.  When the FIN flag
 is sent on an empty STREAM frame, the offset in the STREAM frame MUST be one
 greater than the last data byte sent on this stream.
 
-Both endpoints have a subjective view of the state of a stream that could be
-different when frames are in transit.  Endpoints do not coordinate the creation
-of streams; they are created unilaterally by either endpoint.  The negative
-consequences of a mismatch in states are limited to the "closed" state after
-sending RST_STREAM, where frames might be received for some time after closing.
+The recipient of a frame which changes stream state will have a delayed view of
+the state of a stream while the frame is in transit.  Endpoints do not
+coordinate the creation of streams; they are created unilaterally by either
+endpoint.  The negative consequences of a mismatch in states are limited to the
+"closed" state after sending RST_STREAM, where frames might be received for some
+time after closing.  Endpoints SHOULD use acknowledgments to understand the
+peer's subjective view of stream state at any given time.
 
 Streams have the following states:
 
@@ -2061,8 +2069,9 @@ From this state, either endpoint can send a frame with the FIN flag set, which
 causes the stream to transition into one of the "half-closed" states.  An
 endpoint sending an FIN flag causes the stream state to become "half-closed
 (local)".  An endpoint receiving a FIN flag causes the stream state to become
-"half-closed (remote)"; the receiving endpoint MUST NOT process the FIN flag
-until all preceding data on the stream has been received.
+"half-closed (remote)" once all preceding data has arrived.  The receiving
+endpoint MUST NOT consider the stream state to have changed until all data has
+arrived.
 
 Either endpoint can send a RST_STREAM frame from this state, causing it to
 transition immediately to "closed".
@@ -2072,8 +2081,9 @@ transition immediately to "closed".
 A stream that is in the "half-closed (local)" state MUST NOT be used for sending
 STREAM frames; WINDOW_UPDATE and RST_STREAM MAY be sent in this state.
 
-A stream transitions from this state to "closed" when a frame that contains an
-FIN flag is received or when either peer sends a RST_STREAM frame.
+A stream transitions from this state to "closed" when a STREAM frame that
+contains a FIN flag is received and all prior data has arrived, or when either
+peer sends a RST_STREAM frame.
 
 An endpoint that closes a stream MUST NOT send data beyond the final offset that
 it has chosen, see {{state-closed}} for details.
@@ -2186,6 +2196,12 @@ Streams that are in the "open" state or in either of the "half-closed" states
 count toward the maximum number of streams that an endpoint is permitted to
 open.  Streams in any of these three states count toward the limit advertised in
 the concurrent stream limit.
+
+A recently closed stream MUST also be considered to count toward this limit
+until packets containing all frames required to close the stream have been
+acknowledged. For a stream which closed cleanly, this means all STREAM frames
+have been acknowledged; for a stream closed abruptly, this means the RST_STREAM
+frame has been acknowledged.
 
 Endpoints MUST NOT exceed the limit set by their peer.  An endpoint that
 receives a STREAM frame that causes its advertised concurrent stream limit to be
