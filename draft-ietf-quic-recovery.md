@@ -385,7 +385,7 @@ not been received in a timely manner.
 
 ### Early Retransmit
 
-Early retransmit  {{?RFC5827}} is implemented with a 1/4 RTT timer. It is
+Early retransmit {{?RFC5827}} is implemented with a 1/4 RTT timer. It is
 part of QUIC's time based loss detection, but is always enabled, even when
 only packet reordering loss detection is enabled.
 
