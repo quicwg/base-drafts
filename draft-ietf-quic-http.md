@@ -687,11 +687,6 @@ The payload consists of:
   Payload:
   : HPACK-compressed request headers for the promised response.
 
-TODOs:
-
- - QUIC stream space may be enlarged; would need to redefine Promised Stream
-   field in this case.
- - No CONTINUATION -- HEADERS have EHB; do we need it here?
 
 ### PING
 
