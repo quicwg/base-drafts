@@ -1834,65 +1834,6 @@
     "body": "In #278, @martinthomson says that clients MAY choose a GREASE value for their initial packet to force version negotiation.  I would argue that no self-interested client will do so if the connection is latency-sensitive, since you incur an RTT, unless the spec has this at a higher level than MAY and with specific timing.\r\n\r\nHowever, for HTTP, bringing up a connection to a new Alternative is not latency-sensitive (because you still have your connection to the original host).  In the case where you're bringing up a connection to an alternative instead of to the origin, you've likely talked to the alternative before.\r\n\r\nWe could consider dropping the Alt-Svc version hint entirely, and saying that clients SHOULD open with a reserved version unless it has previously connected to the server and remembers a version list."
   },
   {
-    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/295",
-    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
-    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/295/labels{/name}",
-    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/295/comments",
-    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/295/events",
-    "html_url": "https://github.com/quicwg/base-drafts/issues/295",
-    "id": 207095703,
-    "number": 295,
-    "title": "Connection ID on a version negotiation packet",
-    "user": {
-      "login": "martinthomson",
-      "id": 67641,
-      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/martinthomson",
-      "html_url": "https://github.com/martinthomson",
-      "followers_url": "https://api.github.com/users/martinthomson/followers",
-      "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
-      "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
-      "organizations_url": "https://api.github.com/users/martinthomson/orgs",
-      "repos_url": "https://api.github.com/users/martinthomson/repos",
-      "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/martinthomson/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "labels": [
-      {
-        "id": 481871361,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/design",
-        "name": "design",
-        "color": "1d76db",
-        "default": false
-      },
-      {
-        "id": 481871399,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
-        "name": "transport",
-        "color": "fbca04",
-        "default": false
-      }
-    ],
-    "state": "open",
-    "locked": false,
-    "assignee": null,
-    "assignees": [
-
-    ],
-    "milestone": null,
-    "comments": 2,
-    "created_at": "2017-02-13T00:11:21Z",
-    "updated_at": "2017-02-14T00:07:54Z",
-    "closed_at": null,
-    "body": "Given that we have opted to go with #119 universally, it might be reasonable to think that the server could make a proposal for the connection ID on a version negotiation packet.  However, it probably isn't a good idea.  Since version negotiation is stateless, there is less need to have stable routing for this packet.  Echoing the connection ID gives the client better assurance that its initial packet was what generated the response."
-  }
-,
-  {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/294",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
     "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/294/labels{/name}",
@@ -1949,65 +1890,8 @@
     "updated_at": "2017-02-15T05:23:23Z",
     "closed_at": null,
     "body": "That is, if the client picks X and the server returns a version negotiation packet that lists X, then something is badly wrong.  That version negotiation packet needs to be treated like internet-detritus."
-  },
-  {
-    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/293",
-    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
-    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/293/labels{/name}",
-    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/293/comments",
-    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/293/events",
-    "html_url": "https://github.com/quicwg/base-drafts/issues/293",
-    "id": 207064249,
-    "number": 293,
-    "title": "Does the connection id need to be in a consistent location?",
-    "user": {
-      "login": "ianswett",
-      "id": 20072817,
-      "avatar_url": "https://avatars2.githubusercontent.com/u/20072817?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/ianswett",
-      "html_url": "https://github.com/ianswett",
-      "followers_url": "https://api.github.com/users/ianswett/followers",
-      "following_url": "https://api.github.com/users/ianswett/following{/other_user}",
-      "gists_url": "https://api.github.com/users/ianswett/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/ianswett/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/ianswett/subscriptions",
-      "organizations_url": "https://api.github.com/users/ianswett/orgs",
-      "repos_url": "https://api.github.com/users/ianswett/repos",
-      "events_url": "https://api.github.com/users/ianswett/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/ianswett/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "labels": [
-      {
-        "id": 481871361,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/design",
-        "name": "design",
-        "color": "1d76db",
-        "default": false
-      },
-      {
-        "id": 481871399,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
-        "name": "transport",
-        "color": "fbca04",
-        "default": false
-      }
-    ],
-    "state": "open",
-    "locked": false,
-    "assignee": null,
-    "assignees": [
-
-    ],
-    "milestone": null,
-    "comments": 2,
-    "created_at": "2017-02-12T17:19:51Z",
-    "updated_at": "2017-02-15T05:23:04Z",
-    "closed_at": null,
-    "body": "@martinthomson created a header proposal that provides a fixed 8 byte connection id in a fixed location.  \r\n\r\nWe need to decide if this is a requirement or a nice to have.\r\n\r\nI haven't found any environments it needed to be in a fixed location for all packets, as long as it's easy to determine where it will be from the first byte of the packet."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/290",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3037,64 +2921,6 @@
     "body": "In Tokyo, we agreed that headers streams would no longer be exempt from connection-level flow control.  But the reason that headers and data streams are separate is so that one can be exempt and the other not.  So.... why are we keeping them separate again?\r\n\r\nIt might be simpler, particularly with the specter of #175 around, to bring back DATA frames and say everything's on one stream."
   },
   {
-    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/244",
-    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
-    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/244/labels{/name}",
-    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/244/comments",
-    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/244/events",
-    "html_url": "https://github.com/quicwg/base-drafts/issues/244",
-    "id": 203516852,
-    "number": 244,
-    "title": "Need a NONCE in version negotiation packets",
-    "user": {
-      "login": "igorlord",
-      "id": 25256216,
-      "avatar_url": "https://avatars3.githubusercontent.com/u/25256216?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/igorlord",
-      "html_url": "https://github.com/igorlord",
-      "followers_url": "https://api.github.com/users/igorlord/followers",
-      "following_url": "https://api.github.com/users/igorlord/following{/other_user}",
-      "gists_url": "https://api.github.com/users/igorlord/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/igorlord/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/igorlord/subscriptions",
-      "organizations_url": "https://api.github.com/users/igorlord/orgs",
-      "repos_url": "https://api.github.com/users/igorlord/repos",
-      "events_url": "https://api.github.com/users/igorlord/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/igorlord/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "labels": [
-      {
-        "id": 481871361,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/design",
-        "name": "design",
-        "color": "1d76db",
-        "default": false
-      },
-      {
-        "id": 481871399,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
-        "name": "transport",
-        "color": "fbca04",
-        "default": false
-      }
-    ],
-    "state": "open",
-    "locked": false,
-    "assignee": null,
-    "assignees": [
-
-    ],
-    "milestone": null,
-    "comments": 3,
-    "created_at": "2017-01-26T23:11:40Z",
-    "updated_at": "2017-01-30T15:45:35Z",
-    "closed_at": null,
-    "body": "Now that the client does not send a connection id in its version negotiation (see #119), client needs a public nonce in the packets. That prevents an off-path attacker guessing client source port and interfering with the client establishing connections with a given sever by spoofing version negotiation failure packets as if coming from that sever. That nonce should be returned by the sever in its version negotiation packets. Previously, client's connection id served such a purpose."
-  },
-  {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/242",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
     "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/242/labels{/name}",
@@ -3673,8 +3499,7 @@
     "updated_at": "2017-03-02T22:29:49Z",
     "closed_at": null,
     "body": "The spec just doesn't say anything about this so far. You at least want to put in some minumum requirement (like MUST send at least X ACKs per RTT).\r\n\r\nAlso related but might be a separate issue that I'm not sure about yet: Is there a value in having a mechanism for the sender to tell the receiver how often it would like to receive ACKs?"
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/228",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3848,7 +3673,8 @@
     "updated_at": "2017-01-25T00:59:17Z",
     "closed_at": null,
     "body": "We've assumed that this is the case, but we really need to write it down."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/222",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -4778,100 +4604,6 @@
     "body": "In S 5.2.2 QUIC frames are currently specified without any length field. This means that it's not possible to skip over unknown frame types.\r\n\r\nThere are at least two reasons why this is inconvenient:\r\n\r\n- It makes it hard to write passive analysis tools because those tools will just choke if they encounter unrecognized frames (they cannot process the rest of the packet).\r\n- It makes it hard to skip over frames you don't care about without parsing them. BLOCKED is a good example of such a frame currently"
   },
   {
-    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/193",
-    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
-    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/193/labels{/name}",
-    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/193/comments",
-    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/193/events",
-    "html_url": "https://github.com/quicwg/base-drafts/issues/193",
-    "id": 202444897,
-    "number": 193,
-    "title": "Flags section is kind of confusing",
-    "user": {
-      "login": "ekr",
-      "id": 1111457,
-      "avatar_url": "https://avatars3.githubusercontent.com/u/1111457?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/ekr",
-      "html_url": "https://github.com/ekr",
-      "followers_url": "https://api.github.com/users/ekr/followers",
-      "following_url": "https://api.github.com/users/ekr/following{/other_user}",
-      "gists_url": "https://api.github.com/users/ekr/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/ekr/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/ekr/subscriptions",
-      "organizations_url": "https://api.github.com/users/ekr/orgs",
-      "repos_url": "https://api.github.com/users/ekr/repos",
-      "events_url": "https://api.github.com/users/ekr/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/ekr/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "labels": [
-      {
-        "id": 481871311,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/editorial",
-        "name": "editorial",
-        "color": "0e8a16",
-        "default": false
-      },
-      {
-        "id": 481871399,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
-        "name": "transport",
-        "color": "fbca04",
-        "default": false
-      }
-    ],
-    "state": "open",
-    "locked": false,
-    "assignee": {
-      "login": "ekr",
-      "id": 1111457,
-      "avatar_url": "https://avatars3.githubusercontent.com/u/1111457?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/ekr",
-      "html_url": "https://github.com/ekr",
-      "followers_url": "https://api.github.com/users/ekr/followers",
-      "following_url": "https://api.github.com/users/ekr/following{/other_user}",
-      "gists_url": "https://api.github.com/users/ekr/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/ekr/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/ekr/subscriptions",
-      "organizations_url": "https://api.github.com/users/ekr/orgs",
-      "repos_url": "https://api.github.com/users/ekr/repos",
-      "events_url": "https://api.github.com/users/ekr/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/ekr/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "assignees": [
-      {
-        "login": "ekr",
-        "id": 1111457,
-        "avatar_url": "https://avatars3.githubusercontent.com/u/1111457?v=3",
-        "gravatar_id": "",
-        "url": "https://api.github.com/users/ekr",
-        "html_url": "https://github.com/ekr",
-        "followers_url": "https://api.github.com/users/ekr/followers",
-        "following_url": "https://api.github.com/users/ekr/following{/other_user}",
-        "gists_url": "https://api.github.com/users/ekr/gists{/gist_id}",
-        "starred_url": "https://api.github.com/users/ekr/starred{/owner}{/repo}",
-        "subscriptions_url": "https://api.github.com/users/ekr/subscriptions",
-        "organizations_url": "https://api.github.com/users/ekr/orgs",
-        "repos_url": "https://api.github.com/users/ekr/repos",
-        "events_url": "https://api.github.com/users/ekr/events{/privacy}",
-        "received_events_url": "https://api.github.com/users/ekr/received_events",
-        "type": "User",
-        "site_admin": false
-      }
-    ],
-    "milestone": null,
-    "comments": 1,
-    "created_at": "2017-01-23T04:41:51Z",
-    "updated_at": "2017-01-24T01:30:41Z",
-    "closed_at": null,
-    "body": "The formatting of the flags word section is kind of confusing. Rather than presenting things as hex, I think I would just do a bit diagram like in other flags sections. I can provide a PR if the editors want.\r\n\r\n"
-  },
-  {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/192",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
     "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/192/labels{/name}",
@@ -5102,64 +4834,6 @@
     "updated_at": "2017-01-24T01:03:19Z",
     "closed_at": null,
     "body": "The specification allows endpoints to specify the maximum number of concurrent streams (MSPC), but should not the spec provide for the minimum value of MSPC that all endpoints must support?  If the minimum is 1 (excluding \"service\" streams), it would be good for the spec to state so explicitly."
-  },
-  {
-    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/185",
-    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
-    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/185/labels{/name}",
-    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/185/comments",
-    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/185/events",
-    "html_url": "https://github.com/quicwg/base-drafts/issues/185",
-    "id": 202271417,
-    "number": 185,
-    "title": "Reliable identification of the initial packet for a connection",
-    "user": {
-      "login": "igorlord",
-      "id": 25256216,
-      "avatar_url": "https://avatars3.githubusercontent.com/u/25256216?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/igorlord",
-      "html_url": "https://github.com/igorlord",
-      "followers_url": "https://api.github.com/users/igorlord/followers",
-      "following_url": "https://api.github.com/users/igorlord/following{/other_user}",
-      "gists_url": "https://api.github.com/users/igorlord/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/igorlord/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/igorlord/subscriptions",
-      "organizations_url": "https://api.github.com/users/igorlord/orgs",
-      "repos_url": "https://api.github.com/users/igorlord/repos",
-      "events_url": "https://api.github.com/users/igorlord/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/igorlord/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "labels": [
-      {
-        "id": 481871361,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/design",
-        "name": "design",
-        "color": "1d76db",
-        "default": false
-      },
-      {
-        "id": 481871399,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
-        "name": "transport",
-        "color": "fbca04",
-        "default": false
-      }
-    ],
-    "state": "open",
-    "locked": false,
-    "assignee": null,
-    "assignees": [
-
-    ],
-    "milestone": null,
-    "comments": 12,
-    "created_at": "2017-01-20T23:57:27Z",
-    "updated_at": "2017-02-11T01:59:53Z",
-    "closed_at": null,
-    "body": "Some path elements may need to statelessly identify an initial packet of a connection. These path elements could include load balancers and organization's border security systems.  Ability to identify the initial packet may also be required for systems implementing Stateless Rejects #60.\r\n\r\nSince QUIC allows for packet number truncation, the most straightforward way to identify the initial packet is by checking for packet number 1 and VERSION flag set.\r\n\r\nHence:\r\n\r\n- The language of section 6.1 Version Negotiation would need to change SHOULD to MUST in \"All subsequent packets sent by the client SHOULD have the VERSION flag unset\".\r\n- Section 6.1 Version Negotiation should also gain language like: \"If Version negotiation is not complete in 2^6 packets, any endpoint MAY reset this connection\".  (This is a weaker statement than #143.)\r\n- Proposal in issue #35 is not compatible with this issue. If packet numbers are allowed to be deliberately skipped, we should require that packets with VERSION set MUST NOT be skipped."
   },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/184",
@@ -5457,8 +5131,7 @@
     "updated_at": "2017-03-05T22:32:21Z",
     "closed_at": null,
     "body": "QUIC borrows the HTTP/2 state machine, or tries to replicate it as much as it can.  Part of that replication is the idea that a stream is bidirectional.  The state related to outgoing data and the state related to inbound data are tied.\r\n\r\n#174 suggests a simplification that could open up a more dramatic simplification: independent state for each direction.  #171 moves in that direction also.\r\n\r\nThe state machine that results from that is dramatically simpler: idle -> open -> closed.  That is, before packets, packets and after packets.\r\n\r\nThe consequence for the HTTP mapping is largely that it needs a different method for correlating request and response.\r\n\r\n## Correlating request and response\r\n\r\nCurrently, request and response are correlated by matching the stream identifier.  However, unidirectional streams would allow for cases where streams are not created symmetrically.  For instance, server push would only require streams from the server.  Similarly, the server would not be obligated to respond to requests in the order in which they were received (if at all, since it could reset request streams).\r\n\r\nThat implies that this would add a requirement for the server to identify which request a given stream is answering.  This is an extension of the requirement in #174, which only required that the server identify a push promise (actually, it's less onerous, because you only have one request per stream).\r\n\r\nI can imagine an arrangement where a stream containing headers identifies the stream containing the request headers from the client.  Then the stream containing the body identifies the stream that contained the headers.\r\n\r\n## Saving stream identifiers\r\n\r\nThis is a minor point, though it could be relevant for very long-lived connections.\r\n\r\nQUIC currently insists on a strictly monotonically increasing stream identifier: stream N is followed by stream N+2 always, no skipping of streams is permitted.  Aside from wasting every other stream identifier, other streams are wasted by the mapping. \r\n\r\nGET requests don't include a body, but nonetheless require that the client send a HEADERS on stream N, then a FIN on stream N+2.  Including a reference to the initiating stream at the start of the body of a message would use some octets, but potentially fewer than would be used otherwise (particularly if the reference was a varlen encoding of the difference in stream numbers, which would rarely be anything other than 1).\r\n\r\nObviously, this is an optimization for the case where there are no bodies, but that is a case where the optimization is particularly valuable.  Making more requests (which more frequently have no bodies) during the early stages of a connection is critical to performance."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/171",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5782,7 +5455,8 @@
     "updated_at": "2017-03-07T18:03:50Z",
     "closed_at": null,
     "body": "I'm writing this issue because there was some discussion about a change I made in #145, that seemed to be controversial. I spent a lot of time thinking about this, and realized that my changes in that PR were insufficient to address the problem. I think there are multiple issues in the stream state machinery.\r\n\r\n\r\n## Two common scenarios\r\n\r\nI will describe two scenarios where RST_STREAMs will be used regularly when using HTTP/QUIC.\r\n\r\n### Rejected PUSH\r\n\r\nThe sender (in this case a HTTP server) uses HTTP/2 Push to push a resource that the receiver isn't interested in. The receiver therefore sends a RST_STREAM with offset 0 (since it didn't send any data on that stream) to stop the sender from pushing the resource.\r\n\r\nWhen the sender receives the RST_STREAM, there are two options:\r\n\r\n- the transfer hasn't completed yet: The sender then stops sending data and sends a RST_STREAM with a byte offset equal to whatever highest data offset it sent. RST_STREAMs are transmitted reliably, so both sides will *eventually* receive the other side's RST_STREAM and make adjustments to their flow controller. There is no problem here.\r\n- the transfer has already completed (i.e. the sender already sent a STREAM frame with the FIN bit): According to the draft, STREAM frames on reset streams are not retransmitted. If the STREAM frame with the FIN gets lost, and the sender will never be able to make the necessary adjustments to its flow controller. (I'm not sure, but maybe this is what #163 is about).\r\n\r\nA fix for this problem is to **always** send a RST_STREAM as a response to a RST_STREAM, even if the stream already transitioned to the *half closed* state by sending a FIN bit.\r\n\r\n\r\n\r\n### POST to a 404 URI\r\n\r\nThe second example is more involved, since it involves data flowing bidirectionaly (note that for the PUSH case, the receiver never sent any data on the stream):\r\n\r\nThe sender (in this case a HTTP client) performs a POST request to an URI that the receiver is not reading from, e.g. a non-existing site (HTTP status code 404). The receiver will first send the HTTP response header, and then the (non-empty) 404 body. It will send send a RST_STREAM with a offset equivalent to the body length, to stop the sender, to stop it from sending more data.\r\n\r\nOn the sender side, we have the same situation as in the PUSH case, but let's assume we already resolved that issue.\r\n\r\nThere are two more issues here:\r\n\r\n- We must ensure reliable delivery of the response body (the 404 page). Thus, although the stream was reset, STREAM frames need to be retransmitted.\r\n- The receiver can only send the RST_STREAM **after** composing the response body (since the final byte offset has to be included). However, it would make sense to send the RST_STREAM as soon as possible, to stop the unwanted upload.\r\n\r\nThe first issue could be fixed by requiring that the peer that is resetting a stream MUST ensure reliable delivery of stream data it sent, whereas a peer that is receiving the RST_STREAM SHOULD NOT retransmit any stream data.\r\n\r\nThe second issue could be fixed by defining a RST_STREAM frame that doesn't include a byte offset (or introducing an RST error code that indicates that the byte offset is not set). The receiver in the above example would send this RST_STREAM before sending the 404 body. Since stream data is transmitted reliably, the sender would eventually receive a highest byte offset with a STREAM frame carrying the FIN flag.\r\n\r\n\r\n## Open points for discussion\r\n\r\nDo the three changes capture all possible use cases of resetting streams. Or do we need\r\n* a way to reset a stream such that the peer initiating the reset doesn't ensure the reliable transmission of the data it already sent\r\n* a way to reset a stream such that the peer receiving the RST has to ensure the reliable transmission up to a certain (which?) offset\r\n\r\n"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/161",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -6086,64 +5760,6 @@
     "updated_at": "2017-01-26T06:08:24Z",
     "closed_at": null,
     "body": "The current design of the header with its multiple variable length and variable presence fields would seem to require inordinate sender and receiver code complexity. Complexity, especially in parsers (i.e., on the receiver side), is a source both of unclarity in specifications and errors in implementation. I note the following specific issues:\r\n\r\n(1) There are thirteen possible header lengths, and therefore data offsets : 2, 3, 5, 6, 7, 9, 10, 11, 13, 14, 15, 17, 21. Each of the header fields has a variety of possible offsets. This also increases the complexity of hardware offload implementations of QUIC, but is not complex enough to prevent their implementation and deployment.\r\n\r\n(2) There are combinations of flags that seem to be nonsensical and/or contradictory (e.g., the Packet Number Length codepoint adds 1, 2, 4, or 8 to the length if the Public Reset flag is clear, but 0 to the length if the Public Reset flag is set, see ; Public Reset and Version are mutually exclusive.)\r\n\r\n(3) There appears to be no consideration given to reducing confusability with other deployed UDP protocols in the first N bytes of the header -- see #147 \r\n\r\nI would suggest reducing the number of possible header layouts to reduce complexity, based on the following assumptions:\r\n\r\n(1) The set of variable header lengths will, at most, save a number of bytes per packet that will often be lost in the underflow of suboptimal path MTU discovery.\r\n\r\n(2) Varlen packet numbering makes sense if the packet number always starts from zero, but random initial packet numbers have other advantages; I presume we'll adopt them at some point. Packet numbers only need to be large enough to keep wrap-arounds to be induced by reordering, so 32 bits (as in the TCP sequence number space) is more than sufficient.\r\n\r\n(3) There is value in treating a version number as a magic number to help reduce the chance of misrecognition of non-QUIC packets as initial QUIC packets at an endpoint; for this 32 bits of version are more than enough, and 24 probably suffice. (This will require a redesign of the version number space, which we might want to do in light of #147 anyway).\r\n\r\n\r\nAs an initial proposal, I would propose that either both Connection ID and Version be present, or neither, and that packet number be always present and constant length. This reduces the set of necessary flags to three, leaving us with five flags for reserved/future use (four, if we go ahead and allocate multipath) and the following two header layouts:\r\n\r\nFull Header: 16 octets\r\n\r\n```\r\n+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+\r\n|1|R|K|M| zero  |      version/magic (24 bits)                  |\r\n+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+\r\n|                                                               |\r\n+-                      Connection ID                          -+\r\n|                                                               |\r\n+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+\r\n|                       Packet Number                           |\r\n+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+\r\n```\r\n\r\nTruncated Header: 5 octets\r\n\r\n```\r\n+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+\r\n|0|R|K|M| zero  |                       Packet Number       . . .\r\n+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+\r\n. . . (cont'd)  |\r\n+-+-+-+-+-+-+-+-+\r\n```\r\n\r\nThe header invariant then becomes \"If bit 0x80 in octet 0 is 1, then the seven remaining bits of that octet are reserved for use as flags, and octets 1-3 are a 24-bit version number. If bit 0x80 in octet 0 is 0, then no version number is present; use previous version information for this 5-tuple.\" This can be further simplified by dropping the truncated header entirely, though for very short packets the overhead might be worth saving.\r\n"
-  },
-  {
-    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/147",
-    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
-    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/147/labels{/name}",
-    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/147/comments",
-    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/147/events",
-    "html_url": "https://github.com/quicwg/base-drafts/issues/147",
-    "id": 200582869,
-    "number": 147,
-    "title": "Reflection Attack Resistance",
-    "user": {
-      "login": "britram",
-      "id": 1884116,
-      "avatar_url": "https://avatars3.githubusercontent.com/u/1884116?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/britram",
-      "html_url": "https://github.com/britram",
-      "followers_url": "https://api.github.com/users/britram/followers",
-      "following_url": "https://api.github.com/users/britram/following{/other_user}",
-      "gists_url": "https://api.github.com/users/britram/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/britram/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/britram/subscriptions",
-      "organizations_url": "https://api.github.com/users/britram/orgs",
-      "repos_url": "https://api.github.com/users/britram/repos",
-      "events_url": "https://api.github.com/users/britram/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/britram/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "labels": [
-      {
-        "id": 481871361,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/design",
-        "name": "design",
-        "color": "1d76db",
-        "default": false
-      },
-      {
-        "id": 481871399,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
-        "name": "transport",
-        "color": "fbca04",
-        "default": false
-      }
-    ],
-    "state": "open",
-    "locked": false,
-    "assignee": null,
-    "assignees": [
-
-    ],
-    "milestone": null,
-    "comments": 5,
-    "created_at": "2017-01-13T09:24:36Z",
-    "updated_at": "2017-01-20T03:11:03Z",
-    "closed_at": null,
-    "body": "The design of the QUIC packet header should consider the ease of creating an apparently-valid first packet via reflection against existing, widely deployed UDP protocols (DNS and NTP being the top two here). All easily reflectable packets off these services should be trivially droppable by a QUIC server. Otherwise, there exist a variety of possible DDoS attacks (of which #135 is one case).\r\n\r\nFor 1-RTT first packets, the probablity of creating a valid ClientHello would seem to be negligible, though there might be some value in reducing the processing necessary to recognize and reject reflected garbage, or to allow it to be rejected before delivery to the server process.\r\n\r\nFor 0-RTT first packets, the header layout should be defined such that a version number (or other magic pattern, though the version number space is sparse enough that it can do double duty as a magic pattern) has an offset and bit pattern that does not occur in traffic that can be generated via reflection off common UDP services."
   },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/146",
@@ -6450,71 +6066,6 @@
     "body": "In draft-ietf-quic-recovery.md\r\n\r\n`      if (rto_count = 0):\r\n        alarm_duration = max(200ms, smoothed_rtt + 4 x rttvar);\r\n      else:\r\n        alarm_duration = loss_detection_alarm.get_delay() << 1;\r\n      rto_count++;\r\n\r\nThe return value of get_delay() is not defined anywhere in the document."
   },
   {
-    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/135",
-    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
-    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/135/labels{/name}",
-    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/135/comments",
-    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/135/events",
-    "html_url": "https://github.com/quicwg/base-drafts/issues/135",
-    "id": 199731485,
-    "number": 135,
-    "title": "DoS using Version Negotiation Packets",
-    "user": {
-      "login": "marten-seemann",
-      "id": 1478487,
-      "avatar_url": "https://avatars0.githubusercontent.com/u/1478487?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/marten-seemann",
-      "html_url": "https://github.com/marten-seemann",
-      "followers_url": "https://api.github.com/users/marten-seemann/followers",
-      "following_url": "https://api.github.com/users/marten-seemann/following{/other_user}",
-      "gists_url": "https://api.github.com/users/marten-seemann/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/marten-seemann/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/marten-seemann/subscriptions",
-      "organizations_url": "https://api.github.com/users/marten-seemann/orgs",
-      "repos_url": "https://api.github.com/users/marten-seemann/repos",
-      "events_url": "https://api.github.com/users/marten-seemann/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/marten-seemann/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "labels": [
-      {
-        "id": 481871361,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/design",
-        "name": "design",
-        "color": "1d76db",
-        "default": false
-      },
-      {
-        "id": 489929683,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/editor-ready",
-        "name": "editor-ready",
-        "color": "0e8a16",
-        "default": false
-      },
-      {
-        "id": 481871399,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
-        "name": "transport",
-        "color": "fbca04",
-        "default": false
-      }
-    ],
-    "state": "open",
-    "locked": false,
-    "assignee": null,
-    "assignees": [
-
-    ],
-    "milestone": null,
-    "comments": 21,
-    "created_at": "2017-01-10T04:41:45Z",
-    "updated_at": "2017-02-03T03:52:29Z",
-    "closed_at": null,
-    "body": "I think I’ve found a DoS vulnerability in the current draft.\r\n\r\nLet’s say an attacker sends a first packet to a QUIC server (server A), but picks a version that the server doesn’t support. Furthermore, it spoofs the sender address of this packet to the address of another QUIC server (server B).\r\nThe packet sent by the client will look like this:\r\n1 byte Flags: 0x9 & Packet Number lengths bits\r\n8 byte Connection-ID\r\n4 byte Version Number\r\n1, 2, 3 or 4 byte Packet Number\r\nAEAD data\r\n\r\nServer A will discover that it doesn’t support the QUIC version that the client suggested, and reply with a Version Negotiation Packet, which will get sent to server B. The version negotiation packet will look like this:\r\n1 byte Flags: 0x9\r\n8 byte Connection-ID\r\n4 byte 1st Version Number\r\n4 byte 1st Version Number\r\n....\r\n\r\nIf server B doesn’t support the version sent as 1st Version Number by server A, it will not be able to distinguish this packet from a packet sent from a client (according to [Section 5.1.2](https://quicwg.github.io/base-drafts/draft-ietf-quic-transport.html#handling-packets-from-different-versions) it MUST NOT read anything from the packet except for the Flags byte, the Connection ID and the first Version Number). Furthermore, according to [Section 6.1](https://quicwg.github.io/base-drafts/draft-ietf-quic-transport.html#version-negotiation) the server MUST reply to server B with a Version Negotiation Packet.\r\nAssuming that server A doesn’t support the version sent as 1st Version Number by server B, A and B will continue sending each other Version Negotiation packets indefinitely. Note that the attacker only sent a single packet."
-  },
-  {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/134",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
     "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/134/labels{/name}",
@@ -6578,64 +6129,6 @@
     "updated_at": "2017-01-24T06:34:43Z",
     "closed_at": null,
     "body": "The document currently (though I hope to remove this) makes certificate compression a requirement of the cryptographic handshake.  TLS doesn't really do compression, though it does provided cached-info ([RFC 7924](https://tools.ietf.org/html/7924)).  Is this sufficient or do we need to ask the TLS working group for a compression feature.  I'm assuming that if we did need to ask, we would also be responsible for providing a design.\r\n\r\nNote that TLS 1.3 aims to provide confidentiality for certificates and compression is generally fraught with hazards that compromise confidentiality.  It also potentially a feature that could leak information about a client's past connections to servers.  If we due pursue this, any design we create would need to carefully consider these (and likely other) risks."
-  },
-  {
-    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/133",
-    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
-    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/133/labels{/name}",
-    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/133/comments",
-    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/133/events",
-    "html_url": "https://github.com/quicwg/base-drafts/issues/133",
-    "id": 199728912,
-    "number": 133,
-    "title": "Connection ID in version negotiation",
-    "user": {
-      "login": "martinthomson",
-      "id": 67641,
-      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/martinthomson",
-      "html_url": "https://github.com/martinthomson",
-      "followers_url": "https://api.github.com/users/martinthomson/followers",
-      "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
-      "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
-      "organizations_url": "https://api.github.com/users/martinthomson/orgs",
-      "repos_url": "https://api.github.com/users/martinthomson/repos",
-      "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/martinthomson/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "labels": [
-      {
-        "id": 481871361,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/design",
-        "name": "design",
-        "color": "1d76db",
-        "default": false
-      },
-      {
-        "id": 481871399,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
-        "name": "transport",
-        "color": "fbca04",
-        "default": false
-      }
-    ],
-    "state": "open",
-    "locked": false,
-    "assignee": null,
-    "assignees": [
-
-    ],
-    "milestone": null,
-    "comments": 1,
-    "created_at": "2017-01-10T04:13:43Z",
-    "updated_at": "2017-01-26T04:51:36Z",
-    "closed_at": null,
-    "body": "When I wrote the section on what can change in different versions, I originally just left an unlabelled slot for the connection ID.  But @marten-seemann observed that the server is required to echo the connection ID in a version negotiation packet.\r\n\r\nI don't think that we need the server to echo the connection ID in this case.  That would allow us to restore the 8 octets to a version-specific field."
   },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/128",
@@ -6831,71 +6324,6 @@
     "updated_at": "2017-01-15T21:33:34Z",
     "closed_at": null,
     "body": "If we do this badly, there might be two versions of QUIC for which the transport parameters are confusable in a way that confounds the validation of version negotiation because the transport parameters are interpreted differently for different QUIC versions.\r\n\r\nWe need to write that into the security considerations.  We might recommend preserving the initial part of the transport parameters extension, or - better yet - using a new extension codepoint when the format needs to change."
-  },
-  {
-    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/119",
-    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
-    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/119/labels{/name}",
-    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/119/comments",
-    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/119/events",
-    "html_url": "https://github.com/quicwg/base-drafts/issues/119",
-    "id": 198672930,
-    "number": 119,
-    "title": "Server-proposed connection ID",
-    "user": {
-      "login": "martinthomson",
-      "id": 67641,
-      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/martinthomson",
-      "html_url": "https://github.com/martinthomson",
-      "followers_url": "https://api.github.com/users/martinthomson/followers",
-      "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
-      "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
-      "organizations_url": "https://api.github.com/users/martinthomson/orgs",
-      "repos_url": "https://api.github.com/users/martinthomson/repos",
-      "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/martinthomson/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "labels": [
-      {
-        "id": 481871361,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/design",
-        "name": "design",
-        "color": "1d76db",
-        "default": false
-      },
-      {
-        "id": 489929683,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/editor-ready",
-        "name": "editor-ready",
-        "color": "0e8a16",
-        "default": false
-      },
-      {
-        "id": 481871399,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
-        "name": "transport",
-        "color": "fbca04",
-        "default": false
-      }
-    ],
-    "state": "open",
-    "locked": false,
-    "assignee": null,
-    "assignees": [
-
-    ],
-    "milestone": null,
-    "comments": 11,
-    "created_at": "2017-01-04T10:15:52Z",
-    "updated_at": "2017-02-15T17:30:17Z",
-    "closed_at": null,
-    "body": "QUIC currently has the ability to embed this in the source address token.  I guess that this is primarily because they both happen at the same time (during a stateless reject).\r\n\r\nWe could turn this into a transport parameter, I guess, but that doesn't work for HelloRetryRequest."
   },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/116",
@@ -7209,64 +6637,6 @@
     "body": "NumTimestamps is supposed to specify the \"total number of pairs following, including the First Timestamp.\"  If this is zero, presumably the Delta Largest Acked and First Timestamp fields are absent.  If this is one, presumably these fields are present, but no others are.\r\n\r\nThe *subsequent* fields then say they are repeated \"Num Timestamps\" times, which contradicts my logic above.  I'm guessing this should actually be \"Num Timestamps - 1\" times?"
   },
   {
-    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/95",
-    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
-    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/95/labels{/name}",
-    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/95/comments",
-    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/95/events",
-    "html_url": "https://github.com/quicwg/base-drafts/issues/95",
-    "id": 197286451,
-    "number": 95,
-    "title": "CONNECT",
-    "user": {
-      "login": "MikeBishop",
-      "id": 4273797,
-      "avatar_url": "https://avatars3.githubusercontent.com/u/4273797?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/MikeBishop",
-      "html_url": "https://github.com/MikeBishop",
-      "followers_url": "https://api.github.com/users/MikeBishop/followers",
-      "following_url": "https://api.github.com/users/MikeBishop/following{/other_user}",
-      "gists_url": "https://api.github.com/users/MikeBishop/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/MikeBishop/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/MikeBishop/subscriptions",
-      "organizations_url": "https://api.github.com/users/MikeBishop/orgs",
-      "repos_url": "https://api.github.com/users/MikeBishop/repos",
-      "events_url": "https://api.github.com/users/MikeBishop/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/MikeBishop/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "labels": [
-      {
-        "id": 481871361,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/design",
-        "name": "design",
-        "color": "1d76db",
-        "default": false
-      },
-      {
-        "id": 481871627,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/http",
-        "name": "http",
-        "color": "fbca04",
-        "default": false
-      }
-    ],
-    "state": "open",
-    "locked": false,
-    "assignee": null,
-    "assignees": [
-
-    ],
-    "milestone": null,
-    "comments": 3,
-    "created_at": "2016-12-22T23:17:15Z",
-    "updated_at": "2017-03-09T00:14:04Z",
-    "closed_at": null,
-    "body": "Need discussion of how CONNECT works.  Initial thought:\r\n\r\n - Client does not close data stream after sending request\r\n - If server responds (on the message control stream) with success, the data stream is being relayed into a TCP connection by the server.\r\n\r\nIs there a QUIC-CONNECT?  (Probably not, and almost certainly not in this document.)"
-  },
-  {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/89",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
     "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/89/labels{/name}",
@@ -7504,8 +6874,7 @@
     "updated_at": "2017-02-20T13:27:21Z",
     "closed_at": null,
     "body": "ECN is not currently mentioned in the recovery draft, but it should be included.\r\n\r\nMore importantly, the transport draft has no ability for the peer to communicate ECN marks back to the sender.  I suspect, like ECN, the use of this in the transport would be negotiable in the QUIC handshake.\r\n\r\nIn practice, there most userspace network stacks also cannot see if those marks are set when packets are read."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/67",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7941,64 +7310,6 @@
     "body": "Do we want them? How do we accommodate them?  What are their semantics if they aren't understood?"
   },
   {
-    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/56",
-    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
-    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/56/labels{/name}",
-    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/56/comments",
-    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/56/events",
-    "html_url": "https://github.com/quicwg/base-drafts/issues/56",
-    "id": 192989770,
-    "number": 56,
-    "title": "Extending flags",
-    "user": {
-      "login": "martinthomson",
-      "id": 67641,
-      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/martinthomson",
-      "html_url": "https://github.com/martinthomson",
-      "followers_url": "https://api.github.com/users/martinthomson/followers",
-      "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
-      "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
-      "organizations_url": "https://api.github.com/users/martinthomson/orgs",
-      "repos_url": "https://api.github.com/users/martinthomson/repos",
-      "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/martinthomson/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "labels": [
-      {
-        "id": 481871361,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/design",
-        "name": "design",
-        "color": "1d76db",
-        "default": false
-      },
-      {
-        "id": 481871399,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
-        "name": "transport",
-        "color": "fbca04",
-        "default": false
-      }
-    ],
-    "state": "open",
-    "locked": false,
-    "assignee": null,
-    "assignees": [
-
-    ],
-    "milestone": null,
-    "comments": 5,
-    "created_at": "2016-12-01T23:16:02Z",
-    "updated_at": "2017-01-26T06:20:30Z",
-    "closed_at": null,
-    "body": "We need to define how the public flags might be extended, or if it could be.  This has a pretty serious impact on #55."
-  },
-  {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/53",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
     "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/53/labels{/name}",
@@ -8308,7 +7619,8 @@
     "updated_at": "2017-03-03T00:29:35Z",
     "closed_at": null,
     "body": "It's currently unclear how two QUIC peers opening a connection know which handshake protocol to expect on Stream 1.\r\n\r\nSince the client has to include the opening handshake in its first flight, it has to at least be able to guess *a* handshake protocol that's acceptable to the server and include enough information for the server to know which one it's attempting.  Currently all the mechanisms for telling the client to retry with different options are at the TLS layer, which is too late.\r\n\r\nHow is this negotiated?  Is it baked into the QUIC version?  Is it specified as part of the application mapping (e.g. the HTTP mapping currently requires the TLS 1.3 handshake to be used) and therefore either supplied as part of the Alt-Svc record or implied by the port?"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/44",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
