@@ -43,10 +43,9 @@ informative:
 
 The QUIC transport protocol has several features that are desirable in a
 transport for HTTP, such as stream multiplexing, per-stream flow control, and
-low-latency connection establishment.  This document describes a mapping of
-HTTP semantics over QUIC.  Specifically, this document identifies HTTP/2
-features that are subsumed by QUIC, and describes how the other features can be
-implemented atop QUIC.
+low-latency connection establishment.  This document describes a mapping of HTTP
+semantics over QUIC.  This document also identifies HTTP/2 features that are
+subsumed by QUIC, and describes how HTTP/2 extensions can be ported to QUIC.
 
 --- note_Note_to_Readers
 
@@ -217,9 +216,9 @@ in the appropriate direction.
 
 ##  Stream 3: Connection Control Stream
 
-Since most connection-level concerns from HTTP/2 will be managed by QUIC, the
-primary use of Stream 3 will be for SETTINGS and PRIORITY frames. Stream 3 is
-exempt from connection-level flow-control.
+Since most connection-level concerns will be managed by QUIC, the primary use of
+Stream 3 will be for the SETTINGS frame when the connection opens and for
+PRIORITY frames subsequently.
 
 ## HTTP Message Exchanges
 
@@ -337,31 +336,11 @@ this priority scheme, a given stream can be designated as dependent upon another
 stream, which expresses the preference that the latter stream (the "parent"
 stream) be allocated resources before the former stream (the "dependent"
 stream). Taken together, the dependencies across all streams in a connection
-form a dependency tree. The structure of the dependency tree changes as HEADERS
-and PRIORITY frames add, remove, or change the dependency links between streams.
-
-Implicit in this scheme is the notion of in-order delivery of priority changes
-(i.e., dependency tree mutations): since operations on the dependency tree such
-as reparenting a subtree are not commutative, both sender and receiver must
-apply them in the same order to ensure that both sides have a consistent view of
-the stream dependency tree. HTTP/2 specifies priority assignments in PRIORITY
-frames and (optionally) in HEADERS frames. To achieve in-order delivery of
-priority changes in HTTP/QUIC, PRIORITY frames are sent on the connection
-control stream and the PRIORITY section is removed from the HEADERS frame. The
-semantics of the Stream Dependency, Weight, E flag, and (for HEADERS frames)
-PRIORITY flag are the same as in HTTP/2.
+form a dependency tree. The structure of the dependency tree changes as PRIORITY
+frames add, remove, or change the dependency links between streams.
 
 For consistency's sake, all PRIORITY frames MUST refer to the message control
 stream of the dependent request, not the data stream.
-
-
-## Flow Control
-
-QUIC provides stream and connection level flow control, similar in principle to
-HTTP/2's flow control but with some implementation differences.  As flow control
-is handled by QUIC, the HTTP mapping need not concern itself with maintaining
-flow control state.  The HTTP mapping MUST NOT send WINDOW_UPDATE frames at the
-HTTP level.
 
 
 ## Server Push
@@ -390,8 +369,8 @@ Frames are used only on the connection (stream 3) and message (streams 5, 9,
 etc.) control streams. Other streams carry data payload and are not framed at
 the HTTP layer.
 
-This section describes HTTP framing in QUIC and highlights differences from
-HTTP/2 framing.
+This section describes HTTP framing in QUIC and highlights some differences from
+HTTP/2 framing.  For more detail on differences from HTTP/2, see {{h2-frames}}.
 
 ## Frame Layout
 
@@ -410,18 +389,12 @@ All frames have the following format:
 
 ## Frame Definitions {#frames}
 
-### DATA
-
-DATA frames do not exist.  Frame type 0x0 is reserved.
-
 ### HEADERS {#frame-headers}
 
 The HEADERS frame (type=0x1) is used to carry part of a header set, compressed
-using HPACK {{!RFC7541}}. Because HEADERS frames from different streams will be
-delivered out-of-order and priority-changes are not commutative, the PRIORITY
-region of HEADERS is not supported. A separate PRIORITY frame MUST be used.
+using HPACK {{!RFC7541}}.
 
-HTTP/2 padding is not defined and MUST NOT be used.  One flag is defined:
+One flag is defined:
 
   End Header Block (0x4):
   : This frame concludes a header block.
@@ -471,6 +444,9 @@ it MUST be sent only on the connection control stream. The format has been
 modified to accommodate not being sent on-stream and the larger stream ID space
 of QUIC.
 
+The semantics of the Stream Dependency, Weight, and E flag are the same as in
+HTTP/2.
+
 The flags defined are:
 
   E (0x01):
@@ -508,11 +484,6 @@ The HEADERS frame payload has the following fields:
 A PRIORITY frame MUST have a payload length of nine octets.  A PRIORITY frame
 of any other length MUST be treated as a connection error of type
 HTTP_MALFORMED_PRIORITY.
-
-### RST_STREAM
-
-RST_STREAM frames do not exist, since QUIC provides stream lifecycle management.
-Frame type 0x3 is reserved.
 
 ### SETTINGS {#frame-settings}
 
@@ -661,30 +632,6 @@ TODOs:
    field in this case.
  - No CONTINUATION -- HEADERS have EHB; do we need it here?
 
-### PING
-
-PING frames do not exist, since QUIC provides equivalent functionality. Frame
-type 0x6 is reserved.
-
-
-### GOAWAY frame
-
-GOAWAY frames do not exist, since QUIC provides equivalent functionality. Frame
-type 0x7 is reserved.
-
-
-### WINDOW_UPDATE frame
-
-WINDOW_UPDATE frames do not exist, since QUIC provides equivalent functionality.
-Frame type 0x8 is reserved.
-
-
-### CONTINUATION frame
-
-CONTINUATION frames do not exist, since larger supported HEADERS/PUSH_PROMISE
-frames provide equivalent functionality. Frame type 0x9 is reserved.
-
-
 
 # Error Handling {#errors}
 
@@ -765,7 +712,7 @@ HTTP/QUIC is strongly informed by HTTP/2, and bears many similarities.  This
 section points out important differences from HTTP/2 and describes how to map
 HTTP/2 extensions into HTTP/QUIC.
 
-## HTTP Frame Types
+## HTTP Frame Types {#h2-frames}
 
 Many framing concepts from HTTP/2 can be elided away on QUIC, because the
 transport deals with them. Because frames are already on a stream, they can omit
@@ -784,21 +731,68 @@ the two mappings are not identical.
 
 Many of the differences arise from the fact that HTTP/2 provides an absolute
 ordering between frames across all streams, while QUIC provides this guarantee
-on each stream only.  For example, PRIORITY frames have moved to Stream 3 and
-include the affected stream number because different prioritization operations
-are not commutative.  As a result, if an extension make assumptions that frames
+on each stream only.  As a result, if a frame type makes assumptions that frames
 from different streams will still be received in the order sent, HTTP/QUIC will
 break them.
 
+For example, implicit in the HTTP/2 prioritization scheme is the notion of
+in-order delivery of priority changes (i.e., dependency tree mutations): since
+operations on the dependency tree such as reparenting a subtree are not
+commutative, both sender and receiver must apply them in the same order to
+ensure that both sides have a consistent view of the stream dependency tree.
+HTTP/2 specifies priority assignments in PRIORITY frames and (optionally) in
+HEADERS frames. To achieve in-order delivery of priority changes in HTTP/QUIC,
+PRIORITY frames are sent on the connection control stream and the PRIORITY
+section is removed from the HEADERS frame.
+
 Other than this issue, frame type HTTP/2 extensions are typically portable to
 QUIC simply by replacing Stream 0 in HTTP/2 with Stream 3 in HTTP/QUIC.
+
+Below is a listing of how each HTTP/2 frame type is mapped:
+
+DATA (0x0):
+: Instead of DATA frames, HTTP/QUIC uses a separate data stream.  See
+  {{stream-mapping}}.
+
+HEADERS (0x1):
+: As described above, the PRIORITY region of HEADERS is not supported. A
+  separate PRIORITY frame MUST be used. Padding is not defined in HTTP/QUIC
+  frames.  See {{frame-headers}}.
+
+PRIORITY (0x2):
+: As described above, the PRIORITY frame is sent on the connection control
+  stream.  See {{frame-priority}}.
+
+RST_STREAM (0x3):
+: RST_STREAM frames do not exist, since QUIC provides stream lifecycle
+  management.
+
+SETTINGS (0x4):
+: SETTINGS frames are sent only at the beginning of the connection.  See
+  {{frame-settings}} and {{h2-settings}}.
+
+PUSH_PROMISE (0x5):
+: See {{frame-push-promise}}.
+
+PING (0x6):
+: PING frames do not exist, since QUIC provides equivalent functionality.
+
+GOAWAY (0x7):
+: GOAWAY frames do not exist, since QUIC provides equivalent functionality.
+
+WINDOW_UPDATE (0x8):
+: WINDOW_UPDATE frames do not exist, since QUIC provides flow control.
+
+CONTINUATION (0x9):
+: CONTINUATION frames do not exist; instead, larger HEADERS/PUSH_PROMISE
+  frames than HTTP/2 are permitted, and HEADERS frames can be used in series.
 
 The IANA registry of frame types has been updated in {{iana-frames}} to include
 references to the definition for each frame type in HTTP/2 and in HTTP/QUIC.
 Frames not defined as available in HTTP/QUIC SHOULD NOT be sent and SHOULD be
 ignored as unknown on receipt.
 
-## HTTP/2 SETTINGS Parameters
+## HTTP/2 SETTINGS Parameters {#h2-settings}
 
 An important difference from HTTP/2 is that settings are sent once, at the
 beginning of the connection, and thereafter cannot change.  This eliminates
