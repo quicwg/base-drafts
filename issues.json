@@ -1,56 +1,5 @@
 [
   {
-    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/375",
-    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
-    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/375/labels{/name}",
-    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/375/comments",
-    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/375/events",
-    "html_url": "https://github.com/quicwg/base-drafts/pull/375",
-    "id": 212909710,
-    "number": 375,
-    "title": "Move references to RFC5827 to text",
-    "user": {
-      "login": "ianswett",
-      "id": 20072817,
-      "avatar_url": "https://avatars2.githubusercontent.com/u/20072817?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/ianswett",
-      "html_url": "https://github.com/ianswett",
-      "followers_url": "https://api.github.com/users/ianswett/followers",
-      "following_url": "https://api.github.com/users/ianswett/following{/other_user}",
-      "gists_url": "https://api.github.com/users/ianswett/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/ianswett/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/ianswett/subscriptions",
-      "organizations_url": "https://api.github.com/users/ianswett/orgs",
-      "repos_url": "https://api.github.com/users/ianswett/repos",
-      "events_url": "https://api.github.com/users/ianswett/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/ianswett/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "labels": [
-
-    ],
-    "state": "open",
-    "locked": false,
-    "assignee": null,
-    "assignees": [
-
-    ],
-    "milestone": null,
-    "comments": 1,
-    "created_at": "2017-03-09T01:33:10Z",
-    "updated_at": "2017-03-09T01:52:23Z",
-    "closed_at": null,
-    "pull_request": {
-      "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/375",
-      "html_url": "https://github.com/quicwg/base-drafts/pull/375",
-      "diff_url": "https://github.com/quicwg/base-drafts/pull/375.diff",
-      "patch_url": "https://github.com/quicwg/base-drafts/pull/375.patch"
-    },
-    "body": ""
-  },
-  {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/374",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
     "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/374/labels{/name}",
@@ -1843,8 +1792,7 @@
     "updated_at": "2017-02-15T05:23:23Z",
     "closed_at": null,
     "body": "That is, if the client picks X and the server returns a version negotiation packet that lists X, then something is badly wrong.  That version negotiation packet needs to be treated like internet-detritus."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/293",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -1902,7 +1850,8 @@
     "updated_at": "2017-02-15T05:23:04Z",
     "closed_at": null,
     "body": "@martinthomson created a header proposal that provides a fixed 8 byte connection id in a fixed location.  \r\n\r\nWe need to decide if this is a requirement or a nice to have.\r\n\r\nI haven't found any environments it needed to be in a fixed location for all packets, as long as it's easy to determine where it will be from the first byte of the packet."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/290",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3626,8 +3575,7 @@
     "updated_at": "2017-03-06T23:46:21Z",
     "closed_at": null,
     "body": "QUIC doesn't make order guarantees between streams.  The options on the table currently are:\r\n\r\n- Current (-01) draft puts a sequence number in the frames; HPACK data MUST be handled in order, and will HOL-block.  HPACK is exactly the same as HTTP/2.\r\n- Buck's proposal (draft forthcoming) puts two sequence numbers in the frames and modifies the HPACK encoder to prevent blocking references.  Partially-received HPACK frames must block until fully received.  The new encoder could also be used in HTTP/2, but would require changes to existing code.\r\n- [QPACK](https://tools.ietf.org/html/draft-bishop-quic-http-and-qpack) modifies HPACK to be order-resilient and permit partial frames to be processed, but breaks from the HPACK encoding enough that you'd have at least some separate code paths.\r\n\r\nAlso agreed to put a \"hard-hat warning\" in this section of the HTTP draft, to warn readers this is still work-in-progress."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/227",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3685,7 +3633,8 @@
     "updated_at": "2017-01-25T04:43:48Z",
     "closed_at": null,
     "body": "This is an alternative to #167: We could just encrypt the cleartext data in the initial handshake packets with a deterministic key (e.g. a mixture of a version-dependent key and the initial packet number). The AEAD used there would have to be fixed in the spec.\r\n\r\nThe goal would be to make it harder for middleboxes to ossify on stuff in the client hello, e.g. SNI, and to detect initial packets (#203). On the other hand, there's additional computational cost for decrypting packets server-side."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/224",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5423,8 +5372,7 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/171.patch"
     },
     "body": "Fixes #165.  Key changes:\r\n\r\n- RST_STREAM kills only the sender's direction, not both.  (Retains the existing requirement to respond with RST_STREAM with another RST_STREAM if the stream isn't already closed, which eventually leads to the same result.)\r\n- New REQUEST_RST frame allows peer to solicit a RST_STREAM; text states that this reflects an app recv_close, and that received data is being discarded\r\n\r\nThis should solve the scenarios outlined in #165; a server can ask a client to RST_STREAM its own direction after having sent an early response.  Feedback welcome, of course -- please point out anything I've missed."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/170",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5482,7 +5430,8 @@
     "updated_at": "2017-02-16T03:02:23Z",
     "closed_at": null,
     "body": "There's currently no behavior defined for the case of a connection ID collision.\r\nThe probability for a collision of two 64 bit numbers is *really small*, if connections IDs are chosen randomly. For example, for a server handling 100,000 concurrent connections, the collision probability is about 3*10^-10.\r\nIt might therefore be justified to completely neglect this issue.\r\n\r\nAccording to the current draft, if a client initiates a handshake and chooses an existing connection ID, the server would just silently discard those packets, because it already switched to an encrypted connection and will regard them as undecryptable."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/167",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7493,8 +7442,7 @@
     "updated_at": "2016-12-02T00:25:36Z",
     "closed_at": null,
     "body": "The algorithm for picking the length of the packet number needs much better explanation, and probably a bunch of rationale to support that.\r\n\r\n(Marked as design so that any change gets proper discussion and review.)"
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/65",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7552,7 +7500,8 @@
     "updated_at": "2017-01-24T00:47:14Z",
     "closed_at": null,
     "body": "Does this need to be MUST use?"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/63",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
