@@ -854,17 +854,19 @@ TransportParameters:
 stream_fc_offset (0x0000):
 
 : The initial stream level flow control offset parameter is encoded as an
-  unsigned 32-bit integer.  The sender of this parameter indicates that the flow
-  control offset for all stream data sent toward it is this value.
+  unsigned 32-bit integer in units of octets.  The sender of this parameter
+  indicates that the flow control offset for all stream data sent toward it is
+  this value.
 
 connection_fc_offset (0x0001):
 
 : The connection level flow control offset parameter contains the initial
-  connection flow control window encoded as an unsigned 32-bit integer.  The
-  sender of this parameter sets the byte offset for connection level flow
-  control to this value.  This is equivalent to sending a WINDOW_UPDATE
-  ({{frame-window-update}}) for stream 0 immediately after completing the
-  handshake.
+  connection flow control window encoded as an unsigned 32-bit integer in units
+  of 1024 octets.  That is, the value here is multiplied by 1024 to determine
+  the actual flow control offset.  The sender of this parameter sets the byte
+  offset for connection level flow control to this value.  This is equivalent to
+  sending a WINDOW_UPDATE ({{frame-window-update}}) for stream 0 immediately
+  after completing the handshake.
 
 concurrent_streams (0x0002):
 
@@ -887,7 +889,7 @@ truncate_connection_id (0x0004):
   connection ID being present in every packet.
 
 
-### Values of Transport Parameters for 0-RTT
+### Values of Transport Parameters for 0-RTT {#zerortt-parameters}
 
 Transport parameters from the server SHOULD be remembered by the client for use
 with 0-RTT data.  A client that doesn't remember values from a previous
@@ -912,10 +914,10 @@ particularly with respect to transport parameters that establish limits:
 
 A server MAY close a connection if remembered or assumed 0-RTT transport
 parameters cannot be supported, using an error code that is appropriate to the
-specific condition.  For example, a QUIC_FLOW_CONTROL_SENT_TOO_MUCH_DATA might
-be used to indicate that exceeding flow control limits caused the error.  A
-client that has a connection closed due to an error condition SHOULD NOT attempt
-0-RTT when attempting to create a new connection.
+specific condition.  For example, a QUIC_FLOW_CONTROL_RECEIVED_TOO_MUCH_DATA
+might be used to indicate that exceeding flow control limits caused the error.
+A client that has a connection closed due to an error condition SHOULD NOT
+attempt 0-RTT when attempting to create a new connection.
 
 
 ### New Transport Parameters
@@ -1506,10 +1508,10 @@ to decipher the packet.
 ## WINDOW_UPDATE Frame {#frame-window-update}
 
 The WINDOW_UPDATE frame (type=0x04) informs the peer of an increase in an
-endpoint's flow control receive window. The Stream ID can be zero, indicating
-this WINDOW_UPDATE applies to the connection level flow control window, or
-non-zero, indicating that the specified stream should increase its flow control
-window. The frame is as follows:
+endpoint's flow control receive window for either a single stream, or the entire
+connection as a whole.
+
+The frame is as follows:
 
 ~~~
  0                   1                   2                   3
@@ -1518,7 +1520,7 @@ window. The frame is as follows:
 |                        Stream ID (32)                         |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                                                               |
-+                        Byte Offset (64)                       +
++                    Flow Control Offset (64)                   +
 |                                                               |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
@@ -1530,12 +1532,31 @@ Stream ID:
 : ID of the stream whose flow control windows is being updated, or 0 to specify
   the connection-level flow control window.
 
-Byte offset:
+Flow Control Offset:
 
-: A 64-bit unsigned integer indicating the absolute byte offset of data which
-  can be sent on the given stream.  In the case of connection-level flow
-  control, the cumulative offset which can be sent on all streams that
-  contribute to connection-level flow control.
+: A 64-bit unsigned integer indicating the flow control offset for the given
+  stream (for a stream ID other than 0) or the entire connection.
+
+The flow control offset is expressed in units of octets for individual streams
+(for stream identifiers other than 0).
+
+The connection-level flow control offset is expressed in units of 1024 octets
+(for a stream identifier of 0).  That is, the connection-level flow control
+offset is determined by multiplying the encoded value by 1024.
+
+An endpoint accounts for the maximum offset of data that is sent or received on
+a stream.  Loss or reordering can mean that the size of STREAM frames can be
+less than the maximum data offset on a stream; similarly, STREAM frames might
+not cause the maximum offset on a stream.  A STREAM frame with a FIN bit set or
+RST_STREAM causes the final offset for a stream to be fixed.
+
+The maximum data offset on a stream MUST NOT exceed the stream flow control
+offset advertised by the receiver.  The sum of the maximum data offsets of all
+streams (including closed streams) MUST NOT exceed the connection flow control
+offset advertised by the receiver.  An endpoint MUST terminate a connection with
+a QUIC_FLOW_CONTROL_RECEIVED_TOO_MUCH_DATA error if it receives more data than
+the largest flow control offset that it has sent, unless this is a result of a
+change in the initial offsets (see {{zerortt-parameters}}).
 
 
 ## BLOCKED Frame {#frame-blocked}
