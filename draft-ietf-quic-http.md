@@ -784,8 +784,8 @@ HTTP_RST_CONTROL_STREAM (0x11):
 : A message control stream closed abruptly.
 
 HTTP_EARLY_RESPONSE (0x12):
-: Server is able to generate a response to the client request without selecting
-  the complete request body.
+: Server is able to generate a response to the client request without seeing the
+  complete request body.
 
 
 ## Mapping HTTP/2 Error Codes
