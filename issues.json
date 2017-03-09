@@ -351,7 +351,7 @@
     "milestone": null,
     "comments": 1,
     "created_at": "2017-03-07T01:54:03Z",
-    "updated_at": "2017-03-08T23:59:37Z",
+    "updated_at": "2017-03-09T00:37:23Z",
     "closed_at": null,
     "pull_request": {
       "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/363",
@@ -402,7 +402,7 @@
     "milestone": null,
     "comments": 1,
     "created_at": "2017-03-07T00:52:24Z",
-    "updated_at": "2017-03-08T20:55:18Z",
+    "updated_at": "2017-03-09T00:38:09Z",
     "closed_at": null,
     "pull_request": {
       "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/361",
@@ -1992,9 +1992,9 @@
 
     ],
     "milestone": null,
-    "comments": 6,
+    "comments": 7,
     "created_at": "2017-02-09T18:35:01Z",
-    "updated_at": "2017-02-10T02:37:01Z",
+    "updated_at": "2017-03-09T00:24:48Z",
     "closed_at": null,
     "body": "Something that came up in Tokyo was the need for service providers (i.e. middleboxes) to troubleshoot performance issues in the network. Packet Number Echo (#269) could partially address this problem., particularly for RTT measurement. But it is imperfect for measuring other problems.\r\n\r\nAs someone who has spent quite a bit of time debugging TCP packet traces from service providers, there are two other things that would help greatly in answering the question \"why is my QUIC slow\", without significantly compromising privacy. To do both would take two bits in the public flags, which may be available depending on how some other issues turn out.\r\n\r\n(1) QUIC endpoints MAY set the BLOCKED bit if they include a BLOCKED frame in the packet. If you want to get fancy, you could have a different bit for \"stream blocked\" and \"connection blocked\", but flow control issues are a common cause of traffic pauses with no other discernable symptoms.\r\n(2) QUIC endpoints MUST (SHOULD?) set the RETRANS flag in any packet that contains retransmitted data. This would help operators identify that a connection is slowing down because it is responding to loss, and would allow for very reliable loss statistics for the downstream network."
   },
@@ -7011,9 +7011,9 @@
 
     ],
     "milestone": null,
-    "comments": 2,
+    "comments": 3,
     "created_at": "2016-12-22T23:17:15Z",
-    "updated_at": "2017-03-09T00:06:04Z",
+    "updated_at": "2017-03-09T00:14:04Z",
     "closed_at": null,
     "body": "Need discussion of how CONNECT works.  Initial thought:\r\n\r\n - Client does not close data stream after sending request\r\n - If server responds (on the message control stream) with success, the data stream is being relayed into a TCP connection by the server.\r\n\r\nIs there a QUIC-CONNECT?  (Probably not, and almost certainly not in this document.)"
   },
