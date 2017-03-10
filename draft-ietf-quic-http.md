@@ -1080,6 +1080,8 @@ The original authors of this specification were Robbie Shade and Mike Warres.
 
 - Guide to differences from HTTP/2 and porting HTTP/2 extensions added
 
+- Use separate frame type registry from HTTP/2
+
 ## Since draft-ietf-quic-http-00:
 
 - Changed "HTTP/2-over-QUIC" to "HTTP/QUIC" throughout
