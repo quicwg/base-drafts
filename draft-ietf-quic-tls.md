@@ -1007,8 +1007,8 @@ server.
 A packet that triggers a key update could arrive after successfully processing a
 packet with a higher packet number.  This is only possible if there is a key
 compromise and an attack, or if the peer is incorrectly reverting to use of old
-keys.  An endpoint MUST immediately terminate the connection if it detects this
-condition.
+keys.  Because the latter cannot be differentiated from an attack, an endpoint
+MUST immediately terminate the connection if it detects this condition.
 
 
 # Client Address Validation {#client-address-validation}
