@@ -572,6 +572,16 @@ A server MUST NOT use post-handshake client authentication (see Section 4.6.2 of
 {{!I-D.ietf-tls-tls13}}).
 
 
+## TLS Errors
+
+Errors in the TLS connection SHOULD be signaled using TLS alerts on stream 1.  A
+failure in the handshake MUST be treated as a QUIC connection error of type
+TLS_HANDSHAKE_FAILED.  Once the handshake is complete, an error in the TLS
+connection that causes a TLS alert to be sent or received MUST be treated as a
+QUIC connection error of type TLS_FATAL_ALERT_GENERATED or
+TLS_FATAL_ALERT_RECEIVED respectively.
+
+
 # QUIC Packet Protection {#packet-protection}
 
 QUIC packet protection provides authenticated encryption of packets.  This
@@ -1408,86 +1418,13 @@ The portion of the QUIC error code space allocated for the crypto handshake is
 for the crypto handshake:
 
 TLS_HANDSHAKE_FAILED (0xC000001C):
-: Crypto errors. Handshake failed.
+: The TLS handshake failed.
 
-TLS_MESSAGE_OUT_OF_ORDER (0xC000001D):
-: Handshake message received out of order.
+TLS_FATAL_ALERT_GENERATED (0xC000001D):
+: A TLS fatal alert was sent, causing the TLS connection to end prematurely.
 
-TLS_TOO_MANY_ENTRIES (0xC000001E):
-: Handshake message contained too many entries.
-
-TLS_INVALID_VALUE_LENGTH (0xC000001F):
-: Handshake message contained an invalid value length.
-
-TLS_MESSAGE_AFTER_HANDSHAKE_COMPLETE (0xC0000020):
-: A handshake message was received after the handshake was complete.
-
-TLS_INVALID_RECORD_TYPE (0xC0000021):
-: A handshake message was received with an illegal record type.
-
-TLS_INVALID_PARAMETER (0xC0000022):
-: A handshake message was received with an illegal parameter.
-
-TLS_INVALID_CHANNEL_ID_SIGNATURE (0xC0000034):
-: An invalid channel id signature was supplied.
-
-TLS_MESSAGE_PARAMETER_NOT_FOUND (0xC0000023):
-: A handshake message was received with a mandatory parameter missing.
-
-TLS_MESSAGE_PARAMETER_NO_OVERLAP (0xC0000024):
-: A handshake message was received with a parameter that has no overlap with the
-  local parameter.
-
-TLS_MESSAGE_INDEX_NOT_FOUND (0xC0000025):
-: A handshake message was received that contained a parameter with too few
-  values.
-
-TLS_UNSUPPORTED_PROOF_DEMAND (0xC000005E):
-: A demand for an unsupported proof type was received.
-
-TLS_INTERNAL_ERROR (0xC0000026):
-: An internal error occured in handshake processing.
-
-TLS_VERSION_NOT_SUPPORTED (0xC0000027):
-: A handshake handshake message specified an unsupported version.
-
-TLS_HANDSHAKE_STATELESS_REJECT (0xC0000048):
-: A handshake handshake message resulted in a stateless reject.
-
-TLS_NO_SUPPORT (0xC0000028):
-: There was no intersection between the crypto primitives supported by the peer
-  and ourselves.
-
-TLS_TOO_MANY_REJECTS (0xC0000029):
-: The server rejected our client hello messages too many times.
-
-TLS_PROOF_INVALID (0xC000002A):
-: The client rejected the server's certificate chain or signature.
-
-TLS_DUPLICATE_TAG (0xC000002B):
-: A handshake message was received with a duplicate tag.
-
-TLS_ENCRYPTION_LEVEL_INCORRECT (0xC000002C):
-: A handshake message was received with the wrong encryption level (i.e. it
-  should have been encrypted but was not.)
-
-TLS_SERVER_CONFIG_EXPIRED (0xC000002D):
-: The server config for a server has expired.
-
-TLS_SYMMETRIC_KEY_SETUP_FAILED (0xC0000035):
-: We failed to set up the symmetric keys for a connection.
-
-TLS_MESSAGE_WHILE_VALIDATING_CLIENT_HELLO (0xC0000036):
-: A handshake message arrived, but we are still validating the previous
-  handshake message.
-
-TLS_UPDATE_BEFORE_HANDSHAKE_COMPLETE (0xC0000041):
-: A server config update arrived before the handshake is complete.
-
-TLS_CLIENT_HELLO_TOO_LARGE (0xC000005A):
-: ClientHello cannot fit in one packet.
-
-
+TLS_FATAL_ALERT_RECEIVED (0xC000001E):
+: A TLS fatal alert was received, causing the TLS connection to end prematurely.
 
 
 # IANA Considerations
