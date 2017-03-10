@@ -1,35 +1,48 @@
 [
   {
-    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/382",
+    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/383",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
-    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/382/labels{/name}",
-    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/382/comments",
-    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/382/events",
-    "html_url": "https://github.com/quicwg/base-drafts/pull/382",
-    "id": 213213490,
-    "number": 382,
-    "title": "Remove QUIC_OVERLAPPING_STREAM_DATA",
+    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/383/labels{/name}",
+    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/383/comments",
+    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/383/events",
+    "html_url": "https://github.com/quicwg/base-drafts/issues/383",
+    "id": 213215944,
+    "number": 383,
+    "title": "Do we need to define a maximum packet size?",
     "user": {
-      "login": "martinthomson",
-      "id": 67641,
-      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
+      "login": "marten-seemann",
+      "id": 1478487,
+      "avatar_url": "https://avatars0.githubusercontent.com/u/1478487?v=3",
       "gravatar_id": "",
-      "url": "https://api.github.com/users/martinthomson",
-      "html_url": "https://github.com/martinthomson",
-      "followers_url": "https://api.github.com/users/martinthomson/followers",
-      "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
-      "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
-      "organizations_url": "https://api.github.com/users/martinthomson/orgs",
-      "repos_url": "https://api.github.com/users/martinthomson/repos",
-      "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/martinthomson/received_events",
+      "url": "https://api.github.com/users/marten-seemann",
+      "html_url": "https://github.com/marten-seemann",
+      "followers_url": "https://api.github.com/users/marten-seemann/followers",
+      "following_url": "https://api.github.com/users/marten-seemann/following{/other_user}",
+      "gists_url": "https://api.github.com/users/marten-seemann/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/marten-seemann/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/marten-seemann/subscriptions",
+      "organizations_url": "https://api.github.com/users/marten-seemann/orgs",
+      "repos_url": "https://api.github.com/users/marten-seemann/repos",
+      "events_url": "https://api.github.com/users/marten-seemann/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/marten-seemann/received_events",
       "type": "User",
       "site_admin": false
     },
     "labels": [
-
+      {
+        "id": 481871361,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/design",
+        "name": "design",
+        "color": "1d76db",
+        "default": false
+      },
+      {
+        "id": 481871399,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
+        "name": "transport",
+        "color": "fbca04",
+        "default": false
+      }
     ],
     "state": "open",
     "locked": false,
@@ -38,17 +51,11 @@
 
     ],
     "milestone": null,
-    "comments": 1,
-    "created_at": "2017-03-10T01:05:18Z",
-    "updated_at": "2017-03-10T01:05:57Z",
+    "comments": 3,
+    "created_at": "2017-03-10T01:21:30Z",
+    "updated_at": "2017-03-10T01:39:26Z",
     "closed_at": null,
-    "pull_request": {
-      "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/382",
-      "html_url": "https://github.com/quicwg/base-drafts/pull/382",
-      "diff_url": "https://github.com/quicwg/base-drafts/pull/382.diff",
-      "patch_url": "https://github.com/quicwg/base-drafts/pull/382.patch"
-    },
-    "body": "Closes #146"
+    "body": "In the error codes there's a QUIC_PACKET_TOO_LARGE error, but there's no maximum packet size specified anywhere in the document.\r\n\r\nDoes it make sense to define a maximum packet size or must a QUIC implementation be capable of handling packets with the maximum UDP packet size? Google QUIC currently uses 1452 as the maximum packet size (= Ethernet MTU - minimum UDP header size)."
   },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/381",
@@ -4701,9 +4708,9 @@
 
     ],
     "milestone": null,
-    "comments": 9,
+    "comments": 10,
     "created_at": "2017-01-18T17:46:42Z",
-    "updated_at": "2017-03-10T01:03:07Z",
+    "updated_at": "2017-03-10T01:28:32Z",
     "closed_at": null,
     "pull_request": {
       "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/171",
@@ -5271,64 +5278,6 @@
     "body": "The current design of the header with its multiple variable length and variable presence fields would seem to require inordinate sender and receiver code complexity. Complexity, especially in parsers (i.e., on the receiver side), is a source both of unclarity in specifications and errors in implementation. I note the following specific issues:\r\n\r\n(1) There are thirteen possible header lengths, and therefore data offsets : 2, 3, 5, 6, 7, 9, 10, 11, 13, 14, 15, 17, 21. Each of the header fields has a variety of possible offsets. This also increases the complexity of hardware offload implementations of QUIC, but is not complex enough to prevent their implementation and deployment.\r\n\r\n(2) There are combinations of flags that seem to be nonsensical and/or contradictory (e.g., the Packet Number Length codepoint adds 1, 2, 4, or 8 to the length if the Public Reset flag is clear, but 0 to the length if the Public Reset flag is set, see ; Public Reset and Version are mutually exclusive.)\r\n\r\n(3) There appears to be no consideration given to reducing confusability with other deployed UDP protocols in the first N bytes of the header -- see #147 \r\n\r\nI would suggest reducing the number of possible header layouts to reduce complexity, based on the following assumptions:\r\n\r\n(1) The set of variable header lengths will, at most, save a number of bytes per packet that will often be lost in the underflow of suboptimal path MTU discovery.\r\n\r\n(2) Varlen packet numbering makes sense if the packet number always starts from zero, but random initial packet numbers have other advantages; I presume we'll adopt them at some point. Packet numbers only need to be large enough to keep wrap-arounds to be induced by reordering, so 32 bits (as in the TCP sequence number space) is more than sufficient.\r\n\r\n(3) There is value in treating a version number as a magic number to help reduce the chance of misrecognition of non-QUIC packets as initial QUIC packets at an endpoint; for this 32 bits of version are more than enough, and 24 probably suffice. (This will require a redesign of the version number space, which we might want to do in light of #147 anyway).\r\n\r\n\r\nAs an initial proposal, I would propose that either both Connection ID and Version be present, or neither, and that packet number be always present and constant length. This reduces the set of necessary flags to three, leaving us with five flags for reserved/future use (four, if we go ahead and allocate multipath) and the following two header layouts:\r\n\r\nFull Header: 16 octets\r\n\r\n```\r\n+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+\r\n|1|R|K|M| zero  |      version/magic (24 bits)                  |\r\n+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+\r\n|                                                               |\r\n+-                      Connection ID                          -+\r\n|                                                               |\r\n+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+\r\n|                       Packet Number                           |\r\n+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+\r\n```\r\n\r\nTruncated Header: 5 octets\r\n\r\n```\r\n+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+\r\n|0|R|K|M| zero  |                       Packet Number       . . .\r\n+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+\r\n. . . (cont'd)  |\r\n+-+-+-+-+-+-+-+-+\r\n```\r\n\r\nThe header invariant then becomes \"If bit 0x80 in octet 0 is 1, then the seven remaining bits of that octet are reserved for use as flags, and octets 1-3 are a 24-bit version number. If bit 0x80 in octet 0 is 0, then no version number is present; use previous version information for this 5-tuple.\" This can be further simplified by dropping the truncated header entirely, though for very short packets the overhead might be worth saving.\r\n"
   },
   {
-    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/146",
-    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
-    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/146/labels{/name}",
-    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/146/comments",
-    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/146/events",
-    "html_url": "https://github.com/quicwg/base-drafts/issues/146",
-    "id": 200565658,
-    "number": 146,
-    "title": "STREAM frame boundaries",
-    "user": {
-      "login": "marten-seemann",
-      "id": 1478487,
-      "avatar_url": "https://avatars0.githubusercontent.com/u/1478487?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/marten-seemann",
-      "html_url": "https://github.com/marten-seemann",
-      "followers_url": "https://api.github.com/users/marten-seemann/followers",
-      "following_url": "https://api.github.com/users/marten-seemann/following{/other_user}",
-      "gists_url": "https://api.github.com/users/marten-seemann/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/marten-seemann/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/marten-seemann/subscriptions",
-      "organizations_url": "https://api.github.com/users/marten-seemann/orgs",
-      "repos_url": "https://api.github.com/users/marten-seemann/repos",
-      "events_url": "https://api.github.com/users/marten-seemann/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/marten-seemann/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "labels": [
-      {
-        "id": 489929683,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/editor-ready",
-        "name": "editor-ready",
-        "color": "0e8a16",
-        "default": false
-      },
-      {
-        "id": 481871399,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
-        "name": "transport",
-        "color": "fbca04",
-        "default": false
-      }
-    ],
-    "state": "open",
-    "locked": false,
-    "assignee": null,
-    "assignees": [
-
-    ],
-    "milestone": null,
-    "comments": 22,
-    "created_at": "2017-01-13T07:35:53Z",
-    "updated_at": "2017-03-08T23:38:19Z",
-    "closed_at": null,
-    "body": "We had a [discussion](https://groups.google.com/a/chromium.org/forum/#!topic/proto-quic/j747iwug-Hg) about this earlier on the proto-quic mailing list, but as far as I remember, we never reached a conclusion or discussed this on the IETF mailing list.\r\n\r\nThere are two options:\r\n\r\n1. STREAM frame boundaries MUST be preserved when retransmitting them, i.e. a STREAM frame that is being retransmitted MAY be split into further pieces, but MUST NOT be combined with other STREAM frames.\r\n2. STREAM frames MAY be reassembled before retransmitting them, and STREAM frame boundaries need not be preserved.\r\n\r\nOption 1. is what Chrome and quic-go are currently implementing. 2. is what the draft is specifying in the current version ([here](https://github.com/quicwg/base-drafts/blob/master/draft-ietf-quic-transport.md#sending-and-receiving-data)).\r\n\r\nIf we decide for 1., this needs to be reflected in the draft. If we decide for 2., we need to remove the QUIC_OVERLAPPING_STREAM_DATA (0x8057) error."
-  },
-  {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/144",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
     "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/144/labels{/name}",
@@ -5421,8 +5370,7 @@
     "updated_at": "2017-01-26T07:21:47Z",
     "closed_at": null,
     "body": "In the loss recovery draft, `OnPacketAcked` is called for every packet that is acked by an incoming Ack frame.\r\nThis function calls `DetectLostPackets`, which returns a list of packets that are considered lost. However, this return value is never used in `OnPacketAcked`.\r\n\r\nFurthermore, looking at `DetectLostPackets` in detail, it seems to me that it would be sufficient to call that function once (with the largest observed packet as function parameter) when receiving an Ack."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/143",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5480,7 +5428,8 @@
     "updated_at": "2017-01-20T02:33:13Z",
     "closed_at": null,
     "body": "Servers shouldn't need to send more than one version negotiation packet, they only resend so that they are stateless and to deal with packet loss on the return path.\r\n\r\nClients should ignore version negotiation packets if they already have received packets from the server.  \r\n\r\nThis requirement on the client could be used for denial of service in the case where the legitimate server needs to use version negotiation.  If an attacker can race a legitimate looking ServerHello at the client (which isn't impossible), then the client will ignore the real server's attempt at version negotiation.  This is hard for an off-path attacker due to the need to echo certain parts of the client initial packet.  (I'd say connection ID is enough, but that might run afoul of #119.)"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/142",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
