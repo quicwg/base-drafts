@@ -2032,8 +2032,8 @@ the state of a stream while the frame is in transit.  Endpoints do not
 coordinate the creation of streams; they are created unilaterally by either
 endpoint.  The negative consequences of a mismatch in states are limited to the
 "closed" state after sending RST_STREAM, where frames might be received for some
-time after closing.  Endpoints SHOULD use acknowledgments to understand the
-peer's subjective view of stream state at any given time.
+time after closing.  Endpoints can use acknowledgments to understand the peer's
+subjective view of stream state at any given time.
 
 Streams have the following states:
 
@@ -2200,8 +2200,8 @@ the concurrent stream limit.
 A recently closed stream MUST also be considered to count toward this limit
 until packets containing all frames required to close the stream have been
 acknowledged. For a stream which closed cleanly, this means all STREAM frames
-have been acknowledged; for a stream closed abruptly, this means the RST_STREAM
-frame has been acknowledged.
+have been acknowledged; for a stream which closed abruptly, this means the
+RST_STREAM frame has been acknowledged.
 
 Endpoints MUST NOT exceed the limit set by their peer.  An endpoint that
 receives a STREAM frame that causes its advertised concurrent stream limit to be
