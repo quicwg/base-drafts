@@ -420,7 +420,7 @@
     "milestone": null,
     "comments": 1,
     "created_at": "2017-03-09T02:14:13Z",
-    "updated_at": "2017-03-10T17:47:04Z",
+    "updated_at": "2017-03-10T17:51:57Z",
     "closed_at": null,
     "pull_request": {
       "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/376",
