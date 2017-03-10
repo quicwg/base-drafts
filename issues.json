@@ -1,56 +1,5 @@
 [
   {
-    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/386",
-    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
-    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/386/labels{/name}",
-    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/386/comments",
-    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/386/events",
-    "html_url": "https://github.com/quicwg/base-drafts/pull/386",
-    "id": 213448672,
-    "number": 386,
-    "title": "Fixes SST reference",
-    "user": {
-      "login": "janaiyengar",
-      "id": 11067604,
-      "avatar_url": "https://avatars1.githubusercontent.com/u/11067604?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/janaiyengar",
-      "html_url": "https://github.com/janaiyengar",
-      "followers_url": "https://api.github.com/users/janaiyengar/followers",
-      "following_url": "https://api.github.com/users/janaiyengar/following{/other_user}",
-      "gists_url": "https://api.github.com/users/janaiyengar/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/janaiyengar/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/janaiyengar/subscriptions",
-      "organizations_url": "https://api.github.com/users/janaiyengar/orgs",
-      "repos_url": "https://api.github.com/users/janaiyengar/repos",
-      "events_url": "https://api.github.com/users/janaiyengar/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/janaiyengar/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "labels": [
-
-    ],
-    "state": "open",
-    "locked": false,
-    "assignee": null,
-    "assignees": [
-
-    ],
-    "milestone": null,
-    "comments": 0,
-    "created_at": "2017-03-10T20:50:12Z",
-    "updated_at": "2017-03-10T20:55:24Z",
-    "closed_at": null,
-    "pull_request": {
-      "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/386",
-      "html_url": "https://github.com/quicwg/base-drafts/pull/386",
-      "diff_url": "https://github.com/quicwg/base-drafts/pull/386.diff",
-      "patch_url": "https://github.com/quicwg/base-drafts/pull/386.patch"
-    },
-    "body": "based on PR #333 "
-  },
-  {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/385",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
     "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/385/labels{/name}",
@@ -864,57 +813,6 @@
     "updated_at": "2017-03-08T23:21:16Z",
     "closed_at": null,
     "body": "@ddragana observes that the 64-bit offset value in the WINDOW_UPDATE message is probably the first value that we will run out of (over packet numbers and stream numbers, which should last a bit longer in most cases).  We could avoid this by multiplying these values by a constant (she suggests 1024), which would reduce the granularity with which flow control credits could be granted, but increase the total lifetime of a long-lived connection.\r\n\r\nSo, trade-off time.  The scaling multiplier is now 1.  A larger value allows for longer-lived connections, a shorter value allows finer control over flow control.  I'd suggest that values in the order of 8 are probably easy to justify, can we go as high as 1024?\r\n\r\nWe could also choose a different value for the connection and stream flow control offsets on that basis that connections need more octets, whereas streams do not."
-  },
-  {
-    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/333",
-    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
-    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/333/labels{/name}",
-    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/333/comments",
-    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/333/events",
-    "html_url": "https://github.com/quicwg/base-drafts/pull/333",
-    "id": 209377948,
-    "number": 333,
-    "title": "improve-sst-reference",
-    "user": {
-      "login": "reschke",
-      "id": 332994,
-      "avatar_url": "https://avatars0.githubusercontent.com/u/332994?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/reschke",
-      "html_url": "https://github.com/reschke",
-      "followers_url": "https://api.github.com/users/reschke/followers",
-      "following_url": "https://api.github.com/users/reschke/following{/other_user}",
-      "gists_url": "https://api.github.com/users/reschke/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/reschke/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/reschke/subscriptions",
-      "organizations_url": "https://api.github.com/users/reschke/orgs",
-      "repos_url": "https://api.github.com/users/reschke/repos",
-      "events_url": "https://api.github.com/users/reschke/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/reschke/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "labels": [
-
-    ],
-    "state": "open",
-    "locked": false,
-    "assignee": null,
-    "assignees": [
-
-    ],
-    "milestone": null,
-    "comments": 1,
-    "created_at": "2017-02-22T07:55:56Z",
-    "updated_at": "2017-03-10T20:41:05Z",
-    "closed_at": null,
-    "pull_request": {
-      "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/333",
-      "html_url": "https://github.com/quicwg/base-drafts/pull/333",
-      "diff_url": "https://github.com/quicwg/base-drafts/pull/333.diff",
-      "patch_url": "https://github.com/quicwg/base-drafts/pull/333.patch"
-    },
-    "body": ""
   },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/330",
@@ -1792,8 +1690,7 @@
     "updated_at": "2017-02-07T00:01:56Z",
     "closed_at": null,
     "body": "And define how it interacts with TLS, if at all."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/263",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -1908,7 +1805,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/257.patch"
     },
     "body": "for #252 "
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/253",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3532,8 +3430,7 @@
     "updated_at": "2017-01-24T02:45:11Z",
     "closed_at": null,
     "body": "There is a two byte length field. Surely a 256-byte reason phrase is long enough.\r\n\r\nAlso, are these in ASCII? UTF-8?"
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/198",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3649,7 +3546,8 @@
     "updated_at": "2017-01-24T01:38:48Z",
     "closed_at": null,
     "body": "I think it would be good to make padding the responsibility of the crypto layer. TLS already has a reasonable padding scheme which we can just steal here."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/196",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5536,8 +5434,7 @@
     "updated_at": "2017-03-10T03:55:13Z",
     "closed_at": null,
     "body": "Because of a stated goal from some implementers to reuse HTTP/2 framing as much as possible, the draft currently augments the HTTP/2 Frame Type Registry with a \"Supported Protocol\" column, allowing a frame to be defined for HTTP/2, HTTP/QUIC, or both.  A specification is required for each supported protocol.\r\n\r\nHowever, in the current draft, all but one \"Both\" frames are *different* between HTTP/2 and HTTP/QUIC.  Small or large, nearly every frame has required some modification to work over QUIC.  If we accept #80 , *all* frames will be different between HTTP/2 and HTTP/QUIC.\r\n\r\nAt that point, is there really a point in continuing to define HTTP/QUIC in relation to HTTP/2, or should we just admit that it's a new, separate thing that's heavily inspired by HTTP/2?  Separate registry, etc., and future extensions can register themselves with both if appropriate?  Or do we keep the same registry anyway to enforce that you'll never wind up with totally unrelated frames sharing the same value across the two protocols?"
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/76",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5660,7 +5557,8 @@
     "updated_at": "2017-02-20T13:27:21Z",
     "closed_at": null,
     "body": "ECN is not currently mentioned in the recovery draft, but it should be included.\r\n\r\nMore importantly, the transport draft has no ability for the peer to communicate ECN marks back to the sender.  I suspect, like ECN, the use of this in the transport would be negotiable in the QUIC handshake.\r\n\r\nIn practice, there most userspace network stacks also cannot see if those marks are set when packets are read."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/65",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
