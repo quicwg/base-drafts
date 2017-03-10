@@ -223,106 +223,6 @@
     "body": "In the error codes there's a QUIC_PACKET_TOO_LARGE error, but there's no maximum packet size specified anywhere in the document.\r\n\r\nDoes it make sense to define a maximum packet size or must a QUIC implementation be capable of handling packets with the maximum UDP packet size? Google QUIC currently uses 1452 as the maximum packet size (= Ethernet MTU - minimum UDP header size)."
   },
   {
-    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/381",
-    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
-    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/381/labels{/name}",
-    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/381/comments",
-    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/381/events",
-    "html_url": "https://github.com/quicwg/base-drafts/pull/381",
-    "id": 213195095,
-    "number": 381,
-    "title": "ACK means all frames processed; closed means all frames ACK'd",
-    "user": {
-      "login": "MikeBishop",
-      "id": 4273797,
-      "avatar_url": "https://avatars3.githubusercontent.com/u/4273797?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/MikeBishop",
-      "html_url": "https://github.com/MikeBishop",
-      "followers_url": "https://api.github.com/users/MikeBishop/followers",
-      "following_url": "https://api.github.com/users/MikeBishop/following{/other_user}",
-      "gists_url": "https://api.github.com/users/MikeBishop/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/MikeBishop/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/MikeBishop/subscriptions",
-      "organizations_url": "https://api.github.com/users/MikeBishop/orgs",
-      "repos_url": "https://api.github.com/users/MikeBishop/repos",
-      "events_url": "https://api.github.com/users/MikeBishop/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/MikeBishop/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "labels": [
-      {
-        "id": 481871361,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/design",
-        "name": "design",
-        "color": "1d76db",
-        "default": false
-      },
-      {
-        "id": 481871399,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
-        "name": "transport",
-        "color": "fbca04",
-        "default": false
-      }
-    ],
-    "state": "open",
-    "locked": false,
-    "assignee": {
-      "login": "janaiyengar",
-      "id": 11067604,
-      "avatar_url": "https://avatars1.githubusercontent.com/u/11067604?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/janaiyengar",
-      "html_url": "https://github.com/janaiyengar",
-      "followers_url": "https://api.github.com/users/janaiyengar/followers",
-      "following_url": "https://api.github.com/users/janaiyengar/following{/other_user}",
-      "gists_url": "https://api.github.com/users/janaiyengar/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/janaiyengar/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/janaiyengar/subscriptions",
-      "organizations_url": "https://api.github.com/users/janaiyengar/orgs",
-      "repos_url": "https://api.github.com/users/janaiyengar/repos",
-      "events_url": "https://api.github.com/users/janaiyengar/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/janaiyengar/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "assignees": [
-      {
-        "login": "janaiyengar",
-        "id": 11067604,
-        "avatar_url": "https://avatars1.githubusercontent.com/u/11067604?v=3",
-        "gravatar_id": "",
-        "url": "https://api.github.com/users/janaiyengar",
-        "html_url": "https://github.com/janaiyengar",
-        "followers_url": "https://api.github.com/users/janaiyengar/followers",
-        "following_url": "https://api.github.com/users/janaiyengar/following{/other_user}",
-        "gists_url": "https://api.github.com/users/janaiyengar/gists{/gist_id}",
-        "starred_url": "https://api.github.com/users/janaiyengar/starred{/owner}{/repo}",
-        "subscriptions_url": "https://api.github.com/users/janaiyengar/subscriptions",
-        "organizations_url": "https://api.github.com/users/janaiyengar/orgs",
-        "repos_url": "https://api.github.com/users/janaiyengar/repos",
-        "events_url": "https://api.github.com/users/janaiyengar/events{/privacy}",
-        "received_events_url": "https://api.github.com/users/janaiyengar/received_events",
-        "type": "User",
-        "site_admin": false
-      }
-    ],
-    "milestone": null,
-    "comments": 1,
-    "created_at": "2017-03-09T23:10:54Z",
-    "updated_at": "2017-03-10T17:35:23Z",
-    "closed_at": null,
-    "pull_request": {
-      "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/381",
-      "html_url": "https://github.com/quicwg/base-drafts/pull/381",
-      "diff_url": "https://github.com/quicwg/base-drafts/pull/381.diff",
-      "patch_url": "https://github.com/quicwg/base-drafts/pull/381.patch"
-    },
-    "body": "Fixes #341, #200 ."
-  },
-  {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/378",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
     "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/378/labels{/name}",
@@ -992,64 +892,6 @@
     "updated_at": "2017-02-25T16:32:14Z",
     "closed_at": null,
     "body": "A lost handshake packet is retransmitted after 400ms (assuming that you don't have prior knowledge of the RTT, if you do then it is 2xRTT).  I realize that this is probably shorter than in TCP, but it's still a damned long time to wait.\r\n\r\nWe are far more aggressive in this in WebRTC with DTLS.  For example, NSS retransmits three times before QUIC even sends its first: at 50ms, 150ms, and 350ms.  We haven't seen much evidence that this is bring the Internet to its knees.  It's certainly good for latency to retransmit more aggressively.  Separately, we also send ICE probes much faster, without the back-off, though those are typically much smaller.\r\n\r\nThat said, if retransmitting at this pace is somehow doing damage to something, it would be good to understand why this is the case.  We're definitely interested in avoiding an inadvertent damage that we're doing and changing the above numbers could happen pretty quickly with proper justification."
-  },
-  {
-    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/341",
-    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
-    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/341/labels{/name}",
-    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/341/comments",
-    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/341/events",
-    "html_url": "https://github.com/quicwg/base-drafts/issues/341",
-    "id": 209903637,
-    "number": 341,
-    "title": "What does it mean to acknowledge something?",
-    "user": {
-      "login": "martinthomson",
-      "id": 67641,
-      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/martinthomson",
-      "html_url": "https://github.com/martinthomson",
-      "followers_url": "https://api.github.com/users/martinthomson/followers",
-      "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
-      "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
-      "organizations_url": "https://api.github.com/users/martinthomson/orgs",
-      "repos_url": "https://api.github.com/users/martinthomson/repos",
-      "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/martinthomson/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "labels": [
-      {
-        "id": 481871361,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/design",
-        "name": "design",
-        "color": "1d76db",
-        "default": false
-      },
-      {
-        "id": 481871399,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
-        "name": "transport",
-        "color": "fbca04",
-        "default": false
-      }
-    ],
-    "state": "open",
-    "locked": false,
-    "assignee": null,
-    "assignees": [
-
-    ],
-    "milestone": null,
-    "comments": 5,
-    "created_at": "2017-02-23T22:27:10Z",
-    "updated_at": "2017-02-24T00:34:06Z",
-    "closed_at": null,
-    "body": "We're starting to see a few cases where ACK frames are being used to close the loop on things.  But that raises questions like \"if a peer acknowledges a packet containing a GOAWAY, does that mean I can assume that stream above the mentioned number are now closed at their end?\"\r\n\r\nI think that we need to state what the rule is, and it should be simple.  An acknowledgement for a packet implies that all QUIC-level control messages have been read and processed.\r\n\r\nThis includes PING, ACK, RST_STREAM, GOAWAY, etc...  I think that it also has to include FIN bits on STREAM frames.  That implies that the *transport* must have finished handling all the messages.\r\n\r\nThe application protocol might not have consumed the data from STREAM frames, but that is the only thing that is considered outstanding when a packet is acknowledged.  We have a special sort of acknowledgment for data: flow control credits.\r\n\r\nIf we add features that include special acknowledgement (like flow control), then those would be excluded, but that would be explicitly stated.  Otherwise, if it is in the transport and it is acknowledged, then it has been processed by the receiver."
   },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/340",
@@ -1862,8 +1704,7 @@
     "updated_at": "2017-03-09T23:55:02Z",
     "closed_at": null,
     "body": "Something that came up in Tokyo was the need for service providers (i.e. middleboxes) to troubleshoot performance issues in the network. Packet Number Echo (#269) could partially address this problem., particularly for RTT measurement. But it is imperfect for measuring other problems.\r\n\r\nAs someone who has spent quite a bit of time debugging TCP packet traces from service providers, there are two other things that would help greatly in answering the question \"why is my QUIC slow\", without significantly compromising privacy. To do both would take two bits in the public flags, which may be available depending on how some other issues turn out.\r\n\r\n(1) QUIC endpoints MAY set the BLOCKED bit if they include a BLOCKED frame in the packet. If you want to get fancy, you could have a different bit for \"stream blocked\" and \"connection blocked\", but flow control issues are a common cause of traffic pauses with no other discernable symptoms.\r\n(2) QUIC endpoints MUST (SHOULD?) set the RETRANS flag in any packet that contains retransmitted data. This would help operators identify that a connection is slowing down because it is responding to loss, and would allow for very reliable loss statistics for the downstream network."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/269",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -1979,7 +1820,8 @@
     "updated_at": "2017-03-10T05:42:57Z",
     "closed_at": null,
     "body": "PR #106 added the following requirement on servers:\r\n\r\n> Servers MUST reject the first plaintext packet received from a client if it its total size is less than 1280 octets, to mitigate amplification attacks.\r\n\r\nHowever, this runs into an issue in the case where there are IP header extensions that the client knows about but the server doesn't.  If the client is aware of the IP header extensions and constructs a packet with a smaller payload in order to comply with our recommendation to create a packet of exactly 1280 octets, the server will receive a packet that it thinks is too small.\r\n\r\nI see a few options:\r\n1. loosen the enforcement constraint on the server\r\n2. specify that the server only enforce the constraint if it sees the entire IP packet\r\n3. specify the minimum size and its enforcement in terms of payload size (we could set different values here to allow for header extensions)"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/265",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3602,8 +3444,7 @@
     "updated_at": "2017-01-25T00:29:17Z",
     "closed_at": null,
     "body": "This issue directly applies to the use of Server Proposed Connection ID (issue #119) / Stateless Rejects (issue #60).\r\n\r\n\"Origin servers\" are often complex multi-server data centers with load balancers. Some \"origin servers\" are actually globally distributed load balancing and routing systems, possibly with multiple levels of load balancing (for example global and local).  Since packets may show up at any load balancer node (both for global and local load balancers), it is very difficult (if not prohibitive) for these load balancers to keep track of the load balancing decision for each active connection and share that state among all nodes.\r\n\r\nTo enable stateless load balancing, load balancers need every packet to include routing information for its connection. Server Proposed Connection ID (#119) with Stateless Rejects (#60) are the methods of choice, as they allow the \"origin server system\" to encode some information into the ConnectionID -- a part of the public header present in every packet.  However, depending on the complexity of the encoded routing information, 64 bits may not be enough to ensure a sufficient amount of entropy in the ConnectionID.\r\n\r\nThe proposal is to allow Server Proposed Connection ID to include additional information to be present in every packet. That additional information can take a form of an optional longer Connection ID (and therefore be immutable) or be a new mutable part of the public header."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/203",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3719,7 +3560,8 @@
     "updated_at": "2017-01-24T03:59:20Z",
     "closed_at": null,
     "body": "Consider the following sequence of events on a stream (assuming that MSPC allows exactly one application data stream in the C-S direction:\r\n\r\n```\r\n<---------- Stream Establishment ----------->\r\n<----------------------------------------- FIN\r\nFIN ----------------------------------------->\r\nDATA (stream N+1) -------------------------->\r\n```\r\n\r\nIf you get reordering between the FIN and the data then the server will see it as exceeding MSPC and send  QUIC_TOO_MANY_OPEN_STREAMS. Ugh."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/199",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5556,8 +5398,7 @@
     "updated_at": "2017-01-25T08:02:05Z",
     "closed_at": null,
     "body": "There are a bunch of things that need to be addressed here.  What is likely to happen is that this issue will turn into many smaller issues and this will eventually get closed as those become better understood.\r\n\r\n1. Reasons migration might be needed (mobility, NAT rebinding, routing changes, etc...)\r\n2. Routing considerations when migration occurs\r\n3. Privacy implications of linkability across migrations\r\n4. Verifying consent to send on a new path\r\n5. Establishing any desired middlebox state along the path\r\n"
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/109",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5716,7 +5557,8 @@
     "updated_at": "2017-03-10T03:56:08Z",
     "closed_at": null,
     "body": "#87 covers improving the current use of ALPN and the Alt-Svc v= parameter for HTTP.  However, I think this is something that QUIC needs to solve generically, so forking off a separate issue for that.\r\n\r\nHere are the paths I see that we need to support:\r\n\r\n- **Client to server, first time:** This is inherently a 1-RTT handshake *if* the client guesses the version correctly; 2 RTTs if it's wrong.  This incents clients to attempt the most widely-deployed version of QUIC rather than their highest version.  Consequently, there needs to be a way for a conservative client to discover that a server supports a more advanced version.\r\n- **Client to server, subsequent:** The cached information should contain information about the server's supported versions so the client can come back with the same version as last time. The scenarios where one side has changed need consideration, though:\r\n    - **Client upgraded:** Would require client to cache server's full set of supported versions and compare against the client's supported set at connect time, not just caching the selected version.\r\n    - **Server upgraded:** The current mechanism offers no way for a client to discover that the server would have accepted a version it didn't initially offer, whether because the server didn't previously support it or the client is being conservative.\r\n\r\nIdeally, I'd like to see these solved for QUIC independent of Alt-Svc -- there will be other users besides HTTP.\r\n\r\nI think this could be solved by requiring the server to always send its Version Negotiation list in the crypto handshake, not just if a Version Negotiation packet was actually sent.  Clients can discover when the server supports a newer version than they attempted, and either know what to offer next time or actively open a new connection with the new version in parallel."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/81",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
