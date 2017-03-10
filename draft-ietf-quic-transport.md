@@ -2487,9 +2487,6 @@ QUIC_MISSING_PAYLOAD (0x80000030):
 QUIC_INVALID_STREAM_DATA (0x8000002E):
 : STREAM frame data is malformed.
 
-QUIC_OVERLAPPING_STREAM_DATA (0x80000057):
-: STREAM frame data overlaps with buffered data.
-
 QUIC_UNENCRYPTED_STREAM_DATA (0x8000003D):
 : Received STREAM frame data is not encrypted.
 
