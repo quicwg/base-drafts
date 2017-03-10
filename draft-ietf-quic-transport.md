@@ -65,9 +65,9 @@ informative:
       - ins: B. Ford
     date: 2007-10
     seriesinfo:
-         DOI: 10.1145/1282427.1282421
-	 ACM SIGCOMM: Computer Communication Review Volume 37 Issue 4
-	 target: "http://www.sigcomm.org/sites/default/files/ccr/papers/2007/October/1282427-1282421.pdf"
+      DOI: 10.1145/1282427.1282421
+      ACM SIGCOMM: Computer Communication Review Volume 37 Issue 4
+      target: "http://www.sigcomm.org/sites/default/files/ccr/papers/2007/October/1282427-1282421.pdf"
 
   EARLY-DESIGN:
     title: "QUIC: Multiplexed Transport Over UDP"
