@@ -797,9 +797,9 @@ QUIC does not assume a reliable transport and is required to handle attacks
 where packets are dropped in other ways.  QUIC is therefore not affected by this
 form of truncation.
 
-The packet number is not reset and it is not permitted to go higher than its
-maximum value of 2^64-1.  This establishes a hard limit on the number of packets
-that can be sent.
+The QUIC packet number is not reset and it is not permitted to go higher than
+its maximum value of 2^64-1.  This establishes a hard limit on the number of
+packets that can be sent.
 
 Some AEAD functions have limits for how many packets can be encrypted under the
 same key and IV (see for example {{AEBounds}}).  This might be lower than the
@@ -809,6 +809,21 @@ prior to exceeding any limit set for the AEAD that is in use.
 TLS maintains a separate sequence number that is used for record protection on
 the connection that is hosted on stream 1.  This sequence number is not visible
 to QUIC.
+
+
+## Receiving Protected Packets
+
+Once an endpoint successfully receives a packet with a given packet number, it
+MUST discard all packets with higher packet numbers if they cannot be
+successfully unprotected with either the same key, or - if there is a key update
+- the next packet protection key (see {{key-update}}).  Similarly, a packet that
+appears to trigger a key update, but cannot be unprotected successfully MUST be
+discarded.
+
+Failure to unprotect a packet does not necessarily indicate the existence of a
+protocol error in a peer or an attack.  The truncated packet number encoding
+used in QUIC can cause packet numbers to be decoded incorrectly if they are
+delayed significantly.
 
 
 # Key Phases
@@ -999,6 +1014,12 @@ Finished message.  Otherwise, packets protected by the updated keys could be
 confused for retransmissions of handshake messages.  A client cannot initiate a
 key update until all of its handshake messages have been acknowledged by the
 server.
+
+A packet that triggers a key update could arrive after successfully processing a
+packet with a higher packet number.  This is only possible if there is a key
+compromise and an attack, or if the peer is incorrectly reverting to use of old
+keys.  Because the latter cannot be differentiated from an attack, an endpoint
+MUST immediately terminate the connection if it detects this condition.
 
 
 # Client Address Validation {#client-address-validation}
