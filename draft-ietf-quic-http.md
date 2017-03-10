@@ -1078,6 +1078,8 @@ The original authors of this specification were Robbie Shade and Mike Warres.
 
 - 0-RTT guidance added
 
+- Guide to differences from HTTP/2 and porting HTTP/2 extensions added
+
 ## Since draft-ietf-quic-http-00:
 
 - Changed "HTTP/2-over-QUIC" to "HTTP/QUIC" throughout
