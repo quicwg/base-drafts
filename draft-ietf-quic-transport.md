@@ -865,8 +865,8 @@ connection_fc_offset (0x0001):
   of 1024 octets.  That is, the value here is multiplied by 1024 to determine
   the actual flow control offset.  The sender of this parameter sets the byte
   offset for connection level flow control to this value.  This is equivalent to
-  sending a WINDOW_UPDATE ({{frame-window-update}}) for stream 0 immediately
-  after completing the handshake.
+  sending a WINDOW_UPDATE ({{frame-window-update}}) for the connection
+  immediately after completing the handshake.
 
 concurrent_streams (0x0002):
 
@@ -1545,10 +1545,10 @@ The connection-level flow control offset is expressed in units of 1024 octets
 offset is determined by multiplying the encoded value by 1024.
 
 An endpoint accounts for the maximum offset of data that is sent or received on
-a stream.  Loss or reordering can mean that the size of STREAM frames can be
-less than the maximum data offset on a stream; similarly, STREAM frames might
-not cause the maximum offset on a stream.  A STREAM frame with a FIN bit set or
-RST_STREAM causes the final offset for a stream to be fixed.
+a stream.  Loss or reordering can mean that the maximum offset is greater than
+the total size of data received on a stream.  Similarly, receiving STREAM frames
+might not increase the maximum offset on a stream.  A STREAM frame with a FIN
+bit set or RST_STREAM causes the final offset for a stream to be fixed.
 
 The maximum data offset on a stream MUST NOT exceed the stream flow control
 offset advertised by the receiver.  The sum of the maximum data offsets of all
