@@ -995,106 +995,6 @@
     "body": "@ddragana observes that the 64-bit offset value in the WINDOW_UPDATE message is probably the first value that we will run out of (over packet numbers and stream numbers, which should last a bit longer in most cases).  We could avoid this by multiplying these values by a constant (she suggests 1024), which would reduce the granularity with which flow control credits could be granted, but increase the total lifetime of a long-lived connection.\r\n\r\nSo, trade-off time.  The scaling multiplier is now 1.  A larger value allows for longer-lived connections, a shorter value allows finer control over flow control.  I'd suggest that values in the order of 8 are probably easy to justify, can we go as high as 1024?\r\n\r\nWe could also choose a different value for the connection and stream flow control offsets on that basis that connections need more octets, whereas streams do not."
   },
   {
-    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/337",
-    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
-    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/337/labels{/name}",
-    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/337/comments",
-    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/337/events",
-    "html_url": "https://github.com/quicwg/base-drafts/pull/337",
-    "id": 209664083,
-    "number": 337,
-    "title": "The client Finished message can't be protected with 1-RTT keys",
-    "user": {
-      "login": "martinthomson",
-      "id": 67641,
-      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/martinthomson",
-      "html_url": "https://github.com/martinthomson",
-      "followers_url": "https://api.github.com/users/martinthomson/followers",
-      "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
-      "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
-      "organizations_url": "https://api.github.com/users/martinthomson/orgs",
-      "repos_url": "https://api.github.com/users/martinthomson/repos",
-      "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/martinthomson/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "labels": [
-      {
-        "id": 481871361,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/design",
-        "name": "design",
-        "color": "1d76db",
-        "default": false
-      },
-      {
-        "id": 481871604,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/tls",
-        "name": "tls",
-        "color": "fbca04",
-        "default": false
-      }
-    ],
-    "state": "open",
-    "locked": false,
-    "assignee": {
-      "login": "seanturner",
-      "id": 4488966,
-      "avatar_url": "https://avatars3.githubusercontent.com/u/4488966?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/seanturner",
-      "html_url": "https://github.com/seanturner",
-      "followers_url": "https://api.github.com/users/seanturner/followers",
-      "following_url": "https://api.github.com/users/seanturner/following{/other_user}",
-      "gists_url": "https://api.github.com/users/seanturner/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/seanturner/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/seanturner/subscriptions",
-      "organizations_url": "https://api.github.com/users/seanturner/orgs",
-      "repos_url": "https://api.github.com/users/seanturner/repos",
-      "events_url": "https://api.github.com/users/seanturner/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/seanturner/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "assignees": [
-      {
-        "login": "seanturner",
-        "id": 4488966,
-        "avatar_url": "https://avatars3.githubusercontent.com/u/4488966?v=3",
-        "gravatar_id": "",
-        "url": "https://api.github.com/users/seanturner",
-        "html_url": "https://github.com/seanturner",
-        "followers_url": "https://api.github.com/users/seanturner/followers",
-        "following_url": "https://api.github.com/users/seanturner/following{/other_user}",
-        "gists_url": "https://api.github.com/users/seanturner/gists{/gist_id}",
-        "starred_url": "https://api.github.com/users/seanturner/starred{/owner}{/repo}",
-        "subscriptions_url": "https://api.github.com/users/seanturner/subscriptions",
-        "organizations_url": "https://api.github.com/users/seanturner/orgs",
-        "repos_url": "https://api.github.com/users/seanturner/repos",
-        "events_url": "https://api.github.com/users/seanturner/events{/privacy}",
-        "received_events_url": "https://api.github.com/users/seanturner/received_events",
-        "type": "User",
-        "site_admin": false
-      }
-    ],
-    "milestone": null,
-    "comments": 0,
-    "created_at": "2017-02-23T04:55:25Z",
-    "updated_at": "2017-02-23T04:55:25Z",
-    "closed_at": null,
-    "pull_request": {
-      "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/337",
-      "html_url": "https://github.com/quicwg/base-drafts/pull/337",
-      "diff_url": "https://github.com/quicwg/base-drafts/pull/337.diff",
-      "patch_url": "https://github.com/quicwg/base-drafts/pull/337.patch"
-    },
-    "body": "This actually simplifies things a fair bit.  Now we can just say that 1-RTT keys are available when the Finished message is sent.\r\n\r\nCloses #262."
-  },
-  {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/333",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
     "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/333/labels{/name}",
@@ -1826,8 +1726,7 @@
     "updated_at": "2017-02-15T05:20:55Z",
     "closed_at": null,
     "body": "The text currently says:\r\n\r\n> Once a client receives a packet from the server with the VERSION flag unset, it MUST ignore the flag in subsequently received packets.\r\n\r\nI don't know how to interpret this.  What should a client do if it receives a packet with the VERSION flag set after completing version negotiation?  Maybe should should mandate ignoring the packet not just the flag."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/281",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -1892,7 +1791,8 @@
     "updated_at": "2017-02-15T05:20:29Z",
     "closed_at": null,
     "body": "In HTTP/2, streams states were modified at the point that a PUSH_PROMISE was sent, but actually using that stream could be deferred.  The \"reserved\" state didn't count toward concurrency limit, those streams would count only when packets were first sent.\r\n\r\nIf the client had a low concurrency limit, that could mean that use of promised streams had to be deferred until active streams could be closed.  QUIC maintains a similar model, but that model is incompatible with QUIC.  In HTTP/2, any promised streams can be opened without creating any ambiguity about the state of other reserved streams.  HTTP/2 also allowed endpoints to skip stream numbers.\r\n\r\nIn QUIC the lack of ordering between streams (a feature!) forces us to insist on having a strict monotonic sequence of stream numbers.  If a stream number appears to be skipped, that is only because a packet using it has not yet arrived.  This ensures much simpler accounting for streams and avoids adding latency to stream creation.\r\n\r\nThis creates a problem for promises.  Servers cannot use streams in any order, only those streams within the window of streams permitted by the client concurrency limit are free to be used.\r\n\r\nFor example, a client could have an MSPC of 2.  That allows just one server push at a time.  A server that wants to push two resources could advertise one push on streams 4+6 and the other on 8+10.  However, unlike in HTTP/2 the server cannot start the second push first.  Opening stream 8 would imply that streams 4 and 6 are also open, violating the concurrency limit.\r\n\r\nIt's not clear that this problem needs a solution, but it is a functional regression that we should at least consider and make a conscious decision to accept."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/279",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -2233,71 +2133,6 @@
     "updated_at": "2017-02-07T15:52:03Z",
     "closed_at": null,
     "body": "This is an issue we briefly discussed in a coffee break in Tokyo, that nobody has written up so far.\r\n\r\nWe currently don't have a definition of the number of concurrent streams that both peers agree on at every given moment. Chrome and quic-go solve this problem by allowing a higher number of open streams (10% or 10 streams more, whichever is higher, than the advertised limit). This seems to work fine for HTTP, but will probably break down when using many short-lived streams.\r\n\r\n### Problem analysis\r\n\r\nThe main problem here is that it is very difficult for the sender to determine if the receiver considers a stream closed at any given moment. To do so, it would have to keep track of all packets containing stream data for that stream. Only when all of those packets have been ACKed (or retransmissions of those packets, if any packets were lost), it knows that the stream changed its state on the receiver's side.\r\n\r\nI think there's a more fundamental problem hidden here: Receiving a FIN should not cause a state transition in the first place. The concurrent stream limit is supposed to protect a receiver from allocating to many resources. Therefore, a stream should only be considered closed once the application finished reading from that stream (which, if it is reading the whole stream data, is only possible after receiving the FIN, but might be an arbitrary amount of time later, if the application is reading slowly).\r\n\r\n### Possible solution\r\n\r\nThere needs to be a way for the receiver to tell the sender that it considers a stream closed. We could introduce a CLOSED_STREAM frame type for that.\r\nA peer would send a CLOSED_STREAM frame only after it closed the stream locally (i.e. only from the *half closed (locally)* state) and after it finished reading from the stream. \r\nA peer receiving a CLOSED_STREAM can immediately remove the corresponding stream from the list of open streams.\r\n\r\n\r\nI can work out the details and provide a PR for this, but I'd like to discuss the proposal here first. It might make sense to finish the changes regarding the resetting of streams (related issues: #165 and #171), since this will already significantly change the stream state diagram."
-  },
-  {
-    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/262",
-    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
-    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/262/labels{/name}",
-    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/262/comments",
-    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/262/events",
-    "html_url": "https://github.com/quicwg/base-drafts/issues/262",
-    "id": 205336061,
-    "number": 262,
-    "title": "Don't encrypt client handshake with 1-RTT keys",
-    "user": {
-      "login": "martinthomson",
-      "id": 67641,
-      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/martinthomson",
-      "html_url": "https://github.com/martinthomson",
-      "followers_url": "https://api.github.com/users/martinthomson/followers",
-      "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
-      "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
-      "organizations_url": "https://api.github.com/users/martinthomson/orgs",
-      "repos_url": "https://api.github.com/users/martinthomson/repos",
-      "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/martinthomson/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "labels": [
-      {
-        "id": 481871361,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/design",
-        "name": "design",
-        "color": "1d76db",
-        "default": false
-      },
-      {
-        "id": 481871604,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/tls",
-        "name": "tls",
-        "color": "fbca04",
-        "default": false
-      },
-      {
-        "id": 481871399,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
-        "name": "transport",
-        "color": "fbca04",
-        "default": false
-      }
-    ],
-    "state": "open",
-    "locked": false,
-    "assignee": null,
-    "assignees": [
-
-    ],
-    "milestone": null,
-    "comments": 0,
-    "created_at": "2017-02-04T09:32:15Z",
-    "updated_at": "2017-02-06T23:45:53Z",
-    "closed_at": null,
-    "body": "As @ekr observes, this violates the rules we've agreed to for TLS, the same applies here.\r\n\r\n(This was a long and difficult conversation in TLS, we should probably just work out how to make the change.)"
   },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/257",
@@ -3573,8 +3408,7 @@
     "updated_at": "2017-01-24T23:45:10Z",
     "closed_at": null,
     "body": "It may be desirable for the client to increase the flow control window mid-connection (it observes that client actually has very high BDP; it decides based on application request by peer that it will send a lot of data; it decides that it trusts the peer for some reason; potentially other options).  Currently, we can bump connection flow control window without an issue, but any new individual streams are stuck with whatever was initially negotiated.  We may want to add a mechanism to increase initial stream flow control window mid-connection."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/217",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3690,7 +3524,8 @@
     "updated_at": "2017-01-25T04:24:39Z",
     "closed_at": null,
     "body": "There is some sadness about public reset. See PR #20"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/211",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5391,8 +5226,7 @@
     "updated_at": "2017-01-19T09:07:30Z",
     "closed_at": null,
     "body": "Mostly references to drafts/rfcs/papers, but complete justifications are needed for this draft to be standalone."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/148",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5544,7 +5378,8 @@
     "updated_at": "2017-03-08T23:38:19Z",
     "closed_at": null,
     "body": "We had a [discussion](https://groups.google.com/a/chromium.org/forum/#!topic/proto-quic/j747iwug-Hg) about this earlier on the proto-quic mailing list, but as far as I remember, we never reached a conclusion or discussed this on the IETF mailing list.\r\n\r\nThere are two options:\r\n\r\n1. STREAM frame boundaries MUST be preserved when retransmitting them, i.e. a STREAM frame that is being retransmitted MAY be split into further pieces, but MUST NOT be combined with other STREAM frames.\r\n2. STREAM frames MAY be reassembled before retransmitting them, and STREAM frame boundaries need not be preserved.\r\n\r\nOption 1. is what Chrome and quic-go are currently implementing. 2. is what the draft is specifying in the current version ([here](https://github.com/quicwg/base-drafts/blob/master/draft-ietf-quic-transport.md#sending-and-receiving-data)).\r\n\r\nIf we decide for 1., this needs to be reflected in the draft. If we decide for 2., we need to remove the QUIC_OVERLAPPING_STREAM_DATA (0x8057) error."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/144",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7574,8 +7409,7 @@
     "updated_at": "2017-01-20T02:53:11Z",
     "closed_at": null,
     "body": "... relative to the client's ClientHello.\r\n\r\nWe don't want to design a packet amplifier, but it's highly likely that the server's Certificate will cause the server's messages to be at least a little bigger than the initial messages from the client.  We do need servers to send HelloRetryRequest and do source address validation, but how often?"
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/37",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7691,7 +7525,8 @@
     "updated_at": "2016-11-28T06:00:20Z",
     "closed_at": null,
     "body": "The attacker needs to be on path to create a valid-looking unprotected packet.  \r\n\r\nAlso, randomization doesn't help much if the attacker is on-path."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/33",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
