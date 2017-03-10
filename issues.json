@@ -821,93 +821,6 @@
     "body": "Closes #253.  I think there's value in having a way to specify a QUIC-only (or QUIC-first, though less so) endpoint for the reasons described in the issue."
   },
   {
-    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/345",
-    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
-    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/345/labels{/name}",
-    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/345/comments",
-    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/345/events",
-    "html_url": "https://github.com/quicwg/base-drafts/pull/345",
-    "id": 209964162,
-    "number": 345,
-    "title": "Add a section on what to do when unprotecting a packet fails",
-    "user": {
-      "login": "martinthomson",
-      "id": 67641,
-      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/martinthomson",
-      "html_url": "https://github.com/martinthomson",
-      "followers_url": "https://api.github.com/users/martinthomson/followers",
-      "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
-      "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
-      "organizations_url": "https://api.github.com/users/martinthomson/orgs",
-      "repos_url": "https://api.github.com/users/martinthomson/repos",
-      "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/martinthomson/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "labels": [
-
-    ],
-    "state": "open",
-    "locked": false,
-    "assignee": {
-      "login": "seanturner",
-      "id": 4488966,
-      "avatar_url": "https://avatars3.githubusercontent.com/u/4488966?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/seanturner",
-      "html_url": "https://github.com/seanturner",
-      "followers_url": "https://api.github.com/users/seanturner/followers",
-      "following_url": "https://api.github.com/users/seanturner/following{/other_user}",
-      "gists_url": "https://api.github.com/users/seanturner/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/seanturner/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/seanturner/subscriptions",
-      "organizations_url": "https://api.github.com/users/seanturner/orgs",
-      "repos_url": "https://api.github.com/users/seanturner/repos",
-      "events_url": "https://api.github.com/users/seanturner/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/seanturner/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "assignees": [
-      {
-        "login": "seanturner",
-        "id": 4488966,
-        "avatar_url": "https://avatars3.githubusercontent.com/u/4488966?v=3",
-        "gravatar_id": "",
-        "url": "https://api.github.com/users/seanturner",
-        "html_url": "https://github.com/seanturner",
-        "followers_url": "https://api.github.com/users/seanturner/followers",
-        "following_url": "https://api.github.com/users/seanturner/following{/other_user}",
-        "gists_url": "https://api.github.com/users/seanturner/gists{/gist_id}",
-        "starred_url": "https://api.github.com/users/seanturner/starred{/owner}{/repo}",
-        "subscriptions_url": "https://api.github.com/users/seanturner/subscriptions",
-        "organizations_url": "https://api.github.com/users/seanturner/orgs",
-        "repos_url": "https://api.github.com/users/seanturner/repos",
-        "events_url": "https://api.github.com/users/seanturner/events{/privacy}",
-        "received_events_url": "https://api.github.com/users/seanturner/received_events",
-        "type": "User",
-        "site_admin": false
-      }
-    ],
-    "milestone": null,
-    "comments": 1,
-    "created_at": "2017-02-24T05:36:40Z",
-    "updated_at": "2017-03-10T01:10:37Z",
-    "closed_at": null,
-    "pull_request": {
-      "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/345",
-      "html_url": "https://github.com/quicwg/base-drafts/pull/345",
-      "diff_url": "https://github.com/quicwg/base-drafts/pull/345.diff",
-      "patch_url": "https://github.com/quicwg/base-drafts/pull/345.patch"
-    },
-    "body": "Closes #32, #33."
-  },
-  {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/344",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
     "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/344/labels{/name}",
@@ -1827,8 +1740,7 @@
     "updated_at": "2017-02-15T05:20:29Z",
     "closed_at": null,
     "body": "In HTTP/2, streams states were modified at the point that a PUSH_PROMISE was sent, but actually using that stream could be deferred.  The \"reserved\" state didn't count toward concurrency limit, those streams would count only when packets were first sent.\r\n\r\nIf the client had a low concurrency limit, that could mean that use of promised streams had to be deferred until active streams could be closed.  QUIC maintains a similar model, but that model is incompatible with QUIC.  In HTTP/2, any promised streams can be opened without creating any ambiguity about the state of other reserved streams.  HTTP/2 also allowed endpoints to skip stream numbers.\r\n\r\nIn QUIC the lack of ordering between streams (a feature!) forces us to insist on having a strict monotonic sequence of stream numbers.  If a stream number appears to be skipped, that is only because a packet using it has not yet arrived.  This ensures much simpler accounting for streams and avoids adding latency to stream creation.\r\n\r\nThis creates a problem for promises.  Servers cannot use streams in any order, only those streams within the window of streams permitted by the client concurrency limit are free to be used.\r\n\r\nFor example, a client could have an MSPC of 2.  That allows just one server push at a time.  A server that wants to push two resources could advertise one push on streams 4+6 and the other on 8+10.  However, unlike in HTTP/2 the server cannot start the second push first.  Opening stream 8 would imply that streams 4 and 6 are also open, violating the concurrency limit.\r\n\r\nIt's not clear that this problem needs a solution, but it is a functional regression that we should at least consider and make a conscious decision to accept."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/279",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -1886,7 +1798,8 @@
     "updated_at": "2017-03-09T23:55:02Z",
     "closed_at": null,
     "body": "Something that came up in Tokyo was the need for service providers (i.e. middleboxes) to troubleshoot performance issues in the network. Packet Number Echo (#269) could partially address this problem., particularly for RTT measurement. But it is imperfect for measuring other problems.\r\n\r\nAs someone who has spent quite a bit of time debugging TCP packet traces from service providers, there are two other things that would help greatly in answering the question \"why is my QUIC slow\", without significantly compromising privacy. To do both would take two bits in the public flags, which may be available depending on how some other issues turn out.\r\n\r\n(1) QUIC endpoints MAY set the BLOCKED bit if they include a BLOCKED frame in the packet. If you want to get fancy, you could have a different bit for \"stream blocked\" and \"connection blocked\", but flow control issues are a common cause of traffic pauses with no other discernable symptoms.\r\n(2) QUIC endpoints MUST (SHOULD?) set the RETRANS flag in any packet that contains retransmitted data. This would help operators identify that a connection is slowing down because it is responding to loss, and would allow for very reliable loss statistics for the downstream network."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/269",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3560,8 +3473,7 @@
     "updated_at": "2017-01-25T04:24:39Z",
     "closed_at": null,
     "body": "There is some sadness about public reset. See PR #20"
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/211",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3619,7 +3531,8 @@
     "updated_at": "2017-01-24T01:29:57Z",
     "closed_at": null,
     "body": "There are LOTS of error codes.  The only sensible thing to do is use those code to steer the receiver in the direction of the right logic for recovering from the error.  There is a different piece of information that might be provided to an application for diagnostic purposes (the reason phrase helps if it goes across the wire) and there might be other needs for an API, but across the wire we can probably cut this down a lot."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/210",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5414,8 +5327,7 @@
     "updated_at": "2017-03-08T23:38:19Z",
     "closed_at": null,
     "body": "We had a [discussion](https://groups.google.com/a/chromium.org/forum/#!topic/proto-quic/j747iwug-Hg) about this earlier on the proto-quic mailing list, but as far as I remember, we never reached a conclusion or discussed this on the IETF mailing list.\r\n\r\nThere are two options:\r\n\r\n1. STREAM frame boundaries MUST be preserved when retransmitting them, i.e. a STREAM frame that is being retransmitted MAY be split into further pieces, but MUST NOT be combined with other STREAM frames.\r\n2. STREAM frames MAY be reassembled before retransmitting them, and STREAM frame boundaries need not be preserved.\r\n\r\nOption 1. is what Chrome and quic-go are currently implementing. 2. is what the draft is specifying in the current version ([here](https://github.com/quicwg/base-drafts/blob/master/draft-ietf-quic-transport.md#sending-and-receiving-data)).\r\n\r\nIf we decide for 1., this needs to be reflected in the draft. If we decide for 2., we need to remove the QUIC_OVERLAPPING_STREAM_DATA (0x8057) error."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/144",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5509,7 +5421,8 @@
     "updated_at": "2017-01-26T07:21:47Z",
     "closed_at": null,
     "body": "In the loss recovery draft, `OnPacketAcked` is called for every packet that is acked by an incoming Ack frame.\r\nThis function calls `DetectLostPackets`, which returns a list of packets that are considered lost. However, this return value is never used in `OnPacketAcked`.\r\n\r\nFurthermore, looking at `DetectLostPackets` in detail, it seems to me that it would be sufficient to call that function once (with the largest observed packet as function parameter) when receiving an Ack."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/143",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7399,65 +7312,6 @@
     "closed_at": null,
     "body": "We need to be absolutely explicit here: if unprotecting a packet fails, drop it.  \r\n\r\nIt's important that we have this rule to prevent trivial DoS attacks on connections.  Also, we need to make it clear that unauthenticated data does not get fed into the system unless we have very careful rules around how we handle that data."
   },
-  {
-    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/32",
-    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
-    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/32/labels{/name}",
-    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/32/comments",
-    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/32/events",
-    "html_url": "https://github.com/quicwg/base-drafts/issues/32",
-    "id": 191921697,
-    "number": 32,
-    "title": "Reordering of really old packets",
-    "user": {
-      "login": "martinthomson",
-      "id": 67641,
-      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/martinthomson",
-      "html_url": "https://github.com/martinthomson",
-      "followers_url": "https://api.github.com/users/martinthomson/followers",
-      "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
-      "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
-      "organizations_url": "https://api.github.com/users/martinthomson/orgs",
-      "repos_url": "https://api.github.com/users/martinthomson/repos",
-      "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/martinthomson/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "labels": [
-      {
-        "id": 481871311,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/editorial",
-        "name": "editorial",
-        "color": "0e8a16",
-        "default": false
-      },
-      {
-        "id": 481871604,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/tls",
-        "name": "tls",
-        "color": "fbca04",
-        "default": false
-      }
-    ],
-    "state": "open",
-    "locked": false,
-    "assignee": null,
-    "assignees": [
-
-    ],
-    "milestone": null,
-    "comments": 0,
-    "created_at": "2016-11-28T05:20:46Z",
-    "updated_at": "2016-11-28T05:20:46Z",
-    "closed_at": null,
-    "body": "From @janaiyengar:\r\n\r\n> We need rules using\r\n> packet numbers, such that an old packet with a key phase matching the\r\n> current expected should not cause the connection to blow up.\r\n\r\nWith multiple key updates, there is a possibility that packets from epoch n could collide with packets that were sent in epoch n+2.  This is unlikely, but still something implementations need to handle.  It's not a problem as such unless you insist that connections blow up on decryption failure (which we shouldn't, that's a DoS vector).\r\n\r\nIt's also not a really bad problem because we have packet numbers that should identify the reordered packet as belonging to the older epoch.  We know what the keys were at that time (if we chose to retain them), so it's not even the case that we need to discard the packet every time.\r\n\r\n\r\n"
-  }
-,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/20",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
