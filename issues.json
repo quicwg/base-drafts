@@ -51,9 +51,9 @@
 
     ],
     "milestone": null,
-    "comments": 3,
+    "comments": 4,
     "created_at": "2017-03-10T01:21:30Z",
-    "updated_at": "2017-03-10T01:39:26Z",
+    "updated_at": "2017-03-10T03:22:04Z",
     "closed_at": null,
     "body": "In the error codes there's a QUIC_PACKET_TOO_LARGE error, but there's no maximum packet size specified anywhere in the document.\r\n\r\nDoes it make sense to define a maximum packet size or must a QUIC implementation be capable of handling packets with the maximum UDP packet size? Google QUIC currently uses 1452 as the maximum packet size (= Ethernet MTU - minimum UDP header size)."
   },
@@ -240,7 +240,7 @@
     "milestone": null,
     "comments": 0,
     "created_at": "2017-03-09T06:57:00Z",
-    "updated_at": "2017-03-10T00:03:22Z",
+    "updated_at": "2017-03-10T04:21:11Z",
     "closed_at": null,
     "pull_request": {
       "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/378",
@@ -248,7 +248,7 @@
       "diff_url": "https://github.com/quicwg/base-drafts/pull/378.diff",
       "patch_url": "https://github.com/quicwg/base-drafts/pull/378.patch"
     },
-    "body": "Also, scales the connection-level flow control window by 1024\r\n\r\nCloses #370, #340.\r\n\r\nNote: I was just going to fix these separately, but they both hit exactly the same text.  Seemed like I might as well kill two birds."
+    "body": "Also, scales the connection-level flow control window by 1024\r\n\r\nCloses #370, #340, #192.\r\n\r\nNote: I was just going to fix these separately, but they both hit exactly the same text.  Seemed like I might as well kill two birds."
   },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/377",
@@ -1975,64 +1975,6 @@
     "body": "And define how it interacts with TLS, if at all."
   },
   {
-    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/264",
-    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
-    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/264/labels{/name}",
-    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/264/comments",
-    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/264/events",
-    "html_url": "https://github.com/quicwg/base-drafts/issues/264",
-    "id": 205744936,
-    "number": 264,
-    "title": "Define how source address validation interactions with TLS work",
-    "user": {
-      "login": "martinthomson",
-      "id": 67641,
-      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/martinthomson",
-      "html_url": "https://github.com/martinthomson",
-      "followers_url": "https://api.github.com/users/martinthomson/followers",
-      "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
-      "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
-      "organizations_url": "https://api.github.com/users/martinthomson/orgs",
-      "repos_url": "https://api.github.com/users/martinthomson/repos",
-      "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/martinthomson/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "labels": [
-      {
-        "id": 481871604,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/tls",
-        "name": "tls",
-        "color": "fbca04",
-        "default": false
-      },
-      {
-        "id": 481871399,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
-        "name": "transport",
-        "color": "fbca04",
-        "default": false
-      }
-    ],
-    "state": "open",
-    "locked": false,
-    "assignee": null,
-    "assignees": [
-
-    ],
-    "milestone": null,
-    "comments": 0,
-    "created_at": "2017-02-07T00:00:59Z",
-    "updated_at": "2017-02-07T00:00:59Z",
-    "closed_at": null,
-    "body": "#120 almost gets there, but it needs more details on the interface."
-  },
-  {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/263",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
     "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/263/labels{/name}",
@@ -3538,8 +3480,7 @@
     "updated_at": "2017-01-24T01:29:57Z",
     "closed_at": null,
     "body": "There are LOTS of error codes.  The only sensible thing to do is use those code to steer the receiver in the direction of the right logic for recovering from the error.  There is a different piece of information that might be provided to an application for diagnostic purposes (the reason phrase helps if it goes across the wire) and there might be other needs for an API, but across the wire we can probably cut this down a lot."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/210",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3597,7 +3538,8 @@
     "updated_at": "2017-01-24T07:28:47Z",
     "closed_at": null,
     "body": "- Version negotiation \r\n- Options negotiation\r\n\r\nThe document needs to define a general strategy for this. I see there are other related issues, but none that quite covers the general issue.\r\n"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/209",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -4172,9 +4114,9 @@
 
     ],
     "milestone": null,
-    "comments": 2,
+    "comments": 3,
     "created_at": "2017-01-23T04:32:29Z",
-    "updated_at": "2017-01-24T04:29:04Z",
+    "updated_at": "2017-03-10T04:21:39Z",
     "closed_at": null,
     "body": "S 5.2.1 contains a bunch of instructions for how to deal with packet number 2^64 but (for instance) the connection flow control window is 64-bits in absolute values, so given that we're mostly sending data, it seems improbable you will get to 2^64 packets."
   },
@@ -4710,7 +4652,7 @@
     "milestone": null,
     "comments": 10,
     "created_at": "2017-01-18T17:46:42Z",
-    "updated_at": "2017-03-10T01:28:32Z",
+    "updated_at": "2017-03-10T03:37:32Z",
     "closed_at": null,
     "pull_request": {
       "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/171",
@@ -4719,64 +4661,6 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/171.patch"
     },
     "body": "Fixes #165.  Key changes:\r\n\r\n- RST_STREAM kills only the sender's direction, not both.  (Retains the existing requirement to respond with RST_STREAM with another RST_STREAM if the stream isn't already closed, which eventually leads to the same result.)\r\n- New REQUEST_RST frame allows peer to solicit a RST_STREAM; text states that this reflects an app recv_close, and that received data is being discarded\r\n\r\nThis should solve the scenarios outlined in #165; a server can ask a client to RST_STREAM its own direction after having sent an early response.  Feedback welcome, of course -- please point out anything I've missed."
-  },
-  {
-    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/170",
-    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
-    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/170/labels{/name}",
-    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/170/comments",
-    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/170/events",
-    "html_url": "https://github.com/quicwg/base-drafts/issues/170",
-    "id": 201478058,
-    "number": 170,
-    "title": "Connection ID collisions",
-    "user": {
-      "login": "marten-seemann",
-      "id": 1478487,
-      "avatar_url": "https://avatars0.githubusercontent.com/u/1478487?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/marten-seemann",
-      "html_url": "https://github.com/marten-seemann",
-      "followers_url": "https://api.github.com/users/marten-seemann/followers",
-      "following_url": "https://api.github.com/users/marten-seemann/following{/other_user}",
-      "gists_url": "https://api.github.com/users/marten-seemann/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/marten-seemann/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/marten-seemann/subscriptions",
-      "organizations_url": "https://api.github.com/users/marten-seemann/orgs",
-      "repos_url": "https://api.github.com/users/marten-seemann/repos",
-      "events_url": "https://api.github.com/users/marten-seemann/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/marten-seemann/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "labels": [
-      {
-        "id": 481871311,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/editorial",
-        "name": "editorial",
-        "color": "0e8a16",
-        "default": false
-      },
-      {
-        "id": 481871399,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
-        "name": "transport",
-        "color": "fbca04",
-        "default": false
-      }
-    ],
-    "state": "open",
-    "locked": false,
-    "assignee": null,
-    "assignees": [
-
-    ],
-    "milestone": null,
-    "comments": 7,
-    "created_at": "2017-01-18T04:42:06Z",
-    "updated_at": "2017-02-16T03:02:23Z",
-    "closed_at": null,
-    "body": "There's currently no behavior defined for the case of a connection ID collision.\r\nThe probability for a collision of two 64 bit numbers is *really small*, if connections IDs are chosen randomly. For example, for a server handling 100,000 concurrent connections, the collision probability is about 3*10^-10.\r\nIt might therefore be justified to completely neglect this issue.\r\n\r\nAccording to the current draft, if a client initiates a handshake and chooses an existing connection ID, the server would just silently discard those packets, because it already switched to an encrypted connection and will regard them as undecryptable."
   },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/167",
@@ -5032,64 +4916,6 @@
     "body": "When a client changes IP addresses (for any reason, including NAT rebinding), the server has no way of gaining an assurance that the client has actually seen its packets.  That opens an attack where the attacker establishes a connection, then starts spoofing source address.  If the server starts to send to that source address without verifying that the client can receive packets, that's potentially a powerful packet amplification attack.\r\n\r\nIt's not sufficient to look for ACKs or other such things, because no client message includes proof that the client has actually received a packet from the server.  A client can just generate ACK and WINDOW_UPDATE frames as necessary, even new requests.  The only risk a client runs is that it overestimates the number of packets that the server has sent and sends too many spurious ACK frames, which the server will then recognize and react to."
   },
   {
-    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/157",
-    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
-    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/157/labels{/name}",
-    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/157/comments",
-    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/157/events",
-    "html_url": "https://github.com/quicwg/base-drafts/issues/157",
-    "id": 200923575,
-    "number": 157,
-    "title": "Updated information in retransmitted frames",
-    "user": {
-      "login": "martinthomson",
-      "id": 67641,
-      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/martinthomson",
-      "html_url": "https://github.com/martinthomson",
-      "followers_url": "https://api.github.com/users/martinthomson/followers",
-      "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
-      "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
-      "organizations_url": "https://api.github.com/users/martinthomson/orgs",
-      "repos_url": "https://api.github.com/users/martinthomson/repos",
-      "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/martinthomson/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "labels": [
-      {
-        "id": 481871361,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/design",
-        "name": "design",
-        "color": "1d76db",
-        "default": false
-      },
-      {
-        "id": 481871399,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
-        "name": "transport",
-        "color": "fbca04",
-        "default": false
-      }
-    ],
-    "state": "open",
-    "locked": false,
-    "assignee": null,
-    "assignees": [
-
-    ],
-    "milestone": null,
-    "comments": 1,
-    "created_at": "2017-01-16T03:26:15Z",
-    "updated_at": "2017-01-20T02:56:19Z",
-    "closed_at": null,
-    "body": "WINDOW_UPDATE is cumulative.  Requiring retransmission of the exact value that was sent in the past doesn't make sense if a more recent value is available.  Rather than loss triggering a retransmission of the frame that was lost, loss should trigger the creation of a NEW frame with updated details.\r\n\r\nIn [this comment](https://github.com/quicwg/base-drafts/pull/150#discussion_r96152215) @janaiyengar observes that probably all of the control-like frames could be treated specially if they need to be retransmitted.  Changing the \"retransmission\" rule for control (i.e., non-STREAM) frames to allow for updated information to be included might not benefit many of the other frame types, though it might make sense to make the rule general to allow for some flexibility\r\n\r\nSee also #146 where there is discussion about verbatim retransmission of STREAM frames."
-  },
-  {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/151",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
     "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/151/labels{/name}",
@@ -5182,100 +5008,6 @@
     "updated_at": "2017-01-19T09:07:30Z",
     "closed_at": null,
     "body": "Mostly references to drafts/rfcs/papers, but complete justifications are needed for this draft to be standalone."
-  },
-  {
-    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/148",
-    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
-    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/148/labels{/name}",
-    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/148/comments",
-    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/148/events",
-    "html_url": "https://github.com/quicwg/base-drafts/issues/148",
-    "id": 200583834,
-    "number": 148,
-    "title": "QUIC packet header complexity",
-    "user": {
-      "login": "britram",
-      "id": 1884116,
-      "avatar_url": "https://avatars3.githubusercontent.com/u/1884116?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/britram",
-      "html_url": "https://github.com/britram",
-      "followers_url": "https://api.github.com/users/britram/followers",
-      "following_url": "https://api.github.com/users/britram/following{/other_user}",
-      "gists_url": "https://api.github.com/users/britram/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/britram/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/britram/subscriptions",
-      "organizations_url": "https://api.github.com/users/britram/orgs",
-      "repos_url": "https://api.github.com/users/britram/repos",
-      "events_url": "https://api.github.com/users/britram/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/britram/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "labels": [
-      {
-        "id": 481871361,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/design",
-        "name": "design",
-        "color": "1d76db",
-        "default": false
-      },
-      {
-        "id": 481871399,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
-        "name": "transport",
-        "color": "fbca04",
-        "default": false
-      }
-    ],
-    "state": "open",
-    "locked": false,
-    "assignee": {
-      "login": "ekr",
-      "id": 1111457,
-      "avatar_url": "https://avatars3.githubusercontent.com/u/1111457?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/ekr",
-      "html_url": "https://github.com/ekr",
-      "followers_url": "https://api.github.com/users/ekr/followers",
-      "following_url": "https://api.github.com/users/ekr/following{/other_user}",
-      "gists_url": "https://api.github.com/users/ekr/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/ekr/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/ekr/subscriptions",
-      "organizations_url": "https://api.github.com/users/ekr/orgs",
-      "repos_url": "https://api.github.com/users/ekr/repos",
-      "events_url": "https://api.github.com/users/ekr/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/ekr/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "assignees": [
-      {
-        "login": "ekr",
-        "id": 1111457,
-        "avatar_url": "https://avatars3.githubusercontent.com/u/1111457?v=3",
-        "gravatar_id": "",
-        "url": "https://api.github.com/users/ekr",
-        "html_url": "https://github.com/ekr",
-        "followers_url": "https://api.github.com/users/ekr/followers",
-        "following_url": "https://api.github.com/users/ekr/following{/other_user}",
-        "gists_url": "https://api.github.com/users/ekr/gists{/gist_id}",
-        "starred_url": "https://api.github.com/users/ekr/starred{/owner}{/repo}",
-        "subscriptions_url": "https://api.github.com/users/ekr/subscriptions",
-        "organizations_url": "https://api.github.com/users/ekr/orgs",
-        "repos_url": "https://api.github.com/users/ekr/repos",
-        "events_url": "https://api.github.com/users/ekr/events{/privacy}",
-        "received_events_url": "https://api.github.com/users/ekr/received_events",
-        "type": "User",
-        "site_admin": false
-      }
-    ],
-    "milestone": null,
-    "comments": 10,
-    "created_at": "2017-01-13T09:29:36Z",
-    "updated_at": "2017-01-26T06:08:24Z",
-    "closed_at": null,
-    "body": "The current design of the header with its multiple variable length and variable presence fields would seem to require inordinate sender and receiver code complexity. Complexity, especially in parsers (i.e., on the receiver side), is a source both of unclarity in specifications and errors in implementation. I note the following specific issues:\r\n\r\n(1) There are thirteen possible header lengths, and therefore data offsets : 2, 3, 5, 6, 7, 9, 10, 11, 13, 14, 15, 17, 21. Each of the header fields has a variety of possible offsets. This also increases the complexity of hardware offload implementations of QUIC, but is not complex enough to prevent their implementation and deployment.\r\n\r\n(2) There are combinations of flags that seem to be nonsensical and/or contradictory (e.g., the Packet Number Length codepoint adds 1, 2, 4, or 8 to the length if the Public Reset flag is clear, but 0 to the length if the Public Reset flag is set, see ; Public Reset and Version are mutually exclusive.)\r\n\r\n(3) There appears to be no consideration given to reducing confusability with other deployed UDP protocols in the first N bytes of the header -- see #147 \r\n\r\nI would suggest reducing the number of possible header layouts to reduce complexity, based on the following assumptions:\r\n\r\n(1) The set of variable header lengths will, at most, save a number of bytes per packet that will often be lost in the underflow of suboptimal path MTU discovery.\r\n\r\n(2) Varlen packet numbering makes sense if the packet number always starts from zero, but random initial packet numbers have other advantages; I presume we'll adopt them at some point. Packet numbers only need to be large enough to keep wrap-arounds to be induced by reordering, so 32 bits (as in the TCP sequence number space) is more than sufficient.\r\n\r\n(3) There is value in treating a version number as a magic number to help reduce the chance of misrecognition of non-QUIC packets as initial QUIC packets at an endpoint; for this 32 bits of version are more than enough, and 24 probably suffice. (This will require a redesign of the version number space, which we might want to do in light of #147 anyway).\r\n\r\n\r\nAs an initial proposal, I would propose that either both Connection ID and Version be present, or neither, and that packet number be always present and constant length. This reduces the set of necessary flags to three, leaving us with five flags for reserved/future use (four, if we go ahead and allocate multipath) and the following two header layouts:\r\n\r\nFull Header: 16 octets\r\n\r\n```\r\n+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+\r\n|1|R|K|M| zero  |      version/magic (24 bits)                  |\r\n+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+\r\n|                                                               |\r\n+-                      Connection ID                          -+\r\n|                                                               |\r\n+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+\r\n|                       Packet Number                           |\r\n+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+\r\n```\r\n\r\nTruncated Header: 5 octets\r\n\r\n```\r\n+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+\r\n|0|R|K|M| zero  |                       Packet Number       . . .\r\n+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+\r\n. . . (cont'd)  |\r\n+-+-+-+-+-+-+-+-+\r\n```\r\n\r\nThe header invariant then becomes \"If bit 0x80 in octet 0 is 1, then the seven remaining bits of that octet are reserved for use as flags, and octets 1-3 are a 24-bit version number. If bit 0x80 in octet 0 is 0, then no version number is present; use previous version information for this 5-tuple.\" This can be further simplified by dropping the truncated header entirely, though for very short packets the overhead might be worth saving.\r\n"
   },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/144",
@@ -5423,13 +5155,12 @@
 
     ],
     "milestone": null,
-    "comments": 0,
+    "comments": 1,
     "created_at": "2017-01-13T00:47:14Z",
-    "updated_at": "2017-01-20T02:33:13Z",
+    "updated_at": "2017-03-10T04:09:42Z",
     "closed_at": null,
     "body": "Servers shouldn't need to send more than one version negotiation packet, they only resend so that they are stateless and to deal with packet loss on the return path.\r\n\r\nClients should ignore version negotiation packets if they already have received packets from the server.  \r\n\r\nThis requirement on the client could be used for denial of service in the case where the legitimate server needs to use version negotiation.  If an attacker can race a legitimate looking ServerHello at the client (which isn't impossible), then the client will ignore the real server's attempt at version negotiation.  This is hard for an off-path attacker due to the need to echo certain parts of the client initial packet.  (I'd say connection ID is enough, but that might run afoul of #119.)"
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/142",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5583,9 +5314,9 @@
 
     ],
     "milestone": null,
-    "comments": 2,
+    "comments": 3,
     "created_at": "2017-01-10T04:23:48Z",
-    "updated_at": "2017-01-24T06:34:43Z",
+    "updated_at": "2017-03-10T04:02:30Z",
     "closed_at": null,
     "body": "The document currently (though I hope to remove this) makes certificate compression a requirement of the cryptographic handshake.  TLS doesn't really do compression, though it does provided cached-info ([RFC 7924](https://tools.ietf.org/html/7924)).  Is this sufficient or do we need to ask the TLS working group for a compression feature.  I'm assuming that if we did need to ask, we would also be responsible for providing a design.\r\n\r\nNote that TLS 1.3 aims to provide confidentiality for certificates and compression is generally fraught with hazards that compromise confidentiality.  It also potentially a feature that could leak information about a client's past connections to servers.  If we due pursue this, any design we create would need to carefully consider these (and likely other) risks."
   },
@@ -5718,7 +5449,8 @@
     "updated_at": "2017-01-26T07:12:12Z",
     "closed_at": null,
     "body": "It may be possible to simplify the ACK frame, in particular, the timestamp section. We could conceivably make the \"Time from Largest Acked\" 16 bits, and simply have N-Timestamp-blocks, including this one. I think this is plausible."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/121",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5773,28 +5505,7 @@
     ],
     "state": "open",
     "locked": false,
-    "assignee": null,
-    "assignees": [
-
-    ],
-    "milestone": null,
-    "comments": 5,
-    "created_at": "2017-01-04T10:34:13Z",
-    "updated_at": "2017-01-15T21:33:34Z",
-    "closed_at": null,
-    "body": "If we do this badly, there might be two versions of QUIC for which the transport parameters are confusable in a way that confounds the validation of version negotiation because the transport parameters are interpreted differently for different QUIC versions.\r\n\r\nWe need to write that into the security considerations.  We might recommend preserving the initial part of the transport parameters extension, or - better yet - using a new extension codepoint when the format needs to change."
-  },
-  {
-    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/116",
-    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
-    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/116/labels{/name}",
-    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/116/comments",
-    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/116/events",
-    "html_url": "https://github.com/quicwg/base-drafts/issues/116",
-    "id": 198642646,
-    "number": 116,
-    "title": "Each COPT might be better as empty transport parameters",
-    "user": {
+    "assignee": {
       "login": "martinthomson",
       "id": 67641,
       "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
@@ -5813,34 +5524,33 @@
       "type": "User",
       "site_admin": false
     },
-    "labels": [
+    "assignees": [
       {
-        "id": 481871361,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/design",
-        "name": "design",
-        "color": "1d76db",
-        "default": false
-      },
-      {
-        "id": 481871399,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
-        "name": "transport",
-        "color": "fbca04",
-        "default": false
+        "login": "martinthomson",
+        "id": 67641,
+        "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/martinthomson",
+        "html_url": "https://github.com/martinthomson",
+        "followers_url": "https://api.github.com/users/martinthomson/followers",
+        "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
+        "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
+        "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
+        "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
+        "organizations_url": "https://api.github.com/users/martinthomson/orgs",
+        "repos_url": "https://api.github.com/users/martinthomson/repos",
+        "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
+        "received_events_url": "https://api.github.com/users/martinthomson/received_events",
+        "type": "User",
+        "site_admin": false
       }
     ],
-    "state": "open",
-    "locked": false,
-    "assignee": null,
-    "assignees": [
-
-    ],
     "milestone": null,
-    "comments": 4,
-    "created_at": "2017-01-04T07:08:22Z",
-    "updated_at": "2017-02-07T00:22:29Z",
+    "comments": 6,
+    "created_at": "2017-01-04T10:34:13Z",
+    "updated_at": "2017-03-10T04:00:53Z",
     "closed_at": null,
-    "body": "COPT is apparently repeated, once for each option.  \r\n\r\nOne thing that TLS implementations do is validate that there is only one instance of each extension.  This isn't possible for transport parameters if we require that COPT be used for a list of options.\r\n\r\nAlso, we can reduce the number of extension points in the protocol, we shouldn't pack a list of options into COPT when we have transport parameters for that."
+    "body": "If we do this badly, there might be two versions of QUIC for which the transport parameters are confusable in a way that confounds the validation of version negotiation because the transport parameters are interpreted differently for different QUIC versions.\r\n\r\nWe need to write that into the security considerations.  We might recommend preserving the initial part of the transport parameters extension, or - better yet - using a new extension codepoint when the format needs to change."
   },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/115",
@@ -6002,100 +5712,6 @@
     "body": "I note that the IEEE754 reference doesn't help."
   },
   {
-    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/102",
-    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
-    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/102/labels{/name}",
-    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/102/comments",
-    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/102/events",
-    "html_url": "https://github.com/quicwg/base-drafts/issues/102",
-    "id": 197626400,
-    "number": 102,
-    "title": "Timestamp Block - Zero indexing?",
-    "user": {
-      "login": "MikeBishop",
-      "id": 4273797,
-      "avatar_url": "https://avatars3.githubusercontent.com/u/4273797?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/MikeBishop",
-      "html_url": "https://github.com/MikeBishop",
-      "followers_url": "https://api.github.com/users/MikeBishop/followers",
-      "following_url": "https://api.github.com/users/MikeBishop/following{/other_user}",
-      "gists_url": "https://api.github.com/users/MikeBishop/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/MikeBishop/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/MikeBishop/subscriptions",
-      "organizations_url": "https://api.github.com/users/MikeBishop/orgs",
-      "repos_url": "https://api.github.com/users/MikeBishop/repos",
-      "events_url": "https://api.github.com/users/MikeBishop/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/MikeBishop/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "labels": [
-      {
-        "id": 481871311,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/editorial",
-        "name": "editorial",
-        "color": "0e8a16",
-        "default": false
-      },
-      {
-        "id": 481871399,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
-        "name": "transport",
-        "color": "fbca04",
-        "default": false
-      }
-    ],
-    "state": "open",
-    "locked": false,
-    "assignee": {
-      "login": "ianswett",
-      "id": 20072817,
-      "avatar_url": "https://avatars2.githubusercontent.com/u/20072817?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/ianswett",
-      "html_url": "https://github.com/ianswett",
-      "followers_url": "https://api.github.com/users/ianswett/followers",
-      "following_url": "https://api.github.com/users/ianswett/following{/other_user}",
-      "gists_url": "https://api.github.com/users/ianswett/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/ianswett/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/ianswett/subscriptions",
-      "organizations_url": "https://api.github.com/users/ianswett/orgs",
-      "repos_url": "https://api.github.com/users/ianswett/repos",
-      "events_url": "https://api.github.com/users/ianswett/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/ianswett/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "assignees": [
-      {
-        "login": "ianswett",
-        "id": 20072817,
-        "avatar_url": "https://avatars2.githubusercontent.com/u/20072817?v=3",
-        "gravatar_id": "",
-        "url": "https://api.github.com/users/ianswett",
-        "html_url": "https://github.com/ianswett",
-        "followers_url": "https://api.github.com/users/ianswett/followers",
-        "following_url": "https://api.github.com/users/ianswett/following{/other_user}",
-        "gists_url": "https://api.github.com/users/ianswett/gists{/gist_id}",
-        "starred_url": "https://api.github.com/users/ianswett/starred{/owner}{/repo}",
-        "subscriptions_url": "https://api.github.com/users/ianswett/subscriptions",
-        "organizations_url": "https://api.github.com/users/ianswett/orgs",
-        "repos_url": "https://api.github.com/users/ianswett/repos",
-        "events_url": "https://api.github.com/users/ianswett/events{/privacy}",
-        "received_events_url": "https://api.github.com/users/ianswett/received_events",
-        "type": "User",
-        "site_admin": false
-      }
-    ],
-    "milestone": null,
-    "comments": 3,
-    "created_at": "2016-12-26T23:21:00Z",
-    "updated_at": "2017-02-20T18:50:14Z",
-    "closed_at": null,
-    "body": "NumTimestamps is supposed to specify the \"total number of pairs following, including the First Timestamp.\"  If this is zero, presumably the Delta Largest Acked and First Timestamp fields are absent.  If this is one, presumably these fields are present, but no others are.\r\n\r\nThe *subsequent* fields then say they are repeated \"Num Timestamps\" times, which contradicts my logic above.  I'm guessing this should actually be \"Num Timestamps - 1\" times?"
-  },
-  {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/89",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
     "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/89/labels{/name}",
@@ -6147,9 +5763,9 @@
 
     ],
     "milestone": null,
-    "comments": 1,
+    "comments": 2,
     "created_at": "2016-12-17T21:24:38Z",
-    "updated_at": "2017-01-14T02:13:43Z",
+    "updated_at": "2017-03-10T03:56:08Z",
     "closed_at": null,
     "body": "#87 covers improving the current use of ALPN and the Alt-Svc v= parameter for HTTP.  However, I think this is something that QUIC needs to solve generically, so forking off a separate issue for that.\r\n\r\nHere are the paths I see that we need to support:\r\n\r\n- **Client to server, first time:** This is inherently a 1-RTT handshake *if* the client guesses the version correctly; 2 RTTs if it's wrong.  This incents clients to attempt the most widely-deployed version of QUIC rather than their highest version.  Consequently, there needs to be a way for a conservative client to discover that a server supports a more advanced version.\r\n- **Client to server, subsequent:** The cached information should contain information about the server's supported versions so the client can come back with the same version as last time. The scenarios where one side has changed need consideration, though:\r\n    - **Client upgraded:** Would require client to cache server's full set of supported versions and compare against the client's supported set at connect time, not just caching the selected version.\r\n    - **Server upgraded:** The current mechanism offers no way for a client to discover that the server would have accepted a version it didn't initially offer, whether because the server didn't previously support it or the client is being conservative.\r\n\r\nIdeally, I'd like to see these solved for QUIC independent of Alt-Svc -- there will be other users besides HTTP.\r\n\r\nI think this could be solved by requiring the server to always send its Version Negotiation list in the crypto handshake, not just if a Version Negotiation packet was actually sent.  Clients can discover when the server supports a newer version than they attempted, and either know what to offer next time or actively open a new connection with the new version in parallel."
   },
@@ -6196,6 +5812,13 @@
         "name": "http",
         "color": "fbca04",
         "default": false
+      },
+      {
+        "id": 517015633,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/needs-discussion",
+        "name": "needs-discussion",
+        "color": "d93f0b",
+        "default": false
       }
     ],
     "state": "open",
@@ -6205,9 +5828,9 @@
 
     ],
     "milestone": null,
-    "comments": 5,
+    "comments": 6,
     "created_at": "2016-12-09T23:34:28Z",
-    "updated_at": "2017-02-21T23:41:03Z",
+    "updated_at": "2017-03-10T03:55:13Z",
     "closed_at": null,
     "body": "Because of a stated goal from some implementers to reuse HTTP/2 framing as much as possible, the draft currently augments the HTTP/2 Frame Type Registry with a \"Supported Protocol\" column, allowing a frame to be defined for HTTP/2, HTTP/QUIC, or both.  A specification is required for each supported protocol.\r\n\r\nHowever, in the current draft, all but one \"Both\" frames are *different* between HTTP/2 and HTTP/QUIC.  Small or large, nearly every frame has required some modification to work over QUIC.  If we accept #80 , *all* frames will be different between HTTP/2 and HTTP/QUIC.\r\n\r\nAt that point, is there really a point in continuing to define HTTP/QUIC in relation to HTTP/2, or should we just admit that it's a new, separate thing that's heavily inspired by HTTP/2?  Separate registry, etc., and future extensions can register themselves with both if appropriate?  Or do we keep the same registry anyway to enforce that you'll never wind up with totally unrelated frames sharing the same value across the two protocols?"
   },
@@ -6333,100 +5956,6 @@
     "updated_at": "2017-02-20T13:27:21Z",
     "closed_at": null,
     "body": "ECN is not currently mentioned in the recovery draft, but it should be included.\r\n\r\nMore importantly, the transport draft has no ability for the peer to communicate ECN marks back to the sender.  I suspect, like ECN, the use of this in the transport would be negotiable in the QUIC handshake.\r\n\r\nIn practice, there most userspace network stacks also cannot see if those marks are set when packets are read."
-  },
-  {
-    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/67",
-    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
-    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/67/labels{/name}",
-    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/67/comments",
-    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/67/events",
-    "html_url": "https://github.com/quicwg/base-drafts/issues/67",
-    "id": 193001138,
-    "number": 67,
-    "title": "Picking packet number length",
-    "user": {
-      "login": "martinthomson",
-      "id": 67641,
-      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/martinthomson",
-      "html_url": "https://github.com/martinthomson",
-      "followers_url": "https://api.github.com/users/martinthomson/followers",
-      "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
-      "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
-      "organizations_url": "https://api.github.com/users/martinthomson/orgs",
-      "repos_url": "https://api.github.com/users/martinthomson/repos",
-      "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/martinthomson/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "labels": [
-      {
-        "id": 481871361,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/design",
-        "name": "design",
-        "color": "1d76db",
-        "default": false
-      },
-      {
-        "id": 481871399,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
-        "name": "transport",
-        "color": "fbca04",
-        "default": false
-      }
-    ],
-    "state": "open",
-    "locked": false,
-    "assignee": {
-      "login": "ianswett",
-      "id": 20072817,
-      "avatar_url": "https://avatars2.githubusercontent.com/u/20072817?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/ianswett",
-      "html_url": "https://github.com/ianswett",
-      "followers_url": "https://api.github.com/users/ianswett/followers",
-      "following_url": "https://api.github.com/users/ianswett/following{/other_user}",
-      "gists_url": "https://api.github.com/users/ianswett/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/ianswett/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/ianswett/subscriptions",
-      "organizations_url": "https://api.github.com/users/ianswett/orgs",
-      "repos_url": "https://api.github.com/users/ianswett/repos",
-      "events_url": "https://api.github.com/users/ianswett/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/ianswett/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "assignees": [
-      {
-        "login": "ianswett",
-        "id": 20072817,
-        "avatar_url": "https://avatars2.githubusercontent.com/u/20072817?v=3",
-        "gravatar_id": "",
-        "url": "https://api.github.com/users/ianswett",
-        "html_url": "https://github.com/ianswett",
-        "followers_url": "https://api.github.com/users/ianswett/followers",
-        "following_url": "https://api.github.com/users/ianswett/following{/other_user}",
-        "gists_url": "https://api.github.com/users/ianswett/gists{/gist_id}",
-        "starred_url": "https://api.github.com/users/ianswett/starred{/owner}{/repo}",
-        "subscriptions_url": "https://api.github.com/users/ianswett/subscriptions",
-        "organizations_url": "https://api.github.com/users/ianswett/orgs",
-        "repos_url": "https://api.github.com/users/ianswett/repos",
-        "events_url": "https://api.github.com/users/ianswett/events{/privacy}",
-        "received_events_url": "https://api.github.com/users/ianswett/received_events",
-        "type": "User",
-        "site_admin": false
-      }
-    ],
-    "milestone": null,
-    "comments": 0,
-    "created_at": "2016-12-02T00:25:36Z",
-    "updated_at": "2016-12-02T00:25:36Z",
-    "closed_at": null,
-    "body": "The algorithm for picking the length of the packet number needs much better explanation, and probably a bunch of rationale to support that.\r\n\r\n(Marked as design so that any change gets proper discussion and review.)"
   },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/65",
@@ -6581,9 +6110,9 @@
       }
     ],
     "milestone": null,
-    "comments": 10,
+    "comments": 11,
     "created_at": "2016-12-01T23:50:17Z",
-    "updated_at": "2017-01-25T06:37:34Z",
+    "updated_at": "2017-03-10T03:53:59Z",
     "closed_at": null,
     "body": "We have rules about retransmission of STREAM frames.  ACK has similar properties in terms of what needs to be retransmitted.  Once an ACK has been acked, what should a sender do when constructing future ACK messages?"
   },
@@ -6625,6 +6154,13 @@
         "default": false
       },
       {
+        "id": 517015633,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/needs-discussion",
+        "name": "needs-discussion",
+        "color": "d93f0b",
+        "default": false
+      },
+      {
         "id": 481871399,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
         "name": "transport",
@@ -6639,9 +6175,9 @@
 
     ],
     "milestone": null,
-    "comments": 0,
+    "comments": 1,
     "created_at": "2016-12-01T23:45:54Z",
-    "updated_at": "2016-12-01T23:45:54Z",
+    "updated_at": "2017-03-10T03:52:36Z",
     "closed_at": null,
     "body": "I think that this is one or other peer walking away from a conversation without saying goodbye.  If we're going to talk about silent closes, we need to explain what it is, why a peer might choose to do it, and the consequences for everyone involved if they exist."
   },
@@ -6769,100 +6305,6 @@
     "body": "Do we want them? How do we accommodate them?  What are their semantics if they aren't understood?"
   },
   {
-    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/53",
-    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
-    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/53/labels{/name}",
-    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/53/comments",
-    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/53/events",
-    "html_url": "https://github.com/quicwg/base-drafts/issues/53",
-    "id": 192463844,
-    "number": 53,
-    "title": "Figures should fit 80-column width",
-    "user": {
-      "login": "janaiyengar",
-      "id": 11067604,
-      "avatar_url": "https://avatars1.githubusercontent.com/u/11067604?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/janaiyengar",
-      "html_url": "https://github.com/janaiyengar",
-      "followers_url": "https://api.github.com/users/janaiyengar/followers",
-      "following_url": "https://api.github.com/users/janaiyengar/following{/other_user}",
-      "gists_url": "https://api.github.com/users/janaiyengar/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/janaiyengar/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/janaiyengar/subscriptions",
-      "organizations_url": "https://api.github.com/users/janaiyengar/orgs",
-      "repos_url": "https://api.github.com/users/janaiyengar/repos",
-      "events_url": "https://api.github.com/users/janaiyengar/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/janaiyengar/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "labels": [
-      {
-        "id": 481871311,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/editorial",
-        "name": "editorial",
-        "color": "0e8a16",
-        "default": false
-      },
-      {
-        "id": 481871399,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
-        "name": "transport",
-        "color": "fbca04",
-        "default": false
-      }
-    ],
-    "state": "open",
-    "locked": false,
-    "assignee": {
-      "login": "janaiyengar",
-      "id": 11067604,
-      "avatar_url": "https://avatars1.githubusercontent.com/u/11067604?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/janaiyengar",
-      "html_url": "https://github.com/janaiyengar",
-      "followers_url": "https://api.github.com/users/janaiyengar/followers",
-      "following_url": "https://api.github.com/users/janaiyengar/following{/other_user}",
-      "gists_url": "https://api.github.com/users/janaiyengar/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/janaiyengar/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/janaiyengar/subscriptions",
-      "organizations_url": "https://api.github.com/users/janaiyengar/orgs",
-      "repos_url": "https://api.github.com/users/janaiyengar/repos",
-      "events_url": "https://api.github.com/users/janaiyengar/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/janaiyengar/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "assignees": [
-      {
-        "login": "janaiyengar",
-        "id": 11067604,
-        "avatar_url": "https://avatars1.githubusercontent.com/u/11067604?v=3",
-        "gravatar_id": "",
-        "url": "https://api.github.com/users/janaiyengar",
-        "html_url": "https://github.com/janaiyengar",
-        "followers_url": "https://api.github.com/users/janaiyengar/followers",
-        "following_url": "https://api.github.com/users/janaiyengar/following{/other_user}",
-        "gists_url": "https://api.github.com/users/janaiyengar/gists{/gist_id}",
-        "starred_url": "https://api.github.com/users/janaiyengar/starred{/owner}{/repo}",
-        "subscriptions_url": "https://api.github.com/users/janaiyengar/subscriptions",
-        "organizations_url": "https://api.github.com/users/janaiyengar/orgs",
-        "repos_url": "https://api.github.com/users/janaiyengar/repos",
-        "events_url": "https://api.github.com/users/janaiyengar/events{/privacy}",
-        "received_events_url": "https://api.github.com/users/janaiyengar/received_events",
-        "type": "User",
-        "site_admin": false
-      }
-    ],
-    "milestone": null,
-    "comments": 1,
-    "created_at": "2016-11-30T03:07:47Z",
-    "updated_at": "2016-11-30T04:16:06Z",
-    "closed_at": null,
-    "body": "Not all figures currently do."
-  },
-  {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/47",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
     "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/47/labels{/name}",
@@ -6914,9 +6356,9 @@
 
     ],
     "milestone": null,
-    "comments": 0,
+    "comments": 1,
     "created_at": "2016-11-30T00:38:03Z",
-    "updated_at": "2016-11-30T02:36:13Z",
+    "updated_at": "2017-03-10T03:46:44Z",
     "closed_at": null,
     "body": "Error handling is rather... *distributed* in the core protocol spec.  The frames to signal errors are there, and there's a long list of error codes, but no generalized discussion of how errors are handled and what stream versus connection-level errors mean."
   },
@@ -6958,6 +6400,13 @@
         "default": false
       },
       {
+        "id": 517015633,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/needs-discussion",
+        "name": "needs-discussion",
+        "color": "d93f0b",
+        "default": false
+      },
+      {
         "id": 481871399,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
         "name": "transport",
@@ -6974,7 +6423,7 @@
     "milestone": null,
     "comments": 8,
     "created_at": "2016-11-29T21:28:11Z",
-    "updated_at": "2017-03-03T00:29:35Z",
+    "updated_at": "2017-03-10T03:46:20Z",
     "closed_at": null,
     "body": "It's currently unclear how two QUIC peers opening a connection know which handshake protocol to expect on Stream 1.\r\n\r\nSince the client has to include the opening handshake in its first flight, it has to at least be able to guess *a* handshake protocol that's acceptable to the server and include enough information for the server to know which one it's attempting.  Currently all the mechanisms for telling the client to retry with different options are at the TLS layer, which is too late.\r\n\r\nHow is this negotiated?  Is it baked into the QUIC version?  Is it specified as part of the application mapping (e.g. the HTTP mapping currently requires the TLS 1.3 handshake to be used) and therefore either supplied as part of the Alt-Svc record or implied by the port?"
   },
@@ -7088,64 +6537,6 @@
     "body": "... relative to the client's ClientHello.\r\n\r\nWe don't want to design a packet amplifier, but it's highly likely that the server's Certificate will cause the server's messages to be at least a little bigger than the initial messages from the client.  We do need servers to send HelloRetryRequest and do source address validation, but how often?"
   },
   {
-    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/37",
-    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
-    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/37/labels{/name}",
-    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/37/comments",
-    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/37/events",
-    "html_url": "https://github.com/quicwg/base-drafts/issues/37",
-    "id": 191926219,
-    "number": 37,
-    "title": "Codify how handshake failures are written down",
-    "user": {
-      "login": "martinthomson",
-      "id": 67641,
-      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/martinthomson",
-      "html_url": "https://github.com/martinthomson",
-      "followers_url": "https://api.github.com/users/martinthomson/followers",
-      "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
-      "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
-      "organizations_url": "https://api.github.com/users/martinthomson/orgs",
-      "repos_url": "https://api.github.com/users/martinthomson/repos",
-      "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/martinthomson/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "labels": [
-      {
-        "id": 481871311,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/editorial",
-        "name": "editorial",
-        "color": "0e8a16",
-        "default": false
-      },
-      {
-        "id": 481871399,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
-        "name": "transport",
-        "color": "fbca04",
-        "default": false
-      }
-    ],
-    "state": "open",
-    "locked": false,
-    "assignee": null,
-    "assignees": [
-
-    ],
-    "milestone": null,
-    "comments": 4,
-    "created_at": "2016-11-28T06:06:37Z",
-    "updated_at": "2017-01-17T18:20:10Z",
-    "closed_at": null,
-    "body": "There's a bunch of places where we want to recommend that the handshake fails.  We need an editorial convention for how to write that down, which should include any error codes and messages that are sent at the same time."
-  },
-  {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/36",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
     "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/36/labels{/name}",
@@ -7202,64 +6593,6 @@
     "updated_at": "2016-11-28T06:00:20Z",
     "closed_at": null,
     "body": "The attacker needs to be on path to create a valid-looking unprotected packet.  \r\n\r\nAlso, randomization doesn't help much if the attacker is on-path."
-  },
-  {
-    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/33",
-    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
-    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/33/labels{/name}",
-    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/33/comments",
-    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/33/events",
-    "html_url": "https://github.com/quicwg/base-drafts/issues/33",
-    "id": 191921917,
-    "number": 33,
-    "title": "Decryption failure == drop packet",
-    "user": {
-      "login": "martinthomson",
-      "id": 67641,
-      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/martinthomson",
-      "html_url": "https://github.com/martinthomson",
-      "followers_url": "https://api.github.com/users/martinthomson/followers",
-      "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
-      "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
-      "organizations_url": "https://api.github.com/users/martinthomson/orgs",
-      "repos_url": "https://api.github.com/users/martinthomson/repos",
-      "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/martinthomson/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "labels": [
-      {
-        "id": 481871311,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/editorial",
-        "name": "editorial",
-        "color": "0e8a16",
-        "default": false
-      },
-      {
-        "id": 481871604,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/tls",
-        "name": "tls",
-        "color": "fbca04",
-        "default": false
-      }
-    ],
-    "state": "open",
-    "locked": false,
-    "assignee": null,
-    "assignees": [
-
-    ],
-    "milestone": null,
-    "comments": 0,
-    "created_at": "2016-11-28T05:23:07Z",
-    "updated_at": "2016-11-28T05:23:07Z",
-    "closed_at": null,
-    "body": "We need to be absolutely explicit here: if unprotecting a packet fails, drop it.  \r\n\r\nIt's important that we have this rule to prevent trivial DoS attacks on connections.  Also, we need to make it clear that unauthenticated data does not get fed into the system unless we have very careful rules around how we handle that data."
   },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/20",
