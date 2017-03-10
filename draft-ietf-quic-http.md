@@ -626,11 +626,6 @@ The payload consists of:
   Payload:
   : HPACK-compressed request headers for the promised response.
 
-TODOs:
-
- - QUIC stream space may be enlarged; would need to redefine Promised Stream
-   field in this case.
- - No CONTINUATION -- HEADERS have EHB; do we need it here?
 
 
 # Error Handling {#errors}
@@ -1067,8 +1062,21 @@ The original authors of this specification were Robbie Shade and Mike Warres.
 
 ## Since draft-ietf-quic-http-01:
 
-- SETTINGS can be sent only one at the start of a connection.  SETTINGS_ACK
-  removed.
+- SETTINGS changes:
+
+    - SETTINGS can be sent only once at the start of a connection; no changes
+    - SETTINGS_ACK removed
+    - Settings can only occur in the SETTINGS frame a single time
+    - Boolean format updated
+
+- Alt-Svc parameter changed from "v" to "quic"; format updated
+
+- Closing the connection control stream or any message control stream is a
+  fatal error
+
+- HPACK Sequence counter can wrap
+
+- 0-RTT guidance added
 
 ## Since draft-ietf-quic-http-00:
 
@@ -1079,7 +1087,7 @@ The original authors of this specification were Robbie Shade and Mike Warres.
 
 - Adopted SETTINGS format from draft-bishop-httpbis-extended-settings-01
 
-- Reworked SETTINGS_ACK to account for indeterminate inter-stream order.
+- Reworked SETTINGS_ACK to account for indeterminate inter-stream order
 
 - Described CONNECT pseudo-method
 
