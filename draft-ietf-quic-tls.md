@@ -575,11 +575,11 @@ A server MUST NOT use post-handshake client authentication (see Section 4.6.2 of
 ## TLS Errors
 
 Errors in the TLS connection SHOULD be signaled using TLS alerts on stream 1.  A
-failure in the handshake MUST be treated as a connection error of type
+failure in the handshake MUST be treated as a QUIC connection error of type
 TLS_HANDSHAKE_FAILED.  Once the handshake is complete, an error in the TLS
-connection that causes an alert to be sent or received MUST be treated as a
-connection error of type TLS_FATAL_ALERT_GENERATED or TLS_FATAL_ALERT_RECEIVED
-respectively.
+connection that causes a TLS alert to be sent or received MUST be treated as a
+QUIC connection error of type TLS_FATAL_ALERT_GENERATED or
+TLS_FATAL_ALERT_RECEIVED respectively.
 
 
 # QUIC Packet Protection {#packet-protection}
