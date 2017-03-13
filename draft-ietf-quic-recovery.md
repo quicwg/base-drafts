@@ -44,13 +44,8 @@ normative:
 
 --- abstract
 
-QUIC is a new multiplexed and secure transport atop UDP.  QUIC builds on decades
-of transport and security experience, and implements mechanisms that make it
-attractive as a modern general-purpose transport.  QUIC implements the spirit of
-known TCP loss detection mechanisms, described in RFCs, various Internet-drafts,
-and also those prevalent in the Linux TCP implementation.  This document
-describes QUIC loss detection and congestion control, and attributes the TCP
-equivalent in RFCs, Internet-drafts, academic papers, and TCP implementations.
+This document describes loss detection and congestion control mechanisms for
+QUIC.
 
 --- note_Note_to_Readers
 
@@ -76,11 +71,6 @@ RFCs, various Internet-drafts, and also those prevalent in the Linux TCP
 implementation.  This document describes QUIC congestion control and loss
 recovery, and where applicable, attributes the TCP equivalent in RFCs,
 Internet-drafts, academic papers, and/or TCP implementations.
-
-This document first describes pre-requisite parts of the QUIC transmission
-machinery, then discusses QUIC's default congestion control and loss detection
-mechanisms, and finally lists the various TCP mechanisms that QUIC loss
-detection implements (in spirit.)
 
 
 ## Notational Conventions
@@ -115,9 +105,10 @@ important to the loss detection and congestion control machinery below.
 
 ## Relevant Differences Between QUIC and TCP
 
-There are some notable differences between QUIC and TCP which are important for
-reasoning about the differences between the loss recovery mechanisms employed by
-the two protocols.  We briefly describe these differences below.
+Readers familiar with TCP's loss detection and congestion control will find
+algorithms here that parallel well-known TCP ones. Protocol differences between
+QUIC and TCP however contribute to algorithmic differences. We briefly describe
+these protocol differences below.
 
 ### Monotonically Increasing Packet Numbers
 
@@ -166,12 +157,50 @@ measure and report the delay from when a packet was received by the OS kernel,
 which is useful in receivers which may incur delays such as context-switch
 latency before a userspace QUIC receiver processes a received packet.
 
+
 # Loss Detection
 
-We now describe QUIC's loss detection as functions that should be called on
-packet transmission, when a packet is acked, and timer expiration events.
+## Overview {#overview}
 
-## Constants of interest
+QUIC uses a combination of ack information and alarms to detect lost packets.
+An unacknowledged QUIC packet is marked as lost in one of the following ways:
+
+  * A packet is marked as lost if at least one packet that was sent a threshold
+    number of packets (kReorderingThreshold) after it has been
+    acknowledged. This indicates that the unacknowledged packet is either lost
+    or reordered beyond the specified threshold. This mechanism combines both
+    TCP's FastRetransmit and FACK mechanisms.
+
+  * If a packet is near the tail, where fewer than kReorderingThreshold packets
+    are sent after it, the sender cannot expect to detect loss based on the
+    previous mechanism. In this case, a sender uses both ack information and an
+    alarm to detect loss. Specifically, when the last sent packet is
+    acknowledged, the sender waits a short period of time to allow for
+    reordering and then marks any unacknowledged packets as lost. This mechanism
+    is based on the Linux implementation of TCP Early Retransmit.
+
+  * If a packet is sent at the tail, there are no packets sent after it, and the
+    sender cannot use ack information to detect its loss. The sender therefore
+    relies on an alarm to detect such tail losses. This mechanism is based on
+    TCP's Tail Loss Probe.
+
+  * If all else fails, a Retransmission Timeout (RTO) alarm is always set when
+    any retransmittable packet is outstanding. When this alarm fires, all
+    unacknowledged packets are marked as lost.
+
+  * Instead of a packet threshold to tolerate reordering, a QUIC sender may use
+    a time thresold. This allows for senders to be tolerant of short periods of
+    significant reordering. In this mechanism, a QUIC sender marks a packet as
+    lost when a packet larger than it is acknowledged and a threshold amount of
+    time has passed since the packet was sent.
+
+  * Handshake packets are special in a number of ways, and a separate alarm
+    period is used for them.
+
+
+## Algorithm Details
+
+### Constants of interest
 
 Constants used in loss recovery and congestion control are based on a
 combination of RFCs, papers, and common practice.  Some may need to be changed
@@ -248,7 +277,7 @@ sent_packets:
   ordered by packet number, and packets remain in sent_packets until
   acknowledged or lost.
 
-## Initialization
+### Initialization
 
 At the beginning of the connection, initialize the loss detection variables as
 follows:
@@ -270,7 +299,7 @@ follows:
    initial_rtt = kDefaultInitialRtt
 ~~~
 
-## On Sending a Packet
+### On Sending a Packet
 
 After any packet is sent, be it a new transmission or a rebundled transmission,
 the following OnPacketSent function is called.  The parameters to OnPacketSent
@@ -297,7 +326,7 @@ Pseudocode for OnPacketSent follows:
      SetLossDetectionAlarm()
 ~~~
 
-## On Ack Receipt
+### On Ack Receipt
 
 When an ack is received, it may acknowledge 0 or more packets.
 
@@ -329,7 +358,7 @@ Pseudocode for OnAckReceived and UpdateRtt follow:
        smoothed_rtt = 7/8 * smoothed_rtt + 1/8 * rtt_sample
 ~~~
 
-## On Packet Acknowledgment
+### On Packet Acknowledgment
 
 When a packet is acked for the first time, the following OnPacketAcked function
 is called.  Note that a single ACK frame may newly acknowledge several packets.
@@ -349,14 +378,14 @@ Pseudocode for OnPacketAcked follows:
      sent_packets.remove(acked_packet_number)
 ~~~
 
-## Setting the Loss Detection Alarm
+### Setting the Loss Detection Alarm
 
 QUIC loss detection uses a single alarm for all timer-based loss detection.  The
 duration of the alarm is based on the alarm's mode, which is set in the packet
 and timer events further below.  The function SetLossDetectionAlarm defined
 below shows how the single timer is set based on the alarm mode.
 
-### Handshake Packets
+#### Handshake Packets
 
 The initial flight has no prior RTT sample.  A client SHOULD remember
 the previous RTT it observed when resumption is attempted and use that for an
@@ -379,20 +408,20 @@ Version negotiation packets are always stateless, and MUST be sent once per
 per handshake packet that uses an unsupported QUIC version, and MAY be sent
 in response to 0RTT packets.
 
-### Tail Loss Probe and Retransmission Timeout
+#### Tail Loss Probe and Retransmission Timeout
 
 Tail loss probes {{?I-D.dukkipati-tcpm-tcp-loss-probe}} and retransmission
 timeouts{{?RFC6298}} are an alarm based mechanism to recover from cases when
 there are outstanding retransmittable packets, but an acknowledgement has
 not been received in a timely manner.
 
-### Early Retransmit
+#### Early Retransmit
 
 Early retransmit {{?RFC5827}} is implemented with a 1/4 RTT timer. It is
 part of QUIC's time based loss detection, but is always enabled, even when
 only packet reordering loss detection is enabled.
 
-### Pseudocode
+#### Pseudocode
 
 Pseudocode for SetLossDetectionAlarm follows:
 
@@ -431,7 +460,7 @@ Pseudocode for SetLossDetectionAlarm follows:
     loss_detection_alarm.set(now + alarm_duration)
 ~~~
 
-## On Alarm Firing
+### On Alarm Firing
 
 QUIC uses one loss recovery alarm, which when set, can be in one of several
 modes.  When the alarm fires, the mode determines the action to be performed.
@@ -463,21 +492,21 @@ Pseudocode for OnLossDetectionAlarm follows:
      SetLossDetectionAlarm()
 ~~~
 
-## Detecting Lost Packets
+### Detecting Lost Packets
 
 Packets in QUIC are only considered lost once a larger packet number is
 acknowledged.  DetectLostPackets is called every time an ack is received.
 If the loss detection alarm fires and the loss_time is set, the previous
 largest acked packet is supplied.
 
-### Handshake Packets
+#### Handshake Packets
 
 The receiver MUST ignore unprotected packets that ack protected packets.
 The receiver MUST trust protected acks for unprotected packets, however.  Aside
 from this, loss detection for handshake packets when an ack is processed is
 identical to other packets.
 
-### Pseudocode
+#### Pseudocode
 
 DetectLostPackets takes one parameter, acked, which is the largest acked packet.
 
@@ -510,6 +539,10 @@ Pseudocode for DetectLostPackets follows:
      foreach (packet in lost_packets)
        sent_packets.remove(packet.packet_number)
 ~~~
+
+## Discussion
+TODO: Discuss why constants are chosen as they are.
+
 
 # Congestion Control
 
