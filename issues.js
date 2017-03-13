@@ -195,17 +195,21 @@ var issueFilters = {
   },
 
   closed_since: {
-    args: ['string'],
+    args: ['date'],
     h: 'issues closed since the date and time',
     f: function(since) {
-      if (typeof since === 'string') {
-        since = new Date(since);
-      } else if (since instanceof Date) {
-        since = since.getTime();
-      }
-      return issue => Date.parse(issue.closed_at) > since;
+      return issue => Date.parse(issue.closed_at) >= since;
+    }
+  },
+
+  updated_since: {
+    args: ['date'],
+    h: 'issues updated since the date and time',
+    f: function(since) {
+      return issue => Date.parse(issue.updated_at) >= since;
     }
   }
+
 };
 
 class Parser {
@@ -261,6 +265,15 @@ class Parser {
     return s;
   }
 
+  parseDate() {
+    let str = this.parseString();
+    let time = Date.parse(str);
+    if (isNaN(time)) {
+      throw new Error(`not a valid date: ${str}`);
+    }
+    return time;
+  }
+
   parseNumber() {
     let m = this.str.match(/^\d+/);
     if (!m) {
@@ -297,6 +310,8 @@ class Parser {
       this.parseSeparator((i === 0) ? '(' : ',');
       if (arg === 'string') {
         args.push(this.parseString());
+      } else if (arg === 'date') {
+        args.push(this.parseDate());
       } else if (arg === 'integer') {
         args.push(this.parseNumber());
       } else if (arg === 'filter') {
@@ -313,19 +328,23 @@ class Parser {
   }
 }
 
+var subset = [];
 function filterIssues(str) {
-  let output = issues;
+  subset = issues;
   let parser = new Parser(str);
   let f = parser.parseFilter();
   while (f) {
-    output = output.filter(f);
+    subset = subset.filter(f);
     f = parser.parseFilter();
   }
-  return output;
 }
 
 function shortDesc(x) {
   return `${x.title} (#${x.number})`;
+}
+
+function dumpShown() {
+  console.log('* ' + subset.map(shortDesc).join('\n* ') + '\n');
 }
 
 var debounces = {};
@@ -498,7 +517,7 @@ function redraw(now) {
   d.classList.remove('hidden');
 
   try {
-    let subset = filterIssues(filter.value);
+    filterIssues(filter.value);
     let tbody = document.getElementById('tbody');
     tbody.innerHTML = '';
     subset.forEach(issue => {
