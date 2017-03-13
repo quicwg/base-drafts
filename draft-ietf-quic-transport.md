@@ -677,7 +677,7 @@ CONNECTION_CLOSE frame with the error code QUIC_SEQUENCE_NUMBER_LIMIT_REACHED
 
 To reduce the number of bits required to represent the packet number over the
 wire, only the least significant bits of the packet number are transmitted over
-the wire, up to 48 bits.  The actual packet number for each packet is
+the wire, up to 32 bits.  The actual packet number for each packet is
 reconstructed at the receiver based on the largest packet number received on a
 successfully authenticated packet.
 
