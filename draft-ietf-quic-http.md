@@ -269,7 +269,7 @@ other reasons.
 ### Header Compression
 
 HTTP/QUIC uses HPACK header compression as described in {{!RFC7541}}. HPACK was
-designed for HTTP/2 with the assumption of in- order delivery such as that
+designed for HTTP/2 with the assumption of in-order delivery such as that
 provided by TCP. A sequence of encoded header blocks must arrive (and be
 decoded) at an endpoint in the same order in which they were encoded. This
 ensures that the dynamic state at the two endpoints remains in sync.
@@ -347,7 +347,7 @@ stream of the dependent request, not the data stream.
 
 HTTP/QUIC supports server push as described in {{!RFC7540}}. During connection
 establishment, the client indicates whether it is willing to receive server
-pushes via the SETTINGS_ENABLE_PUSH setting in the SETTINGS frame (see
+pushes via the SETTINGS_DISABLE_PUSH setting in the SETTINGS frame (see
 {{connection-establishment}}), which defaults to 1 (true).
 
 As with server push for HTTP/2, the server initiates a server push by sending a
