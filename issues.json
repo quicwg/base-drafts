@@ -1,5 +1,114 @@
 [
   {
+    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/389",
+    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
+    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/389/labels{/name}",
+    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/389/comments",
+    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/389/events",
+    "html_url": "https://github.com/quicwg/base-drafts/pull/389",
+    "id": 213647715,
+    "number": 389,
+    "title": "Fix timestamp phrasing and spelling",
+    "user": {
+      "login": "ianswett",
+      "id": 20072817,
+      "avatar_url": "https://avatars2.githubusercontent.com/u/20072817?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/ianswett",
+      "html_url": "https://github.com/ianswett",
+      "followers_url": "https://api.github.com/users/ianswett/followers",
+      "following_url": "https://api.github.com/users/ianswett/following{/other_user}",
+      "gists_url": "https://api.github.com/users/ianswett/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/ianswett/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/ianswett/subscriptions",
+      "organizations_url": "https://api.github.com/users/ianswett/orgs",
+      "repos_url": "https://api.github.com/users/ianswett/repos",
+      "events_url": "https://api.github.com/users/ianswett/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/ianswett/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+
+    ],
+    "state": "open",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 0,
+    "created_at": "2017-03-13T00:11:43Z",
+    "updated_at": "2017-03-13T00:11:43Z",
+    "closed_at": null,
+    "pull_request": {
+      "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/389",
+      "html_url": "https://github.com/quicwg/base-drafts/pull/389",
+      "diff_url": "https://github.com/quicwg/base-drafts/pull/389.diff",
+      "patch_url": "https://github.com/quicwg/base-drafts/pull/389.patch"
+    },
+    "body": "Hopefully addresses #388 "
+  },
+  {
+    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/388",
+    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
+    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/388/labels{/name}",
+    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/388/comments",
+    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/388/events",
+    "html_url": "https://github.com/quicwg/base-drafts/issues/388",
+    "id": 213642210,
+    "number": 388,
+    "title": "Timestamps in acknowledgment of PING?",
+    "user": {
+      "login": "martinthomson",
+      "id": 67641,
+      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/martinthomson",
+      "html_url": "https://github.com/martinthomson",
+      "followers_url": "https://api.github.com/users/martinthomson/followers",
+      "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
+      "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
+      "organizations_url": "https://api.github.com/users/martinthomson/orgs",
+      "repos_url": "https://api.github.com/users/martinthomson/repos",
+      "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/martinthomson/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 481871361,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/design",
+        "name": "design",
+        "color": "1d76db",
+        "default": false
+      },
+      {
+        "id": 481871399,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
+        "name": "transport",
+        "color": "fbca04",
+        "default": false
+      }
+    ],
+    "state": "open",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 3,
+    "created_at": "2017-03-12T22:52:45Z",
+    "updated_at": "2017-03-13T00:06:14Z",
+    "closed_at": null,
+    "body": "Should we encourage implementations to include a timestamp for the specific packet that contains a PING when acknowledging it?"
+  },
+  {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/387",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
     "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/387/labels{/name}",
@@ -108,9 +217,9 @@
 
     ],
     "milestone": null,
-    "comments": 2,
+    "comments": 5,
     "created_at": "2017-03-10T05:50:59Z",
-    "updated_at": "2017-03-10T15:17:53Z",
+    "updated_at": "2017-03-12T22:51:16Z",
     "closed_at": null,
     "body": "We now forbid the generation of an ACK in response to an ACK (lest the two endpoints talk each other to death over nothing), rather than recommend acknowledging only a fraction of ACKs.  That's great, and much easier to implement.\r\n\r\nHowever, when removing STOP_WAITING, @ianswett wanted to have a way to solicit an ACK so that a receiver could stop sending acknowledgments for some packets.  He suggested using PING, which is great.  I have another suggestion that I think is superior: WINDOW_UPDATE.  Like PING, WINDOW_UPDATE causes an ACK to be generated, albeit with less urgency and a receiver is highly like to need to send one occasionally.  I think that PING is still viable, but WINDOW_UPDATE is likely to happen naturally anyway."
   },
@@ -273,9 +382,9 @@
 
     ],
     "milestone": null,
-    "comments": 10,
+    "comments": 11,
     "created_at": "2017-03-10T01:21:30Z",
-    "updated_at": "2017-03-10T21:32:59Z",
+    "updated_at": "2017-03-10T23:36:01Z",
     "closed_at": null,
     "body": "In the error codes there's a QUIC_PACKET_TOO_LARGE error, but there's no maximum packet size specified anywhere in the document.\r\n\r\nDoes it make sense to define a maximum packet size or must a QUIC implementation be capable of handling packets with the maximum UDP packet size? Google QUIC currently uses 1452 as the maximum packet size (= Ethernet MTU - minimum UDP header size)."
   },
@@ -1554,6 +1663,13 @@
         "default": false
       },
       {
+        "id": 517015633,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/needs-discussion",
+        "name": "needs-discussion",
+        "color": "d93f0b",
+        "default": false
+      },
+      {
         "id": 481871399,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
         "name": "transport",
@@ -1570,7 +1686,7 @@
     "milestone": null,
     "comments": 17,
     "created_at": "2017-02-09T18:35:01Z",
-    "updated_at": "2017-03-09T23:55:02Z",
+    "updated_at": "2017-03-11T01:41:36Z",
     "closed_at": null,
     "body": "Something that came up in Tokyo was the need for service providers (i.e. middleboxes) to troubleshoot performance issues in the network. Packet Number Echo (#269) could partially address this problem., particularly for RTT measurement. But it is imperfect for measuring other problems.\r\n\r\nAs someone who has spent quite a bit of time debugging TCP packet traces from service providers, there are two other things that would help greatly in answering the question \"why is my QUIC slow\", without significantly compromising privacy. To do both would take two bits in the public flags, which may be available depending on how some other issues turn out.\r\n\r\n(1) QUIC endpoints MAY set the BLOCKED bit if they include a BLOCKED frame in the packet. If you want to get fancy, you could have a different bit for \"stream blocked\" and \"connection blocked\", but flow control issues are a common cause of traffic pauses with no other discernable symptoms.\r\n(2) QUIC endpoints MUST (SHOULD?) set the RETRANS flag in any packet that contains retransmitted data. This would help operators identify that a connection is slowing down because it is responding to loss, and would allow for very reliable loss statistics for the downstream network."
   },
@@ -1612,6 +1728,13 @@
         "default": false
       },
       {
+        "id": 517015633,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/needs-discussion",
+        "name": "needs-discussion",
+        "color": "d93f0b",
+        "default": false
+      },
+      {
         "id": 481871399,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
         "name": "transport",
@@ -1628,7 +1751,7 @@
     "milestone": null,
     "comments": 18,
     "created_at": "2017-02-08T19:24:35Z",
-    "updated_at": "2017-03-02T18:30:54Z",
+    "updated_at": "2017-03-11T01:39:44Z",
     "closed_at": null,
     "body": "In Mirja's Management draft:\r\n[https://tools.ietf.org/html/draft-kuehlewind-quic-appman-00#section-3](url)\r\n\r\n> [EDITOR'S NOTE: the addition of a simple packet number echo would\r\n   allow passive RTT measurement and partial passive downstream loss/\r\n   reordering measurement.  Packet number echo can be sampled at the\r\n   echo-side (i.e. one-in-N packets or 1/p packets can carry an echo)\r\n   for efficiency tradeoff, if necessary.]\r\n\r\nI endorse this idea. Service providers are very interesting in measuring their users' quality of experience and this is one key thing we can expose to enable that. On the face of it, it seems that the privacy hit is marginal."
   },
@@ -1689,7 +1812,8 @@
     "updated_at": "2017-03-10T05:42:57Z",
     "closed_at": null,
     "body": "PR #106 added the following requirement on servers:\r\n\r\n> Servers MUST reject the first plaintext packet received from a client if it its total size is less than 1280 octets, to mitigate amplification attacks.\r\n\r\nHowever, this runs into an issue in the case where there are IP header extensions that the client knows about but the server doesn't.  If the client is aware of the IP header extensions and constructs a packet with a smaller payload in order to comply with our recommendation to create a packet of exactly 1280 octets, the server will receive a packet that it thinks is too small.\r\n\r\nI see a few options:\r\n1. loosen the enforcement constraint on the server\r\n2. specify that the server only enforce the constraint if it sees the entire IP packet\r\n3. specify the minimum size and its enforcement in terms of payload size (we could set different values here to allow for header extensions)"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/265",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -1805,8 +1929,7 @@
     "updated_at": "2017-02-07T15:52:03Z",
     "closed_at": null,
     "body": "This is an issue we briefly discussed in a coffee break in Tokyo, that nobody has written up so far.\r\n\r\nWe currently don't have a definition of the number of concurrent streams that both peers agree on at every given moment. Chrome and quic-go solve this problem by allowing a higher number of open streams (10% or 10 streams more, whichever is higher, than the advertised limit). This seems to work fine for HTTP, but will probably break down when using many short-lived streams.\r\n\r\n### Problem analysis\r\n\r\nThe main problem here is that it is very difficult for the sender to determine if the receiver considers a stream closed at any given moment. To do so, it would have to keep track of all packets containing stream data for that stream. Only when all of those packets have been ACKed (or retransmissions of those packets, if any packets were lost), it knows that the stream changed its state on the receiver's side.\r\n\r\nI think there's a more fundamental problem hidden here: Receiving a FIN should not cause a state transition in the first place. The concurrent stream limit is supposed to protect a receiver from allocating to many resources. Therefore, a stream should only be considered closed once the application finished reading from that stream (which, if it is reading the whole stream data, is only possible after receiving the FIN, but might be an arbitrary amount of time later, if the application is reading slowly).\r\n\r\n### Possible solution\r\n\r\nThere needs to be a way for the receiver to tell the sender that it considers a stream closed. We could introduce a CLOSED_STREAM frame type for that.\r\nA peer would send a CLOSED_STREAM frame only after it closed the stream locally (i.e. only from the *half closed (locally)* state) and after it finished reading from the stream. \r\nA peer receiving a CLOSED_STREAM can immediately remove the corresponding stream from the list of open streams.\r\n\r\n\r\nI can work out the details and provide a PR for this, but I'd like to discuss the proposal here first. It might make sense to finish the changes regarding the resetting of streams (related issues: #165 and #171), since this will already significantly change the stream state diagram."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/257",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -1838,6 +1961,13 @@
     },
     "labels": [
       {
+        "id": 558112767,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/parked",
+        "name": "parked",
+        "color": "f9d0c4",
+        "default": false
+      },
+      {
         "id": 481871399,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
         "name": "transport",
@@ -1854,7 +1984,7 @@
     "milestone": null,
     "comments": 0,
     "created_at": "2017-02-02T13:15:17Z",
-    "updated_at": "2017-02-03T01:43:53Z",
+    "updated_at": "2017-03-11T01:27:08Z",
     "closed_at": null,
     "pull_request": {
       "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/257",
@@ -1953,6 +2083,13 @@
     },
     "labels": [
       {
+        "id": 558112767,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/parked",
+        "name": "parked",
+        "color": "f9d0c4",
+        "default": false
+      },
+      {
         "id": 481871399,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
         "name": "transport",
@@ -1969,7 +2106,7 @@
     "milestone": null,
     "comments": 11,
     "created_at": "2017-01-31T15:01:23Z",
-    "updated_at": "2017-02-10T02:43:59Z",
+    "updated_at": "2017-03-11T01:36:41Z",
     "closed_at": null,
     "body": "transport 9.4 contains: \"A receiver MUST ensure that received stream data is delivered to the application as an ordered byte-stream. Data received out of order MUST be buffered for later delivery, as long as it is not in violation of the receiver’s flow control limits.\"\r\n\r\nI agree QUIC provides an ordered byte stream abstraction, but why do we have this requirement about in-order delivery to the application? Surely that makes a lot of sense, but it seems to me the only real requirement is that it be a byte stream because boundaries are not preserved.."
   },
@@ -2011,6 +2148,13 @@
         "default": false
       },
       {
+        "id": 517015633,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/needs-discussion",
+        "name": "needs-discussion",
+        "color": "d93f0b",
+        "default": false
+      },
+      {
         "id": 481873040,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/recovery",
         "name": "recovery",
@@ -2034,7 +2178,7 @@
     "milestone": null,
     "comments": 0,
     "created_at": "2017-01-30T00:39:55Z",
-    "updated_at": "2017-01-30T02:05:39Z",
+    "updated_at": "2017-03-11T01:37:48Z",
     "closed_at": null,
     "body": "The current transport doc exempts stream 1 from *congestion control*.  That seems to be unnecessary, potentially hard to implement, and maybe even dangerous."
   },
@@ -3429,7 +3573,8 @@
     "updated_at": "2017-01-24T03:59:20Z",
     "closed_at": null,
     "body": "Consider the following sequence of events on a stream (assuming that MSPC allows exactly one application data stream in the C-S direction:\r\n\r\n```\r\n<---------- Stream Establishment ----------->\r\n<----------------------------------------- FIN\r\nFIN ----------------------------------------->\r\nDATA (stream N+1) -------------------------->\r\n```\r\n\r\nIf you get reordering between the FIN and the data then the server will see it as exceeding MSPC and send  QUIC_TOO_MANY_OPEN_STREAMS. Ugh."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/199",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3545,8 +3690,7 @@
     "updated_at": "2017-01-24T03:40:57Z",
     "closed_at": null,
     "body": "The present text strongly suggests that I should be sending blocked every time I get new data:\r\n\r\n  A sender sends a BLOCKED frame (type=0x05) when it is ready to send\r\n   data (and has data to send), but is currently flow control blocked.\r\n\r\nIf the idea is that it should be edge triggered rather than level triggered, the text should say so\r\n"
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/197",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5426,7 +5570,8 @@
     "updated_at": "2017-03-10T03:56:08Z",
     "closed_at": null,
     "body": "#87 covers improving the current use of ALPN and the Alt-Svc v= parameter for HTTP.  However, I think this is something that QUIC needs to solve generically, so forking off a separate issue for that.\r\n\r\nHere are the paths I see that we need to support:\r\n\r\n- **Client to server, first time:** This is inherently a 1-RTT handshake *if* the client guesses the version correctly; 2 RTTs if it's wrong.  This incents clients to attempt the most widely-deployed version of QUIC rather than their highest version.  Consequently, there needs to be a way for a conservative client to discover that a server supports a more advanced version.\r\n- **Client to server, subsequent:** The cached information should contain information about the server's supported versions so the client can come back with the same version as last time. The scenarios where one side has changed need consideration, though:\r\n    - **Client upgraded:** Would require client to cache server's full set of supported versions and compare against the client's supported set at connect time, not just caching the selected version.\r\n    - **Server upgraded:** The current mechanism offers no way for a client to discover that the server would have accepted a version it didn't initially offer, whether because the server didn't previously support it or the client is being conservative.\r\n\r\nIdeally, I'd like to see these solved for QUIC independent of Alt-Svc -- there will be other users besides HTTP.\r\n\r\nI think this could be solved by requiring the server to always send its Version Negotiation list in the crypto handshake, not just if a Version Negotiation packet was actually sent.  Clients can discover when the server supports a newer version than they attempted, and either know what to offer next time or actively open a new connection with the new version in parallel."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/81",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5549,8 +5694,7 @@
     "updated_at": "2017-02-21T08:48:55Z",
     "closed_at": null,
     "body": "In HTTP/2, the CONTINUATION frame was [much loathed](https://github.com/http2/http2-spec/pull/548), but ultimately deemed a necessary evil since there are some truly, ridiculously large headers out there (*\\*cough\\** Kerberos *\\*cough\\**).  The current HTTP/QUIC draft allows a frame to be 64KB long before decoding the HPACK.  Is this large enough?  That was the boundary we'd said it would take in HTTP/2 to require a single frame.\r\n\r\nIf not, the current draft uses the END_HEADERS bit to indicate that another HEADERS frame will follow, which is effectively the same as CONTINUATION.  The same is not currently defined for PUSH_PROMISE (which really ought to be much smaller).\r\n\r\nIf so, could we drop the END_HEADERS thing entirely and say that HPACK-bearing frames are fully self-contained?  It would simplify a lot of client mechanics."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/68",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
