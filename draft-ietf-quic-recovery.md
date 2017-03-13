@@ -233,7 +233,7 @@ reordering_threshold:
 : The largest delta between the largest acked
   retransmittable packet and a packet containing retransmittable frames before
   it's declared lost.
-  
+
 time_reordering_fraction:
 : The reordering window as a fraction of max(smoothed_rtt, latest_rtt).
 
@@ -503,7 +503,7 @@ Pseudocode for DetectLostPackets follows:
          lost_packets.insert(unacked)
        else if (loss_time == 0 && time_when_lost != 0):
          loss_time = time_when_lost - time_since_sent
-     
+
      // Inform the congestion controller of lost packets and
      // lets it decide whether to retransmit immediately.
      OnPacketsLost(lost_packets)
