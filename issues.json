@@ -1,35 +1,48 @@
 [
   {
-    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/389",
+    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/390",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
-    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/389/labels{/name}",
-    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/389/comments",
-    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/389/events",
-    "html_url": "https://github.com/quicwg/base-drafts/pull/389",
-    "id": 213647715,
-    "number": 389,
-    "title": "Fix timestamp phrasing and spelling",
+    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/390/labels{/name}",
+    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/390/comments",
+    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/390/events",
+    "html_url": "https://github.com/quicwg/base-drafts/issues/390",
+    "id": 213648441,
+    "number": 390,
+    "title": "Flow/congestion control and rejected 0-RTT",
     "user": {
-      "login": "ianswett",
-      "id": 20072817,
-      "avatar_url": "https://avatars2.githubusercontent.com/u/20072817?v=3",
+      "login": "martinthomson",
+      "id": 67641,
+      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
       "gravatar_id": "",
-      "url": "https://api.github.com/users/ianswett",
-      "html_url": "https://github.com/ianswett",
-      "followers_url": "https://api.github.com/users/ianswett/followers",
-      "following_url": "https://api.github.com/users/ianswett/following{/other_user}",
-      "gists_url": "https://api.github.com/users/ianswett/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/ianswett/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/ianswett/subscriptions",
-      "organizations_url": "https://api.github.com/users/ianswett/orgs",
-      "repos_url": "https://api.github.com/users/ianswett/repos",
-      "events_url": "https://api.github.com/users/ianswett/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/ianswett/received_events",
+      "url": "https://api.github.com/users/martinthomson",
+      "html_url": "https://github.com/martinthomson",
+      "followers_url": "https://api.github.com/users/martinthomson/followers",
+      "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
+      "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
+      "organizations_url": "https://api.github.com/users/martinthomson/orgs",
+      "repos_url": "https://api.github.com/users/martinthomson/repos",
+      "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/martinthomson/received_events",
       "type": "User",
       "site_admin": false
     },
     "labels": [
-
+      {
+        "id": 481871361,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/design",
+        "name": "design",
+        "color": "1d76db",
+        "default": false
+      },
+      {
+        "id": 481871399,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
+        "name": "transport",
+        "color": "fbca04",
+        "default": false
+      }
     ],
     "state": "open",
     "locked": false,
@@ -39,16 +52,10 @@
     ],
     "milestone": null,
     "comments": 0,
-    "created_at": "2017-03-13T00:11:43Z",
-    "updated_at": "2017-03-13T00:11:43Z",
+    "created_at": "2017-03-13T00:23:41Z",
+    "updated_at": "2017-03-13T00:23:41Z",
     "closed_at": null,
-    "pull_request": {
-      "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/389",
-      "html_url": "https://github.com/quicwg/base-drafts/pull/389",
-      "diff_url": "https://github.com/quicwg/base-drafts/pull/389.diff",
-      "patch_url": "https://github.com/quicwg/base-drafts/pull/389.patch"
-    },
-    "body": "Hopefully addresses #388 "
+    "body": "We need to be very clear about what the rules are regarding 0-RTT packets that are rejected by the server.  I think that this should be:\r\n\r\n* Rejected 0-RTT packets don't count toward flow control.  The server can't see them, so we have to assume that they don't exist for this purpose.\r\n\r\n* Rejected 0-RTT packets **do** count toward congestion control limits.  Congestion control is a local thing, and the packets were sent, which means that they are causing congestion."
   },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/388",
@@ -318,9 +325,9 @@
       }
     ],
     "milestone": null,
-    "comments": 1,
+    "comments": 2,
     "created_at": "2017-03-10T04:48:32Z",
-    "updated_at": "2017-03-10T17:47:02Z",
+    "updated_at": "2017-03-13T00:21:16Z",
     "closed_at": null,
     "pull_request": {
       "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/384",
@@ -3866,64 +3873,6 @@
     "body": "In S 5.2.2 QUIC frames are currently specified without any length field. This means that it's not possible to skip over unknown frame types.\r\n\r\nThere are at least two reasons why this is inconvenient:\r\n\r\n- It makes it hard to write passive analysis tools because those tools will just choke if they encounter unrecognized frames (they cannot process the rest of the packet).\r\n- It makes it hard to skip over frames you don't care about without parsing them. BLOCKED is a good example of such a frame currently"
   },
   {
-    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/192",
-    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
-    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/192/labels{/name}",
-    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/192/comments",
-    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/192/events",
-    "html_url": "https://github.com/quicwg/base-drafts/issues/192",
-    "id": 202444139,
-    "number": 192,
-    "title": "Stop pretending we are going to get to a 64-bit packet number",
-    "user": {
-      "login": "ekr",
-      "id": 1111457,
-      "avatar_url": "https://avatars3.githubusercontent.com/u/1111457?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/ekr",
-      "html_url": "https://github.com/ekr",
-      "followers_url": "https://api.github.com/users/ekr/followers",
-      "following_url": "https://api.github.com/users/ekr/following{/other_user}",
-      "gists_url": "https://api.github.com/users/ekr/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/ekr/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/ekr/subscriptions",
-      "organizations_url": "https://api.github.com/users/ekr/orgs",
-      "repos_url": "https://api.github.com/users/ekr/repos",
-      "events_url": "https://api.github.com/users/ekr/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/ekr/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "labels": [
-      {
-        "id": 481871311,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/editorial",
-        "name": "editorial",
-        "color": "0e8a16",
-        "default": false
-      },
-      {
-        "id": 481871399,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
-        "name": "transport",
-        "color": "fbca04",
-        "default": false
-      }
-    ],
-    "state": "open",
-    "locked": false,
-    "assignee": null,
-    "assignees": [
-
-    ],
-    "milestone": null,
-    "comments": 3,
-    "created_at": "2017-01-23T04:32:29Z",
-    "updated_at": "2017-03-10T04:21:39Z",
-    "closed_at": null,
-    "body": "S 5.2.1 contains a bunch of instructions for how to deal with packet number 2^64 but (for instance) the connection flow control window is 64-bits in absolute values, so given that we're mostly sending data, it seems improbable you will get to 2^64 packets."
-  },
-  {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/188",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
     "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/188/labels{/name}",
@@ -5570,8 +5519,7 @@
     "updated_at": "2017-03-10T03:56:08Z",
     "closed_at": null,
     "body": "#87 covers improving the current use of ALPN and the Alt-Svc v= parameter for HTTP.  However, I think this is something that QUIC needs to solve generically, so forking off a separate issue for that.\r\n\r\nHere are the paths I see that we need to support:\r\n\r\n- **Client to server, first time:** This is inherently a 1-RTT handshake *if* the client guesses the version correctly; 2 RTTs if it's wrong.  This incents clients to attempt the most widely-deployed version of QUIC rather than their highest version.  Consequently, there needs to be a way for a conservative client to discover that a server supports a more advanced version.\r\n- **Client to server, subsequent:** The cached information should contain information about the server's supported versions so the client can come back with the same version as last time. The scenarios where one side has changed need consideration, though:\r\n    - **Client upgraded:** Would require client to cache server's full set of supported versions and compare against the client's supported set at connect time, not just caching the selected version.\r\n    - **Server upgraded:** The current mechanism offers no way for a client to discover that the server would have accepted a version it didn't initially offer, whether because the server didn't previously support it or the client is being conservative.\r\n\r\nIdeally, I'd like to see these solved for QUIC independent of Alt-Svc -- there will be other users besides HTTP.\r\n\r\nI think this could be solved by requiring the server to always send its Version Negotiation list in the crypto handshake, not just if a Version Negotiation packet was actually sent.  Clients can discover when the server supports a newer version than they attempted, and either know what to offer next time or actively open a new connection with the new version in parallel."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/81",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5636,7 +5584,8 @@
     "updated_at": "2017-03-10T03:55:13Z",
     "closed_at": null,
     "body": "Because of a stated goal from some implementers to reuse HTTP/2 framing as much as possible, the draft currently augments the HTTP/2 Frame Type Registry with a \"Supported Protocol\" column, allowing a frame to be defined for HTTP/2, HTTP/QUIC, or both.  A specification is required for each supported protocol.\r\n\r\nHowever, in the current draft, all but one \"Both\" frames are *different* between HTTP/2 and HTTP/QUIC.  Small or large, nearly every frame has required some modification to work over QUIC.  If we accept #80 , *all* frames will be different between HTTP/2 and HTTP/QUIC.\r\n\r\nAt that point, is there really a point in continuing to define HTTP/QUIC in relation to HTTP/2, or should we just admit that it's a new, separate thing that's heavily inspired by HTTP/2?  Separate registry, etc., and future extensions can register themselves with both if appropriate?  Or do we keep the same registry anyway to enforce that you'll never wind up with totally unrelated frames sharing the same value across the two protocols?"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/76",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5978,9 +5927,9 @@
 
     ],
     "milestone": null,
-    "comments": 3,
+    "comments": 4,
     "created_at": "2016-12-01T23:45:54Z",
-    "updated_at": "2017-03-10T15:00:26Z",
+    "updated_at": "2017-03-13T00:18:07Z",
     "closed_at": null,
     "body": "I think that this is one or other peer walking away from a conversation without saying goodbye.  If we're going to talk about silent closes, we need to explain what it is, why a peer might choose to do it, and the consequences for everyone involved if they exist."
   },
