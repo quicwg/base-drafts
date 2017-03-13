@@ -229,7 +229,7 @@ kDelayedAckTimeout (default 25ms):
 kDefaultInitialRtt (default 100ms):
 : The default RTT used before an RTT sample is taken.
 
-## Variables of interest
+### Variables of interest
 
 We first describe the variables required to implement the loss detection
 mechanisms described in this section.
