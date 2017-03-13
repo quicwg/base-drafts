@@ -309,8 +309,7 @@ Pseudocode for OnAckReceived and UpdateRtt follow:
      for acked_packet in DetermineNewlyAckedPackets():
        OnPacketAcked(acked_packet)
 
-     lost_packets = DetectLostPackets(ack.largest_acked_packet)
-     MaybeRetransmit(lost_packets)
+     DetectLostPackets(ack.largest_acked_packet)
      SetLossDetectionAlarm()
 
 
@@ -445,18 +444,17 @@ Pseudocode for OnLossDetectionAlarm follows:
      // TODO: Clarify early retransmit and time loss.
      else if ():
        // Early retransmit or Time Loss Detection
-       lost_packets = DetectLostPackets(acked_packet)
-       MaybeRetransmit(lost_packets)
+       DetectLostPackets(acked_packet)
      else if (tlp_count < kMaxTLPs):
-       // Tail Loss Probe alarm.
+       // Tail Loss Probe.
        if (HasNewDataToSend()):
          SendOnePacketOfNewData()
        else:
          RetransmitOldestPacket()
        tlp_count++
      else:
-       // RTO alarm.
-       RetransmitOldestPacket()
+       // RTO.
+       RetransmitOldestTwoPackets()
        rto_count++
 
      SetLossDetectionAlarm()
@@ -478,8 +476,7 @@ identical to other packets.
 
 ### Pseudocode
 
-DetectLostPackets takes one parameter, acked, which is the largest acked packet,
-and returns a list of packets detected as lost.
+DetectLostPackets takes one parameter, acked, which is the largest acked packet.
 
 Pseudocode for DetectLostPackets follows:
 
@@ -493,7 +490,10 @@ Pseudocode for DetectLostPackets follows:
          lost_packets.insert(unacked)
        else if (packet_delta > reordering_threshold)
          lost_packets.insert(unacked)
-     return lost_packets
+     
+     // Inform the congestion controller of lost packets.
+     OnPacketsLost(lost_packets)
+     MaybeRetransmit(lost_packets)
 ~~~
 
 # Congestion Control
