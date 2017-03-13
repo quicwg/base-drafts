@@ -2767,13 +2767,69 @@ thanks to all.
 
 # Change Log
 
-> **RFC Editor's Note:**  Please remove this section prior to publication of a
+> **RFC Editor's Note:** Please remove this section prior to publication of a
 > final version of this document.
+
+Issue and pull request numbers are listed with a leading octothorp.
 
 
 ## Since draft-ietf-quic-transport-01:
 
-- Defined transport parameters
+- Defined short and long packet headers (#40, #148, #361)
+- Defined a versioning scheme and stable fields (#51, #361)
+- Define reserved version values for "greasing" negotiation (#112, #278)
+- The initial packet number is randomized (#35, #283)
+- Narrow the packet number encoding range requirement (#67, #286, #299, #323,
+  #356)
+
+- Defined client address validation (#52, #118, #120, #275)
+- Define transport parameters as a TLS extension (#122)
+- SCUP and COPT parameters are no longer valid (#116, #117)
+- Transport parameters for 0-RTT are either remembered from before, or assume
+  default values (#126)
+- The server chooses connection IDs in its final flight (#119, #349, #361)
+- The server echoes the Connection ID and packet number fields when sending a
+  Version Negotiation packet (#133, #295, #244)
+
+- Definied a minimum packet size for the initial handshake packet from the
+  client (#69, #136, #139, #164)
+- Path MTU Discovery (#64, #106)
+- The initial handshake packet from the client needs to fit in a single packet
+  (#338)
+
+- Forbid acknowledgment of packets containing only ACK and PADDING (#291)
+- Require that frames are processed when packets are acknowledged (#381, #341)
+- Removed the STOP_WAITING frame (#66)
+- Don't require retransmission of old timestamps for lost ACK frames (#308)
+- Clarified that frames are not retransmitted, but the information in them can
+  be (#157, #298)
+
+- Error handling definitions (#335)
+- Split error codes into four sections (#74)
+- Forbid the use of Public Reset where CONNECTION_CLOSE is possible (#289)
+
+- Define packet protection rules (#336)
+
+- Require that stream be entirely delivered or reset, including acknowledgment
+  of all STREAM frames or the RST_STREAM, before it closes (#381)
+- Remove stream reservation from state machine (#174, #280)
+- Only stream 0 does not contributing to connection-level flow control (#204)
+- Stream 1 counts towards the maximum concurrent stream limit (#201, #282)
+- Remove connection-level flow control exclusion for some streams (except 1)
+  (#246)
+- RST_STREAM affects connection-level flow control (#162, #163)
+- Flow control accounting uses the maximum data offset on each stream, rather
+  than bytes received (#378)
+
+- Moved length-determining fields to the start of STREAM and ACK (#168, #277)
+- Added the ability to pad between frames (#158, #276)
+- Remove error code and reason phrase from GOAWAY (#352, #355)
+- GOAWAY includes a final stream number for both directions (#347)
+- Error codes for RST_STREAM and CONNECTION_CLOSE are now at a consistent offset
+  (#249)
+
+- Defined priority as the responsibility of the application protocol (#104,
+  #303)
 
 
 ## Since draft-ietf-quic-transport-00:

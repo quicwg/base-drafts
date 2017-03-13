@@ -1446,8 +1446,24 @@ many others.
 
 # Change Log
 
-> **RFC Editor's Note:**  Please remove this section prior to publication of a
+> **RFC Editor's Note:** Please remove this section prior to publication of a
 > final version of this document.
+
+Issue and pull request numbers are listed with a leading octothorp.
+
+## Since draft-ietf-quic-tls-01:
+
+- Use TLS alerts to signal TLS errors (#272, #374)
+- Require ClientHello to fit in a single packet (#338)
+- The second client handshake flight is now sent in the clear (#262, #337)
+- The QUIC header is included as AEAD Associated Data (#226, #243, #302)
+- Add interface necessary for client address validation (#275)
+- Define peer authentication (#140)
+- Require at least TLS 1.3 (#138)
+- Define transport parameters as a TLS extension (#122)
+- Define handling for protected packets before the handshake completes (#39)
+- Decouple QUIC version and ALPN (#12)
+
 
 ## Since draft-ietf-quic-tls-00:
 
