@@ -536,10 +536,15 @@ This document has no IANA actions.  Yet.
 > **RFC Editor's Note:**  Please remove this section prior to publication of a
 > final version of this document.
 
-
 ## Since draft-ietf-quic-recovery-01
 
+- Changes initial default RTT to 100ms
+
+- Added time-based loss detection and fixes early retransmit
+
 - Clarified loss recovery for handshake packets
+
+- Fixed references and made TCP references informative
 
 ## Since draft-ietf-quic-recovery-00:
 
