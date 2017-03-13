@@ -80,7 +80,13 @@
       "site_admin": false
     },
     "labels": [
-
+      {
+        "id": 517015633,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/needs-discussion",
+        "name": "needs-discussion",
+        "color": "d93f0b",
+        "default": false
+      }
     ],
     "state": "open",
     "locked": false,
@@ -91,7 +97,7 @@
     "milestone": null,
     "comments": 2,
     "created_at": "2017-03-13T11:14:14Z",
-    "updated_at": "2017-03-13T14:37:08Z",
+    "updated_at": "2017-03-13T19:38:32Z",
     "closed_at": null,
     "pull_request": {
       "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/393",
@@ -182,7 +188,13 @@
       "site_admin": false
     },
     "labels": [
-
+      {
+        "id": 517015633,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/needs-discussion",
+        "name": "needs-discussion",
+        "color": "d93f0b",
+        "default": false
+      }
     ],
     "state": "open",
     "locked": false,
@@ -191,9 +203,9 @@
 
     ],
     "milestone": null,
-    "comments": 0,
+    "comments": 1,
     "created_at": "2017-03-13T10:03:47Z",
-    "updated_at": "2017-03-13T10:28:26Z",
+    "updated_at": "2017-03-13T19:37:40Z",
     "closed_at": null,
     "pull_request": {
       "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/391",
@@ -530,9 +542,9 @@
 
     ],
     "milestone": null,
-    "comments": 6,
+    "comments": 7,
     "created_at": "2017-03-10T05:50:59Z",
-    "updated_at": "2017-03-13T14:34:33Z",
+    "updated_at": "2017-03-13T19:45:45Z",
     "closed_at": null,
     "body": "We now forbid the generation of an ACK in response to an ACK (lest the two endpoints talk each other to death over nothing), rather than recommend acknowledging only a fraction of ACKs.  That's great, and much easier to implement.\r\n\r\nHowever, when removing STOP_WAITING, @ianswett wanted to have a way to solicit an ACK so that a receiver could stop sending acknowledgments for some packets.  He suggested using PING, which is great.  I have another suggestion that I think is superior: WINDOW_UPDATE.  Like PING, WINDOW_UPDATE causes an ACK to be generated, albeit with less urgency and a receiver is highly like to need to send one occasionally.  I think that PING is still viable, but WINDOW_UPDATE is likely to happen naturally anyway."
   },
