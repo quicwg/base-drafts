@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <script src="issues.js"></script>
+    <style>
+      body { font-family: sans-serif; font-size: 15px; }
+      table { border: 1px solid #ddd; border-collapse: collapse; }
+      td, th { border: 1px solid #eee; padding: 5px 1px; text-align: left; vertical-align: top; }
+      td .extra { display: none; max-width: 600px; overflow: auto; margin-top: 5px; }
+      td.id { text-align: right; }
+      td.active .extra { display: block; }
+      td.label span { display: inline-block; margin: 0 2px; padding: 1px 3px; font-size: 12px;
+                      overflow: hidden; text-overflow: ellipsis; max-width: 64px; white-space: nowrap; }
+      td.user a { display: inline-block;  text-decoration: none; vertical-align: middle; margin: 2px;
+                  font-weight: bold; font-size: 12px; color: black; }
+      td.user a:hover { text-decoration: underline; }
+      td.user a.short { overflow:hidden; max-width: 32px; }
+      td.label span, td.user img { border-radius: 2px; vertical-align: middle;  }
+      .hidden { display: none; }
+      #filter { width: 600px; }
+    </style>
+  </head>
+  <body>
+    <div>
+      <label for="filter">Filter:</label>
+      <input id="filter" name="filter" type="search" autofocus placeholder="type '/help' to show filter syntax">
+      <span id="status"><span id="count"></span> records</span>
+    </div>
+    <div id="help">
+      <p>This shows issues in a simple form, free of noise.</p>
+      <p>The filter box above accepts a set of filters, each separated by
+      space.</p>
+      <ul id="functions">
+      </ul>
+      <p>You can also type <tt>/local</tt> to reload the file, or <tt>/remote
+      &lt;user&gt; &lt;repo&gt;</tt> to load a new set of issues from GitHub
+      (only works online).  You can <tt>/sort</tt> on <tt>id</tt>
+      or <tt>recent</tt>.</p>
+    </div>
+    <div id="display">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Title</th>
+            <th>State</th>
+            <th>User</th>
+            <th>Assignee</th>
+            <th>Labels</th>
+          </tr>
+        </thead>
+        <tbody id="tbody">
+        </tbody>
+      </table>
+    </div>
+  </body>
+</html>
