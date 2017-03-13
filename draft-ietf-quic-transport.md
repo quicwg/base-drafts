@@ -1394,8 +1394,8 @@ QUIC ACK frames contain a timestamp section with up to 255 timestamps.
 Timestamps enable better congestion control, but are not required for correct
 loss recovery, and old timestamps are less valuable, so it is not guaranteed
 every timestamp will be received by the sender.  A receiver SHOULD send a
-timestamp exactly once for each retransmittable packet recevied. A receiver
-MAY send timestamps for non-retransmittable packets.
+timestamp exactly once for each received packet containing retransmittable
+frames. A receiver MAY send timestamps for non-retransmittable packets.
 
 A sender MAY intentionally skip packet numbers to introduce entropy into the
 connection, to avoid opportunistic acknowledgement attacks.  The sender MUST
