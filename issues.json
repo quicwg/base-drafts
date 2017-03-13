@@ -1,5 +1,56 @@
 [
   {
+    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/395",
+    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
+    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/395/labels{/name}",
+    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/395/comments",
+    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/395/events",
+    "html_url": "https://github.com/quicwg/base-drafts/pull/395",
+    "id": 213896398,
+    "number": 395,
+    "title": "First version of congestion control",
+    "user": {
+      "login": "ianswett",
+      "id": 20072817,
+      "avatar_url": "https://avatars2.githubusercontent.com/u/20072817?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/ianswett",
+      "html_url": "https://github.com/ianswett",
+      "followers_url": "https://api.github.com/users/ianswett/followers",
+      "following_url": "https://api.github.com/users/ianswett/following{/other_user}",
+      "gists_url": "https://api.github.com/users/ianswett/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/ianswett/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/ianswett/subscriptions",
+      "organizations_url": "https://api.github.com/users/ianswett/orgs",
+      "repos_url": "https://api.github.com/users/ianswett/repos",
+      "events_url": "https://api.github.com/users/ianswett/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/ianswett/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+
+    ],
+    "state": "open",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 0,
+    "created_at": "2017-03-13T21:02:56Z",
+    "updated_at": "2017-03-13T21:15:20Z",
+    "closed_at": null,
+    "pull_request": {
+      "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/395",
+      "html_url": "https://github.com/quicwg/base-drafts/pull/395",
+      "diff_url": "https://github.com/quicwg/base-drafts/pull/395.diff",
+      "patch_url": "https://github.com/quicwg/base-drafts/pull/395.patch"
+    },
+    "body": ""
+  },
+  {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/394",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
     "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/394/labels{/name}",
@@ -1909,7 +1960,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/366.patch"
     },
     "body": "Closes #291.\r\n\r\nNote that #358 contains advice on using PING to elicit an ACK if the endpoint wants to reduce the range of packet numbers that its acknowledgments cover.  We can rely on that same advice.\r\n\r\n@ianswett, I don't know how you want to manage this and #358.  If you want to fold this into #358, that might be best."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/365",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -1966,8 +2018,7 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/365.patch"
     },
     "body": "I need to check this on my mac."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/364",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3965,7 +4016,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/336.patch"
     },
     "body": "This is - at the moment - a little redundant with text in the -tls document.  That's probably OK until we sort out where that text belongs.\r\n\r\nCloses #34."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/335",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -4065,8 +4117,7 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/335.patch"
     },
     "body": "This covers two things:\r\n\r\n1. the general operation of Public Reset packets and their role in the protocol, including two separate admonishments not to use Public Reset unless you don't have connection state\r\n\r\n2. how to generate errors for the connection and for streams\r\n\r\nOn the former, I want to add ekr's proposed public reset design in a separate PR.\r\n\r\nOn the latter, I've cribbed from HTTP/2 a little, but the advice here turns out to be subtly different.\r\n\r\nCloses #289, #47."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/334",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5829,7 +5880,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/306.patch"
     },
     "body": "\"acked\", \"acking\" and variations thereof are fine in colloquial use, but it doesn't hurt to use real words.\r\n\r\nThis expands those uses and uses the capitalized ACK in other places."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/305",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5887,8 +5939,7 @@
     "updated_at": "2017-02-15T00:53:41Z",
     "closed_at": null,
     "body": "> skipping packet numbers between 1 and 255 effectively provides up to 8 bits of efficient entropy on  demand, which should be adequate protection against most opportunistic acknowledgement attacks.\r\n\r\nAside from the odd phrasing, I think that this is incorrect.  Aside from the obvious point that 1-255 is only  7.994 bits of entropy, you also have to take into account the probability that a sender chooses to skip (a probability of 2^-8 would give the answer here).  Add to that the fact that any entropy accumulates with every packet sent.  Choosing to send or withhold each packet number could add up to a bit of entropy over time, so the difficulty in guessing could be higher over time.\r\n\r\nNo matter what strategy it's always safe for an attacker to guess high, so the amount of effective entropy against an attacker is probably less than claimed.  Of course, guessing high has an effect on congestion control, because that is marked by the sender as loss.  That could be as effective in mitigating the optimistic acknowledgment attack as the gap itself.\r\n\r\nThen there is real packet loss.  If you randomly decide to skip 255 numbers, then real packet loss on the packet after the gap makes it difficult to acknowledge (you have to send two ACK frames if there is a gap >255).  Burst loss makes that even more likely.\r\n\r\nIn any case, I'd recommend removing any claim about entropy.  I also recommend removing any mention of specific numbers.  Skipping more packets is fine, but it means that you run the packet number space down faster and you get less efficiency in ACK packets."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/304",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -8079,7 +8130,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/276.patch"
     },
     "body": "Closes #158."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/275",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -8179,8 +8231,7 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/275.patch"
     },
     "body": "This completes the changes that were started in #120.  As agreed at the interim, TLS will host the source address validation packets, but the transport will be responsible for constructing and validating the token.  I've expanded the detailed interface section to cover this.\r\n\r\nThere's some finessing in the text around which part adds the integrity check, with the recognition that - because the token will likely be put alongside other TLS information that needs integrity checks - TLS is probably the best place to do that.\r\n\r\nThis builds on #122 because to do otherwise would be to invite merge conflict hell.  Once that is merged, this will be much easier to review.\r\n\r\nCloses #174, #52, #118."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/274",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -10058,7 +10109,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/246.patch"
     },
     "body": "Edit (mt): to remove \"fixes\"."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/245",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -10116,8 +10168,7 @@
     "updated_at": "2017-01-30T13:53:51Z",
     "closed_at": null,
     "body": "In Tokyo, we agreed that headers streams would no longer be exempt from connection-level flow control.  But the reason that headers and data streams are separate is so that one can be exempt and the other not.  So.... why are we keeping them separate again?\r\n\r\nIt might be simpler, particularly with the specter of #175 around, to bring back DATA frames and say everything's on one stream."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/244",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -11945,7 +11996,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/216.patch"
     },
     "body": "As someone pointed out in the interim, my updated version ranges are only 16 bits wide, not 32 bits.  I also incorrectly separated the transport and TLS regions, which means all of the TLS errors were off.  This pull request fixes those typos."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/215",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -12003,8 +12055,7 @@
     "updated_at": "2017-01-25T04:24:39Z",
     "closed_at": null,
     "body": "There is some sadness about public reset. See PR #20"
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/214",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -13811,7 +13862,8 @@
     "updated_at": "2017-01-24T01:03:19Z",
     "closed_at": null,
     "body": "The specification allows endpoints to specify the maximum number of concurrent streams (MSPC), but should not the spec provide for the minimum value of MSPC that all endpoints must support?  If the minimum is 1 (excluding \"service\" streams), it would be good for the spec to state so explicitly."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/185",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -13869,8 +13921,7 @@
     "updated_at": "2017-03-09T22:44:44Z",
     "closed_at": "2017-03-09T22:44:44Z",
     "body": "Some path elements may need to statelessly identify an initial packet of a connection. These path elements could include load balancers and organization's border security systems.  Ability to identify the initial packet may also be required for systems implementing Stateless Rejects #60.\r\n\r\nSince QUIC allows for packet number truncation, the most straightforward way to identify the initial packet is by checking for packet number 1 and VERSION flag set.\r\n\r\nHence:\r\n\r\n- The language of section 6.1 Version Negotiation would need to change SHOULD to MUST in \"All subsequent packets sent by the client SHOULD have the VERSION flag unset\".\r\n- Section 6.1 Version Negotiation should also gain language like: \"If Version negotiation is not complete in 2^6 packets, any endpoint MAY reset this connection\".  (This is a weaker statement than #143.)\r\n- Proposal in issue #35 is not compatible with this issue. If packet numbers are allowed to be deliberately skipped, we should require that packets with VERSION set MUST NOT be skipped."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/184",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -15778,7 +15829,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/156.patch"
     },
     "body": "After PR #111"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/155",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -15829,8 +15881,7 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/155.patch"
     },
     "body": ""
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/154",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -17799,7 +17850,8 @@
     "updated_at": "2017-03-07T00:52:56Z",
     "closed_at": "2017-02-21T23:17:56Z",
     "body": "TLS provides an extension that limits the amount of data that can be sent during 0-RTT.  This is an explicit configuration item, even though TCP flow control would naturally limit the amount of data a client can send to a server with 0-RTT.  The reason for this is that servers might have to hold some or all of the 0-RTT data.  That buffering might be part of replay mitigation, for example.  A server that supports 0-RTT can use that limit to ensure that it doesn't have to buffer more than it is willing to buffer.\r\n\r\nIn #122, I have chosen to carry over the values for initial flow control window and concurrent stream limit.  We might want to provide separate transport parameters for 0-RTT so that servers can apply lower limits."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/125",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -17863,8 +17915,7 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/125.patch"
     },
     "body": "Let's try to keep the order of this section relevant.  Version negotiation is\r\nnovel in a transport protocol, but it's not the most important thing.  Also,\r\nwe don't need to include a lot of details here."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/124",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -19917,7 +19968,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/96.patch"
     },
     "body": "Breaks the error space into different regions (#74) for the different components and starts defining error codes in each document.  (Note:  I didn't move anything into the loss-detection document, because I don't know what belongs there versus core transport.  Please help.)\r\n\r\nDefinitely need review and discussion here -- I may have deleted or moved error codes inappropriately.  Feel free to make changes to this branch."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/95",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -19975,8 +20027,7 @@
     "updated_at": "2017-03-09T22:41:41Z",
     "closed_at": "2017-03-09T22:41:41Z",
     "body": "Need discussion of how CONNECT works.  Initial thought:\r\n\r\n - Client does not close data stream after sending request\r\n - If server responds (on the message control stream) with success, the data stream is being relayed into a TCP connection by the server.\r\n\r\nIs there a QUIC-CONNECT?  (Probably not, and almost certainly not in this document.)"
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/94",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -21697,7 +21748,8 @@
     "updated_at": "2017-03-08T04:06:15Z",
     "closed_at": "2017-03-08T04:06:15Z",
     "body": "@ianswett suggests that maybe this can be removed.  He didn't say why."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/65",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -21755,8 +21807,7 @@
     "updated_at": "2017-01-24T00:47:14Z",
     "closed_at": null,
     "body": "Does this need to be MUST use?"
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/64",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -23907,7 +23958,8 @@
     "updated_at": "2016-11-28T06:00:20Z",
     "closed_at": null,
     "body": "The attacker needs to be on path to create a valid-looking unprotected packet.  \r\n\r\nAlso, randomization doesn't help much if the attacker is on-path."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/35",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -24001,8 +24053,7 @@
     "updated_at": "2017-03-07T00:52:55Z",
     "closed_at": "2017-02-22T00:43:02Z",
     "body": "We might be able to randomize the starting packet number and thereby avoid having it as a point of ossification.  It also increases the entropy for an off-path attacker who wishes to guess connection IDs because now they have to guess packet number as well."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/34",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -25861,7 +25912,8 @@
     "updated_at": "2017-02-24T03:03:20Z",
     "closed_at": "2017-02-24T03:03:20Z",
     "body": "None of the sections on various techniques in the loss recovery draft include citations.  This is easy for RFCs (just use `{{!RFCXXXX}}` or `{{?RFCXXXX}}`), but academic papers will require the creation of a citation in the appropriate references section."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/5",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -25919,8 +25971,7 @@
     "updated_at": "2016-11-28T23:53:45Z",
     "closed_at": "2016-11-28T23:53:45Z",
     "body": "In the Hybrid Slow Start section, there is a unicode character.  Those are (still) verboten."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/4",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
