@@ -51,9 +51,9 @@
 
     ],
     "milestone": null,
-    "comments": 0,
+    "comments": 2,
     "created_at": "2017-03-13T00:23:41Z",
-    "updated_at": "2017-03-13T00:23:41Z",
+    "updated_at": "2017-03-13T06:13:02Z",
     "closed_at": null,
     "body": "We need to be very clear about what the rules are regarding 0-RTT packets that are rejected by the server.  I think that this should be:\r\n\r\n* Rejected 0-RTT packets don't count toward flow control.  The server can't see them, so we have to assume that they don't exist for this purpose.\r\n\r\n* Rejected 0-RTT packets **do** count toward congestion control limits.  Congestion control is a local thing, and the packets were sent, which means that they are causing congestion."
   },
@@ -332,9 +332,9 @@
 
     ],
     "milestone": null,
-    "comments": 11,
+    "comments": 12,
     "created_at": "2017-03-10T01:21:30Z",
-    "updated_at": "2017-03-10T23:36:01Z",
+    "updated_at": "2017-03-13T00:29:55Z",
     "closed_at": null,
     "body": "In the error codes there's a QUIC_PACKET_TOO_LARGE error, but there's no maximum packet size specified anywhere in the document.\r\n\r\nDoes it make sense to define a maximum packet size or must a QUIC implementation be capable of handling packets with the maximum UDP packet size? Google QUIC currently uses 1452 as the maximum packet size (= Ethernet MTU - minimum UDP header size)."
   },
