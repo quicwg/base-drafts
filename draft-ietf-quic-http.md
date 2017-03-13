@@ -143,7 +143,7 @@ any other stream until the client's SETTINGS frame has been received.
 
 Only implementations of the final, published RFC can identify themselves as
 "hq". Until such an RFC exists, implementations MUST NOT identify themselves
-using these strings.
+using this string.
 
 Implementations of draft versions of the protocol MUST add the string "-" and
 the corresponding draft number to the identifier. For example,
