@@ -770,15 +770,13 @@ followed by additional type-dependent fields:
 ~~~
 {: #frame-layout title="Generic Frame Layout"}
 
-The following table lists currently defined frame types.  Note that the Frame
-Type byte in STREAM and ACK frames is used to carry other frame-specific flags.
-For all other frames, the Frame Type byte simply identifies the frame.  These
-frames are explained in more detail as they are referenced later in the
-document.
+Frame types are listed in {{frame-types}}. Note that the Frame Type byte in
+STREAM and ACK frames is used to carry other frame-specific flags.  For all
+other frames, the Frame Type byte simply identifies the frame.  These frames are
+explained in more detail as they are referenced later in the document.
 
-|------------------|--------------------|----------------------------|
 | Type-field value |     Frame type     | Definition                 |
-|------------------|--------------------|----------------------------|
+|:-----------------|:-------------------|:---------------------------|
 | 0x00             |  PADDING           | {{frame-padding}}          |
 | 0x01             |  RST_STREAM        | {{frame-rst-stream}}       |
 | 0x02             |  CONNECTION_CLOSE  | {{frame-connection-close}} |
@@ -788,8 +786,7 @@ document.
 | 0x07             |  PING              | {{frame-ping}}             |
 | 0x40 - 0x7f      |  ACK               | {{frame-ack}}              |
 | 0x80 - 0xff      |  STREAM            | {{frame-stream}}           |
-|------------------|--------------------|----------------------------|
-
+{: #frame-types title="Frame Types"}
 
 # Life of a Connection
 
