@@ -536,6 +536,11 @@ This document has no IANA actions.  Yet.
 > **RFC Editor's Note:**  Please remove this section prior to publication of a
 > final version of this document.
 
+
+## Since draft-ietf-quic-recovery-01
+
+- Clarified loss recovery for handshake packets
+
 ## Since draft-ietf-quic-recovery-00:
 
 - Improved description of constants and ACK behavior
