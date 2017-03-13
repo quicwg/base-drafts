@@ -116,63 +116,6 @@
     "body": "Should we encourage implementations to include a timestamp for the specific packet that contains a PING when acknowledging it?"
   },
   {
-    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/387",
-    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
-    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/387/labels{/name}",
-    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/387/comments",
-    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/387/events",
-    "html_url": "https://github.com/quicwg/base-drafts/pull/387",
-    "id": 213470064,
-    "number": 387,
-    "title": "Editorial fix to frame types table",
-    "user": {
-      "login": "janaiyengar",
-      "id": 11067604,
-      "avatar_url": "https://avatars1.githubusercontent.com/u/11067604?v=3",
-      "gravatar_id": "",
-      "url": "https://api.github.com/users/janaiyengar",
-      "html_url": "https://github.com/janaiyengar",
-      "followers_url": "https://api.github.com/users/janaiyengar/followers",
-      "following_url": "https://api.github.com/users/janaiyengar/following{/other_user}",
-      "gists_url": "https://api.github.com/users/janaiyengar/gists{/gist_id}",
-      "starred_url": "https://api.github.com/users/janaiyengar/starred{/owner}{/repo}",
-      "subscriptions_url": "https://api.github.com/users/janaiyengar/subscriptions",
-      "organizations_url": "https://api.github.com/users/janaiyengar/orgs",
-      "repos_url": "https://api.github.com/users/janaiyengar/repos",
-      "events_url": "https://api.github.com/users/janaiyengar/events{/privacy}",
-      "received_events_url": "https://api.github.com/users/janaiyengar/received_events",
-      "type": "User",
-      "site_admin": false
-    },
-    "labels": [
-      {
-        "id": 481871311,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/editorial",
-        "name": "editorial",
-        "color": "0e8a16",
-        "default": false
-      }
-    ],
-    "state": "open",
-    "locked": false,
-    "assignee": null,
-    "assignees": [
-
-    ],
-    "milestone": null,
-    "comments": 0,
-    "created_at": "2017-03-10T22:34:18Z",
-    "updated_at": "2017-03-10T22:35:02Z",
-    "closed_at": null,
-    "pull_request": {
-      "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/387",
-      "html_url": "https://github.com/quicwg/base-drafts/pull/387",
-      "diff_url": "https://github.com/quicwg/base-drafts/pull/387.diff",
-      "patch_url": "https://github.com/quicwg/base-drafts/pull/387.patch"
-    },
-    "body": ""
-  },
-  {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/385",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
     "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/385/labels{/name}",
@@ -1819,8 +1762,7 @@
     "updated_at": "2017-03-10T05:42:57Z",
     "closed_at": null,
     "body": "PR #106 added the following requirement on servers:\r\n\r\n> Servers MUST reject the first plaintext packet received from a client if it its total size is less than 1280 octets, to mitigate amplification attacks.\r\n\r\nHowever, this runs into an issue in the case where there are IP header extensions that the client knows about but the server doesn't.  If the client is aware of the IP header extensions and constructs a packet with a smaller payload in order to comply with our recommendation to create a packet of exactly 1280 octets, the server will receive a packet that it thinks is too small.\r\n\r\nI see a few options:\r\n1. loosen the enforcement constraint on the server\r\n2. specify that the server only enforce the constraint if it sees the entire IP packet\r\n3. specify the minimum size and its enforcement in terms of payload size (we could set different values here to allow for header extensions)"
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/265",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -1878,7 +1820,8 @@
     "updated_at": "2017-02-07T00:01:56Z",
     "closed_at": null,
     "body": "And define how it interacts with TLS, if at all."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/263",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3580,8 +3523,7 @@
     "updated_at": "2017-01-24T03:59:20Z",
     "closed_at": null,
     "body": "Consider the following sequence of events on a stream (assuming that MSPC allows exactly one application data stream in the C-S direction:\r\n\r\n```\r\n<---------- Stream Establishment ----------->\r\n<----------------------------------------- FIN\r\nFIN ----------------------------------------->\r\nDATA (stream N+1) -------------------------->\r\n```\r\n\r\nIf you get reordering between the FIN and the data then the server will see it as exceeding MSPC and send  QUIC_TOO_MANY_OPEN_STREAMS. Ugh."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/199",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3639,7 +3581,8 @@
     "updated_at": "2017-01-24T02:45:11Z",
     "closed_at": null,
     "body": "There is a two byte length field. Surely a 256-byte reason phrase is long enough.\r\n\r\nAlso, are these in ASCII? UTF-8?"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/198",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5584,8 +5527,7 @@
     "updated_at": "2017-03-10T03:55:13Z",
     "closed_at": null,
     "body": "Because of a stated goal from some implementers to reuse HTTP/2 framing as much as possible, the draft currently augments the HTTP/2 Frame Type Registry with a \"Supported Protocol\" column, allowing a frame to be defined for HTTP/2, HTTP/QUIC, or both.  A specification is required for each supported protocol.\r\n\r\nHowever, in the current draft, all but one \"Both\" frames are *different* between HTTP/2 and HTTP/QUIC.  Small or large, nearly every frame has required some modification to work over QUIC.  If we accept #80 , *all* frames will be different between HTTP/2 and HTTP/QUIC.\r\n\r\nAt that point, is there really a point in continuing to define HTTP/QUIC in relation to HTTP/2, or should we just admit that it's a new, separate thing that's heavily inspired by HTTP/2?  Separate registry, etc., and future extensions can register themselves with both if appropriate?  Or do we keep the same registry anyway to enforce that you'll never wind up with totally unrelated frames sharing the same value across the two protocols?"
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/76",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5643,7 +5585,8 @@
     "updated_at": "2017-02-21T08:48:55Z",
     "closed_at": null,
     "body": "In HTTP/2, the CONTINUATION frame was [much loathed](https://github.com/http2/http2-spec/pull/548), but ultimately deemed a necessary evil since there are some truly, ridiculously large headers out there (*\\*cough\\** Kerberos *\\*cough\\**).  The current HTTP/QUIC draft allows a frame to be 64KB long before decoding the HPACK.  Is this large enough?  That was the boundary we'd said it would take in HTTP/2 to require a single frame.\r\n\r\nIf not, the current draft uses the END_HEADERS bit to indicate that another HEADERS frame will follow, which is effectively the same as CONTINUATION.  The same is not currently defined for PUSH_PROMISE (which really ought to be much smaller).\r\n\r\nIf so, could we drop the END_HEADERS thing entirely and say that HPACK-bearing frames are fully self-contained?  It would simplify a lot of client mechanics."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/68",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
