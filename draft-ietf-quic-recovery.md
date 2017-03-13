@@ -571,6 +571,8 @@ This document has no IANA actions.  Yet.
 
 ## Since draft-ietf-quic-recovery-01
 
+- Overview added to loss detection
+
 - Changes initial default RTT to 100ms
 
 - Added time-based loss detection and fixes early retransmit
