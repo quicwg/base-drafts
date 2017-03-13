@@ -244,7 +244,7 @@ transmit or exceeding the reordering window in time.
 sent_packets:
 : An association of packet numbers to information about them, including a number
   field indicating the packet number, a time field indicating the time a packet
-  was sent and a bytes field indicating the packet's size.  sent_packets is
+  was sent, and a bytes field indicating the packet's size.  sent_packets is
   ordered by packet number, and packets remain in sent_packets until
   acknowledged or lost.
 
@@ -264,7 +264,7 @@ follows:
    else:
      reordering_threshold = kReorderingThreshold
      time_reordering_fraction = infinite
-   lost_time = 0
+   loss_time = 0
    smoothed_rtt = 0
    rttvar = 0
    initial_rtt = kDefaultInitialRtt
@@ -445,7 +445,7 @@ Pseudocode for OnLossDetectionAlarm follows:
        RetransmitAllHandshakePackets();
        handshake_count++;
      // TODO: Clarify early retransmit and time loss.
-     else if (lost_time != 0):
+     else if (loss_time != 0):
        // Early retransmit or Time Loss Detection
        DetectLostPackets(largest_acked_packet)
      else if (tlp_count < kMaxTLPs):
@@ -467,7 +467,7 @@ Pseudocode for OnLossDetectionAlarm follows:
 
 Packets in QUIC are only considered lost once a larger packet number is
 acknowledged.  DetectLostPackets is called every time an ack is received.
-If the loss detection alarm fires and the lost_time is set, the previous
+If the loss detection alarm fires and the loss_time is set, the previous
 largest acked packet is supplied.
 
 ### Handshake Packets
@@ -487,22 +487,22 @@ Pseudocode for DetectLostPackets follows:
    DetectLostPackets(largest_acked):
      loss_time = 0
      lost_packets = {}
-     time_when_lost = 0;
-     if (time_reordering_fraction == infinite):
-       time_when_lost =
+     delay_until_lost = infinite;
+     if (time_reordering_fraction != infinite):
+       delay_until_lost =
          (1 + time_reordering_fraction) * max(latest_rtt, smoothed_rtt)
      else if (largest_acked.packet_number == largest_sent_packet):
        // Early retransmit alarm.
-       time_when_lost = 9/8 * max(latest_rtt, smoothed_rtt)
+       delay_until_lost = 9/8 * max(latest_rtt, smoothed_rtt)
      foreach (unacked less than largest_acked.packet_number):
        time_since_sent = now() - unacked.time_sent
        packet_delta = largest_acked.packet_number - unacked.packet_number
-       if (time_since_sent > time_when_lost):
+       if (time_since_sent > delay_until_lost):
          lost_packets.insert(unacked)
        else if (packet_delta > reordering_threshold)
          lost_packets.insert(unacked)
-       else if (loss_time == 0 && time_when_lost != 0):
-         loss_time = time_when_lost - time_since_sent
+       else if (loss_time == 0 && delay_until_lost != infinite):
+         loss_time = delay_until_lost - time_since_sent
 
      // Inform the congestion controller of lost packets and
      // lets it decide whether to retransmit immediately.
