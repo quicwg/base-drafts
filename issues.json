@@ -1,5 +1,56 @@
 [
   {
+    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/401",
+    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
+    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/401/labels{/name}",
+    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/401/comments",
+    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/401/events",
+    "html_url": "https://github.com/quicwg/base-drafts/pull/401",
+    "id": 213949736,
+    "number": 401,
+    "title": "Changing para # reference for TLS exporters",
+    "user": {
+      "login": "seanturner",
+      "id": 4488966,
+      "avatar_url": "https://avatars3.githubusercontent.com/u/4488966?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/seanturner",
+      "html_url": "https://github.com/seanturner",
+      "followers_url": "https://api.github.com/users/seanturner/followers",
+      "following_url": "https://api.github.com/users/seanturner/following{/other_user}",
+      "gists_url": "https://api.github.com/users/seanturner/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/seanturner/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/seanturner/subscriptions",
+      "organizations_url": "https://api.github.com/users/seanturner/orgs",
+      "repos_url": "https://api.github.com/users/seanturner/repos",
+      "events_url": "https://api.github.com/users/seanturner/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/seanturner/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+
+    ],
+    "state": "open",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 0,
+    "created_at": "2017-03-14T02:14:02Z",
+    "updated_at": "2017-03-14T02:14:02Z",
+    "closed_at": null,
+    "pull_request": {
+      "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/401",
+      "html_url": "https://github.com/quicwg/base-drafts/pull/401",
+      "diff_url": "https://github.com/quicwg/base-drafts/pull/401.diff",
+      "patch_url": "https://github.com/quicwg/base-drafts/pull/401.patch"
+    },
+    "body": "Exporters has moved to s7.5."
+  },
+  {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/400",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
     "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/400/labels{/name}",
@@ -1899,7 +1950,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/372.patch"
     },
     "body": ""
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/371",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -1957,8 +2009,7 @@
     "updated_at": "2017-03-13T14:55:45Z",
     "closed_at": null,
     "body": "As @LPardue has pointed out in the thread for #242, the HTTP/QUIC spec claims to update the IANA registry for \"existing\" frames.  It really only updates the frames defined in RFC7540; the ALTSVC frame defined in RFC7838 isn't updated.\r\n\r\nIt would be a simple update, but the question is where it belongs.  Should we:\r\n\r\n- Add text in this document to include that frame, because it is \"existing\"?\r\n- Write a new (very short) document updating RFC7838 with HTTP/QUIC support, following the recommendations in #363?\r\n- Kick it back to the httpbis working group to write exactly the same very short document?\r\n\r\nNote that the latter two options probably differ by nothing but the filename of the I-D in question -- the same people will probably end up writing it."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/370",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3841,7 +3892,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/342.patch"
     },
     "body": ""
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/341",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3899,8 +3951,7 @@
     "updated_at": "2017-03-10T17:49:40Z",
     "closed_at": "2017-03-10T17:49:40Z",
     "body": "We're starting to see a few cases where ACK frames are being used to close the loop on things.  But that raises questions like \"if a peer acknowledges a packet containing a GOAWAY, does that mean I can assume that stream above the mentioned number are now closed at their end?\"\r\n\r\nI think that we need to state what the rule is, and it should be simple.  An acknowledgement for a packet implies that all QUIC-level control messages have been read and processed.\r\n\r\nThis includes PING, ACK, RST_STREAM, GOAWAY, etc...  I think that it also has to include FIN bits on STREAM frames.  That implies that the *transport* must have finished handling all the messages.\r\n\r\nThe application protocol might not have consumed the data from STREAM frames, but that is the only thing that is considered outstanding when a packet is acknowledged.  We have a special sort of acknowledgment for data: flow control credits.\r\n\r\nIf we add features that include special acknowledgement (like flow control), then those would be excluded, but that would be explicitly stated.  Otherwise, if it is in the transport and it is acknowledged, then it has been processed by the receiver."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/340",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5720,7 +5771,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/312.patch"
     },
     "body": "Saving us a GENART comment about a missing reference for MPTCP."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/311",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5778,8 +5830,7 @@
     "updated_at": "2017-02-20T00:43:23Z",
     "closed_at": null,
     "body": "Google-QUIC had an issue where post-handshake QUIC packets were being dropped, because a bit changed in the public flags, and a middlebox no longer identified it as QUIC.\r\n\r\nIn order to ensure the entire public flags byte is usable, I suggest we GREASE it by defining the entire space as valid.\r\n\r\nBuilding on Jana's proposal for the public header with a flags byte as a set of codepoints: https://gist.github.com/janaiyengar/b05acb3af17d6e938d25befc69c11eae\r\n\r\nThe goal is to provide a simple mathematical mapping from any value of the public flags onto a frame type.  \r\n\r\nMy suggestion is to lookup the frame type, and if it's not defined, mod the flags value by the number of frame types defined in that phase(short or long form) and pick the type with that index when ordering the frame types by value.\r\n\r\nIf an initial packet number is chosen randomly, and the connection ID is as well, greasing the flags byte and version (#112 and #296) covers everything that is not encrypted."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/310",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7923,7 +7974,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/282.patch"
     },
     "body": "I've chosen to make stream 1 count toward MSPC on the same basis that we decided not to move crypto to stream 0: no special cases.\r\n\r\nCloses #201."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/281",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7988,8 +8040,7 @@
     "updated_at": "2017-02-15T05:20:29Z",
     "closed_at": null,
     "body": "In HTTP/2, streams states were modified at the point that a PUSH_PROMISE was sent, but actually using that stream could be deferred.  The \"reserved\" state didn't count toward concurrency limit, those streams would count only when packets were first sent.\r\n\r\nIf the client had a low concurrency limit, that could mean that use of promised streams had to be deferred until active streams could be closed.  QUIC maintains a similar model, but that model is incompatible with QUIC.  In HTTP/2, any promised streams can be opened without creating any ambiguity about the state of other reserved streams.  HTTP/2 also allowed endpoints to skip stream numbers.\r\n\r\nIn QUIC the lack of ordering between streams (a feature!) forces us to insist on having a strict monotonic sequence of stream numbers.  If a stream number appears to be skipped, that is only because a packet using it has not yet arrived.  This ensures much simpler accounting for streams and avoids adding latency to stream creation.\r\n\r\nThis creates a problem for promises.  Servers cannot use streams in any order, only those streams within the window of streams permitted by the client concurrency limit are free to be used.\r\n\r\nFor example, a client could have an MSPC of 2.  That allows just one server push at a time.  A server that wants to push two resources could advertise one push on streams 4+6 and the other on 8+10.  However, unlike in HTTP/2 the server cannot start the second push first.  Opening stream 8 would imply that streams 4 and 6 are also open, violating the concurrency limit.\r\n\r\nIt's not clear that this problem needs a solution, but it is a functional regression that we should at least consider and make a conscious decision to accept."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/280",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -9953,7 +10004,8 @@
     "updated_at": "2017-03-13T18:57:18Z",
     "closed_at": null,
     "body": "transport 9.4 contains: \"A receiver MUST ensure that received stream data is delivered to the application as an ordered byte-stream. Data received out of order MUST be buffered for later delivery, as long as it is not in violation of the receiver’s flow control limits.\"\r\n\r\nI agree QUIC provides an ordered byte stream abstraction, but why do we have this requirement about in-order delivery to the application? Surely that makes a lot of sense, but it seems to me the only real requirement is that it be a byte stream because boundaries are not preserved.."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/251",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -10053,8 +10105,7 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/251.patch"
     },
     "body": "I've always found 5.2.2's use of 1fdoooss and 01nullmm more confusing than helpful when trying to figure out what the frame type enumerations are. They are well defined later on in the STREAM and ACK frame definitions, but in the general frame type section it reads a bit unclear to me. This PR just enumerates the type ranges of each frame type and forgoes the bit level definitions."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/250",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -11895,7 +11946,8 @@
     "updated_at": "2017-01-25T02:22:52Z",
     "closed_at": null,
     "body": "S 8.3 says:\r\n```\r\nA source address token is opaque and consumed only by the server.  Therefore it\r\ncan be included in the TLS 1.3 pre-shared key identifier for 0-RTT handshakes.\r\nServers that use 0-RTT are advised to provide new pre-shared key identifiers\r\nafter every handshake to avoid linkability of connections by passive observers.\r\nClients MUST use a new pre-shared key identifier for every connection that they\r\ninitiate; if no pre-shared key identifier is available, then resumption is not\r\npossible.\r\n```\r\n\r\nThis seem like an unnecessary requirement. Reusing the same PSK ID seems fine here."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/221",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -11953,8 +12005,7 @@
     "updated_at": "2017-01-25T04:22:50Z",
     "closed_at": null,
     "body": "The quic-tls draft says:\r\n\r\n```\r\n  What about 0-RTT data?  Should we allow acknowledgment of 0-RTT with\r\n  unprotected frames?  If we don't, then 0-RTT data will be unacknowledged until\r\n  the handshake completes.  This isn't a problem if the handshake completes\r\n  without loss, but it could mean that 0-RTT stalls when a handshake packet\r\n  disappears for any reason.\r\n```\r\n\r\nI assume what you're talking about here is the case where the server's first flight of packets are lost, because the server can only find itself in one of two positions because the CH must fit in a single packet.\r\n\r\n- It has no ClientHello, in which case it must buffer any packets\r\n- It has a ClientHello, in which case it can can complete the handshake by sending its first flight.\r\n\r\nMy sense is that having stalling of 0-RTT in the case where parts of the server's first flight are lost is not that big a deal. If you really don't want stalling, you should retransmit faster :)\r\n\r\n\r\n\r\n"
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/220",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -13741,7 +13792,8 @@
     "updated_at": "2017-03-13T00:25:36Z",
     "closed_at": "2017-03-13T00:25:36Z",
     "body": "S 5.2.1 contains a bunch of instructions for how to deal with packet number 2^64 but (for instance) the connection flow control window is 64-bits in absolute values, so given that we're mostly sending data, it seems improbable you will get to 2^64 packets."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/191",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -13786,8 +13838,7 @@
     "updated_at": "2017-01-24T01:32:35Z",
     "closed_at": "2017-01-24T01:24:33Z",
     "body": "For instance, in S 5.1\r\n\r\nFlags (8) \r\n\r\nAnd yet flags is mandatory. Are there any variable length fields that aren't of the 8/16/.. variety?\r\n\r\n"
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/190",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -15754,7 +15805,8 @@
     "updated_at": "2017-03-07T00:52:56Z",
     "closed_at": "2017-02-09T02:56:05Z",
     "body": "If an endpoint receives a RST_STREAM that indicates that its peer has exceeded the stream or connection-level flow control window, it should treat this as a flow control error."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/161",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -15812,8 +15864,7 @@
     "updated_at": "2017-03-03T13:45:55Z",
     "closed_at": null,
     "body": "When a client changes IP addresses (for any reason, including NAT rebinding), the server has no way of gaining an assurance that the client has actually seen its packets.  That opens an attack where the attacker establishes a connection, then starts spoofing source address.  If the server starts to send to that source address without verifying that the client can receive packets, that's potentially a powerful packet amplification attack.\r\n\r\nIt's not sufficient to look for ACKs or other such things, because no client message includes proof that the client has actually received a packet from the server.  A client can just generate ACK and WINDOW_UPDATE frames as necessary, even new requests.  The only risk a client runs is that it overestimates the number of packets that the server has sent and sends too many spurious ACK frames, which the server will then recognize and react to."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/160",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -17735,7 +17786,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/132.patch"
     },
     "body": "According to [Section 5.3](https://quicwg.github.io/base-drafts/draft-ietf-quic-transport.html#version-negotiation-packet), a Version Negotiation Packet MUST contain the Connection ID.\r\n[Section 5.1.2](https://quicwg.github.io/base-drafts/draft-ietf-quic-transport.html#handling-packets-from-different-versions), which specifies the fields that are guaranteed to remain constant between different QUIC versions, must therefore define the location and size of the Connection ID."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/131",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -17813,8 +17865,7 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/131.patch"
     },
     "body": "Builds on #130 to nearly the same end result as #96, to address #74.\r\n\r\nAllocates portions of the error space to QUIC, crypto, and the app-layer. The remote knows the QUIC version (which implies the crypto protocol) and the application -- that means it can figure out what set of error codes to use for interpreting each region. If extensions define new error codes, they would want to do so within the appropriate registries to avoid collisions and thereby confusion.\r\n\r\nCongestion control doesn't get a region, because the peer doesn't know what algorithm you're using to interpret anything anyway -- that's just a transport error.\r\n\r\nAt Jana's suggestion, reserving a range instead for local-only error codes (e.g. the QUIC spec's original \"failed to write to socket,\" \"tried to send unencrypted data,\" etc.) that MUST NOT be sent on the wire, but can be used in logs and APIs to avoid having to use a separate return value for non-protocol errors."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/130",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -19923,7 +19974,8 @@
     "updated_at": "2017-03-10T03:57:11Z",
     "closed_at": "2017-03-10T03:57:11Z",
     "body": "NumTimestamps is supposed to specify the \"total number of pairs following, including the First Timestamp.\"  If this is zero, presumably the Delta Largest Acked and First Timestamp fields are absent.  If this is one, presumably these fields are present, but no others are.\r\n\r\nThe *subsequent* fields then say they are repeated \"Num Timestamps\" times, which contradicts my logic above.  I'm guessing this should actually be \"Num Timestamps - 1\" times?"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/101",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -19968,8 +20020,7 @@
     "updated_at": "2016-12-25T13:41:21Z",
     "closed_at": "2016-12-25T13:41:21Z",
     "body": "Enjoy some time off! I'll be back on the 9th."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/100",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -21603,7 +21654,8 @@
     "updated_at": "2016-12-23T18:05:07Z",
     "closed_at": "2016-12-12T18:39:40Z",
     "body": "In HTTP/2, the HEADERS frame \"opened\" a stream.  In this mapping, any frame can appear first on a stream, since the stream \"opens\" at the QUIC layer.  Do we still need the PRIORITY region in HEADERS, or should implementations just send a PRIORITY frame if they want to declare prioritization?"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/71",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -21667,8 +21719,7 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/71.patch"
     },
     "body": "This pull request changes the current document substantially, with the following major points of change:\r\n\r\n- The HTTP/2 outer frame containing the stream number is replaced with a (otherwise similar) frame format that doesn't contain a stream number.  All stream management is delegated to QUIC.\r\n- HTTP exchanges take up two streams per request/response -- one for data, one for everything else (but mostly headers).  This permits retaining the current behavior (also from HTTP/2) of not flow-controlling non-DATA traffic, and avoids double-framing bodies.\r\n- HPACK frames acquire sequence numbers to enable ordering at the decoder.  This is decidedly suboptimal, but no worse than current and allows us to keep moving and leave the potential redesign of HPACK for the future.\r\n\r\nIt may be more useful to look at the [final content](https://quicwg.github.io/base-drafts/http-unstraddled/draft-ietf-quic-http.html) rather than the diff -- in places, GitHub isn't finding enough of the retained text to make the diff sensible."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/70",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -23844,7 +23895,8 @@
     "updated_at": "2016-11-30T00:26:30Z",
     "closed_at": "2016-11-30T00:26:30Z",
     "body": "This obviously happened in the markdown conversion.  We need to fix it."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/41",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -23895,8 +23947,7 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/41.patch"
     },
     "body": "Jana observed that we have two contributors sections.  We also have two conventions sections.  Merge them both, and remove references to pre-IETF drafts."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/40",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -25818,7 +25869,8 @@
     "updated_at": "2017-01-25T02:08:55Z",
     "closed_at": "2017-01-25T02:08:50Z",
     "body": "As per discussion at the meeting.  This will allow QUIC to evolve ahead of any updates to its higher layers."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/11",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -25918,8 +25970,7 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/11.patch"
     },
     "body": "Builds on top of #10 because that's easiest."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/10",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
