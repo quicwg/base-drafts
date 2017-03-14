@@ -57,65 +57,55 @@ var issueFilters = {
   assigned: {
     args: [],
     h: 'has an assignee',
-    f: function(issue) {
-      return issue.assignees.length > 0;
-    }
+    f: issue => issue.assignees.length > 0,
   },
 
   assigned_to: {
     args: ['string'],
     h: 'assigned to a specific user',
-    f: function(login) {
-      return issue => issue.assignees.some(assignee => assignee.login === login);
-    }
+    f: login => issue => issue.assignees.some(assignee => assignee.login === login),
   },
 
   closed: {
     args: [],
     h: 'is closed',
-    f: function(issue) {
-      return issue.closed_at;
-    }
+    f: issue => issue.closed_at,
   },
 
   open: {
     args: [],
     h: 'is open',
-    f: function(issue) {
-      return !issue.closed_at;
-    }
+    f: issue => !issue.closed_at,
   },
 
   merged: {
     args: [],
     h: 'a merged pull request',
-    f: function(issue) {
-      return issue.pull_request && issue.pull_request.merged_at;
-    }
+    f: issue => issue.pull_request && issue.pull_request.merged_at,
+  },
+
+  discarded: {
+    args: [],
+    h: 'a discarded pull request',
+    f: issue => issue.pull_request && !issue.pull_request.merged_at && issue.closed_at
   },
 
   n: {
     args: ['integer'],
     h: 'issue by number',
-    f: function(i) {
-      return issue => issue.number === i;
-    }
+    f: i => issue => issue.number === i,
   },
 
   label: {
     args: ['string'],
     h: 'has a specific label',
-    f: function(name) {
-      return issue => issue.labels.some(label => label.name === name);
-    }
+    f: name => issue => issue.labels.some(label => label.name === name),
   },
 
   labelled: {
     args: [],
     h: 'has any label',
-    f: function(issue) {
-      return issue.labels.length > 0;
-    }
+    f: issue => issue.labels.length > 0,
   },
 
   title: {
@@ -148,9 +138,7 @@ var issueFilters = {
   pr: {
     args: [],
     h: 'is a pull request',
-    f: function(issue) {
-      return issue.pull_request;
-    }
+    f: issue => issue.pull_request,
   },
 
   issue: {
@@ -164,52 +152,40 @@ var issueFilters = {
   or: {
     args: ['filter', '...filter'],
     h: 'union',
-    f: function(...filters) {
-      return x => filters.some(filter => filter(x));
-    }
+    f: (...filters) =>  x => filters.some(filter => filter(x)),
   },
 
   and: {
     args: ['filter', '...filter'],
     h: 'intersection',
-    f: function(...filters) {
-      return x => filters.every(filter => filter(x));
-    }
+    f: (...filters) => x => filters.every(filter => filter(x)),
   },
 
 
   xor: {
     args: ['filter', '...filter'],
     h: 'for the insane',
-    f: function(...filters) {
-      return x => filters.slice(1).reduce((a, filter) => a ^ filter(x), filters[0](x));
-    }
+    f: (...filters) =>
+      x => filters.slice(1).reduce((a, filter) => a ^ filter(x), filters[0](x)),
   },
 
   not: {
     args: ['filter'],
     h: 'exclusion',
-    f: function(a) {
-      return x => !a(x);
-    }
+    f: a => issue => !a(issue),
   },
 
   closed_since: {
     args: ['date'],
     h: 'issues closed since the date and time',
-    f: function(since) {
-      return issue => Date.parse(issue.closed_at) >= since;
-    }
+    f: since => issue => Date.parse(issue.closed_at) >= since,
   },
 
   updated_since: {
     args: ['date'],
     h: 'issues updated since the date and time',
-    f: function(since) {
-      return issue => Date.parse(issue.updated_at) >= since;
-    }
+    f: since => issue => Date.parse(issue.updated_at) >= since,
   }
-
 };
 
 class Parser {
@@ -469,7 +445,7 @@ function redraw(now) {
     if (!now) {
       return;
     }
-    v = filter.value.slice(1).split(' ').map(x => x.trim());
+    let v = filter.value.slice(1).split(' ').map(x => x.trim());
     filter.value = '';
 
     let cmd = v[0].toLowerCase();
@@ -503,6 +479,7 @@ function redraw(now) {
       status.innerText = 'unknown command: /' + v.join(' ');
     }
     d.classList.add('hidden');
+    window.location.hash = '';
     return;
   }
 
@@ -524,6 +501,9 @@ function redraw(now) {
       tbody.appendChild(makeRow(issue));
     });
     status.innerText = `${subset.length} records shown`;
+    if (now) {
+      window.location.hash = filter.value;
+    }
   } catch (e) {
     if (now) { // Only show errors when someone hits enter.
       status.innerText = `Error: ${e.message}`;
@@ -550,7 +530,11 @@ function generateHelp() {
 }
 
 window.onload = () => {
-  document.getElementById('filter').onkeypress = debounce(redraw);
+  let filter = document.getElementById('filter');
+  filter.onkeypress = debounce(redraw);
+  if (window.location.hash) {
+    filter.value = window.location.hash.substring(1);
+  }
   generateHelp();
   get().then(redraw);
 }
