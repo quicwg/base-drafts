@@ -226,9 +226,9 @@ TLS 1.3 provides two basic handshake modes of interest to QUIC:
    handshake message from the client.
 
  * A 0-RTT handshake in which the client uses information it has previously
-   learned about the server to send immediately.  This data can be replayed by
-   an attacker so it MUST NOT carry a self-contained trigger for any
-   non-idempotent action.
+   learned about the server to send application data immediately.  This
+   application data can be replayed by an attacker so it MUST NOT carry a
+   self-contained trigger for any non-idempotent action.
 
 A simplified TLS 1.3 handshake with 0-RTT application data is shown in
 {{tls-full}}, see {{!I-D.ietf-tls-tls13}} for more options and details.
