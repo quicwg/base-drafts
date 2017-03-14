@@ -282,7 +282,7 @@ handshake to start with the first packet that a client sends.
 
 QUIC packets are protected using a scheme that is specific to QUIC, see
 {{packet-protection}}.  Keys are exported from the TLS connection when they
-become available using a TLS exporter (see Section 7.3.3 of
+become available using a TLS exporter (see Section 7.5 of
 {{!I-D.ietf-tls-tls13}} and {{key-expansion}}).  After keys are exported from
 TLS, QUIC manages its own key schedule.
 
@@ -615,7 +615,7 @@ management when there are key updates (see {{key-update}}).
 QUIC uses a system of packet protection secrets, keys and IVs that are modelled
 on the system used in TLS {{!I-D.ietf-tls-tls13}}.  The secrets that QUIC uses
 as the basis of its key schedule are obtained using TLS exporters (see Section
-7.3.3 of {{!I-D.ietf-tls-tls13}}).
+7.5 of {{!I-D.ietf-tls-tls13}}).
 
 QUIC uses HKDF with the same hash function negotiated by TLS for
 key derivation.  For example, if TLS is using the TLS_AES_128_GCM_SHA256, the
