@@ -28,5 +28,5 @@ deployment:
     branch: /.*/
     commands:
       - make artifacts
-      - make ghpages
-      - make ghissues
+      - make ghpages || make ghpages
+      - make ghissues || make ghissues
