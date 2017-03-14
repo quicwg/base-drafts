@@ -1,5 +1,56 @@
 [
   {
+    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/402",
+    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
+    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/402/labels{/name}",
+    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/402/comments",
+    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/402/events",
+    "html_url": "https://github.com/quicwg/base-drafts/pull/402",
+    "id": 213957311,
+    "number": 402,
+    "title": "Adding my email address",
+    "user": {
+      "login": "seanturner",
+      "id": 4488966,
+      "avatar_url": "https://avatars3.githubusercontent.com/u/4488966?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/seanturner",
+      "html_url": "https://github.com/seanturner",
+      "followers_url": "https://api.github.com/users/seanturner/followers",
+      "following_url": "https://api.github.com/users/seanturner/following{/other_user}",
+      "gists_url": "https://api.github.com/users/seanturner/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/seanturner/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/seanturner/subscriptions",
+      "organizations_url": "https://api.github.com/users/seanturner/orgs",
+      "repos_url": "https://api.github.com/users/seanturner/repos",
+      "events_url": "https://api.github.com/users/seanturner/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/seanturner/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+
+    ],
+    "state": "open",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 0,
+    "created_at": "2017-03-14T03:15:12Z",
+    "updated_at": "2017-03-14T03:15:12Z",
+    "closed_at": null,
+    "pull_request": {
+      "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/402",
+      "html_url": "https://github.com/quicwg/base-drafts/pull/402",
+      "diff_url": "https://github.com/quicwg/base-drafts/pull/402.diff",
+      "patch_url": "https://github.com/quicwg/base-drafts/pull/402.patch"
+    },
+    "body": ""
+  },
+  {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/401",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
     "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/401/labels{/name}",
@@ -1938,7 +1989,8 @@
     "updated_at": "2017-03-09T01:54:13Z",
     "closed_at": "2017-03-09T01:54:13Z",
     "body": "An [oddity in kramdown-rfc2629](https://github.com/cabo/kramdown-rfc2629/issues/38) causes references to be busted when they are included in figures.  Let's not tempt fate and instead move the reference to text, where it can be better framed."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/372",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -1989,8 +2041,7 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/372.patch"
     },
     "body": ""
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/371",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3867,7 +3918,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/343.patch"
     },
     "body": ""
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/342",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3931,8 +3983,7 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/342.patch"
     },
     "body": ""
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/341",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5746,7 +5797,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/313.patch"
     },
     "body": "* Replace uses of encrypted with protected.\r\n* Constistenly use * instead of x everywhere for multiplication\r\n* Remove trailing ;\r\n* Convert the constants and variables into Kramdown definition lists."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/312",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5810,8 +5862,7 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/312.patch"
     },
     "body": "Saving us a GENART comment about a missing reference for MPTCP."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/311",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7920,7 +7971,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/283.patch"
     },
     "body": "In writing this up, it's clear that we've a bunch more work to do in this area."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/282",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -8013,8 +8065,7 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/282.patch"
     },
     "body": "I've chosen to make stream 1 count toward MSPC on the same basis that we decided not to move crypto to stream 0: no special cases.\r\n\r\nCloses #201."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/281",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -9985,7 +10036,8 @@
     "updated_at": "2017-02-08T01:08:48Z",
     "closed_at": null,
     "body": "While HTTP/QUIC doesn't formally require a client to implement Alt-Svc, there's no discovery mechanism other than Alt-Svc provided, so you're not going to get very far without it.  That makes a full HTTP(/TLS)/TCP stack mandatory simply to open the connection in the first place.  For various reasons (e.g. an embedded device in a controlled environment), a client might want to dispense with TCP altogether when it knows that the endpoint will support QUIC.  It might also be useful in testing to be able to directly reference a QUIC endpoint.\r\n\r\nShould we mint new scheme(s) that allows direct reference to a resource served exclusively over HTTP/QUIC?\r\n\r\n(Note, in HTTP/2 the answer was \"no,\" because HTTP/2 could be negotiated using the same TCP connection.  QUIC doesn't have that luxury.)"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/252",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -10043,8 +10095,7 @@
     "updated_at": "2017-03-13T18:57:18Z",
     "closed_at": null,
     "body": "transport 9.4 contains: \"A receiver MUST ensure that received stream data is delivered to the application as an ordered byte-stream. Data received out of order MUST be buffered for later delivery, as long as it is not in violation of the receiver’s flow control limits.\"\r\n\r\nI agree QUIC provides an ordered byte stream abstraction, but why do we have this requirement about in-order delivery to the application? Surely that makes a lot of sense, but it seems to me the only real requirement is that it be a byte stream because boundaries are not preserved.."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/251",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -11927,7 +11978,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/223.patch"
     },
     "body": ""
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/222",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -11985,8 +12037,7 @@
     "updated_at": "2017-01-25T02:22:52Z",
     "closed_at": null,
     "body": "S 8.3 says:\r\n```\r\nA source address token is opaque and consumed only by the server.  Therefore it\r\ncan be included in the TLS 1.3 pre-shared key identifier for 0-RTT handshakes.\r\nServers that use 0-RTT are advised to provide new pre-shared key identifiers\r\nafter every handshake to avoid linkability of connections by passive observers.\r\nClients MUST use a new pre-shared key identifier for every connection that they\r\ninitiate; if no pre-shared key identifier is available, then resumption is not\r\npossible.\r\n```\r\n\r\nThis seem like an unnecessary requirement. Reusing the same PSK ID seems fine here."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/221",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -13773,7 +13824,8 @@
     "updated_at": "2017-03-09T22:45:04Z",
     "closed_at": "2017-03-09T22:45:04Z",
     "body": "The formatting of the flags word section is kind of confusing. Rather than presenting things as hex, I think I would just do a bit diagram like in other flags sections. I can provide a PR if the editors want.\r\n\r\n"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/192",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -13831,8 +13883,7 @@
     "updated_at": "2017-03-13T00:25:36Z",
     "closed_at": "2017-03-13T00:25:36Z",
     "body": "S 5.2.1 contains a bunch of instructions for how to deal with packet number 2^64 but (for instance) the connection flow control window is 64-bits in absolute values, so given that we're mostly sending data, it seems improbable you will get to 2^64 packets."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/191",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -15750,7 +15801,8 @@
     "updated_at": "2017-01-26T02:37:38Z",
     "closed_at": "2017-01-26T02:37:05Z",
     "body": "RST_STREAM kills a stream, but what impact does it have on connection flow control?  Or are we required to account for data in STREAM frames even if they are discarded?\r\n\r\nThe problem here is that data on reset streams is not re-sent, therefore peers get a very different view about what data has been sent.  The receiver of RST_STREAM has no way to manage connection-level flow control for the packets that it has sent.  Packets that it sends before receiving the RST_STREAM might be lost and therefore they might or might not have been counted by the other side.\r\n\r\nAt best, this results in an overly pessimistic view of the connection-level flow control window.  Though it could end up freezing the connection if there are lots of RST_STREAM use with concurrent packet loss.\r\n\r\nThe sender of RST_STREAM can signal the offset of the last octet and thereby ensure that their data is accounted for.  (Separately, we need policing for this value: if it indicates that a flow control window was exceeded, we should treat it as such, even if the frames that it mentions were never sent: opened #162.)\r\n\r\nA potential fix: require RST_STREAM in both directions.  A more drastic fix: make streams unidirectional.\r\n\r\nRelated to the issue @marten-seemann originally mentioned in #145."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/162",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -15844,8 +15896,7 @@
     "updated_at": "2017-03-07T00:52:56Z",
     "closed_at": "2017-02-09T02:56:05Z",
     "body": "If an endpoint receives a RST_STREAM that indicates that its peer has exceeded the stream or connection-level flow control window, it should treat this as a flow control error."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/161",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -17774,7 +17825,8 @@
     "updated_at": "2017-03-09T22:43:53Z",
     "closed_at": "2017-03-09T22:43:53Z",
     "body": "When I wrote the section on what can change in different versions, I originally just left an unlabelled slot for the connection ID.  But @marten-seemann observed that the server is required to echo the connection ID in a version negotiation packet.\r\n\r\nI don't think that we need the server to echo the connection ID in this case.  That would allow us to restore the 8 octets to a version-specific field."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/132",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -17825,8 +17877,7 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/132.patch"
     },
     "body": "According to [Section 5.3](https://quicwg.github.io/base-drafts/draft-ietf-quic-transport.html#version-negotiation-packet), a Version Negotiation Packet MUST contain the Connection ID.\r\n[Section 5.1.2](https://quicwg.github.io/base-drafts/draft-ietf-quic-transport.html#handling-packets-from-different-versions), which specifies the fields that are guaranteed to remain constant between different QUIC versions, must therefore define the location and size of the Connection ID."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/131",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -19919,7 +19970,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/103.patch"
     },
     "body": "Updates the transport spec diagrams to the format @larseggert requested.  A few related changes along the way that are hopefully uncontroversial:\r\n\r\n- Added a notation conventions section, à la RFC 5201, describing the things we're adding to RFC 2360 (including the ones borrowed from 5201).\r\n- Shifted to using the term \"payload\" rather than \"headers\" and \"body,\" since those are never actually used in the descriptions of subsequent packets or frames.  (Describing frame payloads rather than repeating the Type each time simplifies the diagrams and makes them align more nicely.)\r\n- Totally removed the Diversification Nonce field, since that's optional and dependent on a removed bit (in [32e9d5](https://github.com/quicwg/base-drafts/commit/abf5b35a047f33e75f5d31a2b65c26699532e9d5))\r\n- Removed most of the text and the diagram from the Public Reset, since that depends on specs not in evidence (QUIC-Crypto) and I didn't want to do a diagram of an obsolete packet format.  We'll augment EKR's PR with a diagram later.\r\n- Converted the figure-of-a-table of frame types to an actual table, with references to each section."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/102",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -20013,8 +20065,7 @@
     "updated_at": "2017-03-10T03:57:11Z",
     "closed_at": "2017-03-10T03:57:11Z",
     "body": "NumTimestamps is supposed to specify the \"total number of pairs following, including the First Timestamp.\"  If this is zero, presumably the Delta Largest Acked and First Timestamp fields are absent.  If this is one, presumably these fields are present, but no others are.\r\n\r\nThe *subsequent* fields then say they are repeated \"Num Timestamps\" times, which contradicts my logic above.  I'm guessing this should actually be \"Num Timestamps - 1\" times?"
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/101",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -21642,7 +21693,8 @@
     "updated_at": "2016-12-12T18:39:24Z",
     "closed_at": "2016-12-12T18:39:24Z",
     "body": "The current PRIORITY frame has 31 bits to reference the dependent stream.  We'd need to either do some weird dancing (omit one of the bits that can be inferred?), change the layout of PRIORITY to match QUIC's stream space size, or restrict the mapping to use a subset of QUIC streams."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/72",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -21693,8 +21745,7 @@
     "updated_at": "2016-12-23T18:05:07Z",
     "closed_at": "2016-12-12T18:39:40Z",
     "body": "In HTTP/2, the HEADERS frame \"opened\" a stream.  In this mapping, any frame can appear first on a stream, since the stream \"opens\" at the QUIC layer.  Do we still need the PRIORITY region in HEADERS, or should implementations just send a PRIORITY frame if they want to declare prioritization?"
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/71",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -23876,7 +23927,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/43.patch"
     },
     "body": "There's a bunch of things that were broken with the original description of KEY_PHASE.  This restructures things a little, moves the basic packet protection above the section on KEY_PHASE and changes the algorithm.\r\n\r\nThere is still a nasty trial-decryption-like thing that the server has to do during the handshake, which I'd dearly love to kill, but I haven't worked out how to fix it.\r\n\r\nBuilds on #30."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/42",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -23934,8 +23986,7 @@
     "updated_at": "2016-11-30T00:26:30Z",
     "closed_at": "2016-11-30T00:26:30Z",
     "body": "This obviously happened in the markdown conversion.  We need to fix it."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/41",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -25850,7 +25901,8 @@
     "updated_at": "2017-01-13T00:00:18Z",
     "closed_at": "2017-01-13T00:00:18Z",
     "body": "The TLS document doesn't really need to include this."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/12",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -25908,8 +25960,7 @@
     "updated_at": "2017-01-25T02:08:55Z",
     "closed_at": "2017-01-25T02:08:50Z",
     "body": "As per discussion at the meeting.  This will allow QUIC to evolve ahead of any updates to its higher layers."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/11",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
