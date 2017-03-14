@@ -1,5 +1,150 @@
 [
   {
+    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/404",
+    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
+    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/404/labels{/name}",
+    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/404/comments",
+    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/404/events",
+    "html_url": "https://github.com/quicwg/base-drafts/issues/404",
+    "id": 214163573,
+    "number": 404,
+    "title": "ABNF doesn't cite RFC 5234",
+    "user": {
+      "login": "MikeBishop",
+      "id": 4273797,
+      "avatar_url": "https://avatars3.githubusercontent.com/u/4273797?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/MikeBishop",
+      "html_url": "https://github.com/MikeBishop",
+      "followers_url": "https://api.github.com/users/MikeBishop/followers",
+      "following_url": "https://api.github.com/users/MikeBishop/following{/other_user}",
+      "gists_url": "https://api.github.com/users/MikeBishop/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/MikeBishop/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/MikeBishop/subscriptions",
+      "organizations_url": "https://api.github.com/users/MikeBishop/orgs",
+      "repos_url": "https://api.github.com/users/MikeBishop/repos",
+      "events_url": "https://api.github.com/users/MikeBishop/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/MikeBishop/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 481871311,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/editorial",
+        "name": "editorial",
+        "color": "0e8a16",
+        "default": false
+      },
+      {
+        "id": 481871627,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/http",
+        "name": "http",
+        "color": "fbca04",
+        "default": false
+      }
+    ],
+    "state": "open",
+    "locked": false,
+    "assignee": {
+      "login": "MikeBishop",
+      "id": 4273797,
+      "avatar_url": "https://avatars3.githubusercontent.com/u/4273797?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/MikeBishop",
+      "html_url": "https://github.com/MikeBishop",
+      "followers_url": "https://api.github.com/users/MikeBishop/followers",
+      "following_url": "https://api.github.com/users/MikeBishop/following{/other_user}",
+      "gists_url": "https://api.github.com/users/MikeBishop/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/MikeBishop/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/MikeBishop/subscriptions",
+      "organizations_url": "https://api.github.com/users/MikeBishop/orgs",
+      "repos_url": "https://api.github.com/users/MikeBishop/repos",
+      "events_url": "https://api.github.com/users/MikeBishop/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/MikeBishop/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "assignees": [
+      {
+        "login": "MikeBishop",
+        "id": 4273797,
+        "avatar_url": "https://avatars3.githubusercontent.com/u/4273797?v=3",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/MikeBishop",
+        "html_url": "https://github.com/MikeBishop",
+        "followers_url": "https://api.github.com/users/MikeBishop/followers",
+        "following_url": "https://api.github.com/users/MikeBishop/following{/other_user}",
+        "gists_url": "https://api.github.com/users/MikeBishop/gists{/gist_id}",
+        "starred_url": "https://api.github.com/users/MikeBishop/starred{/owner}{/repo}",
+        "subscriptions_url": "https://api.github.com/users/MikeBishop/subscriptions",
+        "organizations_url": "https://api.github.com/users/MikeBishop/orgs",
+        "repos_url": "https://api.github.com/users/MikeBishop/repos",
+        "events_url": "https://api.github.com/users/MikeBishop/events{/privacy}",
+        "received_events_url": "https://api.github.com/users/MikeBishop/received_events",
+        "type": "User",
+        "site_admin": false
+      }
+    ],
+    "milestone": null,
+    "comments": 0,
+    "created_at": "2017-03-14T18:21:54Z",
+    "updated_at": "2017-03-14T18:21:54Z",
+    "closed_at": null,
+    "body": "@reschke points out that we can't use ABNF without citing RFC 5234.  Note to self to add reference in appropriate place."
+  },
+  {
+    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/403",
+    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
+    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/403/labels{/name}",
+    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/403/comments",
+    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/403/events",
+    "html_url": "https://github.com/quicwg/base-drafts/pull/403",
+    "id": 214132890,
+    "number": 403,
+    "title": "type the artwork",
+    "user": {
+      "login": "reschke",
+      "id": 332994,
+      "avatar_url": "https://avatars0.githubusercontent.com/u/332994?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/reschke",
+      "html_url": "https://github.com/reschke",
+      "followers_url": "https://api.github.com/users/reschke/followers",
+      "following_url": "https://api.github.com/users/reschke/following{/other_user}",
+      "gists_url": "https://api.github.com/users/reschke/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/reschke/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/reschke/subscriptions",
+      "organizations_url": "https://api.github.com/users/reschke/orgs",
+      "repos_url": "https://api.github.com/users/reschke/repos",
+      "events_url": "https://api.github.com/users/reschke/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/reschke/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 4,
+    "created_at": "2017-03-14T16:39:04Z",
+    "updated_at": "2017-03-14T18:20:31Z",
+    "closed_at": "2017-03-14T18:20:31Z",
+    "pull_request": {
+      "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/403",
+      "html_url": "https://github.com/quicwg/base-drafts/pull/403",
+      "diff_url": "https://github.com/quicwg/base-drafts/pull/403.diff",
+      "patch_url": "https://github.com/quicwg/base-drafts/pull/403.patch"
+    },
+    "body": ""
+  },
+  {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/402",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
     "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/402/labels{/name}",
@@ -287,17 +432,17 @@
         "default": false
       }
     ],
-    "state": "open",
+    "state": "closed",
     "locked": false,
     "assignee": null,
     "assignees": [
 
     ],
     "milestone": null,
-    "comments": 0,
+    "comments": 1,
     "created_at": "2017-03-14T01:48:48Z",
-    "updated_at": "2017-03-14T01:48:48Z",
-    "closed_at": null,
+    "updated_at": "2017-03-14T13:59:35Z",
+    "closed_at": "2017-03-14T13:59:35Z",
     "body": "Do we really need the normative references to RFC 7230, 7540, QUIC-HTTP in the intro?  Since QUIC isn't supposed to be tied directly to HTTP/2 and frankly anybody reading this document would have gotten to QUIC-TLS through QUIC-TRANSPORT (i.e., they drank the koolaid) couldn't we drop the 1st para and work the QUIC-TRANSPORT reference in as follows:\r\n\r\n    This document describes how QUIC [QUIC-TRANSPORT] can\r\n    be secured using Transport Layer Security (TLS) version 1.3\r\n    [I-D.ietf-tls-tls13]. TLS 1.3 provides critical latency ..."
   },
   {
@@ -683,9 +828,9 @@
 
     ],
     "milestone": null,
-    "comments": 1,
+    "comments": 4,
     "created_at": "2017-03-13T10:03:47Z",
-    "updated_at": "2017-03-14T00:45:42Z",
+    "updated_at": "2017-03-14T14:45:15Z",
     "closed_at": null,
     "pull_request": {
       "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/391",
@@ -747,9 +892,9 @@
 
     ],
     "milestone": null,
-    "comments": 3,
+    "comments": 4,
     "created_at": "2017-03-13T00:23:41Z",
-    "updated_at": "2017-03-13T22:54:31Z",
+    "updated_at": "2017-03-14T15:18:32Z",
     "closed_at": null,
     "body": "We need to be very clear about what the rules are regarding 0-RTT packets that are rejected by the server.  I think that this should be:\r\n\r\n* Rejected 0-RTT packets don't count toward flow control.  The server can't see them, so we have to assume that they don't exist for this purpose.\r\n\r\n* Rejected 0-RTT packets **do** count toward congestion control limits.  Congestion control is a local thing, and the packets were sent, which means that they are causing congestion."
   },
@@ -1802,7 +1947,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/375.patch"
     },
     "body": ""
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/374",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -1989,8 +2135,7 @@
     "updated_at": "2017-03-09T01:54:13Z",
     "closed_at": "2017-03-09T01:54:13Z",
     "body": "An [oddity in kramdown-rfc2629](https://github.com/cabo/kramdown-rfc2629/issues/38) causes references to be busted when they are included in figures.  Let's not tempt fate and instead move the reference to text, where it can be better framed."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/372",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3796,7 +3941,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/345.patch"
     },
     "body": "Closes #32, #33."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/344",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3918,8 +4064,7 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/343.patch"
     },
     "body": ""
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/342",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5688,7 +5833,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/315.patch"
     },
     "body": "Say there word \"random\" add a reference to RFC4086/BCP106."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/314",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5797,8 +5943,7 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/313.patch"
     },
     "body": "* Replace uses of encrypted with protected.\r\n* Constistenly use * instead of x everywhere for multiplication\r\n* Remove trailing ;\r\n* Convert the constants and variables into Kramdown definition lists."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/312",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5966,17 +6111,17 @@
         "default": false
       }
     ],
-    "state": "open",
+    "state": "closed",
     "locked": false,
     "assignee": null,
     "assignees": [
 
     ],
     "milestone": null,
-    "comments": 1,
+    "comments": 2,
     "created_at": "2017-02-15T04:25:25Z",
-    "updated_at": "2017-02-16T03:03:32Z",
-    "closed_at": null,
+    "updated_at": "2017-03-14T14:03:26Z",
+    "closed_at": "2017-03-14T14:03:26Z",
     "body": "The text for `DetectLostPackets` claims that `acked_packet` is a packet number, but the code shows it as having a `packet_number` field, as well as a `time_sent` field.  Maybe a TimeSent() lookup function would work, but at the level that this code operates, I think that it would be better to talk about packets in the abstract.  A real implementation might not carry around all the information a packet might accumulate, but that's for real implementations to worry about."
   },
   {
@@ -7820,7 +7965,8 @@
     "updated_at": "2017-02-17T06:24:16Z",
     "closed_at": "2017-02-17T06:24:16Z",
     "body": "From the document:\r\n\r\n> DISCUSS: Should the receiver be required to enforce this rule that the sender MUST NOT exceed the inflight limit? Specifically, should the receiver drop packets that are received outside this window?\r\n\r\nAs a reminder, we require that the packet number size be determined based on the number of outstanding (undefined, but assumed to be packets that are sent but not yet acknowledged).\r\n\r\nA requirement like this would be virtually impossible to enforce.  The receiver would have to know what of its acknowledgments had arrived at the sender in order to know what was outstanding when the sender generated the packet.  That's only possible in a narrow set of cases."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/284",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7971,8 +8117,7 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/283.patch"
     },
     "body": "In writing this up, it's clear that we've a bunch more work to do in this area."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/282",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -9921,7 +10066,8 @@
     "updated_at": "2017-03-10T05:43:52Z",
     "closed_at": "2017-03-10T05:43:52Z",
     "body": "> WARNING: artwork line too long: '      alarm_duration = max(1.5 * smoothed_rtt, kMinTLPTimeout) << handshake_count;' (82 characters) (at line 261)\r\nWARNING: artwork line too long: '        alarm_duration = max(kMinRTOTimeout, smoothed_rtt + 4 x rttvar);' (72 characters) (at line 261)\r\nWARNING: artwork line too long: '     # TODO: Don't remove packets immediately, since they can be used for' (73 characters) (at line 364)\r\nWARNING: artwork line too long: '           acked_packet.time_sent - kTimeReorderThreshold * smoothed_rtt):' (74 characters) (at line 404)\r\n\r\nBuild with `USE_XSLT=true` set to see these."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/254",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -10036,8 +10182,7 @@
     "updated_at": "2017-02-08T01:08:48Z",
     "closed_at": null,
     "body": "While HTTP/QUIC doesn't formally require a client to implement Alt-Svc, there's no discovery mechanism other than Alt-Svc provided, so you're not going to get very far without it.  That makes a full HTTP(/TLS)/TCP stack mandatory simply to open the connection in the first place.  For various reasons (e.g. an embedded device in a controlled environment), a client might want to dispense with TCP altogether when it knows that the endpoint will support QUIC.  It might also be useful in testing to be able to directly reference a QUIC endpoint.\r\n\r\nShould we mint new scheme(s) that allows direct reference to a resource served exclusively over HTTP/QUIC?\r\n\r\n(Note, in HTTP/2 the answer was \"no,\" because HTTP/2 could be negotiated using the same TCP connection.  QUIC doesn't have that luxury.)"
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/252",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -10090,9 +10235,9 @@
 
     ],
     "milestone": null,
-    "comments": 12,
+    "comments": 13,
     "created_at": "2017-01-31T15:01:23Z",
-    "updated_at": "2017-03-13T18:57:18Z",
+    "updated_at": "2017-03-14T08:11:26Z",
     "closed_at": null,
     "body": "transport 9.4 contains: \"A receiver MUST ensure that received stream data is delivered to the application as an ordered byte-stream. Data received out of order MUST be buffered for later delivery, as long as it is not in violation of the receiver’s flow control limits.\"\r\n\r\nI agree QUIC provides an ordered byte stream abstraction, but why do we have this requirement about in-order delivery to the application? Surely that makes a lot of sense, but it seems to me the only real requirement is that it be a byte stream because boundaries are not preserved.."
   },
@@ -11869,7 +12014,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/225.patch"
     },
     "body": "This builds on #122.  It could probably be moved if we decide not to proceed with that.\r\n\r\nCloses #117."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/224",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -11978,8 +12124,7 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/223.patch"
     },
     "body": ""
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/222",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -13672,7 +13817,8 @@
     "updated_at": "2017-01-24T04:00:55Z",
     "closed_at": "2017-01-24T04:00:55Z",
     "body": "If a client sends a packet with an unknown version and a forged source address, it can use it to mount a reflection DoS onto some victim machine. This is only really useful if:\r\n\r\n(a) the server has a big version list (so the packet is big)\r\n(b) the server doesn't require the client to pad out to ~1MTU.\r\n\r\nIs (b) documented somewhere? The spec suggests that I can send a short packet with a bogus version and the server MUST respond"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/194",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -13824,8 +13970,7 @@
     "updated_at": "2017-03-09T22:45:04Z",
     "closed_at": "2017-03-09T22:45:04Z",
     "body": "The formatting of the flags word section is kind of confusing. Rather than presenting things as hex, I think I would just do a bit diagram like in other flags sections. I can provide a PR if the editors want.\r\n\r\n"
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/192",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -15649,7 +15794,8 @@
     "updated_at": "2017-03-07T18:03:50Z",
     "closed_at": null,
     "body": "I'm writing this issue because there was some discussion about a change I made in #145, that seemed to be controversial. I spent a lot of time thinking about this, and realized that my changes in that PR were insufficient to address the problem. I think there are multiple issues in the stream state machinery.\r\n\r\n\r\n## Two common scenarios\r\n\r\nI will describe two scenarios where RST_STREAMs will be used regularly when using HTTP/QUIC.\r\n\r\n### Rejected PUSH\r\n\r\nThe sender (in this case a HTTP server) uses HTTP/2 Push to push a resource that the receiver isn't interested in. The receiver therefore sends a RST_STREAM with offset 0 (since it didn't send any data on that stream) to stop the sender from pushing the resource.\r\n\r\nWhen the sender receives the RST_STREAM, there are two options:\r\n\r\n- the transfer hasn't completed yet: The sender then stops sending data and sends a RST_STREAM with a byte offset equal to whatever highest data offset it sent. RST_STREAMs are transmitted reliably, so both sides will *eventually* receive the other side's RST_STREAM and make adjustments to their flow controller. There is no problem here.\r\n- the transfer has already completed (i.e. the sender already sent a STREAM frame with the FIN bit): According to the draft, STREAM frames on reset streams are not retransmitted. If the STREAM frame with the FIN gets lost, and the sender will never be able to make the necessary adjustments to its flow controller. (I'm not sure, but maybe this is what #163 is about).\r\n\r\nA fix for this problem is to **always** send a RST_STREAM as a response to a RST_STREAM, even if the stream already transitioned to the *half closed* state by sending a FIN bit.\r\n\r\n\r\n\r\n### POST to a 404 URI\r\n\r\nThe second example is more involved, since it involves data flowing bidirectionaly (note that for the PUSH case, the receiver never sent any data on the stream):\r\n\r\nThe sender (in this case a HTTP client) performs a POST request to an URI that the receiver is not reading from, e.g. a non-existing site (HTTP status code 404). The receiver will first send the HTTP response header, and then the (non-empty) 404 body. It will send send a RST_STREAM with a offset equivalent to the body length, to stop the sender, to stop it from sending more data.\r\n\r\nOn the sender side, we have the same situation as in the PUSH case, but let's assume we already resolved that issue.\r\n\r\nThere are two more issues here:\r\n\r\n- We must ensure reliable delivery of the response body (the 404 page). Thus, although the stream was reset, STREAM frames need to be retransmitted.\r\n- The receiver can only send the RST_STREAM **after** composing the response body (since the final byte offset has to be included). However, it would make sense to send the RST_STREAM as soon as possible, to stop the unwanted upload.\r\n\r\nThe first issue could be fixed by requiring that the peer that is resetting a stream MUST ensure reliable delivery of stream data it sent, whereas a peer that is receiving the RST_STREAM SHOULD NOT retransmit any stream data.\r\n\r\nThe second issue could be fixed by defining a RST_STREAM frame that doesn't include a byte offset (or introducing an RST error code that indicates that the byte offset is not set). The receiver in the above example would send this RST_STREAM before sending the 404 body. Since stream data is transmitted reliably, the sender would eventually receive a highest byte offset with a STREAM frame carrying the FIN flag.\r\n\r\n\r\n## Open points for discussion\r\n\r\nDo the three changes capture all possible use cases of resetting streams. Or do we need\r\n* a way to reset a stream such that the peer initiating the reset doesn't ensure the reliable transmission of the data it already sent\r\n* a way to reset a stream such that the peer receiving the RST has to ensure the reliable transmission up to a certain (which?) offset\r\n\r\n"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/164",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -15801,8 +15947,7 @@
     "updated_at": "2017-01-26T02:37:38Z",
     "closed_at": "2017-01-26T02:37:05Z",
     "body": "RST_STREAM kills a stream, but what impact does it have on connection flow control?  Or are we required to account for data in STREAM frames even if they are discarded?\r\n\r\nThe problem here is that data on reset streams is not re-sent, therefore peers get a very different view about what data has been sent.  The receiver of RST_STREAM has no way to manage connection-level flow control for the packets that it has sent.  Packets that it sends before receiving the RST_STREAM might be lost and therefore they might or might not have been counted by the other side.\r\n\r\nAt best, this results in an overly pessimistic view of the connection-level flow control window.  Though it could end up freezing the connection if there are lots of RST_STREAM use with concurrent packet loss.\r\n\r\nThe sender of RST_STREAM can signal the offset of the last octet and thereby ensure that their data is accounted for.  (Separately, we need policing for this value: if it indicates that a flow control window was exceeded, we should treat it as such, even if the frames that it mentions were never sent: opened #162.)\r\n\r\nA potential fix: require RST_STREAM in both directions.  A more drastic fix: make streams unidirectional.\r\n\r\nRelated to the issue @marten-seemann originally mentioned in #145."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/162",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -17702,7 +17847,8 @@
     "updated_at": "2017-03-09T22:44:12Z",
     "closed_at": "2017-03-09T22:44:12Z",
     "body": "I think I’ve found a DoS vulnerability in the current draft.\r\n\r\nLet’s say an attacker sends a first packet to a QUIC server (server A), but picks a version that the server doesn’t support. Furthermore, it spoofs the sender address of this packet to the address of another QUIC server (server B).\r\nThe packet sent by the client will look like this:\r\n1 byte Flags: 0x9 & Packet Number lengths bits\r\n8 byte Connection-ID\r\n4 byte Version Number\r\n1, 2, 3 or 4 byte Packet Number\r\nAEAD data\r\n\r\nServer A will discover that it doesn’t support the QUIC version that the client suggested, and reply with a Version Negotiation Packet, which will get sent to server B. The version negotiation packet will look like this:\r\n1 byte Flags: 0x9\r\n8 byte Connection-ID\r\n4 byte 1st Version Number\r\n4 byte 1st Version Number\r\n....\r\n\r\nIf server B doesn’t support the version sent as 1st Version Number by server A, it will not be able to distinguish this packet from a packet sent from a client (according to [Section 5.1.2](https://quicwg.github.io/base-drafts/draft-ietf-quic-transport.html#handling-packets-from-different-versions) it MUST NOT read anything from the packet except for the Flags byte, the Connection ID and the first Version Number). Furthermore, according to [Section 6.1](https://quicwg.github.io/base-drafts/draft-ietf-quic-transport.html#version-negotiation) the server MUST reply to server B with a Version Negotiation Packet.\r\nAssuming that server A doesn’t support the version sent as 1st Version Number by server B, A and B will continue sending each other Version Negotiation packets indefinitely. Note that the attacker only sent a single packet."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/134",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -17825,8 +17971,7 @@
     "updated_at": "2017-03-09T22:43:53Z",
     "closed_at": "2017-03-09T22:43:53Z",
     "body": "When I wrote the section on what can change in different versions, I originally just left an unlabelled slot for the connection ID.  But @marten-seemann observed that the server is required to echo the connection ID in a version negotiation packet.\r\n\r\nI don't think that we need the server to echo the connection ID in this case.  That would allow us to restore the 8 octets to a version-specific field."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/132",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -19841,7 +19986,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/105.patch"
     },
     "body": "Here is an alternate solution to he PMTUD section as discussed in Issue #64\r\nhttps://github.com/quicwg/base-drafts/issues/64\r\n\r\nI think it is much cleaner and clearer about what to do. It assumes that ICMP black holes are not a huge problem in the internet, and that no one is using a UDP socket API that prevents them from stopping various noncompliant behaviors. I much prefer this version, although some may find it too restrictive."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/104",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -19970,8 +20116,7 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/103.patch"
     },
     "body": "Updates the transport spec diagrams to the format @larseggert requested.  A few related changes along the way that are hopefully uncontroversial:\r\n\r\n- Added a notation conventions section, à la RFC 5201, describing the things we're adding to RFC 2360 (including the ones borrowed from 5201).\r\n- Shifted to using the term \"payload\" rather than \"headers\" and \"body,\" since those are never actually used in the descriptions of subsequent packets or frames.  (Describing frame payloads rather than repeating the Type each time simplifies the diagrams and makes them align more nicely.)\r\n- Totally removed the Diversification Nonce field, since that's optional and dependent on a removed bit (in [32e9d5](https://github.com/quicwg/base-drafts/commit/abf5b35a047f33e75f5d31a2b65c26699532e9d5))\r\n- Removed most of the text and the diagram from the Public Reset, since that depends on specs not in evidence (QUIC-Crypto) and I didn't want to do a diagram of an obsolete packet format.  We'll augment EKR's PR with a diagram later.\r\n- Converted the figure-of-a-table of frame types to an actual table, with references to each section."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/102",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -21577,7 +21722,8 @@
     "updated_at": "2016-12-20T18:04:06Z",
     "closed_at": "2016-12-20T18:04:06Z",
     "body": "In HTTP/2, SETTINGS provokes an empty SETTINGS frame with the ACK flag sent.  In the EXTENDED_SETTINGS proposal, there's a separately-defined SETTINGS_ACK frame.  Either way, there's a way to know when changes have been applied.\r\n\r\nIf we need this in QUIC, with no defined ordering between bytes on different streams, we would need to ACK on every still-open stream.  (Ick.)  But of course, we also can't know which streams were already closed or not yet open at the time the SETTINGS frame was received, so we can't *enforce* that on the receiver.\r\n\r\nDo we need a SETTINGS epoch in every HTTP frame?  (Ick.)  Or simplify and say that SETTINGS just aren't ACKed over QUIC?"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/74",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -21693,8 +21839,7 @@
     "updated_at": "2016-12-12T18:39:24Z",
     "closed_at": "2016-12-12T18:39:24Z",
     "body": "The current PRIORITY frame has 31 bits to reference the dependent stream.  We'd need to either do some weird dancing (omit one of the bits that can be inferred?), change the layout of PRIORITY to match QUIC's stream space size, or restrict the mapping to use a subset of QUIC streams."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/72",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -23812,7 +23957,8 @@
     "updated_at": "2017-03-10T03:46:20Z",
     "closed_at": null,
     "body": "It's currently unclear how two QUIC peers opening a connection know which handshake protocol to expect on Stream 1.\r\n\r\nSince the client has to include the opening handshake in its first flight, it has to at least be able to guess *a* handshake protocol that's acceptable to the server and include enough information for the server to know which one it's attempting.  Currently all the mechanisms for telling the client to retry with different options are at the TLS layer, which is too late.\r\n\r\nHow is this negotiated?  Is it baked into the QUIC version?  Is it specified as part of the application mapping (e.g. the HTTP mapping currently requires the TLS 1.3 handshake to be used) and therefore either supplied as part of the Alt-Svc record or implied by the port?"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/44",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -23927,8 +24073,7 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/43.patch"
     },
     "body": "There's a bunch of things that were broken with the original description of KEY_PHASE.  This restructures things a little, moves the basic packet protection above the section on KEY_PHASE and changes the algorithm.\r\n\r\nThere is still a nasty trial-decryption-like thing that the server has to do during the handshake, which I'd dearly love to kill, but I haven't worked out how to fix it.\r\n\r\nBuilds on #30."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/42",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -25791,7 +25936,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/15.patch"
     },
     "body": ""
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/14",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -25901,8 +26047,7 @@
     "updated_at": "2017-01-13T00:00:18Z",
     "closed_at": "2017-01-13T00:00:18Z",
     "body": "The TLS document doesn't really need to include this."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/12",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
