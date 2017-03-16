@@ -203,7 +203,7 @@ kDefaultInitialRtt (default 100ms):
 ## Variables of interest
 
 Variables required to implement the congestion control mechanisms
-described in this section.
+are described in this section.
 
 loss_detection_alarm:
 : Multi-modal alarm used for loss detection.
@@ -514,7 +514,7 @@ Pseudocode for DetectLostPackets follows:
 
 # Congestion Control
 
-QUIC's congestion control is based on TCP New Reno{{?RFC6582}}
+QUIC's congestion control is based on TCP NewReno{{?RFC6582}}
 congestion control to determine the congestion window and pacing rate.
 
 ## Slow Start
@@ -522,14 +522,14 @@ congestion control to determine the congestion window and pacing rate.
 QUIC uses a slow start approach where the congestion window is increased
 by the same number of bytes as are acknowledged while in slow start.
 QUIC begins every connection in slow start and exits slow start upon
-loss or when the min_rtt increases by more than 1/8th for a full round.
+loss.
 
 ## Recovery
 
 Recovery is a period of time beginning with detection of a lost packet.
 It ends when all packets outstanding at the time recovery began have been
 acknowledged or lost. During recovery, the congestion window is not
-increased and the pacing gain is reduced to 1.
+increased or decreased.
 
 ## Constants of interest
 
@@ -547,7 +547,7 @@ kLossReductionFactor (default 0.5):
 ## Variables of interest
 
 Variables required to implement the congestion control mechanisms
-described in this section.
+are described in this section.
 
 bytes_in_flight:
 : The sum of the size in bytes of all sent packets that contain at least
@@ -559,9 +559,9 @@ congestion_window:
 end_of_recovery:
 : The packet number after which QUIC will no longer be in recovery.
 
-in_slow_start:
-: Whether a connection is currently in slow start.
-
+ssthresh
+: Slow start threshold in bytes.  When the congestion window is below
+  ssthresh, it grows by the number of bytes acknowledged for each ack.
 
 ## Initialization
 
@@ -572,7 +572,7 @@ follows:
    congestion_window = kInitialWindow
    bytes_in_flight = 0
    end_of_recovery = 0
-   in_slow_start = true
+   ssthresh = infinite
 ~~~
 
 ## On Packet Acknowledgement
@@ -586,7 +586,7 @@ Pseudocode for OnPacketAcked follows:
    OnPacketAcked(acked_packet):
      if (acked_packet.packet_number < end_of_recovery):
        return
-     if (in_slow_start):
+     if (congestion_window < ssthresh):
        congestion_window += acket_packets.bytes
      else:
        congestion_window +=
@@ -604,9 +604,10 @@ are detected lost.
      if (end_of_recovery < largest_lost_packet.packet_number):
        end_of_recovery = largest_sent_packet
        congestion_window *= kLossReductionFactor
+       ssthresh = congestion_window
 ~~~
 
-## Sending Packets
+## Pacing Packets
 
 QUIC sends a packet if there is available congestion window and
 sending the packet does not exceed the pacing rate.
@@ -623,7 +624,6 @@ immediately, and a time in the future if sending is pacing limited.
          packet_size * smoothed_rtt / congestion_window
 ~~~
 
-(describe min_rtt based hystart.)
 (describe how QUIC's F-RTO {{?RFC5682}} delays reducing CWND.)
 (describe PRR {{?RFC6937}})
 
