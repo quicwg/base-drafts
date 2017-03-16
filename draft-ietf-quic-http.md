@@ -94,7 +94,7 @@ HTTP/QUIC was available on UDP port 443 at the same hostname by including the
 following header in any response:
 
 ~~~ example
-    Alt-Svc: hq=":443"
+Alt-Svc: hq=":443"
 ~~~
 
 On receipt of an Alt-Svc header indicating HTTP/QUIC support, a client MAY
@@ -112,8 +112,8 @@ provide version-negotiation hints to HTTP/QUIC clients. QUIC versions are
 four-octet sequences with no additional constraints on format. Syntax:
 
 ~~~ abnf
-    quic = version-number
-    version-number = 1*8HEXDIG; hex-encoded QUIC version
+quic = version-number
+version-number = 1*8HEXDIG; hex-encoded QUIC version
 ~~~
 
 Leading zeros SHOULD be omitted for brevity.  When multiple versions are
@@ -122,7 +122,7 @@ Alt-Svc entry.  For example, if a server supported both version 0x00000001 and
 the version rendered in ASCII as "Q034", it could specify the following header:
 
 ~~~ example
-    Alt-Svc: hq=":443";quic=1;quic=51303334
+Alt-Svc: hq=":443";quic=1;quic=51303334
 ~~~
 
 Where multiple versions are listed, the order of the values reflects the
