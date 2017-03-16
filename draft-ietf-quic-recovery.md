@@ -620,7 +620,7 @@ immediately, and a time in the future if sending is pacing limited.
    TimeToSend(packet_size):
      if (bytes_in_flight + packet_size > congestion_window)
        return infinite
-     return time_of_last_sent_packet + 
+     return time_of_last_sent_packet +
          packet_size * smoothed_rtt / congestion_window
 ~~~
 
