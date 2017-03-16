@@ -2783,7 +2783,7 @@ Issue and pull request numbers are listed with a leading octothorp.
   #356)
 
 - Defined client address validation (#52, #118, #120, #275)
-- Define transport parameters as a TLS extension (#122)
+- Define transport parameters as a TLS extension (#49, #122)
 - SCUP and COPT parameters are no longer valid (#116, #117)
 - Transport parameters for 0-RTT are either remembered from before, or assume
   default values (#126)
