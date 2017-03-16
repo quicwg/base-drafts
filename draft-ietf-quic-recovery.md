@@ -623,7 +623,7 @@ Pseudocode for OnPacketAcked follows:
        congestion_window += acket_packets.bytes
      else:
        congestion_window +=
-           1500 * acked_packets.bytes / congestion_window
+           acked_packets.bytes / congestion_window
 ~~~
 
 ## On Packets Lost
