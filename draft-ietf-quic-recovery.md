@@ -202,9 +202,9 @@ An unacknowledged QUIC packet is marked as lost in one of the following ways:
 
 ### Constants of interest
 
-Constants used in loss recovery and congestion control are based on a
-combination of RFCs, papers, and common practice.  Some may need to be changed
-or negotiated in order to better suit a variety of environments.
+Constants used in loss recovery are based on a combination of RFCs, papers,
+and common practice.  Some may need to be changed or negotiated in order to
+better suit a variety of environments.
 
 kMaxTLPs (default 2):
 : Maximum number of tail loss probes before an RTO fires.
@@ -231,8 +231,8 @@ kDefaultInitialRtt (default 100ms):
 
 ### Variables of interest
 
-We first describe the variables required to implement the loss detection
-mechanisms described in this section.
+Variables required to implement the congestion control mechanisms
+are described in this section.
 
 loss_detection_alarm:
 : Multi-modal alarm used for loss detection.
@@ -341,8 +341,8 @@ Pseudocode for OnAckReceived and UpdateRtt follow:
          rtt_sample -= ack.delay
        UpdateRtt(rtt_sample)
      // Find all newly acked packets.
-     for acked_packet_number in DetermineNewlyAckedPackets():
-       OnPacketAcked(acked_packet_number)
+     for acked_packet in DetermineNewlyAckedPackets():
+       OnPacketAcked(acked_packet.packet_number)
 
      DetectLostPackets(ack.largest_acked_packet)
      SetLossDetectionAlarm()
@@ -535,9 +535,10 @@ Pseudocode for DetectLostPackets follows:
 
      // Inform the congestion controller of lost packets and
      // lets it decide whether to retransmit immediately.
-     OnPacketsLost(lost_packets)
-     foreach (packet in lost_packets)
-       sent_packets.remove(packet.packet_number)
+     if (!lost_packets.empty())
+       OnPacketsLost(lost_packets)
+       foreach (packet in lost_packets)
+         sent_packets.remove(packet.packet_number)
 ~~~
 
 ## Discussion
@@ -546,10 +547,116 @@ TODO: Discuss why constants are chosen as they are.
 
 # Congestion Control
 
-(describe NewReno-style congestion control {{?RFC6582}} for QUIC.)
-(describe appropriate byte counting.)
-(define recovery based on packet numbers.)
-(describe min_rtt based hystart.)
+QUIC's congestion control is based on TCP NewReno{{?RFC6582}}
+congestion control to determine the congestion window and pacing rate.
+
+## Slow Start
+
+QUIC uses a slow start approach where the congestion window is increased
+by the same number of bytes as are acknowledged while in slow start.
+QUIC begins every connection in slow start and exits slow start upon
+loss.
+
+## Recovery
+
+Recovery is a period of time beginning with detection of a lost packet.
+It ends when all packets outstanding at the time recovery began have been
+acknowledged or lost. During recovery, the congestion window is not
+increased or decreased.
+
+## Constants of interest
+
+Constants used in congestion control are based on a combination of RFCs,
+papers, and common practice.  Some may need to be changed or negotiated
+in order to better suit a variety of environments.
+
+kInitialWindow (default 10 * 1500 bytes):
+: Default limit on the amount of outstanding data in bytes.
+
+kLossReductionFactor (default 0.5):
+: Reduction in congestion window when a new loss event is detected.
+
+
+## Variables of interest
+
+Variables required to implement the congestion control mechanisms
+are described in this section.
+
+bytes_in_flight:
+: The sum of the size in bytes of all sent packets that contain at least
+  one retransmittable frame, and have not been acked or declared lost.
+
+congestion_window:
+: Maximum number of bytes in flight that may be sent.
+
+end_of_recovery:
+: The packet number after which QUIC will no longer be in recovery.
+
+ssthresh
+: Slow start threshold in bytes.  When the congestion window is below
+  ssthresh, it grows by the number of bytes acknowledged for each ack.
+
+## Initialization
+
+At the beginning of the connection, initialize the loss detection variables as
+follows:
+
+~~~
+   congestion_window = kInitialWindow
+   bytes_in_flight = 0
+   end_of_recovery = 0
+   ssthresh = infinite
+~~~
+
+## On Packet Acknowledgement
+
+Invoked at the same time loss detection's OnPacketAcked is called and
+supplied with the acked_packet from sent_packets.
+
+Pseudocode for OnPacketAcked follows:
+
+~~~
+   OnPacketAcked(acked_packet):
+     if (acked_packet.packet_number < end_of_recovery):
+       return
+     if (congestion_window < ssthresh):
+       congestion_window += acket_packets.bytes
+     else:
+       congestion_window +=
+           1500 * acked_packets.bytes / congestion_window
+~~~
+
+## On Packets Lost
+
+Invoked by loss detection from DetectLostPackets when new packets
+are detected lost.
+
+~~~
+   OnPacketsLost(lost_packets):
+     largest_lost_packet = lost_packets.last()
+     if (end_of_recovery < largest_lost_packet.packet_number):
+       end_of_recovery = largest_sent_packet
+       congestion_window *= kLossReductionFactor
+       ssthresh = congestion_window
+~~~
+
+## Pacing Packets
+
+QUIC sends a packet if there is available congestion window and
+sending the packet does not exceed the pacing rate.
+
+TimeToSend returns infinite if the congestion controller is congestion
+window limited, a time in the past if the packet can be sent
+immediately, and a time in the future if sending is pacing limited.
+
+~~~
+   TimeToSend(packet_size):
+     if (bytes_in_flight + packet_size > congestion_window)
+       return infinite
+     return time_of_last_sent_packet +
+         packet_size * smoothed_rtt / congestion_window
+~~~
+
 (describe how QUIC's F-RTO {{?RFC5682}} delays reducing CWND.)
 (describe PRR {{?RFC6937}})
 
