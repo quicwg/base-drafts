@@ -248,6 +248,10 @@ tlp_count:
 rto_count:
 : The number of times an rto has been sent without receiving an ack.
 
+largest_sent_before_rto:
+: The last packet number sent prior to the first transmission due to
+retransmission timeout.
+
 smoothed_rtt:
 : The smoothed RTT of the connection, computed as described in
   {{?RFC6298}}
@@ -297,6 +301,7 @@ follows:
    smoothed_rtt = 0
    rttvar = 0
    initial_rtt = kDefaultInitialRtt
+   largest_sent_before_rto = 0
 ~~~
 
 ### On Sending a Packet
@@ -372,6 +377,11 @@ Pseudocode for OnPacketAcked follows:
 
 ~~~
    OnPacketAcked(acked_packet_number):
+     // If the earliest packet acked when exiting RTO was sent due to RTO,
+     // then the RTO was not spurious, so inform congestion control.
+     // Similar to the goal of F-RTO {{?RFC5682}}
+     if (rto_count > 0 && acked_packet_number > largest_sent_before_rto)
+       OnRetransmissionTimeoutVerified()
      handshake_count = 0
      tlp_count = 0
      rto_count = 0
@@ -479,14 +489,13 @@ Pseudocode for OnLossDetectionAlarm follows:
        DetectLostPackets(largest_acked_packet)
      else if (tlp_count < kMaxTLPs):
        // Tail Loss Probe.
-       if (HasNewDataToSend()):
-         SendOnePacketOfNewData()
-       else:
-         RetransmitOldestPacket()
+       SendOnePacket()
        tlp_count++
      else:
        // RTO.
-       RetransmitOldestTwoPackets()
+       if (rto_count == 0)
+         largest_sent_before_rto = largest_sent_packet
+       SendTwoPackets()
        rto_count++
 
      SetLossDetectionAlarm()
@@ -523,7 +532,7 @@ Pseudocode for DetectLostPackets follows:
      else if (largest_acked.packet_number == largest_sent_packet):
        // Early retransmit alarm.
        delay_until_lost = 9/8 * max(latest_rtt, smoothed_rtt)
-     foreach (unacked less than largest_acked.packet_number):
+     foreach (unacked < largest_acked.packet_number):
        time_since_sent = now() - unacked.time_sent
        packet_delta = largest_acked.packet_number - unacked.packet_number
        if (time_since_sent > delay_until_lost):
@@ -552,10 +561,9 @@ congestion control to determine the congestion window and pacing rate.
 
 ## Slow Start
 
-QUIC uses a slow start approach where the congestion window is increased
-by the same number of bytes as are acknowledged while in slow start.
 QUIC begins every connection in slow start and exits slow start upon
-loss.
+loss. While in slow start, QUIC increases the congestion window by the
+number of acknowledged bytes when each ack is processed. 
 
 ## Recovery
 
@@ -570,8 +578,15 @@ Constants used in congestion control are based on a combination of RFCs,
 papers, and common practice.  Some may need to be changed or negotiated
 in order to better suit a variety of environments.
 
-kInitialWindow (default 10 * 1500 bytes):
+kDefaultMss (default 1460 bytes):
+: The default max packet size used for calculating default and minimum
+  congestion windows.
+
+kInitialWindow (default 10 * kDefaultMss):
 : Default limit on the amount of outstanding data in bytes.
+
+kMinimumWindow (default 2 * kDefaultMss):
+: Default minimum congestion window.
 
 kLossReductionFactor (default 0.5):
 : Reduction in congestion window when a new loss event is detected.
@@ -634,11 +649,25 @@ are detected lost.
 ~~~
    OnPacketsLost(lost_packets):
      largest_lost_packet = lost_packets.last()
+     // Start a new recovery epoch if the lost packet is larger
+     // than the end of the previous recovery epoch.
      if (end_of_recovery < largest_lost_packet.packet_number):
        end_of_recovery = largest_sent_packet
        congestion_window *= kLossReductionFactor
+       congestion_window = max(congestion_window, kMinimumWindow)
        ssthresh = congestion_window
 ~~~
+
+## On Retransmission Timeout Verified
+
+QUIC decreases the congestion window to the minimum value once the
+retransmission timeout has been confirmed to not be spurious when
+the first post-RTO acknowledgement is processed.
+
+~~~
+   OnRetransmissionTimeoutVerified()
+     congestion_window = kMinimumWindow
+~~
 
 ## Pacing Packets
 
@@ -653,12 +682,13 @@ immediately, and a time in the future if sending is pacing limited.
    TimeToSend(packet_size):
      if (bytes_in_flight + packet_size > congestion_window)
        return infinite
+     pacing_coefficient = 1.25
+     if (congestion_window < ssthresh)
+       pacing_coefficient = 2
      return time_of_last_sent_packet +
-         packet_size * smoothed_rtt / congestion_window
+         (packet_size * smoothed_rtt) / 
+             (pacing_coefficient * congestion_window)
 ~~~
-
-(describe how QUIC's F-RTO {{?RFC5682}} delays reducing CWND.)
-(describe PRR {{?RFC6937}})
 
 
 # IANA Considerations
