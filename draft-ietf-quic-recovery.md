@@ -563,7 +563,7 @@ congestion control to determine the congestion window and pacing rate.
 
 QUIC begins every connection in slow start and exits slow start upon
 loss. While in slow start, QUIC increases the congestion window by the
-number of acknowledged bytes when each ack is processed. 
+number of acknowledged bytes when each ack is processed.
 
 ## Recovery
 
@@ -674,9 +674,10 @@ the first post-RTO acknowledgement is processed.
 QUIC sends a packet if there is available congestion window and
 sending the packet does not exceed the pacing rate.
 
-TimeToSend returns infinite if the congestion controller is congestion
-window limited, a time in the past if the packet can be sent
-immediately, and a time in the future if sending is pacing limited.
+TimeToSend returns infinite if the congestion controller is
+congestion window limited, a time in the past if the packet can be
+sent immediately, and a time in the future if sending is pacing
+limited.
 
 ~~~
    TimeToSend(packet_size):
@@ -686,7 +687,7 @@ immediately, and a time in the future if sending is pacing limited.
      if (congestion_window < ssthresh)
        pacing_coefficient = 2
      return time_of_last_sent_packet +
-         (packet_size * smoothed_rtt) / 
+         (packet_size * smoothed_rtt) /
              (pacing_coefficient * congestion_window)
 ~~~
 
