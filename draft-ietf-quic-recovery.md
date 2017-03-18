@@ -380,7 +380,8 @@ Pseudocode for OnPacketAcked follows:
      // If a packet sent prior to RTO was acked, then the RTO was
      // spurious.  Otherwise, inform congestion control.
      // Similar to the goal of F-RTO {{?RFC5682}}
-     if (rto_count > 0 && acked_packet_number > largest_sent_before_rto)
+     if (rto_count > 0 &&
+         acked_packet_number > largest_sent_before_rto)
        OnRetransmissionTimeoutVerified()
      handshake_count = 0
      tlp_count = 0
