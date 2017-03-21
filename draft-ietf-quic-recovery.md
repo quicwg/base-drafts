@@ -249,7 +249,8 @@ rto_count:
 : The number of times an rto has been sent without receiving an ack.
 
 largest_sent_before_rto:
-: The last packet number sent prior to the first retransmission timeout.
+: The last packet number sent prior to the first retransmission
+  timeout.
 
 smoothed_rtt:
 : The smoothed RTT of the connection, computed as described in
