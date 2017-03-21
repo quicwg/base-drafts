@@ -2791,8 +2791,8 @@ Issue and pull request numbers are listed with a leading octothorp.
 - The server echoes the Connection ID and packet number fields when sending a
   Version Negotiation packet (#133, #295, #244)
 
-- Definied a minimum packet size for the initial handshake packet from the
-  client (#69, #136, #139, #164)
+- Defined a minimum packet size for the initial handshake packet from the client
+  (#69, #136, #139, #164)
 - Path MTU Discovery (#64, #106)
 - The initial handshake packet from the client needs to fit in a single packet
   (#338)
