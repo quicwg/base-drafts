@@ -1,5 +1,280 @@
 [
   {
+    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/411",
+    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
+    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/411/labels{/name}",
+    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/411/comments",
+    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/411/events",
+    "html_url": "https://github.com/quicwg/base-drafts/issues/411",
+    "id": 215341343,
+    "number": 411,
+    "title": "Restructure document",
+    "user": {
+      "login": "martinthomson",
+      "id": 67641,
+      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/martinthomson",
+      "html_url": "https://github.com/martinthomson",
+      "followers_url": "https://api.github.com/users/martinthomson/followers",
+      "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
+      "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
+      "organizations_url": "https://api.github.com/users/martinthomson/orgs",
+      "repos_url": "https://api.github.com/users/martinthomson/repos",
+      "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/martinthomson/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 481871311,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/editorial",
+        "name": "editorial",
+        "color": "0e8a16",
+        "default": false
+      },
+      {
+        "id": 481871399,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
+        "name": "transport",
+        "color": "fbca04",
+        "default": false
+      }
+    ],
+    "state": "open",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 0,
+    "created_at": "2017-03-20T06:52:02Z",
+    "updated_at": "2017-03-20T06:52:02Z",
+    "closed_at": null,
+    "body": "The current document structure has suffered a little from the large volume of changes that we've thrown at the spec.  Here's a structure that I think will survive a little better:\r\n\r\n## Fluff\r\n\r\n* Introduction (Why QUIC, really high level of what it does)\r\n* Overview (see #410)\r\n\r\n## High-Level Concepts\r\n\r\n* Connections\r\n   * lifecycle (include handshake overview here)\r\n   * graceful shutdown\r\n   * error handling\r\n   * public reset (semantics, not bits)\r\n   * source address validation and DoS\r\n* Streams (lifecycle, purpose and function, priority, flow control)\r\n* Packets and Frames\r\n   * relationship between packets and frames\r\n   * packetization\r\n   * retransmission rules\r\n   * pmtud\r\n* Versions (version negotiation, version numbers)\r\n* Connection IDs (why, migration, nat rebinding, changing ID, privacy)\r\n\r\n## Mechanics\r\n\r\n* Packet Format\r\n   * long and short headers\r\n   * what is constant between versions\r\n   * definition of each of the packet types\r\n* Packet Protection (key phases, AEAD)\r\n* Frames (definition of each frame type; include current Sections 6+8)\r\n* Handshake (crypto, transport parameters)\r\n* Error Codes\r\n\r\n## Boilerplate\r\n\r\n* Security Considerations\r\n* IANA\r\n* etc...\r\n"
+  },
+  {
+    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/410",
+    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
+    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/410/labels{/name}",
+    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/410/comments",
+    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/410/events",
+    "html_url": "https://github.com/quicwg/base-drafts/issues/410",
+    "id": 215339312,
+    "number": 410,
+    "title": "Rewrite overview",
+    "user": {
+      "login": "martinthomson",
+      "id": 67641,
+      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/martinthomson",
+      "html_url": "https://github.com/martinthomson",
+      "followers_url": "https://api.github.com/users/martinthomson/followers",
+      "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
+      "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
+      "organizations_url": "https://api.github.com/users/martinthomson/orgs",
+      "repos_url": "https://api.github.com/users/martinthomson/repos",
+      "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/martinthomson/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 481871311,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/editorial",
+        "name": "editorial",
+        "color": "0e8a16",
+        "default": false
+      },
+      {
+        "id": 481871399,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
+        "name": "transport",
+        "color": "fbca04",
+        "default": false
+      }
+    ],
+    "state": "open",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 0,
+    "created_at": "2017-03-20T06:33:50Z",
+    "updated_at": "2017-03-20T06:33:50Z",
+    "closed_at": null,
+    "body": "A protocol overview should concentrate on establishing the function of the protocol at a high level.  That is, it should describe what the protocol is for and then how the protocol sets out to achieve those goals, with pointers to more detailed explanations of each.  It should act as a way for new readers to orient themselves in both the protocol and its specification.\r\n\r\nThe overview is currently pure self-promotion, which covers part of the first goal, but doesn't do much to help the reader understand how each of these wonderful *features* are actually put together."
+  },
+  {
+    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/409",
+    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
+    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/409/labels{/name}",
+    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/409/comments",
+    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/409/events",
+    "html_url": "https://github.com/quicwg/base-drafts/pull/409",
+    "id": 215195317,
+    "number": 409,
+    "title": "Incorporate F-RTO",
+    "user": {
+      "login": "ianswett",
+      "id": 20072817,
+      "avatar_url": "https://avatars2.githubusercontent.com/u/20072817?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/ianswett",
+      "html_url": "https://github.com/ianswett",
+      "followers_url": "https://api.github.com/users/ianswett/followers",
+      "following_url": "https://api.github.com/users/ianswett/following{/other_user}",
+      "gists_url": "https://api.github.com/users/ianswett/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/ianswett/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/ianswett/subscriptions",
+      "organizations_url": "https://api.github.com/users/ianswett/orgs",
+      "repos_url": "https://api.github.com/users/ianswett/repos",
+      "events_url": "https://api.github.com/users/ianswett/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/ianswett/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 481873040,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/recovery",
+        "name": "recovery",
+        "color": "fbca04",
+        "default": false
+      }
+    ],
+    "state": "open",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 0,
+    "created_at": "2017-03-18T13:49:35Z",
+    "updated_at": "2017-03-18T14:35:22Z",
+    "closed_at": null,
+    "pull_request": {
+      "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/409",
+      "html_url": "https://github.com/quicwg/base-drafts/pull/409",
+      "diff_url": "https://github.com/quicwg/base-drafts/pull/409.diff",
+      "patch_url": "https://github.com/quicwg/base-drafts/pull/409.patch"
+    },
+    "body": ""
+  },
+  {
+    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/408",
+    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
+    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/408/labels{/name}",
+    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/408/comments",
+    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/408/events",
+    "html_url": "https://github.com/quicwg/base-drafts/pull/408",
+    "id": 214978763,
+    "number": 408,
+    "title": "\"Created by\" issues filter",
+    "user": {
+      "login": "LPardue",
+      "id": 6571445,
+      "avatar_url": "https://avatars1.githubusercontent.com/u/6571445?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/LPardue",
+      "html_url": "https://github.com/LPardue",
+      "followers_url": "https://api.github.com/users/LPardue/followers",
+      "following_url": "https://api.github.com/users/LPardue/following{/other_user}",
+      "gists_url": "https://api.github.com/users/LPardue/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/LPardue/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/LPardue/subscriptions",
+      "organizations_url": "https://api.github.com/users/LPardue/orgs",
+      "repos_url": "https://api.github.com/users/LPardue/repos",
+      "events_url": "https://api.github.com/users/LPardue/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/LPardue/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+
+    ],
+    "state": "closed",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 2,
+    "created_at": "2017-03-17T11:37:20Z",
+    "updated_at": "2017-03-17T23:01:46Z",
+    "closed_at": "2017-03-17T22:37:22Z",
+    "pull_request": {
+      "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/408",
+      "html_url": "https://github.com/quicwg/base-drafts/pull/408",
+      "diff_url": "https://github.com/quicwg/base-drafts/pull/408.diff",
+      "patch_url": "https://github.com/quicwg/base-drafts/pull/408.patch"
+    },
+    "body": "Add ability to filter by the user who created an issue/PR. \r\n\r\nNB: Completely untested!"
+  },
+  {
+    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/407",
+    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
+    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/407/labels{/name}",
+    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/407/comments",
+    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/407/events",
+    "html_url": "https://github.com/quicwg/base-drafts/pull/407",
+    "id": 214838442,
+    "number": 407,
+    "title": "restore artwork indentation broken by #403",
+    "user": {
+      "login": "reschke",
+      "id": 332994,
+      "avatar_url": "https://avatars0.githubusercontent.com/u/332994?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/reschke",
+      "html_url": "https://github.com/reschke",
+      "followers_url": "https://api.github.com/users/reschke/followers",
+      "following_url": "https://api.github.com/users/reschke/following{/other_user}",
+      "gists_url": "https://api.github.com/users/reschke/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/reschke/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/reschke/subscriptions",
+      "organizations_url": "https://api.github.com/users/reschke/orgs",
+      "repos_url": "https://api.github.com/users/reschke/repos",
+      "events_url": "https://api.github.com/users/reschke/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/reschke/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+
+    ],
+    "state": "open",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 0,
+    "created_at": "2017-03-16T21:06:14Z",
+    "updated_at": "2017-03-16T21:06:14Z",
+    "closed_at": null,
+    "pull_request": {
+      "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/407",
+      "html_url": "https://github.com/quicwg/base-drafts/pull/407",
+      "diff_url": "https://github.com/quicwg/base-drafts/pull/407.diff",
+      "patch_url": "https://github.com/quicwg/base-drafts/pull/407.patch"
+    },
+    "body": "..hopefully..."
+  },
+  {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/406",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
     "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/406/labels{/name}",
@@ -938,9 +1213,9 @@
 
     ],
     "milestone": null,
-    "comments": 7,
+    "comments": 12,
     "created_at": "2017-03-13T10:03:47Z",
-    "updated_at": "2017-03-16T15:15:51Z",
+    "updated_at": "2017-03-20T09:13:34Z",
     "closed_at": null,
     "pull_request": {
       "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/391",
@@ -1002,9 +1277,9 @@
 
     ],
     "milestone": null,
-    "comments": 10,
+    "comments": 11,
     "created_at": "2017-03-13T00:23:41Z",
-    "updated_at": "2017-03-16T16:05:21Z",
+    "updated_at": "2017-03-17T03:01:44Z",
     "closed_at": null,
     "body": "We need to be very clear about what the rules are regarding 0-RTT packets that are rejected by the server.  I think that this should be:\r\n\r\n* Rejected 0-RTT packets don't count toward flow control.  The server can't see them, so we have to assume that they don't exist for this purpose.\r\n\r\n* Rejected 0-RTT packets **do** count toward congestion control limits.  Congestion control is a local thing, and the packets were sent, which means that they are causing congestion."
   },
@@ -1498,7 +1773,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/382.patch"
     },
     "body": "Closes #146"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/381",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -1942,8 +2218,7 @@
     "updated_at": "2017-03-09T07:29:20Z",
     "closed_at": null,
     "body": "This is related to #353.\r\n\r\nWhat would we expect endpoints to do upon the receipt of ICMP (or ICMPv6) Type=DestinationUnreachable?  For IPv6, that message has a large chunk of the original packet, proving that a path element sent it. For IPv4, there is very little entropy there (just your src port).\r\n\r\nCan this be as trusted as PUBLIC_RESET by Clients? For IPv4 the answer is likely to be \"no\". For ipv6, I am not that sure. But there are real implications for clients that cannot just fall back to tcp.\r\n\r\nIf you ignore ICMP and keep retrying the dead server, you are very likely missing an opportunity to switch the server (switch to another IP offered by DNS).\r\n\r\nIf you do not ignore ICMP (especially ICMPv4) and try reopening the connection (using a different server IP), you are allowing using your client in a highly amplified reflection DDOS attack against the sever. The attacker just needs to send you a slow stream of forged ICMP to get you to keep re-opening/re-negotiating connections and retrying expensive requests."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/376",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3631,7 +3906,8 @@
     "updated_at": "2017-03-08T19:26:57Z",
     "closed_at": "2017-03-08T19:26:57Z",
     "body": "In writing up a change for GOAWAY, I realize that it doesn't need to signal the error condition that triggered it.  An endpoint that wants to kill a connection can use CONNECTION_CLOSE and the error code that carries.  The purpose of GOAWAY is to signal graceful shutdown and to mark multiple streams as being safe to retry.\r\n\r\nIf it doesn't need an error code, then the reason phrase can go away as well.\r\n\r\n(This might depend on the outcome of discussions that suggest that CONNECTION_CLOSE could be replaced by Public Reset.  Or, it might influence the outcome of that discussion...)"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/351",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3913,8 +4189,7 @@
     "updated_at": "2017-03-08T19:26:58Z",
     "closed_at": "2017-03-08T19:26:58Z",
     "body": "GOAWAY has a \"Last Good Stream ID\", which is \"The last Stream ID which was accepted by the sender of the GOAWAY message. If no streams were replied to, this value must be set to 0.\"\r\n\r\nThe sender does not specify the last stream id it will use, which I think it should.\r\n\r\nI also think the text in \"6.6 Connection Termination\" should specify that all streams <= the Last Good Stream ID will be completed(fin'd or reset), including delivering any outstanding data. \r\n\r\n"
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/346",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5520,7 +5795,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/322.patch"
     },
     "body": ""
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/321",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5828,8 +6104,7 @@
     "updated_at": "2017-02-17T20:57:53Z",
     "closed_at": "2017-02-17T20:57:53Z",
     "body": "We got two options for an ASCII reference:\r\n\r\n1. RFC20\r\n2. American National Standards Institute (formerly United States of America Standards Institute), \"USA Code for Information Interchange\", ANSI X3.4-1968, 1968.\r\n\r\nWhen RFC5137 use the ANSI reference they also included the following note: ANSI X3.4-1968 has been replaced by newer versions with slight modifications, but the 1968 version remains definitive for the Internet.\r\n\r\nI lean towards RFC20."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/316",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7615,7 +7890,8 @@
     "updated_at": "2017-02-16T16:33:30Z",
     "closed_at": "2017-02-16T16:33:30Z",
     "body": "@martinthomson Wrote up a public header proposal that implies 4 byte alignment is an important goal of the public header.\r\n\r\nIs it necessary, as it does constrain the design space substantially?  And if there are environments it's necessary, is it only a requirement for non-endpoint devices(aka middleboxes), so only applies to the non-protected portion of the packet."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/291",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7959,8 +8235,7 @@
     "updated_at": "2017-02-12T23:35:30Z",
     "closed_at": "2017-02-12T23:35:30Z",
     "body": "According to @marten-seemann, they occasionally skip a packet number.  This might mess with congestion control if it is done too often, but it seems like a perfectly reasonable thing to do.  The draft currently forbids this.  Maybe it shouldn't."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/286",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -9304,9 +9579,9 @@
 
     ],
     "milestone": null,
-    "comments": 18,
+    "comments": 19,
     "created_at": "2017-02-08T19:24:35Z",
-    "updated_at": "2017-03-11T01:39:44Z",
+    "updated_at": "2017-03-17T10:30:16Z",
     "closed_at": null,
     "body": "In Mirja's Management draft:\r\n[https://tools.ietf.org/html/draft-kuehlewind-quic-appman-00#section-3](url)\r\n\r\n> [EDITOR'S NOTE: the addition of a simple packet number echo would\r\n   allow passive RTT measurement and partial passive downstream loss/\r\n   reordering measurement.  Packet number echo can be sampled at the\r\n   echo-side (i.e. one-in-N packets or 1/p packets can carry an echo)\r\n   for efficiency tradeoff, if necessary.]\r\n\r\nI endorse this idea. Service providers are very interesting in measuring their users' quality of experience and this is one key thing we can expose to enable that. On the face of it, it seems that the privacy hit is marginal."
   },
@@ -9708,7 +9983,8 @@
     "updated_at": "2017-03-10T00:51:53Z",
     "closed_at": "2017-03-10T00:51:53Z",
     "body": "As @ekr observes, this violates the rules we've agreed to for TLS, the same applies here.\r\n\r\n(This was a long and difficult conversation in TLS, we should probably just work out how to make the change.)"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/261",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -10067,8 +10343,7 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/257.patch"
     },
     "body": "for #252 "
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/256",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -11683,7 +11958,8 @@
     "updated_at": "2017-01-25T08:02:34Z",
     "closed_at": null,
     "body": "In order to break linkability across events that are known to an endpoint, we should explore the possibility of having each endpoint provide the other with a new connection identifier AND a number of packet numbers that should be skipped.  This allows an endpoint to continue using the same connection on a new path without linking use of that new path to use of the old path.\r\n\r\nYou need to change connection ID and packet numbers or they can be used for linking.  That doesn't preclude the use of other signals for linking, but it removes obvious ones.\r\n\r\nThis wouldn't address all of the potential linkability issues we identified, but would help in cases where an endpoint is aware of the need - or even potential need - for a gap in linkability."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/231",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -11980,8 +12256,7 @@
     "updated_at": "2017-03-15T01:41:30Z",
     "closed_at": null,
     "body": "This is an alternative to #167: We could just encrypt the cleartext data in the initial handshake packets with a deterministic key (e.g. a mixture of a version-dependent key and the initial packet number). The AEAD used there would have to be fixed in the spec.\r\n\r\nThe goal would be to make it harder for middleboxes to ossify on stuff in the client hello, e.g. SNI, and to detect initial packets (#203). On the other hand, there's additional computational cost for decrypting packets server-side."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/226",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -13541,7 +13816,8 @@
     "updated_at": "2017-01-25T04:47:48Z",
     "closed_at": "2017-01-25T04:47:48Z",
     "body": "The primary use case for conventional CONNECT proxies is firewall traversal. Is there a big use case for QUIC proxies which we then need to traverse?"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/201",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -13831,8 +14107,7 @@
     "updated_at": "2017-01-24T01:38:48Z",
     "closed_at": null,
     "body": "I think it would be good to make padding the responsibility of the crypto layer. TLS already has a reasonable padding scheme which we can just steal here."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/196",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -15441,7 +15716,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/172.patch"
     },
     "body": "QUIC's flow control and stream states are similar to and modeled after HTTP/2.  That makes RFC7540 a great *informative* reference.  However, reading RFC7540 isn't (or shouldn't be) required to implement QUIC, so they shouldn't be normative."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/171",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -15794,8 +16070,7 @@
     "updated_at": "2017-03-07T04:46:54Z",
     "closed_at": null,
     "body": "QUIC originally specified a 12 byte hash for unencrypted packets.  This was dropped when QUIC crypto was swapped for the TLS 1.3 mapping.\r\n\r\nWe should add it back, since it is useful in eliminating corrupted packets and random internet junk.  And possibly in preventing reflection attacks mentioned in #147 "
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/166",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -16312,6 +16587,13 @@
         "default": false
       },
       {
+        "id": 564618955,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/duplicate",
+        "name": "duplicate",
+        "color": "aaaaaa",
+        "default": true
+      },
+      {
         "id": 481871399,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
         "name": "transport",
@@ -16328,7 +16610,7 @@
     "milestone": null,
     "comments": 4,
     "created_at": "2017-01-16T10:45:50Z",
-    "updated_at": "2017-01-20T02:42:48Z",
+    "updated_at": "2017-03-20T05:26:54Z",
     "closed_at": "2017-01-20T02:42:48Z",
     "body": "There already is a \"`DISCUSS_AND_REPLACE: Perhaps make this format simpler`\" note in the spec about the homegrown floating point format used for ACK timestamps. I just wanted to open a corresponding issue.\r\n\r\nIt would be really good if an encoding could be used that was either trivial to implement from scratch, or a standard for which code is readily available.\r\n\r\nAs for the latter, the text in the spec sounds like what is desired is something like the [\"binary16\" format in IEEE 754-2008](https://en.wikipedia.org/wiki/Half-precision_floating-point_format). I'd be great if this could be used. Compiler support seems spotty/sketchy, e.g., [gcc says this](https://gcc.gnu.org/onlinedocs/gcc/Half-Precision.html):\r\n\r\n> The __fp16 type may only be used as an argument to intrinsics defined in <arm_fp16.h>, or as a storage format. For purposes of arithmetic and other operations, __fp16 values in C or C++ expressions are automatically promoted to float. \r\n\r\nAnd it's only supported on ARM, apparently."
   },
@@ -17533,7 +17815,8 @@
     "updated_at": "2017-01-16T14:24:18Z",
     "closed_at": null,
     "body": "In draft-ietf-quic-recovery.md\r\n\r\n`      if (rto_count = 0):\r\n        alarm_duration = max(200ms, smoothed_rtt + 4 x rttvar);\r\n      else:\r\n        alarm_duration = loss_detection_alarm.get_delay() << 1;\r\n      rto_count++;\r\n\r\nThe return value of get_delay() is not defined anywhere in the document."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/141",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -17847,8 +18130,7 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/137.patch"
     },
     "body": "This is part of an ongoing discussion, so I don't expect to resolve this here.\r\n\r\nI opened #134 to address the one listed requirement that TLS doesn't provide.\r\n\r\nCloses #9."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/136",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -18031,9 +18313,9 @@
 
     ],
     "milestone": null,
-    "comments": 3,
+    "comments": 7,
     "created_at": "2017-01-10T04:23:48Z",
-    "updated_at": "2017-03-10T04:02:30Z",
+    "updated_at": "2017-03-20T12:57:56Z",
     "closed_at": null,
     "body": "The document currently (though I hope to remove this) makes certificate compression a requirement of the cryptographic handshake.  TLS doesn't really do compression, though it does provided cached-info ([RFC 7924](https://tools.ietf.org/html/7924)).  Is this sufficient or do we need to ask the TLS working group for a compression feature.  I'm assuming that if we did need to ask, we would also be responsible for providing a design.\r\n\r\nNote that TLS 1.3 aims to provide confidentiality for certificates and compression is generally fraught with hazards that compromise confidentiality.  It also potentially a feature that could leak information about a client's past connections to servers.  If we due pursue this, any design we create would need to carefully consider these (and likely other) risks."
   },
@@ -19592,7 +19874,8 @@
     "updated_at": "2017-03-07T00:52:56Z",
     "closed_at": "2017-02-23T06:57:41Z",
     "body": "Shout out to @davidben and the recently adopted draft-davidben-tls-grease."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/111",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -19883,7 +20166,7 @@
     "milestone": null,
     "comments": 23,
     "created_at": "2017-01-03T06:01:24Z",
-    "updated_at": "2017-02-08T17:22:30Z",
+    "updated_at": "2017-03-20T05:26:37Z",
     "closed_at": null,
     "body": "I note that the IEEE754 reference doesn't help."
   },
@@ -19995,8 +20278,7 @@
     "updated_at": "2017-01-13T21:36:13Z",
     "closed_at": "2017-01-13T21:36:13Z",
     "body": "In draft-quic-ietf-recovery, packet_number is listed as a parameter. But it is not used in the pseudocode, is not sent on to SetLossDetectionAlarm(), and there is no obvious place that SetLossDetectionAlarm() would use it."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/106",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -21460,7 +21742,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/82.patch"
     },
     "body": ""
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/81",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -21729,8 +22012,7 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/77.patch"
     },
     "body": ""
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/76",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -23521,7 +23803,8 @@
     "updated_at": "2017-03-15T01:42:33Z",
     "closed_at": "2017-03-10T01:03:48Z",
     "body": "We need to write down how this happens:\r\n\r\n1. on the same connection\r\n2. on a subsequent connection"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/51",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -23896,8 +24179,7 @@
     "updated_at": "2017-03-10T03:46:44Z",
     "closed_at": null,
     "body": "Error handling is rather... *distributed* in the core protocol spec.  The frames to signal errors are there, and there's a long list of error codes, but no generalized discussion of how errors are handled and what stream versus connection-level errors mean."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/46",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -25625,7 +25907,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/22.patch"
     },
     "body": ""
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/21",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -25943,8 +26226,7 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/17.patch"
     },
     "body": ""
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/16",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",

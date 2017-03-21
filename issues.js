@@ -1,3 +1,24 @@
+function setStatus(msg) {
+  let status = document.getElementById('status');
+  status.innerText = msg;
+}
+
+var sortKey = 'id';
+function sort(k) {
+  k = k || sortKey;
+  if (k === 'id') {
+    issues.sort((x, y) => x.number - y.number);
+    setStatus('sorted by ID');
+  } else if (k === 'recent') {
+    issues.sort((x, y) => Date.parse(y.updated_at) - Date.parse(x.updated_at));
+    setStatus('sorted by last modified');
+  } else {
+    setStatus('no idea how to sort like that');
+    return;
+  }
+  sortKey = k;
+}
+
 function getNext(response) {
   const link = response.headers.get('link');
   if (!link) {
@@ -11,7 +32,7 @@ function getNext(response) {
   return m[1];
 }
 
-function mkurl(wg, repo, type) {
+function buildUrl(wg, repo, type) {
   if (wg && repo) {
     console.log(`loading remote ${type} for ${wg}/${repo}`);
     return `https://api.github.com/repos/${wg}/${repo}/${type}?state=all`;
@@ -29,7 +50,6 @@ async function getAll(url) {
     records = records.concat(await response.json());
     url = getNext(response);
   } while (url);
-  records.sort((x, y) => x.number - y.number);
   return records;
 }
 
@@ -39,9 +59,8 @@ var pulls;
 async function get(wg, repo) {
   issues = null;
   pulls = null;
-  [issues, pulls] = await Promise.all([
-    getAll(mkurl(wg, repo, 'issues')), getAll(mkurl(wg, repo, 'pulls'))
-  ]);
+  [issues, pulls] = await Promise.all(
+    ['issues', 'pulls'].map(type => getAll(buildUrl(wg, repo, type))));
   issues.forEach(issue => {
     if (issue.pull_request) {
       let pull = window.pulls.find(x => x.url == issue.pull_request.url);
@@ -50,6 +69,7 @@ async function get(wg, repo) {
       }
     }
   });
+  sort();
   console.log('loaded all issues and pulls');
 }
 
@@ -64,6 +84,12 @@ var issueFilters = {
     args: ['string'],
     h: 'assigned to a specific user',
     f: login => issue => issue.assignees.some(assignee => assignee.login === login),
+  },
+  
+  created_by: {
+    args: ['string'],
+    h: 'created by a specific user',
+    f: login => issue => issue.user.login === login,
   },
 
   closed: {
@@ -315,28 +341,44 @@ function filterIssues(str) {
   }
 }
 
-function shortDesc(x) {
-  return `${x.title} (#${x.number})`;
-}
+var formatter = {
+  brief: x => `* ${x.title} (#${x.number})`,
+  md: x => `* [#${x.number}](${x.html_url}): ${x.title}`,
+};
 
-function dumpShown() {
-  console.log('* ' + subset.map(shortDesc).join('\n* ') + '\n');
+function format(set, f) {
+  return (set || subset).map(f || formatter.brief).join('\n');
 }
 
 var debounces = {};
+var debounceSlowdown = 100;
+function measureSlowdown() {
+  let start = Date.now();
+  window.setTimeout(_ => {
+    let diff = Date.now() - start;
+    if (diff > debounceSlowdown) {
+      console.log(`slowed to ${diff} ms`);
+      debounceSlowdown = Math.min(1000, diff + debounceSlowdown / 2);
+    }
+  }, 0);
+}
 function debounce(f) {
+  let r = now => {
+    measureSlowdown();
+    f(now);
+  };
   return e => {
     if (debounces[f.name]) {
       window.clearTimeout(debounces[f.name]);
       delete debounces[f.name];
     }
     if (e.key === "Enter") {
-      f(true);
+      r(true);
     } else {
       debounces[f.name] = window.setTimeout(_ => {
         delete debounces[f.name];
-        f(false)
-      }, 100);
+        r(false)
+      }, 10 + debounceSlowdown);
     }
   }
 }
@@ -435,81 +477,82 @@ function makeRow(issue) {
   return tr;
 }
 
-function redraw(now) {
-  let filter = document.getElementById('filter');
-  let h = document.getElementById('help');
-  let d = document.getElementById('display');
-  let status = document.getElementById('status');
+function show(issues) {
+  if (!issues) {
+    return;
+  }
 
-  if (filter.value.charAt(0) == '/') {
-    if (!now) {
-      return;
+  let tbody = document.getElementById('tbody');
+  tbody.innerHTML = '';
+  issues.forEach(issue => {
+    tbody.appendChild(makeRow(issue));
+  });
+}
+
+var currentFilter = '';
+function filter(str, now) {
+  try {
+    filterIssues(str);
+    setStatus(`${issues.length} records selected`);
+    if (now) {
+      window.location.hash = str;
+      currentFilter = str;
     }
-    let v = filter.value.slice(1).split(' ').map(x => x.trim());
-    filter.value = '';
+  } catch (e) {
+    if (now) { // Only show errors when someone hits enter.
+      setStatus(`Error: ${e.message}`);
+      console.log(e);
+    }
+  }
+}
 
-    let cmd = v[0].toLowerCase();
-    if (cmd === 'help') {
-      status.innerText = 'help shown';
-      h.classList.remove('hidden');
-    } else if (cmd === 'local') {
-      status.innerText = 'retrieving local JSON files';
-      get().then(redraw);
-    } else if (cmd === 'remote') {
-      if (v.length < 3) {
-        status.innerText = `need to specify github repo`;
-      } else {
-        get(v[1], v[2]).then(redraw)
-          .then(
-            _ => status.innerText = `successfully loaded ${v[1]}/${v[2]} from GitHub`,
-            e => status.innerText = `Error: ${e.message}`);
-        status.innerText = `fetching from GitHub for ${v[1]}/${v[2]}`;
-      }
-    } else if (cmd  === 'sort') {
-      if (v[1] === 'id') {
-        issues.sort((x, y) => x.number - y.number);
-        status.innerText = 'sorted by ID';
-      } else if (v[1] === 'recent') {
-        issues.sort((x, y) => Date.parse(y.updated_at) - Date.parse(x.updated_at));
-        status.innerText = 'sorted by last modified';
-      } else {
-        status.innerText = 'no idea how to sort like that';
-      }
+function slashCmd(cmd) {
+  if (cmd[0] === 'help') {
+    setStatus('help shown');
+    document.getElementById('help').classList.remove('hidden');
+  } else if (cmd[0] === 'local') {
+    setStatus('retrieving local JSON files');
+    get().then(redraw);
+  } else if (cmd[0] === 'remote') {
+    if (cmd.length < 3) {
+      setStatus('need to specify github repo');
     } else {
-      status.innerText = 'unknown command: /' + v.join(' ');
+      get(cmd[1], cmd[2]).then(redraw)
+        .then(
+          _ => status.innerText = `successfully loaded ${cmd[1]}/${cmd[2]} from GitHub`,
+          e => status.innerText = `Error: ${e.message}`);
+      setStatus(`fetching from GitHub for ${cmd[1]}/${cmd[2]}`);
     }
-    d.classList.add('hidden');
-    window.location.hash = '';
+  } else if (cmd[0]  === 'sort') {
+    sort(cmd[1]);
+    show(subset);
+  } else {
+    setStatus('unknown command: /' + cmd.join(' '));
+  }
+}
+
+function redraw(now) {
+  let cmd = document.getElementById('cmd');
+  if (cmd.value.charAt(0) == '/') {
+    if (now) {
+      slashCmd(cmd.value.slice(1).split(' ').map(x => x.trim()));
+      cmd.value = currentFilter;
+      document.getElementById('display').classList.add('hidden');
+    }
     return;
   }
 
   if (!issues) {
     if (now) {
-      status.innerText = 'Still loading...';
+      showStatus('Still loading...');
     }
     return;
   }
 
-  h.classList.add('hidden');
-  d.classList.remove('hidden');
-
-  try {
-    filterIssues(filter.value);
-    let tbody = document.getElementById('tbody');
-    tbody.innerHTML = '';
-    subset.forEach(issue => {
-      tbody.appendChild(makeRow(issue));
-    });
-    status.innerText = `${subset.length} records shown`;
-    if (now) {
-      window.location.hash = filter.value;
-    }
-  } catch (e) {
-    if (now) { // Only show errors when someone hits enter.
-      status.innerText = `Error: ${e.message}`;
-      console.log(e);
-    }
-  }
+  document.getElementById('help').classList.add('hidden');
+  document.getElementById('display').classList.remove('hidden');
+  filter(cmd.value, now);
+  show(subset);
 }
 
 function generateHelp() {
@@ -530,10 +573,10 @@ function generateHelp() {
 }
 
 window.onload = () => {
-  let filter = document.getElementById('filter');
-  filter.onkeypress = debounce(redraw);
+  let cmd = document.getElementById('cmd');
+  cmd.onkeypress = debounce(redraw);
   if (window.location.hash) {
-    filter.value = window.location.hash.substring(1);
+    cmd.value = decodeURIComponent(window.location.hash.substring(1));
   }
   generateHelp();
   get().then(redraw);
