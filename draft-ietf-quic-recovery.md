@@ -249,8 +249,7 @@ rto_count:
 : The number of times an rto has been sent without receiving an ack.
 
 largest_sent_before_rto:
-: The last packet number sent prior to the first transmission due to
-retransmission timeout.
+: The last packet number sent prior to the first retransmission timeout.
 
 smoothed_rtt:
 : The smoothed RTT of the connection, computed as described in
@@ -373,13 +372,16 @@ OnPacketAcked takes one parameter, acked_packet, which is the packet number of
 the newly acked packet, and returns a list of packet numbers that are detected
 as lost.
 
+If this is the first acknowledgement following RTO, check if the smallest newly
+acknowledged packet is one sent by the RTO, and if so, inform congestion control
+of a verified RTO, similar to F-RTO {{?RFC5682}}
+
 Pseudocode for OnPacketAcked follows:
 
 ~~~
    OnPacketAcked(acked_packet_number):
      // If a packet sent prior to RTO was acked, then the RTO
      // was spurious.  Otherwise, inform congestion control.
-     // Similar to the goal of F-RTO {{?RFC5682}}
      if (rto_count > 0 &&
          acked_packet_number > largest_sent_before_rto)
        OnRetransmissionTimeoutVerified()
@@ -684,12 +686,8 @@ limited.
    TimeToSend(packet_size):
      if (bytes_in_flight + packet_size > congestion_window)
        return infinite
-     pacing_coefficient = 1.25
-     if (congestion_window < ssthresh)
-       pacing_coefficient = 2
      return time_of_last_sent_packet +
-         (packet_size * smoothed_rtt) /
-             (pacing_coefficient * congestion_window)
+         (packet_size * smoothed_rtt) / congestion_window
 ~~~
 
 
