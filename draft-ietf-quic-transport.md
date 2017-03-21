@@ -2813,7 +2813,7 @@ Issue and pull request numbers are listed with a leading octothorp.
 - Require that stream be entirely delivered or reset, including acknowledgment
   of all STREAM frames or the RST_STREAM, before it closes (#381)
 - Remove stream reservation from state machine (#174, #280)
-- Only stream 0 does not contributing to connection-level flow control (#204)
+- Only stream 1 does not contribute to connection-level flow control (#204)
 - Stream 1 counts towards the maximum concurrent stream limit (#201, #282)
 - Remove connection-level flow control exclusion for some streams (except 1)
   (#246)
