@@ -30,6 +30,8 @@ normative:
   QUIC-RECOVERY:
     title: "QUIC Loss Detection and Congestion Control"
     date: {DATE}
+    seriesinfo:
+      Internet-Draft: draft-ietf-quic-recovery-latest
     author:
       -
         ins: J. Iyengar
@@ -45,6 +47,8 @@ normative:
   QUIC-TLS:
     title: "Using Transport Layer Security (TLS) to Secure QUIC"
     date: {DATE}
+    seriesinfo:
+      Internet-Draft: draft-ietf-quic-tls-latest
     author:
       -
         ins: M. Thomson
