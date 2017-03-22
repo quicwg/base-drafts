@@ -85,7 +85,7 @@ var issueFilters = {
     h: 'assigned to a specific user',
     f: login => issue => issue.assignees.some(assignee => assignee.login === login),
   },
-  
+
   created_by: {
     args: ['string'],
     h: 'created by a specific user',
