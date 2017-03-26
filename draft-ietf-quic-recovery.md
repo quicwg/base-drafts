@@ -704,8 +704,8 @@ This document has no IANA actions.  Yet.
 
 # Change Log
 
-> **RFC Editor's Note:**  Please remove this section prior to publication of a
-> final version of this document.
+> **RFC Editor's Note:**  Please remove this section prior to
+> publication of a final version of this document.
 
 ## Since draft-ietf-quic-recovery-01
 
