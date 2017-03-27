@@ -533,7 +533,7 @@ Pseudocode for DetectLostPackets follows:
        else if (packet_delta > reordering_threshold)
          lost_packets.insert(unacked)
        else if (loss_time == 0 && delay_until_lost != infinite):
-         loss_time = delay_until_lost - time_since_sent
+         loss_time = now() + delay_until_lost - time_since_sent
 
      // Inform the congestion controller of lost packets and
      // lets it decide whether to retransmit immediately.
