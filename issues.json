@@ -1,5 +1,56 @@
 [
   {
+    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/417",
+    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
+    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/417/labels{/name}",
+    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/417/comments",
+    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/417/events",
+    "html_url": "https://github.com/quicwg/base-drafts/pull/417",
+    "id": 217716722,
+    "number": 417,
+    "title": "Simplify and clarify RTO alarm calculation",
+    "user": {
+      "login": "ianswett",
+      "id": 20072817,
+      "avatar_url": "https://avatars2.githubusercontent.com/u/20072817?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/ianswett",
+      "html_url": "https://github.com/ianswett",
+      "followers_url": "https://api.github.com/users/ianswett/followers",
+      "following_url": "https://api.github.com/users/ianswett/following{/other_user}",
+      "gists_url": "https://api.github.com/users/ianswett/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/ianswett/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/ianswett/subscriptions",
+      "organizations_url": "https://api.github.com/users/ianswett/orgs",
+      "repos_url": "https://api.github.com/users/ianswett/repos",
+      "events_url": "https://api.github.com/users/ianswett/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/ianswett/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+
+    ],
+    "state": "open",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 1,
+    "created_at": "2017-03-28T22:55:39Z",
+    "updated_at": "2017-03-28T22:56:14Z",
+    "closed_at": null,
+    "pull_request": {
+      "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/417",
+      "html_url": "https://github.com/quicwg/base-drafts/pull/417",
+      "diff_url": "https://github.com/quicwg/base-drafts/pull/417.diff",
+      "patch_url": "https://github.com/quicwg/base-drafts/pull/417.patch"
+    },
+    "body": ""
+  },
+  {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/416",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
     "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/416/labels{/name}",
@@ -40,7 +91,7 @@
     "milestone": null,
     "comments": 0,
     "created_at": "2017-03-27T08:37:12Z",
-    "updated_at": "2017-03-27T15:09:57Z",
+    "updated_at": "2017-03-27T15:29:54Z",
     "closed_at": "2017-03-27T15:09:57Z",
     "pull_request": {
       "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/416",
@@ -91,7 +142,7 @@
     "milestone": null,
     "comments": 0,
     "created_at": "2017-03-27T05:11:52Z",
-    "updated_at": "2017-03-27T15:07:38Z",
+    "updated_at": "2017-03-27T15:29:53Z",
     "closed_at": "2017-03-27T15:07:38Z",
     "pull_request": {
       "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/415",
@@ -1469,9 +1520,9 @@
 
     ],
     "milestone": null,
-    "comments": 12,
+    "comments": 13,
     "created_at": "2017-03-13T10:03:47Z",
-    "updated_at": "2017-03-20T09:13:34Z",
+    "updated_at": "2017-03-28T22:45:30Z",
     "closed_at": null,
     "pull_request": {
       "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/391",
@@ -1647,7 +1698,8 @@
     "updated_at": "2017-03-13T00:06:14Z",
     "closed_at": null,
     "body": "Should we encourage implementations to include a timestamp for the specific packet that contains a PING when acknowledging it?"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/387",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -1704,8 +1756,7 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/387.patch"
     },
     "body": ""
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/386",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3660,7 +3711,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/358.patch"
     },
     "body": "First pass at removing the STOP_WAITING frame.  Intends to resolve #66 ."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/357",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3760,8 +3812,7 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/357.patch"
     },
     "body": "There were a few places where bullet lists were used to carry definitions.  This switches to using definition lists.  I also aligned the transport parameter table."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/356",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5704,7 +5755,8 @@
     "updated_at": "2017-02-27T19:01:40Z",
     "closed_at": null,
     "body": "6.4 currently has\r\n`TODO: Connections that are terminated are added to a TIME_WAIT list at the server, so as to absorb any straggler packets in the network. Discuss TIME_WAIT list.`\r\n\r\nthis is an open issue for the TODO.\r\n\r\nSome initial thoughts: is it always the server that is in TIME_WAIT as opposed to the TCP active close behavior? (seems fine at first blush, but asking for a friend who is less sure :)).\r\n\r\nwhat happens in the TIME_WAIT state.. retransmissions? What happens when you receive packets (ignored - trigger retrrans, RST?)"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/327",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5749,8 +5801,7 @@
     "updated_at": "2017-02-20T23:34:07Z",
     "closed_at": "2017-02-20T23:34:07Z",
     "body": "section 8 of transport:`\r\n\r\n>  If a QUIC endpoint determines that the PMTU between any pair of local and remote IP addresses has fallen below 1280 octets, it MUST immediately cease sending QUIC packets between those IP addresses. This may result in abrupt termination of the connection if all pairs are affected. In this case, an endpoint SHOULD send a Public Reset packet to indicate the failure. \r\n\r\nbut PR is defined as being a last resort and it is of course not authenticated.. while it is short, a CONNECTION_CLOSE only packet would also be below minimum MTUs for IPvmumble, and is authenticated and could carry some diagnostic information.\r\n\r\nIt seems like this error can be authenticated and therefore should be.. and more generally we shouldn't promote error reporting to RST as its interaction with already sent data is very unclear if TCP RST is any kind of corollary.\r\n`"
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/326",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7798,7 +7849,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/298.patch"
     },
     "body": ""
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/297",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7863,8 +7915,7 @@
     "updated_at": "2017-03-23T04:33:33Z",
     "closed_at": "2017-02-14T00:48:06Z",
     "body": "Ostensibly, the `quic` parameter is a performance optimization for Alt-Svc.  A client can learn what QUIC version is most likely to succeed and use that version.  That increases the chances that version negotiation succeeds and thereby reduces the chance that the QUIC connection setup costs an extra round trip.\r\n\r\nHowever, alternative services is precisely the point where performance is not critical.  The client already has a perfectly functional HTTP/1.1 or HTTP/2 connection to the server.  This is a point where they could afford an additional round trip on connection setup.\r\n\r\n@MikeBishop suggested that if we are serious about greasing version negotiation, perhaps we could remove the `quic` parameter from the Alt-Svc header field and force clients to always pick a greased version number for their initial packet.\r\n\r\nAdvantages: grease more often and version negotiation actually gets a real workout, disadvantages: an extra round trip every time you use Alt-Svc.\r\n\r\nThis came up in #278."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/296",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -9892,7 +9943,8 @@
     "updated_at": "2017-02-08T19:11:23Z",
     "closed_at": "2017-02-08T19:10:49Z",
     "body": "Given that many of us, when wearing tsvwg hats, are ECN evangelists, it's a little odd that support for this hasn't come up.\r\n\r\nI see that there's now an internet-draft on this subject:\r\n[(https://tools.ietf.org/html/draft-johansson-quic-ecn-00)](url)\r\n\r\nIt's debatable if it's better to put the ECE/CWR bits in the ACK frame (as the draft suggests) or in some newly-liberated public flags.\r\n\r\nAs an added feature/bug, depending on your perspective, service providers interested in enforcing fairness or bandwidth limits could use ECN bits as fairly clean way to do this. With TCP, a common flow-control tool is the receive window, but that is not available here."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/267",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -9945,13 +9997,12 @@
 
     ],
     "milestone": null,
-    "comments": 2,
+    "comments": 3,
     "created_at": "2017-02-08T04:21:49Z",
-    "updated_at": "2017-03-10T05:42:57Z",
+    "updated_at": "2017-03-28T20:42:30Z",
     "closed_at": null,
     "body": "PR #106 added the following requirement on servers:\r\n\r\n> Servers MUST reject the first plaintext packet received from a client if it its total size is less than 1280 octets, to mitigate amplification attacks.\r\n\r\nHowever, this runs into an issue in the case where there are IP header extensions that the client knows about but the server doesn't.  If the client is aware of the IP header extensions and constructs a packet with a smaller payload in order to comply with our recommendation to create a packet of exactly 1280 octets, the server will receive a packet that it thinks is too small.\r\n\r\nI see a few options:\r\n1. loosen the enforcement constraint on the server\r\n2. specify that the server only enforce the constraint if it sees the entire IP packet\r\n3. specify the minimum size and its enforcement in terms of payload size (we could set different values here to allow for header extensions)"
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/266",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -10825,9 +10876,9 @@
 
     ],
     "milestone": null,
-    "comments": 23,
+    "comments": 24,
     "created_at": "2017-01-31T21:06:14Z",
-    "updated_at": "2017-02-08T01:08:48Z",
+    "updated_at": "2017-03-28T05:54:08Z",
     "closed_at": null,
     "body": "While HTTP/QUIC doesn't formally require a client to implement Alt-Svc, there's no discovery mechanism other than Alt-Svc provided, so you're not going to get very far without it.  That makes a full HTTP(/TLS)/TCP stack mandatory simply to open the connection in the first place.  For various reasons (e.g. an embedded device in a controlled environment), a client might want to dispense with TCP altogether when it knows that the endpoint will support QUIC.  It might also be useful in testing to be able to directly reference a QUIC endpoint.\r\n\r\nShould we mint new scheme(s) that allows direct reference to a resource served exclusively over HTTP/QUIC?\r\n\r\n(Note, in HTTP/2 the answer was \"no,\" because HTTP/2 could be negotiated using the same TCP connection.  QUIC doesn't have that luxury.)"
   },
@@ -11846,7 +11897,8 @@
     "updated_at": "2017-01-26T04:17:41Z",
     "closed_at": null,
     "body": "Parsing all possible header blocks could require a significant number of header parsers operating concurrently.  Since headers tend to be delivered as a single package to applications, that means that the parsers need sufficient space to hold all the partially complete data.\r\n\r\nThis can be addressed by only reading from the streams that an endpoint is able to, but that increases complexity and exposure to head-of-line blocking.\r\n\r\nThis cleaves off the second part of #204."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/237",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -11904,8 +11956,7 @@
     "updated_at": "2017-01-26T04:11:47Z",
     "closed_at": null,
     "body": "@ianswett says that we need a hard line recommendation on when a WINDOW_UPDATE is required.  He suggests that once you get to 1/3 of the space you have allocated to flow control remaining, you SHOULD send a WINDOW_UPDATE along with the next ACK."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/236",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -13695,7 +13746,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/208.patch"
     },
     "body": "are registering your private experimental versions, not that you\r\nare registering the versions people are using for interop testing."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/207",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -13795,8 +13847,7 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/207.patch"
     },
     "body": "This aligns the transport draft with the tls draft.\r\n\r\nThe primary reason for using this identification is that there are three types\r\nof keys that are in concurrent use during a 0-RTT handshake: unprotected\r\n(cleartext), 0-RTT and 1-RTT.  Identifying 0-RTT packets this way allows the\r\nserver to avoid trial decryption."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/206",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -15618,7 +15669,8 @@
     "updated_at": "2017-03-08T14:55:42Z",
     "closed_at": "2017-03-08T14:55:42Z",
     "body": "In Section 7.3 (STOP_WAITING Frame), Least Unacked Delta is calculated using the packet ID of the packet carrying the STOP_WAITING frame. This is reasonable. \r\n\r\nIn the ACK Frame section:\r\n\r\n> An endpoint SHOULD use the \"Largest Acked\" packet number it received to calculate the \"Least Unacked Delta\" value in any STOP_WAITING frame it might send.\r\n\r\nMaybe I understood it wrong but it suggest to calculate Least Unacked Delta using \"Largest Acked\".\r\nThis should be written in a different way if it meant that the information from an ack (not only \"Largest Acked\" but also unacked gaps ) is used to decide to send a STOP_WAITING frame."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/177",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -15683,8 +15735,7 @@
     "updated_at": "2017-01-24T06:11:08Z",
     "closed_at": null,
     "body": ">  If the total number of packets transmitted in this connection reaches 2^64 - 1, the sender MUST close the connection by sending a CONNECTION_CLOSE frame with the error code QUIC_SEQUENCE_NUMBER_LIMIT_REACHED\r\n\r\nIf this packet is lost there is not packet number available for its retransmission. CONNECTION_CLOSE should be reliably transmitted."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/176",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -17629,7 +17680,8 @@
     "updated_at": "2017-03-10T04:10:52Z",
     "closed_at": "2017-03-10T04:10:52Z",
     "body": "The current design of the header with its multiple variable length and variable presence fields would seem to require inordinate sender and receiver code complexity. Complexity, especially in parsers (i.e., on the receiver side), is a source both of unclarity in specifications and errors in implementation. I note the following specific issues:\r\n\r\n(1) There are thirteen possible header lengths, and therefore data offsets : 2, 3, 5, 6, 7, 9, 10, 11, 13, 14, 15, 17, 21. Each of the header fields has a variety of possible offsets. This also increases the complexity of hardware offload implementations of QUIC, but is not complex enough to prevent their implementation and deployment.\r\n\r\n(2) There are combinations of flags that seem to be nonsensical and/or contradictory (e.g., the Packet Number Length codepoint adds 1, 2, 4, or 8 to the length if the Public Reset flag is clear, but 0 to the length if the Public Reset flag is set, see ; Public Reset and Version are mutually exclusive.)\r\n\r\n(3) There appears to be no consideration given to reducing confusability with other deployed UDP protocols in the first N bytes of the header -- see #147 \r\n\r\nI would suggest reducing the number of possible header layouts to reduce complexity, based on the following assumptions:\r\n\r\n(1) The set of variable header lengths will, at most, save a number of bytes per packet that will often be lost in the underflow of suboptimal path MTU discovery.\r\n\r\n(2) Varlen packet numbering makes sense if the packet number always starts from zero, but random initial packet numbers have other advantages; I presume we'll adopt them at some point. Packet numbers only need to be large enough to keep wrap-arounds to be induced by reordering, so 32 bits (as in the TCP sequence number space) is more than sufficient.\r\n\r\n(3) There is value in treating a version number as a magic number to help reduce the chance of misrecognition of non-QUIC packets as initial QUIC packets at an endpoint; for this 32 bits of version are more than enough, and 24 probably suffice. (This will require a redesign of the version number space, which we might want to do in light of #147 anyway).\r\n\r\n\r\nAs an initial proposal, I would propose that either both Connection ID and Version be present, or neither, and that packet number be always present and constant length. This reduces the set of necessary flags to three, leaving us with five flags for reserved/future use (four, if we go ahead and allocate multipath) and the following two header layouts:\r\n\r\nFull Header: 16 octets\r\n\r\n```\r\n+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+\r\n|1|R|K|M| zero  |      version/magic (24 bits)                  |\r\n+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+\r\n|                                                               |\r\n+-                      Connection ID                          -+\r\n|                                                               |\r\n+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+\r\n|                       Packet Number                           |\r\n+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+\r\n```\r\n\r\nTruncated Header: 5 octets\r\n\r\n```\r\n+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+\r\n|0|R|K|M| zero  |                       Packet Number       . . .\r\n+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+\r\n. . . (cont'd)  |\r\n+-+-+-+-+-+-+-+-+\r\n```\r\n\r\nThe header invariant then becomes \"If bit 0x80 in octet 0 is 1, then the seven remaining bits of that octet are reserved for use as flags, and octets 1-3 are a 24-bit version number. If bit 0x80 in octet 0 is 0, then no version number is present; use previous version information for this 5-tuple.\" This can be further simplified by dropping the truncated header entirely, though for very short packets the overhead might be worth saving.\r\n"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/147",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -17687,8 +17739,7 @@
     "updated_at": "2017-03-15T07:16:37Z",
     "closed_at": "2017-03-09T22:44:22Z",
     "body": "The design of the QUIC packet header should consider the ease of creating an apparently-valid first packet via reflection against existing, widely deployed UDP protocols (DNS and NTP being the top two here). All easily reflectable packets off these services should be trivially droppable by a QUIC server. Otherwise, there exist a variety of possible DDoS attacks (of which #135 is one case).\r\n\r\nFor 1-RTT first packets, the probablity of creating a valid ClientHello would seem to be negligible, though there might be some value in reducing the processing necessary to recognize and reject reflected garbage, or to allow it to be rejected before delivery to the server process.\r\n\r\nFor 0-RTT first packets, the header layout should be defined such that a version number (or other magic pattern, though the version number space is sparse enough that it can do double duty as a magic pattern) has an offset and bit pattern that does not occur in traffic that can be generated via reflection off common UDP services."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/146",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -19711,7 +19762,8 @@
     "updated_at": "2017-03-07T00:52:56Z",
     "closed_at": "2017-02-23T06:51:17Z",
     "body": "-transport currently has a TODO regarding the encoding of a source address token.\r\n\r\nI would contend that we don't need to fix this.  This is a protocol from the server to the server."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/117",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -19769,8 +19821,7 @@
     "updated_at": "2017-03-07T00:52:56Z",
     "closed_at": "2017-02-07T00:02:12Z",
     "body": "What is SCUP and do we need it?"
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/116",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -21685,7 +21736,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/88.patch"
     },
     "body": "Trivial change, but not my doc.  Table gives bits as \"01NTLLMM\" while frame definition gives them as \"01N**U**LLMM\".  Since the bit is \"Unused,\" I assume that 'U' is correct?"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/87",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -21750,8 +21802,7 @@
     "updated_at": "2017-02-08T19:43:32Z",
     "closed_at": "2017-02-08T19:43:31Z",
     "body": "Hi @MikeBishop,\r\n\r\nThe QUIC advertisement section of the HTTP mapping document introduces two terms:\r\n* the ALPN identifier `quic` \r\n* the Alt-Svc parameter `v`\r\n\r\nAre these to be defined as part of the mapping document? If so, they should be registered in line with the policies set out in RFC 7301 or RFC 7838 respectively."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/86",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -23591,7 +23642,8 @@
     "updated_at": "2016-12-08T20:22:05Z",
     "closed_at": null,
     "body": "Do we want them? How do we accommodate them?  What are their semantics if they aren't understood?"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/57",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -23649,8 +23701,7 @@
     "updated_at": "2017-01-25T06:38:07Z",
     "closed_at": "2017-01-25T06:38:07Z",
     "body": "Martin Duke observes that until STOP_WAITING is acknowledged, you can't assume that it has had an effect.  This means that anything that depends on the number of \"in flight\" packets can't assume that packets before the Last Unacked packet aren't still considered as in transit by the receiver of the STOP_WAITING.  This is particularly relevant for determining how many bits to allocate to packet numbers.\r\n\r\nWe might just provide advice here, but I've marked this as design so that we can discuss it."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/56",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -25803,7 +25854,8 @@
     "updated_at": "2017-03-06T23:58:59Z",
     "closed_at": "2017-01-11T08:16:02Z",
     "body": "We had consensus in Seoul (which we should reconfirm on the list) about switching from little endian to big endian. This should probably happen in concert with the version number scheme that @martinthomson and @janaiyengar are hashing out."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/27",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -25861,8 +25913,7 @@
     "updated_at": "2017-01-10T05:43:36Z",
     "closed_at": "2017-01-10T05:43:36Z",
     "body": ""
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/26",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
