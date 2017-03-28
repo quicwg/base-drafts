@@ -473,11 +473,9 @@ Pseudocode for SetLossDetectionAlarm follows:
       alarm_duration = max(alarm_duration, 2 * smoothed_rtt)
     else:
       // RTO alarm
-      if (rto_count = 0):
-        alarm_duration = smoothed_rtt + 4 * rttvar
-        alarm_duration = max(alarm_duration, kMinRTOTimeout)
-      else:
-        alarm_duration = loss_detection_alarm.get_delay() << 1
+      alarm_duration = smoothed_rtt + 4 * rttvar
+      alarm_duration = max(alarm_duration, kMinRTOTimeout)
+      alarm_duration = alarm_duration << rto_count
 
     loss_detection_alarm.set(now + alarm_duration)
 ~~~
