@@ -2268,7 +2268,7 @@ resources allocated to streams are correctly prioritized.  Experience with other
 multiplexed protocols, such as HTTP/2 {{?RFC7540}}, shows that effective
 prioritization strategies have a significant positive impact on performance.
 
-QUIC does not provide frames for exchanging priotization information.  Instead
+QUIC does not provide frames for exchanging prioritization information.  Instead
 it relies on receiving priority information from the application that uses QUIC.
 Protocols that use QUIC are able to define any prioritization scheme that suits
 their application semantics.  A protocol might define explicit messages for
