@@ -1,5 +1,56 @@
 [
   {
+    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/422",
+    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
+    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/422/labels{/name}",
+    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/422/comments",
+    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/422/events",
+    "html_url": "https://github.com/quicwg/base-drafts/issues/422",
+    "id": 217981263,
+    "number": 422,
+    "title": "StreamID versus Stream ID",
+    "user": {
+      "login": "MikeBishop",
+      "id": 4273797,
+      "avatar_url": "https://avatars3.githubusercontent.com/u/4273797?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/MikeBishop",
+      "html_url": "https://github.com/MikeBishop",
+      "followers_url": "https://api.github.com/users/MikeBishop/followers",
+      "following_url": "https://api.github.com/users/MikeBishop/following{/other_user}",
+      "gists_url": "https://api.github.com/users/MikeBishop/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/MikeBishop/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/MikeBishop/subscriptions",
+      "organizations_url": "https://api.github.com/users/MikeBishop/orgs",
+      "repos_url": "https://api.github.com/users/MikeBishop/repos",
+      "events_url": "https://api.github.com/users/MikeBishop/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/MikeBishop/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 481871311,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/editorial",
+        "name": "editorial",
+        "color": "0e8a16",
+        "default": false
+      }
+    ],
+    "state": "open",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 0,
+    "created_at": "2017-03-29T19:18:21Z",
+    "updated_at": "2017-03-29T19:18:21Z",
+    "closed_at": null,
+    "body": "I'm in favor of the space, but we should at least be consistent."
+  },
+  {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/421",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
     "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/421/labels{/name}",
@@ -1614,7 +1665,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/393.patch"
     },
     "body": "Version of #391 (replacing #368), adds optional packet number echo to the short header, but makes both packet number and packet number echo fields in the short header 32 bits. Implemented largely by removing complexity from #391."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/392",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -1665,8 +1717,7 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/392.patch"
     },
     "body": "found a vestigial 48-bit packet number while rebasing packet number echo."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/391",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3597,7 +3648,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/363.patch"
     },
     "body": "Collates the HTTP/2 migration guidance from various places into a single section, and expands on details about how HTTP/2 extensions can be used/ported.  In the process, I added more IANA stuff, which should address the HTTP portion of #359.\r\n\r\nBuilds on #274; Closes #242."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/362",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3684,8 +3736,7 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/362.patch"
     },
     "body": "I've tried not to change anything.  I haven't finished, of course."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/361",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5683,7 +5734,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/333.patch"
     },
     "body": ""
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/332",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5734,8 +5786,7 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/332.patch"
     },
     "body": "This reference is unused."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/331",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7596,7 +7647,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/303.patch"
     },
     "body": "We decided that the transport would need priority but that it would rely on the application (protocol) to provide that information.  This attempts to capture that decision and provides a little guidance on what to prioritize (management stuff over STREAM, STREAM 1 over other streams, retransmissions, and then the rest of the streams according to application-layer priority).\r\n\r\nCloses #114, #104."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/302",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7696,8 +7748,7 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/302.patch"
     },
     "body": "Apparently all this crypto stuff isn't going to live in the -tls doc forever, but since it is here.\r\n\r\nCloses #226, but I know that we agreed to this at the Tokyo interim."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/301",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -9823,7 +9874,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/273.patch"
     },
     "body": "Fixes #173, though I would like to ultimately get rid of the Sequence number altogether."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/272",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -9917,8 +9969,7 @@
     "updated_at": "2017-03-10T00:42:51Z",
     "closed_at": "2017-03-10T00:42:51Z",
     "body": "This needs to be written down.  I think that the best outcome would be to include BOTH a TLS alert and a QUIC error code (in a CONNECTION_CLOSE frame)."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/271",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -11805,7 +11856,8 @@
     "updated_at": "2017-02-02T01:13:11Z",
     "closed_at": "2017-02-02T01:13:11Z",
     "body": "The TLS draft currently states that the associated data for AEAD encryption is the empty sequence. This is a deviation from legacy QUIC, which uses the public header as associated data and thus authenticates those fields. Packet number authentication is already accomplished due to its inclusion in the IV.\r\n\r\nIn Tokyo, there was considerable interest in a couple of features that require integrity of Public Header fields:\r\n- Greasing the unused bits in the Public flags\r\n- The connection ID may be used for routing.\r\n\r\nIt is probable that firewalls might block unused public flag bits, particularly if any middlebox could potentially alter them without detection to send a signal.\r\n\r\nTherefore, I suggest that we restore use of the full publice header as associated data. I see no reason that this would impose excessive costs on the receiver.\r\n\r\nI believe @janaiyengar brought this issue up first, though I fully endorse it."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/242",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -11863,8 +11915,7 @@
     "updated_at": "2017-03-23T12:32:41Z",
     "closed_at": "2017-03-10T17:46:29Z",
     "body": "The HTTP/QUIC mapping document is missing consideration for HTTP/2 extension mechanisms. This is part of the charter text:\r\n\r\n> This mapping will accommodate the extension mechanisms defined in the HTTP/2 specification.\r\n\r\nRFC 7540 (https://tools.ietf.org/html/rfc7540#section-5.5) defines three extension mechanisms, lets order these as:\r\n\r\n1. New frame types\r\n2. New error codes\r\n3. New settings\r\n\r\nI can see how 1 and 2 might work out, following Mike's example of augmenting existing definitions and allowing for things that exist in the HTTP/2 and HTTP/QUIC spaces to be managed somewhat independently. A concrete use case I have is the ALTSVC frame (especially when used on stream 0), so I'm happy to contribute towards this issue with some guidance.\r\n\r\n3 has some problems related to proposed SETTINGS changes.\r\n\r\nFinally, extensions that could change of semantics are a bit problematic (does it change the HTTP or the QUIC semantic, if that either of those is even possible). Additionally,  the negotiation of these is trickier given the additional negotation concerns of QUIC (0-RTT etc).\r\n"
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/241",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -13655,7 +13706,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/213.patch"
     },
     "body": ""
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/212",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -13719,8 +13771,7 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/212.patch"
     },
     "body": ""
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/211",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -15535,7 +15586,8 @@
     "updated_at": "2017-02-21T23:39:08Z",
     "closed_at": null,
     "body": "The question is whether we maintain TLS as some abstract concept or not.\r\n\r\nWe could talk about \"the cryptographic handshake\" and features that it provides in the abstract when referring to them in the transport document.  Or we could just describe how this protocol works in concrete terms.\r\n\r\nProponents of the first seem to think that would make replacing TLS easier.  Others disagree.  Others think that replacing TLS would be a bad idea.  Others think that replacing TLS is the only rational choice.  Some people think that people who hold opposing opinions are completely nuts."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/182",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -15599,8 +15651,7 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/182.patch"
     },
     "body": "The app read_close and write_close events aren't defined any place other than a diagram.  I don't believe that it is appropriate to have state transitions that aren't signaled to the remote peer.\r\n\r\nI propose removing these, which only requires that the state diagram be adjusted.\r\n\r\nThis also closes #53, because that was the last diagram that exceeded the line length limits."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/181",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -17488,7 +17539,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/153.patch"
     },
     "body": ""
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/152",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -17539,8 +17591,7 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/152.patch"
     },
     "body": ""
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/151",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -19536,7 +19587,8 @@
     "updated_at": "2017-01-26T07:12:12Z",
     "closed_at": null,
     "body": "It may be possible to simplify the ACK frame, in particular, the timestamp section. We could conceivably make the \"Time from Largest Acked\" 16 bits, and simply have N-Timestamp-blocks, including this one. I think this is plausible."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/122",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -19643,8 +19695,7 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/122.patch"
     },
     "body": "This builds on @MikeBishop's work in #99 in a big way.  I have stolen a lot of text from that.\r\n\r\nAgain, it's the tippy top of a bunch of changes.  #113 comes before this.\r\n\r\nCloses #99."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/121",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -21646,7 +21697,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/93.patch"
     },
     "body": "Adds a change log to each document.  Doc editors, please fill in anything I missed -- just push to this branch."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/92",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -21710,8 +21762,7 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/92.patch"
     },
     "body": "The abstract was just a repetition of the introduction, which isn't really appropriate.  An abstract doesn't need rationale and all the padding, it should just explain the purpose of the document.  QUIC is conceptually very simple, let's capitalize on that.\r\n\r\nI wanted to fix the first sentence of the intro to avoid duplication, but it really is a concise, well-constructed intro.  It could benefit from being split into smaller pieces though."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/91",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -23500,7 +23551,8 @@
     "updated_at": "2017-03-14T01:18:08Z",
     "closed_at": "2017-03-14T01:18:08Z",
     "body": "We have rules about retransmission of STREAM frames.  ACK has similar properties in terms of what needs to be retransmitted.  Once an ACK has been acked, what should a sender do when constructing future ACK messages?"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/62",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -23594,8 +23646,7 @@
     "updated_at": "2017-03-07T00:52:55Z",
     "closed_at": "2017-02-16T22:17:42Z",
     "body": "Martin Duke requests that all fields necessary for frame length computation be moved to the start of the frame."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/61",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -25689,7 +25740,8 @@
     "updated_at": "2017-03-10T03:44:05Z",
     "closed_at": "2017-03-10T03:44:05Z",
     "body": "We need to be absolutely explicit here: if unprotecting a packet fails, drop it.  \r\n\r\nIt's important that we have this rule to prevent trivial DoS attacks on connections.  Also, we need to make it clear that unauthenticated data does not get fed into the system unless we have very careful rules around how we handle that data."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/32",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -25747,8 +25799,7 @@
     "updated_at": "2017-03-10T01:13:28Z",
     "closed_at": "2017-03-10T01:13:28Z",
     "body": "From @janaiyengar:\r\n\r\n> We need rules using\r\n> packet numbers, such that an old packet with a key phase matching the\r\n> current expected should not cause the connection to blow up.\r\n\r\nWith multiple key updates, there is a possibility that packets from epoch n could collide with packets that were sent in epoch n+2.  This is unlikely, but still something implementations need to handle.  It's not a problem as such unless you insist that connections blow up on decryption failure (which we shouldn't, that's a DoS vector).\r\n\r\nIt's also not a really bad problem because we have packet numbers that should identify the reordered packet as belonging to the older epoch.  We know what the keys were at that time (if we chose to retain them), so it's not even the case that we need to discard the packet every time.\r\n\r\n\r\n"
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/31",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -27594,7 +27645,8 @@
     "updated_at": "2016-11-28T04:00:54Z",
     "closed_at": "2016-11-28T04:00:54Z",
     "body": ""
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/2",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -27688,8 +27740,7 @@
     "updated_at": "2016-11-22T13:15:52Z",
     "closed_at": "2016-11-22T13:15:52Z",
     "body": ""
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/1",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
