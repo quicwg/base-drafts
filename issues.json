@@ -89,9 +89,9 @@
 
     ],
     "milestone": null,
-    "comments": 4,
+    "comments": 5,
     "created_at": "2017-03-29T00:37:31Z",
-    "updated_at": "2017-03-29T16:11:00Z",
+    "updated_at": "2017-03-29T16:19:10Z",
     "closed_at": null,
     "body": "We've already had a lot of discussions about the concurrent streams limit, which all brought us back to the problem that at every given moment both peers have to agree about the number of open streams, which seems to require a non-trivial amount of bookkeeping (of ACKs received for all STREAM frames sent on a given stream).\r\n\r\nI'd like to propose a different solution, which solves this problem, and has a couple of nice additional properties as well:\r\n\r\nA receiver advertises the maximum Stream ID it is willing to accept. The sender is allowed to open all streams that have IDs not larger than this number. The receiver can advertise a higher maximum Stream ID whenever it likes to, by sending a STREAM_LIMIT_UPDATE frame. STREAM_LIMIT_UPDATE is a retransmittable frame that contains a single value, the maximum Stream ID.\r\nNote that conceptually, this is similar to advertising a flow control offset (and the rules for STREAM_LIMIT_UPDATEs would be similar to those for WINDOW_UPDATEs).\r\n\r\nAn implementation is free to choose any algorithm to determine which maximum Stream ID it advertises. The number of open streams may be used, but I can think of a couple of other ways to limit the state a peer can create. It would even be possible to advertise different limits depending on the server load."
   },
