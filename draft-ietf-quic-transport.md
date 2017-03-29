@@ -788,6 +788,7 @@ explained in more detail as they are referenced later in the document.
 | 0x04             |  WINDOW_UPDATE     | {{frame-window-update}}    |
 | 0x05             |  BLOCKED           | {{frame-blocked}}          |
 | 0x07             |  PING              | {{frame-ping}}             |
+| 0x08             |  LIMIT_UPDATE      | {{frame-limit-update}}     |
 | 0xa0 - 0x7f      |  ACK               | {{frame-ack}}              |
 | 0xc0 - 0xff      |  STREAM            | {{frame-stream}}           |
 {: #frame-types title="Frame Types"}
@@ -935,7 +936,7 @@ language from Section 3 of {{!I-D.ietf-tls-tls13}}.
    enum {
       stream_fc_offset(0),
       connection_fc_offset(1),
-      concurrent_streams(2),
+      initial_stream_limit(2),
       idle_timeout(3),
       truncate_connection_id(4),
       (65535)
@@ -997,10 +998,11 @@ connection_fc_offset (0x0001):
   sending a WINDOW_UPDATE ({{frame-window-update}}) for the connection
   immediately after completing the handshake.
 
-concurrent_streams (0x0002):
+initial_stream_limit (0x0002):
 
-: The maximum number of concurrent streams parameter is encoded as an unsigned
-  32-bit integer.
+: The initial stream number limit parameter contains the initial maximum stream
+  number the peer may initiate.  This is equivalent to sending a LIMIT_UPDATE
+  ({{frame-limit-update}}) immediately after completing the handshake.
 
 idle_timeout (0x0003):
 
@@ -1023,7 +1025,7 @@ truncate_connection_id (0x0004):
 Transport parameters from the server SHOULD be remembered by the client for use
 with 0-RTT data.  A client that doesn't remember values from a previous
 connection can instead assume the following values: stream_fc_offset (65535),
-connection_fc_offset (65535), concurrent_streams (10), idle_timeout (600),
+connection_fc_offset (65535), initial_stream_limit (20), idle_timeout (600),
 truncate_connection_id (absent).
 
 If assumed values change as a result of completing the handshake, the client is
@@ -1036,7 +1038,7 @@ particularly with respect to transport parameters that establish limits:
   increase to the affected flow control offsets is received, the client can
   recommence sending.
 
-* Similarly, a client might exceed the concurrent stream limit declared by the
+* Similarly, a client might exceed the initial stream limit declared by the
   server.  A client MUST reset any streams that exceed this limit.  A server
   SHOULD reset any streams it cannot handle with a code that allows the client
   to retry any application action bound to those streams.
@@ -1714,6 +1716,36 @@ Stream ID:
   When zero, the Stream ID field indicates that the connection is flow control
   blocked.
 
+## LIMIT_UPDATE Frame {#frame-limit-update}
+
+The LIMIT_UPDATE frame (type=0x08) informs the peer of an increase in an
+endpoint's maximum acceptable stream ID.
+
+The frame is as follows:
+
+~~~
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                    Maximum Stream ID (32)                     |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~
+
+The fields in the LIMIT_UPDATE frame are as follows:
+
+Stream ID:
+: ID of the maximum peer-initiated stream ID for the connection.
+
+Loss or reordering can mean that a LIMIT_UPDATE frame can be received which
+states a lower stream limit than the client has previously received.
+LIMIT_UPDATE frames which do not increase the Maximum Stream ID MUST be ignored.
+
+A peer MUST NOT initiate a stream with a higher Stream ID than the greatest
+Maximum Stream ID it has received.  An endpoint MUST terminate a connection with
+a QUIC_TOO_MANY_OPEN_STREAMS error if a peer initiates a stream with a higher
+Stream ID than it has sent, unless this is a result of a change in the initial
+offsets (see {{zerortt-parameters}}).
+
 
 ## RST_STREAM Frame {#frame-rst-stream}
 
@@ -1993,7 +2025,9 @@ and computational cost.  A single STREAM frame may create, carry data for, and
 terminate a stream, or a stream may last the entire duration of a connection.
 
 Streams are individually flow controlled, allowing an endpoint to limit memory
-commitment and to apply back pressure.
+commitment and to apply back pressure.  The creation of streams is also flow
+controlled, with each peer declaring the maximum stream ID it is willing to
+accept at a given time.
 
 An alternative view of QUIC streams is as an elastic "message" abstraction,
 similar to the way ephemeral streams are used in SST {{SST}}, which may be a
@@ -2200,41 +2234,37 @@ created in sequential order.  Open streams can be used in any order.  Streams
 that are used out of order result in lower-numbered streams in the same
 direction being counted as open.
 
-All streams, including stream 1, count toward this limit.  Thus, a concurrent
-stream limit of 0 will cause a connection to be unusable.  Application protocols
-that use QUIC might require a certain minimum number of streams to function
-correctly.  If a peer advertises an concurrent stream limit (concurrent_streams)
-that is too small for the selected application protocol to function, an endpoint
-MUST terminate the connection with an error of type QUIC_TOO_MANY_OPEN_STREAMS
-({{error-handling}}).
-
 
 ## Stream Concurrency
 
-An endpoint limits the number of concurrently active incoming streams by setting
-the concurrent stream limit (see {{transport-parameter-definitions}}) in the
-transport parameters. The maximum concurrent streams setting is specific to each
-endpoint and applies only to the peer that receives the setting. That is,
-clients specify the maximum number of concurrent streams the server can
-initiate, and servers specify the maximum number of concurrent streams the
-client can initiate.
-
-Streams that are in the "open" state or in either of the "half-closed" states
-count toward the maximum number of streams that an endpoint is permitted to
-open.  Streams in any of these three states count toward the limit advertised in
-the concurrent stream limit.
-
-A recently closed stream MUST also be considered to count toward this limit
-until packets containing all frames required to close the stream have been
-acknowledged. For a stream which closed cleanly, this means all STREAM frames
-have been acknowledged; for a stream which closed abruptly, this means the
-RST_STREAM frame has been acknowledged.
+An endpoint limits the number of concurrently active incoming streams by
+adjusting the maximum stream ID.  An initial value is set in the transport
+parameters  (see {{transport-parameter-definitions}}) and is subsequently
+increased by LIMIT_UPDATE frames (see {{frame-limit-update}}). The maximum
+stream ID is specific to each endpoint and applies only to the peer that
+receives the setting. That is, clients specify the maximum stream ID the server
+can initiate, and servers specify the maximum stream ID the client can initiate.
+Each endpoint may respond on streams initiated by the other peer, regardless of
+whether it is permitted to initiated new streams.
 
 Endpoints MUST NOT exceed the limit set by their peer.  An endpoint that
-receives a STREAM frame that causes its advertised concurrent stream limit to be
-exceeded MUST treat this as a stream error of type QUIC_TOO_MANY_OPEN_STREAMS
-({{error-handling}}).
+receives a STREAM frame with an ID greater than the limit it has sent MUST treat
+this as a stream error of type QUIC_TOO_MANY_OPEN_STREAMS ({{error-handling}}),
+unless this is a result of a change in the initial offsets (see
+{{zerortt-parameters}}).
 
+A Maximum Stream ID of 0 will cause a connection to be unusable.  Application
+protocols that use QUIC might require a certain minimum number of initial
+streams to function correctly.  If a peer advertises an maximum stream ID
+(initial_stream_limit) that is too small for the selected application protocol
+to function, an endpoint MUST terminate the connection with an error of type
+QUIC_TOO_MANY_OPEN_STREAMS ({{error-handling}}).
+
+A receiver MUST NOT renege on an advertisement; that is, once a receiver
+advertises a stream ID via a LIMIT_UPDATE frame, it MUST NOT subsequently
+advertise a smaller maximum ID.  A sender may receive LIMIT_UPDATE frames out of
+order; a sender MUST therefore ignore any LIMIT_UPDATE that does not increase
+the maximum.
 
 ## Sending and Receiving Data
 
@@ -2406,6 +2436,20 @@ how large an offset increment to send in a WINDOW_UPDATE.
 A receiver MAY use an autotuning mechanism to tune the size of the offset
 increment to advertise based on a roundtrip time estimate and the rate at which
 the receiving application consumes data, similar to common TCP implementations.
+
+### Stream Limit Increment
+
+As with flow control, this document leaves when and how many streams to make
+available to a peer via LIMIT_UPDATE to the implementation, but offers a few
+considerations. LIMIT_UPDATE frames constitute overhead, and therefore, sending
+a LIMIT_UPDATE with small offset increments is undesirable.  At the same time,
+withholding LIMIT_UPDATES prevents the peer from fully utilizing the transport.
+Implementations must find the correct tradeoff between these sides to determine
+how large an offset increment to send in a WINDOW_UPDATE.
+
+A receiver MAY adjust the number of permitted streams not in the "closed" state
+based on current activity, system conditions, and other environmental factors.
+
 
 ### BLOCKED frames
 
@@ -2739,7 +2783,7 @@ The initial contents of this registry are shown in
 |:-------|:--------------------------|:------------------------------------|
 | 0x0000 | stream_fc_offset          | {{transport-parameter-definitions}} |
 | 0x0001 | connection_fc_offset      | {{transport-parameter-definitions}} |
-| 0x0002 | concurrent_streams        | {{transport-parameter-definitions}} |
+| 0x0002 | initial_stream_limit      | {{transport-parameter-definitions}} |
 | 0x0003 | idle_timeout              | {{transport-parameter-definitions}} |
 | 0x0004 | truncate_connection_id    | {{transport-parameter-definitions}} |
 {: #iana-tp-table title="Initial QUIC Transport Parameters Entries"}
