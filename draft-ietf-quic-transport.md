@@ -441,7 +441,7 @@ packet type.  Type-specific semantics for this version are described in
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+
-|0|C|K| Type (5)|
+|0|C|K|L|B|Type |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                                                               |
 +                     [Connection ID (64)]                      +
@@ -473,10 +473,27 @@ Key Phase Bit:
 : The third bit (0x20) of the first octet indicates the key phase, which allows
   a recipient of a packet to identify the packet protection keys that are used
   to protect the packet.  See {{QUIC-TLS}} for details.
+  
+Loss Detected Bit:
+
+: The fourth bit (0x10) of the first octet is an optional field that the sender
+  MAY use to indicate that it has detected one or more packet losses that
+  trigger a congestion control response. Senders SHOULD set this bit no more
+  than once per congestion control response. This bit provides information to
+  operators trying to debug performance issues on their network.
+  
+Blocked Bit:
+
+: The fifth bit (0x08) of the first octet is an optional field that the sender
+  MAY use to indicate that a BLOCKED frame is embedded in encrypted portion of
+  the packet. There is no distinction between a BLOCKED frame that applies to a
+  specific stream and one that applies to the entire connection.  This bit
+  provides information to operators trying to debug performance issues on their
+  network. See {{frame-blocked}} for details.
 
 Short Packet Type:
 
-: The remaining 5 bits of the first octet include one of 32 packet types.
+: The remaining 3 bits of the first octet include one of 8 packet types.
   {{short-packet-types}} lists the types that are defined for short packets.
 
 Connection ID:
