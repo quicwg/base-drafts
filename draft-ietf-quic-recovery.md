@@ -568,7 +568,7 @@ delay loss recovery and for the small number of connections where less than
 packet per 25ms is delievered, acking every packet is beneficial to congestion
 control and loss recovery.
 
-The default initial RTT of 100ms was chosen because it's slightl higher than
+The default initial RTT of 100ms was chosen because it is slightly higher than
 both the median and mean min_rtt typically observed on the public internet.
 
 
