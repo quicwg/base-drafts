@@ -1,5 +1,56 @@
 [
   {
+    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/421",
+    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
+    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/421/labels{/name}",
+    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/421/comments",
+    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/421/events",
+    "html_url": "https://github.com/quicwg/base-drafts/pull/421",
+    "id": 217931343,
+    "number": 421,
+    "title": "Add LIMIT_UPDATE and replaces concurrent stream limit",
+    "user": {
+      "login": "MikeBishop",
+      "id": 4273797,
+      "avatar_url": "https://avatars3.githubusercontent.com/u/4273797?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/MikeBishop",
+      "html_url": "https://github.com/MikeBishop",
+      "followers_url": "https://api.github.com/users/MikeBishop/followers",
+      "following_url": "https://api.github.com/users/MikeBishop/following{/other_user}",
+      "gists_url": "https://api.github.com/users/MikeBishop/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/MikeBishop/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/MikeBishop/subscriptions",
+      "organizations_url": "https://api.github.com/users/MikeBishop/orgs",
+      "repos_url": "https://api.github.com/users/MikeBishop/repos",
+      "events_url": "https://api.github.com/users/MikeBishop/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/MikeBishop/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+
+    ],
+    "state": "open",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 0,
+    "created_at": "2017-03-29T16:20:58Z",
+    "updated_at": "2017-03-29T19:15:25Z",
+    "closed_at": null,
+    "pull_request": {
+      "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/421",
+      "html_url": "https://github.com/quicwg/base-drafts/pull/421",
+      "diff_url": "https://github.com/quicwg/base-drafts/pull/421.diff",
+      "patch_url": "https://github.com/quicwg/base-drafts/pull/421.patch"
+    },
+    "body": "Fixes #419.  I largely copied the WINDOW_UPDATE language.  It might actually be cleaner to recast this as a third level of flow control:  Bytes on streams, bytes on connection, streams on connection.  That would let us consolidate some of the duplicated language."
+  },
+  {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/420",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
     "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/420/labels{/name}",
@@ -1614,7 +1665,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/392.patch"
     },
     "body": "found a vestigial 48-bit packet number while rebasing packet number echo."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/391",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -1678,8 +1730,7 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/391.patch"
     },
     "body": "Replaces #357 and #367. It adds optional packet number echo to the short header, with the echo taking the same size as the packet number, including guidance as to the selecting packet number size. This PR introduces no technical changes compared to #367."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/390",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3633,7 +3684,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/362.patch"
     },
     "body": "I've tried not to change anything.  I haven't finished, of course."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/361",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3684,8 +3736,7 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/361.patch"
     },
     "body": "This PR proposes an alternative header format for QUIC.  It is based on a previous proposal and incorporates feedback received on the list. This PR is unfortunately quite invasive.\r\n\r\nCloses:\r\n#35: Starting packet number\r\n#56: Extending flags\r\n#119: Server-proposed connection ID\r\n#133: Connection ID in version negotiation\r\n#135: DoS using Version Negotiation Packets\r\n#147: Reflection Attack Resistance\r\n#185: Reliable identification of the initial packet for a connection\r\n#193: Flags section is kind of confusing\r\n#244: Need a NONCE in version negotiation packets\r\n#293: Does the connection ID need to be in a consistent location\r\n#295: Connection ID on a version negotiation packet\r\n\r\n(also addresses some of:\r\n#148: QUIC packet header complexity\r\n#170: Connection ID collisions)"
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/360",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5683,7 +5734,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/332.patch"
     },
     "body": "This reference is unused."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/331",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5734,8 +5786,7 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/331.patch"
     },
     "body": "These references are unused."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/330",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7645,7 +7696,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/302.patch"
     },
     "body": "Apparently all this crypto stuff isn't going to live in the -tls doc forever, but since it is here.\r\n\r\nCloses #226, but I know that we agreed to this at the Tokyo interim."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/301",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7745,8 +7797,7 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/301.patch"
     },
     "body": ""
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/300",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -9866,7 +9917,8 @@
     "updated_at": "2017-03-10T00:42:51Z",
     "closed_at": "2017-03-10T00:42:51Z",
     "body": "This needs to be written down.  I think that the best outcome would be to include BOTH a TLS alert and a QUIC error code (in a CONNECTION_CLOSE frame)."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/271",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -9923,8 +9975,7 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/271.patch"
     },
     "body": "Fixes #127, but we may want to go further."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/270",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -11812,7 +11863,8 @@
     "updated_at": "2017-03-23T12:32:41Z",
     "closed_at": "2017-03-10T17:46:29Z",
     "body": "The HTTP/QUIC mapping document is missing consideration for HTTP/2 extension mechanisms. This is part of the charter text:\r\n\r\n> This mapping will accommodate the extension mechanisms defined in the HTTP/2 specification.\r\n\r\nRFC 7540 (https://tools.ietf.org/html/rfc7540#section-5.5) defines three extension mechanisms, lets order these as:\r\n\r\n1. New frame types\r\n2. New error codes\r\n3. New settings\r\n\r\nI can see how 1 and 2 might work out, following Mike's example of augmenting existing definitions and allowing for things that exist in the HTTP/2 and HTTP/QUIC spaces to be managed somewhat independently. A concrete use case I have is the ALTSVC frame (especially when used on stream 0), so I'm happy to contribute towards this issue with some guidance.\r\n\r\n3 has some problems related to proposed SETTINGS changes.\r\n\r\nFinally, extensions that could change of semantics are a bit problematic (does it change the HTTP or the QUIC semantic, if that either of those is even possible). Additionally,  the negotiation of these is trickier given the additional negotation concerns of QUIC (0-RTT etc).\r\n"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/241",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -11870,8 +11922,7 @@
     "updated_at": "2017-02-03T03:00:54Z",
     "closed_at": null,
     "body": "For example if the version negotiation packet is lost, there's no ACK frame for the receiver to signal anything to the sender, we should specify what the loss recovery behavior for version negotiation and other special packets is."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/240",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -13668,7 +13719,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/212.patch"
     },
     "body": ""
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/211",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -13726,8 +13778,7 @@
     "updated_at": "2017-03-10T05:03:04Z",
     "closed_at": null,
     "body": "There are LOTS of error codes.  The only sensible thing to do is use those code to steer the receiver in the direction of the right logic for recovering from the error.  There is a different piece of information that might be provided to an application for diagnostic purposes (the reason phrase helps if it goes across the wire) and there might be other needs for an API, but across the wire we can probably cut this down a lot."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/210",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -15548,7 +15599,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/182.patch"
     },
     "body": "The app read_close and write_close events aren't defined any place other than a diagram.  I don't believe that it is appropriate to have state transitions that aren't signaled to the remote peer.\r\n\r\nI propose removing these, which only requires that the state diagram be adjusted.\r\n\r\nThis also closes #53, because that was the last diagram that exceeded the line length limits."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/181",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -15613,8 +15665,7 @@
     "updated_at": "2017-03-07T00:52:56Z",
     "closed_at": "2017-02-08T00:48:08Z",
     "body": "I know that this might be a hard decision to make, but we don't have many settings and it seems like we might be able to avoid changing them mid-connection.\r\n\r\nGetting settings synchronization right is a pain and we really only have one that is ever likely to change and that's the header table size.  We don't allow initial flow control windows to change (no mechanism exists to allow it), so I question whether that needs changing.  If it does need to change, that would be for the same reason that the flow control window needs to change, which suggests we would need to devise a way to change those too.\r\n\r\nSETTINGS_ACK is a huge amount of machinery.  With 0-RTT, it will mean that just opening a connection will trigger a flurry of SETTINGS_ACK frames from the client just to respond to the server's connection preface (assuming that we're still keeping that, it's not clear).  \r\n\r\nOn the other hand, if we reserved a space for application-specific traffic parameters (see #122), we could put the application-layer settings like header table size in the handshake.  That has some downsides (client values would be unencrypted and you would need to include one set of parameters per application protocol on offer), but it means that there couldn't ever be any confusion about the value of a given setting once the connection was open.\r\n\r\nThat would be a huge simplification to the HTTP mapping."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/180",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -17488,7 +17539,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/152.patch"
     },
     "body": ""
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/151",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -17582,8 +17634,7 @@
     "updated_at": "2017-01-19T09:07:30Z",
     "closed_at": null,
     "body": "Mostly references to drafts/rfcs/papers, but complete justifications are needed for this draft to be standalone."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/150",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -19592,7 +19643,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/122.patch"
     },
     "body": "This builds on @MikeBishop's work in #99 in a big way.  I have stolen a lot of text from that.\r\n\r\nAgain, it's the tippy top of a bunch of changes.  #113 comes before this.\r\n\r\nCloses #99."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/121",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -19693,8 +19745,7 @@
     "updated_at": "2017-03-10T04:00:53Z",
     "closed_at": null,
     "body": "If we do this badly, there might be two versions of QUIC for which the transport parameters are confusable in a way that confounds the validation of version negotiation because the transport parameters are interpreted differently for different QUIC versions.\r\n\r\nWe need to write that into the security considerations.  We might recommend preserving the initial part of the transport parameters extension, or - better yet - using a new extension codepoint when the format needs to change."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/120",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -21659,7 +21710,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/92.patch"
     },
     "body": "The abstract was just a repetition of the introduction, which isn't really appropriate.  An abstract doesn't need rationale and all the padding, it should just explain the purpose of the document.  QUIC is conceptually very simple, let's capitalize on that.\r\n\r\nI wanted to fix the first sentence of the intro to avoid duplication, but it really is a concise, well-constructed intro.  It could benefit from being split into smaller pieces though."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/91",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -21710,8 +21762,7 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/91.patch"
     },
     "body": "As per recent TLS 1.3 update."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/90",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -23543,7 +23594,8 @@
     "updated_at": "2017-03-07T00:52:55Z",
     "closed_at": "2017-02-16T22:17:42Z",
     "body": "Martin Duke requests that all fields necessary for frame length computation be moved to the start of the frame."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/61",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -23608,8 +23660,7 @@
     "updated_at": "2017-03-13T00:18:07Z",
     "closed_at": null,
     "body": "I think that this is one or other peer walking away from a conversation without saying goodbye.  If we're going to talk about silent closes, we need to explain what it is, why a peer might choose to do it, and the consequences for everyone involved if they exist."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/60",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -25696,7 +25747,8 @@
     "updated_at": "2017-03-10T01:13:28Z",
     "closed_at": "2017-03-10T01:13:28Z",
     "body": "From @janaiyengar:\r\n\r\n> We need rules using\r\n> packet numbers, such that an old packet with a key phase matching the\r\n> current expected should not cause the connection to blow up.\r\n\r\nWith multiple key updates, there is a possibility that packets from epoch n could collide with packets that were sent in epoch n+2.  This is unlikely, but still something implementations need to handle.  It's not a problem as such unless you insist that connections blow up on decryption failure (which we shouldn't, that's a DoS vector).\r\n\r\nIt's also not a really bad problem because we have packet numbers that should identify the reordered packet as belonging to the older epoch.  We know what the keys were at that time (if we chose to retain them), so it's not even the case that we need to discard the packet every time.\r\n\r\n\r\n"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/31",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -25753,8 +25805,7 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/31.patch"
     },
     "body": "I'm still not convinced by the advantages of this.  It's slightly faster locally, but slower on CI due to the need to install xsltproc.\r\n\r\ncc @reschke "
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/30",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -27637,7 +27688,8 @@
     "updated_at": "2016-11-22T13:15:52Z",
     "closed_at": "2016-11-22T13:15:52Z",
     "body": ""
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/1",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
