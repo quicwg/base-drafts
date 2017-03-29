@@ -2437,13 +2437,11 @@ the receiving application consumes data, similar to common TCP implementations.
 
 As with flow control, this document leaves when and how many streams to make
 available to a peer via LIMIT_UPDATE to the implementation, but offers a few
-considerations. LIMIT_UPDATE frames constitute overhead, and therefore, sending
-a LIMIT_UPDATE with small offset increments is undesirable.  At the same time,
-withholding LIMIT_UPDATES prevents the peer from fully utilizing the transport.
-Implementations must find the correct tradeoff between these sides to determine
-how large an offset increment to send in a WINDOW_UPDATE.
+considerations. LIMIT_UPDATE frames constitute minimal overhead, while
+withholding LIMIT_UPDATEs prevents the peer from fully utilizing the transport.
 
-A receiver MAY adjust the number of permitted streams not in the "closed" state
+Implementations will likely want to advance the Maximum Stream ID as
+peer-initiated streams close.  A receiver MAY also advance the Maximum Stream ID
 based on current activity, system conditions, and other environmental factors.
 
 
