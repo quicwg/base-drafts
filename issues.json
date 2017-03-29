@@ -89,9 +89,9 @@
 
     ],
     "milestone": null,
-    "comments": 0,
+    "comments": 4,
     "created_at": "2017-03-29T00:37:31Z",
-    "updated_at": "2017-03-29T00:37:31Z",
+    "updated_at": "2017-03-29T16:11:00Z",
     "closed_at": null,
     "body": "We've already had a lot of discussions about the concurrent streams limit, which all brought us back to the problem that at every given moment both peers have to agree about the number of open streams, which seems to require a non-trivial amount of bookkeeping (of ACKs received for all STREAM frames sent on a given stream).\r\n\r\nI'd like to propose a different solution, which solves this problem, and has a couple of nice additional properties as well:\r\n\r\nA receiver advertises the maximum Stream ID it is willing to accept. The sender is allowed to open all streams that have IDs not larger than this number. The receiver can advertise a higher maximum Stream ID whenever it likes to, by sending a STREAM_LIMIT_UPDATE frame. STREAM_LIMIT_UPDATE is a retransmittable frame that contains a single value, the maximum Stream ID.\r\nNote that conceptually, this is similar to advertising a flow control offset (and the rules for STREAM_LIMIT_UPDATEs would be similar to those for WINDOW_UPDATEs).\r\n\r\nAn implementation is free to choose any algorithm to determine which maximum Stream ID it advertises. The number of open streams may be used, but I can think of a couple of other ways to limit the state a peer can create. It would even be possible to advertise different limits depending on the server load."
   },
@@ -11025,7 +11025,7 @@
     "milestone": null,
     "comments": 24,
     "created_at": "2017-01-31T21:06:14Z",
-    "updated_at": "2017-03-28T05:54:08Z",
+    "updated_at": "2017-03-29T14:19:48Z",
     "closed_at": null,
     "body": "While HTTP/QUIC doesn't formally require a client to implement Alt-Svc, there's no discovery mechanism other than Alt-Svc provided, so you're not going to get very far without it.  That makes a full HTTP(/TLS)/TCP stack mandatory simply to open the connection in the first place.  For various reasons (e.g. an embedded device in a controlled environment), a client might want to dispense with TCP altogether when it knows that the endpoint will support QUIC.  It might also be useful in testing to be able to directly reference a QUIC endpoint.\r\n\r\nShould we mint new scheme(s) that allows direct reference to a resource served exclusively over HTTP/QUIC?\r\n\r\n(Note, in HTTP/2 the answer was \"no,\" because HTTP/2 could be negotiated using the same TCP connection.  QUIC doesn't have that luxury.)"
   },
