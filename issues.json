@@ -404,9 +404,9 @@
 
     ],
     "milestone": null,
-    "comments": 3,
+    "comments": 4,
     "created_at": "2017-03-29T22:49:56Z",
-    "updated_at": "2017-04-02T09:56:18Z",
+    "updated_at": "2017-04-02T13:59:19Z",
     "closed_at": null,
     "body": "Currently the QUIC spec does not discuss sending multiple ack frames in one packet, and the way it's structured implies largest acked must always increase.  There are plans to use a new initial packet number and a new connection ID when migrating, making multiple ack frames valuable, if not strictly necessary, since otherwise you won't be able to continue acking pre-migration packets.\r\n\r\nAdditionally, this could allow the ack frame to be simpler by making all ack block lengths 1 byte long, instead of the current 1/2/4/6."
   },
