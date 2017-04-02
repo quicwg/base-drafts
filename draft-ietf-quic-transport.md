@@ -1386,7 +1386,7 @@ To limit receiver state or the size of ACK frames, a receiver MAY limit the
 number of ACK blocks it sends.  A receiver can do this even without receiving
 acknowledgment of its ACK frames, with the knowledge this could cause the sender
 to unnecessarily retransmit some data.  When this is necessary, the receiver
-SHOULD ackowledge newly received packets and stop acknowledging packets received
+SHOULD acknowledge newly received packets and stop acknowledging packets received
 in the past.
 
 Unlike TCP SACKs, QUIC ACK blocks are cumulative and therefore irrevocable.
