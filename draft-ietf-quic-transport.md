@@ -2185,18 +2185,18 @@ permitted in the description of a state as a connection error
 ## Stream Identifiers {#stream-identifiers}
 
 Streams are identified by an unsigned 32-bit integer, referred to as the
-StreamID.  To avoid StreamID collision, clients MUST initiate streams usinge
-odd-numbered StreamIDs; streams initiated by the server MUST use even-numbered
-StreamIDs.
+Stream ID.  To avoid Stream ID collision, clients MUST initiate streams usinge
+odd-numbered Stream IDs; streams initiated by the server MUST use even-numbered
+Stream IDs.
 
-A StreamID of zero (0x0) is reserved and used for connection-level flow control
-frames ({{flow-control}}); the StreamID of zero cannot be used to establish a
+A Stream ID of zero (0x0) is reserved and used for connection-level flow control
+frames ({{flow-control}}); the Stream ID of zero cannot be used to establish a
 new stream.
 
-StreamID 1 (0x1) is reserved for the cryptographic handshake.  StreamID 1 MUST
+Stream ID 1 (0x1) is reserved for the cryptographic handshake.  Stream ID 1 MUST
 NOT be used for application data, and MUST be the first client-initiated stream.
 
-A QUIC endpoint cannot reuse a StreamID on a given connection.  Streams MUST be
+A QUIC endpoint cannot reuse a Stream ID on a given connection.  Streams MUST be
 created in sequential order.  Open streams can be used in any order.  Streams
 that are used out of order result in lower-numbered streams in the same
 direction being counted as open.
@@ -2343,7 +2343,7 @@ expected to be sent infrequently in common cases, but they are considered useful
 for debugging and monitoring purposes.
 
 A receiver advertises credit for a stream by sending a WINDOW_UPDATE frame with
-the StreamID set appropriately. A receiver may use the current offset of data
+the Stream ID set appropriately. A receiver may use the current offset of data
 consumed to determine the flow control offset to be advertised.
 A receiver MAY send copies of a WINDOW_UPDATE frame in multiple packets in order
 to make sure that the sender receives it before running out of flow control
@@ -2352,7 +2352,7 @@ credit, even if one of the packets is lost.
 Connection flow control is a limit to the total bytes of stream data sent in
 STREAM frames on all streams contributing to connection flow control.  A
 receiver advertises credit for a connection by sending a WINDOW_UPDATE frame
-with the StreamID set to zero (0x00).  A receiver maintains a cumulative sum of
+with the Stream ID set to zero (0x00).  A receiver maintains a cumulative sum of
 bytes received on all streams contributing to connection-level flow control, to
 check for flow control violations. A receiver may maintain a cumulative sum of
 bytes consumed on all contributing streams to determine the connection-level
