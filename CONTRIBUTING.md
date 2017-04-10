@@ -1,6 +1,6 @@
 # Contributing to QUIC
 
-Before submitting feedback, please familiarize yourself with our current issues list(s). If you're
+Before submitting feedback, please familiarize yourself with our current [issues list](https://github.com/quicwg/base-drafts/issues) and [charter](https://datatracker.ietf.org/wg/quic/about/). If you're
 new to this, you may also want to read the [Tao of the IETF](https://www.ietf.org/tao.html).
 
 **Be aware that all contributions fall under the "NOTE WELL" terms outlined below.**
