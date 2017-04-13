@@ -450,7 +450,7 @@ Pseudocode for SetLossDetectionAlarm follows:
 ~~~
  SetLossDetectionAlarm():
     if (retransmittable packets are not outstanding):
-      loss_detection_alarm.cancel();
+      loss_detection_alarm.cancel()
       return
 
     if (handshake packets are outstanding):
@@ -491,9 +491,8 @@ Pseudocode for OnLossDetectionAlarm follows:
    OnLossDetectionAlarm():
      if (handshake packets are outstanding):
        // Handshake retransmission alarm.
-       RetransmitAllHandshakePackets();
-       handshake_count++;
-     // TODO: Clarify early retransmit and time loss.
+       RetransmitAllHandshakePackets()
+       handshake_count++
      else if (loss_time != 0):
        // Early retransmit or Time Loss Detection
        DetectLostPackets(largest_acked_packet)
@@ -535,7 +534,7 @@ Pseudocode for DetectLostPackets follows:
    DetectLostPackets(largest_acked):
      loss_time = 0
      lost_packets = {}
-     delay_until_lost = infinite;
+     delay_until_lost = infinite
      if (time_reordering_fraction != infinite):
        delay_until_lost =
          (1 + time_reordering_fraction) * max(latest_rtt, smoothed_rtt)
@@ -561,7 +560,16 @@ Pseudocode for DetectLostPackets follows:
 ~~~
 
 ## Discussion
-TODO: Discuss why constants are chosen as they are.
+The majority of constants were derived from best common practices among widely
+deployed TCP implementations on the internet.  Exceptions follow.
+
+A shorter delayed ack time of 25ms was chosen because longer delayed acks can
+delay loss recovery and for the small number of connections where less than
+packet per 25ms is delievered, acking every packet is beneficial to congestion
+control and loss recovery.
+
+The default initial RTT of 100ms was chosen because it is slightly higher than
+both the median and mean min_rtt typically observed on the public internet.
 
 
 # Congestion Control

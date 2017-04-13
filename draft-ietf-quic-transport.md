@@ -1387,7 +1387,9 @@ a PING frame at most once per RTT to explicitly request acknowledgment.
 To limit receiver state or the size of ACK frames, a receiver MAY limit the
 number of ACK blocks it sends.  A receiver can do this even without receiving
 acknowledgment of its ACK frames, with the knowledge this could cause the sender
-to unnecessarily retransmit some data.
+to unnecessarily retransmit some data.  When this is necessary, the receiver
+SHOULD acknowledge newly received packets and stop acknowledging packets
+received in the past.
 
 Unlike TCP SACKs, QUIC ACK blocks are cumulative and therefore irrevocable.
 Once a packet has been acknowledged, even if it does not appear in a future ACK
@@ -1399,6 +1401,7 @@ loss recovery, and old timestamps are less valuable, so it is not guaranteed
 every timestamp will be received by the sender.  A receiver SHOULD send a
 timestamp exactly once for each received packet containing retransmittable
 frames. A receiver MAY send timestamps for non-retransmittable packets.
+A receiver MUST not send timestamps in unprotected packets.
 
 A sender MAY intentionally skip packet numbers to introduce entropy into the
 connection, to avoid opportunistic acknowledgement attacks.  The sender MUST
@@ -2220,11 +2223,11 @@ StreamID.  To avoid StreamID collision, clients MUST initiate streams using
 odd-numbered StreamIDs; streams initiated by the server MUST use even-numbered
 StreamIDs.
 
-A StreamID of zero (0x0) is reserved and used for connection-level flow control
-frames ({{flow-control}}); the StreamID of zero cannot be used to establish a
+A Stream ID of zero (0x0) is reserved and used for connection-level flow control
+frames ({{flow-control}}); the Stream ID of zero cannot be used to establish a
 new stream.
 
-StreamID 1 (0x1) is reserved for the cryptographic handshake.  StreamID 1 MUST
+Stream ID 1 (0x1) is reserved for the cryptographic handshake.  Stream ID 1 MUST
 NOT be used for application data, and MUST be the first client-initiated stream.
 
 A QUIC endpoint cannot reuse a StreamID on a given connection.  Streams MUST be
@@ -2296,7 +2299,7 @@ resources allocated to streams are correctly prioritized.  Experience with other
 multiplexed protocols, such as HTTP/2 {{?RFC7540}}, shows that effective
 prioritization strategies have a significant positive impact on performance.
 
-QUIC does not provide frames for exchanging priotization information.  Instead
+QUIC does not provide frames for exchanging prioritization information.  Instead
 it relies on receiving priority information from the application that uses QUIC.
 Protocols that use QUIC are able to define any prioritization scheme that suits
 their application semantics.  A protocol might define explicit messages for
@@ -2368,7 +2371,7 @@ expected to be sent infrequently in common cases, but they are considered useful
 for debugging and monitoring purposes.
 
 A receiver advertises credit for a stream by sending a WINDOW_UPDATE frame with
-the StreamID set appropriately. A receiver may use the current offset of data
+the Stream ID set appropriately. A receiver may use the current offset of data
 consumed to determine the flow control offset to be advertised.
 A receiver MAY send copies of a WINDOW_UPDATE frame in multiple packets in order
 to make sure that the sender receives it before running out of flow control
@@ -2377,7 +2380,7 @@ credit, even if one of the packets is lost.
 Connection flow control is a limit to the total bytes of stream data sent in
 STREAM frames on all streams contributing to connection flow control.  A
 receiver advertises credit for a connection by sending a WINDOW_UPDATE frame
-with the StreamID set to zero (0x00).  A receiver maintains a cumulative sum of
+with the Stream ID set to zero (0x00).  A receiver maintains a cumulative sum of
 bytes received on all streams contributing to connection-level flow control, to
 check for flow control violations. A receiver may maintain a cumulative sum of
 bytes consumed on all contributing streams to determine the connection-level
