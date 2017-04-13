@@ -86,7 +86,7 @@ informative:
 
 --- abstract
 
-This document describes how Transport Layer Security (TLS) can be used to secure
+This document describes how Transport Layer Security (TLS) is used to secure
 QUIC.
 
 --- note_Note_to_Readers
@@ -104,7 +104,7 @@ code and issues list for this draft can be found at
 # Introduction
 
 
-This document describes how QUIC {{QUIC-TRANSPORT}} can be secured using
+This document describes how QUIC {{QUIC-TRANSPORT}} is secured using
 Transport Layer Security (TLS) version 1.3 {{!I-D.ietf-tls-tls13}}.  TLS
 1.3 provides critical latency improvements for connection establishment
 over previous versions.  Absent packet loss, most new connections can be
@@ -113,7 +113,7 @@ connections between the same client and server, the client can often
 send application data immediately, that is, using a zero round trip
 setup.
 
-This document describes how the standardized TLS 1.3 can act a security
+This document describes how the standardized TLS 1.3 acts a security
 component of QUIC.  The same design could work for TLS 1.2, though few of the
 benefits QUIC provides would be realized due to the handshake latency in
 versions of TLS prior to 1.3.
@@ -121,9 +121,11 @@ versions of TLS prior to 1.3.
 
 # Notational Conventions
 
-The words "MUST", "MUST NOT", "SHOULD", and "MAY" are used in this document.
-It's not shouting; when they are capitalized, they have the special meaning
-defined in {{!RFC2119}}.
+The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL
+NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED",
+"MAY", and "OPTIONAL" in this document are to be interpreted as
+described in BCP 14 {{!RFC2119}}, {{!I-D.leiba-rfc2119-update}} when, and only when, they
+appear in all capitals, as shown here.
 
 This document uses the terminology established in {{QUIC-TRANSPORT}}.
 
@@ -190,15 +192,10 @@ TLS connection for use by QUIC.  This keying material is used to derive packet
 protection keys.  Details on how and when keys are derived and used are included
 in {{packet-protection}}.
 
-This arrangement means that some TLS messages receive redundant protection from
-both the QUIC packet protection and the TLS record protection.  These messages
-are limited in number; the TLS connection is rarely needed once the handshake
-completes.
-
 
 ## TLS Overview
 
-TLS provides two endpoints a way to establish a means of communication over an
+TLS provides two endpoints with a way to establish a means of communication over an
 untrusted medium (that is, the Internet) that ensures that messages they
 exchange cannot be observed, modified, or forged.
 
@@ -215,8 +212,8 @@ when the DH keys are destroyed.
 
 After completing the TLS handshake, the client will have learned and
 authenticated an identity for the server and the server is optionally able to
-learn and authenticate an identity for the client.  TLS supports X.509
-certificate-based authentication {{?RFC5280}} for both server and client.
+learn and authenticate an identity for the client.  TLS supports X.509 {{?RFC5280}}
+certificate-based authentication for both server and client.
 
 The TLS key exchange is resistent to tampering by attackers and it produces
 shared secrets that cannot be controlled by either participating peer.
@@ -226,7 +223,7 @@ shared secrets that cannot be controlled by either participating peer.
 
 TLS 1.3 provides two basic handshake modes of interest to QUIC:
 
- * A full, 1-RTT handshake in which the client is able to send application data
+ * A full 1-RTT handshake in which the client is able to send application data
    after one round trip and the server immediately after receiving the first
    handshake message from the client.
 
@@ -268,9 +265,10 @@ document:
    HelloRetryRequest is also used to verify that the client is correctly able to
    receive packets on the address it claims to have (see {{QUIC-TRANSPORT}}).
 
- * A pre-shared key mode can be used for subsequent handshakes to avoid public
-   key operations.  This is the basis for 0-RTT data, even if the remainder of
-   the connection is protected by a new Diffie-Hellman exchange.
+ * A pre-shared key mode can be used for subsequent handshakes to
+   reduce the number of public key operations.  This is the basis for
+   0-RTT data, even if the remainder of the connection is protected by
+   a new Diffie-Hellman exchange.
 
 
 # TLS Usage
@@ -445,7 +443,7 @@ the cookie extension of a TLS HelloRetryRequest message.  In the other cases,
 the connection either proceeds or terminates with a handshake error.
 
 The client echoes the cookie extension in a second ClientHello.  A ClientHello
-that contains a valid cookie extension will be always be in response to a
+that contains a valid cookie extension will always be in response to a
 HelloRetryRequest.  If address validation was requested by QUIC, then this will
 include an address validation token.  TLS makes a second address validation
 request of QUIC, including the value extracted from the cookie extension.  In
@@ -595,9 +593,10 @@ provides confidentiality and integrity protection for the content of packets
 connection (see {{key-expansion}}).
 
 Different keys are used for QUIC packet protection and TLS record protection.
-Having separate QUIC and TLS record protection means that TLS records can be
-protected by two different keys.  This redundancy is limited to only a few TLS
-records, and is maintained for the sake of simplicity.
+TLS handshake messages are protected solely with TLS record protection,
+but post-handshake messages are redundantly proteted with both
+both the QUIC packet protection and the TLS record protection. These messages
+are limited in number, and so the additional overhead is small.
 
 
 ## Installing New Keys {#new-key}
@@ -607,8 +606,8 @@ and initialization vectors (IVs) are updated (see {{key-expansion}}).  The
 selection of AEAD function is also updated to match the AEAD negotiated by TLS.
 
 For packets other than any unprotected handshake packets (see {{cleartext-hs}}),
-once a change of keys has been made, packets with higher packet numbers MUST use
-the new keying material.  The KEY_PHASE bit on these packets is inverted each
+once a change of keys has been made, packets with higher packet numbers MUST be
+sent with the new keying material.  The KEY_PHASE bit on these packets is inverted each
 time new keys are installed to signal the use of the new keys to the recipient
 (see {{key-phases}} for details).
 
@@ -696,17 +695,27 @@ for its PRF.
 This allows for a succession of new secrets to be created as needed.
 
 HKDF-Expand-Label uses HKDF-Expand {{!RFC5869}} with a specially formatted info
-parameter.  The info parameter that includes the output length (in this case,
-the size of the PRF hash output) encoded on two octets in network byte order,
-the length of the prefixed Label as a single octet, the value of the Label
-prefixed with "TLS 1.3, ", and a zero octet to indicate an empty HashValue.  For
-example, the client packet protection secret uses an info parameter of:
+parameter, as shown:
+
+~~~
+    HKDF-Expand-Label(Secret, Label, HashValue, Length) =
+         HKDF-Expand(Secret, HkdfLabel, Length)
+
+    Where HkdfLabel is specified as:
+
+    struct {
+        uint16 length = Length;
+        opaque label<10..255> = "TLS 1.3, " + Label;
+        uint8 hashLength;     // Always 0
+    } HkdfLabel;
+~~~
+
+For example, the client packet protection secret uses an info parameter of:
 
 ~~~
    info = (HashLen / 256) || (HashLen % 256) || 0x21 ||
           "TLS 1.3, QUIC client 1-RTT secret" || 0x00
 ~~~
-
 
 ### Packet Protection Key and IV
 
@@ -715,37 +724,21 @@ defined in Section 7.3 of {{!I-D.ietf-tls-tls13}}, using different values for
 the input secret.  QUIC uses the AEAD function negotiated by TLS.
 
 The packet protection key and IV used to protect the 0-RTT packets sent by a
-client use the QUIC 0-RTT secret.  This uses the HKDF-Expand-Label with the PRF
-hash function negotiated by TLS.
+client are derived from the QUIC 0-RTT secret. The packet protection keys
+and IVs for 1-RTT packets sent by the client and server are derived from
+the current generation of client_pp_secret and server_pp_secret respectively,
+as shown below:
+
+~~~
+   key = HKDF-Expand-Label(S, "key", "", key_length)
+   iv  = HKDF-Expand-Label(S, "iv", "", iv_length)
+~~~
 
 The length of the output is determined by the requirements of the AEAD function
 selected by TLS.  The key length is the AEAD key size.  As defined in Section
 5.3 of {{!I-D.ietf-tls-tls13}}, the IV length is the larger of 8 or N_MIN (see
-Section 4 of {{!RFC5116}}).
-
-~~~
-   client_0rtt_key = HKDF-Expand-Label(client_0rtt_secret,
-                                       "key", "", key_length)
-   client_0rtt_iv = HKDF-Expand-Label(client_0rtt_secret,
-                                      "iv", "", iv_length)
-~~~
-
-Similarly, the packet protection key and IV used to protect 1-RTT packets sent
-by both client and server use the current packet protection secret.
-
-~~~
-   client_pp_key_<N> = HKDF-Expand-Label(client_pp_secret_<N>,
-                                         "key", "", key_length)
-   client_pp_iv_<N> = HKDF-Expand-Label(client_pp_secret_<N>,
-                                        "iv", "", iv_length)
-   server_pp_key_<N> = HKDF-Expand-Label(server_pp_secret_<N>,
-                                         "key", "", key_length)
-   server_pp_iv_<N> = HKDF-Expand-Label(server_pp_secret_<N>,
-                                        "iv", "", iv_length)
-~~~
-
-The client protects (or encrypts) packets with the client packet protection key
-and IV; the server protects packets with the server packet protection key.
+Section 4 of {{!RFC5116}}). For any secret S, the corresponding key and
+IV are derived as shown below:
 
 The QUIC record protection initially starts without keying material.  When the
 TLS state machine reports that the ClientHello has been sent, the 0-RTT keys can
@@ -761,18 +754,18 @@ used for QUIC packet protection is AEAD that is negotiated for use with the TLS
 connection.  For example, if TLS is using the TLS_AES_128_GCM_SHA256, the
 AEAD_AES_128_GCM function is used.
 
-Regular QUIC packets are protected by an AEAD {{!RFC5116}}.  Version negotiation
+Regular QUIC packets are protected by an AEAD algorithm {{!RFC5116}}.  Version negotiation
 and public reset packets are not protected.
 
 Once TLS has provided a key, the contents of regular QUIC packets immediately
 after any TLS messages have been sent are protected by the AEAD selected by TLS.
 
-The key, K, for the AEAD is either the client packet protection key
+The key, K, is either the client packet protection key
 (client_pp_key_n) or the server packet protection key (server_pp_key_n), derived
 as defined in {{key-expansion}}.
 
-The nonce, N, for the AEAD is formed by combining either the packet protection
-IV (either client_pp_iv_n or server_pp_iv_n) with packet numbers.  The 64 bits
+The nonce, N, is formed by combining the packet protection
+IV (either client_pp_iv_n or server_pp_iv_n) with the packet number.  The 64 bits
 of the reconstructed QUIC packet number in network byte order is left-padded
 with zeros to the size of the IV.  The exclusive OR of the padded packet number
 and the IV forms the AEAD nonce.
@@ -1226,14 +1219,6 @@ endpoint has to drop or shadow protected packets in order to ensure that their
 victim continues to accept unprotected packets.  The ability to shadow packets
 means that an attacker does not need to be on path.
 
-ISSUE:
-
-: This would not be an issue if QUIC had a randomized starting sequence number.
-  If we choose to randomize, we fix this problem and reduce the denial of
-  service exposure to on-path attackers.  The only possible problem is in
-  authenticating the initial value, so that peers can be sure that they haven't
-  missed an initial message.
-
 In addition to causing valid packets to be dropped, an attacker can generate
 packets with an intent of causing the recipient to expend processing resources.
 See {{useless}} for a discussion of these risks.
@@ -1340,7 +1325,7 @@ version of QUIC defined in {{QUIC-TRANSPORT}} is used.
 ## Priming 0-RTT
 
 QUIC uses TLS without modification.  Therefore, it is possible to use a
-pre-shared key that was obtained in a TLS connection over TCP to enable 0-RTT in
+pre-shared key that was established in a TLS handshake over TCP to enable 0-RTT in
 QUIC.  Similarly, QUIC can provide a pre-shared key that can be used to enable
 0-RTT in TCP.
 
