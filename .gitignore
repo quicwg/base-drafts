@@ -10,4 +10,3 @@ venv/
 issues.json
 lib
 .targets.mk
-draft-ietf-quic-tls.md

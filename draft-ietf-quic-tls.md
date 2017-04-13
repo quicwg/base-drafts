@@ -22,6 +22,7 @@ author:
     ins: S. Turner
     name: Sean Turner
     org: sn3rd
+    email: sean@sn3rd.com
     role: editor
 
 normative:
@@ -29,6 +30,8 @@ normative:
   QUIC-TRANSPORT:
     title: "QUIC: A UDP-Based Multiplexed and Secure Transport"
     date: {DATE}
+    seriesinfo:
+      Internet-Draft: draft-ietf-quic-transport-latest
     author:
       -
         ins: J. Iyengar
@@ -54,6 +57,8 @@ informative:
   QUIC-HTTP:
     title: "Hypertext Transfer Protocol (HTTP) over QUIC"
     date: {DATE}
+    seriesinfo:
+      Internet-Draft: draft-ietf-quic-http-latest
     author:
       -
         ins: M. Bishop
@@ -64,6 +69,8 @@ informative:
   QUIC-RECOVERY:
     title: "QUIC Loss Detection and Congestion Control"
     date: {DATE}
+    seriesinfo:
+      Internet-Draft: draft-ietf-quic-recovery-latest
     author:
       -
         ins: J. Iyengar
@@ -96,16 +103,14 @@ code and issues list for this draft can be found at
 
 # Introduction
 
-QUIC {{QUIC-TRANSPORT}} provides a multiplexed transport.  When used for HTTP
-{{!RFC7230}} semantics {{QUIC-HTTP}} it provides several key advantages over
-HTTP/1.1 {{?RFC7230}} or HTTP/2 {{?RFC7540}} over TCP {{?RFC0793}}.
 
-This document describes how QUIC can be secured using Transport Layer Security
-(TLS) version 1.3 {{!I-D.ietf-tls-tls13}}.  TLS 1.3 provides critical latency
-improvements for connection establishment over previous versions.  Absent packet
-loss, most new connections can be established and secured within a single round
-trip; on subsequent connections between the same client and server, the client
-can often send application data immediately, that is, using a zero round trip
+This document describes how QUIC {{QUIC-TRANSPORT}} can be secured using
+Transport Layer Security (TLS) version 1.3 {{!I-D.ietf-tls-tls13}}.  TLS
+1.3 provides critical latency improvements for connection establishment
+over previous versions.  Absent packet loss, most new connections can be
+established and secured within a single round trip; on subsequent
+connections between the same client and server, the client can often
+send application data immediately, that is, using a zero round trip
 setup.
 
 This document describes how the standardized TLS 1.3 can act a security
@@ -226,9 +231,9 @@ TLS 1.3 provides two basic handshake modes of interest to QUIC:
    handshake message from the client.
 
  * A 0-RTT handshake in which the client uses information it has previously
-   learned about the server to send immediately.  This data can be replayed by
-   an attacker so it MUST NOT carry a self-contained trigger for any
-   non-idempotent action.
+   learned about the server to send application data immediately.  This
+   application data can be replayed by an attacker so it MUST NOT carry a
+   self-contained trigger for any non-idempotent action.
 
 A simplified TLS 1.3 handshake with 0-RTT application data is shown in
 {{tls-full}}, see {{!I-D.ietf-tls-tls13}} for more options and details.
@@ -284,7 +289,7 @@ handshake to start with the first packet that a client sends.
 
 QUIC packets are protected using a scheme that is specific to QUIC, see
 {{packet-protection}}.  Keys are exported from the TLS connection when they
-become available using a TLS exporter (see Section 7.3.3 of
+become available using a TLS exporter (see Section 7.5 of
 {{!I-D.ietf-tls-tls13}} and {{key-expansion}}).  After keys are exported from
 TLS, QUIC manages its own key schedule.
 
@@ -317,7 +322,7 @@ ensures that TLS handshake messages are delivered in the correct order.
 
                                            QUIC Frames <any> @1
                             <--------
-@1 QUIC STREAM Frame(s) <1>:
+@C QUIC STREAM Frame(s) <1>:
      (EndOfEarlyData)
      {Finished}
                             -------->
@@ -337,7 +342,7 @@ In {{quic-tls-handshake}}, symbols mean:
 
 If 0-RTT is not attempted, then the client does not send packets protected by
 the 0-RTT key (@0).  In that case, the only key transition on the client is from
-unprotected packets (@C) to 1-RTT protection (@1), which happens before it sends
+unprotected packets (@C) to 1-RTT protection (@1), which happens after it sends
 its final set of TLS handshake messages.
 
 The server sends TLS handshake messages without protection (@C).  The server
@@ -350,7 +355,7 @@ QUIC.  QUIC packets from the server are sent in the clear until the final
 transition to 1-RTT keys.
 
 The client transitions from cleartext (@C) to 0-RTT keys (@0) when sending 0-RTT
-data, and subsequently to to 1-RTT keys (@1) for its second flight of TLS
+data, and subsequently to to 1-RTT keys (@1) after its second flight of TLS
 handshake messages.  This creates the potential for unprotected packets to be
 received by a server in close proximity to packets that are protected with 1-RTT
 keys.
@@ -460,14 +465,14 @@ TLS provides QUIC with signals when 0-RTT and 1-RTT keys are ready for use.
 These events are not asynchronous, they always occur immediately after TLS is
 provided with new handshake octets, or after TLS produces handshake octets.
 
-When TLS has enough information to generate 1-RTT keys, it indicates their
-availability.  On the client, this occurs after receiving the entirety of the
-first flight of TLS handshake messages from the server.  A server indicates that
-1-RTT keys are available after it sends its handshake messages.
+When TLS completed its handshake, 1-RTT keys can be provided to QUIC.  On both
+client and server, this occurs after sending the TLS Finished message.
 
-This ordering ensures that a client sends its second flight of handshake
-messages protected with 1-RTT keys.  More importantly, it ensures that the
-server sends its flight of handshake messages without protection.
+This ordering means that there could be frames that carry TLS handshake messages
+ready to send at the same time that application data is available.  An
+implementation MUST ensure that TLS handshake messages are always sent in
+cleartext packets.  Separate packets are required for data that needs protection
+from 1-RTT keys.
 
 If 0-RTT is possible, it is ready after the client sends a TLS ClientHello
 message or the server receives that message.  After providing a QUIC client with
@@ -501,9 +506,9 @@ Get Handshake
                                                 1-RTT Keys Ready
                      <--- send/receive ---
 Handshake Received
-1-RTT Keys Ready
 Get Handshake
 Handshake Complete
+1-RTT Keys Ready
                       --- send/receive --->
                                               Handshake Received
                                                    Get Handshake
@@ -572,6 +577,16 @@ A server MUST NOT use post-handshake client authentication (see Section 4.6.2 of
 {{!I-D.ietf-tls-tls13}}).
 
 
+## TLS Errors
+
+Errors in the TLS connection SHOULD be signaled using TLS alerts on stream 1.  A
+failure in the handshake MUST be treated as a QUIC connection error of type
+TLS_HANDSHAKE_FAILED.  Once the handshake is complete, an error in the TLS
+connection that causes a TLS alert to be sent or received MUST be treated as a
+QUIC connection error of type TLS_FATAL_ALERT_GENERATED or
+TLS_FATAL_ALERT_RECEIVED respectively.
+
+
 # QUIC Packet Protection {#packet-protection}
 
 QUIC packet protection provides authenticated encryption of packets.  This
@@ -607,7 +622,7 @@ management when there are key updates (see {{key-update}}).
 QUIC uses a system of packet protection secrets, keys and IVs that are modelled
 on the system used in TLS {{!I-D.ietf-tls-tls13}}.  The secrets that QUIC uses
 as the basis of its key schedule are obtained using TLS exporters (see Section
-7.3.3 of {{!I-D.ietf-tls-tls13}}).
+7.5 of {{!I-D.ietf-tls-tls13}}).
 
 QUIC uses HKDF with the same hash function negotiated by TLS for
 key derivation.  For example, if TLS is using the TLS_AES_128_GCM_SHA256, the
@@ -638,8 +653,8 @@ packets sent by the client.
 
 1-RTT keys are used by both client and server after the TLS handshake completes.
 There are two secrets used at any time: one is used to derive packet protection
-keys for packets sent by the client, the other for protecting packets sent by
-the server.
+keys for packets sent by the client, the other for packet protection keys on
+packets sent by the server.
 
 The initial client packet protection secret is exported from TLS using the
 exporter label "EXPORTER-QUIC client 1-RTT Secret"; the initial server packet
@@ -787,9 +802,9 @@ QUIC does not assume a reliable transport and is required to handle attacks
 where packets are dropped in other ways.  QUIC is therefore not affected by this
 form of truncation.
 
-The packet number is not reset and it is not permitted to go higher than its
-maximum value of 2^64-1.  This establishes a hard limit on the number of packets
-that can be sent.
+The QUIC packet number is not reset and it is not permitted to go higher than
+its maximum value of 2^64-1.  This establishes a hard limit on the number of
+packets that can be sent.
 
 Some AEAD functions have limits for how many packets can be encrypted under the
 same key and IV (see for example {{AEBounds}}).  This might be lower than the
@@ -799,6 +814,21 @@ prior to exceeding any limit set for the AEAD that is in use.
 TLS maintains a separate sequence number that is used for record protection on
 the connection that is hosted on stream 1.  This sequence number is not visible
 to QUIC.
+
+
+## Receiving Protected Packets
+
+Once an endpoint successfully receives a packet with a given packet number, it
+MUST discard all packets with higher packet numbers if they cannot be
+successfully unprotected with either the same key, or - if there is a key update
+- the next packet protection key (see {{key-update}}).  Similarly, a packet that
+appears to trigger a key update, but cannot be unprotected successfully MUST be
+discarded.
+
+Failure to unprotect a packet does not necessarily indicate the existence of a
+protocol error in a peer or an attack.  The truncated packet number encoding
+used in QUIC can cause packet numbers to be decoded incorrectly if they are
+delayed significantly.
 
 
 # Key Phases
@@ -830,19 +860,15 @@ ensure that TLS handshake messages are sent with the correct packet protection.
 The initial exchange of packets are sent without protection.  These packets are
 marked with a KEY_PHASE of 0.
 
-TLS handshake messages that are critical to the TLS key exchange cannot be
-protected using QUIC packet protection.  A KEY_PHASE of 0 is used for all of
-these packets, even during retransmission.  The messages critical to key
-exchange are the TLS ClientHello and any TLS handshake message from the server,
-except those that are sent after the handshake completes, such as
-NewSessionTicket.
+TLS handshake messages MUST NOT be protected using QUIC packet protection.  A
+KEY_PHASE of 0 is used for all of these packets, even during retransmission.
+The messages affected are all TLS handshake message up to the TLS Finished that
+is sent by each endpoint.
 
-The second flight of TLS handshake messages from the client, and any TLS
-handshake messages that are sent after completing the TLS handshake do not need
-special packet protection rules.  This includes the EndOfEarlyData message that
-is sent by a client to mark the end of its 0-RTT data.  Packets containing these
-messages use the packet protection keys that are current at the time of sending
-(or retransmission).
+Any TLS handshake messages that are sent after completing the TLS handshake do
+not need special packet protection rules.  Packets containing these messages use
+the packet protection keys that are current at the time of sending (or
+retransmission).
 
 Like the client, a server MUST send retransmissions of its unprotected handshake
 messages or acknowledgments for unprotected handshake messages sent by the
@@ -851,27 +877,25 @@ client in unprotected packets (KEY_PHASE=0).
 
 ### Initial Key Transitions {#first-keys}
 
-Once the TLS key exchange is complete, keying material is exported from TLS and
+Once the TLS handshake is complete, keying material is exported from TLS and
 QUIC packet protection commences.
 
 Packets protected with 1-RTT keys have a KEY_PHASE bit set to 1.  These packets
 also have a VERSION bit set to 0.
 
-If the client is unable to send 0-RTT data - or it does not have 0-RTT data to
-send - packet protection with 1-RTT keys starts with the packets that contain
-its second flight of TLS handshake messages.  That is, the flight containing the
-TLS Finished handshake message and optionally a Certificate and
-CertificateVerify message.
-
 If the client sends 0-RTT data, it marks packets protected with 0-RTT keys with
 a KEY_PHASE of 1 and a VERSION bit of 1.  Setting the version bit means that all
-packets also include the version field.  The client removes the VERSION bit when
-it transitions to using 1-RTT keys, but it does not change the KEY_PHASE bit.
+packets also include the version field.  The client retains the VERSION bit, but
+reverts the KEY_PHASE bit for the packet that contains the TLS EndOfEarlyData
+and Finished messages.
+
+The client clears the VERSION bit and sets the KEY_PHASE bit to 1 when it
+transitions to using 1-RTT keys.
 
 Marking 0-RTT data with the both KEY_PHASE and VERSION bits ensures that the
-server is able to identify these packets as 0-RTT data in case the packet
-containing the TLS ClientHello is lost or delayed.  Including the version also
-ensures that the packet format is known to the server in this case.
+server is able to identify these packets as 0-RTT data in case packets
+containing TLS handshake message are lost or delayed.  Including the version
+also ensures that the packet format is known to the server in this case.
 
 Using both KEY_PHASE and VERSION also ensures that the server is able to
 distinguish between cleartext handshake packets (KEY_PHASE=0, VERSION=1), 0-RTT
@@ -895,25 +919,15 @@ KEY_PHASE of 1.
 
 ### Retransmission and Acknowledgment of Unprotected Packets
 
-The first flight of TLS handshake messages from both client and server
-(ClientHello, or ServerHello through to the server's Finished) are critical to
-the key exchange.  The contents of these messages determines the keys used to
-protect later messages.  If these handshake messages are included in packets
-that are protected with these keys, they will be indecipherable to the
-recipient.
+TLS handshake messages from both client and server are critical to the key
+exchange.  The contents of these messages determines the keys used to protect
+later messages.  If these handshake messages are included in packets that are
+protected with these keys, they will be indecipherable to the recipient.
 
 Even though newer keys could be available when retranmitting, retransmissions of
 these handshake messages MUST be sent in unprotected packets (with a KEY_PHASE
 of 0).  An endpoint MUST also generate ACK frames for these messages that are
 sent in unprotected packets.
-
-The TLS handshake messages that are affected by this rule are specifically:
-
-* A client MUST NOT restransmit a TLS ClientHello with 0-RTT keys.  The server
-  needs this message in order to determine the 0-RTT keys.
-
-* A server MUST NOT retransmit any of its TLS handshake messages with 1-RTT
-  keys.  The client needs these messages in order to determine the 1-RTT keys.
 
 A HelloRetryRequest handshake message might be used to reject an initial
 ClientHello.  A HelloRetryRequest handshake message and any second ClientHello
@@ -922,12 +936,6 @@ natural, because no new keying material will be available when these messages
 need to be sent.  Upon receipt of a HelloRetryRequest, a client SHOULD cease any
 transmission of 0-RTT data; 0-RTT data will only be discarded by any server that
 sends a HelloRetryRequest.
-
-Note:
-
-: TLS handshake data that needs to be sent without protection is all the
-  handshake data acquired from TLS before the point that 1-RTT keys are provided
-  by TLS (see {{key-ready-events}}).
 
 The KEY_PHASE and VERSION bits ensure that protected packets are clearly
 distinguished from unprotected packets.  Loss or reordering might cause
@@ -1011,6 +1019,12 @@ Finished message.  Otherwise, packets protected by the updated keys could be
 confused for retransmissions of handshake messages.  A client cannot initiate a
 key update until all of its handshake messages have been acknowledged by the
 server.
+
+A packet that triggers a key update could arrive after successfully processing a
+packet with a higher packet number.  This is only possible if there is a key
+compromise and an attack, or if the peer is incorrectly reverting to use of old
+keys.  Because the latter cannot be differentiated from an attack, an endpoint
+MUST immediately terminate the connection if it detects this condition.
 
 
 # Client Address Validation {#client-address-validation}
@@ -1408,86 +1422,13 @@ The portion of the QUIC error code space allocated for the crypto handshake is
 for the crypto handshake:
 
 TLS_HANDSHAKE_FAILED (0xC000001C):
-: Crypto errors. Handshake failed.
+: The TLS handshake failed.
 
-TLS_MESSAGE_OUT_OF_ORDER (0xC000001D):
-: Handshake message received out of order.
+TLS_FATAL_ALERT_GENERATED (0xC000001D):
+: A TLS fatal alert was sent, causing the TLS connection to end prematurely.
 
-TLS_TOO_MANY_ENTRIES (0xC000001E):
-: Handshake message contained too many entries.
-
-TLS_INVALID_VALUE_LENGTH (0xC000001F):
-: Handshake message contained an invalid value length.
-
-TLS_MESSAGE_AFTER_HANDSHAKE_COMPLETE (0xC0000020):
-: A handshake message was received after the handshake was complete.
-
-TLS_INVALID_RECORD_TYPE (0xC0000021):
-: A handshake message was received with an illegal record type.
-
-TLS_INVALID_PARAMETER (0xC0000022):
-: A handshake message was received with an illegal parameter.
-
-TLS_INVALID_CHANNEL_ID_SIGNATURE (0xC0000034):
-: An invalid channel id signature was supplied.
-
-TLS_MESSAGE_PARAMETER_NOT_FOUND (0xC0000023):
-: A handshake message was received with a mandatory parameter missing.
-
-TLS_MESSAGE_PARAMETER_NO_OVERLAP (0xC0000024):
-: A handshake message was received with a parameter that has no overlap with the
-  local parameter.
-
-TLS_MESSAGE_INDEX_NOT_FOUND (0xC0000025):
-: A handshake message was received that contained a parameter with too few
-  values.
-
-TLS_UNSUPPORTED_PROOF_DEMAND (0xC000005E):
-: A demand for an unsupported proof type was received.
-
-TLS_INTERNAL_ERROR (0xC0000026):
-: An internal error occured in handshake processing.
-
-TLS_VERSION_NOT_SUPPORTED (0xC0000027):
-: A handshake handshake message specified an unsupported version.
-
-TLS_HANDSHAKE_STATELESS_REJECT (0xC0000048):
-: A handshake handshake message resulted in a stateless reject.
-
-TLS_NO_SUPPORT (0xC0000028):
-: There was no intersection between the crypto primitives supported by the peer
-  and ourselves.
-
-TLS_TOO_MANY_REJECTS (0xC0000029):
-: The server rejected our client hello messages too many times.
-
-TLS_PROOF_INVALID (0xC000002A):
-: The client rejected the server's certificate chain or signature.
-
-TLS_DUPLICATE_TAG (0xC000002B):
-: A handshake message was received with a duplicate tag.
-
-TLS_ENCRYPTION_LEVEL_INCORRECT (0xC000002C):
-: A handshake message was received with the wrong encryption level (i.e. it
-  should have been encrypted but was not.)
-
-TLS_SERVER_CONFIG_EXPIRED (0xC000002D):
-: The server config for a server has expired.
-
-TLS_SYMMETRIC_KEY_SETUP_FAILED (0xC0000035):
-: We failed to set up the symmetric keys for a connection.
-
-TLS_MESSAGE_WHILE_VALIDATING_CLIENT_HELLO (0xC0000036):
-: A handshake message arrived, but we are still validating the previous
-  handshake message.
-
-TLS_UPDATE_BEFORE_HANDSHAKE_COMPLETE (0xC0000041):
-: A server config update arrived before the handshake is complete.
-
-TLS_CLIENT_HELLO_TOO_LARGE (0xC000005A):
-: ClientHello cannot fit in one packet.
-
-
+TLS_FATAL_ALERT_RECEIVED (0xC000001E):
+: A TLS fatal alert was received, causing the TLS connection to end prematurely.
 
 
 # IANA Considerations
@@ -1510,8 +1451,24 @@ many others.
 
 # Change Log
 
-> **RFC Editor's Note:**  Please remove this section prior to publication of a
+> **RFC Editor's Note:** Please remove this section prior to publication of a
 > final version of this document.
+
+Issue and pull request numbers are listed with a leading octothorp.
+
+## Since draft-ietf-quic-tls-01:
+
+- Use TLS alerts to signal TLS errors (#272, #374)
+- Require ClientHello to fit in a single packet (#338)
+- The second client handshake flight is now sent in the clear (#262, #337)
+- The QUIC header is included as AEAD Associated Data (#226, #243, #302)
+- Add interface necessary for client address validation (#275)
+- Define peer authentication (#140)
+- Require at least TLS 1.3 (#138)
+- Define transport parameters as a TLS extension (#122)
+- Define handling for protected packets before the handshake completes (#39)
+- Decouple QUIC version and ALPN (#12)
+
 
 ## Since draft-ietf-quic-tls-00:
 
