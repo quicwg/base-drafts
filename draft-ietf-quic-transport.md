@@ -2185,7 +2185,7 @@ permitted in the description of a state as a connection error
 ## Stream Identifiers {#stream-identifiers}
 
 Streams are identified by an unsigned 32-bit integer, referred to as the
-Stream ID.  To avoid Stream ID collision, clients MUST initiate streams usinge
+Stream ID.  To avoid Stream ID collision, clients MUST initiate streams using
 odd-numbered Stream IDs; streams initiated by the server MUST use even-numbered
 Stream IDs.
 
