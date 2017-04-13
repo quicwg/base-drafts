@@ -1764,8 +1764,6 @@ to abruptly terminate transmission on a stream.  The frame is as follows:
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                        Error Code (32)                        |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                        Stream ID (32)                         |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
@@ -2213,19 +2211,19 @@ permitted in the description of a state as a connection error
 If an endpoint is no longer interested in the data being received, it MAY send a
 DISINTEREST frame on a stream in the "open" or "half-closed (local)" state to
 request closure of the stream in the opposite direction.  This typically
-indicates that the receiving application is no longer reading from the stream
-and all future data will be discarded upon receipt.
+indicates that the receiving application is no longer reading from the stream,
+but is not a guarantee that incoming data will be ignored.
 
 STREAM frames received after sending DISINTEREST are still counted toward the
 connection and stream flow-control windows.  Even though these frames will be
 discarded, because they are sent before their sender receives the DISINTEREST,
 the sender will consider the frames to count against its flow-control windows.
 
-Upon receipt of a DISINTEREST frame, an endpoint SHOULD send a RST_STREAM with
-an error code of QUIC_RECEIVED_RST.  If the DISINTEREST frame is received on a
-stream that is already in the "half-closed (local)" or "closed" states, a
-RST_STREAM frame SHOULD still be sent and retransmission of previously-sent
-STREAM frames SHOULD be cancelled.
+Upon receipt of a DISINTEREST frame on a stream in the "open" state, an endpoint
+SHOULD send a RST_STREAM with an error code of QUIC_RECEIVED_RST.  If the
+DISINTEREST frame is received on a stream that is already in the "half-closed
+(local)" or "closed" states, a RST_STREAM frame MAY still be sent in order to
+cancel retransmission of previously-sent STREAM frames.
 
 
 ## Stream Identifiers {#stream-identifiers}
