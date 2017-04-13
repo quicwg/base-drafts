@@ -141,7 +141,7 @@ While connection-level options pertaining to the core QUIC protocol are set in
 the initial crypto handshake, HTTP-specific settings are conveyed
 in the SETTINGS frame. After the QUIC connection is established, a SETTINGS
 frame ({{frame-settings}}) MUST be sent as the initial frame of the HTTP control
-stream (StreamID 3, see {{stream-mapping}}).  The server MUST NOT send data on
+stream (Stream ID 3, see {{stream-mapping}}).  The server MUST NOT send data on
 any other stream until the client's SETTINGS frame has been received.
 
 ## Draft Version Identification
@@ -359,7 +359,7 @@ pushes via the SETTINGS_DISABLE_PUSH setting in the SETTINGS frame (see
 {{connection-establishment}}), which defaults to 1 (true).
 
 As with server push for HTTP/2, the server initiates a server push by sending a
-PUSH_PROMISE frame containing the StreamID of the stream to be pushed, as well
+PUSH_PROMISE frame containing the Stream ID of the stream to be pushed, as well
 as request header fields attributed to the request. The PUSH_PROMISE frame is
 sent on the control stream of the associated (client-initiated) request, while
 the Promised Stream ID field specifies the Stream ID of the control stream for
