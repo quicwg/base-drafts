@@ -2254,11 +2254,6 @@ ordered byte-stream.  Data received out of order MUST be buffered for later
 delivery, as long as it is not in violation of the receiver's flow control
 limits.
 
-The cryptographic handshake stream, Stream 1, MUST NOT be subject to congestion
-control or connection-level flow control, but MUST be subject to stream-level
-flow control. An endpoint MUST NOT send data on any other stream without
-consulting the congestion controller and the flow controller.
-
 Flow control is described in detail in {{flow-control}}, and congestion control
 is described in the companion document {{QUIC-RECOVERY}}.
 
@@ -2313,10 +2308,13 @@ receiver.  This section describes QUIC's flow-control mechanisms.
 QUIC employs a credit-based flow-control scheme similar to HTTP/2's flow control
 {{?RFC7540}}.  A receiver advertises the number of octets it is prepared to
 receive on a given stream and for the entire connection.  This leads to two
-levels of flow control in QUIC: (i) Connection flow control, which prevents
-senders from exceeding a receiver's buffer capacity for the connection, and (ii)
-Stream flow control, which prevents a single stream from consuming the entire
-receive buffer for a connection.
+levels of flow control in QUIC:
+
+* Connection flow control, which prevents senders from exceeding a receiver's
+  buffer capacity for the connection, and
+
+* Stream flow control, which prevents a single stream from consuming the entire
+  receive buffer for a connection.
 
 A receiver sends WINDOW_UPDATE frames to the sender to advertise additional
 credit by sending the absolute byte offset in the stream or in the connection
@@ -2406,6 +2404,23 @@ how large an offset increment to send in a WINDOW_UPDATE.
 A receiver MAY use an autotuning mechanism to tune the size of the offset
 increment to advertise based on a roundtrip time estimate and the rate at which
 the receiving application consumes data, similar to common TCP implementations.
+
+
+### Flow Control for the Cryptographic Handshake
+
+Stream 1 is reserved for the cryptographic handshake.  Prior to completing the
+cryptographic handshake, the initial flow control offsets are not known by
+either peer.  An endpoint MAY assume that the flow control offsets for both the
+connection and individual streams is the default value (65536 octets).  The
+cryptographic handshake MUST be able to complete within this limit without
+exchanging WINDOW_UPDATE frames.  If the cryptographic handshake cannot complete
+within the default flow control window, this MUST be treated as a fatal
+QUIC_HANDSHAKE_TOO_LARGE error.
+
+Once the cryptographic handshake completes, if an endpoint has exceeded the flow
+control offsets permitted by its peer, then it MUST cease sending new STREAM
+frames and wait for a WINDOW_UPDATE frame that moves the offset.
+
 
 ### BLOCKED frames
 
@@ -2605,6 +2620,10 @@ QUIC_NETWORK_IDLE_TIMEOUT (0x80000019):
 
 QUIC_HANDSHAKE_TIMEOUT (0x80000043):
 : The connection timed out waiting for the handshake to complete.
+
+QUIC_HANDSHAKE_TOO_LARGE (0x80000044):
+: The cryptographic handshake could not be sent due to exceeding flow control
+  limits.
 
 QUIC_ERROR_MIGRATING_ADDRESS (0x8000001a):
 : There was an error encountered migrating addresses.
