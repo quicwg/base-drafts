@@ -788,8 +788,8 @@ explained in more detail as they are referenced later in the document.
 | 0x04             |  WINDOW_UPDATE     | {{frame-window-update}}    |
 | 0x05             |  BLOCKED           | {{frame-blocked}}          |
 | 0x07             |  PING              | {{frame-ping}}             |
-| 0x40 - 0x7f      |  ACK               | {{frame-ack}}              |
-| 0x80 - 0xff      |  STREAM            | {{frame-stream}}           |
+| 0xa0 - 0x7f      |  ACK               | {{frame-ack}}              |
+| 0xc0 - 0xff      |  STREAM            | {{frame-stream}}           |
 {: #frame-types title="Frame Types"}
 
 # Life of a Connection
@@ -1292,10 +1292,10 @@ subsequent sections.
 ## STREAM Frame {#frame-stream}
 
 STREAM frames implicitly create a stream and carry stream data. The type byte
-for a STREAM frame contains embedded flags, and is formatted as `1FDOOOSS`.
+for a STREAM frame contains embedded flags, and is formatted as `11FDOOSS`.
 These bits are parsed as follows:
 
-* The leftmost bit must be set to 1, indicating that this is a STREAM frame.
+* The first two bits must be set to 11, indicating that this is a STREAM frame.
 
 * `F` is the FIN bit, which is used for stream termination.
 
@@ -1306,11 +1306,11 @@ These bits are parsed as follows:
   The option to omit the length should only be used when the packet is a
   "full-sized" packet, to avoid the risk of corruption via padding.
 
-* The `OOO` bits encode the length of the Offset header field as 0, 16, 24,
-  32, 40, 48, 56, or 64 bits long.
+* The `OO` bits encode the length of the Offset header field as 0, 16, 32,
+  or 64 bits long.
 
 * The `SS` bits encode the length of the Stream ID header field as 8, 16, 24,
-  or 32 bits.  (DISCUSS: Consider making this 8, 16, 32, 64.)
+  or 32 bits.
 
 A STREAM frame is shown below.
 
@@ -1322,7 +1322,7 @@ A STREAM frame is shown below.
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                    Stream ID (8/16/24/32)                   ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                Offset (0/16/24/32/40/48/56/64)              ...
+|                      Offset (0/16/32/64)                    ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                        Stream Data (*)                      ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -1344,9 +1344,10 @@ Stream ID:
 Offset:
 
 : A variable-sized unsigned number specifying the byte offset in the stream for
-  the data in this STREAM frame.  The first byte in the stream has an offset of
-  0.  The largest offset delivered on a stream - the sum of the re-constructed
-  offset and data length - MUST be less than 2^64.
+  the data in this STREAM frame.  When the offset length is 0, the offset is 0.
+  The first byte in the stream has an offset of 0.  The largest offset delivered
+  on a stream - the sum of the re-constructed offset and data length - MUST be
+  less than 2^64.
 
 Stream Data:
 
@@ -1410,14 +1411,12 @@ entropy on demand, which should be adequate protection against most
 opportunistic acknowledgement attacks.
 
 The type byte for a ACK frame contains embedded flags, and is formatted as
-`01NULLMM`.  These bits are parsed as follows:
+`101NLLMM`.  These bits are parsed as follows:
 
-* The first two bits must be set to 01 indicating that this is an ACK frame.
+* The first three bits must be set to 101 indicating that this is an ACK frame.
 
 * The `N` bit indicates whether the frame has more than 1 range of acknowledged
   packets (i.e., whether the ACK Block Section contains a Num Blocks field).
-
-* The `U` bit is unused and MUST be set to zero.
 
 * The two `LL` bits encode the length of the Largest Acknowledged field as 1, 2,
   4, or 6 bytes long.
