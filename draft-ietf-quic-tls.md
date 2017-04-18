@@ -717,6 +717,7 @@ For example, the client packet protection secret uses an info parameter of:
           "TLS 1.3, QUIC client 1-RTT secret" || 0x00
 ~~~
 
+
 ### Packet Protection Key and IV
 
 The complete key expansion uses an identical process for key expansion as
@@ -726,19 +727,17 @@ the input secret.  QUIC uses the AEAD function negotiated by TLS.
 The packet protection key and IV used to protect the 0-RTT packets sent by a
 client are derived from the QUIC 0-RTT secret. The packet protection keys
 and IVs for 1-RTT packets sent by the client and server are derived from
-the current generation of client_pp_secret and server_pp_secret respectively,
-as shown below:
-
-~~~
-   key = HKDF-Expand-Label(S, "key", "", key_length)
-   iv  = HKDF-Expand-Label(S, "iv", "", iv_length)
-~~~
-
+the current generation of client_pp_secret and server_pp_secret respectively.
 The length of the output is determined by the requirements of the AEAD function
 selected by TLS.  The key length is the AEAD key size.  As defined in Section
 5.3 of {{!I-D.ietf-tls-tls13}}, the IV length is the larger of 8 or N_MIN (see
 Section 4 of {{!RFC5116}}). For any secret S, the corresponding key and
 IV are derived as shown below:
+
+~~~
+   key = HKDF-Expand-Label(S, "key", "", key_length)
+   iv  = HKDF-Expand-Label(S, "iv", "", iv_length)
+~~~
 
 The QUIC record protection initially starts without keying material.  When the
 TLS state machine reports that the ClientHello has been sent, the 0-RTT keys can
