@@ -2209,7 +2209,7 @@ MUST terminate the connection with an error of type QUIC_TOO_MANY_OPEN_STREAMS
 ({{error-handling}}).
 
 
-## Stream Concurrency
+## Stream Concurrency {#stream-concurrency}
 
 An endpoint limits the number of concurrently active incoming streams by setting
 the concurrent stream limit (see {{transport-parameter-definitions}}) in the
@@ -2696,6 +2696,38 @@ forward-secure key, then any acknowledgments that are received for them MUST
 also be forward-secure encrypted.  Since the attacker will not have the forward
 secure key, the attacker will not be able to generate forward-secure encrypted
 packets with ACK frames.
+
+## Stream commitment attack
+
+An adversarial client may try to use the stream creation process to open a large
+number of streams and induce the server to commit memory resource for the various
+streams. The adversarial client, or clients, would repeat the process on a 
+large number of connections, in an attempt to exhaust the server memory. This
+attack is in some ways similar to SYN flooding attack in TCP, in which the
+attackers try to exhaust a server memory by creating a large number of half 
+open TCP connections. It is less potent than the SYN flooding attack, since
+stream creation is much lighter weight than the creation of TCP-IP connections,
+and stream control data presumably requires less memory resource than a TCP protocol
+control block. However, the attack can be amplified if the adversarial
+client can open multiple streams with a single message.
+
+Normally, clients will open streams sequentially, as explained in {{stream-identifiers}}. 
+However, when several streams are initiated at short intervals,
+transmission error may cause STREAM DATA frames opening streams to be
+received out of sequence. Some implementations will have provisions to 
+open all intermediate streams in case of out-of-sequence arrival. For example,
+a server that receive STREAM DATA for streams 3 and then 9 may decide to
+open stream 5 and 7 immediately. An adversarial client would for example exploit that
+design by sending STREAM DATA for streams 3 and the 2,000,001, causing the 
+server to open 1 million connections, and contributing to server resource
+exhaustion.
+
+The number of active streams is limited by the concurrent stream limit transport 
+parameter, as explained in {{stream-concurrency}}. If chosen judisciously, this limit 
+mitigates the effect of the stream commitment attack. However, setting the limit
+too low could affect performance when applications expect to open large number
+of streams.
+
 
 
 # IANA Considerations
