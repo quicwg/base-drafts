@@ -2699,8 +2699,10 @@ packets with ACK frames.
 
 ## Stream commitment attack
 
-An adversarial client may try to use the stream creation process to open a large
-number of streams and induce the server to commit memory resource for the various
+An adversarial client may try to use the 
+stream creation process to open a large
+number of streams and induce the server to 
+commit memory resource for the various
 streams. The adversarial client, or clients, would repeat the process on a 
 large number of connections, in an attempt to exhaust the server memory. This
 attack is in some ways similar to SYN flooding attack in TCP, in which the
@@ -2725,11 +2727,14 @@ design by sending STREAM DATA for streams 3 and the 2,000,001, causing the
 server to open 1 million connections, and contributing to server resource
 exhaustion.
 
-The number of active streams is limited by the concurrent stream limit transport 
+The number of active streams is limited 
+by the concurrent stream limit transport 
 parameter, as explained in {{stream-concurrency}}. 
 If chosen judisciously, this limit 
-mitigates the effect of the stream commitment attack. However, setting the limit
-too low could affect performance when applications expect to open large number
+mitigates the effect of the stream commitment attack. 
+However, setting the limit
+too low could affect performance when 
+applications expect to open large number
 of streams.
 
 
