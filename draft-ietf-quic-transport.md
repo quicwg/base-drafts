@@ -2699,40 +2699,40 @@ packets with ACK frames.
 
 ## Stream fragmentation and reassembly attacks
 
-An adversarial client may attempt to 
+An adversarial client may attempt to
 exhaust server memory resource by performing
 a stream fragmentation and reassembly attack, similar to the UDP/ICMP
 "Teardrop" fragmentation attacks. The adversarial client would open a stream,
 and send some STREAM DATA packets containing fragments of the stream content.
 The goal of the attack is to induce the receiving implementation to commit
-memory buffers while waiting that the stream data can be reassembled. 
+memory buffers while waiting that the stream data can be reassembled.
 
 For example, a client
-might send some octets at the beginning of a 
-stream and some octets much further 
+might send some octets at the beginning of a
+stream and some octets much further
 away in the stream. A vulnerable server, on receiving the stream data fragments,
 might allocate memory covering the whole space from beginning to end. The client
 would then repeat the process on a large number of streams and a large number
 of connections, inducing the server to commit a large amout of memory.
 
-This attack can be mitigated by not 
+This attack can be mitigated by not
 committing memory for stream data reassembly,
-and simply keeping the STREAM DATA frames until enough fragments have been 
-received and the data can be delivered to the application in proper sequence. 
-However, this is not a complete mitigation. 
+and simply keeping the STREAM DATA frames until enough fragments have been
+received and the data can be delivered to the application in proper sequence.
+However, this is not a complete mitigation.
 The adversarial client could still send
-a large number of STREAM DATA packets separated by holes, 
+a large number of STREAM DATA packets separated by holes,
 forcing the server
 to commit memory for a large number of data segments.
 
 A possible mitigation is for servers to keep a count of the number of
-"reassembly holes" in data streams received from the client. 
+"reassembly holes" in data streams received from the client.
 In normal operation,
-these holes are caused by transmission errors and 
+these holes are caused by transmission errors and
 are promptly filled by the
-recovery processes. An abnormal number of holes is caused by either a 
-very large rate of transmission errors, or by 
-adversarial client behavior. In both 
+recovery processes. An abnormal number of holes is caused by either a
+very large rate of transmission errors, or by
+adversarial client behavior. In both
 cases, it is reasonable for the server to close the connection.
 
 # IANA Considerations
