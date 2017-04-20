@@ -1764,7 +1764,7 @@ The BLOCKED frame does not contain a payload.
 ## STREAM_BLOCKED Frame {#frame-stream-blocked}
 
 A sender sends a STREAM_BLOCKED frame (type=0x09) when it wishes to send data,
-but is unable to due to stream-level flow control.  This stream is analogous to
+but is unable to due to stream-level flow control.  This frame is analogous to
 BLOCKED ({{frame-blocked}}).
 
 The STREAM_BLOCKED frame is as follows:
@@ -2486,7 +2486,7 @@ based on current activity, system conditions, and other environmental factors.
 If a sender does not receive a MAX_DATA or MAX_STREAM_DATA frame when it has run
 out of flow control credit, the sender will be blocked and MUST send a BLOCKED
 or STREAM_BLOCKED frame.  These frames are expected to be useful for debugging
-at the receiver, they do not require any other action.  A receiver SHOULD NOT
+at the receiver; they do not require any other action.  A receiver SHOULD NOT
 wait for a BLOCKED or STREAM_BLOCKED frame before sending MAX_DATA or
 MAX_STREAM_DATA, since doing so will mean that a sender is unable to send for an
 entire round trip.
