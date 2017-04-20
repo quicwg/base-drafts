@@ -2256,13 +2256,6 @@ this as a stream error of type QUIC_TOO_MANY_OPEN_STREAMS ({{error-handling}}),
 unless this is a result of a change in the initial offsets (see
 {{zerortt-parameters}}).
 
-A Maximum Stream ID of 0 will cause a connection to be unusable.  Application
-protocols that use QUIC might require a certain minimum number of initial
-streams to function correctly.  If a peer advertises an maximum stream ID
-(initial_stream_limit) that is too small for the selected application protocol
-to function, an endpoint MUST terminate the connection with an error of type
-QUIC_TOO_MANY_OPEN_STREAMS ({{error-handling}}).
-
 A receiver MUST NOT renege on an advertisement; that is, once a receiver
 advertises a stream ID via a LIMIT_UPDATE frame, it MUST NOT subsequently
 advertise a smaller maximum ID.  A sender may receive LIMIT_UPDATE frames out of
