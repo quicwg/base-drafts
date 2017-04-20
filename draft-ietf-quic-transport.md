@@ -78,7 +78,7 @@ informative:
       - ins: J. Roskind
     date: 2013-12-02
     target: "https://goo.gl/dMVtFi"
- 
+
   SLOWLORIS:
     title: "Welcome to Slowloris..."
     author:
