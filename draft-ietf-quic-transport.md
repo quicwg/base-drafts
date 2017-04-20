@@ -1745,7 +1745,8 @@ Maximum Stream ID:
 
 Loss or reordering can mean that a MAX_STREAM_ID frame can be received which
 states a lower stream limit than the client has previously received.
-MAX_STREAM_ID frames which do not increase the maximum stream ID MUST be ignored.
+MAX_STREAM_ID frames which do not increase the maximum stream ID MUST be
+ignored.
 
 A peer MUST NOT initiate a stream with a higher stream ID than the greatest
 maximum stream ID it has received.  An endpoint MUST terminate a connection with
@@ -2272,7 +2273,7 @@ direction being counted as open.
 
 An endpoint limits the number of concurrently active incoming streams by
 adjusting the maximum stream ID.  An initial value is set in the transport
-parameters  (see {{transport-parameter-definitions}}) and is subsequently
+parameters (see {{transport-parameter-definitions}}) and is subsequently
 increased by MAX_STREAM_ID frames (see {{frame-max-stream-id}}).
 
 The maximum stream ID is specific to each endpoint and applies only to the peer
@@ -2375,9 +2376,9 @@ senders from exceeding a receiver's buffer capacity for the connection, and (ii)
 Stream flow control, which prevents a single stream from consuming the entire
 receive buffer for a connection.
 
-A receiver sends MAX_DATA or MAX_STREAM_DATA frames to the sender to
-advertise additional credit by sending the absolute byte offset in the
-connection or stream which it is willing to receive.
+A receiver sends MAX_DATA or MAX_STREAM_DATA frames to the sender to advertise
+additional credit by sending the absolute byte offset in the connection or
+stream which it is willing to receive.
 
 A receiver MAY advertise a larger offset at any point by sending MAX_DATA or
 MAX_STREAM_DATA frames.  A receiver MUST NOT renege on an advertisement; that
@@ -2481,12 +2482,12 @@ system conditions, and other environmental factors.
 
 ### BLOCKED frames
 
-If a sender does not receive a MAX_DATA or MAX_STREAM_DATA frame when it has
-run out of flow control credit, the sender will be blocked and MUST send a
-BLOCKED frame.  A BLOCKED frame is expected to be useful for debugging at the
-receiver.  A receiver SHOULD NOT wait for a BLOCKED frame before sending
-MAX_DATA or MAX_STREAM_DATA, since doing so will mean that a sender is
-unable to send for an entire round trip.
+If a sender does not receive a MAX_DATA or MAX_STREAM_DATA frame when it has run
+out of flow control credit, the sender will be blocked and MUST send a BLOCKED
+frame.  A BLOCKED frame is expected to be useful for debugging at the receiver.
+A receiver SHOULD NOT wait for a BLOCKED frame before sending MAX_DATA or
+MAX_STREAM_DATA, since doing so will mean that a sender is unable to send for an
+entire round trip.
 
 For smooth operation of the congestion controller, it is generally considered
 best to not let the sender go into quiescence if avoidable.  To avoid blocking a
