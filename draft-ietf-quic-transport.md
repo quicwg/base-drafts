@@ -1669,18 +1669,11 @@ Maximum Data:
   connection-level data limit is determined by multiplying the encoded value by
   1024.
 
-When counting data toward this limit, an endpoint accounts for the maximum
-offset of data that is sent or received on every stream.  Loss or reordering can
-mean that the maximum offset on a stream can be greater than the total size of
-data received on that stream.  Conversely, receiving STREAM frames might not
-increase the maximum offset on a stream if the maximum offset in the frame is
-lower than the maximum received for that stream.
-
-The sum of the maximum data offsets on all streams (including closed streams)
-MUST NOT exceed the value advertised by a receiver.  An endpoint MUST terminate
-a connection with a QUIC_FLOW_CONTROL_RECEIVED_TOO_MUCH_DATA error if it
-receives more data than the maximum data value that it has sent, unless this is
-a result of a change in the initial limits (see {{zerortt-parameters}}).
+The sum of the largest received offsets on all streams - including closed
+streams - MUST NOT exceed the value advertised by a receiver.  An endpoint MUST
+terminate a connection with a QUIC_FLOW_CONTROL_RECEIVED_TOO_MUCH_DATA error if
+it receives more data than the maximum data value that it has sent, unless this
+is a result of a change in the initial limits (see {{zerortt-parameters}}).
 
 
 ## MAX_STREAM_DATA Frame {#frame-max-stream-data}
@@ -1713,14 +1706,17 @@ Maximum Stream Data:
 : A 64-bit unsigned integer indicating the maximum amount of data that can be
   sent on the identified stream, in units of octets.
 
-An endpoint accounts for the maximum offset of data that is sent or received on
-a stream (see {{frame-max-data}} for details).  The data sent on a stream MUST
-NOT exceed the largest maximum stream data value advertised by the receiver.  An
-endpoint MUST terminate a connection with a
+When counting data toward this limit, an endpoint accounts for the largest
+received offset of data that is sent or received on the stream.  Loss or
+reordering can mean that the largest received offset on a stream can be greater
+than the total size of data received on that stream.  Receiving STREAM frames
+might not increase the largest received offset.
+
+The data sent on a stream MUST NOT exceed the largest maximum stream data value
+advertised by the receiver.  An endpoint MUST terminate a connection with a
 QUIC_FLOW_CONTROL_RECEIVED_TOO_MUCH_DATA error if it receives more data than the
 largest maximum stream data that it has sent for the affected stream, unless
-this is a result of a change in the initial limits (see
-{{zerortt-parameters}}).
+this is a result of a change in the initial limits (see {{zerortt-parameters}}).
 
 
 ## MAX_STREAM_ID Frame {#frame-max-stream-id}
@@ -2470,10 +2466,6 @@ available to a peer via MAX_STREAM_ID to implementations, but offers a few
 considerations.  MAX_STREAM_ID frames constitute minimal overhead, while
 withholding MAX_STREAM_ID frames can prevent the peer from using the available
 parallelism.
-
-Sending any increase to the maximum stream ID in the same packet as an ACK frame
-ensures a regular increase in the stream limit without generating excess
-packets.
 
 Implementations will likely want to increase the maximum stream ID as
 peer-initiated streams close.  A receiver MAY also advance the maximum stream ID
