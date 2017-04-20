@@ -1,5 +1,491 @@
 [
   {
+    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/446",
+    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
+    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/446/labels{/name}",
+    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/446/comments",
+    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/446/events",
+    "html_url": "https://github.com/quicwg/base-drafts/issues/446",
+    "id": 222910484,
+    "number": 446,
+    "title": "HOL blocking on Finished",
+    "user": {
+      "login": "martinthomson",
+      "id": 67641,
+      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/martinthomson",
+      "html_url": "https://github.com/martinthomson",
+      "followers_url": "https://api.github.com/users/martinthomson/followers",
+      "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
+      "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
+      "organizations_url": "https://api.github.com/users/martinthomson/orgs",
+      "repos_url": "https://api.github.com/users/martinthomson/repos",
+      "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/martinthomson/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 481871361,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/design",
+        "name": "design",
+        "color": "1d76db",
+        "default": false
+      },
+      {
+        "id": 481871604,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/tls",
+        "name": "tls",
+        "color": "fbca04",
+        "default": false
+      }
+    ],
+    "state": "open",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 0,
+    "created_at": "2017-04-20T00:23:49Z",
+    "updated_at": "2017-04-20T00:23:49Z",
+    "closed_at": null,
+    "body": "The current design creates HOL blocking on the Finished message in some cases.  It might be OK not to block on this, but it would require some careful analysis to ensure that we have understood the implications properly.\r\n\r\nA safer alternative might be to find other ways to ensure that Finished arrives in a timely fashion, though that could require some contortions on the packet format."
+  },
+  {
+    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/445",
+    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
+    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/445/labels{/name}",
+    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/445/comments",
+    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/445/events",
+    "html_url": "https://github.com/quicwg/base-drafts/pull/445",
+    "id": 222818485,
+    "number": 445,
+    "title": "Adding a description of stream commitment attacks in security section",
+    "user": {
+      "login": "huitema",
+      "id": 7464128,
+      "avatar_url": "https://avatars3.githubusercontent.com/u/7464128?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/huitema",
+      "html_url": "https://github.com/huitema",
+      "followers_url": "https://api.github.com/users/huitema/followers",
+      "following_url": "https://api.github.com/users/huitema/following{/other_user}",
+      "gists_url": "https://api.github.com/users/huitema/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/huitema/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/huitema/subscriptions",
+      "organizations_url": "https://api.github.com/users/huitema/orgs",
+      "repos_url": "https://api.github.com/users/huitema/repos",
+      "events_url": "https://api.github.com/users/huitema/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/huitema/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+
+    ],
+    "state": "open",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 1,
+    "created_at": "2017-04-19T17:52:05Z",
+    "updated_at": "2017-04-20T02:08:11Z",
+    "closed_at": null,
+    "pull_request": {
+      "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/445",
+      "html_url": "https://github.com/quicwg/base-drafts/pull/445",
+      "diff_url": "https://github.com/quicwg/base-drafts/pull/445.diff",
+      "patch_url": "https://github.com/quicwg/base-drafts/pull/445.patch"
+    },
+    "body": "See discussion of issue #435: Stream ID sequential order may create head of queue blocking."
+  },
+  {
+    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/444",
+    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
+    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/444/labels{/name}",
+    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/444/comments",
+    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/444/events",
+    "html_url": "https://github.com/quicwg/base-drafts/pull/444",
+    "id": 222811277,
+    "number": 444,
+    "title": "Additional security section on fragmentation reassembly attacks",
+    "user": {
+      "login": "huitema",
+      "id": 7464128,
+      "avatar_url": "https://avatars3.githubusercontent.com/u/7464128?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/huitema",
+      "html_url": "https://github.com/huitema",
+      "followers_url": "https://api.github.com/users/huitema/followers",
+      "following_url": "https://api.github.com/users/huitema/following{/other_user}",
+      "gists_url": "https://api.github.com/users/huitema/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/huitema/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/huitema/subscriptions",
+      "organizations_url": "https://api.github.com/users/huitema/orgs",
+      "repos_url": "https://api.github.com/users/huitema/repos",
+      "events_url": "https://api.github.com/users/huitema/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/huitema/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+
+    ],
+    "state": "open",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 0,
+    "created_at": "2017-04-19T17:25:08Z",
+    "updated_at": "2017-04-20T01:24:32Z",
+    "closed_at": null,
+    "pull_request": {
+      "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/444",
+      "html_url": "https://github.com/quicwg/base-drafts/pull/444",
+      "diff_url": "https://github.com/quicwg/base-drafts/pull/444.diff",
+      "patch_url": "https://github.com/quicwg/base-drafts/pull/444.patch"
+    },
+    "body": "Describe the equivalent of the Teardrop attack for QUIC, and propose mitigation."
+  },
+  {
+    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/443",
+    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
+    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/443/labels{/name}",
+    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/443/comments",
+    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/443/events",
+    "html_url": "https://github.com/quicwg/base-drafts/issues/443",
+    "id": 222570964,
+    "number": 443,
+    "title": "Split WINDOW_UPDATE",
+    "user": {
+      "login": "martinthomson",
+      "id": 67641,
+      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/martinthomson",
+      "html_url": "https://github.com/martinthomson",
+      "followers_url": "https://api.github.com/users/martinthomson/followers",
+      "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
+      "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
+      "organizations_url": "https://api.github.com/users/martinthomson/orgs",
+      "repos_url": "https://api.github.com/users/martinthomson/repos",
+      "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/martinthomson/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 481871361,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/design",
+        "name": "design",
+        "color": "1d76db",
+        "default": false
+      },
+      {
+        "id": 481871399,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
+        "name": "transport",
+        "color": "fbca04",
+        "default": false
+      }
+    ],
+    "state": "open",
+    "locked": false,
+    "assignee": {
+      "login": "martinthomson",
+      "id": 67641,
+      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/martinthomson",
+      "html_url": "https://github.com/martinthomson",
+      "followers_url": "https://api.github.com/users/martinthomson/followers",
+      "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
+      "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
+      "organizations_url": "https://api.github.com/users/martinthomson/orgs",
+      "repos_url": "https://api.github.com/users/martinthomson/repos",
+      "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/martinthomson/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "assignees": [
+      {
+        "login": "martinthomson",
+        "id": 67641,
+        "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/martinthomson",
+        "html_url": "https://github.com/martinthomson",
+        "followers_url": "https://api.github.com/users/martinthomson/followers",
+        "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
+        "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
+        "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
+        "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
+        "organizations_url": "https://api.github.com/users/martinthomson/orgs",
+        "repos_url": "https://api.github.com/users/martinthomson/repos",
+        "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
+        "received_events_url": "https://api.github.com/users/martinthomson/received_events",
+        "type": "User",
+        "site_admin": false
+      }
+    ],
+    "milestone": null,
+    "comments": 0,
+    "created_at": "2017-04-18T23:08:23Z",
+    "updated_at": "2017-04-18T23:08:23Z",
+    "closed_at": null,
+    "body": "The current design has a special carve-out for stream 0, but special semantics for it.\r\n\r\nIf we split this into two different frame types, we avoid having special logic for the scaling of the connection-level window AND we can reclaim stream 0.\r\n\r\nThat leads to the possibility of using stream 0 for crypto, stream 1 for HTTP control."
+  },
+  {
+    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/442",
+    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
+    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/442/labels{/name}",
+    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/442/comments",
+    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/442/events",
+    "html_url": "https://github.com/quicwg/base-drafts/issues/442",
+    "id": 222567272,
+    "number": 442,
+    "title": "Invert the connection ID logic during the handshake",
+    "user": {
+      "login": "martinthomson",
+      "id": 67641,
+      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/martinthomson",
+      "html_url": "https://github.com/martinthomson",
+      "followers_url": "https://api.github.com/users/martinthomson/followers",
+      "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
+      "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
+      "organizations_url": "https://api.github.com/users/martinthomson/orgs",
+      "repos_url": "https://api.github.com/users/martinthomson/repos",
+      "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/martinthomson/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 481871361,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/design",
+        "name": "design",
+        "color": "1d76db",
+        "default": false
+      },
+      {
+        "id": 481871399,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
+        "name": "transport",
+        "color": "fbca04",
+        "default": false
+      }
+    ],
+    "state": "open",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 0,
+    "created_at": "2017-04-18T22:47:02Z",
+    "updated_at": "2017-04-18T22:47:02Z",
+    "closed_at": null,
+    "body": "The current design for server-chosen connection IDs doesn't allow the server to choose a connection ID on version negotiation and stateless reject.  Also, it doesn't allow a load balancer to distinguish between a server-chosen connection ID and one that the client chose.\r\n\r\nThe proposed resolution would be to have the following cleartext packet types:\r\n\r\n1. initial client packet - in which connection ID is randomized by the client\r\n2. server packet - in which the server picks a connection ID\r\n3. version negotiation - in which the server picks a connection ID\r\n4. client packet with server-chosen connection ID\r\n\r\nEssentially, the only packet that contains a client-chosen connection ID is the first one from the client.\r\n\r\nThis only requires a change from \"final server\" to \"initial client\" packet type and a tweak to the semantics of the others.\r\n\r\nRaised in conversation with @siyengar, @igorlord, and some others."
+  },
+  {
+    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/441",
+    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
+    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/441/labels{/name}",
+    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/441/comments",
+    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/441/events",
+    "html_url": "https://github.com/quicwg/base-drafts/issues/441",
+    "id": 222307125,
+    "number": 441,
+    "title": "fix priority grouping node ambiguity",
+    "user": {
+      "login": "mcmanus",
+      "id": 260531,
+      "avatar_url": "https://avatars2.githubusercontent.com/u/260531?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/mcmanus",
+      "html_url": "https://github.com/mcmanus",
+      "followers_url": "https://api.github.com/users/mcmanus/followers",
+      "following_url": "https://api.github.com/users/mcmanus/following{/other_user}",
+      "gists_url": "https://api.github.com/users/mcmanus/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/mcmanus/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/mcmanus/subscriptions",
+      "organizations_url": "https://api.github.com/users/mcmanus/orgs",
+      "repos_url": "https://api.github.com/users/mcmanus/repos",
+      "events_url": "https://api.github.com/users/mcmanus/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/mcmanus/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 481871361,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/design",
+        "name": "design",
+        "color": "1d76db",
+        "default": false
+      },
+      {
+        "id": 481871399,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
+        "name": "transport",
+        "color": "fbca04",
+        "default": false
+      }
+    ],
+    "state": "open",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 3,
+    "created_at": "2017-04-18T05:35:28Z",
+    "updated_at": "2017-04-18T18:10:13Z",
+    "closed_at": null,
+    "body": "in h2 'phantom' (unopened) streams can be used for grouping nodes for priority purposes. This is simultaneously very useful and very concerning from a resource commitment purpose. I'm aware of some servers looking to limit their use through implicit resource allocations, and I'm aware of some clients looking to use them more agressively (i.e. a grouping node per tab).\r\n\r\nPerhaps we should at least make these explicitly negotiated so they can be cleaned up, limited, etc..?"
+  },
+  {
+    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/440",
+    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
+    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/440/labels{/name}",
+    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/440/comments",
+    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/440/events",
+    "html_url": "https://github.com/quicwg/base-drafts/issues/440",
+    "id": 222302589,
+    "number": 440,
+    "title": "Known attacks",
+    "user": {
+      "login": "martinthomson",
+      "id": 67641,
+      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/martinthomson",
+      "html_url": "https://github.com/martinthomson",
+      "followers_url": "https://api.github.com/users/martinthomson/followers",
+      "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
+      "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
+      "organizations_url": "https://api.github.com/users/martinthomson/orgs",
+      "repos_url": "https://api.github.com/users/martinthomson/repos",
+      "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/martinthomson/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 481871311,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/editorial",
+        "name": "editorial",
+        "color": "0e8a16",
+        "default": false
+      },
+      {
+        "id": 481871399,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
+        "name": "transport",
+        "color": "fbca04",
+        "default": false
+      }
+    ],
+    "state": "open",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 4,
+    "created_at": "2017-04-18T05:04:58Z",
+    "updated_at": "2017-04-19T17:56:03Z",
+    "closed_at": null,
+    "body": "Christian Huitema notes a few potential attacks that we don't cover properly:\r\n\r\n1. Stream smurfing attack. Client (or server) opens a large number of streams by sending stream data frames with new stream number and minimal content.\r\n\r\n2. Stream choke attack. Client sends request on a stream, then use stream level flow control to choke the transmission by the server. Apply to many parallel streams for bonus effect.\r\n\r\n3. Silly stream number attack. Client opens stream 2*N+1 for some outlandish version of N. Might play havoc with server management of incoming streams.\r\n\r\n4. Stream drop by drop attack. Client sends data on a stream extremely slowly, maybe 1 byte at a time. Server spin its wheels waiting for data.\r\n\r\nI don't think that these are controversial.  Most are already well-known, we just need text for them."
+  },
+  {
+    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/439",
+    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
+    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/439/labels{/name}",
+    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/439/comments",
+    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/439/events",
+    "html_url": "https://github.com/quicwg/base-drafts/issues/439",
+    "id": 221997991,
+    "number": 439,
+    "title": "Unclear stream close semantics",
+    "user": {
+      "login": "mikkelfj",
+      "id": 193335,
+      "avatar_url": "https://avatars1.githubusercontent.com/u/193335?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/mikkelfj",
+      "html_url": "https://github.com/mikkelfj",
+      "followers_url": "https://api.github.com/users/mikkelfj/followers",
+      "following_url": "https://api.github.com/users/mikkelfj/following{/other_user}",
+      "gists_url": "https://api.github.com/users/mikkelfj/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/mikkelfj/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/mikkelfj/subscriptions",
+      "organizations_url": "https://api.github.com/users/mikkelfj/orgs",
+      "repos_url": "https://api.github.com/users/mikkelfj/repos",
+      "events_url": "https://api.github.com/users/mikkelfj/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/mikkelfj/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 481871361,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/design",
+        "name": "design",
+        "color": "1d76db",
+        "default": false
+      },
+      {
+        "id": 481871399,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
+        "name": "transport",
+        "color": "fbca04",
+        "default": false
+      }
+    ],
+    "state": "open",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 9,
+    "created_at": "2017-04-16T08:22:01Z",
+    "updated_at": "2017-04-19T07:36:24Z",
+    "closed_at": null,
+    "body": "According to life of a stream, a stream can transition from \"half closed local\" to \"closed\" by sending a \"RST\" or by receiving \"FIN\" or \"RST\" from peer. However, sending a \"RST\" may race ahead of any in-flight packets send to the peer. In fact this is likely because the stream will transmit according to a fair schedule while RST will likely be prioritised. The RST will tear down state on both ends preventing the peer from receiving and the local endpont from retransmitting (depending on implementation).\r\n\r\nIn addition to the above there is also a user aspect. QUIC does not define an API, but what does it mean to close a stream? Do you close the write stream or do you close both read and write stream? This can encoded as either sending \"FIN\" or \"FIN+RST\" but has the race condition mentioned. When cleaning up after a stream initiated locally, it appears you need to always eventually send a RST even if the peer has no interest in writing. Application protocol could agree to not require a RST, but that seems a bit roundabout.\r\n\r\nPerhaps it is saner to handle read and write streams entirely separately.\r\nhttps://github.com/quicwg/base-drafts/issues/175\r\n\r\nThe issue may also be related to:\r\nhttps://github.com/quicwg/base-drafts/issues/61"
+  },
+  {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/438",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
     "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/438/labels{/name}",
@@ -38,9 +524,9 @@
 
     ],
     "milestone": null,
-    "comments": 0,
+    "comments": 1,
     "created_at": "2017-04-13T20:06:44Z",
-    "updated_at": "2017-04-13T22:00:46Z",
+    "updated_at": "2017-04-18T19:16:48Z",
     "closed_at": null,
     "pull_request": {
       "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/438",
@@ -131,7 +617,20 @@
       "site_admin": false
     },
     "labels": [
-
+      {
+        "id": 481871361,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/design",
+        "name": "design",
+        "color": "1d76db",
+        "default": false
+      },
+      {
+        "id": 481871627,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/http",
+        "name": "http",
+        "color": "fbca04",
+        "default": false
+      }
     ],
     "state": "open",
     "locked": false,
@@ -140,9 +639,9 @@
 
     ],
     "milestone": null,
-    "comments": 0,
+    "comments": 4,
     "created_at": "2017-04-13T18:05:37Z",
-    "updated_at": "2017-04-13T18:05:49Z",
+    "updated_at": "2017-04-18T23:49:54Z",
     "closed_at": null,
     "body": "Reviewing Issue #181 and PR #236, it seems like having the SETTINGS\r\nframe on Stream #3 creates a bunch of odd race conditions, because\r\nyou need/want to send data (both in 0-RTT and 1-RTT) before you might\r\nget the SETTINGS frame.\r\n\r\nIt occurs to me that we might easily be able to remove this by\r\nmoving the SETTINGS frame into the handshake. Specifically the\r\nClientHello and the EncryptedExtensions.\r\n\r\nIf we did this, there would be no need for defaults, because:\r\n\r\n- In 1-RTT, you would be guaranteed of getting it before you\r\n  could write\r\n- It would not be possible to have a 0-RTT context without\r\n  SETTINGS.\r\n\r\nMoreover, the server's 1-RTT settings frames would clearly\r\napply to the 1-RTT data, but not the 0-RTT data.\r\n\r\nIt seems like the major downsides of this are:\r\n\r\n- Layer violation\r\n- You don't get confidentiality for the client's settings\r\n  (but you do gain a full RTT).\r\n\r\n"
   },
@@ -176,7 +675,20 @@
       "site_admin": false
     },
     "labels": [
-
+      {
+        "id": 481871311,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/editorial",
+        "name": "editorial",
+        "color": "0e8a16",
+        "default": false
+      },
+      {
+        "id": 481871399,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
+        "name": "transport",
+        "color": "fbca04",
+        "default": false
+      }
     ],
     "state": "open",
     "locked": false,
@@ -185,9 +697,9 @@
 
     ],
     "milestone": null,
-    "comments": 5,
+    "comments": 7,
     "created_at": "2017-04-13T01:01:49Z",
-    "updated_at": "2017-04-13T19:12:57Z",
+    "updated_at": "2017-04-18T05:17:09Z",
     "closed_at": null,
     "body": "The transport draft says in Section 10.2 that \"Streams MUST be created in sequential order.\" This is logical. Suppose now that an application sends the STREAM-DATA opening stream 5 in one packet number X, and then the opening of stream 7 in the next packet, number X+1. This is a fairly natural thing to do, for example, for QUIC over DNS, where each transaction opens its own stream. \r\n\r\nSuppose now that packet number X is lost. Packet X+1 will be processed. The receiver will see for the first time a reference to stream 7, without having seen stream 5. In a strict reading of the spec, since streams MUST be created in sequential order, the receiver should signal an error, since streams have been created out of order. But that's fiendish. Or maybe it should queue the stream 7 packet until stream 5 has been open, but that would cause head of queue blocking. Or maybe it should not care about the MUST, and just open stream 7.\r\n\r\nNow, of course, if the receiver is willing to accept stream ID opened out of order, we can have different problems. How much out of order is too much? You may want to say \"1\", but consider that a client could easily pack a dozen DNS requests and as many stream opening in a single packet. If that packet is lost, there is a gap of a dozen stream ID.\r\n\r\nNot sure what the right solution should be. "
   },
@@ -221,7 +733,20 @@
       "site_admin": false
     },
     "labels": [
-
+      {
+        "id": 481871361,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/design",
+        "name": "design",
+        "color": "1d76db",
+        "default": false
+      },
+      {
+        "id": 481871399,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
+        "name": "transport",
+        "color": "fbca04",
+        "default": false
+      }
     ],
     "state": "closed",
     "locked": false,
@@ -232,7 +757,7 @@
     "milestone": null,
     "comments": 9,
     "created_at": "2017-04-11T20:31:36Z",
-    "updated_at": "2017-04-13T16:05:18Z",
+    "updated_at": "2017-04-19T05:40:56Z",
     "closed_at": "2017-04-13T15:58:00Z",
     "body": "#158 introduced a change to the PADDING frame making it a single octect long. @rjb1000 made the this comment on that change, which I think is still a valid concern:\r\n\r\n> With this new approach, it will no longer be safe to do that: the parser must keep parsing 1-byte PADDING frames until it finds a different type of frame, or reaches the end of the packet.\r\n> \r\n> If the PADDING frame included a length, it would be possible to advance a pointer to the start of the next frame in a single parser action. Without a length field, the parser must work through the PADDING frames one by one.\r\n\r\nIs the concern unjust?"
   },
@@ -245,7 +770,7 @@
     "html_url": "https://github.com/quicwg/base-drafts/issues/433",
     "id": 220706652,
     "number": 433,
-    "title": "Propose compressed zero stream frames or TRIM frames",
+    "title": "Propose compressed zero stream frames or TRIM frames (and partially reliable streams)",
     "user": {
       "login": "mikkelfj",
       "id": 193335,
@@ -266,7 +791,20 @@
       "site_admin": false
     },
     "labels": [
-
+      {
+        "id": 481871361,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/design",
+        "name": "design",
+        "color": "1d76db",
+        "default": false
+      },
+      {
+        "id": 481871399,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
+        "name": "transport",
+        "color": "fbca04",
+        "default": false
+      }
     ],
     "state": "open",
     "locked": false,
@@ -275,9 +813,9 @@
 
     ],
     "milestone": null,
-    "comments": 6,
+    "comments": 9,
     "created_at": "2017-04-10T16:55:31Z",
-    "updated_at": "2017-04-12T14:38:32Z",
+    "updated_at": "2017-04-18T05:14:24Z",
     "closed_at": null,
     "body": "In anticipation of partially reliable streams I considered how it might be done today with minimal impact.\r\n\r\nThe application can ask the QUIC API to only transmit or retransmit within a specific range limit or within a specific timeframe. If this is not to violate the current protocol, the QUIC engine must still transmit data but it can then choose to send just zeroes in order to free up internal or application controlled buffers. This is a waste of good bandwidth.\r\n\r\nThe QUIC engine could support a stream frame with just zeroes, using a dedicated frame type, or just a flag in a the stream header if possible. When this is set, the frame data will be absent. At the receiving end, the engine can either just fill in zeroes, or inform the application of a zero block at a given range.\r\n\r\nWith a compressed zero frame, it is then possible to handle partially unreliable streams at the API level without involving the core protocol which need not care.\r\n\r\nA zero frame can also be useful if transmitting a memory mapped file that contains large amount of zeroes - although of course one would normally apply compression.\r\n\r\nA downside of zero frames is that the receiving end cannot tell if the zero block was lost data or just valid zero data. It may derive that from the application context, or perhaps there should be a distrinction between compresed zeroes and actual gap frames.\r\n\r\nAn upside is that the QUIC protocol need not deal with length markers within streams to identify what is a message boundary so only complete messages are dropped or retransmitted.\r\n\r\nThis is somewhat related to sparse files and TRIM sectors in SSD devices.\r\n\r\nOf course, there are many other, and possibly better, ways to deal with partially reliable streams, so this is just one idea I wanted to share.\r\n\r\nUPDATE: another downside is that the receiving end may be blocking for older data just to retrieve a zero frame. However, this can also be handled at the API level, allowing the receiver to advance the stream even if data is missing - zero frames are not needed for this, except the retransmission overhead. So zero frames still provide a consistent way to treat absent data without very close end-point coordination, which may also be useful when forwarding streams to new connections or when writing to a file.\r\n"
   },
@@ -311,7 +849,20 @@
       "site_admin": false
     },
     "labels": [
-
+      {
+        "id": 481871361,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/design",
+        "name": "design",
+        "color": "1d76db",
+        "default": false
+      },
+      {
+        "id": 481871399,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
+        "name": "transport",
+        "color": "fbca04",
+        "default": false
+      }
     ],
     "state": "open",
     "locked": false,
@@ -320,9 +871,9 @@
 
     ],
     "milestone": null,
-    "comments": 0,
+    "comments": 1,
     "created_at": "2017-04-06T16:02:09Z",
-    "updated_at": "2017-04-06T16:02:09Z",
+    "updated_at": "2017-04-18T05:12:59Z",
     "closed_at": null,
     "body": "Following up on the mailing list discussion, filing an issue so that this doesn't get lost. It's not clear from the draft what the concurrent stream limit actually protects. I don't think the current mechanism protects what I think we want it to protect, i.e. the stream state table and the retransmission buffer, however once we specify what we want to protect we can maybe come up with a solution for this."
   },
@@ -509,7 +1060,20 @@
       "site_admin": false
     },
     "labels": [
-
+      {
+        "id": 481871361,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/design",
+        "name": "design",
+        "color": "1d76db",
+        "default": false
+      },
+      {
+        "id": 481871627,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/http",
+        "name": "http",
+        "color": "fbca04",
+        "default": false
+      }
     ],
     "state": "open",
     "locked": false,
@@ -518,9 +1082,9 @@
 
     ],
     "milestone": null,
-    "comments": 7,
+    "comments": 9,
     "created_at": "2017-03-31T22:13:56Z",
-    "updated_at": "2017-04-12T18:05:32Z",
+    "updated_at": "2017-04-18T07:44:17Z",
     "closed_at": null,
     "body": "While discussing QUIC with some network vendors, a concern was brought up that technically, port UDP port 443 is already assigned. From\r\n\r\nhttps://www.iana.org/assignments/service-names-port-numbers/service-names-port-numbers.xhtml?&page=8\r\n\r\n```\r\nhttps\t443\ttcp\thttp protocol over TLS/SSL\t[Kipp_E_B_Hickman]\t[Kipp_E_B_Hickman]\t\t\t\t\t\t\r\nhttps\t443\tudp\thttp protocol over TLS/SSL\t[Kipp_E_B_Hickman]\t[Kipp_E_B_Hickman]\t\t\r\n```\r\n\r\nYes, seems silly and nit picky, but I'm wondering if it'd make sense to try to get 443:UDP assigned to HQ ? The vendor concern is that adding support for special handling of UDP packets on port 443 would have to be absolutely guaranteed to be QUIC. At least that's what I've been told.\r\n\r\nThe other option would be to add an identifier to every QUIC packet, such that they can uniquely identify it as such.\r\n\r\n"
   },
@@ -554,7 +1118,13 @@
       "site_admin": false
     },
     "labels": [
-
+      {
+        "id": 564618955,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/duplicate",
+        "name": "duplicate",
+        "color": "aaaaaa",
+        "default": true
+      }
     ],
     "state": "closed",
     "locked": false,
@@ -565,7 +1135,7 @@
     "milestone": null,
     "comments": 3,
     "created_at": "2017-03-30T14:43:18Z",
-    "updated_at": "2017-03-30T14:48:09Z",
+    "updated_at": "2017-04-19T05:41:22Z",
     "closed_at": "2017-03-30T14:48:09Z",
     "body": "When a client experiences a \"privacy preserving(or theatening) event\", it may want to change connection id and start with a non-linkable packet number.\r\n\r\nI suggest we add a frame to allow the server to supply new connection IDs, and include an indication that the server requests the client change it's connection ID immediately.\r\n\r\nThe document must also specify how the IV for the new connection ID should be constructed, in order to ensure the IV is not re-used and both peers agree on the IV."
   },
@@ -664,7 +1234,20 @@
       "site_admin": false
     },
     "labels": [
-
+      {
+        "id": 481871361,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/design",
+        "name": "design",
+        "color": "1d76db",
+        "default": false
+      },
+      {
+        "id": 481871399,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
+        "name": "transport",
+        "color": "fbca04",
+        "default": false
+      }
     ],
     "state": "open",
     "locked": false,
@@ -675,7 +1258,7 @@
     "milestone": null,
     "comments": 0,
     "created_at": "2017-03-30T05:47:51Z",
-    "updated_at": "2017-03-30T05:47:51Z",
+    "updated_at": "2017-04-19T06:11:24Z",
     "closed_at": null,
     "body": "The draft currently requires clients to reset initial streams beyond the value declared by the server.\r\n> Similarly, a client might exceed the initial stream limit declared by the server.  A client MUST reset any streams that exceed this limit.\r\n\r\nThis can be problematic for applications where stream IDs are meaningful, since the client will never be able to reopen a previously-reset stream ID. It is also wasteful of bandwidth, in case the server is willing to accept the extra data.\r\n\r\nAlso, the paragraph in its entirety is either unclear or self-contradictory:\r\n>A client MUST reset any streams that exceed this limit. A server SHOULD reset any streams it cannot handle [...]\r\n\r\nIf the client MUST reset extra streams, whether server can or cannot handle the extra streams becomes irrelevant -- they are being reset!\r\n\r\nInstead, we should require that the client stops sending any additional STREAM frames for the extra streams (even retransmissions) until the server indicates that it is ready for those streams via LIMIT_UPDATE (#419).  The server should be free to reset what it cannot handle (but for an application with meaningful stream IDs this would render the connection useless)."
   },
@@ -884,17 +1467,17 @@
     "labels": [
 
     ],
-    "state": "open",
+    "state": "closed",
     "locked": false,
     "assignee": null,
     "assignees": [
 
     ],
     "milestone": null,
-    "comments": 1,
+    "comments": 5,
     "created_at": "2017-03-29T16:20:58Z",
-    "updated_at": "2017-04-13T21:59:53Z",
-    "closed_at": null,
+    "updated_at": "2017-04-20T03:03:50Z",
+    "closed_at": "2017-04-20T03:03:47Z",
     "pull_request": {
       "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/421",
       "html_url": "https://github.com/quicwg/base-drafts/pull/421",
@@ -984,7 +1567,20 @@
       "site_admin": false
     },
     "labels": [
-
+      {
+        "id": 481871361,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/design",
+        "name": "design",
+        "color": "1d76db",
+        "default": false
+      },
+      {
+        "id": 481871399,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
+        "name": "transport",
+        "color": "fbca04",
+        "default": false
+      }
     ],
     "state": "open",
     "locked": false,
@@ -993,9 +1589,9 @@
 
     ],
     "milestone": null,
-    "comments": 6,
+    "comments": 7,
     "created_at": "2017-03-29T00:37:31Z",
-    "updated_at": "2017-03-29T20:49:06Z",
+    "updated_at": "2017-04-20T02:50:48Z",
     "closed_at": null,
     "body": "We've already had a lot of discussions about the concurrent streams limit, which all brought us back to the problem that at every given moment both peers have to agree about the number of open streams, which seems to require a non-trivial amount of bookkeeping (of ACKs received for all STREAM frames sent on a given stream).\r\n\r\nI'd like to propose a different solution, which solves this problem, and has a couple of nice additional properties as well:\r\n\r\nA receiver advertises the maximum Stream ID it is willing to accept. The sender is allowed to open all streams that have IDs not larger than this number. The receiver can advertise a higher maximum Stream ID whenever it likes to, by sending a STREAM_LIMIT_UPDATE frame. STREAM_LIMIT_UPDATE is a retransmittable frame that contains a single value, the maximum Stream ID.\r\nNote that conceptually, this is similar to advertising a flow control offset (and the rules for STREAM_LIMIT_UPDATEs would be similar to those for WINDOW_UPDATEs).\r\n\r\nAn implementation is free to choose any algorithm to determine which maximum Stream ID it advertises. The number of open streams may be used, but I can think of a couple of other ways to limit the state a peer can create. It would even be possible to advertise different limits depending on the server load."
   },
@@ -1029,7 +1625,20 @@
       "site_admin": false
     },
     "labels": [
-
+      {
+        "id": 481871361,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/design",
+        "name": "design",
+        "color": "1d76db",
+        "default": false
+      },
+      {
+        "id": 481871399,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
+        "name": "transport",
+        "color": "fbca04",
+        "default": false
+      }
     ],
     "state": "open",
     "locked": false,
@@ -1040,7 +1649,7 @@
     "milestone": null,
     "comments": 0,
     "created_at": "2017-03-29T00:07:09Z",
-    "updated_at": "2017-03-29T00:07:09Z",
+    "updated_at": "2017-04-18T06:11:51Z",
     "closed_at": null,
     "pull_request": {
       "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/418",
@@ -1100,7 +1709,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/417.patch"
     },
     "body": ""
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/416",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -1233,7 +1843,20 @@
       "site_admin": false
     },
     "labels": [
-
+      {
+        "id": 481871311,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/editorial",
+        "name": "editorial",
+        "color": "0e8a16",
+        "default": false
+      },
+      {
+        "id": 481871399,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
+        "name": "transport",
+        "color": "fbca04",
+        "default": false
+      }
     ],
     "state": "closed",
     "locked": false,
@@ -1244,7 +1867,7 @@
     "milestone": null,
     "comments": 0,
     "created_at": "2017-03-23T09:06:31Z",
-    "updated_at": "2017-04-14T01:51:07Z",
+    "updated_at": "2017-04-19T05:41:54Z",
     "closed_at": "2017-04-14T01:51:07Z",
     "body": "There should be a note saying what is the value of an offset if the offset length is 0. The implementation must assume that  the offset is 0."
   },
@@ -1529,8 +2152,7 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/409.patch"
     },
     "body": ""
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/408",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -1672,9 +2294,9 @@
 
     ],
     "milestone": null,
-    "comments": 1,
+    "comments": 2,
     "created_at": "2017-03-15T05:18:40Z",
-    "updated_at": "2017-03-15T23:18:31Z",
+    "updated_at": "2017-04-19T06:14:01Z",
     "closed_at": null,
     "body": "There are a large number of issues are around the packet header. The simplified/streamlined header proposed in PR 361 can address the following laundry list of issues:\r\n#35: Starting packet number\r\n#56: Extending flags\r\n#119: Server-proposed connection ID\r\n#133: Connection ID in version negotiation\r\n#135: DoS using Version Negotiation Packets\r\n#147: Reflection Attack Resistance\r\n#185: Reliable identification of the initial packet for a connection\r\n#193: Flags section is kind of confusing\r\n#244: Need a NONCE in version negotiation packets\r\n#293: Does the connection ID need to be in a consistent location\r\n#295: Connection ID on a version negotiation packet\r\n#148: QUIC packet header complexity\r\n#170: Connection ID collisions\r\n\r\nWe may want to change the header further, but it would be good to have consensus on PR 361 as being a good way forward."
   },
@@ -2807,7 +3429,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/387.patch"
     },
     "body": ""
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/386",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3425,8 +4048,7 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/379.patch"
     },
     "body": "For some reason, the TLS draft is in the .gitignore file.  I can't see a sensible reason for this, and yet the repo obviously does still track the TLS draft.  Am I missing something?\r\n\r\nOrdinarily, I'd just fix this, but it's weird enough I'd like the git-template-master to look and confirm."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/378",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -4020,6 +4642,13 @@
     },
     "labels": [
       {
+        "id": 481871361,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/design",
+        "name": "design",
+        "color": "1d76db",
+        "default": false
+      },
+      {
         "id": 481871399,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
         "name": "transport",
@@ -4036,7 +4665,7 @@
     "milestone": null,
     "comments": 4,
     "created_at": "2017-03-08T17:52:40Z",
-    "updated_at": "2017-03-10T20:16:35Z",
+    "updated_at": "2017-04-19T05:42:39Z",
     "closed_at": "2017-03-10T20:16:35Z",
     "body": "ILubashev's suggestion on #171 alludes to this; separating it out as a new issue.\r\n\r\nConnection-level flow control is currently defined as a cumulative sum of all bytes _received_ on all streams.  However, if you receive STREAM frames out of order, you can know that more data is in flight, even if you haven't received it.  Currently, that data implicitly counts against the receiver's stream window (since it's a max offset), but not against the connection window.\r\n\r\nThis would allow the receiver of a DISINTEREST frame to silently stop retransmission if the STREAM w/ FIN had already been acknowledged (without generating a RST_STREAM) since the flow control states on both sides would be consistent.  However, it would also require more logic on STREAM receipt, since it's no longer just a running counter of the size of all received STREAM frames."
   },
@@ -4375,6 +5004,13 @@
         "default": false
       },
       {
+        "id": 554720037,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/has-consensus",
+        "name": "has-consensus",
+        "color": "5319e7",
+        "default": false
+      },
+      {
         "id": 481871627,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/http",
         "name": "http",
@@ -4391,7 +5027,7 @@
     "milestone": null,
     "comments": 1,
     "created_at": "2017-03-07T03:16:57Z",
-    "updated_at": "2017-03-08T18:12:19Z",
+    "updated_at": "2017-04-19T05:30:41Z",
     "closed_at": "2017-03-08T18:12:19Z",
     "body": "We need errors for when a stream is ended in the middle of a frame."
   },
@@ -4863,7 +5499,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/357.patch"
     },
     "body": "There were a few places where bullet lists were used to carry definitions.  This switches to using definition lists.  I also aligned the transport parameter table."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/356",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5246,6 +5883,13 @@
         "default": false
       },
       {
+        "id": 554720037,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/has-consensus",
+        "name": "has-consensus",
+        "color": "5319e7",
+        "default": false
+      },
+      {
         "id": 481871399,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
         "name": "transport",
@@ -5262,7 +5906,7 @@
     "milestone": null,
     "comments": 1,
     "created_at": "2017-03-02T00:38:07Z",
-    "updated_at": "2017-03-08T19:26:57Z",
+    "updated_at": "2017-04-19T05:27:41Z",
     "closed_at": "2017-03-08T19:26:57Z",
     "body": "In writing up a change for GOAWAY, I realize that it doesn't need to signal the error condition that triggered it.  An endpoint that wants to kill a connection can use CONNECTION_CLOSE and the error code that carries.  The purpose of GOAWAY is to signal graceful shutdown and to mark multiple streams as being safe to retry.\r\n\r\nIf it doesn't need an error code, then the reason phrase can go away as well.\r\n\r\n(This might depend on the outcome of discussions that suggest that CONNECTION_CLOSE could be replaced by Public Reset.  Or, it might influence the outcome of that discussion...)"
   },
@@ -5406,6 +6050,13 @@
         "default": false
       },
       {
+        "id": 554720037,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/has-consensus",
+        "name": "has-consensus",
+        "color": "5319e7",
+        "default": false
+      },
+      {
         "id": 481871399,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
         "name": "transport",
@@ -5422,11 +6073,10 @@
     "milestone": null,
     "comments": 8,
     "created_at": "2017-02-28T00:27:13Z",
-    "updated_at": "2017-03-10T00:14:59Z",
+    "updated_at": "2017-04-19T05:27:41Z",
     "closed_at": "2017-03-10T00:14:59Z",
     "body": "My sense is that we'd like the server to chose the \"real\" connection ID to be used for a connection. Among other things, this enables servers to embed routing/load balancing information into connection IDs.\r\n\r\nI have heard two options for what the client should do before it has a server-chosen connection ID.\r\n\r\n1) Send a random connection ID\r\n2) Send a connection ID of 0\r\n\r\nIf we go with approach 1, then we need some mechanism that load balancers can use to detect if a packet's connection ID is server-chosen or not. It seems likely that all packets encrypted with 1-RTT keys could use server generated connection IDs. But other packets it's not so clear. Consider the case of a non-0-RTT handshake. The initial client handshake packet would include a client-chosen connection ID. When the server replies, it could use a server-chosen connection ID. If so then when the client sends the next handshake packet it could use the server-chosen connection ID as well. But that means that we'd need a mechanism to disambiguate client handshake packets with client-chosen connection IDs from client handshake packets with server-chosen connection IDs. We could devote bits or packet types to indicate this. I suspect the same argument might hold for server handshake packets. We might not want the server to chose a connection ID until it is ready to accept the handshake.\r\n\r\nOne benefit of this approach, however, is that a QUIC server could chose to simply use the client's connection ID for the duration of the connection. This would mean that it would not need to be able to generate a new connection ID that is guaranteed to be sent by the load balancer back to itself. In cases where the vendor of the load balancer and the server are not the same, this might be valuable.\r\n\r\nIf we go with approach 2, then it's obvious that any packet with a non-zero connection ID has a server-chosen connection ID (though the server still may want to verify that it's a \"valid\" connection ID according to the algorithm it uses). \r\n\r\nOn the other hand, this requires QUIC servers which are behind load balancers to be able to generate connection IDs which the load balancer will route back to them. If the server and load balancers are from different vendors, this might be challenging.\r\n\r\n"
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/348",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5529,6 +6179,13 @@
         "default": false
       },
       {
+        "id": 554720037,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/has-consensus",
+        "name": "has-consensus",
+        "color": "5319e7",
+        "default": false
+      },
+      {
         "id": 481871399,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
         "name": "transport",
@@ -5545,7 +6202,7 @@
     "milestone": null,
     "comments": 2,
     "created_at": "2017-02-24T15:11:01Z",
-    "updated_at": "2017-03-08T19:26:58Z",
+    "updated_at": "2017-04-19T05:27:41Z",
     "closed_at": "2017-03-08T19:26:58Z",
     "body": "GOAWAY has a \"Last Good Stream ID\", which is \"The last Stream ID which was accepted by the sender of the GOAWAY message. If no streams were replied to, this value must be set to 0.\"\r\n\r\nThe sender does not specify the last stream id it will use, which I think it should.\r\n\r\nI also think the text in \"6.6 Connection Termination\" should specify that all streams <= the Last Good Stream ID will be completed(fin'd or reset), including delivering any outstanding data. \r\n\r\n"
   },
@@ -5911,6 +6568,13 @@
         "default": false
       },
       {
+        "id": 554720037,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/has-consensus",
+        "name": "has-consensus",
+        "color": "5319e7",
+        "default": false
+      },
+      {
         "id": 481871399,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
         "name": "transport",
@@ -5927,7 +6591,7 @@
     "milestone": null,
     "comments": 5,
     "created_at": "2017-02-23T22:27:10Z",
-    "updated_at": "2017-03-10T17:49:40Z",
+    "updated_at": "2017-04-19T05:27:41Z",
     "closed_at": "2017-03-10T17:49:40Z",
     "body": "We're starting to see a few cases where ACK frames are being used to close the loop on things.  But that raises questions like \"if a peer acknowledges a packet containing a GOAWAY, does that mean I can assume that stream above the mentioned number are now closed at their end?\"\r\n\r\nI think that we need to state what the rule is, and it should be simple.  An acknowledgement for a packet implies that all QUIC-level control messages have been read and processed.\r\n\r\nThis includes PING, ACK, RST_STREAM, GOAWAY, etc...  I think that it also has to include FIN bits on STREAM frames.  That implies that the *transport* must have finished handling all the messages.\r\n\r\nThe application protocol might not have consumed the data from STREAM frames, but that is the only thing that is considered outstanding when a packet is acknowledged.  We have a special sort of acknowledgment for data: flow control credits.\r\n\r\nIf we add features that include special acknowledgement (like flow control), then those would be excluded, but that would be explicitly stated.  Otherwise, if it is in the transport and it is acknowledged, then it has been processed by the receiver."
   },
@@ -5969,6 +6633,13 @@
         "default": false
       },
       {
+        "id": 554720037,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/has-consensus",
+        "name": "has-consensus",
+        "color": "5319e7",
+        "default": false
+      },
+      {
         "id": 481871399,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
         "name": "transport",
@@ -5985,7 +6656,7 @@
     "milestone": null,
     "comments": 3,
     "created_at": "2017-02-23T22:19:39Z",
-    "updated_at": "2017-03-14T01:21:51Z",
+    "updated_at": "2017-04-19T05:27:41Z",
     "closed_at": "2017-03-14T01:21:51Z",
     "body": "@ddragana observes that the 64-bit offset value in the WINDOW_UPDATE message is probably the first value that we will run out of (over packet numbers and stream numbers, which should last a bit longer in most cases).  We could avoid this by multiplying these values by a constant (she suggests 1024), which would reduce the granularity with which flow control credits could be granted, but increase the total lifetime of a long-lived connection.\r\n\r\nSo, trade-off time.  The scaling multiplier is now 1.  A larger value allows for longer-lived connections, a shorter value allows finer control over flow control.  I'd suggest that values in the order of 8 are probably easy to justify, can we go as high as 1024?\r\n\r\nWe could also choose a different value for the connection and stream flow control offsets on that basis that connections need more octets, whereas streams do not."
   },
@@ -6735,7 +7406,20 @@
       "site_admin": false
     },
     "labels": [
-
+      {
+        "id": 481871311,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/editorial",
+        "name": "editorial",
+        "color": "0e8a16",
+        "default": false
+      },
+      {
+        "id": 481871399,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
+        "name": "transport",
+        "color": "fbca04",
+        "default": false
+      }
     ],
     "state": "closed",
     "locked": false,
@@ -6746,7 +7430,7 @@
     "milestone": null,
     "comments": 6,
     "created_at": "2017-02-21T16:34:12Z",
-    "updated_at": "2017-02-23T13:52:17Z",
+    "updated_at": "2017-04-19T05:43:24Z",
     "closed_at": "2017-02-21T17:49:32Z",
     "body": "> Byte offset: A 64-bit unsigned integer indicating the absolute byte offset of data which can be sent on the given stream. In the case of connection-level flow control, the cumulative offset which can be sent on all streams that contribute to connection-level flow control.\r\n\r\nCan we clarify what \"the cumulative offset which can be sent on all streams\" means? It reads as cumulative amount of data that can be sent on all streams including data already sent, and not an increment like in h2. \r\nI think this should be an increment similar to h2."
   },
@@ -6838,7 +7522,20 @@
       "site_admin": false
     },
     "labels": [
-
+      {
+        "id": 564618955,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/duplicate",
+        "name": "duplicate",
+        "color": "aaaaaa",
+        "default": true
+      },
+      {
+        "id": 481871399,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
+        "name": "transport",
+        "color": "fbca04",
+        "default": false
+      }
     ],
     "state": "closed",
     "locked": false,
@@ -6849,10 +7546,11 @@
     "milestone": null,
     "comments": 2,
     "created_at": "2017-02-20T04:01:15Z",
-    "updated_at": "2017-02-20T23:34:07Z",
+    "updated_at": "2017-04-19T05:43:50Z",
     "closed_at": "2017-02-20T23:34:07Z",
     "body": "section 8 of transport:`\r\n\r\n>  If a QUIC endpoint determines that the PMTU between any pair of local and remote IP addresses has fallen below 1280 octets, it MUST immediately cease sending QUIC packets between those IP addresses. This may result in abrupt termination of the connection if all pairs are affected. In this case, an endpoint SHOULD send a Public Reset packet to indicate the failure. \r\n\r\nbut PR is defined as being a last resort and it is of course not authenticated.. while it is short, a CONNECTION_CLOSE only packet would also be below minimum MTUs for IPvmumble, and is authenticated and could carry some diagnostic information.\r\n\r\nIt seems like this error can be authenticated and therefore should be.. and more generally we shouldn't promote error reporting to RST as its interaction with already sent data is very unclear if TCP RST is any kind of corollary.\r\n`"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/326",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7071,6 +7769,13 @@
         "default": false
       },
       {
+        "id": 554720037,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/has-consensus",
+        "name": "has-consensus",
+        "color": "5319e7",
+        "default": false
+      },
+      {
         "id": 481871399,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
         "name": "transport",
@@ -7087,7 +7792,7 @@
     "milestone": null,
     "comments": 11,
     "created_at": "2017-02-17T22:02:06Z",
-    "updated_at": "2017-03-15T01:39:18Z",
+    "updated_at": "2017-04-19T05:27:18Z",
     "closed_at": "2017-03-08T19:14:20Z",
     "body": "The text currently mandates (MUST!) a 4 times safety margin against reordering when picking the packet number size.  This is purely a safety margin feature, so mandating a value isn't justified.\r\n\r\nAn implementation could, though perhaps it is unwise, use a much smaller packet number than this.  The risk is that there is reordering greater than 2^size and the packets are delivered but cannot be recovered at the receiver.  That's terrible, it will trigger loss recovery and send bad signals.  However, the protocol doesn't actually break.\r\n\r\nAt a minimum, we should make this a recommendation.  Setting a mandatory floor on the value might be reasonable, but I'd be reluctant to do that unless it was pretty low, or if the value were different for different packet number sizes (smaller margins are probably more justifiable for larger packet number encodings).\r\n\r\nIdeally, we should science this and try to measure probabilities of reordering.  Ideally reordering probability as a function of outstanding packets."
   },
@@ -7340,8 +8045,7 @@
     "updated_at": "2017-02-17T22:14:51Z",
     "closed_at": "2017-02-17T22:14:51Z",
     "body": "Some of the acronyms are spelled out and some aren't.  We should make it matchy-matchy."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/318",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -8000,6 +8704,13 @@
         "default": false
       },
       {
+        "id": 554720037,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/has-consensus",
+        "name": "has-consensus",
+        "color": "5319e7",
+        "default": false
+      },
+      {
         "id": 481871399,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
         "name": "transport",
@@ -8052,7 +8763,7 @@
     "milestone": null,
     "comments": 1,
     "created_at": "2017-02-15T01:12:19Z",
-    "updated_at": "2017-03-08T07:09:12Z",
+    "updated_at": "2017-04-19T05:27:18Z",
     "closed_at": "2017-03-08T07:09:12Z",
     "body": "We need to include advice on the creation of ACK frames when an ACK frame was lost.  The advice from @ianswett is that new timing information isn't valuable.  Both endpoints only need to maintain timing information for individual packets for a short period, so retransmission of old timing information isn't valuable.\r\n\r\nThus, we should recommend that endpoints do just that: maintain a short list of packets that they want to provide timing for.  They should then not worry about re-sending any timestamps from lost packets."
   },
@@ -8087,6 +8798,13 @@
     },
     "labels": [
       {
+        "id": 481871311,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/editorial",
+        "name": "editorial",
+        "color": "0e8a16",
+        "default": false
+      },
+      {
         "id": 481871399,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
         "name": "transport",
@@ -8103,7 +8821,7 @@
     "milestone": null,
     "comments": 2,
     "created_at": "2017-02-15T01:07:46Z",
-    "updated_at": "2017-03-10T05:38:58Z",
+    "updated_at": "2017-04-19T05:48:43Z",
     "closed_at": "2017-03-10T05:38:58Z",
     "body": "The definition of \"Delta Last Acked\" is the same for all of the timestamp entries.  This implies that every packet number in the timestamp block is expressed relative to the \"Last Acked\".  That would make it impossible to provide timestamps for packets more than 255 packet numbers behind the last acknowledged packet and multiple ACK frames would be needed to do that.\r\n\r\nI don't think that's right, but that subsequent deltas apply to the last timestamp.  That is:\r\n```diff\r\n  packet_number[0] = last_acknowledged - delta_last[0]\r\n- packet_number[n] = last_acknowledged - delta_last[n]\r\n+ packet_number[n] = last_acknowledged - sum(1, n, delta_last[i])\r\n```"
   },
@@ -8947,6 +9665,13 @@
         "default": true
       },
       {
+        "id": 554720037,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/has-consensus",
+        "name": "has-consensus",
+        "color": "5319e7",
+        "default": false
+      },
+      {
         "id": 481871627,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/http",
         "name": "http",
@@ -8963,10 +9688,11 @@
     "milestone": null,
     "comments": 2,
     "created_at": "2017-02-14T00:46:44Z",
-    "updated_at": "2017-03-23T04:33:33Z",
+    "updated_at": "2017-04-19T05:30:41Z",
     "closed_at": "2017-02-14T00:48:06Z",
     "body": "Ostensibly, the `quic` parameter is a performance optimization for Alt-Svc.  A client can learn what QUIC version is most likely to succeed and use that version.  That increases the chances that version negotiation succeeds and thereby reduces the chance that the QUIC connection setup costs an extra round trip.\r\n\r\nHowever, alternative services is precisely the point where performance is not critical.  The client already has a perfectly functional HTTP/1.1 or HTTP/2 connection to the server.  This is a point where they could afford an additional round trip on connection setup.\r\n\r\n@MikeBishop suggested that if we are serious about greasing version negotiation, perhaps we could remove the `quic` parameter from the Alt-Svc header field and force clients to always pick a greased version number for their initial packet.\r\n\r\nAdvantages: grease more often and version negotiation actually gets a real workout, disadvantages: an extra round trip every time you use Alt-Svc.\r\n\r\nThis came up in #278."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/296",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -9063,6 +9789,13 @@
         "default": false
       },
       {
+        "id": 554720037,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/has-consensus",
+        "name": "has-consensus",
+        "color": "5319e7",
+        "default": false
+      },
+      {
         "id": 481871399,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
         "name": "transport",
@@ -9079,7 +9812,7 @@
     "milestone": null,
     "comments": 3,
     "created_at": "2017-02-13T00:11:21Z",
-    "updated_at": "2017-03-09T22:45:55Z",
+    "updated_at": "2017-04-19T05:27:18Z",
     "closed_at": "2017-03-09T22:45:55Z",
     "body": "Given that we have opted to go with #119 universally, it might be reasonable to think that the server could make a proposal for the connection ID on a version negotiation packet.  However, it probably isn't a good idea.  Since version negotiation is stateless, there is less need to have stable routing for this packet.  Echoing the connection ID gives the client better assurance that its initial packet was what generated the response."
   },
@@ -9179,6 +9912,13 @@
         "default": false
       },
       {
+        "id": 554720037,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/has-consensus",
+        "name": "has-consensus",
+        "color": "5319e7",
+        "default": false
+      },
+      {
         "id": 481871399,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
         "name": "transport",
@@ -9195,7 +9935,7 @@
     "milestone": null,
     "comments": 3,
     "created_at": "2017-02-12T17:19:51Z",
-    "updated_at": "2017-03-09T22:45:33Z",
+    "updated_at": "2017-04-19T05:27:18Z",
     "closed_at": "2017-03-09T22:45:33Z",
     "body": "@martinthomson created a header proposal that provides a fixed 8 byte connection id in a fixed location.  \r\n\r\nWe need to decide if this is a requirement or a nice to have.\r\n\r\nI haven't found any environments it needed to be in a fixed location for all packets, as long as it's easy to determine where it will be from the first byte of the packet."
   },
@@ -9237,6 +9977,13 @@
         "default": false
       },
       {
+        "id": 554720037,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/has-consensus",
+        "name": "has-consensus",
+        "color": "5319e7",
+        "default": false
+      },
+      {
         "id": 481871399,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
         "name": "transport",
@@ -9253,7 +10000,7 @@
     "milestone": null,
     "comments": 3,
     "created_at": "2017-02-12T17:17:45Z",
-    "updated_at": "2017-02-16T16:33:30Z",
+    "updated_at": "2017-04-19T05:27:18Z",
     "closed_at": "2017-02-16T16:33:30Z",
     "body": "@martinthomson Wrote up a public header proposal that implies 4 byte alignment is an important goal of the public header.\r\n\r\nIs it necessary, as it does constrain the design space substantially?  And if there are environments it's necessary, is it only a requirement for non-endpoint devices(aka middleboxes), so only applies to the non-protected portion of the packet."
   },
@@ -9295,6 +10042,13 @@
         "default": false
       },
       {
+        "id": 554720037,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/has-consensus",
+        "name": "has-consensus",
+        "color": "5319e7",
+        "default": false
+      },
+      {
         "id": 481871399,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
         "name": "transport",
@@ -9311,7 +10065,7 @@
     "milestone": null,
     "comments": 7,
     "created_at": "2017-02-10T09:02:27Z",
-    "updated_at": "2017-03-07T23:27:16Z",
+    "updated_at": "2017-04-19T05:27:18Z",
     "closed_at": "2017-03-07T23:27:16Z",
     "body": "The text says:\r\n\r\n> However, since it is possible that an endpoint might only send packets containing ACK frames (or other non-retransmittable frames), the receiving peer MAY send an ACK frame after a reasonable number (currently 20) of such packets have been received.\r\n\r\n\"currently 20\" seems pretty arbitrary.  That smells like something from the Google QUIC implementation.  We should be more concrete about this, if that behaviour even makes sense.\r\n\r\nIf an endpoint is receiving nothing but ACKs but is sending itself, then acknowledging those ACKs is probably fine.\r\n\r\nAn endpoint with nothing to say can generate a lot of ACKs over time, but if both endpoints are being quiet other than ACKs, it's probably time to shut up entirely.  Maybe we should say that the peer SHOULD generate an ACK frame only if it has other frame types to send.\r\n\r\nLimiting the number of PING frames that a peer will respond to is a separate issue, and may motivate a limit with a number attached to it.\r\n"
   },
@@ -9411,6 +10165,13 @@
         "default": false
       },
       {
+        "id": 554720037,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/has-consensus",
+        "name": "has-consensus",
+        "color": "5319e7",
+        "default": false
+      },
+      {
         "id": 481871399,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
         "name": "transport",
@@ -9427,11 +10188,10 @@
     "milestone": null,
     "comments": 3,
     "created_at": "2017-02-10T08:41:14Z",
-    "updated_at": "2017-02-27T01:15:15Z",
+    "updated_at": "2017-04-19T05:27:18Z",
     "closed_at": "2017-02-27T01:15:15Z",
     "body": "The draft currently says:\r\n\r\n> In this case, an endpoint SHOULD send a Public Reset packet to indicate the failure. \r\n\r\n(This is in the context of discovering that the MTU is too small.)\r\n\r\nGiven that it doesn't take much to send an authenticated CONNECTION_CLOSE in a packet that won't risk breaking even the minimum IPv4 MTU, I think that this suggestion too much.  I would change this to \"treat this as a connection error of SOME_ERROR_CODE\" either defining a new MTU_TOO_SMALL error code, or reusing an existing one."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/288",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -9582,6 +10342,13 @@
     },
     "labels": [
       {
+        "id": 481871311,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/editorial",
+        "name": "editorial",
+        "color": "0e8a16",
+        "default": false
+      },
+      {
         "id": 481871399,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
         "name": "transport",
@@ -9598,7 +10365,7 @@
     "milestone": null,
     "comments": 2,
     "created_at": "2017-02-10T08:14:39Z",
-    "updated_at": "2017-02-12T23:35:30Z",
+    "updated_at": "2017-04-19T05:46:32Z",
     "closed_at": "2017-02-12T23:35:30Z",
     "body": "According to @marten-seemann, they occasionally skip a packet number.  This might mess with congestion control if it is done too often, but it seems like a perfectly reasonable thing to do.  The draft currently forbids this.  Maybe it shouldn't."
   },
@@ -9640,6 +10407,13 @@
         "default": false
       },
       {
+        "id": 554720037,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/has-consensus",
+        "name": "has-consensus",
+        "color": "5319e7",
+        "default": false
+      },
+      {
         "id": 481871399,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
         "name": "transport",
@@ -9656,7 +10430,7 @@
     "milestone": null,
     "comments": 4,
     "created_at": "2017-02-10T07:51:06Z",
-    "updated_at": "2017-02-17T17:41:36Z",
+    "updated_at": "2017-04-19T05:27:18Z",
     "closed_at": "2017-02-17T17:41:36Z",
     "body": "The text for packet number size calculation says:\r\n\r\n> a QUIC sender MUST NOT have more than 2^(packet_number_size - 2) in flight\r\n\r\nWhat it means to be \"in flight\" is not defined.  It seems like it might mean unacknowledged, not including packets that were marked as \"lost\" by the recovery algorithm.  The difference between the current packet number and the highest acknowledged packet number might also work.\r\n\r\nThe more that I think about this, the more that I'm convinced that this is made up of 90% fudge.  Neither of the above definitions for \"in flight\" is perfect and the constant (4) is pure fudge.\r\n\r\nWhat we might ideally want to ask before determining how big the packet number encoding needs to be is how far out of order a packet could possibly get during transit - and at what point we consider excessive reordering to be considered loss.  If we assume either definition, the current mandate assumes that we want to recover from delay of 4 times the RTT (with the first definition, add four times the reordering threshold).\r\n\r\nThat seems excessive.  Given that we should be getting at least an ACK per RTT in these cases, that much delay will likely result in retransmission several times over unless all of the ACK packets are similarly delayed.\r\n\r\nWhile we might make some recommendations, \"MUST\" doesn't seem correct.  I suspect that we need data on reordering (or packet delays) under real-world conditions before we could make a better recommendation.\r\n\r\nI think that we need to make the following changes: \r\n1. define \"in flight\" (or use a new definition based on RTT and the reordering threshold)\r\n2. make this a recommendation rather than a requirement\r\n3. update the values in the recommendation based on data\r\n4. maybe advise being conservative: spending an extra byte or two occasionally might be wise if it means avoiding packets being lost\r\n\r\nThis issue should wait for the outcome of the header discussions, it could become moot."
   },
@@ -9698,6 +10472,13 @@
         "default": false
       },
       {
+        "id": 554720037,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/has-consensus",
+        "name": "has-consensus",
+        "color": "5319e7",
+        "default": false
+      },
+      {
         "id": 481871399,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
         "name": "transport",
@@ -9714,7 +10495,7 @@
     "milestone": null,
     "comments": 1,
     "created_at": "2017-02-10T07:20:34Z",
-    "updated_at": "2017-02-17T06:24:16Z",
+    "updated_at": "2017-04-19T05:27:18Z",
     "closed_at": "2017-02-17T06:24:16Z",
     "body": "From the document:\r\n\r\n> DISCUSS: Should the receiver be required to enforce this rule that the sender MUST NOT exceed the inflight limit? Specifically, should the receiver drop packets that are received outside this window?\r\n\r\nAs a reminder, we require that the packet number size be determined based on the number of outstanding (undefined, but assumed to be packets that are sent but not yet acknowledged).\r\n\r\nA requirement like this would be virtually impossible to enforce.  The receiver would have to know what of its acknowledgments had arrived at the sender in order to know what was outstanding when the sender generated the packet.  That's only possible in a narrow set of cases."
   },
@@ -10716,6 +11497,13 @@
         "default": false
       },
       {
+        "id": 554720037,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/has-consensus",
+        "name": "has-consensus",
+        "color": "5319e7",
+        "default": false
+      },
+      {
         "id": 481871604,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/tls",
         "name": "tls",
@@ -10768,7 +11556,7 @@
     "milestone": null,
     "comments": 5,
     "created_at": "2017-02-08T21:52:02Z",
-    "updated_at": "2017-03-10T00:42:51Z",
+    "updated_at": "2017-04-19T05:29:26Z",
     "closed_at": "2017-03-10T00:42:51Z",
     "body": "This needs to be written down.  I think that the best outcome would be to include BOTH a TLS alert and a QUIC error code (in a CONNECTION_CLOSE frame)."
   },
@@ -10981,7 +11769,13 @@
       "site_admin": false
     },
     "labels": [
-
+      {
+        "id": 564618955,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/duplicate",
+        "name": "duplicate",
+        "color": "aaaaaa",
+        "default": true
+      }
     ],
     "state": "closed",
     "locked": false,
@@ -10992,7 +11786,7 @@
     "milestone": null,
     "comments": 1,
     "created_at": "2017-02-08T19:06:51Z",
-    "updated_at": "2017-02-08T19:11:23Z",
+    "updated_at": "2017-04-19T05:34:39Z",
     "closed_at": "2017-02-08T19:10:49Z",
     "body": "Given that many of us, when wearing tsvwg hats, are ECN evangelists, it's a little odd that support for this hasn't come up.\r\n\r\nI see that there's now an internet-draft on this subject:\r\n[(https://tools.ietf.org/html/draft-johansson-quic-ecn-00)](url)\r\n\r\nIt's debatable if it's better to put the ECE/CWR bits in the ACK frame (as the draft suggests) or in some newly-liberated public flags.\r\n\r\nAs an added feature/bug, depending on your perspective, service providers interested in enforcing fairness or bandwidth limits could use ECN bits as fairly clean way to do this. With TCP, a common flow-control tool is the receive window, but that is not available here."
   },
@@ -11027,6 +11821,13 @@
     },
     "labels": [
       {
+        "id": 481871361,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/design",
+        "name": "design",
+        "color": "1d76db",
+        "default": false
+      },
+      {
         "id": 517015633,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/needs-discussion",
         "name": "needs-discussion",
@@ -11050,10 +11851,11 @@
     "milestone": null,
     "comments": 3,
     "created_at": "2017-02-08T04:21:49Z",
-    "updated_at": "2017-03-28T20:42:30Z",
+    "updated_at": "2017-04-19T06:12:11Z",
     "closed_at": null,
     "body": "PR #106 added the following requirement on servers:\r\n\r\n> Servers MUST reject the first plaintext packet received from a client if it its total size is less than 1280 octets, to mitigate amplification attacks.\r\n\r\nHowever, this runs into an issue in the case where there are IP header extensions that the client knows about but the server doesn't.  If the client is aware of the IP header extensions and constructs a packet with a smaller payload in order to comply with our recommendation to create a packet of exactly 1280 octets, the server will receive a packet that it thinks is too small.\r\n\r\nI see a few options:\r\n1. loosen the enforcement constraint on the server\r\n2. specify that the server only enforce the constraint if it sees the entire IP packet\r\n3. specify the minimum size and its enforcement in terms of payload size (we could set different values here to allow for header extensions)"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/266",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -11200,6 +12002,13 @@
     },
     "labels": [
       {
+        "id": 481871361,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/design",
+        "name": "design",
+        "color": "1d76db",
+        "default": false
+      },
+      {
         "id": 481871604,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/tls",
         "name": "tls",
@@ -11223,7 +12032,7 @@
     "milestone": null,
     "comments": 1,
     "created_at": "2017-02-07T00:00:59Z",
-    "updated_at": "2017-03-10T04:31:30Z",
+    "updated_at": "2017-04-19T05:46:03Z",
     "closed_at": "2017-03-10T04:31:30Z",
     "body": "#120 almost gets there, but it needs more details on the interface."
   },
@@ -11323,6 +12132,13 @@
         "default": false
       },
       {
+        "id": 554720037,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/has-consensus",
+        "name": "has-consensus",
+        "color": "5319e7",
+        "default": false
+      },
+      {
         "id": 481871604,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/tls",
         "name": "tls",
@@ -11346,7 +12162,7 @@
     "milestone": null,
     "comments": 0,
     "created_at": "2017-02-04T09:32:15Z",
-    "updated_at": "2017-03-10T00:51:53Z",
+    "updated_at": "2017-04-19T05:27:17Z",
     "closed_at": "2017-03-10T00:51:53Z",
     "body": "As @ekr observes, this violates the rules we've agreed to for TLS, the same applies here.\r\n\r\n(This was a long and difficult conversation in TLS, we should probably just work out how to make the change.)"
   },
@@ -11544,8 +12360,7 @@
     "updated_at": "2017-02-06T09:22:35Z",
     "closed_at": "2017-02-06T09:22:35Z",
     "body": ""
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/258",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -11965,6 +12780,13 @@
     },
     "labels": [
       {
+        "id": 481871361,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/design",
+        "name": "design",
+        "color": "1d76db",
+        "default": false
+      },
+      {
         "id": 558112767,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/parked",
         "name": "parked",
@@ -11988,7 +12810,7 @@
     "milestone": null,
     "comments": 14,
     "created_at": "2017-01-31T15:01:23Z",
-    "updated_at": "2017-04-13T06:32:58Z",
+    "updated_at": "2017-04-19T06:12:17Z",
     "closed_at": null,
     "body": "transport 9.4 contains: \"A receiver MUST ensure that received stream data is delivered to the application as an ordered byte-stream. Data received out of order MUST be buffered for later delivery, as long as it is not in violation of the receiver’s flow control limits.\"\r\n\r\nI agree QUIC provides an ordered byte stream abstraction, but why do we have this requirement about in-order delivery to the application? Surely that makes a lot of sense, but it seems to me the only real requirement is that it be a byte stream because boundaries are not preserved.."
   },
@@ -12539,6 +13361,13 @@
         "default": false
       },
       {
+        "id": 554720037,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/has-consensus",
+        "name": "has-consensus",
+        "color": "5319e7",
+        "default": false
+      },
+      {
         "id": 481871399,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
         "name": "transport",
@@ -12555,7 +13384,7 @@
     "milestone": null,
     "comments": 4,
     "created_at": "2017-01-26T23:11:40Z",
-    "updated_at": "2017-03-09T22:45:19Z",
+    "updated_at": "2017-04-19T05:26:12Z",
     "closed_at": "2017-03-09T22:45:19Z",
     "body": "Now that the client does not send a connection id in its version negotiation (see #119), client needs a public nonce in the packets. That prevents an off-path attacker guessing client source port and interfering with the client establishing connections with a given sever by spoofing version negotiation failure packets as if coming from that sever. That nonce should be returned by the sever in its version negotiation packets. Previously, client's connection id served such a purpose."
   },
@@ -12594,6 +13423,13 @@
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/design",
         "name": "design",
         "color": "1d76db",
+        "default": false
+      },
+      {
+        "id": 554720037,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/has-consensus",
+        "name": "has-consensus",
+        "color": "5319e7",
         "default": false
       },
       {
@@ -12656,7 +13492,7 @@
     "milestone": null,
     "comments": 3,
     "created_at": "2017-01-26T20:52:37Z",
-    "updated_at": "2017-02-02T01:13:11Z",
+    "updated_at": "2017-04-19T05:26:12Z",
     "closed_at": "2017-02-02T01:13:11Z",
     "body": "The TLS draft currently states that the associated data for AEAD encryption is the empty sequence. This is a deviation from legacy QUIC, which uses the public header as associated data and thus authenticates those fields. Packet number authentication is already accomplished due to its inclusion in the IV.\r\n\r\nIn Tokyo, there was considerable interest in a couple of features that require integrity of Public Header fields:\r\n- Greasing the unused bits in the Public flags\r\n- The connection ID may be used for routing.\r\n\r\nIt is probable that firewalls might block unused public flag bits, particularly if any middlebox could potentially alter them without detection to send a signal.\r\n\r\nTherefore, I suggest that we restore use of the full publice header as associated data. I see no reason that this would impose excessive costs on the receiver.\r\n\r\nI believe @janaiyengar brought this issue up first, though I fully endorse it."
   },
@@ -12698,6 +13534,13 @@
         "default": false
       },
       {
+        "id": 554720037,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/has-consensus",
+        "name": "has-consensus",
+        "color": "5319e7",
+        "default": false
+      },
+      {
         "id": 481871627,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/http",
         "name": "http",
@@ -12714,7 +13557,7 @@
     "milestone": null,
     "comments": 11,
     "created_at": "2017-01-26T07:41:13Z",
-    "updated_at": "2017-03-23T12:32:41Z",
+    "updated_at": "2017-04-19T05:30:23Z",
     "closed_at": "2017-03-10T17:46:29Z",
     "body": "The HTTP/QUIC mapping document is missing consideration for HTTP/2 extension mechanisms. This is part of the charter text:\r\n\r\n> This mapping will accommodate the extension mechanisms defined in the HTTP/2 specification.\r\n\r\nRFC 7540 (https://tools.ietf.org/html/rfc7540#section-5.5) defines three extension mechanisms, lets order these as:\r\n\r\n1. New frame types\r\n2. New error codes\r\n3. New settings\r\n\r\nI can see how 1 and 2 might work out, following Mike's example of augmenting existing definitions and allowing for things that exist in the HTTP/2 and HTTP/QUIC spaces to be managed somewhat independently. A concrete use case I have is the ALTSVC frame (especially when used on stream 0), so I'm happy to contribute towards this issue with some guidance.\r\n\r\n3 has some problems related to proposed SETTINGS changes.\r\n\r\nFinally, extensions that could change of semantics are a bit problematic (does it change the HTTP or the QUIC semantic, if that either of those is even possible). Additionally,  the negotiation of these is trickier given the additional negotation concerns of QUIC (0-RTT etc).\r\n"
   },
@@ -13007,7 +13850,8 @@
     "updated_at": "2017-01-26T04:11:47Z",
     "closed_at": null,
     "body": "@ianswett says that we need a hard line recommendation on when a WINDOW_UPDATE is required.  He suggests that once you get to 1/3 of the space you have allocated to flow control remaining, you SHOULD send a WINDOW_UPDATE along with the next ACK."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/236",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -13479,6 +14323,13 @@
         "default": false
       },
       {
+        "id": 554720037,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/has-consensus",
+        "name": "has-consensus",
+        "color": "5319e7",
+        "default": false
+      },
+      {
         "id": 481871627,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/http",
         "name": "http",
@@ -13495,11 +14346,10 @@
     "milestone": null,
     "comments": 2,
     "created_at": "2017-01-25T05:21:17Z",
-    "updated_at": "2017-02-03T03:48:37Z",
+    "updated_at": "2017-04-19T05:30:23Z",
     "closed_at": "2017-02-02T07:31:02Z",
     "body": "As discussed at the Tokyo interim, we might choose to use a less generic name for this and to avoid colliding with an existing but incompatible usage."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/228",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -13661,6 +14511,13 @@
         "default": false
       },
       {
+        "id": 554720037,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/has-consensus",
+        "name": "has-consensus",
+        "color": "5319e7",
+        "default": false
+      },
+      {
         "id": 481871604,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/tls",
         "name": "tls",
@@ -13713,7 +14570,7 @@
     "milestone": null,
     "comments": 2,
     "created_at": "2017-01-25T01:51:44Z",
-    "updated_at": "2017-02-17T17:37:48Z",
+    "updated_at": "2017-04-19T05:29:15Z",
     "closed_at": "2017-02-17T17:37:48Z",
     "body": "QUIC AEAD usage in quic-tls draft currently says \"associated data, A,  for the AEAD is an empty sequence.\" The current rationale is that the public header fields do not need to be authenticated since the connection ID, flags, packet number, and version number are all effectively covered by  encryption/decryption. \r\n\r\nWe have at least 1 public flags field that is as yet unused. Since we do not know its use yet, we may want to authenticate the header to future-proof."
   },
@@ -14898,7 +15755,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/207.patch"
     },
     "body": "This aligns the transport draft with the tls draft.\r\n\r\nThe primary reason for using this identification is that there are three types\r\nof keys that are in concurrent use during a 0-RTT handshake: unprotected\r\n(cleartext), 0-RTT and 1-RTT.  Identifying 0-RTT packets this way allows the\r\nserver to avoid trial decryption."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/206",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -14929,7 +15787,27 @@
       "site_admin": false
     },
     "labels": [
-
+      {
+        "id": 481871361,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/design",
+        "name": "design",
+        "color": "1d76db",
+        "default": false
+      },
+      {
+        "id": 481871604,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/tls",
+        "name": "tls",
+        "color": "fbca04",
+        "default": false
+      },
+      {
+        "id": 481871399,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
+        "name": "transport",
+        "color": "fbca04",
+        "default": false
+      }
     ],
     "state": "closed",
     "locked": false,
@@ -14940,7 +15818,7 @@
     "milestone": null,
     "comments": 1,
     "created_at": "2017-01-23T23:34:45Z",
-    "updated_at": "2017-01-24T06:06:59Z",
+    "updated_at": "2017-04-19T05:49:25Z",
     "closed_at": "2017-01-24T06:06:59Z",
     "body": "My current understanding of the documents is that on the QUIC layer, the client picks the version and the server offers a list of versions it support.  On the TLS layer ALPN handshake, client advertises its versions and server picks one.  This is not guaranteed to produce the same version in absence of MITMs, since client and server might have different version preferences.\r\n\r\nI suggest that we change the TLS layer negotiation into \"QUIC client says its version, and server says its supported versions\", similar to #97 .  That way, we effectively repeat the version negotiation information used on transport layer in the handshake, allowing the peers to compare the authenticated information from the handshake with the one they used in transport, and tear down the connection in case those do not match."
   },
@@ -15040,6 +15918,13 @@
         "default": false
       },
       {
+        "id": 554720037,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/has-consensus",
+        "name": "has-consensus",
+        "color": "5319e7",
+        "default": false
+      },
+      {
         "id": 481871627,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/http",
         "name": "http",
@@ -15063,7 +15948,7 @@
     "milestone": null,
     "comments": 9,
     "created_at": "2017-01-23T13:32:28Z",
-    "updated_at": "2017-02-15T03:09:34Z",
+    "updated_at": "2017-04-19T05:26:12Z",
     "closed_at": "2017-02-15T03:09:25Z",
     "body": "There are currently two problems with streams not contributing to connection-level flow control:\r\n\r\n1. There is no way to negotiate which streams don't contribute (and their number is not limited one would have to negotiate an equation). For HTTP the non-contributing stream numbers are defined in the HTTP/QUIC draft, but defining those streams statically might not be suitable for every protocol.\r\n2. Non-contributing create a DoS opportunity. Current implementations of the QUIC protocol use a MCSP of 100. That means that a client can consume at least 100 * initial flow control window of memory on the server (and possibly even more since there's no size limit of a GET request). That results to an additional memory consumption of more than 6 MB (for comparison: Chrome and quic-go set the connection-level flow control window to 1.5 MB).\r\n\r\n### Possible solution\r\n\r\nNon-contributing are needed in the following situation: A client that is uploading data will be connection-level flow control blocked if it is sending data faster than the server is consuming it. In that situation, it makes sense to stop the client from overloading the server with more data, but at the same time allowing it to issue new requests.\r\n\r\nThe problem could be solved by defining two connection-level flow control windows: One that defines the amount of data that can be sent, and one that is defines the amount of request data and other application-layer control functions. I will refer two the two windows as \"data fc window\" and \"control fc window\".\r\n\r\nThe rules are:\r\n\r\n- When a peer opens a new stream, it defines which of the two windows the stream should be counted to (This could be done by the setting a bit in the STREAM frame public flag, but we'd have to steal it from some other field. Maybe there's a better solution?). The association of a STREAM to one of the two window cannot be changed later. Every stream has to contribute to either of the two windows.\r\n- A receiver maintains the two connection-level flow control windows and sends connection-level WINDOW_UPDATEs appropriately (there needs to be a way to distinguish between a WINDOW_UPDATE for the data and for the control window of course. Maybe use a bit of the frame type?). \r\n- In HTTP all data MUST be sent in the data fc window, and all request, PRIORITY and SETTINGs frames MUST be sent in the control fc window.\r\n\r\nThe question is: Is this general enough for all protocols? Can the messages in every protocol be mapped into the two categories \"data message\" and \"control message\"?\r\n"
   },
@@ -15163,6 +16048,13 @@
         "default": false
       },
       {
+        "id": 554720037,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/has-consensus",
+        "name": "has-consensus",
+        "color": "5319e7",
+        "default": false
+      },
+      {
         "id": 481871627,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/http",
         "name": "http",
@@ -15179,7 +16071,7 @@
     "milestone": null,
     "comments": 7,
     "created_at": "2017-01-23T06:09:56Z",
-    "updated_at": "2017-01-25T04:47:48Z",
+    "updated_at": "2017-04-19T05:30:23Z",
     "closed_at": "2017-01-25T04:47:48Z",
     "body": "The primary use case for conventional CONNECT proxies is firewall traversal. Is there a big use case for QUIC proxies which we then need to traverse?"
   },
@@ -15221,6 +16113,13 @@
         "default": false
       },
       {
+        "id": 554720037,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/has-consensus",
+        "name": "has-consensus",
+        "color": "5319e7",
+        "default": false
+      },
+      {
         "id": 481871399,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
         "name": "transport",
@@ -15237,7 +16136,7 @@
     "milestone": null,
     "comments": 4,
     "created_at": "2017-01-23T05:14:50Z",
-    "updated_at": "2017-03-07T00:52:56Z",
+    "updated_at": "2017-04-19T05:26:12Z",
     "closed_at": "2017-02-16T22:27:54Z",
     "body": "And if so in which directions?"
   },
@@ -15356,8 +16255,7 @@
     "updated_at": "2017-01-24T02:45:11Z",
     "closed_at": null,
     "body": "There is a two byte length field. Surely a 256-byte reason phrase is long enough.\r\n\r\nAlso, are these in ASCII? UTF-8?"
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/198",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -15562,7 +16460,20 @@
       "site_admin": false
     },
     "labels": [
-
+      {
+        "id": 564618955,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/duplicate",
+        "name": "duplicate",
+        "color": "aaaaaa",
+        "default": true
+      },
+      {
+        "id": 481871399,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
+        "name": "transport",
+        "color": "fbca04",
+        "default": false
+      }
     ],
     "state": "closed",
     "locked": false,
@@ -15573,7 +16484,7 @@
     "milestone": null,
     "comments": 2,
     "created_at": "2017-01-23T04:49:24Z",
-    "updated_at": "2017-01-24T04:00:55Z",
+    "updated_at": "2017-04-19T05:35:57Z",
     "closed_at": "2017-01-24T04:00:55Z",
     "body": "If a client sends a packet with an unknown version and a forged source address, it can use it to mount a reflection DoS onto some victim machine. This is only really useful if:\r\n\r\n(a) the server has a big version list (so the packet is big)\r\n(b) the server doesn't require the client to pad out to ~1MTU.\r\n\r\nIs (b) documented somewhere? The spec suggests that I can send a short packet with a bogus version and the server MUST respond"
   },
@@ -16254,6 +17165,13 @@
         "default": false
       },
       {
+        "id": 554720037,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/has-consensus",
+        "name": "has-consensus",
+        "color": "5319e7",
+        "default": false
+      },
+      {
         "id": 481871399,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
         "name": "transport",
@@ -16270,7 +17188,7 @@
     "milestone": null,
     "comments": 13,
     "created_at": "2017-01-20T23:57:27Z",
-    "updated_at": "2017-03-09T22:44:44Z",
+    "updated_at": "2017-04-19T05:26:12Z",
     "closed_at": "2017-03-09T22:44:44Z",
     "body": "Some path elements may need to statelessly identify an initial packet of a connection. These path elements could include load balancers and organization's border security systems.  Ability to identify the initial packet may also be required for systems implementing Stateless Rejects #60.\r\n\r\nSince QUIC allows for packet number truncation, the most straightforward way to identify the initial packet is by checking for packet number 1 and VERSION flag set.\r\n\r\nHence:\r\n\r\n- The language of section 6.1 Version Negotiation would need to change SHOULD to MUST in \"All subsequent packets sent by the client SHOULD have the VERSION flag unset\".\r\n- Section 6.1 Version Negotiation should also gain language like: \"If Version negotiation is not complete in 2^6 packets, any endpoint MAY reset this connection\".  (This is a weaker statement than #143.)\r\n- Proposal in issue #35 is not compatible with this issue. If packet numbers are allowed to be deliberately skipped, we should require that packets with VERSION set MUST NOT be skipped."
   },
@@ -16506,17 +17424,17 @@
         "default": false
       }
     ],
-    "state": "closed",
+    "state": "open",
     "locked": false,
     "assignee": null,
     "assignees": [
 
     ],
     "milestone": null,
-    "comments": 3,
+    "comments": 5,
     "created_at": "2017-01-20T04:47:04Z",
-    "updated_at": "2017-03-07T00:52:56Z",
-    "closed_at": "2017-02-08T00:48:08Z",
+    "updated_at": "2017-04-19T11:33:46Z",
+    "closed_at": null,
     "body": "I know that this might be a hard decision to make, but we don't have many settings and it seems like we might be able to avoid changing them mid-connection.\r\n\r\nGetting settings synchronization right is a pain and we really only have one that is ever likely to change and that's the header table size.  We don't allow initial flow control windows to change (no mechanism exists to allow it), so I question whether that needs changing.  If it does need to change, that would be for the same reason that the flow control window needs to change, which suggests we would need to devise a way to change those too.\r\n\r\nSETTINGS_ACK is a huge amount of machinery.  With 0-RTT, it will mean that just opening a connection will trigger a flurry of SETTINGS_ACK frames from the client just to respond to the server's connection preface (assuming that we're still keeping that, it's not clear).  \r\n\r\nOn the other hand, if we reserved a space for application-specific traffic parameters (see #122), we could put the application-layer settings like header table size in the handshake.  That has some downsides (client values would be unencrypted and you would need to include one set of parameters per application protocol on offer), but it means that there couldn't ever be any confusion about the value of a given setting once the connection was open.\r\n\r\nThat would be a huge simplification to the HTTP mapping."
   },
   {
@@ -16786,7 +17704,8 @@
     "updated_at": "2017-01-24T06:11:08Z",
     "closed_at": null,
     "body": ">  If the total number of packets transmitted in this connection reaches 2^64 - 1, the sender MUST close the connection by sending a CONNECTION_CLOSE frame with the error code QUIC_SEQUENCE_NUMBER_LIMIT_REACHED\r\n\r\nIf this packet is lost there is not packet number available for its retransmission. CONNECTION_CLOSE should be reliably transmitted."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/176",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -16825,6 +17744,13 @@
         "default": false
       },
       {
+        "id": 554720037,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/has-consensus",
+        "name": "has-consensus",
+        "color": "5319e7",
+        "default": false
+      },
+      {
         "id": 481871627,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/http",
         "name": "http",
@@ -16841,7 +17767,7 @@
     "milestone": null,
     "comments": 23,
     "created_at": "2017-01-19T06:36:19Z",
-    "updated_at": "2017-03-08T18:12:17Z",
+    "updated_at": "2017-04-19T05:30:22Z",
     "closed_at": "2017-03-08T18:12:17Z",
     "body": "@martinthomson noticed an issue in the QPACK draft that's equally true with HPACK in -01:\r\n\r\nIf you RST_STREAM a stream with a missing QUIC STREAM frame that contains an HPACK frame (HEADERS, PUSH_PROMISE), that missing frame never gets retransmitted.  That, in turn, means that no future HPACK frame can be interpreted, ever, because you're missing part of your history.\r\n\r\nOops.\r\n\r\nMy first inclination is to change the HTTP draft to say that message control streams MUST NOT be reset.  If you don't want the message body, reset the data stream, but you MUST read the message headers.  If, for some reason, you cannot do so, then terminate the connection.\r\n\r\nAnyone see a barrier to that (other than the price of ginormous headers)?"
   },
@@ -16941,6 +17867,13 @@
         "default": false
       },
       {
+        "id": 554720037,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/has-consensus",
+        "name": "has-consensus",
+        "color": "5319e7",
+        "default": false
+      },
+      {
         "id": 481871399,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
         "name": "transport",
@@ -16957,7 +17890,7 @@
     "milestone": null,
     "comments": 5,
     "created_at": "2017-01-18T22:43:36Z",
-    "updated_at": "2017-02-23T06:50:06Z",
+    "updated_at": "2017-04-19T05:26:12Z",
     "closed_at": "2017-02-23T06:50:06Z",
     "body": "QUIC borrows the concept of stream reservation from HTTP/2.  However, there is a small difference between those state machines in that a reserved stream becomes open when data is sent on it.  HTTP/2 reserved streams become half-closed in this case (basically, only the server can send on a reserved stream).\r\n\r\nThe reason we have reservation is that we use stream numbers to identify requests at the HTTP mapping.  We reserve the stream number so that we can use its number in the PUSH_PROMISE frame.  That ties the PUSH_PROMISE - which contains a request - to the stream containing the response.  We need to create streams sequentially, so reservation allows us to \"create\" the stream in the right order and still be able to reference it.\r\n\r\nIn practice, however, this is a nuisance.  Reserved streams don't count toward concurrency limits and so they represent an unbounded state exposure.  Reserved streams might be created in order, but they can be used in any order.  Of course, this is a minor annoyance at best because there is always application state, and maybe priority information for these streams.\r\n\r\nI believe that QUIC has the opportunity to address this annoyance and in the process make the state machine simpler.  If QUIC removed the concept of stream reservation and instead required that application protocols create their correlators for use with talking about future streams, that would greatly simplify things.\r\n\r\nFor instance, we could remove the promised stream identifier from PUSH_PROMISE.  Instead, the stream that carries a push promise response could start with a frame that identified the PUSH_PROMISE by stream and number: \"this stream contains the response for promised request number P on stream N\".  Or, we could mint a new PUSH_PROMISE identifier that could be carried at the start of the stream."
   },
@@ -16999,6 +17932,13 @@
         "default": false
       },
       {
+        "id": 554720037,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/has-consensus",
+        "name": "has-consensus",
+        "color": "5319e7",
+        "default": false
+      },
+      {
         "id": 481871627,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/http",
         "name": "http",
@@ -17015,7 +17955,7 @@
     "milestone": null,
     "comments": 1,
     "created_at": "2017-01-18T22:16:43Z",
-    "updated_at": "2017-02-23T01:31:22Z",
+    "updated_at": "2017-04-19T05:30:22Z",
     "closed_at": "2017-02-23T01:31:22Z",
     "body": "Re: 5.2.2. HEADERS\r\n\r\nDefines the sequence number as 16 bits.  \r\n\r\nUnder the HTTP mapping, with stream ids being 32 bit, and 2 streams per request, the limit would be ~ 2^30 requests per connection.   The 16 bit HEADERs sequence number will run out much sooner.\r\n\r\nUnless the assumption is that these HEADERs sequence numbers can wrap around, and the active range constrained, ala TCP sequence numbers.\r\n\r\nOr a third alternative might be to go with compressed, ala issue #154.\r\n\r\nMaybe sequence numbers could adopt the integer encoding scheme of HPACK?\r\n\r\n\r\n"
   },
@@ -17250,6 +18190,13 @@
         "default": false
       },
       {
+        "id": 554720037,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/has-consensus",
+        "name": "has-consensus",
+        "color": "5319e7",
+        "default": false
+      },
+      {
         "id": 481873040,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/recovery",
         "name": "recovery",
@@ -17302,11 +18249,10 @@
     "milestone": null,
     "comments": 6,
     "created_at": "2017-01-17T18:33:39Z",
-    "updated_at": "2017-03-07T00:52:56Z",
+    "updated_at": "2017-04-19T05:28:54Z",
     "closed_at": "2017-02-24T14:07:08Z",
     "body": "I would like to see some language in the loss recovery document about client actions when the first handshake message is lost. We have overloaded this loss signal with multiple meanings/responses:\r\n\r\n(1) Retransmit (due to garden-variety network loss)\r\n(2) Change MTU and retransmit (due to MTU problems, though we might see ICMP here?)\r\n(3) Failover to TCP (middleboxes eating QUIC)\r\n(4) Give up (path failure)\r\n\r\nIf I were implementing a client using these documents, I am not sure how I would handle a CHLO loss given these conflicting imperatives. I could accept having SHOULDs instead of MUSTs, but there ought to be something."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/168",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -17345,6 +18291,13 @@
         "default": false
       },
       {
+        "id": 554720037,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/has-consensus",
+        "name": "has-consensus",
+        "color": "5319e7",
+        "default": false
+      },
+      {
         "id": 481871399,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
         "name": "transport",
@@ -17361,7 +18314,7 @@
     "milestone": null,
     "comments": 4,
     "created_at": "2017-01-17T17:09:44Z",
-    "updated_at": "2017-03-15T03:55:36Z",
+    "updated_at": "2017-04-19T05:26:12Z",
     "closed_at": "2017-01-26T06:23:54Z",
     "body": "Computing the length of an ACK frame is unnecessarily complicated because there are a series of length fields the implementation has to check. These fields are themselves of variable length from the start of the frame because they are placed after ACK frame content. This amounts to a lot of traversing of memory just to just to figure out how much memory to pull to process the ACK.\r\n\r\nA simple solution would be to move NumBlocks and NumTS to immediate after the ACK frame flags. This would have no impact on the protocol except to ease implementation."
   },
@@ -17598,6 +18551,13 @@
         "default": false
       },
       {
+        "id": 554720037,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/has-consensus",
+        "name": "has-consensus",
+        "color": "5319e7",
+        "default": false
+      },
+      {
         "id": 481871399,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
         "name": "transport",
@@ -17650,7 +18610,7 @@
     "milestone": null,
     "comments": 13,
     "created_at": "2017-01-17T02:08:50Z",
-    "updated_at": "2017-03-07T00:52:56Z",
+    "updated_at": "2017-04-19T05:26:12Z",
     "closed_at": "2017-02-09T09:11:28Z",
     "body": "@martinduke raised this in #106.  What should we say about the size of handshake packets.\r\n\r\n1. All handshake packets to be padded to maximum size.\r\n2. Pad at least one packet per handshake (in each direction) that is successfully acknowledged\r\n3. More specifically, the first client packet (CHLO) and retransmissions, and last server packet [SHLO] and retransmissions. In many cases this will be the same as #2, but is a bit more prescriptive.\r\n\r\nI think that we have agreed that the first packet from the client will be *at most* one packet.  The question is for the server where to pad.\r\n\r\nI believe that option 3 and option 1 amount to the same thing.  Option 2 looks a bit like option 4 (pad the first packet).\r\n\r\nThis relates to (and may subsume) #38."
   },
@@ -17692,6 +18652,13 @@
         "default": false
       },
       {
+        "id": 554720037,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/has-consensus",
+        "name": "has-consensus",
+        "color": "5319e7",
+        "default": false
+      },
+      {
         "id": 481871399,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
         "name": "transport",
@@ -17708,7 +18675,7 @@
     "milestone": null,
     "comments": 2,
     "created_at": "2017-01-17T01:21:42Z",
-    "updated_at": "2017-01-26T02:37:38Z",
+    "updated_at": "2017-04-19T05:26:12Z",
     "closed_at": "2017-01-26T02:37:05Z",
     "body": "RST_STREAM kills a stream, but what impact does it have on connection flow control?  Or are we required to account for data in STREAM frames even if they are discarded?\r\n\r\nThe problem here is that data on reset streams is not re-sent, therefore peers get a very different view about what data has been sent.  The receiver of RST_STREAM has no way to manage connection-level flow control for the packets that it has sent.  Packets that it sends before receiving the RST_STREAM might be lost and therefore they might or might not have been counted by the other side.\r\n\r\nAt best, this results in an overly pessimistic view of the connection-level flow control window.  Though it could end up freezing the connection if there are lots of RST_STREAM use with concurrent packet loss.\r\n\r\nThe sender of RST_STREAM can signal the offset of the last octet and thereby ensure that their data is accounted for.  (Separately, we need policing for this value: if it indicates that a flow control window was exceeded, we should treat it as such, even if the frames that it mentions were never sent: opened #162.)\r\n\r\nA potential fix: require RST_STREAM in both directions.  A more drastic fix: make streams unidirectional.\r\n\r\nRelated to the issue @marten-seemann originally mentioned in #145."
   },
@@ -17747,6 +18714,13 @@
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/design",
         "name": "design",
         "color": "1d76db",
+        "default": false
+      },
+      {
+        "id": 554720037,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/has-consensus",
+        "name": "has-consensus",
+        "color": "5319e7",
         "default": false
       },
       {
@@ -17802,7 +18776,7 @@
     "milestone": null,
     "comments": 2,
     "created_at": "2017-01-17T01:16:13Z",
-    "updated_at": "2017-03-07T00:52:56Z",
+    "updated_at": "2017-04-19T05:25:18Z",
     "closed_at": "2017-02-09T02:56:05Z",
     "body": "If an endpoint receives a RST_STREAM that indicates that its peer has exceeded the stream or connection-level flow control window, it should treat this as a flow control error."
   },
@@ -17960,6 +18934,13 @@
         "default": true
       },
       {
+        "id": 554720037,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/has-consensus",
+        "name": "has-consensus",
+        "color": "5319e7",
+        "default": false
+      },
+      {
         "id": 481871399,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
         "name": "transport",
@@ -17976,7 +18957,7 @@
     "milestone": null,
     "comments": 4,
     "created_at": "2017-01-16T10:45:50Z",
-    "updated_at": "2017-03-20T05:26:54Z",
+    "updated_at": "2017-04-19T05:25:18Z",
     "closed_at": "2017-01-20T02:42:48Z",
     "body": "There already is a \"`DISCUSS_AND_REPLACE: Perhaps make this format simpler`\" note in the spec about the homegrown floating point format used for ACK timestamps. I just wanted to open a corresponding issue.\r\n\r\nIt would be really good if an encoding could be used that was either trivial to implement from scratch, or a standard for which code is readily available.\r\n\r\nAs for the latter, the text in the spec sounds like what is desired is something like the [\"binary16\" format in IEEE 754-2008](https://en.wikipedia.org/wiki/Half-precision_floating-point_format). I'd be great if this could be used. Compiler support seems spotty/sketchy, e.g., [gcc says this](https://gcc.gnu.org/onlinedocs/gcc/Half-Precision.html):\r\n\r\n> The __fp16 type may only be used as an argument to intrinsics defined in <arm_fp16.h>, or as a storage format. For purposes of arithmetic and other operations, __fp16 values in C or C++ expressions are automatically promoted to float. \r\n\r\nAnd it's only supported on ARM, apparently."
   },
@@ -18025,7 +19006,7 @@
         "default": false
       }
     ],
-    "state": "closed",
+    "state": "open",
     "locked": false,
     "assignee": {
       "login": "martinthomson",
@@ -18070,8 +19051,8 @@
     "milestone": null,
     "comments": 7,
     "created_at": "2017-01-16T08:31:58Z",
-    "updated_at": "2017-03-07T00:52:56Z",
-    "closed_at": "2017-02-14T00:08:12Z",
+    "updated_at": "2017-04-19T05:52:06Z",
+    "closed_at": null,
     "body": "The section on padding frames currently says:\r\n```\r\n   The PADDING frame (type=0x00) pads a packet with 0x00 bytes.  When\r\n   this frame is encountered, the rest of the packet is expected to be\r\n   padding bytes.  The frame contains 0x00 bytes and extends to the end\r\n   of the QUIC packet.  A PADDING frame has no additional fields.\r\n```\r\n\r\nI'd like to discuss whether a padding frame that can be inserted anywhere, instead of only as the last frame in a packet, makes sense.\r\n\r\nI'm currently doing a [zero-copy implementation of QUIC](https://github.com/NTAP/quant) on top of [netmap](http://info.iet.unipi.it/~luigi/netmap/) via a [userspace IPv4/UDP stack](https://github.com/NTAP/warpcore), which due to static DMA mappings requires an app to place stream frame data directly into packet buffers at a (fixed) offset. The QUIC stack then inserts the common header and other frames before the stream frames, and needs to pad any unused space. Currently, this isn't possible.\r\n\r\nIn other words, I'd like something similar to the [No-Operation TCP option](https://tools.ietf.org/html/rfc793#page-18).\r\n\r\n(And it's an open question whether going to great lengths to support zero-copy TX is actually all that useful, given that we're going to do crypto over the entire buffer anyway.)"
   },
   {
@@ -18112,6 +19093,13 @@
         "default": false
       },
       {
+        "id": 554720037,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/has-consensus",
+        "name": "has-consensus",
+        "color": "5319e7",
+        "default": false
+      },
+      {
         "id": 481871399,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
         "name": "transport",
@@ -18128,7 +19116,7 @@
     "milestone": null,
     "comments": 2,
     "created_at": "2017-01-16T03:26:15Z",
-    "updated_at": "2017-03-10T04:11:41Z",
+    "updated_at": "2017-04-19T05:25:18Z",
     "closed_at": "2017-03-10T04:11:40Z",
     "body": "WINDOW_UPDATE is cumulative.  Requiring retransmission of the exact value that was sent in the past doesn't make sense if a more recent value is available.  Rather than loss triggering a retransmission of the frame that was lost, loss should trigger the creation of a NEW frame with updated details.\r\n\r\nIn [this comment](https://github.com/quicwg/base-drafts/pull/150#discussion_r96152215) @janaiyengar observes that probably all of the control-like frames could be treated specially if they need to be retransmitted.  Changing the \"retransmission\" rule for control (i.e., non-STREAM) frames to allow for updated information to be included might not benefit many of the other frame types, though it might make sense to make the rule general to allow for some flexibility\r\n\r\nSee also #146 where there is discussion about verbatim retransmission of STREAM frames."
   },
@@ -18272,6 +19260,13 @@
         "default": false
       },
       {
+        "id": 554720037,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/has-consensus",
+        "name": "has-consensus",
+        "color": "5319e7",
+        "default": false
+      },
+      {
         "id": 481871627,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/http",
         "name": "http",
@@ -18288,7 +19283,7 @@
     "milestone": null,
     "comments": 5,
     "created_at": "2017-01-14T23:14:28Z",
-    "updated_at": "2017-02-10T17:49:15Z",
+    "updated_at": "2017-04-19T05:30:22Z",
     "closed_at": "2017-02-10T17:49:15Z",
     "body": "QUIC uses a 32-bit (soon to be 64-bit) stream space.  However, we know that HTTP sessions typically don't use nearly the 31 bits of stream space we have in HTTP/2.  As QUIC continues to expand the number of streams it supports, HTTP/QUIC ends up spending more bits on stream ID overhead (PRIORITY, PUSH_PROMISE, etc.).\r\n\r\nShould we consider having variable-length stream ID fields in these frames?  Or is the complexity reduction worth stating the full stream ID, especially since we no longer have an HTTP-level stream ID on every frame?"
   },
@@ -18677,6 +19672,13 @@
         "default": false
       },
       {
+        "id": 554720037,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/has-consensus",
+        "name": "has-consensus",
+        "color": "5319e7",
+        "default": false
+      },
+      {
         "id": 481871399,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
         "name": "transport",
@@ -18729,7 +19731,7 @@
     "milestone": null,
     "comments": 11,
     "created_at": "2017-01-13T09:29:36Z",
-    "updated_at": "2017-03-10T04:10:52Z",
+    "updated_at": "2017-04-19T05:25:18Z",
     "closed_at": "2017-03-10T04:10:52Z",
     "body": "The current design of the header with its multiple variable length and variable presence fields would seem to require inordinate sender and receiver code complexity. Complexity, especially in parsers (i.e., on the receiver side), is a source both of unclarity in specifications and errors in implementation. I note the following specific issues:\r\n\r\n(1) There are thirteen possible header lengths, and therefore data offsets : 2, 3, 5, 6, 7, 9, 10, 11, 13, 14, 15, 17, 21. Each of the header fields has a variety of possible offsets. This also increases the complexity of hardware offload implementations of QUIC, but is not complex enough to prevent their implementation and deployment.\r\n\r\n(2) There are combinations of flags that seem to be nonsensical and/or contradictory (e.g., the Packet Number Length codepoint adds 1, 2, 4, or 8 to the length if the Public Reset flag is clear, but 0 to the length if the Public Reset flag is set, see ; Public Reset and Version are mutually exclusive.)\r\n\r\n(3) There appears to be no consideration given to reducing confusability with other deployed UDP protocols in the first N bytes of the header -- see #147 \r\n\r\nI would suggest reducing the number of possible header layouts to reduce complexity, based on the following assumptions:\r\n\r\n(1) The set of variable header lengths will, at most, save a number of bytes per packet that will often be lost in the underflow of suboptimal path MTU discovery.\r\n\r\n(2) Varlen packet numbering makes sense if the packet number always starts from zero, but random initial packet numbers have other advantages; I presume we'll adopt them at some point. Packet numbers only need to be large enough to keep wrap-arounds to be induced by reordering, so 32 bits (as in the TCP sequence number space) is more than sufficient.\r\n\r\n(3) There is value in treating a version number as a magic number to help reduce the chance of misrecognition of non-QUIC packets as initial QUIC packets at an endpoint; for this 32 bits of version are more than enough, and 24 probably suffice. (This will require a redesign of the version number space, which we might want to do in light of #147 anyway).\r\n\r\n\r\nAs an initial proposal, I would propose that either both Connection ID and Version be present, or neither, and that packet number be always present and constant length. This reduces the set of necessary flags to three, leaving us with five flags for reserved/future use (four, if we go ahead and allocate multipath) and the following two header layouts:\r\n\r\nFull Header: 16 octets\r\n\r\n```\r\n+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+\r\n|1|R|K|M| zero  |      version/magic (24 bits)                  |\r\n+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+\r\n|                                                               |\r\n+-                      Connection ID                          -+\r\n|                                                               |\r\n+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+\r\n|                       Packet Number                           |\r\n+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+\r\n```\r\n\r\nTruncated Header: 5 octets\r\n\r\n```\r\n+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+\r\n|0|R|K|M| zero  |                       Packet Number       . . .\r\n+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+\r\n. . . (cont'd)  |\r\n+-+-+-+-+-+-+-+-+\r\n```\r\n\r\nThe header invariant then becomes \"If bit 0x80 in octet 0 is 1, then the seven remaining bits of that octet are reserved for use as flags, and octets 1-3 are a 24-bit version number. If bit 0x80 in octet 0 is 0, then no version number is present; use previous version information for this 5-tuple.\" This can be further simplified by dropping the truncated header entirely, though for very short packets the overhead might be worth saving.\r\n"
   },
@@ -18771,6 +19773,13 @@
         "default": false
       },
       {
+        "id": 554720037,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/has-consensus",
+        "name": "has-consensus",
+        "color": "5319e7",
+        "default": false
+      },
+      {
         "id": 481871399,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
         "name": "transport",
@@ -18787,10 +19796,11 @@
     "milestone": null,
     "comments": 8,
     "created_at": "2017-01-13T09:24:36Z",
-    "updated_at": "2017-03-15T07:16:37Z",
+    "updated_at": "2017-04-19T05:25:18Z",
     "closed_at": "2017-03-09T22:44:22Z",
     "body": "The design of the QUIC packet header should consider the ease of creating an apparently-valid first packet via reflection against existing, widely deployed UDP protocols (DNS and NTP being the top two here). All easily reflectable packets off these services should be trivially droppable by a QUIC server. Otherwise, there exist a variety of possible DDoS attacks (of which #135 is one case).\r\n\r\nFor 1-RTT first packets, the probablity of creating a valid ClientHello would seem to be negligible, though there might be some value in reducing the processing necessary to recognize and reject reflected garbage, or to allow it to be rejected before delivery to the server process.\r\n\r\nFor 0-RTT first packets, the header layout should be defined such that a version number (or other magic pattern, though the version number space is sparse enough that it can do double duty as a magic pattern) has an offset and bit pattern that does not occur in traffic that can be generated via reflection off common UDP services."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/146",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -18822,10 +19832,10 @@
     },
     "labels": [
       {
-        "id": 489929683,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/editor-ready",
-        "name": "editor-ready",
-        "color": "0e8a16",
+        "id": 481871361,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/design",
+        "name": "design",
+        "color": "1d76db",
         "default": false
       },
       {
@@ -18845,7 +19855,7 @@
     "milestone": null,
     "comments": 22,
     "created_at": "2017-01-13T07:35:53Z",
-    "updated_at": "2017-03-10T01:35:35Z",
+    "updated_at": "2017-04-19T05:47:33Z",
     "closed_at": "2017-03-10T01:35:35Z",
     "body": "We had a [discussion](https://groups.google.com/a/chromium.org/forum/#!topic/proto-quic/j747iwug-Hg) about this earlier on the proto-quic mailing list, but as far as I remember, we never reached a conclusion or discussed this on the IETF mailing list.\r\n\r\nThere are two options:\r\n\r\n1. STREAM frame boundaries MUST be preserved when retransmitting them, i.e. a STREAM frame that is being retransmitted MAY be split into further pieces, but MUST NOT be combined with other STREAM frames.\r\n2. STREAM frames MAY be reassembled before retransmitting them, and STREAM frame boundaries need not be preserved.\r\n\r\nOption 1. is what Chrome and quic-go are currently implementing. 2. is what the draft is specifying in the current version ([here](https://github.com/quicwg/base-drafts/blob/master/draft-ietf-quic-transport.md#sending-and-receiving-data)).\r\n\r\nIf we decide for 1., this needs to be reflected in the draft. If we decide for 2., we need to remove the QUIC_OVERLAPPING_STREAM_DATA (0x8057) error."
   },
@@ -19348,6 +20358,13 @@
         "default": false
       },
       {
+        "id": 554720037,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/has-consensus",
+        "name": "has-consensus",
+        "color": "5319e7",
+        "default": false
+      },
+      {
         "id": 481871399,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
         "name": "transport",
@@ -19364,11 +20381,10 @@
     "milestone": null,
     "comments": 6,
     "created_at": "2017-01-10T23:45:12Z",
-    "updated_at": "2017-01-26T02:19:11Z",
+    "updated_at": "2017-04-19T05:25:18Z",
     "closed_at": "2017-01-26T02:19:11Z",
     "body": "Is there a minimum MTU we want QUIC to enforce? If so, how big? If an endpoint discovers this is not achievable, what then? Do they have to fail over to TCP, or do we just let the (IPv4) network fragment packets?\r\n"
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/138",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -19535,6 +20551,13 @@
         "default": false
       },
       {
+        "id": 554720037,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/has-consensus",
+        "name": "has-consensus",
+        "color": "5319e7",
+        "default": false
+      },
+      {
         "id": 481871399,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
         "name": "transport",
@@ -19551,7 +20574,7 @@
     "milestone": null,
     "comments": 5,
     "created_at": "2017-01-10T05:48:55Z",
-    "updated_at": "2017-03-07T00:52:56Z",
+    "updated_at": "2017-04-19T05:25:18Z",
     "closed_at": "2017-02-08T23:34:00Z",
     "body": "We need a certain size to avoid amplification attacks.  See also #38."
   },
@@ -19600,6 +20623,13 @@
         "default": false
       },
       {
+        "id": 554720037,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/has-consensus",
+        "name": "has-consensus",
+        "color": "5319e7",
+        "default": false
+      },
+      {
         "id": 481871399,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
         "name": "transport",
@@ -19616,7 +20646,7 @@
     "milestone": null,
     "comments": 22,
     "created_at": "2017-01-10T04:41:45Z",
-    "updated_at": "2017-03-09T22:44:12Z",
+    "updated_at": "2017-04-19T05:25:18Z",
     "closed_at": "2017-03-09T22:44:12Z",
     "body": "I think I’ve found a DoS vulnerability in the current draft.\r\n\r\nLet’s say an attacker sends a first packet to a QUIC server (server A), but picks a version that the server doesn’t support. Furthermore, it spoofs the sender address of this packet to the address of another QUIC server (server B).\r\nThe packet sent by the client will look like this:\r\n1 byte Flags: 0x9 & Packet Number lengths bits\r\n8 byte Connection-ID\r\n4 byte Version Number\r\n1, 2, 3 or 4 byte Packet Number\r\nAEAD data\r\n\r\nServer A will discover that it doesn’t support the QUIC version that the client suggested, and reply with a Version Negotiation Packet, which will get sent to server B. The version negotiation packet will look like this:\r\n1 byte Flags: 0x9\r\n8 byte Connection-ID\r\n4 byte 1st Version Number\r\n4 byte 1st Version Number\r\n....\r\n\r\nIf server B doesn’t support the version sent as 1st Version Number by server A, it will not be able to distinguish this packet from a packet sent from a client (according to [Section 5.1.2](https://quicwg.github.io/base-drafts/draft-ietf-quic-transport.html#handling-packets-from-different-versions) it MUST NOT read anything from the packet except for the Flags byte, the Connection ID and the first Version Number). Furthermore, according to [Section 6.1](https://quicwg.github.io/base-drafts/draft-ietf-quic-transport.html#version-negotiation) the server MUST reply to server B with a Version Negotiation Packet.\r\nAssuming that server A doesn’t support the version sent as 1st Version Number by server B, A and B will continue sending each other Version Negotiation packets indefinitely. Note that the attacker only sent a single packet."
   },
@@ -19723,6 +20753,13 @@
         "default": false
       },
       {
+        "id": 554720037,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/has-consensus",
+        "name": "has-consensus",
+        "color": "5319e7",
+        "default": false
+      },
+      {
         "id": 481871399,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
         "name": "transport",
@@ -19739,7 +20776,7 @@
     "milestone": null,
     "comments": 2,
     "created_at": "2017-01-10T04:13:43Z",
-    "updated_at": "2017-03-09T22:43:53Z",
+    "updated_at": "2017-04-19T05:25:18Z",
     "closed_at": "2017-03-09T22:43:53Z",
     "body": "When I wrote the section on what can change in different versions, I originally just left an unlabelled slot for the connection ID.  But @marten-seemann observed that the server is required to echo the connection ID in a version negotiation packet.\r\n\r\nI don't think that we need the server to echo the connection ID in this case.  That would allow us to restore the 8 octets to a version-specific field."
   },
@@ -20126,6 +21163,13 @@
         "default": false
       },
       {
+        "id": 554720037,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/has-consensus",
+        "name": "has-consensus",
+        "color": "5319e7",
+        "default": false
+      },
+      {
         "id": 481871627,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/http",
         "name": "http",
@@ -20142,7 +21186,7 @@
     "milestone": null,
     "comments": 2,
     "created_at": "2017-01-06T04:16:47Z",
-    "updated_at": "2017-02-23T01:35:44Z",
+    "updated_at": "2017-04-19T05:30:22Z",
     "closed_at": "2017-02-23T01:35:44Z",
     "body": "HTTP/2 compatibility at the framing level is a bit of an unrealistic goal.  Maybe we could just avoid allocating those bits first."
   },
@@ -20191,7 +21235,7 @@
         "default": false
       }
     ],
-    "state": "closed",
+    "state": "open",
     "locked": false,
     "assignee": null,
     "assignees": [
@@ -20200,8 +21244,8 @@
     "milestone": null,
     "comments": 2,
     "created_at": "2017-01-06T03:07:50Z",
-    "updated_at": "2017-03-07T00:52:56Z",
-    "closed_at": "2017-02-21T23:17:56Z",
+    "updated_at": "2017-04-19T05:32:25Z",
+    "closed_at": null,
     "body": "TLS provides an extension that limits the amount of data that can be sent during 0-RTT.  This is an explicit configuration item, even though TCP flow control would naturally limit the amount of data a client can send to a server with 0-RTT.  The reason for this is that servers might have to hold some or all of the 0-RTT data.  That buffering might be part of replay mitigation, for example.  A server that supports 0-RTT can use that limit to ensure that it doesn't have to buffer more than it is willing to buffer.\r\n\r\nIn #122, I have chosen to carry over the values for initial flow control window and concurrent stream limit.  We might want to provide separate transport parameters for 0-RTT so that servers can apply lower limits."
   },
   {
@@ -20306,6 +21350,13 @@
         "default": false
       },
       {
+        "id": 554720037,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/has-consensus",
+        "name": "has-consensus",
+        "color": "5319e7",
+        "default": false
+      },
+      {
         "id": 481871627,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/http",
         "name": "http",
@@ -20329,7 +21380,7 @@
     "milestone": null,
     "comments": 12,
     "created_at": "2017-01-06T01:36:14Z",
-    "updated_at": "2017-01-24T06:31:00Z",
+    "updated_at": "2017-04-19T05:25:18Z",
     "closed_at": "2017-01-24T06:11:48Z",
     "body": "Is there the potential for a version downgrade if the client is given unauthenticated hints about the version(s) that the server supports?\r\n\r\nIt's true that Alt-Svc will be authenticated in MOST cases, so maybe we don't have to worry about this.  On the other hand, it creates problems for analyzing the security properties of the negotiation.  I would suggest that we should insist that the Alt-Svc advertisement be authenticated before using any hints.\r\n\r\nThat could rule out the DNS as a source of version hints."
   },
@@ -20701,6 +21752,13 @@
         "default": false
       },
       {
+        "id": 554720037,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/has-consensus",
+        "name": "has-consensus",
+        "color": "5319e7",
+        "default": false
+      },
+      {
         "id": 481871399,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
         "name": "transport",
@@ -20717,7 +21775,7 @@
     "milestone": null,
     "comments": 12,
     "created_at": "2017-01-04T10:15:52Z",
-    "updated_at": "2017-03-09T22:43:44Z",
+    "updated_at": "2017-04-19T05:25:18Z",
     "closed_at": "2017-03-09T22:43:44Z",
     "body": "QUIC currently has the ability to embed this in the source address token.  I guess that this is primarily because they both happen at the same time (during a stateless reject).\r\n\r\nWe could turn this into a transport parameter, I guess, but that doesn't work for HelloRetryRequest."
   },
@@ -20756,6 +21814,13 @@
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/design",
         "name": "design",
         "color": "1d76db",
+        "default": false
+      },
+      {
+        "id": 554720037,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/has-consensus",
+        "name": "has-consensus",
+        "color": "5319e7",
         "default": false
       },
       {
@@ -20811,7 +21876,7 @@
     "milestone": null,
     "comments": 3,
     "created_at": "2017-01-04T10:13:39Z",
-    "updated_at": "2017-03-07T00:52:56Z",
+    "updated_at": "2017-04-19T05:25:18Z",
     "closed_at": "2017-02-23T06:51:17Z",
     "body": "-transport currently has a TODO regarding the encoding of a source address token.\r\n\r\nI would contend that we don't need to fix this.  This is a protocol from the server to the server."
   },
@@ -20853,6 +21918,13 @@
         "default": false
       },
       {
+        "id": 554720037,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/has-consensus",
+        "name": "has-consensus",
+        "color": "5319e7",
+        "default": false
+      },
+      {
         "id": 481871399,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
         "name": "transport",
@@ -20869,10 +21941,11 @@
     "milestone": null,
     "comments": 4,
     "created_at": "2017-01-04T10:10:49Z",
-    "updated_at": "2017-03-07T00:52:56Z",
+    "updated_at": "2017-04-19T05:25:18Z",
     "closed_at": "2017-02-07T00:02:12Z",
     "body": "What is SCUP and do we need it?"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/116",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -20911,6 +21984,13 @@
         "default": false
       },
       {
+        "id": 554720037,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/has-consensus",
+        "name": "has-consensus",
+        "color": "5319e7",
+        "default": false
+      },
+      {
         "id": 481871399,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
         "name": "transport",
@@ -20927,7 +22007,7 @@
     "milestone": null,
     "comments": 5,
     "created_at": "2017-01-04T07:08:22Z",
-    "updated_at": "2017-03-15T01:44:07Z",
+    "updated_at": "2017-04-19T05:25:18Z",
     "closed_at": "2017-03-10T03:59:48Z",
     "body": "COPT is apparently repeated, once for each option.  \r\n\r\nOne thing that TLS implementations do is validate that there is only one instance of each extension.  This isn't possible for transport parameters if we require that COPT be used for a list of options.\r\n\r\nAlso, we can reduce the number of extension points in the protocol, we shouldn't pack a list of options into COPT when we have transport parameters for that."
   },
@@ -21027,6 +22107,13 @@
         "default": false
       },
       {
+        "id": 554720037,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/has-consensus",
+        "name": "has-consensus",
+        "color": "5319e7",
+        "default": false
+      },
+      {
         "id": 481871399,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
         "name": "transport",
@@ -21079,7 +22166,7 @@
     "milestone": null,
     "comments": 10,
     "created_at": "2017-01-04T05:15:00Z",
-    "updated_at": "2017-03-07T00:52:56Z",
+    "updated_at": "2017-04-19T05:25:17Z",
     "closed_at": "2017-02-17T17:38:35Z",
     "body": "When talking about priority in #104, the question arose.  Say you have two streams and a STREAM frame to send on each, but only enough capacity to send one (due to flow control, congestion, or whatever).  Prioritization information helps us answer this question.  But what if the message is a retransmission of a packet that was determined to be lost.\r\n\r\nI think that the right answer has to do with tracking how long since a packet was originally given to QUIC to send.  And that we don't necessarily need to concern ourselves with whether it was sent previously or not - that will shake out in time anyway.  If it was sent before, it was obviously high enough priority to be worth sending once already.\r\n\r\nThat said, the value of repairing a gap in a stream is pretty high in terms of the ration of bytes delivered to bytes transmitted, so that might have some say."
   },
@@ -21185,6 +22272,13 @@
         "default": false
       },
       {
+        "id": 554720037,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/has-consensus",
+        "name": "has-consensus",
+        "color": "5319e7",
+        "default": false
+      },
+      {
         "id": 481871399,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
         "name": "transport",
@@ -21237,7 +22331,7 @@
     "milestone": null,
     "comments": 8,
     "created_at": "2017-01-04T02:47:10Z",
-    "updated_at": "2017-03-07T00:52:56Z",
+    "updated_at": "2017-04-19T05:25:17Z",
     "closed_at": "2017-02-23T06:57:41Z",
     "body": "Shout out to @davidben and the recently adopted draft-davidben-tls-grease."
   },
@@ -21534,8 +22628,7 @@
     "updated_at": "2017-03-20T05:26:37Z",
     "closed_at": null,
     "body": "I note that the IEEE754 reference doesn't help."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/108",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -21574,6 +22667,13 @@
         "default": false
       },
       {
+        "id": 554720037,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/has-consensus",
+        "name": "has-consensus",
+        "color": "5319e7",
+        "default": false
+      },
+      {
         "id": 481871399,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
         "name": "transport",
@@ -21590,7 +22690,7 @@
     "milestone": null,
     "comments": 16,
     "created_at": "2017-01-03T05:50:33Z",
-    "updated_at": "2017-01-31T06:36:02Z",
+    "updated_at": "2017-04-19T05:25:17Z",
     "closed_at": "2017-01-26T06:53:59Z",
     "body": "QUIC currently permits up to 32 bits of stream number.  This could be increased to 64."
   },
@@ -21625,6 +22725,13 @@
     },
     "labels": [
       {
+        "id": 481871311,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/editorial",
+        "name": "editorial",
+        "color": "0e8a16",
+        "default": false
+      },
+      {
         "id": 481873040,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/recovery",
         "name": "recovery",
@@ -21641,7 +22748,7 @@
     "milestone": null,
     "comments": 2,
     "created_at": "2016-12-30T00:13:01Z",
-    "updated_at": "2017-01-13T21:36:13Z",
+    "updated_at": "2017-04-19T05:45:35Z",
     "closed_at": "2017-01-13T21:36:13Z",
     "body": "In draft-quic-ietf-recovery, packet_number is listed as a parameter. But it is not used in the pseudocode, is not sent on to SetLossDetectionAlarm(), and there is no obvious place that SetLossDetectionAlarm() would use it."
   },
@@ -21797,6 +22904,13 @@
         "default": false
       },
       {
+        "id": 554720037,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/has-consensus",
+        "name": "has-consensus",
+        "color": "5319e7",
+        "default": false
+      },
+      {
         "id": 481871627,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/http",
         "name": "http",
@@ -21820,7 +22934,7 @@
     "milestone": null,
     "comments": 11,
     "created_at": "2016-12-27T22:26:08Z",
-    "updated_at": "2017-03-07T00:52:56Z",
+    "updated_at": "2017-04-19T05:25:17Z",
     "closed_at": "2017-02-23T04:28:46Z",
     "body": "The way HTTP/2 Priority is generally implemented is to keep a minimal amount in the TLS pipeline / TCP send buffer, retaining as much flexibility as possible to insert frames from high-priority streams ahead of those from lower-priority streams if they become available before the low-priority frames have been \"committed\".  Once data has been encrypted or sent to TCP, it must be sent even if higher-priority data has become available.\r\n\r\nIf the QUIC transport layer has no notion of priority, HTTP may have to do the same on each stream.  It might be preferable to provide the data for each stream into the transport as it becomes available, since the transport is already performing the framing functionality, but that would require the transport to take priority into account when deciding which stream's data to put on the wire next.\r\n\r\nThis need not be a wire format change (HTTP can continue to communicate priority at its layer), but should perhaps be noted as a useful property of an implementation and part of the defined interface with the application layer."
   },
@@ -22012,7 +23126,13 @@
       "site_admin": false
     },
     "labels": [
-
+      {
+        "id": 481871311,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/editorial",
+        "name": "editorial",
+        "color": "0e8a16",
+        "default": false
+      }
     ],
     "state": "closed",
     "locked": false,
@@ -22023,7 +23143,7 @@
     "milestone": null,
     "comments": 0,
     "created_at": "2016-12-24T07:07:58Z",
-    "updated_at": "2016-12-25T13:41:21Z",
+    "updated_at": "2017-04-19T05:31:07Z",
     "closed_at": "2016-12-25T13:41:21Z",
     "body": "Enjoy some time off! I'll be back on the 9th."
   },
@@ -22231,6 +23351,13 @@
         "default": false
       },
       {
+        "id": 554720037,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/has-consensus",
+        "name": "has-consensus",
+        "color": "5319e7",
+        "default": false
+      },
+      {
         "id": 481871604,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/tls",
         "name": "tls",
@@ -22247,7 +23374,7 @@
     "milestone": null,
     "comments": 3,
     "created_at": "2016-12-23T18:41:56Z",
-    "updated_at": "2017-03-07T00:52:56Z",
+    "updated_at": "2017-04-19T05:28:54Z",
     "closed_at": "2017-02-23T04:29:39Z",
     "body": "The QUIC-TLS spec currently says that the server should select a protocol without regard to the current QUIC version, and MAY (not MUST?) do Version Negotiation if the selected protocol can't be carried by the current QUIC version.  However, if the server does Version Negotiation, the client's ClientHello gets thrown away, and the client has to resend the ClientHello anyway.\r\n\r\nI'd be more inclined to say that servers select application protocols compatible with the current version if it can.  There are then two possibilities:\r\n\r\n  - Client learns that server supports a newer version in the response.  Then the client can try again (in parallel or in the future) over the newer version.  Same RTTs to reach the new version/protocol, but able to exchange some data on the initial connection 1 RTT sooner.\r\n  - Server supports no protocol compatible with the client's supported version, and triggers Version Negotiation anyway.  Same RTTs to reach the new version/protocol."
   },
@@ -22360,6 +23487,13 @@
         "default": false
       },
       {
+        "id": 554720037,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/has-consensus",
+        "name": "has-consensus",
+        "color": "5319e7",
+        "default": false
+      },
+      {
         "id": 481871627,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/http",
         "name": "http",
@@ -22376,7 +23510,7 @@
     "milestone": null,
     "comments": 3,
     "created_at": "2016-12-22T23:17:15Z",
-    "updated_at": "2017-03-09T22:41:41Z",
+    "updated_at": "2017-04-19T05:30:22Z",
     "closed_at": "2017-03-09T22:41:41Z",
     "body": "Need discussion of how CONNECT works.  Initial thought:\r\n\r\n - Client does not close data stream after sending request\r\n - If server responds (on the message control stream) with success, the data stream is being relayed into a TCP connection by the server.\r\n\r\nIs there a QUIC-CONNECT?  (Probably not, and almost certainly not in this document.)"
   },
@@ -22827,6 +23961,13 @@
         "default": false
       },
       {
+        "id": 554720037,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/has-consensus",
+        "name": "has-consensus",
+        "color": "5319e7",
+        "default": false
+      },
+      {
         "id": 481871627,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/http",
         "name": "http",
@@ -22850,10 +23991,11 @@
     "milestone": null,
     "comments": 11,
     "created_at": "2016-12-16T14:33:56Z",
-    "updated_at": "2017-02-08T19:43:32Z",
+    "updated_at": "2017-04-19T05:28:54Z",
     "closed_at": "2017-02-08T19:43:31Z",
     "body": "Hi @MikeBishop,\r\n\r\nThe QUIC advertisement section of the HTTP mapping document introduces two terms:\r\n* the ALPN identifier `quic` \r\n* the Alt-Svc parameter `v`\r\n\r\nAre these to be defined as part of the mapping document? If so, they should be registered in line with the policies set out in RFC 7301 or RFC 7838 respectively."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/86",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -23275,8 +24417,7 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/79.patch"
     },
     "body": "(sorry for the noise)"
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/78",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -23475,6 +24616,13 @@
         "default": false
       },
       {
+        "id": 554720037,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/has-consensus",
+        "name": "has-consensus",
+        "color": "5319e7",
+        "default": false
+      },
+      {
         "id": 481871627,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/http",
         "name": "http",
@@ -23491,7 +24639,7 @@
     "milestone": null,
     "comments": 3,
     "created_at": "2016-12-05T21:50:11Z",
-    "updated_at": "2017-03-23T04:30:26Z",
+    "updated_at": "2017-04-19T05:30:22Z",
     "closed_at": "2016-12-20T18:04:06Z",
     "body": "In HTTP/2, SETTINGS provokes an empty SETTINGS frame with the ACK flag sent.  In the EXTENDED_SETTINGS proposal, there's a separately-defined SETTINGS_ACK frame.  Either way, there's a way to know when changes have been applied.\r\n\r\nIf we need this in QUIC, with no defined ordering between bytes on different streams, we would need to ACK on every still-open stream.  (Ick.)  But of course, we also can't know which streams were already closed or not yet open at the time the SETTINGS frame was received, so we can't *enforce* that on the receiver.\r\n\r\nDo we need a SETTINGS epoch in every HTTP frame?  (Ick.)  Or simplify and say that SETTINGS just aren't ACKed over QUIC?"
   },
@@ -23533,6 +24681,13 @@
         "default": false
       },
       {
+        "id": 554720037,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/has-consensus",
+        "name": "has-consensus",
+        "color": "5319e7",
+        "default": false
+      },
+      {
         "id": 481873040,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/recovery",
         "name": "recovery",
@@ -23556,7 +24711,7 @@
     "milestone": null,
     "comments": 2,
     "created_at": "2016-12-05T21:45:16Z",
-    "updated_at": "2017-01-24T02:12:50Z",
+    "updated_at": "2017-04-19T05:23:42Z",
     "closed_at": "2017-01-24T02:10:49Z",
     "body": "If applications want to terminate a stream or connection for a reason that isn't specific to the QUIC transport layer, they currently need to define their own error communication mechanism and wait for the frame to be acknowledged before they tell QUIC to terminate the stream/connection.  That's not necessarily practical.\r\n\r\nCould we carve out a segment of the error space and define them to be application-defined, so each application mapping can add whatever error codes are relevant to it?  E.g. QUIC currently defines  QUIC_DECOMPRESSION_FAILURE, but QUIC defines no compression.  That's really there for HPACK, I presume.\r\n\r\nWe could do likewise for handshake errors, since that's also pluggable -- QUIC will have its own AEAD error codes, but things that could go wrong in the handshake will vary by which handshake protocol we're using."
   },
@@ -23591,6 +24746,13 @@
     },
     "labels": [
       {
+        "id": 481871361,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/design",
+        "name": "design",
+        "color": "1d76db",
+        "default": false
+      },
+      {
         "id": 481871627,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/http",
         "name": "http",
@@ -23607,7 +24769,7 @@
     "milestone": null,
     "comments": 1,
     "created_at": "2016-12-05T21:30:24Z",
-    "updated_at": "2016-12-12T18:39:24Z",
+    "updated_at": "2017-04-19T05:45:10Z",
     "closed_at": "2016-12-12T18:39:24Z",
     "body": "The current PRIORITY frame has 31 bits to reference the dependent stream.  We'd need to either do some weird dancing (omit one of the bits that can be inferred?), change the layout of PRIORITY to match QUIC's stream space size, or restrict the mapping to use a subset of QUIC streams."
   },
@@ -23642,6 +24804,13 @@
     },
     "labels": [
       {
+        "id": 481871361,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/design",
+        "name": "design",
+        "color": "1d76db",
+        "default": false
+      },
+      {
         "id": 481871627,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/http",
         "name": "http",
@@ -23658,7 +24827,7 @@
     "milestone": null,
     "comments": 2,
     "created_at": "2016-12-05T21:20:43Z",
-    "updated_at": "2016-12-23T18:05:07Z",
+    "updated_at": "2017-04-19T05:44:57Z",
     "closed_at": "2016-12-12T18:39:40Z",
     "body": "In HTTP/2, the HEADERS frame \"opened\" a stream.  In this mapping, any frame can appear first on a stream, since the stream \"opens\" at the QUIC layer.  Do we still need the PRIORITY region in HEADERS, or should implementations just send a PRIORITY frame if they want to declare prioritization?"
   },
@@ -23764,6 +24933,13 @@
         "default": false
       },
       {
+        "id": 554720037,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/has-consensus",
+        "name": "has-consensus",
+        "color": "5319e7",
+        "default": false
+      },
+      {
         "id": 481871399,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
         "name": "transport",
@@ -23780,7 +24956,7 @@
     "milestone": null,
     "comments": 3,
     "created_at": "2016-12-05T19:02:37Z",
-    "updated_at": "2017-01-26T06:36:13Z",
+    "updated_at": "2017-04-19T05:23:42Z",
     "closed_at": "2017-01-26T06:35:57Z",
     "body": "Mirja Kühlewind points out that multiple ACK frames per packet don't really make sense, and they aren't retransmittable.  Instead, Mirja suggests replacing the ACK frame with an optional region in the packet header and a bit indicating its presence.  STOP_WAITING, already a candidate for removal (#66), could be consolidated here as well."
   },
@@ -23822,6 +24998,13 @@
         "default": false
       },
       {
+        "id": 554720037,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/has-consensus",
+        "name": "has-consensus",
+        "color": "5319e7",
+        "default": false
+      },
+      {
         "id": 481871399,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
         "name": "transport",
@@ -23838,7 +25021,7 @@
     "milestone": null,
     "comments": 3,
     "created_at": "2016-12-03T21:57:27Z",
-    "updated_at": "2017-01-26T02:18:26Z",
+    "updated_at": "2017-04-19T05:23:42Z",
     "closed_at": "2017-01-26T02:18:11Z",
     "body": "Issue #64 brought up PTUMD, which brought up the issue of minimum packet size.\r\n\r\nStateless rejects require the CHLO to fit into one packet, so the minimum should be specified with that in mind.\r\n\r\n#64 also brought up the issue of downgrade attacks, and given the vast majority of paths permit 1200 bytes, we should be able to agree on a reasonable(ie: >1k) minimum size."
   },
@@ -23945,6 +25128,13 @@
         "default": false
       },
       {
+        "id": 554720037,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/has-consensus",
+        "name": "has-consensus",
+        "color": "5319e7",
+        "default": false
+      },
+      {
         "id": 481871399,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
         "name": "transport",
@@ -23997,7 +25187,7 @@
     "milestone": null,
     "comments": 1,
     "created_at": "2016-12-02T00:25:36Z",
-    "updated_at": "2017-03-10T03:54:27Z",
+    "updated_at": "2017-04-19T05:23:42Z",
     "closed_at": "2017-03-10T03:54:26Z",
     "body": "The algorithm for picking the length of the packet number needs much better explanation, and probably a bunch of rationale to support that.\r\n\r\n(Marked as design so that any change gets proper discussion and review.)"
   },
@@ -24039,10 +25229,10 @@
         "default": false
       },
       {
-        "id": 489929683,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/editor-ready",
-        "name": "editor-ready",
-        "color": "0e8a16",
+        "id": 554720037,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/has-consensus",
+        "name": "has-consensus",
+        "color": "5319e7",
         "default": false
       },
       {
@@ -24098,7 +25288,7 @@
     "milestone": null,
     "comments": 2,
     "created_at": "2016-12-02T00:24:36Z",
-    "updated_at": "2017-03-08T04:06:15Z",
+    "updated_at": "2017-04-19T05:33:48Z",
     "closed_at": "2017-03-08T04:06:15Z",
     "body": "@ianswett suggests that maybe this can be removed.  He didn't say why."
   },
@@ -24198,6 +25388,13 @@
         "default": false
       },
       {
+        "id": 554720037,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/has-consensus",
+        "name": "has-consensus",
+        "color": "5319e7",
+        "default": false
+      },
+      {
         "id": 481871399,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
         "name": "transport",
@@ -24250,7 +25447,7 @@
     "milestone": null,
     "comments": 23,
     "created_at": "2016-12-01T23:52:46Z",
-    "updated_at": "2017-03-07T00:52:56Z",
+    "updated_at": "2017-04-19T05:23:42Z",
     "closed_at": "2017-02-09T02:57:06Z",
     "body": "Quoting Martin Duke:\r\n> RFC-Compliant ICMP PMTU messages include the\r\n> oversize packet's IP header and the first 8 bytes of the transport. This\r\n> allows  TCP to demultiplex the ICMP to the relevant connection/path, and\r\n> check that the echoed sequence number corresponds to an in-flight segment,\r\n> and that the segment that would have violated the advertised MTU. As TCP\r\n> windows increase, it's true that this may be less effective.\r\n>\r\n> For QUIC, these messages will contain only the UDP header. I believe this is\r\n> sufficient to demux to the right connection (QUIC allows the same 4-tuple\r\n> for multiple connection IDs, but it would be fine to apply it to all such\r\n> connections), but I see no clear mechanism to prevent a blind attacker that\r\n> guesses the 4-tuple from forcing a QUIC connection to revert to the min path\r\n> MTU. Some possibilities:\r\n>     (a) Require routers to send more bytes. This is probably not deployable,\r\n> and in any case because packet numbers always start at zero this doesn't add\r\n> much security.\r\n>     (b) Store UDP or IP data. We could require QUIC to store the UDP\r\n> checksum or IP ID in its send queue, thus allowing it to associate the\r\n> returned headers with a packet in its queue. This is ugly from a layering\r\n> perspective and may not be plausible with hardware offload of checksums,\r\n> various middleboxes, etc.\r\n>     (c) Isolated DF packets. QUIC could pick a long time interval (10\r\n> seconds?) in which is sets DF on a single MTU-sized packet (which may have\r\n> to be padded). QUIC would only accept ICMP messages within an RTT or so of\r\n> having sent one of these MTU probe packets, or until it's acked. Thus the\r\n> probabability an off-path attacker could time it correctly is (RTT / 10\r\n> sec). If there's an extended burst of ICMP to overcome this, that's probably\r\n> an attack indication to handle either in IP, the firewall, or at worst in\r\n> QUIC.  I have some language to codify this, and if we agree this is the\r\n> right approach I can share it."
   },
@@ -24289,6 +25486,13 @@
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/design",
         "name": "design",
         "color": "1d76db",
+        "default": false
+      },
+      {
+        "id": 554720037,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/has-consensus",
+        "name": "has-consensus",
+        "color": "5319e7",
         "default": false
       },
       {
@@ -24351,7 +25555,7 @@
     "milestone": null,
     "comments": 12,
     "created_at": "2016-12-01T23:50:17Z",
-    "updated_at": "2017-03-14T01:18:08Z",
+    "updated_at": "2017-04-19T05:23:42Z",
     "closed_at": "2017-03-14T01:18:08Z",
     "body": "We have rules about retransmission of STREAM frames.  ACK has similar properties in terms of what needs to be retransmitted.  Once an ACK has been acked, what should a sender do when constructing future ACK messages?"
   },
@@ -24390,6 +25594,13 @@
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/design",
         "name": "design",
         "color": "1d76db",
+        "default": false
+      },
+      {
+        "id": 554720037,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/has-consensus",
+        "name": "has-consensus",
+        "color": "5319e7",
         "default": false
       },
       {
@@ -24445,7 +25656,7 @@
     "milestone": null,
     "comments": 4,
     "created_at": "2016-12-01T23:48:18Z",
-    "updated_at": "2017-03-07T00:52:55Z",
+    "updated_at": "2017-04-19T05:23:42Z",
     "closed_at": "2017-02-16T22:17:42Z",
     "body": "Martin Duke requests that all fields necessary for frame length computation be moved to the start of the frame."
   },
@@ -24617,6 +25828,13 @@
         "default": false
       },
       {
+        "id": 554720037,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/has-consensus",
+        "name": "has-consensus",
+        "color": "5319e7",
+        "default": false
+      },
+      {
         "id": 481871399,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
         "name": "transport",
@@ -24633,7 +25851,7 @@
     "milestone": null,
     "comments": 1,
     "created_at": "2016-12-01T23:41:08Z",
-    "updated_at": "2017-01-04T02:12:05Z",
+    "updated_at": "2017-04-19T05:23:42Z",
     "closed_at": "2017-01-04T02:12:05Z",
     "body": "This isn't defined as being required or optional.  Also, it appears to both be mandatory and have a default value."
   },
@@ -24733,6 +25951,13 @@
         "default": false
       },
       {
+        "id": 554720037,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/has-consensus",
+        "name": "has-consensus",
+        "color": "5319e7",
+        "default": false
+      },
+      {
         "id": 481871399,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
         "name": "transport",
@@ -24749,10 +25974,11 @@
     "milestone": null,
     "comments": 4,
     "created_at": "2016-12-01T23:29:15Z",
-    "updated_at": "2017-01-25T06:38:07Z",
+    "updated_at": "2017-04-19T05:23:42Z",
     "closed_at": "2017-01-25T06:38:07Z",
     "body": "Martin Duke observes that until STOP_WAITING is acknowledged, you can't assume that it has had an effect.  This means that anything that depends on the number of \"in flight\" packets can't assume that packets before the Last Unacked packet aren't still considered as in transit by the receiver of the STOP_WAITING.  This is particularly relevant for determining how many bits to allocate to packet numbers.\r\n\r\nWe might just provide advice here, but I've marked this as design so that we can discuss it."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/56",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -24791,6 +26017,13 @@
         "default": false
       },
       {
+        "id": 554720037,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/has-consensus",
+        "name": "has-consensus",
+        "color": "5319e7",
+        "default": false
+      },
+      {
         "id": 481871399,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
         "name": "transport",
@@ -24807,7 +26040,7 @@
     "milestone": null,
     "comments": 6,
     "created_at": "2016-12-01T23:16:02Z",
-    "updated_at": "2017-03-09T22:43:34Z",
+    "updated_at": "2017-04-19T05:23:42Z",
     "closed_at": "2017-03-09T22:43:33Z",
     "body": "We need to define how the public flags might be extended, or if it could be.  This has a pretty serious impact on #55."
   },
@@ -24856,7 +26089,7 @@
         "default": false
       }
     ],
-    "state": "closed",
+    "state": "open",
     "locked": false,
     "assignee": null,
     "assignees": [
@@ -24865,8 +26098,8 @@
     "milestone": null,
     "comments": 15,
     "created_at": "2016-12-01T23:15:26Z",
-    "updated_at": "2017-01-09T22:33:57Z",
-    "closed_at": "2017-01-09T22:33:57Z",
+    "updated_at": "2017-04-19T05:32:25Z",
+    "closed_at": null,
     "body": "We need to know what can change between versions.\r\n\r\nThe critical thing for forward compatibility is the ability to signal that a new version is being used.  In order to do so, the recipient (the server here) needs to be able to find the version field.  Given the current packet layout, that means that we need to guarantee that the connection ID and version bits behave consistently across versions and that no extra fields are added in between the start of the packet and the version."
   },
   {
@@ -25114,6 +26347,13 @@
         "default": false
       },
       {
+        "id": 554720037,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/has-consensus",
+        "name": "has-consensus",
+        "color": "5319e7",
+        "default": false
+      },
+      {
         "id": 481871399,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
         "name": "transport",
@@ -25166,7 +26406,7 @@
     "milestone": null,
     "comments": 3,
     "created_at": "2016-11-30T02:22:17Z",
-    "updated_at": "2017-03-15T01:42:33Z",
+    "updated_at": "2017-04-19T05:23:42Z",
     "closed_at": "2017-03-10T01:03:48Z",
     "body": "We need to write down how this happens:\r\n\r\n1. on the same connection\r\n2. on a subsequent connection"
   },
@@ -25215,7 +26455,7 @@
         "default": false
       }
     ],
-    "state": "closed",
+    "state": "open",
     "locked": false,
     "assignee": {
       "login": "janaiyengar",
@@ -25258,10 +26498,10 @@
       }
     ],
     "milestone": null,
-    "comments": 3,
+    "comments": 4,
     "created_at": "2016-11-30T02:21:44Z",
-    "updated_at": "2017-04-12T22:23:43Z",
-    "closed_at": "2017-01-24T02:43:55Z",
+    "updated_at": "2017-04-19T05:45:00Z",
+    "closed_at": null,
     "body": "There have been proposals on the list. We need to finalize a version number scheme for QUIC versions."
   },
   {
@@ -25302,6 +26542,13 @@
         "default": false
       },
       {
+        "id": 554720037,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/has-consensus",
+        "name": "has-consensus",
+        "color": "5319e7",
+        "default": false
+      },
+      {
         "id": 481871399,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
         "name": "transport",
@@ -25318,7 +26565,7 @@
     "milestone": null,
     "comments": 7,
     "created_at": "2016-11-30T02:21:34Z",
-    "updated_at": "2017-03-03T00:25:48Z",
+    "updated_at": "2017-04-19T05:23:41Z",
     "closed_at": "2017-01-24T06:41:04Z",
     "body": "In h2, we were able to update transport-y parameters like flow control window and number of streams.  If we adopt a TLS extension for negotiating/advertising these, that means we can't update them."
   },
@@ -25357,6 +26604,13 @@
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/design",
         "name": "design",
         "color": "1d76db",
+        "default": false
+      },
+      {
+        "id": 554720037,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/has-consensus",
+        "name": "has-consensus",
+        "color": "5319e7",
         "default": false
       },
       {
@@ -25412,11 +26666,10 @@
     "milestone": null,
     "comments": 3,
     "created_at": "2016-11-30T02:16:57Z",
-    "updated_at": "2017-03-07T00:52:55Z",
+    "updated_at": "2017-04-19T05:22:44Z",
     "closed_at": "2017-02-22T00:41:42Z",
     "body": "We currently have no way of advertising things like flow control windows, maximum number of streams, etc...\r\n\r\nCandidate is a QUIC extension that we include in the handshake.   This can include the QUIC version."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/48",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -25985,6 +27238,13 @@
         "default": false
       },
       {
+        "id": 554720037,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/has-consensus",
+        "name": "has-consensus",
+        "color": "5319e7",
+        "default": false
+      },
+      {
         "id": 481871399,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
         "name": "transport",
@@ -26056,7 +27316,7 @@
     "milestone": null,
     "comments": 5,
     "created_at": "2016-11-28T08:31:53Z",
-    "updated_at": "2017-03-15T01:33:25Z",
+    "updated_at": "2017-04-19T05:22:13Z",
     "closed_at": "2017-03-10T01:07:03Z",
     "body": "Packet numbers, stream offsets, various ACK information and many other fields can currently be encoded as variable length. Do we have some data on the benefits of this complexity? Would it be sufficient to use fewer increments, or could we even move to fixed length encoding for some or all of these fields?"
   },
@@ -26336,6 +27596,13 @@
         "default": false
       },
       {
+        "id": 554720037,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/has-consensus",
+        "name": "has-consensus",
+        "color": "5319e7",
+        "default": false
+      },
+      {
         "id": 481871399,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
         "name": "transport",
@@ -26388,7 +27655,7 @@
     "milestone": null,
     "comments": 6,
     "created_at": "2016-11-28T05:57:04Z",
-    "updated_at": "2017-03-07T00:52:55Z",
+    "updated_at": "2017-04-19T05:22:13Z",
     "closed_at": "2017-02-22T00:43:02Z",
     "body": "We might be able to randomize the starting packet number and thereby avoid having it as a point of ossification.  It also increases the entropy for an off-path attacker who wishes to guess connection IDs because now they have to guess packet number as well."
   },
@@ -26427,6 +27694,13 @@
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/design",
         "name": "design",
         "color": "1d76db",
+        "default": false
+      },
+      {
+        "id": 554720037,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/has-consensus",
+        "name": "has-consensus",
+        "color": "5319e7",
         "default": false
       },
       {
@@ -26482,7 +27756,7 @@
     "milestone": null,
     "comments": 9,
     "created_at": "2016-11-28T05:49:43Z",
-    "updated_at": "2017-03-08T23:33:56Z",
+    "updated_at": "2017-04-19T05:28:54Z",
     "closed_at": "2017-03-08T23:33:56Z",
     "body": "If we consider cleartext << 0-RTT << 1-RTT, then we might be able to establish a clear rule regarding acknowledgments.\r\n\r\nThe desired rule is that an ACK MUST be sent with the same or higher protection.\r\n\r\nHowever: This rule would mean that a server is required to ACK 0-RTT data with 1-RTT keys.  That's tricky, because loss or delay of the server's first flight also delays the server's ACKs of 0-RTT data (the server can't use 0-RTT keys)."
   },
@@ -26945,6 +28219,13 @@
         "default": false
       },
       {
+        "id": 554720037,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/has-consensus",
+        "name": "has-consensus",
+        "color": "5319e7",
+        "default": false
+      },
+      {
         "id": 481871604,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/tls",
         "name": "tls",
@@ -26961,10 +28242,11 @@
     "milestone": null,
     "comments": 1,
     "created_at": "2016-11-25T07:03:52Z",
-    "updated_at": "2017-01-10T05:43:36Z",
+    "updated_at": "2017-04-19T05:28:54Z",
     "closed_at": "2017-01-10T05:43:36Z",
     "body": ""
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/26",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -27003,6 +28285,13 @@
         "default": false
       },
       {
+        "id": 554720037,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/has-consensus",
+        "name": "has-consensus",
+        "color": "5319e7",
+        "default": false
+      },
+      {
         "id": 481871604,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/tls",
         "name": "tls",
@@ -27026,7 +28315,7 @@
     "milestone": null,
     "comments": 1,
     "created_at": "2016-11-25T07:01:36Z",
-    "updated_at": "2016-12-10T01:29:49Z",
+    "updated_at": "2017-04-19T05:28:53Z",
     "closed_at": "2016-12-10T01:29:49Z",
     "body": "DIVERSIFICATION_NONCE (0x04) is dead, 0x80 is unused."
   },
@@ -27068,6 +28357,13 @@
         "default": false
       },
       {
+        "id": 554720037,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/has-consensus",
+        "name": "has-consensus",
+        "color": "5319e7",
+        "default": false
+      },
+      {
         "id": 481871604,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/tls",
         "name": "tls",
@@ -27084,7 +28380,7 @@
     "milestone": null,
     "comments": 1,
     "created_at": "2016-11-25T06:50:08Z",
-    "updated_at": "2017-03-07T04:45:57Z",
+    "updated_at": "2017-04-19T05:28:53Z",
     "closed_at": "2017-03-07T04:45:57Z",
     "body": "The design for TLS 1.3 KeyUpdate ensures that a compromise of keys after a KeyUpdate has been completed doesn't result in a compromise of all prior keys on that connection.\r\n\r\nThis is not true in QUIC.  QUIC uses a TLS exporter to obtain its initial seed keys.  As long as the exporter secret remains viable (and it will by default in most TLS stacks), then it will be able to compromise any QUIC packet protection keys.\r\n\r\nWe can't close the TLS connection on stream 1 early because it is desirable to have new session tickets issued to clients over time, especially if a server wants to update keys in response to mobility or other significant events.\r\n\r\nWe could recommend that TLS stacks provide an API for destroying an exporter secret, but that would interact poorly with things like token binding which use the exporter secret constantly."
   },
@@ -27489,8 +28785,7 @@
     "updated_at": "2017-02-08T21:03:22Z",
     "closed_at": "2017-02-08T21:03:22Z",
     "body": "Hi,\r\n\r\nI believe the RST_STREAM error codes are missing from https://tools.ietf.org/html/draft-hamilton-quic-transport-protocol-01 (there weren't in the previous version either).\r\n\r\nThese error codes are distinct from other error codes but the enumeration ranges overlap, which causes some unfortunate aliasing. I raised this issue on the QUIC Protocol discussion group (https://groups.google.com/a/chromium.org/forum/#!topic/proto-quic/dSSNpQj3shI) but also raising here to signal when the the I-D gets updated.\r\n"
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/18",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -27725,7 +29020,13 @@
       "site_admin": false
     },
     "labels": [
-
+      {
+        "id": 481871311,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/editorial",
+        "name": "editorial",
+        "color": "0e8a16",
+        "default": false
+      }
     ],
     "state": "closed",
     "locked": false,
@@ -27736,7 +29037,7 @@
     "milestone": null,
     "comments": 0,
     "created_at": "2016-11-23T11:07:41Z",
-    "updated_at": "2016-11-25T01:27:00Z",
+    "updated_at": "2017-04-19T05:31:07Z",
     "closed_at": "2016-11-25T01:27:00Z",
     "body": "http://editorconfig.org/\r\n\r\nAlso need instructions. "
   },
@@ -27843,6 +29144,13 @@
         "default": false
       },
       {
+        "id": 554720037,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/has-consensus",
+        "name": "has-consensus",
+        "color": "5319e7",
+        "default": false
+      },
+      {
         "id": 481871604,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/tls",
         "name": "tls",
@@ -27859,7 +29167,7 @@
     "milestone": null,
     "comments": 2,
     "created_at": "2016-11-23T02:07:58Z",
-    "updated_at": "2017-01-25T02:08:55Z",
+    "updated_at": "2017-04-19T05:28:53Z",
     "closed_at": "2017-01-25T02:08:50Z",
     "body": "As per discussion at the meeting.  This will allow QUIC to evolve ahead of any updates to its higher layers."
   },
@@ -28340,7 +29648,13 @@
       "site_admin": false
     },
     "labels": [
-
+      {
+        "id": 481871311,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/editorial",
+        "name": "editorial",
+        "color": "0e8a16",
+        "default": false
+      }
     ],
     "state": "closed",
     "locked": false,
@@ -28351,7 +29665,7 @@
     "milestone": null,
     "comments": 4,
     "created_at": "2016-11-22T15:19:13Z",
-    "updated_at": "2016-11-23T11:02:33Z",
+    "updated_at": "2017-04-19T05:31:07Z",
     "closed_at": "2016-11-23T11:02:33Z",
     "body": "Sorry for the spam. We only seem to get issue notifications through intermittently."
   },
