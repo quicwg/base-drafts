@@ -790,6 +790,7 @@ explained in more detail as they are referenced later in the document.
 | 0x06        | MAX_STREAM_ID    | {{frame-max-stream-id}}    |
 | 0x07        | PING             | {{frame-ping}}             |
 | 0x08        | BLOCKED          | {{frame-blocked}}          |
+| 0x09        | STREAM_BLOCKED   | {{frame-stream-blocked}}   |
 | 0xa0 - 0x7f | ACK              | {{frame-ack}}              |
 | 0xc0 - 0xff | STREAM           | {{frame-stream}}           |
 {: #frame-types title="Frame Types"}
@@ -1752,11 +1753,21 @@ limits (see {{zerortt-parameters}}).
 
 ## BLOCKED Frame {#frame-blocked}
 
-A sender sends a BLOCKED frame (type=0x08) when it is ready to send data (and
-has data to send), but is currently flow control blocked. BLOCKED frames are
-purely informational frames, but extremely useful for debugging purposes. A
-receiver of a BLOCKED frame should simply discard it (after possibly printing a
-helpful log message). The frame is as follows:
+A sender sends a BLOCKED frame (type=0x08) when it wishes to send data, but is
+unable to due to connection-level flow control (see {{blocking}}). BLOCKED
+frames can be used as input to tuning of flow control algorithms (see
+{{fc-credit}}).
+
+The BLOCKED frame does not contain a payload.
+
+
+## STREAM_BLOCKED Frame {#frame-stream-blocked}
+
+A sender sends a STREAM_BLOCKED frame (type=0x09) when it wishes to send data,
+but is unable to due to stream-level flow control.  This stream is analogous to
+BLOCKED ({{frame-blocked}}).
+
+The STREAM_BLOCKED frame is as follows:
 
 ~~~
  0                   1                   2                   3
@@ -1766,14 +1777,11 @@ helpful log message). The frame is as follows:
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
 
-The BLOCKED frame contains a single field:
+The STREAM_BLOCKED frame contains a single field:
 
 Stream ID:
 
 : A 32-bit unsigned number indicating the stream which is flow control blocked.
-  A non-zero Stream ID field specifies the stream that is flow control blocked.
-  When zero, the Stream ID field indicates that the connection is flow control
-  blocked.
 
 
 ## RST_STREAM Frame {#frame-rst-stream}
@@ -2444,7 +2452,7 @@ frame and has sent neither a FIN nor a RST_STREAM, it MUST send a RST_STREAM in
 response, bearing the offset of the last byte sent on this stream as the final
 offset.
 
-### Data Limit Increments
+### Data Limit Increments {#fc-credit}
 
 This document leaves when and how many bytes to advertise in a MAX_DATA or
 MAX_STREAM_DATA to implementations, but offers a few considerations.  These
@@ -2473,12 +2481,13 @@ peer-initiated streams close.  A receiver MAY also advance the maximum stream ID
 based on current activity, system conditions, and other environmental factors.
 
 
-### BLOCKED frames
+### Blocking on Flow Control {#blocking}
 
 If a sender does not receive a MAX_DATA or MAX_STREAM_DATA frame when it has run
 out of flow control credit, the sender will be blocked and MUST send a BLOCKED
-frame.  A BLOCKED frame is expected to be useful for debugging at the receiver.
-A receiver SHOULD NOT wait for a BLOCKED frame before sending MAX_DATA or
+or STREAM_BLOCKED frame.  These frames are expected to be useful for debugging
+at the receiver, they do not require any other action.  A receiver SHOULD NOT
+wait for a BLOCKED or STREAM_BLOCKED frame before sending MAX_DATA or
 MAX_STREAM_DATA, since doing so will mean that a sender is unable to send for an
 entire round trip.
 
