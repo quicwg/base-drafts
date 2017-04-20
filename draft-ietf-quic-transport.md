@@ -1685,7 +1685,7 @@ a result of a change in the initial limits (see {{zerortt-parameters}}).
 
 ## MAX_STREAM_DATA Frame {#frame-max-stream-data}
 
-The MAX_STREAM_DATA frame (type=0x04) is used in flow control to inform a peer
+The MAX_STREAM_DATA frame (type=0x05) is used in flow control to inform a peer
 of the maximum amount of data that can be sent on a stream.
 
 The frame is as follows:
@@ -1725,7 +1725,7 @@ this is a result of a change in the initial limits (see
 
 ## MAX_STREAM_ID Frame {#frame-max-stream-id}
 
-The MAX_STREAM_ID frame (type=0x08) informs the peer of the maximum stream ID
+The MAX_STREAM_ID frame (type=0x06) informs the peer of the maximum stream ID
 that they are permitted to open.
 
 The frame is as follows:
@@ -1757,7 +1757,7 @@ limits (see {{zerortt-parameters}}).
 
 ## BLOCKED Frame {#frame-blocked}
 
-A sender sends a BLOCKED frame (type=0x05) when it is ready to send data (and
+A sender sends a BLOCKED frame (type=0x08) when it is ready to send data (and
 has data to send), but is currently flow control blocked. BLOCKED frames are
 purely informational frames, but extremely useful for debugging purposes. A
 receiver of a BLOCKED frame should simply discard it (after possibly printing a
