@@ -16,7 +16,7 @@ latest::
 	    echo "$$f contains trailing whitespace"; err=1; \
 	  fi; \
 	  if cat "$$f" | (l=0; while read -r a; do l=$$(($$l + 1)); echo -E "$$l:$$a"; done) | \
-	     grep -v '^[0-9]*: *|' | tr -d '\r' | grep '^[0-9]*:.\{81\}'; then \
+	     sed -e '1,/--- abstract/d;/^[0-9]*: *|/d' | tr -d '\r' | grep '^[0-9]*:.\{81\}'; then \
 	    echo "$$f contains a line with >80 characters"; err=1; \
 	  fi; \
 	  if cat "$$f" | (l=0; while read -r a; do l=$$(($$l + 1)); echo -E "$$l:$$a"; done) | \
