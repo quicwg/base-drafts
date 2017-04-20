@@ -1,5 +1,121 @@
 [
   {
+    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/452",
+    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
+    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/452/labels{/name}",
+    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/452/comments",
+    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/452/events",
+    "html_url": "https://github.com/quicwg/base-drafts/issues/452",
+    "id": 222952275,
+    "number": 452,
+    "title": "Recording the conditions that produce BLOCKED",
+    "user": {
+      "login": "martinthomson",
+      "id": 67641,
+      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/martinthomson",
+      "html_url": "https://github.com/martinthomson",
+      "followers_url": "https://api.github.com/users/martinthomson/followers",
+      "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
+      "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
+      "organizations_url": "https://api.github.com/users/martinthomson/orgs",
+      "repos_url": "https://api.github.com/users/martinthomson/repos",
+      "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/martinthomson/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 481871361,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/design",
+        "name": "design",
+        "color": "1d76db",
+        "default": false
+      },
+      {
+        "id": 481871399,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
+        "name": "transport",
+        "color": "fbca04",
+        "default": false
+      }
+    ],
+    "state": "open",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 0,
+    "created_at": "2017-04-20T05:20:36Z",
+    "updated_at": "2017-04-20T05:20:36Z",
+    "closed_at": null,
+    "body": "It's possible that we don't care about the reliability of BLOCKED, but there is an inherent problem with the frame.\r\n\r\nThe quality of a signal like this is either in being able to capture the conditions that lead to it being generated, maybe in terms of looking at traces.  Or, it can be useful hollistically: by aggregating reports over a large set you can determine whether a change to flow control tuning was successful.\r\n\r\nA sender of BLOCKED is currently obligated to retransmit lost BLOCKED frames.  That achieves the latter goal reasonably well, but it does little for the former because the state of the connection when BLOCKED was generated is unlikely to be the same when it is eventually retransmitted.  Even on the first transmission, the receiver of a BLOCKED frame still has to do quite a lot to work out what the state of the sender might have been.\r\n\r\nBLOCKED would be more useful if it reported the limit that caused it to be generated.  That would also solve #451."
+  },
+  {
+    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/451",
+    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
+    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/451/labels{/name}",
+    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/451/comments",
+    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/451/events",
+    "html_url": "https://github.com/quicwg/base-drafts/issues/451",
+    "id": 222952222,
+    "number": 451,
+    "title": "No rules limit the sending of BLOCKED",
+    "user": {
+      "login": "martinthomson",
+      "id": 67641,
+      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/martinthomson",
+      "html_url": "https://github.com/martinthomson",
+      "followers_url": "https://api.github.com/users/martinthomson/followers",
+      "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
+      "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
+      "organizations_url": "https://api.github.com/users/martinthomson/orgs",
+      "repos_url": "https://api.github.com/users/martinthomson/repos",
+      "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/martinthomson/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 481871361,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/design",
+        "name": "design",
+        "color": "1d76db",
+        "default": false
+      },
+      {
+        "id": 481871399,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
+        "name": "transport",
+        "color": "fbca04",
+        "default": false
+      }
+    ],
+    "state": "open",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 0,
+    "created_at": "2017-04-20T05:20:10Z",
+    "updated_at": "2017-04-20T05:20:10Z",
+    "closed_at": null,
+    "body": "In discussions of BLOCKED in HTTP/2, one important limitation was that a sender wouldn't send multiple BLOCKED frames for the same limit.  That is, it would stop sending BLOCKED until it received a WINDOW_UPDATE for the affected limit.\r\n\r\nNo such restriction applies.  An poor implementation of QUIC could end up generating a LOT of BLOCKED frames.  The above limit would seem to be reasonable."
+  },
+  {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/450",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
     "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/450/labels{/name}",
@@ -89,7 +205,7 @@
     "milestone": null,
     "comments": 0,
     "created_at": "2017-04-20T04:27:43Z",
-    "updated_at": "2017-04-20T04:44:27Z",
+    "updated_at": "2017-04-20T05:33:11Z",
     "closed_at": null,
     "pull_request": {
       "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/450",
@@ -191,7 +307,7 @@
     "milestone": null,
     "comments": 0,
     "created_at": "2017-04-20T04:25:09Z",
-    "updated_at": "2017-04-20T04:45:47Z",
+    "updated_at": "2017-04-20T05:31:16Z",
     "closed_at": null,
     "pull_request": {
       "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/448",
@@ -1643,7 +1759,8 @@
     "updated_at": "2017-04-05T10:26:05Z",
     "closed_at": null,
     "body": "Currently the QUIC spec does not discuss sending multiple ack frames in one packet, and the way it's structured implies largest acked must always increase.  There are plans to use a new initial packet number and a new connection ID when migrating, making multiple ack frames valuable, if not strictly necessary, since otherwise you won't be able to continue acking pre-migration packets.\r\n\r\nAdditionally, this could allow the ack frame to be simpler by making all ack block lengths 1 byte long, instead of the current 1/2/4/6."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/422",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -1736,7 +1853,7 @@
     "milestone": null,
     "comments": 5,
     "created_at": "2017-03-29T16:20:58Z",
-    "updated_at": "2017-04-20T03:03:50Z",
+    "updated_at": "2017-04-20T05:05:57Z",
     "closed_at": "2017-04-20T03:03:47Z",
     "pull_request": {
       "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/421",
@@ -1745,8 +1862,7 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/421.patch"
     },
     "body": "Fixes #419.  I largely copied the WINDOW_UPDATE language.  It might actually be cleaner to recast this as a third level of flow control:  Bytes on streams, bytes on connection, streams on connection.  That would let us consolidate some of the duplicated language."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/420",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3350,7 +3466,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/393.patch"
     },
     "body": "Version of #391 (replacing #368), adds optional packet number echo to the short header, but makes both packet number and packet number echo fields in the short header 32 bits. Implemented largely by removing complexity from #391."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/392",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3465,8 +3582,7 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/391.patch"
     },
     "body": "Replaces #357 and #367. It adds optional packet number echo to the short header, with the echo taking the same size as the packet number, including guidance as to the selecting packet number size. This PR introduces no technical changes compared to #367."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/390",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5347,7 +5463,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/363.patch"
     },
     "body": "Collates the HTTP/2 migration guidance from various places into a single section, and expands on details about how HTTP/2 extensions can be used/ported.  In the process, I added more IANA stuff, which should address the HTTP portion of #359.\r\n\r\nBuilds on #274; Closes #242."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/362",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5485,8 +5602,7 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/361.patch"
     },
     "body": "This PR proposes an alternative header format for QUIC.  It is based on a previous proposal and incorporates feedback received on the list. This PR is unfortunately quite invasive.\r\n\r\nCloses:\r\n#35: Starting packet number\r\n#56: Extending flags\r\n#119: Server-proposed connection ID\r\n#133: Connection ID in version negotiation\r\n#135: DoS using Version Negotiation Packets\r\n#147: Reflection Attack Resistance\r\n#185: Reliable identification of the initial packet for a connection\r\n#193: Flags section is kind of confusing\r\n#244: Need a NONCE in version negotiation packets\r\n#293: Does the connection ID need to be in a consistent location\r\n#295: Connection ID on a version negotiation packet\r\n\r\n(also addresses some of:\r\n#148: QUIC packet header complexity\r\n#170: Connection ID collisions)"
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/360",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7468,7 +7584,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/333.patch"
     },
     "body": ""
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/332",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7570,8 +7687,7 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/331.patch"
     },
     "body": "These references are unused."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/330",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -9428,7 +9544,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/303.patch"
     },
     "body": "We decided that the transport would need priority but that it would rely on the application (protocol) to provide that information.  This attempts to capture that decision and provides a little guidance on what to prioritize (management stuff over STREAM, STREAM 1 over other streams, retransmissions, and then the rest of the streams according to application-layer priority).\r\n\r\nCloses #114, #104."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/302",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -9628,8 +9745,7 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/301.patch"
     },
     "body": ""
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/300",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -11718,7 +11834,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/273.patch"
     },
     "body": "Fixes #173, though I would like to ultimately get rid of the Sequence number altogether."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/272",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -11876,8 +11993,7 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/271.patch"
     },
     "body": "Fixes #127, but we may want to go further."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/270",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -13755,7 +13871,8 @@
     "updated_at": "2017-04-19T05:26:12Z",
     "closed_at": "2017-02-02T01:13:11Z",
     "body": "The TLS draft currently states that the associated data for AEAD encryption is the empty sequence. This is a deviation from legacy QUIC, which uses the public header as associated data and thus authenticates those fields. Packet number authentication is already accomplished due to its inclusion in the IV.\r\n\r\nIn Tokyo, there was considerable interest in a couple of features that require integrity of Public Header fields:\r\n- Greasing the unused bits in the Public flags\r\n- The connection ID may be used for routing.\r\n\r\nIt is probable that firewalls might block unused public flag bits, particularly if any middlebox could potentially alter them without detection to send a signal.\r\n\r\nTherefore, I suggest that we restore use of the full publice header as associated data. I see no reason that this would impose excessive costs on the receiver.\r\n\r\nI believe @janaiyengar brought this issue up first, though I fully endorse it."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/242",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -13878,8 +13995,7 @@
     "updated_at": "2017-02-03T03:00:54Z",
     "closed_at": null,
     "body": "For example if the version negotiation packet is lost, there's no ACK frame for the receiver to signal anything to the sender, we should specify what the loss recovery behavior for version negotiation and other special packets is."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/240",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -15626,7 +15742,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/213.patch"
     },
     "body": ""
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/212",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -15748,8 +15865,7 @@
     "updated_at": "2017-03-10T05:03:04Z",
     "closed_at": null,
     "body": "There are LOTS of error codes.  The only sensible thing to do is use those code to steer the receiver in the direction of the right logic for recovering from the error.  There is a different piece of information that might be provided to an application for diagnostic purposes (the reason phrase helps if it goes across the wire) and there might be other needs for an API, but across the wire we can probably cut this down a lot."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/210",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -17567,7 +17683,8 @@
     "updated_at": "2017-02-21T23:39:08Z",
     "closed_at": null,
     "body": "The question is whether we maintain TLS as some abstract concept or not.\r\n\r\nWe could talk about \"the cryptographic handshake\" and features that it provides in the abstract when referring to them in the transport document.  Or we could just describe how this protocol works in concrete terms.\r\n\r\nProponents of the first seem to think that would make replacing TLS easier.  Others disagree.  Others think that replacing TLS would be a bad idea.  Others think that replacing TLS is the only rational choice.  Some people think that people who hold opposing opinions are completely nuts."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/182",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -17696,8 +17813,7 @@
     "updated_at": "2017-04-19T11:33:46Z",
     "closed_at": null,
     "body": "I know that this might be a hard decision to make, but we don't have many settings and it seems like we might be able to avoid changing them mid-connection.\r\n\r\nGetting settings synchronization right is a pain and we really only have one that is ever likely to change and that's the header table size.  We don't allow initial flow control windows to change (no mechanism exists to allow it), so I question whether that needs changing.  If it does need to change, that would be for the same reason that the flow control window needs to change, which suggests we would need to devise a way to change those too.\r\n\r\nSETTINGS_ACK is a huge amount of machinery.  With 0-RTT, it will mean that just opening a connection will trigger a flurry of SETTINGS_ACK frames from the client just to respond to the server's connection preface (assuming that we're still keeping that, it's not clear).  \r\n\r\nOn the other hand, if we reserved a space for application-specific traffic parameters (see #122), we could put the application-layer settings like header table size in the handshake.  That has some downsides (client values would be unencrypted and you would need to include one set of parameters per application protocol on offer), but it means that there couldn't ever be any confusion about the value of a given setting once the connection was open.\r\n\r\nThat would be a huge simplification to the HTTP mapping."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/180",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -19597,7 +19713,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/153.patch"
     },
     "body": ""
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/152",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -19742,8 +19859,7 @@
     "updated_at": "2017-01-19T09:07:30Z",
     "closed_at": null,
     "body": "Mostly references to drafts/rfcs/papers, but complete justifications are needed for this draft to be standalone."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/150",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -21701,7 +21817,8 @@
     "updated_at": "2017-01-26T07:12:12Z",
     "closed_at": null,
     "body": "It may be possible to simplify the ACK frame, in particular, the timestamp section. We could conceivably make the \"Time from Largest Acked\" 16 bits, and simply have N-Timestamp-blocks, including this one. I think this is plausible."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/122",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -21909,8 +22026,7 @@
     "updated_at": "2017-03-10T04:00:53Z",
     "closed_at": null,
     "body": "If we do this badly, there might be two versions of QUIC for which the transport parameters are confusable in a way that confounds the validation of version negotiation because the transport parameters are interpreted differently for different QUIC versions.\r\n\r\nWe need to write that into the security considerations.  We might recommend preserving the initial part of the transport parameters extension, or - better yet - using a new extension codepoint when the format needs to change."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/120",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -23894,7 +24010,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/93.patch"
     },
     "body": "Adds a change log to each document.  Doc editors, please fill in anything I missed -- just push to this branch."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/92",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -24009,8 +24126,7 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/91.patch"
     },
     "body": "As per recent TLS 1.3 update."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/90",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -25818,7 +25934,8 @@
     "updated_at": "2017-04-19T05:23:42Z",
     "closed_at": "2017-03-14T01:18:08Z",
     "body": "We have rules about retransmission of STREAM frames.  ACK has similar properties in terms of what needs to be retransmitted.  Once an ACK has been acked, what should a sender do when constructing future ACK messages?"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/62",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -25984,8 +26101,7 @@
     "updated_at": "2017-03-30T23:40:24Z",
     "closed_at": null,
     "body": "I think that this is one or other peer walking away from a conversation without saying goodbye.  If we're going to talk about silent closes, we need to explain what it is, why a peer might choose to do it, and the consequences for everyone involved if they exist."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/60",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -28077,7 +28193,8 @@
     "updated_at": "2017-03-10T03:44:05Z",
     "closed_at": "2017-03-10T03:44:05Z",
     "body": "We need to be absolutely explicit here: if unprotecting a packet fails, drop it.  \r\n\r\nIt's important that we have this rule to prevent trivial DoS attacks on connections.  Also, we need to make it clear that unauthenticated data does not get fed into the system unless we have very careful rules around how we handle that data."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/32",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -28192,8 +28309,7 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/31.patch"
     },
     "body": "I'm still not convinced by the advantages of this.  It's slightly faster locally, but slower on CI due to the need to install xsltproc.\r\n\r\ncc @reschke "
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/30",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -30022,7 +30138,8 @@
     "updated_at": "2016-11-28T04:00:54Z",
     "closed_at": "2016-11-28T04:00:54Z",
     "body": ""
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/2",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
