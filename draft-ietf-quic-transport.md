@@ -2746,18 +2746,22 @@ packets with ACK frames.
 
 The attacks commonly known as Slowloris {{SLOWLORIS}}
 try to keep many connections
-to the target endpoint open and hold them open as long as possible. These attacks
+to the target endpoint open and hold
+them open as long as possible. These attacks
 can be executed against a QUIC endpoint by slowly sending small amount of
 data on an open stream, slowly opening the flow control windows in order
 to limit the sender rate, or possibly manufacturing QUIC ACK that
 simulate a high loss rate and slow down sending by the other endpoint.
 
-QUIC implementers should consider implementing the
-classic mitigations of the Slowloris attack, such as increasing the maximum
-number of clients the server will allow, limiting the number of connections
-a single IP address is allowed to make, imposing restrictions on the minimum
-transfer speed a connection is allowed to have, and restricting the length of
-time a client is allowed to stay connected.
+QUIC implementers SHOULD implement
+mitigations of the Slowloris attack, such as increasing the maximum
+number of clients the server will allow,
+limiting the number of connections
+a single IP address is allowed to make,
+imposing restrictions on the minimum
+transfer speed a connection is allowed to have,
+and restricting the length of
+time an endpoint is allowed to stay connected.
 
 # IANA Considerations
 
