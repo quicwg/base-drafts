@@ -685,7 +685,7 @@ the first post-RTO acknowledgement is processed.
 ~~~
    OnRetransmissionTimeoutVerified()
      congestion_window = kMinimumWindow
-~~
+~~~
 
 ## Pacing Packets
 
