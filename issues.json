@@ -58,9 +58,9 @@
 
     ],
     "milestone": null,
-    "comments": 0,
+    "comments": 1,
     "created_at": "2017-04-20T05:52:50Z",
-    "updated_at": "2017-04-20T05:52:50Z",
+    "updated_at": "2017-04-20T05:53:43Z",
     "closed_at": null,
     "pull_request": {
       "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/453",
@@ -543,9 +543,9 @@
 
     ],
     "milestone": null,
-    "comments": 2,
+    "comments": 3,
     "created_at": "2017-04-19T17:52:05Z",
-    "updated_at": "2017-04-20T03:11:32Z",
+    "updated_at": "2017-04-20T05:53:53Z",
     "closed_at": null,
     "pull_request": {
       "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/445",
