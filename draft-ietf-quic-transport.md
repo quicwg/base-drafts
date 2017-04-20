@@ -80,11 +80,13 @@ informative:
     target: "https://goo.gl/dMVtFi"
     
   SLOWLORIS:
-    title: "Welcome to Slowloris - the low bandwidth, yet greedy and poisonous HTTP client!"
+    title: 
+     "Welcome to Slowloris - the low bandwidth, yet greedy and poisonous HTTP client!"
     author:
       - ins: R. RSnake Hansen
     date: 2009-06
-    target: "https://web.archive.org/web/20150315054838/http://ha.ckers.org/slowloris/"
+    target: 
+     "https://web.archive.org/web/20150315054838/http://ha.ckers.org/slowloris/"
 
 
 --- abstract
