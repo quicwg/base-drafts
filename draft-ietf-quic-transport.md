@@ -84,7 +84,7 @@ informative:
     author:
       - ins: R. RSnake Hansen
     date: 2009-06
-    target: 
+    target:
      "https://web.archive.org/web/20150315054838/http://ha.ckers.org/slowloris/"
 
 
