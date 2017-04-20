@@ -2697,34 +2697,23 @@ also be forward-secure encrypted.  Since the attacker will not have the forward
 secure key, the attacker will not be able to generate forward-secure encrypted
 packets with ACK frames.
 
-## Stream fragmentation and reassembly attacks
+## Stream Fragmentation and Reassembly Attacks
 
-An adversarial client may attempt to
-exhaust server memory resource by performing
-a stream fragmentation and reassembly attack, similar to the UDP/ICMP
-"Teardrop" fragmentation attacks. The adversarial client would open a stream,
-and send some STREAM DATA packets containing fragments of the stream content.
-The goal of the attack is to induce the receiving implementation to commit
-memory buffers while waiting that the stream data can be reassembled.
+An adversarial endpoint might intentionally fragment the data on
+stream buffers in order to cause disproportionate memory commitment.
+The adversarial endpoint would open a stream,
+and send some STREAM DATA packets containing arbitrary
+fragments of the stream content. This attack can be
+amplifed if used by multiple clients against a single server.
 
-For example, a client
-might send some octets at the beginning of a
-stream and some octets much further
-away in the stream. A vulnerable server, on receiving the stream data fragments,
-might allocate memory covering the whole space from beginning to end. The client
-would then repeat the process on a large number of streams and a large number
-of connections, inducing the server to commit a large amout of memory.
+The attack is mitigated if flow control windows correspond to
+available memory. However, some receivers will over-commit memory and advertise
+flow control offsets in the aggregate that exceed actual available memory.
+The over-commitment strategy may leads to better performance when
+endpoints are well behaved, but renders endpoints vulnerable to
+the stream fragmentation attack.
 
-This attack can be mitigated by not
-committing memory for stream data reassembly,
-and simply keeping the STREAM DATA frames until enough fragments have been
-received and the data can be delivered to the application in proper sequence.
-However, this is not a complete mitigation.
-The adversarial client could still send
-a large number of STREAM DATA packets separated by holes,
-forcing the server
-to commit memory for a large number of data segments.
-
+Endpoints that over commit memory should mitigate this attack.
 A possible mitigation is for servers to keep a count of the number of
 "reassembly holes" in data streams received from the client.
 In normal operation,
