@@ -1671,10 +1671,10 @@ Maximum Data:
 
 When counting data toward this limit, an endpoint accounts for the maximum
 offset of data that is sent or received on every stream.  Loss or reordering can
-mean that the maximum offset is greater than the total size of data received on
-a stream.  Receiving STREAM frames might not increase the maximum offset on a
-stream if the maximum offset doesn't increase.  A STREAM frame with a FIN bit
-set or RST_STREAM causes the final offset for a stream to be fixed.
+mean that the maximum offset on a stream can be greater than the total size of
+data received on that stream.  Conversely, receiving STREAM frames might not
+increase the maximum offset on a stream if the maximum offset in the frame is
+lower than the maximum received for that stream.
 
 The sum of the maximum data offsets on all streams (including closed streams)
 MUST NOT exceed the value advertised by a receiver.  An endpoint MUST terminate
@@ -2389,7 +2389,7 @@ move the window forward.
 
 A receiver MUST close the connection with a
 QUIC_FLOW_CONTROL_RECEIVED_TOO_MUCH_DATA error ({{error-handling}}) if the
-peer violates the advertised limits on data on a connection or stream.
+peer violates the advertised connection or stream data limits.
 
 A sender MUST send BLOCKED frames to indicate it has data to write but is
 blocked by lack of connection or stream flow control credit.  BLOCKED frames are
@@ -2471,13 +2471,13 @@ considerations.  MAX_STREAM_ID frames constitute minimal overhead, while
 withholding MAX_STREAM_ID frames can prevent the peer from using the available
 parallelism.
 
-Implementations will likely want to increase the maximum stream ID as
-peer-initiated streams close.  Sending a MAX_STREAM_ID frame along with ACK
-frames ensures a regular increase in the stream limit without generating excess
+Sending any increase to the maximum stream ID in the same packet as an ACK frame
+ensures a regular increase in the stream limit without generating excess
 packets.
 
-A receiver MAY also advance the maximum stream ID based on current activity,
-system conditions, and other environmental factors.
+Implementations will likely want to increase the maximum stream ID as
+peer-initiated streams close.  A receiver MAY also advance the maximum stream ID
+based on current activity, system conditions, and other environmental factors.
 
 
 ### BLOCKED frames
