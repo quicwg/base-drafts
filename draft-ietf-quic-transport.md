@@ -1002,7 +1002,10 @@ initial_stream_limit (0x0002):
 
 : The initial stream number limit parameter contains the initial maximum stream
   number the peer may initiate.  This is equivalent to sending a LIMIT_UPDATE
-  ({{frame-limit-update}}) immediately after completing the handshake.
+  ({{frame-limit-update}}) immediately after completing the handshake.  This
+  value MUST NOT be set to 0, an endpoint MUST generate a
+  QUIC_INVALID_NEGOTIATED_VALUE error if it receives a value of zero for this
+  parameter.
 
 idle_timeout (0x0003):
 
