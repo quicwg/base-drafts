@@ -78,7 +78,7 @@ informative:
       - ins: J. Roskind
     date: 2013-12-02
     target: "https://goo.gl/dMVtFi"
-    
+ 
   SLOWLORIS:
     title: "Welcome to Slowloris..."
     author:
@@ -2754,8 +2754,8 @@ data on an open stream, slowly opening the flow control windows in order
 to limit the sender rate, or possibly manufacturing QUIC ACK that
 simulate a high loss rate and slow down sending by the other endpoint.
 
-QUIC implementers SHOULD implement
-mitigations of the Slowloris attack, such as increasing the maximum
+QUIC deployments SHOULD provide
+mitigations of the Slowloris attacks, such as increasing the maximum
 number of clients the server will allow,
 limiting the number of connections
 a single IP address is allowed to make,
