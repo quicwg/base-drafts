@@ -61,6 +61,15 @@ normative:
         org: sn3rd
         role: editor
 
+  FIPS180:
+    title: NIST FIPS 180-4, Secure Hash Standard
+    author:
+      name: NIST
+      ins: National Institute of Standards and Technology, U.S. Department of Commerce
+    date: 2015-08
+    seriesinfo: DOI 10.6028/NIST.FIPS.180-4
+    target: http://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.180-4.pdf
+
 informative:
 
   EARLY-DESIGN:
@@ -273,7 +282,6 @@ Version Negotiation packet, are not encrypted, but information sent in these
 unencrypted handshake packets is later verified as part of cryptographic
 processing.
 
-PUBLIC_RESET packets that reset a connection are currently not authenticated.
 
 ## Connection Migration and Resilience to NAT Rebinding
 
@@ -345,9 +353,9 @@ describing the value of fields.
 
 Any QUIC packet has either a long or a short header, as indicated by the Header
 Form bit. Long headers are expected to be used early in the connection before
-version negotiation and establishment of 1-RTT keys, and for public resets.
-Short headers are minimal version-specific headers, which can be used after
-version negotiation and 1-RTT keys are established.
+version negotiation and establishment of 1-RTT keys.  Short headers are minimal
+version-specific headers, which can be used after version negotiation and 1-RTT
+keys are established.
 
 ## Long Header
 
@@ -374,9 +382,9 @@ Long headers are used for packets that are sent prior to the completion of
 version negotiation and establishment of 1-RTT keys. Once both conditions are
 met, a sender SHOULD switch to sending short-form headers. While inefficient,
 long headers MAY be used for packets encrypted with 1-RTT keys. The long form
-allows for special packets, such as the Version Negotiation and the Public Reset
-packets to be represented in this uniform fixed-length packet format. A long
-header contains the following fields:
+allows for special packets - such as the Version Negotiation packet - to be
+represented in this uniform fixed-length packet format. A long header contains
+the following fields:
 
 Header Form:
 
@@ -422,7 +430,6 @@ The following packet types are defined:
 | 0x06 | 0-RTT Protected               | {{packet-protected}}        |
 | 0x07 | 1-RTT Protected (key phase 0) | {{packet-protected}}        |
 | 0x08 | 1-RTT Protected (key phase 1) | {{packet-protected}}        |
-| 0x09 | Public Reset                  | {{packet-public-reset}}     |
 {: #long-packet-types title="Long Header Packet Types"}
 
 The header form, packet type, connection ID, packet number and version fields of
@@ -682,42 +689,6 @@ packet protection in detail.  After decryption, the plaintext consists of a
 sequence of frames, as described in {{frames}}.
 
 
-## Public Reset Packet {#packet-public-reset}
-
-A Public Reset packet is only sent by servers and is used to abruptly terminate
-communications. Public Reset is provided as an option of last resort for a
-server that does not have access to the state of a connection.  This is intended
-for use by a server that has lost state (for example, through a crash or
-outage). A server that wishes to communicate a fatal connection error MUST use a
-CONNECTION_CLOSE frame if it has sufficient state to do so.
-
-A Public Reset packet uses long headers with a type value of 0x09.
-
-The connection ID and packet number of fields together contain octets 1 through
-12 from the packet that triggered the reset.  For a client that sends a
-connection ID on every packet, the Connection ID field is simply an echo of the
-client's Connection ID, and the Packet Number field includes an echo of the
-client's packet number.  Depending on the client's packet number length it might
-also include 0, 2, or 3 additional octets from the protected payload of the
-client packet.
-
-The version field contains the current QUIC version.
-
-A Public Reset packet sent by a server indicates that it does not have the
-state necessary to continue with a connection.  In this case, the server will
-include the fields that prove that it originally participated in the connection
-(see {{public-reset-proof}} for details).
-
-Upon receipt of a Public Reset packet that contains a valid proof, a client MUST
-tear down state associated with the connection.  The client MUST then cease
-sending packets on the connection and SHOULD discard any subsequent packets that
-arrive. A Public Reset that does not contain a valid proof MUST be ignored.
-
-### Public Reset Proof
-
-TODO: Details to be added.
-
-
 ## Connection ID {#connection-id}
 
 QUIC connections are identified by their 64-bit Connection ID.  All long headers
@@ -783,9 +754,9 @@ sending a packet with a number of 0x6b4264 requires a 16-bit or larger packet
 number encoding; whereas a 32-bit packet number is needed to send a packet with
 a number of 0x6bc107.
 
-Version Negotiation ({{packet-version}}), Server Stateless Retry
-({{packet-server-stateless}}), and Public Reset ({{packet-public-reset}})
-packets have special rules for populating the packet number field.
+Version Negotiation ({{packet-version}}), and Server Stateless Retry
+({{packet-server-stateless}}) packets have special rules for populating the
+packet number field.
 
 
 ### Initial Packet Number {#initial-packet-number}
@@ -1048,6 +1019,7 @@ language from Section 3 of {{!I-D.ietf-tls-tls13}}.
       idle_timeout(3),
       omit_connection_id(4),
       max_packet_size(5),
+      stateless_reset_secret(6),
       (65535)
    } TransportParameterId;
 
@@ -1121,6 +1093,11 @@ idle_timeout (0x0003):
 
 : The idle timeout is a value in seconds that is encoded as an unsigned 16-bit
   integer.  The maximum value is 600 seconds (10 minutes).
+
+stateless_reset_secret (0x0005):
+
+: The Stateless Reset Secret is used in verifying a stateless reset, see
+  {{stateless-reset}}.  This parameter is a sequence of 16 octets.
 
 An endpoint MAY use the following transport parameters:
 
@@ -1459,15 +1436,8 @@ of three ways:
    enabled when it is expensive to send an explicit close, such as mobile
    networks that must wake up the radio.
 
-3. Abrupt Shutdown: An endpoint may send a Public Reset packet at any time
-   during the connection to abruptly terminate an active connection.  A Public
-   Reset packet SHOULD only be used as a final recourse.  Commonly, a public
-   reset is expected to be sent when a packet on an established connection is
-   received by an endpoint that is unable decrypt the packet.  For instance, if
-   a server reboots mid-connection and loses any cryptographic state associated
-   with open connections, and then receives a packet on an open connection, it
-   should send a Public Reset packet in return.  (TODO: articulate rules around
-   when a public reset should be sent.)
+3. Stateless Reset: An endpoint that loses state can use this procedure to cause
+   the connection to terminate early, see {{stateless-reset}} for details.
 
 After receiving either a CONNECTION_CLOSE frame or a Public Reset, an
 endpoint MUST NOT send additional packets on that connection. After
@@ -1481,6 +1451,111 @@ Reset packet.  Implementations SHOULD throttle these responses, for
 instance by exponentially backing off the number of packets which are
 received before sending a response.  After this time, implementations
 SHOULD respond to unexpected packets with a Public Reset packet.
+
+
+## Stateless Reset {#stateless-reset}
+
+
+A stateless reset is provided as an option of last resort for a server that does
+not have access to the state of a connection.  This is intended for use by a
+server that has lost state (for example, through a crash or outage).  A server
+that wishes to communicate a fatal connection error MUST use a CONNECTION_CLOSE
+frame if it has sufficient state to do so.
+
+To support this process, the server sends a stateless_reset_secret value during
+the handshake in the transport parameters.  This value is protected by
+encryption, so only client and server know this value.
+
+A server that receives packets that it cannot process sends a packet in the
+following layout:
+
+~~~
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+
+|0|C|K|  00001  |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                                                               |
++                     [Connection ID (64)]                      +
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                                                               |
++                                                               +
+|                                                               |
++                   Stateless Reset Token (128)                 +
+|                                                               |
++                                                               +
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                        Random Octets (*)                    ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~
+
+This packet uses the short header form with the shortest possible packet number
+encoding.  This minimizes the perceived gap between the last packet that the
+server sent and this packet.  The leading octet of the Stateless Reset Token
+will be interpreted as a packet number.  A server MAY use a different short
+header type, indicating a different packet number length, but this allows for
+the message to be identified as a stateless reset more easily using heuristics.
+
+A server copies the connection ID field from the packet that triggers the
+stateless reset.  A server omits the connection ID if explicitly configured to
+do so, or if the client packet did not include a connection ID.
+
+After the first short header octet and optional connection ID, the server
+includes the value of the Stateless Reset Secret that it included in its
+transport parameters.
+
+After the Stateless Reset Secret, the server pads the message with random
+octets.
+
+This design ensures that a stateless reset packet is - to the extent possible -
+indistinguishable from a regular packet.
+
+
+### Detecting a Stateless Reset
+
+A client detects a potential stateless reset when a packet with a short header
+cannot be decrypted.  The client then performs a constant-time comparison of the
+16 octets that follow the Connection ID with the Stateless Reset Secret provided
+by the server in its transport parameters.  If this comparison is successful,
+the connection MUST be terminated immediately.  Otherwise, the packet can be
+discarded.
+
+
+### Selecting a Stateless Reset Secret
+
+In order to create a Stateless Reset Secret, a server could randomly generate
+{{!RFC4086}} a secret for every connection that it creates.  However, this
+presents a coordination problem when there are multiple servers in a cluster or
+a storage problem for a server that might lose state.  Stateless reset
+specifically exists to handle the case where state is lost, so this approach is
+suboptimal.
+
+A single static key can be used across all connections to the same endpoint by
+generating the proof using a second iteration of a preimage-resistant function
+that takes three inputs: the static key, a the connection ID for the connection
+(see {{connection-id}}), and an identifier for the server instance.  A server
+could use HMAC {{?RFC2104}} (for example, HMAC(static_key, server_id ||
+connection_id)) or HKDF {{?RFC5869}} (for example, using the static key as input
+keying material, with server and connection identifiers as salt).  The output of
+this function is truncated to 16 octets to produce the Stateless Reset Secret
+for that connection.
+
+A server that loses state can use the same method to generate a valid Stateless
+Reset Secret.  The connection ID comes from the packet that the server receives.
+
+This design relies on the client always sending a connection ID in its packets
+so that the server can use the connection ID from a packet to reset the
+connection.  A server that uses this design cannot allow clients to omit a
+connection ID (that is, it cannot use the truncate_connection_id transport
+parameter {{transport-parameter-definitions}}).
+
+A Stateless Reset Secret can only be used once for a given set of server
+instance, connection ID, and static key.  A connection ID from a connection that
+was reset cannot be reused for new connections at the same server without first
+changing to use a different static key or server identifier.
+
 
 # Frame Types and Formats
 
@@ -2191,7 +2266,7 @@ transmission efficiency to underfilled packets.
 # Packetization and Reliability {#packetization}
 
 The Path Maximum Transmission Unit (PMTU) is the maximum size of the entire IP
-header, UDP header, and UDP payload. The UDP payload includes the QUIC public
+header, UDP header, and UDP payload. The UDP payload includes the QUIC packet
 header, protected payload, and any authentication fields.
 
 All QUIC packets SHOULD be sized to fit within the estimated PMTU to avoid IP
@@ -2797,9 +2872,10 @@ The most appropriate error code ({{error-codes}}) SHOULD be included in the
 frame that signals the error.  Where this specification identifies error
 conditions, it also identifies the error code that is used.
 
-Public Reset is not suitable for any error that can be signaled with a
-CONNECTION_CLOSE or RST_STREAM frame.  Public Reset MUST NOT be sent by an
-endpoint that has the state necessary to send a frame on the connection.
+A stateless reset ({{stateless-reset}}) is not suitable for any error that can
+be signaled with a CONNECTION_CLOSE or RST_STREAM frame.  A stateless reset MUST
+NOT be used by an endpoint that has the state necessary to send a frame on the
+connection.
 
 
 ## Connection Errors
@@ -2818,8 +2894,8 @@ effort expended on terminated connections.
 
 An endpoint that chooses not to retransmit packets containing CONNECTION_CLOSE
 risks a peer missing the first such packet.  The only mechanism available to an
-endpoint that continues to receive data for a terminated connection is to send a
-Public Reset packet.
+endpoint that continues to receive data for a terminated connection is to use
+the stateless reset process ({{stateless-reset}}).
 
 An endpoint that receives an invalid CONNECTION_CLOSE frame MUST NOT signal the
 existence of the error to its peer.
@@ -3072,6 +3148,7 @@ The initial contents of this registry are shown in
 | 0x0003 | idle_timeout            | {{transport-parameter-definitions}} |
 | 0x0004 | omit_connection_id      | {{transport-parameter-definitions}} |
 | 0x0005 | max_packet_size         | {{transport-parameter-definitions}} |
+| 0x0006 | stateless_reset_secret  | {{transport-parameter-definitions}} |
 {: #iana-tp-table title="Initial QUIC Transport Parameters Entries"}
 
 
