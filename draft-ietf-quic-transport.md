@@ -2702,7 +2702,7 @@ packets with ACK frames.
 An adversarial endpoint might intentionally fragment the data on
 stream buffers in order to cause disproportionate memory commitment.
 The adversarial endpoint would open a stream,
-and send some STREAM DATA packets containing arbitrary
+and send some STREAM frames containing arbitrary
 fragments of the stream content.
 
 The attack is mitigated if flow control windows correspond to
@@ -2714,7 +2714,7 @@ the stream fragmentation attack.
 
 QUIC deployments SHOULD provide mitigations against the stream fragmentation
 attack. Mitigations MAY consist of avoiding over-committing memory, delaying
-reassembly of STREAM DATA frames, implementing heuristics based on the
+reassembly of STREAM frames, implementing heuristics based on the
 age and duration of reassembly holes, or some combination.
 
 # IANA Considerations
