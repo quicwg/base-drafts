@@ -2713,7 +2713,7 @@ endpoints are well behaved, but renders endpoints vulnerable to
 the stream fragmentation attack.
 
 QUIC deployments SHOULD provide mitigations against the stream fragmentation
-attack. Mitigations MAY consist of avoiding over-committing memory, delaying
+attack. Mitigations could consist of avoiding over-committing memory, delaying
 reassembly of STREAM frames, implementing heuristics based on the
 age and duration of reassembly holes, or some combination.
 
