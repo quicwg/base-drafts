@@ -1,5 +1,127 @@
 [
   {
+    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/459",
+    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
+    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/459/labels{/name}",
+    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/459/comments",
+    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/459/events",
+    "html_url": "https://github.com/quicwg/base-drafts/pull/459",
+    "id": 223245486,
+    "number": 459,
+    "title": "Change RST_STREAM impact on state",
+    "user": {
+      "login": "martinthomson",
+      "id": 67641,
+      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/martinthomson",
+      "html_url": "https://github.com/martinthomson",
+      "followers_url": "https://api.github.com/users/martinthomson/followers",
+      "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
+      "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
+      "organizations_url": "https://api.github.com/users/martinthomson/orgs",
+      "repos_url": "https://api.github.com/users/martinthomson/repos",
+      "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/martinthomson/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 481871311,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/editorial",
+        "name": "editorial",
+        "color": "0e8a16",
+        "default": false
+      },
+      {
+        "id": 481871399,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
+        "name": "transport",
+        "color": "fbca04",
+        "default": false
+      }
+    ],
+    "state": "open",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 0,
+    "created_at": "2017-04-21T01:07:59Z",
+    "updated_at": "2017-04-21T01:22:01Z",
+    "closed_at": null,
+    "pull_request": {
+      "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/459",
+      "html_url": "https://github.com/quicwg/base-drafts/pull/459",
+      "diff_url": "https://github.com/quicwg/base-drafts/pull/459.diff",
+      "patch_url": "https://github.com/quicwg/base-drafts/pull/459.patch"
+    },
+    "body": "The behaviour of RST_STREAM was fine, but it's description created several problems.  Most of these problems manifested in a convoluted description of the closed state.  The same problem existed in HTTP/2, but it was less of a problem there because of the strict ordering provided by TCP.\r\n\r\nThis refactors the state machine to recognize that RST_STREAM is really unidirectional.  Both sides need to send it or flow control gets screwy.\r\n\r\nSo people can understand, here's the old state machine picture:\r\n```\r\n                            +--------+\r\n                            |        |\r\n                            |  idle  |\r\n                            |        |\r\n                            +--------+\r\n                                 |\r\n                                 | send data/\r\n                                 | recv data/\r\n                                 | recv higher stream\r\n                                 |\r\n                                 v\r\n                            +--------+\r\n                recv FIN    |        |    send FIN\r\n                  ,---------|  open  |-----------.\r\n                 /          |        |            \\\r\n                v           +--------+             v\r\n         +----------+            |             +----------+\r\n         |   half   |            |             |   half   |\r\n         |  closed  |            | send RST/   |  closed  |\r\n         | (remote) |            | recv RST    |  (local) |\r\n         +----------+            |             +----------+\r\n             |                   |                    |\r\n             | send FIN/         |          recv FIN/ |\r\n             | send RST/         v          send RST/ |\r\n             | recv RST     +--------+      recv RST  |\r\n             `------------->|        |<---------------'\r\n                            | closed |\r\n                            |        |\r\n                            +--------+\r\n```\r\n\r\nThe new one is a little simpler:\r\n```\r\n                            +--------+\r\n                 recv RST   |        |    send RST\r\n              ,-------------|  idle  |---------------.\r\n             /              |        |                \\\r\n            |               +--------+                 |\r\n            |                    |                     |\r\n            |        send STREAM / recv STREAM         |\r\n            |                    |                     |\r\n            |                    v                     |\r\n            |    recv FIN/  +--------+    send FIN/    |\r\n            |    recv RST   |        |    send RST     |\r\n            |     ,---------|  open  |-----------.     |\r\n            |    /          |        |            \\    |\r\n            v   v           +--------+             v   v\r\n         +----------+                          +----------+\r\n         |   half   |                          |   half   |\r\n         |  closed  |                          |  closed  |\r\n         | (remote) |                          |  (local) |\r\n         +----------+                          +----------+\r\n             |                                        |\r\n             |   send FIN/  +--------+    recv FIN/   |\r\n              \\  send RST   |        |    recv RST   /\r\n               `----------->| closed |<-------------'\r\n                            |        |\r\n                            +--------+\r\n```\r\n\r\nI've built this on top of #450 to make my life easier in the case that #450 is accepted (in other words, I'm betting on it being accepted).\r\n\r\nCloses #458."
+  },
+  {
+    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/458",
+    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
+    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/458/labels{/name}",
+    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/458/comments",
+    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/458/events",
+    "html_url": "https://github.com/quicwg/base-drafts/issues/458",
+    "id": 223244375,
+    "number": 458,
+    "title": "RST_STREAM has no semantics in idle state",
+    "user": {
+      "login": "martinthomson",
+      "id": 67641,
+      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/martinthomson",
+      "html_url": "https://github.com/martinthomson",
+      "followers_url": "https://api.github.com/users/martinthomson/followers",
+      "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
+      "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
+      "organizations_url": "https://api.github.com/users/martinthomson/orgs",
+      "repos_url": "https://api.github.com/users/martinthomson/repos",
+      "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/martinthomson/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 481871311,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/editorial",
+        "name": "editorial",
+        "color": "0e8a16",
+        "default": false
+      },
+      {
+        "id": 481871399,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
+        "name": "transport",
+        "color": "fbca04",
+        "default": false
+      }
+    ],
+    "state": "open",
+    "locked": false,
+    "assignee": null,
+    "assignees": [
+
+    ],
+    "milestone": null,
+    "comments": 0,
+    "created_at": "2017-04-21T01:00:05Z",
+    "updated_at": "2017-04-21T01:00:05Z",
+    "closed_at": null,
+    "body": "This appears to be a bug with the state machine.  An endpoint is allowed to send RST_STREAM, but the draft doesn't actually define what happens.  There is no text and no transitions in the picture."
+  },
+  {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/457",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
     "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/457/labels{/name}",
@@ -850,9 +972,9 @@
 
     ],
     "milestone": null,
-    "comments": 2,
+    "comments": 4,
     "created_at": "2017-04-19T17:25:08Z",
-    "updated_at": "2017-04-20T21:39:37Z",
+    "updated_at": "2017-04-21T01:22:42Z",
     "closed_at": null,
     "pull_request": {
       "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/444",
@@ -1681,7 +1803,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/430.patch"
     },
     "body": "Also fixes #414 "
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/429",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -1790,8 +1913,7 @@
     "updated_at": "2017-04-18T07:44:17Z",
     "closed_at": null,
     "body": "While discussing QUIC with some network vendors, a concern was brought up that technically, port UDP port 443 is already assigned. From\r\n\r\nhttps://www.iana.org/assignments/service-names-port-numbers/service-names-port-numbers.xhtml?&page=8\r\n\r\n```\r\nhttps\t443\ttcp\thttp protocol over TLS/SSL\t[Kipp_E_B_Hickman]\t[Kipp_E_B_Hickman]\t\t\t\t\t\t\r\nhttps\t443\tudp\thttp protocol over TLS/SSL\t[Kipp_E_B_Hickman]\t[Kipp_E_B_Hickman]\t\t\r\n```\r\n\r\nYes, seems silly and nit picky, but I'm wondering if it'd make sense to try to get 443:UDP assigned to HQ ? The vendor concern is that adding support for special handling of UDP packets on port 443 would have to be absolutely guaranteed to be QUIC. At least that's what I've been told.\r\n\r\nThe other option would be to add an identifier to every QUIC packet, such that they can uniquely identify it as such.\r\n\r\n"
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/427",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3391,7 +3513,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/400.patch"
     },
     "body": "My OCD is showing..."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/399",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3513,8 +3636,7 @@
     "updated_at": "2017-03-14T13:59:35Z",
     "closed_at": "2017-03-14T13:59:35Z",
     "body": "Do we really need the normative references to RFC 7230, 7540, QUIC-HTTP in the intro?  Since QUIC isn't supposed to be tied directly to HTTP/2 and frankly anybody reading this document would have gotten to QUIC-TLS through QUIC-TRANSPORT (i.e., they drank the koolaid) couldn't we drop the 1st para and work the QUIC-TRANSPORT reference in as follows:\r\n\r\n    This document describes how QUIC [QUIC-TRANSPORT] can\r\n    be secured using Transport Layer Security (TLS) version 1.3\r\n    [I-D.ietf-tls-tls13]. TLS 1.3 provides critical latency ..."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/397",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5371,7 +5493,8 @@
     "updated_at": "2017-04-19T05:42:39Z",
     "closed_at": "2017-03-10T20:16:35Z",
     "body": "ILubashev's suggestion on #171 alludes to this; separating it out as a new issue.\r\n\r\nConnection-level flow control is currently defined as a cumulative sum of all bytes _received_ on all streams.  However, if you receive STREAM frames out of order, you can know that more data is in flight, even if you haven't received it.  Currently, that data implicitly counts against the receiver's stream window (since it's a max offset), but not against the connection window.\r\n\r\nThis would allow the receiver of a DISINTEREST frame to silently stop retransmission if the STREAM w/ FIN had already been acknowledged (without generating a RST_STREAM) since the flow control states on both sides would be consistent.  However, it would also require more logic on STREAM receipt, since it's no longer just a running counter of the size of all received STREAM frames."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/369",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5473,8 +5596,7 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/368.patch"
     },
     "body": "This is a version of #367 (replacing #351 manually rebased on #361), that sets packet numbers and packet number echoes in short headers to 32-bits, mainly by cutting complexity out of #367."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/367",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7362,7 +7484,8 @@
     "updated_at": "2017-04-19T05:27:41Z",
     "closed_at": "2017-03-14T01:21:51Z",
     "body": "@ddragana observes that the 64-bit offset value in the WINDOW_UPDATE message is probably the first value that we will run out of (over packet numbers and stream numbers, which should last a bit longer in most cases).  We could avoid this by multiplying these values by a constant (she suggests 1024), which would reduce the granularity with which flow control credits could be granted, but increase the total lifetime of a long-lived connection.\r\n\r\nSo, trade-off time.  The scaling multiplier is now 1.  A larger value allows for longer-lived connections, a shorter value allows finer control over flow control.  I'd suggest that values in the order of 8 are probably easy to justify, can we go as high as 1024?\r\n\r\nWe could also choose a different value for the connection and stream flow control offsets on that basis that connections need more octets, whereas streams do not."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/339",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7490,8 +7613,7 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/338.patch"
     },
     "body": "I'm marking this as editorial.  It touches both TLS and transport.  Anyone who thinks that this is OK can merge it."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/337",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -9274,7 +9396,8 @@
     "updated_at": "2017-03-14T14:03:26Z",
     "closed_at": "2017-03-14T14:03:26Z",
     "body": "The text for `DetectLostPackets` claims that `acked_packet` is a packet number, but the code shows it as having a `packet_number` field, as well as a `time_sent` field.  Maybe a TimeSent() lookup function would work, but at the level that this code operates, I think that it would be better to talk about packets in the abstract.  A real implementation might not carry around all the information a packet might accumulate, but that's for real implementations to worry about."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/309",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -9469,8 +9592,7 @@
     "updated_at": "2017-04-19T05:27:18Z",
     "closed_at": "2017-03-08T07:09:12Z",
     "body": "We need to include advice on the creation of ACK frames when an ACK frame was lost.  The advice from @ianswett is that new timing information isn't valuable.  Both endpoints only need to maintain timing information for individual packets for a short period, so retransmission of old timing information isn't valuable.\r\n\r\nThus, we should recommend that endpoints do just that: maintain a short list of packets that they want to provide timing for.  They should then not worry about re-sending any timestamps from lost packets."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/307",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -11603,7 +11725,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/280.patch"
     },
     "body": "This PR is based on the outcome of the discussion in #174.  The observation there is that using stream X implicitly opens stream X-2; since all streams are opened in sequence, it must just be that the packets that mention stream X-2 got delayed or lost somehow.\r\n\r\nOnce you accept that, it's also reasonable to allow a different order of stream creation (the point at which numbers are allocated) and stream *use* (when you send packets on a stream).  This neatly addresses the issue whereby server push can promise use of streams, but not use them in the order in which they were promised.\r\n\r\nThere's a catch here, and it's not one that was introduced by this change, if a server promises more streams than the client permits in its concurrent streams limit, the server cannot use streams beyond the limit.  I'll open a bug on that.\r\n\r\nCloses #182 - that removed only a few of the application actions.  This removes all of them.\r\nCloses #174."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/279",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -11761,8 +11884,7 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/278.patch"
     },
     "body": "I realize that I stuck this on top of #122.  That's convenient because the new text benefits from being able to reference some of that text.  It makes this diff look awful for the moment though (at least until #122 lands).\r\n\r\nCloses #112."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/277",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -13667,7 +13789,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/250.patch"
     },
     "body": "This particular sentence always confused me - it read as if it specified than an initiating peer had to send a close message to itself."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/249",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -13839,8 +13962,7 @@
     "updated_at": "2017-03-11T01:37:48Z",
     "closed_at": null,
     "body": "The current transport doc exempts stream 1 from *congestion control*.  That seems to be unnecessary, potentially hard to implement, and maybe even dangerous."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/247",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -15609,7 +15731,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/220.patch"
     },
     "body": ""
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/219",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -15767,8 +15890,7 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/218.patch"
     },
     "body": "If you reference it in the text, you can use {{?RFCXXXX}} to make an informative reference."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/217",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -17522,7 +17644,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/190.patch"
     },
     "body": "Moves references to informational references, clarifies that SRTT and RTTVar are computed based on an RFC, and adds todos for the congestion control section for anything formerly in the references section."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/189",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -17713,8 +17836,7 @@
     "updated_at": "2017-01-24T00:55:49Z",
     "closed_at": null,
     "body": "> **9.1.1. idle**\r\nAll streams start in the “idle” state.\r\n...\r\nReceiving any frame other than STREAM or RST_STREAM on a stream in this state MUST be treated as a connection error (Section 11) of type YYYY.\r\n\r\nReceiving a WINDOW_UPDATE frame (or probably any other frame) for a stream before the first STREAM frame for that stream due to packet reordering/loss should not be treated as a connection error (causing a connection reset)."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/187",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -19591,7 +19713,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/160.patch"
     },
     "body": "\"send FIN\" and \"recv FIN\" are used in wrong places.  https://tools.ietf.org/html/rfc7540#section-5.1 asserts this."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/159",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -19757,8 +19880,7 @@
     "updated_at": "2017-04-19T05:52:06Z",
     "closed_at": null,
     "body": "The section on padding frames currently says:\r\n```\r\n   The PADDING frame (type=0x00) pads a packet with 0x00 bytes.  When\r\n   this frame is encountered, the rest of the packet is expected to be\r\n   padding bytes.  The frame contains 0x00 bytes and extends to the end\r\n   of the QUIC packet.  A PADDING frame has no additional fields.\r\n```\r\n\r\nI'd like to discuss whether a padding frame that can be inserted anywhere, instead of only as the last frame in a packet, makes sense.\r\n\r\nI'm currently doing a [zero-copy implementation of QUIC](https://github.com/NTAP/quant) on top of [netmap](http://info.iet.unipi.it/~luigi/netmap/) via a [userspace IPv4/UDP stack](https://github.com/NTAP/warpcore), which due to static DMA mappings requires an app to place stream frame data directly into packet buffers at a (fixed) offset. The QUIC stack then inserts the common header and other frames before the stream frames, and needs to pad any unused space. Currently, this isn't possible.\r\n\r\nIn other words, I'd like something similar to the [No-Operation TCP option](https://tools.ietf.org/html/rfc793#page-18).\r\n\r\n(And it's an open question whether going to great lengths to support zero-copy TX is actually all that useful, given that we're going to do crypto over the entire buffer anyway.)"
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/157",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -21662,7 +21784,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/130.patch"
     },
     "body": "This is the purely-editorial aspect of #96 -- errors are moved to the document that describes that piece of the mechanism (TLS, HTTP, or Transport).  There will be a separate PR building on this one which contains the non-editorial changes with @janaiyengar's feedback."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/129",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -21827,8 +21950,7 @@
     "updated_at": "2017-03-06T23:41:36Z",
     "closed_at": null,
     "body": "The transport protocol has frames, and STREAM frames can contain frames for the HTTP mapping.  It's confusing.  We should work out how to deal with that."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/127",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -23913,7 +24035,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/100.patch"
     },
     "body": "For #95; uses HTTP_CONNECT_ERROR error code out of #96, but is otherwise independent.  Can be fixed up to correspond with whatever we decide to do there."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/99",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -24015,8 +24138,7 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/98.patch"
     },
     "body": "Pulled from elsewhere in the doc."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/97",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -25662,7 +25784,8 @@
     "updated_at": "2017-04-19T05:23:42Z",
     "closed_at": "2017-01-26T06:35:57Z",
     "body": "Mirja Kühlewind points out that multiple ACK frames per packet don't really make sense, and they aren't retransmittable.  Instead, Mirja suggests replacing the ACK frame with an optional region in the packet header and a bit indicating its presence.  STOP_WAITING, already a candidate for removal (#66), could be consolidated here as well."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/69",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -25792,8 +25915,7 @@
     "updated_at": "2017-02-20T13:27:21Z",
     "closed_at": null,
     "body": "ECN is not currently mentioned in the recovery draft, but it should be included.\r\n\r\nMore importantly, the transport draft has no ability for the peer to communicate ECN marks back to the sender.  I suspect, like ECN, the use of this in the transport would be negotiable in the QUIC handshake.\r\n\r\nIn practice, there most userspace network stacks also cannot see if those marks are set when packets are read."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/67",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -28022,7 +28144,8 @@
     "updated_at": "2017-04-19T05:22:13Z",
     "closed_at": "2017-03-10T01:07:03Z",
     "body": "Packet numbers, stream offsets, various ACK information and many other fields can currently be encoded as variable length. Do we have some data on the benefits of this complexity? Would it be sufficient to use fewer increments, or could we even move to fixed length encoding for some or all of these fields?"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/39",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -28144,8 +28267,7 @@
     "updated_at": "2017-01-20T02:53:11Z",
     "closed_at": null,
     "body": "... relative to the client's ClientHello.\r\n\r\nWe don't want to design a packet amplifier, but it's highly likely that the server's Certificate will cause the server's messages to be at least a little bigger than the initial messages from the client.  We do need servers to send HelloRetryRequest and do source address validation, but how often?"
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/37",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -30030,7 +30152,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/10.patch"
     },
     "body": "As instructed by the chairs."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/9",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -30146,8 +30269,7 @@
     "updated_at": "2017-02-24T06:16:22Z",
     "closed_at": "2017-02-24T06:16:22Z",
     "body": "This isn't relevant for a specification."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/7",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
