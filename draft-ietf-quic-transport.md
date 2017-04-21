@@ -2133,10 +2133,13 @@ frame with the FIN flag set can cause two state transitions.
 The recipient of a frame which changes stream state will have a delayed view of
 the state of a stream while the frame is in transit.  Endpoints do not
 coordinate the creation of streams; they are created unilaterally by either
-endpoint.  The negative consequences of a mismatch in states are limited to the
-"closed" state after sending RST_STREAM, where frames might be received for some
-time after closing.  Endpoints can use acknowledgments to understand the peer's
+endpoint.  Endpoints can use acknowledgments to understand the peer's
 subjective view of stream state at any given time.
+
+In the absence of more specific guidance elsewhere in this document,
+implementations SHOULD treat the receipt of a frame that is not expressly
+permitted in the description of a state as a connection error (see
+{{error-handling}}).
 
 
 ### idle
@@ -2165,14 +2168,14 @@ Receiving any frame other than STREAM or RST_STREAM on a stream in this state
 MUST be treated as a connection error ({{error-handling}}) of type YYYY.
 
 An endpoint MUST NOT send a STREAM of RST_STREAM frame for a stream ID that is
-higher than the peers advertised maximum stream ID.
+higher than the peers advertised maximum stream ID (see {{frame-max-stream-id}}).
 
 
 ### open
 
 A stream in the "open" state may be used by both peers to send frames of any
-type.  In this state, a sending peer must observe the flow-control limit
-advertised by its receiving peer ({{flow-control}}).
+type.  In this state, endpoints can send MAX_STREAM_DATA and MUST observe the
+value advertised by its receiving peer (see {{flow-control}}).
 
 From this state, either endpoint can send a frame with the FIN flag set, which
 causes the stream to transition into one of the "half-closed" states.  An
@@ -2187,49 +2190,54 @@ A RST_STREAM frame on an "open" stream causes the stream to become
 "half-closed (local)"; receiving RST_STREAM causes the stream to become
 "half-closed (remote)".
 
+Any frame type that mentions a stream ID can be sent in this state.
+
 
 ### half-closed (local)
 
 A stream that is in the "half-closed (local)" state MUST NOT be used for sending
-STREAM frames; MAX_STREAM_DATA and RST_STREAM MAY be sent in this state.
-
-A stream transitions from this state to "closed" when a STREAM frame that
-contains a FIN flag is received and all prior data has arrived, or when either
-peer sends a RST_STREAM frame.
+of new STREAM frames.  Retransmission of data that has already been sent on
+STREAM frames is permitted.  An endpoint MAY also send MAX_STREAM_DATA and
+RST_STREAM in this state.
 
 An endpoint that closes a stream MUST NOT send data beyond the final offset that
 it has chosen, see {{state-closed}} for details.
 
-An endpoint can receive any type of frame in this state.  Providing flow-control
-credit using MAX_STREAM_DATA frames is necessary to continue receiving
-flow-controlled frames.  In this state, a receiver MAY ignore MAX_STREAM_DATA
-frames for this stream, which might arrive for a short period after a frame
-bearing the FIN flag is sent.
+A stream transitions from this state to "closed" when a STREAM frame that
+contains a FIN flag is received and all prior data has arrived, or when a
+RST_STREAM frame is received.
 
-### half-closed (remote)
+An endpoint can receive any frame that mentions a stream ID in this state.
+Providing flow-control credit using MAX_STREAM_DATA frames is necessary to
+continue receiving flow-controlled frames.  In this state, a receiver MAY ignore
+MAX_STREAM_DATA frames for this stream, which might arrive for a short period
+after a frame bearing the FIN flag is sent.
 
-A stream that is "half-closed (remote)" is no longer being used by the peer to
-send any data.  In this state, a sender is no longer obligated to maintain a
-receiver stream-level flow-control window.
 
-A stream that is in the "half-closed (remote)" state will have a final offset
-for received data, see {{state-closed}} for details.
+### half-closed (remote) {#state-hc-remote}
 
-A stream in this state can be used by the endpoint to send frames of any type.
-In this state, the endpoint continues to observe advertised stream-level and
-connection-level flow-control limits ({{flow-control}}).
+A stream is "half-closed (remote)" when the stream is no longer being used by
+the peer to send any data.  An endpoint will have either received all data that
+a peer has sent or will have received a RST_STREAM frame and discarded any
+received data.
 
-A stream can transition from this state to "closed" by sending a frame that
-contains a FIN flag or when either peer sends a RST_STREAM frame.
+Once all data has been either received or discarded, a sender is no longer
+obligated to update the maximum received data for the connection.
 
-### closed {#state-closed}
+An endpoint that receives a RST_STREAM frame (and which has not sent a FIN or a
+RST_STREAM) MUST immediately respond with a RST_STREAM frame, and MUST NOT send
+any more data on the stream.
 
-The "closed" state is the terminal state.
+Due to reordering, an endpoint could continue receiving frames for the stream
+even after the stream is closed for sending.  Frames received after a peer
+closes a stream SHOULD be discarded.  An endpoint MAY choose to limit the period
+over which it ignores frames and treat frames that arrive after this time as
+being in error.
 
 An endpoint will learn the final offset of the data it receives on a stream when
-it enters the "half-closed (remote)" or "closed" state.  The final offset is
-carried explicitly in the RST_STREAM frame; otherwise, the final offset is the
-offset of the end of the data carried in STREAM frame marked with a FIN flag.
+it enters the "half-closed (remote)".  The final offset is carried explicitly in
+the RST_STREAM frame; otherwise, the final offset is the offset of the end of
+the data carried in STREAM frame marked with a FIN flag.
 
 An endpoint MUST NOT send data on a stream at or beyond the final offset.
 
@@ -2242,29 +2250,27 @@ errors is not mandatory, but only because requiring that an endpoint generate
 these errors also means that the endpoint needs to maintain the final offset
 state for closed streams, which could mean a significant state commitment.
 
-An endpoint that receives a RST_STREAM frame (and which has not sent a FIN or a
-RST_STREAM) MUST immediately respond with a RST_STREAM frame, and MUST NOT send
-any more data on the stream.  This endpoint may continue receiving frames for
-the stream on which a RST_STREAM is received.
+A stream in this state can be used by the endpoint to send any frame that
+mentions a stream ID.  In this state, the endpoint MUST observe advertised
+stream and connection data limits (see {{flow-control}}).
 
-If this state is reached as a result of sending a RST_STREAM frame, the peer
-that receives the RST_STREAM frame might have already sent -- or enqueued for
-sending -- frames on the stream that cannot be withdrawn.  An endpoint MUST
-ignore frames that it receives on closed streams after it has sent a RST_STREAM
-frame. An endpoint MAY choose to limit the period over which it ignores frames
-and treat frames that arrive after this time as being in error.
+A stream can transition from this state to "closed" by completing transmission
+of all data.  This includes sending all data carried in STREAM frames up
+including the terminal STREAM frame that contains a FIN flag and receiving
+acknowledgment from the peer for all data.
 
-STREAM frames received after sending RST_STREAM are counted toward the
-connection and stream flow-control windows.  Even though these frames might be
-ignored, because they are sent before their sender receives the RST_STREAM, the
-sender will consider the frames to count against its flow-control windows.
+A stream becomes "closed" when the endpoint sends and receives acknowledgment of
+a RST_STREAM frame.
 
-In the absence of more specific guidance elsewhere in this document,
-implementations SHOULD treat the receipt of a frame that is not expressly
-permitted in the description of a state as a connection error
-({{error-handling}}). Frames of unknown types are ignored.
 
-(TODO: QUIC_STREAM_NO_ERROR is a special case.  Write it up.)
+### closed {#state-closed}
+
+The "closed" state is the terminal state for a stream.
+
+Once a stream reaches this state, no frames can be sent that mention the stream.
+Reordering might cause frames to be received after closing, see
+{{state-hc-remote}}.
+
 
 ## Stream Identifiers {#stream-identifiers}
 
@@ -2438,8 +2444,6 @@ Conversely if a sender believes it is blocked, while endpoint B expects more
 data can be received, then the connection can be in a deadlock, with the sender
 waiting for a MAX_DATA or MAX_STREAM_DATA frame which will never come.
 
-### Mid-stream RST_STREAM
-
 On receipt of a RST_STREAM frame, an endpoint will tear down state for the
 matching stream and ignore further data arriving on that stream.  This could
 result in the endpoints getting out of sync, since the RST_STREAM frame may have
@@ -2480,7 +2484,8 @@ it increases data limits based on a roundtrip time estimate and the rate at
 which the receiving application consumes data, similar to common TCP
 implementations.
 
-### Stream Limit Increment
+
+## Stream Limit Increment
 
 As with flow control, this document leaves when and how many streams to make
 available to a peer via MAX_STREAM_ID to implementations, but offers a few
