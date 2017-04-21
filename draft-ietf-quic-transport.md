@@ -2708,7 +2708,7 @@ fragments of the stream content.
 The attack is mitigated if flow control windows correspond to
 available memory. However, some receivers will over-commit memory and advertise
 flow control offsets in the aggregate that exceed actual available memory.
-The over-commitment strategy may leads to better performance when
+The over-commitment strategy can lead to better performance when
 endpoints are well behaved, but renders endpoints vulnerable to
 the stream fragmentation attack.
 
