@@ -2168,7 +2168,8 @@ Receiving any frame other than STREAM or RST_STREAM on a stream in this state
 MUST be treated as a connection error ({{error-handling}}) of type YYYY.
 
 An endpoint MUST NOT send a STREAM of RST_STREAM frame for a stream ID that is
-higher than the peers advertised maximum stream ID (see {{frame-max-stream-id}}).
+higher than the peers advertised maximum stream ID (see
+{{frame-max-stream-id}}).
 
 
 ### open
