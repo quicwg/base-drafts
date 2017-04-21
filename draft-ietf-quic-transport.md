@@ -679,15 +679,15 @@ a storage problem for a server that might lose state.  Public Reset specifically
 exists to handle the case where state is lost, so this approach is suboptimal.
 
 A single static key can be used across all connections to the same endpoint by
-generating the proof using a second iteration of a preimage resistant function
+generating the proof using a second iteration of a preimage-resistant function
 that takes three inputs: the static key, a the connection ID for the connection
 (see {{connection-id}}), and an identifier for the server instance.  For
 instance, this could use HMAC {{?RFC2104}} (for example, HMAC(static_key,
 server_id || connection_id)), HKDF {{?RFC5869}} (for example, using the static
 key as input keying material, with server and connection identifiers as salt).
-The output of the preimage resistant function is truncated to 16 octets to
-produce a valid proof, then hashed again to produce the Public Reset Verifier,
-which is included in the transport parameters.
+The output of this function is truncated to 16 octets to produce a valid proof,
+then hashed again to produce the Public Reset Verifier, which is included in the
+transport parameters.
 
 A server that loses state and is forced to generate a Public Reset can use the
 same method to generate a valid Public Reset Proof.  The connection ID comes
@@ -696,9 +696,10 @@ from the packet that triggers the Public Reset.
 This design relies on the client always sending a connection ID in its packets
 so that the server can use the connection ID from a packet to reset the
 connection.  A server that uses this design cannot allow clients to omit a
-connection ID.
+connection ID (that is, it cannot use the truncate_connection_id transport
+parameter {{transport-parameter-definitions}}).
 
-A Public Reset can only be used once for a given server instance, connection ID
+A Public Reset can only be used once for a given server instance, connection ID,
 and static key.  A connection ID from a connection that was reset cannot be
 reused for new connections at the same server without first changing to use a
 different static key or server identifier.
