@@ -2714,7 +2714,7 @@ the stream fragmentation attack.
 
 QUIC deployments SHOULD provide mitigations against the stream fragmentation
 attack. Mitigations MAY consist of avoiding over-committing memory, delaying
-reassembly of STREAM DATA frames, implementing heuristics based the
+reassembly of STREAM DATA frames, implementing heuristics based on the
 age and duration of reassembly holes, or some combination.
 
 # IANA Considerations
