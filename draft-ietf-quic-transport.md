@@ -1361,7 +1361,9 @@ Stream Data:
 
 : The bytes from the designated stream to be delivered.
 
-A STREAM frame MUST have either non-zero data length or the FIN bit set.
+A STREAM frame MUST have either non-zero data length or the FIN bit set.  When
+the FIN flag is sent on an empty STREAM frame, the offset in the STREAM frame
+MUST be one greater than the last data byte sent on this stream.
 
 Stream multiplexing is achieved by interleaving STREAM frames from multiple
 streams into one or more QUIC packets.  A single QUIC packet MAY bundle STREAM
@@ -1787,7 +1789,14 @@ Stream ID:
 ## RST_STREAM Frame {#frame-rst-stream}
 
 An endpoint may use a RST_STREAM frame (type=0x01) to abruptly terminate a
-stream.  The frame is as follows:
+stream.
+
+After sending a RST_STREAM, an endpoint ceases transmission of STREAM frames on
+the identified stream.  A receiver of RST_STREAM can discard any data that it
+already received on that stream.  An endpoint sends a RST_STREAM in response to
+a RST_STREAM unless the stream is already closed.
+
+The RST_STREAM frame is as follows:
 
 ~~~
  0                   1                   2                   3
@@ -2082,50 +2091,44 @@ shown in the following figure and described below.
 
 ~~~
                             +--------+
-                            |        |
-                            |  idle  |
-                            |        |
-                            +--------+
-                                 |
-                                 | send data/
-                                 | recv data/
-                                 | recv higher stream
-                                 |
-                                 v
-                            +--------+
-                recv FIN    |        |    send FIN
-                  ,---------|  open  |-----------.
-                 /          |        |            \
-                v           +--------+             v
-         +----------+            |             +----------+
-         |   half   |            |             |   half   |
-         |  closed  |            | send RST/   |  closed  |
-         | (remote) |            | recv RST    |  (local) |
-         +----------+            |             +----------+
-             |                   |                    |
-             | send FIN/         |          recv FIN/ |
-             | send RST/         v          send RST/ |
-             | recv RST     +--------+      recv RST  |
-             `------------->|        |<---------------'
-                            | closed |
+                 recv RST   |        |    send RST
+              ,-------------|  idle  |---------------.
+             /              |        |                \
+            |               +--------+                 |
+            |                    |                     |
+            |        send STREAM / recv STREAM         |
+            |                    |                     |
+            |                    v                     |
+            |    recv FIN/  +--------+    send FIN/    |
+            |    recv RST   |        |    send RST     |
+            |     ,---------|  open  |-----------.     |
+            |    /          |        |            \    |
+            v   v           +--------+             v   v
+         +----------+                          +----------+
+         |   half   |                          |   half   |
+         |  closed  |                          |  closed  |
+         | (remote) |                          |  (local) |
+         +----------+                          +----------+
+             |                                        |
+             |   send FIN/  +--------+    recv FIN/   |
+              \  send RST   |        |    recv RST   /
+               `----------->| closed |<-------------'
                             |        |
                             +--------+
 
    send:   endpoint sends this frame
    recv:   endpoint receives this frame
 
-   data: application data in a STREAM frame
-   FIN: FIN flag in a STREAM frame
-   RST: RST_STREAM frame
+   STREAM: a STREAM frame
+   FIN:    FIN flag in a STREAM frame
+   RST:    RST_STREAM frame
 ~~~
 {: #stream-lifecycle title="Lifecycle of a stream"}
 
 Note that this diagram shows stream state transitions and the frames and flags
 that affect those transitions only.  For the purpose of state transitions, the
 FIN flag is processed as a separate event to the frame that bears it; a STREAM
-frame with the FIN flag set can cause two state transitions.  When the FIN flag
-is sent on an empty STREAM frame, the offset in the STREAM frame MUST be one
-greater than the last data byte sent on this stream.
+frame with the FIN flag set can cause two state transitions.
 
 The recipient of a frame which changes stream state will have a delayed view of
 the state of a stream while the frame is in transit.  Endpoints do not
@@ -2134,8 +2137,6 @@ endpoint.  The negative consequences of a mismatch in states are limited to the
 "closed" state after sending RST_STREAM, where frames might be received for some
 time after closing.  Endpoints can use acknowledgments to understand the peer's
 subjective view of stream state at any given time.
-
-Streams have the following states:
 
 
 ### idle
@@ -2155,8 +2156,16 @@ also causes all lower-numbered "idle" streams in the same direction to become
 order to their creation, or it could happen if packets are lost or reordered in
 transit.
 
+A RST_STREAM frame on an "idle" stream causes the stream to become
+"half-closed".  Sending a RST_STREAM frame causes the stream to become
+"half-closed (local)"; receiving RST_STREAM causes the stream to become
+"half-closed (remote)".
+
 Receiving any frame other than STREAM or RST_STREAM on a stream in this state
 MUST be treated as a connection error ({{error-handling}}) of type YYYY.
+
+An endpoint MUST NOT send a STREAM of RST_STREAM frame for a stream ID that is
+higher than the peers advertised maximum stream ID.
 
 
 ### open
@@ -2173,8 +2182,11 @@ endpoint sending an FIN flag causes the stream state to become "half-closed
 endpoint MUST NOT consider the stream state to have changed until all data has
 arrived.
 
-Either endpoint can send a RST_STREAM frame from this state, causing it to
-transition immediately to "closed".
+A RST_STREAM frame on an "open" stream causes the stream to become
+"half-closed".  Sending a RST_STREAM frame causes the stream to become
+"half-closed (local)"; receiving RST_STREAM causes the stream to become
+"half-closed (remote)".
+
 
 ### half-closed (local)
 
