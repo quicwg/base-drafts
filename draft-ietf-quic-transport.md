@@ -63,15 +63,6 @@ normative:
 
 informative:
 
-  SST:
-    title: "Structured Streams: A New Transport Abstraction"
-    author:
-      - ins: B. Ford
-    date: 2007-10
-    seriesinfo:
-      DOI: 10.1145/1282427.1282421
-      ACM SIGCOMM: Computer Communication Review Volume 37 Issue 4
-
   EARLY-DESIGN:
     title: "QUIC: Multiplexed Transport Over UDP"
     author:
@@ -2033,8 +2024,10 @@ controlled, with each peer declaring the maximum stream ID it is willing to
 accept at a given time.
 
 An alternative view of QUIC streams is as an elastic "message" abstraction,
-similar to the way ephemeral streams are used in SST {{SST}}, which may be a
-more appealing description for some applications.
+similar to the way ephemeral streams are used in SST
+{{?SST=DOI.10.1145/1282427.1282421}}, which may be a more appealing description
+for some applications.
+
 
 ## Life of a Stream
 

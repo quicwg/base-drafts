@@ -432,10 +432,10 @@ in response to 0RTT packets.
 
 #### Tail Loss Probe and Retransmission Timeout
 
-Tail loss probes {{?I-D.dukkipati-tcpm-tcp-loss-probe}} and retransmission
-timeouts{{?RFC6298}} are an alarm based mechanism to recover from cases when
-there are outstanding retransmittable packets, but an acknowledgement has
-not been received in a timely manner.
+Tail loss probes {{?LOSS-PROBE=I-D.dukkipati-tcpm-tcp-loss-probe}} and
+retransmission timeouts {{?RFC6298}} are an alarm based mechanism to recover
+from cases when there are outstanding retransmittable packets, but an
+acknowledgement has not been received in a timely manner.
 
 #### Early Retransmit
 
