@@ -193,8 +193,8 @@ in {{packet-protection}}.
 
 ## TLS Overview
 
-TLS provides two endpoints with a way to establish a means of communication over an
-untrusted medium (that is, the Internet) that ensures that messages they
+TLS provides two endpoints with a way to establish a means of communication over
+an untrusted medium (that is, the Internet) that ensures that messages they
 exchange cannot be observed, modified, or forged.
 
 TLS features can be separated into two basic functions: an authenticated key
@@ -210,8 +210,8 @@ when the DH keys are destroyed.
 
 After completing the TLS handshake, the client will have learned and
 authenticated an identity for the server and the server is optionally able to
-learn and authenticate an identity for the client.  TLS supports X.509 {{?RFC5280}}
-certificate-based authentication for both server and client.
+learn and authenticate an identity for the client.  TLS supports X.509
+{{?RFC5280}} certificate-based authentication for both server and client.
 
 The TLS key exchange is resistent to tampering by attackers and it produces
 shared secrets that cannot be controlled by either participating peer.
@@ -605,9 +605,9 @@ selection of AEAD function is also updated to match the AEAD negotiated by TLS.
 
 For packets other than any unprotected handshake packets (see {{cleartext-hs}}),
 once a change of keys has been made, packets with higher packet numbers MUST be
-sent with the new keying material.  The KEY_PHASE bit on these packets is inverted each
-time new keys are installed to signal the use of the new keys to the recipient
-(see {{key-phases}} for details).
+sent with the new keying material.  The KEY_PHASE bit on these packets is
+inverted each time new keys are installed to signal the use of the new keys to
+the recipient (see {{key-phases}} for details).
 
 An endpoint retransmits stream data in a new packet.  New packets have new
 packet numbers and use the latest packet protection keys.  This simplifies key
@@ -751,21 +751,21 @@ used for QUIC packet protection is AEAD that is negotiated for use with the TLS
 connection.  For example, if TLS is using the TLS_AES_128_GCM_SHA256, the
 AEAD_AES_128_GCM function is used.
 
-Regular QUIC packets are protected by an AEAD algorithm {{!RFC5116}}.  Version negotiation
-and public reset packets are not protected.
+Regular QUIC packets are protected by an AEAD algorithm {{!RFC5116}}.  Version
+negotiation and public reset packets are not protected.
 
 Once TLS has provided a key, the contents of regular QUIC packets immediately
 after any TLS messages have been sent are protected by the AEAD selected by TLS.
 
-The key, K, is either the client packet protection key
-(client_pp_key_n) or the server packet protection key (server_pp_key_n), derived
-as defined in {{key-expansion}}.
+The key, K, is either the client packet protection key (client_pp_key_n) or the
+server packet protection key (server_pp_key_n), derived as defined in
+{{key-expansion}}.
 
-The nonce, N, is formed by combining the packet protection
-IV (either client_pp_iv_n or server_pp_iv_n) with the packet number.  The 64 bits
-of the reconstructed QUIC packet number in network byte order is left-padded
-with zeros to the size of the IV.  The exclusive OR of the padded packet number
-and the IV forms the AEAD nonce.
+The nonce, N, is formed by combining the packet protection IV (either
+client_pp_iv_n or server_pp_iv_n) with the packet number.  The 64 bits of the
+reconstructed QUIC packet number in network byte order is left-padded with zeros
+to the size of the IV.  The exclusive OR of the padded packet number and the IV
+forms the AEAD nonce.
 
 The associated data, A, for the AEAD is the contents of the QUIC header,
 starting from the flags octet in the common header.
@@ -1322,9 +1322,9 @@ version of QUIC defined in {{QUIC-TRANSPORT}} is used.
 ## Priming 0-RTT
 
 QUIC uses TLS without modification.  Therefore, it is possible to use a
-pre-shared key that was established in a TLS handshake over TCP to enable 0-RTT in
-QUIC.  Similarly, QUIC can provide a pre-shared key that can be used to enable
-0-RTT in TCP.
+pre-shared key that was established in a TLS handshake over TCP to enable 0-RTT
+in QUIC.  Similarly, QUIC can provide a pre-shared key that can be used to
+enable 0-RTT in TCP.
 
 All the restrictions on the use of 0-RTT apply, with the exception of the ALPN
 label, which MUST only change to a label that is explicitly designated as being
