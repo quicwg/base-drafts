@@ -2785,11 +2785,12 @@ involve sending small amounts of data, gradually opening flow control windows in
 order to control the sender rate, or manufacturing ACK frames that simulate a
 high loss rate.
 
-QUIC deployments SHOULD provide mitigations of the Slowloris attacks, such as
+QUIC deployments SHOULD provide mitigations for the Slowloris attacks, such as
 increasing the maximum number of clients the server will allow, limiting the
 number of connections a single IP address is allowed to make, imposing
 restrictions on the minimum transfer speed a connection is allowed to have, and
 restricting the length of time an endpoint is allowed to stay connected.
+
 
 ## Stream Fragmentation and Reassembly Attacks
 
