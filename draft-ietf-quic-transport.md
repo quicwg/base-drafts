@@ -2238,7 +2238,7 @@ that are used out of order result in lower-numbered streams in the same
 direction being counted as open.
 
 
-## Stream Concurrency
+## Stream Concurrency {#stream-concurrency}
 
 An endpoint limits the number of concurrently active incoming streams by
 adjusting the maximum stream ID.  An initial value is set in the transport
@@ -2735,6 +2735,7 @@ also be forward-secure encrypted.  Since the attacker will not have the forward
 secure key, the attacker will not be able to generate forward-secure encrypted
 packets with ACK frames.
 
+
 ## Stream Fragmentation and Reassembly Attacks
 
 An adversarial endpoint might intentionally fragment the data on
@@ -2754,6 +2755,35 @@ QUIC deployments SHOULD provide mitigations against the stream fragmentation
 attack. Mitigations could consist of avoiding over-committing memory, delaying
 reassembly of STREAM frames, implementing heuristics based on the
 age and duration of reassembly holes, or some combination.
+
+
+## Stream Commitment Attack
+
+An adversarial endpoint can open lots of streams,
+exhausting state on the server.
+The adversarial endpoint, or endpoint, could repeat the process on a
+large number of connections, in a manner similar to
+SYN flooding attacks in TCP.
+
+Normally, clients will open streams sequentially,
+as explained in {{stream-identifiers}}.
+However, when several streams are initiated at short intervals,
+transmission error may cause STREAM DATA frames opening streams to be
+received out of sequence. A receiver is obligated to open intervening
+streams if a higher-numbered stream ID is received. Thus, on a
+new connection, opening stream 2000001 opens 1 million streams,
+as required by the specification.
+
+The number of active streams is limited
+by the concurrent stream limit transport
+parameter, as explained in {{stream-concurrency}}.
+If chosen judisciously, this limit
+mitigates the effect of the stream commitment attack.
+However, setting the limit
+too low could affect performance when
+applications expect to open large number
+of streams.
+
 
 # IANA Considerations
 
