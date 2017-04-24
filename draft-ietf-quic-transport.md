@@ -2337,7 +2337,7 @@ Stream IDs are usually encoded as a 32-bit integer, though the STREAM frame
 stream ID are zero.
 
 
-## Life of a Stream
+## Life of a Stream {#stream-states}
 
 The semantics of QUIC streams is based on HTTP/2 streams, and the lifecycle of a
 QUIC stream therefore closely follows that of an HTTP/2 stream {{?RFC7540}},
@@ -2807,6 +2807,10 @@ risks a peer missing the first such packet.  The only mechanism available to an
 endpoint that continues to receive data for a terminated connection is to send a
 Public Reset packet.
 
+An endpoint that receives an invalid error code in a CONNECTION_CLOSE frame MUST
+NOT signal the existence of the error to its peer.  It MAY treat the error as an
+INTERNAL_ERROR on the basis that there is some fault with the peer.
+
 
 ## Stream Errors
 
@@ -2853,173 +2857,74 @@ CONNECTION_CLOSE or RST_STREAM frame. Error codes share a common code space.
 Some error codes apply only to either streams or the entire connection and have
 no defined semantics in the other context.
 
-QUIC_INTERNAL_ERROR (0x80000001):
-: Connection has reached an invalid state.
+INTERNAL_ERROR (0x80000001):
 
-QUIC_STREAM_DATA_AFTER_TERMINATION (0x80000002):
-: There were data frames after the a fin or reset.
+: The endpoint encountered an internal error and cannot continue with the
+  connection.
 
-QUIC_INVALID_PACKET_HEADER (0x80000003):
-: Control frame is malformed.
+ENHANCE_YOUR_CALM (0x80000002):
 
-QUIC_INVALID_FRAME_DATA (0x80000004):
-: Frame data is malformed.
+: The endpoint detected that its peer is exhibiting a behavior that might be
+  generating excessive load.
 
-QUIC_MULTIPLE_TERMINATION_OFFSETS (0x80000005):
-: Multiple final offset values were received on the same stream
+NO_ERROR (0x80000003):
 
-QUIC_STREAM_CANCELLED (0x80000006):
-: The stream was cancelled
+: An endpoint uses this with CONNECTION_CLOSE to signal that the connection is
+  being closed abruptly in the absence of any error.  An endpoint uses this with
+  RST_STREAM to signal that the stream is no longer wanted or in response to the
+  receipt of a RST_STREAM for that stream.
 
-QUIC_CLOSED_CRITICAL_STREAM (0x80000007):
-: A stream that is critical to the protocol was closed.
+CANCELLED (0x80000004):
 
-QUIC_MISSING_PAYLOAD (0x80000030):
-: The packet contained no payload.
+: An endpoint sends this with RST_STREAM to indicate that the stream is not
+  wanted and that no application action was taken for the stream.  This error
+  code is not valid for use with CONNECTION_CLOSE.
 
-QUIC_INVALID_STREAM_DATA (0x8000002E):
-: STREAM frame data is malformed.
+FLOW_CONTROL_ERROR (0x80000005):
 
-QUIC_UNENCRYPTED_STREAM_DATA (0x8000003D):
-: Received STREAM frame data is not encrypted.
+: An endpoint received more data than it permitted in its advertised data limits
+  (see {{flow-control}}.
 
-QUIC_MAYBE_CORRUPTED_MEMORY (0x80000059):
-: Received a frame which is likely the result of memory corruption.
+STREAM_ID_ERROR (0x80000006):
 
-QUIC_INVALID_RST_STREAM_DATA (0x80000006):
-: RST_STREAM frame data is malformed.
+: An endpoint received a frame for a stream identifier that exceeded its
+  advertised maximum stream ID.
 
-QUIC_INVALID_CONNECTION_CLOSE_DATA (0x80000007):
-: CONNECTION_CLOSE frame data is malformed.
+STREAM_STATE_ERROR (0x80000007):
 
-QUIC_INVALID_GOAWAY_DATA (0x80000008):
-: GOAWAY frame data is malformed.
+: An endpoint received a frame for a stream that was not in a state that
+  permitted that frame (see {{stream-states}}).
 
-QUIC_INVALID_WINDOW_UPDATE_DATA (0x80000039):
-: WINDOW_UPDATE frame data is malformed.
+FINAL_OFFSET_ERROR (0x80000008):
 
-QUIC_INVALID_BLOCKED_DATA (0x8000003A):
-: BLOCKED frame data is malformed.
+: An endpoint received a STREAM frame containing data that exceeded the
+  previously established final offset.  Or an endpoint received a RST_STREAM
+  frame containing a final offset that was lower than the maximum offset of data
+  that was already received.  Or an endpoint received a RST_STREAM frame
+  containing a different final offset to the one already established.
 
-QUIC_INVALID_PATH_CLOSE_DATA (0x8000004E):
-: PATH_CLOSE frame data is malformed.
+FRAME_FORMAT_ERROR (0x80000009):
 
-QUIC_INVALID_ACK_DATA (0x80000009):
-: ACK frame data is malformed.
+: An endpoint received a frame that was badly formatted.  For instance, an empty
+  STREAM frame that omitted the FIN flag, or an ACK frame that has more
+  acknowledgment ranges than the remainder of the packet could carry.
 
-QUIC_INVALID_VERSION_NEGOTIATION_PACKET (0x8000000A):
-: Version negotiation packet is malformed.
+TRANSPORT_PARAMETER_ERROR (0x8000000A):
 
-QUIC_INVALID_PUBLIC_RST_PACKET (0x8000000b):
-: Public RST packet is malformed.
+: An endpoint received transport parameters that were badly formatted, included
+  an invalid value, was absent even though it is mandatory, was present though
+  it is forbidden, or is otherwise in error.
 
-QUIC_DECRYPTION_FAILURE (0x8000000c):
-: There was an error decrypting.
+VERSION_NEGOTIATION_ERROR (0x8000000B):
 
-QUIC_ENCRYPTION_FAILURE (0x8000000d):
-: There was an error encrypting.
+: An endpoint received transport parameters that contained version negotiation
+  parameters that disagreed with the version negotiation that it performed.
+  This error code indicates a potential version downgrade attack.
 
-QUIC_PACKET_TOO_LARGE (0x8000000e):
-: The packet exceeded kMaxPacketSize.
+PROTOCOL_VIOLATION (0x8000000C):
 
-QUIC_PEER_GOING_AWAY (0x80000010):
-: The peer is going away. May be a client or server.
-
-QUIC_INVALID_STREAM_ID (0x80000011):
-: A stream ID was invalid.
-
-QUIC_INVALID_PRIORITY (0x80000031):
-: A priority was invalid.
-
-QUIC_TOO_MANY_OPEN_STREAMS (0x80000012):
-: Too many streams already open.
-
-QUIC_TOO_MANY_AVAILABLE_STREAMS (0x8000004c):
-: The peer created too many available streams.
-
-QUIC_PUBLIC_RESET (0x80000013):
-: Received public reset for this connection.
-
-QUIC_INVALID_VERSION (0x80000014):
-: Invalid protocol version.
-
-QUIC_INVALID_HEADER_ID (0x80000016):
-: The Header ID for a stream was too far from the previous.
-
-QUIC_INVALID_NEGOTIATED_VALUE (0x80000017):
-: Negotiable parameter received during handshake had invalid value.
-
-QUIC_DECOMPRESSION_FAILURE (0x80000018):
-: There was an error decompressing data.
-
-QUIC_NETWORK_IDLE_TIMEOUT (0x80000019):
-: The connection timed out due to no network activity.
-
-QUIC_HANDSHAKE_TIMEOUT (0x80000043):
-: The connection timed out waiting for the handshake to complete.
-
-QUIC_ERROR_MIGRATING_ADDRESS (0x8000001a):
-: There was an error encountered migrating addresses.
-
-QUIC_ERROR_MIGRATING_PORT (0x80000056):
-: There was an error encountered migrating port only.
-
-QUIC_EMPTY_STREAM_FRAME_NO_FIN (0x80000032):
-: We received a STREAM_FRAME with no data and no fin flag set.
-
-QUIC_FLOW_CONTROL_RECEIVED_TOO_MUCH_DATA (0x8000003b):
-: The peer received too much data, violating flow control.
-
-QUIC_FLOW_CONTROL_SENT_TOO_MUCH_DATA (0x8000003f):
-: The peer sent too much data, violating flow control.
-
-QUIC_FLOW_CONTROL_INVALID_WINDOW (0x80000040):
-: The peer received an invalid flow control window.
-
-QUIC_CONNECTION_IP_POOLED (0x8000003e):
-: The connection has been IP pooled into an existing connection.
-
-QUIC_TOO_MANY_OUTSTANDING_SENT_PACKETS (0x80000044):
-: The connection has too many outstanding sent packets.
-
-QUIC_TOO_MANY_OUTSTANDING_RECEIVED_PACKETS (0x80000045):
-: The connection has too many outstanding received packets.
-
-QUIC_CONNECTION_CANCELLED (0x80000046):
-: The QUIC connection has been cancelled.
-
-QUIC_BAD_PACKET_LOSS_RATE (0x80000047):
-: Disabled QUIC because of high packet loss rate.
-
-QUIC_PUBLIC_RESETS_POST_HANDSHAKE (0x80000049):
-: Disabled QUIC because of too many PUBLIC_RESETs post handshake.
-
-QUIC_TIMEOUTS_WITH_OPEN_STREAMS (0x8000004a):
-: Disabled QUIC because of too many timeouts with streams open.
-
-QUIC_TOO_MANY_RTOS (0x80000055):
-: QUIC timed out after too many RTOs.
-
-QUIC_ENCRYPTION_LEVEL_INCORRECT (0x8000002c):
-: A packet was received with the wrong encryption level (i.e. it should
-  have been encrypted but was not.)
-
-QUIC_VERSION_NEGOTIATION_MISMATCH (0x80000037):
-: This connection involved a version negotiation which appears to have been
-  tampered with.
-
-QUIC_IP_ADDRESS_CHANGED (0x80000050):
-: IP address changed causing connection close.
-
-QUIC_ADDRESS_VALIDATION_FAILURE (0x80000051):
-: Client address validation failed.
-
-QUIC_TOO_MANY_FRAME_GAPS (0x8000005d):
-: Stream frames arrived too discontiguously so that stream sequencer buffer
-  maintains too many gaps.
-
-QUIC_TOO_MANY_SESSIONS_ON_SERVER (0x80000060):
-: Connection closed because server hit max number of sessions allowed.
+: An endpoint detected an error with protocol compliance that was not covered by
+  more specific error codes.
 
 
 # Security and Privacy Considerations
