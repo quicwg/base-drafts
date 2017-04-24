@@ -2743,74 +2743,60 @@ also be forward-secure encrypted.  Since the attacker will not have the forward
 secure key, the attacker will not be able to generate forward-secure encrypted
 packets with ACK frames.
 
+
 ## Slowloris Attacks
 
-The attacks commonly known as Slowloris {{SLOWLORIS}}
-try to keep many connections
-to the target endpoint open and hold
-them open as long as possible. These attacks
-can be executed against a QUIC endpoint by slowly sending small amount of
-data on an open stream, slowly opening the flow control windows in order
-to limit the sender rate, or possibly manufacturing QUIC ACK that
-simulate a high loss rate and slow down sending by the other endpoint.
+The attacks commonly known as Slowloris {{SLOWLORIS}} try to keep many
+connections to the target endpoint open and hold them open as long as possible.
+These attacks can be executed against a QUIC endpoint by generating the minimum
+amount of activity necessary to avoid being closed for inactivity.  This might
+involve sending small amounts of data, gradually opening flow control windows in
+order to control the sender rate, or manufacturing ACK frames that simulate a
+high loss rate.
 
-QUIC deployments SHOULD provide
-mitigations of the Slowloris attacks, such as increasing the maximum
-number of clients the server will allow,
-limiting the number of connections
-a single IP address is allowed to make,
-imposing restrictions on the minimum
-transfer speed a connection is allowed to have,
-and restricting the length of
-time an endpoint is allowed to stay connected.
+QUIC deployments SHOULD provide mitigations of the Slowloris attacks, such as
+increasing the maximum number of clients the server will allow, limiting the
+number of connections a single IP address is allowed to make, imposing
+restrictions on the minimum transfer speed a connection is allowed to have, and
+restricting the length of time an endpoint is allowed to stay connected.
 
 ## Stream Fragmentation and Reassembly Attacks
 
-An adversarial endpoint might intentionally fragment the data on
-stream buffers in order to cause disproportionate memory commitment.
-The adversarial endpoint would open a stream,
-and send some STREAM frames containing arbitrary
-fragments of the stream content.
+An adversarial endpoint might intentionally fragment the data on stream buffers
+in order to cause disproportionate memory commitment.  An adversarial endpoint
+could open a stream and send some STREAM frames containing arbitrary fragments
+of the stream content.
 
-The attack is mitigated if flow control windows correspond to
-available memory. However, some receivers will over-commit memory and advertise
-flow control offsets in the aggregate that exceed actual available memory.
-The over-commitment strategy can lead to better performance when
-endpoints are well behaved, but renders endpoints vulnerable to
-the stream fragmentation attack.
+The attack is mitigated if flow control windows correspond to available
+memory.  However, some receivers will over-commit memory and advertise flow
+control offsets in the aggregate that exceed actual available memory.  The
+over-commitment strategy can lead to better performance when endpoints are well
+behaved, but renders endpoints vulnerable to the stream fragmentation attack.
 
 QUIC deployments SHOULD provide mitigations against the stream fragmentation
-attack. Mitigations could consist of avoiding over-committing memory, delaying
-reassembly of STREAM frames, implementing heuristics based on the
-age and duration of reassembly holes, or some combination.
+attack.  Mitigations could consist of avoiding over-committing memory, delaying
+reassembly of STREAM frames, implementing heuristics based on the age and
+duration of reassembly holes, or some combination.
 
 
 ## Stream Commitment Attack
 
-An adversarial endpoint can open lots of streams,
-exhausting state on the server.
-The adversarial endpoint, or endpoint, could repeat the process on a
-large number of connections, in a manner similar to
-SYN flooding attacks in TCP.
+An adversarial endpoint can open lots of streams, exhausting state on an
+endpoint.  The adversarial endpoint could repeat the process on a large number
+of connections, in a manner similar to SYN flooding attacks in TCP.
 
-Normally, clients will open streams sequentially,
-as explained in {{stream-identifiers}}.
-However, when several streams are initiated at short intervals,
-transmission error may cause STREAM DATA frames opening streams to be
-received out of sequence. A receiver is obligated to open intervening
-streams if a higher-numbered stream ID is received. Thus, on a
-new connection, opening stream 2000001 opens 1 million streams,
-as required by the specification.
+Normally, clients will open streams sequentially, as explained in
+{{stream-identifiers}}.  However, when several streams are initiated at short
+intervals, transmission error may cause STREAM DATA frames opening streams to be
+received out of sequence.  A receiver is obligated to open intervening streams
+if a higher-numbered stream ID is received.  Thus, on a new connection, opening
+stream 2000001 opens 1 million streams, as required by the specification.
 
-The number of active streams is limited
-by the concurrent stream limit transport
-parameter, as explained in {{stream-concurrency}}.
-If chosen judisciously, this limit
-mitigates the effect of the stream commitment attack.
-However, setting the limit
-too low could affect performance when
-applications expect to open large number
-of streams.
+The number of active streams is limited by the concurrent stream limit transport
+parameter, as explained in {{stream-concurrency}}.  If chosen judisciously, this
+limit mitigates the effect of the stream commitment attack.  However, setting
+the limit too low could affect performance when applications expect to open
+large number of streams.
 
 
 # IANA Considerations
