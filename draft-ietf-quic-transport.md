@@ -2735,6 +2735,25 @@ also be forward-secure encrypted.  Since the attacker will not have the forward
 secure key, the attacker will not be able to generate forward-secure encrypted
 packets with ACK frames.
 
+## Stream Fragmentation and Reassembly Attacks
+
+An adversarial endpoint might intentionally fragment the data on
+stream buffers in order to cause disproportionate memory commitment.
+The adversarial endpoint would open a stream,
+and send some STREAM frames containing arbitrary
+fragments of the stream content.
+
+The attack is mitigated if flow control windows correspond to
+available memory. However, some receivers will over-commit memory and advertise
+flow control offsets in the aggregate that exceed actual available memory.
+The over-commitment strategy can lead to better performance when
+endpoints are well behaved, but renders endpoints vulnerable to
+the stream fragmentation attack.
+
+QUIC deployments SHOULD provide mitigations against the stream fragmentation
+attack. Mitigations could consist of avoiding over-committing memory, delaying
+reassembly of STREAM frames, implementing heuristics based on the
+age and duration of reassembly holes, or some combination.
 
 # IANA Considerations
 
