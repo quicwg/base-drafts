@@ -1114,7 +1114,9 @@ initial_max_stream_id (0x0002):
 : The initial maximum stream ID parameter contains the initial maximum stream
   number the peer may initiate, encoded as an unsigned 32-bit integer.  This is
   equivalent to sending a MAX_STREAM_ID ({{frame-max-stream-id}}) immediately
-  after completing the handshake.
+  after completing the handshake.  This value MUST NOT be set to 0, an endpoint
+  MUST generate a TRANSPORT_PARAMETER_ERROR error if it receives a value of
+  0 for this parameter.
 
 idle_timeout (0x0003):
 
