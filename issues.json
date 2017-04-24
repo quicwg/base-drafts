@@ -51,9 +51,9 @@
 
     ],
     "milestone": null,
-    "comments": 2,
+    "comments": 3,
     "created_at": "2017-04-23T12:42:15Z",
-    "updated_at": "2017-04-24T00:57:07Z",
+    "updated_at": "2017-04-24T01:46:11Z",
     "closed_at": null,
     "body": "https://quicwg.github.io/base-drafts/draft-ietf-quic-transport.html#rfc.section.5.1\r\n\r\nThe graphic seems to suggest that bit 0 indicates a long header given the bit numbering sequence, but it appears to be encoded as bit 7.\r\n\r\n```\r\n 0                   1                   2                   3\r\n 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1\r\n+-+-+-+-+-+-+-+-+\r\n|1|   Type (7)  |\r\n+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+\r\n|                                                               |\r\n+                       Connection ID (64)                      +\r\n|                                                               |\r\n+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+\r\n|                       Packet Number (32)                      |\r\n+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+\r\n|                         Version (32)                          |\r\n+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+\r\n|                          Payload (*)                        ...\r\n+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+\r\n```"
   },
