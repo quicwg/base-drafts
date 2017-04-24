@@ -79,6 +79,14 @@ informative:
     date: 2013-12-02
     target: "https://goo.gl/dMVtFi"
 
+  SLOWLORIS:
+    title: "Welcome to Slowloris..."
+    author:
+      - ins: R. RSnake Hansen
+    date: 2009-06
+    target:
+     "https://web.archive.org/web/20150315054838/http://ha.ckers.org/slowloris/"
+
 
 --- abstract
 
@@ -2735,6 +2743,26 @@ also be forward-secure encrypted.  Since the attacker will not have the forward
 secure key, the attacker will not be able to generate forward-secure encrypted
 packets with ACK frames.
 
+## Slowloris Attacks
+
+The attacks commonly known as Slowloris {{SLOWLORIS}}
+try to keep many connections
+to the target endpoint open and hold
+them open as long as possible. These attacks
+can be executed against a QUIC endpoint by slowly sending small amount of
+data on an open stream, slowly opening the flow control windows in order
+to limit the sender rate, or possibly manufacturing QUIC ACK that
+simulate a high loss rate and slow down sending by the other endpoint.
+
+QUIC deployments SHOULD provide
+mitigations of the Slowloris attacks, such as increasing the maximum
+number of clients the server will allow,
+limiting the number of connections
+a single IP address is allowed to make,
+imposing restrictions on the minimum
+transfer speed a connection is allowed to have,
+and restricting the length of
+time an endpoint is allowed to stay connected.
 
 ## Stream Fragmentation and Reassembly Attacks
 
