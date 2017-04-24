@@ -749,9 +749,9 @@ increase by at least one after sending any packet, unless otherwise specified
 
 A QUIC endpoint MUST NOT reuse a packet number within the same connection (that
 is, under the same cryptographic keys).  If the packet number for sending
-reaches 2^64 - 1, the sender MUST close the connection by sending a
-CONNECTION_CLOSE frame with the error code QUIC_SEQUENCE_NUMBER_LIMIT_REACHED
-(connection termination is described in {{termination}}.)
+reaches 2^64 - 1, the sender MUST close the connection without sending a
+CONNECTION_CLOSE frame or any further packets; the sender MAY send a Public
+Reset packet in response to further packets that it receives.
 
 To reduce the number of bits required to represent the packet number over the
 wire, only the least significant bits of the packet number are transmitted over
@@ -1192,7 +1192,7 @@ The client includes two fields in the transport parameters:
   MUST be identical to the value that is on the packet that carries the
   ClientHello.  A server that receives a negotiated_version that does not match
   the version of QUIC that is in use MUST terminate the connection with a
-  QUIC_VERSION_NEGOTIATION_MISMATCH error code.
+  VERSION_NEGOTIATION_ERROR error code.
 
 * The initial_version is the version that the client initially attempted to use.
   If the server did not send a version negotiation packet {{packet-version}},
@@ -1210,7 +1210,7 @@ server MUST check that it would have sent a version negotiation packet if it had
 received a packet with the indicated initial_version.  If a server would have
 accepted the version included in the initial_version and the value differs from
 the value of negotiated_version, the server MUST terminate the connection with a
-QUIC_VERSION_NEGOTIATION_MISMATCH error.
+VERSION_NEGOTIATION_ERROR error.
 
 The server includes a list of versions that it would send in any version
 negotiation packet ({{packet-version}}) in supported_versions.  This value is
@@ -1219,9 +1219,9 @@ set even if it did not send a version negotiation packet.
 The client can validate that the negotiated_version is included in the
 supported_versions list and - if version negotiation was performed - that it
 would have selected the negotiated version.  A client MUST terminate the
-connection with a QUIC_VERSION_NEGOTIATION_MISMATCH error code if the
+connection with a VERSION_NEGOTIATION_ERROR error code if the
 negotiated_version value is not included in the supported_versions list.  A
-client MUST terminate with a QUIC_VERSION_NEGOTIATION_MISMATCH error code if
+client MUST terminate with a VERSION_NEGOTIATION_ERROR error code if
 version negotiation occurred but it would have selected a different version
 based on the value of the supported_versions list.
 
@@ -1355,8 +1355,7 @@ protection can be delegated to the cryptographic handshake protocol, avoiding
 redundant protection.  If integrity protection is delegated to the cryptographic
 handshake, an integrity failure will result in immediate cryptographic handshake
 failure.  If integrity protection is performed by QUIC, QUIC MUST abort the
-connection if the integrity check fails with a QUIC_ADDRESS_VALIDATION_FAILURE
-error code.
+connection if the integrity check fails with a PROTOCOL_VIOLATION error code.
 
 
 ## Connection Migration {#migration}
@@ -1900,9 +1899,9 @@ might not increase the largest received offset.
 
 The data sent on a stream MUST NOT exceed the largest maximum stream data value
 advertised by the receiver.  An endpoint MUST terminate a connection with a
-QUIC_FLOW_CONTROL_RECEIVED_TOO_MUCH_DATA error if it receives more data than the
-largest maximum stream data that it has sent for the affected stream, unless
-this is a result of a change in the initial limits (see {{zerortt-parameters}}).
+FLOW_CONTROL_ERROR error if it receives more data than the largest maximum
+stream data that it has sent for the affected stream, unless this is a result of
+a change in the initial limits (see {{zerortt-parameters}}).
 
 
 ## MAX_STREAM_ID Frame {#frame-max-stream-id}
@@ -1932,9 +1931,9 @@ ignored.
 
 A peer MUST NOT initiate a stream with a higher stream ID than the greatest
 maximum stream ID it has received.  An endpoint MUST terminate a connection with
-a QUIC_TOO_MANY_OPEN_STREAMS error if a peer initiates a stream with a higher
-stream ID than it has sent, unless this is a result of a change in the initial
-limits (see {{zerortt-parameters}}).
+a STREAM_ID_ERROR error if a peer initiates a stream with a higher stream ID
+than it has sent, unless this is a result of a change in the initial limits (see
+{{zerortt-parameters}}).
 
 
 ## BLOCKED Frame {#frame-blocked}
@@ -2534,9 +2533,8 @@ regardless of whether it is permitted to initiated new streams.
 
 Endpoints MUST NOT exceed the limit set by their peer.  An endpoint that
 receives a STREAM frame with an ID greater than the limit it has sent MUST treat
-this as a stream error of type QUIC_TOO_MANY_OPEN_STREAMS ({{error-handling}}),
-unless this is a result of a change in the initial offsets (see
-{{zerortt-parameters}}).
+this as a stream error of type STREAM_ID_ERROR ({{error-handling}}), unless this
+is a result of a change in the initial offsets (see {{zerortt-parameters}}).
 
 A receiver MUST NOT renege on an advertisement; that is, once a receiver
 advertises a stream ID via a MAX_STREAM_ID frame, it MUST NOT subsequently
@@ -2637,9 +2635,9 @@ smaller offset.  A sender could receive MAX_DATA or MAX_STREAM_DATA frames out
 of order; a sender MUST therefore ignore any flow control offset that does not
 move the window forward.
 
-A receiver MUST close the connection with a
-QUIC_FLOW_CONTROL_RECEIVED_TOO_MUCH_DATA error ({{error-handling}}) if the
-peer violates the advertised connection or stream data limits.
+A receiver MUST close the connection with a FLOW_CONTROL_ERROR error
+({{error-handling}}) if the peer violates the advertised connection or stream
+data limits.
 
 A sender MUST send BLOCKED frames to indicate it has data to write but is
 blocked by lack of connection or stream flow control credit.  BLOCKED frames are
@@ -2764,13 +2762,12 @@ An endpoint MUST NOT send data on a stream at or beyond the final offset.
 
 Once a final offset for a stream is known, it cannot change.  If a RST_STREAM or
 STREAM frame causes the final offset to change for a stream, an endpoint SHOULD
-respond with a QUIC_STREAM_DATA_AFTER_TERMINATION error (see
-{{error-handling}}).  A receiver SHOULD treat receipt of data at or beyond the
-final offset as a QUIC_STREAM_DATA_AFTER_TERMINATION error, even after a stream
-is closed.  Generating these errors is not mandatory, but only because
-requiring that an endpoint generate these errors also means that the endpoint
-needs to maintain the final offset state for closed streams, which could mean a
-significant state commitment.
+respond with a FINAL_OFFSET_ERROR error (see {{error-handling}}).  A receiver
+SHOULD treat receipt of data at or beyond the final offset as a
+FINAL_OFFSET_ERROR error, even after a stream is closed.  Generating these
+errors is not mandatory, but only because requiring that an endpoint generate
+these errors also means that the endpoint needs to maintain the final offset
+state for closed streams, which could mean a significant state commitment.
 
 
 # Error Handling
@@ -2821,7 +2818,7 @@ affected stream.
 
 Stream 0 is critical to the functioning of the entire connection.  If stream 0
 is closed with either a RST_STREAM or STREAM frame bearing the FIN flag, an
-endpoint MUST generate a connection error of type QUIC_CLOSED_CRITICAL_STREAM.
+endpoint MUST generate a connection error of type PROTOCOL_VIOLATION.
 
 Some application protocols make other streams critical to that protocol.  An
 application protocol does not need to inform the transport that a stream is
