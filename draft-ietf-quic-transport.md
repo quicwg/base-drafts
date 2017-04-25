@@ -2197,7 +2197,7 @@ Any frame type that mentions a stream ID can be sent in this state.
 ### half-closed (local)
 
 A stream that is in the "half-closed (local)" state MUST NOT be used for sending
-of new STREAM frames.  Retransmission of data that has already been sent on
+on new STREAM frames.  Retransmission of data that has already been sent on
 STREAM frames is permitted.  An endpoint MAY also send MAX_STREAM_DATA and
 RST_STREAM in this state.
 
