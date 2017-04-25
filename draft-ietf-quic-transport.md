@@ -242,17 +242,18 @@ or loss.
 
 ## Stream and Connection Flow Control
 
-QUIC implements stream- and connection-level flow control, closely following
-HTTP/2's flow control mechanisms.  At a high level, a QUIC receiver advertises
-the absolute byte offset within each stream up to which the receiver is willing
-to receive data.  As data is sent, received, and delivered on a particular
-stream, the receiver sends WINDOW_UPDATE frames that increase the advertised
-offset limit for that stream, allowing the peer to send more data on that
-stream.  In addition to this stream-level flow control, QUIC implements
-connection-level flow control to limit the aggregate buffer that a QUIC receiver
-is willing to allocate to all streams on a connection.  Connection-level flow
-control works in the same way as stream-level flow control, but the bytes
-delivered and highest received offset are all aggregates across all streams.
+QUIC implements stream- and connection-level flow control.  At a high level, a
+QUIC receiver advertises the maximum amount of data that it is willing to
+receive on each stream.  As data is sent, received, and delivered on a
+particular stream, the receiver sends MAX_STREAM_DATA frames that increase the
+advertised limit for that stream, allowing the peer to send more data on that
+stream.
+
+In addition to this stream-level flow control, QUIC implements connection-level
+flow control to limit the aggregate buffer that a QUIC receiver is willing to
+allocate to all streams on a connection.  Connection-level flow control works in
+the same way as stream-level flow control, but the bytes delivered and the
+limits are aggregated across all streams.
 
 ## Authenticated and Encrypted Header and Payload
 
@@ -778,18 +779,19 @@ STREAM and ACK frames is used to carry other frame-specific flags.  For all
 other frames, the Frame Type byte simply identifies the frame.  These frames are
 explained in more detail as they are referenced later in the document.
 
-| Type-field value |     Frame type     | Definition                 |
-|:-----------------|:-------------------|:---------------------------|
-| 0x00             |  PADDING           | {{frame-padding}}          |
-| 0x01             |  RST_STREAM        | {{frame-rst-stream}}       |
-| 0x02             |  CONNECTION_CLOSE  | {{frame-connection-close}} |
-| 0x03             |  GOAWAY            | {{frame-goaway}}           |
-| 0x04             |  WINDOW_UPDATE     | {{frame-window-update}}    |
-| 0x05             |  BLOCKED           | {{frame-blocked}}          |
-| 0x07             |  PING              | {{frame-ping}}             |
-| 0x08             |  LIMIT_UPDATE      | {{frame-limit-update}}     |
-| 0xa0 - 0x7f      |  ACK               | {{frame-ack}}              |
-| 0xc0 - 0xff      |  STREAM            | {{frame-stream}}           |
+| Type Value  | Frame Type Name  | Definition                 |
+|:------------|:-----------------|:---------------------------|
+| 0x00        | PADDING          | {{frame-padding}}          |
+| 0x01        | RST_STREAM       | {{frame-rst-stream}}       |
+| 0x02        | CONNECTION_CLOSE | {{frame-connection-close}} |
+| 0x03        | GOAWAY           | {{frame-goaway}}           |
+| 0x04        | MAX_DATA         | {{frame-max-data}}         |
+| 0x05        | MAX_STREAM_DATA  | {{frame-max-stream-data}}  |
+| 0x06        | MAX_STREAM_ID    | {{frame-max-stream-id}}    |
+| 0x07        | PING             | {{frame-ping}}             |
+| 0x08        | BLOCKED          | {{frame-blocked}}          |
+| 0xa0 - 0x7f | ACK              | {{frame-ack}}              |
+| 0xc0 - 0xff | STREAM           | {{frame-stream}}           |
 {: #frame-types title="Frame Types"}
 
 # Life of a Connection
@@ -933,9 +935,9 @@ language from Section 3 of {{!I-D.ietf-tls-tls13}}.
    uint32 QuicVersion;
 
    enum {
-      stream_fc_offset(0),
-      connection_fc_offset(1),
-      initial_stream_limit(2),
+      initial_max_stream_data(0),
+      initial_max_data(1),
+      initial_max_stream_id(2),
       idle_timeout(3),
       truncate_connection_id(4),
       (65535)
@@ -980,31 +982,31 @@ Definitions for each of the defined transport parameters are included in
 An endpoint MUST include the following parameters in its encoded
 TransportParameters:
 
-stream_fc_offset (0x0000):
+initial_max_stream_data (0x0000):
 
-: The initial stream level flow control offset parameter is encoded as an
-  unsigned 32-bit integer in units of octets.  The sender of this parameter
-  indicates that the flow control offset for all stream data sent toward it is
-  this value.
+: The initial stream maximum data parameter contains the initial value for the
+  maximum data that can be sent on any newly created stream.  This parameter is
+  encoded as an unsigned 32-bit integer in units of octets.  This is equivalent
+  to an implicit MAX_STREAM_DATA frame ({{frame-max-stream-data}}) being sent on
+  all streams immediately after opening.
 
-connection_fc_offset (0x0001):
+initial_max_data (0x0001):
 
-: The connection level flow control offset parameter contains the initial
-  connection flow control window encoded as an unsigned 32-bit integer in units
-  of 1024 octets.  That is, the value here is multiplied by 1024 to determine
-  the actual flow control offset.  The sender of this parameter sets the byte
-  offset for connection level flow control to this value.  This is equivalent to
-  sending a WINDOW_UPDATE ({{frame-window-update}}) for the connection
+: The initial maximum data parameter contains the initial value for the maximum
+  amount of data that can be sent on the connection.  This parameter is encoded
+  as an unsigned 32-bit integer in units of 1024 octets.  That is, the value
+  here is multiplied by 1024 to determine the actual maximum value.  This is
+  equivalent to sending a MAX_DATA ({{frame-max-data}}) for the connection
   immediately after completing the handshake.
 
-initial_stream_limit (0x0002):
+initial_max_stream_id (0x0002):
 
-: The initial stream number limit parameter contains the initial maximum stream
-  number the peer may initiate.  This is equivalent to sending a LIMIT_UPDATE
-  ({{frame-limit-update}}) immediately after completing the handshake.  This
-  value MUST NOT be set to 0, an endpoint MUST generate a
-  QUIC_INVALID_NEGOTIATED_VALUE error if it receives a value of zero for this
-  parameter.
+: The initial maximum stream ID parameter contains the initial maximum stream
+  number the peer may initiate, encoded as an unsigned 32-bit integer.  This is
+  equivalent to sending a MAX_STREAM_ID ({{frame-max-stream-id}}) immediately
+  after completing the handshake.  This value MUST NOT be set to 0, an endpoint
+  MUST generate a QUIC_INVALID_NEGOTIATED_VALUE error if it receives a value of
+  zero for this parameter.
 
 idle_timeout (0x0003):
 
@@ -1026,19 +1028,20 @@ truncate_connection_id (0x0004):
 
 Transport parameters from the server SHOULD be remembered by the client for use
 with 0-RTT data.  A client that doesn't remember values from a previous
-connection can instead assume the following values: stream_fc_offset (65535),
-connection_fc_offset (65535), initial_stream_limit (20), idle_timeout (600),
-truncate_connection_id (absent).
+connection can instead assume the following values: initial_max_stream_data
+(65535), initial_max_data (65535), initial_max_stream_id (20), idle_timeout
+(600), truncate_connection_id (absent).
 
 If assumed values change as a result of completing the handshake, the client is
 expected to respect the new values.  This introduces some potential problems,
 particularly with respect to transport parameters that establish limits:
 
-* A client might exceed a newly declared connection or stream flow control limit
-  with 0-RTT data.  If this occurs, the client ceases transmission as though the
-  flow control limit was reached.  Once WINDOW_UPDATE frames indicating an
-  increase to the affected flow control offsets is received, the client can
-  recommence sending.
+* A client might exceed a newly declared initial value for the connection or
+  stream maximum data limit with 0-RTT data.  If this occurs, the client ceases
+  transmission as though these limits were reached.  The server SHOULD NOT
+  terminate a connection if the client has exceeded these limits.  Once MAX_DATA
+  or MAX_STREAM_DATA frames indicating an increase to the affected maximum data
+  limit is received, the client can recommence sending.
 
 * Similarly, a client might exceed the initial stream limit declared by the
   server.  A client MUST reset any streams that exceed this limit.  A server
@@ -1639,11 +1642,43 @@ by a client in protected packets, because it is certain that the server is able
 to decipher the packet.
 
 
-## WINDOW_UPDATE Frame {#frame-window-update}
+## MAX_DATA Frame {#frame-max-data}
 
-The WINDOW_UPDATE frame (type=0x04) informs the peer of an increase in an
-endpoint's flow control receive window for either a single stream, or the entire
-connection as a whole.
+The MAX_DATA frame (type=0x04) is used in flow control to informs the peer of
+the maximum amount of data that can be sent on the connection as a whole.
+
+The frame is as follows:
+
+~~~
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                                                               |
++                        Maximum Data (64)                      +
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~
+
+The fields in the MAX_DATA frame are as follows:
+
+Maximum Data:
+
+: A 64-bit unsigned integer indicating the maximum amount of data that can be
+  sent on the entire connection, in units of 1024 octets.  That is, the updated
+  connection-level data limit is determined by multiplying the encoded value by
+  1024.
+
+The sum of the largest received offsets on all streams - including closed
+streams - MUST NOT exceed the value advertised by a receiver.  An endpoint MUST
+terminate a connection with a QUIC_FLOW_CONTROL_RECEIVED_TOO_MUCH_DATA error if
+it receives more data than the maximum data value that it has sent, unless this
+is a result of a change in the initial limits (see {{zerortt-parameters}}).
+
+
+## MAX_STREAM_DATA Frame {#frame-max-stream-data}
+
+The MAX_STREAM_DATA frame (type=0x05) is used in flow control to inform a peer
+of the maximum amount of data that can be sent on a stream.
 
 The frame is as follows:
 
@@ -1654,48 +1689,70 @@ The frame is as follows:
 |                        Stream ID (32)                         |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                                                               |
-+                    Flow Control Offset (64)                   +
++                    Maximum Stream Data (64)                   +
 |                                                               |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
 
-The fields in the WINDOW_UPDATE frame are as follows:
+The fields in the MAX_STREAM_DATA frame are as follows:
 
 Stream ID:
 
-: ID of the stream whose flow control windows is being updated, or 0 to specify
-  the connection-level flow control window.
+: The stream ID of the stream that is affected.
 
-Flow Control Offset:
+Maximum Stream Data:
 
-: A 64-bit unsigned integer indicating the flow control offset for the given
-  stream (for a stream ID other than 0) or the entire connection.
+: A 64-bit unsigned integer indicating the maximum amount of data that can be
+  sent on the identified stream, in units of octets.
 
-The flow control offset is expressed in units of octets for individual streams
-(for stream identifiers other than 0).
+When counting data toward this limit, an endpoint accounts for the largest
+received offset of data that is sent or received on the stream.  Loss or
+reordering can mean that the largest received offset on a stream can be greater
+than the total size of data received on that stream.  Receiving STREAM frames
+might not increase the largest received offset.
 
-The connection-level flow control offset is expressed in units of 1024 octets
-(for a stream identifier of 0).  That is, the connection-level flow control
-offset is determined by multiplying the encoded value by 1024.
+The data sent on a stream MUST NOT exceed the largest maximum stream data value
+advertised by the receiver.  An endpoint MUST terminate a connection with a
+QUIC_FLOW_CONTROL_RECEIVED_TOO_MUCH_DATA error if it receives more data than the
+largest maximum stream data that it has sent for the affected stream, unless
+this is a result of a change in the initial limits (see {{zerortt-parameters}}).
 
-An endpoint accounts for the maximum offset of data that is sent or received on
-a stream.  Loss or reordering can mean that the maximum offset is greater than
-the total size of data received on a stream.  Similarly, receiving STREAM frames
-might not increase the maximum offset on a stream.  A STREAM frame with a FIN
-bit set or RST_STREAM causes the final offset for a stream to be fixed.
 
-The maximum data offset on a stream MUST NOT exceed the stream flow control
-offset advertised by the receiver.  The sum of the maximum data offsets of all
-streams (including closed streams) MUST NOT exceed the connection flow control
-offset advertised by the receiver.  An endpoint MUST terminate a connection with
-a QUIC_FLOW_CONTROL_RECEIVED_TOO_MUCH_DATA error if it receives more data than
-the largest flow control offset that it has sent, unless this is a result of a
-change in the initial offsets (see {{zerortt-parameters}}).
+## MAX_STREAM_ID Frame {#frame-max-stream-id}
+
+The MAX_STREAM_ID frame (type=0x06) informs the peer of the maximum stream ID
+that they are permitted to open.
+
+The frame is as follows:
+
+~~~
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                    Maximum Stream ID (32)                     |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~
+
+The fields in the MAX_STREAM_ID frame are as follows:
+
+Maximum Stream ID:
+: ID of the maximum peer-initiated stream ID for the connection.
+
+Loss or reordering can mean that a MAX_STREAM_ID frame can be received which
+states a lower stream limit than the client has previously received.
+MAX_STREAM_ID frames which do not increase the maximum stream ID MUST be
+ignored.
+
+A peer MUST NOT initiate a stream with a higher stream ID than the greatest
+maximum stream ID it has received.  An endpoint MUST terminate a connection with
+a QUIC_TOO_MANY_OPEN_STREAMS error if a peer initiates a stream with a higher
+stream ID than it has sent, unless this is a result of a change in the initial
+limits (see {{zerortt-parameters}}).
 
 
 ## BLOCKED Frame {#frame-blocked}
 
-A sender sends a BLOCKED frame (type=0x05) when it is ready to send data (and
+A sender sends a BLOCKED frame (type=0x08) when it is ready to send data (and
 has data to send), but is currently flow control blocked. BLOCKED frames are
 purely informational frames, but extremely useful for debugging purposes. A
 receiver of a BLOCKED frame should simply discard it (after possibly printing a
@@ -1717,36 +1774,6 @@ Stream ID:
   A non-zero Stream ID field specifies the stream that is flow control blocked.
   When zero, the Stream ID field indicates that the connection is flow control
   blocked.
-
-## LIMIT_UPDATE Frame {#frame-limit-update}
-
-The LIMIT_UPDATE frame (type=0x08) informs the peer of an increase in an
-endpoint's maximum acceptable stream ID.
-
-The frame is as follows:
-
-~~~
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                    Maximum Stream ID (32)                     |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-~~~
-
-The fields in the LIMIT_UPDATE frame are as follows:
-
-Stream ID:
-: ID of the maximum peer-initiated stream ID for the connection.
-
-Loss or reordering can mean that a LIMIT_UPDATE frame can be received which
-states a lower stream limit than the client has previously received.
-LIMIT_UPDATE frames which do not increase the Maximum Stream ID MUST be ignored.
-
-A peer MUST NOT initiate a stream with a higher Stream ID than the greatest
-Maximum Stream ID it has received.  An endpoint MUST terminate a connection with
-a QUIC_TOO_MANY_OPEN_STREAMS error if a peer initiates a stream with a higher
-Stream ID than it has sent, unless this is a result of a change in the initial
-offsets (see {{zerortt-parameters}}).
 
 
 ## RST_STREAM Frame {#frame-rst-stream}
@@ -2144,7 +2171,7 @@ transition immediately to "closed".
 ### half-closed (local)
 
 A stream that is in the "half-closed (local)" state MUST NOT be used for sending
-STREAM frames; WINDOW_UPDATE and RST_STREAM MAY be sent in this state.
+STREAM frames; MAX_STREAM_DATA and RST_STREAM MAY be sent in this state.
 
 A stream transitions from this state to "closed" when a STREAM frame that
 contains a FIN flag is received and all prior data has arrived, or when either
@@ -2154,8 +2181,8 @@ An endpoint that closes a stream MUST NOT send data beyond the final offset that
 it has chosen, see {{state-closed}} for details.
 
 An endpoint can receive any type of frame in this state.  Providing flow-control
-credit using WINDOW_UPDATE frames is necessary to continue receiving
-flow-controlled frames.  In this state, a receiver MAY ignore WINDOW_UPDATE
+credit using MAX_STREAM_DATA frames is necessary to continue receiving
+flow-controlled frames.  In this state, a receiver MAY ignore MAX_STREAM_DATA
 frames for this stream, which might arrive for a short period after a frame
 bearing the FIN flag is sent.
 
@@ -2243,13 +2270,14 @@ direction being counted as open.
 
 An endpoint limits the number of concurrently active incoming streams by
 adjusting the maximum stream ID.  An initial value is set in the transport
-parameters  (see {{transport-parameter-definitions}}) and is subsequently
-increased by LIMIT_UPDATE frames (see {{frame-limit-update}}). The maximum
-stream ID is specific to each endpoint and applies only to the peer that
-receives the setting. That is, clients specify the maximum stream ID the server
-can initiate, and servers specify the maximum stream ID the client can initiate.
-Each endpoint may respond on streams initiated by the other peer, regardless of
-whether it is permitted to initiated new streams.
+parameters (see {{transport-parameter-definitions}}) and is subsequently
+increased by MAX_STREAM_ID frames (see {{frame-max-stream-id}}).
+
+The maximum stream ID is specific to each endpoint and applies only to the peer
+that receives the setting. That is, clients specify the maximum stream ID the
+server can initiate, and servers specify the maximum stream ID the client can
+initiate.  Each endpoint may respond on streams initiated by the other peer,
+regardless of whether it is permitted to initiated new streams.
 
 Endpoints MUST NOT exceed the limit set by their peer.  An endpoint that
 receives a STREAM frame with an ID greater than the limit it has sent MUST treat
@@ -2345,44 +2373,39 @@ senders from exceeding a receiver's buffer capacity for the connection, and (ii)
 Stream flow control, which prevents a single stream from consuming the entire
 receive buffer for a connection.
 
-A receiver sends WINDOW_UPDATE frames to the sender to advertise additional
-credit by sending the absolute byte offset in the stream or in the connection
-which it is willing to receive.
+A receiver sends MAX_DATA or MAX_STREAM_DATA frames to the sender to advertise
+additional credit by sending the absolute byte offset in the connection or
+stream which it is willing to receive.
 
-The initial flow control credit is 65536 bytes for both the stream and
-connection flow controllers.
-
-A receiver MAY advertise a larger offset at any point in the connection by
-sending a WINDOW_UPDATE frame.  A receiver MUST NOT renege on an advertisement;
-that is, once a receiver advertises an offset via a WINDOW_UPDATE frame, it MUST
-NOT subsequently advertise a smaller offset.  A sender may receive WINDOW_UPDATE
-frames out of order; a sender MUST therefore ignore any WINDOW_UPDATE that
-does not move the window forward.
+A receiver MAY advertise a larger offset at any point by sending MAX_DATA or
+MAX_STREAM_DATA frames.  A receiver MUST NOT renege on an advertisement; that
+is, once a receiver advertises an offset, it MUST NOT subsequently advertise a
+smaller offset.  A sender could receive MAX_DATA or MAX_STREAM_DATA frames out
+of order; a sender MUST therefore ignore any flow control offset that does not
+move the window forward.
 
 A receiver MUST close the connection with a
 QUIC_FLOW_CONTROL_RECEIVED_TOO_MUCH_DATA error ({{error-handling}}) if the
-peer violates the advertised stream or connection flow control windows.
+peer violates the advertised connection or stream data limits.
 
 A sender MUST send BLOCKED frames to indicate it has data to write but is
 blocked by lack of connection or stream flow control credit.  BLOCKED frames are
 expected to be sent infrequently in common cases, but they are considered useful
 for debugging and monitoring purposes.
 
-A receiver advertises credit for a stream by sending a WINDOW_UPDATE frame with
-the Stream ID set appropriately. A receiver may use the current offset of data
-consumed to determine the flow control offset to be advertised.
-A receiver MAY send copies of a WINDOW_UPDATE frame in multiple packets in order
-to make sure that the sender receives it before running out of flow control
-credit, even if one of the packets is lost.
+A receiver advertises credit for a stream by sending a MAX_STREAM_DATA frame
+with the Stream ID set appropriately. A receiver could use the current offset of
+data consumed to determine the flow control offset to be advertised.  A receiver
+MAY send MAX_STREAM_DATA frames in multiple packets in order to make sure that
+the sender receives an update before running out of flow control credit, even if
+one of the packets is lost.
 
 Connection flow control is a limit to the total bytes of stream data sent in
-STREAM frames on all streams contributing to connection flow control.  A
-receiver advertises credit for a connection by sending a WINDOW_UPDATE frame
-with the Stream ID set to zero (0x00).  A receiver maintains a cumulative sum of
-bytes received on all streams contributing to connection-level flow control, to
-check for flow control violations. A receiver may maintain a cumulative sum of
-bytes consumed on all contributing streams to determine the connection-level
-flow control offset to be advertised.
+STREAM frames on all streams.  A receiver advertises credit for a connection by
+sending a MAX_DATA frame.  A receiver maintains a cumulative sum of bytes
+received on all streams, which are used to check for flow control violations. A
+receiver might use a sum of bytes consumed on all contributing streams to
+determine the maximum data limit to be advertised.
 
 ## Edge Cases and Other Considerations
 
@@ -2390,9 +2413,10 @@ There are some edge cases which must be considered when dealing with stream and
 connection level flow control.  Given enough time, both endpoints must agree on
 flow control state.  If one end believes it can send more than the other end is
 willing to receive, the connection will be torn down when too much data arrives.
+
 Conversely if a sender believes it is blocked, while endpoint B expects more
 data can be received, then the connection can be in a deadlock, with the sender
-waiting for a WINDOW_UPDATE which will never come.
+waiting for a MAX_DATA or MAX_STREAM_DATA frame which will never come.
 
 ### Mid-stream RST_STREAM
 
@@ -2420,44 +2444,49 @@ frame and has sent neither a FIN nor a RST_STREAM, it MUST send a RST_STREAM in
 response, bearing the offset of the last byte sent on this stream as the final
 offset.
 
-### Offset Increment
+### Data Limit Increments
 
-This document leaves when and how many bytes to advertise in a WINDOW_UPDATE to
-the implementation, but offers a few considerations.  WINDOW_UPDATE frames
-constitute overhead, and therefore, sending a WINDOW_UPDATE with small offset
-increments is undesirable.  At the same time, sending WINDOW_UPDATES with large
-offset increments requires the sender to commit to that amount of buffer.
-Implementations must find the correct tradeoff between these sides to determine
-how large an offset increment to send in a WINDOW_UPDATE.
+This document leaves when and how many bytes to advertise in a MAX_DATA or
+MAX_STREAM_DATA to implementations, but offers a few considerations.  These
+frames contribute to connection overhead.  Therefore frequently sending frames
+with small changes is undesirable.  At the same time, infrequent updates require
+larger increments to limits if blocking is to be avoided.  Thus, larger updates
+require a receiver to commit to larger resource commitments.  Thus there is a
+tradeoff between resource commitment and overhead when determining how large a
+limit is advertised.
 
-A receiver MAY use an autotuning mechanism to tune the size of the offset
-increment to advertise based on a roundtrip time estimate and the rate at which
-the receiving application consumes data, similar to common TCP implementations.
+A receiver MAY use an autotuning mechanism to tune the frequency and amount that
+it increases data limits based on a roundtrip time estimate and the rate at
+which the receiving application consumes data, similar to common TCP
+implementations.
 
 ### Stream Limit Increment
 
 As with flow control, this document leaves when and how many streams to make
-available to a peer via LIMIT_UPDATE to the implementation, but offers a few
-considerations. LIMIT_UPDATE frames constitute minimal overhead, while
-withholding LIMIT_UPDATEs prevents the peer from fully utilizing the transport.
+available to a peer via MAX_STREAM_ID to implementations, but offers a few
+considerations.  MAX_STREAM_ID frames constitute minimal overhead, while
+withholding MAX_STREAM_ID frames can prevent the peer from using the available
+parallelism.
 
-Implementations will likely want to advance the Maximum Stream ID as
-peer-initiated streams close.  A receiver MAY also advance the Maximum Stream ID
+Implementations will likely want to increase the maximum stream ID as
+peer-initiated streams close.  A receiver MAY also advance the maximum stream ID
 based on current activity, system conditions, and other environmental factors.
 
 
 ### BLOCKED frames
 
-If a sender does not receive a WINDOW_UPDATE frame when it has run out of flow
-control credit, the sender will be blocked and MUST send a BLOCKED frame.  A
-BLOCKED frame is expected to be useful for debugging at the receiver.  A
-receiver SHOULD NOT wait for a BLOCKED frame before sending a
-WINDOW_UPDATE, since doing so will cause at least one roundtrip of quiescence.
+If a sender does not receive a MAX_DATA or MAX_STREAM_DATA frame when it has run
+out of flow control credit, the sender will be blocked and MUST send a BLOCKED
+frame.  A BLOCKED frame is expected to be useful for debugging at the receiver.
+A receiver SHOULD NOT wait for a BLOCKED frame before sending MAX_DATA or
+MAX_STREAM_DATA, since doing so will mean that a sender is unable to send for an
+entire round trip.
+
 For smooth operation of the congestion controller, it is generally considered
 best to not let the sender go into quiescence if avoidable.  To avoid blocking a
 sender, and to reasonably account for the possibiity of loss, a receiver should
-send a WINDOW_UPDATE frame at least two roundtrips before it expects the sender
-to get blocked.
+send a MAX_DATA or MAX_STREAM_DATA frame at least two roundtrips before it
+expects the sender to get blocked.
 
 
 # Error Handling
@@ -2829,13 +2858,13 @@ merely aesthetically displeasing, or architecturally dubious).
 The initial contents of this registry are shown in
 {{iana-tp-table}}.
 
-| Value  | Parameter Name            | Specification                       |
-|:-------|:--------------------------|:------------------------------------|
-| 0x0000 | stream_fc_offset          | {{transport-parameter-definitions}} |
-| 0x0001 | connection_fc_offset      | {{transport-parameter-definitions}} |
-| 0x0002 | initial_stream_limit      | {{transport-parameter-definitions}} |
-| 0x0003 | idle_timeout              | {{transport-parameter-definitions}} |
-| 0x0004 | truncate_connection_id    | {{transport-parameter-definitions}} |
+| Value  | Parameter Name          | Specification                       |
+|:-------|:------------------------|:------------------------------------|
+| 0x0000 | initial_max_stream_data | {{transport-parameter-definitions}} |
+| 0x0001 | initial_max_data        | {{transport-parameter-definitions}} |
+| 0x0002 | initial_max_stream_id   | {{transport-parameter-definitions}} |
+| 0x0003 | idle_timeout            | {{transport-parameter-definitions}} |
+| 0x0004 | truncate_connection_id  | {{transport-parameter-definitions}} |
 {: #iana-tp-table title="Initial QUIC Transport Parameters Entries"}
 
 
