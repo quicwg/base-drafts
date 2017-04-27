@@ -1,5 +1,105 @@
 [
   {
+    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/470",
+    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
+    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/470/labels{/name}",
+    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/470/comments",
+    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/470/events",
+    "html_url": "https://github.com/quicwg/base-drafts/pull/470",
+    "id": 224663626,
+    "number": 470,
+    "title": "Small editorial fixes to stream identifiers",
+    "user": {
+      "login": "martinthomson",
+      "id": 67641,
+      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/martinthomson",
+      "html_url": "https://github.com/martinthomson",
+      "followers_url": "https://api.github.com/users/martinthomson/followers",
+      "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
+      "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
+      "organizations_url": "https://api.github.com/users/martinthomson/orgs",
+      "repos_url": "https://api.github.com/users/martinthomson/repos",
+      "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/martinthomson/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 481871311,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/editorial",
+        "name": "editorial",
+        "color": "0e8a16",
+        "default": false
+      },
+      {
+        "id": 481871399,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
+        "name": "transport",
+        "color": "fbca04",
+        "default": false
+      }
+    ],
+    "state": "open",
+    "locked": false,
+    "assignee": {
+      "login": "janaiyengar",
+      "id": 11067604,
+      "avatar_url": "https://avatars1.githubusercontent.com/u/11067604?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/janaiyengar",
+      "html_url": "https://github.com/janaiyengar",
+      "followers_url": "https://api.github.com/users/janaiyengar/followers",
+      "following_url": "https://api.github.com/users/janaiyengar/following{/other_user}",
+      "gists_url": "https://api.github.com/users/janaiyengar/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/janaiyengar/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/janaiyengar/subscriptions",
+      "organizations_url": "https://api.github.com/users/janaiyengar/orgs",
+      "repos_url": "https://api.github.com/users/janaiyengar/repos",
+      "events_url": "https://api.github.com/users/janaiyengar/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/janaiyengar/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "assignees": [
+      {
+        "login": "janaiyengar",
+        "id": 11067604,
+        "avatar_url": "https://avatars1.githubusercontent.com/u/11067604?v=3",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/janaiyengar",
+        "html_url": "https://github.com/janaiyengar",
+        "followers_url": "https://api.github.com/users/janaiyengar/followers",
+        "following_url": "https://api.github.com/users/janaiyengar/following{/other_user}",
+        "gists_url": "https://api.github.com/users/janaiyengar/gists{/gist_id}",
+        "starred_url": "https://api.github.com/users/janaiyengar/starred{/owner}{/repo}",
+        "subscriptions_url": "https://api.github.com/users/janaiyengar/subscriptions",
+        "organizations_url": "https://api.github.com/users/janaiyengar/orgs",
+        "repos_url": "https://api.github.com/users/janaiyengar/repos",
+        "events_url": "https://api.github.com/users/janaiyengar/events{/privacy}",
+        "received_events_url": "https://api.github.com/users/janaiyengar/received_events",
+        "type": "User",
+        "site_admin": false
+      }
+    ],
+    "milestone": null,
+    "comments": 0,
+    "created_at": "2017-04-27T04:10:18Z",
+    "updated_at": "2017-04-27T04:10:18Z",
+    "closed_at": null,
+    "pull_request": {
+      "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/470",
+      "html_url": "https://github.com/quicwg/base-drafts/pull/470",
+      "diff_url": "https://github.com/quicwg/base-drafts/pull/470.diff",
+      "patch_url": "https://github.com/quicwg/base-drafts/pull/470.patch"
+    },
+    "body": "Closes #209."
+  },
+  {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/469",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
     "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/469/labels{/name}",
@@ -1898,7 +1998,8 @@
     "updated_at": "2017-04-18T18:10:13Z",
     "closed_at": null,
     "body": "in h2 'phantom' (unopened) streams can be used for grouping nodes for priority purposes. This is simultaneously very useful and very concerning from a resource commitment purpose. I'm aware of some servers looking to limit their use through implicit resource allocations, and I'm aware of some clients looking to use them more agressively (i.e. a grouping node per tab).\r\n\r\nPerhaps we should at least make these explicitly negotiated so they can be cleaned up, limited, etc..?"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/440",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -1956,8 +2057,7 @@
     "updated_at": "2017-04-19T17:56:03Z",
     "closed_at": null,
     "body": "Christian Huitema notes a few potential attacks that we don't cover properly:\r\n\r\n1. Stream smurfing attack. Client (or server) opens a large number of streams by sending stream data frames with new stream number and minimal content.\r\n\r\n2. Stream choke attack. Client sends request on a stream, then use stream level flow control to choke the transmission by the server. Apply to many parallel streams for bonus effect.\r\n\r\n3. Silly stream number attack. Client opens stream 2*N+1 for some outlandish version of N. Might play havoc with server management of incoming streams.\r\n\r\n4. Stream drop by drop attack. Client sends data on a stream extremely slowly, maybe 1 byte at a time. Server spin its wheels waiting for data.\r\n\r\nI don't think that these are controversial.  Most are already well-known, we just need text for them."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/439",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3567,7 +3667,8 @@
     "updated_at": "2017-04-26T07:03:52Z",
     "closed_at": null,
     "body": "The current document structure has suffered a little from the large volume of changes that we've thrown at the spec.  Here's a structure that I think will survive a little better:\r\n\r\n## Fluff\r\n\r\n* Introduction (Why QUIC, really high level of what it does)\r\n* Overview (see #410)\r\n\r\n## High-Level Concepts\r\n\r\n* Connections\r\n   * lifecycle (include handshake overview here)\r\n   * graceful shutdown\r\n   * error handling\r\n   * public reset (semantics, not bits)\r\n   * source address validation and DoS\r\n* Streams (lifecycle, purpose and function, priority, flow control)\r\n* Packets and Frames\r\n   * relationship between packets and frames\r\n   * packetization\r\n   * retransmission rules\r\n   * pmtud\r\n* Versions (version negotiation, version numbers)\r\n* Connection IDs (why, migration, nat rebinding, changing ID, privacy)\r\n\r\n## Mechanics\r\n\r\n* Packet Format\r\n   * long and short headers\r\n   * what is constant between versions\r\n   * definition of each of the packet types\r\n* Packet Protection (key phases, AEAD)\r\n* Frames (definition of each frame type; include current Sections 6+8)\r\n* Handshake (crypto, transport parameters)\r\n* Error Codes\r\n\r\n## Boilerplate\r\n\r\n* Security Considerations\r\n* IANA\r\n* etc...\r\n"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/410",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3625,8 +3726,7 @@
     "updated_at": "2017-03-21T13:03:50Z",
     "closed_at": null,
     "body": "A protocol overview should concentrate on establishing the function of the protocol at a high level.  That is, it should describe what the protocol is for and then how the protocol sets out to achieve those goals, with pointers to more detailed explanations of each.  It should act as a way for new readers to orient themselves in both the protocol and its specification.\r\n\r\nThe overview is currently pure self-promotion, which covers part of the first goal, but doesn't do much to help the reader understand how each of these wonderful *features* are actually put together."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/409",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5385,7 +5485,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/381.patch"
     },
     "body": "Fixes #341, #200 ."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/380",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5478,8 +5579,7 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/380.patch"
     },
     "body": "This should be almost all editorial -- wording, formatting, and figure consistency changes in the first commit.\r\n\r\nWhile doing those, I noticed that the draft still talks about a \"VERSION flag,\" but the header no longer has one, so I fixed those.  Please review this for technical accuracy."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/379",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7490,7 +7590,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/351.patch"
     },
     "body": "Initial suggestion to address #269, based on alternate header proposal from @janaiyengar "
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/350",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7541,8 +7642,7 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/350.patch"
     },
     "body": ""
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/349",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -9453,7 +9553,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/321.patch"
     },
     "body": ""
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/320",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -9517,8 +9618,7 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/320.patch"
     },
     "body": "Resolves #319."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/319",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -11598,7 +11698,8 @@
     "updated_at": "2017-04-19T05:27:18Z",
     "closed_at": "2017-03-07T23:27:16Z",
     "body": "The text says:\r\n\r\n> However, since it is possible that an endpoint might only send packets containing ACK frames (or other non-retransmittable frames), the receiving peer MAY send an ACK frame after a reasonable number (currently 20) of such packets have been received.\r\n\r\n\"currently 20\" seems pretty arbitrary.  That smells like something from the Google QUIC implementation.  We should be more concrete about this, if that behaviour even makes sense.\r\n\r\nIf an endpoint is receiving nothing but ACKs but is sending itself, then acknowledging those ACKs is probably fine.\r\n\r\nAn endpoint with nothing to say can generate a lot of ACKs over time, but if both endpoints are being quiet other than ACKs, it's probably time to shut up entirely.  Maybe we should say that the peer SHOULD generate an ACK frame only if it has other frame types to send.\r\n\r\nLimiting the number of PING frames that a peer will respond to is a separate issue, and may motivate a limit with a number attached to it.\r\n"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/290",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -11656,8 +11757,7 @@
     "updated_at": "2017-02-16T13:44:04Z",
     "closed_at": null,
     "body": "> The application SHOULD attempt to use TLS over TCP instead.\r\n\r\n(This is in the context of finding that the MTU is too small.)\r\n\r\nThe text includes a very specific recommendation to use TLS over TCP for one particular case.  This is unwise for two reasons:\r\n1. we don't know if all protocols that build on QUIC will have a TCP over TLS option available to them; DNS over QUIC might be an example of where TLS over TCP is an inadvisable fallback option\r\n2. we should rely on a generic error handling section that includes generic advice about things like falling back to a backup protocol\r\n\r\nMarked as editorial, I hope that's not controversial."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/289",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -13780,7 +13880,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/261.patch"
     },
     "body": "@mnot, this should do the trick.  See https://circleci.com/gh/quicwg/base-drafts/597 and the newly created [gh-issues branch](https://github.com/quicwg/base-drafts/tree/gh-issues) to see what this does.  I haven't written any HTML yet, but they are at least being saved."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/260",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -13837,8 +13938,7 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/260.patch"
     },
     "body": "...by sending the Finished in every packet."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/259",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -15817,7 +15917,8 @@
     "updated_at": "2017-01-31T06:46:27Z",
     "closed_at": null,
     "body": "Quoting myself from the mailing list:\r\n\r\nTL;DR. Encrypt the packet number with ECB or something like it. This\r\nis probably a bad idea but I wanted to write it down.\r\n\r\nI had an idea last night about encrypting the packet number. Here's\r\na diagram of a QUIC regular packet:\r\n\r\n ```  +-+-+-+-+-+-+-+-+\r\n   |   Flags (8)   |\r\n   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+\r\n   |                                                               |\r\n   +                     [Connection ID (64)]                      +\r\n   |                                                               |\r\n   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+\r\n   |                        [Version (32)]                         |\r\n   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ \r\n   |                  Packet Number (8/16/32/48)                 ...\r\n   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+\r\n   |                    {Encrypted Payload (*)}                  ...\r\n   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+\r\n   ```\r\nThe insight here is that the reason that the packet number is outside\r\nof the encryption is because it is used as the nonce for the AEAD\r\nfunction. However, there are encryption algorithms (which we usually\r\navoid for various reasons) which do not need a nonce. Specifically,\r\nwhat we could do is derive two keys:\r\n\r\n  K_h: header encryption\r\n  K_p: packet encryption\r\n\r\n\r\nSo you get:\r\n\r\n ```\r\n  +-+-+-+-+-+-+-+-+\r\n   |   Flags (8)   |\r\n   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+\r\n   |                                                               |\r\n   +                     [Connection ID (64)]                      +\r\n   |                                                               |\r\n   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+\r\n   |                        [Version (32)]                         |\r\n   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ ^ \r\n   |                 {Packet Number (8/16/32/48)}                ... | encrypted with K_h\r\n   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ v\r\n   |                    {Encrypted Payload (*)}                  ... ^\r\n   |                                                                 | encrypted with K_p\r\n   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ v\r\n```\r\n\r\nThis of course leaves the question of which crypto mode you use to encrypt\r\nthe packet number. The natural choice is ECB, but that only works with\r\ndata values the same size as the cipher block, which for AES is much\r\nbigger than the packet number (128 bits). So, that's waste, though you\r\nmight of course add stuff to the block if we had other headers.\r\nWe could use 3DES (which has a 64-bit block) or FFX (which can be used\r\nwith any block size, but at some additional computational cost).\r\n\r\nTwo pre-emptive responses to common questions:\r\n\r\n1. Yes, ECB and FFX are not generally as good as AEAD algorithms, in\r\nparticular because they don't have integrity and they reveal patterns\r\nin the plaintext. However, this is data which would (a) otherwise be in the\r\nclear and (b) is folded into the ordinary AEAD integrity check.\r\n\r\n2. As long as we correctly generate K_h and K_p independently using\r\na KDF, then any weaknesses in K_h don't implicate K_p.\r\n\r\nAgain, this probably isn't worth doing with the current amount of\r\nstuff in the headers, but I wanted to write it down so that people would\r\nknow about it.\r\n"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/230",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -15875,8 +15976,7 @@
     "updated_at": "2017-03-02T22:29:49Z",
     "closed_at": null,
     "body": "The spec just doesn't say anything about this so far. You at least want to put in some minumum requirement (like MUST send at least X ACKs per RTT).\r\n\r\nAlso related but might be a separate issue that I'm not sure about yet: Is there a value in having a mechanism for the sender to tell the receiver how often it would like to receive ACKs?"
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/229",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -17730,7 +17830,8 @@
     "updated_at": "2017-04-19T05:26:12Z",
     "closed_at": "2017-02-16T22:27:54Z",
     "body": "And if so in which directions?"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/200",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -17788,8 +17889,7 @@
     "updated_at": "2017-04-27T00:25:43Z",
     "closed_at": "2017-04-27T00:25:43Z",
     "body": "Consider the following sequence of events on a stream (assuming that MSPC allows exactly one application data stream in the C-S direction:\r\n\r\n```\r\n<---------- Stream Establishment ----------->\r\n<----------------------------------------- FIN\r\nFIN ----------------------------------------->\r\nDATA (stream N+1) -------------------------->\r\n```\r\n\r\nIf you get reordering between the FIN and the data then the server will see it as exceeding MSPC and send  QUIC_TOO_MANY_OPEN_STREAMS. Ugh."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/199",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -19684,7 +19784,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/171.patch"
     },
     "body": "Fixes #165.  Key changes:\r\n\r\n- RST_STREAM kills only the sender's direction, not both.  (Retains the existing requirement to respond with RST_STREAM with another RST_STREAM if the stream isn't already closed, which eventually leads to the same result.)\r\n- New REQUEST_RST frame allows peer to solicit a RST_STREAM; text states that this reflects an app recv_close, and that received data is being discarded\r\n\r\nThis should solve the scenarios outlined in #165; a server can ask a client to RST_STREAM its own direction after having sent an early response.  Feedback welcome, of course -- please point out anything I've missed."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/170",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -19742,8 +19843,7 @@
     "updated_at": "2017-03-10T04:13:23Z",
     "closed_at": "2017-03-10T04:13:23Z",
     "body": "There's currently no behavior defined for the case of a connection ID collision.\r\nThe probability for a collision of two 64 bit numbers is *really small*, if connections IDs are chosen randomly. For example, for a server handling 100,000 concurrent connections, the collision probability is about 3*10^-10.\r\nIt might therefore be justified to completely neglect this issue.\r\n\r\nAccording to the current draft, if a client initiates a handshake and chooses an existing connection ID, the server would just silently discard those packets, because it already switched to an encrypted connection and will regard them as undecryptable."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/169",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -21907,7 +22007,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/141.patch"
     },
     "body": ""
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/140",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -21971,8 +22072,7 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/140.patch"
     },
     "body": "I realized that we didn't have a lot on that point.  We should."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/139",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -24072,7 +24172,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/111.patch"
     },
     "body": "I was worried that this would be hard.\r\n\r\nCloses #28 \r\n"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/110",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -24172,8 +24273,7 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/110.patch"
     },
     "body": ""
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/109",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -25960,7 +26060,8 @@
     "updated_at": "2017-03-10T03:55:13Z",
     "closed_at": null,
     "body": "Because of a stated goal from some implementers to reuse HTTP/2 framing as much as possible, the draft currently augments the HTTP/2 Frame Type Registry with a \"Supported Protocol\" column, allowing a frame to be defined for HTTP/2, HTTP/QUIC, or both.  A specification is required for each supported protocol.\r\n\r\nHowever, in the current draft, all but one \"Both\" frames are *different* between HTTP/2 and HTTP/QUIC.  Small or large, nearly every frame has required some modification to work over QUIC.  If we accept #80 , *all* frames will be different between HTTP/2 and HTTP/QUIC.\r\n\r\nAt that point, is there really a point in continuing to define HTTP/QUIC in relation to HTTP/2, or should we just admit that it's a new, separate thing that's heavily inspired by HTTP/2?  Separate registry, etc., and future extensions can register themselves with both if appropriate?  Or do we keep the same registry anyway to enforce that you'll never wind up with totally unrelated frames sharing the same value across the two protocols?"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/80",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -26011,8 +26112,7 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/80.patch"
     },
     "body": "[EXTENDED_SETTINGS](https://tools.ietf.org/html/draft-bishop-httpbis-extended-settings-01) was proposed in the HTTP WG as an extension providing an alternative to the HTTP/2 SETTINGS frame.  While feedback was that it was \"the design we should have had for HTTP/2... more general, saves space in most cases, and includes a flag to request acknowledgment\", there was also a feeling that as an extension it was overkill since most things that needed settings already used SETTINGS.  The advice was to hold it for HTTP/QUIC and make it the default SETTINGS frame there.  So here it is.\r\n\r\nNote that while it uses a slightly different ACK mechanism than HTTP/2 SETTINGS, it's subject to the same timing issues as HTTP/2 SETTINGS ACK over QUIC, namely that you can't know when the setting change has been applied on each stream.  This pull request doesn't fix that; it's tracked by #75 still."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/79",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -28216,7 +28316,8 @@
     "updated_at": "2017-04-19T05:45:00Z",
     "closed_at": null,
     "body": "There have been proposals on the list. We need to finalize a version number scheme for QUIC versions."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/50",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -28281,8 +28382,7 @@
     "updated_at": "2017-04-19T05:23:41Z",
     "closed_at": "2017-01-24T06:41:04Z",
     "body": "In h2, we were able to update transport-y parameters like flow control window and number of streams.  If we adopt a TLS extension for negotiating/advertising these, that means we can't update them."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/49",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -30403,7 +30503,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/21.patch"
     },
     "body": "Fixes #14 "
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/20",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -30467,8 +30568,7 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/20.patch"
     },
     "body": "The model here is that neither on-path nor off-path attackers should be able to forge one, but\r\nthat on-path elements should be able to validate the public reset."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/19",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
