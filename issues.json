@@ -456,9 +456,9 @@
 
     ],
     "milestone": null,
-    "comments": 5,
+    "comments": 6,
     "created_at": "2017-04-21T01:07:59Z",
-    "updated_at": "2017-04-25T22:59:51Z",
+    "updated_at": "2017-04-27T02:26:14Z",
     "closed_at": null,
     "pull_request": {
       "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/459",
@@ -13086,7 +13086,7 @@
       "id": 2484848,
       "number": 1,
       "title": "First Implementation Draft",
-      "description": "",
+      "description": "See https://github.com/quicwg/base-drafts/wiki/First-Implementation-Draft",
       "creator": {
         "login": "mnot",
         "id": 74384,
@@ -13106,11 +13106,11 @@
         "type": "User",
         "site_admin": false
       },
-      "open_issues": 4,
+      "open_issues": 7,
       "closed_issues": 0,
       "state": "open",
       "created_at": "2017-04-27T00:23:44Z",
-      "updated_at": "2017-04-27T00:30:39Z",
+      "updated_at": "2017-04-27T02:10:18Z",
       "due_on": "2017-06-21T07:00:00Z",
       "closed_at": null
     },
@@ -14395,7 +14395,7 @@
       "id": 2484848,
       "number": 1,
       "title": "First Implementation Draft",
-      "description": "",
+      "description": "See https://github.com/quicwg/base-drafts/wiki/First-Implementation-Draft",
       "creator": {
         "login": "mnot",
         "id": 74384,
@@ -14415,11 +14415,11 @@
         "type": "User",
         "site_admin": false
       },
-      "open_issues": 4,
+      "open_issues": 7,
       "closed_issues": 0,
       "state": "open",
       "created_at": "2017-04-27T00:23:44Z",
-      "updated_at": "2017-04-27T00:30:39Z",
+      "updated_at": "2017-04-27T02:10:18Z",
       "due_on": "2017-06-21T07:00:00Z",
       "closed_at": null
     },
@@ -15130,17 +15130,17 @@
         "default": false
       }
     ],
-    "state": "open",
+    "state": "closed",
     "locked": false,
     "assignee": null,
     "assignees": [
 
     ],
     "milestone": null,
-    "comments": 1,
+    "comments": 2,
     "created_at": "2017-01-26T04:07:56Z",
-    "updated_at": "2017-01-26T04:11:47Z",
-    "closed_at": null,
+    "updated_at": "2017-04-27T00:34:04Z",
+    "closed_at": "2017-04-27T00:34:04Z",
     "body": "@ianswett says that we need a hard line recommendation on when a WINDOW_UPDATE is required.  He suggests that once you get to 1/3 of the space you have allocated to flow control remaining, you SHOULD send a WINDOW_UPDATE along with the next ACK."
   },
   {
@@ -16402,17 +16402,17 @@
         "default": false
       }
     ],
-    "state": "open",
+    "state": "closed",
     "locked": false,
     "assignee": null,
     "assignees": [
 
     ],
     "milestone": null,
-    "comments": 3,
+    "comments": 4,
     "created_at": "2017-01-24T05:23:15Z",
-    "updated_at": "2017-01-24T23:34:14Z",
-    "closed_at": null,
+    "updated_at": "2017-04-27T02:20:05Z",
+    "closed_at": "2017-04-27T02:20:05Z",
     "body": "For illustrative purposes, consider a server with an max open stream limit of 2.  The client sends packets with frames in the following order:\r\n\r\n1. Open stream 3\r\n2. Open stream 5\r\n3. Close stream 5\r\n4. Open stream 7\r\n\r\nThe network reorders packets 3 and 4. From the server's perspective, the client has violated the maximum.  In order to deal with this, the server will presumably need something more complicated than just \"if violated, kill\" -- maybe kill the connection if it *remains* violated for more than 1-2 RTT?"
   },
   {
@@ -18716,7 +18716,7 @@
         "default": false
       }
     ],
-    "state": "open",
+    "state": "closed",
     "locked": false,
     "assignee": null,
     "assignees": [
@@ -18725,8 +18725,8 @@
     "milestone": null,
     "comments": 5,
     "created_at": "2017-01-20T04:47:04Z",
-    "updated_at": "2017-04-19T11:33:46Z",
-    "closed_at": null,
+    "updated_at": "2017-04-27T02:18:05Z",
+    "closed_at": "2017-04-27T02:18:05Z",
     "body": "I know that this might be a hard decision to make, but we don't have many settings and it seems like we might be able to avoid changing them mid-connection.\r\n\r\nGetting settings synchronization right is a pain and we really only have one that is ever likely to change and that's the header table size.  We don't allow initial flow control windows to change (no mechanism exists to allow it), so I question whether that needs changing.  If it does need to change, that would be for the same reason that the flow control window needs to change, which suggests we would need to devise a way to change those too.\r\n\r\nSETTINGS_ACK is a huge amount of machinery.  With 0-RTT, it will mean that just opening a connection will trigger a flurry of SETTINGS_ACK frames from the client just to respond to the server's connection preface (assuming that we're still keeping that, it's not clear).  \r\n\r\nOn the other hand, if we reserved a space for application-specific traffic parameters (see #122), we could put the application-layer settings like header table size in the handshake.  That has some downsides (client values would be unencrypted and you would need to include one set of parameters per application protocol on offer), but it means that there couldn't ever be any confusion about the value of a given setting once the connection was open.\r\n\r\nThat would be a huge simplification to the HTTP mapping."
   },
   {
@@ -19113,44 +19113,10 @@
     "assignees": [
 
     ],
-    "milestone": {
-      "url": "https://api.github.com/repos/quicwg/base-drafts/milestones/1",
-      "html_url": "https://github.com/quicwg/base-drafts/milestone/1",
-      "labels_url": "https://api.github.com/repos/quicwg/base-drafts/milestones/1/labels",
-      "id": 2484848,
-      "number": 1,
-      "title": "First Implementation Draft",
-      "description": "",
-      "creator": {
-        "login": "mnot",
-        "id": 74384,
-        "avatar_url": "https://avatars2.githubusercontent.com/u/74384?v=3",
-        "gravatar_id": "",
-        "url": "https://api.github.com/users/mnot",
-        "html_url": "https://github.com/mnot",
-        "followers_url": "https://api.github.com/users/mnot/followers",
-        "following_url": "https://api.github.com/users/mnot/following{/other_user}",
-        "gists_url": "https://api.github.com/users/mnot/gists{/gist_id}",
-        "starred_url": "https://api.github.com/users/mnot/starred{/owner}{/repo}",
-        "subscriptions_url": "https://api.github.com/users/mnot/subscriptions",
-        "organizations_url": "https://api.github.com/users/mnot/orgs",
-        "repos_url": "https://api.github.com/users/mnot/repos",
-        "events_url": "https://api.github.com/users/mnot/events{/privacy}",
-        "received_events_url": "https://api.github.com/users/mnot/received_events",
-        "type": "User",
-        "site_admin": false
-      },
-      "open_issues": 4,
-      "closed_issues": 0,
-      "state": "open",
-      "created_at": "2017-04-27T00:23:44Z",
-      "updated_at": "2017-04-27T00:30:39Z",
-      "due_on": "2017-06-21T07:00:00Z",
-      "closed_at": null
-    },
+    "milestone": null,
     "comments": 13,
     "created_at": "2017-01-18T23:12:28Z",
-    "updated_at": "2017-04-27T00:27:44Z",
+    "updated_at": "2017-04-27T01:26:05Z",
     "closed_at": null,
     "body": "QUIC borrows the HTTP/2 state machine, or tries to replicate it as much as it can.  Part of that replication is the idea that a stream is bidirectional.  The state related to outgoing data and the state related to inbound data are tied.\r\n\r\n#174 suggests a simplification that could open up a more dramatic simplification: independent state for each direction.  #171 moves in that direction also.\r\n\r\nThe state machine that results from that is dramatically simpler: idle -> open -> closed.  That is, before packets, packets and after packets.\r\n\r\nThe consequence for the HTTP mapping is largely that it needs a different method for correlating request and response.\r\n\r\n## Correlating request and response\r\n\r\nCurrently, request and response are correlated by matching the stream identifier.  However, unidirectional streams would allow for cases where streams are not created symmetrically.  For instance, server push would only require streams from the server.  Similarly, the server would not be obligated to respond to requests in the order in which they were received (if at all, since it could reset request streams).\r\n\r\nThat implies that this would add a requirement for the server to identify which request a given stream is answering.  This is an extension of the requirement in #174, which only required that the server identify a push promise (actually, it's less onerous, because you only have one request per stream).\r\n\r\nI can imagine an arrangement where a stream containing headers identifies the stream containing the request headers from the client.  Then the stream containing the body identifies the stream that contained the headers.\r\n\r\n## Saving stream identifiers\r\n\r\nThis is a minor point, though it could be relevant for very long-lived connections.\r\n\r\nQUIC currently insists on a strictly monotonically increasing stream identifier: stream N is followed by stream N+2 always, no skipping of streams is permitted.  Aside from wasting every other stream identifier, other streams are wasted by the mapping. \r\n\r\nGET requests don't include a body, but nonetheless require that the client send a HEADERS on stream N, then a FIN on stream N+2.  Including a reference to the initiating stream at the start of the body of a message would use some octets, but potentially fewer than would be used otherwise (particularly if the reference was a varlen encoding of the difference in stream numbers, which would rarely be anything other than 1).\r\n\r\nObviously, this is an optimization for the case where there are no bodies, but that is a case where the optimization is particularly valuable.  Making more requests (which more frequently have no bodies) during the early stages of a connection is critical to performance."
   },
@@ -19708,7 +19674,7 @@
       "id": 2484848,
       "number": 1,
       "title": "First Implementation Draft",
-      "description": "",
+      "description": "See https://github.com/quicwg/base-drafts/wiki/First-Implementation-Draft",
       "creator": {
         "login": "mnot",
         "id": 74384,
@@ -19728,11 +19694,11 @@
         "type": "User",
         "site_admin": false
       },
-      "open_issues": 4,
+      "open_issues": 7,
       "closed_issues": 0,
       "state": "open",
       "created_at": "2017-04-27T00:23:44Z",
-      "updated_at": "2017-04-27T00:30:39Z",
+      "updated_at": "2017-04-27T02:10:18Z",
       "due_on": "2017-06-21T07:00:00Z",
       "closed_at": null
     },
@@ -20359,7 +20325,7 @@
         "default": false
       }
     ],
-    "state": "open",
+    "state": "closed",
     "locked": false,
     "assignee": {
       "login": "martinthomson",
@@ -20402,10 +20368,10 @@
       }
     ],
     "milestone": null,
-    "comments": 7,
+    "comments": 8,
     "created_at": "2017-01-16T08:31:58Z",
-    "updated_at": "2017-04-19T05:52:06Z",
-    "closed_at": null,
+    "updated_at": "2017-04-27T02:14:45Z",
+    "closed_at": "2017-04-27T02:14:45Z",
     "body": "The section on padding frames currently says:\r\n```\r\n   The PADDING frame (type=0x00) pads a packet with 0x00 bytes.  When\r\n   this frame is encountered, the rest of the packet is expected to be\r\n   padding bytes.  The frame contains 0x00 bytes and extends to the end\r\n   of the QUIC packet.  A PADDING frame has no additional fields.\r\n```\r\n\r\nI'd like to discuss whether a padding frame that can be inserted anywhere, instead of only as the last frame in a packet, makes sense.\r\n\r\nI'm currently doing a [zero-copy implementation of QUIC](https://github.com/NTAP/quant) on top of [netmap](http://info.iet.unipi.it/~luigi/netmap/) via a [userspace IPv4/UDP stack](https://github.com/NTAP/warpcore), which due to static DMA mappings requires an app to place stream frame data directly into packet buffers at a (fixed) offset. The QUIC stack then inserts the common header and other frames before the stream frames, and needs to pad any unused space. Currently, this isn't possible.\r\n\r\nIn other words, I'd like something similar to the [No-Operation TCP option](https://tools.ietf.org/html/rfc793#page-18).\r\n\r\n(And it's an open question whether going to great lengths to support zero-copy TX is actually all that useful, given that we're going to do crypto over the entire buffer anyway.)"
   },
   {
@@ -20830,9 +20796,9 @@
       }
     ],
     "milestone": null,
-    "comments": 0,
+    "comments": 1,
     "created_at": "2017-01-13T19:48:48Z",
-    "updated_at": "2017-01-19T09:07:30Z",
+    "updated_at": "2017-04-27T02:13:04Z",
     "closed_at": null,
     "body": "Mostly references to drafts/rfcs/papers, but complete justifications are needed for this draft to be standalone."
   },
@@ -21443,10 +21409,44 @@
     "assignees": [
 
     ],
-    "milestone": null,
+    "milestone": {
+      "url": "https://api.github.com/repos/quicwg/base-drafts/milestones/1",
+      "html_url": "https://github.com/quicwg/base-drafts/milestone/1",
+      "labels_url": "https://api.github.com/repos/quicwg/base-drafts/milestones/1/labels",
+      "id": 2484848,
+      "number": 1,
+      "title": "First Implementation Draft",
+      "description": "See https://github.com/quicwg/base-drafts/wiki/First-Implementation-Draft",
+      "creator": {
+        "login": "mnot",
+        "id": 74384,
+        "avatar_url": "https://avatars2.githubusercontent.com/u/74384?v=3",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/mnot",
+        "html_url": "https://github.com/mnot",
+        "followers_url": "https://api.github.com/users/mnot/followers",
+        "following_url": "https://api.github.com/users/mnot/following{/other_user}",
+        "gists_url": "https://api.github.com/users/mnot/gists{/gist_id}",
+        "starred_url": "https://api.github.com/users/mnot/starred{/owner}{/repo}",
+        "subscriptions_url": "https://api.github.com/users/mnot/subscriptions",
+        "organizations_url": "https://api.github.com/users/mnot/orgs",
+        "repos_url": "https://api.github.com/users/mnot/repos",
+        "events_url": "https://api.github.com/users/mnot/events{/privacy}",
+        "received_events_url": "https://api.github.com/users/mnot/received_events",
+        "type": "User",
+        "site_admin": false
+      },
+      "open_issues": 7,
+      "closed_issues": 0,
+      "state": "open",
+      "created_at": "2017-04-27T00:23:44Z",
+      "updated_at": "2017-04-27T02:10:18Z",
+      "due_on": "2017-06-21T07:00:00Z",
+      "closed_at": null
+    },
     "comments": 1,
     "created_at": "2017-01-13T00:47:14Z",
-    "updated_at": "2017-03-10T04:09:42Z",
+    "updated_at": "2017-04-27T02:10:18Z",
     "closed_at": null,
     "body": "Servers shouldn't need to send more than one version negotiation packet, they only resend so that they are stateless and to deal with packet loss on the return path.\r\n\r\nClients should ignore version negotiation packets if they already have received packets from the server.  \r\n\r\nThis requirement on the client could be used for denial of service in the case where the legitimate server needs to use version negotiation.  If an attacker can race a legitimate looking ServerHello at the client (which isn't impossible), then the client will ignore the real server's attempt at version negotiation.  This is hard for an off-path attacker due to the need to echo certain parts of the client initial packet.  (I'd say connection ID is enough, but that might run afoul of #119.)"
   },
@@ -22782,9 +22782,9 @@
 
     ],
     "milestone": null,
-    "comments": 1,
+    "comments": 2,
     "created_at": "2017-01-05T22:38:10Z",
-    "updated_at": "2017-01-26T07:12:12Z",
+    "updated_at": "2017-04-27T02:09:16Z",
     "closed_at": null,
     "body": "It may be possible to simplify the ACK frame, in particular, the timestamp section. We could conceivably make the \"Time from Largest Acked\" 16 bits, and simply have N-Timestamp-blocks, including this one. I think this is plausible."
   },
@@ -25192,17 +25192,17 @@
         "default": false
       }
     ],
-    "state": "open",
+    "state": "closed",
     "locked": false,
     "assignee": null,
     "assignees": [
 
     ],
     "milestone": null,
-    "comments": 2,
+    "comments": 3,
     "created_at": "2016-12-17T21:24:38Z",
-    "updated_at": "2017-03-10T03:56:08Z",
-    "closed_at": null,
+    "updated_at": "2017-04-27T02:07:13Z",
+    "closed_at": "2017-04-27T02:06:32Z",
     "body": "#87 covers improving the current use of ALPN and the Alt-Svc v= parameter for HTTP.  However, I think this is something that QUIC needs to solve generically, so forking off a separate issue for that.\r\n\r\nHere are the paths I see that we need to support:\r\n\r\n- **Client to server, first time:** This is inherently a 1-RTT handshake *if* the client guesses the version correctly; 2 RTTs if it's wrong.  This incents clients to attempt the most widely-deployed version of QUIC rather than their highest version.  Consequently, there needs to be a way for a conservative client to discover that a server supports a more advanced version.\r\n- **Client to server, subsequent:** The cached information should contain information about the server's supported versions so the client can come back with the same version as last time. The scenarios where one side has changed need consideration, though:\r\n    - **Client upgraded:** Would require client to cache server's full set of supported versions and compare against the client's supported set at connect time, not just caching the selected version.\r\n    - **Server upgraded:** The current mechanism offers no way for a client to discover that the server would have accepted a version it didn't initially offer, whether because the server didn't previously support it or the client is being conservative.\r\n\r\nIdeally, I'd like to see these solved for QUIC independent of Alt-Svc -- there will be other users besides HTTP.\r\n\r\nI think this could be solved by requiring the server to always send its Version Negotiation list in the crypto handshake, not just if a Version Negotiation packet was actually sent.  Clients can discover when the server supports a newer version than they attempted, and either know what to offer next time or actively open a new connection with the new version in parallel."
   },
   {
@@ -27129,10 +27129,44 @@
     "assignees": [
 
     ],
-    "milestone": null,
-    "comments": 4,
+    "milestone": {
+      "url": "https://api.github.com/repos/quicwg/base-drafts/milestones/1",
+      "html_url": "https://github.com/quicwg/base-drafts/milestone/1",
+      "labels_url": "https://api.github.com/repos/quicwg/base-drafts/milestones/1/labels",
+      "id": 2484848,
+      "number": 1,
+      "title": "First Implementation Draft",
+      "description": "See https://github.com/quicwg/base-drafts/wiki/First-Implementation-Draft",
+      "creator": {
+        "login": "mnot",
+        "id": 74384,
+        "avatar_url": "https://avatars2.githubusercontent.com/u/74384?v=3",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/mnot",
+        "html_url": "https://github.com/mnot",
+        "followers_url": "https://api.github.com/users/mnot/followers",
+        "following_url": "https://api.github.com/users/mnot/following{/other_user}",
+        "gists_url": "https://api.github.com/users/mnot/gists{/gist_id}",
+        "starred_url": "https://api.github.com/users/mnot/starred{/owner}{/repo}",
+        "subscriptions_url": "https://api.github.com/users/mnot/subscriptions",
+        "organizations_url": "https://api.github.com/users/mnot/orgs",
+        "repos_url": "https://api.github.com/users/mnot/repos",
+        "events_url": "https://api.github.com/users/mnot/events{/privacy}",
+        "received_events_url": "https://api.github.com/users/mnot/received_events",
+        "type": "User",
+        "site_admin": false
+      },
+      "open_issues": 7,
+      "closed_issues": 0,
+      "state": "open",
+      "created_at": "2017-04-27T00:23:44Z",
+      "updated_at": "2017-04-27T02:10:18Z",
+      "due_on": "2017-06-21T07:00:00Z",
+      "closed_at": null
+    },
+    "comments": 5,
     "created_at": "2016-12-01T23:42:04Z",
-    "updated_at": "2017-01-24T00:45:35Z",
+    "updated_at": "2017-04-27T02:00:19Z",
     "closed_at": null,
     "body": "Also, Martin Duke observes that it's not clear how QUIC would determine that the crypto handshake was incomplete after one message.\r\n\r\nI note that this might be aided by #35."
   },
@@ -27252,10 +27286,44 @@
     "assignees": [
 
     ],
-    "milestone": null,
+    "milestone": {
+      "url": "https://api.github.com/repos/quicwg/base-drafts/milestones/1",
+      "html_url": "https://github.com/quicwg/base-drafts/milestone/1",
+      "labels_url": "https://api.github.com/repos/quicwg/base-drafts/milestones/1/labels",
+      "id": 2484848,
+      "number": 1,
+      "title": "First Implementation Draft",
+      "description": "See https://github.com/quicwg/base-drafts/wiki/First-Implementation-Draft",
+      "creator": {
+        "login": "mnot",
+        "id": 74384,
+        "avatar_url": "https://avatars2.githubusercontent.com/u/74384?v=3",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/mnot",
+        "html_url": "https://github.com/mnot",
+        "followers_url": "https://api.github.com/users/mnot/followers",
+        "following_url": "https://api.github.com/users/mnot/following{/other_user}",
+        "gists_url": "https://api.github.com/users/mnot/gists{/gist_id}",
+        "starred_url": "https://api.github.com/users/mnot/starred{/owner}{/repo}",
+        "subscriptions_url": "https://api.github.com/users/mnot/subscriptions",
+        "organizations_url": "https://api.github.com/users/mnot/orgs",
+        "repos_url": "https://api.github.com/users/mnot/repos",
+        "events_url": "https://api.github.com/users/mnot/events{/privacy}",
+        "received_events_url": "https://api.github.com/users/mnot/received_events",
+        "type": "User",
+        "site_admin": false
+      },
+      "open_issues": 7,
+      "closed_issues": 0,
+      "state": "open",
+      "created_at": "2017-04-27T00:23:44Z",
+      "updated_at": "2017-04-27T02:10:18Z",
+      "due_on": "2017-06-21T07:00:00Z",
+      "closed_at": null
+    },
     "comments": 8,
     "created_at": "2016-12-01T23:30:54Z",
-    "updated_at": "2016-12-08T20:22:05Z",
+    "updated_at": "2017-04-27T01:41:36Z",
     "closed_at": null,
     "body": "Do we want them? How do we accommodate them?  What are their semantics if they aren't understood?"
   },
@@ -27434,17 +27502,17 @@
         "default": false
       }
     ],
-    "state": "open",
+    "state": "closed",
     "locked": false,
     "assignee": null,
     "assignees": [
 
     ],
     "milestone": null,
-    "comments": 15,
+    "comments": 16,
     "created_at": "2016-12-01T23:15:26Z",
-    "updated_at": "2017-04-19T05:32:25Z",
-    "closed_at": null,
+    "updated_at": "2017-04-27T01:40:34Z",
+    "closed_at": "2017-04-27T01:40:34Z",
     "body": "We need to know what can change between versions.\r\n\r\nThe critical thing for forward compatibility is the ability to signal that a new version is being used.  In order to do so, the recipient (the server here) needs to be able to find the version field.  Given the current packet layout, that means that we need to guarantee that the connection ID and version bits behave consistently across versions and that no extra fields are added in between the start of the packet and the version."
   },
   {
@@ -28131,7 +28199,7 @@
         "default": false
       }
     ],
-    "state": "open",
+    "state": "closed",
     "locked": false,
     "assignee": null,
     "assignees": [
@@ -28140,8 +28208,8 @@
     "milestone": null,
     "comments": 1,
     "created_at": "2016-11-30T00:38:03Z",
-    "updated_at": "2017-03-10T03:46:44Z",
-    "closed_at": null,
+    "updated_at": "2017-04-27T01:33:08Z",
+    "closed_at": "2017-04-27T01:33:08Z",
     "body": "Error handling is rather... *distributed* in the core protocol spec.  The frames to signal errors are there, and there's a long list of error codes, but no generalized discussion of how errors are handled and what stream versus connection-level errors mean."
   }
 ,
@@ -28315,10 +28383,44 @@
     "assignees": [
 
     ],
-    "milestone": null,
+    "milestone": {
+      "url": "https://api.github.com/repos/quicwg/base-drafts/milestones/1",
+      "html_url": "https://github.com/quicwg/base-drafts/milestone/1",
+      "labels_url": "https://api.github.com/repos/quicwg/base-drafts/milestones/1/labels",
+      "id": 2484848,
+      "number": 1,
+      "title": "First Implementation Draft",
+      "description": "See https://github.com/quicwg/base-drafts/wiki/First-Implementation-Draft",
+      "creator": {
+        "login": "mnot",
+        "id": 74384,
+        "avatar_url": "https://avatars2.githubusercontent.com/u/74384?v=3",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/mnot",
+        "html_url": "https://github.com/mnot",
+        "followers_url": "https://api.github.com/users/mnot/followers",
+        "following_url": "https://api.github.com/users/mnot/following{/other_user}",
+        "gists_url": "https://api.github.com/users/mnot/gists{/gist_id}",
+        "starred_url": "https://api.github.com/users/mnot/starred{/owner}{/repo}",
+        "subscriptions_url": "https://api.github.com/users/mnot/subscriptions",
+        "organizations_url": "https://api.github.com/users/mnot/orgs",
+        "repos_url": "https://api.github.com/users/mnot/repos",
+        "events_url": "https://api.github.com/users/mnot/events{/privacy}",
+        "received_events_url": "https://api.github.com/users/mnot/received_events",
+        "type": "User",
+        "site_admin": false
+      },
+      "open_issues": 7,
+      "closed_issues": 0,
+      "state": "open",
+      "created_at": "2017-04-27T00:23:44Z",
+      "updated_at": "2017-04-27T02:10:18Z",
+      "due_on": "2017-06-21T07:00:00Z",
+      "closed_at": null
+    },
     "comments": 9,
     "created_at": "2016-11-29T21:28:11Z",
-    "updated_at": "2017-04-03T19:21:12Z",
+    "updated_at": "2017-04-27T01:32:45Z",
     "closed_at": null,
     "body": "It's currently unclear how two QUIC peers opening a connection know which handshake protocol to expect on Stream 1.\r\n\r\nSince the client has to include the opening handshake in its first flight, it has to at least be able to guess *a* handshake protocol that's acceptable to the server and include enough information for the server to know which one it's attempting.  Currently all the mechanisms for telling the client to retry with different options are at the TLS layer, which is too late.\r\n\r\nHow is this negotiated?  Is it baked into the QUIC version?  Is it specified as part of the application mapping (e.g. the HTTP mapping currently requires the TLS 1.3 handshake to be used) and therefore either supplied as part of the Alt-Svc record or implied by the port?"
   },
@@ -28367,9 +28469,9 @@
 
     ],
     "milestone": null,
-    "comments": 4,
+    "comments": 5,
     "created_at": "2016-11-29T21:21:59Z",
-    "updated_at": "2017-03-02T03:41:35Z",
+    "updated_at": "2017-04-27T01:31:38Z",
     "closed_at": null,
     "body": "The submission was complicated by the fact that the documents cross-reference each other, which makes for some difficulty during the build/submission process.  Martin worked around that initially by just changing the references to be by title instead of by I-D name.  For the future, however, should we make the documents acyclic?  That would require clarifying the interfaces between the components we intend to make separable, which I think is a strictly good thing.\r\n\r\nMy initial inclination is that the core spec should reference none of the others, and each of the others should reference only the core spec.  The HTTP mapping doesn’t care what loss detection or security handshake is used, only that they provide the features needed by QUIC.  Currently, we explicitly require that the TLS handshake be used, but I’m not convinced that’s necessary.  (Alternately, we could reference the actual TLS RFC and require that “a handshake using TLS” be employed, rather than the particular handshake we’re currently defining.)  The loss detection and security components shouldn’t care about each other either, so long as they can trust that the jobs are getting done.  The core spec should contain the interfaces for all these intersection points.\r\n\r\nGiven that we’ve already agreed that we intend these pieces to be modular, I think this is *probably* an editorial-class change, albeit a big one."
   },
