@@ -1268,12 +1268,12 @@ of three ways:
    streams), then the peer must assume that the streams were incomplete and were
    abnormally terminated.
 
-2. Implicit Shutdown: The default idle timeout for a QUIC connection is 30
-   seconds, and is a required parameter in connection negotiation.  The maximum
-   is 10 minutes.  If there is no network activity for the duration of the idle
-   timeout, the connection is closed.  By default a CONNECTION_CLOSE frame will
-   be sent.  A silent close option can be enabled when it is expensive to send
-   an explicit close, such as mobile networks that must wake up the radio.
+2. Implicit Shutdown: The default idle timeout is a required parameter in
+   connection negotiation.  The maximum is 10 minutes.  If there is no network
+   activity for the duration of the idle timeout, the connection is closed.  By
+   default a CONNECTION_CLOSE frame will be sent.  A silent close option can be
+   enabled when it is expensive to send an explicit close, such as mobile
+   networks that must wake up the radio.
 
 3. Abrupt Shutdown: An endpoint may send a Public Reset packet at any time
    during the connection to abruptly terminate an active connection.  A Public
