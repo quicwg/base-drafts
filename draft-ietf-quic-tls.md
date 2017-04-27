@@ -1186,16 +1186,22 @@ obtained from protected messages, information obtained from less reliable
 sources can be discarded.
 
 
-### WINDOW_UPDATE Frames
+### Updates to Data and Stream Limits
 
-`WINDOW_UPDATE` frames MUST NOT be sent unprotected.
+`MAX_DATA`, `MAX_STREAM_DATA`, `BLOCKED`, `STREAM_BLOCKED`, and `MAX_STREAM_ID`
+frames MUST NOT be sent unprotected.
 
-Though data is exchanged on stream 1, the initial flow control window is
-sufficiently large to allow the TLS handshake to complete.  This limits the
-maximum size of the TLS handshake and would prevent a server or client from
-using an abnormally large certificate chain.
+Though data is exchanged on stream 1, the initial flow control window on that
+stream is sufficiently large to allow the TLS handshake to complete.  This
+limits the maximum size of the TLS handshake and would prevent a server or
+client from using an abnormally large certificate chain.
 
 Stream 1 is exempt from the connection-level flow control window.
+
+Consequently, there is no need to signal being blocked on flow control.
+
+Similarly, there is no need to increase the number of allowed streams until the
+handshake completes.
 
 
 ### Denial of Service with Unprotected Packets
