@@ -1,5 +1,105 @@
 [
   {
+    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/469",
+    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
+    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/469/labels{/name}",
+    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/469/comments",
+    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/469/events",
+    "html_url": "https://github.com/quicwg/base-drafts/pull/469",
+    "id": 224662754,
+    "number": 469,
+    "title": "Minor editorial corrections to reason phrase of CONNECTION_CLOSE",
+    "user": {
+      "login": "martinthomson",
+      "id": 67641,
+      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/martinthomson",
+      "html_url": "https://github.com/martinthomson",
+      "followers_url": "https://api.github.com/users/martinthomson/followers",
+      "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
+      "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
+      "organizations_url": "https://api.github.com/users/martinthomson/orgs",
+      "repos_url": "https://api.github.com/users/martinthomson/repos",
+      "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/martinthomson/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 481871311,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/editorial",
+        "name": "editorial",
+        "color": "0e8a16",
+        "default": false
+      },
+      {
+        "id": 481871399,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
+        "name": "transport",
+        "color": "fbca04",
+        "default": false
+      }
+    ],
+    "state": "open",
+    "locked": false,
+    "assignee": {
+      "login": "janaiyengar",
+      "id": 11067604,
+      "avatar_url": "https://avatars1.githubusercontent.com/u/11067604?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/janaiyengar",
+      "html_url": "https://github.com/janaiyengar",
+      "followers_url": "https://api.github.com/users/janaiyengar/followers",
+      "following_url": "https://api.github.com/users/janaiyengar/following{/other_user}",
+      "gists_url": "https://api.github.com/users/janaiyengar/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/janaiyengar/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/janaiyengar/subscriptions",
+      "organizations_url": "https://api.github.com/users/janaiyengar/orgs",
+      "repos_url": "https://api.github.com/users/janaiyengar/repos",
+      "events_url": "https://api.github.com/users/janaiyengar/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/janaiyengar/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "assignees": [
+      {
+        "login": "janaiyengar",
+        "id": 11067604,
+        "avatar_url": "https://avatars1.githubusercontent.com/u/11067604?v=3",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/janaiyengar",
+        "html_url": "https://github.com/janaiyengar",
+        "followers_url": "https://api.github.com/users/janaiyengar/followers",
+        "following_url": "https://api.github.com/users/janaiyengar/following{/other_user}",
+        "gists_url": "https://api.github.com/users/janaiyengar/gists{/gist_id}",
+        "starred_url": "https://api.github.com/users/janaiyengar/starred{/owner}{/repo}",
+        "subscriptions_url": "https://api.github.com/users/janaiyengar/subscriptions",
+        "organizations_url": "https://api.github.com/users/janaiyengar/orgs",
+        "repos_url": "https://api.github.com/users/janaiyengar/repos",
+        "events_url": "https://api.github.com/users/janaiyengar/events{/privacy}",
+        "received_events_url": "https://api.github.com/users/janaiyengar/received_events",
+        "type": "User",
+        "site_admin": false
+      }
+    ],
+    "milestone": null,
+    "comments": 0,
+    "created_at": "2017-04-27T04:02:14Z",
+    "updated_at": "2017-04-27T04:02:14Z",
+    "closed_at": null,
+    "pull_request": {
+      "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/469",
+      "html_url": "https://github.com/quicwg/base-drafts/pull/469",
+      "diff_url": "https://github.com/quicwg/base-drafts/pull/469.diff",
+      "patch_url": "https://github.com/quicwg/base-drafts/pull/469.patch"
+    },
+    "body": "Closes #199."
+  },
+  {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/468",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
     "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/468/labels{/name}",
@@ -1856,7 +1956,8 @@
     "updated_at": "2017-04-19T17:56:03Z",
     "closed_at": null,
     "body": "Christian Huitema notes a few potential attacks that we don't cover properly:\r\n\r\n1. Stream smurfing attack. Client (or server) opens a large number of streams by sending stream data frames with new stream number and minimal content.\r\n\r\n2. Stream choke attack. Client sends request on a stream, then use stream level flow control to choke the transmission by the server. Apply to many parallel streams for bonus effect.\r\n\r\n3. Silly stream number attack. Client opens stream 2*N+1 for some outlandish version of N. Might play havoc with server management of incoming streams.\r\n\r\n4. Stream drop by drop attack. Client sends data on a stream extremely slowly, maybe 1 byte at a time. Server spin its wheels waiting for data.\r\n\r\nI don't think that these are controversial.  Most are already well-known, we just need text for them."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/439",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -1914,8 +2015,7 @@
     "updated_at": "2017-04-19T07:36:24Z",
     "closed_at": null,
     "body": "According to life of a stream, a stream can transition from \"half closed local\" to \"closed\" by sending a \"RST\" or by receiving \"FIN\" or \"RST\" from peer. However, sending a \"RST\" may race ahead of any in-flight packets send to the peer. In fact this is likely because the stream will transmit according to a fair schedule while RST will likely be prioritised. The RST will tear down state on both ends preventing the peer from receiving and the local endpont from retransmitting (depending on implementation).\r\n\r\nIn addition to the above there is also a user aspect. QUIC does not define an API, but what does it mean to close a stream? Do you close the write stream or do you close both read and write stream? This can encoded as either sending \"FIN\" or \"FIN+RST\" but has the race condition mentioned. When cleaning up after a stream initiated locally, it appears you need to always eventually send a RST even if the peer has no interest in writing. Application protocol could agree to not require a RST, but that seems a bit roundabout.\r\n\r\nPerhaps it is saner to handle read and write streams entirely separately.\r\nhttps://github.com/quicwg/base-drafts/issues/175\r\n\r\nThe issue may also be related to:\r\nhttps://github.com/quicwg/base-drafts/issues/61"
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/438",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3525,7 +3625,8 @@
     "updated_at": "2017-03-21T13:03:50Z",
     "closed_at": null,
     "body": "A protocol overview should concentrate on establishing the function of the protocol at a high level.  That is, it should describe what the protocol is for and then how the protocol sets out to achieve those goals, with pointers to more detailed explanations of each.  It should act as a way for new readers to orient themselves in both the protocol and its specification.\r\n\r\nThe overview is currently pure self-promotion, which covers part of the first goal, but doesn't do much to help the reader understand how each of these wonderful *features* are actually put together."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/409",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3582,8 +3683,7 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/409.patch"
     },
     "body": ""
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/408",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5378,7 +5478,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/380.patch"
     },
     "body": "This should be almost all editorial -- wording, formatting, and figure consistency changes in the first commit.\r\n\r\nWhile doing those, I noticed that the draft still talks about a \"VERSION flag,\" but the header no longer has one, so I fixed those.  Please review this for technical accuracy."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/379",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5478,8 +5579,7 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/379.patch"
     },
     "body": "For some reason, the TLS draft is in the .gitignore file.  I can't see a sensible reason for this, and yet the repo obviously does still track the TLS draft.  Am I missing something?\r\n\r\nOrdinarily, I'd just fix this, but it's weird enough I'd like the git-template-master to look and confirm."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/378",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7441,7 +7541,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/350.patch"
     },
     "body": ""
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/349",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7506,8 +7607,7 @@
     "updated_at": "2017-04-19T05:27:41Z",
     "closed_at": "2017-03-10T00:14:59Z",
     "body": "My sense is that we'd like the server to chose the \"real\" connection ID to be used for a connection. Among other things, this enables servers to embed routing/load balancing information into connection IDs.\r\n\r\nI have heard two options for what the client should do before it has a server-chosen connection ID.\r\n\r\n1) Send a random connection ID\r\n2) Send a connection ID of 0\r\n\r\nIf we go with approach 1, then we need some mechanism that load balancers can use to detect if a packet's connection ID is server-chosen or not. It seems likely that all packets encrypted with 1-RTT keys could use server generated connection IDs. But other packets it's not so clear. Consider the case of a non-0-RTT handshake. The initial client handshake packet would include a client-chosen connection ID. When the server replies, it could use a server-chosen connection ID. If so then when the client sends the next handshake packet it could use the server-chosen connection ID as well. But that means that we'd need a mechanism to disambiguate client handshake packets with client-chosen connection IDs from client handshake packets with server-chosen connection IDs. We could devote bits or packet types to indicate this. I suspect the same argument might hold for server handshake packets. We might not want the server to chose a connection ID until it is ready to accept the handshake.\r\n\r\nOne benefit of this approach, however, is that a QUIC server could chose to simply use the client's connection ID for the duration of the connection. This would mean that it would not need to be able to generate a new connection ID that is guaranteed to be sent by the load balancer back to itself. In cases where the vendor of the load balancer and the server are not the same, this might be valuable.\r\n\r\nIf we go with approach 2, then it's obvious that any packet with a non-zero connection ID has a server-chosen connection ID (though the server still may want to verify that it's a \"valid\" connection ID according to the algorithm it uses). \r\n\r\nOn the other hand, this requires QUIC servers which are behind load balancers to be able to generate connection IDs which the load balancer will route back to them. If the server and load balancers are from different vendors, this might be challenging.\r\n\r\n"
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/348",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -9417,7 +9517,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/320.patch"
     },
     "body": "Resolves #319."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/319",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -9475,8 +9576,7 @@
     "updated_at": "2017-02-17T22:14:51Z",
     "closed_at": "2017-02-17T22:14:51Z",
     "body": "Some of the acronyms are spelled out and some aren't.  We should make it matchy-matchy."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/318",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -11556,7 +11656,8 @@
     "updated_at": "2017-02-16T13:44:04Z",
     "closed_at": null,
     "body": "> The application SHOULD attempt to use TLS over TCP instead.\r\n\r\n(This is in the context of finding that the MTU is too small.)\r\n\r\nThe text includes a very specific recommendation to use TLS over TCP for one particular case.  This is unwise for two reasons:\r\n1. we don't know if all protocols that build on QUIC will have a TCP over TLS option available to them; DNS over QUIC might be an example of where TLS over TCP is an inadvisable fallback option\r\n2. we should rely on a generic error handling section that includes generic advice about things like falling back to a backup protocol\r\n\r\nMarked as editorial, I hope that's not controversial."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/289",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -11621,8 +11722,7 @@
     "updated_at": "2017-04-19T05:27:18Z",
     "closed_at": "2017-02-27T01:15:15Z",
     "body": "The draft currently says:\r\n\r\n> In this case, an endpoint SHOULD send a Public Reset packet to indicate the failure. \r\n\r\n(This is in the context of discovering that the MTU is too small.)\r\n\r\nGiven that it doesn't take much to send an authenticated CONNECTION_CLOSE in a packet that won't risk breaking even the minimum IPv4 MTU, I think that this suggestion too much.  I would change this to \"treat this as a connection error of SOME_ERROR_CODE\" either defining a new MTU_TOO_SMALL error code, or reusing an existing one."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/288",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -13737,7 +13837,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/260.patch"
     },
     "body": "...by sending the Finished in every packet."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/259",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -13824,8 +13925,7 @@
     "updated_at": "2017-02-06T09:22:35Z",
     "closed_at": "2017-02-06T09:22:35Z",
     "body": ""
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/258",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -15775,7 +15875,8 @@
     "updated_at": "2017-03-02T22:29:49Z",
     "closed_at": null,
     "body": "The spec just doesn't say anything about this so far. You at least want to put in some minumum requirement (like MUST send at least X ACKs per RTT).\r\n\r\nAlso related but might be a separate issue that I'm not sure about yet: Is there a value in having a mechanism for the sender to tell the receiver how often it would like to receive ACKs?"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/229",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -15840,8 +15941,7 @@
     "updated_at": "2017-04-19T05:30:23Z",
     "closed_at": "2017-02-02T07:31:02Z",
     "body": "As discussed at the Tokyo interim, we might choose to use a less generic name for this and to avoid colliding with an existing but incompatible usage."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/228",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -17688,7 +17788,8 @@
     "updated_at": "2017-04-27T00:25:43Z",
     "closed_at": "2017-04-27T00:25:43Z",
     "body": "Consider the following sequence of events on a stream (assuming that MSPC allows exactly one application data stream in the C-S direction:\r\n\r\n```\r\n<---------- Stream Establishment ----------->\r\n<----------------------------------------- FIN\r\nFIN ----------------------------------------->\r\nDATA (stream N+1) -------------------------->\r\n```\r\n\r\nIf you get reordering between the FIN and the data then the server will see it as exceeding MSPC and send  QUIC_TOO_MANY_OPEN_STREAMS. Ugh."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/199",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -17746,8 +17847,7 @@
     "updated_at": "2017-01-24T02:45:11Z",
     "closed_at": null,
     "body": "There is a two byte length field. Surely a 256-byte reason phrase is long enough.\r\n\r\nAlso, are these in ASCII? UTF-8?"
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/198",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -19642,7 +19742,8 @@
     "updated_at": "2017-03-10T04:13:23Z",
     "closed_at": "2017-03-10T04:13:23Z",
     "body": "There's currently no behavior defined for the case of a connection ID collision.\r\nThe probability for a collision of two 64 bit numbers is *really small*, if connections IDs are chosen randomly. For example, for a server handling 100,000 concurrent connections, the collision probability is about 3*10^-10.\r\nIt might therefore be justified to completely neglect this issue.\r\n\r\nAccording to the current draft, if a client initiates a handshake and chooses an existing connection ID, the server would just silently discard those packets, because it already switched to an encrypted connection and will regard them as undecryptable."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/169",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -19743,8 +19844,7 @@
     "updated_at": "2017-04-19T05:28:54Z",
     "closed_at": "2017-02-24T14:07:08Z",
     "body": "I would like to see some language in the loss recovery document about client actions when the first handshake message is lost. We have overloaded this loss signal with multiple meanings/responses:\r\n\r\n(1) Retransmit (due to garden-variety network loss)\r\n(2) Change MTU and retransmit (due to MTU problems, though we might see ICMP here?)\r\n(3) Failover to TCP (middleboxes eating QUIC)\r\n(4) Give up (path failure)\r\n\r\nIf I were implementing a client using these documents, I am not sure how I would handle a CHLO loss given these conflicting imperatives. I could accept having SHOULDs instead of MUSTs, but there ought to be something."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/168",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -21871,7 +21971,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/140.patch"
     },
     "body": "I realized that we didn't have a lot on that point.  We should."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/139",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -21936,8 +22037,7 @@
     "updated_at": "2017-04-19T05:25:18Z",
     "closed_at": "2017-01-26T02:19:11Z",
     "body": "Is there a minimum MTU we want QUIC to enforce? If so, how big? If an endpoint discovers this is not achievable, what then? Do they have to fail over to TCP, or do we just let the (IPv4) network fragment packets?\r\n"
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/138",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -24072,7 +24172,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/110.patch"
     },
     "body": ""
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/109",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -24173,8 +24274,7 @@
     "updated_at": "2017-03-20T05:26:37Z",
     "closed_at": null,
     "body": "I note that the IEEE754 reference doesn't help."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/108",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -25911,7 +26011,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/80.patch"
     },
     "body": "[EXTENDED_SETTINGS](https://tools.ietf.org/html/draft-bishop-httpbis-extended-settings-01) was proposed in the HTTP WG as an extension providing an alternative to the HTTP/2 SETTINGS frame.  While feedback was that it was \"the design we should have had for HTTP/2... more general, saves space in most cases, and includes a flag to request acknowledgment\", there was also a feeling that as an extension it was overkill since most things that needed settings already used SETTINGS.  The advice was to hold it for HTTP/QUIC and make it the default SETTINGS frame there.  So here it is.\r\n\r\nNote that while it uses a slightly different ACK mechanism than HTTP/2 SETTINGS, it's subject to the same timing issues as HTTP/2 SETTINGS ACK over QUIC, namely that you can't know when the setting change has been applied on each stream.  This pull request doesn't fix that; it's tracked by #75 still."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/79",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -25962,8 +26063,7 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/79.patch"
     },
     "body": "(sorry for the noise)"
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/78",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -28181,7 +28281,8 @@
     "updated_at": "2017-04-19T05:23:41Z",
     "closed_at": "2017-01-24T06:41:04Z",
     "body": "In h2, we were able to update transport-y parameters like flow control window and number of streams.  If we adopt a TLS extension for negotiating/advertising these, that means we can't update them."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/49",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -28282,8 +28383,7 @@
     "updated_at": "2017-04-19T05:22:44Z",
     "closed_at": "2017-02-22T00:41:42Z",
     "body": "We currently have no way of advertising things like flow control windows, maximum number of streams, etc...\r\n\r\nCandidate is a QUIC extension that we include in the handshake.   This can include the QUIC version."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/48",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -30367,7 +30467,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/20.patch"
     },
     "body": "The model here is that neither on-path nor off-path attackers should be able to forge one, but\r\nthat on-path elements should be able to validate the public reset."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/19",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -30432,8 +30533,7 @@
     "updated_at": "2017-02-08T21:03:22Z",
     "closed_at": "2017-02-08T21:03:22Z",
     "body": "Hi,\r\n\r\nI believe the RST_STREAM error codes are missing from https://tools.ietf.org/html/draft-hamilton-quic-transport-protocol-01 (there weren't in the previous version either).\r\n\r\nThese error codes are distinct from other error codes but the enumeration ranges overlap, which causes some unfortunate aliasing. I raised this issue on the QUIC Protocol discussion group (https://groups.google.com/a/chromium.org/forum/#!topic/proto-quic/dSSNpQj3shI) but also raising here to signal when the the I-D gets updated.\r\n"
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/18",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
