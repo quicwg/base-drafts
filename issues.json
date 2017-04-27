@@ -456,9 +456,9 @@
 
     ],
     "milestone": null,
-    "comments": 6,
+    "comments": 7,
     "created_at": "2017-04-21T01:07:59Z",
-    "updated_at": "2017-04-27T02:45:23Z",
+    "updated_at": "2017-04-27T02:47:24Z",
     "closed_at": null,
     "pull_request": {
       "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/459",
@@ -956,17 +956,17 @@
         "default": false
       }
     ],
-    "state": "open",
+    "state": "closed",
     "locked": false,
     "assignee": null,
     "assignees": [
 
     ],
     "milestone": null,
-    "comments": 0,
+    "comments": 1,
     "created_at": "2017-04-20T05:20:10Z",
-    "updated_at": "2017-04-20T05:20:10Z",
-    "closed_at": null,
+    "updated_at": "2017-04-27T02:54:39Z",
+    "closed_at": "2017-04-27T02:54:39Z",
     "body": "In discussions of BLOCKED in HTTP/2, one important limitation was that a sender wouldn't send multiple BLOCKED frames for the same limit.  That is, it would stop sending BLOCKED until it received a WINDOW_UPDATE for the affected limit.\r\n\r\nNo such restriction applies.  An poor implementation of QUIC could end up generating a LOT of BLOCKED frames.  The above limit would seem to be reasonable."
   },
   {
@@ -15353,7 +15353,7 @@
     "html_url": "https://github.com/quicwg/base-drafts/issues/233",
     "id": 203250449,
     "number": 233,
-    "title": "Unknown frame types",
+    "title": "Frame type extensibility",
     "user": {
       "login": "martinthomson",
       "id": 67641,
@@ -15398,7 +15398,7 @@
     "milestone": null,
     "comments": 2,
     "created_at": "2017-01-25T23:11:39Z",
-    "updated_at": "2017-01-25T23:17:08Z",
+    "updated_at": "2017-04-27T02:53:46Z",
     "closed_at": null,
     "body": "The draft currently says:\r\n\r\n> Frames of unknown types are ignored.\r\n\r\nWhich is basically impossible. The only option an endpoint has when it encounters an unknown frame type is to throw out the entire frame or terminate the connection.  We should pick the latter."
   },
@@ -17825,17 +17825,17 @@
         "default": false
       }
     ],
-    "state": "open",
+    "state": "closed",
     "locked": false,
     "assignee": null,
     "assignees": [
 
     ],
     "milestone": null,
-    "comments": 3,
+    "comments": 4,
     "created_at": "2017-01-23T04:45:37Z",
-    "updated_at": "2017-01-25T05:35:30Z",
-    "closed_at": null,
+    "updated_at": "2017-04-27T02:53:01Z",
+    "closed_at": "2017-04-27T02:53:01Z",
     "body": "In S 5.2.2 QUIC frames are currently specified without any length field. This means that it's not possible to skip over unknown frame types.\r\n\r\nThere are at least two reasons why this is inconvenient:\r\n\r\n- It makes it hard to write passive analysis tools because those tools will just choke if they encounter unrecognized frames (they cannot process the rest of the packet).\r\n- It makes it hard to skip over frames you don't care about without parsing them. BLOCKED is a good example of such a frame currently"
   },
   {
@@ -18406,17 +18406,17 @@
         "default": false
       }
     ],
-    "state": "open",
+    "state": "closed",
     "locked": false,
     "assignee": null,
     "assignees": [
 
     ],
     "milestone": null,
-    "comments": 2,
+    "comments": 3,
     "created_at": "2017-01-21T01:58:59Z",
-    "updated_at": "2017-01-24T01:03:19Z",
-    "closed_at": null,
+    "updated_at": "2017-04-27T02:50:31Z",
+    "closed_at": "2017-04-27T02:50:31Z",
     "body": "The specification allows endpoints to specify the maximum number of concurrent streams (MSPC), but should not the spec provide for the minimum value of MSPC that all endpoints must support?  If the minimum is 1 (excluding \"service\" streams), it would be good for the spec to state so explicitly."
   },
   {
@@ -18587,17 +18587,17 @@
         "default": false
       }
     ],
-    "state": "open",
+    "state": "closed",
     "locked": false,
     "assignee": null,
     "assignees": [
 
     ],
     "milestone": null,
-    "comments": 1,
+    "comments": 2,
     "created_at": "2017-01-20T07:47:21Z",
-    "updated_at": "2017-02-21T23:39:08Z",
-    "closed_at": null,
+    "updated_at": "2017-04-27T02:48:32Z",
+    "closed_at": "2017-04-27T02:48:32Z",
     "body": "The question is whether we maintain TLS as some abstract concept or not.\r\n\r\nWe could talk about \"the cryptographic handshake\" and features that it provides in the abstract when referring to them in the transport document.  Or we could just describe how this protocol works in concrete terms.\r\n\r\nProponents of the first seem to think that would make replacing TLS easier.  Others disagree.  Others think that replacing TLS would be a bad idea.  Others think that replacing TLS is the only rational choice.  Some people think that people who hold opposing opinions are completely nuts."
   },
   {
