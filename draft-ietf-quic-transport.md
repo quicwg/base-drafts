@@ -2331,8 +2331,8 @@ limits.
 
 An endpoint MUST NOT send data on any stream without ensuring that it is within
 the data limits set by its peer.  The cryptographic handshake stream, Stream 0,
-is exempt from the limits imposed by connection-level data limits.  Stream 0 is
-still subject to stream-level data limits.
+is exempt from the connection-level data limits established by MAX_DATA.  Stream
+0 is still subject to stream-level data limits and MAX_STREAM_DATA.
 
 Flow control is described in detail in {{flow-control}}, and congestion control
 is described in the companion document {{QUIC-RECOVERY}}.
