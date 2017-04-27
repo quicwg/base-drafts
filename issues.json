@@ -2813,17 +2813,17 @@
         "default": false
       }
     ],
-    "state": "open",
+    "state": "closed",
     "locked": false,
     "assignee": null,
     "assignees": [
 
     ],
     "milestone": null,
-    "comments": 7,
+    "comments": 8,
     "created_at": "2017-03-29T00:37:31Z",
-    "updated_at": "2017-04-20T02:50:48Z",
-    "closed_at": null,
+    "updated_at": "2017-04-27T00:23:59Z",
+    "closed_at": "2017-04-27T00:23:59Z",
     "body": "We've already had a lot of discussions about the concurrent streams limit, which all brought us back to the problem that at every given moment both peers have to agree about the number of open streams, which seems to require a non-trivial amount of bookkeeping (of ACKs received for all STREAM frames sent on a given stream).\r\n\r\nI'd like to propose a different solution, which solves this problem, and has a couple of nice additional properties as well:\r\n\r\nA receiver advertises the maximum Stream ID it is willing to accept. The sender is allowed to open all streams that have IDs not larger than this number. The receiver can advertise a higher maximum Stream ID whenever it likes to, by sending a STREAM_LIMIT_UPDATE frame. STREAM_LIMIT_UPDATE is a retransmittable frame that contains a single value, the maximum Stream ID.\r\nNote that conceptually, this is similar to advertising a flow control offset (and the rules for STREAM_LIMIT_UPDATEs would be similar to those for WINDOW_UPDATEs).\r\n\r\nAn implementation is free to choose any algorithm to determine which maximum Stream ID it advertises. The number of open streams may be used, but I can think of a couple of other ways to limit the state a peer can create. It would even be possible to advertise different limits depending on the server load."
   },
   {
@@ -4290,8 +4290,8 @@
     "labels": [
       {
         "id": 517015633,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/blocking",
-        "name": "blocking",
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/needs-discussion",
+        "name": "needs-discussion",
         "color": "d93f0b",
         "default": false
       },
@@ -4405,8 +4405,8 @@
     "labels": [
       {
         "id": 517015633,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/blocking",
-        "name": "blocking",
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/needs-discussion",
+        "name": "needs-discussion",
         "color": "d93f0b",
         "default": false
       },
@@ -4801,17 +4801,17 @@
     },
     "labels": [
       {
-        "id": 517015633,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/blocking",
-        "name": "blocking",
-        "color": "d93f0b",
-        "default": false
-      },
-      {
         "id": 481871361,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/design",
         "name": "design",
         "color": "1d76db",
+        "default": false
+      },
+      {
+        "id": 517015633,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/needs-discussion",
+        "name": "needs-discussion",
+        "color": "d93f0b",
         "default": false
       },
       {
@@ -5462,17 +5462,17 @@
     },
     "labels": [
       {
-        "id": 517015633,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/blocking",
-        "name": "blocking",
-        "color": "d93f0b",
-        "default": false
-      },
-      {
         "id": 481871627,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/http",
         "name": "http",
         "color": "fbca04",
+        "default": false
+      },
+      {
+        "id": 517015633,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/needs-discussion",
+        "name": "needs-discussion",
+        "color": "d93f0b",
         "default": false
       }
     ],
@@ -7338,17 +7338,17 @@
     },
     "labels": [
       {
-        "id": 517015633,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/blocking",
-        "name": "blocking",
-        "color": "d93f0b",
-        "default": false
-      },
-      {
         "id": 481871627,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/http",
         "name": "http",
         "color": "fbca04",
+        "default": false
+      },
+      {
+        "id": 517015633,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/needs-discussion",
+        "name": "needs-discussion",
+        "color": "d93f0b",
         "default": false
       }
     ],
@@ -8573,17 +8573,17 @@
     },
     "labels": [
       {
-        "id": 517015633,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/blocking",
-        "name": "blocking",
-        "color": "d93f0b",
-        "default": false
-      },
-      {
         "id": 481871361,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/design",
         "name": "design",
         "color": "1d76db",
+        "default": false
+      },
+      {
+        "id": 517015633,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/needs-discussion",
+        "name": "needs-discussion",
+        "color": "d93f0b",
         "default": false
       },
       {
@@ -12163,17 +12163,17 @@
     },
     "labels": [
       {
-        "id": 517015633,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/blocking",
-        "name": "blocking",
-        "color": "d93f0b",
-        "default": false
-      },
-      {
         "id": 481871361,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/design",
         "name": "design",
         "color": "1d76db",
+        "default": false
+      },
+      {
+        "id": 517015633,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/needs-discussion",
+        "name": "needs-discussion",
+        "color": "d93f0b",
         "default": false
       },
       {
@@ -12936,17 +12936,17 @@
     },
     "labels": [
       {
-        "id": 517015633,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/blocking",
-        "name": "blocking",
-        "color": "d93f0b",
-        "default": false
-      },
-      {
         "id": 481871361,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/design",
         "name": "design",
         "color": "1d76db",
+        "default": false
+      },
+      {
+        "id": 517015633,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/needs-discussion",
+        "name": "needs-discussion",
+        "color": "d93f0b",
         "default": false
       },
       {
@@ -13052,17 +13052,17 @@
     },
     "labels": [
       {
-        "id": 517015633,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/blocking",
-        "name": "blocking",
-        "color": "d93f0b",
-        "default": false
-      },
-      {
         "id": 481871361,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/design",
         "name": "design",
         "color": "1d76db",
+        "default": false
+      },
+      {
+        "id": 517015633,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/needs-discussion",
+        "name": "needs-discussion",
+        "color": "d93f0b",
         "default": false
       },
       {
@@ -13079,10 +13079,44 @@
     "assignees": [
 
     ],
-    "milestone": null,
+    "milestone": {
+      "url": "https://api.github.com/repos/quicwg/base-drafts/milestones/1",
+      "html_url": "https://github.com/quicwg/base-drafts/milestone/1",
+      "labels_url": "https://api.github.com/repos/quicwg/base-drafts/milestones/1/labels",
+      "id": 2484848,
+      "number": 1,
+      "title": "First Implementation Draft",
+      "description": "",
+      "creator": {
+        "login": "mnot",
+        "id": 74384,
+        "avatar_url": "https://avatars2.githubusercontent.com/u/74384?v=3",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/mnot",
+        "html_url": "https://github.com/mnot",
+        "followers_url": "https://api.github.com/users/mnot/followers",
+        "following_url": "https://api.github.com/users/mnot/following{/other_user}",
+        "gists_url": "https://api.github.com/users/mnot/gists{/gist_id}",
+        "starred_url": "https://api.github.com/users/mnot/starred{/owner}{/repo}",
+        "subscriptions_url": "https://api.github.com/users/mnot/subscriptions",
+        "organizations_url": "https://api.github.com/users/mnot/orgs",
+        "repos_url": "https://api.github.com/users/mnot/repos",
+        "events_url": "https://api.github.com/users/mnot/events{/privacy}",
+        "received_events_url": "https://api.github.com/users/mnot/received_events",
+        "type": "User",
+        "site_admin": false
+      },
+      "open_issues": 4,
+      "closed_issues": 0,
+      "state": "open",
+      "created_at": "2017-04-27T00:23:44Z",
+      "updated_at": "2017-04-27T00:30:39Z",
+      "due_on": "2017-06-21T07:00:00Z",
+      "closed_at": null
+    },
     "comments": 3,
     "created_at": "2017-02-08T04:21:49Z",
-    "updated_at": "2017-04-19T06:12:11Z",
+    "updated_at": "2017-04-27T00:30:39Z",
     "closed_at": null,
     "body": "PR #106 added the following requirement on servers:\r\n\r\n> Servers MUST reject the first plaintext packet received from a client if it its total size is less than 1280 octets, to mitigate amplification attacks.\r\n\r\nHowever, this runs into an issue in the case where there are IP header extensions that the client knows about but the server doesn't.  If the client is aware of the IP header extensions and constructs a packet with a smaller payload in order to comply with our recommendation to create a packet of exactly 1280 octets, the server will receive a packet that it thinks is too small.\r\n\r\nI see a few options:\r\n1. loosen the enforcement constraint on the server\r\n2. specify that the server only enforce the constraint if it sees the entire IP packet\r\n3. specify the minimum size and its enforcement in terms of payload size (we could set different values here to allow for header extensions)"
   },
@@ -14327,13 +14361,6 @@
     },
     "labels": [
       {
-        "id": 517015633,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/blocking",
-        "name": "blocking",
-        "color": "d93f0b",
-        "default": false
-      },
-      {
         "id": 481871361,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/design",
         "name": "design",
@@ -14361,10 +14388,44 @@
     "assignees": [
 
     ],
-    "milestone": null,
+    "milestone": {
+      "url": "https://api.github.com/repos/quicwg/base-drafts/milestones/1",
+      "html_url": "https://github.com/quicwg/base-drafts/milestone/1",
+      "labels_url": "https://api.github.com/repos/quicwg/base-drafts/milestones/1/labels",
+      "id": 2484848,
+      "number": 1,
+      "title": "First Implementation Draft",
+      "description": "",
+      "creator": {
+        "login": "mnot",
+        "id": 74384,
+        "avatar_url": "https://avatars2.githubusercontent.com/u/74384?v=3",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/mnot",
+        "html_url": "https://github.com/mnot",
+        "followers_url": "https://api.github.com/users/mnot/followers",
+        "following_url": "https://api.github.com/users/mnot/following{/other_user}",
+        "gists_url": "https://api.github.com/users/mnot/gists{/gist_id}",
+        "starred_url": "https://api.github.com/users/mnot/starred{/owner}{/repo}",
+        "subscriptions_url": "https://api.github.com/users/mnot/subscriptions",
+        "organizations_url": "https://api.github.com/users/mnot/orgs",
+        "repos_url": "https://api.github.com/users/mnot/repos",
+        "events_url": "https://api.github.com/users/mnot/events{/privacy}",
+        "received_events_url": "https://api.github.com/users/mnot/received_events",
+        "type": "User",
+        "site_admin": false
+      },
+      "open_issues": 4,
+      "closed_issues": 0,
+      "state": "open",
+      "created_at": "2017-04-27T00:23:44Z",
+      "updated_at": "2017-04-27T00:30:39Z",
+      "due_on": "2017-06-21T07:00:00Z",
+      "closed_at": null
+    },
     "comments": 0,
     "created_at": "2017-01-30T00:39:55Z",
-    "updated_at": "2017-03-11T01:37:48Z",
+    "updated_at": "2017-04-27T00:29:08Z",
     "closed_at": null,
     "body": "The current transport doc exempts stream 1 from *congestion control*.  That seems to be unnecessary, potentially hard to implement, and maybe even dangerous."
   },
@@ -15669,17 +15730,17 @@
     },
     "labels": [
       {
-        "id": 517015633,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/blocking",
-        "name": "blocking",
-        "color": "d93f0b",
-        "default": false
-      },
-      {
         "id": 481871361,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/design",
         "name": "design",
         "color": "1d76db",
+        "default": false
+      },
+      {
+        "id": 517015633,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/needs-discussion",
+        "name": "needs-discussion",
+        "color": "d93f0b",
         "default": false
       },
       {
@@ -17415,17 +17476,17 @@
         "default": false
       }
     ],
-    "state": "open",
+    "state": "closed",
     "locked": false,
     "assignee": null,
     "assignees": [
 
     ],
     "milestone": null,
-    "comments": 2,
+    "comments": 3,
     "created_at": "2017-01-23T05:13:53Z",
-    "updated_at": "2017-01-24T03:59:20Z",
-    "closed_at": null,
+    "updated_at": "2017-04-27T00:25:43Z",
+    "closed_at": "2017-04-27T00:25:43Z",
     "body": "Consider the following sequence of events on a stream (assuming that MSPC allows exactly one application data stream in the C-S direction:\r\n\r\n```\r\n<---------- Stream Establishment ----------->\r\n<----------------------------------------- FIN\r\nFIN ----------------------------------------->\r\nDATA (stream N+1) -------------------------->\r\n```\r\n\r\nIf you get reordering between the FIN and the data then the server will see it as exceeding MSPC and send  QUIC_TOO_MANY_OPEN_STREAMS. Ugh."
   },
   {
@@ -19052,10 +19113,44 @@
     "assignees": [
 
     ],
-    "milestone": null,
+    "milestone": {
+      "url": "https://api.github.com/repos/quicwg/base-drafts/milestones/1",
+      "html_url": "https://github.com/quicwg/base-drafts/milestone/1",
+      "labels_url": "https://api.github.com/repos/quicwg/base-drafts/milestones/1/labels",
+      "id": 2484848,
+      "number": 1,
+      "title": "First Implementation Draft",
+      "description": "",
+      "creator": {
+        "login": "mnot",
+        "id": 74384,
+        "avatar_url": "https://avatars2.githubusercontent.com/u/74384?v=3",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/mnot",
+        "html_url": "https://github.com/mnot",
+        "followers_url": "https://api.github.com/users/mnot/followers",
+        "following_url": "https://api.github.com/users/mnot/following{/other_user}",
+        "gists_url": "https://api.github.com/users/mnot/gists{/gist_id}",
+        "starred_url": "https://api.github.com/users/mnot/starred{/owner}{/repo}",
+        "subscriptions_url": "https://api.github.com/users/mnot/subscriptions",
+        "organizations_url": "https://api.github.com/users/mnot/orgs",
+        "repos_url": "https://api.github.com/users/mnot/repos",
+        "events_url": "https://api.github.com/users/mnot/events{/privacy}",
+        "received_events_url": "https://api.github.com/users/mnot/received_events",
+        "type": "User",
+        "site_admin": false
+      },
+      "open_issues": 4,
+      "closed_issues": 0,
+      "state": "open",
+      "created_at": "2017-04-27T00:23:44Z",
+      "updated_at": "2017-04-27T00:30:39Z",
+      "due_on": "2017-06-21T07:00:00Z",
+      "closed_at": null
+    },
     "comments": 13,
     "created_at": "2017-01-18T23:12:28Z",
-    "updated_at": "2017-03-05T22:32:21Z",
+    "updated_at": "2017-04-27T00:27:44Z",
     "closed_at": null,
     "body": "QUIC borrows the HTTP/2 state machine, or tries to replicate it as much as it can.  Part of that replication is the idea that a stream is bidirectional.  The state related to outgoing data and the state related to inbound data are tied.\r\n\r\n#174 suggests a simplification that could open up a more dramatic simplification: independent state for each direction.  #171 moves in that direction also.\r\n\r\nThe state machine that results from that is dramatically simpler: idle -> open -> closed.  That is, before packets, packets and after packets.\r\n\r\nThe consequence for the HTTP mapping is largely that it needs a different method for correlating request and response.\r\n\r\n## Correlating request and response\r\n\r\nCurrently, request and response are correlated by matching the stream identifier.  However, unidirectional streams would allow for cases where streams are not created symmetrically.  For instance, server push would only require streams from the server.  Similarly, the server would not be obligated to respond to requests in the order in which they were received (if at all, since it could reset request streams).\r\n\r\nThat implies that this would add a requirement for the server to identify which request a given stream is answering.  This is an extension of the requirement in #174, which only required that the server identify a push promise (actually, it's less onerous, because you only have one request per stream).\r\n\r\nI can imagine an arrangement where a stream containing headers identifies the stream containing the request headers from the client.  Then the stream containing the body identifies the stream that contained the headers.\r\n\r\n## Saving stream identifiers\r\n\r\nThis is a minor point, though it could be relevant for very long-lived connections.\r\n\r\nQUIC currently insists on a strictly monotonically increasing stream identifier: stream N is followed by stream N+2 always, no skipping of streams is permitted.  Aside from wasting every other stream identifier, other streams are wasted by the mapping. \r\n\r\nGET requests don't include a body, but nonetheless require that the client send a HEADERS on stream N, then a FIN on stream N+2.  Including a reference to the initiating stream at the start of the body of a message would use some octets, but potentially fewer than would be used otherwise (particularly if the reference was a varlen encoding of the difference in stream numbers, which would rarely be anything other than 1).\r\n\r\nObviously, this is an optimization for the case where there are no bodies, but that is a case where the optimization is particularly valuable.  Making more requests (which more frequently have no bodies) during the early stages of a connection is critical to performance."
   },
@@ -19579,13 +19674,6 @@
     },
     "labels": [
       {
-        "id": 517015633,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/blocking",
-        "name": "blocking",
-        "color": "d93f0b",
-        "default": false
-      },
-      {
         "id": 481871361,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/design",
         "name": "design",
@@ -19613,10 +19701,44 @@
     "assignees": [
 
     ],
-    "milestone": null,
-    "comments": 2,
+    "milestone": {
+      "url": "https://api.github.com/repos/quicwg/base-drafts/milestones/1",
+      "html_url": "https://github.com/quicwg/base-drafts/milestone/1",
+      "labels_url": "https://api.github.com/repos/quicwg/base-drafts/milestones/1/labels",
+      "id": 2484848,
+      "number": 1,
+      "title": "First Implementation Draft",
+      "description": "",
+      "creator": {
+        "login": "mnot",
+        "id": 74384,
+        "avatar_url": "https://avatars2.githubusercontent.com/u/74384?v=3",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/mnot",
+        "html_url": "https://github.com/mnot",
+        "followers_url": "https://api.github.com/users/mnot/followers",
+        "following_url": "https://api.github.com/users/mnot/following{/other_user}",
+        "gists_url": "https://api.github.com/users/mnot/gists{/gist_id}",
+        "starred_url": "https://api.github.com/users/mnot/starred{/owner}{/repo}",
+        "subscriptions_url": "https://api.github.com/users/mnot/subscriptions",
+        "organizations_url": "https://api.github.com/users/mnot/orgs",
+        "repos_url": "https://api.github.com/users/mnot/repos",
+        "events_url": "https://api.github.com/users/mnot/events{/privacy}",
+        "received_events_url": "https://api.github.com/users/mnot/received_events",
+        "type": "User",
+        "site_admin": false
+      },
+      "open_issues": 4,
+      "closed_issues": 0,
+      "state": "open",
+      "created_at": "2017-04-27T00:23:44Z",
+      "updated_at": "2017-04-27T00:30:39Z",
+      "due_on": "2017-06-21T07:00:00Z",
+      "closed_at": null
+    },
+    "comments": 3,
     "created_at": "2017-01-17T14:28:16Z",
-    "updated_at": "2017-03-07T04:46:54Z",
+    "updated_at": "2017-04-27T00:28:07Z",
     "closed_at": null,
     "body": "QUIC originally specified a 12 byte hash for unencrypted packets.  This was dropped when QUIC crypto was swapped for the TLS 1.3 mapping.\r\n\r\nWe should add it back, since it is useful in eliminating corrupted packets and random internet junk.  And possibly in preventing reflection attacks mentioned in #147 "
   }
@@ -22315,13 +22437,6 @@
     },
     "labels": [
       {
-        "id": 517015633,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/blocking",
-        "name": "blocking",
-        "color": "d93f0b",
-        "default": false
-      },
-      {
         "id": 481871311,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/editorial",
         "name": "editorial",
@@ -22352,7 +22467,7 @@
     "milestone": null,
     "comments": 2,
     "created_at": "2017-01-06T04:18:17Z",
-    "updated_at": "2017-03-06T23:41:36Z",
+    "updated_at": "2017-04-27T00:22:09Z",
     "closed_at": null,
     "body": "The transport protocol has frames, and STREAM frames can contain frames for the HTTP mapping.  It's confusing.  We should work out how to deal with that."
   },
@@ -25512,13 +25627,6 @@
     },
     "labels": [
       {
-        "id": 517015633,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/blocking",
-        "name": "blocking",
-        "color": "d93f0b",
-        "default": false
-      },
-      {
         "id": 481871311,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/editorial",
         "name": "editorial",
@@ -25530,6 +25638,13 @@
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/http",
         "name": "http",
         "color": "fbca04",
+        "default": false
+      },
+      {
+        "id": 517015633,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/needs-discussion",
+        "name": "needs-discussion",
+        "color": "d93f0b",
         "default": false
       }
     ],
@@ -26922,17 +27037,17 @@
     },
     "labels": [
       {
-        "id": 517015633,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/blocking",
-        "name": "blocking",
-        "color": "d93f0b",
-        "default": false
-      },
-      {
         "id": 481871361,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/design",
         "name": "design",
         "color": "1d76db",
+        "default": false
+      },
+      {
+        "id": 517015633,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/needs-discussion",
+        "name": "needs-discussion",
+        "color": "d93f0b",
         "default": false
       },
       {
@@ -28173,17 +28288,17 @@
     },
     "labels": [
       {
-        "id": 517015633,
-        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/blocking",
-        "name": "blocking",
-        "color": "d93f0b",
-        "default": false
-      },
-      {
         "id": 481871361,
         "url": "https://api.github.com/repos/quicwg/base-drafts/labels/design",
         "name": "design",
         "color": "1d76db",
+        "default": false
+      },
+      {
+        "id": 517015633,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/needs-discussion",
+        "name": "needs-discussion",
+        "color": "d93f0b",
         "default": false
       },
       {
