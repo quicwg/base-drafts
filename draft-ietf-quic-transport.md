@@ -1866,13 +1866,16 @@ Error Code:
 
 Reason Phrase Length:
 
-: A 16-bit unsigned number specifying the length of the reason phrase.  This may
-  be zero if the sender chooses to not give details beyond the Error Code.
+: A 16-bit unsigned number specifying the length of the reason phrase.  Note
+  that a CONNECTION_CLOSE frame cannot be split between packets, so in practice
+  any limits on packet size will also limit the space available for a reason
+  phrase.
 
 Reason Phrase:
 
-: An optional human-readable explanation for why the connection was closed.
-
+: A human-readable explanation for why the connection was closed.  This can be
+  zero length if the sender chooses to not give details beyond the Error Code.
+  This SHOULD be a UTF-8 encoded string {{!RFC3629}}.
 
 
 ## GOAWAY Frame {#frame-goaway}
