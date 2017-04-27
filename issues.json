@@ -1,5 +1,205 @@
 [
   {
+    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/468",
+    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
+    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/468/labels{/name}",
+    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/468/comments",
+    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/468/events",
+    "html_url": "https://github.com/quicwg/base-drafts/pull/468",
+    "id": 224661533,
+    "number": 468,
+    "title": "Make TLS track changes in transport",
+    "user": {
+      "login": "martinthomson",
+      "id": 67641,
+      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/martinthomson",
+      "html_url": "https://github.com/martinthomson",
+      "followers_url": "https://api.github.com/users/martinthomson/followers",
+      "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
+      "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
+      "organizations_url": "https://api.github.com/users/martinthomson/orgs",
+      "repos_url": "https://api.github.com/users/martinthomson/repos",
+      "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/martinthomson/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 481871311,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/editorial",
+        "name": "editorial",
+        "color": "0e8a16",
+        "default": false
+      },
+      {
+        "id": 481871604,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/tls",
+        "name": "tls",
+        "color": "fbca04",
+        "default": false
+      }
+    ],
+    "state": "open",
+    "locked": false,
+    "assignee": {
+      "login": "seanturner",
+      "id": 4488966,
+      "avatar_url": "https://avatars3.githubusercontent.com/u/4488966?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/seanturner",
+      "html_url": "https://github.com/seanturner",
+      "followers_url": "https://api.github.com/users/seanturner/followers",
+      "following_url": "https://api.github.com/users/seanturner/following{/other_user}",
+      "gists_url": "https://api.github.com/users/seanturner/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/seanturner/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/seanturner/subscriptions",
+      "organizations_url": "https://api.github.com/users/seanturner/orgs",
+      "repos_url": "https://api.github.com/users/seanturner/repos",
+      "events_url": "https://api.github.com/users/seanturner/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/seanturner/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "assignees": [
+      {
+        "login": "seanturner",
+        "id": 4488966,
+        "avatar_url": "https://avatars3.githubusercontent.com/u/4488966?v=3",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/seanturner",
+        "html_url": "https://github.com/seanturner",
+        "followers_url": "https://api.github.com/users/seanturner/followers",
+        "following_url": "https://api.github.com/users/seanturner/following{/other_user}",
+        "gists_url": "https://api.github.com/users/seanturner/gists{/gist_id}",
+        "starred_url": "https://api.github.com/users/seanturner/starred{/owner}{/repo}",
+        "subscriptions_url": "https://api.github.com/users/seanturner/subscriptions",
+        "organizations_url": "https://api.github.com/users/seanturner/orgs",
+        "repos_url": "https://api.github.com/users/seanturner/repos",
+        "events_url": "https://api.github.com/users/seanturner/events{/privacy}",
+        "received_events_url": "https://api.github.com/users/seanturner/received_events",
+        "type": "User",
+        "site_admin": false
+      }
+    ],
+    "milestone": null,
+    "comments": 0,
+    "created_at": "2017-04-27T03:51:36Z",
+    "updated_at": "2017-04-27T03:51:36Z",
+    "closed_at": null,
+    "pull_request": {
+      "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/468",
+      "html_url": "https://github.com/quicwg/base-drafts/pull/468",
+      "diff_url": "https://github.com/quicwg/base-drafts/pull/468.diff",
+      "patch_url": "https://github.com/quicwg/base-drafts/pull/468.patch"
+    },
+    "body": "This is a small change to follow #421 and friends."
+  },
+  {
+    "url": "https://api.github.com/repos/quicwg/base-drafts/issues/467",
+    "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
+    "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/467/labels{/name}",
+    "comments_url": "https://api.github.com/repos/quicwg/base-drafts/issues/467/comments",
+    "events_url": "https://api.github.com/repos/quicwg/base-drafts/issues/467/events",
+    "html_url": "https://github.com/quicwg/base-drafts/pull/467",
+    "id": 224659707,
+    "number": 467,
+    "title": "Prune transport error codes",
+    "user": {
+      "login": "martinthomson",
+      "id": 67641,
+      "avatar_url": "https://avatars2.githubusercontent.com/u/67641?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/martinthomson",
+      "html_url": "https://github.com/martinthomson",
+      "followers_url": "https://api.github.com/users/martinthomson/followers",
+      "following_url": "https://api.github.com/users/martinthomson/following{/other_user}",
+      "gists_url": "https://api.github.com/users/martinthomson/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/martinthomson/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/martinthomson/subscriptions",
+      "organizations_url": "https://api.github.com/users/martinthomson/orgs",
+      "repos_url": "https://api.github.com/users/martinthomson/repos",
+      "events_url": "https://api.github.com/users/martinthomson/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/martinthomson/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "labels": [
+      {
+        "id": 481871361,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/design",
+        "name": "design",
+        "color": "1d76db",
+        "default": false
+      },
+      {
+        "id": 481871399,
+        "url": "https://api.github.com/repos/quicwg/base-drafts/labels/transport",
+        "name": "transport",
+        "color": "fbca04",
+        "default": false
+      }
+    ],
+    "state": "open",
+    "locked": false,
+    "assignee": {
+      "login": "janaiyengar",
+      "id": 11067604,
+      "avatar_url": "https://avatars1.githubusercontent.com/u/11067604?v=3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/janaiyengar",
+      "html_url": "https://github.com/janaiyengar",
+      "followers_url": "https://api.github.com/users/janaiyengar/followers",
+      "following_url": "https://api.github.com/users/janaiyengar/following{/other_user}",
+      "gists_url": "https://api.github.com/users/janaiyengar/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/janaiyengar/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/janaiyengar/subscriptions",
+      "organizations_url": "https://api.github.com/users/janaiyengar/orgs",
+      "repos_url": "https://api.github.com/users/janaiyengar/repos",
+      "events_url": "https://api.github.com/users/janaiyengar/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/janaiyengar/received_events",
+      "type": "User",
+      "site_admin": false
+    },
+    "assignees": [
+      {
+        "login": "janaiyengar",
+        "id": 11067604,
+        "avatar_url": "https://avatars1.githubusercontent.com/u/11067604?v=3",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/janaiyengar",
+        "html_url": "https://github.com/janaiyengar",
+        "followers_url": "https://api.github.com/users/janaiyengar/followers",
+        "following_url": "https://api.github.com/users/janaiyengar/following{/other_user}",
+        "gists_url": "https://api.github.com/users/janaiyengar/gists{/gist_id}",
+        "starred_url": "https://api.github.com/users/janaiyengar/starred{/owner}{/repo}",
+        "subscriptions_url": "https://api.github.com/users/janaiyengar/subscriptions",
+        "organizations_url": "https://api.github.com/users/janaiyengar/orgs",
+        "repos_url": "https://api.github.com/users/janaiyengar/repos",
+        "events_url": "https://api.github.com/users/janaiyengar/events{/privacy}",
+        "received_events_url": "https://api.github.com/users/janaiyengar/received_events",
+        "type": "User",
+        "site_admin": false
+      }
+    ],
+    "milestone": null,
+    "comments": 0,
+    "created_at": "2017-04-27T03:36:35Z",
+    "updated_at": "2017-04-27T03:36:35Z",
+    "closed_at": null,
+    "pull_request": {
+      "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/467",
+      "html_url": "https://github.com/quicwg/base-drafts/pull/467",
+      "diff_url": "https://github.com/quicwg/base-drafts/pull/467.diff",
+      "patch_url": "https://github.com/quicwg/base-drafts/pull/467.patch"
+    },
+    "body": "This prunes the transport error codes to the short list I shared on the [mailing list](https://mailarchive.ietf.org/arch/msg/quic/xJ5Rr1_N6JI1DT1S7z77G0nZG2Y).\r\n\r\n@janaiyengar this rots quickly, I want to close on before we next chat.\r\n\r\nCloses #96, #177, #184."
+  },
+  {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/466",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
     "labels_url": "https://api.github.com/repos/quicwg/base-drafts/issues/466/labels{/name}",
@@ -1714,7 +1914,8 @@
     "updated_at": "2017-04-19T07:36:24Z",
     "closed_at": null,
     "body": "According to life of a stream, a stream can transition from \"half closed local\" to \"closed\" by sending a \"RST\" or by receiving \"FIN\" or \"RST\" from peer. However, sending a \"RST\" may race ahead of any in-flight packets send to the peer. In fact this is likely because the stream will transmit according to a fair schedule while RST will likely be prioritised. The RST will tear down state on both ends preventing the peer from receiving and the local endpont from retransmitting (depending on implementation).\r\n\r\nIn addition to the above there is also a user aspect. QUIC does not define an API, but what does it mean to close a stream? Do you close the write stream or do you close both read and write stream? This can encoded as either sending \"FIN\" or \"FIN+RST\" but has the race condition mentioned. When cleaning up after a stream initiated locally, it appears you need to always eventually send a RST even if the peer has no interest in writing. Application protocol could agree to not require a RST, but that seems a bit roundabout.\r\n\r\nPerhaps it is saner to handle read and write streams entirely separately.\r\nhttps://github.com/quicwg/base-drafts/issues/175\r\n\r\nThe issue may also be related to:\r\nhttps://github.com/quicwg/base-drafts/issues/61"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/438",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -1816,8 +2017,7 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/437.patch"
     },
     "body": "This is breaking in the Makefile sanity checks."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/436",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3382,7 +3582,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/409.patch"
     },
     "body": ""
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/408",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -3484,8 +3685,7 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/407.patch"
     },
     "body": "..hopefully..."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/406",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5278,7 +5478,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/379.patch"
     },
     "body": "For some reason, the TLS draft is in the .gitignore file.  I can't see a sensible reason for this, and yet the repo obviously does still track the TLS draft.  Am I missing something?\r\n\r\nOrdinarily, I'd just fix this, but it's weird enough I'd like the git-template-master to look and confirm."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/378",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -5429,8 +5630,7 @@
     "updated_at": "2017-03-09T07:29:20Z",
     "closed_at": null,
     "body": "This is related to #353.\r\n\r\nWhat would we expect endpoints to do upon the receipt of ICMP (or ICMPv6) Type=DestinationUnreachable?  For IPv6, that message has a large chunk of the original packet, proving that a path element sent it. For IPv4, there is very little entropy there (just your src port).\r\n\r\nCan this be as trusted as PUBLIC_RESET by Clients? For IPv4 the answer is likely to be \"no\". For ipv6, I am not that sure. But there are real implications for clients that cannot just fall back to tcp.\r\n\r\nIf you ignore ICMP and keep retrying the dead server, you are very likely missing an opportunity to switch the server (switch to another IP offered by DNS).\r\n\r\nIf you do not ignore ICMP (especially ICMPv4) and try reopening the connection (using a different server IP), you are allowing using your client in a highly amplified reflection DDOS attack against the sever. The attacker just needs to send you a slow stream of forged ICMP to get you to keep re-opening/re-negotiating connections and retrying expensive requests."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/376",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7306,7 +7506,8 @@
     "updated_at": "2017-04-19T05:27:41Z",
     "closed_at": "2017-03-10T00:14:59Z",
     "body": "My sense is that we'd like the server to chose the \"real\" connection ID to be used for a connection. Among other things, this enables servers to embed routing/load balancing information into connection IDs.\r\n\r\nI have heard two options for what the client should do before it has a server-chosen connection ID.\r\n\r\n1) Send a random connection ID\r\n2) Send a connection ID of 0\r\n\r\nIf we go with approach 1, then we need some mechanism that load balancers can use to detect if a packet's connection ID is server-chosen or not. It seems likely that all packets encrypted with 1-RTT keys could use server generated connection IDs. But other packets it's not so clear. Consider the case of a non-0-RTT handshake. The initial client handshake packet would include a client-chosen connection ID. When the server replies, it could use a server-chosen connection ID. If so then when the client sends the next handshake packet it could use the server-chosen connection ID as well. But that means that we'd need a mechanism to disambiguate client handshake packets with client-chosen connection IDs from client handshake packets with server-chosen connection IDs. We could devote bits or packet types to indicate this. I suspect the same argument might hold for server handshake packets. We might not want the server to chose a connection ID until it is ready to accept the handshake.\r\n\r\nOne benefit of this approach, however, is that a QUIC server could chose to simply use the client's connection ID for the duration of the connection. This would mean that it would not need to be able to generate a new connection ID that is guaranteed to be sent by the load balancer back to itself. In cases where the vendor of the load balancer and the server are not the same, this might be valuable.\r\n\r\nIf we go with approach 2, then it's obvious that any packet with a non-zero connection ID has a server-chosen connection ID (though the server still may want to verify that it's a \"valid\" connection ID according to the algorithm it uses). \r\n\r\nOn the other hand, this requires QUIC servers which are behind load balancers to be able to generate connection IDs which the load balancer will route back to them. If the server and load balancers are from different vendors, this might be challenging.\r\n\r\n"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/348",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -7435,8 +7636,7 @@
     "updated_at": "2017-04-19T05:27:41Z",
     "closed_at": "2017-03-08T19:26:58Z",
     "body": "GOAWAY has a \"Last Good Stream ID\", which is \"The last Stream ID which was accepted by the sender of the GOAWAY message. If no streams were replied to, this value must be set to 0.\"\r\n\r\nThe sender does not specify the last stream id it will use, which I think it should.\r\n\r\nI also think the text in \"6.6 Connection Termination\" should specify that all streams <= the Last Good Stream ID will be completed(fin'd or reset), including delivering any outstanding data. \r\n\r\n"
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/346",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -9275,7 +9475,8 @@
     "updated_at": "2017-02-17T22:14:51Z",
     "closed_at": "2017-02-17T22:14:51Z",
     "body": "Some of the acronyms are spelled out and some aren't.  We should make it matchy-matchy."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/318",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -9397,8 +9598,7 @@
     "updated_at": "2017-02-17T20:57:53Z",
     "closed_at": "2017-02-17T20:57:53Z",
     "body": "We got two options for an ASCII reference:\r\n\r\n1. RFC20\r\n2. American National Standards Institute (formerly United States of America Standards Institute), \"USA Code for Information Interchange\", ANSI X3.4-1968, 1968.\r\n\r\nWhen RFC5137 use the ANSI reference they also included the following note: ANSI X3.4-1968 has been replaced by newer versions with slight modifications, but the 1968 version remains definitive for the Internet.\r\n\r\nI lean towards RFC20."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/316",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -11421,7 +11621,8 @@
     "updated_at": "2017-04-19T05:27:18Z",
     "closed_at": "2017-02-27T01:15:15Z",
     "body": "The draft currently says:\r\n\r\n> In this case, an endpoint SHOULD send a Public Reset packet to indicate the failure. \r\n\r\n(This is in the context of discovering that the MTU is too small.)\r\n\r\nGiven that it doesn't take much to send an authenticated CONNECTION_CLOSE in a packet that won't risk breaking even the minimum IPv4 MTU, I think that this suggestion too much.  I would change this to \"treat this as a connection error of SOME_ERROR_CODE\" either defining a new MTU_TOO_SMALL error code, or reusing an existing one."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/288",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -11598,8 +11799,7 @@
     "updated_at": "2017-04-19T05:46:32Z",
     "closed_at": "2017-02-12T23:35:30Z",
     "body": "According to @marten-seemann, they occasionally skip a packet number.  This might mess with congestion control if it is done too often, but it seems like a perfectly reasonable thing to do.  The draft currently forbids this.  Maybe it shouldn't."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/286",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -13624,7 +13824,8 @@
     "updated_at": "2017-02-06T09:22:35Z",
     "closed_at": "2017-02-06T09:22:35Z",
     "body": ""
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/258",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -13788,8 +13989,7 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/257.patch"
     },
     "body": "for #252 "
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/256",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -15640,7 +15840,8 @@
     "updated_at": "2017-04-19T05:30:23Z",
     "closed_at": "2017-02-02T07:31:02Z",
     "body": "As discussed at the Tokyo interim, we might choose to use a less generic name for this and to avoid colliding with an existing but incompatible usage."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/228",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -15763,8 +15964,7 @@
     "updated_at": "2017-03-15T01:41:30Z",
     "closed_at": null,
     "body": "This is an alternative to #167: We could just encrypt the cleartext data in the initial handshake packets with a deterministic key (e.g. a mixture of a version-dependent key and the initial packet number). The AEAD used there would have to be fixed in the spec.\r\n\r\nThe goal would be to make it harder for middleboxes to ossify on stuff in the client hello, e.g. SNI, and to detect initial packets (#203). On the other hand, there's additional computational cost for decrypting packets server-side."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/226",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -17546,7 +17746,8 @@
     "updated_at": "2017-01-24T02:45:11Z",
     "closed_at": null,
     "body": "There is a two byte length field. Surely a 256-byte reason phrase is long enough.\r\n\r\nAlso, are these in ASCII? UTF-8?"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/198",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -17662,8 +17863,7 @@
     "updated_at": "2017-01-24T01:38:48Z",
     "closed_at": null,
     "body": "I think it would be good to make padding the responsibility of the crypto layer. TLS already has a reasonable padding scheme which we can just steal here."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/196",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -19543,7 +19743,8 @@
     "updated_at": "2017-04-19T05:28:54Z",
     "closed_at": "2017-02-24T14:07:08Z",
     "body": "I would like to see some language in the loss recovery document about client actions when the first handshake message is lost. We have overloaded this loss signal with multiple meanings/responses:\r\n\r\n(1) Retransmit (due to garden-variety network loss)\r\n(2) Change MTU and retransmit (due to MTU problems, though we might see ICMP here?)\r\n(3) Failover to TCP (middleboxes eating QUIC)\r\n(4) Give up (path failure)\r\n\r\nIf I were implementing a client using these documents, I am not sure how I would handle a CHLO loss given these conflicting imperatives. I could accept having SHOULDs instead of MUSTs, but there ought to be something."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/168",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -19707,8 +19908,7 @@
     "updated_at": "2017-04-27T00:28:07Z",
     "closed_at": null,
     "body": "QUIC originally specified a 12 byte hash for unencrypted packets.  This was dropped when QUIC crypto was swapped for the TLS 1.3 mapping.\r\n\r\nWe should add it back, since it is useful in eliminating corrupted packets and random internet junk.  And possibly in preventing reflection attacks mentioned in #147 "
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/166",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -21736,7 +21936,8 @@
     "updated_at": "2017-04-19T05:25:18Z",
     "closed_at": "2017-01-26T02:19:11Z",
     "body": "Is there a minimum MTU we want QUIC to enforce? If so, how big? If an endpoint discovers this is not achievable, what then? Do they have to fail over to TCP, or do we just let the (IPv4) network fragment packets?\r\n"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/138",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -21864,8 +22065,7 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/137.patch"
     },
     "body": "This is part of an ongoing discussion, so I don't expect to resolve this here.\r\n\r\nI opened #134 to address the one listed requirement that TLS doesn't provide.\r\n\r\nCloses #9."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/136",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -23973,7 +24173,8 @@
     "updated_at": "2017-03-20T05:26:37Z",
     "closed_at": null,
     "body": "I note that the IEEE754 reference doesn't help."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/108",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -24096,8 +24297,7 @@
     "updated_at": "2017-04-19T05:45:35Z",
     "closed_at": "2017-01-13T21:36:13Z",
     "body": "In draft-quic-ietf-recovery, packet_number is listed as a parameter. But it is not used in the pseudocode, is not sent on to SetLossDetectionAlarm(), and there is no obvious place that SetLossDetectionAlarm() would use it."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/106",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -25762,7 +25962,8 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/79.patch"
     },
     "body": "(sorry for the noise)"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/78",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -25864,8 +26065,7 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/77.patch"
     },
     "body": ""
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/76",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -28082,7 +28282,8 @@
     "updated_at": "2017-04-19T05:22:44Z",
     "closed_at": "2017-02-22T00:41:42Z",
     "body": "We currently have no way of advertising things like flow control windows, maximum number of streams, etc...\r\n\r\nCandidate is a QUIC extension that we include in the handshake.   This can include the QUIC version."
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/48",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -28211,8 +28412,7 @@
     "updated_at": "2017-04-27T01:33:08Z",
     "closed_at": "2017-04-27T01:33:08Z",
     "body": "Error handling is rather... *distributed* in the core protocol spec.  The frames to signal errors are there, and there's a long list of error codes, but no generalized discussion of how errors are handled and what stream versus connection-level errors mean."
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/46",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -30232,7 +30432,8 @@
     "updated_at": "2017-02-08T21:03:22Z",
     "closed_at": "2017-02-08T21:03:22Z",
     "body": "Hi,\r\n\r\nI believe the RST_STREAM error codes are missing from https://tools.ietf.org/html/draft-hamilton-quic-transport-protocol-01 (there weren't in the previous version either).\r\n\r\nThese error codes are distinct from other error codes but the enumeration ranges overlap, which causes some unfortunate aliasing. I raised this issue on the QUIC Protocol discussion group (https://groups.google.com/a/chromium.org/forum/#!topic/proto-quic/dSSNpQj3shI) but also raising here to signal when the the I-D gets updated.\r\n"
-  },
+  }
+,
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/18",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
@@ -30334,8 +30535,7 @@
       "patch_url": "https://github.com/quicwg/base-drafts/pull/17.patch"
     },
     "body": ""
-  }
-,
+  },
   {
     "url": "https://api.github.com/repos/quicwg/base-drafts/issues/16",
     "repository_url": "https://api.github.com/repos/quicwg/base-drafts",
