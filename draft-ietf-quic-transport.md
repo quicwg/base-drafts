@@ -2021,7 +2021,7 @@ discussed in more detail in {{QUIC-RECOVERY}}.
 
 ## Special Considerations for PMTU Discovery
 
-Traditional ICMP-based path MTU discovery in IPv4 ({{!RFC1191}} is potentially
+Traditional ICMP-based path MTU discovery in IPv4 {{!RFC1191}} is potentially
 vulnerable to off-path attacks that successfully guess the IP/port 4-tuple and
 reduce the MTU to a bandwidth-inefficient value. TCP connections mitigate this
 risk by using the (at minimum) 8 bytes of transport header echoed in the ICMP
