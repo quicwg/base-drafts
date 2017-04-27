@@ -2235,21 +2235,8 @@ closes a stream SHOULD be discarded.  An endpoint MAY choose to limit the period
 over which it ignores frames and treat frames that arrive after this time as
 being in error.
 
-An endpoint will learn the final offset of the data it receives on a stream when
-it enters the "half-closed (remote)".  The final offset is carried explicitly in
-the RST_STREAM frame; otherwise, the final offset is the offset of the end of
-the data carried in STREAM frame marked with a FIN flag.
-
-An endpoint MUST NOT send data on a stream at or beyond the final offset.
-
-Once a final offset for a stream is known, it cannot change.  If a RST_STREAM or
-STREAM frame causes the final offset to change for a stream, an endpoint SHOULD
-respond with a QUIC_STREAM_DATA_AFTER_TERMINATION error (see
-{{error-handling}}).  A receiver SHOULD treat receipt of data at or beyond the
-final offset as a QUIC_STREAM_DATA_AFTER_TERMINATION error.  Generating these
-errors is not mandatory, but only because requiring that an endpoint generate
-these errors also means that the endpoint needs to maintain the final offset
-state for closed streams, which could mean a significant state commitment.
+An endpoint will know the final offset of the data it receives on a stream when
+it reaches the "half-closed (remote)" state, see {{final-offset}} for details.
 
 A stream in this state can be used by the endpoint to send any frame that
 mentions a stream ID.  In this state, the endpoint MUST observe advertised
@@ -2514,6 +2501,31 @@ best to not let the sender go into quiescence if avoidable.  To avoid blocking a
 sender, and to reasonably account for the possibiity of loss, a receiver should
 send a MAX_DATA or MAX_STREAM_DATA frame at least two roundtrips before it
 expects the sender to get blocked.
+
+
+## Stream Final Offset {#final-offset}
+
+The final offset is the count of the number of octets that are transmitted on a
+stream.  For a stream that is reset, the final offset is carried explicitly in
+the RST_STREAM frame.  Otherwise, the final offset is the offset of the end of
+the data carried in STREAM frame marked with a FIN flag.
+
+An endpoint will know the final offset for a stream when the stream enters the
+"half-closed (remote)" state.  However, if there is reordering or loss, an
+endpoint might learn the final offset prior to entering this state if it is
+carried on a STREAM frame.
+
+An endpoint MUST NOT send data on a stream at or beyond the final offset.
+
+Once a final offset for a stream is known, it cannot change.  If a RST_STREAM or
+STREAM frame causes the final offset to change for a stream, an endpoint SHOULD
+respond with a QUIC_STREAM_DATA_AFTER_TERMINATION error (see
+{{error-handling}}).  A receiver SHOULD treat receipt of data at or beyond the
+final offset as a QUIC_STREAM_DATA_AFTER_TERMINATION error, even after a stream
+is closed.  Generating these errors is not mandatory, but only because
+requiring that an endpoint generate these errors also means that the endpoint
+needs to maintain the final offset state for closed streams, which could mean a
+significant state commitment.
 
 
 # Error Handling
