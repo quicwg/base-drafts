@@ -458,7 +458,7 @@
     "milestone": null,
     "comments": 6,
     "created_at": "2017-04-21T01:07:59Z",
-    "updated_at": "2017-04-27T02:26:14Z",
+    "updated_at": "2017-04-27T02:45:23Z",
     "closed_at": null,
     "pull_request": {
       "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/459",
@@ -1872,7 +1872,7 @@
     "milestone": null,
     "comments": 4,
     "created_at": "2017-04-13T18:05:37Z",
-    "updated_at": "2017-04-18T23:49:54Z",
+    "updated_at": "2017-04-27T02:31:54Z",
     "closed_at": null,
     "body": "Reviewing Issue #181 and PR #236, it seems like having the SETTINGS\r\nframe on Stream #3 creates a bunch of odd race conditions, because\r\nyou need/want to send data (both in 0-RTT and 1-RTT) before you might\r\nget the SETTINGS frame.\r\n\r\nIt occurs to me that we might easily be able to remove this by\r\nmoving the SETTINGS frame into the handshake. Specifically the\r\nClientHello and the EncryptedExtensions.\r\n\r\nIf we did this, there would be no need for defaults, because:\r\n\r\n- In 1-RTT, you would be guaranteed of getting it before you\r\n  could write\r\n- It would not be possible to have a 0-RTT context without\r\n  SETTINGS.\r\n\r\nMoreover, the server's 1-RTT settings frames would clearly\r\napply to the 1-RTT data, but not the 0-RTT data.\r\n\r\nIt seems like the major downsides of this are:\r\n\r\n- Layer violation\r\n- You don't get confidentiality for the client's settings\r\n  (but you do gain a full RTT).\r\n\r\n"
   },
