@@ -89,7 +89,7 @@
         "default": false
       }
     ],
-    "state": "open",
+    "state": "closed",
     "locked": false,
     "assignee": null,
     "assignees": [
@@ -98,8 +98,8 @@
     "milestone": null,
     "comments": 0,
     "created_at": "2017-04-26T07:31:53Z",
-    "updated_at": "2017-04-26T18:19:41Z",
-    "closed_at": null,
+    "updated_at": "2017-04-27T02:29:51Z",
+    "closed_at": "2017-04-27T02:29:51Z",
     "pull_request": {
       "url": "https://api.github.com/repos/quicwg/base-drafts/pulls/465",
       "html_url": "https://github.com/quicwg/base-drafts/pull/465",
