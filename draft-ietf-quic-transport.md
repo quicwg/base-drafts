@@ -913,7 +913,7 @@ prior to establishing a connection, exposing the server to a denial of service
 risk.
 
 The first client packet of the cryptographic handshake protocol MUST fit within
-a 1200 octet QUIC packet.  This includes overheads that reduce the space
+a 1232 octet QUIC packet payload.  This includes overheads that reduce the space
 available to the cryptographic handshake protocol.
 
 Details of how TLS is integrated with QUIC is provided in more detail in
