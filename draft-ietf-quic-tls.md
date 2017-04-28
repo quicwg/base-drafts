@@ -83,6 +83,15 @@ informative:
         org: Google
         role: editor
 
+  FNV:
+    title: "FNV Hash"
+    date: 2015-01-07
+    author:
+      -
+        ins: L. Noll
+        name: Landon Curt Noll
+    target: "http://www.isthe.com/chongo/tech/comp/fnv/"
+
 
 --- abstract
 
@@ -819,6 +828,73 @@ Failure to unprotect a packet does not necessarily indicate the existence of a
 protocol error in a peer or an attack.  The truncated packet number encoding
 used in QUIC can cause packet numbers to be decoded incorrectly if they are
 delayed significantly.
+
+
+# Unprotected Packets
+
+QUIC adds an integrity check to all unprotected packets.  Any packet that is not
+protected by the negotiated AEAD (see {{packet-protection}}), includes a
+integrity check.  This check does not prevent the packet from being altered, it
+exists for added resilience against data corruption and to provided added
+assurance that the sender intends to use QUIC.
+
+Unprotected packets all use the long form of the QUIC header and so will include
+a version number.  For this version of QUIC, the integrity check uses the
+128-bit FNV-1a hash (see {{fnv1a}}).  The output of this hash is appended to the
+payload of the packet.
+
+The integrity check algorithm MAY change for other versions of the protocol.
+
+
+## Integrity Check Processing
+
+An endpoint sending a packet that has a long header and a type that does not
+indicate that the packet will be protected (that is, 0-RTT Encrypted (0x05),
+1-RTT Encrypted (key phase 0) (0x06), or 1-RTT Encrypted (key phase 1) (0x07))
+first constructs the packet that it sends without the integrity check.
+
+In constructing the packet, the endpoint has to consider the extra length that
+the integrity check will add relative to the path MTU.  In particular, the
+integrity check length needs to be subtracted from available space when padding
+the initial client packet.
+
+The sender then calculates the integrity check over the entire packet, starting
+from the type field.  The output of the hash is appended to the packet.
+
+A receiver that receives an unprotected packet first checks that the version is
+correct, then removes the trailing octets.  It calculates the integrity check
+over the remainder of the packet.  Unprotected packets that do not contain a
+valid integrity check MUST be discarded.
+
+An implementation could choose to treat the addition and removal of the
+integrity check as though it were an AEAD.
+
+
+## The 128-bit FNV-1a Algorithm {#fnv1a}
+
+QUIC uses the 128-bit version of the alternative Fowler/Noll/Vo hash, or FNV-1a
+{{FNV}}.
+
+FNV-1a can be expressed in pseudocode as:
+
+```
+hash := offset basis
+for each input octet:
+    hash := hash XOR input octet
+    hash := hash * prime
+```
+
+That is, a 128-bit unsigned integer is initialized with an offset basis.  Then,
+for each octet of the input, the exclusive binary OR of the value is taken, then
+multiplied by a prime.  Any overflow from multiplication is discarded.
+
+The offset basis for the 128-bit FNV-1a is the decimal value
+144066263297769815596495629667062367629 (in hex,
+0x6c62272e07bb014262b821756295c58d).  The prime is 309485009821345068724781371
+(in hex, 0x1000000000000000000013b; or as an expression 2^88 + 2^8 + 0x3b).
+
+Once all octets have been processed in this fashion, the final integer value is
+encoded on 16 octets in network byte order.
 
 
 # Key Phases
