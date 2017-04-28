@@ -1977,10 +1977,8 @@ total size is less than 1280 octets, to mitigate amplification attacks.
 
 If a QUIC endpoint determines that the PMTU between any pair of local and remote
 IP addresses has fallen below 1280 octets, it MUST immediately cease sending
-QUIC packets between those IP addresses. This may result in abrupt termination
-of the connection if all pairs are affected. In this case, an endpoint SHOULD
-send a Public Reset packet to indicate the failure. The application SHOULD
-attempt to use TLS over TCP instead.
+QUIC packets on the affected path.  This could result in termination of the
+connection if an alternative path cannot be found.
 
 A sender bundles one or more frames in a Regular QUIC packet (see {{frames}}).
 
