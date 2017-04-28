@@ -2208,6 +2208,9 @@ A RST_STREAM frame on an "idle" stream causes the stream to become
 "half-closed (local)"; receiving RST_STREAM causes the stream to become
 "half-closed (remote)".
 
+An endpoint might receive MAX_STREAM_DATA frames on peer-initiated streams that
+are "idle" if there is loss or reordering of packets.
+
 Receiving any frame other than STREAM, MAX_STREAM_DATA, STREAM_BLOCKED, or
 RST_STREAM on a stream in this state MUST be treated as a connection error
 ({{error-handling}}) of type YYYY.
