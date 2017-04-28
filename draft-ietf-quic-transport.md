@@ -2084,18 +2084,14 @@ similar to the way ephemeral streams are used in SST
 for some applications.
 
 
-## Stream Identifiers {#stream-identifiers}
+## Stream Identifiers {#stream-id}
 
 Streams are identified by an unsigned 32-bit integer, referred to as the Stream
 ID.  To avoid Stream ID collision, clients initiate streams using odd-numbered
 Stream IDs; streams initiated by the server use even-numbered Stream IDs.
 
-A Stream ID of zero (0x0) is reserved and used for identifying the connection as
-a whole and is used in connection-level flow control frames ({{flow-control}}).
-The Stream ID of zero cannot be used to establish a new stream.
-
-Stream ID 1 (0x1) is reserved for the cryptographic handshake.  Stream ID 1 MUST
-NOT be used for application data, and MUST be the first client-initiated stream.
+Stream ID 0 (0x0) is reserved for the cryptographic handshake.  Stream 0 MUST
+NOT be used for application data, and is the first client-initiated stream.
 
 A QUIC endpoint cannot reuse a Stream ID.  Streams MUST be created in sequential
 order.  Open streams can be used in any order.  Streams that are used out of
@@ -2175,8 +2171,8 @@ All streams start in the "idle" state.
 The following transitions are valid from this state:
 
 Sending or receiving a STREAM frame causes the stream to become "open".  The
-stream identifier is selected as described in {{stream-identifiers}}.  The same
-STREAM frame can also cause a stream to immediately become "half-closed".
+stream identifier is selected as described in {{stream-id}}.  The same STREAM
+frame can also cause a stream to immediately become "half-closed".
 
 Receiving a STREAM frame on a peer-initiated stream (that is, a packet sent by a
 server on an even-numbered stream or a client packet on an odd-numbered stream)
@@ -2854,11 +2850,11 @@ An adversarial endpoint can open lots of streams, exhausting state on an
 endpoint.  The adversarial endpoint could repeat the process on a large number
 of connections, in a manner similar to SYN flooding attacks in TCP.
 
-Normally, clients will open streams sequentially, as explained in
-{{stream-identifiers}}.  However, when several streams are initiated at short
-intervals, transmission error may cause STREAM DATA frames opening streams to be
-received out of sequence.  A receiver is obligated to open intervening streams
-if a higher-numbered stream ID is received.  Thus, on a new connection, opening
+Normally, clients will open streams sequentially, as explained in {{stream-id}}.
+However, when several streams are initiated at short intervals, transmission
+error may cause STREAM DATA frames opening streams to be received out of
+sequence.  A receiver is obligated to open intervening streams if a
+higher-numbered stream ID is received.  Thus, on a new connection, opening
 stream 2000001 opens 1 million streams, as required by the specification.
 
 The number of active streams is limited by the concurrent stream limit transport
