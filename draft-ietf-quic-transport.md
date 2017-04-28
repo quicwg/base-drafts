@@ -1045,9 +1045,8 @@ particularly with respect to transport parameters that establish limits:
   limit is received, the client can recommence sending.
 
 * Similarly, a client might exceed the initial stream limit declared by the
-  server.  A client MUST reset any streams that exceed this limit.  A server
-  SHOULD reset any streams it cannot handle with a code that allows the client
-  to retry any application action bound to those streams.
+  server.  A server MAY reset any streams it cannot handle with a code that
+  allows the client to retry any application action bound to those streams.
 
 A server MAY close a connection if remembered or assumed 0-RTT transport
 parameters cannot be supported, using an error code that is appropriate to the
