@@ -866,9 +866,6 @@ correct, then removes the trailing octets.  It calculates the integrity check
 over the remainder of the packet.  Unprotected packets that do not contain a
 valid integrity check MUST be discarded.
 
-An implementation could choose to treat the addition and removal of the
-integrity check as though it were an AEAD.
-
 
 ## The 128-bit FNV-1a Algorithm {#fnv1a}
 
