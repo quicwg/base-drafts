@@ -1058,6 +1058,10 @@ validation was not requested originally.  In such cases, the cookie extension
 could either be absent or it could indicate that an address validation token is
 not present.
 
+A server can use the cookie extension to store all state necessary to continue
+the connection.  This allows a server to avoid committing state for clients that
+have unvalidated source addresses.
+
 
 ## NewSessionTicket Address Validation
 
