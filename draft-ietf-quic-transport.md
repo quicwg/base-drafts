@@ -2301,10 +2301,10 @@ unless this is a result of a change in the initial offsets (see
 {{zerortt-parameters}}).
 
 A receiver MUST NOT renege on an advertisement; that is, once a receiver
-advertises a stream ID via a LIMIT_UPDATE frame, it MUST NOT subsequently
-advertise a smaller maximum ID.  A sender may receive LIMIT_UPDATE frames out of
-order; a sender MUST therefore ignore any LIMIT_UPDATE that does not increase
-the maximum.
+advertises a stream ID via a MAX_STREAM_ID frame, it MUST NOT subsequently
+advertise a smaller maximum ID.  A sender may receive MAX_STREAM_ID frames out
+of order; a sender MUST therefore ignore any MAX_STREAM_ID that does not
+increase the maximum.
 
 ## Sending and Receiving Data
 
