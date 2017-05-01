@@ -1058,9 +1058,26 @@ validation was not requested originally.  In such cases, the cookie extension
 could either be absent or it could indicate that an address validation token is
 not present.
 
+
+### Stateless Address Validation
+
 A server can use the cookie extension to store all state necessary to continue
 the connection.  This allows a server to avoid committing state for clients that
 have unvalidated source addresses.
+
+For instance, a server could use a statically-configured key to encrypt the
+information that it requires and include that information in the cookie.  In
+addition to address validation information, a server that uses encryption also
+needs to be able recover the hash of the ClientHello and its length, plus any
+information it needs in order to reconstruct the HelloRetryRequest.
+
+A client proceeds as though the server were stateful.  It constructs a second
+ClientHello and sends it following the initial ClientHello.  Note that this
+means a server that doesn't maintain state between the intial and second
+ClientHello will receive the second ClientHello in STREAM frames with a non-zero
+offset.  The resulting gap in the received stream data needs to be ignored and
+data passed to TLS; if a valid cookie is found, the size of the gap SHOULD be
+validated prior to generating a response.
 
 
 ## NewSessionTicket Address Validation
