@@ -83,15 +83,6 @@ informative:
         org: Google
         role: editor
 
-  FNV:
-    title: "FNV Hash"
-    date: 2015-01-07
-    author:
-      -
-        ins: L. Noll
-        name: Landon Curt Noll
-    target: "http://www.isthe.com/chongo/tech/comp/fnv/"
-
 
 --- abstract
 
@@ -853,24 +844,19 @@ indicate that the packet will be protected (that is, 0-RTT Encrypted (0x05),
 1-RTT Encrypted (key phase 0) (0x06), or 1-RTT Encrypted (key phase 1) (0x07))
 first constructs the packet that it sends without the integrity check.
 
-In constructing the packet, the endpoint has to consider the extra length that
-the integrity check will add relative to the path MTU.  In particular, the
-integrity check length needs to be subtracted from available space when padding
-the initial client packet.
-
 The sender then calculates the integrity check over the entire packet, starting
 from the type field.  The output of the hash is appended to the packet.
 
 A receiver that receives an unprotected packet first checks that the version is
-correct, then removes the trailing octets.  It calculates the integrity check
+correct, then removes the trailing 16 octets.  It calculates the integrity check
 over the remainder of the packet.  Unprotected packets that do not contain a
 valid integrity check MUST be discarded.
 
 
 ## The 128-bit FNV-1a Algorithm {#fnv1a}
 
-QUIC uses the 128-bit version of the alternative Fowler/Noll/Vo hash, or FNV-1a
-{{FNV}}.
+QUIC uses the 128-bit version of the alternative Fowler/Noll/Vo hash (FNV-1a)
+{{?FNV=I-D.eastlake-fnv}}.
 
 FNV-1a can be expressed in pseudocode as:
 
@@ -891,7 +877,7 @@ The offset basis for the 128-bit FNV-1a is the decimal value
 (in hex, 0x1000000000000000000013b; or as an expression 2^88 + 2^8 + 0x3b).
 
 Once all octets have been processed in this fashion, the final integer value is
-encoded on 16 octets in network byte order.
+encoded as 16 octets in network byte order.
 
 
 # Key Phases
