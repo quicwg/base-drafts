@@ -533,9 +533,8 @@ older than 1.3 is negotiated.
 ## ClientHello Size
 
 QUIC requires that the initial handshake packet from a client fit within the
-payload of a single packet.  A minimum-sized initial packet in IPv6 has space
-for a single TLS record of 1197 octets once the QUIC header and minimal framing
-is added.
+payload of a single packet.  The size limits on QUIC packets mean that a record
+containing a ClientHello needs to fit within 1197 octets.
 
 A TLS ClientHello can fit within this limit with ample space remaining.
 However, there are several variables that could cause this limit to be exceeded.
@@ -549,9 +548,9 @@ extension can have an effect on a client's ability to connect.  Choosing a small
 value increases the probability that these values can be successfully used by a
 client.
 
-A TLS implementation does not need to enforce this size constraint.  QUIC
-padding can be used to reach this size, meaning that a TLS server is unlikely to
-receive a large ClientHello message.
+The TLS implementation does not need to ensure that the ClientHello is
+sufficiently large.  QUIC PADDING frames are added to increase the size of the
+packet as necessary.
 
 
 ## Peer Authentication
