@@ -1971,8 +1971,8 @@ signals that indicate a smaller limit might exist.
 Clients MUST ensure that the first packet in a connection, and any
 retransmissions of those octets, has a payload of least 1232 octets for an IPv6
 datagram and 1252 octets for an IPv4 datagram.  In the absence of extensions to
-the IP or UDP header, padding to exactly these values will result in a packet
-that is 1280 octets.
+the IP header, padding to exactly these values will result in a packet that is
+1280 octets.
 
 The initial client packet SHOULD be padded to exactly these values unless the
 client has a reasonable assurance that the PMTU is larger.  Sending a packet of
