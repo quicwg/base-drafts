@@ -790,6 +790,7 @@ explained in more detail as they are referenced later in the document.
 | 0x07        | PING             | {{frame-ping}}             |
 | 0x08        | BLOCKED          | {{frame-blocked}}          |
 | 0x09        | STREAM_BLOCKED   | {{frame-stream-blocked}}   |
+| 0x0a        | STREAM_ID_NEEDED | {{frame-stream-id-needed}} |
 | 0xa0 - 0x7f | ACK              | {{frame-ack}}              |
 | 0xc0 - 0xff | STREAM           | {{frame-stream}}           |
 {: #frame-types title="Frame Types"}
@@ -1780,6 +1781,14 @@ The STREAM_BLOCKED frame contains a single field:
 Stream ID:
 
 : A 32-bit unsigned number indicating the stream which is flow control blocked.
+
+
+## STREAM_ID_NEEDED Frame {#frame-stream-id-needed}
+
+A sender sends a STREAM_ID_NEEDED frame (type=0x0a) when it wishes to open a
+stream, but is unable to due to the maximum stream ID limit.
+
+The STREAM_ID_NEEDED frame does not contain a payload.
 
 
 ## RST_STREAM Frame {#frame-rst-stream}
