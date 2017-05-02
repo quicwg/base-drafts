@@ -1137,7 +1137,7 @@ on its own.
 
 Several methods are used in QUIC to mitigate this attack.  Firstly, the initial
 handshake packet is padded to at least 1280 octets.  This allows a server to
-send a similar amount of data without risking causing an amplication attack
+send a similar amount of data without risking causing an amplification attack
 toward an unproven remote address.
 
 A server eventually confirms that a client has received its messages when the
