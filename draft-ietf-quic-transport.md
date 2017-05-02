@@ -576,9 +576,8 @@ packets.  The first Final Server Cleartext and all subsequent packets MUST use
 the final Connection ID, as described in {{connection-id}}.
 
 The payload of a Cleartext packet consists of a sequence of frames, as described
-in {{frames}}.
-
-(TODO: Add hash before frames.)
+in {{frames}}.  Cleartext packets also include an integrity check, described in
+{{QUIC-TLS}}.
 
 
 ## Encrypted Packets {#encrypted-packet}
