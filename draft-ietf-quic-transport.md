@@ -1245,9 +1245,6 @@ cryptographic verification of a client which has changed its IP
 address because the client continues to use the same session key for
 encrypting and decrypting packets.
 
-DISCUSS: Simultaneous migration.  Is this reasonable?
-
-TODO: Perhaps move mitigation techniques from Security Considerations here.
 
 ## Connection Termination {#termination}
 
