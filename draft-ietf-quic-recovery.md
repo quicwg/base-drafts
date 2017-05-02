@@ -191,7 +191,7 @@ An unacknowledged QUIC packet is marked as lost in one of the following ways:
     unacknowledged packets are marked as lost.
 
   * Instead of a packet threshold to tolerate reordering, a QUIC sender may use
-    a time thresold. This allows for senders to be tolerant of short periods of
+    a time threshold. This allows for senders to be tolerant of short periods of
     significant reordering. In this mechanism, a QUIC sender marks a packet as
     lost when a packet larger than it is acknowledged and a threshold amount of
     time has passed since the packet was sent.
@@ -216,7 +216,7 @@ kReorderingThreshold (default 3):
   considers a packet lost.
 
 kTimeReorderingFraction (default 1/8):
-: Maximum reordering in time sapce before time based loss detection considers
+: Maximum reordering in time space before time based loss detection considers
   a packet lost.  In fraction of an RTT.
 
 kMinTLPTimeout (default 10ms):
@@ -314,7 +314,7 @@ are as follows:
 
 * packet_number: The packet number of the sent packet.
 
-* is_retransmittble: A boolean that indicates whether the packet contains at
+* is_retransmittable: A boolean that indicates whether the packet contains at
   least one frame requiring reliable deliver.  The retransmittability of various
   QUIC frames is described in {{QUIC-TRANSPORT}}.  If false, it is still
   acceptable for an ack to be received for this packet.  However, a caller MUST
@@ -432,10 +432,10 @@ in response to 0RTT packets.
 
 #### Tail Loss Probe and Retransmission Timeout
 
-Tail loss probes {{?I-D.dukkipati-tcpm-tcp-loss-probe}} and retransmission
-timeouts{{?RFC6298}} are an alarm based mechanism to recover from cases when
-there are outstanding retransmittable packets, but an acknowledgement has
-not been received in a timely manner.
+Tail loss probes {{?LOSS-PROBE=I-D.dukkipati-tcpm-tcp-loss-probe}} and
+retransmission timeouts {{?RFC6298}} are an alarm based mechanism to recover
+from cases when there are outstanding retransmittable packets, but an
+acknowledgement has not been received in a timely manner.
 
 #### Early Retransmit
 
@@ -565,7 +565,7 @@ deployed TCP implementations on the internet.  Exceptions follow.
 
 A shorter delayed ack time of 25ms was chosen because longer delayed acks can
 delay loss recovery and for the small number of connections where less than
-packet per 25ms is delievered, acking every packet is beneficial to congestion
+packet per 25ms is delivered, acking every packet is beneficial to congestion
 control and loss recovery.
 
 The default initial RTT of 100ms was chosen because it is slightly higher than
@@ -685,7 +685,7 @@ the first post-RTO acknowledgement is processed.
 ~~~
    OnRetransmissionTimeoutVerified()
      congestion_window = kMinimumWindow
-~~
+~~~
 
 ## Pacing Packets
 

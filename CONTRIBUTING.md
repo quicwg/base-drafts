@@ -77,7 +77,7 @@ Note that whether or not a design issue is closed does **not** reflect consensus
 
 We also use the following labels to help understand the state of our design issues:
 
-* [`needs-discussion`](https://github.com/quicwg/base-drafts/labels/needs-discussion): The issue needs significant Working Group discussion before it can progress.
+* [`needs-discussion`](https://github.com/quicwg/base-drafts/labels/needs-discussion): The issue blocks progress to our next milestone.
 * [`has-proposal`](https://github.com/quicwg/base-drafts/labels/has-proposal): The issue has a proposal for resolution.
 * [`editor-ready`](https://github.com/quicwg/base-drafts/labels/editor-ready): The Working Group believes it has a viable resolution, but the editors need to incorporate that into the document so we can see it in situ.
 
