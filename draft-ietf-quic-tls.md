@@ -530,7 +530,7 @@ version of TLS.  An endpoint MUST terminate the connection if a version of TLS
 older than 1.3 is negotiated.
 
 
-## ClientHello Size
+## ClientHello Size {#clienthello-size}
 
 QUIC requires that the initial handshake packet from a client fit within the
 payload of a single packet.  The size limits on QUIC packets mean that a record
@@ -1140,13 +1140,23 @@ addition to address validation information, a server that uses encryption also
 needs to be able recover the hash of the ClientHello and its length, plus any
 information it needs in order to reconstruct the HelloRetryRequest.
 
-A client proceeds as though the server were stateful.  It constructs a second
-ClientHello and sends it following the initial ClientHello.  Note that this
-means a server that doesn't maintain state between the intial and second
-ClientHello will receive the second ClientHello in STREAM frames with a non-zero
-offset.  The resulting gap in the received stream data needs to be ignored and
-data passed to TLS; if a valid cookie is found, the size of the gap SHOULD be
-validated prior to generating a response.
+
+### Sending HelloRetryRequest
+
+A server does not need to maintain state for the connection when sending a
+HelloRetryRequest message.  This might be necessary to avoid creating a denial
+of service exposure for the server.  However, this means that information about
+the transport will be lost at the server.  This includes the stream offset of
+stream 0, the packet number that the server selects, and any opportunity to
+measure round trip time.
+
+A server MUST send a TLS HelloRetryRequest in a Server Stateless Retry packet.
+Using a Server Stateless Retry packet causes the client to reset stream offsets
+and avoids the need to commit to an initial packet number.
+
+A HelloRetryRequest message MUST NOT be split between multiple Server Stateless
+Retry packets.  This means that HelloRetryRequest is subject to the same size
+constraints as a ClientHello (see {{clienthello-size}}).
 
 
 ## NewSessionTicket Address Validation
