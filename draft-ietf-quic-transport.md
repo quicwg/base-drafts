@@ -1342,7 +1342,7 @@ Data Length:
 
 Stream ID:
 
-: A variable-sized unsigned ID unique to this stream.
+: The stream ID of the stream (see {{stream-identifiers}}.
 
 Offset:
 
@@ -2087,6 +2087,29 @@ similar to the way ephemeral streams are used in SST
 for some applications.
 
 
+## Stream Identifiers {#stream-identifiers}
+
+Streams are identified by an unsigned 32-bit integer, referred to as the Stream
+ID.  To avoid Stream ID collision, clients initiate streams using odd-numbered
+Stream IDs; streams initiated by the server use even-numbered Stream IDs.
+
+A Stream ID of zero (0x0) is reserved and used for identifying the connection as
+a whole and is used in connection-level flow control frames ({{flow-control}}).
+The Stream ID of zero cannot be used to establish a new stream.
+
+Stream ID 1 (0x1) is reserved for the cryptographic handshake.  Stream ID 1 MUST
+NOT be used for application data, and MUST be the first client-initiated stream.
+
+A QUIC endpoint cannot reuse a Stream ID.  Streams MUST be created in sequential
+order.  Open streams can be used in any order.  Streams that are used out of
+order result in lower-numbered streams in the same direction being counted as
+open.
+
+Stream IDs are usually encoded as a 32-bit integer, though the STREAM frame
+({{frame-stream}}) permits a shorter encoding when the leading bits of the
+stream ID are zero.
+
+
 ## Life of a Stream
 
 The semantics of QUIC streams is based on HTTP/2 streams, and the lifecycle of a
@@ -2265,25 +2288,6 @@ Once a stream reaches this state, no frames can be sent that mention the stream.
 Reordering might cause frames to be received after closing, see
 {{state-hc-remote}}.
 
-
-## Stream Identifiers {#stream-identifiers}
-
-Streams are identified by an unsigned 32-bit integer, referred to as the
-Stream ID.  To avoid Stream ID collision, clients MUST initiate streams using
-odd-numbered Stream IDs; streams initiated by the server MUST use even-numbered
-Stream IDs.
-
-A Stream ID of zero (0x0) is reserved and used for connection-level flow control
-frames ({{flow-control}}); the Stream ID of zero cannot be used to establish a
-new stream.
-
-Stream ID 1 (0x1) is reserved for the cryptographic handshake.  Stream ID 1 MUST
-NOT be used for application data, and MUST be the first client-initiated stream.
-
-A QUIC endpoint cannot reuse a Stream ID on a given connection.  Streams MUST be
-created in sequential order.  Open streams can be used in any order.  Streams
-that are used out of order result in lower-numbered streams in the same
-direction being counted as open.
 
 
 ## Stream Concurrency {#stream-concurrency}
