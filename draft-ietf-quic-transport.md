@@ -822,8 +822,13 @@ compares the client's version to the versions it supports.
 If the version selected by the client is not acceptable to the server, the
 server discards the incoming packet and responds with a Version Negotiation
 packet ({{version-packet}}).  This includes a list of versions that the server
-will accept.  A server MUST send a Version Negotiation packet for every packet
-that it receives with an unacceptable version.
+will accept.
+
+A server sends a Version Negotiation packet for every packet that it receives
+with an unacceptable version.  This allows a server to process packets with
+unsupported versions without retaining state.  Though either the initial client
+packet or the version negotiation packet that is sent in response could be lost,
+the client will send new packets until it successfully receives a response.
 
 If the packet contains a version that is acceptable to the server, the server
 proceeds with the handshake ({{handshake}}).  This commits the server to the
@@ -843,8 +848,13 @@ which is not a Version Negotiation packet.
 
 A client MUST NOT change the version it uses unless it is in response to a
 Version Negotiation packet from the server.  Once a client receives a packet
-from the server which is not a Version Negotiation packet, it MUST ignore
-Version Negotiation packets on the same connection.
+from the server which is not a Version Negotiation packet, it MUST ignore other
+Version Negotiation packets on the same connection.  Similarly, a client MUST
+ignore a Version Negotiation packet if it has already received and acted on a
+Version Negotiation packet.
+
+A client MUST ignore a Version Negotiation packet that lists the client's chosen
+version.
 
 Version negotiation uses unprotected data. The result of the negotiation MUST be
 revalidated as part of the cryptographic handshake (see {{version-validation}}).
