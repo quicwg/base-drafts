@@ -90,11 +90,11 @@ via the Alt-Svc HTTP response header or the HTTP/2 ALTSVC frame ({{!RFC7838}}),
 using the ALPN token defined in {{connection-establishment}}.
 
 For example, an origin could indicate in an HTTP/1.1 or HTTP/2 response that
-HTTP/QUIC was available on UDP port 443 at the same hostname by including the
+HTTP/QUIC was available on UDP port 50781 at the same hostname by including the
 following header in any response:
 
 ~~~ example
-Alt-Svc: hq=":443"
+Alt-Svc: hq=":50781"
 ~~~
 
 On receipt of an Alt-Svc header indicating HTTP/QUIC support, a client MAY
@@ -104,6 +104,10 @@ successful, send HTTP requests using the mapping described in this document.
 Connectivity problems (e.g. firewall blocking UDP) can result in QUIC connection
 establishment failure, in which case the client SHOULD continue using the
 existing connection or try another alternative endpoint offered by the origin.
+
+Servers MAY serve HTTP/QUIC on any UDP port.  Servers MUST use the same port
+across all IP addresses that serve a single domain, and SHOULD NOT change this
+port.
 
 ## QUIC Version Hints {#alt-svc-version-hint}
 
@@ -122,7 +126,7 @@ Alt-Svc entry.  For example, if a server supported both version 0x00000001 and
 the version rendered in ASCII as "Q034", it could specify the following header:
 
 ~~~ example
-Alt-Svc: hq=":443";quic=1;quic=51303334
+Alt-Svc: hq=":49288";quic=1;quic=51303334
 ~~~
 
 Where multiple versions are listed, the order of the values reflects the
