@@ -207,11 +207,11 @@ setting up a secure transport connection.  QUIC connections are
 expected to commonly use 0-RTT handshakes, meaning that for most QUIC
 connections, data can be sent immediately following the client
 handshake packet, without waiting for a reply from the server.  QUIC
-provides a dedicated stream (Stream ID 1) to be used for performing
+provides a dedicated stream (Stream ID 0) to be used for performing
 the cryptographic handshake and QUIC options negotiation.  The format
 of the QUIC options and parameters used during negotiation are
 described in this document, but the handshake protocol that runs on
-Stream ID 1 is described in the accompanying cryptographic handshake
+Stream ID 0 is described in the accompanying cryptographic handshake
 draft {{QUIC-TLS}}.
 
 ## Stream Multiplexing
@@ -874,7 +874,7 @@ solicit a list of supported versions from a server.
 ## Cryptographic and Transport Handshake {#handshake}
 
 QUIC relies on a combined cryptographic and transport handshake to minimize
-connection establishment latency.  QUIC allocates stream 1 for the cryptographic
+connection establishment latency.  QUIC allocates stream 0 for the cryptographic
 handshake.  This version of QUIC uses TLS 1.3 {{QUIC-TLS}}.
 
 QUIC provides this stream with reliable, ordered delivery of data.  In return,
@@ -1005,9 +1005,7 @@ initial_max_stream_id (0x0002):
 : The initial maximum stream ID parameter contains the initial maximum stream
   number the peer may initiate, encoded as an unsigned 32-bit integer.  This is
   equivalent to sending a MAX_STREAM_ID ({{frame-max-stream-id}}) immediately
-  after completing the handshake.  This value MUST NOT be set to 0, an endpoint
-  MUST generate a QUIC_INVALID_NEGOTIATED_VALUE error if it receives a value of
-  zero for this parameter.
+  after completing the handshake.
 
 idle_timeout (0x0003):
 
@@ -1668,11 +1666,13 @@ Maximum Data:
   connection-level data limit is determined by multiplying the encoded value by
   1024.
 
-The sum of the largest received offsets on all streams - including closed
-streams - MUST NOT exceed the value advertised by a receiver.  An endpoint MUST
-terminate a connection with a QUIC_FLOW_CONTROL_RECEIVED_TOO_MUCH_DATA error if
-it receives more data than the maximum data value that it has sent, unless this
-is a result of a change in the initial limits (see {{zerortt-parameters}}).
+All data sent in STREAM frames counts toward this limit, with the exception of
+data on stream 0.  The sum of the largest received offsets on all streams -
+including closed streams, but excluding stream 0 - MUST NOT exceed the value
+advertised by a receiver.  An endpoint MUST terminate a connection with a
+QUIC_FLOW_CONTROL_RECEIVED_TOO_MUCH_DATA error if it receives more data than the
+maximum data value that it has sent, unless this is a result of a change in the
+initial limits (see {{zerortt-parameters}}).
 
 
 ## MAX_STREAM_DATA Frame {#frame-max-stream-data}
@@ -2329,7 +2329,7 @@ ordered byte-stream.  Data received out of order MUST be buffered for later
 delivery, as long as it is not in violation of the receiver's flow control
 limits.
 
-The cryptographic handshake stream, Stream 1, MUST NOT be subject to congestion
+The cryptographic handshake stream, stream 0, MUST NOT be subject to congestion
 control or connection-level flow control, but MUST be subject to stream-level
 flow control. An endpoint MUST NOT send data on any other stream without
 consulting the congestion controller and the flow controller.
@@ -2367,7 +2367,7 @@ the protocol functions efficiently.  That is, prioritizing frames other than
 STREAM frames ensures that loss recovery, congestion control, and flow control
 operate effectively.
 
-Stream 1 MUST be prioritized over other streams prior to the completion of the
+Stream 0 MUST be prioritized over other streams prior to the completion of the
 cryptographic handshake.  This includes the retransmission of the second flight
 of client handshake messages, that is, the TLS Finished and any client
 authentication messages.
@@ -2576,7 +2576,7 @@ recoverable state, the endpoint can sent a RST_STREAM frame
 ({{frame-rst-stream}}) with an appropriate error code to terminate just the
 affected stream.
 
-Stream 1 is critical to the functioning of the entire connection.  If stream 1
+Stream 0 is critical to the functioning of the entire connection.  If stream 0
 is closed with either a RST_STREAM or STREAM frame bearing the FIN flag, an
 endpoint MUST generate a connection error of type QUIC_CLOSED_CRITICAL_STREAM.
 

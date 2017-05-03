@@ -141,7 +141,7 @@ While connection-level options pertaining to the core QUIC protocol are set in
 the initial crypto handshake, HTTP-specific settings are conveyed
 in the SETTINGS frame. After the QUIC connection is established, a SETTINGS
 frame ({{frame-settings}}) MUST be sent as the initial frame of the HTTP control
-stream (Stream ID 3, see {{stream-mapping}}).  The server MUST NOT send data on
+stream (Stream ID 1, see {{stream-mapping}}).  The server MUST NOT send data on
 any other stream until the client's SETTINGS frame has been received.
 
 ## Draft Version Identification
@@ -175,8 +175,8 @@ the HTTP framing layer. A QUIC receiver buffers and orders received STREAM
 frames, exposing the data contained within as a reliable byte stream to the
 application.
 
-QUIC reserves Stream 1 for crypto operations (the handshake, crypto config
-updates). Stream 3 is reserved for sending and receiving HTTP control frames,
+QUIC reserves Stream 0 for crypto operations (the handshake, crypto config
+updates). Stream 1 is reserved for sending and receiving HTTP control frames,
 and is analogous to HTTP/2's Stream 0.  This connection control stream is
 considered critical to the HTTP connection.  If the connection control stream is
 closed for any reason, this MUST be treated as a connection error of type
@@ -184,8 +184,8 @@ QUIC_CLOSED_CRITICAL_STREAM.
 
 When HTTP headers and data are sent over QUIC, the QUIC layer handles most of
 the stream management. An HTTP request/response consumes a pair of streams: This
-means that the client's first request occurs on QUIC streams 5 and 7, the second
-on stream 9 and 11, and so on. The server's first push consumes streams 2 and 4.
+means that the client's first request occurs on QUIC streams 3 and 5, the second
+on stream 7 and 9, and so on. The server's first push consumes streams 2 and 4.
 This amounts to the second least-significant bit differentiating the two streams
 in a request.
 
@@ -222,10 +222,10 @@ responses are considered complete when the corresponding QUIC streams are closed
 in the appropriate direction.
 
 
-##  Stream 3: Connection Control Stream
+##  Stream 1: Connection Control Stream
 
 Since most connection-level concerns will be managed by QUIC, the primary use of
-Stream 3 will be for the SETTINGS frame when the connection opens and for
+Stream 1 will be for the SETTINGS frame when the connection opens and for
 PRIORITY frames subsequently.
 
 ## HTTP Message Exchanges
@@ -373,7 +373,7 @@ corresponding data stream.
 
 # HTTP Framing Layer
 
-Frames are used only on the connection (stream 3) and message (streams 5, 9,
+Frames are used only on the connection (stream 1) and message (streams 3, 7,
 etc.) control streams. Other streams carry data payload and are not framed at
 the HTTP layer.
 
@@ -749,7 +749,7 @@ PRIORITY frames are sent on the connection control stream and the PRIORITY
 section is removed from the HEADERS frame.
 
 Other than this issue, frame type HTTP/2 extensions are typically portable to
-QUIC simply by replacing Stream 0 in HTTP/2 with Stream 3 in HTTP/QUIC.
+QUIC simply by replacing Stream 0 in HTTP/2 with Stream 1 in HTTP/QUIC.
 
 Below is a listing of how each HTTP/2 frame type is mapped:
 

@@ -179,8 +179,8 @@ out specially.
 {: #schematic title="QUIC and TLS Interactions"}
 
 The initial state of a QUIC connection has packets exchanged without any form of
-protection.  In this state, QUIC is limited to using stream 1 and associated
-packets.  Stream 1 is reserved for a TLS connection.  This is a complete TLS
+protection.  In this state, QUIC is limited to using stream 0 and associated
+packets.  Stream 0 is reserved for a TLS connection.  This is a complete TLS
 connection as it would appear when layered over TCP; the only difference is that
 QUIC provides the reliability and ordering that would otherwise be provided by
 TCP.
@@ -271,7 +271,7 @@ document:
 
 # TLS Usage
 
-QUIC reserves stream 1 for a TLS connection.  Stream 1 contains a complete TLS
+QUIC reserves stream 0 for a TLS connection.  Stream 0 contains a complete TLS
 connection, which includes the TLS record layer.  Other than the definition of a
 QUIC-specific extension (see Section-TBD), TLS is unmodified for this use.  This
 means that TLS will apply confidentiality and integrity protection to its
@@ -279,7 +279,7 @@ records.  In particular, TLS record protection is what provides confidentiality
 protection for the TLS handshake messages sent by the server.
 
 QUIC permits a client to send frames on streams starting from the first packet.
-The initial packet from a client contains a stream frame for stream 1 that
+The initial packet from a client contains a stream frame for stream 0 that
 contains the first TLS handshake messages from the client.  This allows the TLS
 handshake to start with the first packet that a client sends.
 
@@ -293,14 +293,14 @@ TLS, QUIC manages its own key schedule.
 ## Handshake and Setup Sequence
 
 The integration of QUIC with a TLS handshake is shown in more detail in
-{{quic-tls-handshake}}.  QUIC `STREAM` frames on stream 1 carry the TLS
+{{quic-tls-handshake}}.  QUIC `STREAM` frames on stream 0 carry the TLS
 handshake.  QUIC performs loss recovery {{QUIC-RECOVERY}} for this stream and
 ensures that TLS handshake messages are delivered in the correct order.
 
 ~~~
     Client                                             Server
 
-@C QUIC STREAM Frame(s) <1>:
+@C QUIC STREAM Frame(s) <0>:
      ClientHello
        + QUIC Extension
                             -------->
@@ -310,7 +310,7 @@ ensures that TLS handshake messages are delivered in the correct order.
    Replayable QUIC Frames
                             -------->
 
-                                      QUIC STREAM Frame <1>: @C
+                                      QUIC STREAM Frame <0>: @C
                                                ServerHello
                                   {TLS Handshake Messages}
                             <--------
@@ -318,7 +318,7 @@ ensures that TLS handshake messages are delivered in the correct order.
 
                                            QUIC Frames <any> @1
                             <--------
-@C QUIC STREAM Frame(s) <1>:
+@C QUIC STREAM Frame(s) <0>:
      (EndOfEarlyData)
      {Finished}
                             -------->
@@ -371,7 +371,7 @@ Additional functions might be needed to configure TLS.
 ### Handshake Interface
 
 In order to drive the handshake, TLS depends on being able to send and receive
-handshake messages on stream 1.  There are two basic functions on this
+handshake messages on stream 0.  There are two basic functions on this
 interface: one where QUIC requests handshake messages and one where QUIC
 provides handshake packets.
 
@@ -381,9 +381,9 @@ Before starting the handshake QUIC provides TLS with the transport parameters
 A QUIC client starts TLS by requesting TLS handshake octets from
 TLS.  The client acquires handshake octets before sending its first packet.
 
-A QUIC server starts the process by providing TLS with stream 1 octets.
+A QUIC server starts the process by providing TLS with stream 0 octets.
 
-Each time that an endpoint receives data on stream 1, it delivers the octets to
+Each time that an endpoint receives data on stream 0, it delivers the octets to
 TLS if it is able.  Each time that TLS is provided with new data, new handshake
 octets are requested from TLS.  TLS might not provide any octets if the
 handshake messages it has received are incomplete or it has no data to send.
@@ -399,7 +399,7 @@ data is that the server might wish to provide additional or updated session
 tickets to a client.
 
 When the handshake is complete, QUIC only needs to provide TLS with any data
-that arrives on stream 1.  In the same way that is done during the handshake,
+that arrives on stream 0.  In the same way that is done during the handshake,
 new data is requested from TLS after providing received data.
 
 Important:
@@ -575,7 +575,7 @@ A server MUST NOT use post-handshake client authentication (see Section 4.6.2 of
 
 ## TLS Errors
 
-Errors in the TLS connection SHOULD be signaled using TLS alerts on stream 1.  A
+Errors in the TLS connection SHOULD be signaled using TLS alerts on stream 0.  A
 failure in the handshake MUST be treated as a QUIC connection error of type
 TLS_HANDSHAKE_FAILED.  Once the handshake is complete, an error in the TLS
 connection that causes a TLS alert to be sent or received MUST be treated as a
@@ -802,7 +802,7 @@ packet number limit.  An endpoint MUST initiate a key update ({{key-update}})
 prior to exceeding any limit set for the AEAD that is in use.
 
 TLS maintains a separate sequence number that is used for record protection on
-the connection that is hosted on stream 1.  This sequence number is not visible
+the connection that is hosted on stream 0.  This sequence number is not visible
 to QUIC.
 
 
@@ -1157,7 +1157,7 @@ the overheads of that protection.
 
 # Pre-handshake QUIC Messages {#pre-hs}
 
-Implementations MUST NOT exchange data on any stream other than stream 1 without
+Implementations MUST NOT exchange data on any stream other than stream 0 without
 packet protection.  QUIC requires the use of several types of frame for managing
 loss detection and recovery during this phase.  In addition, it might be useful
 to use the data acquired during the exchange of unauthenticated messages for
@@ -1208,9 +1208,9 @@ fatal error.
 
 ### STREAM Frames
 
-`STREAM` frames for stream 1 are permitted.  These carry the TLS handshake
+`STREAM` frames for stream 0 are permitted.  These carry the TLS handshake
 messages.  Once 1-RTT keys are available, unprotected `STREAM` frames on stream
-1 can be ignored.
+0 can be ignored.
 
 Receiving unprotected `STREAM` frames for other streams MUST be treated as a
 fatal error.
@@ -1250,12 +1250,12 @@ sources can be discarded.
 `MAX_DATA`, `MAX_STREAM_DATA`, `BLOCKED`, `STREAM_BLOCKED`, and `MAX_STREAM_ID`
 frames MUST NOT be sent unprotected.
 
-Though data is exchanged on stream 1, the initial flow control window on that
+Though data is exchanged on stream 0, the initial flow control window on that
 stream is sufficiently large to allow the TLS handshake to complete.  This
 limits the maximum size of the TLS handshake and would prevent a server or
 client from using an abnormally large certificate chain.
 
-Stream 1 is exempt from the connection-level flow control window.
+Stream 0 is exempt from the connection-level flow control window.
 
 Consequently, there is no need to signal being blocked on flow control.
 
