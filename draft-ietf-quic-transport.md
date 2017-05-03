@@ -1342,7 +1342,7 @@ Data Length:
 
 Stream ID:
 
-: The stream ID of the stream.
+: The stream ID of the stream (see {{stream-identifiers}}.
 
 Offset:
 
