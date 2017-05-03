@@ -716,8 +716,7 @@ as load balancers, to locate and use it.
 
 The client MUST choose a random connection ID and use it in Client Initial
 packets ({{packet-client-initial}}).  If the client has received any packet from
-the server, the uses the connection ID it received from the server in that
-packet.
+the server, it uses the connection ID it received from the server.
 
 When the server receives a Client Initial packet, it chooses a new value for the
 connection ID and sends that in its response.  The server can send a new
