@@ -791,8 +791,9 @@ explained in more detail as they are referenced later in the document.
 | 0x08        | BLOCKED          | {{frame-blocked}}          |
 | 0x09        | STREAM_BLOCKED   | {{frame-stream-blocked}}   |
 | 0x0a        | STREAM_ID_NEEDED | {{frame-stream-id-needed}} |
-| 0xa0 - 0x7f | ACK              | {{frame-ack}}              |
-| 0xc0 - 0xff | STREAM           | {{frame-stream}}           |
+| 0x0b        | NEW_CONNECTION_ID | {{frame-new-connection-id}} |
+| 0xa0 - 0x7f | ACK               | {{frame-ack}}               |
+| 0xc0 - 0xff | STREAM            | {{frame-stream}}            |
 {: #frame-types title="Frame Types"}
 
 # Life of a Connection
@@ -1246,12 +1247,59 @@ error code.
 ## Connection Migration {#migration}
 
 QUIC connections are identified by their 64-bit Connection ID.  QUIC's
-consistent connection ID allows connections to survive changes to the
-client's IP and/or port, such as those caused by client or server
-migrating to a new network.  QUIC also provides automatic
-cryptographic verification of a client which has changed its IP
-address because the client continues to use the same session key for
-encrypting and decrypting packets.
+consistent connection ID allows connections to survive changes to the client's
+IP and/or port, such as those caused by client or server migrating to a new
+network.  Connection migration allows a client to retain any shared state with a
+connection when they move networks.  This includes state that can be hard to
+recover such as outstanding requests, which might otherwise be lost with no easy
+way to retry them.
+
+
+### Privacy Implications of Connection Migration {#migration-linkability}
+
+Using a stable connection ID on multiple network paths allows a passive observer
+to correlate activity between those paths.  A client that moves between networks
+might not wish to have their activity correlated by any entity other than a
+server.
+
+The NEW_CONNECTION_ID message can be sent by a server to provide an unlinkable
+connection ID for use in case the client wishes to explicitly break linkability
+between two points of network attachment.
+
+The NEW_CONNECTION_ID message includes a connection ID that the client can use
+for packets on the current connection.  This message also includes packet number
+gap, which is the number of packet numbers that the client skips when using the
+new connection ID.  Without this, the packet number field in the header might be
+used to link activity across networks.  A server MUST provide a 32-bit value for
+the packet number gap field that is indistinguishable from random to a passive
+observer.
+
+A client might need to send packets on multiple networks without receiving any
+response from the server.  To ensure that the client is not linkable across each
+of these changes, a new connection ID and packet number gap are needed for each
+network.  To support this, a server sends multiple NEW_CONNECTION_ID messages.
+Each NEW_CONNECTION_ID is marked with a sequence number.  Connection IDs MUST be
+used in the order in which they are numbered.
+
+Packet number gaps are cumulative.  A client might skip connection IDs, but it
+MUST ensure that it applies the associated packet number gaps in addition to the
+packet number gap associated with the connection ID that it does use.
+
+A server that receives a packet that is marked with a new connection ID recovers
+the packet number by adding the cumulative packet number gap to its expected
+packet number.  A server SHOULD discard packets that contain a smaller gap than
+it advertised.
+
+For instance, a server might provide a packet number gap of 7 associated with a
+new connection ID.  If the server received packet 10 using the previous
+connection ID, it should expect packets on the new connection ID to start at 18.
+A packet with the new connection ID and a packet number of 17 is discarded as
+being in error.
+
+
+### Address Validation for Migrated Connections
+
+TODO: see issue #161
 
 
 ## Connection Termination {#termination}
@@ -1869,6 +1917,49 @@ additional fields. The receiver of a PING frame simply needs to acknowledge the
 packet containing this frame. The PING frame SHOULD be used to keep a connection
 alive when a stream is open. The default is to send a PING frame after 15
 seconds of quiescence. A PING frame has no additional fields.
+
+
+## NEW_CONNECTION_ID Frame {#frame-new-connection-id}
+
+A server sends a NEW_CONNECTION_ID to provide the client with alternative
+connection IDs that can be used to break linkability when migrating connections
+(see {{migration-linkability}}).
+
+The NEW_CONNECTION_ID is as follows:
+
+~~~
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|       Sequence (16)           |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                                                               |
++                        Connection ID (64)                     +
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                      Packet Number Gap (32)                   |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~
+
+The fields are:
+
+Sequence:
+
+: A 16-bit sequence number.  This value starts at 0 and increases by 1 for each
+  connection ID that is provided by the server.  The sequence value can wrap;
+  the value 65535 is followed by 0.  When wrapping the sequence field, the
+  server MUST ensure that a value with the same sequence has been received and
+  acknowledged by the client.  The connection ID that is assigned during the
+  handshake is assumed to have a sequence of 65535.
+
+Connection ID:
+
+: A 64-bit connection ID.
+
+Packet Number Gap:
+
+: The number of packets to skip when using the connection ID.  Packet number
+  gaps are cumulative, see {{migration-linkability}}.
 
 
 ## CONNECTION_CLOSE frame {#frame-connection-close}
