@@ -820,6 +820,16 @@ protocol error in a peer or an attack.  The truncated packet number encoding
 used in QUIC can cause packet numbers to be decoded incorrectly if they are
 delayed significantly.
 
+## Packet Number Gaps
+
+{{QUIC-TRANSPORT}}; Section 7.5.1.1 also requires a secret to compute packet
+number gaps on connection ID transitions. That secret is computed as:
+
+~~~
+      packet_number_secret
+          = TLS-Exporter("EXPORTER-QUIC Packet Number Secret"
+                         "", Hash.length)
+~~~
 
 # Unprotected Packets
 
