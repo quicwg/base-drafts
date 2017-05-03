@@ -1957,7 +1957,7 @@ appropriately, and storing the result of previous PMTU determinations.
 
 In the absence of these mechanisms, QUIC endpoints SHOULD NOT send IP packets
 larger than 1280 octets. Assuming the minimum IP header size, this results in
-a UDP payload length of 1232 octets for IPv6 and 1252 octets for IPv4.
+a QUIC packet size of 1232 octets for IPv6 and 1252 octets for IPv4.
 
 QUIC endpoints that implement any kind of PMTU discovery SHOULD maintain an
 estimate for each combination of local and remote IP addresses (as each pairing
@@ -1969,10 +1969,10 @@ An endpoint MUST NOT reduce their MTU below this number, even if it receives
 signals that indicate a smaller limit might exist.
 
 Clients MUST ensure that the first packet in a connection, and any
-retransmissions of those octets, has a payload of least 1232 octets for an IPv6
-datagram and 1252 octets for an IPv4 datagram.  In the absence of extensions to
-the IP header, padding to exactly these values will result in a packet that is
-1280 octets.
+retransmissions of those octets, has a QUIC packet size of least 1232 octets for
+an IPv6 packet and 1252 octets for an IPv4 packet.  In the absence of extensions
+to the IP header, padding to exactly these values will result in an IP packet
+that is 1280 octets.
 
 The initial client packet SHOULD be padded to exactly these values unless the
 client has a reasonable assurance that the PMTU is larger.  Sending a packet of
