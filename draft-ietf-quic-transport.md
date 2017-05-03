@@ -1795,6 +1795,11 @@ Stream ID:
 
 : A 32-bit unsigned number indicating the stream which is flow control blocked.
 
+An endpoint MAY send a STREAM_BLOCKED frame for a stream that exceeds the
+maximum stream ID set by its peer (see {{frame-max-stream-id}}).  This does not
+open the stream, but informs the peer that a new stream was needed, but the
+stream limit prevented the creation of the stream.
+
 
 ## STREAM_ID_NEEDED Frame {#frame-stream-id-needed}
 
@@ -2189,9 +2194,10 @@ All streams start in the "idle" state.
 
 The following transitions are valid from this state:
 
-Sending or receiving a STREAM frame causes the stream to become "open".  The
-stream identifier is selected as described in {{stream-id}}.  The same STREAM
-frame can also cause a stream to immediately become "half-closed".
+Sending or receiving a STREAM frame causes the identified stream to become
+"open".  The stream identifier for a new stream is selected as described in
+{{stream-id}}.  The same STREAM frame can also cause a stream to
+immediately become "half-closed" if the FIN flag is set.
 
 Receiving a STREAM frame on a peer-initiated stream (that is, a packet sent by a
 server on an even-numbered stream or a client packet on an odd-numbered stream)
@@ -2205,8 +2211,12 @@ A RST_STREAM frame on an "idle" stream causes the stream to become
 "half-closed (local)"; receiving RST_STREAM causes the stream to become
 "half-closed (remote)".
 
-Receiving any frame other than STREAM or RST_STREAM on a stream in this state
-MUST be treated as a connection error ({{error-handling}}) of type YYYY.
+An endpoint might receive MAX_STREAM_DATA frames on peer-initiated streams that
+are "idle" if there is loss or reordering of packets.
+
+Receiving any frame other than STREAM, MAX_STREAM_DATA, STREAM_BLOCKED, or
+RST_STREAM on a stream in this state MUST be treated as a connection error
+({{error-handling}}) of type YYYY.
 
 An endpoint MUST NOT send a STREAM of RST_STREAM frame for a stream ID that is
 higher than the peers advertised maximum stream ID (see
