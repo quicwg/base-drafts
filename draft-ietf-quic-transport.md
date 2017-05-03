@@ -1670,9 +1670,9 @@ Maximum Data:
   1024.
 
 All data sent in STREAM frames counts toward this limit, with the exception of
-STREAM frames on stream 0.  The sum of the largest received offsets on all
-streams - including closed streams, but excluding stream 0 - MUST NOT exceed the
-value advertised by a receiver.  An endpoint MUST terminate a connection with a
+data on stream 0.  The sum of the largest received offsets on all streams -
+including closed streams, but excluding stream 0 - MUST NOT exceed the value
+advertised by a receiver.  An endpoint MUST terminate a connection with a
 QUIC_FLOW_CONTROL_RECEIVED_TOO_MUCH_DATA error if it receives more data than the
 maximum data value that it has sent, unless this is a result of a change in the
 initial limits (see {{zerortt-parameters}}).
