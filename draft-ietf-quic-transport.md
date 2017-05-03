@@ -1279,8 +1279,8 @@ A client might need to send packets on multiple networks without receiving any
 response from the server.  To ensure that the client is not linkable across each
 of these changes, a new connection ID and packet number gap are needed for each
 network.  To support this, a server sends multiple NEW_CONNECTION_ID messages.
-Each NEW_CONNECTION_ID is marked with a sequence number, which determines the
-order in which they are used.
+Each NEW_CONNECTION_ID is marked with a sequence number.  Connection IDs MUST be
+used in the order in which they are numbered.
 
 Packet number gaps are cumulative.  A client might skip connection IDs, but it
 MUST ensure that it applies the associated packet number gaps in addition to the
