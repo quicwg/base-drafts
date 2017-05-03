@@ -853,8 +853,8 @@ Version Negotiation packets on the same connection.  Similarly, a client MUST
 ignore a Version Negotiation packet if it has already received and acted on a
 Version Negotiation packet.
 
-A client MUST ignore a Version Negotiation packet if it lists the version it has
-chosen.
+A client MUST ignore a Version Negotiation packet that lists the client's chosen
+version.
 
 Version negotiation uses unprotected data. The result of the negotiation MUST be
 revalidated as part of the cryptographic handshake (see {{version-validation}}).
