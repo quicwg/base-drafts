@@ -708,9 +708,10 @@ a number of 0x6bc107.
 
 ### Initial Packet Number
 
-The initial value for packet number MUST be a 31-bit random number.  That is,
-the value is selected from an uniform random distribution between 0 and 2^31-1.
-{{?RFC4086}} provides guidance on the generation of random values.
+The initial value for packet number MUST be selected from an uniform random
+distribution between 0 and 2^31-1.  That is, the lower 31 bits of the packet
+number are randomized.  {{?RFC4086}} provides guidance on the generation of
+random values.
 
 The first set of packets sent by an endpoint MUST include the low 32-bits of the
 packet number.  Once any packet has been acknowledged, subsequent packets can
