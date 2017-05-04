@@ -415,8 +415,8 @@ The following packet types are defined:
 | 01   | Version Negotiation           | {{packet-version}}          |
 | 02   | Client Initial                | {{packet-client-initial}}   |
 | 03   | Server Stateless Retry        | {{packet-server-stateless}} |
-| 04   | Client Cleartext              | {{packet-client-cleartext}} |
-| 05   | Server Cleartext              | {{packet-server-cleartext}} |
+| 04   | Server Cleartext              | {{packet-server-cleartext}} |
+| 05   | Client Cleartext              | {{packet-client-cleartext}} |
 | 06   | 0-RTT Encrypted               | {{packet-encrypted}}        |
 | 07   | 1-RTT Encrypted (key phase 0) | {{packet-encrypted}}        |
 | 08   | 1-RTT Encrypted (key phase 1) | {{packet-encrypted}}        |
@@ -559,22 +559,29 @@ described in {{QUIC-TLS}}.
 ### Client Initial Packet {#packet-client-initial}
 
 The Client Initial packet has a type octet of 0x82.  It carries the first
-cryptographic handshake message sent by the client, prior to receiving any
-packets from the server.
+cryptographic handshake message sent by the client.
 
-The client populates the connection ID and packet number fields with randomly
-selected values.  The randomized packet number is incremented for each
-subsequent packet (see {{packet-numbers}}).
+The client populates the connection ID field with randomly selected values,
+unless it has received a packet from the server.  If the client has received a
+packet from the server, the connection ID field uses the value provided by the
+server.
+
+The packet number used for Client Initial packets is initialized with a random
+value each time the new contents are created for the packet.  Retransmissions of
+the packet contents increment the packet number by one, see
+({{packet-numbers}}).
 
 The payload of a Client Initial packet consists of a STREAM frame (or frames)
 for stream 0 containing a cryptographic handshake message, plus any PADDING
 frames necessary to ensure that the packet is at least the minimum size (see
-{{packetization}}).
+{{packetization}}).  This stream frame always starts at an offset of 0 (see
+{{stateless-retry}}).
 
 The client uses the Client Initial Packet type for any packet that contains an
 initial cryptographic handshake message.  This includes all cases where a new
-packet containing the initial cryptographic message needs to be created, either
-in response to a Version Negotiation packet, or in response to a stateless retry
+packet containing the initial cryptographic message needs to be created, this
+includes the packets sent after receiving a Version Negotiation
+({{packet-version}}) or Server Stateless Retry packet
 ({{packet-server-stateless}}).
 
 
@@ -590,51 +597,48 @@ selected value, see {{connection-id}}.
 The packet number field echoes the packet number of the triggering client
 packet.  This allows a client to verify that the server received its packet.
 
-After receiving a Server Stateless Retry packet, the next cryptographic
-handshake message MUST be sent by the client on stream 0 at an offset of 0.  The
+After receiving a Server Stateless Retry packet, the client MUST generate a new
+Client Initial packet containing the next cryptographic handshake message.  The
 client discards any buffers it uses for generating retransmissions of handshake
-data and effectively starts the connection anew, keeping only the cryptographic
-handshake state.  The cryptographic handshake is continued, but the transport
-connection is reset.  Continuing the cryptographic handshake is necessary to
-ensure that an attacker cannot force a downgrade of any cryptographic
-parameters.
+data, resets the initial packet number and resets the stream offset for stream
+0, keeping only the cryptographic handshake state.  In effect, the cryptographic
+handshake is continued, but the transport connection is reset.  Continuing the
+cryptographic handshake is necessary to ensure that an attacker cannot force a
+downgrade of any cryptographic parameters.
 
 The payload of the Server Stateless Retry packet contains STREAM frames and
-could contain PADDING and ACK frames.
-
-The client constructs a new Client Cleartext packet
-({{packet-client-cleartext}}) for subsequent cryptographic handshake messages.
-
-
-### Client Cleartext Packet {#packet-client-cleartext}
-
-A Client Cleartext packet has a type octet of 0x84 and is sent when the client
-has received a packet from the server, which will be either a Server Cleartext
-packet or a Version Negotiation packet.
-
-The connection ID field in a Client Cleartext packet contains a server-selected
-connection ID, see {{connection-id}}.
-
-The packet number field is incremented for each Client Cleartext packet sent,
-see {{packet-numbers}}.
-
-The payload of this packet contains STREAM frames and could contain PADDING and
-ACK frames.  If this packet is sent in response to a Version Negotiation
-({{packet-version}}) or Server Stateless Retry packet
-({{packet-server-stateless}}), it MUST be padded to the minimum packet size for
-initial packets (see {{packetization}}).
+could contain PADDING and ACK frames.  A server can only send a single Server
+Stateless Retry packet in response to each Client Initial packet that is
+receives.
 
 
 ### Server Cleartext Packet {#packet-server-cleartext}
 
-A Server Cleartext packet has a type octet of 0x85.  It is used to carry
+A Server Cleartext packet has a type octet of 0x84.  It is used to carry
 acknowledgments and cryptographic handshake messages from the server.
 
 The connection ID field in a Server Cleartext packet contains a connection ID
 that is chosen by the server (see {{connection-id}}).
 
 The first Server Cleartext packet contains a randomized packet number.  This
-value is increased for each subsequent packet as described in
+value is increased for each subsequent packet sent by the server as described in
+{{packet-numbers}}.
+
+The payload of this packet contains STREAM frames and could contain PADDING and
+ACK frames.
+
+
+### Client Cleartext Packet {#packet-client-cleartext}
+
+A Client Cleartext packet has a type octet of 0x85 and is sent when the client
+has received a Server Cleartext packet from the server.
+
+The connection ID field in a Client Cleartext packet contains a server-selected
+connection ID, see {{connection-id}}.
+
+The Client Cleartext packet includes a packet number that is one higher than the
+last Client Initial, 0-RTT Encrypted or Client Cleartext packet that was sent.
+The packet number is incremented for each subsequent packet, see
 {{packet-numbers}}.
 
 The payload of this packet contains STREAM frames and could contain PADDING and
@@ -648,15 +652,16 @@ that are protected with 1-RTT keys MAY be sent with long headers.  The different
 packet types explicitly indicate the encryption level and therefore the keys
 that are used to remove packet protection.
 
-Packets protected with 0-RTT keys use a type octet of 0x85.  The connection ID
-field for a 0-RTT packet is selected by the client, unless the client has
-received a packet from the server.  The client can send 0-RTT packets after
-having received a packet from the server if that packet does not complete the
-handshake.  If the client has received a packet, it MAY update the connection ID
-it uses for 0-RTT packets.
+Packets protected with 0-RTT keys use a type octet of 0x86.  The connection ID
+field for a 0-RTT packet is selected by the client.
 
-Packets protected with 1-RTT keys use a type octet of 0x86 for key phase 0 and
-0x87 for key phase 1; see {{QUIC-TLS}} for more details on the use of key
+The client can send 0-RTT packets after having received a packet from the server
+if that packet does not complete the handshake.  Even if the client receives a
+different connection ID from the server, it MUST NOT update the connection ID it
+uses for 0-RTT packets.  This enables consistent routing for all 0-RTT packets.
+
+Packets protected with 1-RTT keys use a type octet of 0x87 for key phase 0 and
+0x88 for key phase 1; see {{QUIC-TLS}} for more details on the use of key
 phases.  The connection ID field for these packet types MUST contain the value
 selected by the server, see {{connection-id}}.
 
@@ -721,14 +726,15 @@ the server, it uses the connection ID it received from the server.
 
 When the server receives a Client Initial packet, it chooses a new value for the
 connection ID and sends that in its response.  The server can send a new
-connection ID in either a Version Negotiation packet ({{packet-version}}), a
-Server Stateless Retry packet ({{packet-server-stateless}}) or a Server
-Cleartext packet ({{packet-server-cleartext}}).  The server MAY choose to use
-the value that the client initially selects.
+connection ID in any packet that is sent in response to a Client Initial packet.
+This includes Version Negotiation ({{packet-version}}), Server Stateless Retry
+({{packet-server-stateless}}), and the first Server Cleartext packet
+({{packet-server-cleartext}}).  The server MAY choose to use the value that the
+client initially selects.
 
 A server MUST NOT propose a different connection ID in response to a Client
 Cleartext packet ({{packet-client-cleartext}}).  A Client Cleartext packet is
-only sent after the client has received a connection ID from the server.
+only sent after the server has committed to maintaining connection state.
 
 
 ## Packet Numbers {#packet-numbers}
@@ -736,7 +742,8 @@ only sent after the client has received a connection ID from the server.
 The packet number is a 64-bit unsigned number and is used as part of a
 cryptographic nonce for packet encryption.  Each endpoint maintains a separate
 packet number for sending and receiving.  The packet number for sending MUST
-increase by at least one after sending any packet.
+increase by at least one after sending any packet, unless otherwise specified
+(see {{initial-packet-number}}).
 
 A QUIC endpoint MUST NOT reuse a packet number within the same connection (that
 is, under the same cryptographic keys).  If the packet number for sending
@@ -772,7 +779,12 @@ sending a packet with a number of 0x6b4264 requires a 16-bit or larger packet
 number encoding; whereas a 32-bit packet number is needed to send a packet with
 a number of 0x6bc107.
 
-### Initial Packet Number
+Version Negotiation ({{packet-version}}), Server Stateless Retry
+({{packet-server-stateless}}), and Public Reset ({{packet-public-reset}})
+packets have special rules for populating the packet number field.
+
+
+### Initial Packet Number {#initial-packet-number}
 
 The initial value for packet number MUST be selected from an uniform random
 distribution between 0 and 2^31-1.  That is, the lower 31 bits of the packet
@@ -782,6 +794,16 @@ random values.
 The first set of packets sent by an endpoint MUST include the low 32-bits of the
 packet number.  Once any packet has been acknowledged, subsequent packets can
 use a shorter packet number encoding.
+
+A client that receives a Version Negotiation ({{packet-version}}) or Server
+Stateless Retry packet ({{packet-server-stateless}}) MUST generate a new initial
+packet number.  This ensures that the first transmission attempt for a Client
+Initial packet ({{packet-client-initial}}) always contains a randomized packet
+number, but packets that contain retransmissions increment the packet number.
+
+A client MUST NOT generate a new initial packet number if it discards the server
+packet.  This might happen if the information the client retransmits its Client
+Initial packet.
 
 
 ## Handling Packets from Different Versions {#version-specific}
