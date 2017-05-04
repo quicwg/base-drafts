@@ -819,7 +819,10 @@ initial packets sent from the client to the server MUST use the long header
 format and MUST specify the version of the protocol being used.
 
 When the server receives a packet from a client with the long header format, it
-compares the client's version to the versions it supports.
+compares the client's version to the versions it supports.  Packets MUST be
+discarded if they appear to use the short header format, or if they are too
+short to contain a complete packet header and at least one octet of payload.
+That is, packets that are fewer than 18 octets long are too short to be valid.
 
 If the version selected by the client is not acceptable to the server, the
 server discards the incoming packet and responds with a Version Negotiation
