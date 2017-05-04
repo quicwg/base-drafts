@@ -779,19 +779,19 @@ STREAM and ACK frames is used to carry other frame-specific flags.  For all
 other frames, the Frame Type byte simply identifies the frame.  These frames are
 explained in more detail as they are referenced later in the document.
 
-| Type Value  | Frame Type Name  | Definition                 |
-|:------------|:-----------------|:---------------------------|
-| 0x00        | PADDING          | {{frame-padding}}          |
-| 0x01        | RST_STREAM       | {{frame-rst-stream}}       |
-| 0x02        | CONNECTION_CLOSE | {{frame-connection-close}} |
-| 0x03        | GOAWAY           | {{frame-goaway}}           |
-| 0x04        | MAX_DATA         | {{frame-max-data}}         |
-| 0x05        | MAX_STREAM_DATA  | {{frame-max-stream-data}}  |
-| 0x06        | MAX_STREAM_ID    | {{frame-max-stream-id}}    |
-| 0x07        | PING             | {{frame-ping}}             |
-| 0x08        | BLOCKED          | {{frame-blocked}}          |
-| 0x09        | STREAM_BLOCKED   | {{frame-stream-blocked}}   |
-| 0x0a        | STREAM_ID_NEEDED | {{frame-stream-id-needed}} |
+| Type Value  | Frame Type Name   | Definition                  |
+|:------------|:------------------|:----------------------------|
+| 0x00        | PADDING           | {{frame-padding}}           |
+| 0x01        | RST_STREAM        | {{frame-rst-stream}}        |
+| 0x02        | CONNECTION_CLOSE  | {{frame-connection-close}}  |
+| 0x03        | GOAWAY            | {{frame-goaway}}            |
+| 0x04        | MAX_DATA          | {{frame-max-data}}          |
+| 0x05        | MAX_STREAM_DATA   | {{frame-max-stream-data}}   |
+| 0x06        | MAX_STREAM_ID     | {{frame-max-stream-id}}     |
+| 0x07        | PING              | {{frame-ping}}              |
+| 0x08        | BLOCKED           | {{frame-blocked}}           |
+| 0x09        | STREAM_BLOCKED    | {{frame-stream-blocked}}    |
+| 0x0a        | STREAM_ID_NEEDED  | {{frame-stream-id-needed}}  |
 | 0x0b        | NEW_CONNECTION_ID | {{frame-new-connection-id}} |
 | 0xa0 - 0x7f | ACK               | {{frame-ack}}               |
 | 0xc0 - 0xff | STREAM            | {{frame-stream}}            |
