@@ -1052,6 +1052,7 @@ language from Section 3 of {{!I-D.ietf-tls-tls13}}.
       initial_max_stream_id(2),
       idle_timeout(3),
       truncate_connection_id(4),
+      max_packet_size(5),
       (65535)
    } TransportParameterId;
 
@@ -1132,6 +1133,14 @@ truncate_connection_id (0x0004):
   the 5-tuple is sufficient to identify a connection.  This parameter is zero
   length.  Omitting the parameter indicates that the endpoint relies on the
   connection ID being present in every packet.
+
+max_packet_size (0x0005):
+
+: The maximum packet size parameter places a limit on the size of packets that
+  the endpoint is willing to receive, encoded as an unsigned 16-bit integer.
+  The default for this parameter is the maximum permitted UDP payload of 65527.
+  Values below 256 are invalid.  The initial packet from a client is exempt from
+  this limit.
 
 
 ### Values of Transport Parameters for 0-RTT {#zerortt-parameters}
@@ -3149,6 +3158,7 @@ The initial contents of this registry are shown in
 | 0x0002 | initial_max_stream_id   | {{transport-parameter-definitions}} |
 | 0x0003 | idle_timeout            | {{transport-parameter-definitions}} |
 | 0x0004 | truncate_connection_id  | {{transport-parameter-definitions}} |
+| 0x0005 | max_packet_size         | {{transport-parameter-definitions}} |
 {: #iana-tp-table title="Initial QUIC Transport Parameters Entries"}
 
 
