@@ -1151,8 +1151,10 @@ stream 0, the packet number that the server selects, and any opportunity to
 measure round trip time.
 
 A server MUST send a TLS HelloRetryRequest in a Server Stateless Retry packet.
-Using a Server Stateless Retry packet causes the client to reset stream offsets
-and avoids the need to commit to an initial packet number.
+Using a Server Stateless Retry packet causes the client to reset stream offsets.
+It also avoids the need for the server select an initial packet number, which
+would need to be remembered so that subsequent packets could be correctly
+numbered.
 
 A HelloRetryRequest message MUST NOT be split between multiple Server Stateless
 Retry packets.  This means that HelloRetryRequest is subject to the same size
