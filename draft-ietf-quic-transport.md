@@ -1232,6 +1232,13 @@ client MUST terminate with a VERSION_NEGOTIATION_ERROR error code if
 version negotiation occurred but it would have selected a different version
 based on the value of the supported_versions list.
 
+The position and size of the version validation fields in the transport
+parameters MUST NOT change between different versions of QUIC.  If a version of
+QUIC needs to define a new format for transport parameters, it MUST define and
+use a new TLS extension rather than redefine the layout of the existing
+extension.  Confusion about the format of transport pararameters, especially the
+version negotiation fields, could lead to version downgrade attacks.
+
 
 ## Stateless Retries {#stateless-retry}
 
