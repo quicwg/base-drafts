@@ -316,6 +316,9 @@ MAY use one of these version numbers with the expectation that the server will
 initiate version negotiation; a server MAY advertise support for one of these
 versions and can expect that clients ignore the value.
 
+Version numbers with the lower 24 bits clearted were used to identify
+pre-standards versions of QUIC.
+
 \[\[RFC editor: please remove the remainder of this section before
 publication.]]
 
