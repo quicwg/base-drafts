@@ -1703,7 +1703,7 @@ to decipher the packet.
 
 ## MAX_DATA Frame {#frame-max-data}
 
-The MAX_DATA frame (type=0x04) is used in flow control to inform a peer of
+The MAX_DATA frame (type=0x04) is used in flow control to inform the peer of
 the maximum amount of data that can be sent on the connection as a whole.
 
 The frame is as follows:
