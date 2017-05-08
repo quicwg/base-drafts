@@ -1258,22 +1258,21 @@ way to retry them.
 
 ### Privacy Implications of Connection Migration {#migration-linkability}
 
-Using a stable connection ID on multiple network paths allows a passive observer
-to correlate activity between those paths.  A client that moves between networks
-might not wish to have their activity correlated by any entity other than a
-server.
-
-The NEW_CONNECTION_ID message can be sent by a server to provide an unlinkable
-connection ID for use in case the client wishes to explicitly break linkability
+Using a stable connection ID on multiple network paths allows a
+passive observer to correlate activity between those paths.  A client
+that moves between networks might not wish to have their activity
+correlated by any entity other than a server. The NEW_CONNECTION_ID
+message can be sent by a server to provide an unlinkable connection ID
+for use in case the client wishes to explicitly break linkability
 between two points of network attachment.
 
-The NEW_CONNECTION_ID message includes a connection ID that the client can use
-for packets on the current connection.  This message also includes packet number
-gap, which is the number of packet numbers that the client skips when using the
-new connection ID.  Without this, the packet number field in the header might be
-used to link activity across networks.  A server MUST provide a 32-bit value for
-the packet number gap field that is indistinguishable from random to a passive
-observer.
+A client which wishes to break linkability upon changing networks MUST
+use the NEW_CONNECTION_ID as well as incrementing the packet sequence
+number by an externally unpredictable value computed as described in
+{{packet-number-gap}}. Packet number gaps are cumulative.  A client
+might skip connection IDs, but it MUST ensure that it applies the
+associated packet number gaps in addition to the packet number gap
+associated with the connection ID that it does use.
 
 A client might need to send packets on multiple networks without receiving any
 response from the server.  To ensure that the client is not linkable across each
@@ -1281,10 +1280,6 @@ of these changes, a new connection ID and packet number gap are needed for each
 network.  To support this, a server sends multiple NEW_CONNECTION_ID messages.
 Each NEW_CONNECTION_ID is marked with a sequence number.  Connection IDs MUST be
 used in the order in which they are numbered.
-
-Packet number gaps are cumulative.  A client might skip connection IDs, but it
-MUST ensure that it applies the associated packet number gaps in addition to the
-packet number gap associated with the connection ID that it does use.
 
 A server that receives a packet that is marked with a new connection ID recovers
 the packet number by adding the cumulative packet number gap to its expected
@@ -1296,6 +1291,22 @@ new connection ID.  If the server received packet 10 using the previous
 connection ID, it should expect packets on the new connection ID to start at 18.
 A packet with the new connection ID and a packet number of 17 is discarded as
 being in error.
+
+#### Packet Number Gap
+
+In order to avoid linkage, the packet number gap MUST be externally
+indistinguishable from random. The packet number gap for a connection
+ID with sequence number is computed by encoding the sequence number
+as a 32-bit integer in big-endian format, and then computing:
+
+~~~
+Gap = HKDF-Expand-Label(packet_number_secret,
+                        "QUIC packet sequence gap", sequence, 4)
+~~~
+
+The output of HKDF-Expand-Label is interpreted as a big-endian
+number. "packet_number_secret" is derived from the TLS key exchange,
+as described in {{QUIC-TLS}} Section 5.6.
 
 
 ### Address Validation for Migrated Connections
@@ -1938,8 +1949,6 @@ The NEW_CONNECTION_ID is as follows:
 +                        Connection ID (64)                     +
 |                                                               |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                      Packet Number Gap (32)                   |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
 
 The fields are:
@@ -1956,11 +1965,6 @@ Sequence:
 Connection ID:
 
 : A 64-bit connection ID.
-
-Packet Number Gap:
-
-: The number of packets to skip when using the connection ID.  Packet number
-  gaps are cumulative, see {{migration-linkability}}.
 
 
 ## CONNECTION_CLOSE frame {#frame-connection-close}
