@@ -1393,6 +1393,10 @@ value that is defined by the version of QUIC that is in use.  The
 quic_transport_parameters extension carries a TransportParameters when the
 version of QUIC defined in {{QUIC-TRANSPORT}} is used.
 
+The quic_transport_parameters extension is carried in the ClientHello and the
+EncryptedExtensions messages during the handshake.  The extension MAY be
+included in a NewSessionTicket message.
+
 
 ## Priming 0-RTT
 
