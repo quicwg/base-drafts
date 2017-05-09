@@ -725,7 +725,7 @@ packets ({{packet-client-initial}}).  If the client has received any packet from
 the server, it uses the connection ID it received from the server.
 
 When the server receives a Client Initial packet, it chooses a new value for the
-connection ID and sends that in its response.  The server can send a new
+connection ID and sends that in its response.  The server MUST send a new
 connection ID in any packet that is sent in response to a Client Initial packet.
 This includes Version Negotiation ({{packet-version}}), Server Stateless Retry
 ({{packet-server-stateless}}), and the first Server Cleartext packet
