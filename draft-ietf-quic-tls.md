@@ -834,7 +834,7 @@ number gaps on connection ID transitions. That secret is computed as:
 # Unprotected Packets
 
 QUIC adds an integrity check to all unprotected packets.  Any packet that is not
-protected by the negotiated AEAD (see {{packet-protection}}), includes a
+protected by the negotiated AEAD (see {{packet-protection}}), includes an
 integrity check.  This check does not prevent the packet from being altered, it
 exists for added resilience against data corruption and to provided added
 assurance that the sender intends to use QUIC.
