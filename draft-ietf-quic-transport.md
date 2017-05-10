@@ -2634,6 +2634,12 @@ sender, and to reasonably account for the possibiity of loss, a receiver should
 send a MAX_DATA or MAX_STREAM_DATA frame at least two roundtrips before it
 expects the sender to get blocked.
 
+A sender sends a single BLOCKED or STREAM_BLOCKED frame only once when it
+reaches a data limit.  A sender MUST NOT send multiple BLOCKED or STREAM_BLOCKED
+frames for the same data limit, unless the original frame is determined to be
+lost.  Another BLOCKED or STREAM_BLOCKED frame can be sent after the data limit
+is increased.
+
 
 ## Stream Final Offset {#final-offset}
 
