@@ -597,14 +597,19 @@ selected value, see {{connection-id}}.
 The packet number field echoes the packet number of the triggering client
 packet.  This allows a client to verify that the server received its packet.
 
-After receiving a Server Stateless Retry packet, the client MUST generate a new
-Client Initial packet containing the next cryptographic handshake message.  The
-client discards any buffers it uses for generating retransmissions of handshake
-data, resets the initial packet number and resets the stream offset for stream
-0, keeping only the cryptographic handshake state.  In effect, the cryptographic
-handshake is continued, but the transport connection is reset.  Continuing the
-cryptographic handshake is necessary to ensure that an attacker cannot force a
-downgrade of any cryptographic parameters.
+After receiving a Server Stateless Retry packet, the client uses a new Client
+Initial packet containing the next cryptographic handshake message.  The client
+retains the state of its cryptographic handshake, but discards all transport
+state.  In effect, the next cryptographic handshake message is sent on a new
+connection.  The new Client Initial packet is sent in a packet with a newly
+randomized packet number and starting at a stream offset of 0.
+
+Continuing the cryptographic handshake is necessary to ensure that an attacker
+cannot force a downgrade of any cryptographic parameters.  In addition to
+continuing the cryptographic handshake, the client MUST remember the results of
+any version negotiation that occurred (see {{version-negotiation}}).  The client
+MAY also retain any observed RTT or congestion state that it has accumulated for
+the flow, but other transport state MUST be discarded.
 
 The payload of the Server Stateless Retry packet contains STREAM frames and
 could contain PADDING and ACK frames.  A server can only send a single Server
@@ -1223,21 +1228,14 @@ based on the value of the supported_versions list.
 ## Stateless Retries {#stateless-retry}
 
 A server can process an initial cryptographic handshake messages from a client
-without committing any state.  This allows a server to perform address
-validation ({{address-validation}}, or to defer connection establishment costs.
+without committing any state. This allows a server to perform address validation
+({{address-validation}}, or to defer connection establishment costs.
 
-In order to ensure consistent state regarding stream offsets and packet numbers,
-a server that generates a response to an initial packet without retaining
+A server that generates a response to an initial packet without retaining
 connection state MUST use the Server Stateless Retry packet
-({{packet-server-stateless}}).  This packet causes a client to reset the state
-of stream 0 and continue the connection attempt with fresh stream state while
-maintaining the state of the cryptographic handshake.
-
-A server that sends a Server Stateless Retry packet is then not obligated to
-ensure that it correctly accounts for data already sent on stream 0 either by
-both itself or by the client.  Similarly, a server also does not have to
-remember a randomized initial packet number: the Server Stateless Retry packet
-includes a copy of the packet number from the client packet.
+({{packet-server-stateless}}).  This packet causes a client to reset its
+transport state and to continue the connection attempt with new connection state
+while maintaining the state of the cryptographic handshake.
 
 A server MUST NOT send multiple Server Stateless Retry packets in response to a
 client handshake packet.  Thus, any cryptographic handshake message that is sent
