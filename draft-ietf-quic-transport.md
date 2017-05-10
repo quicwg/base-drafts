@@ -452,6 +452,8 @@ packet type.  Type-specific semantics for this version are described in
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                      Packet Number (8/16/32)                ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                  [Packet Number Echo (8/16/32)]             ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                     Encrypted Payload (*)                   ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~~~
@@ -489,8 +491,16 @@ Connection ID:
 
 Packet Number:
 
-: The length of the packet number field depends on the packet type.  This field
-  can be 1, 2 or 4 octets long depending on the short packet type.
+: The length of the packet number field depends on the packet type. This
+  field can be 1, 2 or 4 octets long depending on the short packet type;
+  see {{packet-numbers}}.
+
+Packet Number Echo:
+
+: The packet number echo field, if present, contains the highest packet number
+  seen in the opposite direction. This field is optional; if present, it is 1,
+  2, or 4 octets long depending on the short packet type; see
+  {{packet-number-echo}}.
 
 Encrypted Payload:
 
@@ -500,11 +510,14 @@ The packet type in a short header currently determines only the size of the
 packet number field.  Additional types can be used to signal the presence of
 other fields.
 
-| Type | Packet Number Size |
-|:-----|:-------------------|
-| 01   | 1 octet            |
-| 02   | 2 octets           |
-| 03   | 4 octets           |
+| Type | Packet Number Size     | Packet Number Echo Size |
+|:-----|:-----------------------|-------------------------|
+| 01   | 1 octet                | not present             |
+| 02   | 2 octets               | not present             |
+| 03   | 4 octets               | not present             |
+| 05   | 1 octet                | 1 octet                 |
+| 06   | 2 octets               | 2 octets                |
+| 07   | 4 octets               | 4 octets                |
 {: #short-packet-types title="Short Header Packet Types"}
 
 The header form, connection ID flag and connection ID of a short header packet
@@ -720,6 +733,36 @@ The first set of packets sent by an endpoint MUST include the low 32-bits of the
 packet number.  Once any packet has been acknowledged, subsequent packets can
 use a shorter packet number encoding.
 
+### Packet Number Echo {#packet-number-echo}
+
+If present, the Packet Number Echo field contains the least significant 8, 16,
+or 32 bits of the highest packet number seen in the opposite direction before
+this packet was sent. This allows devices along the path to estimate round-trip
+times and observe indications of loss, for passive performance measurement of
+QUIC flows equivalent to present techniques using TCP sequence and
+acknowledgement numbers and/or timestamps.
+
+The Packet Number Echo field SHOULD be present on 1-RTT packets containing at
+least one ACK frame (see {{frame-ack}}). For efficiency's sake, it MAY be
+omitted if a 1-RTT packet containing an ACK frame has already been sent during a
+time interval equal to the sender's current estimate of the RTT.
+
+Since the Packet Number and Packet Number Echo fielda are of the same size, a
+sender sending a packet containing a Packet Number Echo determines the size to
+use as follows:
+
+- Let `SIZE_P` be the size of the packet number to be sent, as determined in
+  {{packet-numbers}} above.
+
+- Let `SIZE_E` be the size of the packet number sent in the packet whose packet
+  number is to be echoed.
+
+- Let `SIZE_S` be the size of the packet number dictated by the difference
+  between the packet number echo to be sent and the last packet number echo
+  sent; if no packet number echo has yet been sent, then let `SIZE_S` be 4.
+
+- Choose the packet number and packet number echo size to send as max(`SIZE_P`,
+  `SIZE_E`, `SIZE_S`).
 
 ## Handling Packets from Different Versions {#version-specific}
 
