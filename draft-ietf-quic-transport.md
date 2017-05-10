@@ -420,9 +420,9 @@ The following packet types are defined:
 | 03   | Server Stateless Retry        | {{packet-server-stateless}} |
 | 04   | Server Cleartext              | {{packet-server-cleartext}} |
 | 05   | Client Cleartext              | {{packet-client-cleartext}} |
-| 06   | 0-RTT Encrypted               | {{packet-encrypted}}        |
-| 07   | 1-RTT Encrypted (key phase 0) | {{packet-encrypted}}        |
-| 08   | 1-RTT Encrypted (key phase 1) | {{packet-encrypted}}        |
+| 06   | 0-RTT Protected               | {{packet-protected}}        |
+| 07   | 1-RTT Protected (key phase 0) | {{packet-protected}}        |
+| 08   | 1-RTT Protected (key phase 1) | {{packet-protected}}        |
 | 09   | Public Reset                  | {{packet-public-reset}}     |
 {: #long-packet-types title="Long Header Packet Types"}
 
@@ -452,7 +452,7 @@ following sections.
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                      Packet Number (8/16/32)                ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                     Encrypted Payload (*)                   ...
+|                     Protected Payload (*)                   ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~~~
 {: #fig-short-header title="Short Header Format"}
@@ -492,7 +492,7 @@ Packet Number:
 : The length of the packet number field depends on the packet type.  This field
   can be 1, 2 or 4 octets long depending on the short packet type.
 
-Encrypted Payload:
+Protected Payload:
 
 : Packets with a short header always include a 1-RTT protected payload.
 
@@ -645,7 +645,7 @@ The connection ID field in a Client Cleartext packet contains a server-selected
 connection ID, see {{connection-id}}.
 
 The Client Cleartext packet includes a packet number that is one higher than the
-last Client Initial, 0-RTT Encrypted or Client Cleartext packet that was sent.
+last Client Initial, 0-RTT Protected or Client Cleartext packet that was sent.
 The packet number is incremented for each subsequent packet, see
 {{packet-numbers}}.
 
@@ -653,7 +653,7 @@ The payload of this packet contains STREAM frames and could contain PADDING and
 ACK frames.
 
 
-## Encrypted Packets {#packet-encrypted}
+## Protected Packets {#packet-protected}
 
 Packets that are protected with 0-RTT keys are sent with long headers.  Packets
 that are protected with 1-RTT keys MAY be sent with long headers.  The different
@@ -673,15 +673,14 @@ Packets protected with 1-RTT keys use a type octet of 0x87 for key phase 0 and
 phases.  The connection ID field for these packet types MUST contain the value
 selected by the server, see {{connection-id}}.
 
-The version field for encrypted packets is the current QUIC version.
+The version field for protected packets is the current QUIC version.
 
 The packet number field contains a packet number, which increases with each
 packet sent, see {{packet-numbers}} for details.
 
-The encrypted payload is both authenticated and encrypted using packet
-protection keys. {{QUIC-TLS}} describes packet protection in detail.  After
-decryption, the plaintext consists of a sequence of frames, as described in
-{{frames}}.
+The payload is protected using authenticated encryption.  {{QUIC-TLS}} describes
+packet protection in detail.  After decryption, the plaintext consists of a
+sequence of frames, as described in {{frames}}.
 
 
 ## Public Reset Packet {#packet-public-reset}
@@ -700,7 +699,7 @@ The connection ID and packet number of fields together contain octets 1 through
 connection ID on every packet, the Connection ID field is simply an echo of the
 client's Connection ID, and the Packet Number field includes an echo of the
 client's packet number.  Depending on the client's packet number length it might
-also include 0, 2, or 3 additional octets from the encrypted payload of the
+also include 0, 2, or 3 additional octets from the protected payload of the
 client packet.
 
 The version field contains the current QUIC version.
@@ -836,7 +835,7 @@ an unsupported version.
 
 # Frames and Frame Types {#frames}
 
-The payload of cleartext packets and the plaintext after decryption of encrypted
+The payload of cleartext packets and the plaintext after decryption of protected
 payloads consists of a sequence of frames, as shown in {{packet-frames}}.
 
 ~~~
@@ -852,9 +851,9 @@ payloads consists of a sequence of frames, as shown in {{packet-frames}}.
 |                          Frame N (*)                        ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
-{: #packet-frames title="Contents of Encrypted Payload"}
+{: #packet-frames title="Contents of Protected Payload"}
 
-Encrypted payloads MUST contain at least one frame, and MAY contain multiple
+Protected payloads MUST contain at least one frame, and MAY contain multiple
 frames and multiple frame types.
 
 Frames MUST fit within a single QUIC packet and MUST NOT span a QUIC packet
@@ -2178,7 +2177,7 @@ in the GOAWAY frame can then be retried.
 
 The Path Maximum Transmission Unit (PTMU) is the maximum size of the entire IP
 header, UDP header, and UDP payload. The UDP payload includes the QUIC public
-header, encrypted payload, and any authentication fields.
+header, protected payload, and any authentication fields.
 
 All QUIC packets SHOULD be sized to fit within the estimated PMTU to avoid IP
 fragmentation or packet drops. To optimize bandwidth efficiency, endpoints
@@ -3049,10 +3048,10 @@ sent, the connection can be aborted.
 The second mitigation is that the server can require that acknowledgments for
 sent packets match the encryption level of the sent packet.  This mitigation is
 useful if the connection has an ephemeral forward-secure key that is generated
-and used for every new connection.  If a packet sent is encrypted with a
+and used for every new connection.  If a packet sent is protected with a
 forward-secure key, then any acknowledgments that are received for them MUST
-also be forward-secure encrypted.  Since the attacker will not have the forward
-secure key, the attacker will not be able to generate forward-secure encrypted
+also be forward-secure protected.  Since the attacker will not have the forward
+secure key, the attacker will not be able to generate forward-secure protected
 packets with ACK frames.
 
 

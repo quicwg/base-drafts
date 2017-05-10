@@ -263,20 +263,20 @@ document:
    HelloRetryRequest is also used to verify that the client is correctly able to
    receive packets on the address it claims to have (see {{QUIC-TRANSPORT}}).
 
- * A pre-shared key mode can be used for subsequent handshakes to
-   reduce the number of public key operations.  This is the basis for
-   0-RTT data, even if the remainder of the connection is protected by
-   a new Diffie-Hellman exchange.
+ * A pre-shared key mode can be used for subsequent handshakes to reduce the
+   number of public key operations.  This is the basis for 0-RTT data, even if
+   the remainder of the connection is protected by a new Diffie-Hellman
+   exchange.
 
 
 # TLS Usage
 
 QUIC reserves stream 0 for a TLS connection.  Stream 0 contains a complete TLS
 connection, which includes the TLS record layer.  Other than the definition of a
-QUIC-specific extension (see Section-TBD), TLS is unmodified for this use.  This
-means that TLS will apply confidentiality and integrity protection to its
-records.  In particular, TLS record protection is what provides confidentiality
-protection for the TLS handshake messages sent by the server.
+QUIC-specific extension (see {{quic_parameters}}), TLS is unmodified for this
+use.  This means that TLS will apply confidentiality and integrity protection to
+its records.  In particular, TLS record protection is what provides
+confidentiality protection for the TLS handshake messages sent by the server.
 
 QUIC permits a client to send frames on streams starting from the first packet.
 The initial packet from a client contains a stream frame for stream 0 that
@@ -330,16 +330,23 @@ ensures that TLS handshake messages are delivered in the correct order.
 In {{quic-tls-handshake}}, symbols mean:
 
 * "<" and ">" enclose stream numbers.
-* "@" indicates the key phase that is currently used for protecting QUIC
-  packets.
+
+* "@" indicates the keys that are used for protecting the QUIC packet (C =
+  cleartext, with integrity only; 0 = 0-RTT keys; 1 = 1-RTT keys).
+
 * "(" and ")" enclose messages that are protected with TLS 0-RTT handshake or
   application keys.
+
 * "{" and "}" enclose messages that are protected by the TLS Handshake keys.
 
 If 0-RTT is not attempted, then the client does not send packets protected by
 the 0-RTT key (@0).  In that case, the only key transition on the client is from
-unprotected packets (@C) to 1-RTT protection (@1), which happens after it sends
+cleartext packets (@C) to 1-RTT protection (@1), which happens after it sends
 its final set of TLS handshake messages.
+
+Note: the client uses two different types of cleartext packet during the
+handshake.  The Client Initial packet carries a TLS ClientHello message; the
+remainder of the TLS handshake is carried in Client Cleartext packets.
 
 The server sends TLS handshake messages without protection (@C).  The server
 transitions from no protection (@C) to full 1-RTT protection (@1) after it sends
@@ -897,9 +904,9 @@ during the handshake a new secret is exported from TLS and packet protection
 keys are derived from that secret.
 
 Every time that a new set of keys is used for protecting outbound packets, the
-KEY_PHASE bit in the public flags is toggled.  The exception is the transition
-from 0-RTT keys to 1-RTT keys, where the presence of the version field and its
-associated bit is used (see {{first-keys}}).
+KEY_PHASE bit in the public flags is toggled.  0-RTT protected packets use the
+QUIC long header, they do not use the KEY_PHASE bit to select the correct keys
+(see {{first-keys}}).
 
 Once the connection is fully enabled, the KEY_PHASE bit allows a recipient to
 detect a change in keying material without necessarily needing to receive the
@@ -907,7 +914,9 @@ first packet that triggered the change.  An endpoint that notices a changed
 KEY_PHASE bit can update keys and decrypt the packet that contains the changed
 bit, see {{key-update}}.
 
-The KEY_PHASE bit is the third bit of the public flags (0x04).
+The KEY_PHASE bit is included as the 0x20 bit of the QUIC short header, or is
+determined by the packet type from the long header (a type of 0x06 indicates a
+key phase of 0, 0x07 indicates key phase 1).
 
 Transitions between keys during the handshake are complicated by the need to
 ensure that TLS handshake messages are sent with the correct packet protection.
@@ -915,13 +924,12 @@ ensure that TLS handshake messages are sent with the correct packet protection.
 
 ## Packet Protection for the TLS Handshake {#cleartext-hs}
 
-The initial exchange of packets are sent without protection.  These packets are
-marked with a KEY_PHASE of 0.
+The initial exchange of packets are sent without protection.  These packets use
+a cleartext packet type.
 
-TLS handshake messages MUST NOT be protected using QUIC packet protection.  A
-KEY_PHASE of 0 is used for all of these packets, even during retransmission.
-The messages affected are all TLS handshake message up to the TLS Finished that
-is sent by each endpoint.
+TLS handshake messages MUST NOT be protected using QUIC packet protection.  All
+TLS handshake messages up to the TLS Finished message sent by either endpoint
+use cleartext packets.
 
 Any TLS handshake messages that are sent after completing the TLS handshake do
 not need special packet protection rules.  Packets containing these messages use
@@ -930,7 +938,7 @@ retransmission).
 
 Like the client, a server MUST send retransmissions of its unprotected handshake
 messages or acknowledgments for unprotected handshake messages sent by the
-client in unprotected packets (KEY_PHASE=0).
+client in cleartext packets.
 
 
 ### Initial Key Transitions {#first-keys}
@@ -938,29 +946,17 @@ client in unprotected packets (KEY_PHASE=0).
 Once the TLS handshake is complete, keying material is exported from TLS and
 QUIC packet protection commences.
 
-Packets protected with 1-RTT keys have a KEY_PHASE bit set to 1.  These packets
-also have a VERSION bit set to 0.
+Packets protected with 1-RTT keys initially have a KEY_PHASE bit set to 0.  This
+bit inverts with each subsequent key update (see {{key-update}}).
 
-If the client sends 0-RTT data, it marks packets protected with 0-RTT keys with
-a KEY_PHASE of 1 and a VERSION bit of 1.  Setting the version bit means that all
-packets also include the version field.  The client retains the VERSION bit, but
-reverts the KEY_PHASE bit for the packet that contains the TLS EndOfEarlyData
-and Finished messages.
+If the client sends 0-RTT data, it uses the 0-RTT packet type.  The packet that
+contains the TLS EndOfEarlyData and Finished messages are sent in cleartext
+packets.
 
-The client clears the VERSION bit and sets the KEY_PHASE bit to 1 when it
-transitions to using 1-RTT keys.
-
-Marking 0-RTT data with the both KEY_PHASE and VERSION bits ensures that the
-server is able to identify these packets as 0-RTT data in case packets
-containing TLS handshake message are lost or delayed.  Including the version
-also ensures that the packet format is known to the server in this case.
-
-Using both KEY_PHASE and VERSION also ensures that the server is able to
-distinguish between cleartext handshake packets (KEY_PHASE=0, VERSION=1), 0-RTT
-protected packets (KEY_PHASE=1, VERSION=1), and 1-RTT protected packets
-(KEY_PHASE=1, VERSION=0).  Packets with all of these markings can arrive
-concurrently, and being able to identify each cleanly ensures that the correct
-packet protection keys can be selected and applied.
+Using distinct packet types during the handshake for handshake messages, 0-RTT
+data, and 1-RTT data ensures that the server is able to distinguish between the
+different keys used to remove packet protection.  All of these packets can
+arrive concurrently at a server.
 
 A server might choose to retain 0-RTT packets that arrive before a TLS
 ClientHello.  The server can then use those packets once the ClientHello
@@ -971,8 +967,8 @@ packets that are saved might be necessary.
 
 The server transitions to using 1-RTT keys after sending its first flight of TLS
 handshake messages.  From this point, the server protects all packets with 1-RTT
-keys.  Future packets are therefore protected with 1-RTT keys and marked with a
-KEY_PHASE of 1.
+keys.  Future packets are therefore protected with 1-RTT keys.  Initially, these
+are marked with a KEY_PHASE of 0.
 
 
 ### Retransmission and Acknowledgment of Unprotected Packets
@@ -983,22 +979,22 @@ later messages.  If these handshake messages are included in packets that are
 protected with these keys, they will be indecipherable to the recipient.
 
 Even though newer keys could be available when retranmitting, retransmissions of
-these handshake messages MUST be sent in unprotected packets (with a KEY_PHASE
-of 0).  An endpoint MUST also generate ACK frames for these messages that are
-sent in unprotected packets.
+these handshake messages MUST be sent in cleartext packets.  An endpoint MUST
+also generate ACK frames for these messages that are sent in cleartext packets.
 
 A HelloRetryRequest handshake message might be used to reject an initial
-ClientHello.  A HelloRetryRequest handshake message and any second ClientHello
-that is sent in response MUST also be sent without packet protection.  This is
-natural, because no new keying material will be available when these messages
-need to be sent.  Upon receipt of a HelloRetryRequest, a client SHOULD cease any
+ClientHello.  A HelloRetryRequest handshake message is sent in a Server
+Stateless Retry packet; any second ClientHello that is sent in response uses a
+Client Initial packet type.  Neither packet is protected.  This is natural,
+because no new keying material will be available when these messages need to be
+sent.  Upon receipt of a HelloRetryRequest, a client SHOULD cease any
 transmission of 0-RTT data; 0-RTT data will only be discarded by any server that
 sends a HelloRetryRequest.
 
-The KEY_PHASE and VERSION bits ensure that protected packets are clearly
-distinguished from unprotected packets.  Loss or reordering might cause
-unprotected packets to arrive once 1-RTT keys are in use, unprotected packets
-are easily distinguished from 1-RTT packets.
+The packet type ensures that protected packets are clearly distinguished from
+unprotected packets.  Loss or reordering might cause unprotected packets to
+arrive once 1-RTT keys are in use, unprotected packets are easily distinguished
+from 1-RTT packets using the packet type.
 
 Once 1-RTT keys are available to an endpoint, it no longer needs the TLS
 handshake messages that are carried in unprotected packets.  However, a server
@@ -1392,8 +1388,8 @@ not authenticated, enabling an active attacker to force a version downgrade.
 To ensure that a QUIC version downgrade is not forced by an attacker, version
 information is copied into the TLS handshake, which provides integrity
 protection for the QUIC negotiation.  This does not prevent version downgrade
-during the handshake, though it means that such a downgrade causes a handshake
-failure.
+prior to the completion of the handshake, though it means that a downgrade
+causes a handshake failure.
 
 TLS uses Application Layer Protocol Negotiation (ALPN) {{!RFC7301}} to select an
 application protocol.  The application-layer protocol MAY restrict the QUIC
@@ -1470,12 +1466,11 @@ by an attacker.
 Certificate caching {{?RFC7924}} can reduce the size of the server's handshake
 messages significantly.
 
-QUIC requires that the packet containing a ClientHello be padded to the size of
-the maximum transmission unit (MTU).  A server is less likely to generate a
-packet reflection attack if the data it sends is a small multiple of this size.
-A server SHOULD use a HelloRetryRequest if the size of the handshake messages it
-sends is likely to significantly exceed the size of the packet containing the
-ClientHello.
+QUIC requires that the packet containing a ClientHello be padded to a minimum
+size.  A server is less likely to generate a packet reflection attack if the
+data it sends is a small multiple of this size.  A server SHOULD use a
+HelloRetryRequest if the size of the handshake messages it sends is likely to
+significantly exceed the size of the packet containing the ClientHello.
 
 
 ## Peer Denial of Service {#useless}
