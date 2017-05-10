@@ -303,6 +303,9 @@ QUIC versions are identified using a 32-bit value.
 The version 0x00000000 is reserved to represent an invalid version.  This
 version of the specification is identified by the number 0x00000001.
 
+Version 0x000000001 of QUIC uses TLS as a cryptographic handshake protocol, as
+described in {{QUIC-TLS}}.
+
 Versions with the most significant 16 bits of the version number cleared are
 reserved for use in future IETF consensus documents.
 
@@ -887,7 +890,9 @@ solicit a list of supported versions from a server.
 
 QUIC relies on a combined cryptographic and transport handshake to minimize
 connection establishment latency.  QUIC allocates stream 0 for the cryptographic
-handshake.  This version of QUIC uses TLS 1.3 {{QUIC-TLS}}.
+handshake.  Version 0x00000001 of QUIC uses TLS 1.3 as described in
+{{QUIC-TLS}}; a different QUIC version number could indicate that a different
+cryptographic handshake protocol is in use.
 
 QUIC provides this stream with reliable, ordered delivery of data.  In return,
 the cryptographic handshake provides QUIC with:
