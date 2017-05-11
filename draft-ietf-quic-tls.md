@@ -530,7 +530,7 @@ version of TLS.  An endpoint MUST terminate the connection if a version of TLS
 older than 1.3 is negotiated.
 
 
-## ClientHello Size
+## ClientHello Size {#clienthello-size}
 
 QUIC requires that the initial handshake packet from a client fit within the
 payload of a single packet.  The size limits on QUIC packets mean that a record
@@ -1125,6 +1125,39 @@ consult the transport protocol regarding address validation if address
 validation was not requested originally.  In such cases, the cookie extension
 could either be absent or it could indicate that an address validation token is
 not present.
+
+
+### Stateless Address Validation
+
+A server can use the cookie extension to store all state necessary to continue
+the connection.  This allows a server to avoid committing state for clients that
+have unvalidated source addresses.
+
+For instance, a server could use a statically-configured key to encrypt the
+information that it requires and include that information in the cookie.  In
+addition to address validation information, a server that uses encryption also
+needs to be able recover the hash of the ClientHello and its length, plus any
+information it needs in order to reconstruct the HelloRetryRequest.
+
+
+### Sending HelloRetryRequest
+
+A server does not need to maintain state for the connection when sending a
+HelloRetryRequest message.  This might be necessary to avoid creating a denial
+of service exposure for the server.  However, this means that information about
+the transport will be lost at the server.  This includes the stream offset of
+stream 0, the packet number that the server selects, and any opportunity to
+measure round trip time.
+
+A server MUST send a TLS HelloRetryRequest in a Server Stateless Retry packet.
+Using a Server Stateless Retry packet causes the client to reset stream offsets.
+It also avoids the need for the server select an initial packet number, which
+would need to be remembered so that subsequent packets could be correctly
+numbered.
+
+A HelloRetryRequest message MUST NOT be split between multiple Server Stateless
+Retry packets.  This means that HelloRetryRequest is subject to the same size
+constraints as a ClientHello (see {{clienthello-size}}).
 
 
 ## NewSessionTicket Address Validation
