@@ -2809,9 +2809,8 @@ risks a peer missing the first such packet.  The only mechanism available to an
 endpoint that continues to receive data for a terminated connection is to send a
 Public Reset packet.
 
-An endpoint that receives an invalid error code in a CONNECTION_CLOSE frame MUST
-NOT signal the existence of the error to its peer.  It MAY treat the error as an
-INTERNAL_ERROR on the basis that there is some fault with the peer.
+An endpoint that receives an invalid CONNECTION_CLOSE frame MUST NOT signal the
+existence of the error to its peer.
 
 
 ## Stream Errors
