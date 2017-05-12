@@ -2842,45 +2842,83 @@ CONNECTION_CLOSE or RST_STREAM frame. Error codes share a common code space.
 Some error codes apply only to either streams or the entire connection and have
 no defined semantics in the other context.
 
-INTERNAL_ERROR (0x80000001):
+FRAME_ERROR (0x800000TT):
+
+: An endpoint received a frame that was badly formatted.  For instance, an empty
+  STREAM frame that omitted the FIN flag, or an ACK frame that has more
+  acknowledgment ranges than the remainder of the packet could carry. The final
+  octet of the error code carries the Type field in the offending frame.
+
+INTERNAL_ERROR (0x80000100):
 
 : The endpoint encountered an internal error and cannot continue with the
   connection.
 
-ENHANCE_YOUR_CALM (0x80000002):
+CRYPTO_STREAM_CLOSED (0x80000101): 
 
-: The endpoint detected that its peer is exhibiting a behavior that might be
-  generating excessive load.
+: A fin or a RST_STREAM was received for stream 0.
 
-NO_ERROR (0x80000003):
+PAYLOAD_MISSING (0x80000102):
+
+: Received packet contained no payload.
+
+HANDSHAKE_TIMEOUT (0x80000103):
+
+: Connection timed out waiting for the handshake to complete.
+
+NETWORK_IDLE_TIMEOUT (0x80000104):
+
+: Connection timed out due to no network activity.
+
+UNENCRYPTED_STREAM_DATA (0x80000105):
+
+: Stream data for a stream other than 0 was received in an unprotected packet.
+
+INVALID_VERSION_NEGOTIATION_PACKET (0x80000106):
+
+: Version negotiation packet is malformed.
+
+PUBLIC_RESET_RECEIVED (0x80000107):
+
+: A public reset packet was received for this connection post-handshake.
+
+TOO_MANY_RTOS (0x80000108):
+
+: Connection timed out after too many retransmissions.
+
+ADDRESS_VALIDATION_FAILURE (0x80000109):
+
+: Peer's IP address validation failed.
+
+NO_ERROR (0x8000010A):
 
 : An endpoint uses this with CONNECTION_CLOSE to signal that the connection is
   being closed abruptly in the absence of any error.  An endpoint uses this with
   RST_STREAM to signal that the stream is no longer wanted or in response to the
   receipt of a RST_STREAM for that stream.
 
-CANCELLED (0x80000004):
+CANCELLED (0x8000010B):
 
 : An endpoint sends this with RST_STREAM to indicate that the stream is not
   wanted and that no application action was taken for the stream.  This error
   code is not valid for use with CONNECTION_CLOSE.
 
-FLOW_CONTROL_ERROR (0x80000005):
+FLOW_CONTROL_ERROR (0x8000010C):
 
 : An endpoint received more data than it permitted in its advertised data limits
   (see {{flow-control}}.
 
-STREAM_ID_ERROR (0x80000006):
+STREAM_ID_ERROR (0x8000010D):
 
 : An endpoint received a frame for a stream identifier that exceeded its
   advertised maximum stream ID.
 
-STREAM_STATE_ERROR (0x80000007):
+STREAM_STATE_ERROR (0x8000010E):
 
 : An endpoint received a frame for a stream that was not in a state that
   permitted that frame (see {{stream-states}}).
 
-FINAL_OFFSET_ERROR (0x80000008):
+FINAL_OFFSET_ERROR (0x8000010F):
 
 : An endpoint received a STREAM frame containing data that exceeded the
   previously established final offset.  Or an endpoint received a RST_STREAM
@@ -2888,25 +2926,20 @@ FINAL_OFFSET_ERROR (0x80000008):
   that was already received.  Or an endpoint received a RST_STREAM frame
   containing a different final offset to the one already established.
 
-FRAME_FORMAT_ERROR (0x80000009):
 
-: An endpoint received a frame that was badly formatted.  For instance, an empty
-  STREAM frame that omitted the FIN flag, or an ACK frame that has more
-  acknowledgment ranges than the remainder of the packet could carry.
-
-TRANSPORT_PARAMETER_ERROR (0x8000000A):
+TRANSPORT_PARAMETER_ERROR (0x80000110):
 
 : An endpoint received transport parameters that were badly formatted, included
   an invalid value, was absent even though it is mandatory, was present though
   it is forbidden, or is otherwise in error.
 
-VERSION_NEGOTIATION_ERROR (0x8000000B):
+VERSION_NEGOTIATION_ERROR (0x80000111):
 
 : An endpoint received transport parameters that contained version negotiation
   parameters that disagreed with the version negotiation that it performed.
   This error code indicates a potential version downgrade attack.
 
-PROTOCOL_VIOLATION (0x8000000C):
+PROTOCOL_VIOLATION (0x800001FF):
 
 : An endpoint detected an error with protocol compliance that was not covered by
   more specific error codes.
