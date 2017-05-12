@@ -1114,9 +1114,7 @@ initial_max_stream_id (0x0002):
 : The initial maximum stream ID parameter contains the initial maximum stream
   number the peer may initiate, encoded as an unsigned 32-bit integer.  This is
   equivalent to sending a MAX_STREAM_ID ({{frame-max-stream-id}}) immediately
-  after completing the handshake.  This value MUST NOT be set to 0, an endpoint
-  MUST generate a TRANSPORT_PARAMETER_ERROR error if it receives a value of
-  0 for this parameter.
+  after completing the handshake.
 
 idle_timeout (0x0003):
 
@@ -2321,6 +2319,24 @@ similar to the way ephemeral streams are used in SST
 for some applications.
 
 
+Stream Identifiers {#stream-id}
+
+Streams are identified by an unsigned 32-bit integer, referred to as the Stream
+ID. To avoid Stream ID collision, clients initiate streams using odd-numbered
+Stream IDs; streams initiated by the server use even-numbered Stream IDs.
+
+Stream ID 0 (0x0) is reserved for the cryptographic handshake. Stream 0 MUST NOT
+be used for application data, and is the first client-initiated stream.
+
+A QUIC endpoint cannot reuse a Stream ID. Streams MUST be created in sequential
+order. Open streams can be used in any order. Streams that are used out of order
+result in lower-numbered streams in the same direction being counted as open.
+
+Stream IDs are usually encoded as a 32-bit integer, though the STREAM frame
+({{frame-stream}}) permits a shorter encoding when the leading bits of the
+stream ID are zero.
+
+
 ## Life of a Stream {#stream-states}
 
 The semantics of QUIC streams is based on HTTP/2 streams, and the lifecycle of a
@@ -2792,10 +2808,8 @@ risks a peer missing the first such packet.  The only mechanism available to an
 endpoint that continues to receive data for a terminated connection is to send a
 Public Reset packet.
 
-An endpoint that receives an invalid error code in a CONNECTION_CLOSE frame MUST
-NOT signal the existence of the error to its peer.  It MAY treat the error as an
-INTERNAL_ERROR on the basis that there is some fault with the peer.
-
+An endpoint that receives an invalid CONNECTION_CLOSE frame MUST NOT signal the
+existence of the error to its peer.
 
 ## Stream Errors
 
