@@ -927,13 +927,20 @@ If the packet contains a version that is acceptable to the server, the server
 proceeds with the handshake ({{handshake}}).  This commits the server to the
 version that the client selected.
 
-When the client receives a Version Negotiation packet from the server, it should
-select an acceptable protocol version.  If the server lists an acceptable
-version, the client selects that version and reattempts to create a connection
-using that version.  Though the contents of a packet might not change in
-response to version negotiation, a client MUST increase the packet number it
-uses on every packet it sends.  Packets MUST continue to use long headers and
-MUST include the new negotiated protocol version.
+A client MUST discard a Version Negotiation packet that does not contain Packet
+Number and Version fields that match those fields in a packet that the client
+previously sent.  This doesn't guarantee that the Version Negotiation packet is
+genuine, but it reduces the chances that the packet is spoofed.
+
+A client that receives a valid Version Negotiation packet selects an acceptable
+protocol version from those listed by the server.  The client then reattempts to
+create a connection using that version.  Though the contents of a packet might
+not change in response to version negotiation, a client MUST choose a new packet
+number it uses on every packet it sends.
+
+If the server does not list an acceptable version, the client MAY ignore the
+Version Negotiation packet.  This might reduce the likelihood that a spoofed
+Version Negotiation packet can be used to disrupt connection establishment.
 
 The client MUST use the long header format and include its selected version on
 all packets until it has 1-RTT keys and it has received a packet from the server
@@ -1229,6 +1236,18 @@ negotiated_version value is not included in the supported_versions list.  A
 client MUST terminate with a QUIC_VERSION_NEGOTIATION_MISMATCH error code if
 version negotiation occurred but it would have selected a different version
 based on the value of the supported_versions list.
+
+If the client receives a Version Negotiation packet and these validation checks
+subsequently fail, it is likely that the client received a spoofed Version
+Negotiation packet.  A client MAY attempt to create a new connection and ignore
+any Version Negotiation packets that match those that caused the connection to
+fail.
+
+Note:
+
+: The client cannot rely on the version list from the transport parameters.
+  Until the cryptographic handshake is successfully completed, these values
+  cannot be considered to be authentic.
 
 
 ## Stateless Retries {#stateless-retry}
