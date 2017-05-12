@@ -2328,7 +2328,7 @@ Stream IDs; streams initiated by the server use even-numbered Stream IDs.
 Stream ID 0 (0x0) is reserved for the cryptographic handshake.  Stream 0 MUST
 NOT be used for application data, and is the first client-initiated stream.
 
-A QUIC endpoint cannot reuse a Stream ID. Streams MUST be created in sequential
+A QUIC endpoint cannot reuse a Stream ID.  Streams MUST be created in sequential
 order.  Open streams can be used in any order.  Streams that are used out of
 order result in lower-numbered streams in the same direction being counted as
 open.
