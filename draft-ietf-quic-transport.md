@@ -2319,18 +2319,19 @@ similar to the way ephemeral streams are used in SST
 for some applications.
 
 
-Stream Identifiers {#stream-id}
+## Stream Identifiers {#stream-id}
 
 Streams are identified by an unsigned 32-bit integer, referred to as the Stream
-ID. To avoid Stream ID collision, clients initiate streams using odd-numbered
+ID.  To avoid Stream ID collision, clients initiate streams using odd-numbered
 Stream IDs; streams initiated by the server use even-numbered Stream IDs.
 
-Stream ID 0 (0x0) is reserved for the cryptographic handshake. Stream 0 MUST NOT
-be used for application data, and is the first client-initiated stream.
+Stream ID 0 (0x0) is reserved for the cryptographic handshake.  Stream 0 MUST
+NOT be used for application data, and is the first client-initiated stream.
 
 A QUIC endpoint cannot reuse a Stream ID. Streams MUST be created in sequential
-order. Open streams can be used in any order. Streams that are used out of order
-result in lower-numbered streams in the same direction being counted as open.
+order.  Open streams can be used in any order.  Streams that are used out of
+order result in lower-numbered streams in the same direction being counted as
+open.
 
 Stream IDs are usually encoded as a 32-bit integer, though the STREAM frame
 ({{frame-stream}}) permits a shorter encoding when the leading bits of the
@@ -2810,6 +2811,7 @@ Public Reset packet.
 
 An endpoint that receives an invalid CONNECTION_CLOSE frame MUST NOT signal the
 existence of the error to its peer.
+
 
 ## Stream Errors
 
