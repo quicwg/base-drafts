@@ -1531,7 +1531,7 @@ greatly appreciated.  The Recommended column is to be marked Yes.
 "EXPORTER-QUIC 0-RTT Secret" from {{0-rtt-secrets}} as well as
 "EXPORTER-QUIC client 1-RTT Secret" and
 "EXPORTER-QUIC server 1-RTT Secret" from {{1-rtt-secrets}}.  The DTLS column is
-to be marked No.  The Recommended column is to be marked No.
+to be marked No.  The Recommended column is to be marked Yes.
 
 --- back
 
