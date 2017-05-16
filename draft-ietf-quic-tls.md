@@ -1521,8 +1521,8 @@ This document does not create any new IANA registries, but it does utilize the
 following registries;
 
 * QUIC Transport Parameter Registry {{QUIC-TRANSPORT}} - This registry
-uses the Specificatino Required policy {{!RFC5226}}.  IANA is to register the three
-values found in {{errors}.
+uses the Specificatino Required policy {{!RFC5226}}.  IANA is to register the
+three values found in {{errors}.
 
 * TLS ExtensionsType Registry {{?I-D.ietf-tls-iana-registry-updates}} - This
 registry uses the Specifiation Required policy {{RFC5226}}.  IANA is to register
@@ -1531,7 +1531,7 @@ the quic_transport_parameters extension found in {{quic_parameters}}.  Assigning
 be marked Yes.
 
 * TLS Exporter Label Registry {{?I-D.ietf-tls-iana-registry-updates}} - This
-registry uses the Specification Required policy {{RFC5226}.  IANA is regquested
+registry uses the Specification Required policy {{RFC5226}.  IANA is requested
 to register "EXPORTER-QUIC 0-RTT Secret" from {{0-rtt-secrets}} and
 "EXPORTER-QUIC client 1-RTT Secret" and
 "EXPORTER-QUIC server 1-RTT Secret" from {{1-rtt-secrets}}.  The DTLS column is to
