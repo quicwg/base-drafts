@@ -590,7 +590,7 @@ includes the packets sent after receiving a Version Negotiation
 
 ### Server Stateless Retry Packet {#packet-server-stateless}
 
-A Server Stateless Retry packet uses long headers with a type value of 0x03.  
+A Server Stateless Retry packet uses long headers with a type value of 0x03.
 It carries cryptographic handshake messages and acknowledgments.  It is used
 by a server that wishes to perform a stateless retry (see
 {{stateless-retry}}).
