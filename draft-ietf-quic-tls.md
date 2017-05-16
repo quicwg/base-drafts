@@ -1534,8 +1534,8 @@ be marked Yes.
 registry uses the Specification Required policy {{RFC5226}.  IANA is requested
 to register "EXPORTER-QUIC 0-RTT Secret" from {{0-rtt-secrets}} and
 "EXPORTER-QUIC client 1-RTT Secret" and
-"EXPORTER-QUIC server 1-RTT Secret" from {{1-rtt-secrets}}.  The DTLS column is to
-marked Yes.  The Recommended column is to be marked Yes.
+"EXPORTER-QUIC server 1-RTT Secret" from {{1-rtt-secrets}}.  The DTLS column is
+to be marked Yes.  The Recommended column is to be marked Yes.
 
 --- back
 
