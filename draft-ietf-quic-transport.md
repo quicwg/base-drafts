@@ -515,8 +515,8 @@ versions of QUIC are interpreted.
 
 ## Version Negotiation Packet {#packet-version}
 
-A Version Negotiation packet has long headers with a type value of 0x01 and is 
-sent only by servers.  The Version Negotiation packet is a response to a client 
+A Version Negotiation packet has long headers with a type value of 0x01 and is
+sent only by servers.  The Version Negotiation packet is a response to a client
 packet that contains a version that is not supported by the server.
 
 The connection ID field contains a server-selected connection ID that the client
@@ -561,7 +561,7 @@ described in {{QUIC-TLS}}.
 
 ### Client Initial Packet {#packet-client-initial}
 
-The Client Initial packet uses long headers with a type value of 0x02.  
+The Client Initial packet uses long headers with a type value of 0x02.
 It carries the first cryptographic handshake message sent by the client.
 
 The client populates the connection ID field with randomly selected values,
@@ -591,8 +591,8 @@ includes the packets sent after receiving a Version Negotiation
 ### Server Stateless Retry Packet {#packet-server-stateless}
 
 A Server Stateless Retry packet uses long headers with a type value of 0x03.  
-It carries cryptographic handshake messages and acknowledgments.  It is used 
-by a server that wishes to perform a stateless retry (see 
+It carries cryptographic handshake messages and acknowledgments.  It is used
+by a server that wishes to perform a stateless retry (see
 {{stateless-retry}}).
 
 The connection ID field in a Server Stateless Retry packet contains a server
@@ -623,8 +623,8 @@ receives.
 
 ### Server Cleartext Packet {#packet-server-cleartext}
 
-A Server Cleartext packet uses long headers with a type value of 0x04.  It is 
-used to carry acknowledgments and cryptographic handshake messages from the 
+A Server Cleartext packet uses long headers with a type value of 0x04.  It is
+used to carry acknowledgments and cryptographic handshake messages from the
 server.
 
 The connection ID field in a Server Cleartext packet contains a connection ID
@@ -640,7 +640,7 @@ ACK frames.
 
 ### Client Cleartext Packet {#packet-client-cleartext}
 
-A Client Cleartext packet uses long headers with a type value of 0x05, and is 
+A Client Cleartext packet uses long headers with a type value of 0x05, and is
 sent when the client has received a Server Cleartext packet from the server.
 
 The connection ID field in a Client Cleartext packet contains a server-selected
@@ -670,9 +670,9 @@ if that packet does not complete the handshake.  Even if the client receives a
 different connection ID from the server, it MUST NOT update the connection ID it
 uses for 0-RTT packets.  This enables consistent routing for all 0-RTT packets.
 
-Packets protected with 1-RTT keys that use long headers use a type value of 0x07 
-for key phase 0 and 0x08 for key phase 1; see {{QUIC-TLS}} for more details on 
-the use of key phases.  The connection ID field for these packet types MUST 
+Packets protected with 1-RTT keys that use long headers use a type value of 0x07
+for key phase 0 and 0x08 for key phase 1; see {{QUIC-TLS}} for more details on
+the use of key phases.  The connection ID field for these packet types MUST
 contain the value selected by the server, see {{connection-id}}.
 
 The version field for protected packets is the current QUIC version.
