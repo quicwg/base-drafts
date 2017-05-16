@@ -515,7 +515,7 @@ versions of QUIC are interpreted.
 
 ## Version Negotiation Packet {#packet-version}
 
-A Version Negotiation packet has a type octet of 0x81 and is sent only by
+A Version Negotiation packet has a type value of 0x01 and is sent only by
 servers.  The Version Negotiation packet is a response to a client packet that
 contains a version that is not supported by the server.
 
@@ -561,7 +561,7 @@ described in {{QUIC-TLS}}.
 
 ### Client Initial Packet {#packet-client-initial}
 
-The Client Initial packet has a type octet of 0x82.  It carries the first
+The Client Initial packet has a type value of 0x02.  It carries the first
 cryptographic handshake message sent by the client.
 
 The client populates the connection ID field with randomly selected values,
@@ -590,7 +590,7 @@ includes the packets sent after receiving a Version Negotiation
 
 ### Server Stateless Retry Packet {#packet-server-stateless}
 
-A Server Stateless Retry packet has a type octet of 0x83.  It carries
+A Server Stateless Retry packet has a type value of 0x03.  It carries
 cryptographic handshake messages and acknowledgments.  It is used by a server
 that wishes to perform a stateless retry (see {{stateless-retry}}).
 
@@ -622,7 +622,7 @@ receives.
 
 ### Server Cleartext Packet {#packet-server-cleartext}
 
-A Server Cleartext packet has a type octet of 0x84.  It is used to carry
+A Server Cleartext packet has a type value of 0x04.  It is used to carry
 acknowledgments and cryptographic handshake messages from the server.
 
 The connection ID field in a Server Cleartext packet contains a connection ID
@@ -638,7 +638,7 @@ ACK frames.
 
 ### Client Cleartext Packet {#packet-client-cleartext}
 
-A Client Cleartext packet has a type octet of 0x85 and is sent when the client
+A Client Cleartext packet has a type value of 0x05 and is sent when the client
 has received a Server Cleartext packet from the server.
 
 The connection ID field in a Client Cleartext packet contains a server-selected
@@ -660,7 +660,7 @@ that are protected with 1-RTT keys MAY be sent with long headers.  The different
 packet types explicitly indicate the encryption level and therefore the keys
 that are used to remove packet protection.
 
-Packets protected with 0-RTT keys use a type octet of 0x86.  The connection ID
+Packets protected with 0-RTT keys use a type value of 0x06.  The connection ID
 field for a 0-RTT packet is selected by the client.
 
 The client can send 0-RTT packets after having received a packet from the server
@@ -668,8 +668,8 @@ if that packet does not complete the handshake.  Even if the client receives a
 different connection ID from the server, it MUST NOT update the connection ID it
 uses for 0-RTT packets.  This enables consistent routing for all 0-RTT packets.
 
-Packets protected with 1-RTT keys use a type octet of 0x87 for key phase 0 and
-0x88 for key phase 1; see {{QUIC-TLS}} for more details on the use of key
+Packets protected with 1-RTT keys use a type value of 0x07 for key phase 0 and
+0x08 for key phase 1; see {{QUIC-TLS}} for more details on the use of key
 phases.  The connection ID field for these packet types MUST contain the value
 selected by the server, see {{connection-id}}.
 
@@ -692,7 +692,7 @@ for use by a server that has lost state (for example, through a crash or
 outage). A server that wishes to communicate a fatal connection error MUST use a
 CONNECTION_CLOSE frame if it has sufficient state to do so.
 
-A Public Reset packet has a type octet of 0x88.
+A Public Reset packet has a type value of 0x09.
 
 The connection ID and packet number of fields together contain octets 1 through
 12 from the packet that triggered the reset.  For a client that sends a
