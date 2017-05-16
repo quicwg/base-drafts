@@ -1518,10 +1518,10 @@ TLS_FATAL_ALERT_RECEIVED (0xC000001E):
 # IANA Considerations
 
 This document does not create any new IANA registries, but it does utilize the
-following registries;
+following registries:
 
 * QUIC Transport Parameter Registry - IANA is to register the three values found
-in {{errors}.
+in {{errors}}.
 
 * TLS ExtensionsType Registry - IANA is to register the quic_transport_parameters
 extension found in {{quic_parameters}}.  Assigning 26 to the extension would be
