@@ -633,7 +633,7 @@ key derivation.  For example, if TLS is using the TLS_AES_128_GCM_SHA256, the
 SHA-256 hash function is used.
 
 
-### 0-RTT Secret {#0-rtt-secrets)
+### 0-RTT Secret {#zero-rtt-secrets}
 
 0-RTT keys are those keys that are used in resumed connections prior to the
 completion of the TLS handshake.  Data sent using 0-RTT keys might be replayed
@@ -653,7 +653,7 @@ packets sent by the client.
 ~~~
 
 
-### 1-RTT Secrets {#1-rtt-secrets}
+### 1-RTT Secrets {#one-rtt-secrets}
 
 1-RTT keys are used by both client and server after the TLS handshake completes.
 There are two secrets used at any time: one is used to derive packet protection
@@ -1521,17 +1521,18 @@ This document does not create any new IANA registries, but it does utilize the
 following registries:
 
 * QUIC Transport Parameter Registry - IANA is to register the three values found
-in {{errors}}.
+  in {{errors}}.
 
-* TLS ExtensionsType Registry - IANA is to register the quic_transport_parameters
-extension found in {{quic_parameters}}.  Assigning 26 to the extension would be
-greatly appreciated.  The Recommended column is to be marked Yes.
+* TLS ExtensionsType Registry - IANA is to register the
+  quic_transport_parameters extension found in {{quic_parameters}}.  Assigning
+  26 to the extension would be greatly appreciated.  The Recommended column is
+  to be marked Yes.
 
 * TLS Exporter Label Registry - IANA is requested to register
-"EXPORTER-QUIC 0-RTT Secret" from {{0-rtt-secrets}} as well as
-"EXPORTER-QUIC client 1-RTT Secret" and
-"EXPORTER-QUIC server 1-RTT Secret" from {{1-rtt-secrets}}.  The DTLS column is
-to be marked No.  The Recommended column is to be marked Yes.
+  "EXPORTER-QUIC 0-RTT Secret" from {{zero-rtt-secrets}} as well as
+  "EXPORTER-QUIC client 1-RTT Secret" and
+  "EXPORTER-QUIC server 1-RTT Secret" from {{one-rtt-secrets}}.  The DTLS column
+  is to be marked No.  The Recommended column is to be marked Yes.
 
 --- back
 
