@@ -98,7 +98,7 @@ important to the loss detection and congestion control machinery below.
 * Retransmittable frames are frames requiring reliable delivery.  The most
   common are STREAM frames, which typically contain application data.
 
-* Crypto handshake data is also sent as STREAM data, and uses the reliability
+* Crypto handshake data is sent on stream 0, and uses the reliability
   machinery of QUIC underneath.
 
 * ACK frames contain acknowledgment information.  QUIC uses a SACK-based
@@ -196,7 +196,8 @@ An unacknowledged QUIC packet is marked as lost in one of the following ways:
     lost when a packet larger than it is acknowledged and a threshold amount of
     time has passed since the packet was sent.
 
-  * Handshake packets are special in a number of ways, and a separate alarm
+  * Handshake packets, which contain STREAM frames for stream 0, are
+    critical to QUIC transport and crypto negotiation, so a separate alarm
     period is used for them.
 
 
