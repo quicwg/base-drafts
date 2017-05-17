@@ -408,8 +408,7 @@ below shows how the single timer is set based on the alarm mode.
 The initial flight has no prior RTT sample.  A client SHOULD remember
 the previous RTT it observed when resumption is attempted and use that for an
 initial RTT value.  If no previous RTT is available, the initial RTT defaults
-to 200ms.  Once an RTT measurement is taken, it MUST replace the initial RTT
-value.
+to 200ms.
 
 Endpoints MUST retransmit handshake frames if not acknowledged within a
 time limit. This time limit will start as the largest of twice the rtt value
