@@ -61,6 +61,15 @@ normative:
         org: sn3rd
         role: editor
 
+  FIPS180:
+    title: NIST FIPS 180-4, Secure Hash Standard
+    author:
+      name: NIST
+      ins: National Institute of Standards and Technology, U.S. Department of Commerce
+    date: 2015-08
+    seriesinfo: DOI 10.6028/NIST.FIPS.180-4
+    target: http://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.180-4.pdf
+
 informative:
 
   EARLY-DESIGN:
@@ -716,9 +725,64 @@ tear down state associated with the connection.  The client MUST then cease
 sending packets on the connection and SHOULD discard any subsequent packets that
 arrive. A Public Reset that does not contain a valid proof MUST be ignored.
 
+
 ### Public Reset Proof
 
-TODO: Details to be added.
+The Public Reset Proof is a 16 octet sequence that is included in every
+authenticated Public Reset packet.  The proof uses a one-time password design
+{{?RFC2289}}.  The hash of the proof is provided during the handshake in the
+Public Reset verifier transport parameter (see
+{{transport-parameter-definitions}}).
+
+QUIC uses 16 octets from the output of SHA-256 {{FIPS180}}.  This makes it
+difficult to construct a proof value that hashes to the same verifier.  As long
+as the proof itself is not easily guessed, only the endpoint that generated the
+original proof can generate a valid Public Reset.
+
+An endpoint validates a Public Reset Proof by hashing the proof with SHA-256.
+The hash output is truncated to 16 octets and compared to the Public Reset
+Verifier.  If the values are the same, then the Public Reset packet is valid.
+
+A server SHOULD include a Public Reset Verifier during the handshake; a client
+MAY include a verifier.
+
+
+### Selecting a Public Reset Proof
+
+The design for the Public Reset Proof allows an endpoint to avoid per-connection
+state in order to create verifiable Public Reset packets.
+
+In order to create a Public Reset Proof, a server could randomly generate
+{{!RFC4086}} a proof for every connection that it creates.  However, this
+presents a coordination problem when there are multiple servers in a cluster or
+a storage problem for a server that might lose state.  Public Reset specifically
+exists to handle the case where state is lost, so this approach is suboptimal.
+
+A single static key can be used across all connections to the same endpoint by
+generating the proof using a second iteration of a preimage-resistant function
+that takes three inputs: the static key, a the connection ID for the connection
+(see {{connection-id}}), and an identifier for the server instance.  A server
+could use HMAC {{?RFC2104}} (for example, HMAC(static_key, server_id ||
+connection_id)) or HKDF {{?RFC5869}} (for example, using the static key as input
+keying material, with server and connection identifiers as salt).  The output of
+this function is truncated to 16 octets to produce a valid proof, then hashed
+again to produce the Public Reset Verifier, which is included in the transport
+parameters.
+
+A server that loses state and is forced to generate a Public Reset can use the
+same method to generate a valid Public Reset Proof.  The connection ID comes
+from the packet that triggers the Public Reset.
+
+This design relies on the client always sending a connection ID in its packets
+so that the server can use the connection ID from a packet to reset the
+connection.  A server that uses this design cannot allow clients to omit a
+connection ID (that is, it cannot use the truncate_connection_id transport
+parameter {{transport-parameter-definitions}}).
+
+A Public Reset can only be used once for a given server instance, connection ID,
+and static key.  A connection ID from a connection that was reset cannot be
+reused for new connections at the same server without first changing to use a
+different static key or server identifier.
 
 
 ## Connection ID {#connection-id}
@@ -1052,6 +1116,7 @@ language from Section 3 of {{!I-D.ietf-tls-tls13}}.
       initial_max_stream_id(2),
       idle_timeout(3),
       truncate_connection_id(4),
+      public_reset_verifier(5),
       (65535)
    } TransportParameterId;
 
@@ -1123,6 +1188,11 @@ idle_timeout (0x0003):
 : The idle timeout is a value in seconds that is encoded as an unsigned 16-bit
   integer.  The maximum value is 600 seconds (10 minutes).
 
+public_reset_verifier (0x0005):
+
+: The Public Reset Verifier is used in authenticating Public Reset packets, see
+  {{public-reset-proof}}.  This parameter is a sequence of 16 octets.
+
 An endpoint MAY use the following transport parameters:
 
 truncate_connection_id (0x0004):
@@ -1140,7 +1210,7 @@ Transport parameters from the server SHOULD be remembered by the client for use
 with 0-RTT data.  A client that doesn't remember values from a previous
 connection can instead assume the following values: initial_max_stream_data
 (65535), initial_max_data (65535), initial_max_stream_id (20), idle_timeout
-(600), truncate_connection_id (absent).
+(600), public_reset_verifier (absent), and truncate_connection_id (absent).
 
 If assumed values change as a result of completing the handshake, the client is
 expected to respect the new values.  This introduces some potential problems,
@@ -3157,6 +3227,7 @@ The initial contents of this registry are shown in
 | 0x0002 | initial_max_stream_id   | {{transport-parameter-definitions}} |
 | 0x0003 | idle_timeout            | {{transport-parameter-definitions}} |
 | 0x0004 | truncate_connection_id  | {{transport-parameter-definitions}} |
+| 0x0005 | public_reset_verifier     | {{transport-parameter-definitions}} |
 {: #iana-tp-table title="Initial QUIC Transport Parameters Entries"}
 
 
