@@ -261,9 +261,6 @@ smoothed_rtt:
 rttvar:
 : The RTT variance, computed as described in {{?RFC6298}}
 
-initial_rtt:
-: The initial RTT used before any RTT measurements have been made.
-
 reordering_threshold:
 : The largest delta between the largest acked
   retransmittable packet and a packet containing retransmittable frames before
@@ -302,7 +299,6 @@ follows:
    loss_time = 0
    smoothed_rtt = 0
    rttvar = 0
-   initial_rtt = kDefaultInitialRtt
    largest_sent_before_rto = 0
 ~~~
 
@@ -412,7 +408,7 @@ below shows how the single timer is set based on the alarm mode.
 The initial flight has no prior RTT sample.  A client SHOULD remember
 the previous RTT it observed when resumption is attempted and use that for an
 initial RTT value.  If no previous RTT is available, the initial RTT defaults
-to 200ms.  Once an RTT measurement is taken, it MUST replace initial_rtt.
+to 200ms.
 
 Endpoints MUST retransmit handshake frames if not acknowledged within a
 time limit. This time limit will start as the largest of twice the rtt value
@@ -456,11 +452,11 @@ Pseudocode for SetLossDetectionAlarm follows:
     if (handshake packets are outstanding):
       // Handshake retransmission alarm.
       if (smoothed_rtt == 0):
-        alarm_duration = 2 * initial_rtt
+        alarm_duration = 2 * kDefaultInitialRtt
       else:
         alarm_duration = 2 * smoothed_rtt
       alarm_duration = max(alarm_duration, kMinTLPTimeout)
-      alarm_duration = alarm_duration << handshake_count
+      alarm_duration = alarm_duration * (2 ^ handshake_count)
     else if (loss_time != 0):
       // Early retransmit timer or time loss detection.
       alarm_duration = loss_time - now
@@ -475,7 +471,7 @@ Pseudocode for SetLossDetectionAlarm follows:
       // RTO alarm
       alarm_duration = smoothed_rtt + 4 * rttvar
       alarm_duration = max(alarm_duration, kMinRTOTimeout)
-      alarm_duration = alarm_duration << rto_count
+      alarm_duration = alarm_duration * (2 ^ rto_count)
 
     loss_detection_alarm.set(now + alarm_duration)
 ~~~
