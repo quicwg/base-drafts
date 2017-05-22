@@ -255,6 +255,9 @@ largest_sent_before_rto:
 : The last packet number sent prior to the first retransmission
   timeout.
 
+time_of_last_sent_packet:
+: The time the most recent packet was sent.
+
 smoothed_rtt:
 : The smoothed RTT of the connection, computed as described in
   {{?RFC6298}}
@@ -301,6 +304,7 @@ follows:
    smoothed_rtt = 0
    rttvar = 0
    largest_sent_before_rto = 0
+   time_of_last_sent_packet = 0
 ~~~
 
 ### On Sending a Packet
@@ -323,6 +327,7 @@ Pseudocode for OnPacketSent follows:
 
 ~~~
  OnPacketSent(packet_number, is_retransmittable, sent_bytes):
+   time_of_last_sent_packet = now;
    sent_packets[packet_number].packet_number = packet_number
    sent_packets[packet_number].time = now
    if is_retransmittable:
