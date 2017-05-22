@@ -396,8 +396,8 @@ Connection ID:
 
 Packet Number:
 
-: Octets 9 to 12 contain the packet number.  {{packet-numbers} describes the use
-  of packet numbers.
+: Octets 9 to 12 contain the packet number.  {{packet-numbers}} describes the
+  use of packet numbers.
 
 Version:
 
