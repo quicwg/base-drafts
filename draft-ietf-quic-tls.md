@@ -1558,7 +1558,12 @@ many others.
 
 Issue and pull request numbers are listed with a leading octothorp.
 
-## Since draft-ietf-quic-tls-01:
+## Since draft-ietf-quic-tls-02
+
+- Updates to match changes in transport draft
+
+
+## Since draft-ietf-quic-tls-01
 
 - Use TLS alerts to signal TLS errors (#272, #374)
 - Require ClientHello to fit in a single packet (#338)
@@ -1572,22 +1577,16 @@ Issue and pull request numbers are listed with a leading octothorp.
 - Decouple QUIC version and ALPN (#12)
 
 
-## Since draft-ietf-quic-tls-00:
+## Since draft-ietf-quic-tls-00
 
-- Changed bit used to signal key phase.
+- Changed bit used to signal key phase
+- Updated key phase markings during the handshake
+- Added TLS interface requirements section
+- Moved to use of TLS exporters for key derivation
+- Moved TLS error code definitions into this document
 
-- Updated key phase markings during the handshake.
+## Since draft-thomson-quic-tls-01
 
-- Added TLS interface requirements section.
-
-- Moved to use of TLS exporters for key derivation.
-
-- Moved TLS error code definitions into this document.
-
-## Since draft-thomson-quic-tls-01:
-
-- Adopted as base for draft-ietf-quic-tls.
-
-- Updated authors/editors list.
-
-- Added status note.
+- Adopted as base for draft-ietf-quic-tls
+- Updated authors/editors list
+- Added status note

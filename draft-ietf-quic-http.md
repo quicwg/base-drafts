@@ -1072,10 +1072,14 @@ The original authors of this specification were Robbie Shade and Mike Warres.
 > **RFC Editor's Note:**  Please remove this section prior to publication of a
 > final version of this document.
 
-## Since draft-ietf-quic-http-01:
+## Since draft-ietf-quic-http-02
+
+- Track changes in transport draft
+
+
+## Since draft-ietf-quic-http-01
 
 - SETTINGS changes (#181):
-
     - SETTINGS can be sent only once at the start of a connection;
       no changes thereafter
     - SETTINGS_ACK removed
@@ -1083,36 +1087,27 @@ The original authors of this specification were Robbie Shade and Mike Warres.
     - Boolean format updated
 
 - Alt-Svc parameter changed from "v" to "quic"; format updated (#229)
-
 - Closing the connection control stream or any message control stream is a
   fatal error (#176)
-
 - HPACK Sequence counter can wrap (#173)
-
 - 0-RTT guidance added
-
 - Guide to differences from HTTP/2 and porting HTTP/2 extensions added
   (#127,#242)
 
-## Since draft-ietf-quic-http-00:
+
+## Since draft-ietf-quic-http-00
 
 - Changed "HTTP/2-over-QUIC" to "HTTP/QUIC" throughout (#11,#29)
-
 - Changed from using HTTP/2 framing within Stream 3 to new framing format and
   two-stream-per-request model (#71,#72,#73)
-
 - Adopted SETTINGS format from draft-bishop-httpbis-extended-settings-01
-
 - Reworked SETTINGS_ACK to account for indeterminate inter-stream order (#75)
-
 - Described CONNECT pseudo-method (#95)
-
 - Updated ALPN token and Alt-Svc guidance (#13,#87)
-
 - Application-layer-defined error codes (#19,#74)
 
-## Since draft-shade-quic-http2-mapping-00:
 
-- Adopted as base for draft-ietf-quic-http.
+## Since draft-shade-quic-http2-mapping-00
 
-- Updated authors/editors list.
+- Adopted as base for draft-ietf-quic-http
+- Updated authors/editors list

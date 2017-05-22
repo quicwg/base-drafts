@@ -110,7 +110,6 @@ with legacy clients and middleboxes.  QUIC authenticates all of its headers and
 encrypts most of the data it exchanges, including its signaling.  This allows
 the protocol to evolve without incurring a dependency on upgrades to
 middleboxes.
-
 This document describes the core QUIC protocol, including the conceptual design,
 wire format, and mechanisms of the QUIC protocol for connection establishment,
 stream multiplexing, stream and connection-level flow control, and data
@@ -3185,8 +3184,34 @@ thanks to all.
 
 Issue and pull request numbers are listed with a leading octothorp.
 
+## Since draft-ietf-quic-transport-02
 
-## Since draft-ietf-quic-transport-01:
+- The size of the initial packet payload has a fixed minimum (#267, #472)
+- Define when Version Negotiation packets are ignored (#284, #294, #241, #143,
+  #474)
+- The 64-bit FNV-1a algorithm is used for integrity protection of unprotected
+  packets (#167, #480, #481, #517)
+- Rework initial packet types to change how the connection ID is chosen (#482,
+  #442, #493)
+- No timestamps are forbidden in unprotected packets (#542, #429)
+- Cryptographic handshake is now on stream 0 (#456)
+- Remove congestion control exemption for cryptographic handshake (#248, #476)
+- Version 1 of QUIC uses TLS; a new version is needed to use a different
+  handshake protocol (#516)
+- STREAM frames have a reduced number of offset lengths (#543, #430)
+- Split some frames into separate connection- and stream- level frames
+  (#443)
+  - WINDOW_UPDATE split into MAX_DATA and MAX_STREAM_DATA (#450)
+  - BLOCKED split to match WINDOW_UPDATE split (#454)
+  - Define STREAM_ID_NEEDED frame (#455)
+- A NEW_CONNECTION_ID frame supports connection migration without linkability
+  (#232, #491, #496)
+- Transport parameters for 0-RTT are retained from a previous connection (#512)
+  - A client in 0-RTT no longer required to reset excess streams (#425, #479)
+- Expanded security considerations (#440, #444, #445, #448)
+
+
+## Since draft-ietf-quic-transport-01
 
 - Defined short and long packet headers (#40, #148, #361)
 - Defined a versioning scheme and stable fields (#51, #361)
@@ -3245,24 +3270,18 @@ Issue and pull request numbers are listed with a leading octothorp.
   #303)
 
 
-## Since draft-ietf-quic-transport-00:
+## Since draft-ietf-quic-transport-00
 
 - Replaced DIVERSIFICATION_NONCE flag with KEY_PHASE flag
-
 - Defined versioning
-
 - Reworked description of packet and frame layout
-
 - Error code space is divided into regions for each component
-
 - Use big endian for all numeric values
 
-## Since draft-hamilton-quic-transport-protocol-01:
 
-- Adopted as base for draft-ietf-quic-tls.
+## Since draft-hamilton-quic-transport-protocol-01
 
-- Updated authors/editors list.
-
-- Added IANA Considerations section.
-
-- Moved Contributors and Acknowledgments to appendices.
+- Adopted as base for draft-ietf-quic-tls
+- Updated authors/editors list
+- Added IANA Considerations section
+- Moved Contributors and Acknowledgments to appendices

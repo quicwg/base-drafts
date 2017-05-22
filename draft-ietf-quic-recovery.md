@@ -718,26 +718,30 @@ This document has no IANA actions.  Yet.
 > **RFC Editor's Note:**  Please remove this section prior to
 > publication of a final version of this document.
 
+## Since draft-ietf-quic-recovery-02
+
+- Integrate F-RTO (#544, #409)
+- Add congestion control (#545, #395)
+- Require connection abort if a skipped packet was acknowledged (#415)
+- Simplify RTO calculations (#142, #417)
+
+
 ## Since draft-ietf-quic-recovery-01
 
 - Overview added to loss detection
-
 - Changes initial default RTT to 100ms
-
 - Added time-based loss detection and fixes early retransmit
-
 - Clarified loss recovery for handshake packets
-
 - Fixed references and made TCP references informative
 
-## Since draft-ietf-quic-recovery-00:
+
+## Since draft-ietf-quic-recovery-00
 
 - Improved description of constants and ACK behavior
 
-## Since draft-iyengar-quic-loss-recovery-01:
 
-- Adopted as base for draft-ietf-quic-recovery.
+## Since draft-iyengar-quic-loss-recovery-01
 
-- Updated authors/editors list.
-
-- Added table of contents.
+- Adopted as base for draft-ietf-quic-recovery
+- Updated authors/editors list
+- Added table of contents
