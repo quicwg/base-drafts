@@ -1136,33 +1136,29 @@ truncate_connection_id (0x0004):
 
 ### Values of Transport Parameters for 0-RTT {#zerortt-parameters}
 
-Transport parameters from the server SHOULD be remembered by the client for use
-with 0-RTT data.  A client that doesn't remember values from a previous
-connection can instead assume the following values: initial_max_stream_data
-(65535), initial_max_data (65535), initial_max_stream_id (20), idle_timeout
-(600), truncate_connection_id (absent).
+Transport parameters from the server MUST be remembered by the client for use
+with 0-RTT data.  If the TLS NewSessionTicket message includes the
+quic_transport_parameters extension, then those values are used for the server
+values when establishing a new connection using that ticket.  Otherwise, the
+transport parameters that the server advertises during connection establishment
+are used.
 
-If assumed values change as a result of completing the handshake, the client is
-expected to respect the new values.  This introduces some potential problems,
-particularly with respect to transport parameters that establish limits:
+A server can remember the transport parameters that it advertised, or store an
+integrity-protected copy of the values in the ticket and recover the information
+when accepting 0-RTT data.  A server uses the transport parameters in
+determining whether to accept 0-RTT data.
 
-* A client might exceed a newly declared initial value for the connection or
-  stream maximum data limit with 0-RTT data.  If this occurs, the client ceases
-  transmission as though these limits were reached.  The server SHOULD NOT
-  terminate a connection if the client has exceeded these limits.  Once MAX_DATA
-  or MAX_STREAM_DATA frames indicating an increase to the affected maximum data
-  limit is received, the client can recommence sending.
+A server MAY accept 0-RTT and subsequently provide different values for
+transport parameters for use in the new connection.  If 0-RTT data is accepted
+by the server, the server MUST NOT reduce any limits or alter any values that
+might be violated by the client with its 0-RTT data.  In particular, a server
+that accepts 0-RTT data MUST NOT set values for initial_max_data or
+initial_max_stream_data that are smaller than the remembered value of those
+parameters.  Similarly, a server MUST NOT reduce the value of
+initial_max_stream_id.
 
-* Similarly, a client might exceed the initial stream limit declared by the
-  server.  A server MAY reset any streams it cannot handle with a code that
-  allows the client to retry any application action bound to those streams.
-
-A server MAY close a connection if remembered or assumed 0-RTT transport
-parameters cannot be supported, using an error code that is appropriate to the
-specific condition.  For example, a QUIC_FLOW_CONTROL_RECEIVED_TOO_MUCH_DATA
-might be used to indicate that exceeding flow control limits caused the error.
-A client that has a connection closed due to an error condition SHOULD NOT
-attempt 0-RTT when attempting to create a new connection.
+A server MUST reject 0-RTT data or even abort a handshake if the implied values
+for transport parameters cannot be supported.
 
 
 ### New Transport Parameters
@@ -1171,10 +1167,6 @@ New transport parameters can be used to negotiate new protocol behavior.  An
 endpoint MUST ignore transport parameters that it does not support.  Absence of
 a transport parameter therefore disables any optional protocol feature that is
 negotiated using the parameter.
-
-The definition of a transport parameter SHOULD include a default value that a
-client can use when establishing a new connection.  If no default is specified,
-the value can be assumed to be absent when attempting 0-RTT.
 
 New transport parameters can be registered according to the rules in
 {{iana-transport-parameters}}.
