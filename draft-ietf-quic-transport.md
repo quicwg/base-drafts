@@ -745,7 +745,7 @@ sending a packet with a number of 0x6b4264 requires a 16-bit or larger packet
 number encoding; whereas a 32-bit packet number is needed to send a packet with
 a number of 0x6bc107.
 
-Version Negotiation ({{packet-version}}), and Server Stateless Retry
+Version Negotiation ({{packet-version}}) and Server Stateless Retry
 ({{packet-server-stateless}}) packets have special rules for populating the
 packet number field.
 
@@ -1448,10 +1448,10 @@ SHOULD respond to unexpected packets with a Public Reset packet.
 
 
 A stateless reset is provided as an option of last resort for a server that does
-not have access to the state of a connection.  This is intended for use by a
-server that has lost state (for example, through a crash or outage).  A server
-that wishes to communicate a fatal connection error MUST use a CONNECTION_CLOSE
-frame if it has sufficient state to do so.
+not have access to the state of a connection.  A server crash or outage might
+result in clients continuing to send data to a server that is unable to properly
+continue the connection.  A server that wishes to communicate a fatal connection
+error MUST use a CONNECTION_CLOSE frame if it has sufficient state to do so.
 
 To support this process, the server sends a stateless_reset_secret value during
 the handshake in the transport parameters.  This value is protected by
@@ -1542,10 +1542,13 @@ connection.  A server that uses this design cannot allow clients to omit a
 connection ID (that is, it cannot use the truncate_connection_id transport
 parameter {{transport-parameter-definitions}}).
 
-A Stateless Reset Secret can only be used once for a given set of server
-instance, connection ID, and static key.  A connection ID from a connection that
-was reset cannot be reused for new connections at the same server without first
-changing to use a different static key or server identifier.
+Revealing the Stateless Reset Secret allows any entity to terminate the
+connection, so a value can only be used once.  This method for choosing the
+Stateless Reset Secret means that the combination of server instance, connection
+ID, and static key cannot occur for another connection.  A connection ID from a
+connection that is reset by revealing the Stateless Reset Secret cannot be
+reused for new connections at the same server without first changing to use a
+different static key or server identifier.
 
 
 # Frame Types and Formats
