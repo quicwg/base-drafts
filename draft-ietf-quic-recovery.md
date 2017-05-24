@@ -255,6 +255,10 @@ largest_sent_before_rto:
 : The last packet number sent prior to the first retransmission
   timeout.
 
+latest_rtt:
+: The most recent RTT measurement made when receiving an ack for
+  a previously unacked packet.
+
 smoothed_rtt:
 : The smoothed RTT of the connection, computed as described in
   {{?RFC6298}}
@@ -343,10 +347,10 @@ Pseudocode for OnAckReceived and UpdateRtt follow:
    OnAckReceived(ack):
      // If the largest acked is newly acked, update the RTT.
      if (sent_packets[ack.largest_acked]):
-       rtt_sample = now - sent_packets[ack.largest_acked].time
-       if (rtt_sample > ack.ack_delay):
-         rtt_sample -= ack.delay
-       UpdateRtt(rtt_sample)
+       latest_rtt = now - sent_packets[ack.largest_acked].time
+       if (latest_rtt > ack.ack_delay):
+         latest_rtt -= ack.delay
+       UpdateRtt(latest_rtt)
      // The sender may skip packets for detecting optimistic ACKs
      if (packets acked that the sender skipped):
        abortConnection()
@@ -358,14 +362,14 @@ Pseudocode for OnAckReceived and UpdateRtt follow:
      SetLossDetectionAlarm()
 
 
-   UpdateRtt(rtt_sample):
+   UpdateRtt(latest_rtt):
      // Based on {{?RFC6298}}.
      if (smoothed_rtt == 0):
-       smoothed_rtt = rtt_sample
-       rttvar = rtt_sample / 2
+       smoothed_rtt = latest_rtt
+       rttvar = latest_rtt / 2
      else:
-       rttvar = 3/4 * rttvar + 1/4 * (smoothed_rtt - rtt_sample)
-       smoothed_rtt = 7/8 * smoothed_rtt + 1/8 * rtt_sample
+       rttvar = 3/4 * rttvar + 1/4 * (smoothed_rtt - latest_rtt)
+       smoothed_rtt = 7/8 * smoothed_rtt + 1/8 * latest_rtt
 ~~~
 
 ### On Packet Acknowledgment
