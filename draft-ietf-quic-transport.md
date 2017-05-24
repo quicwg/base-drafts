@@ -61,15 +61,6 @@ normative:
         org: sn3rd
         role: editor
 
-  FIPS180:
-    title: NIST FIPS 180-4, Secure Hash Standard
-    author:
-      name: NIST
-      ins: National Institute of Standards and Technology, U.S. Department of Commerce
-    date: 2015-08
-    seriesinfo: DOI 10.6028/NIST.FIPS.180-4
-    target: http://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.180-4.pdf
-
 informative:
 
   EARLY-DESIGN:
