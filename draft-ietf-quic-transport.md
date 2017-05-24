@@ -1010,7 +1010,7 @@ language from Section 3 of {{!I-D.ietf-tls-tls13}}.
       idle_timeout(3),
       omit_connection_id(4),
       max_packet_size(5),
-      stateless_reset_secret(6),
+      stateless_reset_token(6),
       (65535)
    } TransportParameterId;
 
@@ -1085,9 +1085,9 @@ idle_timeout (0x0003):
 : The idle timeout is a value in seconds that is encoded as an unsigned 16-bit
   integer.  The maximum value is 600 seconds (10 minutes).
 
-stateless_reset_secret (0x0005):
+stateless_reset_token (0x0005):
 
-: The Stateless Reset Secret is used in verifying a stateless reset, see
+: The Stateless Reset Token is used in verifying a stateless reset, see
   {{stateless-reset}}.  This parameter is a sequence of 16 octets.
 
 An endpoint MAY use the following transport parameters:
@@ -1453,7 +1453,7 @@ result in clients continuing to send data to a server that is unable to properly
 continue the connection.  A server that wishes to communicate a fatal connection
 error MUST use a CONNECTION_CLOSE frame if it has sufficient state to do so.
 
-To support this process, the server sends a stateless_reset_secret value during
+To support this process, the server sends a stateless_reset_token value during
 the handshake in the transport parameters.  This value is protected by
 encryption, so only client and server know this value.
 
@@ -1494,10 +1494,10 @@ stateless reset.  A server omits the connection ID if explicitly configured to
 do so, or if the client packet did not include a connection ID.
 
 After the first short header octet and optional connection ID, the server
-includes the value of the Stateless Reset Secret that it included in its
+includes the value of the Stateless Reset Token that it included in its
 transport parameters.
 
-After the Stateless Reset Secret, the server pads the message with random
+After the Stateless Reset Token, the server pads the message with random
 octets.
 
 This design ensures that a stateless reset packet is - to the extent possible -
@@ -1508,15 +1508,15 @@ indistinguishable from a regular packet.
 
 A client detects a potential stateless reset when a packet with a short header
 cannot be decrypted.  The client then performs a constant-time comparison of the
-16 octets that follow the Connection ID with the Stateless Reset Secret provided
+16 octets that follow the Connection ID with the Stateless Reset Token provided
 by the server in its transport parameters.  If this comparison is successful,
 the connection MUST be terminated immediately.  Otherwise, the packet can be
 discarded.
 
 
-### Selecting a Stateless Reset Secret
+### Selecting a Stateless Reset Token
 
-In order to create a Stateless Reset Secret, a server could randomly generate
+In order to create a Stateless Reset Token, a server could randomly generate
 {{!RFC4086}} a secret for every connection that it creates.  However, this
 presents a coordination problem when there are multiple servers in a cluster or
 a storage problem for a server that might lose state.  Stateless reset
@@ -1530,7 +1530,7 @@ that takes three inputs: the static key, a the connection ID for the connection
 could use HMAC {{?RFC2104}} (for example, HMAC(static_key, server_id ||
 connection_id)) or HKDF {{?RFC5869}} (for example, using the static key as input
 keying material, with server and connection identifiers as salt).  The output of
-this function is truncated to 16 octets to produce the Stateless Reset Secret
+this function is truncated to 16 octets to produce the Stateless Reset Token
 for that connection.
 
 A server that loses state can use the same method to generate a valid Stateless
@@ -1542,11 +1542,11 @@ connection.  A server that uses this design cannot allow clients to omit a
 connection ID (that is, it cannot use the truncate_connection_id transport
 parameter {{transport-parameter-definitions}}).
 
-Revealing the Stateless Reset Secret allows any entity to terminate the
+Revealing the Stateless Reset Token allows any entity to terminate the
 connection, so a value can only be used once.  This method for choosing the
-Stateless Reset Secret means that the combination of server instance, connection
+Stateless Reset Token means that the combination of server instance, connection
 ID, and static key cannot occur for another connection.  A connection ID from a
-connection that is reset by revealing the Stateless Reset Secret cannot be
+connection that is reset by revealing the Stateless Reset Token cannot be
 reused for new connections at the same server without first changing to use a
 different static key or server identifier.
 
@@ -3142,7 +3142,7 @@ The initial contents of this registry are shown in
 | 0x0003 | idle_timeout            | {{transport-parameter-definitions}} |
 | 0x0004 | omit_connection_id      | {{transport-parameter-definitions}} |
 | 0x0005 | max_packet_size         | {{transport-parameter-definitions}} |
-| 0x0006 | stateless_reset_secret  | {{transport-parameter-definitions}} |
+| 0x0006 | stateless_reset_token   | {{transport-parameter-definitions}} |
 {: #iana-tp-table title="Initial QUIC Transport Parameters Entries"}
 
 
