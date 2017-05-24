@@ -343,9 +343,6 @@ Pseudocode for OnPacketSent follows:
 
 When an ack is received, it may acknowledge 0 or more packets.
 
-The sender MUST abort the connection if it receives an ACK for a packet it
-never sent, see {{QUIC-TRANSPORT}}.
-
 Pseudocode for OnAckReceived and UpdateRtt follow:
 
 ~~~
@@ -356,9 +353,6 @@ Pseudocode for OnAckReceived and UpdateRtt follow:
        if (latest_rtt > ack.ack_delay):
          latest_rtt -= ack.delay
        UpdateRtt(latest_rtt)
-     // The sender may skip packets for detecting optimistic ACKs
-     if (packets acked that the sender skipped):
-       abortConnection()
      // Find all newly acked packets.
      for acked_packet in DetermineNewlyAckedPackets():
        OnPacketAcked(acked_packet.packet_number)
