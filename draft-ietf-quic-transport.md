@@ -1590,7 +1590,7 @@ frames. A receiver MAY send timestamps for non-retransmittable packets.
 A receiver MUST not send timestamps in unprotected packets.
 
 A sender MAY intentionally skip packet numbers to introduce entropy into the
-connection, to avoid opportunistic acknowledgement attacks.  The sender MUST
+connection, to avoid opportunistic acknowledgement attacks.  The sender SHOULD
 close the connection if an unsent packet number is acknowledged.  The format of
 the ACK frame is efficient at expressing blocks of missing packets; skipping
 packet numbers between 1 and 255 effectively provides up to 8 bits of efficient
