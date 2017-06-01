@@ -2809,7 +2809,7 @@ Public Reset packet.
 ## Stream Errors
 
 If the error affects a single stream, but otherwise leaves the connection in a
-recoverable state, the endpoint can sent a RST_STREAM frame
+recoverable state, the endpoint can send a RST_STREAM frame
 ({{frame-rst-stream}}) with an appropriate error code to terminate just the
 affected stream.
 
