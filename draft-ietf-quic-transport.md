@@ -759,11 +759,11 @@ reaches 2^64 - 1, the sender MUST close the connection by sending a
 CONNECTION_CLOSE frame with the error code QUIC_SEQUENCE_NUMBER_LIMIT_REACHED
 (connection termination is described in {{termination}}.)
 
-To reduce the number of bits required to represent the packet number over the
-wire, only the least significant bits of the packet number are transmitted over
-the wire, up to 32 bits.  The actual packet number for each packet is
-reconstructed at the receiver based on the largest packet number received on a
-successfully authenticated packet.
+To reduce the number of bits required to represent the packet number
+over the wire, only the least significant bits of the packet number
+are transmitted.  The actual packet number for each packet is
+reconstructed at the receiver based on the largest packet number
+received on a successfully authenticated packet.
 
 A packet number is decoded by finding the packet number value that is closest to
 the next expected packet.  The next expected packet is the highest received
