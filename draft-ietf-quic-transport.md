@@ -302,7 +302,7 @@ QUIC versions are identified using a 32-bit value.
 The version 0x00000000 is reserved to represent an invalid version.  This
 version of the specification is identified by the number 0x00000001.
 
-Version 0x000000001 of QUIC uses TLS as a cryptographic handshake protocol, as
+Version 0x00000001 of QUIC uses TLS as a cryptographic handshake protocol, as
 described in {{QUIC-TLS}}.
 
 Versions with the most significant 16 bits of the version number cleared are
