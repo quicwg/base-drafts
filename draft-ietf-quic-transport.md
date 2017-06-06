@@ -727,7 +727,7 @@ as load balancers, to locate and use it.
 The client MUST choose a random connection ID and use it in Client Initial
 packets ({{packet-client-initial}}) and 0-RTT packets ({{packet-protected}}).
 If the client has received any packet from the server, it uses the connection ID
-it received from the server.
+it received from the server for all packets other than 0-RTT packets.
 
 When the server receives a Client Initial packet and decides to proceed with the
 handshake, it chooses a new value for the connection ID and sends that in a
