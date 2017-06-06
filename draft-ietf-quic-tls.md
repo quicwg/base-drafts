@@ -827,7 +827,7 @@ protocol error in a peer or an attack.  The truncated packet number encoding
 used in QUIC can cause packet numbers to be decoded incorrectly if they are
 delayed significantly.
 
-## Packet Number Gaps
+## Packet Number Gaps {#packet-number-gaps}
 
 {{QUIC-TRANSPORT}}; Section 7.5.1.1 also requires a secret to compute packet
 number gaps on connection ID transitions. That secret is computed as:
@@ -1533,10 +1533,11 @@ following registries:
   to be marked Yes.
 
 * TLS Exporter Label Registry - IANA is requested to register
-  "EXPORTER-QUIC 0-RTT Secret" from {{zero-rtt-secrets}} as well as
-  "EXPORTER-QUIC client 1-RTT Secret" and
-  "EXPORTER-QUIC server 1-RTT Secret" from {{one-rtt-secrets}}.  The DTLS column
-  is to be marked No.  The Recommended column is to be marked Yes.
+  "EXPORTER-QUIC 0-RTT Secret" from {{zero-rtt-secrets}};
+  "EXPORTER-QUIC client 1-RTT Secret" and "EXPORTER-QUIC server 1-RTT Secret"
+  from {{one-rtt-secrets}}; "EXPORTER-QUIC Packet Number Secret"
+  {#packet-number-gaps}.  The DTLS column is to be marked No.  The Recommended
+  column is to be marked Yes.
 
 --- back
 
