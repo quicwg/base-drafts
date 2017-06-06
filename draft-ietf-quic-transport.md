@@ -592,8 +592,8 @@ It carries cryptographic handshake messages and acknowledgments.  It is used
 by a server that wishes to perform a stateless retry (see
 {{stateless-retry}}).
 
-The packet number and connection ID fields echo the packet number of the
-triggering client packet.  This allows a client to verify that the server
+The packet number and connection ID fields echo the corresponding fields from
+the triggering client packet.  This allows a client to verify that the server
 received its packet.
 
 After receiving a Server Stateless Retry packet, the client uses a new Client
@@ -725,13 +725,18 @@ location in all packet headers, making it straightforward for middleboxes, such
 as load balancers, to locate and use it.
 
 The client MUST choose a random connection ID and use it in Client Initial
-packets ({{packet-client-initial}}).  If the client has received any packet from
-the server, it uses the connection ID it received from the server.
+packets ({{packet-client-initial}}) and 0-RTT packets ({{packet-protected}}).
+If the client has received any packet from the server, it uses the connection ID
+it received from the server.
 
 When the server receives a Client Initial packet and decides to proceed with the
 handshake, it chooses a new value for the connection ID and sends that in a
 Server Cleartext packet.  The server MAY choose to use the value that the client
 initially selects.
+
+Once the client receives the connection ID that the server has chosen, it uses
+this for all subsequent packets that it sends, except for any 0-RTT packets,
+which all have the same connection ID.
 
 
 ## Packet Numbers {#packet-numbers}
