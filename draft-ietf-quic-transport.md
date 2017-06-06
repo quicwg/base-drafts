@@ -518,13 +518,10 @@ A Version Negotiation packet has long headers with a type value of 0x01 and is
 sent only by servers.  The Version Negotiation packet is a response to a client
 packet that contains a version that is not supported by the server.
 
-The connection ID field contains a server-selected connection ID that the client
-MUST use for subsequent packets, see {{connection-id}}.
-
-The packet number and version fields echo corresponding values from the
-triggering client packet.  This allows clients some assurance that the server
-received the packet and that the Version Negotiation packet was not carried in a
-packet with a spoofed source address.
+The packet number, connection ID and version fields echo corresponding values
+from the triggering client packet.  This allows clients some assurance that the
+server received the packet and that the Version Negotiation packet was not
+carried in a packet with a spoofed source address.
 
 The payload of the Version Negotiation packet is a list of 32-bit versions which
 the server supports, as shown below.
@@ -595,11 +592,9 @@ It carries cryptographic handshake messages and acknowledgments.  It is used
 by a server that wishes to perform a stateless retry (see
 {{stateless-retry}}).
 
-The connection ID field in a Server Stateless Retry packet contains a server
-selected value, see {{connection-id}}.
-
-The packet number field echoes the packet number of the triggering client
-packet.  This allows a client to verify that the server received its packet.
+The packet number and connection ID fields echo the corresponding fields from
+the triggering client packet.  This allows a client to verify that the server
+received its packet.
 
 After receiving a Server Stateless Retry packet, the client uses a new Client
 Initial packet containing the next cryptographic handshake message.  The client
@@ -730,20 +725,18 @@ location in all packet headers, making it straightforward for middleboxes, such
 as load balancers, to locate and use it.
 
 The client MUST choose a random connection ID and use it in Client Initial
-packets ({{packet-client-initial}}).  If the client has received any packet from
-the server, it uses the connection ID it received from the server.
+packets ({{packet-client-initial}}) and 0-RTT packets ({{packet-protected}}).
+If the client has received any packet from the server, it uses the connection ID
+it received from the server for all packets other than 0-RTT packets.
 
-When the server receives a Client Initial packet, it chooses a new value for the
-connection ID and sends that in its response.  The server MUST send a new
-connection ID in any packet that is sent in response to a Client Initial packet.
-This includes Version Negotiation ({{packet-version}}), Server Stateless Retry
-({{packet-server-stateless}}), and the first Server Cleartext packet
-({{packet-server-cleartext}}).  The server MAY choose to use the value that the
-client initially selects.
+When the server receives a Client Initial packet and decides to proceed with the
+handshake, it chooses a new value for the connection ID and sends that in a
+Server Cleartext packet.  The server MAY choose to use the value that the client
+initially selects.
 
-A server MUST NOT propose a different connection ID in response to a Client
-Cleartext packet ({{packet-client-cleartext}}).  A Client Cleartext packet is
-only sent after the server has committed to maintaining connection state.
+Once the client receives the connection ID that the server has chosen, it uses
+this for all subsequent packets that it sends, except for any 0-RTT packets,
+which all have the same connection ID.
 
 
 ## Packet Numbers {#packet-numbers}
