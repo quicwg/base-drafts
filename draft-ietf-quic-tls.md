@@ -1536,7 +1536,7 @@ following registries:
   "EXPORTER-QUIC 0-RTT Secret" from {{zero-rtt-secrets}};
   "EXPORTER-QUIC client 1-RTT Secret" and "EXPORTER-QUIC server 1-RTT Secret"
   from {{one-rtt-secrets}}; "EXPORTER-QUIC Packet Number Secret"
-  {#packet-number-gaps}.  The DTLS column is to be marked No.  The Recommended
+  {{packet-number-gaps}}.  The DTLS column is to be marked No.  The Recommended
   column is to be marked Yes.
 
 --- back
