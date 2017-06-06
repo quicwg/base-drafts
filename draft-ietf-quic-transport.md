@@ -575,9 +575,10 @@ the packet contents increment the packet number by one, see
 
 The payload of a Client Initial packet consists of a STREAM frame (or frames)
 for stream 0 containing a cryptographic handshake message, plus any PADDING
-frames necessary to ensure that the packet is at least the minimum size (see
-{{packetization}}).  This stream frame always starts at an offset of 0 (see
-{{stateless-retry}}).
+frames necessary to ensure that the packet is at least the minimum PMTU size
+(see {{packetization}}).  The stream in this packet always starts at an offset
+of 0 (see {{stateless-retry}}) and the complete cyptographic handshake message
+MUST fit in a single packet (see {{handshake}}).
 
 The client uses the Client Initial Packet type for any packet that contains an
 initial cryptographic handshake message.  This includes all cases where a new
@@ -2168,7 +2169,7 @@ in the GOAWAY frame can then be retried.
 
 # Packetization and Reliability {#packetization}
 
-The Path Maximum Transmission Unit (PTMU) is the maximum size of the entire IP
+The Path Maximum Transmission Unit (PMTU) is the maximum size of the entire IP
 header, UDP header, and UDP payload. The UDP payload includes the QUIC public
 header, protected payload, and any authentication fields.
 
