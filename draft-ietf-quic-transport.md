@@ -1138,9 +1138,10 @@ max_packet_size (0x0005):
 
 : The maximum packet size parameter places a limit on the size of packets that
   the endpoint is willing to receive, encoded as an unsigned 16-bit integer.
-  The default for this parameter is the maximum permitted UDP payload of 65527.
-  Values below 256 are invalid.  The initial packet from a client is exempt from
-  this limit.
+  This indicates that packets larger than this limit will be dropped.  The
+  default for this parameter is the maximum permitted UDP payload of 65527.
+  Values below 1252 are invalid.  This limit only applies to protected packets
+  ({{packet-protected}}).
 
 
 ### Values of Transport Parameters for 0-RTT {#zerortt-parameters}
