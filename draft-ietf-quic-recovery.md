@@ -98,7 +98,7 @@ important to the loss detection and congestion control machinery below.
 * Retransmittable frames are frames requiring reliable delivery.  The most
   common are STREAM frames, which typically contain application data.
 
-* Crypto handshake data is also sent as STREAM data, and uses the reliability
+* Crypto handshake data is sent on stream 0, and uses the reliability
   machinery of QUIC underneath.
 
 * ACK frames contain acknowledgment information.  QUIC uses a SACK-based
@@ -196,7 +196,8 @@ An unacknowledged QUIC packet is marked as lost in one of the following ways:
     lost when a packet larger than it is acknowledged and a threshold amount of
     time has passed since the packet was sent.
 
-  * Handshake packets are special in a number of ways, and a separate alarm
+  * Handshake packets, which contain STREAM frames for stream 0, are
+    critical to QUIC transport and crypto negotiation, so a separate alarm
     period is used for them.
 
 
@@ -254,15 +255,19 @@ largest_sent_before_rto:
 : The last packet number sent prior to the first retransmission
   timeout.
 
+time_of_last_sent_packet:
+: The time the most recent packet was sent.
+
+latest_rtt:
+: The most recent RTT measurement made when receiving an ack for
+  a previously unacked packet.
+
 smoothed_rtt:
 : The smoothed RTT of the connection, computed as described in
   {{?RFC6298}}
 
 rttvar:
 : The RTT variance, computed as described in {{?RFC6298}}
-
-initial_rtt:
-: The initial RTT used before any RTT measurements have been made.
 
 reordering_threshold:
 : The largest delta between the largest acked
@@ -302,8 +307,8 @@ follows:
    loss_time = 0
    smoothed_rtt = 0
    rttvar = 0
-   initial_rtt = kDefaultInitialRtt
    largest_sent_before_rto = 0
+   time_of_last_sent_packet = 0
 ~~~
 
 ### On Sending a Packet
@@ -326,6 +331,7 @@ Pseudocode for OnPacketSent follows:
 
 ~~~
  OnPacketSent(packet_number, is_retransmittable, sent_bytes):
+   time_of_last_sent_packet = now;
    sent_packets[packet_number].packet_number = packet_number
    sent_packets[packet_number].time = now
    if is_retransmittable:
@@ -337,22 +343,16 @@ Pseudocode for OnPacketSent follows:
 
 When an ack is received, it may acknowledge 0 or more packets.
 
-The sender MUST abort the connection if it receives an ACK for a packet it
-never sent, see {{QUIC-TRANSPORT}}.
-
 Pseudocode for OnAckReceived and UpdateRtt follow:
 
 ~~~
    OnAckReceived(ack):
      // If the largest acked is newly acked, update the RTT.
      if (sent_packets[ack.largest_acked]):
-       rtt_sample = now - sent_packets[ack.largest_acked].time
-       if (rtt_sample > ack.ack_delay):
-         rtt_sample -= ack.delay
-       UpdateRtt(rtt_sample)
-     // The sender may skip packets for detecting optimistic ACKs
-     if (packets acked that the sender skipped):
-       abortConnection()
+       latest_rtt = now - sent_packets[ack.largest_acked].time
+       if (latest_rtt > ack.ack_delay):
+         latest_rtt -= ack.delay
+       UpdateRtt(latest_rtt)
      // Find all newly acked packets.
      for acked_packet in DetermineNewlyAckedPackets():
        OnPacketAcked(acked_packet.packet_number)
@@ -361,14 +361,14 @@ Pseudocode for OnAckReceived and UpdateRtt follow:
      SetLossDetectionAlarm()
 
 
-   UpdateRtt(rtt_sample):
+   UpdateRtt(latest_rtt):
      // Based on {{?RFC6298}}.
      if (smoothed_rtt == 0):
-       smoothed_rtt = rtt_sample
-       rttvar = rtt_sample / 2
+       smoothed_rtt = latest_rtt
+       rttvar = latest_rtt / 2
      else:
-       rttvar = 3/4 * rttvar + 1/4 * (smoothed_rtt - rtt_sample)
-       smoothed_rtt = 7/8 * smoothed_rtt + 1/8 * rtt_sample
+       rttvar = 3/4 * rttvar + 1/4 * (smoothed_rtt - latest_rtt)
+       smoothed_rtt = 7/8 * smoothed_rtt + 1/8 * latest_rtt
 ~~~
 
 ### On Packet Acknowledgment
@@ -412,7 +412,7 @@ below shows how the single timer is set based on the alarm mode.
 The initial flight has no prior RTT sample.  A client SHOULD remember
 the previous RTT it observed when resumption is attempted and use that for an
 initial RTT value.  If no previous RTT is available, the initial RTT defaults
-to 200ms.  Once an RTT measurement is taken, it MUST replace initial_rtt.
+to 200ms.
 
 Endpoints MUST retransmit handshake frames if not acknowledged within a
 time limit. This time limit will start as the largest of twice the rtt value
@@ -456,11 +456,11 @@ Pseudocode for SetLossDetectionAlarm follows:
     if (handshake packets are outstanding):
       // Handshake retransmission alarm.
       if (smoothed_rtt == 0):
-        alarm_duration = 2 * initial_rtt
+        alarm_duration = 2 * kDefaultInitialRtt
       else:
         alarm_duration = 2 * smoothed_rtt
       alarm_duration = max(alarm_duration, kMinTLPTimeout)
-      alarm_duration = alarm_duration << handshake_count
+      alarm_duration = alarm_duration * (2 ^ handshake_count)
     else if (loss_time != 0):
       // Early retransmit timer or time loss detection.
       alarm_duration = loss_time - now
@@ -475,7 +475,7 @@ Pseudocode for SetLossDetectionAlarm follows:
       // RTO alarm
       alarm_duration = smoothed_rtt + 4 * rttvar
       alarm_duration = max(alarm_duration, kMinRTOTimeout)
-      alarm_duration = alarm_duration << rto_count
+      alarm_duration = alarm_duration * (2 ^ rto_count)
 
     loss_detection_alarm.set(now + alarm_duration)
 ~~~
@@ -721,26 +721,30 @@ This document has no IANA actions.  Yet.
 > **RFC Editor's Note:**  Please remove this section prior to
 > publication of a final version of this document.
 
+## Since draft-ietf-quic-recovery-02
+
+- Integrate F-RTO (#544, #409)
+- Add congestion control (#545, #395)
+- Require connection abort if a skipped packet was acknowledged (#415)
+- Simplify RTO calculations (#142, #417)
+
+
 ## Since draft-ietf-quic-recovery-01
 
 - Overview added to loss detection
-
 - Changes initial default RTT to 100ms
-
 - Added time-based loss detection and fixes early retransmit
-
 - Clarified loss recovery for handshake packets
-
 - Fixed references and made TCP references informative
 
-## Since draft-ietf-quic-recovery-00:
+
+## Since draft-ietf-quic-recovery-00
 
 - Improved description of constants and ACK behavior
 
-## Since draft-iyengar-quic-loss-recovery-01:
 
-- Adopted as base for draft-ietf-quic-recovery.
+## Since draft-iyengar-quic-loss-recovery-01
 
-- Updated authors/editors list.
-
-- Added table of contents.
+- Adopted as base for draft-ietf-quic-recovery
+- Updated authors/editors list
+- Added table of contents
