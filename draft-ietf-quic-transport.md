@@ -27,6 +27,24 @@ author:
 
 normative:
 
+  QUIC-CORE:
+    title: "QUIC: A UDP-Based Secure Transport"
+    date: {DATE}
+    seriesinfo:
+      Internet-Draft: draft-ietf-quic-core-latest
+    author:
+      -
+        ins: J. Iyengar
+        name: Jana Iyengar
+        org: Google
+        role: editor
+      -
+        ins: M. Thomson
+        name: Martin Thomson
+        org: Mozilla
+        role: editor
+
+
   QUIC-RECOVERY:
     title: "QUIC Loss Detection and Congestion Control"
     date: {DATE}
@@ -81,9 +99,11 @@ informative:
 
 --- abstract
 
-This document defines the core of the QUIC transport protocol.  This document
-describes connection establishment, packet format, multiplexing and reliability.
-Accompanying documents describe the cryptographic handshake and loss detection.
+This document defines the initial version of the QUIC transport protocol.
+
+Building on the framework in {{QUIC-CORE}}, this
+document describes packet format, multiplexing and reliability. Accompanying
+documents describe the cryptographic handshake and loss detection.
 
 
 --- note_Note_to_Readers
@@ -110,10 +130,11 @@ with legacy clients and middleboxes.  QUIC authenticates all of its headers and
 encrypts most of the data it exchanges, including its signaling.  This allows
 the protocol to evolve without incurring a dependency on upgrades to
 middleboxes.
-This document describes the core QUIC protocol, including the conceptual design,
-wire format, and mechanisms of the QUIC protocol for connection establishment,
-stream multiplexing, stream and connection-level flow control, and data
-reliability.
+
+This document describes the initial version of the QUIC protocol, including the
+conceptual design, wire format, and mechanisms of the QUIC protocol for
+connection establishment, stream multiplexing, stream and connection-level flow
+control, and data reliability.
 
 Accompanying documents describe QUIC's loss detection and congestion control
 {{QUIC-RECOVERY}}, and the use of TLS 1.3 for key negotiation {{QUIC-TLS}}.
@@ -256,24 +277,14 @@ limits are aggregated across all streams.
 
 ## Authenticated and Encrypted Header and Payload
 
-TCP headers appear in plaintext on the wire and are not authenticated, causing a
-plethora of injection and header manipulation issues for TCP, such as
-receive-window manipulation and sequence-number overwriting.  While some of
-these are mechanisms used by middleboxes to improve TCP performance, others are
-active attacks.  Even "performance-enhancing" middleboxes that routinely
-interpose on the transport state machine end up limiting the evolvability of the
-transport protocol, as has been observed in the design of MPTCP {{?RFC6824}} and
-in its subsequent deployability issues.
-
-Generally, QUIC packets are always authenticated and the payload is typically
+{{QUIC-CORE}} defines that QUIC packets are always authenticated.
+In addition, all payloads carried by this version of QUIC are
 fully encrypted.  The parts of the packet header which are not encrypted are
 still authenticated by the receiver, so as to thwart any packet injection or
 manipulation by third parties.  Some early handshake packets, such as the
 Version Negotiation packet, are not encrypted, but information sent in these
 unencrypted handshake packets is later verified as part of cryptographic
 processing.
-
-PUBLIC_RESET packets that reset a connection are currently not authenticated.
 
 ## Connection Migration and Resilience to NAT Rebinding
 
@@ -288,35 +299,14 @@ a new server IP address as well, since the Connection ID remains consistent
 across changes in the client's and the server's network addresses.
 
 
-## Version Negotiation {#benefit-version-negotiation}
-
-QUIC version negotiation allows for multiple versions of the protocol to be
-deployed and used concurrently. Version negotiation is described in
-{{version-negotiation}}.
-
-
 # Versions {#versions}
 
-QUIC versions are identified using a 32-bit value.
-
-The version 0x00000000 is reserved to represent an invalid version.  This
-version of the specification is identified by the number 0x00000001.
+QUIC versions are identified using a 32-bit value as described in
+{{QUIC-CORE}}. This version of the specification is identified by
+the number 0x00000001.
 
 Version 0x000000001 of QUIC uses TLS as a cryptographic handshake protocol, as
 described in {{QUIC-TLS}}.
-
-Versions with the most significant 16 bits of the version number cleared are
-reserved for use in future IETF consensus documents.
-
-Versions that follow the pattern 0x?a?a?a?a are reserved for use in forcing
-version negotiation to be exercised.  That is, any version number where the low
-four bits of all octets is 1010 (in binary).  A client or server MAY advertise
-support for any of these reserved versions.
-
-Reserved version numbers will probably never represent a real protocol; a client
-MAY use one of these version numbers with the expectation that the server will
-initiate version negotiation; a server MAY advertise support for one of these
-versions and can expect that clients ignore the value.
 
 \[\[RFC editor: please remove the remainder of this section before
 publication.]]
@@ -335,169 +325,43 @@ are using for private experimentation on the
 
 # Packet Types and Formats
 
-We first describe QUIC's packet types and their formats, since some are
-referenced in subsequent mechanisms.
-
-All numeric values are encoded in network byte order (that is, big-endian) and
-all field sizes are in bits.  When discussing individual bits of fields, the
-least significant bit is referred to as bit 0.  Hexadecimal notation is used for
-describing the value of fields.
-
-Any QUIC packet has either a long or a short header, as indicated by the Header
-Form bit. Long headers are expected to be used early in the connection before
-version negotiation and establishment of 1-RTT keys, and for public resets.
-Short headers are minimal version-specific headers, which can be used after
-version negotiation and 1-RTT keys are established.
+{{QUIC-CORE}} defines the structure of a packet; this version of
+QUIC defines several additional packet types for both long-form and short-form
+packet headers.
 
 ## Long Header
-
-~~~~~
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+
-|1|   Type (7)  |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                                                               |
-+                       Connection ID (64)                      +
-|                                                               |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                       Packet Number (32)                      |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                         Version (32)                          |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                          Payload (*)                        ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-~~~~~
-{: #fig-long-header title="Long Header Format"}
 
 Long headers are used for packets that are sent prior to the completion of
 version negotiation and establishment of 1-RTT keys. Once both conditions are
 met, a sender SHOULD switch to sending short-form headers. While inefficient,
-long headers MAY be used for packets encrypted with 1-RTT keys. The long form
-allows for special packets, such as the Version Negotiation and the Public Reset
-packets to be represented in this uniform fixed-length packet format. A long
-header contains the following fields:
+long headers MAY be used for packets encrypted with 1-RTT keys.
 
-Header Form:
-
-: The most significant bit (0x80) of the first octet is set to 1 for long
-  headers and 0 for short headers.
-
-Long Packet Type:
-
-: The remaining seven bits of first octet of a long packet is the packet type.
-  This field can indicate one of 128 packet types.  The types specified for this
-  version are listed in {{long-packet-types}}.
-
-Connection ID:
-
-: Octets 1 through 8 contain the connection ID. {{connection-id}} describes the
-  use of this field in more detail.
-
-Packet Number:
-
-: Octets 9 to 12 contain the packet number.  {{packet-numbers}} describes the
-  use of packet numbers.
-
-Version:
-
-: Octets 13 to 16 contain the selected protocol version.  This field indicates
-  which version of QUIC is in use and determines how the rest of the protocol
-  fields are interpreted.
-
-Payload:
-
-: Octets from 17 onwards (the rest of QUIC packet) are the payload of the
-  packet.
-
-The following packet types are defined:
+The format of the long-form header is described in {{QUIC-CORE}}.
+The following additional packet types are defined:
 
 | Type | Name                          | Section                     |
 |:-----|:------------------------------|:----------------------------|
-| 01   | Version Negotiation           | {{packet-version}}          |
-| 02   | Client Initial                | {{packet-client-initial}}   |
-| 03   | Server Stateless Retry        | {{packet-server-stateless}} |
-| 04   | Server Cleartext              | {{packet-server-cleartext}} |
-| 05   | Client Cleartext              | {{packet-client-cleartext}} |
-| 06   | 0-RTT Protected               | {{packet-protected}}        |
-| 07   | 1-RTT Protected (key phase 0) | {{packet-protected}}        |
-| 08   | 1-RTT Protected (key phase 1) | {{packet-protected}}        |
-| 09   | Public Reset                  | {{packet-public-reset}}     |
+| 03   | Client Initial                | {{packet-client-initial}}   |
+| 04   | Server Stateless Retry        | {{packet-server-stateless}} |
+| 05   | Server Cleartext              | {{packet-server-cleartext}} |
+| 06   | Client Cleartext              | {{packet-client-cleartext}} |
+| 07   | 0-RTT Protected               | {{packet-protected}}        |
+| 08   | 1-RTT Protected (key phase 0) | {{packet-protected}}        |
+| 09   | 1-RTT Protected (key phase 1) | {{packet-protected}}        |
 {: #long-packet-types title="Long Header Packet Types"}
 
-The header form, packet type, connection ID, packet number and version fields of
-a long header packet are version-independent. The types of packets defined in
-{{long-packet-types}} are version-specific.  See {{version-specific}} for
-details on how packets from different versions of QUIC are interpreted.
-
-(TODO: Should the list of packet types be version-independent?)
-
-The interpretation of the fields and the payload are specific to a version and
-packet type.  Type-specific semantics for this version are described in the
-following sections.
+The interpretation of the fields and the payload are specific to this version
+and the packet type.  Type-specific semantics for this version are described in
+the following sections.
 
 
 ## Short Header
 
-~~~~~
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+
-|0|C|K| Type (5)|
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                                                               |
-+                     [Connection ID (64)]                      +
-|                                                               |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                      Packet Number (8/16/32)                ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                     Protected Payload (*)                   ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-~~~~~
-{: #fig-short-header title="Short Header Format"}
-
 The short header can be used after the version and 1-RTT keys are negotiated.
-This header form has the following fields:
+The format of the long-form header is described in {{QUIC-CORE}}.
 
-Header Form:
-
-: The most significant bit (0x80) of the first octet of a packet is the header
-  form.  This bit is set to 0 for the short header.
-
-Connection ID Flag:
-
-: The second bit (0x40) of the first octet indicates whether the Connection ID
-  field is present.  If set to 1, then the Connection ID field is present; if
-  set to 0, the Connection ID field is omitted.
-
-Key Phase Bit:
-
-: The third bit (0x20) of the first octet indicates the key phase, which allows
-  a recipient of a packet to identify the packet protection keys that are used
-  to protect the packet.  See {{QUIC-TLS}} for details.
-
-Short Packet Type:
-
-: The remaining 5 bits of the first octet include one of 32 packet types.
-  {{short-packet-types}} lists the types that are defined for short packets.
-
-Connection ID:
-
-: If the Connection ID Flag is set, a connection ID occupies octets 1 through 8
-  of the packet.  See {{connection-id}} for more details.
-
-Packet Number:
-
-: The length of the packet number field depends on the packet type.  This field
-  can be 1, 2 or 4 octets long depending on the short packet type.
-
-Protected Payload:
-
-: Packets with a short header always include a 1-RTT protected payload.
-
-The packet type in a short header currently determines only the size of the
-packet number field.  Additional types can be used to signal the presence of
-other fields.
+In this version, the packet type in a short header currently determines only the
+size of the packet number field.
 
 | Type | Packet Number Size |
 |:-----|:-------------------|
@@ -505,44 +369,6 @@ other fields.
 | 02   | 2 octets           |
 | 03   | 4 octets           |
 {: #short-packet-types title="Short Header Packet Types"}
-
-The header form, connection ID flag and connection ID of a short header packet
-are version-independent.  The remaining fields are specific to the selected QUIC
-version.  See {{version-specific}} for details on how packets from different
-versions of QUIC are interpreted.
-
-
-## Version Negotiation Packet {#packet-version}
-
-A Version Negotiation packet has long headers with a type value of 0x01 and is
-sent only by servers.  The Version Negotiation packet is a response to a client
-packet that contains a version that is not supported by the server.
-
-The packet number, connection ID and version fields echo corresponding values
-from the triggering client packet.  This allows clients some assurance that the
-server received the packet and that the Version Negotiation packet was not
-carried in a packet with a spoofed source address.
-
-The payload of the Version Negotiation packet is a list of 32-bit versions which
-the server supports, as shown below.
-
-~~~
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                    Supported Version 1 (32)                 ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                   [Supported Version 2 (32)]                ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-                               ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                   [Supported Version N (32)]                ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-~~~
-{: #version-negotiation-format title="Version Negotiation Packet"}
-
-See {{version-negotiation}} for a description of the version negotiation
-process.
 
 
 ## Cleartext Packets {#cleartext-packet}
@@ -581,7 +407,7 @@ The client uses the Client Initial Packet type for any packet that contains an
 initial cryptographic handshake message.  This includes all cases where a new
 packet containing the initial cryptographic message needs to be created, this
 includes the packets sent after receiving a Version Negotiation
-({{packet-version}}) or Server Stateless Retry packet
+({{QUIC-CORE}}) or Server Stateless Retry packet
 ({{packet-server-stateless}}).
 
 
@@ -680,42 +506,6 @@ packet protection in detail.  After decryption, the plaintext consists of a
 sequence of frames, as described in {{frames}}.
 
 
-## Public Reset Packet {#packet-public-reset}
-
-A Public Reset packet is only sent by servers and is used to abruptly terminate
-communications. Public Reset is provided as an option of last resort for a
-server that does not have access to the state of a connection.  This is intended
-for use by a server that has lost state (for example, through a crash or
-outage). A server that wishes to communicate a fatal connection error MUST use a
-CONNECTION_CLOSE frame if it has sufficient state to do so.
-
-A Public Reset packet uses long headers with a type value of 0x09.
-
-The connection ID and packet number of fields together contain octets 1 through
-12 from the packet that triggered the reset.  For a client that sends a
-connection ID on every packet, the Connection ID field is simply an echo of the
-client's Connection ID, and the Packet Number field includes an echo of the
-client's packet number.  Depending on the client's packet number length it might
-also include 0, 2, or 3 additional octets from the protected payload of the
-client packet.
-
-The version field contains the current QUIC version.
-
-A Public Reset packet sent by a server indicates that it does not have the
-state necessary to continue with a connection.  In this case, the server will
-include the fields that prove that it originally participated in the connection
-(see {{public-reset-proof}} for details).
-
-Upon receipt of a Public Reset packet that contains a valid proof, a client MUST
-tear down state associated with the connection.  The client MUST then cease
-sending packets on the connection and SHOULD discard any subsequent packets that
-arrive. A Public Reset that does not contain a valid proof MUST be ignored.
-
-### Public Reset Proof
-
-TODO: Details to be added.
-
-
 ## Connection ID {#connection-id}
 
 QUIC connections are identified by their 64-bit Connection ID.  All long headers
@@ -781,9 +571,8 @@ sending a packet with a number of 0x6b4264 requires a 16-bit or larger packet
 number encoding; whereas a 32-bit packet number is needed to send a packet with
 a number of 0x6bc107.
 
-Version Negotiation ({{packet-version}}), Server Stateless Retry
-({{packet-server-stateless}}), and Public Reset ({{packet-public-reset}})
-packets have special rules for populating the packet number field.
+Server Stateless Retry ({{packet-server-stateless}}) has special rules for
+populating the packet number field.
 
 
 ### Initial Packet Number {#initial-packet-number}
@@ -797,7 +586,7 @@ The first set of packets sent by an endpoint MUST include the low 32-bits of the
 packet number.  Once any packet has been acknowledged, subsequent packets can
 use a shorter packet number encoding.
 
-A client that receives a Version Negotiation ({{packet-version}}) or Server
+A client that receives a Version Negotiation ({{QUIC-CORE}}) or Server
 Stateless Retry packet ({{packet-server-stateless}}) MUST generate a new initial
 packet number.  This ensures that the first transmission attempt for a Client
 Initial packet ({{packet-client-initial}}) always contains a randomized packet
@@ -806,26 +595,6 @@ number, but packets that contain retransmissions increment the packet number.
 A client MUST NOT generate a new initial packet number if it discards the server
 packet.  This might happen if the information the client retransmits its Client
 Initial packet.
-
-
-## Handling Packets from Different Versions {#version-specific}
-
-Between different versions the following things are guaranteed to remain
-constant:
-
-* the location of the header form flag,
-
-* the location of the Connection ID flag in short headers,
-
-* the location and size of the Connection ID field in both header forms,
-
-* the location and size of the Version field in long headers, and
-
-* the location and size of the Packet Number field in long headers.
-
-Implementations MUST assume that an unsupported version uses an unknown packet
-format. All other fields MUST be ignored when processing a packet that contains
-an unsupported version.
 
 
 # Frames and Frame Types {#frames}
@@ -899,9 +668,10 @@ endpoint, as described in {{termination}}.
 
 ## Version Negotiation {#version-negotiation}
 
-QUIC's connection establishment begins with version negotiation, since all
-communication between the endpoints, including packet and frame formats, relies
-on the two endpoints agreeing on a version.
+QUIC's connection establishment begins with version negotiation as described in
+{{QUIC-CORE}}, since all communication between the endpoints,
+including packet and frame formats, relies on the two endpoints agreeing on a
+version.
 
 A QUIC connection begins with a client sending a handshake packet. The details
 of the handshake mechanisms are described in {{handshake}}, but all of the
@@ -911,67 +681,18 @@ format and MUST specify the version of the protocol being used.
 When the server receives a packet from a client with the long header format, it
 compares the client's version to the versions it supports.
 
-If the version selected by the client is not acceptable to the server, the
-server discards the incoming packet and responds with a Version Negotiation
-packet ({{packet-version}}).  This includes a list of versions that the server
-will accept.
-
-A server sends a Version Negotiation packet for every packet that it receives
-with an unacceptable version.  This allows a server to process packets with
-unsupported versions without retaining state.  Though either the initial client
-packet or the version negotiation packet that is sent in response could be lost,
-the client will send new packets until it successfully receives a response.
-
 If the packet contains a version that is acceptable to the server, the server
 proceeds with the handshake ({{handshake}}).  This commits the server to the
-version that the client selected.
-
-When the client receives a Version Negotiation packet from the server, it should
-select an acceptable protocol version.  If the server lists an acceptable
-version, the client selects that version and reattempts to create a connection
-using that version.  Though the contents of a packet might not change in
-response to version negotiation, a client MUST increase the packet number it
-uses on every packet it sends.  Packets MUST continue to use long headers and
-MUST include the new negotiated protocol version.
+version that the client selected.  If the version selected by the client is not
+acceptable to the server, the server performs version negotiation as described
+in {{QUIC-CORE}}.
 
 The client MUST use the long header format and include its selected version on
 all packets until it has 1-RTT keys and it has received a packet from the server
 which is not a Version Negotiation packet.
 
-A client MUST NOT change the version it uses unless it is in response to a
-Version Negotiation packet from the server.  Once a client receives a packet
-from the server which is not a Version Negotiation packet, it MUST ignore other
-Version Negotiation packets on the same connection.  Similarly, a client MUST
-ignore a Version Negotiation packet if it has already received and acted on a
-Version Negotiation packet.
-
-A client MUST ignore a Version Negotiation packet that lists the client's chosen
-version.
-
 Version negotiation uses unprotected data. The result of the negotiation MUST be
 revalidated as part of the cryptographic handshake (see {{version-validation}}).
-
-### Using Reserved Versions
-
-For a server to use a new version in the future, clients must correctly handle
-unsupported versions. To help ensure this, a server SHOULD include a reserved
-version (see {{versions}}) while generating a Version Negotiation packet.
-
-The design of version negotiation permits a server to avoid maintaining state
-for packets that it rejects in this fashion.  However, when the server generates
-a Version Negotiation packet, it cannot randomly generate a reserved version
-number. This is because the server is required to include the same value in its
-transport parameters (see {{version-validation}}).  To avoid the selected
-version number changing during connection establishment, the reserved version
-SHOULD be generated as a function of values that will be available to the server
-when later generating its handshake packets.
-
-A pseudorandom function that takes client address information (IP and port) and
-the client selected version as input would ensure that there is sufficient
-variability in the values that a server uses.
-
-A client MAY send a packet using a reserved version number.  This can be used to
-solicit a list of supported versions from a server.
 
 ## Cryptographic and Transport Handshake {#handshake}
 
@@ -1185,7 +906,7 @@ The client includes two fields in the transport parameters:
   QUIC_VERSION_NEGOTIATION_MISMATCH error code.
 
 * The initial_version is the version that the client initially attempted to use.
-  If the server did not send a version negotiation packet {{packet-version}},
+  If the server did not send a version negotiation packet {{QUIC-CORE}},
   this will be identical to the negotiated_version.
 
 A server that processes all packets in a stateful fashion can remember how
@@ -1203,7 +924,7 @@ the value of negotiated_version, the server MUST terminate the connection with a
 QUIC_VERSION_NEGOTIATION_MISMATCH error.
 
 The server includes a list of versions that it would send in any version
-negotiation packet ({{packet-version}}) in supported_versions.  This value is
+negotiation packet ({{QUIC-CORE}}) in supported_versions.  This value is
 set even if it did not send a version negotiation packet.
 
 The client can validate that the negotiated_version is included in the
@@ -2161,24 +1882,6 @@ in the GOAWAY frame can then be retried.
 
 
 # Packetization and Reliability {#packetization}
-
-The Path Maximum Transmission Unit (PMTU) is the maximum size of the entire IP
-header, UDP header, and UDP payload. The UDP payload includes the QUIC public
-header, protected payload, and any authentication fields.
-
-All QUIC packets SHOULD be sized to fit within the estimated PMTU to avoid IP
-fragmentation or packet drops. To optimize bandwidth efficiency, endpoints
-SHOULD use Packetization Layer PMTU Discovery ({{!RFC4821}}) and MAY use PMTU
-Discovery ({{!RFC1191}}, {{!RFC1981}}) for detecting the PMTU, setting the PMTU
-appropriately, and storing the result of previous PMTU determinations.
-
-In the absence of these mechanisms, QUIC endpoints SHOULD NOT send IP packets
-larger than 1280 octets. Assuming the minimum IP header size, this results in
-a QUIC packet size of 1232 octets for IPv6 and 1252 octets for IPv4.
-
-QUIC endpoints that implement any kind of PMTU discovery SHOULD maintain an
-estimate for each combination of local and remote IP addresses (as each pairing
-could have a different maximum MTU in the path).
 
 QUIC depends on the network path supporting a MTU of at least 1280 octets. This
 is the IPv6 minimum and therefore also supported by most modern IPv4 networks.
@@ -3275,7 +2978,7 @@ Issue and pull request numbers are listed with a leading octothorp.
 
 ## Since draft-hamilton-quic-transport-protocol-01
 
-- Adopted as base for draft-ietf-quic-tls
+- Adopted as base for draft-ietf-quic-transport
 - Updated authors/editors list
 - Added IANA Considerations section
 - Moved Contributors and Acknowledgments to appendices
