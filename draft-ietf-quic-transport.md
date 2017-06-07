@@ -100,10 +100,9 @@ informative:
 --- abstract
 
 This document defines the initial version of the QUIC transport protocol.
-
-Building on the framework in {{QUIC-CORE}}, this
-document describes packet format, multiplexing and reliability. Accompanying
-documents describe the cryptographic handshake and loss detection.
+Building on the framework in {{QUIC-CORE}}, this document describes packet
+format, multiplexing and reliability. Accompanying documents describe the
+cryptographic handshake and loss detection.
 
 
 --- note_Note_to_Readers
@@ -358,7 +357,7 @@ the following sections.
 ## Short Header
 
 The short header can be used after the version and 1-RTT keys are negotiated.
-The format of the long-form header is described in {{QUIC-CORE}}.
+The format of the short-form header is described in {{QUIC-CORE}}.
 
 In this version, the packet type in a short header currently determines only the
 size of the packet number field.
