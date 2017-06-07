@@ -1843,9 +1843,6 @@ to abruptly terminate transmission on a stream.  The frame is as follows:
 
 The fields are:
 
-* Error code: A 32-bit error code which indicates why the data is being
-  discarded.
-
 * Stream ID: The 32-bit Stream ID of the stream being ignored.
 
 
@@ -2222,7 +2219,7 @@ Any frame type that mentions a stream ID can be sent in this state.
 A stream that is in the "half-closed (local)" state MUST NOT be used for sending
 on new STREAM frames.  Retransmission of data that has already been sent on
 STREAM frames is permitted.  An endpoint MAY also send MAX_STREAM_DATA and
-RST_STREAM in this state.
+DISINTEREST in this state.
 
 An endpoint that closes a stream MUST NOT send data beyond the final offset that
 it has chosen, see {{state-closed}} for details.
@@ -2281,6 +2278,7 @@ The "closed" state is the terminal state for a stream.
 Once a stream reaches this state, no frames can be sent that mention the stream.
 Reordering might cause frames to be received after closing, see
 {{state-hc-remote}}.
+
 
 ## Solicited State Transitions
 
