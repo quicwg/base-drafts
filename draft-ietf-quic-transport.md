@@ -198,7 +198,7 @@ strengths of QUIC include:
 
 * Version negotiation
 
-* Support for monitoring
+* Support for latency monitoring
 
 
 ## Low-Latency Connection Establishment
@@ -296,7 +296,7 @@ QUIC version negotiation allows for multiple versions of the protocol to be
 deployed and used concurrently. Version negotiation is described in
 {{version-negotiation}}.
 
-## Support for Monitoring
+## Support for Latency Monitoring
 
 Network administrators often find difficult to monitor the behavior
 of encrypted protocols. Bandwidth can be monitored by observing the
