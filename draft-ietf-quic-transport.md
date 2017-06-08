@@ -863,6 +863,10 @@ the network path. This bit is set as follow:
 Observation points can estimate the network latency by monitoring the
 changes in the latency spin bit.
 
+The latency spin bit handling is similar to the
+"Alternate Marking method for passive performance monitoring"
+described in [@?I-D.draft-ietf-ippm-alt-mark].
+
 # Frames and Frame Types {#frames}
 
 The payload of cleartext packets and the plaintext after decryption of protected
