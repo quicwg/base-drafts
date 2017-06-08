@@ -1535,7 +1535,7 @@ MUST be one greater than the last data byte sent on this stream.
 
 Stream multiplexing is achieved by interleaving STREAM frames from multiple
 streams into one or more QUIC packets.  A single QUIC packet can include
-multiple STREAM frames from one or more stream IDs.
+multiple STREAM frames from one or more streams.
 
 Implementation note: One of the benefits of QUIC is avoidance of head-of-line
 blocking across multiple streams.  When a packet loss occurs, only streams with
