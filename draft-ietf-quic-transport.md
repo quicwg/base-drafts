@@ -198,7 +198,7 @@ strengths of QUIC include:
 
 * Version negotiation
 
-* Support for monitoring 
+* Support for monitoring
 
 
 ## Low-Latency Connection Establishment
