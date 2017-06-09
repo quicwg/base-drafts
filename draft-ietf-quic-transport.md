@@ -1482,11 +1482,13 @@ These bits are parsed as follows:
   The option to omit the length should only be used when the packet is a
   "full-sized" packet, to avoid the risk of corruption via padding.
 
-* The `OO` bits encode the length of the Offset header field as 0, 16, 32,
-  or 64 bits long.
+* The `SS` bits encode the length of the Stream ID header field.
+  The values 00, 01, 02, and 03 indicate lengths of 8, 16, 24, and 32 bits
+  long respectively.
 
-* The `SS` bits encode the length of the Stream ID header field as 8, 16, 24,
-  or 32 bits.
+* The `OO` bits encode the length of the Offset header field.
+  The values 00, 01, 02, and 03 indicate lengths of 0, 16, 32, and
+  64 bits long respectively.
 
 A STREAM frame is shown below.
 
