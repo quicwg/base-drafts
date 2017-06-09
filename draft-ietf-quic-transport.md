@@ -1474,7 +1474,7 @@ subsequent sections.
 ## STREAM Frame {#frame-stream}
 
 STREAM frames implicitly create a stream and carry stream data. The type byte
-for a STREAM frame contains embedded flags, and is formatted as `11FDOOSS`.
+for a STREAM frame contains embedded flags, and is formatted as `11FDSSOO`.
 These bits are parsed as follows:
 
 * The first two bits must be set to 11, indicating that this is a STREAM frame.
