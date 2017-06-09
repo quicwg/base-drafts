@@ -1346,21 +1346,12 @@ way to retry them.
 
 ### Privacy Implications of Connection Migration {#migration-linkability}
 
-Using a stable connection ID on multiple network paths allows a
-passive observer to correlate activity between those paths.  A client
-that moves between networks might not wish to have their activity
-correlated by any entity other than a server. The NEW_CONNECTION_ID
-message can be sent by a server to provide an unlinkable connection ID
-for use in case the client wishes to explicitly break linkability
-between two points of network attachment.
-
-A client which wishes to break linkability upon changing networks MUST
-use the NEW_CONNECTION_ID as well as incrementing the packet sequence
-number by an externally unpredictable value computed as described in
-{{packet-number-gap}}. Packet number gaps are cumulative.  A client
-might skip connection IDs, but it MUST ensure that it applies the
-associated packet number gaps in addition to the packet number gap
-associated with the connection ID that it does use.
+Using a stable connection ID on multiple network paths allows a passive observer
+to correlate activity between those paths.  A client that moves between networks
+might not wish to have their activity correlated by any entity other than a
+server. The NEW_CONNECTION_ID message can be sent by a server to provide an
+unlinkable connection ID for use in case the client wishes to explicitly break
+linkability between two points of network attachment.
 
 A client might need to send packets on multiple networks without receiving any
 response from the server.  To ensure that the client is not linkable across each
@@ -1368,6 +1359,14 @@ of these changes, a new connection ID and packet number gap are needed for each
 network.  To support this, a server sends multiple NEW_CONNECTION_ID messages.
 Each NEW_CONNECTION_ID is marked with a sequence number.  Connection IDs MUST be
 used in the order in which they are numbered.
+
+A client which wishes to break linkability upon changing networks MUST use the
+connection ID provided by the server as well as incrementing the packet sequence
+number by an externally unpredictable value computed as described in
+{{packet-number-gap}}. Packet number gaps are cumulative.  A client might skip
+connection IDs, but it MUST ensure that it applies the associated packet number
+gaps for connection IDs that it skips in addition to the packet number gap
+associated with the connection ID that it does use.
 
 A server that receives a packet that is marked with a new connection ID recovers
 the packet number by adding the cumulative packet number gap to its expected
@@ -1379,6 +1378,7 @@ new connection ID.  If the server received packet 10 using the previous
 connection ID, it should expect packets on the new connection ID to start at 18.
 A packet with the new connection ID and a packet number of 17 is discarded as
 being in error.
+
 
 #### Packet Number Gap
 
@@ -1497,14 +1497,15 @@ After the first short header octet and optional connection ID, the server
 includes the value of the Stateless Reset Token that it included in its
 transport parameters.
 
-After the Stateless Reset Token, the server pads the message with random
-octets.
+After the Stateless Reset Token, the endpoint pads the message with an arbitrary
+number of packets containing random values.
 
 This design ensures that a stateless reset packet is - to the extent possible -
 indistinguishable from a regular packet.
 
-A different stateless reset token is used for each connection ID that is used.
-The NEW_CONNECTION_ID includes a new token.
+A stateless reset is not appropriate for signaling error conditions.  An
+endpoint that wishes to communicate a fatal connection error MUST use a
+CONNECTION_CLOSE frame if it has sufficient state to do so.
 
 
 ### Detecting a Stateless Reset
@@ -1517,7 +1518,7 @@ the connection MUST be terminated immediately.  Otherwise, the packet can be
 discarded.
 
 
-### Selecting a Stateless Reset Token
+### Calculating a Stateless Reset Token
 
 In order to create a Stateless Reset Token, a server could randomly generate
 {{!RFC4086}} a secret for every connection that it creates.  However, this
