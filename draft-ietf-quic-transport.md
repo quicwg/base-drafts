@@ -2336,19 +2336,20 @@ shown in the following figure and described below.
 
 ~~~
                             +--------+
+                            |        |
+                            |  idle  |
+                            |        |
+                            +--------+
+                                 |
+                        send/recv STREAM/RST
+                             recv MSD/SB
+                                 |
+                                 v
+                 recv FIN/  +--------+    send FIN/
                  recv RST   |        |    send RST
-              ,-------------|  idle  |---------------.
-             /              |        |                \
-            |               +--------+                 |
-            |                    |                     |
-            |        send STREAM / recv STREAM         |
-            |                    |                     |
-            |                    v                     |
-            |    recv FIN/  +--------+    send FIN/    |
-            |    recv RST   |        |    send RST     |
-            |     ,---------|  open  |-----------.     |
-            |    /          |        |            \    |
-            v   v           +--------+             v   v
+                  ,---------|  open  |-----------.
+                 /          |        |            \
+                v           +--------+             v
          +----------+                          +----------+
          |   half   |                          |   half   |
          |  closed  |                          |  closed  |
@@ -2367,19 +2368,22 @@ shown in the following figure and described below.
    STREAM: a STREAM frame
    FIN:    FIN flag in a STREAM frame
    RST:    RST_STREAM frame
+   MSD:    MAX_STREAM_DATA frame
+   SB:     STREAM_BLOCKED frame
 ~~~
 {: #stream-lifecycle title="Lifecycle of a stream"}
 
 Note that this diagram shows stream state transitions and the frames and flags
-that affect those transitions only.  For the purpose of state transitions, the
-FIN flag is processed as a separate event to the frame that bears it; a STREAM
-frame with the FIN flag set can cause two state transitions.
+that affect those transitions only.  It is possible for a single frame to cause
+two transitions: receiving a RST_STREAM frame, or a STREAM frame with the FIN
+flag cause the stream state to move from "idle" to "open" and then immediately
+to one of the "half-closed" states.
 
-The recipient of a frame which changes stream state will have a delayed view of
+The recipient of a frame that changes stream state will have a delayed view of
 the state of a stream while the frame is in transit.  Endpoints do not
 coordinate the creation of streams; they are created unilaterally by either
-endpoint.  Endpoints can use acknowledgments to understand the peer's
-subjective view of stream state at any given time.
+endpoint.  Endpoints can use acknowledgments to understand the peer's subjective
+view of stream state at any given time.
 
 In the absence of more specific guidance elsewhere in this document,
 implementations SHOULD treat the receipt of a frame that is not expressly
@@ -2393,29 +2397,14 @@ All streams start in the "idle" state.
 
 The following transitions are valid from this state:
 
-Sending or receiving a STREAM frame causes the identified stream to become
-"open".  The stream identifier for a new stream is selected as described in
-{{stream-id}}.  The same STREAM frame can also cause a stream to
-immediately become "half-closed" if the FIN flag is set.
+Sending or receiving a STREAM or RST_STREAM frame causes the identified stream
+to become "open".  The stream identifier for a new stream is selected as
+described in {{stream-id}}.  A RST_STREAM frame, or a STREAM frame with the FIN
+flag set also causes a stream to become "half-closed".
 
-Receiving a STREAM frame on a peer-initiated stream (that is, a packet sent by a
-server on an even-numbered stream or a client packet on an odd-numbered stream)
-also causes all lower-numbered "idle" streams in the same direction to become
-"open".  This could occur if a peer begins sending on streams in a different
-order to their creation, or it could happen if packets are lost or reordered in
-transit.
-
-A RST_STREAM frame on an "idle" stream causes the stream to become
-"half-closed".  Sending a RST_STREAM frame causes the stream to become
-"half-closed (local)"; receiving RST_STREAM causes the stream to become
-"half-closed (remote)".
-
-An endpoint might receive MAX_STREAM_DATA frames on peer-initiated streams that
-are "idle" if there is loss or reordering of packets.
-
-Receiving any frame other than STREAM, MAX_STREAM_DATA, STREAM_BLOCKED, or
-RST_STREAM on a stream in this state MUST be treated as a connection error
-({{error-handling}}) of type YYYY.
+An endpoint might receive MAX_STREAM_DATA or STREAM_BLOCKED frames on
+peer-initiated streams that are "idle" if there is loss or reordering of
+packets.  Receiving these frames also causes the stream to become "open".
 
 An endpoint MUST NOT send a STREAM or RST_STREAM frame for a stream ID that is
 higher than the peers advertised maximum stream ID (see
@@ -2428,18 +2417,27 @@ A stream in the "open" state may be used by both peers to send frames of any
 type.  In this state, endpoints can send MAX_STREAM_DATA and MUST observe the
 value advertised by its receiving peer (see {{flow-control}}).
 
-From this state, either endpoint can send a frame with the FIN flag set, which
-causes the stream to transition into one of the "half-closed" states.  An
-endpoint sending an FIN flag causes the stream state to become "half-closed
-(local)".  An endpoint receiving a FIN flag causes the stream state to become
-"half-closed (remote)" once all preceding data has arrived.  The receiving
-endpoint MUST NOT consider the stream state to have changed until all data has
-arrived.
+Opening a stream causes all lower-numbered streams in the same direction to
+become open.  Thus, opening an odd-numbered stream causes all "idle",
+odd-numbered streams with a lower identifier to become open and the same applies
+to even numbered streams.  Endpoints open streams in increasing numeric order,
+but loss or reordering can cause packets that open streams to arrive out of
+order.
+
+From the "open" state, either endpoint can send a frame with the FIN flag set,
+which causes the stream to transition into one of the "half-closed" states.
+This flag can be set on the frame that opens the stream, which causes the stream
+to immediately become "half-closed".  An endpoint sending an FIN flag causes the
+stream state to become "half-closed (local)".  An endpoint receiving a FIN flag
+causes the stream state to become "half-closed (remote)" once all preceding data
+has arrived.  The receiving endpoint MUST NOT consider the stream state to have
+changed until all data has arrived.
 
 A RST_STREAM frame on an "open" stream causes the stream to become
-"half-closed".  Sending a RST_STREAM frame causes the stream to become
-"half-closed (local)"; receiving RST_STREAM causes the stream to become
-"half-closed (remote)".
+"half-closed".  A stream that becomes "open" as a result of sending or receiving
+RST_STREAM immediately becomes "half-closed".  Sending a RST_STREAM frame causes
+the stream to become "half-closed (local)"; receiving RST_STREAM causes the
+stream to become "half-closed (remote)".
 
 Any frame type that mentions a stream ID can be sent in this state.
 
@@ -2492,10 +2490,10 @@ A stream in this state can be used by the endpoint to send any frame that
 mentions a stream ID.  In this state, the endpoint MUST observe advertised
 stream and connection data limits (see {{flow-control}}).
 
-A stream can transition from this state to "closed" by completing transmission
-of all data.  This includes sending all data carried in STREAM frames up
-including the terminal STREAM frame that contains a FIN flag and receiving
-acknowledgment from the peer for all data.
+A stream transitions from this state to "closed" by completing transmission of
+all data.  This includes sending all data carried in STREAM frames up including
+the terminal STREAM frame that contains a FIN flag and receiving acknowledgment
+from the peer for packets that included all the data.
 
 A stream becomes "closed" when the endpoint sends and receives acknowledgment of
 a RST_STREAM frame.
@@ -2508,7 +2506,6 @@ The "closed" state is the terminal state for a stream.
 Once a stream reaches this state, no frames can be sent that mention the stream.
 Reordering might cause frames to be received after closing, see
 {{state-hc-remote}}.
-
 
 
 ## Stream Concurrency {#stream-concurrency}
