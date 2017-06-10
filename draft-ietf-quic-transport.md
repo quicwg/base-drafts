@@ -2432,7 +2432,7 @@ stream data and a STREAM frame with a FIN flag, including any retransmissions,
 the stream state becomes "half-closed (local)".  When an endpoint receives all
 stream data a FIN flag the stream state becomes "half-closed (remote)".  An
 endpoint MUST NOT consider the stream state to have changed until all data has
-either been acknowledged or received.
+been acknowledged, received or discarded.
 
 A RST_STREAM frame on an "open" stream causes the stream to become
 "half-closed".  A stream that becomes "open" as a result of sending or receiving
