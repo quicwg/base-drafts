@@ -2427,11 +2427,12 @@ order.
 From the "open" state, either endpoint can send a frame with the FIN flag set,
 which causes the stream to transition into one of the "half-closed" states.
 This flag can be set on the frame that opens the stream, which causes the stream
-to immediately become "half-closed".  An endpoint sending an FIN flag causes the
-stream state to become "half-closed (local)".  An endpoint receiving a FIN flag
-causes the stream state to become "half-closed (remote)" once all preceding data
-has arrived.  The receiving endpoint MUST NOT consider the stream state to have
-changed until all data has arrived.
+to immediately become "half-closed".  Once an endpoint has completed sending all
+stream data and a STREAM frame with a FIN flag, including any retransmissions,
+the stream state becomes "half-closed (local)".  When an endpoint receives all
+stream data a FIN flag the stream state becomes "half-closed (remote)".  An
+endpoint MUST NOT consider the stream state to have changed until all data has
+either been acknowledged or received.
 
 A RST_STREAM frame on an "open" stream causes the stream to become
 "half-closed".  A stream that becomes "open" as a result of sending or receiving
