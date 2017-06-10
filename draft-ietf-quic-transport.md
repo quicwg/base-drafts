@@ -1481,9 +1481,9 @@ following layout:
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
 
-This packet uses the short header form with the shortest possible packet number
-encoding.  This minimizes the perceived gap between the last packet that the
-server sent and this packet.  The leading octet of the Stateless Reset Token
+This packet SHOULD use the short header form with the shortest possible packet
+number encoding.  This minimizes the perceived gap between the last packet that
+the server sent and this packet.  The leading octet of the Stateless Reset Token
 will be interpreted as a packet number.  A server MAY use a different short
 header type, indicating a different packet number length, but this allows for
 the message to be identified as a stateless reset more easily using heuristics.
