@@ -1497,7 +1497,7 @@ includes the value of the Stateless Reset Token that it included in its
 transport parameters.
 
 After the Stateless Reset Token, the endpoint pads the message with an arbitrary
-number of packets containing random values.
+number of octets containing random values.
 
 This design ensures that a stateless reset packet is - to the extent possible -
 indistinguishable from a regular packet.
