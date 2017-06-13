@@ -1611,11 +1611,13 @@ The type byte for a ACK frame contains embedded flags, and is formatted as
 * The `N` bit indicates whether the frame has more than 1 range of acknowledged
   packets (i.e., whether the ACK Block Section contains a Num Blocks field).
 
-* The two `LL` bits encode the length of the Largest Acknowledged field as 1, 2,
-  4, or 6 bytes long.
+* The two `LL` bits encode the length of the Largest Acknowledged field.
+  The values 00, 01, 02, and 03 indicate lengths of 8, 16, 32, and 48
+  bits respectively.
 
-* The two `MM` bits encode the length of the ACK Block Length fields as 1, 2,
-  4, or 6 bytes long.
+* The two `MM` bits encode the length of the ACK Block Length fields.
+  The values 00, 01, 02, and 03 indicate lengths of 8, 16, 32, and 48
+  bits respectively.
 
 An ACK frame is shown below.
 
