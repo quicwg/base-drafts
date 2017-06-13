@@ -177,57 +177,162 @@ coordinate their experiments on the quic@ietf.org mailing list.
 
 A QUIC stream provides reliable in-order delivery of bytes, but makes no
 guarantees about order of delivery with regard to bytes on other streams. On the
-wire, data is framed into QUIC STREAM frames, but this framing is invisible to
-the HTTP framing layer. A QUIC receiver buffers and orders received STREAM
-frames, exposing the data contained within as a reliable byte stream to the
-application.
+wire, HTTP/QUIC frames are framed into QUIC STREAM frames, but this framing is
+invisible to the HTTP framing layer. A QUIC receiver buffers and orders received
+STREAM frames, exposing the data contained within as a reliable byte stream to
+the application.
 
 QUIC reserves Stream 0 for crypto operations (the handshake, crypto config
-updates). Stream 1 is reserved for sending and receiving HTTP control frames,
-and is analogous to HTTP/2's Stream 0.  This control stream is considered
-critical to the HTTP connection.  If the control stream is closed for any
-reason, this MUST be treated as a connection error of type
-QUIC_CLOSED_CRITICAL_STREAM.
+updates). Stream 1 in both directions is reserved for sending and receiving HTTP
+control frames.  This control stream pair is considered critical to the HTTP
+connection.  If either control stream is closed for any reason, this MUST be
+treated as a connection error of type QUIC_CLOSED_CRITICAL_STREAM.
 
-When HTTP headers and data are sent over QUIC, the QUIC layer handles most of
-the stream management. An HTTP request/response consumes a single stream: This
-means that the client's first request occurs on QUIC stream 3, the second on
-stream 5, and so on. The server's first push consumes stream 2.
+When HTTP requests and responses are sent over QUIC, the QUIC layer handles most
+of the stream management. An HTTP request/response consumes a pair of streams: a
+request stream from the client and a response stream from the server.
 
-This stream carries frames related to the request/response (see {{frames}}).
-When a stream terminates cleanly, if the last frame on the stream was truncated,
-this MUST be treated as a connection error (see HTTP_MALFORMED_* in
-{{http-error-codes}}).  Streams which terminate abruptly may be reset at any
-point in the frame.
+Aside from the control stream, the beginning of each stream starts with a short
+stream header ({{stream-header}}).  This stream header is used to identify the
+type of stream and to link the stream to another stream as necessary.
 
-Streams SHOULD be used sequentially, with no gaps.  Streams used for pushed
-resources MAY be initiated out-of-order, but stream IDs SHOULD be allocated to
-promised resources sequentially.
+Streams MUST be opened sequentially, with no gaps.
 
-HTTP does not need to do any separate multiplexing when using QUIC - data sent
+HTTP does not need to do any separate multiplexing when using QUIC. Data sent
 over a QUIC stream always maps to a particular HTTP transaction. Requests and
-responses are considered complete when the corresponding QUIC stream is closed
-in the appropriate direction.
+responses are considered complete when the corresponding QUIC streams are
+closed.
 
 
-##  Stream 1: Control Stream
+## Stream Header
 
-Since most connection-level concerns will be managed by QUIC, the primary use of
-Stream 1 will be for the SETTINGS frame when the connection opens and for
-PRIORITY frames subsequently.
+The stream header is used to correlate requests and responses, including the
+response to server push with the PUSH_PROMISE containing the request.
+
+The stream header consists of a single octet that identifies the type of stream,
+plus any parameters that are specific to the stream type.
+
+
+## Stream Types
+
+The stream types are summarized in {{stream-type-table}}.
+
+| Stream Type        | Code | Section             |
+|:-------------------|-----:|:--------------------|
+| Control            | n/a  | {{stream-control}}  |
+| Request            | 0x00 | {{stream-request}}  |
+| Response           | 0x01 | {{stream-response}} |
+| Push               | 0x02 | {{stream-push}}     |
+{: #stream-type-table title="Stream Types"}
+
+An endpoint MUST treat the receipt of a stream with an unknown type, an invalid
+type, or a truncated stream header as an connection error of type
+HTTP_INVALID_STREAM_HEADER.
+
+
+### Stream 1: Control Stream {#stream-control}
+
+Stream 1 is opened by both client and server and is used for the SETTINGS frame
+immediately after the connection opens.  After the SETTINGS frame has been sent,
+this stream is used for PRIORITY and CANCEL_REQUEST frames.
+
+There is no stream header for a control stream; the stream is identified by its
+stream number.  The control stream contains a sequence of frames, starting with
+the SETTINGS frame.
+
+
+### Request Streams {#stream-request}
+
+Request streams are opened by the client.  Request streams carry the headers and
+any trailers of requests.
+
+~~~~~
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+
+|   Type (8)    |
++-+-+-+-+-+-+-+-+
+~~~~~
+
+The stream header for a request stream contains only the type octet, which is
+set to 0x00.  After the stream header, request streams contain a sequence of
+frames (see {{http-framing-layer}}).
+
+
+### Response Streams {#stream-response}
+
+Response streams are opened by the server.  Response streams carry the headers
+and optional trailers of responses, plus any promises for server push.
+
+The stream header for a response stream contains the type octet, which is set to
+0x01, and the stream ID of the request stream that this response is for as a
+32-bit value.
+
+~~~~~
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+
+|   Type (8)    |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                        Stream ID (32)                         |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~~~
+
+After the stream header, response streams contain a sequence of frames (see
+{{http-framing-layer}}).
+
+If a response stream header identifies a stream that is not a request stream, or
+it references a request stream that already has an associated response stream,
+the connection MUST be terminated with an HTTP_UNMATCHED_RESPONSE error.
+
+
+### Push Streams {#stream-push}
+
+Push streams are opened by servers.  Push streams carry headers of responses for
+use with server push.
+
+The stream header for a push stream contains the type octet, which is set to
+0x02, and the push ID from a PUSH_PROMISE frame (see {{frame-push-promise}}).
+
+~~~~~
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+
+|   Type (8)    |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                         Push ID (32)                          |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~~~
+
+Each Push ID MUST only be used once in a push stream header.  If a push stream
+header includes a Push ID that was used in another push stream header, the
+client MUST treat this as a connection error of type HTTP_DUPLICATE_PUSH.  The
+same Push ID can be used in multiple PUSH_PROMISE frames (see
+{{frame-push-promise}}).
+
+After the push stream header, a push contains a response ({{request-response}}),
+with response headers, a response body (if any) carried by DATA frames, then
+trailers (if any) carried by HEADERS frames.
+
+A push stream references a server push request by including the Push ID field
+from a PUSH_PROMISE frame that was sent on a response stream, see
+{{frame-push-promise}} for details.  Note that due to reordering of packets, the
+PUSH_PROMISE frame might not have been received when the push stream is opened.
+
 
 ## HTTP Message Exchanges {#request-response}
 
-A client sends an HTTP request on a new QUIC stream. A server sends an HTTP
-response on the same stream as the request.
+A client sends an HTTP request on a new request stream ({{stream-request}}). A
+server sends an HTTP response on a response stream ({{stream-response}}).  The
+response stream header includes the stream ID of the request stream.
 
 An HTTP message (request or response) consists of:
 
 1. one header block (see {{frame-headers}}) containing the message headers (see
    {{!RFC7230}}, Section 3.2),
 
-2. the payload body (see {{!RFC7230}}, Section 3.3), sent as a series of DATA
-   frames (see {{frame-data}}),
+2. optionally, the payload body (see {{!RFC7230}}, Section 3.3), sent as a
+   series of DATA frames (see {{frame-data}}),
 
 3. optionally, one header block containing the trailer-part, if present (see
    {{!RFC7230}}, Section 4.1.2).
@@ -245,9 +350,9 @@ body. Such a header block is a sequence of HEADERS frames with End Header Block
 set on the last frame. Senders MUST send only one header block in the trailers
 section; receivers MUST discard any subsequent header blocks.
 
-An HTTP request/response exchange fully consumes a QUIC stream. After sending a
-request, a client closes the stream for sending; after sending a response, the
-server closes the stream for sending and the QUIC stream is fully closed.
+An HTTP request or response fully consumes a QUIC stream. After sending a
+request, a client closes the stream it used for sending the request; after
+sending a response, the server closes the stream for sending the response.
 
 A server can send a complete response prior to the client sending an entire
 request if the response does not depend on any portion of the request that has
@@ -285,27 +390,26 @@ host for similar purposes.
 
 A CONNECT request in HTTP/QUIC functions in the same manner as in HTTP/2. The
 request MUST be formatted as described in {{!RFC7540}}, Section 8.3. A CONNECT
-request that does not conform to these restrictions is malformed. The message
-data stream MUST NOT be closed at the end of the request.
+request that does not conform to these restrictions is malformed.
 
 A proxy that supports CONNECT establishes a TCP connection ({{!RFC0793}}) to the
 server identified in the ":authority" pseudo-header field. Once this connection
 is successfully established, the proxy sends a HEADERS frame containing a 2xx
-series status code to the client, as defined in {{!RFC7231}}, Section 4.3.6.
+series status code to the client on a response stream, as defined in
+{{!RFC7231}}, Section 4.3.6.
 
-All DATA frames on the request stream correspond to data sent on the TCP
-connection. Any DATA frame sent by the client is transmitted by the proxy to the
-TCP server; data received from the TCP server is packaged into DATA frames by
-the proxy. Note that the size and number of TCP segments is not guaranteed to
-map predictably to the size and number of HTTP DATA or QUIC STREAM frames.
+The data exchanged in DATA frames correspond directly to data sent on the TCP
+connection. DATA frames sent by the client are transmitted by the proxy to the
+TCP server; data received from the TCP server are sent as DATA frames by the
+proxy. Note that the size and number of TCP segments is not guaranteed to map
+predictably to the size and number of HTTP DATA or QUIC STREAM frames.
 
-The TCP connection can be closed by either peer. When the client half-closes the
+The TCP connection can be closed by either peer. When the client closes the
 request stream, the proxy will set the FIN bit on its connection to the TCP
-server. When the proxy receives a packet with the FIN bit set, it will
-half-close the corresponding stream. TCP connections which remain half-closed in
-a single direction are not invalid, but are often handled poorly by servers, so
-clients SHOULD NOT half-close connections on which they are still expecting
-data.
+server.  When the proxy receives a packet with the FIN bit set, it will close
+the response stream. TCP connections which remain closed in a single direction
+are not invalid, but are often handled poorly by servers, so clients SHOULD NOT
+close streams for connections on which they are still expecting data.
 
 A TCP connection error is signaled with RST_STREAM. A proxy treats any error in
 the TCP connection, which includes receiving a TCP segment with the RST bit set,
@@ -325,8 +429,8 @@ as PRIORITY frames add, remove, or change the dependency links between requests.
 
 HTTP/2 defines its priorities in terms of streams whereas HTTP over QUIC
 identifies requests.  The PRIORITY frame {{frame-priority}} identifies a request
-either by identifying the stream that carries a request or by using a Push ID
-({{frame-push-promise}}).  Other than the means of identifying requests, the
+either by identifying a request stream ({{stream-request}}) or by using a Push
+ID ({{frame-push-promise}}).  Other than the means of identifying requests, the
 prioritization system is identical to that in HTTP/2.
 
 Only a client can send PRIORITY frames.  A server MUST NOT send a PRIORITY
@@ -347,36 +451,14 @@ the PUSH_PROMISE does not reference a stream; when a server fulfills a promise,
 the stream that carries the stream headers references the PUSH_PROMISE.  This
 allows a server to fulfill promises in the order that best suits its needs.
 
-The server push response is conveyed on a push stream.  A push stream is a
-server-initiated stream.  A push stream includes a header (see
-{{fig-push-stream-header}}) that identifies the PUSH_PROMISE that it fulfills.
-This header consists of a 32-bit Push ID, which identifies a server push (see
-{{frame-push-promise}}).
-
-~~~~~
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                         Push ID (32)                          |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-~~~~~
-{: #fig-push-stream-header title="Push Stream Header"}
-
-Each Push ID MUST only be used once in a push stream header.  If a push stream
-header includes a Push ID that was used in another push stream header, the
-client MUST treat this as a connection error of type HTTP_DUPLICATE_PUSH.  The
-same Push ID can be used in multiple PUSH_PROMISE frames (see
-{{frame-push-promise}}).
-
-After the push stream header, a push contains a response ({{request-response}}),
-with response headers, a response body (if any) carried by DATA frames, then
-trailers (if any) carried by HEADERS frames.
+The server push response is conveyed on a push stream (see {{stream-push}}).
 
 If a promised server push is not needed by the client, the client SHOULD send a
-CANCEL_PUSH frame; if the push stream is already open, a QUIC STOP_SENDING frame
-with an appropriate error code can be used instead (e.g., HTTP_PUSH_REFUSED,
-HTTP_PUSH_ALREADY_IN_CACHE; see {{errors}}).  This asks the server not to
-transfer the data and indicates that it will be discarded upon receipt.
+CANCEL_REQUEST frame; if the push stream is already open, a QUIC STOP_SENDING
+frame with an appropriate error code can be used instead (e.g.,
+HTTP_PUSH_REFUSED, HTTP_PUSH_ALREADY_IN_CACHE; see {{errors}}).  This asks the
+server not to transfer the data and indicates that it will be discarded upon
+receipt.
 
 
 # HTTP Framing Layer {#http-framing-layer}
@@ -439,15 +521,15 @@ without EHB set, followed by a HEADERS frame with EHB set.
 ### PRIORITY {#frame-priority}
 
 The PRIORITY (type=0x02) frame specifies the sender-advised priority of a stream
-and is substantially different in format from {{!RFC7540}}.  In order to ensure
-that prioritization is processed in a consistent order, PRIORITY frames MUST be
-sent on the control stream.  A PRIORITY frame sent on any other stream MUST be
+and is substantially different from {{!RFC7540}}. In order to ensure that
+prioritization is processed in a consistent order, PRIORITY frames MUST be sent
+on the control stream.  A PRIORITY frame sent on any other stream MUST be
 treated as a HTTP_WRONG_STREAM error.
 
-The format has been modified to accommodate not being sent on a request stream,
-to allow for identification of server pushes, and the larger stream ID space of
-QUIC.  The semantics of the Stream Dependency, Weight, and E flag are otherwise
-the same as in HTTP/2.
+The format of this frame has been modified from the definition in HTTP/2 to
+accommodate not being sent on a request stream, to allow for identification of
+server pushes, and the larger stream ID space of QUIC.  The semantics of the
+Stream Dependency, Weight, and E flag are the same as in HTTP/2.
 
 The flags defined are:
 
@@ -519,39 +601,61 @@ The length of a PRIORITY frame is 9 octets.  A PRIORITY frame with any other
 length MUST be treated as a connection error of type HTTP_MALFORMED_PRIORITY.
 
 
-### CANCEL_PUSH {#frame-cancel-push}
+### CANCEL_REQUEST {#frame-cancel-request}
 
-The CANCEL_PUSH frame (type=0x3) is used to request cancellation of server push
-prior to the push stream being created.  The CANCEL_PUSH frame identifies a
-server push request by Push ID (see {{frame-push-promise}}).
+The CANCEL_REQUEST frame (type=0x3) is used to request cancellation of a request
+prior to the response stream being created.  This frame can be used to cancel
+both outstanding requests initiated by a client and server push requests that
+are initiated with a PUSH_PROMISE.
+
+The frame identifies a client-initiated request by the stream ID that carried
+the request; a server push request is identified by Push ID (see
+{{frame-push-promise}}).
 
 When a server receives this frame, it aborts sending the response for the
-identified server push.  If the server has not yet started to send the server
-push, it can use the receipt of a CANCEL_PUSH frame to avoid opening a
-stream.  If the push stream has been opened by the server, the server SHOULD
-sent a QUIC RST_STREAM frame on those streams and cease transmission of the
-response.
+identified request.  If the server has not yet started to send the response
+stream for the identified request, it can use the receipt of a CANCEL_REQUEST
+frame to avoid opening a stream.  If a response or push stream has been opened
+by the server, the server SHOULD sent a QUIC RST_STREAM frame on the stream and
+cease transmission of the response.
 
 A server can send this frame to indicate that it won't be sending a response
 prior to creation of a push stream.  Once the push stream has been created,
-sending CANCEL_PUSH has no effect on the state of the push stream.  A QUIC
+sending CANCEL_REQUEST has no effect on the state of the push stream.  A QUIC
 RST_STREAM frame SHOULD be used instead to cancel transmission of the server
 push response.
 
-A CANCEL_PUSH frame is sent on the control stream.  Sending a CANCEL_PUSH frame
-on a stream other than the control stream MUST be treated as a stream error of
-type HTTP_WRONG_STREAM.
+A client that cancels a request that it initiated SHOULD send a QUIC RST_STREAM
+frame to reset the associated request stream, unless that stream is already
+closed.
 
-The CANCEL_PUSH frame has no defined flags.
+Packet reordering and loss can cause a CANCEL_REQUEST frame to be received
+before the request that it references has been seen.  If the server receives a
+CANCEL_REQUEST frame, it could identify a request that has not yet been seen by
+the server.  If the client receives a CANCEL_REQUEST frame, that frame might
+identify a Push ID that has not yet been seen by the client.  If the server
+resets the stream that carries a PUSH_PROMISE, a client might never receive a
+PUSH_PROMISE that mentions the Push ID.
 
-The CANCEL_PUSH frame carries a 32-bit Push ID that identifies the server push
-that is being cancelled (see {{frame-push-promise}}).
+A CANCEL_REQUEST frame is sent on the control stream.  Sending a CANCEL_REQUEST
+frame on a stream other than the control stream MUST be treated as a stream
+error of type HTTP_WRONG_STREAM.
 
-If the client receives a CANCEL_PUSH frame, that frame might identify a Push ID
-that has not yet been mentioned by a PUSH_PROMISE frame.
+The flags defined for CANCEL_REQUEST are:
 
-A server MUST treat a CANCEL_PUSH frame payload that is other than 4 octets in
-length as a connection error of type HTTP_MALFORMED_CANCEL_PUSH.
+  PUSH (0x01):
+  : When set, this flag indicates that the frame identifies a push by its push
+    ID; when cleared, the frame identifies a request stream.
+
+With the PUSH flag set, the CANCEL_REQUEST frame carries a 32-bit Push ID that
+identifies the server push that is being cancelled (see {{frame-push-promise}}).
+
+With the PUSH flag cleared, the CANCEL_REQUEST frame carries a 32-bit stream ID
+of the request stream that carries a client-initiated request (see
+{{stream-request}}).
+
+A server MUST treat a CANCEL_REQUEST frame payload that is other than 4 octets
+in length as a connection error of type HTTP_MALFORMED_CANCEL_REQUEST.
 
 
 ### SETTINGS {#frame-settings}
@@ -608,10 +712,9 @@ SETTINGS frames always apply to a connection, never a single stream.  A SETTINGS
 frame MUST be sent as the first frame of the control stream (see
 {{stream-mapping}}) by each peer, and MUST NOT be sent subsequently or on any
 other stream. If an endpoint receives an SETTINGS frame on a different stream,
-the endpoint MUST respond with a connection error of type
-HTTP_SETTINGS_ON_WRONG_STREAM.  If an endpoint receives a second SETTINGS frame,
-the endpoint MUST respond with a connection error of type
-HTTP_MULTIPLE_SETTINGS.
+the endpoint MUST respond with a connection error of type HTTP_WRONG_STREAM.  If
+an endpoint receives a second SETTINGS frame, the endpoint MUST respond with a
+connection error of type HTTP_MULTIPLE_SETTINGS.
 
 The SETTINGS frame affects connection state. A badly formed or incomplete
 SETTINGS frame MUST be treated as a connection error ({{errors}}) of type
@@ -687,8 +790,8 @@ The payload consists of:
 
 Push ID:
 : A 32-bit identifier for the server push request.  A push ID is used in push
-  stream header ({{server-push}}), CANCEL_PUSH frames ({{frame-cancel-push}}),
-  and PRIORITY frames ({{frame-priority}}).
+  stream header ({{server-push}}), CANCEL_REQUEST frames
+  ({{frame-cancel-request}}), and PRIORITY frames ({{frame-priority}}).
 
 Header Block:
 : HPACK-compressed request headers for the promised response.
@@ -851,20 +954,29 @@ HTTP_MALFORMED_PUSH_PROMISE (0x0C):
 : A PUSH_PROMISE frame has been received with an invalid format.
 
 HTTP_MALFORMED_DATA (0x0D):
-: A HEADERS frame has been received with an invalid format.
+: A DATA frame has been received with an invalid format.
 
-HTTP_INTERRUPTED_HEADERS (0x0E):
+HTTP_MALFORMED_CANCEL_REQUEST (0x0E):
+: A CANCEL_REQUEST frame has been received with an invalid format.
+
+HTTP_INTERRUPTED_HEADERS (0x0F):
 : A HEADERS frame without the End Header Block flag was followed by a frame
   other than HEADERS.
-
-HTTP_SETTINGS_ON_WRONG_STREAM (0x0F):
-: A SETTINGS frame was received on a request control stream.
 
 HTTP_MULTIPLE_SETTINGS (0x10):
 : More than one SETTINGS frame was received.
 
 HTTP_DUPLICATE_PUSH (0x11):
 : Multiple push streams used the same Push ID.
+
+HTTP_INVALID_STREAM_HEADER (0x12):
+: A stream header contained an unknown type or referenced an invalid stream.
+
+HTTP_UNMATCHED_RESPONSE (0x13):
+: A response stream referenced an invalid stream.
+
+HTTP_WRONG_STREAM (0x14):
+: A frame was sent on the wrong stream.
 
 
 # Considerations for Transitioning from HTTP/2
@@ -924,7 +1036,8 @@ ordering, and would be portable to HTTP/2 in the same manner.
 Below is a listing of how each HTTP/2 frame type is mapped:
 
 DATA (0x0):
-: Padding is not defined in HTTP/QUIC frames.  See {{frame-data}}.
+: DATA frames cannot end a stream and padding is not defined in HTTP/QUIC
+  frames.  See {{frame-data}}.
 
 HEADERS (0x1):
 : As described above, the PRIORITY region of HEADERS is not supported. A
@@ -937,8 +1050,8 @@ PRIORITY (0x2):
 
 RST_STREAM (0x3):
 : RST_STREAM frames do not exist, since QUIC provides stream lifecycle
-  management.  The same code point is used for the CANCEL_PUSH frame
-  ({{frame-cancel-push}}).
+  management.  The same code point is used for the CANCEL_REQUEST frame
+  ({{frame-cancel-request}}).
 
 SETTINGS (0x4):
 : SETTINGS frames are sent only at the beginning of the connection.  See
@@ -1141,7 +1254,7 @@ The entries in the following table are registered by this document.
 | DATA           | 0x0  | {{frame-data}}           |
 | HEADERS        | 0x1  | {{frame-headers}}        |
 | PRIORITY       | 0x2  | {{frame-priority}}       |
-| CANCEL_PUSH    | 0x3  | {{frame-cancel-push}}    |
+| CANCEL_REQUEST | 0x3  | {{frame-cancel-request}} |
 | SETTINGS       | 0x4  | {{frame-settings}}       |
 | PUSH_PROMISE   | 0x5  | {{frame-push-promise}}   |
 | Reserved       | 0x6  | N/A                      |
@@ -1233,10 +1346,14 @@ The entries in the following table are registered by this document.
 |  HTTP_MALFORMED_PRIORITY          |  0x0A  |  Invalid PRIORITY frame                | {{http-error-codes}} |
 |  HTTP_MALFORMED_SETTINGS          |  0x0B  |  Invalid SETTINGS frame                | {{http-error-codes}} |
 |  HTTP_MALFORMED_PUSH_PROMISE      |  0x0C  |  Invalid PUSH_PROMISE frame            | {{http-error-codes}} |
-|  HTTP_INTERRUPTED_HEADERS         |  0x0E  |  Incomplete HEADERS block              | {{http-error-codes}} |
-|  HTTP_WRONG_STREAM                |  0x0F  |  A frame was sent on the wrong stream  | {{http-error-codes}} |
+|  HTTP_MALFORMED_DATA              |  0x0D  |  Invalid DATA frame                    | {{http-error-codes}} |
+|  HTTP_MALFORMED_CANCEL_REQUEST    |  0x0E  |  Invalid CANCEL_REQUEST frame          | {{http-error-codes}} |
+|  HTTP_INTERRUPTED_HEADERS         |  0x0F  |  Incomplete HEADERS block              | {{http-error-codes}} |
 |  HTTP_MULTIPLE_SETTINGS           |  0x10  |  Multiple SETTINGS frames              | {{http-error-codes}} |
 |  HTTP_DUPLICATE_PUSH              |  0x11  |  Duplicate server push                 | {{http-error-codes}} |
+|  HTTP_INVALID_STREAM_HEADER       |  0x12  |  Invalid stream header                 | {{http-error-codes}} |
+|  HTTP_UNMATCHED_RESPONSE          |  0x13  |  Response stream header was invalid    | {{http-error-codes}} |
+|  HTTP_WRONG_STREAM                |  0x14  |  A frame was sent on the wrong stream  | {{http-error-codes}} |
 |-----------------------------------|--------|----------------------------------------|----------------------|
 
 
