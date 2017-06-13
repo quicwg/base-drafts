@@ -1610,11 +1610,11 @@ The type byte for a ACK frame contains embedded flags, and is formatted as
   packets (i.e., whether the ACK Block Section contains a Num Blocks field).
 
 * The two `LL` bits encode the length of the Largest Acknowledged field.
-  The values 00, 01, 02, and 03 indicate lengths of 8, 16, 32, and 48
+  The values 00, 01, 02, and 03 indicate lengths of 8, 16, 32, and 64
   bits respectively.
 
 * The two `MM` bits encode the length of the ACK Block Length fields.
-  The values 00, 01, 02, and 03 indicate lengths of 8, 16, 32, and 48
+  The values 00, 01, 02, and 03 indicate lengths of 8, 16, 32, and 64
   bits respectively.
 
 An ACK frame is shown below.
@@ -1625,7 +1625,7 @@ An ACK frame is shown below.
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |[Num Blocks(8)]|   NumTS (8)   |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                Largest Acknowledged (8/16/32/48)            ...
+|                Largest Acknowledged (8/16/32/64)            ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |        ACK Delay (16)         |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -1684,15 +1684,15 @@ field.
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|              First ACK Block Length (8/16/32/48)            ...
+|              First ACK Block Length (8/16/32/64)            ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|  [Gap 1 (8)]  |       [ACK Block 1 Length (8/16/32/48)]     ...
+|  [Gap 1 (8)]  |       [ACK Block 1 Length (8/16/32/64)]     ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|  [Gap 2 (8)]  |       [ACK Block 2 Length (8/16/32/48)]     ...
+|  [Gap 2 (8)]  |       [ACK Block 2 Length (8/16/32/64)]     ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
                              ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|  [Gap N (8)]  |       [ACK Block N Length (8/16/32/48)]     ...
+|  [Gap N (8)]  |       [ACK Block N Length (8/16/32/64)]     ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
 {: #ack-block-format title="ACK Block Section"}
