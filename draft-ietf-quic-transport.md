@@ -2291,10 +2291,10 @@ Too Big messages.
 provisional until QUIC's loss detection algorithm determines that the packet is
 actually lost.
 
+
 # Streams: QUIC's Data Structuring Abstraction {#streams}
 
-Streams in QUIC provide a lightweight, ordered, and bidirectional byte-stream
-abstraction modeled closely on HTTP/2 streams {{?RFC7540}}.
+Streams in QUIC provide a lightweight, ordered, and unidirectional byte-stream.
 
 Streams can be created either by the client or the server, can concurrently send
 data interleaved with other streams, and can be cancelled.
@@ -2321,11 +2321,12 @@ for some applications.
 ## Stream Identifiers {#stream-id}
 
 Streams are identified by an unsigned 32-bit integer, referred to as the Stream
-ID.  To avoid Stream ID collision, clients initiate streams using odd-numbered
-Stream IDs; streams initiated by the server use even-numbered Stream IDs.
+ID.  A separate identifier space is used for streams sent by each peer.
 
-Stream ID 0 (0x0) is reserved for the cryptographic handshake.  Stream 0 MUST
-NOT be used for application data, and is the first client-initiated stream.
+Stream ID 0 (0x0) in both directions is reserved for the cryptographic
+handshake.  Both client and server send cryptographic handshake messages on
+their stream 0, which is bound into a bidirectional channel.  Stream 0 MUST NOT
+be used for application data.
 
 A QUIC endpoint cannot reuse a Stream ID.  Streams MUST be created in sequential
 order.  Open streams can be used in any order.  Streams that are used out of
@@ -2337,13 +2338,21 @@ Stream IDs are usually encoded as a 32-bit integer, though the STREAM frame
 stream ID are zero.
 
 
-## Life of a Stream
+## Stream States
 
-The semantics of QUIC streams is based on HTTP/2 streams, and the lifecycle of a
-QUIC stream therefore closely follows that of an HTTP/2 stream {{?RFC7540}},
-with some differences to accommodate the possibility of out-of-order delivery
-due to the use of multiple streams in QUIC.  The lifecycle of a QUIC stream is
-shown in the following figure and described below.
+Endpoints do not coordinate the creation of streams; they are created
+unilaterally by either endpoint.
+
+A stream sender controls the state of its streams; the state of a stream is only
+affected by frames that are sent by the sending endpoint.  However,
+state-affecting frames can arrive out of order at the receiving endpoint,
+leading to a different set of valid transitions for receiving streams.
+
+
+### Stream States for Sending
+
+{{stream-state-send}} illustrates the states and transitions that apply to a
+stream at the sender of that stream.
 
 ~~~
                             +--------+
@@ -2352,86 +2361,101 @@ shown in the following figure and described below.
                             |        |
                             +--------+
                                  |
-                        send/recv STREAM/RST
-                             recv MSD/SB
+                      send STREAM or RST_STREAM
                                  |
                                  v
-                 recv FIN/  +--------+    send FIN/
-                 recv RST   |        |    send RST
-                  ,---------|  open  |-----------.
-                 /          |        |            \
-                v           +--------+             v
-         +----------+                          +----------+
-         |   half   |                          |   half   |
-         |  closed  |                          |  closed  |
-         | (remote) |                          |  (local) |
-         +----------+                          +----------+
-             |                                        |
-             |   send FIN/  +--------+    recv FIN/   |
-              \  send RST   |        |    recv RST   /
-               `----------->| closed |<-------------'
+                            +--------+
+                            |        |
+                            |  open  |
                             |        |
                             +--------+
-
-   send:   endpoint sends this frame
-   recv:   endpoint receives this frame
-
-   STREAM: a STREAM frame
-   FIN:    FIN flag in a STREAM frame
-   RST:    RST_STREAM frame
-   MSD:    MAX_STREAM_DATA frame
-   SB:     STREAM_BLOCKED frame
+                                 |
+                      send STREAM with FIN flag
+                         send RST_STREAM
+                                 |
+                                 v
+                            +--------+
+                            |        |
+                            | closed |
+                            |        |
+                            +--------+
 ~~~
-{: #stream-lifecycle title="Lifecycle of a stream"}
-
-Note that this diagram shows stream state transitions and the frames and flags
-that affect those transitions only.  It is possible for a single frame to cause
-two transitions: receiving a RST_STREAM frame, or a STREAM frame with the FIN
-flag cause the stream state to move from "idle" to "open" and then immediately
-to one of the "half-closed" states.
-
-The recipient of a frame that changes stream state will have a delayed view of
-the state of a stream while the frame is in transit.  Endpoints do not
-coordinate the creation of streams; they are created unilaterally by either
-endpoint.  Endpoints can use acknowledgments to understand the peer's subjective
-view of stream state at any given time.
-
-In the absence of more specific guidance elsewhere in this document,
-implementations SHOULD treat the receipt of a frame that is not expressly
-permitted in the description of a state as a connection error (see
-{{error-handling}}).
+{: #stream-state-send title="Stream States for Sending"}
 
 
-### idle
+### Stream States for Receiving
+
+{{stream-state-recv}} illustrates the states and transitions that apply to a
+stream at the receiving endpoint.
+
+~~~
+                            +--------+
+                            |        |
+                            |  idle  |
+                            |        |
+                            +--------+
+                                 |
+                     receive STREAM, RST_STREAM or
+                           STREAM_BLOCKED
+                     or receive these frames for a
+                         higher-numbered stream
+                                 |
+                                 v
+                            +--------+
+                            |        |
+                            |  open  |
+                            |        |
+                            +--------+
+                                 |
+                     receive STREAM with FIN flag
+                        receive RST_STREAM
+                                 |
+                                 v
+                            +--------+
+                            |        |
+                            | closed |
+                            |        |
+                            +--------+
+~~~
+{: #stream-state-recv title="Stream States for Receipt"}
+
+The recipient of a stream will have a delayed view of the state of streams at
+its peer.  Loss or delay of frames can cause frames to arrive out of order.
+
+
+### The "idle" State
 
 All streams start in the "idle" state.
 
 The following transitions are valid from this state:
 
-Sending or receiving a STREAM or RST_STREAM frame causes the identified stream
-to become "open".  The stream identifier for a new stream is selected as
-described in {{stream-id}}.  A RST_STREAM frame, or a STREAM frame with the FIN
-flag set also causes a stream to become "half-closed".
+Sending a STREAM or RST_STREAM frame causes the identified stream to become
+"open" for a sending endpoint.  New streams use the next stream available
+identifier, as described in {{stream-id}}.  An endpoint MUST NOT send a STREAM
+or RST_STREAM frame for a stream ID that is higher than the peers advertised
+maximum stream ID (see {{frame-max-stream-id}}).
 
-An endpoint might receive MAX_STREAM_DATA or STREAM_BLOCKED frames on
-peer-initiated streams that are "idle" if there is loss or reordering of
-packets.  Receiving these frames also causes the stream to become "open".
+Receiving a STREAM, RST_STREAM, or STREAM_BLOCKED frame causes a stream to
+become "open" for a receiving endpoint.
 
-An endpoint MUST NOT send a STREAM or RST_STREAM frame for a stream ID that is
-higher than the peers advertised maximum stream ID (see
-{{frame-max-stream-id}}).
+A RST_STREAM frame, or a STREAM frame with the FIN flag set also causes a stream
+to become "closed" immediately afterwards.
+
+Note:
+
+: An endpoint should not need to send a RST_STREAM frame on an "idle" stream,
+  unless specifically mandated by the application protocol.
 
 
 ### open
 
 A stream in the "open" state may be used by both peers to send frames of any
-type.  In this state, endpoints can send MAX_STREAM_DATA and MUST observe the
-value advertised by its receiving peer (see {{flow-control}}).
+type.  In this state, a receiving endpoint can send MAX_STREAM_DATA and a
+sending endpoint MUST observe the value advertised by its receiving peer (see
+{{flow-control}}).
 
 Opening a stream causes all lower-numbered streams in the same direction to
-become open.  Thus, opening an odd-numbered stream causes all "idle",
-odd-numbered streams with a lower identifier to become open and the same applies
-to even numbered streams.  Endpoints open streams in increasing numeric order,
+become open.  Endpoints open streams in increasing numeric order,
 but loss or reordering can cause packets that open streams to arrive out of
 order.
 
