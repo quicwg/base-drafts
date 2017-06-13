@@ -298,13 +298,13 @@ deployed and used concurrently. Version negotiation is described in
 
 ## Support for Latency Monitoring
 
-Network administrators often find difficult to monitor the behavior
+Network administrators have difficulties monitoring the behavior
 of encrypted protocols. Bandwidth can be monitored by observing the
-flow of encrypted packets, but the usal tools for monitoring
+flow of encrypted packets, but the usual tools for monitoring
 latency require observing packet numbers and acknowledgements, which
 in QUIC are encrypted.
-QUIC packets include a clear text latency spin bit that enables
-monitoring of latency by observing packets in transit.
+QUIC packets enable monitoring of latency by including a clear text
+latency spin bit that is reflected between peers.
 
 # Versions {#versions}
 
