@@ -180,45 +180,30 @@ frames, exposing the data contained within as a reliable byte stream to the
 application.
 
 QUIC reserves Stream 0 for crypto operations (the handshake, crypto config
-updates). Stream 1 is reserved for sending and receiving HTTP control frames,
-and is analogous to HTTP/2's Stream 0.  This connection control stream is
-considered critical to the HTTP connection.  If the connection control stream is
-closed for any reason, this MUST be treated as a connection error of type
-QUIC_CLOSED_CRITICAL_STREAM.
+updates). Stream 1 in both directions is reserved for sending and receiving HTTP
+control frames.  The resulting bidirectional channel is analogous to HTTP/2's
+Stream 0.  This connection control stream pair is considered critical to the
+HTTP connection.  If either connection control stream is closed for any reason,
+this MUST be treated as a connection error of type QUIC_CLOSED_CRITICAL_STREAM.
 
 When HTTP headers and data are sent over QUIC, the QUIC layer handles most of
-the stream management. An HTTP request/response consumes a pair of streams: This
-means that the client's first request occurs on QUIC streams 3 and 5, the second
-on stream 7 and 9, and so on. The server's first push consumes streams 2 and 4.
-This amounts to the second least-significant bit differentiating the two streams
-in a request.
+the stream management. An HTTP request/response consumes a pair of streams in
+each direction.
 
-The lower-numbered stream is called the message control stream and carries
-frames related to the request/response, including HEADERS. The higher-numbered
-stream is the data stream and carries the request/response body with no
-additional framing. Note that a request or response without a body will cause
-this stream to be half-closed in the corresponding direction without
-transferring data.
+Aside from the connection control streams, the beginning of each stream starts
+with a short stream header.  This stream header is used to identify the type of
+stream and to link the stream to another stream as necessary.  See
+{{stream-header}} for more details on the stream header.
 
-Because the message control stream contains HPACK data which manipulates
-connection-level state, the message control stream MUST NOT be closed with a
-stream-level error.  If an implementation chooses to reject a request with a
-QUIC error code, it MUST trigger a QUIC RST_STREAM on the data stream only.  An
-implementation MAY close (FIN) a message control stream without completing a
-full HTTP message if the data stream has been abruptly closed.  Data on message
-control streams MUST be fully consumed, or the connection terminated.
+\[Editor's Note: the following paragraph is clearly busted.  We will need
+QPACK/QCRAM for this to work.]  Request, response and push streams contain HPACK
+data which manipulates connection-level state.  Therefore, these streams MUST
+NOT be closed with a stream-level error.
 
-All message control streams are considered critical to the HTTP connection.  If
-a message control stream is terminated abruptly for any reason, this MUST be
-treated as a connection error of type HTTP_RST_CONTROL_STREAM.  When a message
-control stream terminates cleanly, if the last frame on the stream was
-truncated, this MUST be treated as a connection error (see HTTP_MALFORMED_* in
-{{http-error-codes}}).
-
-Pairs of streams must be utilized sequentially, with no gaps.  The data stream
-is opened at the same time as the message control stream is opened and is closed
-after transferring the body.  The data stream is closed immediately after
-sending the request headers if there is no body.
+Streams must be opened sequentially, with no gaps.  Data streams SHOULD be
+opened after the request, response or push stream is opened.  Data streams are
+closed after transferring the body.  Data streams are not opened for messages
+that contain no body and messages that contain an empty body.
 
 HTTP does not need to do any separate multiplexing when using QUIC - data sent
 over a QUIC stream always maps to a particular HTTP transaction. Requests and
@@ -226,36 +211,177 @@ responses are considered complete when the corresponding QUIC streams are closed
 in the appropriate direction.
 
 
-##  Stream 1: Connection Control Stream
+## Stream Header
 
-Since most connection-level concerns will be managed by QUIC, the primary use of
-Stream 1 will be for the SETTINGS frame when the connection opens and for
-PRIORITY frames subsequently.
+The stream header consists of a single octet that identifies the type of stream,
+plus any parameters that are specific to the stream type.
+
+
+## Stream Types
+
+The stream types are summarized in {{stream-type-table}}.
+
+| Stream Type        | Code | Section             |
+|:-------------------|-----:|:--------------------|
+| Connection Control | 0xff | {{stream-control}}  |
+| Request            | 0x00 | {{stream-request}}  |
+| Response           | 0x01 | {{stream-response}} |
+| Data               | 0x02 | {{stream-data}}     |
+| Push               | 0x02 | {{stream-push}}     |
+{: #stream-type-table title="Stream Types"}
+
+An endpoint MUST terminate the connection with an HTTP_INVALID_STREAM_HEADER
+error if it receives a stream header that uses an unknown or unsupported type.
+
+
+### Stream 1: Connection Control Stream {#stream-control}
+
+Stream 1 is opened by both client and server and is used for the SETTINGS frame
+immediately after the connection opens.  After the SETTINGS frame has been sent,
+this stream is used for PRIORITY frames.
+
+The stream header for a connection control stream contains only the type octet,
+which is set to 0xff.  After the stream header, the connection control stream
+contains a sequence of frames, starting with the SETTINGS frame.
+
+If an endpoint receives a stream type of 0xff on any stream other than stream 1,
+it MUST terminate the connection with an HTTP_INVALID_STREAM_HEADER error.
+
+
+### Request Streams {#stream-request}
+
+Request streams are opened by the client.  Request streams carry the headers and
+optional trailers of requests.
+
+The stream header for a request stream contains only the type octet,
+which is set to 0x00.  After the stream header, request streams contain a
+sequence of frames (see {{http-framing-layer}}).
+
+
+### Response Streams {#stream-response}
+
+Response streams are opened by the server.  Response streams carry the headers
+and optional trailers of responses, plus any promises for server push.
+
+The stream header for a response stream contains the type octet, which is set to
+0x01, and the stream ID of the request stream that this response is for as a
+32-bit value.
+
+~~~~~
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+
+|   Type (8)    |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                        Stream ID (32)                         |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~~~
+
+After the stream header, response streams contain a sequence of frames (see
+{{http-framing-layer}}).
+
+If a response stream identifies a stream that is not a request stream, or it
+references a stream that already has an associated response stream, the
+connection MUST be terminated with an HTTP_UNMATCHED_RESPONSE error.
+
+
+### Data Streams {#stream-data}
+
+Data streams are opened by both client and server.  Data streams carry the
+payload body of requests or responses.
+
+The stream header for a response stream contains the type octet, which is set to
+0x02, and the stream ID of a request or response stream as a 32-bit value.
+
+~~~~~
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+
+|   Type (8)    |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                        Stream ID (32)                         |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~~~
+
+After the stream header, data streams contain the octets of the payload body.
+Data streams do not carry frames.
+
+Data streams MUST reference a request or response stream.  The referenced stream
+MUST include a HAS_BODY frame.  If a data stream is received that references a
+stream of a different type, the referenced stream does not include a HAS_BODY
+frame, or another data stream already references the identified steam, then the
+connection MUST be terminated with a HTTP_UNMATCHED_BODY error.  Note that due
+to reordering of packets, the referenced stream or HAS_BODY frame might not have
+been received when the data stream is opened.
+
+
+
+### Push Streams {#stream-push}
+
+Push streams are opened by servers.  Push streams carry headers of responses for
+use with server push.
+
+The stream header for a push stream contains the type octet, which is set to
+0x04, the stream ID of a response stream as a 32-bit value, and an index for a
+PUSH_PROMISE frame on the response stream as a 16-bit value.
+
+~~~~~
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+
+|   Type (8)    |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                        Stream ID (32)                         |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|       Push Index (16)         |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~~~
+
+After the stream header, push streams contain frames.
+
+A push stream MUST reference a response stream and a PUSH_PROMISE frame on that
+stream.  PUSH_PROMISE frames are identified by the order in which they are sent
+on the response stream, with the first PUSH_PROMISE frame starting at an index
+of 0.  If a data stream is received that references a stream that is not a
+response stream, or the referenced request or response stream does not
+PUSH_PROMISE frame at the given index, or another push stream already references
+that PUSH_PROMISE frame, the connection MUST be terminated with a
+HTTP_UNMATCHED_PUSH error.  Note that due to reordering of packets, the
+referenced stream or PUSH_PROMISE frame might not have been received when the
+data stream is opened.
+
 
 ## HTTP Message Exchanges
 
-A client sends an HTTP request on a new pair of QUIC streams. A server sends an
-HTTP response on the same streams as the request.
+A client sends an HTTP request on a new QUIC request stream
+({{stream-request}}). A server sends an HTTP response on a
+({{stream-response}}), including the stream ID of the request stream in the
+stream header.
 
 An HTTP message (request or response) consists of:
 
-1. one header block (see {{frame-headers}}) on the control stream containing the
-   message headers (see {{!RFC7230}}, Section 3.2),
+1. one header block (see {{frame-headers}}) on the request or response stream
+   containing the message headers (see {{!RFC7230}}, Section 3.2),
 
-2. the payload body (see {{!RFC7230}}, Section 3.3), sent on the data stream,
+2. optionally, the payload body (see {{!RFC7230}}, Section 3.3), which is sent
+   on the data stream if the request or response stream includes a HAS_BODY
+   frame after the initial header block (see {{frame-has-body}}),
 
-3. optionally, one header block on the control stream containing the
+3. optionally, one header block on the request or response stream containing the
    trailer-part, if present (see {{!RFC7230}}, Section 4.1.2).
 
 In addition, prior to sending the message header block indicated above, a
-response may contain zero or more header blocks on the control stream containing
-the message headers of informational (1xx) HTTP responses (see {{!RFC7230}},
-Section 3.2 and {{!RFC7231}}, Section 6.2).
+response may contain zero or more header blocks on the response stream
+containing the message headers of informational (1xx) HTTP responses (see
+{{!RFC7230}}, Section 3.2 and {{!RFC7231}}, Section 6.2).
 
-The data stream MUST be half-closed immediately after the transfer of the body.
-If the message does not contain a body, the corresponding data stream MUST still
-be half-closed without transferring any data. The "chunked" transfer encoding
-defined in Section 4.1 of {{!RFC7230}} MUST NOT be used.
+A message that contains a payload body includes a HAS_BODY frame immediately
+after the first header block.  This indicates that another stream will include
+the payload body.  A data stream is opened to carry the payload body.  The data
+stream MUST be closed immediately after sending the body.  If the message does
+not contain a body, a data stream MUST NOT be opened and the HAS_BODY message
+MUST NOT be sent.  The "chunked" transfer encoding defined in Section 4.1 of
+{{!RFC7230}} MUST NOT be used.
 
 Trailing header fields are carried in an additional header block on the message
 control stream. Such a header block is a sequence of HEADERS frames with End
@@ -264,19 +390,18 @@ the trailers section; receivers MUST decode any subsequent header blocks in
 order to maintain HPACK decoder state, but the resulting output MUST be
 discarded.
 
-An HTTP request/response exchange fully consumes a pair of streams. After
-sending a request, a client closes the streams for sending; after sending a
-response, the server closes its streams for sending and the QUIC streams are
-fully closed.
+An HTTP request/response exchange fully consumes a request stream and response
+stream.  The exchange also consumes a stream for each payload body that is
+present.  After sending a request, a client closes the streams it used for
+sending the request and any request body; after sending a response, the server
+closes the stream it used for sending the request and any payload body.
 
 A server can send a complete response prior to the client sending an entire
 request if the response does not depend on any portion of the request that has
-not been sent and received. When this is true, a server MAY request that the
-client abort transmission of a request without error by sending a RST_STREAM
-with an error code of NO_ERROR after sending a complete response and closing its
-stream. Clients MUST NOT discard responses as a result of receiving such a
-RST_STREAM, though clients can always discard responses at their discretion for
-other reasons.
+not been sent and received.  A server can request that the client cease
+transmission and retransmission of stream data on the stream or streams that
+carry the request by sending a REQUEST_RST frame on those streams (TBD).
+
 
 ### Header Compression
 
@@ -322,18 +447,19 @@ is successfully established, the proxy sends a HEADERS frame containing a 2xx
 series status code to the client, as defined in {{!RFC7231}}, Section 4.3.6, on
 the message control stream.
 
-All QUIC STREAM frames on the message data stream correspond to data sent on the
-TCP connection. Any QUIC STREAM frame sent by the client is transmitted by the
-proxy to the TCP server; data received from the TCP server is written to the
-data stream by the proxy. Note that the size and number of TCP segments is not
-guaranteed to map predictably to the size and number of QUIC STREAM frames.
+The data received on the data streams associated with this exchange after the
+stream header correspond directly to data sent on the TCP connection. Any QUIC
+STREAM frame sent by the client is transmitted by the proxy to the TCP server;
+data received from the TCP server is written to the data stream by the
+proxy. Note that the size and number of TCP segments is not guaranteed to map
+predictably to the size and number of QUIC STREAM frames.
 
-The TCP connection can be closed by either peer. When the client half-closes the
-data stream, the proxy will set the FIN bit on its connection to the TCP server.
-When the proxy receives a packet with the FIN bit set, it will half-close the
-corresponding data stream. TCP connections which remain half-closed in a single
+The TCP connection can be closed by either peer. When the client closes the data
+stream, the proxy will set the FIN bit on its connection to the TCP server.
+When the proxy receives a packet with the FIN bit set, it will close the
+corresponding data stream. TCP connections which remain closed in a single
 direction are not invalid, but are often handled poorly by servers, so clients
-SHOULD NOT half-close connections on which they are still expecting data.
+SHOULD NOT close streams for connections on which they are still expecting data.
 
 A TCP connection error is signaled with RST_STREAM. A proxy treats any error in
 the TCP connection, which includes receiving a TCP segment with the RST bit set,
@@ -351,8 +477,8 @@ stream). Taken together, the dependencies across all streams in a connection
 form a dependency tree. The structure of the dependency tree changes as PRIORITY
 frames add, remove, or change the dependency links between streams.
 
-For consistency's sake, all PRIORITY frames MUST refer to the message control
-stream of the dependent request, not the data stream.
+For consistency's sake, all PRIORITY frames MUST refer to the request stream of
+the dependent request, not the response stream or either data stream.
 
 
 ## Server Push
@@ -365,14 +491,17 @@ pushes via the SETTINGS_DISABLE_PUSH setting in the SETTINGS frame (see
 As with server push for HTTP/2, the server initiates a server push by sending a
 PUSH_PROMISE frame containing the Stream ID of the stream to be pushed, as well
 as request header fields attributed to the request. The PUSH_PROMISE frame is
-sent on the control stream of the associated (client-initiated) request, while
-the Promised Stream ID field specifies the Stream ID of the control stream for
-the server-initiated request.
+sent on a response stream.  Unlike HTTP/2, the PUSH_PROMISE does not reference a
+stream; when a server fulfills a promise, the stream that carries the stream
+headers references the PUSH_PROMISE.  This allows a server to fulfill promises
+in the order that best suits its needs.
 
-The server push response is conveyed in the same way as a non-server-push
-response, with response headers and (if present) trailers carried by HEADERS
-frames sent on the control stream, and response body (if any) sent via the
-corresponding data stream.
+The server push response is conveyed on a push stream.  Aside from the stream
+header, which identifies the response stream and PUSH_PROMISE frame, a push
+stream is identical to a non-server-push response, with response headers and (if
+present) trailers carried by HEADERS frames sent on the control stream, and
+response body (if any) indicated with a HAS_BODY frame and associated data
+stream.
 
 
 # HTTP Framing Layer
@@ -400,6 +529,14 @@ All frames have the following format:
 {: #fig-frame title="HTTP/QUIC frame format"}
 
 ## Frame Definitions {#frames}
+
+### HAS_BODY {#frame-has-body}
+
+The HAS_BODY frame indicates that the HTTP message contains a payload body.  It
+is sent after the initial header block on a request, response, or push stream.
+
+The HAS_BODY frame has no flags and is always empty.
+
 
 ### HEADERS {#frame-headers}
 
@@ -618,19 +755,12 @@ server to client, as in HTTP/2.  It defines no flags.
     0                   1                   2                   3
     0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |                   Promised Stream ID (32)                     |
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
    |       Sequence? (16)          |         Header Block (*)    ...
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~~~~~~~~
 {: #fig-push-promise title="PUSH_PROMISE frame payload"}
 
 The payload consists of:
-
-  Promised Stream ID:
-  : A 32-bit Stream ID indicating the QUIC stream on which the response headers
-    will be sent.  (The response body stream is implied by the headers stream,
-    as defined in {{stream-mapping}}.)
 
   HPACK Sequence:
   : A sixteen-bit counter, equivalent to the Sequence field in HEADERS
@@ -649,6 +779,8 @@ entire connection when an error is encountered.  These are referred to as
 
 HTTP/QUIC requires that only data streams be terminated abruptly.  Terminating a
 message control stream will result in an error of type HTTP_RST_CONTROL_STREAM.
+\[Editor's note: this is clearly busted right now, because data streams don't
+always exist.]
 
 This section describes HTTP-specific error codes which can be used to express
 the cause of a connection or stream error.
@@ -712,6 +844,18 @@ HTTP_MULTIPLE_SETTINGS (0x10):
 HTTP_RST_CONTROL_STREAM (0x11):
 : A message control stream closed abruptly.
 
+HTTP_INVALID_STREAM_HEADER (0x12):
+: A stream header contained an unknown type or referenced an invalid stream.
+
+HTTP_UNMATCHED_RESPONSE (0x13):
+: A response stream referenced an invalid stream.
+
+HTTP_UNMATCHED_DATA (0x14):
+: A data stream referenced an invalid stream.
+
+HTTP_UNMATCHED_PUSH (0x15):
+: A push stream referenced an invalid stream.
+
 
 # Considerations for Transitioning from HTTP/2
 
@@ -758,8 +902,8 @@ QUIC simply by replacing Stream 0 in HTTP/2 with Stream 1 in HTTP/QUIC.
 Below is a listing of how each HTTP/2 frame type is mapped:
 
 DATA (0x0):
-: Instead of DATA frames, HTTP/QUIC uses a separate data stream.  See
-  {{stream-mapping}}.
+: Instead of DATA frames, HTTP/QUIC uses a separate data stream.  The code point
+  for DATA frames is used for the HAS_BODY frame. See {{frame-has-body}}.
 
 HEADERS (0x1):
 : As described above, the PRIORITY region of HEADERS is not supported. A
@@ -779,7 +923,9 @@ SETTINGS (0x4):
   {{frame-settings}} and {{h2-settings}}.
 
 PUSH_PROMISE (0x5):
-: See {{frame-push-promise}}.
+: The PUSH_PROMISE does not reference the stream that carries the response to
+  the pushed request; instead the push stream references the PUSH_PROMISE frame.
+  See {{frame-push-promise}}.
 
 PING (0x6):
 : PING frames do not exist, since QUIC provides equivalent functionality.
@@ -963,6 +1109,7 @@ Values for existing registrations are assigned by this document:
   | Frame Type    | Supported Protocols | HTTP/QUIC Specification |
   |---------------|:-------------------:|-------------------------|
   | DATA          | HTTP/2 only         | N/A                     |
+  | HAS_BODY      | QUIC only           | {{frame-has-body}}      |
   | HEADERS       | Both                | {{frame-headers}}       |
   | PRIORITY      | Both                | {{frame-priority}}      |
   | RST_STREAM    | HTTP/2 only         | N/A                     |
@@ -1058,6 +1205,10 @@ The entries in the following table are registered by this document.
 |  HTTP_SETTINGS_ON_WRONG_STREAM    |  0x0F  |  SETTINGS frame on a request control stream  |  {{http-error-codes}}  |
 |  HTTP_MULTIPLE_SETTINGS           |  0x10  |  Multiple SETTINGS frames                    |  {{http-error-codes}}  |
 |  HTTP_RST_CONTROL_STREAM          |  0x11  |  Message control stream was RST              |  {{http-error-codes}}  |
+|  HTTP_INVALID_STREAM_HEADER       |  0x12  |  Invalid stream header                       |  {{http-error-codes}}  |
+|  HTTP_UNMATCHED_RESPONSE          |  0x13  |  Response stream header was invalid          |  {{http-error-codes}}  |
+|  HTTP_UNMATCHED_DATA              |  0x14  |  Data stream header was invalid              |  {{http-error-codes}}  |
+|  HTTP_UNMATCHED_PUSH              |  0x15  |  Push stream header was invalid              |  {{http-error-codes}}  |
 |-----------------------------------|--------|----------------------------------------------|------------------------|
 
 
