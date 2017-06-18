@@ -3187,6 +3187,11 @@ thanks to all.
 
 Issue and pull request numbers are listed with a leading octothorp.
 
+## Since draft-ietf-quic-transport-03
+
+- Change STREAM and RST_STREAM layout
+- Add MAX_STREAM_ID settings
+
 ## Since draft-ietf-quic-transport-02
 
 - The size of the initial packet payload has a fixed minimum (#267, #472)
