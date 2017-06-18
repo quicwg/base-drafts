@@ -2011,13 +2011,13 @@ The RST_STREAM frame is as follows:
 
 The fields are:
 
-Error code:
-
-: A 32-bit error code which indicates why the stream is being closed.
-
 Stream ID:
 
 : The 32-bit Stream ID of the stream being terminated.
+
+Error code:
+
+: A 32-bit error code which indicates why the stream is being closed.
 
 Final offset:
 
