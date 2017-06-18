@@ -1529,15 +1529,15 @@ Offset:
   on a stream - the sum of the re-constructed offset and data length - MUST be
   less than 2^64.
 
-Stream Data:
-
-: The bytes from the designated stream to be delivered.
-
 Data Length:
 
 : An optional 16-bit unsigned number specifying the length of the Stream Data
   field in this STREAM frame.  This field is present when the `D` bit is set to
   1.
+
+Stream Data:
+
+: The bytes from the designated stream to be delivered.
 
 A STREAM frame MUST have either non-zero data length or the FIN bit set.  When
 the FIN flag is sent on an empty STREAM frame, the offset in the STREAM frame
