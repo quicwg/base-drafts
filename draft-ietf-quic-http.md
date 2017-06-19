@@ -251,11 +251,19 @@ it MUST terminate the connection with an HTTP_INVALID_STREAM_HEADER error.
 ### Request Streams {#stream-request}
 
 Request streams are opened by the client.  Request streams carry the headers and
-optional trailers of requests.
+any trailers of requests.
 
-The stream header for a request stream contains only the type octet,
-which is set to 0x00.  After the stream header, request streams contain a
-sequence of frames (see {{http-framing-layer}}).
+~~~~~
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+
+|   Type (8)    |
++-+-+-+-+-+-+-+-+
+~~~~~
+
+The stream header for a request stream contains only the type octet, which is
+set to 0x00.  After the stream header, request streams contain a sequence of
+frames (see {{http-framing-layer}}).
 
 
 ### Response Streams {#stream-response}
@@ -467,18 +475,22 @@ as a stream error of type HTTP_CONNECT_ERROR ({{http-error-codes}}).
 Correspondingly, a proxy MUST send a TCP segment with the RST bit set if it
 detects an error with the stream or the QUIC connection.
 
-## Stream Priorities {#priority}
+## Request Prioritization {#priority}
 
 HTTP/QUIC uses the priority scheme described in {{!RFC7540}} Section 5.3. In
-this priority scheme, a given stream can be designated as dependent upon another
-stream, which expresses the preference that the latter stream (the "parent"
-stream) be allocated resources before the former stream (the "dependent"
-stream). Taken together, the dependencies across all streams in a connection
-form a dependency tree. The structure of the dependency tree changes as PRIORITY
-frames add, remove, or change the dependency links between streams.
+this priority scheme, a given request can be designated as dependent upon
+another request, which expresses the preference that the latter stream (the
+"parent" request) be allocated resources before the former stream (the
+"dependent" request). Taken together, the dependencies across all request in a
+connection form a dependency tree. The structure of the dependency tree changes
+as PRIORITY frames add, remove, or change the dependency links between request.
 
-For consistency's sake, all PRIORITY frames MUST refer to the request stream of
-the dependent request, not the response stream or either data stream.
+HTTP/2 defines its priorities in terms of streams whereas HTTP over QUIC
+identifies requests.  The PRIORITY frame {{frame-priority}} either identifies a
+request stream ({{stream-request}}) or the index of a PUSH_PROMISE frame on a
+response stream ({{frame-push-promise}}, {{stream-response}}).  Other than the
+means of identifying requests, the prioritization system is identical to that in
+HTTP/2.
 
 
 ## Server Push
@@ -489,26 +501,25 @@ pushes via the SETTINGS_DISABLE_PUSH setting in the SETTINGS frame (see
 {{connection-establishment}}), which defaults to 1 (true).
 
 As with server push for HTTP/2, the server initiates a server push by sending a
-PUSH_PROMISE frame containing the Stream ID of the stream to be pushed, as well
-as request header fields attributed to the request. The PUSH_PROMISE frame is
-sent on a response stream.  Unlike HTTP/2, the PUSH_PROMISE does not reference a
-stream; when a server fulfills a promise, the stream that carries the stream
-headers references the PUSH_PROMISE.  This allows a server to fulfill promises
-in the order that best suits its needs.
+PUSH_PROMISE frame that includes request header fields attributed to the
+request. The PUSH_PROMISE frame is sent on a response stream.  Unlike HTTP/2,
+the PUSH_PROMISE does not reference a stream; when a server fulfills a promise,
+the stream that carries the stream headers references the PUSH_PROMISE.  This
+allows a server to fulfill promises in the order that best suits its needs.
 
 The server push response is conveyed on a push stream.  Aside from the stream
 header, which identifies the response stream and PUSH_PROMISE frame, a push
-stream is identical to a non-server-push response, with response headers and (if
-present) trailers carried by HEADERS frames sent on the control stream, and
-response body (if any) indicated with a HAS_BODY frame and associated data
-stream.
+stream is identical to a regular response stream ({{stream-response}}), with
+response headers and (if present) trailers carried by HEADERS frames sent on the
+control stream, and response body (if any) indicated with a HAS_BODY frame and
+associated data stream.
 
 
 # HTTP Framing Layer
 
-Frames are used only on the connection (stream 1) and message (streams 3, 7,
-etc.) control streams. Other streams carry data payload and are not framed at
-the HTTP layer.
+Frames are used only on the connection (stream 1) and request, response, and
+push streams.  Other streams carry data payload and are not framed at the HTTP
+layer.
 
 This section describes HTTP framing in QUIC and highlights some differences from
 HTTP/2 framing.  For more detail on differences from HTTP/2, see {{h2-frames}}.
@@ -598,6 +609,16 @@ HTTP/2.
 
 The flags defined are:
 
+  PUSH (0x04):
+  : Indicates that the Prioritized Stream is a server push rather than a
+    request.  If set, this flag indicates that the Prioritized Stream identifies
+    a response stream and the Promise Index field is present.
+
+  PUSH_DEPENDENT (0x02):
+  : Indicates a dependency on a pushed request.  If set, this flag indicates
+    that the Dependent Stream identifies a response stream and that the
+    Dependent Promise Index field is present.
+
   E (0x01):
   : Indicates that the stream dependency is exclusive (see {{!RFC7540}} Section
     5.3).
@@ -608,31 +629,65 @@ The flags defined are:
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
    |                   Prioritized Stream (32)                     |
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |      [Promise Index(16)]      |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
    |                    Dependent Stream (32)                      |
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   | [Dependent Promise Index(16)] |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
    |   Weight (8)  |
    +-+-+-+-+-+-+-+-+
 ~~~~~~~~~~
 {: #fig-priority title="PRIORITY frame payload"}
 
-The HEADERS frame payload has the following fields:
+The PRIORITY frame payload has the following fields:
 
   Prioritized Stream:
-  : A 32-bit stream identifier for the message control stream whose priority is
-    being updated.
+  : A 32-bit stream identifier for stream that carries the request that is being
+    prioritized; either a request stream if the PUSH flag is clear, or a
+    response stream if the PUSH flag is set.
+
+  Promise Index:
+  : If the PUSH flag is set, then the Promise Index identifies a PUSH_PROMISE on
+    the Prioritized Stream as a 16-bit value, see {{stream-push}} for a
+    definition of how to identify a PUSH_PROMISE.
 
   Stream Dependency:
-  : A 32-bit stream identifier for the stream that this stream depends on (see
-    {{priority}} and {!RFC7540}} Section 5.3).
+  : A 32-bit stream identifier for the stream that carries the request that this
+    request depends on; either a request stream if the PUSH flag is clear, or a
+    response stream if the PUSH flag is set.  For details of dependencies,
+    see{{priority}} and {!RFC7540}} Section 5.3).
+
+  Dependent Promise Index:
+  : If the PUSH_DEPENDENT flag is set, then the Promise Index identifies a
+    PUSH_PROMISE on the Stream Dependency as a 16-bit value, see {{stream-push}}
+    for a definition of how to identify a PUSH_PROMISE.
 
   Weight:
   : An unsigned 8-bit integer representing a priority weight for the stream (see
     {{!RFC7540}} Section 5.3). Add one to the value to obtain a weight between 1
     and 256.
 
-A PRIORITY frame MUST have a payload length of nine octets.  A PRIORITY frame
-of any other length MUST be treated as a connection error of type
-HTTP_MALFORMED_PRIORITY.
+A PRIORITY frame identifies a request to priotize, and a request upon which that
+request is dependent.  A request is identified by the stream ID of a request
+when the corresponding PUSH or PUSH_DEPENDENT flags are cleared.  Setting the
+PUSH or PUSH_DEPENDENT flag causes the frame to identify a PUSH_PROMISE that is
+carried on a response stream (see {{stream-push}} for details).
+
+A PRIORITY frame MAY identify no request by using a stream ID of 0.  The
+corresponding PUSH or PUSH_DEPENDENT flag MUST be cleared if a stream ID of 0 is
+used.
+
+A PRIORITY frame that does not reference a request MUST be treated as a
+HTTP_MALFORMED_PRIORITY error, unless it references stream ID 0.  A PRIORITY
+that sets a PUSH or PUSH_DEPENDENT flag, but then references stream ID 0 in the
+corresponding field MUST be treated as a HTTP_MALFORMED_PRIORITY error.
+
+The length of a PRIORITY frame is determined by its flags.  A PRIORITY frame is
+nine octets in length, plus two for each of the PUSH and PUSH_DEPENDENT flags
+that are set.  A PRIORITY frame with a length that doesn't match its flags MUST
+be treated as a connection error of type HTTP_MALFORMED_PRIORITY.
+
 
 ### SETTINGS {#frame-settings}
 
