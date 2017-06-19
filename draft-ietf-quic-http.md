@@ -492,6 +492,8 @@ response stream ({{frame-push-promise}}, {{stream-response}}).  Other than the
 means of identifying requests, the prioritization system is identical to that in
 HTTP/2.
 
+Only a client can prioritize requests.  A server MUST NOT sent a PRIORITY frame.
+
 
 ## Server Push
 
