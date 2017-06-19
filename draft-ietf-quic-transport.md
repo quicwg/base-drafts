@@ -304,7 +304,7 @@ flow of encrypted packets, but the usual tools for monitoring
 latency require observing packet numbers and acknowledgements, which
 in QUIC are encrypted.
 QUIC packets enable monitoring of latency by including a clear text
-latency spin bit that is reflected between peers.
+latency spin bit that is reflected between client and server.
 
 # Versions {#versions}
 
@@ -853,15 +853,19 @@ an unsupported version.
 The latency spin bit enables latency monitoring from observation points on
 the network path. This bit is set as follow:
 
-* The connection responder sets the spin bit value to the value of the
-  spin bit in the last packet received from the connection initiator.
+* The server sets the spin bit value to the value of the
+  spin bit in the last packet received from the client.
 
-* The connection initiator sets the spin bit value to the opposite
-  of the last value received from the connection responder, or to 0
+* The client sets the spin bit value to the opposite
+  of the last value received from the server, or to 0
   if no packet as been received yet.
 
-Observation points can estimate the network latency by monitoring the
+Observation points can estimate the network latency by monitoring these
 changes in the latency spin bit.
+If packets are delivered in sequence, this procedure will cause the spin
+bit to change value in each direction once per round trip. Out of
+sequence deliveries can cause some spurious transitions, which
+monitoring agents may have to filter.
 
 The latency spin bit handling is similar to the
 "Alternate Marking method for passive performance monitoring"
