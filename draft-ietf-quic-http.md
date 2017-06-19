@@ -600,10 +600,11 @@ until the previous zero-value header block has been confirmed received.
 
 The PRIORITY (type=0x02) frame specifies the sender-advised priority of a stream
 and is substantially different from {{!RFC7540}}. In order to support ordering,
-it MUST be sent only on the connection control stream. The format has been
-modified to accommodate not being sent on-stream and the larger stream ID space
-of QUIC.
+it MUST be sent only on the connection control stream.  A PRIORITY frame sent on
+any other stream MUST be treated as a HTTP_WRONG_STREAM error.
 
+The format of this frame has been modified from the definition in HTTP/2 to
+accommodate not being sent on-stream and the larger stream ID space of QUIC.
 The semantics of the Stream Dependency, Weight, and E flag are the same as in
 HTTP/2.
 
@@ -687,6 +688,50 @@ The length of a PRIORITY frame is determined by its flags.  A PRIORITY frame is
 nine octets in length, plus two for each of the PUSH and PUSH_DEPENDENT flags
 that are set.  A PRIORITY frame with a length that doesn't match its flags MUST
 be treated as a connection error of type HTTP_MALFORMED_PRIORITY.
+
+
+### RST_PUSH {#frame-rst-push}
+
+The RST_PUSH frame (type=0x3) is used to request cancellation of a server push
+prior to receiving the response stream associated with the pushed response.  A
+client sends a RST_PUSH frame on the connection control stream and identifies a
+PUSH_PROMISE frame, in response, the server aborts sending the promised
+response.
+
+If the server has not yet started to send the response stream for the pushed
+response, it can use the receipt of a RST_PUSH frame to avoid opening a stream.
+If a response stream or data stream has been opened by the server, the server
+SHOULD sent a QUIC RST_STREAM frame on those streams and cease transmission of
+the response.
+
+Sending a RST_PUSH frame on a stream other than the connection control stream
+MUST be treated as a HTTP_WRONG_STREAM error.
+
+~~~~~~~~~~  drawing
+    0                   1                   2                   3
+    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |                    Response Stream (32)                       |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |       Promise Index(16)       |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |                      Error Code (32)                          |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~~~~~~~~
+{: #fig-rst-push title="RST_PUSH frame payload"}
+
+The RST_PUSH frame payload has the following fields:
+
+  Response Stream:
+  : A 32-bit stream identifier for the response stream that carries the
+    PUSH_PROMISE frame.
+
+  Promise Index:
+  : The 16-bit index of the PUSH_PROMISE frame on the response stream. See
+    {{stream-push}} for a definition of how to identify a PUSH_PROMISE.
+
+  Error Code:
+  : A 32-bit error code indicating why the response is not desired.
 
 
 ### SETTINGS {#frame-settings}
@@ -971,7 +1016,8 @@ PRIORITY (0x2):
 
 RST_STREAM (0x3):
 : RST_STREAM frames do not exist, since QUIC provides stream lifecycle
-  management.
+  management.  The same code point is used for the RST_PUSH frame
+  ({{frame-rst-push}}).
 
 SETTINGS (0x4):
 : SETTINGS frames are sent only at the beginning of the connection.  See
@@ -1168,6 +1214,7 @@ Values for existing registrations are assigned by this document:
   | HEADERS       | Both                | {{frame-headers}}       |
   | PRIORITY      | Both                | {{frame-priority}}      |
   | RST_STREAM    | HTTP/2 only         | N/A                     |
+  | RST_PUSH      | QUIC only           | {{frame-rst-push}}      |
   | SETTINGS      | Both                | {{frame-settings}}      |
   | PUSH_PROMISE  | Both                | {{frame-push-promise}}  |
   | PING          | HTTP/2 only         | N/A                     |
