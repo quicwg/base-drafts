@@ -710,7 +710,7 @@ parameter, as shown:
 
     struct {
         uint16 length = Length;
-        opaque label<10..255> = "TLS 1.3, " + Label;
+        opaque label<10..255> = "tls13 " + Label;
         uint8 hashLength;     // Always 0
     } HkdfLabel;
 ~~~
@@ -719,7 +719,7 @@ For example, the client packet protection secret uses an info parameter of:
 
 ~~~
    info = (HashLen / 256) || (HashLen % 256) || 0x21 ||
-          "TLS 1.3, QUIC client 1-RTT secret" || 0x00
+          "tls13 QUIC client 1-RTT secret" || 0x00
 ~~~
 
 
