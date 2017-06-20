@@ -195,10 +195,11 @@ with a short stream header.  This stream header is used to identify the type of
 stream and to link the stream to another stream as necessary.  See
 {{stream-header}} for more details on the stream header.
 
-\[Editor's Note: the following paragraph is clearly busted.  We will need
-QPACK/QCRAM for this to work.]  Request, response and push streams contain HPACK
-data which manipulates connection-level state.  Therefore, these streams MUST
-NOT be closed with a stream-level error.
+\[Editor's Note: the following is clearly busted.  Requests and responses can't
+reliably be cancelled as a result of this change.  We will need QPACK/QCRAM for
+this to work.] Request, response and push streams contain HPACK data which
+manipulates connection-level state.  Therefore, these streams MUST NOT be closed
+with a stream-level error.
 
 Streams must be opened sequentially, with no gaps.  Data streams SHOULD be
 opened after the request, response or push stream is opened.  Data streams are
@@ -207,11 +208,14 @@ that contain no body and messages that contain an empty body.
 
 HTTP does not need to do any separate multiplexing when using QUIC - data sent
 over a QUIC stream always maps to a particular HTTP transaction. Requests and
-responses are considered complete when the corresponding QUIC streams are closed
-in the appropriate direction.
+responses are considered complete when the corresponding QUIC streams are
+closed.
 
 
 ## Stream Header
+
+The stream header is used to correlate requests and responses, including the
+response to server push with the PUSH_PROMISE containing the request.
 
 The stream header consists of a single octet that identifies the type of stream,
 plus any parameters that are specific to the stream type.
@@ -227,7 +231,7 @@ The stream types are summarized in {{stream-type-table}}.
 | Request            | 0x00 | {{stream-request}}  |
 | Response           | 0x01 | {{stream-response}} |
 | Data               | 0x02 | {{stream-data}}     |
-| Push               | 0x02 | {{stream-push}}     |
+| Push               | 0x03 | {{stream-push}}     |
 {: #stream-type-table title="Stream Types"}
 
 An endpoint MUST terminate the connection with an HTTP_INVALID_STREAM_HEADER
@@ -239,6 +243,14 @@ error if it receives a stream header that uses an unknown or unsupported type.
 Stream 1 is opened by both client and server and is used for the SETTINGS frame
 immediately after the connection opens.  After the SETTINGS frame has been sent,
 this stream is used for PRIORITY frames.
+
+~~~~~
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+
+|   Type (8)    |
++-+-+-+-+-+-+-+-+
+~~~~~
 
 The stream header for a connection control stream contains only the type octet,
 which is set to 0xff.  After the stream header, the connection control stream
@@ -288,9 +300,9 @@ The stream header for a response stream contains the type octet, which is set to
 After the stream header, response streams contain a sequence of frames (see
 {{http-framing-layer}}).
 
-If a response stream identifies a stream that is not a request stream, or it
-references a stream that already has an associated response stream, the
-connection MUST be terminated with an HTTP_UNMATCHED_RESPONSE error.
+If a response stream header identifies a stream that is not a request stream, or
+it references a request stream that already has an associated response stream,
+the connection MUST be terminated with an HTTP_UNMATCHED_RESPONSE error.
 
 
 ### Data Streams {#stream-data}
@@ -330,7 +342,7 @@ Push streams are opened by servers.  Push streams carry headers of responses for
 use with server push.
 
 The stream header for a push stream contains the type octet, which is set to
-0x04, the stream ID of a response stream as a 32-bit value, and an index for a
+0x03, the stream ID of a response stream as a 32-bit value, and an index for a
 PUSH_PROMISE frame on the response stream as a 16-bit value.
 
 ~~~~~
