@@ -351,32 +351,25 @@ PUSH_PROMISE frame on the response stream as a 16-bit value.
 +-+-+-+-+-+-+-+-+
 |   Type (8)    |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                        Stream ID (32)                         |
+|                         Push ID (32)                          |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|       Push Index (16)         |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~~~
 
-After the stream header, push streams contain frames.
+After the stream header, push streams contain a sequence of frames (see
+{{http-framing-layer}}).
 
-A push stream MUST reference a response stream and a PUSH_PROMISE frame on that
-stream.  PUSH_PROMISE frames are identified by the order in which they are sent
-on the response stream, with the first PUSH_PROMISE frame starting at an index
-of 0.  If a data stream is received that references a stream that is not a
-response stream, or the referenced request or response stream does not
-PUSH_PROMISE frame at the given index, or another push stream already references
-that PUSH_PROMISE frame, the connection MUST be terminated with a
-HTTP_UNMATCHED_PUSH error.  Note that due to reordering of packets, the
-referenced stream or PUSH_PROMISE frame might not have been received when the
-data stream is opened.
+A push stream references a server push request by including the Push ID field
+from a PUSH_PROMISE frame that was sent on a response stream, see
+{{frame-push-promise}} for details.  Note that due to reordering of packets, the
+PUSH_PROMISE frame might not have been received when the push stream is opened.
 
 
 ## HTTP Message Exchanges
 
 A client sends an HTTP request on a new QUIC request stream
 ({{stream-request}}). A server sends an HTTP response on a
-({{stream-response}}), including the stream ID of the request stream in the
-stream header.
+response stream ({{stream-response}}).  The response stream header includes the
+stream ID of the request stream.
 
 An HTTP message (request or response) consists of:
 
@@ -498,11 +491,10 @@ connection form a dependency tree. The structure of the dependency tree changes
 as PRIORITY frames add, remove, or change the dependency links between request.
 
 HTTP/2 defines its priorities in terms of streams whereas HTTP over QUIC
-identifies requests.  The PRIORITY frame {{frame-priority}} either identifies a
-request stream ({{stream-request}}) or the index of a PUSH_PROMISE frame on a
-response stream ({{frame-push-promise}}, {{stream-response}}).  Other than the
-means of identifying requests, the prioritization system is identical to that in
-HTTP/2.
+identifies requests.  The PRIORITY frame {{frame-priority}} identifies a request
+either by identifying a request stream ({{stream-request}}) or by using a Push
+ID ({{frame-push-promise}}).  Other than the means of identifying requests, the
+prioritization system is identical to that in HTTP/2.
 
 Only a client can prioritize requests.  A server MUST NOT send a PRIORITY frame.
 
@@ -642,14 +634,10 @@ The flags defined are:
     0                   1                   2                   3
     0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |                   Prioritized Stream (32)                     |
+   |                   Prioritized Request (32)                    |
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |      [Promise Index(16)]      |
+   |                    Dependent Request (32)                     |
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |                    Dependent Stream (32)                      |
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   | [Dependent Promise Index(16)] |
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
    |   Weight (8)  |
    +-+-+-+-+-+-+-+-+
 ~~~~~~~~~~
@@ -657,26 +645,16 @@ The flags defined are:
 
 The PRIORITY frame payload has the following fields:
 
-  Prioritized Stream:
-  : A 32-bit stream identifier for stream that carries the request that is being
-    prioritized; either a request stream if the PUSH flag is clear, or a
-    response stream if the PUSH flag is set.
-
-  Promise Index:
-  : If the PUSH flag is set, then the Promise Index identifies a PUSH_PROMISE on
-    the Prioritized Stream as a 16-bit value, see {{stream-push}} for a
-    definition of how to identify a PUSH_PROMISE.
+  Prioritized Request:
+  : A 32-bit identifier for a request.  This contains the stream ID of a request
+    stream when the PUSH flag is clear, or a push ID when the PUSH flag is set.
 
   Stream Dependency:
-  : A 32-bit stream identifier for the stream that carries the request that this
-    request depends on; either a request stream if the PUSH flag is clear, or a
-    response stream if the PUSH flag is set.  For details of dependencies,
-    see{{priority}} and {!RFC7540}} Section 5.3).
-
-  Dependent Promise Index:
-  : If the PUSH_DEPENDENT flag is set, then the Promise Index identifies a
-    PUSH_PROMISE on the Stream Dependency as a 16-bit value, see {{stream-push}}
-    for a definition of how to identify a PUSH_PROMISE.
+  : A 32-bit stream identifier for a dependent request.  This contains the
+    stream ID of a request stream when the PUSH flag is clear, or a push ID when
+    the PUSH flag is set.  A request stream ID of 0 indicates a dependency on
+    the root stream. For details of dependencies, see{{priority}} and
+    {!RFC7540}} Section 5.3).
 
   Weight:
   : An unsigned 8-bit integer representing a priority weight for the stream (see
@@ -685,23 +663,21 @@ The PRIORITY frame payload has the following fields:
 
 A PRIORITY frame identifies a request to priotize, and a request upon which that
 request is dependent.  A request is identified by the stream ID of a request
-when the corresponding PUSH or PUSH_DEPENDENT flags are cleared.  Setting the
-PUSH or PUSH_DEPENDENT flag causes the frame to identify a PUSH_PROMISE that is
-carried on a response stream (see {{stream-push}} for details).
+when the corresponding PUSH or PUSH_DEPENDENT flag is not set.  Setting the PUSH
+or PUSH_DEPENDENT flag causes the frame to identify a PUSH_PROMISE using a Push
+ID (see {{frame-push-promise}} for details).
 
-A PRIORITY frame MAY identify no request by using a stream ID of 0.  The
-corresponding PUSH or PUSH_DEPENDENT flag MUST be cleared if a stream ID of 0 is
-used.
+A PRIORITY frame MAY identify no request by using a stream ID of 0; as in
+{{!RFC7540}}, this makes the request dependent on the root of the dependency
+tree.
 
 A PRIORITY frame that does not reference a request MUST be treated as a
 HTTP_MALFORMED_PRIORITY error, unless it references stream ID 0.  A PRIORITY
-that sets a PUSH or PUSH_DEPENDENT flag, but then references stream ID 0 in the
-corresponding field MUST be treated as a HTTP_MALFORMED_PRIORITY error.
+that sets a PUSH or PUSH_DEPENDENT flag, but then references a non-existent Push
+ID MUST be treated as a HTTP_MALFORMED_PRIORITY error.
 
-The length of a PRIORITY frame is determined by its flags.  A PRIORITY frame is
-nine octets in length, plus two for each of the PUSH and PUSH_DEPENDENT flags
-that are set.  A PRIORITY frame with a length that doesn't match its flags MUST
-be treated as a connection error of type HTTP_MALFORMED_PRIORITY.
+The length of a PRIORITY frame is 9 octets.  A PRIORITY frame with any other
+length MUST be treated as a connection error of type HTTP_MALFORMED_PRIORITY.
 
 
 ### RST_PUSH {#frame-rst-push}
@@ -725,9 +701,7 @@ MUST be treated as a HTTP_WRONG_STREAM error.
     0                   1                   2                   3
     0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |                    Response Stream (32)                       |
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |       Promise Index(16)       |
+   |                          Push ID (32)                         |
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
    |                      Error Code (32)                          |
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -736,13 +710,8 @@ MUST be treated as a HTTP_WRONG_STREAM error.
 
 The RST_PUSH frame payload has the following fields:
 
-  Response Stream:
-  : A 32-bit stream identifier for the response stream that carries the
-    PUSH_PROMISE frame.
-
-  Promise Index:
-  : The 16-bit index of the PUSH_PROMISE frame on the response stream. See
-    {{stream-push}} for a definition of how to identify a PUSH_PROMISE.
+  Push ID:
+  : A 32-bit Push ID from a PUSH_PROMISE frame (see {{frame-push-promise}}).
 
   Error Code:
   : A 32-bit error code indicating why the response is not desired.
@@ -860,6 +829,7 @@ are safe to retry are sent in 0-RTT.) If the connection was closed before the
 SETTINGS frame was received, clients SHOULD discard any cached values and use
 the defaults above on the next connection.
 
+
 ### PUSH_PROMISE {#frame-push-promise}
 
 The PUSH_PROMISE frame (type=0x05) is used to carry a request header set from
@@ -869,6 +839,8 @@ server to client, as in HTTP/2.  It defines no flags.
     0                   1                   2                   3
     0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |                          Push ID (32)                         |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
    |       Sequence? (16)          |         Header Block (*)    ...
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~~~~~~~~
@@ -876,12 +848,18 @@ server to client, as in HTTP/2.  It defines no flags.
 
 The payload consists of:
 
+  Push ID:
+  : A 32-bit identifier for the server push request.  This identifier is used in
+    push stream headers ({{stream-push}}), RST_PUSH frames ({{frame-rst-push}}),
+    and PRIORITY frames ({{frame-priority}}) to identify this request.  A server
+    MUST create a unique value for each PUSH_PROMISE frame that it generates on
+    the same connection.
+
   HPACK Sequence:
-  : A sixteen-bit counter, equivalent to the Sequence field in HEADERS
+  : A 16-bit counter, equivalent to the Sequence field in HEADERS
 
   Payload:
   : HPACK-compressed request headers for the promised response.
-
 
 
 # Error Handling {#errors}
@@ -968,7 +946,10 @@ HTTP_UNMATCHED_DATA (0x14):
 : A data stream referenced an invalid stream.
 
 HTTP_UNMATCHED_PUSH (0x15):
-: A push stream referenced an invalid stream.
+: A push stream referenced an server push request.
+
+HTTP_WRONG_STREAM (0x16):
+: A frame was sent on the wrong stream.
 
 
 # Considerations for Transitioning from HTTP/2
@@ -1325,6 +1306,7 @@ The entries in the following table are registered by this document.
 |  HTTP_UNMATCHED_RESPONSE          |  0x13  |  Response stream header was invalid          |  {{http-error-codes}}  |
 |  HTTP_UNMATCHED_DATA              |  0x14  |  Data stream header was invalid              |  {{http-error-codes}}  |
 |  HTTP_UNMATCHED_PUSH              |  0x15  |  Push stream header was invalid              |  {{http-error-codes}}  |
+|  HTTP_WRONG_STREAM                |  0x16  |  A frame was sent on the wrong stream        |  {{http-error-codes}}  |
 |-----------------------------------|--------|----------------------------------------------|------------------------|
 
 
