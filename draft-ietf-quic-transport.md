@@ -1713,7 +1713,8 @@ ACK Block Length (opt, repeated):
 
 : An unsigned packet number delta that indicates the number of contiguous
   packets being acknowledged starting after the end of the previous gap.
-  Repeated "Num Blocks" times.
+  Repeated "Num Blocks" times.  This may be 0 in order to specify a range
+  of missing packets longer than 255.
 
 
 ### Timestamp Section {#timestamp-section}
