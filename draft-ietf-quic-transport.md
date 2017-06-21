@@ -2430,7 +2430,7 @@ All streams start in the "idle" state.
 The following transitions are valid from this state:
 
 Sending a STREAM or RST_STREAM frame causes the identified stream to become
-"open" for a sending endpoint.  New streams use the next stream available
+"open" for a sending endpoint.  New streams use the next available stream
 identifier, as described in {{stream-id}}.  An endpoint MUST NOT send a STREAM
 or RST_STREAM frame for a stream ID that is higher than the peers advertised
 maximum stream ID (see {{frame-max-stream-id}}).
