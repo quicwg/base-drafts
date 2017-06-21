@@ -258,6 +258,12 @@ largest_sent_before_rto:
 time_of_last_sent_packet:
 : The time the most recent packet was sent.
 
+largest_sent_packet:
+: The packet number of the most recently sent packet.
+
+largest_acked_packet:
+: The largest packet number acknowledged in an ack frame.
+
 latest_rtt:
 : The most recent RTT measurement made when receiving an ack for
   a previously unacked packet.
@@ -309,6 +315,7 @@ follows:
    rttvar = 0
    largest_sent_before_rto = 0
    time_of_last_sent_packet = 0
+   largest_sent_packet = 0
 ~~~
 
 ### On Sending a Packet
@@ -331,7 +338,8 @@ Pseudocode for OnPacketSent follows:
 
 ~~~
  OnPacketSent(packet_number, is_retransmittable, sent_bytes):
-   time_of_last_sent_packet = now;
+   time_of_last_sent_packet = now
+   largest_sent_packet = packet_number
    sent_packets[packet_number].packet_number = packet_number
    sent_packets[packet_number].time = now
    if is_retransmittable:
@@ -347,6 +355,7 @@ Pseudocode for OnAckReceived and UpdateRtt follow:
 
 ~~~
    OnAckReceived(ack):
+     largest_acked_packet = ack.largest_acked
      // If the largest acked is newly acked, update the RTT.
      if (sent_packets[ack.largest_acked]):
        latest_rtt = now - sent_packets[ack.largest_acked].time
