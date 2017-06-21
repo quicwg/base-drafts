@@ -380,13 +380,13 @@ header contains the following fields:
 
 Header Form:
 
-: The most significant bit (0x80) of the first octet is set to 1 for long
+: The most significant bit (0x80) of octet 0 (the first octet) is set to 1 for long
   headers and 0 for short headers.
 
 Long Packet Type:
 
-: The remaining seven bits of first octet of a long packet is the packet type.
-  This field can indicate one of 128 packet types.  The types specified for this
+: The remaining seven bits of octet 0 of a long packet is the packet type.  This
+  field can indicate one of 128 packet types.  The types specified for this
   version are listed in {{long-packet-types}}.
 
 Connection ID:
@@ -461,12 +461,12 @@ This header form has the following fields:
 
 Header Form:
 
-: The most significant bit (0x80) of the first octet of a packet is the header
+: The most significant bit (0x80) of the octet 0 of a packet is the header
   form.  This bit is set to 0 for the short header.
 
 Connection ID Flag:
 
-: The second bit (0x40) of the first octet indicates whether the Connection ID
+: The second bit (0x40) of the octet 0 indicates whether the Connection ID
   field is present.  If set to 1, then the Connection ID field is present; if
   set to 0, the Connection ID field is omitted.  The Connection ID field can
   only be omitted if the omit_connection_id transport parameter
@@ -475,13 +475,13 @@ Connection ID Flag:
 
 Key Phase Bit:
 
-: The third bit (0x20) of the first octet indicates the key phase, which allows
+: The third bit (0x20) of the octet 0 indicates the key phase, which allows
   a recipient of a packet to identify the packet protection keys that are used
   to protect the packet.  See {{QUIC-TLS}} for details.
 
 Short Packet Type:
 
-: The remaining 5 bits of the first octet include one of 32 packet types.
+: The remaining 5 bits of the octet 0 include one of 32 packet types.
   {{short-packet-types}} lists the types that are defined for short packets.
 
 Connection ID:
