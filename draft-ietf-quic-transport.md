@@ -380,8 +380,8 @@ header contains the following fields:
 
 Header Form:
 
-: The most significant bit (0x80) of octet 0 (the first octet) is set to 1 for long
-  headers and 0 for short headers.
+: The most significant bit (0x80) of octet 0 (the first octet) is set to 1 for
+  long headers and 0 for short headers.
 
 Long Packet Type:
 
