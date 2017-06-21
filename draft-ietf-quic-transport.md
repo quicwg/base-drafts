@@ -2853,45 +2853,40 @@ CONNECTION_CLOSE or RST_STREAM frame. Error codes share a common code space.
 Some error codes apply only to either streams or the entire connection and have
 no defined semantics in the other context.
 
-INTERNAL_ERROR (0x80000001):
-
-: The endpoint encountered an internal error and cannot continue with the
-  connection.
-
-ENHANCE_YOUR_CALM (0x80000002):
-
-: The endpoint detected that its peer is exhibiting a behavior that might be
-  generating excessive load.
-
-NO_ERROR (0x80000003):
+NO_ERROR (0x80000000):
 
 : An endpoint uses this with CONNECTION_CLOSE to signal that the connection is
   being closed abruptly in the absence of any error.  An endpoint uses this with
   RST_STREAM to signal that the stream is no longer wanted or in response to the
   receipt of a RST_STREAM for that stream.
 
-CANCELLED (0x80000004):
+INTERNAL_ERROR (0x80000001):
+
+: The endpoint encountered an internal error and cannot continue with the
+  connection.
+
+CANCELLED (0x80000002):
 
 : An endpoint sends this with RST_STREAM to indicate that the stream is not
   wanted and that no application action was taken for the stream.  This error
   code is not valid for use with CONNECTION_CLOSE.
 
-FLOW_CONTROL_ERROR (0x80000005):
+FLOW_CONTROL_ERROR (0x80000003):
 
 : An endpoint received more data than it permitted in its advertised data limits
-  (see {{flow-control}}.
+  (see {{flow-control}}).
 
-STREAM_ID_ERROR (0x80000006):
+STREAM_ID_ERROR (0x80000004):
 
 : An endpoint received a frame for a stream identifier that exceeded its
   advertised maximum stream ID.
 
-STREAM_STATE_ERROR (0x80000007):
+STREAM_STATE_ERROR (0x80000005):
 
 : An endpoint received a frame for a stream that was not in a state that
   permitted that frame (see {{stream-states}}).
 
-FINAL_OFFSET_ERROR (0x80000008):
+FINAL_OFFSET_ERROR (0x80000006):
 
 : An endpoint received a STREAM frame containing data that exceeded the
   previously established final offset.  Or an endpoint received a RST_STREAM
@@ -2899,28 +2894,36 @@ FINAL_OFFSET_ERROR (0x80000008):
   that was already received.  Or an endpoint received a RST_STREAM frame
   containing a different final offset to the one already established.
 
-FRAME_FORMAT_ERROR (0x80000009):
+FRAME_FORMAT_ERROR (0x80000007):
 
 : An endpoint received a frame that was badly formatted.  For instance, an empty
   STREAM frame that omitted the FIN flag, or an ACK frame that has more
-  acknowledgment ranges than the remainder of the packet could carry.
+  acknowledgment ranges than the remainder of the packet could carry.  This is a
+  generic error code; an endpoint SHOULD use the more specific frame format
+  error codes (0x800001XX) if possible.
 
-TRANSPORT_PARAMETER_ERROR (0x8000000A):
+TRANSPORT_PARAMETER_ERROR (0x80000008):
 
 : An endpoint received transport parameters that were badly formatted, included
   an invalid value, was absent even though it is mandatory, was present though
   it is forbidden, or is otherwise in error.
 
-VERSION_NEGOTIATION_ERROR (0x8000000B):
+VERSION_NEGOTIATION_ERROR (0x80000009):
 
 : An endpoint received transport parameters that contained version negotiation
   parameters that disagreed with the version negotiation that it performed.
   This error code indicates a potential version downgrade attack.
 
-PROTOCOL_VIOLATION (0x8000000C):
+PROTOCOL_VIOLATION (0x8000000A):
 
 : An endpoint detected an error with protocol compliance that was not covered by
   more specific error codes.
+
+FRAME_ERROR (0x800001XX):
+
+: An endpoint detected an error in a specific frame type.  The frame type is
+  included as the last octet of the error code.  For example, an error in a
+  MAX_STREAM_ID frame would be indicated with the code (0x80000106).
 
 
 # Security and Privacy Considerations
