@@ -398,6 +398,7 @@ Pseudocode for OnPacketAcked follows:
 
 ~~~
    OnPacketAcked(acked_packet_number):
+     OnPacketAckedCC(acked_packet_number)
      // If a packet sent prior to RTO was acked, then the RTO
      // was spurious.  Otherwise, inform congestion control.
      if (rto_count > 0 &&
@@ -652,13 +653,13 @@ follows:
 
 ## On Packet Acknowledgement
 
-Invoked at the same time loss detection's OnPacketAcked is called and
-supplied with the acked_packet from sent_packets.
+Invoked from loss detection's OnPacketAcked and is supplied with
+acked_packet from sent_packets.
 
-Pseudocode for OnPacketAcked follows:
+Pseudocode for OnPacketAckedCC follows:
 
 ~~~
-   OnPacketAcked(acked_packet):
+   OnPacketAckedCC(acked_packet):
      if (acked_packet.packet_number < end_of_recovery):
        return
      if (congestion_window < ssthresh):
