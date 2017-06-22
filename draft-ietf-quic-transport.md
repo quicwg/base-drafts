@@ -1063,6 +1063,9 @@ language from Section 3 of {{!I-D.ietf-tls-tls13}}.
 
          case encrypted_extensions:
             QuicVersion supported_versions<2..2^8-4>;
+
+         case new_session_ticket:
+            struct {};
       };
       TransportParameter parameters<30..2^16-1>;
    } TransportParameters;
@@ -1214,8 +1217,9 @@ the value of negotiated_version, the server MUST terminate the connection with a
 QUIC_VERSION_NEGOTIATION_MISMATCH error.
 
 The server includes a list of versions that it would send in any version
-negotiation packet ({{packet-version}}) in supported_versions.  This value is
-set even if it did not send a version negotiation packet.
+negotiation packet ({{packet-version}}) in supported_versions.  The server
+populates this field even if it did not send a version negotiation packet.  This
+field is absent if the parameters are included in a NewSessionTicket message.
 
 The client can validate that the negotiated_version is included in the
 supported_versions list and - if version negotiation was performed - that it
@@ -3214,7 +3218,8 @@ Issue and pull request numbers are listed with a leading octothorp.
   - Define STREAM_ID_NEEDED frame (#455)
 - A NEW_CONNECTION_ID frame supports connection migration without linkability
   (#232, #491, #496)
-- Transport parameters for 0-RTT are retained from a previous connection (#512)
+- Transport parameters for 0-RTT are retained from a previous connection (#405,
+  #513, #512)
   - A client in 0-RTT no longer required to reset excess streams (#425, #479)
 - Expanded security considerations (#440, #444, #445, #448)
 
