@@ -680,41 +680,67 @@ The length of a PRIORITY frame is 9 octets.  A PRIORITY frame with any other
 length MUST be treated as a connection error of type HTTP_MALFORMED_PRIORITY.
 
 
-### RST_PUSH {#frame-rst-push}
+### CANCEL_REQUEST {#frame-cancel-request}
 
-The RST_PUSH frame (type=0x3) is used to request cancellation of a server push
-prior to receiving the response stream associated with the pushed response.  A
-client sends a RST_PUSH frame on the connection control stream and identifies a
-PUSH_PROMISE frame, in response, the server aborts sending the promised
-response.
+The CANCEL_REQUEST frame (type=0x3) is used to request cancellation of a request
+prior to the response stream being created.  This frame can be used to cancel
+both outstanding requests initiated by a client and server push requests that
+are initiated with a PUSH_PROMISE.
 
-If the server has not yet started to send the response stream for the pushed
-response, it can use the receipt of a RST_PUSH frame to avoid opening a stream.
-If a response stream or data stream has been opened by the server, the server
-SHOULD sent a QUIC RST_STREAM frame on those streams and cease transmission of
-the response.
+The frame identifies a client-initiated request by the stream ID that carried
+the request; a server push request is identified by Push ID (see
+{{frame-push-promise}}).
 
-Sending a RST_PUSH frame on a stream other than the connection control stream
-MUST be treated as a HTTP_WRONG_STREAM error.
+Upon receipt of this frame the server aborts sending the response for the
+identified request.  If the server has not yet started to send the response
+stream for the identified request, it can use the receipt of a CANCEL_REQUEST
+frame to avoid opening a stream.  If a response stream or data stream has been
+opened by the server, the server SHOULD sent a QUIC RST_STREAM frame on those
+streams and cease transmission of the response.
+
+A client that cancels a request that it initiated SHOULD send a QUIC RST_STREAM
+frame to reset the associated request stream, unless that stream is already
+closed.
+
+A client sends a CANCEL_REQUEST frame on the connection control stream.  Sending
+a CANCEL_REQUEST frame on a stream other than the connection control stream MUST
+be treated as a HTTP_WRONG_STREAM error.
+
+The flags defined are:
+
+  PUSH (0x01):
+  : When set, this flag indicates that the frame identifies a push by its push
+    ID; when cleared, the frame identifies a request stream.
+
 
 ~~~~~~~~~~  drawing
     0                   1                   2                   3
     0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |                          Push ID (32)                         |
+   |                 Request Stream/Push ID (32)                   |
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
    |                      Error Code (32)                          |
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~~~~~~~~
-{: #fig-rst-push title="RST_PUSH frame payload"}
+{: #fig-cancel-request title="CANCEL_REQUEST frame payload"}
 
-The RST_PUSH frame payload has the following fields:
+The CANCEL_REQUEST frame payload has the following fields:
 
-  Push ID:
-  : A 32-bit Push ID from a PUSH_PROMISE frame (see {{frame-push-promise}}).
+  Request Stream/Push ID:
+  : A 32-bit stream ID or Push ID that identifies the request.  If the PUSH flag
+    is set, this refers to a Push ID included in a PUSH_PROMISE frame (see
+    {{frame-push-promise}}); if the PUSH flag is cleared, this refers to a
+    request by its stream ID.
 
   Error Code:
   : A 32-bit error code indicating why the response is not desired.
+
+A CANCEL_REQUEST frame always contains an 8 octet payload.  A server MUST treat
+a CANCEL_REQUEST frame payload that is other than 8 octets in length, or a
+CANCEL_REQUEST frame that identifies a stream that doesn't carry a valid request
+as an HTTP_MALFORMED_CANCEL_REQUEST error.  Note however that due to packet
+reordering, a CANCEL_REQUEST frame could arrive before the request stream that
+it references is opened.
 
 
 ### SETTINGS {#frame-settings}
@@ -850,10 +876,10 @@ The payload consists of:
 
   Push ID:
   : A 32-bit identifier for the server push request.  This identifier is used in
-    push stream headers ({{stream-push}}), RST_PUSH frames ({{frame-rst-push}}),
-    and PRIORITY frames ({{frame-priority}}) to identify this request.  A server
-    MUST create a unique value for each PUSH_PROMISE frame that it generates on
-    the same connection.
+    push stream headers ({{stream-push}}), CANCEL_REQUEST frames
+    ({{frame-cancel-request}}), and PRIORITY frames ({{frame-priority}}) to
+    identify this request.  A server MUST create a unique value for each
+    PUSH_PROMISE frame that it generates on the same connection.
 
   HPACK Sequence:
   : A 16-bit counter, equivalent to the Sequence field in HEADERS
@@ -1011,8 +1037,8 @@ PRIORITY (0x2):
 
 RST_STREAM (0x3):
 : RST_STREAM frames do not exist, since QUIC provides stream lifecycle
-  management.  The same code point is used for the RST_PUSH frame
-  ({{frame-rst-push}}).
+  management.  The same code point is used for the CANCEL_REQUEST frame
+  ({{frame-cancel-request}}).
 
 SETTINGS (0x4):
 : SETTINGS frames are sent only at the beginning of the connection.  See
@@ -1201,22 +1227,22 @@ in {{!RFC7540}}:
 
 Values for existing registrations are assigned by this document:
 
-  |---------------|---------------------|-------------------------|
-  | Frame Type    | Supported Protocols | HTTP/QUIC Specification |
-  |---------------|:-------------------:|-------------------------|
-  | DATA          | HTTP/2 only         | N/A                     |
-  | HAS_BODY      | QUIC only           | {{frame-has-body}}      |
-  | HEADERS       | Both                | {{frame-headers}}       |
-  | PRIORITY      | Both                | {{frame-priority}}      |
-  | RST_STREAM    | HTTP/2 only         | N/A                     |
-  | RST_PUSH      | QUIC only           | {{frame-rst-push}}      |
-  | SETTINGS      | Both                | {{frame-settings}}      |
-  | PUSH_PROMISE  | Both                | {{frame-push-promise}}  |
-  | PING          | HTTP/2 only         | N/A                     |
-  | GOAWAY        | HTTP/2 only         | N/A                     |
-  | WINDOW_UPDATE | HTTP/2 only         | N/A                     |
-  | CONTINUATION  | HTTP/2 only         | N/A                     |
-  |---------------|---------------------|-------------------------|
+  |----------------|---------------------|--------------------------|
+  | Frame Type     | Supported Protocols | HTTP/QUIC Specification  |
+  |----------------|:-------------------:|--------------------------|
+  | DATA           | HTTP/2 only         | N/A                      |
+  | HAS_BODY       | QUIC only           | {{frame-has-body}}       |
+  | HEADERS        | Both                | {{frame-headers}}        |
+  | PRIORITY       | Both                | {{frame-priority}}       |
+  | RST_STREAM     | HTTP/2 only         | N/A                      |
+  | CANCEL_REQUEST | QUIC only           | {{frame-cancel-request}} |
+  | SETTINGS       | Both                | {{frame-settings}}       |
+  | PUSH_PROMISE   | Both                | {{frame-push-promise}}   |
+  | PING           | HTTP/2 only         | N/A                      |
+  | GOAWAY         | HTTP/2 only         | N/A                      |
+  | WINDOW_UPDATE  | HTTP/2 only         | N/A                      |
+  | CONTINUATION   | HTTP/2 only         | N/A                      |
+  |----------------|---------------------|--------------------------|
 
 The "Specification" column is renamed to "HTTP/2 specification" and is only
 required if the frame is supported over HTTP/2.
