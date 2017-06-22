@@ -552,7 +552,9 @@ All frames have the following format:
 The HAS_BODY frame indicates that the HTTP message contains a payload body.  It
 is sent after the initial header block on a request, response, or push stream.
 
-The HAS_BODY frame has no flags and is always empty.
+The HAS_BODY frame has no flags and is always empty.  A HAS_BODY frame with a
+non-empty payload or flags that are set MUST be treated as a
+HTTP_MALFORMED_HAS_BODY error.
 
 
 ### HEADERS {#frame-headers}
@@ -797,10 +799,9 @@ SETTINGS frames always apply to a connection, never a single stream.  A SETTINGS
 frame MUST be sent as the first frame of the connection control stream (see
 {{stream-mapping}}) by each peer, and MUST NOT be sent subsequently or on any
 other stream. If an endpoint receives an SETTINGS frame on a different stream,
-the endpoint MUST respond with a connection error of type
-HTTP_SETTINGS_ON_WRONG_STREAM.  If an endpoint receives a second SETTINGS frame,
-the endpoint MUST respond with a connection error of type
-HTTP_MULTIPLE_SETTINGS.
+the endpoint MUST respond with a connection error of type HTTP_WRONG_STREAM.  If
+an endpoint receives a second SETTINGS frame, the endpoint MUST respond with a
+connection error of type HTTP_MULTIPLE_SETTINGS.
 
 The SETTINGS frame affects connection state. A badly formed or incomplete
 SETTINGS frame MUST be treated as a connection error (Section 5.4.1) of type
@@ -937,24 +938,27 @@ HTTP_VERSION_FALLBACK (0x08):
 : The requested operation cannot be served over HTTP/QUIC.  The peer should
   retry over HTTP/2.
 
-HTTP_MALFORMED_HEADERS (0x09):
+HTTP_MALFORMED_HAS_BODY (0x09):
+: A HAS_BODY frame with a non-empty payload or set flags was received.
+
+HTTP_MALFORMED_HEADERS (0x0A):
 : A HEADERS frame has been received with an invalid format.
 
-HTTP_MALFORMED_PRIORITY (0x0A):
+HTTP_MALFORMED_PRIORITY (0x0B):
 : A PRIORITY frame has been received with an invalid format.
 
-HTTP_MALFORMED_SETTINGS (0x0B):
+HTTP_MALFORMED_SETTINGS (0x0C):
 : A SETTINGS frame has been received with an invalid format.
 
-HTTP_MALFORMED_PUSH_PROMISE (0x0C):
+HTTP_MALFORMED_PUSH_PROMISE (0x0D):
 : A PUSH_PROMISE frame has been received with an invalid format.
 
-HTTP_INTERRUPTED_HEADERS (0x0E):
+HTTP_MALFORMED_CANCEL_REQUEST (0x0E):
+: A PUSH_PROMISE frame has been received with an invalid format.
+
+HTTP_INTERRUPTED_HEADERS (0x0F):
 : A HEADERS frame without the End Header Block flag was followed by a frame
   other than HEADERS.
-
-HTTP_SETTINGS_ON_WRONG_STREAM (0x0F):
-: A SETTINGS frame was received on a request control stream.
 
 HTTP_MULTIPLE_SETTINGS (0x10):
 : More than one SETTINGS frame was received.
@@ -1320,12 +1324,13 @@ The entries in the following table are registered by this document.
 |  HTTP_CONNECT_ERROR               |  0x06  |  TCP reset or error on CONNECT request       |  {{http-error-codes}}  |
 |  HTTP_EXCESSIVE_LOAD              |  0x07  |  Peer generating excessive load              |  {{http-error-codes}}  |
 |  HTTP_VERSION_FALLBACK            |  0x08  |  Retry over HTTP/2                           |  {{http-error-codes}}  |
-|  HTTP_MALFORMED_HEADERS           |  0x09  |  Invalid HEADERS frame                       |  {{http-error-codes}}  |
-|  HTTP_MALFORMED_PRIORITY          |  0x0A  |  Invalid PRIORITY frame                      |  {{http-error-codes}}  |
-|  HTTP_MALFORMED_SETTINGS          |  0x0B  |  Invalid SETTINGS frame                      |  {{http-error-codes}}  |
-|  HTTP_MALFORMED_PUSH_PROMISE      |  0x0C  |  Invalid PUSH_PROMISE frame                  |  {{http-error-codes}}  |
-|  HTTP_INTERRUPTED_HEADERS         |  0x0E  |  Incomplete HEADERS block                    |  {{http-error-codes}}  |
-|  HTTP_SETTINGS_ON_WRONG_STREAM    |  0x0F  |  SETTINGS frame on a request control stream  |  {{http-error-codes}}  |
+|  HTTP_MALFORMED_HEADERS           |  0x09  |  Invalid HAS_BODY frame                      |  {{http-error-codes}}  |
+|  HTTP_MALFORMED_HEADERS           |  0x0A  |  Invalid HEADERS frame                       |  {{http-error-codes}}  |
+|  HTTP_MALFORMED_PRIORITY          |  0x0B  |  Invalid PRIORITY frame                      |  {{http-error-codes}}  |
+|  HTTP_MALFORMED_SETTINGS          |  0x0C  |  Invalid SETTINGS frame                      |  {{http-error-codes}}  |
+|  HTTP_MALFORMED_PUSH_PROMISE      |  0x0D  |  Invalid PUSH_PROMISE frame                  |  {{http-error-codes}}  |
+|  HTTP_MALFORMED_CANCEL_REQUEST    |  0x0E  |  Invalid CANCEL_REQUEST frame                |  {{http-error-codes}}  |
+|  HTTP_INTERRUPTED_HEADERS         |  0x0F  |  Incomplete HEADERS block                    |  {{http-error-codes}}  |
 |  HTTP_MULTIPLE_SETTINGS           |  0x10  |  Multiple SETTINGS frames                    |  {{http-error-codes}}  |
 |  HTTP_RST_CONTROL_STREAM          |  0x11  |  Message control stream was RST              |  {{http-error-codes}}  |
 |  HTTP_INVALID_STREAM_HEADER       |  0x12  |  Invalid stream header                       |  {{http-error-codes}}  |
