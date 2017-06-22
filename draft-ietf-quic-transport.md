@@ -2723,9 +2723,9 @@ the RST_STREAM frame.  Otherwise, the final offset is the offset of the end of
 the data carried in STREAM frame marked with a FIN flag.
 
 An endpoint will know the final offset for a stream when it receives a STREAM
-frame with a FIN flag or a RST_STREAM frame.  If there is reordering or loss,
-an endpoint receive a STREAM frame with a FIN flag prior to the stream entering
-the "closed" state.
+frame with a FIN flag or a RST_STREAM frame.  If there is reordering or loss, an
+endpoint might receive a STREAM frame with a FIN flag prior to the stream
+entering the "closed" state.
 
 An endpoint MUST NOT send data on a stream at or beyond the final offset.
 
