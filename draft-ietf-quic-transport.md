@@ -1582,9 +1582,9 @@ to unnecessarily retransmit some data.  When this is necessary, the receiver
 SHOULD acknowledge newly received packets and stop acknowledging packets
 received in the past.
 
-Unlike TCP SACKs, QUIC ACK blocks are cumulative and therefore irrevocable.
-Once a packet has been acknowledged, even if it does not appear in a future ACK
-frame, it is assumed to be acknowledged.
+Unlike TCP SACKs, QUIC ACK blocks are irrevocable.  Once a packet has
+been acknowledged, even if it does not appear in a future ACK frame,
+it remains acknowledged.
 
 QUIC ACK frames contain a timestamp section with up to 255 timestamps.
 Timestamps enable better congestion control, but are not required for correct
@@ -2242,9 +2242,8 @@ When a packet is detected as lost, the sender re-sends any frames as necessary:
   since subsequent data on this stream is expected to not be delivered by the
   receiver.
 
-* ACK and PADDING frames MUST NOT be retransmitted.  ACK frames are cumulative,
-  so new frames containing updated information will be sent as described in
-  {{frame-ack}}.
+* ACK and PADDING frames MUST NOT be retransmitted.  ACK frames
+ containing updated information will be sent as described in {{frame-ack}}.
 
 * All other frames MUST be retransmitted.
 
