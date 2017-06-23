@@ -884,8 +884,8 @@ explained in more detail as they are referenced later in the document.
 | 0x09        | STREAM_BLOCKED    | {{frame-stream-blocked}}    |
 | 0x0a        | STREAM_ID_NEEDED  | {{frame-stream-id-needed}}  |
 | 0x0b        | NEW_CONNECTION_ID | {{frame-new-connection-id}} |
-| 0xa0 - 0xbf | ACK               | {{frame-ack}}               |
-| 0xc0 - 0xff | STREAM            | {{frame-stream}}            |
+| 0x60 - 0x7f | ACK               | {{frame-ack}}               |
+| 0x80 - 0xff | STREAM            | {{frame-stream}}            |
 {: #frame-types title="Frame Types"}
 
 # Life of a Connection
@@ -1610,7 +1610,7 @@ entropy on demand, which should be adequate protection against most
 opportunistic acknowledgement attacks.
 
 The type byte for a ACK frame contains embedded flags, and is formatted as
-`101NLLMM`.  These bits are parsed as follows:
+`011NLLMM`.  These bits are parsed as follows:
 
 * The first three bits must be set to 101 indicating that this is an ACK frame.
 
@@ -2576,6 +2576,9 @@ An endpoint MUST NOT send data on any stream without ensuring that it is within
 the data limits set by its peer.  The cryptographic handshake stream, Stream 0,
 is exempt from the connection-level data limits established by MAX_DATA.  Stream
 0 is still subject to stream-level data limits and MAX_STREAM_DATA.
+
+If a STREAM frame is received for a stream that was previously specified as
+unidirectional, the connection MUST be closed with QUIC_INVALID_FRAME_DATA.
 
 Flow control is described in detail in {{flow-control}}, and congestion control
 is described in the companion document {{QUIC-RECOVERY}}.
