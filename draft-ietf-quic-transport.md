@@ -1483,10 +1483,13 @@ subsequent sections.
 ## STREAM Frame {#frame-stream}
 
 STREAM frames implicitly create a stream and carry stream data. The type byte
-for a STREAM frame contains embedded flags, and is formatted as `11FSSOOD`.
+for a STREAM frame contains embedded flags, and is formatted as `1UFSSOOD`.
 These bits are parsed as follows:
 
-* The first two bits must be set to 11, indicating that this is a STREAM frame.
+* The first bit must be set to 1, indicating that this is a STREAM frame.
+
+* 'U' is the UNI bit, which is used to indicate this is a unidirectional
+  stream, and no stream frames may be sent in response.
 
 * `F` is the FIN bit, which is used for stream termination.
 
@@ -2301,7 +2304,8 @@ Streams in QUIC provide a lightweight, ordered, and bidirectional byte-stream
 abstraction modeled closely on HTTP/2 streams {{?RFC7540}}.
 
 Streams can be created either by the client or the server, can concurrently send
-data interleaved with other streams, and can be cancelled.
+data interleaved with other streams, can be cancelled, and can be opened in
+unidirectional mode.
 
 Data that is received on a stream is delivered in order within that stream, but
 there is no particular delivery order across streams.  Transmit ordering among
@@ -2357,11 +2361,11 @@ shown in the following figure and described below.
                             +--------+
                                  |
                         send/recv STREAM/RST
-                             recv MSD/SB
+                             recv MSD/SB             
                                  |
                                  v
-                 recv FIN/  +--------+    send FIN/
-                 recv RST   |        |    send RST
+              recv FIN/     +--------+     send FIN/
+         recv RST/send UNI  |        |  send RST/recv UNI
                   ,---------|  open  |-----------.
                  /          |        |            \
                 v           +--------+             v
@@ -2382,6 +2386,7 @@ shown in the following figure and described below.
 
    STREAM: a STREAM frame
    FIN:    FIN flag in a STREAM frame
+   UNI:    UNI flag in a STREAM frame
    RST:    RST_STREAM frame
    MSD:    MAX_STREAM_DATA frame
    SB:     STREAM_BLOCKED frame
@@ -2461,9 +2466,10 @@ Any frame type that mentions a stream ID can be sent in this state.
 ### half-closed (local)
 
 A stream that is in the "half-closed (local)" state MUST NOT be used for sending
-on new STREAM frames.  Retransmission of data that has already been sent on
+new STREAM frames.  Retransmission of data that has already been sent on
 STREAM frames is permitted.  An endpoint MAY also send MAX_STREAM_DATA and
-RST_STREAM in this state.
+RST_STREAM in this state.  A stream immediately transitions to
+"half-closed (local)" if it is created with the UNI flag set.
 
 An endpoint that closes a stream MUST NOT send data beyond the final offset that
 it has chosen, see {{state-closed}} for details.
@@ -2483,8 +2489,8 @@ after a frame bearing the FIN flag is sent.
 
 A stream is "half-closed (remote)" when the stream is no longer being used by
 the peer to send any data.  An endpoint will have either received all data that
-a peer has sent or will have received a RST_STREAM frame and discarded any
-received data.
+a peer has sent, will have sent an UNI flag on the stream, or will have
+received a RST_STREAM frame and discarded any received data.
 
 Once all data has been either received or discarded, a sender is no longer
 obligated to update the maximum received data for the connection.
@@ -2757,7 +2763,8 @@ is increased.
 The final offset is the count of the number of octets that are transmitted on a
 stream.  For a stream that is reset, the final offset is carried explicitly in
 the RST_STREAM frame.  Otherwise, the final offset is the offset of the end of
-the data carried in STREAM frame marked with a FIN flag.
+the data carried in STREAM frame marked with a FIN flag, or 0 in the case of
+received streams with the UNI flag set.
 
 An endpoint will know the final offset for a stream when the stream enters the
 "half-closed (remote)" state.  However, if there is reordering or loss, an
