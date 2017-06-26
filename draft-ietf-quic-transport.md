@@ -854,10 +854,12 @@ The latency spin bit enables latency monitoring from observation points on
 the network path. This bit is set as follow:
 
 * The server sets the spin bit value to the value of the
-  spin bit in the last packet received from the client.
+  spin bit in the packet received from the client with
+  the largest sequence number.
 
 * The client sets the spin bit value to the opposite
-  of the last value received from the server, or to 0
+  of the value set in the packet received from the server with the
+  largest sequence number, or to 0
   if no packet as been received yet.
 
 Observation points can estimate the network latency by monitoring these
