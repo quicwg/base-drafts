@@ -775,10 +775,10 @@ to the size of the IV.  The exclusive OR of the padded packet number and the IV
 forms the AEAD nonce.
 
 The associated data, A, for the AEAD is the contents of the QUIC header,
-starting from the flags octet in the common header.
+starting from the flags octet in either the short or long header.
 
-The input plaintext, P, for the AEAD is the contents of the QUIC frame following
-the packet number, as described in {{QUIC-TRANSPORT}}.
+The input plaintext, P, for the AEAD is the content of the QUIC frame following
+the header, as described in {{QUIC-TRANSPORT}}.
 
 The output ciphertext, C, of the AEAD is transmitted in place of P.
 
