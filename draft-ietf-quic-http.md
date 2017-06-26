@@ -242,7 +242,7 @@ error if it receives a stream header that uses an unknown or unsupported type.
 
 Stream 1 is opened by both client and server and is used for the SETTINGS frame
 immediately after the connection opens.  After the SETTINGS frame has been sent,
-this stream is used for PRIORITY frames.
+this stream is used for PRIORITY and CANCEL_REQUEST frames.
 
 There is no stream header for a connection control stream; the stream is
 identified by its stream number.  The connection control stream contains a
@@ -357,10 +357,9 @@ PUSH_PROMISE frame might not have been received when the push stream is opened.
 
 ## HTTP Message Exchanges
 
-A client sends an HTTP request on a new QUIC request stream
-({{stream-request}}). A server sends an HTTP response on a
-response stream ({{stream-response}}).  The response stream header includes the
-stream ID of the request stream.
+A client sends an HTTP request on a new request stream ({{stream-request}}). A
+server sends an HTTP response on a response stream ({{stream-response}}).  The
+response stream header includes the stream ID of the request stream.
 
 An HTTP message (request or response) consists of:
 
@@ -451,12 +450,13 @@ is successfully established, the proxy sends a HEADERS frame containing a 2xx
 series status code to the client, as defined in {{!RFC7231}}, Section 4.3.6, on
 the response stream.
 
-The data received on the data streams associated with this exchange after the
-stream header correspond directly to data sent on the TCP connection. Any QUIC
-STREAM frame sent by the client is transmitted by the proxy to the TCP server;
-data received from the TCP server is written to the data stream by the
-proxy. Note that the size and number of TCP segments is not guaranteed to map
-predictably to the size and number of QUIC STREAM frames.
+The request and response streams for the CONNECT method MUST include a HAS_BODY
+frame.  The data received on the data streams associated with this exchange
+after the stream header correspond directly to data sent on the TCP
+connection. Any QUIC STREAM frame sent by the client is transmitted by the proxy
+to the TCP server; data received from the TCP server is written to the data
+stream by the proxy. Note that the size and number of TCP segments is not
+guaranteed to map predictably to the size and number of QUIC STREAM frames.
 
 The TCP connection can be closed by either peer. When the client closes the data
 stream, the proxy will set the FIN bit on its connection to the TCP server.
@@ -508,11 +508,11 @@ The server push response is conveyed on a push stream.  Aside from the stream
 header, which identifies the response stream and PUSH_PROMISE frame, a push
 stream is identical to a regular response stream ({{stream-response}}), with
 response headers and (if present) trailers carried by HEADERS frames sent on the
-control stream, and response body (if any) indicated with a HAS_BODY frame and
+push stream, and response body (if any) indicated with a HAS_BODY frame and
 associated data stream.
 
 
-# HTTP Framing Layer
+# HTTP Framing Layer {#http-framing-layer}
 
 Frames are used only on the connection (stream 1) and request, response, and
 push streams.  Other streams carry data payload and are not framed at the HTTP
@@ -610,7 +610,7 @@ HTTP/2.
 
 The flags defined are:
 
-  PUSH (0x04):
+  PUSH_PRIORITIZED (0x04):
   : Indicates that the Prioritized Stream is a server push rather than a
     request.  If set, this flag indicates that the Prioritized Stream identifies
     a response stream and the Promise Index field is present.
@@ -641,14 +641,15 @@ The PRIORITY frame payload has the following fields:
 
   Prioritized Request:
   : A 32-bit identifier for a request.  This contains the stream ID of a request
-    stream when the PUSH flag is clear, or a push ID when the PUSH flag is set.
+    stream when the PUSH_PRIORITIZED flag is clear, or a push ID when the PUSH
+    flag is set.
 
   Stream Dependency:
   : A 32-bit stream identifier for a dependent request.  This contains the
-    stream ID of a request stream when the PUSH flag is clear, or a push ID when
-    the PUSH flag is set.  A request stream ID of 0 indicates a dependency on
-    the root stream. For details of dependencies, see{{priority}} and
-    {!RFC7540}} Section 5.3).
+    stream ID of a request stream when the PUSH_DEPENDENT flag is clear, or a
+    push ID when the PUSH_DEPENDENT flag is set.  A request stream ID of 0
+    indicates a dependency on the root stream. For details of dependencies,
+    see {{priority}} and {!RFC7540}} Section 5.3).
 
   Weight:
   : An unsigned 8-bit integer representing a priority weight for the stream (see
@@ -657,9 +658,9 @@ The PRIORITY frame payload has the following fields:
 
 A PRIORITY frame identifies a request to priotize, and a request upon which that
 request is dependent.  A request is identified by the stream ID of a request
-when the corresponding PUSH or PUSH_DEPENDENT flag is not set.  Setting the PUSH
-or PUSH_DEPENDENT flag causes the frame to identify a PUSH_PROMISE using a Push
-ID (see {{frame-push-promise}} for details).
+when the corresponding PUSH_PRIORITIZED or PUSH_DEPENDENT flag is not set.
+Setting the PUSH or PUSH_DEPENDENT flag causes the frame to identify a
+PUSH_PROMISE using a Push ID (see {{frame-push-promise}} for details).
 
 A PRIORITY frame MAY identify no request by using a stream ID of 0; as in
 {{!RFC7540}}, this makes the request dependent on the root of the dependency
@@ -667,8 +668,8 @@ tree.
 
 A PRIORITY frame that does not reference a request MUST be treated as a
 HTTP_MALFORMED_PRIORITY error, unless it references stream ID 0.  A PRIORITY
-that sets a PUSH or PUSH_DEPENDENT flag, but then references a non-existent Push
-ID MUST be treated as a HTTP_MALFORMED_PRIORITY error.
+that sets a PUSH_PRIORITIZED or PUSH_DEPENDENT flag, but then references a
+non-existent Push ID MUST be treated as a HTTP_MALFORMED_PRIORITY error.
 
 The length of a PRIORITY frame is 9 octets.  A PRIORITY frame with any other
 length MUST be treated as a connection error of type HTTP_MALFORMED_PRIORITY.
@@ -713,8 +714,6 @@ The flags defined are:
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
    |                 Request Stream/Push ID (32)                   |
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |                      Error Code (32)                          |
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~~~~~~~~
 {: #fig-cancel-request title="CANCEL_REQUEST frame payload"}
 
@@ -726,11 +725,8 @@ The CANCEL_REQUEST frame payload has the following fields:
     {{frame-push-promise}}); if the PUSH flag is cleared, this refers to a
     request by its stream ID.
 
-  Error Code:
-  : A 32-bit error code indicating why the response is not desired.
-
-A CANCEL_REQUEST frame always contains an 8 octet payload.  A server MUST treat
-a CANCEL_REQUEST frame payload that is other than 8 octets in length, or a
+A CANCEL_REQUEST frame always contains a four octet payload.  A server MUST
+treat a CANCEL_REQUEST frame payload that is other than 8 octets in length, or a
 CANCEL_REQUEST frame that identifies a stream that doesn't carry a valid request
 as an HTTP_MALFORMED_CANCEL_REQUEST error.  Note however that due to packet
 reordering, a CANCEL_REQUEST frame could arrive before the request stream that
@@ -890,8 +886,8 @@ entire connection when an error is encountered.  These are referred to as
 
 HTTP/QUIC requires that only data streams be terminated abruptly.  Terminating a
 request, response or push stream will result in an error of type
-HTTP_RST_CONTROL_STREAM.  \[Editor's note: this is clearly busted right now,
-because data streams don't always exist.]
+HTTP_RST_CONTROL_STREAM.  The CANCEL_REQUEST frame can be used to cleanly abort
+a request without affecting connection state.
 
 This section describes HTTP-specific error codes which can be used to express
 the cause of a connection or stream error.
