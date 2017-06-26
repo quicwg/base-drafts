@@ -718,7 +718,7 @@ parameter, as shown:
 For example, the client packet protection secret uses an info parameter of:
 
 ~~~
-   info = (HashLen / 256) || (HashLen % 256) || 0x21 ||
+   info = (HashLen / 256) || (HashLen % 256) || 0x1f ||
           "tls13 QUIC client 1-RTT secret" || 0x00
 ~~~
 
