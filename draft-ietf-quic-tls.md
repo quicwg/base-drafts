@@ -877,12 +877,12 @@ QUIC uses the 64-bit version of the alternative Fowler/Noll/Vo hash (FNV-1a)
 
 FNV-1a can be expressed in pseudocode as:
 
-```
+~~~
 hash := offset basis
 for each input octet:
     hash := hash XOR input octet
     hash := hash * prime
-```
+~~~
 
 That is, a 64-bit unsigned integer is initialized with an offset basis.  Then,
 for each octet of the input, the exclusive binary OR of the value is taken, then
