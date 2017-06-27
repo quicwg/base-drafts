@@ -1544,7 +1544,7 @@ Stream Data:
 
 : The bytes from the designated stream to be delivered.
 
-A stream frame's payload MUST NOT be empty, unless the FIN bit is set.  When the
+A stream frame's Stream Data MUST NOT be empty, unless the FIN bit is set.  When the
 FIN flag is sent on an empty STREAM frame, the offset in the STREAM frame MUST
 be one greater than the last data byte sent on this stream.
 
