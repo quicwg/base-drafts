@@ -2294,7 +2294,7 @@ actually lost.
 
 # Streams: QUIC's Data Structuring Abstraction {#streams}
 
-Streams in QUIC provide a lightweight, ordered, and unidirectional byte-stream.
+Streams in QUIC provide a lightweight, ordered, unidirectional byte-stream.
 
 Streams can be created either by the client or the server, can concurrently send
 data interleaved with other streams, and can be cancelled.
@@ -2323,10 +2323,9 @@ for some applications.
 Streams are identified by an unsigned 32-bit integer, referred to as the Stream
 ID.  A separate identifier space is used for streams sent by each peer.
 
-Stream ID 0 (0x0) in both directions is reserved for the cryptographic
-handshake.  Both client and server send cryptographic handshake messages on
-their stream 0, which is bound into a bidirectional channel.  Stream 0 MUST NOT
-be used for application data.
+Stream ID 0 in both directions is reserved for the cryptographic handshake.
+Both client and server send cryptographic handshake messages on their stream 0.
+Stream 0 MUST NOT be used for application data.
 
 A QUIC endpoint cannot reuse a Stream ID.  Streams MUST be created in sequential
 order.  Open streams can be used in any order.  Streams that are used out of
@@ -2341,10 +2340,10 @@ stream ID are zero.
 ## Stream States
 
 Endpoints do not coordinate the creation of streams; they are created
-unilaterally by either endpoint.
+unilaterally by the sending endpoint.
 
-A stream sender controls the state of its streams; the state of a stream is only
-affected by frames that are sent by the sending endpoint.  However,
+Transitions between stream states ("idle", "open", and "closed") is only
+triggered by frames that are sent by the sending endpoint.  However,
 state-affecting frames can arrive out of order at the receiving endpoint,
 leading to a different set of valid transitions for receiving streams.
 
@@ -2433,7 +2432,9 @@ Sending a STREAM or RST_STREAM frame causes the identified stream to become
 "open" for a sending endpoint.  New streams use the next available stream
 identifier, as described in {{stream-id}}.  An endpoint MUST NOT send a STREAM
 or RST_STREAM frame for a stream ID that is higher than the peers advertised
-maximum stream ID (see {{frame-max-stream-id}}).
+maximum stream ID (see {{frame-max-stream-id}}).  An endpoint MUST treat
+receiving a STREAM or RST_STREAM frame for stream above the maximum as a
+QUIC_TOO_MANY_OPEN_STREAMS error.
 
 Receiving a STREAM, RST_STREAM, or STREAM_BLOCKED frame causes a stream to
 become "open" for a receiving endpoint.
@@ -2466,8 +2467,8 @@ From the "open" state, the sending endpoint causes the stream to become "closed"
 by sending a RST_STREAM frame, or by sending a STREAM frame with the FIN flag
 set after sending all preceding data.
 
-A stream becomes "closed" at the receiving endpoint when all data is received
-and a STREAM frame with a FIN flag is received or when a RST_STREAM frame is
+A stream becomes "closed" at the receiving endpoint when a RST_STREAM frame is
+received or when all data is received and a STREAM frame with a FIN flag is
 received.
 
 

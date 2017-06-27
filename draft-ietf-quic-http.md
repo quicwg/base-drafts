@@ -191,9 +191,9 @@ the stream management. An HTTP request/response consumes a pair of streams in
 each direction.
 
 Aside from the connection control stream, the beginning of each stream starts
-with a short stream header.  This stream header is used to identify the type of
-stream and to link the stream to another stream as necessary.  See
-{{stream-header}} for more details on the stream header.
+with a short stream header ({{stream-header}}).  This stream header is used to
+identify the type of stream and to link the stream to another stream as
+necessary.
 
 \[Editor's Note: the following is clearly busted.  Requests and responses can't
 reliably be cancelled as a result of this change.  We will need QPACK/QCRAM for
@@ -201,10 +201,10 @@ this to work.] Request, response and push streams contain HPACK data which
 manipulates connection-level state.  Therefore, these streams MUST NOT be closed
 with a stream-level error.
 
-Streams must be opened sequentially, with no gaps.  Data streams SHOULD be
-opened after the request, response or push stream is opened.  Data streams are
-closed after transferring the body.  Data streams are not opened for messages
-that contain no body and messages that contain an empty body.
+New streams use the next available QUIC stream.  Data streams SHOULD be opened
+after the request, response or push stream is opened.  Data streams are closed
+after transferring the body.  Data streams are not opened for messages that
+contain no body and messages that contain an empty body.
 
 HTTP does not need to do any separate multiplexing when using QUIC - data sent
 over a QUIC stream always maps to a particular HTTP transaction. Requests and
@@ -247,9 +247,6 @@ this stream is used for PRIORITY and CANCEL_REQUEST frames.
 There is no stream header for a connection control stream; the stream is
 identified by its stream number.  The connection control stream contains a
 sequence of frames, starting with the SETTINGS frame.
-
-If an endpoint receives a stream type of 0xff on any stream other than stream 1,
-it MUST terminate the connection with an HTTP_INVALID_STREAM_HEADER error.
 
 
 ### Request Streams {#stream-request}
@@ -302,7 +299,7 @@ the connection MUST be terminated with an HTTP_UNMATCHED_RESPONSE error.
 Data streams are opened by both client and server.  Data streams carry the
 payload body of requests or responses.
 
-The stream header for a response stream contains the type octet, which is set to
+The stream header for a data stream contains the type octet, which is set to
 0x02, and the stream ID of a request or response stream as a 32-bit value.
 
 ~~~~~
