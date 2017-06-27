@@ -938,10 +938,6 @@ create a connection using that version.  Though the contents of a packet might
 not change in response to version negotiation, a client MUST choose a new packet
 number it uses on every packet it sends.
 
-If the server does not list an acceptable version, the client MAY ignore the
-Version Negotiation packet.  This might reduce the likelihood that a spoofed
-Version Negotiation packet can be used to disrupt connection establishment.
-
 The client MUST use the long header format and include its selected version on
 all packets until it has 1-RTT keys and it has received a packet from the server
 which is not a Version Negotiation packet.
@@ -1238,16 +1234,15 @@ version negotiation occurred but it would have selected a different version
 based on the value of the supported_versions list.
 
 If the client receives a Version Negotiation packet and these validation checks
-subsequently fail, it is likely that the client received a spoofed Version
+subsequently fail, it is possible that the client received a spoofed Version
 Negotiation packet.  A client MAY attempt to create a new connection and ignore
 any Version Negotiation packets that match those that caused the connection to
 fail.
 
 Note:
 
-: The client cannot rely on the version list from the transport parameters.
-  Until the cryptographic handshake is successfully completed, these values
-  cannot be considered to be authentic.
+: The version list from the transport parameters is not authenticated until
+  after the cryptographic handshake is complete.
 
 
 ## Stateless Retries {#stateless-retry}
