@@ -614,9 +614,9 @@ are described in this section.
 
 bytes_in_flight:
 : The sum of the size in bytes of all sent packets that contain at least
-  one retransmittable frame, and have not been acked or declared lost.
-  The size does not include IP or UDP overhead.  Ack only frames do not
-  count towards byte_in_flight.
+  one retransmittable or PADDING frame, and have not been acked or
+  declared lost. The size does not include IP or UDP overhead.
+  Ack only frames do not count towards byte_in_flight.
 
 congestion_window:
 : Maximum number of bytes in flight that may be sent.
