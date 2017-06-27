@@ -468,7 +468,10 @@ Connection ID Flag:
 
 : The second bit (0x40) of the first octet indicates whether the Connection ID
   field is present.  If set to 1, then the Connection ID field is present; if
-  set to 0, the Connection ID field is omitted.
+  set to 0, the Connection ID field is omitted.  The Connection ID field can
+  only be omitted if the omit_connection_id transport parameter
+  ({{transport-parameter-definitions}}) is used by the intended recipient of the
+  packet.
 
 Key Phase Bit:
 
@@ -1045,7 +1048,7 @@ language from Section 3 of {{!I-D.ietf-tls-tls13}}.
       initial_max_data(1),
       initial_max_stream_id(2),
       idle_timeout(3),
-      truncate_connection_id(4),
+      omit_connection_id(4),
       max_packet_size(5),
       (65535)
    } TransportParameterId;
@@ -1123,12 +1126,13 @@ idle_timeout (0x0003):
 
 An endpoint MAY use the following transport parameters:
 
-truncate_connection_id (0x0004):
+omit_connection_id (0x0004):
 
-: The truncated connection identifier parameter indicates that packets sent to
-  the peer can omit the connection ID.  This can be used by an endpoint where
-  the 5-tuple is sufficient to identify a connection.  This parameter is zero
-  length.  Omitting the parameter indicates that the endpoint relies on the
+: The omit connection identifier parameter indicates that packets sent to the
+  endpoint that advertises this parameter can omit the connection ID.  This can
+  be used by an endpoint where it knows that source and destination IP address
+  and port are sufficient for it to identify a connection.  This parameter is
+  zero length.  Absence this parameter indicates that the endpoint relies on the
   connection ID being present in every packet.
 
 max_packet_size (0x0005):
@@ -3057,7 +3061,7 @@ The initial contents of this registry are shown in
 | 0x0001 | initial_max_data        | {{transport-parameter-definitions}} |
 | 0x0002 | initial_max_stream_id   | {{transport-parameter-definitions}} |
 | 0x0003 | idle_timeout            | {{transport-parameter-definitions}} |
-| 0x0004 | truncate_connection_id  | {{transport-parameter-definitions}} |
+| 0x0004 | omit_connection_id      | {{transport-parameter-definitions}} |
 | 0x0005 | max_packet_size         | {{transport-parameter-definitions}} |
 {: #iana-tp-table title="Initial QUIC Transport Parameters Entries"}
 
