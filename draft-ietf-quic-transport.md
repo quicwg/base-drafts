@@ -414,15 +414,15 @@ The following packet types are defined:
 
 | Type | Name                          | Section                     |
 |:-----|:------------------------------|:----------------------------|
-| 01   | Version Negotiation           | {{packet-version}}          |
-| 02   | Client Initial                | {{packet-client-initial}}   |
-| 03   | Server Stateless Retry        | {{packet-server-stateless}} |
-| 04   | Server Cleartext              | {{packet-server-cleartext}} |
-| 05   | Client Cleartext              | {{packet-client-cleartext}} |
-| 06   | 0-RTT Protected               | {{packet-protected}}        |
-| 07   | 1-RTT Protected (key phase 0) | {{packet-protected}}        |
-| 08   | 1-RTT Protected (key phase 1) | {{packet-protected}}        |
-| 09   | Public Reset                  | {{packet-public-reset}}     |
+| 0x01 | Version Negotiation           | {{packet-version}}          |
+| 0x02 | Client Initial                | {{packet-client-initial}}   |
+| 0x03 | Server Stateless Retry        | {{packet-server-stateless}} |
+| 0x04 | Server Cleartext              | {{packet-server-cleartext}} |
+| 0x05 | Client Cleartext              | {{packet-client-cleartext}} |
+| 0x06 | 0-RTT Protected               | {{packet-protected}}        |
+| 0x07 | 1-RTT Protected (key phase 0) | {{packet-protected}}        |
+| 0x08 | 1-RTT Protected (key phase 1) | {{packet-protected}}        |
+| 0x09 | Public Reset                  | {{packet-public-reset}}     |
 {: #long-packet-types title="Long Header Packet Types"}
 
 The header form, packet type, connection ID, packet number and version fields of
@@ -504,9 +504,9 @@ other fields.
 
 | Type | Packet Number Size |
 |:-----|:-------------------|
-| 01   | 1 octet            |
-| 02   | 2 octets           |
-| 03   | 4 octets           |
+| 0x01 | 1 octet            |
+| 0x02 | 2 octets           |
+| 0x03 | 4 octets           |
 {: #short-packet-types title="Short Header Packet Types"}
 
 The header form, connection ID flag and connection ID of a short header packet
