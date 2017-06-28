@@ -187,8 +187,8 @@ HTTP connection.  If either connection control stream is closed for any reason,
 this MUST be treated as a connection error of type QUIC_CLOSED_CRITICAL_STREAM.
 
 When HTTP headers and data are sent over QUIC, the QUIC layer handles most of
-the stream management. An HTTP request/response consumes a pair of streams in
-each direction.
+the stream management. An HTTP request/response consumes a bidirectional pair of
+streams in each direction.
 
 Aside from the connection control stream, the beginning of each stream starts
 with a short stream header.  This stream header is used to identify the type of
@@ -214,12 +214,13 @@ closed.
 
 ## Stream Header
 
-The stream header is used to correlate requests and responses, including the
-response to server push with the PUSH_PROMISE containing the request.
+The stream header is used to correlate unidirectional streams with ongoing
+request/response exchanges, including the response to server push with the
+PUSH_PROMISE containing the request.  There is no stream header for
+bidirectional streams; the stream is correlated at the QUIC layer.
 
 The stream header consists of a single octet that identifies the type of stream,
 plus any parameters that are specific to the stream type.
-
 
 ## Stream Types
 
@@ -228,10 +229,9 @@ The stream types are summarized in {{stream-type-table}}.
 | Stream Type        | Code | Section             |
 |:-------------------|-----:|:--------------------|
 | Connection Control | n/a  | {{stream-control}}  |
-| Request            | 0x00 | {{stream-request}}  |
-| Response           | 0x01 | {{stream-response}} |
-| Data               | 0x02 | {{stream-data}}     |
-| Push               | 0x03 | {{stream-push}}     |
+| Request            | n/a  | {{stream-request}}  |
+| Data               | 0x00 | {{stream-data}}     |
+| Push               | 0x01 | {{stream-push}}     |
 {: #stream-type-table title="Stream Types"}
 
 An endpoint MUST terminate the connection with an HTTP_INVALID_STREAM_HEADER
@@ -240,70 +240,31 @@ error if it receives a stream header that uses an unknown or unsupported type.
 
 ### Stream 1: Connection Control Stream {#stream-control}
 
-Stream 1 is opened by both client and server and is used for the SETTINGS frame
-immediately after the connection opens.  After the SETTINGS frame has been sent,
-this stream is used for PRIORITY and CANCEL_REQUEST frames.
+Stream 1 is a bidirectional stream opened by the client and is used for
+the SETTINGS frame immediately after the connection opens.  After the SETTINGS
+frame has been sent, this stream is used for PRIORITY and CANCEL_REQUEST frames.
 
-There is no stream header for a connection control stream; the stream is
-identified by its stream number.  The connection control stream contains a
-sequence of frames, starting with the SETTINGS frame.
-
-If an endpoint receives a stream type of 0xff on any stream other than stream 1,
-it MUST terminate the connection with an HTTP_INVALID_STREAM_HEADER error.
+The connection control stream contains a sequence of frames, starting with the
+SETTINGS frame.
 
 
 ### Request Streams {#stream-request}
 
-Request streams are opened by the client.  Request streams carry the headers and
-any trailers of requests.
+Request streams are bidirectional streams opened by the client.  Request streams
+carry the headers and any trailers of requests from the client to the server.
+In the server-to-client direction, request streams carry the headers and
+optional trailers of responses, plus any promises for server push.
 
-~~~~~
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+
-|   Type (8)    |
-+-+-+-+-+-+-+-+-+
-~~~~~
-
-The stream header for a request stream contains only the type octet, which is
-set to 0x00.  After the stream header, request streams contain a sequence of
-frames (see {{http-framing-layer}}).
-
-
-### Response Streams {#stream-response}
-
-Response streams are opened by the server.  Response streams carry the headers
-and optional trailers of responses, plus any promises for server push.
-
-The stream header for a response stream contains the type octet, which is set to
-0x01, and the stream ID of the request stream that this response is for as a
-32-bit value.
-
-~~~~~
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+
-|   Type (8)    |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                        Stream ID (32)                         |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-~~~~~
-
-After the stream header, response streams contain a sequence of frames (see
-{{http-framing-layer}}).
-
-If a response stream header identifies a stream that is not a request stream, or
-it references a request stream that already has an associated response stream,
-the connection MUST be terminated with an HTTP_UNMATCHED_RESPONSE error.
+Request streams contain a sequence of frames (see {{http-framing-layer}}).
 
 
 ### Data Streams {#stream-data}
 
-Data streams are opened by both client and server.  Data streams carry the
-payload body of requests or responses.
+Data streams are unidirectional streams opened by both clients and servers. Data
+streams carry the payload body of requests or responses.
 
-The stream header for a response stream contains the type octet, which is set to
-0x02, and the stream ID of a request or response stream as a 32-bit value.
+The stream header for a data stream contains the type octet, which is set to
+0x00, and the stream ID of a request stream as a 32-bit value.
 
 ~~~~~
  0                   1                   2                   3
@@ -318,23 +279,23 @@ The stream header for a response stream contains the type octet, which is set to
 After the stream header, data streams contain the octets of the payload body.
 Data streams do not carry frames.
 
-Data streams MUST reference a request or response stream.  The referenced stream
-MUST include a HAS_BODY frame.  If a data stream is received that references a
-stream of a different type, the referenced stream does not include a HAS_BODY
-frame, or another data stream already references the identified steam, then the
-connection MUST be terminated with a HTTP_UNMATCHED_BODY error.  Note that due
-to reordering of packets, the referenced stream or HAS_BODY frame might not have
-been received when the data stream is opened.
-
+Data streams MUST reference a request stream.  The referenced stream MUST
+include a HAS_BODY frame in the same direction.  If a data stream is received
+that references a stream of a different type, the referenced stream does not
+include a HAS_BODY frame, or another data stream already references the
+identified steam, then the connection MUST be terminated with a
+HTTP_UNMATCHED_DATA error.  Note that due to reordering of packets, the
+referenced stream or HAS_BODY frame might not have been received when the data
+stream is opened.
 
 
 ### Push Streams {#stream-push}
 
-Push streams are opened by servers.  Push streams carry headers of responses for
-use with server push.
+Push streams are unidirectional streams opened by servers.  Push streams carry
+headers of responses for use with server push.
 
 The stream header for a push stream contains the type octet, which is set to
-0x03, and the push ID from a PUSH_PROMISE frame (see {{frame-push-promise}}).
+0x01, and the push ID from a PUSH_PROMISE frame (see {{frame-push-promise}}).
 
 ~~~~~
  0                   1                   2                   3
@@ -357,9 +318,9 @@ PUSH_PROMISE frame might not have been received when the push stream is opened.
 
 ## HTTP Message Exchanges
 
-A client sends an HTTP request on a new request stream ({{stream-request}}). A
-server sends an HTTP response on a response stream ({{stream-response}}).  The
-response stream header includes the stream ID of the request stream.
+A client sends an HTTP request on a new bidirectional stream
+({{stream-request}}). A server sends an HTTP response on the corresponding
+stream, managed by the QUIC layer.
 
 An HTTP message (request or response) consists of:
 
@@ -393,17 +354,17 @@ block in the trailers section; receivers MUST decode any subsequent header
 blocks in order to maintain HPACK decoder state, but the resulting output MUST
 be discarded.
 
-An HTTP request/response exchange fully consumes a request stream and response
-stream.  The exchange also consumes a stream for each payload body that is
-present.  After sending a request, a client closes the streams it used for
-sending the request and any request body; after sending a response, the server
-closes the stream it used for sending the request and any payload body.
+An HTTP request/response exchange fully consumes a bidirectional stream, as well
+as a unidirectional stream for each payload body that is present.  After sending
+a request, a client closes the streams it used for sending the request and any
+request body; after sending a response, the server closes the streams it used
+for sending the request and any payload body.
 
 A server can send a complete response prior to the client sending an entire
 request if the response does not depend on any portion of the request that has
 not been sent and received.  A server can request that the client cease
 transmission and retransmission of stream data on the stream or streams that
-carry the request by sending a REQUEST_RST frame on those streams (TBD).
+carry the request by sending a DISINTEREST frame on those streams (TBD).
 
 
 ### Header Compression
@@ -452,11 +413,11 @@ the response stream.
 
 The request and response streams for the CONNECT method MUST include a HAS_BODY
 frame.  The data received on the data streams associated with this exchange
-after the stream header correspond directly to data sent on the TCP
-connection. Any QUIC STREAM frame sent by the client is transmitted by the proxy
-to the TCP server; data received from the TCP server is written to the data
-stream by the proxy. Note that the size and number of TCP segments is not
-guaranteed to map predictably to the size and number of QUIC STREAM frames.
+correspond directly to data sent on the TCP connection. Any QUIC STREAM frame
+sent by the client is transmitted by the proxy to the TCP server; data received
+from the TCP server is written to the data stream by the proxy. Note that the
+size and number of TCP segments is not guaranteed to map predictably to the size
+and number of QUIC STREAM frames.
 
 The TCP connection can be closed by either peer. When the client closes the data
 stream, the proxy will set the FIN bit on its connection to the TCP server.
@@ -501,15 +462,14 @@ As with server push for HTTP/2, the server initiates a server push by sending a
 PUSH_PROMISE frame that includes request header fields attributed to the
 request. The PUSH_PROMISE frame is sent on a response stream.  Unlike HTTP/2,
 the PUSH_PROMISE does not reference a stream; when a server fulfills a promise,
-the stream that carries the stream headers references the PUSH_PROMISE.  This
+the stream that carries the response headers references the PUSH_PROMISE.  This
 allows a server to fulfill promises in the order that best suits its needs.
 
 The server push response is conveyed on a push stream.  Aside from the stream
-header, which identifies the response stream and PUSH_PROMISE frame, a push
-stream is identical to a regular response stream ({{stream-response}}), with
-response headers and (if present) trailers carried by HEADERS frames sent on the
-push stream, and response body (if any) indicated with a HAS_BODY frame and
-associated data stream.
+header, which identifies the Push ID, a push stream is identical to the response
+on a request stream ({{stream-request}}), with response headers and (if present)
+trailers carried by HEADERS frames sent on the push stream, and response body
+(if any) indicated with a HAS_BODY frame and associated data stream.
 
 
 # HTTP Framing Layer {#http-framing-layer}
@@ -957,9 +917,6 @@ HTTP_RST_CONTROL_STREAM (0x11):
 HTTP_INVALID_STREAM_HEADER (0x12):
 : A stream header contained an unknown type or referenced an invalid stream.
 
-HTTP_UNMATCHED_RESPONSE (0x13):
-: A response stream referenced an invalid stream.
-
 HTTP_UNMATCHED_DATA (0x14):
 : A data stream referenced an invalid stream.
 
@@ -1322,7 +1279,6 @@ The entries in the following table are registered by this document.
 |  HTTP_MULTIPLE_SETTINGS           |  0x10  |  Multiple SETTINGS frames                    |  {{http-error-codes}}  |
 |  HTTP_RST_CONTROL_STREAM          |  0x11  |  A stream containing headers was RST         |  {{http-error-codes}}  |
 |  HTTP_INVALID_STREAM_HEADER       |  0x12  |  Invalid stream header                       |  {{http-error-codes}}  |
-|  HTTP_UNMATCHED_RESPONSE          |  0x13  |  Response stream header was invalid          |  {{http-error-codes}}  |
 |  HTTP_UNMATCHED_DATA              |  0x14  |  Data stream header was invalid              |  {{http-error-codes}}  |
 |  HTTP_UNMATCHED_PUSH              |  0x15  |  Push stream header was invalid              |  {{http-error-codes}}  |
 |  HTTP_WRONG_STREAM                |  0x16  |  A frame was sent on the wrong stream        |  {{http-error-codes}}  |
