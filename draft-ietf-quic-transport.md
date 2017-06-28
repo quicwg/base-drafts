@@ -367,6 +367,10 @@ version negotiation and 1-RTT keys are established.
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                          Payload (*)                        ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                                                               |
++                        [FNV Hash(64)]                         +
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~~~
 {: #fig-long-header title="Long Header Format"}
 
@@ -409,6 +413,12 @@ Payload:
 
 : Octets from 17 onwards (the rest of QUIC packet) are the payload of the
   packet.
+
+FNV Hash:
+
+: If Packet Type is unprotected ( Version Negociation, Client Initial,
+  Client/Server Cleartext, Public Reset ) a 64-bit FNV-1a hash is present.
+  See {{QUIC-TLS}} for more details
 
 The following packet types are defined:
 
