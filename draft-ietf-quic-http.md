@@ -191,9 +191,9 @@ the stream management. An HTTP request/response consumes a bidirectional pair of
 streams in each direction.
 
 Aside from the connection control stream, the beginning of each stream starts
-with a short stream header.  This stream header is used to identify the type of
-stream and to link the stream to another stream as necessary.  See
-{{stream-header}} for more details on the stream header.
+with a short stream header ({{stream-header}}).  This stream header is used to
+identify the type of stream and to link the stream to another stream as
+necessary.
 
 \[Editor's Note: the following is clearly busted.  Requests and responses can't
 reliably be cancelled as a result of this change.  We will need QPACK/QCRAM for
@@ -201,10 +201,10 @@ this to work.] Request, response and push streams contain HPACK data which
 manipulates connection-level state.  Therefore, these streams MUST NOT be closed
 with a stream-level error.
 
-Streams must be opened sequentially, with no gaps.  Data streams SHOULD be
-opened after the request, response or push stream is opened.  Data streams are
-closed after transferring the body.  Data streams are not opened for messages
-that contain no body and messages that contain an empty body.
+New streams use the next available QUIC stream.  Data streams SHOULD be opened
+after the request, response or push stream is opened.  Data streams are closed
+after transferring the body.  Data streams are not opened for messages that
+contain no body and messages that contain an empty body.
 
 HTTP does not need to do any separate multiplexing when using QUIC - data sent
 over a QUIC stream always maps to a particular HTTP transaction. Requests and
@@ -243,9 +243,6 @@ error if it receives a stream header that uses an unknown or unsupported type.
 Stream 1 is a bidirectional stream opened by the client and is used for
 the SETTINGS frame immediately after the connection opens.  After the SETTINGS
 frame has been sent, this stream is used for PRIORITY and CANCEL_REQUEST frames.
-
-The connection control stream contains a sequence of frames, starting with the
-SETTINGS frame.
 
 
 ### Request Streams {#stream-request}
