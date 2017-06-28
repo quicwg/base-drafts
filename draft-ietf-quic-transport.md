@@ -198,6 +198,8 @@ strengths of QUIC include:
 
 * Version negotiation
 
+* Support for latency monitoring
+
 
 ## Low-Latency Connection Establishment
 
@@ -294,6 +296,15 @@ QUIC version negotiation allows for multiple versions of the protocol to be
 deployed and used concurrently. Version negotiation is described in
 {{version-negotiation}}.
 
+## Support for Latency Monitoring
+
+Network administrators have difficulties monitoring the behavior
+of encrypted protocols. Bandwidth can be monitored by observing the
+flow of encrypted packets, but the usual tools for monitoring
+latency require observing packet numbers and acknowledgements, which
+in QUIC are encrypted.
+QUIC packets enable monitoring of latency by including a clear text
+latency spin bit that is reflected between client and server.
 
 # Versions {#versions}
 
@@ -355,7 +366,7 @@ version negotiation and 1-RTT keys are established.
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+
-|1|   Type (7)  |
+|1|S|  Type (6) |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                                                               |
 +                       Connection ID (64)                      +
@@ -383,10 +394,15 @@ Header Form:
 : The most significant bit (0x80) of the first octet is set to 1 for long
   headers and 0 for short headers.
 
+Latency Spin Bit:
+
+: The second most significant bit (0x40) of the first octet carries
+  the latency spin bit used for latency monitoring.
+
 Long Packet Type:
 
-: The remaining seven bits of first octet of a long packet is the packet type.
-  This field can indicate one of 128 packet types.  The types specified for this
+: The remaining six bits of first octet of a long packet is the packet type.
+  This field can indicate one of 64 packet types.  The types specified for this
   version are listed in {{long-packet-types}}.
 
 Connection ID:
@@ -443,7 +459,7 @@ following sections.
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+
-|0|C|K| Type (5)|
+|0|S|C|K|Type(4)|
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                                                               |
 +                     [Connection ID (64)]                      +
@@ -464,9 +480,14 @@ Header Form:
 : The most significant bit (0x80) of the first octet of a packet is the header
   form.  This bit is set to 0 for the short header.
 
+Latency Spin Bit:
+
+: The second most significant bit (0x40) of the first octet carries
+  the latency spin bit used for latency monitoring.
+
 Connection ID Flag:
 
-: The second bit (0x40) of the first octet indicates whether the Connection ID
+: The third bit (0x20) of the first octet indicates whether the Connection ID
   field is present.  If set to 1, then the Connection ID field is present; if
   set to 0, the Connection ID field is omitted.  The Connection ID field can
   only be omitted if the omit_connection_id transport parameter
@@ -475,13 +496,13 @@ Connection ID Flag:
 
 Key Phase Bit:
 
-: The third bit (0x20) of the first octet indicates the key phase, which allows
+: The fourth bit (0x10) of the first octet indicates the key phase, which allows
   a recipient of a packet to identify the packet protection keys that are used
   to protect the packet.  See {{QUIC-TLS}} for details.
 
 Short Packet Type:
 
-: The remaining 5 bits of the first octet include one of 32 packet types.
+: The remaining 4 bits of the first octet include one of 16 packet types.
   {{short-packet-types}} lists the types that are defined for short packets.
 
 Connection ID:
@@ -831,6 +852,30 @@ Implementations MUST assume that an unsupported version uses an unknown packet
 format. All other fields MUST be ignored when processing a packet that contains
 an unsupported version.
 
+## Latency Spin Bit
+
+The latency spin bit enables latency monitoring from observation points on
+the network path. This bit is set as follow:
+
+* The server sets the spin bit value to the value of the
+  spin bit in the packet received from the client with
+  the largest sequence number.
+
+* The client sets the spin bit value to the opposite
+  of the value set in the packet received from the server with the
+  largest sequence number, or to 0
+  if no packet as been received yet.
+
+Observation points can estimate the network latency by monitoring these
+changes in the latency spin bit.
+If packets are delivered in sequence, this procedure will cause the spin
+bit to change value in each direction once per round trip. Out of
+sequence deliveries can cause some spurious transitions, which
+monitoring agents may have to filter.
+
+The latency spin bit handling is similar to the
+"Alternate Marking method for passive performance monitoring"
+described in [@?I-D.draft-ietf-ippm-alt-mark].
 
 # Frames and Frame Types {#frames}
 
