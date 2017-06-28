@@ -1510,6 +1510,10 @@ A STREAM frame is shown below.
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                      Offset (0/16/32/64)                    ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|  [Flags (8)]  |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|              [Associated Stream ID (8/16/24/32)]            ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |       [Data Length (16)]      |        Stream Data (*)      ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
@@ -1529,6 +1533,16 @@ Offset:
   on a stream - the sum of the re-constructed offset and data length - MUST be
   less than 2^64.
 
+Flags:
+
+: Indicates properties of the stream.  Present only when the offset length is 0.
+  See {{stream-flags}}.
+
+Associated Stream ID:
+
+: The stream ID of the stream to which this stream responds.  See
+  {{stream-flags}} for details on the field's length and presence.
+
 Data Length:
 
 : An optional 16-bit unsigned number specifying the length of the Stream Data
@@ -1538,6 +1552,10 @@ Data Length:
 Stream Data:
 
 : The bytes from the designated stream to be delivered.
+
+The first STREAM frame on a given stream MUST use an Offset length of zero and
+a corresponding Flags field describing the stream.  A value of zero in a
+non-zero-length Offset field MUST NOT be used.
 
 A STREAM frame MUST have either non-zero data length or the FIN bit set.  When
 the FIN flag is sent on an empty STREAM frame, the offset in the STREAM frame
@@ -1556,6 +1574,28 @@ blocks all those streams from making progress.  An implementation is therefore
 advised to bundle as few streams as necessary in outgoing packets without losing
 transmission efficiency to underfilled packets.
 
+### Stream Flags {#stream-flags}
+
+The Flags field indicates properties of a newly-opened stream.  The use of these
+properties are controlled by the application, but are carried by the QUIC
+transport to ease reuse by multiple applications.
+
+The flags are formatted as `TTAARRRR`.  These bits are interpreted as follows:
+
+  - The `TT` bits indicate the type of the stream:
+      - `00` indicates a unidirectional stream (no response expected)
+      - `01` indicates the initial leg of a bidirectional stream (one response
+        expected)
+      - `10` indicates the initial leg of a one-to-many stream (one or more
+        responses expected)
+      - `11` indicates a response stream, and signals the presence of an
+        Associated Stream ID field
+  - The `AA` bits encode the length of the Associated Stream ID field.
+    The values 00, 01, 02, and 03 indicate lengths of 8, 16, 24, and 32 bits
+    long respectively.  These bits are ignored if the `TT` bits have any value
+    other than `11`.
+  - The `RRRR` bits are reserved to indicate additional stream properties in
+    future versions, and MUST be set to zero in this version.
 
 ## ACK Frame {#frame-ack}
 
@@ -2297,7 +2337,9 @@ actually lost.
 Streams in QUIC provide a lightweight, ordered, unidirectional byte-stream.
 
 Streams can be created either by the client or the server, can concurrently send
-data interleaved with other streams, and can be cancelled.
+data interleaved with other streams, and can be cancelled.  Streams can be
+associated with each other to enable bidirectional communication, including
+many-to-one relationships, as needed by the application protocol.
 
 Data that is received on a stream is delivered in order within that stream, but
 there is no particular delivery order across streams.  Transmit ordering among
@@ -2585,6 +2627,22 @@ sending new data, unless application priorities indicate otherwise.
 Retransmitting lost STREAM frames can fill in gaps, which allows the peer to
 consume already received data and free up flow control window.
 
+## Stream Correlation {#correlation}
+
+The first STREAM frame on a stream identifies whether the stream will be
+stand-alone, expects one or more responding streams, or is a response.
+Responding streams additionally identify the stream in the opposite direction
+with which they are correlated.  Correlated streams can be used to present
+bidirectional channels, subscriptions, or other useful abstractions to the
+application layer.
+
+Receipt of a stream associated to a parent which did not expect a response
+(unidirectional), or receipt of additional streams associated to a parent which
+expected only one response (bidirectional) MUST be treated as a stream error of
+type QUIC_CORRELATION_FAILED ({{error-handling}}).
+
+The client's stream 0 MUST request a bidirectional stream.  The server MUST
+use its stream 0 to respond.
 
 # Flow Control {#flow-control}
 
@@ -2844,6 +2902,9 @@ QUIC_STREAM_CANCELLED (0x80000006):
 
 QUIC_CLOSED_CRITICAL_STREAM (0x80000007):
 : A stream that is critical to the protocol was closed.
+
+QUIC_CORRELATION_FAILED (0x80000008):
+: A stream declared an association which could not be matched.
 
 QUIC_MISSING_PAYLOAD (0x80000030):
 : The packet contained no payload.
