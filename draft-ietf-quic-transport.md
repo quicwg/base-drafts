@@ -884,6 +884,7 @@ explained in more detail as they are referenced later in the document.
 | 0x09        | STREAM_BLOCKED    | {{frame-stream-blocked}}    |
 | 0x0a        | STREAM_ID_NEEDED  | {{frame-stream-id-needed}}  |
 | 0x0b        | NEW_CONNECTION_ID | {{frame-new-connection-id}} |
+| 0x0c        | DISINTEREST       | {{frame-disinterest}}       |
 | 0xa0 - 0xbf | ACK               | {{frame-ack}}               |
 | 0xc0 - 0xff | STREAM            | {{frame-stream}}            |
 {: #frame-types title="Frame Types"}
@@ -2034,7 +2035,7 @@ Final offset:
 
 ## DISINTEREST Frame {#frame-disinterest}
 
-An endpoint may use a DISINTEREST frame (type=0x08) to communicate that incoming
+An endpoint may use a DISINTEREST frame (type=0x0c) to communicate that incoming
 data is being discarded on receipt at application request.  This signals a peer
 to abruptly terminate transmission on a stream.  The frame is as follows:
 
