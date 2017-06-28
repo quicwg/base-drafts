@@ -385,9 +385,9 @@ Header Form:
 
 Long Packet Type:
 
-: The remaining seven bits of octet 0 of a long packet is the packet type.  This
-  field can indicate one of 128 packet types.  The types specified for this
-  version are listed in {{long-packet-types}}.
+: The remaining seven bits of octet 0 contain the packet type.  This field can
+  indicate one of 128 packet types.  The types specified for this version are
+  listed in {{long-packet-types}}.
 
 Connection ID:
 
