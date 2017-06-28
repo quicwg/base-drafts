@@ -258,6 +258,12 @@ largest_sent_before_rto:
 time_of_last_sent_packet:
 : The time the most recent packet was sent.
 
+largest_sent_packet:
+: The packet number of the most recently sent packet.
+
+largest_acked_packet:
+: The largest packet number acknowledged in an ack frame.
+
 latest_rtt:
 : The most recent RTT measurement made when receiving an ack for
   a previously unacked packet.
@@ -309,6 +315,7 @@ follows:
    rttvar = 0
    largest_sent_before_rto = 0
    time_of_last_sent_packet = 0
+   largest_sent_packet = 0
 ~~~
 
 ### On Sending a Packet
@@ -331,7 +338,8 @@ Pseudocode for OnPacketSent follows:
 
 ~~~
  OnPacketSent(packet_number, is_retransmittable, sent_bytes):
-   time_of_last_sent_packet = now;
+   time_of_last_sent_packet = now
+   largest_sent_packet = packet_number
    sent_packets[packet_number].packet_number = packet_number
    sent_packets[packet_number].time = now
    if is_retransmittable:
@@ -347,6 +355,7 @@ Pseudocode for OnAckReceived and UpdateRtt follow:
 
 ~~~
    OnAckReceived(ack):
+     largest_acked_packet = ack.largest_acked
      // If the largest acked is newly acked, update the RTT.
      if (sent_packets[ack.largest_acked]):
        latest_rtt = now - sent_packets[ack.largest_acked].time
@@ -389,6 +398,7 @@ Pseudocode for OnPacketAcked follows:
 
 ~~~
    OnPacketAcked(acked_packet_number):
+     OnPacketAckedCC(acked_packet_number)
      // If a packet sent prior to RTO was acked, then the RTO
      // was spurious.  Otherwise, inform congestion control.
      if (rto_count > 0 &&
@@ -617,7 +627,9 @@ are described in this section.
 
 bytes_in_flight:
 : The sum of the size in bytes of all sent packets that contain at least
-  one retransmittable frame, and have not been acked or declared lost.
+  one retransmittable or PADDING frame, and have not been acked or
+  declared lost. The size does not include IP or UDP overhead.
+  Ack only frames do not count towards byte_in_flight.
 
 congestion_window:
 : Maximum number of bytes in flight that may be sent.
@@ -643,13 +655,13 @@ follows:
 
 ## On Packet Acknowledgement
 
-Invoked at the same time loss detection's OnPacketAcked is called and
-supplied with the acked_packet from sent_packets.
+Invoked from loss detection's OnPacketAcked and is supplied with
+acked_packet from sent_packets.
 
-Pseudocode for OnPacketAcked follows:
+Pseudocode for OnPacketAckedCC follows:
 
 ~~~
-   OnPacketAcked(acked_packet):
+   OnPacketAckedCC(acked_packet):
      if (acked_packet.packet_number < end_of_recovery):
        return
      if (congestion_window < ssthresh):

@@ -710,7 +710,7 @@ parameter, as shown:
 
     struct {
         uint16 length = Length;
-        opaque label<10..255> = "TLS 1.3, " + Label;
+        opaque label<10..255> = "tls13 " + Label;
         uint8 hashLength;     // Always 0
     } HkdfLabel;
 ~~~
@@ -718,8 +718,8 @@ parameter, as shown:
 For example, the client packet protection secret uses an info parameter of:
 
 ~~~
-   info = (HashLen / 256) || (HashLen % 256) || 0x21 ||
-          "TLS 1.3, QUIC client 1-RTT secret" || 0x00
+   info = (HashLen / 256) || (HashLen % 256) || 0x1f ||
+          "tls13 QUIC client 1-RTT secret" || 0x00
 ~~~
 
 
@@ -775,10 +775,10 @@ to the size of the IV.  The exclusive OR of the padded packet number and the IV
 forms the AEAD nonce.
 
 The associated data, A, for the AEAD is the contents of the QUIC header,
-starting from the flags octet in the common header.
+starting from the flags octet in either the short or long header.
 
-The input plaintext, P, for the AEAD is the contents of the QUIC frame following
-the packet number, as described in {{QUIC-TRANSPORT}}.
+The input plaintext, P, for the AEAD is the content of the QUIC frame following
+the header, as described in {{QUIC-TRANSPORT}}.
 
 The output ciphertext, C, of the AEAD is transmitted in place of P.
 
@@ -877,12 +877,12 @@ QUIC uses the 64-bit version of the alternative Fowler/Noll/Vo hash (FNV-1a)
 
 FNV-1a can be expressed in pseudocode as:
 
-```
+~~~
 hash := offset basis
 for each input octet:
     hash := hash XOR input octet
     hash := hash * prime
-```
+~~~
 
 That is, a 64-bit unsigned integer is initialized with an offset basis.  Then,
 for each octet of the input, the exclusive binary OR of the value is taken, then

@@ -10,7 +10,9 @@ else
 	git clone -q --depth 10 -b master https://github.com/martinthomson/i-d-template.git lib
 endif
 
-latest::
+latest:: lint
+.PHONY: lint
+lint:
 	@err=0; for f in draft-*.md ; do \
 	  if grep -n ' $$' "$$f"; then \
 	    echo "$$f contains trailing whitespace"; err=1; \

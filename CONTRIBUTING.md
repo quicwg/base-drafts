@@ -24,7 +24,7 @@ new to this, you may also want to read the [Tao of the IETF](https://www.ietf.or
 
 The Working Group has a few venues for discussion:
 
-* We plain to meet at all [IETF meetings](https://www.ietf.org/meeting/) for the foreseeable future, and hold interim meetings between them, at least through 2017. See our [meeting materials repository](https://github.com/quicwg/wg-materials) and the [official proceedings](https://datatracker.ietf.org/wg/quic/meetings/).
+* We plan to meet at all [IETF meetings](https://www.ietf.org/meeting/) for the foreseeable future, and hold interim meetings between them, at least through 2017. See our [meeting materials repository](https://github.com/quicwg/wg-materials) and the [official proceedings](https://datatracker.ietf.org/wg/quic/meetings/).
 
 * Our [mailing list](https://www.ietf.org/mailman/listinfo/quic) is used for most communication, including notifications of meetings, new drafts, consensus calls and other business, as well as issue discussion.
 
@@ -77,6 +77,7 @@ Note that whether or not a design issue is closed does **not** reflect consensus
 
 We also use the following labels to help understand the state of our design issues:
 
+* [`arch`](https://github.com/quicwg/base-drafts/labels/arch): The issue is a higher-level architectural issue that should drive the solution to a number of other issues.
 * [`needs-discussion`](https://github.com/quicwg/base-drafts/labels/needs-discussion): The issue blocks progress to our next milestone.
 * [`has-proposal`](https://github.com/quicwg/base-drafts/labels/has-proposal): The issue has a proposal for resolution.
 * [`editor-ready`](https://github.com/quicwg/base-drafts/labels/editor-ready): The Working Group believes it has a viable resolution, but the editors need to incorporate that into the document so we can see it in situ.
@@ -114,15 +115,13 @@ addressed to:
  * The RFC Editor or the Internet-Drafts function
  * All IETF Contributions are subject to the rules of
    [RFC 5378](https://tools.ietf.org/html/rfc5378) and
-   [RFC 3979](https://tools.ietf.org/html/rfc3979)
-   (updated by [RFC 4879](https://tools.ietf.org/html/rfc4879)).
+   [RFC 8179](https://tools.ietf.org/html/rfc8179).
 
 Statements made outside of an IETF session, mailing list or other function, that are clearly not
 intended to be input to an IETF activity, group or function, are not IETF Contributions in the
 context of this notice.
 
-Please consult [RFC 5378](https://tools.ietf.org/html/rfc5378) and [RFC
-3979](https://tools.ietf.org/html/rfc3979) for details.
+Please consult [RFC 5378](https://tools.ietf.org/html/rfc5378) and [RFC 8179](https://tools.ietf.org/html/rfc8179) for details.
 
 A participant in any IETF activity is deemed to accept all IETF rules of process, as documented in
 Best Current Practices RFCs and IESG Statements.
