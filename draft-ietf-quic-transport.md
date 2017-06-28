@@ -2116,10 +2116,10 @@ Error Code:
 
 Reason Phrase Length:
 
-: A 16-bit unsigned number specifying the length of the reason phrase in bytes. Note
-  that a CONNECTION_CLOSE frame cannot be split between packets, so in practice
-  any limits on packet size will also limit the space available for a reason
-  phrase.
+: A 16-bit unsigned number specifying the length of the reason phrase in bytes.
+  Note that a CONNECTION_CLOSE frame cannot be split between packets, so in
+  practice any limits on packet size will also limit the space available for a
+  reason phrase.
 
 Reason Phrase:
 
