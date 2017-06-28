@@ -470,8 +470,8 @@ Connection ID Flag:
   field is present.  If set to 1, then the Connection ID field is present; if
   set to 0, the Connection ID field is omitted.  The Connection ID field can
   only be omitted if the omit_connection_id transport parameter
-  ({{transport-parameter-definitions}}) is used by the intended recipient of the
-  packet.
+  ({{transport-parameter-definitions}}) is specified by the intended recipient
+  of the packet.
 
 Key Phase Bit:
 
