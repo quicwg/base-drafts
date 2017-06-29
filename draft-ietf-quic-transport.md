@@ -2361,7 +2361,7 @@ shown in the following figure and described below.
                             +--------+
                                  |
                         send/recv STREAM/RST
-                             recv MSD/SB             
+                             recv MSD/SB
                                  |
                                  v
               recv FIN/     +--------+     send FIN/
