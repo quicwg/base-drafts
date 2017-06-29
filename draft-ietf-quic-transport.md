@@ -2405,6 +2405,12 @@ coordinate the creation of streams; they are created unilaterally by either
 endpoint.  Endpoints can use acknowledgments to understand the peer's subjective
 view of stream state at any given time.
 
+Only the initiator of a stream may send a STREAM frame without receiving one
+unless otherwise specified by the application.  All implicitly opened streams
+must remain in the IDLE state until a STREAM frame has been received.  If a
+RST is received on a stream reserved for the peer before any STREAM frame
+has been received, it will immediately transition to the closed state.
+
 In the absence of more specific guidance elsewhere in this document,
 implementations SHOULD treat the receipt of a frame that is not expressly
 permitted in the description of a state as a connection error (see
@@ -2469,7 +2475,8 @@ A stream that is in the "half-closed (local)" state MUST NOT be used for sending
 new STREAM frames.  Retransmission of data that has already been sent on
 STREAM frames is permitted.  An endpoint MAY also send MAX_STREAM_DATA and
 RST_STREAM in this state.  A stream immediately transitions to
-"half-closed (local)" if it is created with the UNI flag set.
+"half-closed (local)" if it is created when a STREAM frame with the UNI flag
+set is received.
 
 An endpoint that closes a stream MUST NOT send data beyond the final offset that
 it has chosen, see {{state-closed}} for details.
@@ -2577,8 +2584,9 @@ the data limits set by its peer.  The cryptographic handshake stream, Stream 0,
 is exempt from the connection-level data limits established by MAX_DATA.  Stream
 0 is still subject to stream-level data limits and MAX_STREAM_DATA.
 
-If a STREAM frame is received for a stream that was previously specified as
-unidirectional, the connection MUST be closed with QUIC_INVALID_FRAME_DATA.
+If a STREAM frame is received and the UNI bit does not match the UNI bit of
+previous STREAM frames for that stream id, the connection MUST be closed with
+QUIC_INVALID_FRAME_DATA.
 
 Flow control is described in detail in {{flow-control}}, and congestion control
 is described in the companion document {{QUIC-RECOVERY}}.
@@ -2767,7 +2775,7 @@ The final offset is the count of the number of octets that are transmitted on a
 stream.  For a stream that is reset, the final offset is carried explicitly in
 the RST_STREAM frame.  Otherwise, the final offset is the offset of the end of
 the data carried in STREAM frame marked with a FIN flag, or 0 in the case of
-received streams with the UNI flag set.
+incoming unidirectional streams.
 
 An endpoint will know the final offset for a stream when the stream enters the
 "half-closed (remote)" state.  However, if there is reordering or loss, an
@@ -2965,7 +2973,7 @@ QUIC_INVALID_NEGOTIATED_VALUE (0x80000017):
 
 QUIC_DECOMPRESSION_FAILURE (0x80000018):
 : There was an error decompressing data.
-
+pu
 QUIC_NETWORK_IDLE_TIMEOUT (0x80000019):
 : The connection timed out due to no network activity.
 
