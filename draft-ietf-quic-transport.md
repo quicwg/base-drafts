@@ -3101,7 +3101,8 @@ Issue and pull request numbers are listed with a leading octothorp.
 ## Since draft-ietf-quic-transport-04
 
 - Increase max length of largest acked (48 => 64)*
-- Rename TransportParameterId (truncate_connection_id => omit_connection_id) (#659)
+- Rename TransportParameterId (truncate_... => omit_...) (#659)
+- Update Error code list
 
 * Break packet compability
 
