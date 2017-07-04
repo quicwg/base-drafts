@@ -1482,86 +1482,348 @@ packet. The use of these frames and various frame header bits are described in
 subsequent sections.
 
 
-## STREAM Frame {#frame-stream}
+## PADDING Frame {#frame-padding}
 
-STREAM frames implicitly create a stream and carry stream data. The type byte
-for a STREAM frame contains embedded flags, and is formatted as `11FSSOOD`.
-These bits are parsed as follows:
+The PADDING frame (type=0x00) has no semantic value.  PADDING frames can be used
+to increase the size of a packet.  Padding can be used to increase an initial
+client packet to the minimum required size, or to provide protection against
+traffic analysis for protected packets.
 
-* The first two bits must be set to 11, indicating that this is a STREAM frame.
+A PADDING frame has no content.  That is, a PADDING frame consists of the single
+octet that identifies the frame as a PADDING frame.
 
-* `F` is the FIN bit, which is used for stream termination.
 
-* The `SS` bits encode the length of the Stream ID header field.
-  The values 00, 01, 02, and 03 indicate lengths of 8, 16, 24, and 32 bits
-  long respectively.
+## RST_STREAM Frame {#frame-rst-stream}
 
-* The `OO` bits encode the length of the Offset header field.
-  The values 00, 01, 02, and 03 indicate lengths of 0, 16, 32, and
-  64 bits long respectively.
+An endpoint may use a RST_STREAM frame (type=0x01) to abruptly terminate a
+stream.
 
-* The `D` bit indicates whether a Data Length field is present in the STREAM
-  header.  When set to 0, this field indicates that the Stream Data field
-  extends to the end of the packet.  When set to 1, this field indicates that
-  Data Length field contains the length (in bytes) of the Stream Data field.
-  The option to omit the length should only be used when the packet is a
-  "full-sized" packet, to avoid the risk of corruption via padding.
+After sending a RST_STREAM, an endpoint ceases transmission of STREAM frames on
+the identified stream.  A receiver of RST_STREAM can discard any data that it
+already received on that stream.  An endpoint sends a RST_STREAM in response to
+a RST_STREAM unless the stream is already closed.
 
-A STREAM frame is shown below.
+The RST_STREAM frame is as follows:
 
 ~~~
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                    Stream ID (8/16/24/32)                   ...
+|                        Stream ID (32)                         |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                      Offset (0/16/32/64)                    ...
+|                        Error Code (32)                        |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|       [Data Length (16)]      |        Stream Data (*)      ...
+|                                                               |
++                       Final Offset (64)                       +
+|                                                               |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
-{: #stream-format title="STREAM Frame Format"}
 
-The STREAM frame contains the following fields:
+The fields are:
 
 Stream ID:
 
-: The stream ID of the stream (see {{stream-id}}).
+: The 32-bit Stream ID of the stream being terminated.
 
-Offset:
+Error code:
 
-: A variable-sized unsigned number specifying the byte offset in the stream for
-  the data in this STREAM frame.  When the offset length is 0, the offset is 0.
-  The first byte in the stream has an offset of 0.  The largest offset delivered
-  on a stream - the sum of the re-constructed offset and data length - MUST be
-  less than 2^64.
+: A 32-bit error code which indicates why the stream is being closed.
 
-Data Length:
+Final offset:
 
-: An optional 16-bit unsigned number specifying the length of the Stream Data
-  field in this STREAM frame.  This field is present when the `D` bit is set to
-  1.
+: A 64-bit unsigned integer indicating the absolute byte offset of the end of
+  data written on this stream by the RST_STREAM sender.
 
-Stream Data:
 
-: The bytes from the designated stream to be delivered.
+## CONNECTION_CLOSE frame {#frame-connection-close}
 
-A stream frame's payload MUST NOT be empty, unless the FIN bit is set.  When the
-FIN flag is sent on an empty STREAM frame, the offset in the STREAM frame MUST
-be one greater than the last data byte sent on this stream.
+An endpoint sends a CONNECTION_CLOSE frame (type=0x02) to notify its peer that
+the connection is being closed.  If there are open streams that haven't been
+explicitly closed, they are implicitly closed when the connection is closed.
+(Ideally, a GOAWAY frame would be sent with enough time that all streams are
+torn down.)  The frame is as follows:
 
-Stream multiplexing is achieved by interleaving STREAM frames from multiple
-streams into one or more QUIC packets.  A single QUIC packet can include
-multiple STREAM frames from one or more streams.
+~~~
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                        Error Code (32)                        |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|   Reason Phrase Length (16)   |      [Reason Phrase (*)]    ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~
 
-Implementation note: One of the benefits of QUIC is avoidance of head-of-line
-blocking across multiple streams.  When a packet loss occurs, only streams with
-data in that packet are blocked waiting for a retransmission to be received,
-while other streams can continue making progress.  Note that when data from
-multiple streams is bundled into a single QUIC packet, loss of that packet
-blocks all those streams from making progress.  An implementation is therefore
-advised to bundle as few streams as necessary in outgoing packets without losing
-transmission efficiency to underfilled packets.
+The fields of a CONNECTION_CLOSE frame are as follows:
+
+Error Code:
+
+: A 32-bit error code which indicates the reason for closing this connection.
+
+Reason Phrase Length:
+
+: A 16-bit unsigned number specifying the length of the reason phrase in bytes.
+  Note that a CONNECTION_CLOSE frame cannot be split between packets, so in
+  practice any limits on packet size will also limit the space available for a
+  reason phrase.
+
+Reason Phrase:
+
+: A human-readable explanation for why the connection was closed.  This can be
+  zero length if the sender chooses to not give details beyond the Error Code.
+  This SHOULD be a UTF-8 encoded string {{!RFC3629}}.
+
+
+## GOAWAY Frame {#frame-goaway}
+
+An endpoint uses a GOAWAY frame (type=0x03) to initiate a graceful shutdown of a
+connection.  The endpoints will continue to use any active streams, but the
+sender of the GOAWAY will not initiate or accept any additional streams beyond
+those indicated.  The GOAWAY frame is as follows:
+
+~~~
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                  Largest Client Stream ID (32)                |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                  Largest Server Stream ID (32)                |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~
+
+The fields of a GOAWAY frame are:
+
+Largest Client Stream ID:
+
+: The highest-numbered, client-initiated stream on which the endpoint sending
+  the GOAWAY frame either sent data, or received and delivered data.  All
+  higher-numbered, client-initiated streams (that is, odd-numbered streams) are
+  implicitly reset by sending or receiving the GOAWAY frame.
+
+Largest Server Stream ID:
+
+: The highest-numbered, server-initiated stream on which the endpoint sending
+  the GOAWAY frame either sent data, or received and delivered data.  All
+  higher-numbered, server-initiated streams (that is, even-numbered streams) are
+  implicitly reset by sending or receiving the GOAWAY frame.
+
+A GOAWAY frame indicates that any application layer actions on streams with
+higher numbers than those indicated can be safely retried because no data was
+exchanged.  An endpoint MUST set the value of the Largest Client or Server
+Stream ID to be at least as high as the highest-numbered stream on which it
+either sent data or received and delivered data to the application protocol that
+uses QUIC.
+
+An endpoint MAY choose a larger stream identifier if it wishes to allow for a
+number of streams to be created.  This is especially valuable for peer-initiated
+streams where packets creating new streams could be in transit; using a larger
+stream number allows those streams to complete.
+
+In addition to initiating a graceful shutdown of a connection, GOAWAY MAY be
+sent immediately prior to sending a CONNECTION_CLOSE frame that is sent as a
+result of detecting a fatal error.  Higher-numbered streams than those indicated
+in the GOAWAY frame can then be retried.
+
+
+## MAX_DATA Frame {#frame-max-data}
+
+The MAX_DATA frame (type=0x04) is used in flow control to inform the peer of
+the maximum amount of data that can be sent on the connection as a whole.
+
+The frame is as follows:
+
+~~~
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                                                               |
++                        Maximum Data (64)                      +
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~
+
+The fields in the MAX_DATA frame are as follows:
+
+Maximum Data:
+
+: A 64-bit unsigned integer indicating the maximum amount of data that can be
+  sent on the entire connection, in units of 1024 octets.  That is, the updated
+  connection-level data limit is determined by multiplying the encoded value by
+  1024.
+
+All data sent in STREAM frames counts toward this limit, with the exception of
+data on stream 0.  The sum of the largest received offsets on all streams -
+including closed streams, but excluding stream 0 - MUST NOT exceed the value
+advertised by a receiver.  An endpoint MUST terminate a connection with a
+QUIC_FLOW_CONTROL_RECEIVED_TOO_MUCH_DATA error if it receives more data than the
+maximum data value that it has sent, unless this is a result of a change in the
+initial limits (see {{zerortt-parameters}}).
+
+
+## MAX_STREAM_DATA Frame {#frame-max-stream-data}
+
+The MAX_STREAM_DATA frame (type=0x05) is used in flow control to inform a peer
+of the maximum amount of data that can be sent on a stream.
+
+The frame is as follows:
+
+~~~
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                        Stream ID (32)                         |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                                                               |
++                    Maximum Stream Data (64)                   +
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~
+
+The fields in the MAX_STREAM_DATA frame are as follows:
+
+Stream ID:
+
+: The stream ID of the stream that is affected.
+
+Maximum Stream Data:
+
+: A 64-bit unsigned integer indicating the maximum amount of data that can be
+  sent on the identified stream, in units of octets.
+
+When counting data toward this limit, an endpoint accounts for the largest
+received offset of data that is sent or received on the stream.  Loss or
+reordering can mean that the largest received offset on a stream can be greater
+than the total size of data received on that stream.  Receiving STREAM frames
+might not increase the largest received offset.
+
+The data sent on a stream MUST NOT exceed the largest maximum stream data value
+advertised by the receiver.  An endpoint MUST terminate a connection with a
+FLOW_CONTROL_ERROR error if it receives more data than the largest maximum
+stream data that it has sent for the affected stream, unless this is a result of
+a change in the initial limits (see {{zerortt-parameters}}).
+
+
+## MAX_STREAM_ID Frame {#frame-max-stream-id}
+
+The MAX_STREAM_ID frame (type=0x06) informs the peer of the maximum stream ID
+that they are permitted to open.
+
+The frame is as follows:
+
+~~~
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                    Maximum Stream ID (32)                     |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~
+
+The fields in the MAX_STREAM_ID frame are as follows:
+
+Maximum Stream ID:
+: ID of the maximum peer-initiated stream ID for the connection.
+
+Loss or reordering can mean that a MAX_STREAM_ID frame can be received which
+states a lower stream limit than the client has previously received.
+MAX_STREAM_ID frames which do not increase the maximum stream ID MUST be
+ignored.
+
+A peer MUST NOT initiate a stream with a higher stream ID than the greatest
+maximum stream ID it has received.  An endpoint MUST terminate a connection with
+a STREAM_ID_ERROR error if a peer initiates a stream with a higher stream ID
+than it has sent, unless this is a result of a change in the initial limits (see
+{{zerortt-parameters}}).
+
+
+## PING frame {#frame-ping}
+
+Endpoints can use PING frames (type=0x07) to verify that their peers are still
+alive or to check reachability to the peer. The PING frame contains no
+additional fields. The receiver of a PING frame simply needs to acknowledge the
+packet containing this frame. The PING frame SHOULD be used to keep a connection
+alive when a stream is open. The default is to send a PING frame after 15
+seconds of quiescence. A PING frame has no additional fields.
+
+
+## BLOCKED Frame {#frame-blocked}
+
+A sender sends a BLOCKED frame (type=0x08) when it wishes to send data, but is
+unable to due to connection-level flow control (see {{blocking}}). BLOCKED
+frames can be used as input to tuning of flow control algorithms (see
+{{fc-credit}}).
+
+The BLOCKED frame does not contain a payload.
+
+
+## STREAM_BLOCKED Frame {#frame-stream-blocked}
+
+A sender sends a STREAM_BLOCKED frame (type=0x09) when it wishes to send data,
+but is unable to due to stream-level flow control.  This frame is analogous to
+BLOCKED ({{frame-blocked}}).
+
+The STREAM_BLOCKED frame is as follows:
+
+~~~
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                        Stream ID (32)                         |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~
+
+The STREAM_BLOCKED frame contains a single field:
+
+Stream ID:
+
+: A 32-bit unsigned number indicating the stream which is flow control blocked.
+
+An endpoint MAY send a STREAM_BLOCKED frame for a stream that exceeds the
+maximum stream ID set by its peer (see {{frame-max-stream-id}}).  This does not
+open the stream, but informs the peer that a new stream was needed, but the
+stream limit prevented the creation of the stream.
+
+
+## STREAM_ID_NEEDED Frame {#frame-stream-id-needed}
+
+A sender sends a STREAM_ID_NEEDED frame (type=0x0a) when it wishes to open a
+stream, but is unable to due to the maximum stream ID limit.
+
+The STREAM_ID_NEEDED frame does not contain a payload.
+
+
+## NEW_CONNECTION_ID Frame {#frame-new-connection-id}
+
+A server sends a NEW_CONNECTION_ID frame (type=0x0b) to provide the client with
+alternative connection IDs that can be used to break linkability when migrating
+connections (see {{migration-linkability}}).
+
+The NEW_CONNECTION_ID is as follows:
+
+~~~
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|       Sequence (16)           |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                                                               |
++                        Connection ID (64)                     +
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~
+
+The fields are:
+
+Sequence:
+
+: A 16-bit sequence number.  This value starts at 0 and increases by 1 for each
+  connection ID that is provided by the server.  The sequence value can wrap;
+  the value 65535 is followed by 0.  When wrapping the sequence field, the
+  server MUST ensure that a value with the same sequence has been received and
+  acknowledged by the client.  The connection ID that is assigned during the
+  handshake is assumed to have a sequence of 65535.
+
+Connection ID:
+
+: A 64-bit connection ID.
 
 
 ## ACK Frame {#frame-ack}
@@ -1776,6 +2038,88 @@ Time Since Previous Timestamp 1..N(opt, repeated):
 The timestamp section lists packet receipt timestamps ordered by timestamp.
 
 
+## STREAM Frame {#frame-stream}
+
+STREAM frames implicitly create a stream and carry stream data. The type byte
+for a STREAM frame contains embedded flags, and is formatted as `11FSSOOD`.
+These bits are parsed as follows:
+
+* The first two bits must be set to 11, indicating that this is a STREAM frame.
+
+* `F` is the FIN bit, which is used for stream termination.
+
+* The `SS` bits encode the length of the Stream ID header field.
+  The values 00, 01, 02, and 03 indicate lengths of 8, 16, 24, and 32 bits
+  long respectively.
+
+* The `OO` bits encode the length of the Offset header field.
+  The values 00, 01, 02, and 03 indicate lengths of 0, 16, 32, and
+  64 bits long respectively.
+
+* The `D` bit indicates whether a Data Length field is present in the STREAM
+  header.  When set to 0, this field indicates that the Stream Data field
+  extends to the end of the packet.  When set to 1, this field indicates that
+  Data Length field contains the length (in bytes) of the Stream Data field.
+  The option to omit the length should only be used when the packet is a
+  "full-sized" packet, to avoid the risk of corruption via padding.
+
+A STREAM frame is shown below.
+
+~~~
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                    Stream ID (8/16/24/32)                   ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                      Offset (0/16/32/64)                    ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|       [Data Length (16)]      |        Stream Data (*)      ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~
+{: #stream-format title="STREAM Frame Format"}
+
+The STREAM frame contains the following fields:
+
+Stream ID:
+
+: The stream ID of the stream (see {{stream-id}}).
+
+Offset:
+
+: A variable-sized unsigned number specifying the byte offset in the stream for
+  the data in this STREAM frame.  When the offset length is 0, the offset is 0.
+  The first byte in the stream has an offset of 0.  The largest offset delivered
+  on a stream - the sum of the re-constructed offset and data length - MUST be
+  less than 2^64.
+
+Data Length:
+
+: An optional 16-bit unsigned number specifying the length of the Stream Data
+  field in this STREAM frame.  This field is present when the `D` bit is set to
+  1.
+
+Stream Data:
+
+: The bytes from the designated stream to be delivered.
+
+A stream frame's payload MUST NOT be empty, unless the FIN bit is set.  When the
+FIN flag is sent on an empty STREAM frame, the offset in the STREAM frame MUST
+be one greater than the last data byte sent on this stream.
+
+Stream multiplexing is achieved by interleaving STREAM frames from multiple
+streams into one or more QUIC packets.  A single QUIC packet can include
+multiple STREAM frames from one or more streams.
+
+Implementation note: One of the benefits of QUIC is avoidance of head-of-line
+blocking across multiple streams.  When a packet loss occurs, only streams with
+data in that packet are blocked waiting for a retransmission to be received,
+while other streams can continue making progress.  Note that when data from
+multiple streams is bundled into a single QUIC packet, loss of that packet
+blocks all those streams from making progress.  An implementation is therefore
+advised to bundle as few streams as necessary in outgoing packets without losing
+transmission efficiency to underfilled packets.
+
+
 #### Time Format
 
 DISCUSS_AND_REPLACE: Perhaps make this format simpler.
@@ -1834,348 +2178,6 @@ by a client in protected packets, because it is certain that the server is able
 to decipher the packet.
 
 
-## MAX_DATA Frame {#frame-max-data}
-
-The MAX_DATA frame (type=0x04) is used in flow control to inform the peer of
-the maximum amount of data that can be sent on the connection as a whole.
-
-The frame is as follows:
-
-~~~
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                                                               |
-+                        Maximum Data (64)                      +
-|                                                               |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-~~~
-
-The fields in the MAX_DATA frame are as follows:
-
-Maximum Data:
-
-: A 64-bit unsigned integer indicating the maximum amount of data that can be
-  sent on the entire connection, in units of 1024 octets.  That is, the updated
-  connection-level data limit is determined by multiplying the encoded value by
-  1024.
-
-All data sent in STREAM frames counts toward this limit, with the exception of
-data on stream 0.  The sum of the largest received offsets on all streams -
-including closed streams, but excluding stream 0 - MUST NOT exceed the value
-advertised by a receiver.  An endpoint MUST terminate a connection with a
-QUIC_FLOW_CONTROL_RECEIVED_TOO_MUCH_DATA error if it receives more data than the
-maximum data value that it has sent, unless this is a result of a change in the
-initial limits (see {{zerortt-parameters}}).
-
-
-## MAX_STREAM_DATA Frame {#frame-max-stream-data}
-
-The MAX_STREAM_DATA frame (type=0x05) is used in flow control to inform a peer
-of the maximum amount of data that can be sent on a stream.
-
-The frame is as follows:
-
-~~~
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                        Stream ID (32)                         |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                                                               |
-+                    Maximum Stream Data (64)                   +
-|                                                               |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-~~~
-
-The fields in the MAX_STREAM_DATA frame are as follows:
-
-Stream ID:
-
-: The stream ID of the stream that is affected.
-
-Maximum Stream Data:
-
-: A 64-bit unsigned integer indicating the maximum amount of data that can be
-  sent on the identified stream, in units of octets.
-
-When counting data toward this limit, an endpoint accounts for the largest
-received offset of data that is sent or received on the stream.  Loss or
-reordering can mean that the largest received offset on a stream can be greater
-than the total size of data received on that stream.  Receiving STREAM frames
-might not increase the largest received offset.
-
-The data sent on a stream MUST NOT exceed the largest maximum stream data value
-advertised by the receiver.  An endpoint MUST terminate a connection with a
-FLOW_CONTROL_ERROR error if it receives more data than the largest maximum
-stream data that it has sent for the affected stream, unless this is a result of
-a change in the initial limits (see {{zerortt-parameters}}).
-
-
-## MAX_STREAM_ID Frame {#frame-max-stream-id}
-
-The MAX_STREAM_ID frame (type=0x06) informs the peer of the maximum stream ID
-that they are permitted to open.
-
-The frame is as follows:
-
-~~~
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                    Maximum Stream ID (32)                     |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-~~~
-
-The fields in the MAX_STREAM_ID frame are as follows:
-
-Maximum Stream ID:
-: ID of the maximum peer-initiated stream ID for the connection.
-
-Loss or reordering can mean that a MAX_STREAM_ID frame can be received which
-states a lower stream limit than the client has previously received.
-MAX_STREAM_ID frames which do not increase the maximum stream ID MUST be
-ignored.
-
-A peer MUST NOT initiate a stream with a higher stream ID than the greatest
-maximum stream ID it has received.  An endpoint MUST terminate a connection with
-a STREAM_ID_ERROR error if a peer initiates a stream with a higher stream ID
-than it has sent, unless this is a result of a change in the initial limits (see
-{{zerortt-parameters}}).
-
-
-## BLOCKED Frame {#frame-blocked}
-
-A sender sends a BLOCKED frame (type=0x08) when it wishes to send data, but is
-unable to due to connection-level flow control (see {{blocking}}). BLOCKED
-frames can be used as input to tuning of flow control algorithms (see
-{{fc-credit}}).
-
-The BLOCKED frame does not contain a payload.
-
-
-## STREAM_BLOCKED Frame {#frame-stream-blocked}
-
-A sender sends a STREAM_BLOCKED frame (type=0x09) when it wishes to send data,
-but is unable to due to stream-level flow control.  This frame is analogous to
-BLOCKED ({{frame-blocked}}).
-
-The STREAM_BLOCKED frame is as follows:
-
-~~~
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                        Stream ID (32)                         |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-~~~
-
-The STREAM_BLOCKED frame contains a single field:
-
-Stream ID:
-
-: A 32-bit unsigned number indicating the stream which is flow control blocked.
-
-An endpoint MAY send a STREAM_BLOCKED frame for a stream that exceeds the
-maximum stream ID set by its peer (see {{frame-max-stream-id}}).  This does not
-open the stream, but informs the peer that a new stream was needed, but the
-stream limit prevented the creation of the stream.
-
-
-## STREAM_ID_NEEDED Frame {#frame-stream-id-needed}
-
-A sender sends a STREAM_ID_NEEDED frame (type=0x0a) when it wishes to open a
-stream, but is unable to due to the maximum stream ID limit.
-
-The STREAM_ID_NEEDED frame does not contain a payload.
-
-
-## RST_STREAM Frame {#frame-rst-stream}
-
-An endpoint may use a RST_STREAM frame (type=0x01) to abruptly terminate a
-stream.
-
-After sending a RST_STREAM, an endpoint ceases transmission of STREAM frames on
-the identified stream.  A receiver of RST_STREAM can discard any data that it
-already received on that stream.  An endpoint sends a RST_STREAM in response to
-a RST_STREAM unless the stream is already closed.
-
-The RST_STREAM frame is as follows:
-
-~~~
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                        Stream ID (32)                         |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                        Error Code (32)                        |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                                                               |
-+                       Final Offset (64)                       +
-|                                                               |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-~~~
-
-The fields are:
-
-Stream ID:
-
-: The 32-bit Stream ID of the stream being terminated.
-
-Error code:
-
-: A 32-bit error code which indicates why the stream is being closed.
-
-Final offset:
-
-: A 64-bit unsigned integer indicating the absolute byte offset of the end of
-  data written on this stream by the RST_STREAM sender.
-
-
-## PADDING Frame {#frame-padding}
-
-The PADDING frame (type=0x00) has no semantic value.  PADDING frames can be used
-to increase the size of a packet.  Padding can be used to increase an initial
-client packet to the minimum required size, or to provide protection against
-traffic analysis for protected packets.
-
-A PADDING frame has no content.  That is, a PADDING frame consists of the single
-octet that identifies the frame as a PADDING frame.
-
-
-## PING frame {#frame-ping}
-
-Endpoints can use PING frames (type=0x07) to verify that their peers are still
-alive or to check reachability to the peer. The PING frame contains no
-additional fields. The receiver of a PING frame simply needs to acknowledge the
-packet containing this frame. The PING frame SHOULD be used to keep a connection
-alive when a stream is open. The default is to send a PING frame after 15
-seconds of quiescence. A PING frame has no additional fields.
-
-
-## NEW_CONNECTION_ID Frame {#frame-new-connection-id}
-
-A server sends a NEW_CONNECTION_ID frame (type=0x0b) to provide the client with
-alternative connection IDs that can be used to break linkability when migrating
-connections (see {{migration-linkability}}).
-
-The NEW_CONNECTION_ID is as follows:
-
-~~~
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|       Sequence (16)           |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                                                               |
-+                        Connection ID (64)                     +
-|                                                               |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-~~~
-
-The fields are:
-
-Sequence:
-
-: A 16-bit sequence number.  This value starts at 0 and increases by 1 for each
-  connection ID that is provided by the server.  The sequence value can wrap;
-  the value 65535 is followed by 0.  When wrapping the sequence field, the
-  server MUST ensure that a value with the same sequence has been received and
-  acknowledged by the client.  The connection ID that is assigned during the
-  handshake is assumed to have a sequence of 65535.
-
-Connection ID:
-
-: A 64-bit connection ID.
-
-
-## CONNECTION_CLOSE frame {#frame-connection-close}
-
-An endpoint sends a CONNECTION_CLOSE frame (type=0x02) to notify its peer that
-the connection is being closed.  If there are open streams that haven't been
-explicitly closed, they are implicitly closed when the connection is closed.
-(Ideally, a GOAWAY frame would be sent with enough time that all streams are
-torn down.)  The frame is as follows:
-
-~~~
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                        Error Code (32)                        |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|   Reason Phrase Length (16)   |      [Reason Phrase (*)]    ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-~~~
-
-The fields of a CONNECTION_CLOSE frame are as follows:
-
-Error Code:
-
-: A 32-bit error code which indicates the reason for closing this connection.
-
-Reason Phrase Length:
-
-: A 16-bit unsigned number specifying the length of the reason phrase in bytes.
-  Note that a CONNECTION_CLOSE frame cannot be split between packets, so in
-  practice any limits on packet size will also limit the space available for a
-  reason phrase.
-
-Reason Phrase:
-
-: A human-readable explanation for why the connection was closed.  This can be
-  zero length if the sender chooses to not give details beyond the Error Code.
-  This SHOULD be a UTF-8 encoded string {{!RFC3629}}.
-
-
-## GOAWAY Frame {#frame-goaway}
-
-An endpoint uses a GOAWAY frame (type=0x03) to initiate a graceful shutdown of a
-connection.  The endpoints will continue to use any active streams, but the
-sender of the GOAWAY will not initiate or accept any additional streams beyond
-those indicated.  The GOAWAY frame is as follows:
-
-~~~
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                  Largest Client Stream ID (32)                |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                  Largest Server Stream ID (32)                |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-~~~
-
-The fields of a GOAWAY frame are:
-
-Largest Client Stream ID:
-
-: The highest-numbered, client-initiated stream on which the endpoint sending
-  the GOAWAY frame either sent data, or received and delivered data.  All
-  higher-numbered, client-initiated streams (that is, odd-numbered streams) are
-  implicitly reset by sending or receiving the GOAWAY frame.
-
-Largest Server Stream ID:
-
-: The highest-numbered, server-initiated stream on which the endpoint sending
-  the GOAWAY frame either sent data, or received and delivered data.  All
-  higher-numbered, server-initiated streams (that is, even-numbered streams) are
-  implicitly reset by sending or receiving the GOAWAY frame.
-
-A GOAWAY frame indicates that any application layer actions on streams with
-higher numbers than those indicated can be safely retried because no data was
-exchanged.  An endpoint MUST set the value of the Largest Client or Server
-Stream ID to be at least as high as the highest-numbered stream on which it
-either sent data or received and delivered data to the application protocol that
-uses QUIC.
-
-An endpoint MAY choose a larger stream identifier if it wishes to allow for a
-number of streams to be created.  This is especially valuable for peer-initiated
-streams where packets creating new streams could be in transit; using a larger
-stream number allows those streams to complete.
-
-In addition to initiating a graceful shutdown of a connection, GOAWAY MAY be
-sent immediately prior to sending a CONNECTION_CLOSE frame that is sent as a
-result of detecting a fatal error.  Higher-numbered streams than those indicated
-in the GOAWAY frame can then be retried.
 
 
 # Packetization and Reliability {#packetization}
