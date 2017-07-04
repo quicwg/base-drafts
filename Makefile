@@ -12,11 +12,8 @@ endif
 
 latest:: lint
 .PHONY: lint
-lint:
+lint::
 	@err=0; for f in draft-*.md ; do \
-	  if grep -n ' $$' "$$f"; then \
-	    echo "$$f contains trailing whitespace"; err=1; \
-	  fi; \
 	  if cat "$$f" | (l=0; while read -r a; do l=$$(($$l + 1)); echo -E "$$l:$$a"; done) | \
 	     sed -e '1,/--- abstract/d;/^[0-9]*: *|/d' | tr -d '\r' | grep '^[0-9]*:.\{81\}'; then \
 	    echo "$$f contains a line with >80 characters"; err=1; \
