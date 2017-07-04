@@ -2055,9 +2055,9 @@ seconds of quiescence. A PING frame has no additional fields.
 
 ## NEW_CONNECTION_ID Frame {#frame-new-connection-id}
 
-A server sends a NEW_CONNECTION_ID to provide the client with alternative
-connection IDs that can be used to break linkability when migrating connections
-(see {{migration-linkability}}).
+A server sends a NEW_CONNECTION_ID frame (type=0x0b) to provide the client with
+alternative connection IDs that can be used to break linkability when migrating
+connections (see {{migration-linkability}}).
 
 The NEW_CONNECTION_ID is as follows:
 
