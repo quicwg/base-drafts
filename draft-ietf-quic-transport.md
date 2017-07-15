@@ -2207,13 +2207,14 @@ signals that indicate a smaller limit might exist.
 
 Clients MUST ensure that the first packet in a connection, and any
 retransmissions of those octets, has a QUIC packet size of least 1200 octets.
+The packet size for a QUIC packet includes the QUIC header and integrity check,
+but not the UDP or IP header.
 
 The initial client packet SHOULD be padded to exactly 1200 octets unless the
-client has a reasonable assurance that the PMTU is larger.  This size includes
-the QUIC header and integrity check, but not the UDP or IP header. Sending a
-packet of this size ensures that the network path supports an MTU of this size
-and helps reduce the amplitude of amplification attacks caused by server
-responses toward an unverified client address.
+client has a reasonable assurance that the PMTU is larger.  Sending a packet of
+this size ensures that the network path supports an MTU of this size and helps
+reduce the amplitude of amplification attacks caused by server responses toward
+an unverified client address.
 
 Servers MUST ignore an initial plaintext packet from a client if its total size
 is less than 1200 octets.
