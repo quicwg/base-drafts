@@ -573,11 +573,11 @@ the packet contents increment the packet number by one, see
 ({{packet-numbers}}).
 
 The payload of a Client Initial packet consists of a STREAM frame (or frames)
-for stream 0 containing a cryptographic handshake message, plus any PADDING
-frames necessary to ensure that the packet is at least the minimum PMTU size
-(see {{packetization}}).  The stream in this packet always starts at an offset
-of 0 (see {{stateless-retry}}) and the complete cyptographic handshake message
-MUST fit in a single packet (see {{handshake}}).
+for stream 0 containing a cryptographic handshake message, with enough PADDING
+frames that the packet is at least 1200 octets (see {{packetization}}).  The
+stream in this packet always starts at an offset of 0 (see {{stateless-retry}})
+and the complete cyptographic handshake message MUST fit in a single packet (see
+{{handshake}}).
 
 The client uses the Client Initial Packet type for any packet that contains an
 initial cryptographic handshake message.  This includes all cases where a new
@@ -1140,7 +1140,7 @@ max_packet_size (0x0005):
   the endpoint is willing to receive, encoded as an unsigned 16-bit integer.
   This indicates that packets larger than this limit will be dropped.  The
   default for this parameter is the maximum permitted UDP payload of 65527.
-  Values below 1252 are invalid.  This limit only applies to protected packets
+  Values below 1200 are invalid.  This limit only applies to protected packets
   ({{packet-protected}}).
 
 
@@ -2206,19 +2206,16 @@ An endpoint MUST NOT reduce their MTU below this number, even if it receives
 signals that indicate a smaller limit might exist.
 
 Clients MUST ensure that the first packet in a connection, and any
-retransmissions of those octets, has a QUIC packet size of least 1232 octets for
-an IPv6 packet and 1252 octets for an IPv4 packet.  In the absence of extensions
-to the IP header, padding to exactly these values will result in an IP packet
-that is 1280 octets.
+retransmissions of those octets, has a QUIC packet size of least 1200 octets.
 
-The initial client packet SHOULD be padded to exactly these values unless the
+The initial client packet SHOULD be padded to exactly 1200 octets unless the
 client has a reasonable assurance that the PMTU is larger.  Sending a packet of
 this size ensures that the network path supports an MTU of this size and helps
 reduce the amplitude of amplification attacks caused by server responses toward
 an unverified client address.
 
 Servers MUST ignore an initial plaintext packet from a client if its total size
-is less than 1232 octets for IPv6 or 1252 octets for IPv4.
+is less than 1200 octets.
 
 If a QUIC endpoint determines that the PMTU between any pair of local and remote
 IP addresses has fallen below 1280 octets, it MUST immediately cease sending
