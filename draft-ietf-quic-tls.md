@@ -541,7 +541,7 @@ older than 1.3 is negotiated.
 
 QUIC requires that the initial handshake packet from a client fit within the
 payload of a single packet.  The size limits on QUIC packets mean that a record
-containing a ClientHello needs to fit within 1165 octets.
+containing a ClientHello needs to fit within 1171 octets.
 
 A TLS ClientHello can fit within this limit with ample space remaining.
 However, there are several variables that could cause this limit to be exceeded.
