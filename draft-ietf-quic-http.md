@@ -486,7 +486,7 @@ The HEADERS frame payload has the following fields:
 
   Stream Dependency:
   : A 32-bit stream identifier for the stream that this stream depends on (see
-    {{priority}} and {!RFC7540}} Section 5.3).
+    {{priority}} and {{!RFC7540}} Section 5.3).
 
   Weight:
   : An unsigned 8-bit integer representing a priority weight for the stream (see
