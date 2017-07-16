@@ -557,7 +557,7 @@ the endpoint MUST respond with a connection error of type
 HTTP_MULTIPLE_SETTINGS.
 
 The SETTINGS frame affects connection state. A badly formed or incomplete
-SETTINGS frame MUST be treated as a connection error (Section 5.4.1) of type
+SETTINGS frame MUST be treated as a connection error (Section 5.4.1 of {{!RFC7540}}) of type
 HTTP_MALFORMED_SETTINGS.
 
 
