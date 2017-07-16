@@ -343,7 +343,7 @@ detects an error with the stream or the QUIC connection.
 
 ## Stream Priorities {#priority}
 
-HTTP/QUIC uses the priority scheme described in {{!RFC7540}} Section 5.3. In
+HTTP/QUIC uses the priority scheme described in {{!RFC7540}}, Section 5.3. In
 this priority scheme, a given stream can be designated as dependent upon another
 stream, which expresses the preference that the latter stream (the "parent"
 stream) be allocated resources before the former stream (the "dependent"
@@ -462,7 +462,7 @@ HTTP/2.
 The flags defined are:
 
   E (0x01):
-  : Indicates that the stream dependency is exclusive (see {{!RFC7540}} Section
+  : Indicates that the stream dependency is exclusive (see {{!RFC7540}}, Section
     5.3).
 
 ~~~~~~~~~~  drawing
@@ -486,11 +486,11 @@ The HEADERS frame payload has the following fields:
 
   Stream Dependency:
   : A 32-bit stream identifier for the stream that this stream depends on (see
-    {{priority}} and {{!RFC7540}} Section 5.3).
+    {{priority}} and {{!RFC7540}}, Section 5.3).
 
   Weight:
   : An unsigned 8-bit integer representing a priority weight for the stream (see
-    {{!RFC7540}} Section 5.3). Add one to the value to obtain a weight between 1
+    {{!RFC7540}}, Section 5.3). Add one to the value to obtain a weight between 1
     and 256.
 
 A PRIORITY frame MUST have a payload length of nine octets.  A PRIORITY frame
