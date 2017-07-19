@@ -237,8 +237,7 @@ be used.
 Trailing header fields are carried in an additional header block following the
 body. Such a header block is a sequence of HEADERS frames with End Header Block
 set on the last frame. Senders MUST send only one header block in the trailers
-section; receivers MUST decode any subsequent header blocks in order to maintain
-HPACK decoder state, but the resulting output MUST be discarded.
+section; receivers MUST discard any subsequent header blocks.
 
 An HTTP request/response exchange fully consumes a QUIC stream. After sending a
 request, a client closes the stream for sending; after sending a response, the
@@ -262,19 +261,10 @@ decoded) at an endpoint in the same order in which they were encoded. This
 ensures that the dynamic state at the two endpoints remains in sync.
 
 QUIC streams provide in-order delivery of data sent on those streams, but there
-are no guarantees about order of delivery between streams. To achieve in-order
-delivery of HEADERS frames in QUIC, the HPACK-bearing frames contain a counter
-which can be used to ensure in-order processing. Data (request/response bodies)
-which arrive out of order are buffered until the corresponding HEADERS arrive.
-
-This does introduce head-of-line blocking: if the packet containing HEADERS for
-stream N is lost or reordered then the HEADERS for stream N+4 cannot be
-processed until it has been retransmitted successfully, even though the HEADERS
-for stream N+4 may have arrived.
-
-DISCUSS:
-: Keep HPACK with HOLB? Redesign HPACK to be order-invariant? How much
-do we need to retain compatibility with HTTP/2's HPACK?
+are no guarantees about order of delivery between streams. QUIC anticipates
+moving to a modified version of HPACK without this assumption.  In the meantime,
+by fixing the size of the dynamic table at zero, HPACK can be used in an
+unordered environment.
 
 
 ### The CONNECT Method
@@ -383,7 +373,7 @@ connection error ({{errors}}) of type HTTP_WRONG_STREAM.
 ### HEADERS {#frame-headers}
 
 The HEADERS frame (type=0x1) is used to carry part of a header set, compressed
-using HPACK {{!RFC7541}}.
+using HPACK {{header-compression}}.
 
 One flag is defined:
 
@@ -393,22 +383,6 @@ One flag is defined:
 A HEADERS frame with any other flags set MUST be treated as a connection error
 of type HTTP_MALFORMED_HEADERS.
 
-~~~~~~~~~~  drawing
-    0                   1                   2                   3
-    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |       Sequence? (16)          |    Header Block Fragment (*)...
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-~~~~~~~~~~
-{: #fig-headers title="HEADERS frame payload"}
-
-The HEADERS frame payload has the following fields:
-
-  Sequence Number:
-  : Present only on the first frame of a header block sequence. This MUST
-  be set to zero on the first header block sequence, and incremented on
-  each header block.
-
 The next frame on the same stream after a HEADERS frame without the EHB flag set
 MUST be another HEADERS frame. A receiver MUST treat the receipt of any other
 type of frame as a stream error of type HTTP_INTERRUPTED_HEADERS. (Note that
@@ -417,14 +391,6 @@ transmission of frames, so multiplexing is not blocked by this requirement.)
 
 A full header block is contained in a sequence of zero or more HEADERS frames
 without EHB set, followed by a HEADERS frame with EHB set.
-
-On receipt, header blocks (HEADERS, PUSH_PROMISE) MUST be processed by the HPACK
-decoder in sequence. If a block is missing, all subsequent HPACK frames MUST be
-held until it arrives, or the connection terminated.
-
-When the Sequence counter reaches its maximum value (0xFFFF), the next increment
-returns it to zero.  An endpoint MUST NOT wrap the Sequence counter to zero
-until the previous zero-value header block has been confirmed received.
 
 
 ### PRIORITY {#frame-priority}
@@ -490,8 +456,8 @@ are also acceptable and proceed with the value it has chosen. (This choice could
 be announced in a field of an extension frame, or in its own value in SETTINGS.)
 
 Different values for the same parameter can be advertised by each peer. For
-example, a client might permit a very large HPACK state table while a server
-chooses to use a small one to conserve memory.
+example, a client might be willing to consume very large response headers,
+while servers are more cautious about request size.
 
 Parameters MUST NOT occur more than once.  A receiver MAY treat the presence of
 the same parameter more than once as a connection error of type
@@ -551,7 +517,7 @@ bytes than would be used to transfer the maximum permitted value.
 The following settings are defined in HTTP/QUIC:
 
   SETTINGS_HEADER_TABLE_SIZE (0x1):
-  : An integer with a maximum value of 2^32 - 1.
+  : An integer with a maximum value of 2^32 - 1.  This value MUST be zero.
 
   SETTINGS_DISABLE_PUSH (0x2):
   : Transmitted as a Boolean; replaces SETTINGS_ENABLE_PUSH
@@ -598,7 +564,7 @@ server to client, as in HTTP/2.  It defines no flags.
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
    |                   Promised Stream ID (32)                     |
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |       Sequence? (16)          |         Header Block (*)    ...
+   |                       Header Block (*)                      ...
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~~~~~~~~
 {: #fig-push-promise title="PUSH_PROMISE frame payload"}
@@ -609,12 +575,8 @@ The payload consists of:
   : A 32-bit Stream ID indicating the QUIC stream on which the response will be
     sent
 
-  HPACK Sequence:
-  : A sixteen-bit counter, equivalent to the Sequence field in HEADERS
-
   Payload:
   : HPACK-compressed request headers for the promised response.
-
 
 
 # Error Handling {#errors}
