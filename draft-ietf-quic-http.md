@@ -24,6 +24,8 @@ normative:
   QUIC-TRANSPORT:
     title: "QUIC: A UDP-Based Multiplexed and Secure Transport"
     date: {DATE}
+    seriesinfo:
+      Internet-Draft: draft-ietf-quic-transport-latest
     author:
       -
         ins: J. Iyengar
@@ -88,10 +90,12 @@ via the Alt-Svc HTTP response header or the HTTP/2 ALTSVC frame ({{!RFC7838}}),
 using the ALPN token defined in {{connection-establishment}}.
 
 For example, an origin could indicate in an HTTP/1.1 or HTTP/2 response that
-HTTP/QUIC was available on UDP port 443 at the same hostname by including the
+HTTP/QUIC was available on UDP port 50781 at the same hostname by including the
 following header in any response:
 
-    Alt-Svc: hq=":443"
+~~~ example
+Alt-Svc: hq=":50781"
+~~~
 
 On receipt of an Alt-Svc header indicating HTTP/QUIC support, a client MAY
 attempt to establish a QUIC connection to the indicated host and port and, if
@@ -101,21 +105,29 @@ Connectivity problems (e.g. firewall blocking UDP) can result in QUIC connection
 establishment failure, in which case the client SHOULD continue using the
 existing connection or try another alternative endpoint offered by the origin.
 
+Servers MAY serve HTTP/QUIC on any UDP port.  Servers MUST use the same port
+across all IP addresses that serve a single domain, and SHOULD NOT change this
+port.
+
 ## QUIC Version Hints {#alt-svc-version-hint}
 
 This document defines the "quic" parameter for Alt-Svc, which MAY be used to
 provide version-negotiation hints to HTTP/QUIC clients. QUIC versions are
 four-octet sequences with no additional constraints on format. Syntax:
 
-    quic = version-number
-    version-number = 1*8HEXDIG; hex-encoded QUIC version
+~~~ abnf
+quic = version-number
+version-number = 1*8HEXDIG; hex-encoded QUIC version
+~~~
 
 Leading zeros SHOULD be omitted for brevity.  When multiple versions are
 supported, the "quic" parameter MAY be repeated multiple times in a single
 Alt-Svc entry.  For example, if a server supported both version 0x00000001 and
 the version rendered in ASCII as "Q034", it could specify the following header:
 
-    Alt-Svc: hq=":443";quic=1;quic=51303334
+~~~ example
+Alt-Svc: hq=":49288";quic=1;quic=51303334
+~~~
 
 Where multiple versions are listed, the order of the values reflects the
 server's preference (with the first value being the most preferred version).
@@ -133,7 +145,7 @@ While connection-level options pertaining to the core QUIC protocol are set in
 the initial crypto handshake, HTTP-specific settings are conveyed
 in the SETTINGS frame. After the QUIC connection is established, a SETTINGS
 frame ({{frame-settings}}) MUST be sent as the initial frame of the HTTP control
-stream (StreamID 3, see {{stream-mapping}}).  The server MUST NOT send data on
+stream (Stream ID 1, see {{stream-mapping}}).  The server MUST NOT send data on
 any other stream until the client's SETTINGS frame has been received.
 
 ## Draft Version Identification
@@ -143,7 +155,7 @@ any other stream until the client's SETTINGS frame has been received.
 
 Only implementations of the final, published RFC can identify themselves as
 "hq". Until such an RFC exists, implementations MUST NOT identify themselves
-using these strings.
+using this string.
 
 Implementations of draft versions of the protocol MUST add the string "-" and
 the corresponding draft number to the identifier. For example,
@@ -167,8 +179,8 @@ the HTTP framing layer. A QUIC receiver buffers and orders received STREAM
 frames, exposing the data contained within as a reliable byte stream to the
 application.
 
-QUIC reserves Stream 1 for crypto operations (the handshake, crypto config
-updates). Stream 3 is reserved for sending and receiving HTTP control frames,
+QUIC reserves Stream 0 for crypto operations (the handshake, crypto config
+updates). Stream 1 is reserved for sending and receiving HTTP control frames,
 and is analogous to HTTP/2's Stream 0.  This connection control stream is
 considered critical to the HTTP connection.  If the connection control stream is
 closed for any reason, this MUST be treated as a connection error of type
@@ -176,8 +188,8 @@ QUIC_CLOSED_CRITICAL_STREAM.
 
 When HTTP headers and data are sent over QUIC, the QUIC layer handles most of
 the stream management. An HTTP request/response consumes a pair of streams: This
-means that the client's first request occurs on QUIC streams 5 and 7, the second
-on stream 9 and 11, and so on. The server's first push consumes streams 2 and 4.
+means that the client's first request occurs on QUIC streams 3 and 5, the second
+on stream 7 and 9, and so on. The server's first push consumes streams 2 and 4.
 This amounts to the second least-significant bit differentiating the two streams
 in a request.
 
@@ -214,10 +226,10 @@ responses are considered complete when the corresponding QUIC streams are closed
 in the appropriate direction.
 
 
-##  Stream 3: Connection Control Stream
+##  Stream 1: Connection Control Stream
 
 Since most connection-level concerns will be managed by QUIC, the primary use of
-Stream 3 will be for the SETTINGS frame when the connection opens and for
+Stream 1 will be for the SETTINGS frame when the connection opens and for
 PRIORITY frames subsequently.
 
 ## HTTP Message Exchanges
@@ -269,7 +281,7 @@ other reasons.
 ### Header Compression
 
 HTTP/QUIC uses HPACK header compression as described in {{!RFC7541}}. HPACK was
-designed for HTTP/2 with the assumption of in- order delivery such as that
+designed for HTTP/2 with the assumption of in-order delivery such as that
 provided by TCP. A sequence of encoded header blocks must arrive (and be
 decoded) at an endpoint in the same order in which they were encoded. This
 ensures that the dynamic state at the two endpoints remains in sync.
@@ -331,7 +343,7 @@ detects an error with the stream or the QUIC connection.
 
 ## Stream Priorities {#priority}
 
-HTTP/QUIC uses the priority scheme described in {{!RFC7540}} Section 5.3. In
+HTTP/QUIC uses the priority scheme described in {{!RFC7540}}, Section 5.3. In
 this priority scheme, a given stream can be designated as dependent upon another
 stream, which expresses the preference that the latter stream (the "parent"
 stream) be allocated resources before the former stream (the "dependent"
@@ -347,11 +359,11 @@ stream of the dependent request, not the data stream.
 
 HTTP/QUIC supports server push as described in {{!RFC7540}}. During connection
 establishment, the client indicates whether it is willing to receive server
-pushes via the SETTINGS_ENABLE_PUSH setting in the SETTINGS frame (see
+pushes via the SETTINGS_DISABLE_PUSH setting in the SETTINGS frame (see
 {{connection-establishment}}), which defaults to 1 (true).
 
 As with server push for HTTP/2, the server initiates a server push by sending a
-PUSH_PROMISE frame containing the StreamID of the stream to be pushed, as well
+PUSH_PROMISE frame containing the Stream ID of the stream to be pushed, as well
 as request header fields attributed to the request. The PUSH_PROMISE frame is
 sent on the control stream of the associated (client-initiated) request, while
 the Promised Stream ID field specifies the Stream ID of the control stream for
@@ -365,7 +377,7 @@ corresponding data stream.
 
 # HTTP Framing Layer
 
-Frames are used only on the connection (stream 3) and message (streams 5, 9,
+Frames are used only on the connection (stream 1) and message (streams 3, 7,
 etc.) control streams. Other streams carry data payload and are not framed at
 the HTTP layer.
 
@@ -376,7 +388,7 @@ HTTP/2 framing.  For more detail on differences from HTTP/2, see {{h2-frames}}.
 
 All frames have the following format:
 
-~~~~~~~~~~
+~~~~~~~~~~ drawing
     0                   1                   2                   3
     0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -402,7 +414,7 @@ One flag is defined:
 A HEADERS frame with any other flags set MUST be treated as a connection error
 of type HTTP_MALFORMED_HEADERS.
 
-~~~~~~~~~~
+~~~~~~~~~~  drawing
     0                   1                   2                   3
     0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -450,10 +462,10 @@ HTTP/2.
 The flags defined are:
 
   E (0x01):
-  : Indicates that the stream dependency is exclusive (see {{!RFC7540}} Section
+  : Indicates that the stream dependency is exclusive (see {{!RFC7540}}, Section
     5.3).
 
-~~~~~~~~~~
+~~~~~~~~~~  drawing
     0                   1                   2                   3
     0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -474,11 +486,11 @@ The HEADERS frame payload has the following fields:
 
   Stream Dependency:
   : A 32-bit stream identifier for the stream that this stream depends on (see
-    {{priority}} and {!RFC7540}} Section 5.3).
+    {{priority}} and {{!RFC7540}}, Section 5.3).
 
   Weight:
   : An unsigned 8-bit integer representing a priority weight for the stream (see
-    {{!RFC7540}} Section 5.3). Add one to the value to obtain a weight between 1
+    {{!RFC7540}}, Section 5.3). Add one to the value to obtain a weight between 1
     and 256.
 
 A PRIORITY frame MUST have a payload length of nine octets.  A PRIORITY frame
@@ -513,7 +525,7 @@ The payload of a SETTINGS frame consists of zero or more parameters, each
 consisting of an unsigned 16-bit setting identifier and a length-prefixed binary
 value.
 
-~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~  drawing
     0                   1                   2                   3
     0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -545,7 +557,7 @@ the endpoint MUST respond with a connection error of type
 HTTP_MULTIPLE_SETTINGS.
 
 The SETTINGS frame affects connection state. A badly formed or incomplete
-SETTINGS frame MUST be treated as a connection error (Section 5.4.1) of type
+SETTINGS frame MUST be treated as a connection error ({{errors}}) of type
 HTTP_MALFORMED_SETTINGS.
 
 
@@ -602,7 +614,7 @@ the defaults above on the next connection.
 The PUSH_PROMISE frame (type=0x05) is used to carry a request header set from
 server to client, as in HTTP/2.  It defines no flags.
 
-~~~~~~~~~~
+~~~~~~~~~~  drawing
     0                   1                   2                   3
     0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -741,7 +753,7 @@ PRIORITY frames are sent on the connection control stream and the PRIORITY
 section is removed from the HEADERS frame.
 
 Other than this issue, frame type HTTP/2 extensions are typically portable to
-QUIC simply by replacing Stream 0 in HTTP/2 with Stream 3 in HTTP/QUIC.
+QUIC simply by replacing Stream 0 in HTTP/2 with Stream 1 in HTTP/QUIC.
 
 Below is a listing of how each HTTP/2 frame type is mapped:
 
@@ -1060,47 +1072,49 @@ The original authors of this specification were Robbie Shade and Mike Warres.
 > **RFC Editor's Note:**  Please remove this section prior to publication of a
 > final version of this document.
 
-## Since draft-ietf-quic-http-01:
+## Since draft-ietf-quic-http-04
 
-- SETTINGS changes:
+- Use separate frame type registry from HTTP/2 (#81)
 
-    - SETTINGS can be sent only once at the start of a connection; no changes
+## Since draft-ietf-quic-http-03
+
+None.
+
+## Since draft-ietf-quic-http-02
+
+- Track changes in transport draft
+
+
+## Since draft-ietf-quic-http-01
+
+- SETTINGS changes (#181):
+    - SETTINGS can be sent only once at the start of a connection;
+      no changes thereafter
     - SETTINGS_ACK removed
     - Settings can only occur in the SETTINGS frame a single time
     - Boolean format updated
 
-- Alt-Svc parameter changed from "v" to "quic"; format updated
-
+- Alt-Svc parameter changed from "v" to "quic"; format updated (#229)
 - Closing the connection control stream or any message control stream is a
-  fatal error
-
-- HPACK Sequence counter can wrap
-
+  fatal error (#176)
+- HPACK Sequence counter can wrap (#173)
 - 0-RTT guidance added
-
 - Guide to differences from HTTP/2 and porting HTTP/2 extensions added
+  (#127,#242)
 
-- Use separate frame type registry from HTTP/2
+## Since draft-ietf-quic-http-00
 
-## Since draft-ietf-quic-http-00:
-
-- Changed "HTTP/2-over-QUIC" to "HTTP/QUIC" throughout
-
+- Changed "HTTP/2-over-QUIC" to "HTTP/QUIC" throughout (#11,#29)
 - Changed from using HTTP/2 framing within Stream 3 to new framing format and
-  two-stream-per-request model
-
+  two-stream-per-request model (#71,#72,#73)
 - Adopted SETTINGS format from draft-bishop-httpbis-extended-settings-01
+- Reworked SETTINGS_ACK to account for indeterminate inter-stream order (#75)
+- Described CONNECT pseudo-method (#95)
+- Updated ALPN token and Alt-Svc guidance (#13,#87)
+- Application-layer-defined error codes (#19,#74)
 
-- Reworked SETTINGS_ACK to account for indeterminate inter-stream order
 
-- Described CONNECT pseudo-method
+## Since draft-shade-quic-http2-mapping-00
 
-- Updated ALPN token and Alt-Svc guidance
-
-- Application-layer-defined error codes
-
-## Since draft-shade-quic-http2-mapping-00:
-
-- Adopted as base for draft-ietf-quic-http.
-
-- Updated authors/editors list.
+- Adopted as base for draft-ietf-quic-http
+- Updated authors/editors list

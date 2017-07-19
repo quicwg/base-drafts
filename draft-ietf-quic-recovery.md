@@ -30,6 +30,8 @@ normative:
   QUIC-TRANSPORT:
     title: "QUIC: A UDP-Based Multiplexed and Secure Transport"
     date: {DATE}
+    seriesinfo:
+      Internet-Draft: draft-ietf-quic-transport-latest
     author:
       -
         ins: J. Iyengar
@@ -44,13 +46,8 @@ normative:
 
 --- abstract
 
-QUIC is a new multiplexed and secure transport atop UDP.  QUIC builds on decades
-of transport and security experience, and implements mechanisms that make it
-attractive as a modern general-purpose transport.  QUIC implements the spirit of
-known TCP loss detection mechanisms, described in RFCs, various Internet-drafts,
-and also those prevalent in the Linux TCP implementation.  This document
-describes QUIC loss detection and congestion control, and attributes the TCP
-equivalent in RFCs, Internet-drafts, academic papers, and TCP implementations.
+This document describes loss detection and congestion control mechanisms for
+QUIC.
 
 --- note_Note_to_Readers
 
@@ -77,11 +74,6 @@ implementation.  This document describes QUIC congestion control and loss
 recovery, and where applicable, attributes the TCP equivalent in RFCs,
 Internet-drafts, academic papers, and/or TCP implementations.
 
-This document first describes pre-requisite parts of the QUIC transmission
-machinery, then discusses QUIC's default congestion control and loss detection
-mechanisms, and finally lists the various TCP mechanisms that QUIC loss
-detection implements (in spirit.)
-
 
 ## Notational Conventions
 
@@ -106,7 +98,7 @@ important to the loss detection and congestion control machinery below.
 * Retransmittable frames are frames requiring reliable delivery.  The most
   common are STREAM frames, which typically contain application data.
 
-* Crypto handshake data is also sent as STREAM data, and uses the reliability
+* Crypto handshake data is sent on stream 0, and uses the reliability
   machinery of QUIC underneath.
 
 * ACK frames contain acknowledgment information.  QUIC uses a SACK-based
@@ -115,9 +107,10 @@ important to the loss detection and congestion control machinery below.
 
 ## Relevant Differences Between QUIC and TCP
 
-There are some notable differences between QUIC and TCP which are important for
-reasoning about the differences between the loss recovery mechanisms employed by
-the two protocols.  We briefly describe these differences below.
+Readers familiar with TCP's loss detection and congestion control will find
+algorithms here that parallel well-known TCP ones. Protocol differences between
+QUIC and TCP however contribute to algorithmic differences. We briefly describe
+these protocol differences below.
 
 ### Monotonically Increasing Packet Numbers
 
@@ -166,16 +159,55 @@ measure and report the delay from when a packet was received by the OS kernel,
 which is useful in receivers which may incur delays such as context-switch
 latency before a userspace QUIC receiver processes a received packet.
 
+
 # Loss Detection
 
-We now describe QUIC's loss detection as functions that should be called on
-packet transmission, when a packet is acked, and timer expiration events.
+## Overview {#overview}
 
-## Constants of interest
+QUIC uses a combination of ack information and alarms to detect lost packets.
+An unacknowledged QUIC packet is marked as lost in one of the following ways:
 
-Constants used in loss recovery and congestion control are based on a
-combination of RFCs, papers, and common practice.  Some may need to be changed
-or negotiated in order to better suit a variety of environments.
+  * A packet is marked as lost if at least one packet that was sent a threshold
+    number of packets (kReorderingThreshold) after it has been
+    acknowledged. This indicates that the unacknowledged packet is either lost
+    or reordered beyond the specified threshold. This mechanism combines both
+    TCP's FastRetransmit and FACK mechanisms.
+
+  * If a packet is near the tail, where fewer than kReorderingThreshold packets
+    are sent after it, the sender cannot expect to detect loss based on the
+    previous mechanism. In this case, a sender uses both ack information and an
+    alarm to detect loss. Specifically, when the last sent packet is
+    acknowledged, the sender waits a short period of time to allow for
+    reordering and then marks any unacknowledged packets as lost. This mechanism
+    is based on the Linux implementation of TCP Early Retransmit.
+
+  * If a packet is sent at the tail, there are no packets sent after it, and the
+    sender cannot use ack information to detect its loss. The sender therefore
+    relies on an alarm to detect such tail losses. This mechanism is based on
+    TCP's Tail Loss Probe.
+
+  * If all else fails, a Retransmission Timeout (RTO) alarm is always set when
+    any retransmittable packet is outstanding. When this alarm fires, all
+    unacknowledged packets are marked as lost.
+
+  * Instead of a packet threshold to tolerate reordering, a QUIC sender may use
+    a time threshold. This allows for senders to be tolerant of short periods of
+    significant reordering. In this mechanism, a QUIC sender marks a packet as
+    lost when a packet larger than it is acknowledged and a threshold amount of
+    time has passed since the packet was sent.
+
+  * Handshake packets, which contain STREAM frames for stream 0, are
+    critical to QUIC transport and crypto negotiation, so a separate alarm
+    period is used for them.
+
+
+## Algorithm Details
+
+### Constants of interest
+
+Constants used in loss recovery are based on a combination of RFCs, papers,
+and common practice.  Some may need to be changed or negotiated in order to
+better suit a variety of environments.
 
 kMaxTLPs (default 2):
 : Maximum number of tail loss probes before an RTO fires.
@@ -184,8 +216,8 @@ kReorderingThreshold (default 3):
 : Maximum reordering in packet number space before FACK style loss detection
   considers a packet lost.
 
-kTimeReorderingThreshold (default 1/8):
-: Maximum reordering in time sapce before time based loss detection considers
+kTimeReorderingFraction (default 1/8):
+: Maximum reordering in time space before time based loss detection considers
   a packet lost.  In fraction of an RTT.
 
 kMinTLPTimeout (default 10ms):
@@ -200,18 +232,13 @@ kDelayedAckTimeout (default 25ms):
 kDefaultInitialRtt (default 100ms):
 : The default RTT used before an RTT sample is taken.
 
-## Variables of interest
+### Variables of interest
 
-We first describe the variables required to implement the loss detection
-mechanisms described in this section.
+Variables required to implement the congestion control mechanisms
+are described in this section.
 
 loss_detection_alarm:
 : Multi-modal alarm used for loss detection.
-
-alarm_mode:
-: QUIC maintains a single loss detection alarm, which switches
-  between various modes.  This mode is used to determine the duration of the
-  alarm.
 
 handshake_count:
 : The number of times the handshake packets have been
@@ -224,6 +251,23 @@ tlp_count:
 rto_count:
 : The number of times an rto has been sent without receiving an ack.
 
+largest_sent_before_rto:
+: The last packet number sent prior to the first retransmission
+  timeout.
+
+time_of_last_sent_packet:
+: The time the most recent packet was sent.
+
+largest_sent_packet:
+: The packet number of the most recently sent packet.
+
+largest_acked_packet:
+: The largest packet number acknowledged in an ack frame.
+
+latest_rtt:
+: The most recent RTT measurement made when receiving an ack for
+  a previously unacked packet.
+
 smoothed_rtt:
 : The smoothed RTT of the connection, computed as described in
   {{?RFC6298}}
@@ -231,24 +275,26 @@ smoothed_rtt:
 rttvar:
 : The RTT variance, computed as described in {{?RFC6298}}
 
-initial_rtt:
-: The initial RTT used before any RTT measurements have been made.
-
 reordering_threshold:
 : The largest delta between the largest acked
   retransmittable packet and a packet containing retransmittable frames before
   it's declared lost.
 
-use_time_loss:
-: When true, loss detection operates solely based on reordering
-  threshold in time, rather than in packet number gaps.
+time_reordering_fraction:
+: The reordering window as a fraction of max(smoothed_rtt, latest_rtt).
+
+loss_time:
+: The time at which the next packet will be considered lost based on early
+transmit or exceeding the reordering window in time.
 
 sent_packets:
-: An association of packet numbers to information about them, including a time
-  field indicating the time a packet was sent and a bytes field indicating the
-  packet's size.
+: An association of packet numbers to information about them, including a number
+  field indicating the packet number, a time field indicating the time a packet
+  was sent, and a bytes field indicating the packet's size.  sent_packets is
+  ordered by packet number, and packets remain in sent_packets until
+  acknowledged or lost.
 
-## Initialization
+### Initialization
 
 At the beginning of the connection, initialize the loss detection variables as
 follows:
@@ -258,14 +304,21 @@ follows:
    handshake_count = 0
    tlp_count = 0
    rto_count = 0
-   reordering_threshold = kReorderingThreshold
-   use_time_loss = false
+   if (UsingTimeLossDetection())
+     reordering_threshold = infinite
+     time_reordering_fraction = kTimeReorderingFraction
+   else:
+     reordering_threshold = kReorderingThreshold
+     time_reordering_fraction = infinite
+   loss_time = 0
    smoothed_rtt = 0
    rttvar = 0
-   initial_rtt = kDefaultInitialRtt
+   largest_sent_before_rto = 0
+   time_of_last_sent_packet = 0
+   largest_sent_packet = 0
 ~~~
 
-## On Sending a Packet
+### On Sending a Packet
 
 After any packet is sent, be it a new transmission or a rebundled transmission,
 the following OnPacketSent function is called.  The parameters to OnPacketSent
@@ -273,7 +326,7 @@ are as follows:
 
 * packet_number: The packet number of the sent packet.
 
-* is_retransmittble: A boolean that indicates whether the packet contains at
+* is_retransmittable: A boolean that indicates whether the packet contains at
   least one frame requiring reliable deliver.  The retransmittability of various
   QUIC frames is described in {{QUIC-TRANSPORT}}.  If false, it is still
   acceptable for an ack to be received for this packet.  However, a caller MUST
@@ -285,13 +338,16 @@ Pseudocode for OnPacketSent follows:
 
 ~~~
  OnPacketSent(packet_number, is_retransmittable, sent_bytes):
+   time_of_last_sent_packet = now
+   largest_sent_packet = packet_number
+   sent_packets[packet_number].packet_number = packet_number
    sent_packets[packet_number].time = now
    if is_retransmittable:
      sent_packets[packet_number].bytes = sent_bytes
      SetLossDetectionAlarm()
 ~~~
 
-## On Ack Receipt
+### On Ack Receipt
 
 When an ack is received, it may acknowledge 0 or more packets.
 
@@ -299,32 +355,32 @@ Pseudocode for OnAckReceived and UpdateRtt follow:
 
 ~~~
    OnAckReceived(ack):
+     largest_acked_packet = ack.largest_acked
      // If the largest acked is newly acked, update the RTT.
      if (sent_packets[ack.largest_acked]):
-       rtt_sample = now - sent_packets[ack.largest_acked].time
-       if (rtt_sample > ack.ack_delay):
-         rtt_sample -= ack.delay
-       UpdateRtt(rtt_sample)
+       latest_rtt = now - sent_packets[ack.largest_acked].time
+       if (latest_rtt > ack.ack_delay):
+         latest_rtt -= ack.delay
+       UpdateRtt(latest_rtt)
      // Find all newly acked packets.
      for acked_packet in DetermineNewlyAckedPackets():
-       OnPacketAcked(acked_packet)
+       OnPacketAcked(acked_packet.packet_number)
 
-     lost_packets = DetectLostPackets(ack.largest_acked_packet)
-     MaybeRetransmit(lost_packets)
+     DetectLostPackets(ack.largest_acked_packet)
      SetLossDetectionAlarm()
 
 
-   UpdateRtt(rtt_sample):
+   UpdateRtt(latest_rtt):
      // Based on {{?RFC6298}}.
      if (smoothed_rtt == 0):
-       smoothed_rtt = rtt_sample
-       rttvar = rtt_sample / 2
+       smoothed_rtt = latest_rtt
+       rttvar = latest_rtt / 2
      else:
-       rttvar = 3/4 * rttvar + 1/4 * (smoothed_rtt - rtt_sample)
-       smoothed_rtt = 7/8 * smoothed_rtt + 1/8 * rtt_sample
+       rttvar = 3/4 * rttvar + 1/4 * (smoothed_rtt - latest_rtt)
+       smoothed_rtt = 7/8 * smoothed_rtt + 1/8 * latest_rtt
 ~~~
 
-## On Packet Acknowledgment
+### On Packet Acknowledgment
 
 When a packet is acked for the first time, the following OnPacketAcked function
 is called.  Note that a single ACK frame may newly acknowledge several packets.
@@ -334,34 +390,42 @@ OnPacketAcked takes one parameter, acked_packet, which is the packet number of
 the newly acked packet, and returns a list of packet numbers that are detected
 as lost.
 
+If this is the first acknowledgement following RTO, check if the smallest newly
+acknowledged packet is one sent by the RTO, and if so, inform congestion control
+of a verified RTO, similar to F-RTO {{?RFC5682}}
+
 Pseudocode for OnPacketAcked follows:
 
 ~~~
-   OnPacketAcked(acked_packet):
+   OnPacketAcked(acked_packet_number):
+     OnPacketAckedCC(acked_packet_number)
+     // If a packet sent prior to RTO was acked, then the RTO
+     // was spurious.  Otherwise, inform congestion control.
+     if (rto_count > 0 &&
+         acked_packet_number > largest_sent_before_rto)
+       OnRetransmissionTimeoutVerified()
      handshake_count = 0
      tlp_count = 0
      rto_count = 0
-     # TODO: Don't remove packets immediately, since they can be
-     # used for detecting spurous retransmits.
-     sent_packets.remove(acked_packet)
+     sent_packets.remove(acked_packet_number)
 ~~~
 
-## Setting the Loss Detection Alarm
+### Setting the Loss Detection Alarm
 
 QUIC loss detection uses a single alarm for all timer-based loss detection.  The
 duration of the alarm is based on the alarm's mode, which is set in the packet
 and timer events further below.  The function SetLossDetectionAlarm defined
 below shows how the single timer is set based on the alarm mode.
 
-### Handshake Packets
+#### Handshake Packets
 
 The initial flight has no prior RTT sample.  A client SHOULD remember
 the previous RTT it observed when resumption is attempted and use that for an
 initial RTT value.  If no previous RTT is available, the initial RTT defaults
-to 200ms.  Once an RTT measurement is taken, it MUST replace initial_rtt.
+to 100ms.
 
 Endpoints MUST retransmit handshake frames if not acknowledged within a
-time limit. This time limit will start as the largest of twice the rtt value
+time limit. This time limit will start as the largest of twice the RTT value
 and MinTLPTimeout.  Each consecutive handshake retransmission doubles the
 time limit, until an acknowledgement is received.
 
@@ -373,44 +437,43 @@ When stateless rejects are in use, the connection is considered immediately
 closed once a reject is sent, so no timer is set to retransmit the reject.
 
 Version negotiation packets are always stateless, and MUST be sent once per
-per handshake packet that uses an unsupported QUIC version, and MAY be sent
-in response to 0RTT packets.
+handshake packet that uses an unsupported QUIC version, and MAY be sent in
+response to 0RTT packets.
 
-### Tail Loss Probe and Retransmission Timeout
+#### Tail Loss Probe and Retransmission Timeout
 
-Tail loss probes {{?I-D.dukkipati-tcpm-tcp-loss-probe}} and retransmission
-timeouts{{?RFC6298}} are an alarm based mechanism to recover from cases when
-there are outstanding retransmittable packets, but an acknowledgement has
-not been received in a timely manner.
+Tail loss probes {{?LOSS-PROBE=I-D.dukkipati-tcpm-tcp-loss-probe}} and
+retransmission timeouts {{?RFC6298}} are an alarm based mechanism to recover
+from cases when there are outstanding retransmittable packets, but an
+acknowledgement has not been received in a timely manner.
 
-### Early Retransmit
+#### Early Retransmit
 
 Early retransmit {{?RFC5827}} is implemented with a 1/4 RTT timer. It is
 part of QUIC's time based loss detection, but is always enabled, even when
 only packet reordering loss detection is enabled.
 
-### Pseudocode
+#### Pseudocode
 
 Pseudocode for SetLossDetectionAlarm follows:
 
 ~~~
  SetLossDetectionAlarm():
     if (retransmittable packets are not outstanding):
-      loss_detection_alarm.cancel();
+      loss_detection_alarm.cancel()
       return
 
     if (handshake packets are outstanding):
       // Handshake retransmission alarm.
       if (smoothed_rtt == 0):
-        alarm_duration = 2 * initial_rtt
+        alarm_duration = 2 * kDefaultInitialRtt
       else:
         alarm_duration = 2 * smoothed_rtt
       alarm_duration = max(alarm_duration, kMinTLPTimeout)
-      alarm_duration = alarm_duration << handshake_count
-    else if (largest sent packet is acked):
-      // Early retransmit
-      // with an alarm to reduce spurious retransmits.
-      alarm_duration = 0.25 * smoothed_rtt
+      alarm_duration = alarm_duration * (2 ^ handshake_count)
+    else if (loss_time != 0):
+      // Early retransmit timer or time loss detection.
+      alarm_duration = loss_time - now
     else if (tlp_count < kMaxTLPs):
       // Tail Loss Probe
       if (retransmittable_packets_outstanding = 1):
@@ -420,16 +483,14 @@ Pseudocode for SetLossDetectionAlarm follows:
       alarm_duration = max(alarm_duration, 2 * smoothed_rtt)
     else:
       // RTO alarm
-      if (rto_count = 0):
-        alarm_duration = smoothed_rtt + 4 * rttvar
-        alarm_duration = max(alarm_duration, kMinRTOTimeout)
-      else:
-        alarm_duration = loss_detection_alarm.get_delay() << 1
+      alarm_duration = smoothed_rtt + 4 * rttvar
+      alarm_duration = max(alarm_duration, kMinRTOTimeout)
+      alarm_duration = alarm_duration * (2 ^ rto_count)
 
     loss_detection_alarm.set(now + alarm_duration)
 ~~~
 
-## On Alarm Firing
+### On Alarm Firing
 
 QUIC uses one loss recovery alarm, which when set, can be in one of several
 modes.  When the alarm fires, the mode determines the action to be performed.
@@ -440,70 +501,221 @@ Pseudocode for OnLossDetectionAlarm follows:
    OnLossDetectionAlarm():
      if (handshake packets are outstanding):
        // Handshake retransmission alarm.
-       RetransmitAllHandshakePackets();
-       handshake_count++;
-     // TODO: Clarify early retransmit and time loss.
-     else if ():
+       RetransmitAllHandshakePackets()
+       handshake_count++
+     else if (loss_time != 0):
        // Early retransmit or Time Loss Detection
-       lost_packets = DetectLostPackets(acked_packet)
-       MaybeRetransmit(lost_packets)
+       DetectLostPackets(largest_acked_packet)
      else if (tlp_count < kMaxTLPs):
-       // Tail Loss Probe alarm.
-       if (HasNewDataToSend()):
-         SendOnePacketOfNewData()
-       else:
-         RetransmitOldestPacket()
+       // Tail Loss Probe.
+       SendOnePacket()
        tlp_count++
      else:
-       // RTO alarm.
-       RetransmitOldestPacket()
+       // RTO.
+       if (rto_count == 0)
+         largest_sent_before_rto = largest_sent_packet
+       SendTwoPackets()
        rto_count++
 
      SetLossDetectionAlarm()
 ~~~
 
-## Detecting Lost Packets
+### Detecting Lost Packets
 
 Packets in QUIC are only considered lost once a larger packet number is
-acknowledged.  DetectLostPackets is called every time there is a new largest
-packet or if the loss detection alarm fires the previous largest acked packet is
-supplied.
+acknowledged.  DetectLostPackets is called every time an ack is received.
+If the loss detection alarm fires and the loss_time is set, the previous
+largest acked packet is supplied.
 
-### Handshake Packets
+#### Handshake Packets
 
 The receiver MUST ignore unprotected packets that ack protected packets.
 The receiver MUST trust protected acks for unprotected packets, however.  Aside
 from this, loss detection for handshake packets when an ack is processed is
 identical to other packets.
 
-### Pseudocode
+#### Pseudocode
 
-DetectLostPackets takes one parameter, acked, which is the largest acked packet,
-and returns a list of packets detected as lost.
+DetectLostPackets takes one parameter, acked, which is the largest acked packet.
 
 Pseudocode for DetectLostPackets follows:
 
 ~~~
-   DetectLostPackets(acked):
+   DetectLostPackets(largest_acked):
+     loss_time = 0
      lost_packets = {}
-     foreach (unacked less than acked):
-       time_delta = acked.time_sent - unacked.time_sent
-       packet_delta = acked.packet_number - unacked.packet_number
-       if (time_delta > kTimeReorderThreshold * smoothed_rtt):
+     delay_until_lost = infinite
+     if (time_reordering_fraction != infinite):
+       delay_until_lost =
+         (1 + time_reordering_fraction) * max(latest_rtt, smoothed_rtt)
+     else if (largest_acked.packet_number == largest_sent_packet):
+       // Early retransmit alarm.
+       delay_until_lost = 9/8 * max(latest_rtt, smoothed_rtt)
+     foreach (unacked < largest_acked.packet_number):
+       time_since_sent = now() - unacked.time_sent
+       packet_delta = largest_acked.packet_number - unacked.packet_number
+       if (time_since_sent > delay_until_lost):
          lost_packets.insert(unacked)
        else if (packet_delta > reordering_threshold)
          lost_packets.insert(unacked)
-     return lost_packets
+       else if (loss_time == 0 && delay_until_lost != infinite):
+         loss_time = now() + delay_until_lost - time_since_sent
+
+     // Inform the congestion controller of lost packets and
+     // lets it decide whether to retransmit immediately.
+     if (!lost_packets.empty())
+       OnPacketsLost(lost_packets)
+       foreach (packet in lost_packets)
+         sent_packets.remove(packet.packet_number)
 ~~~
+
+## Discussion
+The majority of constants were derived from best common practices among widely
+deployed TCP implementations on the internet.  Exceptions follow.
+
+A shorter delayed ack time of 25ms was chosen because longer delayed acks can
+delay loss recovery and for the small number of connections where less than
+packet per 25ms is delivered, acking every packet is beneficial to congestion
+control and loss recovery.
+
+The default initial RTT of 100ms was chosen because it is slightly higher than
+both the median and mean min_rtt typically observed on the public internet.
+
 
 # Congestion Control
 
-(describe NewReno-style congestion control {{?RFC6582}} for QUIC.)
-(describe appropriate byte counting.)
-(define recovery based on packet numbers.)
-(describe min_rtt based hystart.)
-(describe how QUIC's F-RTO {{?RFC5682}} delays reducing CWND.)
-(describe PRR {{?RFC6937}})
+QUIC's congestion control is based on TCP NewReno{{?RFC6582}}
+congestion control to determine the congestion window and pacing rate.
+
+## Slow Start
+
+QUIC begins every connection in slow start and exits slow start upon
+loss. While in slow start, QUIC increases the congestion window by the
+number of acknowledged bytes when each ack is processed.
+
+## Recovery
+
+Recovery is a period of time beginning with detection of a lost packet.
+It ends when all packets outstanding at the time recovery began have been
+acknowledged or lost. During recovery, the congestion window is not
+increased or decreased.
+
+## Constants of interest
+
+Constants used in congestion control are based on a combination of RFCs,
+papers, and common practice.  Some may need to be changed or negotiated
+in order to better suit a variety of environments.
+
+kDefaultMss (default 1460 bytes):
+: The default max packet size used for calculating default and minimum
+  congestion windows.
+
+kInitialWindow (default 10 * kDefaultMss):
+: Default limit on the amount of outstanding data in bytes.
+
+kMinimumWindow (default 2 * kDefaultMss):
+: Default minimum congestion window.
+
+kLossReductionFactor (default 0.5):
+: Reduction in congestion window when a new loss event is detected.
+
+
+## Variables of interest
+
+Variables required to implement the congestion control mechanisms
+are described in this section.
+
+bytes_in_flight:
+: The sum of the size in bytes of all sent packets that contain at least
+  one retransmittable or PADDING frame, and have not been acked or
+  declared lost. The size does not include IP or UDP overhead.
+  Ack only frames do not count towards byte_in_flight.
+
+congestion_window:
+: Maximum number of bytes in flight that may be sent.
+
+end_of_recovery:
+: The packet number after which QUIC will no longer be in recovery.
+
+ssthresh
+: Slow start threshold in bytes.  When the congestion window is below
+  ssthresh, it grows by the number of bytes acknowledged for each ack.
+
+## Initialization
+
+At the beginning of the connection, initialize the loss detection variables as
+follows:
+
+~~~
+   congestion_window = kInitialWindow
+   bytes_in_flight = 0
+   end_of_recovery = 0
+   ssthresh = infinite
+~~~
+
+## On Packet Acknowledgement
+
+Invoked from loss detection's OnPacketAcked and is supplied with
+acked_packet from sent_packets.
+
+Pseudocode for OnPacketAckedCC follows:
+
+~~~
+   OnPacketAckedCC(acked_packet):
+     if (acked_packet.packet_number < end_of_recovery):
+       return
+     if (congestion_window < ssthresh):
+       congestion_window += acket_packets.bytes
+     else:
+       congestion_window +=
+           acked_packets.bytes / congestion_window
+~~~
+
+## On Packets Lost
+
+Invoked by loss detection from DetectLostPackets when new packets
+are detected lost.
+
+~~~
+   OnPacketsLost(lost_packets):
+     largest_lost_packet = lost_packets.last()
+     // Start a new recovery epoch if the lost packet is larger
+     // than the end of the previous recovery epoch.
+     if (end_of_recovery < largest_lost_packet.packet_number):
+       end_of_recovery = largest_sent_packet
+       congestion_window *= kLossReductionFactor
+       congestion_window = max(congestion_window, kMinimumWindow)
+       ssthresh = congestion_window
+~~~
+
+## On Retransmission Timeout Verified
+
+QUIC decreases the congestion window to the minimum value once the
+retransmission timeout has been confirmed to not be spurious when
+the first post-RTO acknowledgement is processed.
+
+~~~
+   OnRetransmissionTimeoutVerified()
+     congestion_window = kMinimumWindow
+~~~
+
+## Pacing Packets
+
+QUIC sends a packet if there is available congestion window and
+sending the packet does not exceed the pacing rate.
+
+TimeToSend returns infinite if the congestion controller is
+congestion window limited, a time in the past if the packet can be
+sent immediately, and a time in the future if sending is pacing
+limited.
+
+~~~
+   TimeToSend(packet_size):
+     if (bytes_in_flight + packet_size > congestion_window)
+       return infinite
+     return time_of_last_sent_packet +
+         (packet_size * smoothed_rtt) / congestion_window
+~~~
 
 
 # IANA Considerations
@@ -518,17 +730,33 @@ This document has no IANA actions.  Yet.
 
 # Change Log
 
-> **RFC Editor's Note:**  Please remove this section prior to publication of a
-> final version of this document.
+> **RFC Editor's Note:**  Please remove this section prior to
+> publication of a final version of this document.
 
-## Since draft-ietf-quic-recovery-00:
+## Since draft-ietf-quic-recovery-02
+
+- Integrate F-RTO (#544, #409)
+- Add congestion control (#545, #395)
+- Require connection abort if a skipped packet was acknowledged (#415)
+- Simplify RTO calculations (#142, #417)
+
+
+## Since draft-ietf-quic-recovery-01
+
+- Overview added to loss detection
+- Changes initial default RTT to 100ms
+- Added time-based loss detection and fixes early retransmit
+- Clarified loss recovery for handshake packets
+- Fixed references and made TCP references informative
+
+
+## Since draft-ietf-quic-recovery-00
 
 - Improved description of constants and ACK behavior
 
-## Since draft-iyengar-quic-loss-recovery-01:
 
-- Adopted as base for draft-ietf-quic-recovery.
+## Since draft-iyengar-quic-loss-recovery-01
 
-- Updated authors/editors list.
-
-- Added table of contents.
+- Adopted as base for draft-ietf-quic-recovery
+- Updated authors/editors list
+- Added table of contents
