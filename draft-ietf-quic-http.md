@@ -716,8 +716,16 @@ HTTP_RST_CONTROL_STREAM (0x11):
 # Considerations for Transitioning from HTTP/2
 
 HTTP/QUIC is strongly informed by HTTP/2, and bears many similarities.  This
-section points out important differences from HTTP/2 and describes how to map
-HTTP/2 extensions into HTTP/QUIC.
+section describes the approach taken to design HTTP/QUIC, points out important
+differences from HTTP/2, and describes how to map HTTP/2 extensions into
+HTTP/QUIC.
+
+HTTP/QUIC begins from the premise that HTTP/2 code reuse is a useful feature,
+but not a hard requirement.  HTTP/QUIC departs from HTTP/2 primarily where
+necessary to accommodate the differences in behavior between QUIC and TCP (lack
+of ordering, support for streams).
+
+These departures are noted in this section.
 
 ## HTTP Frame Types {#h2-frames}
 
@@ -817,9 +825,8 @@ SETTINGS_ENABLE_PUSH:
 : See SETTINGS_DISABLE_PUSH in {{settings-parameters}}.
 
 SETTINGS_MAX_CONCURRENT_STREAMS:
-: QUIC requires the maximum number of incoming streams per connection to be
-  specified in the initial transport handshake.  Specifying
-  SETTINGS_MAX_CONCURRENT_STREAMS in the SETTINGS frame is an error.
+: QUIC controls the largest open stream ID as part of its flow control logic.
+  Specifying SETTINGS_MAX_CONCURRENT_STREAMS in the SETTINGS frame is an error.
 
 SETTINGS_INITIAL_WINDOW_SIZE:
 : QUIC requires both stream and connection flow control window sizes to be
@@ -947,6 +954,11 @@ Type" registry operates under either of the "IETF Review" or "IESG Approval"
 policies {{?RFC5226}} for values between 0x00 and 0xef, with values between 0xf0
 and 0xff being reserved for Experimental Use.
 
+While this registry is separate from the "HTTP/2 Frame Type" registry defined in
+{{RFC7540}}, it is preferable that the assignments parallel each other.  If an
+entry is present in only one registry, every effort SHOULD be made to avoid
+assigning the corresponding value to an unrelated operation.
+
 New entries in this registry require the following information:
 
 Frame Type:
@@ -983,7 +995,13 @@ This document establishes a registry for HTTP/QUIC settings.  The "HTTP/QUIC
 Settings" registry manages a 16-bit space.  The "HTTP/QUIC Settings" registry
 operates under the "Expert Review" policy {{?RFC5226}} for values in the range
 from 0x0000 to 0xefff, with values between and 0xf000 and 0xffff being reserved
-for Experimental Use.
+for Experimental Use.  The designated experts are the same as those for the
+"HTTP/2 Settings" registry defined in {{RFC7540}}.
+
+While this registry is separate from the "HTTP/2 Settings" registry defined in
+{{RFC7540}}, it is preferable that the assignments parallel each other.  If an
+entry is present in only one registry, every effort SHOULD be made to avoid
+assigning the corresponding value to an unrelated operation.
 
 New registrations are advised to provide the following information:
 
@@ -1074,7 +1092,7 @@ The original authors of this specification were Robbie Shade and Mike Warres.
 
 ## Since draft-ietf-quic-http-04
 
-- Use separate frame type registry from HTTP/2 (#81)
+- Use separate frame type and settings registries from HTTP/2 (#81)
 
 ## Since draft-ietf-quic-http-03
 
