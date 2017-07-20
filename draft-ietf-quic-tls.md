@@ -840,14 +840,14 @@ number gaps on connection ID transitions. That secret is computed as:
 
 # Unprotected Packets
 
-QUIC adds an integrity check to all unprotected packets.  Any packet that is not
-protected by the negotiated AEAD (see {{packet-protection}}), includes an
-integrity check.  This check does not prevent the packet from being altered, it
-exists for added resilience against data corruption and to provided added
-assurance that the sender intends to use QUIC.
+QUIC adds an integrity check to all cleartext packets.  Cleartext packets are
+not protected by the negotiated AEAD (see {{packet-protection}}), but instead
+include an integrity check.  This check does not prevent the packet from being
+altered, it exists for added resilience against data corruption and to provide
+added assurance that the sender intends to use QUIC.
 
-Unprotected packets all use the long form of the QUIC header and so will include
-a version number.  For this version of QUIC, the integrity check uses the 64-bit
+Cleartext packets all use the long form of the QUIC header and so will include a
+version number.  For this version of QUIC, the integrity check uses the 64-bit
 FNV-1a hash (see {{fnv1a}}).  The output of this hash is appended to the payload
 of the packet.
 
