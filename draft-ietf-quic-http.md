@@ -82,6 +82,9 @@ The words "MUST", "MUST NOT", "SHOULD", and "MAY" are used in this document.
 It's not shouting; when they are capitalized, they have the special meaning
 defined in {{!RFC2119}}.
 
+Field definitions are given in Augmented Backus-Naur Form (ABNF), as defined in
+{{!RFC5234}}.
+
 
 # QUIC Advertisement
 
@@ -793,7 +796,7 @@ PROTOCOL_ERROR (0x1):
 : No single mapping.  See new HTTP_MALFORMED_* error codes defined in
   {{http-error-codes}}.
 
-INTERNAL_ERROR (0x2)
+INTERNAL_ERROR (0x2):
 : HTTP_INTERNAL_ERROR in {{http-error-codes}}.
 
 FLOW_CONTROL_ERROR (0x3):
@@ -1011,6 +1014,7 @@ The original authors of this specification were Robbie Shade and Mike Warres.
 
 ## Since draft-ietf-quic-http-04
 
+- Cite RFC 5234 (#404)
 - Return to a single stream per request (#245)
 
 ## Since draft-ietf-quic-http-03
@@ -1020,7 +1024,6 @@ None.
 ## Since draft-ietf-quic-http-02
 
 - Track changes in transport draft
-
 
 ## Since draft-ietf-quic-http-01
 
