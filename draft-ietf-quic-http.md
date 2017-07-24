@@ -200,9 +200,9 @@ this MUST be treated as a connection error (see HTTP_MALFORMED_* in
 {{http-error-codes}}).  Streams which terminate abruptly may do so at any point
 in the frame.
 
-Streams used for requests MUST be utilized sequentially, with no gaps.  Streams
-used for pushed resources MAY be initiated out-of-order, but stream IDs SHOULD
-be allocated to promised resources sequentially.
+Streams SHOULD be utilized sequentially, with no gaps.  Streams used for pushed
+resources MAY be initiated out-of-order, but stream IDs SHOULD be allocated to
+promised resources sequentially.
 
 HTTP does not need to do any separate multiplexing when using QUIC - data sent
 over a QUIC stream always maps to a particular HTTP transaction. Requests and
