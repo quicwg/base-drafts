@@ -723,7 +723,9 @@ HTTP/QUIC.
 HTTP/QUIC begins from the premise that HTTP/2 code reuse is a useful feature,
 but not a hard requirement.  HTTP/QUIC departs from HTTP/2 primarily where
 necessary to accommodate the differences in behavior between QUIC and TCP (lack
-of ordering, support for streams).
+of ordering, support for streams).  We intend to avoid gratuitous changes which
+make it difficult or impossible to build extensions with the same semantics
+applicable to both protocols at once.
 
 These departures are noted in this section.
 
@@ -762,6 +764,8 @@ section is removed from the HEADERS frame.
 
 Other than this issue, frame type HTTP/2 extensions are typically portable to
 QUIC simply by replacing Stream 0 in HTTP/2 with Stream 1 in HTTP/QUIC.
+HTTP/QUIC extensions will not assume ordering, but would not be harmed by
+ordering, and would be portable to HTTP/2 in the same manner.
 
 Below is a listing of how each HTTP/2 frame type is mapped:
 
@@ -802,7 +806,7 @@ CONTINUATION (0x9):
 : CONTINUATION frames do not exist; instead, larger HEADERS/PUSH_PROMISE
   frames than HTTP/2 are permitted, and HEADERS frames can be used in series.
 
-Frame types defined by extensions to HTTP/2 need to be re-registered for
+Frame types defined by extensions to HTTP/2 need to be separately registered for
 HTTP/QUIC if still applicable.  The IDs of frames defined in {{!RFC7540}} have
 been reserved for simplicity.  See {{iana-frames}}.
 
@@ -840,9 +844,9 @@ SETTINGS_MAX_FRAME_SIZE:
 SETTINGS_MAX_HEADER_LIST_SIZE:
 : See {{settings-parameters}}.
 
-Settings defined by extensions to HTTP/2 need to be re-registered for HTTP/QUIC
-if still applicable.  The IDs of settings defined in {{!RFC7540}} have been
-reserved for simplicity.  See {{iana-settings}}.
+Settings need to be defined separately for HTTP/2 and  HTTP/QUIC.  The IDs of
+settings defined in {{!RFC7540}} have been reserved for simplicity.  See
+{{iana-settings}}.
 
 
 ## HTTP/2 Error Codes
@@ -901,8 +905,8 @@ INADEQUATE_SECURITY (0xc):
 HTTP_1_1_REQUIRED (0xd):
 : HTTP_VERSION_FALLBACK in {{http-error-codes}}.
 
-Error codes defined by HTTP/2 extensions need to be re-registered for HTTP/QUIC
-if still applicable.  See {{iana-error-codes}}.
+Error codes need to be defined for HTTP/2 and HTTP/QUIC separately.  See
+{{iana-error-codes}}.
 
 # Security Considerations
 
