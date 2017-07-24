@@ -855,7 +855,7 @@ PROTOCOL_ERROR (0x1):
 : No single mapping.  See new HTTP_MALFORMED_* error codes defined in
   {{http-error-codes}}.
 
-INTERNAL_ERROR (0x2)
+INTERNAL_ERROR (0x2):
 : HTTP_INTERNAL_ERROR in {{http-error-codes}}.
 
 FLOW_CONTROL_ERROR (0x3):
