@@ -82,6 +82,9 @@ The words "MUST", "MUST NOT", "SHOULD", and "MAY" are used in this document.
 It's not shouting; when they are capitalized, they have the special meaning
 defined in {{!RFC2119}}.
 
+Field definitions are given in Augmented Backus-Naur Form (ABNF), as defined in
+{{!RFC5234}}.
+
 
 # QUIC Advertisement
 
@@ -344,7 +347,7 @@ detects an error with the stream or the QUIC connection.
 
 ## Stream Priorities {#priority}
 
-HTTP/QUIC uses the priority scheme described in {{!RFC7540}} Section 5.3. In
+HTTP/QUIC uses the priority scheme described in {{!RFC7540}}, Section 5.3. In
 this priority scheme, a given stream can be designated as dependent upon another
 stream, which expresses the preference that the latter stream (the "parent"
 stream) be allocated resources before the former stream (the "dependent"
@@ -468,7 +471,7 @@ HTTP/2.
 The flags defined are:
 
   E (0x01):
-  : Indicates that the stream dependency is exclusive (see {{!RFC7540}} Section
+  : Indicates that the stream dependency is exclusive (see {{!RFC7540}}, Section
     5.3).
 
 ~~~~~~~~~~  drawing
@@ -492,11 +495,11 @@ The HEADERS frame payload has the following fields:
 
   Stream Dependency:
   : A 32-bit stream identifier for the stream that this stream depends on (see
-    {{priority}} and {!RFC7540}} Section 5.3).
+    {{priority}} and {{!RFC7540}}, Section 5.3).
 
   Weight:
   : An unsigned 8-bit integer representing a priority weight for the stream (see
-    {{!RFC7540}} Section 5.3). Add one to the value to obtain a weight between 1
+    {{!RFC7540}}, Section 5.3). Add one to the value to obtain a weight between 1
     and 256.
 
 A PRIORITY frame MUST have a payload length of nine octets.  A PRIORITY frame
@@ -563,7 +566,7 @@ the endpoint MUST respond with a connection error of type
 HTTP_MULTIPLE_SETTINGS.
 
 The SETTINGS frame affects connection state. A badly formed or incomplete
-SETTINGS frame MUST be treated as a connection error (Section 5.4.1) of type
+SETTINGS frame MUST be treated as a connection error ({{errors}}) of type
 HTTP_MALFORMED_SETTINGS.
 
 
@@ -861,7 +864,7 @@ PROTOCOL_ERROR (0x1):
 : No single mapping.  See new HTTP_MALFORMED_* error codes defined in
   {{http-error-codes}}.
 
-INTERNAL_ERROR (0x2)
+INTERNAL_ERROR (0x2):
 : HTTP_INTERNAL_ERROR in {{http-error-codes}}.
 
 FLOW_CONTROL_ERROR (0x3):
@@ -1078,10 +1081,17 @@ The original authors of this specification were Robbie Shade and Mike Warres.
 > **RFC Editor's Note:**  Please remove this section prior to publication of a
 > final version of this document.
 
+## Since draft-ietf-quic-http-04
+
+- Cite RFC 5234 (#404)
+
+## Since draft-ietf-quic-http-03
+
+None.
+
 ## Since draft-ietf-quic-http-02
 
 - Track changes in transport draft
-
 
 ## Since draft-ietf-quic-http-01
 
