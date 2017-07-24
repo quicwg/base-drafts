@@ -359,8 +359,8 @@ stream of the dependent request, not the data stream.
 
 HTTP/QUIC supports server push as described in {{!RFC7540}}. During connection
 establishment, the client indicates whether it is willing to receive server
-pushes via the SETTINGS_DISABLE_PUSH setting in the SETTINGS frame (see
-{{connection-establishment}}), which defaults to 1 (true).
+pushes via the SETTINGS_ENABLE_PUSH setting in the SETTINGS frame (see
+{{connection-establishment}}), which defaults to 0 (false).
 
 As with server push for HTTP/2, the server initiates a server push by sending a
 PUSH_PROMISE frame containing the Stream ID of the stream to be pushed, as well
@@ -573,13 +573,13 @@ bytes than would be used to transfer the maximum permitted value.
 The following settings are defined in HTTP/QUIC:
 
   SETTINGS_HEADER_TABLE_SIZE (0x1):
-  : An integer with a maximum value of 2^32 - 1.
+  : An integer with a maximum value of 2^32 - 1
 
-  SETTINGS_DISABLE_PUSH (0x2):
-  : Transmitted as a Boolean; replaces SETTINGS_ENABLE_PUSH
+  SETTINGS_ENABLE_PUSH (0x2):
+  : Transmitted as a Boolean
 
   SETTINGS_MAX_HEADER_LIST_SIZE (0x6):
-  : An integer with a maximum value of 2^32 - 1.
+  : An integer with a maximum value of 2^32 - 1
 
 #### Usage in 0-RTT
 
@@ -815,7 +815,7 @@ SETTINGS_HEADER_TABLE_SIZE:
 : See {{settings-parameters}}.
 
 SETTINGS_ENABLE_PUSH:
-: See SETTINGS_DISABLE_PUSH in {{settings-parameters}}.
+: See {{settings-parameters}}.
 
 SETTINGS_MAX_CONCURRENT_STREAMS:
 : QUIC requires the maximum number of incoming streams per connection to be
@@ -1000,7 +1000,7 @@ Values for existing registrations are assigned by this document:
 | Setting Name               | Supported Protocols | HTTP/QUIC Specification |
 |----------------------------|:-------------------:|-------------------------|
 | HEADER_TABLE_SIZE          | Both                | {{settings-parameters}} |
-| ENABLE_PUSH / DISABLE_PUSH | Both                | {{settings-parameters}} |
+| ENABLE_PUSH                | Both                | {{settings-parameters}} |
 | MAX_CONCURRENT_STREAMS     | HTTP/2 Only         | N/A                     |
 | INITIAL_WINDOW_SIZE        | HTTP/2 Only         | N/A                     |
 | MAX_FRAME_SIZE             | HTTP/2 Only         | N/A                     |
