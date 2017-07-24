@@ -1077,7 +1077,7 @@ The original authors of this specification were Robbie Shade and Mike Warres.
 
 ## Since draft-ietf-quic-http-04
 
-None yet.
+- Cite RFC 5234 (#404)
 
 ## Since draft-ietf-quic-http-03
 
