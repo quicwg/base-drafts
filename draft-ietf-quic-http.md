@@ -1072,10 +1072,17 @@ The original authors of this specification were Robbie Shade and Mike Warres.
 > **RFC Editor's Note:**  Please remove this section prior to publication of a
 > final version of this document.
 
+## Since draft-ietf-quic-http-04
+
+None yet.
+
+## Since draft-ietf-quic-http-03
+
+None.
+
 ## Since draft-ietf-quic-http-02
 
 - Track changes in transport draft
-
 
 ## Since draft-ietf-quic-http-01
 
