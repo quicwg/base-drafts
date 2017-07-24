@@ -82,6 +82,9 @@ The words "MUST", "MUST NOT", "SHOULD", and "MAY" are used in this document.
 It's not shouting; when they are capitalized, they have the special meaning
 defined in {{!RFC2119}}.
 
+Field definitions are given in Augmented Backus-Naur Form (ABNF), as defined in
+{{!RFC5234}}.
+
 
 # QUIC Advertisement
 
@@ -1074,7 +1077,7 @@ The original authors of this specification were Robbie Shade and Mike Warres.
 
 ## Since draft-ietf-quic-http-04
 
-None yet.
+- Cite RFC 5234 (#404)
 
 ## Since draft-ietf-quic-http-03
 
