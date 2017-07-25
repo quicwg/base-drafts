@@ -756,10 +756,9 @@ CONNECTION_CLOSE frame or any further packets; the sender MAY send a Public
 Reset packet in response to further packets that it receives.
 
 To reduce the number of bits required to represent the packet number over the
-wire, only the least significant bits of the packet number are transmitted over
-the wire, up to 32 bits.  The actual packet number for each packet is
-reconstructed at the receiver based on the largest packet number received on a
-successfully authenticated packet.
+wire, only the least significant bits of the packet number are transmitted.  The
+actual packet number for each packet is reconstructed at the receiver based on
+the largest packet number received on a successfully authenticated packet.
 
 A packet number is decoded by finding the packet number value that is closest to
 the next expected packet.  The next expected packet is the highest received
