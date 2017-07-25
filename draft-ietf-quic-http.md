@@ -481,7 +481,7 @@ The flags defined are:
 ~~~~~~~~~~
 {: #fig-priority title="PRIORITY frame payload"}
 
-The HEADERS frame payload has the following fields:
+The PRIORITY frame payload has the following fields:
 
   Prioritized Stream:
   : A 32-bit stream identifier for the message control stream whose priority is
