@@ -1015,7 +1015,7 @@ The original authors of this specification were Robbie Shade and Mike Warres.
 ## Since draft-ietf-quic-http-04
 
 - Cite RFC 5234 (#404)
-- Return to a single stream per request (#245)
+- Return to a single stream per request (#245,#557)
 
 ## Since draft-ietf-quic-http-03
 
