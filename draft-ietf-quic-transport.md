@@ -876,7 +876,6 @@ explained in more detail as they are referenced later in the document.
 | 0x00        | PADDING           | {{frame-padding}}           |
 | 0x01        | RST_STREAM        | {{frame-rst-stream}}        |
 | 0x02        | CONNECTION_CLOSE  | {{frame-connection-close}}  |
-| 0x03        | GOAWAY            | {{frame-goaway}}            |
 | 0x04        | MAX_DATA          | {{frame-max-data}}          |
 | 0x05        | MAX_STREAM_DATA   | {{frame-max-stream-data}}   |
 | 0x06        | MAX_STREAM_ID     | {{frame-max-stream-id}}     |
@@ -1441,16 +1440,13 @@ period of time.  A QUIC connection, once established, can be terminated in one
 of three ways:
 
 1. Explicit Shutdown: An endpoint sends a CONNECTION_CLOSE frame to
-   initiate a connection termination.  An endpoint may send a GOAWAY frame to
-   the peer prior to a CONNECTION_CLOSE to indicate that the connection will
-   soon be terminated.  A GOAWAY frame signals to the peer that any active
-   streams will continue to be processed, but the sender of the GOAWAY will not
-   initiate any additional streams and will not accept any new incoming streams.
-   On termination of the active streams, a CONNECTION_CLOSE may be sent.  If an
-   endpoint sends a CONNECTION_CLOSE frame while unterminated streams are active
-   (no FIN bit or RST_STREAM frames have been sent or received for one or more
-   streams), then the peer must assume that the streams were incomplete and were
-   abnormally terminated.
+   initiate a connection termination.  An endpoint MAY use application-layer
+   mechanisms to gracefully close activity on the connection. On termination of
+   the active streams, a CONNECTION_CLOSE may be sent.  If an endpoint sends a
+   CONNECTION_CLOSE frame while unterminated streams are active (no FIN bit or
+   RST_STREAM frames have been sent or received for one or more streams), then
+   the peer must assume that the streams were incomplete and were abnormally
+   terminated.
 
 2. Implicit Shutdown: The default idle timeout is a required parameter in
    connection negotiation.  The maximum is 10 minutes.  If there is no network
@@ -1539,8 +1535,7 @@ Final offset:
 An endpoint sends a CONNECTION_CLOSE frame (type=0x02) to notify its peer that
 the connection is being closed.  If there are open streams that haven't been
 explicitly closed, they are implicitly closed when the connection is closed.
-(Ideally, a GOAWAY frame would be sent with enough time that all streams are
-torn down.)  The frame is as follows:
+The frame is as follows:
 
 ~~~
  0                   1                   2                   3
@@ -1570,57 +1565,6 @@ Reason Phrase:
 : A human-readable explanation for why the connection was closed.  This can be
   zero length if the sender chooses to not give details beyond the Error Code.
   This SHOULD be a UTF-8 encoded string {{!RFC3629}}.
-
-
-## GOAWAY Frame {#frame-goaway}
-
-An endpoint uses a GOAWAY frame (type=0x03) to initiate a graceful shutdown of a
-connection.  The endpoints will continue to use any active streams, but the
-sender of the GOAWAY will not initiate or accept any additional streams beyond
-those indicated.  The GOAWAY frame is as follows:
-
-~~~
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                  Largest Client Stream ID (32)                |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                  Largest Server Stream ID (32)                |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-~~~
-
-The fields of a GOAWAY frame are:
-
-Largest Client Stream ID:
-
-: The highest-numbered, client-initiated stream on which the endpoint sending
-  the GOAWAY frame either sent data, or received and delivered data.  All
-  higher-numbered, client-initiated streams (that is, odd-numbered streams) are
-  implicitly reset by sending or receiving the GOAWAY frame.
-
-Largest Server Stream ID:
-
-: The highest-numbered, server-initiated stream on which the endpoint sending
-  the GOAWAY frame either sent data, or received and delivered data.  All
-  higher-numbered, server-initiated streams (that is, even-numbered streams) are
-  implicitly reset by sending or receiving the GOAWAY frame.
-
-A GOAWAY frame indicates that any application layer actions on streams with
-higher numbers than those indicated can be safely retried because no data was
-exchanged.  An endpoint MUST set the value of the Largest Client or Server
-Stream ID to be at least as high as the highest-numbered stream on which it
-either sent data or received and delivered data to the application protocol that
-uses QUIC.
-
-An endpoint MAY choose a larger stream identifier if it wishes to allow for a
-number of streams to be created.  This is especially valuable for peer-initiated
-streams where packets creating new streams could be in transit; using a larger
-stream number allows those streams to complete.
-
-In addition to initiating a graceful shutdown of a connection, GOAWAY MAY be
-sent immediately prior to sending a CONNECTION_CLOSE frame that is sent as a
-result of detecting a fatal error.  Higher-numbered streams than those indicated
-in the GOAWAY frame can then be retried.
 
 
 ## MAX_DATA Frame {#frame-max-data}
@@ -3098,6 +3042,10 @@ thanks to all.
 > final version of this document.
 
 Issue and pull request numbers are listed with a leading octothorp.
+
+## Since draft-ietf-quic-transport-04
+
+- Removed GOAWAY (#696)
 
 ## Since draft-ietf-quic-transport-03
 

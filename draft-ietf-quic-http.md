@@ -585,6 +585,116 @@ The payload consists of:
   : HPACK-compressed request headers for the promised response.
 
 
+### GOAWAY {#frame-goaway}
+
+The GOAWAY frame (type=0x7) is used to initiate graceful shutdown of a
+connection.  GOAWAY allows an endpoint to stop accepting new streams while still
+finishing processing of previously established streams.  This enables
+administrative actions, like server maintenance.
+
+There is an inherent race condition between an endpoint starting new streams and
+the remote sending a GOAWAY frame.  To deal with this case, the GOAWAY contains
+the stream identifier of the last peer- initiated stream that was or might be
+processed on the sending endpoint in this connection.  For instance, if the
+server sends a GOAWAY frame, the identified stream is the highest-numbered
+stream initiated by the client.  This MAY be lower than the stream limit
+identified by a QUIC MAX_STREAM_ID frame.
+
+Once sent, the sender will refuse requests sent on streams initiated by the
+receiver if the stream has an identifier higher than the included last stream
+identifier.  Receivers of a GOAWAY frame MUST NOT send new requests on the
+connection, although a new connection can be established for new streams.
+
+If the receiver of the GOAWAY has sent requests on streams with a higher stream
+identifier than what is indicated in the GOAWAY frame, those streams are not or
+will not be processed.  The receiver of the GOAWAY frame can treat the requests
+as though they had never been sent at all, thereby allowing those requests to be
+retried later on a new connection.  Servers SHOULD treat requests on streams
+above this ID as stream errors of type HTTP_REQUEST_CANCELLED.
+
+Endpoints SHOULD send a GOAWAY frame when the closing of a connection is known
+in advance, even if the window is small, so that the remote peer can know
+whether a stream has been partially processed or not.  For example, if an HTTP
+client sends a POST at the same time that a server closes a QUIC connection, the
+client cannot know if the server started to process that POST request if the
+server does not send a GOAWAY frame to indicate what streams it might have acted
+on.
+
+For unexpected closures caused by error conditions, transport-level mechanisms
+SHOULD be used.  However, a GOAWAY MAY still be sent to provide additional
+detail to clients.
+
+~~~~~~~~~~  drawing
+ +---------------------------------------------------------------+
+ |                   Last-Stream-ID (32)                         |
+ +---------------------------------------------------------------+
+ |                     [Error Code (32)]                         |
+ +---------------------------------------------------------------+
+ |                 [Additional Debug Data (*)]                 ...
+ +---------------------------------------------------------------+
+~~~~~~~~~~
+ {: #fig-goaway title="GOAWAY frame payload"}
+
+The GOAWAY frame does not define any flags.
+
+The GOAWAY frame applies to the connection, not a specific stream. An endpoint
+MUST treat a GOAWAY frame on a stream other than the control stream as a
+connection error ({{errors}}) of type HTTP_WRONG_STREAM.
+
+The last stream identifier in the GOAWAY frame contains the highest- numbered
+stream identifier for which the sender of the GOAWAY frame might have taken some
+action on or might yet take action on.  All streams up to and including the
+identified stream might have been processed in some way.  The last stream
+identifier can be set to 0 if no streams were processed.
+
+> Note: In this context, "processed" means that some data from the stream was
+> passed to some higher layer of software that might have taken some action as a
+> result.
+
+If a connection terminates without a GOAWAY frame, the last stream identifier is
+effectively the highest possible stream identifier.
+
+Reattempting requests on streams with lower- or equal-numbered identifiers is
+not possible, with the exception of idempotent actions like HTTP GET, PUT, or
+DELETE.  Any protocol activity that used higher-numbered streams can be safely
+retried using a new connection.
+
+Activity on streams numbered lower or equal to the last stream identifier might
+still complete successfully.  The sender of a GOAWAY frame might gracefully shut
+down a connection by sending a GOAWAY frame, maintaining the connection in an
+"open" state until all in- progress streams complete.
+
+An endpoint MAY send multiple GOAWAY frames if circumstances change. For
+instance, an endpoint that sends GOAWAY without an error code during graceful
+shutdown could subsequently encounter an error condition.  The last stream
+identifier from the last GOAWAY frame received indicates which streams could
+have been acted upon.  Endpoints MUST NOT increase the value they send in the
+last stream identifier, since the peers might already have retried unprocessed
+requests on another connection.
+
+A client that is unable to retry requests loses all requests that are in flight
+when the server closes the connection.  A server that is attempting to
+gracefully shut down a connection SHOULD send an initial GOAWAY frame with the
+last stream identifier set to 2^32-1.  This signals to the client that a
+shutdown is imminent and that initiating further requests is prohibited.  After
+allowing time for any in-flight requests (at least one round-trip time), the
+server MAY send another GOAWAY frame with an updated last stream identifier.
+This ensures that a connection can be cleanly shut down without losing requests.
+
+After sending a GOAWAY frame, the sender MUST reset any existing or subsequently
+opened streams with an HTTP_REQUEST_CANCELLED error code.
+
+The GOAWAY frame contains an optional 32-bit error code ({{http-error-codes}})
+that contains the reason for closing the connection.  If no error has been
+encountered, this field MAY be omitted.
+
+Endpoints MAY append opaque data to the payload of any GOAWAY frame. Additional
+debug data is intended for diagnostic purposes only and carries no semantic
+value.  Debug information could contain security- or privacy-sensitive data.
+Logged or otherwise persistently stored debug data MUST have adequate safeguards
+to prevent unauthorized access.
+
+
 # Error Handling {#errors}
 
 QUIC allows the application to abruptly terminate (reset) individual streams or
@@ -738,7 +848,7 @@ PING (0x6):
 : PING frames do not exist, since QUIC provides equivalent functionality.
 
 GOAWAY (0x7):
-: GOAWAY frames do not exist, since QUIC provides equivalent functionality.
+: The error code in GOAWAY is optional. See {{frame-goaway}}.
 
 WINDOW_UPDATE (0x8):
 : WINDOW_UPDATE frames do not exist, since QUIC provides flow control.
@@ -929,7 +1039,7 @@ The entries in the following table are registered by this document.
   | SETTINGS      | 0x4  | {{frame-settings}}      |
   | PUSH_PROMISE  | 0x5  | {{frame-push-promise}}  |
   | Reserved      | 0x6  | N/A                     |
-  | Reserved      | 0x7  | N/A                     |
+  | GOAWAY        | 0x7  | {{frame-goaway}}        |
   | Reserved      | 0x8  | N/A                     |
   | Reserved      | 0x9  | N/A                     |
   |---------------|------|-------------------------|
@@ -1039,6 +1149,7 @@ The original authors of this specification were Robbie Shade and Mike Warres.
 - Cite RFC 5234 (#404)
 - Return to a single stream per request (#245,#557)
 - Use separate frame type and settings registries from HTTP/2 (#81)
+- Restored GOAWAY (#696)
 
 ## Since draft-ietf-quic-http-03
 
