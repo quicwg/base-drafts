@@ -197,10 +197,10 @@ stream 5, and so on. The server's first push consumes stream 2.
 This stream carries frames related to the request/response (see {{frames}}).
 When a stream terminates cleanly, if the last frame on the stream was truncated,
 this MUST be treated as a connection error (see HTTP_MALFORMED_* in
-{{http-error-codes}}).  Streams which terminate abruptly may do so at any point
-in the frame.
+{{http-error-codes}}).  Streams which terminate abruptly may be reset at any
+point in the frame.
 
-Streams SHOULD be utilized sequentially, with no gaps.  Streams used for pushed
+Streams SHOULD be used sequentially, with no gaps.  Streams used for pushed
 resources MAY be initiated out-of-order, but stream IDs SHOULD be allocated to
 promised resources sequentially.
 
@@ -587,8 +587,8 @@ The payload consists of:
 
 # Error Handling {#errors}
 
-QUIC allows the application to abruptly terminate individual streams or the
-entire connection when an error is encountered.  These are referred to as
+QUIC allows the application to abruptly terminate (reset) individual streams or
+the entire connection when an error is encountered.  These are referred to as
 "stream errors" or "connection errors" and are described in more detail in
 [QUIC-TRANSPORT].
 
