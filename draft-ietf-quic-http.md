@@ -184,52 +184,33 @@ application.
 
 QUIC reserves Stream 0 for crypto operations (the handshake, crypto config
 updates). Stream 1 is reserved for sending and receiving HTTP control frames,
-and is analogous to HTTP/2's Stream 0.  This connection control stream is
-considered critical to the HTTP connection.  If the connection control stream is
-closed for any reason, this MUST be treated as a connection error of type
+and is analogous to HTTP/2's Stream 0.  This control stream is considered
+critical to the HTTP connection.  If the control stream is closed for any
+reason, this MUST be treated as a connection error of type
 QUIC_CLOSED_CRITICAL_STREAM.
 
 When HTTP headers and data are sent over QUIC, the QUIC layer handles most of
-the stream management. An HTTP request/response consumes a pair of streams: This
-means that the client's first request occurs on QUIC streams 3 and 5, the second
-on stream 7 and 9, and so on. The server's first push consumes streams 2 and 4.
-This amounts to the second least-significant bit differentiating the two streams
-in a request.
+the stream management. An HTTP request/response consumes a single stream: This
+means that the client's first request occurs on QUIC stream 3, the second on
+stream 5, and so on. The server's first push consumes stream 2.
 
-The lower-numbered stream is called the message control stream and carries
-frames related to the request/response, including HEADERS. The higher-numbered
-stream is the data stream and carries the request/response body with no
-additional framing. Note that a request or response without a body will cause
-this stream to be half-closed in the corresponding direction without
-transferring data.
+This stream carries frames related to the request/response (see {{frames}}).
+When a stream terminates cleanly, if the last frame on the stream was truncated,
+this MUST be treated as a connection error (see HTTP_MALFORMED_* in
+{{http-error-codes}}).  Streams which terminate abruptly may be reset at any
+point in the frame.
 
-Because the message control stream contains HPACK data which manipulates
-connection-level state, the message control stream MUST NOT be closed with a
-stream-level error.  If an implementation chooses to reject a request with a
-QUIC error code, it MUST trigger a QUIC RST_STREAM on the data stream only.  An
-implementation MAY close (FIN) a message control stream without completing a
-full HTTP message if the data stream has been abruptly closed.  Data on message
-control streams MUST be fully consumed, or the connection terminated.
-
-All message control streams are considered critical to the HTTP connection.  If
-a message control stream is terminated abruptly for any reason, this MUST be
-treated as a connection error of type HTTP_RST_CONTROL_STREAM.  When a message
-control stream terminates cleanly, if the last frame on the stream was
-truncated, this MUST be treated as a connection error (see HTTP_MALFORMED_* in
-{{http-error-codes}}).
-
-Pairs of streams must be utilized sequentially, with no gaps.  The data stream
-is opened at the same time as the message control stream is opened and is closed
-after transferring the body.  The data stream is closed immediately after
-sending the request headers if there is no body.
+Streams SHOULD be used sequentially, with no gaps.  Streams used for pushed
+resources MAY be initiated out-of-order, but stream IDs SHOULD be allocated to
+promised resources sequentially.
 
 HTTP does not need to do any separate multiplexing when using QUIC - data sent
 over a QUIC stream always maps to a particular HTTP transaction. Requests and
-responses are considered complete when the corresponding QUIC streams are closed
+responses are considered complete when the corresponding QUIC stream is closed
 in the appropriate direction.
 
 
-##  Stream 1: Connection Control Stream
+##  Stream 1: Control Stream
 
 Since most connection-level concerns will be managed by QUIC, the primary use of
 Stream 1 will be for the SETTINGS frame when the connection opens and for
@@ -237,40 +218,36 @@ PRIORITY frames subsequently.
 
 ## HTTP Message Exchanges
 
-A client sends an HTTP request on a new pair of QUIC streams. A server sends an
-HTTP response on the same streams as the request.
+A client sends an HTTP request on a new QUIC stream. A server sends an HTTP
+response on the same stream as the request.
 
 An HTTP message (request or response) consists of:
 
-1. one header block (see {{frame-headers}}) on the control stream containing the
-   message headers (see {{!RFC7230}}, Section 3.2),
+1. one header block (see {{frame-headers}}) containing the message headers (see
+   {{!RFC7230}}, Section 3.2),
 
-2. the payload body (see {{!RFC7230}}, Section 3.3), sent on the data stream,
+2. the payload body (see {{!RFC7230}}, Section 3.3), sent as a series of DATA
+   frames (see {{frame-data}}),
 
-3. optionally, one header block on the control stream containing the
-   trailer-part, if present (see {{!RFC7230}}, Section 4.1.2).
+3. optionally, one header block containing the trailer-part, if present (see
+   {{!RFC7230}}, Section 4.1.2).
 
 In addition, prior to sending the message header block indicated above, a
-response may contain zero or more header blocks on the control stream containing
-the message headers of informational (1xx) HTTP responses (see {{!RFC7230}},
-Section 3.2 and {{!RFC7231}}, Section 6.2).
+response may contain zero or more header blocks containing the message headers
+of informational (1xx) HTTP responses (see {{!RFC7230}}, Section 3.2 and
+{{!RFC7231}}, Section 6.2).
 
-The data stream MUST be half-closed immediately after the transfer of the body.
-If the message does not contain a body, the corresponding data stream MUST still
-be half-closed without transferring any data. The "chunked" transfer encoding
-defined in Section 4.1 of {{!RFC7230}} MUST NOT be used.
+The "chunked" transfer encoding defined in Section 4.1 of {{!RFC7230}} MUST NOT
+be used.
 
-Trailing header fields are carried in an additional header block on the message
-control stream. Such a header block is a sequence of HEADERS frames with End
-Header Block set on the last frame. Senders MUST send only one header block in
-the trailers section; receivers MUST decode any subsequent header blocks in
-order to maintain HPACK decoder state, but the resulting output MUST be
-discarded.
+Trailing header fields are carried in an additional header block following the
+body. Such a header block is a sequence of HEADERS frames with End Header Block
+set on the last frame. Senders MUST send only one header block in the trailers
+section; receivers MUST discard any subsequent header blocks.
 
-An HTTP request/response exchange fully consumes a pair of streams. After
-sending a request, a client closes the streams for sending; after sending a
-response, the server closes its streams for sending and the QUIC streams are
-fully closed.
+An HTTP request/response exchange fully consumes a QUIC stream. After sending a
+request, a client closes the stream for sending; after sending a response, the
+server closes the stream for sending and the QUIC stream is fully closed.
 
 A server can send a complete response prior to the client sending an entire
 request if the response does not depend on any portion of the request that has
@@ -290,19 +267,10 @@ decoded) at an endpoint in the same order in which they were encoded. This
 ensures that the dynamic state at the two endpoints remains in sync.
 
 QUIC streams provide in-order delivery of data sent on those streams, but there
-are no guarantees about order of delivery between streams. To achieve in-order
-delivery of HEADERS frames in QUIC, the HPACK-bearing frames contain a counter
-which can be used to ensure in-order processing. Data (request/response bodies)
-which arrive out of order are buffered until the corresponding HEADERS arrive.
-
-This does introduce head-of-line blocking: if the packet containing HEADERS for
-stream N is lost or reordered then the HEADERS for stream N+4 cannot be
-processed until it has been retransmitted successfully, even though the HEADERS
-for stream N+4 may have arrived.
-
-DISCUSS:
-: Keep HPACK with HOLB? Redesign HPACK to be order-invariant? How much
-do we need to retain compatibility with HTTP/2's HPACK?
+are no guarantees about order of delivery between streams. QUIC anticipates
+moving to a modified version of HPACK without this assumption.  In the meantime,
+by fixing the size of the dynamic table at zero, HPACK can be used in an
+unordered environment.
 
 
 ### The CONNECT Method
@@ -322,21 +290,21 @@ data stream MUST NOT be closed at the end of the request.
 A proxy that supports CONNECT establishes a TCP connection ({{!RFC0793}}) to the
 server identified in the ":authority" pseudo-header field. Once this connection
 is successfully established, the proxy sends a HEADERS frame containing a 2xx
-series status code to the client, as defined in {{!RFC7231}}, Section 4.3.6, on
-the message control stream.
+series status code to the client, as defined in {{!RFC7231}}, Section 4.3.6.
 
-All QUIC STREAM frames on the message data stream correspond to data sent on the
-TCP connection. Any QUIC STREAM frame sent by the client is transmitted by the
-proxy to the TCP server; data received from the TCP server is written to the
-data stream by the proxy. Note that the size and number of TCP segments is not
-guaranteed to map predictably to the size and number of QUIC STREAM frames.
+All DATA frames on the request stream correspond to data sent on the TCP
+connection. Any DATA frame sent by the client is transmitted by the proxy to the
+TCP server; data received from the TCP server is packaged into DATA frames by
+the proxy. Note that the size and number of TCP segments is not guaranteed to
+map predictably to the size and number of HTTP DATA or QUIC STREAM frames.
 
 The TCP connection can be closed by either peer. When the client half-closes the
-data stream, the proxy will set the FIN bit on its connection to the TCP server.
-When the proxy receives a packet with the FIN bit set, it will half-close the
-corresponding data stream. TCP connections which remain half-closed in a single
-direction are not invalid, but are often handled poorly by servers, so clients
-SHOULD NOT half-close connections on which they are still expecting data.
+request stream, the proxy will set the FIN bit on its connection to the TCP
+server. When the proxy receives a packet with the FIN bit set, it will
+half-close the corresponding stream. TCP connections which remain half-closed in
+a single direction are not invalid, but are often handled poorly by servers, so
+clients SHOULD NOT half-close connections on which they are still expecting
+data.
 
 A TCP connection error is signaled with RST_STREAM. A proxy treats any error in
 the TCP connection, which includes receiving a TCP segment with the RST bit set,
@@ -354,9 +322,6 @@ stream). Taken together, the dependencies across all streams in a connection
 form a dependency tree. The structure of the dependency tree changes as PRIORITY
 frames add, remove, or change the dependency links between streams.
 
-For consistency's sake, all PRIORITY frames MUST refer to the message control
-stream of the dependent request, not the data stream.
-
 
 ## Server Push
 
@@ -368,24 +333,20 @@ pushes via the SETTINGS_DISABLE_PUSH setting in the SETTINGS frame (see
 As with server push for HTTP/2, the server initiates a server push by sending a
 PUSH_PROMISE frame containing the Stream ID of the stream to be pushed, as well
 as request header fields attributed to the request. The PUSH_PROMISE frame is
-sent on the control stream of the associated (client-initiated) request, while
-the Promised Stream ID field specifies the Stream ID of the control stream for
-the server-initiated request.
+sent on the stream of the associated (client-initiated) request, while the
+Promised Stream ID field specifies the Stream ID of the server-initiated
+request.
 
 The server push response is conveyed in the same way as a non-server-push
 response, with response headers and (if present) trailers carried by HEADERS
-frames sent on the control stream, and response body (if any) sent via the
-corresponding data stream.
+frames, and response body (if any) carried by DATA frames.
 
 
 # HTTP Framing Layer
 
-Frames are used only on the connection (stream 1) and message (streams 3, 7,
-etc.) control streams. Other streams carry data payload and are not framed at
-the HTTP layer.
-
-This section describes HTTP framing in QUIC and highlights some differences from
-HTTP/2 framing.  For more detail on differences from HTTP/2, see {{h2-frames}}.
+Frames are used on each stream.  This section describes HTTP framing in QUIC and
+highlights some differences from HTTP/2 framing.  For more detail on differences
+from HTTP/2, see {{h2-frames}}.
 
 ## Frame Layout
 
@@ -404,10 +365,21 @@ All frames have the following format:
 
 ## Frame Definitions {#frames}
 
+### DATA {#frame-data}
+
+DATA frames (type=0x0) convey arbitrary, variable-length sequences of octets
+associated with an HTTP request or response payload.
+
+The DATA frame defines no flags.
+
+DATA frames MUST be associated with an HTTP request or response.  If a DATA
+frame is received on the control stream, the recipient MUST respond with a
+connection error ({{errors}}) of type HTTP_WRONG_STREAM.
+
 ### HEADERS {#frame-headers}
 
 The HEADERS frame (type=0x1) is used to carry part of a header set, compressed
-using HPACK {{!RFC7541}}.
+using HPACK {{header-compression}}.
 
 One flag is defined:
 
@@ -416,22 +388,6 @@ One flag is defined:
 
 A HEADERS frame with any other flags set MUST be treated as a connection error
 of type HTTP_MALFORMED_HEADERS.
-
-~~~~~~~~~~  drawing
-    0                   1                   2                   3
-    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |       Sequence? (16)          |    Header Block Fragment (*)...
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-~~~~~~~~~~
-{: #fig-headers title="HEADERS frame payload"}
-
-The HEADERS frame payload has the following fields:
-
-  Sequence Number:
-  : Present only on the first frame of a header block sequence. This MUST
-  be set to zero on the first header block sequence, and incremented on
-  each header block.
 
 The next frame on the same stream after a HEADERS frame without the EHB flag set
 MUST be another HEADERS frame. A receiver MUST treat the receipt of any other
@@ -442,22 +398,13 @@ transmission of frames, so multiplexing is not blocked by this requirement.)
 A full header block is contained in a sequence of zero or more HEADERS frames
 without EHB set, followed by a HEADERS frame with EHB set.
 
-On receipt, header blocks (HEADERS, PUSH_PROMISE) MUST be processed by the HPACK
-decoder in sequence. If a block is missing, all subsequent HPACK frames MUST be
-held until it arrives, or the connection terminated.
-
-When the Sequence counter reaches its maximum value (0xFFFF), the next increment
-returns it to zero.  An endpoint MUST NOT wrap the Sequence counter to zero
-until the previous zero-value header block has been confirmed received.
-
 
 ### PRIORITY {#frame-priority}
 
 The PRIORITY (type=0x02) frame specifies the sender-advised priority of a stream
 and is substantially different from {{!RFC7540}}. In order to support ordering,
-it MUST be sent only on the connection control stream. The format has been
-modified to accommodate not being sent on-stream and the larger stream ID space
-of QUIC.
+it MUST be sent only on the control stream. The format has been modified to
+accommodate not being sent on-stream and the larger stream ID space of QUIC.
 
 The semantics of the Stream Dependency, Weight, and E flag are the same as in
 HTTP/2.
@@ -484,17 +431,17 @@ The flags defined are:
 The PRIORITY frame payload has the following fields:
 
   Prioritized Stream:
-  : A 32-bit stream identifier for the message control stream whose priority is
-    being updated.
+  : A 32-bit stream identifier for the request stream whose priority is being
+    updated.
 
   Stream Dependency:
-  : A 32-bit stream identifier for the stream that this stream depends on (see
-    {{priority}} and {{!RFC7540}}, Section 5.3).
+  : A 32-bit stream identifier for the request stream that this stream depends
+    on (see {{priority}} and {{!RFC7540}}, Section 5.3).
 
   Weight:
   : An unsigned 8-bit integer representing a priority weight for the stream (see
-    {{!RFC7540}}, Section 5.3). Add one to the value to obtain a weight between 1
-    and 256.
+    {{!RFC7540}}, Section 5.3). Add one to the value to obtain a weight between
+    1 and 256.
 
 A PRIORITY frame MUST have a payload length of nine octets.  A PRIORITY frame
 of any other length MUST be treated as a connection error of type
@@ -515,8 +462,8 @@ are also acceptable and proceed with the value it has chosen. (This choice could
 be announced in a field of an extension frame, or in its own value in SETTINGS.)
 
 Different values for the same parameter can be advertised by each peer. For
-example, a client might permit a very large HPACK state table while a server
-chooses to use a small one to conserve memory.
+example, a client might be willing to consume very large response headers,
+while servers are more cautious about request size.
 
 Parameters MUST NOT occur more than once.  A receiver MAY treat the presence of
 the same parameter more than once as a connection error of type
@@ -551,7 +498,7 @@ An implementation MUST ignore the contents for any SETTINGS identifier it does
 not understand.
 
 SETTINGS frames always apply to a connection, never a single stream.  A SETTINGS
-frame MUST be sent as the first frame of the connection control stream (see
+frame MUST be sent as the first frame of the control stream (see
 {{stream-mapping}}) by each peer, and MUST NOT be sent subsequently or on any
 other stream. If an endpoint receives an SETTINGS frame on a different stream,
 the endpoint MUST respond with a connection error of type
@@ -576,7 +523,7 @@ bytes than would be used to transfer the maximum permitted value.
 The following settings are defined in HTTP/QUIC:
 
   SETTINGS_HEADER_TABLE_SIZE (0x1):
-  : An integer with a maximum value of 2^32 - 1.
+  : An integer with a maximum value of 2^32 - 1.  This value MUST be zero.
 
   SETTINGS_DISABLE_PUSH (0x2):
   : Transmitted as a Boolean; replaces SETTINGS_ENABLE_PUSH
@@ -623,7 +570,7 @@ server to client, as in HTTP/2.  It defines no flags.
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
    |                   Promised Stream ID (32)                     |
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |       Sequence? (16)          |         Header Block (*)    ...
+   |                       Header Block (*)                      ...
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~~~~~~~~
 {: #fig-push-promise title="PUSH_PROMISE frame payload"}
@@ -631,27 +578,19 @@ server to client, as in HTTP/2.  It defines no flags.
 The payload consists of:
 
   Promised Stream ID:
-  : A 32-bit Stream ID indicating the QUIC stream on which the response headers
-    will be sent.  (The response body stream is implied by the headers stream,
-    as defined in {{stream-mapping}}.)
-
-  HPACK Sequence:
-  : A sixteen-bit counter, equivalent to the Sequence field in HEADERS
+  : A 32-bit Stream ID indicating the QUIC stream on which the response will be
+    sent
 
   Payload:
   : HPACK-compressed request headers for the promised response.
 
 
-
 # Error Handling {#errors}
 
-QUIC allows the application to abruptly terminate individual streams or the
-entire connection when an error is encountered.  These are referred to as
+QUIC allows the application to abruptly terminate (reset) individual streams or
+the entire connection when an error is encountered.  These are referred to as
 "stream errors" or "connection errors" and are described in more detail in
 [QUIC-TRANSPORT].
-
-HTTP/QUIC requires that only data streams be terminated abruptly.  Terminating a
-message control stream will result in an error of type HTTP_RST_CONTROL_STREAM.
 
 This section describes HTTP-specific error codes which can be used to express
 the cause of a connection or stream error.
@@ -702,6 +641,9 @@ HTTP_MALFORMED_SETTINGS (0x0B):
 HTTP_MALFORMED_PUSH_PROMISE (0x0C):
 : A PUSH_PROMISE frame has been received with an invalid format.
 
+HTTP_MALFORMED_DATA (0x0D):
+: A HEADERS frame has been received with an invalid format.
+
 HTTP_INTERRUPTED_HEADERS (0x0E):
 : A HEADERS frame without the End Header Block flag was followed by a frame
   other than HEADERS.
@@ -711,9 +653,6 @@ HTTP_SETTINGS_ON_WRONG_STREAM (0x0F):
 
 HTTP_MULTIPLE_SETTINGS (0x10):
 : More than one SETTINGS frame was received.
-
-HTTP_RST_CONTROL_STREAM (0x11):
-: A message control stream closed abruptly.
 
 
 # Considerations for Transitioning from HTTP/2
@@ -752,8 +691,8 @@ commutative, both sender and receiver must apply them in the same order to
 ensure that both sides have a consistent view of the stream dependency tree.
 HTTP/2 specifies priority assignments in PRIORITY frames and (optionally) in
 HEADERS frames. To achieve in-order delivery of priority changes in HTTP/QUIC,
-PRIORITY frames are sent on the connection control stream and the PRIORITY
-section is removed from the HEADERS frame.
+PRIORITY frames are sent on the control stream and the PRIORITY section is
+removed from the HEADERS frame.
 
 Other than this issue, frame type HTTP/2 extensions are typically portable to
 QUIC simply by replacing Stream 0 in HTTP/2 with Stream 1 in HTTP/QUIC.
@@ -761,8 +700,7 @@ QUIC simply by replacing Stream 0 in HTTP/2 with Stream 1 in HTTP/QUIC.
 Below is a listing of how each HTTP/2 frame type is mapped:
 
 DATA (0x0):
-: Instead of DATA frames, HTTP/QUIC uses a separate data stream.  See
-  {{stream-mapping}}.
+: Padding is not defined in HTTP/QUIC frames.  See {{frame-data}}.
 
 HEADERS (0x1):
 : As described above, the PRIORITY region of HEADERS is not supported. A
@@ -770,8 +708,8 @@ HEADERS (0x1):
   frames.  See {{frame-headers}}.
 
 PRIORITY (0x2):
-: As described above, the PRIORITY frame is sent on the connection control
-  stream.  See {{frame-priority}}.
+: As described above, the PRIORITY frame is sent on the control stream.  See
+  {{frame-priority}}.
 
 RST_STREAM (0x3):
 : RST_STREAM frames do not exist, since QUIC provides stream lifecycle
@@ -965,7 +903,7 @@ Values for existing registrations are assigned by this document:
   |---------------|---------------------|-------------------------|
   | Frame Type    | Supported Protocols | HTTP/QUIC Specification |
   |---------------|:-------------------:|-------------------------|
-  | DATA          | HTTP/2 only         | N/A                     |
+  | DATA          | Both                | {{frame-data}}          |
   | HEADERS       | Both                | {{frame-headers}}       |
   | PRIORITY      | Both                | {{frame-priority}}      |
   | RST_STREAM    | HTTP/2 only         | N/A                     |
@@ -1060,7 +998,6 @@ The entries in the following table are registered by this document.
 |  HTTP_INTERRUPTED_HEADERS         |  0x0E  |  Incomplete HEADERS block                    |  {{http-error-codes}}  |
 |  HTTP_SETTINGS_ON_WRONG_STREAM    |  0x0F  |  SETTINGS frame on a request control stream  |  {{http-error-codes}}  |
 |  HTTP_MULTIPLE_SETTINGS           |  0x10  |  Multiple SETTINGS frames                    |  {{http-error-codes}}  |
-|  HTTP_RST_CONTROL_STREAM          |  0x11  |  Message control stream was RST              |  {{http-error-codes}}  |
 |-----------------------------------|--------|----------------------------------------------|------------------------|
 
 
@@ -1078,6 +1015,7 @@ The original authors of this specification were Robbie Shade and Mike Warres.
 ## Since draft-ietf-quic-http-04
 
 - Cite RFC 5234 (#404)
+- Return to a single stream per request (#245)
 
 ## Since draft-ietf-quic-http-03
 
