@@ -594,7 +594,7 @@ administrative actions, like server maintenance.
 
 There is an inherent race condition between an endpoint starting new streams and
 the remote sending a GOAWAY frame.  To deal with this case, the GOAWAY contains
-the stream identifier of the last peer- initiated stream that was or might be
+the stream identifier of the last peer-initiated stream that was or might be
 processed on the sending endpoint in this connection.  For instance, if the
 server sends a GOAWAY frame, the identified stream is the highest-numbered
 stream initiated by the client.  This MAY be lower than the stream limit
@@ -641,7 +641,7 @@ The GOAWAY frame applies to the connection, not a specific stream. An endpoint
 MUST treat a GOAWAY frame on a stream other than the control stream as a
 connection error ({{errors}}) of type HTTP_WRONG_STREAM.
 
-The last stream identifier in the GOAWAY frame contains the highest- numbered
+The last stream identifier in the GOAWAY frame contains the highest-numbered
 stream identifier for which the sender of the GOAWAY frame might have taken some
 action on or might yet take action on.  All streams up to and including the
 identified stream might have been processed in some way.  The last stream
@@ -662,7 +662,7 @@ retried using a new connection.
 Activity on streams numbered lower or equal to the last stream identifier might
 still complete successfully.  The sender of a GOAWAY frame might gracefully shut
 down a connection by sending a GOAWAY frame, maintaining the connection in an
-"open" state until all in- progress streams complete.
+"open" state until all in-progress streams complete.
 
 An endpoint MAY send multiple GOAWAY frames if circumstances change. For
 instance, an endpoint that sends GOAWAY without an error code during graceful
