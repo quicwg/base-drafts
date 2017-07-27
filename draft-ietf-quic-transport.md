@@ -1441,7 +1441,7 @@ period of time.  A QUIC connection, once established, can be terminated in one
 of three ways:
 
 1. Explicit Shutdown: An endpoint sends a CONNECTION_CLOSE frame to
-   initiate a connection termination.  An endpoint may send a GOAWAY frame to
+   terminate the connection.  An endpoint may send a GOAWAY frame to
    the peer prior to a CONNECTION_CLOSE to indicate that the connection will
    soon be terminated.  A GOAWAY frame signals to the peer that any active
    streams will continue to be processed, but the sender of the GOAWAY will not
@@ -1469,9 +1469,17 @@ of three ways:
    should send a Public Reset packet in return.  (TODO: articulate rules around
    when a public reset should be sent.)
 
-TODO: Connections that are terminated are added to a TIME_WAIT list at the
-server, so as to absorb any straggler packets in the network.  Discuss TIME_WAIT
-list.
+After receiving either a CONNECTION_CLOSE frame or a Public Reset, an
+endpoint MUST NOT send additional packets on that connection. After
+sending either a CONNECTION_CLOSE frame or a Public Reset packet,
+implementations MUST NOT send any non-closing packets on that connection. If
+additional packets are received after this time, implementations
+SHOULD respond to them by sending either a CONNECTION_CLOSE frame or a
+Public Reset packet, either of which may just be a duplicate of a
+previous packet. Implementations SHOULD throttle these responses, for
+instance by exponentially backing off the number of packets which must
+be received before sending a response.
+
 
 # Frame Types and Formats
 
