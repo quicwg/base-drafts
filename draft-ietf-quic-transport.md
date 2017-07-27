@@ -886,7 +886,7 @@ explained in more detail as they are referenced later in the document.
 | 0x09        | STREAM_BLOCKED    | {{frame-stream-blocked}}    |
 | 0x0a        | STREAM_ID_NEEDED  | {{frame-stream-id-needed}}  |
 | 0x0b        | NEW_CONNECTION_ID | {{frame-new-connection-id}} |
-| 0x0c        | DISINTEREST       | {{frame-disinterest}}       |
+| 0x0c        | STOP_SENDING      | {{frame-stop-sending}}      |
 | 0xa0 - 0xbf | ACK               | {{frame-ack}}               |
 | 0xc0 - 0xff | STREAM            | {{frame-stream}}            |
 {: #frame-types title="Frame Types"}
@@ -1826,11 +1826,12 @@ Connection ID:
 
 : A 64-bit connection ID.
 
-## DISINTEREST Frame {#frame-disinterest}
+## STOP_SENDING Frame {#frame-stop-sending}
 
-An endpoint may use a DISINTEREST frame (type=0x0c) to communicate that incoming
-data is being discarded on receipt at application request.  This signals a peer
-to abruptly terminate transmission on a stream.  The frame is as follows:
+An endpoint may use a STOP_SENDING frame (type=0x0c) to communicate that
+incoming data is being discarded on receipt at application request.  This
+signals a peer to abruptly terminate transmission on a stream.  The frame is as
+follows:
 
 ~~~
  0                   1                   2                   3
@@ -2491,7 +2492,7 @@ Any frame type that mentions a stream ID can be sent in this state.
 A stream that is in the "half-closed (local)" state MUST NOT be used for sending
 on new STREAM frames.  Retransmission of data that has already been sent on
 STREAM frames is permitted.  An endpoint MAY also send MAX_STREAM_DATA and
-DISINTEREST in this state.
+STOP_SENDING in this state.
 
 An endpoint that closes a stream MUST NOT send data beyond the final offset that
 it has chosen, see {{state-closed}} for details.
@@ -2554,21 +2555,21 @@ Reordering might cause frames to be received after closing, see
 ## Solicited State Transitions
 
 If an endpoint is no longer interested in the data being received, it MAY send a
-DISINTEREST frame on a stream in the "open" or "half-closed (local)" state to
+STOP_SENDING frame on a stream in the "open" or "half-closed (local)" state to
 request closure of the stream in the opposite direction.  This typically
 indicates that the receiving application is no longer reading from the stream,
 but is not a guarantee that incoming data will be ignored.
 
-STREAM frames received after sending DISINTEREST are still counted toward the
+STREAM frames received after sending STOP_SENDING are still counted toward the
 connection and stream flow-control windows.  Even though these frames will be
-discarded, because they are sent before their sender receives the DISINTEREST,
+discarded, because they are sent before their sender receives the STOP_SENDING,
 the sender will consider the frames to count against its flow-control windows.
 
-Upon receipt of a DISINTEREST frame on a stream in the "open" state, an endpoint
-SHOULD send a RST_STREAM with an error code of QUIC_RECEIVED_RST.  If the
-DISINTEREST frame is received on a stream that is already in the "half-closed
-(local)" or "closed" states, a RST_STREAM frame MAY still be sent in order to
-cancel retransmission of previously-sent STREAM frames.
+Upon receipt of a STOP_SENDING frame on a stream in the "open" state, an
+endpoint SHOULD send a RST_STREAM with an error code of QUIC_RECEIVED_RST.  If
+the STOP_SENDING frame is received on a stream that is already in the
+"half-closed (local)" or "closed" states, a RST_STREAM frame MAY still be sent
+in order to cancel retransmission of previously-sent STREAM frames.
 
 
 ## Stream Concurrency {#stream-concurrency}
@@ -2745,7 +2746,7 @@ should be taken on the data already received is an application-specific issue,
 but it will often be the case that upon receipt of a RST_STREAM an endpoint
 will choose to stop sending data in its own direction. If the sender of a
 RST_STREAM wishes to explicitly state that no future data will be processed,
-that endpoint MAY send a DISINTEREST frame at the same time.
+that endpoint MAY send a STOP_SENDING frame at the same time.
 
 ### Data Limit Increments {#fc-credit}
 
@@ -2975,7 +2976,7 @@ PROTOCOL_VIOLATION (0x8000000A):
 
 QUIC_RECEIVED_RST (0x80000035):
 
-: Terminating stream because peer sent a RST_STREAM or DISINTEREST.
+: Terminating stream because peer sent a RST_STREAM or STOP_SENDING.
 
 FRAME_ERROR (0x800001XX):
 
