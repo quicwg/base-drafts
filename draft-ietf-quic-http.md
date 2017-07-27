@@ -327,8 +327,8 @@ frames add, remove, or change the dependency links between streams.
 
 HTTP/QUIC supports server push as described in {{!RFC7540}}. During connection
 establishment, the client indicates whether it is willing to receive server
-pushes via the SETTINGS_DISABLE_PUSH setting in the SETTINGS frame (see
-{{connection-establishment}}), which defaults to 1 (true).
+pushes via the SETTINGS_ENABLE_PUSH setting in the SETTINGS frame (see
+{{connection-establishment}}), which is disabled by default.
 
 As with server push for HTTP/2, the server initiates a server push by sending a
 PUSH_PROMISE frame containing the Stream ID of the stream to be pushed, as well
@@ -525,11 +525,11 @@ The following settings are defined in HTTP/QUIC:
   SETTINGS_HEADER_TABLE_SIZE (0x1):
   : An integer with a maximum value of 2^32 - 1.  This value MUST be zero.
 
-  SETTINGS_DISABLE_PUSH (0x2):
-  : Transmitted as a Boolean; replaces SETTINGS_ENABLE_PUSH
+  SETTINGS_ENABLE_PUSH (0x2):
+  : Transmitted as a Boolean
 
   SETTINGS_MAX_HEADER_LIST_SIZE (0x6):
-  : An integer with a maximum value of 2^32 - 1.
+  : An integer with a maximum value of 2^32 - 1
 
 #### Usage in 0-RTT
 
@@ -767,7 +767,7 @@ SETTINGS_HEADER_TABLE_SIZE:
 : See {{settings-parameters}}.
 
 SETTINGS_ENABLE_PUSH:
-: See SETTINGS_DISABLE_PUSH in {{settings-parameters}}.
+: See {{settings-parameters}}.
 
 SETTINGS_MAX_CONCURRENT_STREAMS:
 : QUIC controls the largest open stream ID as part of its flow control logic.
@@ -966,7 +966,7 @@ The entries in the following table are registered by this document.
 | Setting Name               | Code | Specification           |
 |----------------------------|:----:|-------------------------|
 | HEADER_TABLE_SIZE          | 0x1  | {{settings-parameters}} |
-| DISABLE_PUSH               | 0x2  | {{settings-parameters}} |
+| ENABLE_PUSH                | 0x2  | {{settings-parameters}} |
 | Reserved                   | 0x3  | N/A                     |
 | Reserved                   | 0x4  | N/A                     |
 | Reserved                   | 0x5  | N/A                     |
@@ -1039,6 +1039,7 @@ The original authors of this specification were Robbie Shade and Mike Warres.
 - Cite RFC 5234 (#404)
 - Return to a single stream per request (#245,#557)
 - Use separate frame type and settings registries from HTTP/2 (#81)
+- SETTINGS_ENABLE_PUSH instead of SETTINGS_DISABLE_PUSH (#477)
 
 ## Since draft-ietf-quic-http-03
 
