@@ -2162,8 +2162,8 @@ Stream Data:
 : The bytes from the designated stream to be delivered.
 
 A stream frame's Stream Data MUST NOT be empty, unless the FIN bit is set.  When
-the FIN flag is sent on an empty STREAM frame, the offset in the STREAM frame
-MUST be one greater than the last data byte sent on this stream.
+the FIN flag is sent on an empty STREAM frame, the offset in the STREAM frame is
+the offset of the next byte that would be sent.
 
 Stream multiplexing is achieved by interleaving STREAM frames from multiple
 streams into one or more QUIC packets.  A single QUIC packet can include
