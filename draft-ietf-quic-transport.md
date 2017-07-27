@@ -2531,8 +2531,8 @@ mentions a stream ID.  In this state, the endpoint MUST observe advertised
 stream and connection data limits (see {{flow-control}}).
 
 A stream transitions from this state to "closed" by completing transmission of
-all data.  This includes sending all data carried in STREAM frames up to and
-including the terminal STREAM frame that contains a FIN flag.
+all data.  This includes sending all data carried in STREAM frames including
+the terminal STREAM frame that contains a FIN flag.
 
 A stream also becomes "closed" when the endpoint sends a RST_STREAM frame.
 
