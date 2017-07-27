@@ -1838,12 +1838,18 @@ to abruptly terminate transmission on a stream.  The frame is as follows:
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                        Stream ID (32)                         |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                        Error Code (32)                        |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
 
 The fields are:
 
-* Stream ID: The 32-bit Stream ID of the stream being ignored.
+Stream ID:
+: The 32-bit Stream ID of the stream being ignored.
 
+Error Code:
+: The reason the sender is ignoring the stream, or QUIC_NO_ERROR if not due to
+  an error.
 
 ## ACK Frame {#frame-ack}
 
@@ -3142,6 +3148,10 @@ thanks to all.
 > final version of this document.
 
 Issue and pull request numbers are listed with a leading octothorp.
+
+## Since draft-ietf-quic-transport-04
+
+- Introduce STOP_SENDING frame (#165)
 
 ## Since draft-ietf-quic-transport-03
 
