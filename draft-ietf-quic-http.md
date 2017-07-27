@@ -922,7 +922,7 @@ The entries in the following table are registered by this document.
   |---------------|------|-------------------------|
   | Frame Type    | Code | Specification           |
   |---------------|:----:|-------------------------|
-  | Reserved      | 0x0  | N/A                     |
+  | DATA          | 0x0  | {{frame-data}}          |
   | HEADERS       | 0x1  | {{frame-headers}}       |
   | PRIORITY      | 0x2  | {{frame-priority}}      |
   | Reserved      | 0x3  | N/A                     |
