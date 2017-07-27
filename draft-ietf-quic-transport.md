@@ -2470,16 +2470,15 @@ but loss or reordering can cause packets that open streams to arrive out of
 order.
 
 From the "open" state, either endpoint can send a frame with the FIN flag set,
-which causes the stream to transition into one of the "half-closed" states.
-This flag can be set on the frame that opens the stream, which causes the stream
-to immediately become "half-closed".  Once an endpoint has completed sending all
+which causes the stream to transition into one of the "half-closed" states. This
+flag can be set on the frame that opens the stream, which causes the stream to
+immediately become "half-closed".  Once an endpoint has completed sending all
 stream data and a STREAM frame with a FIN flag, the stream state becomes
-"half-closed (local)".  When an endpoint receives all stream data a FIN flag the
-stream state becomes "half-closed (remote)".  An endpoint MUST NOT consider the
-stream state to have changed until all data has been sent, received or
-discarded.
+"half-closed (local)".  When an endpoint receives all stream data and a FIN flag
+the stream state becomes "half-closed (remote)".  An endpoint MUST NOT consider
+the stream state to have changed until all data has been sent or received.
 
-A RST_STREAM frame on an "open" stream causes the stream to become
+A RST_STREAM frame on an "open" stream also causes the stream to become
 "half-closed".  A stream that becomes "open" as a result of sending or receiving
 RST_STREAM immediately becomes "half-closed".  Sending a RST_STREAM frame causes
 the stream to become "half-closed (local)"; receiving RST_STREAM causes the
@@ -2518,10 +2517,6 @@ received data.
 Once all data has been either received or discarded, a sender is no longer
 obligated to update the maximum received data for the connection.
 
-An endpoint that receives a RST_STREAM frame (and which has not sent a FIN or a
-RST_STREAM) MUST immediately respond with a RST_STREAM frame, and MUST NOT send
-any more data on the stream.
-
 Due to reordering, an endpoint could continue receiving frames for the stream
 even after the stream is closed for sending.  Frames received after a peer
 closes a stream SHOULD be discarded.  An endpoint MAY choose to limit the period
@@ -2536,11 +2531,10 @@ mentions a stream ID.  In this state, the endpoint MUST observe advertised
 stream and connection data limits (see {{flow-control}}).
 
 A stream transitions from this state to "closed" by completing transmission of
-all data.  This includes sending all data carried in STREAM frames up including
-the terminal STREAM frame that contains a FIN flag.
+all data.  This includes sending all data carried in STREAM frames up to and
+including the terminal STREAM frame that contains a FIN flag.
 
-A stream becomes "closed" when the endpoint sends and receives acknowledgment of
-a RST_STREAM frame.
+A stream also becomes "closed" when the endpoint sends a RST_STREAM frame.
 
 
 ### closed {#state-closed}
@@ -2741,12 +2735,12 @@ controller.
 
 ### Response to a RST_STREAM
 
-RST_STREAM terminates a stream abruptly.  Whether any action or response can or
-should be taken on the data already received is an application-specific issue,
-but it will often be the case that upon receipt of a RST_STREAM an endpoint
-will choose to stop sending data in its own direction. If the sender of a
-RST_STREAM wishes to explicitly state that no future data will be processed,
-that endpoint MAY send a STOP_SENDING frame at the same time.
+RST_STREAM terminates one direction of a stream abruptly.  Whether any action or
+response can or should be taken on the data already received is an
+application-specific issue, but it will often be the case that upon receipt of a
+RST_STREAM an endpoint will choose to stop sending data in its own direction. If
+the sender of a RST_STREAM wishes to explicitly state that no future data will
+be processed, that endpoint MAY send a STOP_SENDING frame at the same time.
 
 ### Data Limit Increments {#fc-credit}
 
