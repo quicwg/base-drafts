@@ -1473,13 +1473,16 @@ After receiving either a CONNECTION_CLOSE frame or a Public Reset, an
 endpoint MUST NOT send additional packets on that connection. After
 sending either a CONNECTION_CLOSE frame or a Public Reset packet,
 implementations MUST NOT send any non-closing packets on that connection. If
-additional packets are received after this time, implementations
-SHOULD respond to them by sending either a CONNECTION_CLOSE frame or a
-Public Reset packet, either of which may just be a duplicate of a
-previous packet. Implementations SHOULD throttle these responses, for
+additional packets are received after this time and before
+idle_timeout seconds has passed, implementations
+SHOULD respond to them by sending a CONNECTION_CLOSE
+(which MAY just be a duplicate of the previous CONNECTION_CLOSE packet)
+but MAY also send a Public Reset packet.
+Implementations SHOULD throttle these responses, for
 instance by exponentially backing off the number of packets which must
 be received before sending a response.
-
+After this time, implementations SHOULD respond to unexpected packets
+with a Public Reset packet.
 
 # Frame Types and Formats
 
