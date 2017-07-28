@@ -443,9 +443,15 @@ The PRIORITY frame payload has the following fields:
     {{!RFC7540}}, Section 5.3). Add one to the value to obtain a weight between
     1 and 256.
 
-A PRIORITY frame MUST have a payload length of nine octets.  A PRIORITY frame
-of any other length MUST be treated as a connection error of type
+A PRIORITY frame MAY identify a dependent stream with a stream ID of 0; as in
+{{!RFC7540}}, this makes the request dependent on the root of the dependency
+tree.  Stream ID 0 and stream ID 1 cannot be reprioritized; an attempt to
+reprioritize these stream MUST be treated as a connection error of type
 HTTP_MALFORMED_PRIORITY.
+
+The length of a PRIORITY frame is 9 octets.  A PRIORITY frame with any other
+length MUST be treated as a connection error of type HTTP_MALFORMED_PRIORITY.
+
 
 ### SETTINGS {#frame-settings}
 
