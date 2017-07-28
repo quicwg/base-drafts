@@ -624,15 +624,15 @@ already be in transit. A new connection can be established for new requests.
 
 If the client has sent requests on streams with a higher stream identifier than
 indicated in the GOAWAY frame, those requests were not and will not be
-processed.  The client can treat the requests as though they had never been sent
-at all, thereby allowing those requests to be retried later on a new connection.
-Servers SHOULD reset new streams above this ID with the error code
+processed.  Servers SHOULD reset new streams above this ID with the error code
 HTTP_REQUEST_CANCELLED.  Servers MAY also reset streams below the indicated ID
 with HTTP_REQUEST_CANCELLED if the associated requests were not processed.
 
-Automatically retrying requests on streams with lower- or equal-numbered
-identifiers is not possible, unless this is otherwise permitted (e.g. idempotent
-actions like GET, PUT, or DELETE).  These requests remain open until they are
+The client can treat these requests as though they had never been sent at all,
+thereby allowing them to be retried later on a new connection. Automatically
+retrying other requests is not possible, unless this is otherwise permitted
+(e.g. idempotent actions like GET, PUT, or DELETE).  Requests on stream IDs less
+than or equals to the stream ID in the GOAWAY frame remain open until they are
 completed successfully, reset, or the connection terminates.
 
 Servers SHOULD send a GOAWAY frame when the closing of a connection is known
