@@ -2559,11 +2559,12 @@ connection and stream flow-control windows.  Even though these frames will be
 discarded, because they are sent before their sender receives the STOP_SENDING,
 the sender will consider the frames to count against its flow-control windows.
 
-Upon receipt of a STOP_SENDING frame on a stream in the "open" state, an
-endpoint SHOULD send a RST_STREAM with an error code of QUIC_RECEIVED_RST.  If
-the STOP_SENDING frame is received on a stream that is already in the
-"half-closed (local)" or "closed" states, a RST_STREAM frame MAY still be sent
-in order to cancel retransmission of previously-sent STREAM frames.
+Upon receipt of a STOP_SENDING frame on a stream in the "open" or "half-closed
+(remote)" states, an endpoint SHOULD send a RST_STREAM with an error code of
+QUIC_RECEIVED_RST.  If the STOP_SENDING frame is received on a stream that is
+already in the "half-closed (local)" or "closed" states, a RST_STREAM frame MAY
+still be sent in order to cancel retransmission of previously-sent STREAM
+frames.
 
 
 ## Stream Concurrency {#stream-concurrency}
