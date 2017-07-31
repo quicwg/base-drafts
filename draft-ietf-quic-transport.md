@@ -2555,9 +2555,9 @@ indicates that the receiving application is no longer reading from the stream,
 but is not a guarantee that incoming data will be ignored.
 
 STREAM frames received after sending STOP_SENDING are still counted toward the
-connection and stream flow-control windows.  Even though these frames will be
-discarded, because they are sent before their sender receives the STOP_SENDING,
-the sender will consider the frames to count against its flow-control windows.
+connection and stream flow-control windows, even though these frames will be
+discarded upon receipt.  This avoids potential ambiguity about which STREAM
+frames count toward flow control.
 
 Upon receipt of a STOP_SENDING frame on a stream in the "open" or "half-closed
 (remote)" states, an endpoint SHOULD send a RST_STREAM with an error code of
