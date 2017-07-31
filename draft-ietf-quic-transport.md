@@ -1428,42 +1428,65 @@ TODO: see issue #161
 
 Connections should remain open until they become idle for a pre-negotiated
 period of time.  A QUIC connection, once established, can be terminated in one
-of three ways:
-
-1. Explicit Shutdown: An endpoint sends a CONNECTION_CLOSE frame to
-   terminate the connection.  An endpoint MAY use application-layer mechanisms
-   prior to a CONNECTION_CLOSE to indicate that the connection will soon be
-   terminated.  On termination of the active streams, a CONNECTION_CLOSE may be
-   sent.  If an endpoint sends a CONNECTION_CLOSE frame while unterminated
-   streams are active (no FIN bit or RST_STREAM frames have been sent or
-   received for one or more streams), then the peer must assume that the streams
-   were incomplete and were abnormally terminated.
-
-2. Implicit Shutdown: The default idle timeout is a required parameter in
-   connection negotiation.  The maximum is 10 minutes.  If there is no network
-   activity for the duration of the idle timeout, the connection is closed.  By
-   default a CONNECTION_CLOSE frame will be sent.  A silent close option can be
-   enabled when it is expensive to send an explicit close, such as mobile
-   networks that must wake up the radio.
-
-3. Stateless Reset: An endpoint that loses state can use this procedure to cause
-   the connection to terminate early, see {{stateless-reset}} for details.
-
-After receiving either a CONNECTION_CLOSE frame or a Public Reset, an
-endpoint MUST NOT send additional packets on that connection. After
-sending either a CONNECTION_CLOSE frame or a Public Reset packet,
-implementations MUST NOT send any non-closing packets on that
-connection. If additional packets are received after this time and
-before idle_timeout seconds has passed, implementations SHOULD respond
-to them by sending a CONNECTION_CLOSE (which MAY just be a duplicate
-of the previous CONNECTION_CLOSE packet) but MAY also send a Public
-Reset packet.  Implementations SHOULD throttle these responses, for
-instance by exponentially backing off the number of packets which are
-received before sending a response.  After this time, implementations
-SHOULD respond to unexpected packets with a Public Reset packet.
+of four ways: negotiated shutdown, idle timeout, immediate close, and a
+connection reset.
 
 
-## Stateless Reset {#stateless-reset}
+### Negotiated Shutdown
+
+An application protocol might arrange to abandon a connection after negotiating
+a graceful shutdown.  The application protocol exchanges whatever messages that
+are needed to cause both endpoints to agree to close the connection, after which
+the connection is closed.  A negotiated shutdown might not result in exchanging
+messages that are visible to the transport.
+
+
+### Idle Timeout
+
+A connection that remains idle for longer than the idle timeout (see
+{{transport-parameter-definitions}} becomes closed.  Either peer removes
+connection state if they have neither sent nor received a packet for this time.
+
+The time at which an idle timeout takes effect won't be perfectly synchronized
+on peers.  Endpoints might allow for the possibility that the remote side might
+attempt to send packets before the timeout.  In this case, an endpoint might
+choose to retain enough information to generate a CONNECTION_CLOSE.  Endpoints
+MAY instead rely on sending Public Reset in response to packets that arrive
+after an idle timeout.
+
+
+### Immediate Close
+
+An endpoint sends a CONNECTION_CLOSE frame to terminate the connection
+immediately.  A CONNECTION_CLOSE causes all open streams to immediately become
+closed; open streams can be assumed to be implicitly reset.  After receiving a
+CONNECTION_CLOSE frame, endpoints MUST NOT send additional packets on that
+connection.
+
+An peer that receives a CONNECTION_CLOSE might have sent packets that will
+arrive after the endpoint sends CONNECTION_CLOSE.  An endpoint SHOULD respond to
+these packets with another CONNECTION_CLOSE message.  To minimize the state that
+an endpoint maintains in this case, they MAY send the exact same
+CONNECTION_CLOSE packet.
+
+Note:
+
+: This intentionally contradicts other advice in this document that recommends
+  the creation of new packet numbers for every packet.  Sending new packet
+  numbers is primarily of advantage to loss recovery and congestion control,
+  which are not expected to be relevant for a closed connection.  Retransmitting
+  the final packet requires less state at the server.
+
+Implementations SHOULD limit the number of CONNECTION_CLOSE messages they
+generate.  For instance, an implementation could exponentially increase the
+number of packets that it receives before sending the packet containing
+CONNECTION_CLOSE.  Once enough time has passed to allow a peer to receive the
+CONNECTION_CLOSE, an endpoint SHOULD discard per-connection state and MAY
+instead rely on sending a stateless reset in response to any further incoming
+packets.
+
+
+### Stateless Reset {#stateless-reset}
 
 A stateless reset is provided as an option of last resort for a server that does
 not have access to the state of a connection.  A server crash or outage might
@@ -1526,7 +1549,7 @@ endpoint that wishes to communicate a fatal connection error MUST use a
 CONNECTION_CLOSE frame if it has sufficient state to do so.
 
 
-### Detecting a Stateless Reset
+#### Detecting a Stateless Reset
 
 A client detects a potential stateless reset when a packet with a short header
 cannot be decrypted.  The client then performs a constant-time comparison of the
@@ -1536,7 +1559,7 @@ the connection MUST be terminated immediately.  Otherwise, the packet can be
 discarded.
 
 
-### Calculating a Stateless Reset Token
+#### Calculating a Stateless Reset Token
 
 The stateless reset token MUST be difficult to guess.  In order to create a
 Stateless Reset Token, a server could randomly generate {{!RFC4086}} a secret
