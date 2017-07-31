@@ -368,14 +368,14 @@ same Push ID can be used in multiple PUSH_PROMISE frames (see
 {{frame-push-promise}}).
 
 After the push stream header, a push contains a response ({{request-response}}),
-with response headers and (if present) trailers carried by HEADERS frames sent
-on the control stream, and response body (if any) carried by DATA frames.
+with response headers, a response body (if any) carried by DATA frames, then
+trailers (if any) carried by HEADERS frames.
 
-If a promised push stream is not needed by the client, the client SHOULD send a
-QUIC STOP_SENDING on the promised stream with an appropriate error code (e.g.
-HTTP_PUSH_REFUSED, HTTP_PUSH_ALREADY_IN_CACHE; see {{errors}}).  This asks the
-server not to transfer the data and indicates that it will be discarded upon
-receipt.
+If a promised server push is not needed by the client, the client SHOULD send a
+CANCEL_PUSH frame; if the push stream is already open, a QUIC STOP_SENDING frame
+with an appropriate error code can be used instead (e.g., HTTP_PUSH_REFUSED,
+HTTP_PUSH_ALREADY_IN_CACHE; see {{errors}}).  This asks the server not to
+transfer the data and indicates that it will be discarded upon receipt.
 
 
 # HTTP Framing Layer {#http-framing-layer}
@@ -452,13 +452,10 @@ The flags defined are:
 
   PUSH_PRIORITIZED (0x04):
   : Indicates that the Prioritized Stream is a server push rather than a
-    request.  If set, this flag indicates that the Prioritized Stream identifies
-    a response stream and the Promise Index field is present.
+    request.
 
   PUSH_DEPENDENT (0x02):
-  : Indicates a dependency on a pushed request.  If set, this flag indicates
-    that the Dependent Stream identifies a response stream and that the
-    Dependent Promise Index field is present.
+  : Indicates a dependency on a server push.
 
   E (0x01):
   : Indicates that the stream dependency is exclusive (see {{!RFC7540}}, Section
@@ -481,15 +478,15 @@ The PRIORITY frame payload has the following fields:
 
   Prioritized Request:
   : A 32-bit identifier for a request.  This contains the stream ID of a request
-    stream when the PUSH_PRIORITIZED flag is clear, or a Push ID when the PUSH
-    flag is set.
+    stream when the PUSH_PRIORITIZED flag is clear, or a Push ID when the
+    PUSH_PRIORITIZED flag is set.
 
   Stream Dependency:
   : A 32-bit stream identifier for a dependent request.  This contains the
     stream ID of a request stream when the PUSH_DEPENDENT flag is clear, or a
     Push ID when the PUSH_DEPENDENT flag is set.  A request stream ID of 0
     indicates a dependency on the root stream. For details of dependencies,
-    see {{priority}} and {!RFC7540}}, Section 5.3).
+    see {{priority}} and {!RFC7540}}, Section 5.3.
 
   Weight:
   : An unsigned 8-bit integer representing a priority weight for the stream (see
@@ -502,9 +499,9 @@ when the corresponding PUSH_PRIORITIZED or PUSH_DEPENDENT flag is not set.
 Setting the PUSH or PUSH_DEPENDENT flag causes the frame to identify a
 PUSH_PROMISE using a Push ID (see {{frame-push-promise}} for details).
 
-A PRIORITY frame MAY identify no request by using a stream ID of 0; as in
-{{!RFC7540}}, this makes the request dependent on the root of the dependency
-tree.
+A PRIORITY frame MAY identify no request in the Prioritized Request field by
+using a stream ID of 0; as in {{!RFC7540}}, this makes the request dependent on
+the root of the dependency tree.
 
 A PRIORITY frame MAY identify a dependent stream with a stream ID of 0; as in
 {{!RFC7540}}, this makes the request dependent on the root of the dependency
@@ -521,50 +518,37 @@ The length of a PRIORITY frame is 9 octets.  A PRIORITY frame with any other
 length MUST be treated as a connection error of type HTTP_MALFORMED_PRIORITY.
 
 
-### CANCEL_REQUEST {#frame-cancel-request}
+### CANCEL_PUSH {#frame-cancel-push}
 
-The CANCEL_REQUEST frame (type=0x3) is used to request cancellation of a request
-prior to the response stream being created.  This frame can be used to cancel
-server push requests that are initiated with a PUSH_PROMISE.
-
-The CANCEL_REQUEST frame identifies a server push request by Push ID (see
-{{frame-push-promise}}).
+The CANCEL_PUSH frame (type=0x3) is used to request cancellation of server push
+prior to the push stream being created.  The CANCEL_REQUEST frame identifies a
+server push request by Push ID (see {{frame-push-promise}}).
 
 When a server receives this frame, it aborts sending the response for the
 identified server push.  If the server has not yet started to send the server
-push, it can use the receipt of a CANCEL_REQUEST frame to avoid opening a
+push, it can use the receipt of a CANCEL_PUSH frame to avoid opening a
 stream.  If the push stream has been opened by the server, the server SHOULD
 sent a QUIC RST_STREAM frame on those streams and cease transmission of the
 response.
 
 A server can send this frame to indicate that it won't be sending a response
-prior to creation of a push stream.  Once the push stream has been created, a
-RST_STREAM with a CANCELLED code can be used instead.
+prior to creation of a push stream.  Once the push stream has been created,
+sending CANCEL_PUSH has no effect on the state of the push stream.  A QUIC
+RST_STREAM frame SHOULD be used instead to cancel transmission of the server
+push response.
 
-A CANCEL_REQUEST frame is sent on the control stream.  Sending a CANCEL_REQUEST
-frame on a stream other than the control stream MUST be treated as a
-HTTP_WRONG_STREAM error.
+A CANCEL_PUSH frame is sent on the control stream.  Sending a CANCEL_PUSH frame
+on a stream other than the control stream MUST be treated as a stream error of
+type HTTP_WRONG_STREAM.
 
-The CANCEL_REQUEST frame has no defined flags.
+The CANCEL_PUSH frame has no defined flags.
 
-~~~~~~~~~~  drawing
-    0                   1                   2                   3
-    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |                         Push ID (32)                          |
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-~~~~~~~~~~
-{: #fig-cancel-request title="CANCEL_REQUEST frame payload"}
+The CANCEL_PUSH frame carries a 32-bit Push ID that identifies the server push
+that is being cancelled (see {{frame-push-promise}}).
 
-The CANCEL_REQUEST frame payload has the following fields:
-
-  Push ID:
-  : A 32-bit Push ID that identifies the request (see {{frame-push-promise}}).
-
-A CANCEL_REQUEST frame always contains a four octet payload.  A server MUST
-treat a CANCEL_REQUEST frame payload that is other than 4 octets in length, or a
-CANCEL_REQUEST frame that identifies an unknown Push ID as an
-HTTP_MALFORMED_CANCEL_REQUEST error.
+A server MUST treat a CANCEL_PUSH frame payload that is other than 4 octets in
+length, or a CANCEL_PUSH frame that identifies an unknown Push ID as a
+connection error of type HTTP_MALFORMED_CANCEL_PUSH.
 
 
 ### SETTINGS {#frame-settings}
@@ -699,10 +683,9 @@ server to client, as in HTTP/2.  The PUSH_PROMISE frame defines no flags.
 The payload consists of:
 
 Push ID:
-: A 32-bit identifier for the server push request.  This identifier is used in
-  push stream header ({{server-push}}), CANCEL_REQUEST frames
-  ({{frame-cancel-request}}), and PRIORITY frames ({{frame-priority}}) to
-  identify this request.
+: A 32-bit identifier for the server push request.  A push ID is used in push
+  stream header ({{server-push}}), CANCEL_PUSH frames ({{frame-cancel-push}}),
+  and PRIORITY frames ({{frame-priority}}).
 
 Header Block:
 : HPACK-compressed request headers for the promised response.
@@ -952,8 +935,8 @@ PRIORITY (0x2):
 
 RST_STREAM (0x3):
 : RST_STREAM frames do not exist, since QUIC provides stream lifecycle
-  management.  The same code point is used for the CANCEL_REQUEST frame
-  ({{frame-cancel-request}}).
+  management.  The same code point is used for the CANCEL_PUSH frame
+  ({{frame-cancel-push}}).
 
 SETTINGS (0x4):
 : SETTINGS frames are sent only at the beginning of the connection.  See
@@ -1156,7 +1139,7 @@ The entries in the following table are registered by this document.
 | DATA           | 0x0  | {{frame-data}}           |
 | HEADERS        | 0x1  | {{frame-headers}}        |
 | PRIORITY       | 0x2  | {{frame-priority}}       |
-| CANCEL_REQUEST | 0x3  | {{frame-cancel-request}} |
+| CANCEL_PUSH    | 0x3  | {{frame-cancel-push}}    |
 | SETTINGS       | 0x4  | {{frame-settings}}       |
 | PUSH_PROMISE   | 0x5  | {{frame-push-promise}}   |
 | Reserved       | 0x6  | N/A                      |
@@ -1273,6 +1256,7 @@ The original authors of this specification were Robbie Shade and Mike Warres.
 - Use separate frame type and settings registries from HTTP/2 (#81)
 - SETTINGS_ENABLE_PUSH instead of SETTINGS_DISABLE_PUSH (#477)
 - Restored GOAWAY (#696)
+- Identify server push using Push ID rather than a stream ID (#702,#281)
 
 ## Since draft-ietf-quic-http-03
 
