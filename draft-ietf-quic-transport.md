@@ -2277,7 +2277,10 @@ When a packet is detected as lost, the sender re-sends any frames as necessary:
   receiver.
 
 * ACK and PADDING frames MUST NOT be retransmitted.  ACK frames
- containing updated information will be sent as described in {{frame-ack}}.
+  containing updated information will be sent as described in {{frame-ack}}.
+
+* STOP_SENDING frames MUST be retransmitted, unless the stream has become closed
+  in the appropriate direction.  See {{solicited-state-transitions}}.
 
 * All other frames MUST be retransmitted.
 
@@ -2560,11 +2563,16 @@ discarded upon receipt.  This avoids potential ambiguity about which STREAM
 frames count toward flow control.
 
 Upon receipt of a STOP_SENDING frame on a stream in the "open" or "half-closed
-(remote)" states, an endpoint SHOULD send a RST_STREAM with an error code of
+(remote)" states, an endpoint MUST send a RST_STREAM with an error code of
 QUIC_RECEIVED_RST.  If the STOP_SENDING frame is received on a stream that is
 already in the "half-closed (local)" or "closed" states, a RST_STREAM frame MAY
 still be sent in order to cancel retransmission of previously-sent STREAM
 frames.
+
+While STOP_SENDING frames are retransmittable, an implementation MAY choose not
+to retransmit a lost STOP_SENDING frame if the stream has already been closed
+in the appropriate direction since the frame was first generated.
+See {{packetization}}.
 
 
 ## Stream Concurrency {#stream-concurrency}
