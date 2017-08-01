@@ -597,18 +597,20 @@ The GOAWAY frame (type=0x7) is used to initiate graceful shutdown of a
 connection by a server.  GOAWAY allows a server to stop accepting new requests
 while still finishing processing of previously received requests.  This enables
 administrative actions, like server maintenance.  GOAWAY by itself does not
-close a connection.
+close a connection.  (Note that clients do not need to send GOAWAY to gracefully
+close a connection; they simply stop making new requests.)
 
 The GOAWAY frame does not define any flags, and the payload is a QUIC stream
 identifier.  The GOAWAY frame applies to the connection, not a specific stream.
 An endpoint MUST treat a GOAWAY frame on a stream other than the control stream
 as a connection error ({{errors}}) of type HTTP_WRONG_STREAM.
 
-There is an inherent race condition between a client sending new requests and
-the server sending a GOAWAY frame.  To deal with this case, the GOAWAY contains
-the stream identifier of the last client-initiated request that was or might be
-processed in this connection.  This MAY be lower than the stream limit
-identified by a QUIC MAX_STREAM_ID frame, and MAY be zero if no requsets were
+New client requests might already have been sent before the client receives the
+server's GOAWAY frame.  The GOAWAY frame contains the stream identifier of the
+last client-initiated request that was or might be processed in this connection,
+which enables client and server to agree on which requests were accepted prior
+to the connection shutdown.  This identifier MAY be lower than the stream limit
+identified by a QUIC MAX_STREAM_ID frame, and MAY be zero if no requests were
 processed.  Servers SHOULD NOT increase the MAX_STREAM_ID limit after sending a
 GOAWAY frame.
 
@@ -624,16 +626,17 @@ already be in transit. A new connection can be established for new requests.
 
 If the client has sent requests on streams with a higher stream identifier than
 indicated in the GOAWAY frame, those requests were not and will not be
-processed.  Servers SHOULD reset new streams above this ID with the error code
+processed.  Endpoints SHOULD reset any streams above this ID with the error code
 HTTP_REQUEST_CANCELLED.  Servers MAY also reset streams below the indicated ID
 with HTTP_REQUEST_CANCELLED if the associated requests were not processed.
 
-The client can treat these requests as though they had never been sent at all,
-thereby allowing them to be retried later on a new connection. Automatically
-retrying other requests is not possible, unless this is otherwise permitted
-(e.g. idempotent actions like GET, PUT, or DELETE).  Requests on stream IDs less
-than or equals to the stream ID in the GOAWAY frame remain open until they are
-completed successfully, reset, or the connection terminates.
+The client can treat requests cancelled by the server as though they had never
+been sent at all, thereby allowing them to be retried later on a new connection.
+Automatically retrying other requests is not possible, unless this is otherwise
+permitted (e.g. idempotent actions like GET, PUT, or DELETE).  Requests on
+stream IDs less than or equal to the stream ID in the GOAWAY frame might have
+been processed; their status cannot be known until they are completed
+successfully, reset, or the connection terminates.
 
 Servers SHOULD send a GOAWAY frame when the closing of a connection is known
 in advance, even if the advance notice is small, so that the remote peer can
