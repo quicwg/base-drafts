@@ -273,7 +273,6 @@ Version Negotiation packet, are not encrypted, but information sent in these
 unencrypted handshake packets is later verified as part of cryptographic
 processing.
 
-PUBLIC_RESET packets that reset a connection are currently not authenticated.
 
 ## Connection Migration and Resilience to NAT Rebinding
 
@@ -345,9 +344,9 @@ describing the value of fields.
 
 Any QUIC packet has either a long or a short header, as indicated by the Header
 Form bit. Long headers are expected to be used early in the connection before
-version negotiation and establishment of 1-RTT keys, and for public resets.
-Short headers are minimal version-specific headers, which can be used after
-version negotiation and 1-RTT keys are established.
+version negotiation and establishment of 1-RTT keys.  Short headers are minimal
+version-specific headers, which can be used after version negotiation and 1-RTT
+keys are established.
 
 ## Long Header
 
@@ -374,9 +373,9 @@ Long headers are used for packets that are sent prior to the completion of
 version negotiation and establishment of 1-RTT keys. Once both conditions are
 met, a sender SHOULD switch to sending short-form headers. While inefficient,
 long headers MAY be used for packets encrypted with 1-RTT keys. The long form
-allows for special packets, such as the Version Negotiation and the Public Reset
-packets to be represented in this uniform fixed-length packet format. A long
-header contains the following fields:
+allows for special packets - such as the Version Negotiation packet - to be
+represented in this uniform fixed-length packet format. A long header contains
+the following fields:
 
 Header Form:
 
@@ -422,7 +421,6 @@ The following packet types are defined:
 | 0x06 | 0-RTT Protected               | {{packet-protected}}        |
 | 0x07 | 1-RTT Protected (key phase 0) | {{packet-protected}}        |
 | 0x08 | 1-RTT Protected (key phase 1) | {{packet-protected}}        |
-| 0x09 | Public Reset                  | {{packet-public-reset}}     |
 {: #long-packet-types title="Long Header Packet Types"}
 
 The header form, packet type, connection ID, packet number and version fields of
@@ -682,42 +680,6 @@ packet protection in detail.  After decryption, the plaintext consists of a
 sequence of frames, as described in {{frames}}.
 
 
-## Public Reset Packet {#packet-public-reset}
-
-A Public Reset packet is only sent by servers and is used to abruptly terminate
-communications. Public Reset is provided as an option of last resort for a
-server that does not have access to the state of a connection.  This is intended
-for use by a server that has lost state (for example, through a crash or
-outage). A server that wishes to communicate a fatal connection error MUST use a
-CONNECTION_CLOSE frame if it has sufficient state to do so.
-
-A Public Reset packet uses long headers with a type value of 0x09.
-
-The connection ID and packet number of fields together contain octets 1 through
-12 from the packet that triggered the reset.  For a client that sends a
-connection ID on every packet, the Connection ID field is simply an echo of the
-client's Connection ID, and the Packet Number field includes an echo of the
-client's packet number.  Depending on the client's packet number length it might
-also include 0, 2, or 3 additional octets from the protected payload of the
-client packet.
-
-The version field contains the current QUIC version.
-
-A Public Reset packet sent by a server indicates that it does not have the
-state necessary to continue with a connection.  In this case, the server will
-include the fields that prove that it originally participated in the connection
-(see {{public-reset-proof}} for details).
-
-Upon receipt of a Public Reset packet that contains a valid proof, a client MUST
-tear down state associated with the connection.  The client MUST then cease
-sending packets on the connection and SHOULD discard any subsequent packets that
-arrive. A Public Reset that does not contain a valid proof MUST be ignored.
-
-### Public Reset Proof
-
-TODO: Details to be added.
-
-
 ## Connection ID {#connection-id}
 
 QUIC connections are identified by their 64-bit Connection ID.  All long headers
@@ -756,10 +718,9 @@ CONNECTION_CLOSE frame or any further packets; the sender MAY send a Public
 Reset packet in response to further packets that it receives.
 
 To reduce the number of bits required to represent the packet number over the
-wire, only the least significant bits of the packet number are transmitted over
-the wire, up to 32 bits.  The actual packet number for each packet is
-reconstructed at the receiver based on the largest packet number received on a
-successfully authenticated packet.
+wire, only the least significant bits of the packet number are transmitted.  The
+actual packet number for each packet is reconstructed at the receiver based on
+the largest packet number received on a successfully authenticated packet.
 
 A packet number is decoded by finding the packet number value that is closest to
 the next expected packet.  The next expected packet is the highest received
@@ -784,9 +745,9 @@ sending a packet with a number of 0x6b4264 requires a 16-bit or larger packet
 number encoding; whereas a 32-bit packet number is needed to send a packet with
 a number of 0x6bc107.
 
-Version Negotiation ({{packet-version}}), Server Stateless Retry
-({{packet-server-stateless}}), and Public Reset ({{packet-public-reset}})
-packets have special rules for populating the packet number field.
+Version Negotiation ({{packet-version}}) and Server Stateless Retry
+({{packet-server-stateless}}) packets have special rules for populating the
+packet number field.
 
 
 ### Initial Packet Number {#initial-packet-number}
@@ -877,7 +838,6 @@ explained in more detail as they are referenced later in the document.
 | 0x00        | PADDING           | {{frame-padding}}           |
 | 0x01        | RST_STREAM        | {{frame-rst-stream}}        |
 | 0x02        | CONNECTION_CLOSE  | {{frame-connection-close}}  |
-| 0x03        | GOAWAY            | {{frame-goaway}}            |
 | 0x04        | MAX_DATA          | {{frame-max-data}}          |
 | 0x05        | MAX_STREAM_DATA   | {{frame-max-stream-data}}   |
 | 0x06        | MAX_STREAM_ID     | {{frame-max-stream-id}}     |
@@ -1050,6 +1010,7 @@ language from Section 3 of {{!I-D.ietf-tls-tls13}}.
       idle_timeout(3),
       omit_connection_id(4),
       max_packet_size(5),
+      stateless_reset_token(6),
       (65535)
    } TransportParameterId;
 
@@ -1123,6 +1084,11 @@ idle_timeout (0x0003):
 
 : The idle timeout is a value in seconds that is encoded as an unsigned 16-bit
   integer.  The maximum value is 600 seconds (10 minutes).
+
+stateless_reset_token (0x0005):
+
+: The Stateless Reset Token is used in verifying a stateless reset, see
+  {{stateless-reset}}.  This parameter is a sequence of 16 octets.
 
 An endpoint MAY use the following transport parameters:
 
@@ -1380,21 +1346,12 @@ way to retry them.
 
 ### Privacy Implications of Connection Migration {#migration-linkability}
 
-Using a stable connection ID on multiple network paths allows a
-passive observer to correlate activity between those paths.  A client
-that moves between networks might not wish to have their activity
-correlated by any entity other than a server. The NEW_CONNECTION_ID
-message can be sent by a server to provide an unlinkable connection ID
-for use in case the client wishes to explicitly break linkability
-between two points of network attachment.
-
-A client which wishes to break linkability upon changing networks MUST
-use the NEW_CONNECTION_ID as well as incrementing the packet sequence
-number by an externally unpredictable value computed as described in
-{{packet-number-gap}}. Packet number gaps are cumulative.  A client
-might skip connection IDs, but it MUST ensure that it applies the
-associated packet number gaps in addition to the packet number gap
-associated with the connection ID that it does use.
+Using a stable connection ID on multiple network paths allows a passive observer
+to correlate activity between those paths.  A client that moves between networks
+might not wish to have their activity correlated by any entity other than a
+server. The NEW_CONNECTION_ID message can be sent by a server to provide an
+unlinkable connection ID for use in case the client wishes to explicitly break
+linkability between two points of network attachment.
 
 A client might need to send packets on multiple networks without receiving any
 response from the server.  To ensure that the client is not linkable across each
@@ -1402,6 +1359,14 @@ of these changes, a new connection ID and packet number gap are needed for each
 network.  To support this, a server sends multiple NEW_CONNECTION_ID messages.
 Each NEW_CONNECTION_ID is marked with a sequence number.  Connection IDs MUST be
 used in the order in which they are numbered.
+
+A client which wishes to break linkability upon changing networks MUST use the
+connection ID provided by the server as well as incrementing the packet sequence
+number by an externally unpredictable value computed as described in
+{{packet-number-gap}}. Packet number gaps are cumulative.  A client might skip
+connection IDs, but it MUST ensure that it applies the associated packet number
+gaps for connection IDs that it skips in addition to the packet number gap
+associated with the connection ID that it does use.
 
 A server that receives a packet that is marked with a new connection ID recovers
 the packet number by adding the cumulative packet number gap to its expected
@@ -1413,6 +1378,7 @@ new connection ID.  If the server received packet 10 using the previous
 connection ID, it should expect packets on the new connection ID to start at 18.
 A packet with the new connection ID and a packet number of 17 is discarded as
 being in error.
+
 
 #### Packet Number Gap
 
@@ -1443,16 +1409,13 @@ period of time.  A QUIC connection, once established, can be terminated in one
 of three ways:
 
 1. Explicit Shutdown: An endpoint sends a CONNECTION_CLOSE frame to
-   initiate a connection termination.  An endpoint may send a GOAWAY frame to
-   the peer prior to a CONNECTION_CLOSE to indicate that the connection will
-   soon be terminated.  A GOAWAY frame signals to the peer that any active
-   streams will continue to be processed, but the sender of the GOAWAY will not
-   initiate any additional streams and will not accept any new incoming streams.
-   On termination of the active streams, a CONNECTION_CLOSE may be sent.  If an
-   endpoint sends a CONNECTION_CLOSE frame while unterminated streams are active
-   (no FIN bit or RST_STREAM frames have been sent or received for one or more
-   streams), then the peer must assume that the streams were incomplete and were
-   abnormally terminated.
+   terminate the connection.  An endpoint MAY use application-layer mechanisms
+   prior to a CONNECTION_CLOSE to indicate that the connection will soon be
+   terminated.  On termination of the active streams, a CONNECTION_CLOSE may be
+   sent.  If an endpoint sends a CONNECTION_CLOSE frame while unterminated
+   streams are active (no FIN bit or RST_STREAM frames have been sent or
+   received for one or more streams), then the peer must assume that the streams
+   were incomplete and were abnormally terminated.
 
 2. Implicit Shutdown: The default idle timeout is a required parameter in
    connection negotiation.  The maximum is 10 minutes.  If there is no network
@@ -1461,19 +1424,132 @@ of three ways:
    enabled when it is expensive to send an explicit close, such as mobile
    networks that must wake up the radio.
 
-3. Abrupt Shutdown: An endpoint may send a Public Reset packet at any time
-   during the connection to abruptly terminate an active connection.  A Public
-   Reset packet SHOULD only be used as a final recourse.  Commonly, a public
-   reset is expected to be sent when a packet on an established connection is
-   received by an endpoint that is unable decrypt the packet.  For instance, if
-   a server reboots mid-connection and loses any cryptographic state associated
-   with open connections, and then receives a packet on an open connection, it
-   should send a Public Reset packet in return.  (TODO: articulate rules around
-   when a public reset should be sent.)
+3. Stateless Reset: An endpoint that loses state can use this procedure to cause
+   the connection to terminate early, see {{stateless-reset}} for details.
 
-TODO: Connections that are terminated are added to a TIME_WAIT list at the
-server, so as to absorb any straggler packets in the network.  Discuss TIME_WAIT
-list.
+After receiving either a CONNECTION_CLOSE frame or a Public Reset, an
+endpoint MUST NOT send additional packets on that connection. After
+sending either a CONNECTION_CLOSE frame or a Public Reset packet,
+implementations MUST NOT send any non-closing packets on that
+connection. If additional packets are received after this time and
+before idle_timeout seconds has passed, implementations SHOULD respond
+to them by sending a CONNECTION_CLOSE (which MAY just be a duplicate
+of the previous CONNECTION_CLOSE packet) but MAY also send a Public
+Reset packet.  Implementations SHOULD throttle these responses, for
+instance by exponentially backing off the number of packets which are
+received before sending a response.  After this time, implementations
+SHOULD respond to unexpected packets with a Public Reset packet.
+
+
+## Stateless Reset {#stateless-reset}
+
+A stateless reset is provided as an option of last resort for a server that does
+not have access to the state of a connection.  A server crash or outage might
+result in clients continuing to send data to a server that is unable to properly
+continue the connection.  A server that wishes to communicate a fatal connection
+error MUST use a CONNECTION_CLOSE frame if it has sufficient state to do so.
+
+To support this process, the server sends a stateless_reset_token value during
+the handshake in the transport parameters.  This value is protected by
+encryption, so only client and server know this value.
+
+A server that receives packets that it cannot process sends a packet in the
+following layout:
+
+~~~
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+
+|0|C|K|  00001  |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                                                               |
++                     [Connection ID (64)]                      +
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                                                               |
++                                                               +
+|                                                               |
++                   Stateless Reset Token (128)                 +
+|                                                               |
++                                                               +
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                        Random Octets (*)                    ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~
+
+This packet SHOULD use the short header form with the shortest possible packet
+number encoding.  This minimizes the perceived gap between the last packet that
+the server sent and this packet.  The leading octet of the Stateless Reset Token
+will be interpreted as a packet number.  A server MAY use a different short
+header type, indicating a different packet number length, but this allows for
+the message to be identified as a stateless reset more easily using heuristics.
+
+A server copies the connection ID field from the packet that triggers the
+stateless reset.  A server omits the connection ID if explicitly configured to
+do so, or if the client packet did not include a connection ID.
+
+After the first short header octet and optional connection ID, the server
+includes the value of the Stateless Reset Token that it included in its
+transport parameters.
+
+After the Stateless Reset Token, the endpoint pads the message with an arbitrary
+number of octets containing random values.
+
+This design ensures that a stateless reset packet is - to the extent possible -
+indistinguishable from a regular packet.
+
+A stateless reset is not appropriate for signaling error conditions.  An
+endpoint that wishes to communicate a fatal connection error MUST use a
+CONNECTION_CLOSE frame if it has sufficient state to do so.
+
+
+### Detecting a Stateless Reset
+
+A client detects a potential stateless reset when a packet with a short header
+cannot be decrypted.  The client then performs a constant-time comparison of the
+16 octets that follow the Connection ID with the Stateless Reset Token provided
+by the server in its transport parameters.  If this comparison is successful,
+the connection MUST be terminated immediately.  Otherwise, the packet can be
+discarded.
+
+
+### Calculating a Stateless Reset Token
+
+The stateless reset token MUST be difficult to guess.  In order to create a
+Stateless Reset Token, a server could randomly generate {{!RFC4086}} a secret
+for every connection that it creates.  However, this presents a coordination
+problem when there are multiple servers in a cluster or a storage problem for a
+server that might lose state.  Stateless reset specifically exists to handle the
+case where state is lost, so this approach is suboptimal.
+
+A single static key can be used across all connections to the same endpoint by
+generating the proof using a second iteration of a preimage-resistant function
+that takes three inputs: the static key, a the connection ID for the connection
+(see {{connection-id}}), and an identifier for the server instance.  A server
+could use HMAC {{?RFC2104}} (for example, HMAC(static_key, server_id ||
+connection_id)) or HKDF {{?RFC5869}} (for example, using the static key as input
+keying material, with server and connection identifiers as salt).  The output of
+this function is truncated to 16 octets to produce the Stateless Reset Token
+for that connection.
+
+A server that loses state can use the same method to generate a valid Stateless
+Reset Secret.  The connection ID comes from the packet that the server receives.
+
+This design relies on the client always sending a connection ID in its packets
+so that the server can use the connection ID from a packet to reset the
+connection.  A server that uses this design cannot allow clients to omit a
+connection ID (that is, it cannot use the truncate_connection_id transport
+parameter {{transport-parameter-definitions}}).
+
+Revealing the Stateless Reset Token allows any entity to terminate the
+connection, so a value can only be used once.  This method for choosing the
+Stateless Reset Token means that the combination of server instance, connection
+ID, and static key cannot occur for another connection.  A connection ID from a
+connection that is reset by revealing the Stateless Reset Token cannot be
+reused for new connections at the same server without first changing to use a
+different static key or server identifier.
+
 
 # Frame Types and Formats
 
@@ -1541,8 +1617,7 @@ Final offset:
 An endpoint sends a CONNECTION_CLOSE frame (type=0x02) to notify its peer that
 the connection is being closed.  If there are open streams that haven't been
 explicitly closed, they are implicitly closed when the connection is closed.
-(Ideally, a GOAWAY frame would be sent with enough time that all streams are
-torn down.)  The frame is as follows:
+The frame is as follows:
 
 ~~~
  0                   1                   2                   3
@@ -1572,57 +1647,6 @@ Reason Phrase:
 : A human-readable explanation for why the connection was closed.  This can be
   zero length if the sender chooses to not give details beyond the Error Code.
   This SHOULD be a UTF-8 encoded string {{!RFC3629}}.
-
-
-## GOAWAY Frame {#frame-goaway}
-
-An endpoint uses a GOAWAY frame (type=0x03) to initiate a graceful shutdown of a
-connection.  The endpoints will continue to use any active streams, but the
-sender of the GOAWAY will not initiate or accept any additional streams beyond
-those indicated.  The GOAWAY frame is as follows:
-
-~~~
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                  Largest Client Stream ID (32)                |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                  Largest Server Stream ID (32)                |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-~~~
-
-The fields of a GOAWAY frame are:
-
-Largest Client Stream ID:
-
-: The highest-numbered, client-initiated stream on which the endpoint sending
-  the GOAWAY frame either sent data, or received and delivered data.  All
-  higher-numbered, client-initiated streams (that is, odd-numbered streams) are
-  implicitly reset by sending or receiving the GOAWAY frame.
-
-Largest Server Stream ID:
-
-: The highest-numbered, server-initiated stream on which the endpoint sending
-  the GOAWAY frame either sent data, or received and delivered data.  All
-  higher-numbered, server-initiated streams (that is, even-numbered streams) are
-  implicitly reset by sending or receiving the GOAWAY frame.
-
-A GOAWAY frame indicates that any application layer actions on streams with
-higher numbers than those indicated can be safely retried because no data was
-exchanged.  An endpoint MUST set the value of the Largest Client or Server
-Stream ID to be at least as high as the highest-numbered stream on which it
-either sent data or received and delivered data to the application protocol that
-uses QUIC.
-
-An endpoint MAY choose a larger stream identifier if it wishes to allow for a
-number of streams to be created.  This is especially valuable for peer-initiated
-streams where packets creating new streams could be in transit; using a larger
-stream number allows those streams to complete.
-
-In addition to initiating a graceful shutdown of a connection, GOAWAY MAY be
-sent immediately prior to sending a CONNECTION_CLOSE frame that is sent as a
-result of detecting a fatal error.  Higher-numbered streams than those indicated
-in the GOAWAY frame can then be retried.
 
 
 ## MAX_DATA Frame {#frame-max-data}
@@ -1809,6 +1833,14 @@ The NEW_CONNECTION_ID is as follows:
 +                        Connection ID (64)                     +
 |                                                               |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                                                               |
++                                                               +
+|                                                               |
++                   Stateless Reset Token (128)                 +
+|                                                               |
++                                                               +
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
 
 The fields are:
@@ -1825,6 +1857,12 @@ Sequence:
 Connection ID:
 
 : A 64-bit connection ID.
+
+Stateless Reset Token:
+
+: A 128-bit value that will be used to for a stateless reset when the associated
+  connection ID is used (see {{stateless-reset}}).
+
 
 ## STOP_SENDING Frame {#frame-stop-sending}
 
@@ -2188,8 +2226,8 @@ Stream Data:
 : The bytes from the designated stream to be delivered.
 
 A stream frame's Stream Data MUST NOT be empty, unless the FIN bit is set.  When
-the FIN flag is sent on an empty STREAM frame, the offset in the STREAM frame
-MUST be one greater than the last data byte sent on this stream.
+the FIN flag is sent on an empty STREAM frame, the offset in the STREAM frame is
+the offset of the next byte that would be sent.
 
 Stream multiplexing is achieved by interleaving STREAM frames from multiple
 streams into one or more QUIC packets.  A single QUIC packet can include
@@ -2208,7 +2246,7 @@ transmission efficiency to underfilled packets.
 # Packetization and Reliability {#packetization}
 
 The Path Maximum Transmission Unit (PMTU) is the maximum size of the entire IP
-header, UDP header, and UDP payload. The UDP payload includes the QUIC public
+header, UDP header, and UDP payload. The UDP payload includes the QUIC packet
 header, protected payload, and any authentication fields.
 
 All QUIC packets SHOULD be sized to fit within the estimated PMTU to avoid IP
@@ -2837,9 +2875,10 @@ The most appropriate error code ({{error-codes}}) SHOULD be included in the
 frame that signals the error.  Where this specification identifies error
 conditions, it also identifies the error code that is used.
 
-Public Reset is not suitable for any error that can be signaled with a
-CONNECTION_CLOSE or RST_STREAM frame.  Public Reset MUST NOT be sent by an
-endpoint that has the state necessary to send a frame on the connection.
+A stateless reset ({{stateless-reset}}) is not suitable for any error that can
+be signaled with a CONNECTION_CLOSE or RST_STREAM frame.  A stateless reset MUST
+NOT be used by an endpoint that has the state necessary to send a frame on the
+connection.
 
 
 ## Connection Errors
@@ -2858,8 +2897,8 @@ effort expended on terminated connections.
 
 An endpoint that chooses not to retransmit packets containing CONNECTION_CLOSE
 risks a peer missing the first such packet.  The only mechanism available to an
-endpoint that continues to receive data for a terminated connection is to send a
-Public Reset packet.
+endpoint that continues to receive data for a terminated connection is to use
+the stateless reset process ({{stateless-reset}}).
 
 An endpoint that receives an invalid CONNECTION_CLOSE frame MUST NOT signal the
 existence of the error to its peer.
@@ -3116,6 +3155,7 @@ The initial contents of this registry are shown in
 | 0x0003 | idle_timeout            | {{transport-parameter-definitions}} |
 | 0x0004 | omit_connection_id      | {{transport-parameter-definitions}} |
 | 0x0005 | max_packet_size         | {{transport-parameter-definitions}} |
+| 0x0006 | stateless_reset_token   | {{transport-parameter-definitions}} |
 {: #iana-tp-table title="Initial QUIC Transport Parameters Entries"}
 
 
@@ -3155,6 +3195,7 @@ Issue and pull request numbers are listed with a leading octothorp.
 ## Since draft-ietf-quic-transport-04
 
 - Introduce STOP_SENDING frame (#165)
+- Removed GOAWAY (#696)
 
 ## Since draft-ietf-quic-transport-03
 
