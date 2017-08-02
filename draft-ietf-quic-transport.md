@@ -1849,8 +1849,7 @@ Stream ID:
 : The 32-bit Stream ID of the stream being ignored.
 
 Error Code:
-: The reason the sender is ignoring the stream, or QUIC_NO_ERROR if not due to
-  an error.
+: The application-specified reason the sender is ignoring the stream.
 
 ## ACK Frame {#frame-ack}
 
@@ -2553,7 +2552,7 @@ Reordering might cause frames to be received after closing, see
 
 If an endpoint is no longer interested in the data being received, it MAY send a
 STOP_SENDING frame on a stream in the "open" or "half-closed (local)" state to
-request closure of the stream in the opposite direction.  This typically
+prompt closure of the stream in the opposite direction.  This typically
 indicates that the receiving application is no longer reading from the stream,
 but is not a guarantee that incoming data will be ignored.
 

@@ -278,9 +278,9 @@ not been sent and received. When this is true, a server MAY request that the
 client abort transmission of a request without error by triggering a QUIC
 STOP_SENDING with error code HTTP_EARLY_RESPONSE, sending a complete response,
 and cleanly closing its streams. Clients MUST NOT discard complete responses as
-a result of receiving a STOP_SENDING, though clients can always discard
-responses at their discretion for other reasons.  Servers SHOULD NOT abort a
-response in progress as a result of receiving a solicited RST_STREAM.
+a result of having their request terminated abruptly, though clients can always
+discard responses at their discretion for other reasons.  Servers MUST NOT
+abort a response in progress as a result of receiving a solicited RST_STREAM.
 
 ### Header Compression
 
