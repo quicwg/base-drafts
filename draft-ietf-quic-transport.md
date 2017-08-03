@@ -846,6 +846,7 @@ explained in more detail as they are referenced later in the document.
 | 0x09        | STREAM_BLOCKED    | {{frame-stream-blocked}}    |
 | 0x0a        | STREAM_ID_NEEDED  | {{frame-stream-id-needed}}  |
 | 0x0b        | NEW_CONNECTION_ID | {{frame-new-connection-id}} |
+| 0x0c        | STOP_SENDING      | {{frame-stop-sending}}      |
 | 0xa0 - 0xbf | ACK               | {{frame-ack}}               |
 | 0xc0 - 0xff | STREAM            | {{frame-stream}}            |
 {: #frame-types title="Frame Types"}
@@ -1863,6 +1864,31 @@ Stateless Reset Token:
   connection ID is used (see {{stateless-reset}}).
 
 
+## STOP_SENDING Frame {#frame-stop-sending}
+
+An endpoint may use a STOP_SENDING frame (type=0x0c) to communicate that
+incoming data is being discarded on receipt at application request.  This
+signals a peer to abruptly terminate transmission on a stream.  The frame is as
+follows:
+
+~~~
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                        Stream ID (32)                         |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                        Error Code (32)                        |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~
+
+The fields are:
+
+Stream ID:
+: The 32-bit Stream ID of the stream being ignored.
+
+Error Code:
+: The application-specified reason the sender is ignoring the stream.
+
 ## ACK Frame {#frame-ack}
 
 Receivers send ACK frames to inform senders which packets they have received and
@@ -2288,7 +2314,10 @@ When a packet is detected as lost, the sender re-sends any frames as necessary:
   receiver.
 
 * ACK and PADDING frames MUST NOT be retransmitted.  ACK frames
- containing updated information will be sent as described in {{frame-ack}}.
+  containing updated information will be sent as described in {{frame-ack}}.
+
+* STOP_SENDING frames MUST be retransmitted, unless the stream has become closed
+  in the appropriate direction.  See {{solicited-state-transitions}}.
 
 * All other frames MUST be retransmitted.
 
@@ -2481,16 +2510,15 @@ but loss or reordering can cause packets that open streams to arrive out of
 order.
 
 From the "open" state, either endpoint can send a frame with the FIN flag set,
-which causes the stream to transition into one of the "half-closed" states.
-This flag can be set on the frame that opens the stream, which causes the stream
-to immediately become "half-closed".  Once an endpoint has completed sending all
+which causes the stream to transition into one of the "half-closed" states. This
+flag can be set on the frame that opens the stream, which causes the stream to
+immediately become "half-closed".  Once an endpoint has completed sending all
 stream data and a STREAM frame with a FIN flag, the stream state becomes
-"half-closed (local)".  When an endpoint receives all stream data a FIN flag the
-stream state becomes "half-closed (remote)".  An endpoint MUST NOT consider the
-stream state to have changed until all data has been sent, received or
-discarded.
+"half-closed (local)".  When an endpoint receives all stream data and a FIN flag
+the stream state becomes "half-closed (remote)".  An endpoint MUST NOT consider
+the stream state to have changed until all data has been sent or received.
 
-A RST_STREAM frame on an "open" stream causes the stream to become
+A RST_STREAM frame on an "open" stream also causes the stream to become
 "half-closed".  A stream that becomes "open" as a result of sending or receiving
 RST_STREAM immediately becomes "half-closed".  Sending a RST_STREAM frame causes
 the stream to become "half-closed (local)"; receiving RST_STREAM causes the
@@ -2498,13 +2526,12 @@ stream to become "half-closed (remote)".
 
 Any frame type that mentions a stream ID can be sent in this state.
 
-
 ### half-closed (local)
 
 A stream that is in the "half-closed (local)" state MUST NOT be used for sending
 on new STREAM frames.  Retransmission of data that has already been sent on
 STREAM frames is permitted.  An endpoint MAY also send MAX_STREAM_DATA and
-RST_STREAM in this state.
+STOP_SENDING in this state.
 
 An endpoint that closes a stream MUST NOT send data beyond the final offset that
 it has chosen, see {{state-closed}} for details.
@@ -2530,10 +2557,6 @@ received data.
 Once all data has been either received or discarded, a sender is no longer
 obligated to update the maximum received data for the connection.
 
-An endpoint that receives a RST_STREAM frame (and which has not sent a FIN or a
-RST_STREAM) MUST immediately respond with a RST_STREAM frame, and MUST NOT send
-any more data on the stream.
-
 Due to reordering, an endpoint could continue receiving frames for the stream
 even after the stream is closed for sending.  Frames received after a peer
 closes a stream SHOULD be discarded.  An endpoint MAY choose to limit the period
@@ -2548,11 +2571,10 @@ mentions a stream ID.  In this state, the endpoint MUST observe advertised
 stream and connection data limits (see {{flow-control}}).
 
 A stream transitions from this state to "closed" by completing transmission of
-all data.  This includes sending all data carried in STREAM frames up including
+all data.  This includes sending all data carried in STREAM frames including
 the terminal STREAM frame that contains a FIN flag.
 
-A stream becomes "closed" when the endpoint sends and receives acknowledgment of
-a RST_STREAM frame.
+A stream also becomes "closed" when the endpoint sends a RST_STREAM frame.
 
 
 ### closed {#state-closed}
@@ -2562,6 +2584,32 @@ The "closed" state is the terminal state for a stream.
 Once a stream reaches this state, no frames can be sent that mention the stream.
 Reordering might cause frames to be received after closing, see
 {{state-hc-remote}}.
+
+
+## Solicited State Transitions
+
+If an endpoint is no longer interested in the data being received, it MAY send a
+STOP_SENDING frame on a stream in the "open" or "half-closed (local)" state to
+prompt closure of the stream in the opposite direction.  This typically
+indicates that the receiving application is no longer reading from the stream,
+but is not a guarantee that incoming data will be ignored.
+
+STREAM frames received after sending STOP_SENDING are still counted toward the
+connection and stream flow-control windows, even though these frames will be
+discarded upon receipt.  This avoids potential ambiguity about which STREAM
+frames count toward flow control.
+
+Upon receipt of a STOP_SENDING frame on a stream in the "open" or "half-closed
+(remote)" states, an endpoint MUST send a RST_STREAM with an error code of
+QUIC_RECEIVED_RST.  If the STOP_SENDING frame is received on a stream that is
+already in the "half-closed (local)" or "closed" states, a RST_STREAM frame MAY
+still be sent in order to cancel retransmission of previously-sent STREAM
+frames.
+
+While STOP_SENDING frames are retransmittable, an implementation MAY choose not
+to retransmit a lost STOP_SENDING frame if the stream has already been closed
+in the appropriate direction since the frame was first generated.
+See {{packetization}}.
 
 
 ## Stream Concurrency {#stream-concurrency}
@@ -2733,11 +2781,12 @@ controller.
 
 ### Response to a RST_STREAM
 
-Since streams are bidirectional, a sender of a RST_STREAM needs to know how many
-bytes the peer has sent on the stream.  If an endpoint receives a RST_STREAM
-frame and has sent neither a FIN nor a RST_STREAM, it MUST send a RST_STREAM in
-response, bearing the offset of the last byte sent on this stream as the final
-offset.
+RST_STREAM terminates one direction of a stream abruptly.  Whether any action or
+response can or should be taken on the data already received is an
+application-specific issue, but it will often be the case that upon receipt of a
+RST_STREAM an endpoint will choose to stop sending data in its own direction. If
+the sender of a RST_STREAM wishes to explicitly state that no future data will
+be processed, that endpoint MAY send a STOP_SENDING frame at the same time.
 
 ### Data Limit Increments {#fc-credit}
 
@@ -2966,6 +3015,10 @@ PROTOCOL_VIOLATION (0x8000000A):
 : An endpoint detected an error with protocol compliance that was not covered by
   more specific error codes.
 
+QUIC_RECEIVED_RST (0x80000035):
+
+: Terminating stream because peer sent a RST_STREAM or STOP_SENDING.
+
 FRAME_ERROR (0x800001XX):
 
 : An endpoint detected an error in a specific frame type.  The frame type is
@@ -3141,6 +3194,7 @@ Issue and pull request numbers are listed with a leading octothorp.
 
 ## Since draft-ietf-quic-transport-04
 
+- Introduce STOP_SENDING frame (#165)
 - Removed GOAWAY (#696)
 
 ## Since draft-ietf-quic-transport-03
