@@ -486,7 +486,7 @@ The PRIORITY frame payload has the following fields:
     stream ID of a request stream when the PUSH_DEPENDENT flag is clear, or a
     Push ID when the PUSH_DEPENDENT flag is set.  A request stream ID of 0
     indicates a dependency on the root stream. For details of dependencies,
-    see {{priority}} and {!RFC7540}}, Section 5.3.
+    see {{priority}} and {{!RFC7540}}, Section 5.3.
 
   Weight:
   : An unsigned 8-bit integer representing a priority weight for the stream (see
@@ -499,14 +499,12 @@ when the corresponding PUSH_PRIORITIZED or PUSH_DEPENDENT flag is not set.
 Setting the PUSH or PUSH_DEPENDENT flag causes the frame to identify a
 PUSH_PROMISE using a Push ID (see {{frame-push-promise}} for details).
 
-A PRIORITY frame MAY identify no request in the Prioritized Request field by
-using a stream ID of 0; as in {{!RFC7540}}, this makes the request dependent on
-the root of the dependency tree.
-
-A PRIORITY frame MAY identify a dependent stream with a stream ID of 0; as in
+A PRIORITY frame MAY identify a Stream Dependency with a stream ID of 0; as in
 {{!RFC7540}}, this makes the request dependent on the root of the dependency
-tree.  Stream ID 0 and stream ID 1 cannot be reprioritized; an attempt to
-reprioritize these stream MUST be treated as a connection error of type
+tree.
+
+Stream ID 0 and stream ID 1 cannot be reprioritized. A Prioritized Request that
+identifies Stream 0 or 1 MUST be treated as a connection error of type
 HTTP_MALFORMED_PRIORITY.
 
 A PRIORITY frame that does not reference a request MUST be treated as a
@@ -521,7 +519,7 @@ length MUST be treated as a connection error of type HTTP_MALFORMED_PRIORITY.
 ### CANCEL_PUSH {#frame-cancel-push}
 
 The CANCEL_PUSH frame (type=0x3) is used to request cancellation of server push
-prior to the push stream being created.  The CANCEL_REQUEST frame identifies a
+prior to the push stream being created.  The CANCEL_PUSH frame identifies a
 server push request by Push ID (see {{frame-push-promise}}).
 
 When a server receives this frame, it aborts sending the response for the
