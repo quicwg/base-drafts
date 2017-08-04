@@ -1263,6 +1263,7 @@ The original authors of this specification were Robbie Shade and Mike Warres.
 - SETTINGS_ENABLE_PUSH instead of SETTINGS_DISABLE_PUSH (#477)
 - Restored GOAWAY (#696)
 - Identify server push using Push ID rather than a stream ID (#702,#281)
+- DATA frames cannot be empty (#700)
 
 ## Since draft-ietf-quic-http-03
 
