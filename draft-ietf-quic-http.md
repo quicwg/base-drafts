@@ -496,7 +496,7 @@ The PRIORITY frame payload has the following fields:
 
 A PRIORITY frame identifies a request to priotize, and a request upon which that
 request is dependent.  A Prioritized Request ID or Stream Dependency ID
-identifies a client initiated request using the corresponding stream ID when the
+identifies a client-initiated request using the corresponding stream ID when the
 corresponding PUSH_PRIORITIZED or PUSH_DEPENDENT flag is not set.  Setting the
 PUSH_PRIORITIZED or PUSH_DEPENDENT flag causes the Prioritized Request ID or
 Stream Dependency ID (respectively) to identify a server push using a Push ID
