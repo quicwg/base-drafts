@@ -329,7 +329,8 @@ either by identifying the stream that carries a request or by using a Push ID
 ({{frame-push-promise}}).  Other than the means of identifying requests, the
 prioritization system is identical to that in HTTP/2.
 
-Only a client can prioritize requests.  A server MUST NOT send a PRIORITY frame.
+Only a client can send PRIORITY frames.  A server MUST NOT send a PRIORITY
+frame.
 
 
 ## Server Push
@@ -465,9 +466,9 @@ The flags defined are:
     0                   1                   2                   3
     0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |                   Prioritized Request (32)                    |
+   |                 Prioritized Request ID (32)                   |
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |                    Dependent Request (32)                     |
+   |                  Stream Dependency ID (32)                    |
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
    |   Weight (8)  |
    +-+-+-+-+-+-+-+-+
@@ -476,12 +477,12 @@ The flags defined are:
 
 The PRIORITY frame payload has the following fields:
 
-  Prioritized Request:
+  Prioritized Request ID:
   : A 32-bit identifier for a request.  This contains the stream ID of a request
     stream when the PUSH_PRIORITIZED flag is clear, or a Push ID when the
     PUSH_PRIORITIZED flag is set.
 
-  Stream Dependency:
+  Stream Dependency ID:
   : A 32-bit stream identifier for a dependent request.  This contains the
     stream ID of a request stream when the PUSH_DEPENDENT flag is clear, or a
     Push ID when the PUSH_DEPENDENT flag is set.  A request stream ID of 0
@@ -494,17 +495,19 @@ The PRIORITY frame payload has the following fields:
     1 and 256.
 
 A PRIORITY frame identifies a request to priotize, and a request upon which that
-request is dependent.  A request is identified by the stream ID of a request
-when the corresponding PUSH_PRIORITIZED or PUSH_DEPENDENT flag is not set.
-Setting the PUSH or PUSH_DEPENDENT flag causes the frame to identify a
-PUSH_PROMISE using a Push ID (see {{frame-push-promise}} for details).
+request is dependent.  A Prioritized Request ID or Stream Dependency ID
+identifies a client initiated request using the corresponding stream ID when the
+corresponding PUSH_PRIORITIZED or PUSH_DEPENDENT flag is not set.  Setting the
+PUSH_PRIORITIZED or PUSH_DEPENDENT flag causes the Prioritized Request ID or
+Stream Dependency ID (respectively) to identify a server push using a Push ID
+(see {{frame-push-promise}} for details).
 
-A PRIORITY frame MAY identify a Stream Dependency with a stream ID of 0; as in
-{{!RFC7540}}, this makes the request dependent on the root of the dependency
+A PRIORITY frame MAY identify a Stream Dependency ID using a stream ID of 0; as
+in {{!RFC7540}}, this makes the request dependent on the root of the dependency
 tree.
 
-Stream ID 0 and stream ID 1 cannot be reprioritized. A Prioritized Request that
-identifies Stream 0 or 1 MUST be treated as a connection error of type
+Stream ID 0 and stream ID 1 cannot be reprioritized. A Prioritized Request ID
+that identifies Stream 0 or 1 MUST be treated as a connection error of type
 HTTP_MALFORMED_PRIORITY.
 
 A PRIORITY frame that does not reference a request MUST be treated as a
@@ -544,17 +547,19 @@ The CANCEL_PUSH frame has no defined flags.
 The CANCEL_PUSH frame carries a 32-bit Push ID that identifies the server push
 that is being cancelled (see {{frame-push-promise}}).
 
+If the client receives a CANCEL_PUSH frame, that frame might identify a Push ID
+that has not yet been mentioned by a PUSH_PROMISE frame.
+
 A server MUST treat a CANCEL_PUSH frame payload that is other than 4 octets in
-length, or a CANCEL_PUSH frame that identifies an unknown Push ID as a
-connection error of type HTTP_MALFORMED_CANCEL_PUSH.
+length as a connection error of type HTTP_MALFORMED_CANCEL_PUSH.
 
 
 ### SETTINGS {#frame-settings}
 
 The SETTINGS frame (type=0x4) conveys configuration parameters that affect how
 endpoints communicate, such as preferences and constraints on peer behavior, and
-is substantially different from {{!RFC7540}}. Individually, a SETTINGS parameter
-can also be referred to as a "setting".
+is different from {{!RFC7540}}. Individually, a SETTINGS parameter can also be
+referred to as a "setting".
 
 SETTINGS parameters are not negotiated; they describe characteristics of the
 sending peer, which can be used by the receiving peer. However, a negotiation
@@ -692,7 +697,7 @@ A server MAY use the same Push ID in multiple PUSH_PROMISE frames.  This allows
 the server to use the same server push in response to multiple concurrent
 requests.  Referencing the same server push ensures that a PUSH_PROMISE can be
 made in relation to every response in which server push might be needed without
-causing duplicating pushes.
+duplicating pushes.
 
 A server that uses the same Push ID in multiple PUSH_PROMISE frames MUST include
 the same header fields each time.  The octets of the header block MAY be
@@ -701,13 +706,12 @@ be identical.  Note that ordering of header fields is significant.  A client
 MUST treat receipt of a PUSH_PROMISE with conflicting header field values for
 the same Push ID as a connection error of type HTTP_MALFORMED_PUSH_PROMISE.
 
-A server SHOULD avoid sending a PUSH_PROMISE that includes a Push ID that was
-fulfilled prior to the request being made.  Though a client needs to handle
-receiving a promised response prior to it being promised due to reordering of
-stream delivery, clients might be unable to reuse a pushed response that was
-long since consumed. \[Editor's Note: should we include a count of the number of
-promises that a push fulfils in the push stream header?  That would remove this
-problem.]
+Allowing duplicate references to the same Push ID is primarily to reduce
+duplication caused by concurrent requests.  A server SHOULD avoid reusing a Push
+ID over a long period.  Clients are likely to consume server push responses and
+not retain them for reuse over time.  Clients that see a PUSH_PROMISE that uses
+a Push ID that they have since consumed and discarded are forced to ignore the
+PUSH_PROMISE.
 
 
 ### GOAWAY {#frame-goaway}
@@ -941,9 +945,9 @@ SETTINGS (0x4):
   {{frame-settings}} and {{h2-settings}}.
 
 PUSH_PROMISE (0x5):
-: The PUSH_PROMISE does not reference the stream that carries the response to
-  the pushed request; instead the push stream references the PUSH_PROMISE frame.
-  See {{frame-push-promise}}.
+: The PUSH_PROMISE does not reference a stream; instead the push stream
+  references the PUSH_PROMISE frame using a Push ID.  See
+  {{frame-push-promise}}.
 
 PING (0x6):
 : PING frames do not exist, since QUIC provides equivalent functionality.
