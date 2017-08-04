@@ -216,7 +216,7 @@ Since most connection-level concerns will be managed by QUIC, the primary use of
 Stream 1 will be for the SETTINGS frame when the connection opens and for
 PRIORITY frames subsequently.
 
-## HTTP Message Exchanges
+## HTTP Message Exchanges {#request-response}
 
 A client sends an HTTP request on a new QUIC stream. A server sends an HTTP
 response on the same stream as the request.
@@ -313,15 +313,24 @@ as a stream error of type HTTP_CONNECT_ERROR ({{http-error-codes}}).
 Correspondingly, a proxy MUST send a TCP segment with the RST bit set if it
 detects an error with the stream or the QUIC connection.
 
-## Stream Priorities {#priority}
+## Request Prioritization {#priority}
 
 HTTP/QUIC uses the priority scheme described in {{!RFC7540}}, Section 5.3. In
-this priority scheme, a given stream can be designated as dependent upon another
-stream, which expresses the preference that the latter stream (the "parent"
-stream) be allocated resources before the former stream (the "dependent"
-stream). Taken together, the dependencies across all streams in a connection
-form a dependency tree. The structure of the dependency tree changes as PRIORITY
-frames add, remove, or change the dependency links between streams.
+this priority scheme, a given request can be designated as dependent upon
+another request, which expresses the preference that the latter stream (the
+"parent" request) be allocated resources before the former stream (the
+"dependent" request). Taken together, the dependencies across all requests in a
+connection form a dependency tree. The structure of the dependency tree changes
+as PRIORITY frames add, remove, or change the dependency links between requests.
+
+HTTP/2 defines its priorities in terms of streams whereas HTTP over QUIC
+identifies requests.  The PRIORITY frame {{frame-priority}} identifies a request
+either by identifying the stream that carries a request or by using a Push ID
+({{frame-push-promise}}).  Other than the means of identifying requests, the
+prioritization system is identical to that in HTTP/2.
+
+Only a client can send PRIORITY frames.  A server MUST NOT send a PRIORITY
+frame.
 
 
 ## Server Push
@@ -332,23 +341,45 @@ pushes via the SETTINGS_ENABLE_PUSH setting in the SETTINGS frame (see
 {{connection-establishment}}), which is disabled by default.
 
 As with server push for HTTP/2, the server initiates a server push by sending a
-PUSH_PROMISE frame containing the Stream ID of the stream to be pushed, as well
-as request header fields attributed to the request. The PUSH_PROMISE frame is
-sent on the stream of the associated (client-initiated) request, while the
-Promised Stream ID field specifies the Stream ID of the server-initiated
-request.
+PUSH_PROMISE frame that includes request header fields attributed to the
+request. The PUSH_PROMISE frame is sent on a response stream.  Unlike HTTP/2,
+the PUSH_PROMISE does not reference a stream; when a server fulfills a promise,
+the stream that carries the stream headers references the PUSH_PROMISE.  This
+allows a server to fulfill promises in the order that best suits its needs.
 
-The server push response is conveyed in the same way as a non-server-push
-response, with response headers and (if present) trailers carried by HEADERS
-frames, and response body (if any) carried by DATA frames.
+The server push response is conveyed on a push stream.  A push stream is a
+server-initiated stream.  A push stream includes a header (see
+{{fig-push-stream-header}}) that identifies the PUSH_PROMISE that it fulfills.
+This header consists of a 32-bit Push ID, which identifies a server push (see
+{{frame-push-promise}}).
 
-If a promised push stream is not needed by the client, the client SHOULD send a
-QUIC STOP_SENDING on the promised stream with an appropriate error code (e.g.
-HTTP_PUSH_REFUSED, HTTP_PUSH_ALREADY_IN_CACHE; see {{errors}}).  This asks the
-server not to transfer the data and indicates that it will be discarded upon
-receipt.
+~~~~~
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                         Push ID (32)                          |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~~~
+{: #fig-push-stream-header title="Push Stream Header"}
 
-# HTTP Framing Layer
+Each Push ID MUST only be used once in a push stream header.  If a push stream
+header includes a Push ID that was used in another push stream header, the
+client MUST treat this as a connection error of type HTTP_DUPLICATE_PUSH.  The
+same Push ID can be used in multiple PUSH_PROMISE frames (see
+{{frame-push-promise}}).
+
+After the push stream header, a push contains a response ({{request-response}}),
+with response headers, a response body (if any) carried by DATA frames, then
+trailers (if any) carried by HEADERS frames.
+
+If a promised server push is not needed by the client, the client SHOULD send a
+CANCEL_PUSH frame; if the push stream is already open, a QUIC STOP_SENDING frame
+with an appropriate error code can be used instead (e.g., HTTP_PUSH_REFUSED,
+HTTP_PUSH_ALREADY_IN_CACHE; see {{errors}}).  This asks the server not to
+transfer the data and indicates that it will be discarded upon receipt.
+
+
+# HTTP Framing Layer {#http-framing-layer}
 
 Frames are used on each stream.  This section describes HTTP framing in QUIC and
 highlights some differences from HTTP/2 framing.  For more detail on differences
@@ -408,14 +439,24 @@ without EHB set, followed by a HEADERS frame with EHB set.
 ### PRIORITY {#frame-priority}
 
 The PRIORITY (type=0x02) frame specifies the sender-advised priority of a stream
-and is substantially different from {{!RFC7540}}. In order to support ordering,
-it MUST be sent only on the control stream. The format has been modified to
-accommodate not being sent on-stream and the larger stream ID space of QUIC.
+and is substantially different in format from {{!RFC7540}}.  In order to ensure
+that prioritization is processed in a consistent order, PRIORITY frames MUST be
+sent on the control stream.  A PRIORITY frame sent on any other stream MUST be
+treated as a HTTP_WRONG_STREAM error.
 
-The semantics of the Stream Dependency, Weight, and E flag are the same as in
-HTTP/2.
+The format has been modified to accommodate not being sent on a request stream,
+to allow for identification of server pushes, and the larger stream ID space of
+QUIC.  The semantics of the Stream Dependency, Weight, and E flag are otherwise
+the same as in HTTP/2.
 
 The flags defined are:
+
+  PUSH_PRIORITIZED (0x04):
+  : Indicates that the Prioritized Stream is a server push rather than a
+    request.
+
+  PUSH_DEPENDENT (0x02):
+  : Indicates a dependency on a server push.
 
   E (0x01):
   : Indicates that the stream dependency is exclusive (see {{!RFC7540}}, Section
@@ -425,9 +466,9 @@ The flags defined are:
     0                   1                   2                   3
     0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |                   Prioritized Stream (32)                     |
+   |                 Prioritized Request ID (32)                   |
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |                    Dependent Stream (32)                      |
+   |                  Stream Dependency ID (32)                    |
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
    |   Weight (8)  |
    +-+-+-+-+-+-+-+-+
@@ -436,35 +477,89 @@ The flags defined are:
 
 The PRIORITY frame payload has the following fields:
 
-  Prioritized Stream:
-  : A 32-bit stream identifier for the request stream whose priority is being
-    updated.
+  Prioritized Request ID:
+  : A 32-bit identifier for a request.  This contains the stream ID of a request
+    stream when the PUSH_PRIORITIZED flag is clear, or a Push ID when the
+    PUSH_PRIORITIZED flag is set.
 
-  Stream Dependency:
-  : A 32-bit stream identifier for the request stream that this stream depends
-    on (see {{priority}} and {{!RFC7540}}, Section 5.3).
+  Stream Dependency ID:
+  : A 32-bit stream identifier for a dependent request.  This contains the
+    stream ID of a request stream when the PUSH_DEPENDENT flag is clear, or a
+    Push ID when the PUSH_DEPENDENT flag is set.  A request stream ID of 0
+    indicates a dependency on the root stream. For details of dependencies,
+    see {{priority}} and {{!RFC7540}}, Section 5.3.
 
   Weight:
   : An unsigned 8-bit integer representing a priority weight for the stream (see
     {{!RFC7540}}, Section 5.3). Add one to the value to obtain a weight between
     1 and 256.
 
-A PRIORITY frame MAY identify a dependent stream with a stream ID of 0; as in
-{{!RFC7540}}, this makes the request dependent on the root of the dependency
-tree.  Stream ID 0 and stream ID 1 cannot be reprioritized; an attempt to
-reprioritize these stream MUST be treated as a connection error of type
+A PRIORITY frame identifies a request to priotize, and a request upon which that
+request is dependent.  A Prioritized Request ID or Stream Dependency ID
+identifies a client-initiated request using the corresponding stream ID when the
+corresponding PUSH_PRIORITIZED or PUSH_DEPENDENT flag is not set.  Setting the
+PUSH_PRIORITIZED or PUSH_DEPENDENT flag causes the Prioritized Request ID or
+Stream Dependency ID (respectively) to identify a server push using a Push ID
+(see {{frame-push-promise}} for details).
+
+A PRIORITY frame MAY identify a Stream Dependency ID using a stream ID of 0; as
+in {{!RFC7540}}, this makes the request dependent on the root of the dependency
+tree.
+
+Stream ID 0 and stream ID 1 cannot be reprioritized. A Prioritized Request ID
+that identifies Stream 0 or 1 MUST be treated as a connection error of type
 HTTP_MALFORMED_PRIORITY.
+
+A PRIORITY frame that does not reference a request MUST be treated as a
+HTTP_MALFORMED_PRIORITY error, unless it references stream ID 0.  A PRIORITY
+that sets a PUSH_PRIORITIZED or PUSH_DEPENDENT flag, but then references a
+non-existent Push ID MUST be treated as a HTTP_MALFORMED_PRIORITY error.
 
 The length of a PRIORITY frame is 9 octets.  A PRIORITY frame with any other
 length MUST be treated as a connection error of type HTTP_MALFORMED_PRIORITY.
+
+
+### CANCEL_PUSH {#frame-cancel-push}
+
+The CANCEL_PUSH frame (type=0x3) is used to request cancellation of server push
+prior to the push stream being created.  The CANCEL_PUSH frame identifies a
+server push request by Push ID (see {{frame-push-promise}}).
+
+When a server receives this frame, it aborts sending the response for the
+identified server push.  If the server has not yet started to send the server
+push, it can use the receipt of a CANCEL_PUSH frame to avoid opening a
+stream.  If the push stream has been opened by the server, the server SHOULD
+sent a QUIC RST_STREAM frame on those streams and cease transmission of the
+response.
+
+A server can send this frame to indicate that it won't be sending a response
+prior to creation of a push stream.  Once the push stream has been created,
+sending CANCEL_PUSH has no effect on the state of the push stream.  A QUIC
+RST_STREAM frame SHOULD be used instead to cancel transmission of the server
+push response.
+
+A CANCEL_PUSH frame is sent on the control stream.  Sending a CANCEL_PUSH frame
+on a stream other than the control stream MUST be treated as a stream error of
+type HTTP_WRONG_STREAM.
+
+The CANCEL_PUSH frame has no defined flags.
+
+The CANCEL_PUSH frame carries a 32-bit Push ID that identifies the server push
+that is being cancelled (see {{frame-push-promise}}).
+
+If the client receives a CANCEL_PUSH frame, that frame might identify a Push ID
+that has not yet been mentioned by a PUSH_PROMISE frame.
+
+A server MUST treat a CANCEL_PUSH frame payload that is other than 4 octets in
+length as a connection error of type HTTP_MALFORMED_CANCEL_PUSH.
 
 
 ### SETTINGS {#frame-settings}
 
 The SETTINGS frame (type=0x4) conveys configuration parameters that affect how
 endpoints communicate, such as preferences and constraints on peer behavior, and
-is substantially different from {{!RFC7540}}. Individually, a SETTINGS parameter
-can also be referred to as a "setting".
+is different from {{!RFC7540}}. Individually, a SETTINGS parameter can also be
+referred to as a "setting".
 
 SETTINGS parameters are not negotiated; they describe characteristics of the
 sending peer, which can be used by the receiving peer. However, a negotiation
@@ -571,16 +666,17 @@ are safe to retry are sent in 0-RTT.) If the connection was closed before the
 SETTINGS frame was received, clients SHOULD discard any cached values and use
 the defaults above on the next connection.
 
+
 ### PUSH_PROMISE {#frame-push-promise}
 
 The PUSH_PROMISE frame (type=0x05) is used to carry a request header set from
-server to client, as in HTTP/2.  It defines no flags.
+server to client, as in HTTP/2.  The PUSH_PROMISE frame defines no flags.
 
 ~~~~~~~~~~  drawing
     0                   1                   2                   3
     0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |                   Promised Stream ID (32)                     |
+   |                          Push ID (32)                         |
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
    |                       Header Block (*)                      ...
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -589,12 +685,33 @@ server to client, as in HTTP/2.  It defines no flags.
 
 The payload consists of:
 
-  Promised Stream ID:
-  : A 32-bit Stream ID indicating the QUIC stream on which the response will be
-    sent
+Push ID:
+: A 32-bit identifier for the server push request.  A push ID is used in push
+  stream header ({{server-push}}), CANCEL_PUSH frames ({{frame-cancel-push}}),
+  and PRIORITY frames ({{frame-priority}}).
 
-  Payload:
-  : HPACK-compressed request headers for the promised response.
+Header Block:
+: HPACK-compressed request headers for the promised response.
+
+A server MAY use the same Push ID in multiple PUSH_PROMISE frames.  This allows
+the server to use the same server push in response to multiple concurrent
+requests.  Referencing the same server push ensures that a PUSH_PROMISE can be
+made in relation to every response in which server push might be needed without
+duplicating pushes.
+
+A server that uses the same Push ID in multiple PUSH_PROMISE frames MUST include
+the same header fields each time.  The octets of the header block MAY be
+different due to differing encoding, but the header fields and their values MUST
+be identical.  Note that ordering of header fields is significant.  A client
+MUST treat receipt of a PUSH_PROMISE with conflicting header field values for
+the same Push ID as a connection error of type HTTP_MALFORMED_PUSH_PROMISE.
+
+Allowing duplicate references to the same Push ID is primarily to reduce
+duplication caused by concurrent requests.  A server SHOULD avoid reusing a Push
+ID over a long period.  Clients are likely to consume server push responses and
+not retain them for reuse over time.  Clients that see a PUSH_PROMISE that uses
+a Push ID that they have since consumed and discarded are forced to ignore the
+PUSH_PROMISE.
 
 
 ### GOAWAY {#frame-goaway}
@@ -746,6 +863,9 @@ HTTP_SETTINGS_ON_WRONG_STREAM (0x0F):
 HTTP_MULTIPLE_SETTINGS (0x10):
 : More than one SETTINGS frame was received.
 
+HTTP_DUPLICATE_PUSH (0x11):
+: Multiple push streams used the same Push ID.
+
 
 # Considerations for Transitioning from HTTP/2
 
@@ -817,14 +937,17 @@ PRIORITY (0x2):
 
 RST_STREAM (0x3):
 : RST_STREAM frames do not exist, since QUIC provides stream lifecycle
-  management.
+  management.  The same code point is used for the CANCEL_PUSH frame
+  ({{frame-cancel-push}}).
 
 SETTINGS (0x4):
 : SETTINGS frames are sent only at the beginning of the connection.  See
   {{frame-settings}} and {{h2-settings}}.
 
 PUSH_PROMISE (0x5):
-: See {{frame-push-promise}}.
+: The PUSH_PROMISE does not reference a stream; instead the push stream
+  references the PUSH_PROMISE frame using a Push ID.  See
+  {{frame-push-promise}}.
 
 PING (0x6):
 : PING frames do not exist, since QUIC provides equivalent functionality.
@@ -1012,20 +1135,20 @@ Specification:
 
 The entries in the following table are registered by this document.
 
-  |---------------|------|-------------------------|
-  | Frame Type    | Code | Specification           |
-  |---------------|:----:|-------------------------|
-  | DATA          | 0x0  | {{frame-data}}          |
-  | HEADERS       | 0x1  | {{frame-headers}}       |
-  | PRIORITY      | 0x2  | {{frame-priority}}      |
-  | Reserved      | 0x3  | N/A                     |
-  | SETTINGS      | 0x4  | {{frame-settings}}      |
-  | PUSH_PROMISE  | 0x5  | {{frame-push-promise}}  |
-  | Reserved      | 0x6  | N/A                     |
-  | GOAWAY        | 0x7  | {{frame-goaway}}        |
-  | Reserved      | 0x8  | N/A                     |
-  | Reserved      | 0x9  | N/A                     |
-  |---------------|------|-------------------------|
+|----------------|------|--------------------------|
+| Frame Type     | Code | Specification            |
+|----------------|:----:|--------------------------|
+| DATA           | 0x0  | {{frame-data}}           |
+| HEADERS        | 0x1  | {{frame-headers}}        |
+| PRIORITY       | 0x2  | {{frame-priority}}       |
+| CANCEL_PUSH    | 0x3  | {{frame-cancel-push}}    |
+| SETTINGS       | 0x4  | {{frame-settings}}       |
+| PUSH_PROMISE   | 0x5  | {{frame-push-promise}}   |
+| Reserved       | 0x6  | N/A                      |
+| GOAWAY         | 0x7  | {{frame-goaway}}         |
+| Reserved       | 0x8  | N/A                      |
+| Reserved       | 0x9  | N/A                      |
+|----------------|------|--------------------------|
 
 ## Settings Parameters {#iana-settings}
 
@@ -1095,25 +1218,26 @@ Specification:
 
 The entries in the following table are registered by this document.
 
-|-----------------------------------|--------|----------------------------------------------|------------------------|
-| Name                              | Code   | Description                                  | Specification          |
-|-----------------------------------|--------|----------------------------------------------|------------------------|
-|  HTTP_PUSH_REFUSED                |  0x01  |  Client refused pushed content               |  {{http-error-codes}}  |
-|  HTTP_INTERNAL_ERROR              |  0x02  |  Internal error                              |  {{http-error-codes}}  |
-|  HTTP_PUSH_ALREADY_IN_CACHE       |  0x03  |  Pushed content already cached               |  {{http-error-codes}}  |
-|  HTTP_REQUEST_CANCELLED           |  0x04  |  Data no longer needed                       |  {{http-error-codes}}  |
-|  HTTP_HPACK_DECOMPRESSION_FAILED  |  0x05  |  HPACK cannot continue                       |  {{http-error-codes}}  |
-|  HTTP_CONNECT_ERROR               |  0x06  |  TCP reset or error on CONNECT request       |  {{http-error-codes}}  |
-|  HTTP_EXCESSIVE_LOAD              |  0x07  |  Peer generating excessive load              |  {{http-error-codes}}  |
-|  HTTP_VERSION_FALLBACK            |  0x08  |  Retry over HTTP/2                           |  {{http-error-codes}}  |
-|  HTTP_MALFORMED_HEADERS           |  0x09  |  Invalid HEADERS frame                       |  {{http-error-codes}}  |
-|  HTTP_MALFORMED_PRIORITY          |  0x0A  |  Invalid PRIORITY frame                      |  {{http-error-codes}}  |
-|  HTTP_MALFORMED_SETTINGS          |  0x0B  |  Invalid SETTINGS frame                      |  {{http-error-codes}}  |
-|  HTTP_MALFORMED_PUSH_PROMISE      |  0x0C  |  Invalid PUSH_PROMISE frame                  |  {{http-error-codes}}  |
-|  HTTP_INTERRUPTED_HEADERS         |  0x0E  |  Incomplete HEADERS block                    |  {{http-error-codes}}  |
-|  HTTP_SETTINGS_ON_WRONG_STREAM    |  0x0F  |  SETTINGS frame on a request control stream  |  {{http-error-codes}}  |
-|  HTTP_MULTIPLE_SETTINGS           |  0x10  |  Multiple SETTINGS frames                    |  {{http-error-codes}}  |
-|-----------------------------------|--------|----------------------------------------------|------------------------|
+|-----------------------------------|--------|----------------------------------------|----------------------|
+| Name                              | Code   | Description                            | Specification        |
+|-----------------------------------|--------|----------------------------------------|----------------------|
+|  HTTP_PUSH_REFUSED                |  0x01  |  Client refused pushed content         | {{http-error-codes}} |
+|  HTTP_INTERNAL_ERROR              |  0x02  |  Internal error                        | {{http-error-codes}} |
+|  HTTP_PUSH_ALREADY_IN_CACHE       |  0x03  |  Pushed content already cached         | {{http-error-codes}} |
+|  HTTP_REQUEST_CANCELLED           |  0x04  |  Data no longer needed                 | {{http-error-codes}} |
+|  HTTP_HPACK_DECOMPRESSION_FAILED  |  0x05  |  HPACK cannot continue                 | {{http-error-codes}} |
+|  HTTP_CONNECT_ERROR               |  0x06  |  TCP reset or error on CONNECT request | {{http-error-codes}} |
+|  HTTP_EXCESSIVE_LOAD              |  0x07  |  Peer generating excessive load        | {{http-error-codes}} |
+|  HTTP_VERSION_FALLBACK            |  0x08  |  Retry over HTTP/2                     | {{http-error-codes}} |
+|  HTTP_MALFORMED_HEADERS           |  0x09  |  Invalid HEADERS frame                 | {{http-error-codes}} |
+|  HTTP_MALFORMED_PRIORITY          |  0x0A  |  Invalid PRIORITY frame                | {{http-error-codes}} |
+|  HTTP_MALFORMED_SETTINGS          |  0x0B  |  Invalid SETTINGS frame                | {{http-error-codes}} |
+|  HTTP_MALFORMED_PUSH_PROMISE      |  0x0C  |  Invalid PUSH_PROMISE frame            | {{http-error-codes}} |
+|  HTTP_INTERRUPTED_HEADERS         |  0x0E  |  Incomplete HEADERS block              | {{http-error-codes}} |
+|  HTTP_WRONG_STREAM                |  0x0F  |  A frame was sent on the wrong stream  | {{http-error-codes}} |
+|  HTTP_MULTIPLE_SETTINGS           |  0x10  |  Multiple SETTINGS frames              | {{http-error-codes}} |
+|  HTTP_DUPLICATE_PUSH              |  0x11  |  Duplicate server push                 | {{http-error-codes}} |
+|-----------------------------------|--------|----------------------------------------|----------------------|
 
 
 --- back
@@ -1134,6 +1258,7 @@ The original authors of this specification were Robbie Shade and Mike Warres.
 - Use separate frame type and settings registries from HTTP/2 (#81)
 - SETTINGS_ENABLE_PUSH instead of SETTINGS_DISABLE_PUSH (#477)
 - Restored GOAWAY (#696)
+- Identify server push using Push ID rather than a stream ID (#702,#281)
 
 ## Since draft-ietf-quic-http-03
 
