@@ -362,9 +362,20 @@ This header consists of a 32-bit Push ID, which identifies a server push (see
 ~~~~~
 {: #fig-push-stream-header title="Push Stream Header"}
 
+A push stream always starts with a 32-bit Push ID.  A client MUST treat
+receiving a push stream that contains fewer than 4 octets as a connection error
+of type HTTP_MALFORMED_PUSH.
+
+A server SHOULD use Push IDs sequentially, starting at 0.  A client uses the
+MAX_PUSH_ID frame ({{frame-max-push-id}}) and SETTINGS_MAX_PUSH_ID
+({{settings-parameters}}) to limit the number of pushes that a server can
+promise initiate.  A client MUST treat receipt of a push stream with a Push ID
+that is greater than the maximum Push ID as a connection error of type
+HTTP_MALFORMED_PUSH.
+
 Each Push ID MUST only be used once in a push stream header.  If a push stream
 header includes a Push ID that was used in another push stream header, the
-client MUST treat this as a connection error of type HTTP_DUPLICATE_PUSH.  The
+client MUST treat this as a connection error of type HTTP_MALFORMED_PUSH.  The
 same Push ID can be used in multiple PUSH_PROMISE frames (see
 {{frame-push-promise}}).
 
@@ -631,8 +642,12 @@ The following settings are defined in HTTP/QUIC:
   SETTINGS_HEADER_TABLE_SIZE (0x1):
   : An integer with a maximum value of 2^32 - 1.  This value MUST be zero.
 
-  SETTINGS_ENABLE_PUSH (0x2):
-  : Transmitted as a Boolean
+  SETTINGS_MAX_PUSH_ID (0x2):
+  : An integer with a maximum value of 2^32 - 1.  This determines the initial
+    maximum Push ID that a server can use.  This setting only has meaning when
+    set by a client; a server MUST NOT provide a value for this setting.  A
+    client MUST treat receipt of this setting from a server as a connection
+    error of type HTTP_MALFORMED_SETTINGS.
 
   SETTINGS_MAX_HEADER_LIST_SIZE (0x6):
   : An integer with a maximum value of 2^32 - 1
@@ -691,6 +706,12 @@ Push ID:
 
 Header Block:
 : HPACK-compressed request headers for the promised response.
+
+A server MUST NOT use a Push ID that is larger than the client has provided in a
+MAX_PUSH_ID frame ({{frame-max-push-id}}) or the SETTINGS_MAX_PUSH_ID setting
+({{settings-parameters}}).  A client that receives a PUSH_PROMISE that contains
+a larger Push ID than is allowed MUST be treated as a connection error of type
+HTTP_MALFORMED_PUSH_PROMISE.
 
 A server MAY use the same Push ID in multiple PUSH_PROMISE frames.  This allows
 the server to use the same server push in response to multiple concurrent
@@ -793,6 +814,30 @@ the server MAY send another GOAWAY frame with an updated last stream identifier.
 This ensures that a connection can be cleanly shut down without losing requests.
 
 
+# MAX_PUSH_ID {#frame-max-push-id}
+
+The MAX_PUSH_ID frame (type=0xA) is used by clients to control the number of
+server pushes that the server can initiate.  This sets the maximum value for a
+Push ID that the server can use in a PUSH_PROMISE frame.  Consequently, this
+also limits the number of push streams that the server can initiate.
+
+The initial value for the maximum Push ID is determined by the
+SETTINGS_MAX_PUSH_ID setting ({{settings-parameters}}).  A client that wishes to
+manage the number of promised server pushes can increase the maximum Push ID by
+sending a MAX_PUSH_ID frame as the server fulfills or cancels server pushes.
+
+The MAX_PUSH_ID frame has no defined flags.
+
+The MAX_PUSH_ID frame carries a 32-bit Push ID that identifies the maximum value
+for a Push ID that the server can use (see {{frame-push-promise}}).
+
+A server MUST NOT send a MAX_PUSH_ID frame.  A client MUST treat the receipt of
+a MAX_PUSH_ID frame as a connection error of type HTTP_MALFORMED_MAX_PUSH_ID.
+
+A server MUST treat a MAX_PUSH_ID frame payload that is other than 4 octets in
+length as a connection error of type HTTP_MALFORMED_MAX_PUSH_ID.
+
+
 # Error Handling {#errors}
 
 QUIC allows the application to abruptly terminate (reset) individual streams or
@@ -862,8 +907,8 @@ HTTP_WRONG_STREAM (0x0F):
 HTTP_MULTIPLE_SETTINGS (0x10):
 : More than one SETTINGS frame was received.
 
-HTTP_DUPLICATE_PUSH (0x11):
-: Multiple push streams used the same Push ID.
+HTTP_MALFORMED_PUSH (0x11):
+: A push stream header was malformed or included an invalid Push ID.
 
 
 # Considerations for Transitioning from HTTP/2
@@ -982,7 +1027,9 @@ SETTINGS_HEADER_TABLE_SIZE:
 : See {{settings-parameters}}.
 
 SETTINGS_ENABLE_PUSH:
-: See {{settings-parameters}}.
+: This is renamed to SETTINGS_MAX_PUSH_ID.  Rather than being a Boolean, this
+  includes an integer that sets an upper bound on the number of server pushes.
+  See {{settings-parameters}}.
 
 SETTINGS_MAX_CONCURRENT_STREAMS:
 : QUIC controls the largest open stream ID as part of its flow control logic.
@@ -1147,6 +1194,7 @@ The entries in the following table are registered by this document.
 | GOAWAY         | 0x7  | {{frame-goaway}}         |
 | Reserved       | 0x8  | N/A                      |
 | Reserved       | 0x9  | N/A                      |
+| MAX_PUSH_ID    | 0xA  | {{frame-max-push-id}}    |
 |----------------|------|--------------------------|
 
 ## Settings Parameters {#iana-settings}
@@ -1236,7 +1284,7 @@ The entries in the following table are registered by this document.
 |  HTTP_INTERRUPTED_HEADERS         |  0x0E  |  Incomplete HEADERS block              | {{http-error-codes}} |
 |  HTTP_WRONG_STREAM                |  0x0F  |  A frame was sent on the wrong stream  | {{http-error-codes}} |
 |  HTTP_MULTIPLE_SETTINGS           |  0x10  |  Multiple SETTINGS frames              | {{http-error-codes}} |
-|  HTTP_DUPLICATE_PUSH              |  0x11  |  Duplicate server push                 | {{http-error-codes}} |
+|  HTTP_MALFORMED_PUSH              |  0x11  |  Invalid push stream header            | {{http-error-codes}} |
 |-----------------------------------|--------|----------------------------------------|----------------------|
 
 
@@ -1259,6 +1307,8 @@ The original authors of this specification were Robbie Shade and Mike Warres.
 - SETTINGS_ENABLE_PUSH instead of SETTINGS_DISABLE_PUSH (#477)
 - Restored GOAWAY (#696)
 - Identify server push using Push ID rather than a stream ID (#702,#281)
+- Made push ID sequential, rename SETTINGS_ENABLE_PUSH to SETTINGS_MAX_PUSH_ID
+  (#709)
 
 ## Since draft-ietf-quic-http-03
 
