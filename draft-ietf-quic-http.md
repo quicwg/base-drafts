@@ -821,6 +821,13 @@ server pushes that the server can initiate.  This sets the maximum value for a
 Push ID that the server can use in a PUSH_PROMISE frame.  Consequently, this
 also limits the number of push streams that the server can initiate.
 
+The MAX_PUSH_ID frame is always sent on the control stream.  Receipt of a
+MAX_PUSH_ID frame on any other stream MUST be treated as a connection error of
+type HTTP_WRONG_STREAM.
+
+A server MUST NOT send a MAX_PUSH_ID frame.  A client MUST treat the receipt of
+a MAX_PUSH_ID frame as a connection error of type HTTP_MALFORMED_MAX_PUSH_ID.
+
 The initial value for the maximum Push ID is determined by the
 SETTINGS_MAX_PUSH_ID setting ({{settings-parameters}}).  A client that wishes to
 manage the number of promised server pushes can increase the maximum Push ID by
@@ -829,10 +836,10 @@ sending a MAX_PUSH_ID frame as the server fulfills or cancels server pushes.
 The MAX_PUSH_ID frame has no defined flags.
 
 The MAX_PUSH_ID frame carries a 32-bit Push ID that identifies the maximum value
-for a Push ID that the server can use (see {{frame-push-promise}}).
-
-A server MUST NOT send a MAX_PUSH_ID frame.  A client MUST treat the receipt of
-a MAX_PUSH_ID frame as a connection error of type HTTP_MALFORMED_MAX_PUSH_ID.
+for a Push ID that the server can use (see {{frame-push-promise}}).  A
+MAX_PUSH_ID frame cannot reduce the maximum Push ID; receipt of a MAX_PUSH_ID
+that contains a smaller value than previously received MUST be treated as a
+connection error of type HTTP_MALFORMED_MAX_PUSH_ID.
 
 A server MUST treat a MAX_PUSH_ID frame payload that is other than 4 octets in
 length as a connection error of type HTTP_MALFORMED_MAX_PUSH_ID.
@@ -909,6 +916,9 @@ HTTP_MULTIPLE_SETTINGS (0x10):
 
 HTTP_MALFORMED_PUSH (0x11):
 : A push stream header was malformed or included an invalid Push ID.
+
+HTTP_MALFORMED_MAX_PUSH_ID (0x12):
+: A MAX_STREAM_ID frame has been received with an invalid format.
 
 
 # Considerations for Transitioning from HTTP/2
@@ -1285,6 +1295,7 @@ The entries in the following table are registered by this document.
 |  HTTP_WRONG_STREAM                |  0x0F  |  A frame was sent on the wrong stream  | {{http-error-codes}} |
 |  HTTP_MULTIPLE_SETTINGS           |  0x10  |  Multiple SETTINGS frames              | {{http-error-codes}} |
 |  HTTP_MALFORMED_PUSH              |  0x11  |  Invalid push stream header            | {{http-error-codes}} |
+|  HTTP_MALFORMED_MAX_PUSH_ID       |  0x12  |  Invalid MAX_PUSH_ID frame             | {{http-error-codes}} |
 |-----------------------------------|--------|----------------------------------------|----------------------|
 
 
