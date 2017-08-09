@@ -367,10 +367,10 @@ receiving a push stream that contains fewer than 4 octets as a connection error
 of type HTTP_MALFORMED_PUSH.
 
 A server SHOULD use Push IDs sequentially, starting at 0.  A client uses the
-MAX_PUSH_ID frame ({{frame-max-push-id}}) and SETTINGS_MAX_PUSH_ID
-({{settings-parameters}}) to limit the number of pushes that a server can
-promise initiate.  A client MUST treat receipt of a push stream with a Push ID
-that is greater than the maximum Push ID as a connection error of type
+SETTINGS_MAX_PUSH_ID ({{settings-parameters}}) setting and the MAX_PUSH_ID frame
+({{frame-max-push-id}}) to limit the number of pushes that a server can promise
+initiate.  A client MUST treat receipt of a push stream with a Push ID that is
+greater than the maximum Push ID as a connection error of type
 HTTP_MALFORMED_PUSH.
 
 Each Push ID MUST only be used once in a push stream header.  If a push stream
@@ -709,9 +709,9 @@ Header Block:
 
 A server MUST NOT use a Push ID that is larger than the client has provided in a
 MAX_PUSH_ID frame ({{frame-max-push-id}}) or the SETTINGS_MAX_PUSH_ID setting
-({{settings-parameters}}).  A client that receives a PUSH_PROMISE that contains
-a larger Push ID than is allowed MUST be treated as a connection error of type
-HTTP_MALFORMED_PUSH_PROMISE.
+({{settings-parameters}}).  A client MUST treat receipt of a PUSH_PROMISE that
+contains a larger Push ID than the client has advertised as a connection error
+of type HTTP_MALFORMED_PUSH_PROMISE.
 
 A server MAY use the same Push ID in multiple PUSH_PROMISE frames.  This allows
 the server to use the same server push in response to multiple concurrent
@@ -816,10 +816,11 @@ This ensures that a connection can be cleanly shut down without losing requests.
 
 # MAX_PUSH_ID {#frame-max-push-id}
 
-The MAX_PUSH_ID frame (type=0xA) is used by clients to control the number of
+The MAX_PUSH_ID frame (type=0xD) is used by clients to control the number of
 server pushes that the server can initiate.  This sets the maximum value for a
 Push ID that the server can use in a PUSH_PROMISE frame.  Consequently, this
-also limits the number of push streams that the server can initiate.
+also limits the number of push streams that the server can initiate in addition
+to the limit set by the QUIC MAX_STREAM_ID frame.
 
 The MAX_PUSH_ID frame is always sent on the control stream.  Receipt of a
 MAX_PUSH_ID frame on any other stream MUST be treated as a connection error of
@@ -1204,7 +1205,7 @@ The entries in the following table are registered by this document.
 | GOAWAY         | 0x7  | {{frame-goaway}}         |
 | Reserved       | 0x8  | N/A                      |
 | Reserved       | 0x9  | N/A                      |
-| MAX_PUSH_ID    | 0xA  | {{frame-max-push-id}}    |
+| MAX_PUSH_ID    | 0xD  | {{frame-max-push-id}}    |
 |----------------|------|--------------------------|
 
 ## Settings Parameters {#iana-settings}
