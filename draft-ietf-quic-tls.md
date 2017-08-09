@@ -222,8 +222,8 @@ shared secrets that cannot be controlled by either participating peer.
 TLS 1.3 provides two basic handshake modes of interest to QUIC:
 
  * A full 1-RTT handshake in which the client is able to send application data
-   after one round trip and the server immediately responds after receiving the first
-   handshake message from the client.
+   after one round trip and the server immediately responds after receiving the
+   first handshake message from the client.
 
  * A 0-RTT handshake in which the client uses information it has previously
    learned about the server to send application data immediately.  This
