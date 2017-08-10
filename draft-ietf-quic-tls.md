@@ -1262,25 +1262,25 @@ able to inject these packets.  Timing and packet retransmission information from
 `ACK` frames is critical to the functioning of the protocol, but these frames
 might be spoofed or altered.
 
-Endpoints MUST NOT use an unprotected `ACK` frame to acknowledge data that was
-protected by 0-RTT or 1-RTT keys.  An endpoint MUST ignore an unprotected `ACK`
-frame if it claims to acknowledge data that was sent in a protected packet.
-Such an acknowledgement can only serve as a denial of service, since an endpoint
-that can read protected data is always able to send protected data.
+Endpoints MUST NOT use an `ACK` frame in an unprotected packet to acknowledge
+packets that were protected by 0-RTT or 1-RTT keys.  An endpoint MUST ignore an
+`ACK` frame in an unprotected packet if it claims to acknowledge data that was
+sent in a protected packet.  Such an acknowledgement can only serve as a denial
+of service, since an endpoint that can read protected data is always able to
+send protected data.
 
-ISSUE:
+Note:
 
-: What about 0-RTT data?  Should we allow acknowledgment of 0-RTT with
-  unprotected frames?  If we don't, then 0-RTT data will be unacknowledged until
-  the handshake completes.  This isn't a problem if the handshake completes
-  without loss, but it could mean that 0-RTT stalls when a handshake packet
-  disappears for any reason.
+: 0-RTT data can be acknowledged by the server as it receives it, but any
+  packets containing acknowledgments of 0-RTT data cannot have packet protection
+  removed by the client until the entire server handshake is received by the
+  client.
 
-An endpoint SHOULD use data from unprotected or 0-RTT-protected `ACK` frames
-only during the initial handshake and while they have insufficient information
-from 1-RTT-protected `ACK` frames.  Once sufficient information has been
-obtained from protected messages, information obtained from less reliable
-sources can be discarded.
+An endpoint SHOULD use data from `ACK` frames carried in unprotected or
+0-RTT-protected packets only during the initial handshake and while they have
+insufficient information from `ACK` frames in 1-RTT-protected packets.  Once
+sufficient information has been obtained from protected messages, information
+obtained from less reliable sources can be discarded.
 
 
 ### Updates to Data and Stream Limits
