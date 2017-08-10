@@ -336,9 +336,9 @@ frame.
 ## Server Push
 
 HTTP/QUIC supports server push as described in {{!RFC7540}}. During connection
-establishment, the client indicates whether it is willing to receive server
-pushes via the SETTINGS_ENABLE_PUSH setting in the SETTINGS frame (see
-{{connection-establishment}}), which is disabled by default.
+establishment, the client enables server push by sending a MAX_PUSH_ID frame
+(see {{frame-max-push-id}}).  A server cannot use server push until it receives
+a MAX_PUSH_ID frame.
 
 As with server push for HTTP/2, the server initiates a server push by sending a
 PUSH_PROMISE frame that includes request header fields attributed to the
@@ -367,10 +367,9 @@ receiving a push stream that contains fewer than 4 octets as a connection error
 of type HTTP_MALFORMED_PUSH.
 
 A server SHOULD use Push IDs sequentially, starting at 0.  A client uses the
-SETTINGS_MAX_PUSH_ID ({{settings-parameters}}) setting and the MAX_PUSH_ID frame
-({{frame-max-push-id}}) to limit the number of pushes that a server can promise
-initiate.  A client MUST treat receipt of a push stream with a Push ID that is
-greater than the maximum Push ID as a connection error of type
+MAX_PUSH_ID frame ({{frame-max-push-id}}) to limit the number of pushes that a
+server can promise initiate.  A client MUST treat receipt of a push stream with
+a Push ID that is greater than the maximum Push ID as a connection error of type
 HTTP_MALFORMED_PUSH.
 
 Each Push ID MUST only be used once in a push stream header.  If a push stream
@@ -642,13 +641,6 @@ The following settings are defined in HTTP/QUIC:
   SETTINGS_HEADER_TABLE_SIZE (0x1):
   : An integer with a maximum value of 2^32 - 1.  This value MUST be zero.
 
-  SETTINGS_MAX_PUSH_ID (0x2):
-  : An integer with a maximum value of 2^32 - 1.  This determines the initial
-    maximum Push ID that a server can use.  This setting only has meaning when
-    set by a client; a server MUST NOT provide a value for this setting.  A
-    client MUST treat receipt of this setting from a server as a connection
-    error of type HTTP_MALFORMED_SETTINGS.
-
   SETTINGS_MAX_HEADER_LIST_SIZE (0x6):
   : An integer with a maximum value of 2^32 - 1
 
@@ -708,10 +700,9 @@ Header Block:
 : HPACK-compressed request headers for the promised response.
 
 A server MUST NOT use a Push ID that is larger than the client has provided in a
-MAX_PUSH_ID frame ({{frame-max-push-id}}) or the SETTINGS_MAX_PUSH_ID setting
-({{settings-parameters}}).  A client MUST treat receipt of a PUSH_PROMISE that
-contains a larger Push ID than the client has advertised as a connection error
-of type HTTP_MALFORMED_PUSH_PROMISE.
+MAX_PUSH_ID frame ({{frame-max-push-id}}).  A client MUST treat receipt of a
+PUSH_PROMISE that contains a larger Push ID than the client has advertised as a
+connection error of type HTTP_MALFORMED_PUSH_PROMISE.
 
 A server MAY use the same Push ID in multiple PUSH_PROMISE frames.  This allows
 the server to use the same server push in response to multiple concurrent
@@ -829,8 +820,8 @@ type HTTP_WRONG_STREAM.
 A server MUST NOT send a MAX_PUSH_ID frame.  A client MUST treat the receipt of
 a MAX_PUSH_ID frame as a connection error of type HTTP_MALFORMED_MAX_PUSH_ID.
 
-The initial value for the maximum Push ID is determined by the
-SETTINGS_MAX_PUSH_ID setting ({{settings-parameters}}).  A client that wishes to
+The maximum Push ID is unset when a connection is created, meaning that a server
+cannot push until it receives a MAX_PUSH_ID frame.  A client that wishes to
 manage the number of promised server pushes can increase the maximum Push ID by
 sending a MAX_PUSH_ID frame as the server fulfills or cancels server pushes.
 
@@ -1038,9 +1029,8 @@ SETTINGS_HEADER_TABLE_SIZE:
 : See {{settings-parameters}}.
 
 SETTINGS_ENABLE_PUSH:
-: This is renamed to SETTINGS_MAX_PUSH_ID.  Rather than being a Boolean, this
-  includes an integer that sets an upper bound on the number of server pushes.
-  See {{settings-parameters}}.
+: This is removed in favor of the MAX_PUSH_ID which provides a more granular
+  control over server push.
 
 SETTINGS_MAX_CONCURRENT_STREAMS:
 : QUIC controls the largest open stream ID as part of its flow control logic.
@@ -1240,7 +1230,7 @@ The entries in the following table are registered by this document.
 | Setting Name               | Code | Specification           |
 |----------------------------|:----:|-------------------------|
 | HEADER_TABLE_SIZE          | 0x1  | {{settings-parameters}} |
-| ENABLE_PUSH                | 0x2  | {{settings-parameters}} |
+| Reserved                   | 0x2  | N/A                     |
 | Reserved                   | 0x3  | N/A                     |
 | Reserved                   | 0x4  | N/A                     |
 | Reserved                   | 0x5  | N/A                     |
@@ -1319,8 +1309,7 @@ The original authors of this specification were Robbie Shade and Mike Warres.
 - SETTINGS_ENABLE_PUSH instead of SETTINGS_DISABLE_PUSH (#477)
 - Restored GOAWAY (#696)
 - Identify server push using Push ID rather than a stream ID (#702,#281)
-- Made push ID sequential, rename SETTINGS_ENABLE_PUSH to SETTINGS_MAX_PUSH_ID
-  (#709)
+- Made push ID sequential, add MAX_PUSH_ID, remove SETTINGS_ENABLE_PUSH (#709)
 
 ## Since draft-ietf-quic-http-03
 
