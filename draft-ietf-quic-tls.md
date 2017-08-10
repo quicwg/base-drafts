@@ -1263,18 +1263,18 @@ able to inject these packets.  Timing and packet retransmission information from
 might be spoofed or altered.
 
 Endpoints MUST NOT use an `ACK` frame in an unprotected packet to acknowledge
-packets that were protected by 0-RTT or 1-RTT keys.  An endpoint MUST ignore an
-`ACK` frame in an unprotected packet if it claims to acknowledge data that was
-sent in a protected packet.  Such an acknowledgement can only serve as a denial
-of service, since an endpoint that can read protected data is always able to
-send protected data.
+packets that were protected by 0-RTT or 1-RTT keys.  An endpoint MUST treat
+receipt of an `ACK` frame in an unprotected packet that claims to acknowledge
+protected packets as a connection error of type OPTIMISTIC_ACK.  An endpoint
+that can read protected data is always able to send protected data.
 
 Note:
 
 : 0-RTT data can be acknowledged by the server as it receives it, but any
   packets containing acknowledgments of 0-RTT data cannot have packet protection
-  removed by the client until the entire server handshake is received by the
-  client.
+  removed by the client until the TLS handshake is complete.  The 1-RTT keys
+  necessary to remove packet protection cannot be derived until the client
+  receives all server handshake messages.
 
 An endpoint SHOULD use data from `ACK` frames carried in unprotected packets or
 packets protected with 0-RTT keys only during the initial handshake.  All `ACK`
