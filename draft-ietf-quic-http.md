@@ -857,7 +857,7 @@ HTTP_INTERRUPTED_HEADERS (0x0E):
   other than HEADERS.
 
 HTTP_WRONG_STREAM (0x0F):
-: A frame was received on a different stream to where it is permitted.
+: A frame was received on stream where it is not permitted.
 
 HTTP_MULTIPLE_SETTINGS (0x10):
 : More than one SETTINGS frame was received.
