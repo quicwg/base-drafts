@@ -1234,12 +1234,12 @@ based on the value of the supported_versions list.
 
 When an endpoint accepts multiple QUIC versions, it can potentially interpret
 transport parameters as they are defined by any of the QUIC versions it
-supports.  The version field in the QUIC packet header are only authenticated
-using the transport parameters.  The position and the format of the version
-fields in transport parameters MUST either be identical across different QUIC
-versions, or be unambiguously different in a way that ensures that there is no
-possibility for confusion about their interpretation.  One way that a new format
-could be introduced is to define a TLS extension with a different codepoint.
+supports.  The version field in the QUIC packet header is authenticated using
+the transport parameters.  The position and the format of the version fields in
+transport parameters MUST either be identical across different QUIC versions, or
+be unambiguously different to ensure no for confusion about their
+interpretation.  One way that a new format could be introduced is to define a
+TLS extension with a different codepoint.
 
 
 ## Stateless Retries {#stateless-retry}
