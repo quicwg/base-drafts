@@ -368,8 +368,8 @@ of type HTTP_MALFORMED_PUSH.
 
 A server SHOULD use Push IDs sequentially, starting at 0.  A client uses the
 MAX_PUSH_ID frame ({{frame-max-push-id}}) to limit the number of pushes that a
-server can promise initiate.  A client MUST treat receipt of a push stream with
-a Push ID that is greater than the maximum Push ID as a connection error of type
+server can promise.  A client MUST treat receipt of a push stream with a Push ID
+that is greater than the maximum Push ID as a connection error of type
 HTTP_MALFORMED_PUSH.
 
 Each Push ID MUST only be used once in a push stream header.  If a push stream
