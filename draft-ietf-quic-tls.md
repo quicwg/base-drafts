@@ -1276,11 +1276,13 @@ Note:
   removed by the client until the entire server handshake is received by the
   client.
 
-An endpoint SHOULD use data from `ACK` frames carried in unprotected or
-0-RTT-protected packets only during the initial handshake and while they have
-insufficient information from `ACK` frames in 1-RTT-protected packets.  Once
-sufficient information has been obtained from protected messages, information
-obtained from less reliable sources can be discarded.
+An endpoint SHOULD use data from `ACK` frames carried in unprotected packets or
+packets protected with 0-RTT keys only during the initial handshake.  All `ACK`
+frames contained in unprotected packets that are received after successful
+receipt of a packet protected with 1-RTT keys MUST be discarded.  An endpoint
+SHOULD therefore include acknowledgments for unprotected and any packets
+protected with 0-RTT keys until it sees an acknowledgment for a packet that is
+both protected with 1-RTT keys and contains an `ACK` frame.
 
 
 ### Updates to Data and Stream Limits
