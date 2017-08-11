@@ -847,8 +847,8 @@ explained in more detail as they are referenced later in the document.
 | 0x0a        | STREAM_ID_NEEDED  | {{frame-stream-id-needed}}  |
 | 0x0b        | NEW_CONNECTION_ID | {{frame-new-connection-id}} |
 | 0x0c        | STOP_SENDING      | {{frame-stop-sending}}      |
-| 0xa0 - 0xbf | ACK               | {{frame-ack}}               |
-| 0xc0 - 0xff | STREAM            | {{frame-stream}}            |
+| 0x60 - 0x7f | ACK               | {{frame-ack}}               |
+| 0x80 - 0xff | STREAM            | {{frame-stream}}            |
 {: #frame-types title="Frame Types"}
 
 # Life of a Connection
@@ -2164,7 +2164,7 @@ to decipher the packet.
 ## STREAM Frame {#frame-stream}
 
 STREAM frames implicitly create a stream and carry stream data. The type byte
-for a STREAM frame contains embedded flags, and is formatted as `11FSSOOD`.
+for a STREAM frame contains embedded flags, and is formatted as `1FSSOORD`.
 These bits are parsed as follows:
 
 * The first two bits must be set to 11, indicating that this is a STREAM frame.
@@ -2178,6 +2178,9 @@ These bits are parsed as follows:
 * The `OO` bits encode the length of the Offset header field.
   The values 00, 01, 02, and 03 indicate lengths of 0, 16, 32, and
   64 bits long respectively.
+
+* The `R` bit indicates whether this stream is related to another stream.  When
+  set to 1, this field indicates that the Related Stream ID field is present.
 
 * The `D` bit indicates whether a Data Length field is present in the STREAM
   header.  When set to 0, this field indicates that the Stream Data field
@@ -2195,6 +2198,8 @@ A STREAM frame is shown below.
 |                    Stream ID (8/16/24/32)                   ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                      Offset (0/16/32/64)                    ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                    [Related Stream ID (32)]                   |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |       [Data Length (16)]      |        Stream Data (*)      ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -2214,6 +2219,16 @@ Offset:
   The first byte in the stream has an offset of 0.  The largest offset delivered
   on a stream - the sum of the re-constructed offset and data length - MUST be
   less than 2^64.
+
+Related Stream ID:
+
+: A 32-bit value containing the stream ID of a stream in the opposite direction.
+  This field is only present if the Offset field is zero length.  Using a
+  Related Stream ID allows an application protocol to create bidirectional
+  streams by having a stream in one direction refer to another.  The identified
+  stream MUST NOT be in the "idle" state; receipt of a STREAM frame that
+  contains a Related Stream ID for an "idle" stream MUST be treated as a
+  connection error of type PROTOCOL_VIOLATION.
 
 Data Length:
 
@@ -2496,7 +2511,7 @@ The recipient of a stream will have a delayed view of the state of streams at
 its peer.  Loss or delay of frames can cause frames to arrive out of order.
 
 
-### The "idle" State
+### The "idle" State {#stream-state-idle}
 
 All streams start in the "idle" state.
 
@@ -2522,7 +2537,7 @@ Note:
   unless specifically mandated by the application protocol.
 
 
-### The "open" State
+### The "open" State {#stream-state-open}
 
 A stream in the "open" state is used for transmission of data in STREAM frames.
 
@@ -2546,7 +2561,7 @@ received or when all data is received and a STREAM frame with a FIN flag is
 received.
 
 
-### The "closed" State
+### The "closed" State {#stream-state-closed}
 
 A "closed" stream cannot be used for sending any stream-related frames.
 
@@ -2617,6 +2632,39 @@ advertises a stream ID via a MAX_STREAM_ID frame, it MUST NOT subsequently
 advertise a smaller maximum ID.  A sender may receive MAX_STREAM_ID frames out
 of order; a sender MUST therefore ignore any MAX_STREAM_ID that does not
 increase the maximum.
+
+
+## Related Streams
+
+Using the Related Stream ID in the STREAM frame ({{frame-stream}}) allows for
+the creation of a pair of streams.  One endpoint creates a stream without
+assigning a related stream and the peer opens another stream that includes the
+stream ID of the first in the Related Stream ID of the first stream.  This
+enables straightforward use of QUIC for request-response protocols or protocols
+that rely on bidirectional channels.
+
+This document doesn't proscribe the use of the Related Stream ID field, leaving
+decisions about the semantics of related streams to protocols that use QUIC.
+Protocols that use QUIC MUST either define the semantics of related streams or
+prohibit the use of the Related Stream ID field.  Protocols MAY define other
+uses for the Related Stream ID field, but are advised that complex relationships
+between streams could be poorly supported in generic QUIC implementations.  The
+INVALID_RELATED_STREAM error code can be used by protocols to signal receipt of
+invalid Related Stream ID field values, unless the protocol defines a more
+specific error code for the circumstances.
+
+The Related Stream ID for a stream only needs to be sent once for each (allowing
+for retransmissions due to loss).  Sending the field on all stream frames with
+an offset of 0 ensures that the value is received without duplicating the field
+unnecessarily.  If the value of the Related Stream ID changes for a stream, the
+endpoint that receives the conflicting value MUST treat this as a connection
+error of type INVALID_RELATED_STREAM.
+
+A related stream MUST NOT refer to a stream in the "idle" state
+({{stream-state-idle}}).  Receipt of a STREAM frame that includes a Related
+Stream ID field that identifies an "idle" stream MUST be treated as a connection
+error of type INVALID_RELATED_STREAM.
+
 
 ## Sending and Receiving Data
 
