@@ -845,7 +845,8 @@ explained in more detail as they are referenced later in the document.
 |:------------|:------------------|:----------------------------|
 | 0x00        | PADDING           | {{frame-padding}}           |
 | 0x01        | RST_STREAM        | {{frame-rst-stream}}        |
-| 0x02        | CONNECTION_CLOSE  | {{frame-connection-close}}  |
+| 0x02        | TRANSPORT_CLOSE   | {{frame-transport-close}}   |
+| 0x03        | APPLICATION_CLOSE | {{frame-application-close}} |
 | 0x04        | MAX_DATA          | {{frame-max-data}}          |
 | 0x05        | MAX_STREAM_DATA   | {{frame-max-stream-data}}   |
 | 0x06        | MAX_STREAM_ID     | {{frame-max-stream-id}}     |
@@ -1497,19 +1498,19 @@ signal the timeout using an immediate close.
 
 ### Immediate Close
 
-An endpoint sends a CONNECTION_CLOSE frame to terminate the connection
-immediately.  A CONNECTION_CLOSE causes all open streams to immediately become
-closed; open streams can be assumed to be implicitly reset.  After sending or
-receiving a CONNECTION_CLOSE frame, endpoints immediately enter a draining
-period.
+An endpoint sends a CONNECTION_CLOSE or APPLICATION_CLOSE frame to terminate the
+connection immediately.  Either frame causes all open streams to immediately
+become closed; open streams can be assumed to be implicitly reset.  After
+sending or receiving a CONNECTION_CLOSE frame, endpoints immediately enter a
+draining period.
 
-During the draining period, an endpoint that sends a CONNECTION_CLOSE frame
-SHOULD respond to any subsequent packet that it receives with another packet
-containing a CONNECTION_CLOSE frame.  To reduce the state that an endpoint
-maintains in this case, it MAY send the exact same packet.  However, endpoints
-SHOULD limit the number of CONNECTION_CLOSE messages they generate.  For
-instance, an endpoint could progressively increase the number of packets that it
-receives before sending additional CONNECTION_CLOSE frames.
+During the draining period, an endpoint that sends a CONNECTION_CLOSE or
+APPLICATION_CLOSE frame SHOULD respond to any subsequent packet that it receives
+with another packet containing either close frame.  To reduce the state that an
+endpoint maintains in this case, it MAY send the exact same packet.  However,
+endpoints SHOULD limit the number of packets they generate containing either
+close frame.  For instance, an endpoint could progressively increase the number
+of packets that it receives before sending additional packets.
 
 Note:
 
@@ -1519,9 +1520,9 @@ Note:
   control, which are not expected to be relevant for a closed connection.
   Retransmitting the final packet requires less state.
 
-An endpoint can cease sending CONNECTION_CLOSE frames if it receives either a
-CONNECTION_CLOSE or an acknowledgement for a packet that contained a
-CONNECTION_CLOSE.
+An endpoint can cease sending CONNECTION_CLOSE or APPLICATION_CLOSE frames if it
+receives either a CONNECTION_CLOSE, APPLICATION_CLOSE or an acknowledgement for
+a packet that contained a either close frame.
 
 
 ### Stateless Reset {#stateless-reset}
@@ -1530,7 +1531,8 @@ A stateless reset is provided as an option of last resort for a server that does
 not have access to the state of a connection.  A server crash or outage might
 result in clients continuing to send data to a server that is unable to properly
 continue the connection.  A server that wishes to communicate a fatal connection
-error MUST use a CONNECTION_CLOSE frame if it has sufficient state to do so.
+error MUST use a TRANSPORT_CLOSE or APPLICATION_CLOSE frame if it has sufficient
+state to do so.
 
 To support this process, the server sends a stateless_reset_token value during
 the handshake in the transport parameters.  This value is protected by
@@ -1584,7 +1586,7 @@ indistinguishable from a regular packet.
 
 A stateless reset is not appropriate for signaling error conditions.  An
 endpoint that wishes to communicate a fatal connection error MUST use a
-CONNECTION_CLOSE frame if it has sufficient state to do so.
+TRANSPORT_CLOSE or APPLICATION_CLOSE frame if it has sufficient state to do so.
 
 
 #### Detecting a Stateless Reset
@@ -1670,7 +1672,7 @@ The RST_STREAM frame is as follows:
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                        Stream ID (32)                         |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                        Error Code (32)                        |
+|               Application Protocol Error Code (32)            |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                                                               |
 +                       Final Offset (64)                       +
@@ -1684,43 +1686,51 @@ Stream ID:
 
 : The 32-bit Stream ID of the stream being terminated.
 
-Error code:
+Application Protocol Error Code:
 
-: A 32-bit error code which indicates why the stream is being closed.
+: A 32-bit application protocol error code (see {{app-error-codes}}) which
+  indicates why the stream is being closed.
 
-Final offset:
+Final Offset:
 
 : A 64-bit unsigned integer indicating the absolute byte offset of the end of
   data written on this stream by the RST_STREAM sender.
 
 
-## CONNECTION_CLOSE frame {#frame-connection-close}
+## TRANSPORT_CLOSE frame {#frame-transport-close}
 
-An endpoint sends a CONNECTION_CLOSE frame (type=0x02) to notify its peer that
-the connection is being closed.  If there are open streams that haven't been
-explicitly closed, they are implicitly closed when the connection is closed.
-The frame is as follows:
+An endpoint sends a TRANSPORT_CLOSE frame (type=0x02) to notify its peer that
+the connection is being closed.  TRANSPORT_CLOSE is used to signal errors at the
+QUIC layer, or the absence of errors (with the NO_ERROR code).
+
+If there are open streams that haven't been explicitly closed, they are
+implicitly closed when the connection is closed.
+
+The TRANSPORT_CLOSE frame is as follows:
 
 ~~~
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                        Error Code (32)                        |
+|                         Error Code (32)                       |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |   Reason Phrase Length (16)   |      [Reason Phrase (*)]    ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
 
-The fields of a CONNECTION_CLOSE frame are as follows:
+The fields of a TRANSPORT_CLOSE frame are as follows:
 
 Error Code:
 
 : A 32-bit error code which indicates the reason for closing this connection.
+  TRANSPORT_CLOSE uses codes from the space defined in {{error-codes}};
+  APPLICATION_CLOSE uses codes from the application protocol error code space
+  ({{app-error-codes}}).
 
 Reason Phrase Length:
 
 : A 16-bit unsigned number specifying the length of the reason phrase in bytes.
-  Note that a CONNECTION_CLOSE frame cannot be split between packets, so in
+  Note that a TRANSPORT_CLOSE frame cannot be split between packets, so in
   practice any limits on packet size will also limit the space available for a
   reason phrase.
 
@@ -1729,6 +1739,17 @@ Reason Phrase:
 : A human-readable explanation for why the connection was closed.  This can be
   zero length if the sender chooses to not give details beyond the Error Code.
   This SHOULD be a UTF-8 encoded string {{!RFC3629}}.
+
+
+## APPLICATION_CLOSE frame {#frame-application-close}
+
+An APPLICATION_CLOSE frame (type=0x03) uses the same format as the
+TRANSPORT_CLOSE frame ({{frame-transport-close}}), except that it uses error
+codes from the application protocol error code space ({{app-error-codes}})
+instead of the transport error code space.
+
+Other than the error code space, the format and semantics of the
+APPLICATION_CLOSE frame are identical to the TRANSPORT_CLOSE frame.
 
 
 ## MAX_DATA Frame {#frame-max-data}
@@ -2702,11 +2723,10 @@ discarded upon receipt.  This avoids potential ambiguity about which STREAM
 frames count toward flow control.
 
 Upon receipt of a STOP_SENDING frame on a stream in the "open" or "half-closed
-(remote)" states, an endpoint MUST send a RST_STREAM with an error code of
-QUIC_RECEIVED_RST.  If the STOP_SENDING frame is received on a stream that is
-already in the "half-closed (local)" or "closed" states, a RST_STREAM frame MAY
-still be sent in order to cancel retransmission of previously-sent STREAM
-frames.
+(remote)" states, an endpoint MUST send a RST_STREAM frame.  If the STOP_SENDING
+frame is received on a stream that is already in the "half-closed (local)" or
+"closed" states, a RST_STREAM frame MAY still be sent in order to cancel
+retransmission of previously-sent STREAM frames.
 
 While STOP_SENDING frames are retransmittable, an implementation MAY choose not
 to retransmit a lost STOP_SENDING frame if the stream has already been closed
@@ -2980,32 +3000,39 @@ frame that signals the error.  Where this specification identifies error
 conditions, it also identifies the error code that is used.
 
 A stateless reset ({{stateless-reset}}) is not suitable for any error that can
-be signaled with a CONNECTION_CLOSE or RST_STREAM frame.  A stateless reset MUST
-NOT be used by an endpoint that has the state necessary to send a frame on the
-connection.
+be signaled with a TRANSPORT_CLOSE, APPLICATION_CLOSE, or RST_STREAM frame.  A
+stateless reset MUST NOT be used by an endpoint that has the state necessary to
+send a frame on the connection.
 
 
 ## Connection Errors
 
 Errors that result in the connection being unusable, such as an obvious
 violation of protocol semantics or corruption of state that affects an entire
-connection, MUST be signaled using a CONNECTION_CLOSE frame
-({{frame-connection-close}}). An endpoint MAY close the connection in this
-manner, even if the error only affects a single stream.
+connection, MUST be signaled using a TRANSPORT_CLOSE or APPLICATION_CLOSE frame
+({{frame-transport-close}}, {{frame-application-close}}). An endpoint MAY close
+the connection in this manner, even if the error only affects a single stream.
 
-A CONNECTION_CLOSE frame could be sent in a packet that is lost.  An endpoint
-SHOULD be prepared to retransmit a packet containing a CONNECTION_CLOSE frame if
-it receives more packets on a terminated connection.  Limiting the number of
-retransmissions and the time over which this final packet is sent limits the
-effort expended on terminated connections.
+Application protocols can signal application-specific protocol errors using the
+APPLICATION_CLOSE frame.  Errors that are specific to the transport, including
+all those described in this document, are carried in a TRANSPORT_CLOSE frame.
+Other than the type of error code they carry, these frames are identical in
+format and semantics.
 
-An endpoint that chooses not to retransmit packets containing CONNECTION_CLOSE
-risks a peer missing the first such packet.  The only mechanism available to an
-endpoint that continues to receive data for a terminated connection is to use
-the stateless reset process ({{stateless-reset}}).
+A TRANSPORT_CLOSE or APPLICATION_CLOSE frame could be sent in a packet that is
+lost.  An endpoint SHOULD be prepared to retransmit a packet containing either
+frame type if it receives more packets on a terminated connection.  Limiting the
+number of retransmissions and the time over which this final packet is sent
+limits the effort expended on terminated connections.
 
-An endpoint that receives an invalid CONNECTION_CLOSE frame MUST NOT signal the
-existence of the error to its peer.
+An endpoint that chooses not to retransmit packets containing TRANSPORT_CLOSE or
+APPLICATION_CLOSE risks a peer missing the first such packet.  The only
+mechanism available to an endpoint that continues to receive data for a
+terminated connection is to use the stateless reset process
+({{stateless-reset}}).
+
+An endpoint that receives an invalid TRANSPORT_CLOSE or APPLICATION_CLOSE frame
+MUST NOT signal the existence of the error to its peer.
 
 
 ## Stream Errors
@@ -3019,57 +3046,33 @@ Stream 0 is critical to the functioning of the entire connection.  If stream 0
 is closed with either a RST_STREAM or STREAM frame bearing the FIN flag, an
 endpoint MUST generate a connection error of type PROTOCOL_VIOLATION.
 
-Some application protocols make other streams critical to that protocol.  An
-application protocol does not need to inform the transport that a stream is
-critical; it can instead generate appropriate errors in response to being
-notified that the critical stream is closed.
+A stream error is always an application-layer construct.  A RST_STREAM MUST NOT
+be generated by the QUIC transport layer.  Resetting a stream at the transport
+layer could cause unrecoverable loss of application protocol state.  Application
+protocols might require certain streams to be reliably delivered in order to
+guarantee consistent state between endpoints.  For this reason, all errors that
+can be detected at the transport layer result in connection errors.
 
-An endpoint MAY send a RST_STREAM frame in the same packet as a CONNECTION_CLOSE
-frame.
+An endpoint that detects a stream error MAY choose to treat the error as a
+connection error and send an APPLICATION_CLOSE frame in place of RST_STREAM.
 
 
-## Error Codes
+## Transport Error Codes {#error-codes}
 
-Error codes are 32 bits long, with the first two bits indicating the source of
-the error code:
-
-0x00000000-0x3FFFFFFF:
-: Application-specific error codes.  Defined by each application-layer protocol.
-
-0x40000000-0x7FFFFFFF:
-: Reserved for host-local error codes.  These codes MUST NOT be sent to a peer,
-  but MAY be used in API return codes and logs.
-
-0x80000000-0xBFFFFFFF:
-: QUIC transport error codes, including packet protection errors.  Applicable to
-  all uses of QUIC.
-
-0xC0000000-0xFFFFFFFF:
-: Cryptographic error codes.  Defined by the cryptographic handshake protocol
-  in use.
+Transport error codes are 32 bits long.
 
 This section lists the defined QUIC transport error codes that may be used in a
-CONNECTION_CLOSE or RST_STREAM frame. Error codes share a common code space.
-Some error codes apply only to either streams or the entire connection and have
-no defined semantics in the other context.
+TRANSPORT_CLOSE frame.  These errors apply to the entire connection.
 
 NO_ERROR (0x80000000):
 
-: An endpoint uses this with CONNECTION_CLOSE to signal that the connection is
-  being closed abruptly in the absence of any error.  An endpoint uses this with
-  RST_STREAM to signal that the stream is no longer wanted or in response to the
-  receipt of a RST_STREAM for that stream.
+: An endpoint uses this with TRANSPORT_CLOSE to signal that the connection is
+  being closed abruptly in the absence of any error.
 
 INTERNAL_ERROR (0x80000001):
 
 : The endpoint encountered an internal error and cannot continue with the
   connection.
-
-CANCELLED (0x80000002):
-
-: An endpoint sends this with RST_STREAM to indicate that the stream is not
-  wanted and that no application action was taken for the stream.  This error
-  code is not valid for use with CONNECTION_CLOSE.
 
 FLOW_CONTROL_ERROR (0x80000003):
 
@@ -3119,15 +3122,23 @@ PROTOCOL_VIOLATION (0x8000000A):
 : An endpoint detected an error with protocol compliance that was not covered by
   more specific error codes.
 
-QUIC_RECEIVED_RST (0x80000035):
-
-: Terminating stream because peer sent a RST_STREAM or STOP_SENDING.
-
 FRAME_ERROR (0x800001XX):
 
 : An endpoint detected an error in a specific frame type.  The frame type is
   included as the last octet of the error code.  For example, an error in a
   MAX_STREAM_ID frame would be indicated with the code (0x80000106).
+
+
+## Application Protocol Error Codes {#app-error-codes}
+
+Application protocol error codes are 32-bits long, but the management of
+application error codes are left to application protocols.  Application protocol
+error codes are used for the RST_STREAM ({{frame-rst-stream}}) and
+APPLICATION_CLOSE ({{frame-application-close}}) frames.
+
+Application protocols SHOULD define an error codes for use when sending a
+RST_STREAM in response to a STOP_SENDING frame.  Otherwise, there is no
+restriction on the use of the 32-bit error code space for application protocols.
 
 
 # Security and Privacy Considerations
@@ -3248,8 +3259,7 @@ accessible.  The expert(s) are encouraged to be biased towards approving
 registrations unless they are abusive, frivolous, or actively harmful (not
 merely aesthetically displeasing, or architecturally dubious).
 
-The initial contents of this registry are shown in
-{{iana-tp-table}}.
+The initial contents of this registry are shown in {{iana-tp-table}}.
 
 | Value  | Parameter Name          | Specification                       |
 |:-------|:------------------------|:------------------------------------|
@@ -3261,6 +3271,57 @@ The initial contents of this registry are shown in
 | 0x0005 | max_packet_size         | {{transport-parameter-definitions}} |
 | 0x0006 | stateless_reset_token   | {{transport-parameter-definitions}} |
 {: #iana-tp-table title="Initial QUIC Transport Parameters Entries"}
+
+
+## QUIC Transport Error Codes Registry {#iana-error-codes}
+
+IANA \[SHALL add/has added] a registry for "QUIC Transport Error Codes" under a
+"QUIC Protocol" heading.
+
+The "QUIC Transport Error Codes" registry governs a 32-bit space.  This space is
+split into two spaces that are governed by different policies.  Values with the
+first byte in the range 0x00 to 0xfe (in hexadecimal) are assigned via the
+Specification Required policy {{!RFC5226}}.  Values with the first byte 0xff are
+reserved for Private Use {{!RFC5226}}.
+
+Registrations MUST include the following fields:
+
+Value:
+
+: The numeric value of the assignment (registrations will be between 0x00000000
+  and 0xfeffffff).
+
+Code:
+
+: A short mnemonic for the parameter.
+
+Description:
+
+: A brief description of the error code semantics, which MAY be a summary if a
+  specification reference is provided.
+
+Specification:
+
+: A reference to a publicly available specification for the value.
+
+The initial contents of this registry are shown in {{iana-error-table}}.  Note
+that FRAME_ERROR takes the range from 0x80000100 to 0x800001ff and private use
+occupies the range from 0xfe000000 to 0xffffffff.
+
+| Value       | Error                     | Description                   | Specification   |
+|:------------|:--------------------------|:------------------------------|:----------------|
+| 0x0         | NO_ERROR                  | No error                      | {{error-codes}} |
+| 0x1         | INTERNAL_ERROR            | Implementation error          | {{error-codes}} |
+| 0x3         | FLOW_CONTROL_ERROR        | Flow control error            | {{error-codes}} |
+| 0x4         | STREAM_ID_ERROR           | Invalid stream ID             | {{error-codes}} |
+| 0x5         | STREAM_STATE_ERROR        | Frame received in invalid stream state | {{error-codes}} |
+| 0x6         | FINAL_OFFSET_ERROR        | Change to final stream offset | {{error-codes}} |
+| 0x7         | FRAME_FORMAT_ERROR        | Generic frame format error    | {{error-codes}} |
+| 0x8         | TRANSPORT_PARAMETER_ERROR | Error in transport parameters | {{error-codes}} |
+| 0x9         | VERSION_NEGOTIATION_ERROR | Version negotiation failure   | {{error-codes}} |
+| 0xA         | PROTOCOL_VIOLATION        | Generic protocol violation    | {{error-codes}} |
+| 0x100-0x1FF | FRAME_ERROR               | Specific frame format error   | {{error-codes}} |
+{: #iana-error-table title="Initial QUIC Transport Error Codes Entries"}
 
 
 --- back
