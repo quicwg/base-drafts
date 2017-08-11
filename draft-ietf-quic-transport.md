@@ -1681,7 +1681,7 @@ The RST_STREAM frame is as follows:
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                        Stream ID (32)                         |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|               Application Protocol Error Code (32)            |
+| App Protocol Error Code (16)  |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                                                               |
 +                       Final Offset (64)                       +
@@ -2002,7 +2002,7 @@ follows:
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                        Stream ID (32)                         |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                        Error Code (32)                        |
+|                      App  Error Code (32)                     |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
 
@@ -2011,8 +2011,9 @@ The fields are:
 Stream ID:
 : The 32-bit Stream ID of the stream being ignored.
 
-Error Code:
-: The application-specified reason the sender is ignoring the stream.
+App Error Code:
+: A 32-bit, application-specified reason the sender is ignoring the stream (see
+  {{app-error-codes}}).
 
 ## ACK Frame {#frame-ack}
 
@@ -3137,6 +3138,8 @@ FRAME_ERROR (0x1XX):
   included as the last octet of the error code.  For example, an error in a
   MAX_STREAM_ID frame would be indicated with the code (0x106).
 
+See {{iana-error-codes}} for details of registering new error codes.
+
 
 ## Application Protocol Error Codes {#app-error-codes}
 
@@ -3145,9 +3148,10 @@ application error codes are left to application protocols.  Application protocol
 error codes are used for the RST_STREAM ({{frame-rst-stream}}) and
 APPLICATION_CLOSE ({{frame-application-close}}) frames.
 
-Application protocols SHOULD define an error codes for use when sending a
-RST_STREAM in response to a STOP_SENDING frame.  Otherwise, there is no
-restriction on the use of the 32-bit error code space for application protocols.
+Application protocols SHOULD define an error codes for indicating no error and
+for use when sending a RST_STREAM in response to a STOP_SENDING frame.
+Otherwise, there is no restriction on the use of the 16-bit error code space for
+application protocols.
 
 
 # Security and Privacy Considerations
