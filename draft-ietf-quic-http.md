@@ -872,16 +872,15 @@ establishment to servers.
 QUIC allows the application to abruptly terminate (reset) individual streams or
 the entire connection when an error is encountered.  These are referred to as
 "stream errors" or "connection errors" and are described in more detail in
-[QUIC-TRANSPORT].
+{{QUIC-TRANSPORT}}.
 
 This section describes HTTP-specific error codes which can be used to express
 the cause of a connection or stream error.
 
 ## HTTP-Defined QUIC Error Codes {#http-error-codes}
 
-QUIC allocates error codes 0x0000-0x3FFF to application protocol definition. The
-following error codes are defined by HTTP for use in QUIC RST_STREAM and
-CONNECTION_CLOSE frames.
+The following error codes are defined by HTTP for use in QUIC RST_STREAM and
+APPLICATION_CLOSE frames.
 
 HTTP_PUSH_REFUSED (0x01):
 : The server has attempted to push content which the client will not accept
@@ -1270,7 +1269,7 @@ The entries in the following table are registered by this document.
 ## Error Codes {#iana-error-codes}
 
 This document establishes a registry for HTTP/QUIC error codes.  The
-"HTTP/QUIC Error Code" registry manages a 30-bit space.  The "HTTP/QUIC
+"HTTP/QUIC Error Code" registry manages a 32-bit space.  The "HTTP/QUIC
 Error Code" registry operates under the "Expert Review" policy
 {{?RFC5226}}.
 
@@ -1285,7 +1284,7 @@ Name:
 : A name for the error code.  Specifying an error code name is optional.
 
 Code:
-: The 30-bit error code value.
+: The 32-bit error code value.
 
 Description:
 : A brief description of the error code semantics, longer if no detailed
