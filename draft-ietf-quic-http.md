@@ -198,6 +198,10 @@ type of stream and to link the stream to another stream as necessary.
 
 Streams MUST be opened sequentially, with no gaps.
 
+HTTP does not use the Related Stream ID field.  Receipt of a QUIC STREAM frame
+that includes a Related Stream ID field MUST be treated as a connection error of
+type INVALID_RELATED_STREAM.
+
 HTTP does not need to do any separate multiplexing when using QUIC. Data sent
 over a QUIC stream always maps to a particular HTTP transaction. Requests and
 responses are considered complete when the corresponding QUIC streams are
