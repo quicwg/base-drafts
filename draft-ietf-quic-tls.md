@@ -1508,18 +1508,17 @@ packets as indicative of an attack.
 # Error Codes {#errors}
 
 This document defines error codes from the error code space used in
-{{QUIC-TRANSPORT}}.  To avoid collisions, these codes are defined in the range
-0xC0000000-0xFFFFFFFF.
+{{QUIC-TRANSPORT}}.
 
 The following error codes are defined when TLS is used for the crypto handshake:
 
-TLS_HANDSHAKE_FAILED (0xC000001C):
+TLS_HANDSHAKE_FAILED (0x201):
 : The TLS handshake failed.
 
-TLS_FATAL_ALERT_GENERATED (0xC000001D):
+TLS_FATAL_ALERT_GENERATED (0x202):
 : A TLS fatal alert was sent, causing the TLS connection to end prematurely.
 
-TLS_FATAL_ALERT_RECEIVED (0xC000001E):
+TLS_FATAL_ALERT_RECEIVED (0x203):
 : A TLS fatal alert was received, causing the TLS connection to end prematurely.
 
 
@@ -1545,11 +1544,11 @@ values in the following registries:
   {{packet-number-gaps}}.  The DTLS column is to be marked No.  The Recommended
   column is to be marked Yes.
 
-| Value      | Error                     | Description  | Specification |
-|:-----------|:--------------------------|:--------------|
-| 0xC000001C | TLS_HANDSHAKE_FAILED      | {{errors}}    |
-| 0xC000001D | TLS_FATAL_ALERT_GENERATED | {{errors}}    |
-| 0xC000001E | TLS_FATAL_ALERT_RECEIVED  | {{errors}}    |
+| Value | Error                     | Description           | Specification |
+|:------|:--------------------------|:----------------------|:--------------|
+| 0x201 | TLS_HANDSHAKE_FAILED      | TLS handshake failure | {{errors}}    |
+| 0x202 | TLS_FATAL_ALERT_GENERATED | Sent TLS alert        | {{errors}}    |
+| 0x203 | TLS_FATAL_ALERT_RECEIVED  | Receives TLS alert    | {{errors}}    |
 {: #iana-errors title="QUIC Transport Error Codes for TLS"}
 
 
