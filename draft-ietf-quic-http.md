@@ -877,10 +877,10 @@ the entire connection when an error is encountered.  These are referred to as
 This section describes HTTP-specific error codes which can be used to express
 the cause of a connection or stream error.
 
-## HTTP-Defined QUIC Error Codes {#http-error-codes}
+## HTTP/QUIC Error Codes {#http-error-codes}
 
-The following error codes are defined by HTTP for use in QUIC RST_STREAM and
-APPLICATION_CLOSE frames.
+The following error codes are defined for use in QUIC RST_STREAM and
+APPLICATION_CLOSE frames when using HTTP/QUIC.
 
 HTTP_PUSH_REFUSED (0x01):
 : The server has attempted to push content which the client will not accept
