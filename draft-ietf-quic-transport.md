@@ -3011,32 +3011,32 @@ Transport error codes are 32 bits long.
 This section lists the defined QUIC transport error codes that may be used in a
 TRANSPORT_CLOSE frame.  These errors apply to the entire connection.
 
-NO_ERROR (0x80000000):
+NO_ERROR (0x0):
 
 : An endpoint uses this with TRANSPORT_CLOSE to signal that the connection is
   being closed abruptly in the absence of any error.
 
-INTERNAL_ERROR (0x80000001):
+INTERNAL_ERROR (0x1):
 
 : The endpoint encountered an internal error and cannot continue with the
   connection.
 
-FLOW_CONTROL_ERROR (0x80000003):
+FLOW_CONTROL_ERROR (0x3):
 
 : An endpoint received more data than it permitted in its advertised data limits
   (see {{flow-control}}).
 
-STREAM_ID_ERROR (0x80000004):
+STREAM_ID_ERROR (0x4):
 
 : An endpoint received a frame for a stream identifier that exceeded its
   advertised maximum stream ID.
 
-STREAM_STATE_ERROR (0x80000005):
+STREAM_STATE_ERROR (0x5):
 
 : An endpoint received a frame for a stream that was not in a state that
   permitted that frame (see {{stream-states}}).
 
-FINAL_OFFSET_ERROR (0x80000006):
+FINAL_OFFSET_ERROR (0x6):
 
 : An endpoint received a STREAM frame containing data that exceeded the
   previously established final offset.  Or an endpoint received a RST_STREAM
@@ -3044,36 +3044,36 @@ FINAL_OFFSET_ERROR (0x80000006):
   that was already received.  Or an endpoint received a RST_STREAM frame
   containing a different final offset to the one already established.
 
-FRAME_FORMAT_ERROR (0x80000007):
+FRAME_FORMAT_ERROR (0x7):
 
 : An endpoint received a frame that was badly formatted.  For instance, an empty
   STREAM frame that omitted the FIN flag, or an ACK frame that has more
   acknowledgment ranges than the remainder of the packet could carry.  This is a
   generic error code; an endpoint SHOULD use the more specific frame format
-  error codes (0x800001XX) if possible.
+  error codes (0x1XX) if possible.
 
-TRANSPORT_PARAMETER_ERROR (0x80000008):
+TRANSPORT_PARAMETER_ERROR (0x8):
 
 : An endpoint received transport parameters that were badly formatted, included
   an invalid value, was absent even though it is mandatory, was present though
   it is forbidden, or is otherwise in error.
 
-VERSION_NEGOTIATION_ERROR (0x80000009):
+VERSION_NEGOTIATION_ERROR (0x9):
 
 : An endpoint received transport parameters that contained version negotiation
   parameters that disagreed with the version negotiation that it performed.
   This error code indicates a potential version downgrade attack.
 
-PROTOCOL_VIOLATION (0x8000000A):
+PROTOCOL_VIOLATION (0xA):
 
 : An endpoint detected an error with protocol compliance that was not covered by
   more specific error codes.
 
-FRAME_ERROR (0x800001XX):
+FRAME_ERROR (0x1XX):
 
 : An endpoint detected an error in a specific frame type.  The frame type is
   included as the last octet of the error code.  For example, an error in a
-  MAX_STREAM_ID frame would be indicated with the code (0x80000106).
+  MAX_STREAM_ID frame would be indicated with the code (0x106).
 
 
 ## Application Protocol Error Codes {#app-error-codes}
@@ -3252,8 +3252,8 @@ Specification:
 : A reference to a publicly available specification for the value.
 
 The initial contents of this registry are shown in {{iana-error-table}}.  Note
-that FRAME_ERROR takes the range from 0x80000100 to 0x800001ff and private use
-occupies the range from 0xfe000000 to 0xffffffff.
+that FRAME_ERROR takes the range from 0x100 to 0x1FF and private use occupies
+the range from 0XFE000000 to 0XFFFFFFFF.
 
 | Value       | Error                     | Description                   | Specification   |
 |:------------|:--------------------------|:------------------------------|:----------------|
