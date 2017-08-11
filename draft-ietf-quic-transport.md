@@ -721,8 +721,8 @@ increase by at least one after sending any packet, unless otherwise specified
 A QUIC endpoint MUST NOT reuse a packet number within the same connection (that
 is, under the same cryptographic keys).  If the packet number for sending
 reaches 2^64 - 1, the sender MUST close the connection without sending a
-TRANSPORT_CLOSE frame or any further packets; the sender MAY send a Public Reset
-packet in response to further packets that it receives.
+TRANSPORT_CLOSE frame or any further packets; the sender MAY send a Stateless
+Reset packet in response to further packets that it receives.
 
 To reduce the number of bits required to represent the packet number over the
 wire, only the least significant bits of the packet number are transmitted.  The
@@ -1453,7 +1453,8 @@ on peers.  Endpoints might allow for the possibility that the remote side might
 attempt to send packets before the timeout.  In this case, an endpoint might
 choose to retain enough information to generate a packet containing
 TRANSPORT_CLOSE (see {{immediate-close}}).  Endpoints MAY instead rely on
-sending Public Reset in response to packets that arrive after an idle timeout.
+sending Stateless Reset in response to packets that arrive after an idle
+timeout.
 
 
 ### Immediate Close
