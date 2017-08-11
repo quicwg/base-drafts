@@ -856,6 +856,10 @@ the cause of a connection or stream error.
 The following error codes are defined for use in QUIC RST_STREAM and
 APPLICATION_CLOSE frames when using HTTP/QUIC.
 
+HTTP_NO_ERROR (0x00):
+: No error.  This is used when the connection or stream needs to be closed, but
+  there is no error to signal.
+
 HTTP_PUSH_REFUSED (0x01):
 : The server has attempted to push content which the client will not accept
   on this connection.
@@ -1066,7 +1070,7 @@ The HTTP/2 error codes defined in Section 7 of {{!RFC7540}} map to QUIC error
 codes as follows:
 
 NO_ERROR (0x0):
-: QUIC_NO_ERROR
+: HTTP_NO_ERROR
 
 PROTOCOL_ERROR (0x1):
 : No single mapping.  See new HTTP_MALFORMED_* error codes defined in
@@ -1272,6 +1276,7 @@ The entries in the following table are registered by this document.
 |-----------------------------------|--------|----------------------------------------|----------------------|
 | Name                              | Code   | Description                            | Specification        |
 |-----------------------------------|--------|----------------------------------------|----------------------|
+|  HTTP_NO_ERROR                    |  0x00  |  No error                              | {{http-error-codes}} |
 |  HTTP_PUSH_REFUSED                |  0x01  |  Client refused pushed content         | {{http-error-codes}} |
 |  HTTP_INTERNAL_ERROR              |  0x02  |  Internal error                        | {{http-error-codes}} |
 |  HTTP_PUSH_ALREADY_IN_CACHE       |  0x03  |  Pushed content already cached         | {{http-error-codes}} |
