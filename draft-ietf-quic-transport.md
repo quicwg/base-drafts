@@ -1490,10 +1490,19 @@ A connection that remains idle for longer than the idle timeout (see
 connection state if they have neither sent nor received a packet for this time.
 
 The time at which an idle timeout takes effect won't be perfectly synchronized
+<<<<<<< HEAD
 on peers.  A connection enters the draining period when the idle timeout
 expires.  During this time, an endpoint that receives new packets MAY choose to
 restore the connection.  Alternatively, an endpoint that receives packets MAY
 signal the timeout using an immediate close.
+=======
+on peers.  Endpoints might allow for the possibility that the remote side might
+attempt to send packets before the timeout.  In this case, an endpoint might
+choose to retain enough information to generate a packet containing
+TRANSPORT_CLOSE (see {{immediate-close}}).  Endpoints MAY instead rely on
+sending Stateless Reset in response to packets that arrive after an idle
+timeout.
+>>>>>>> s/Public Reset/Stateless Reset/
 
 
 ### Immediate Close
