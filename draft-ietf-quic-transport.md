@@ -1688,7 +1688,7 @@ Stream ID:
 
 Application Protocol Error Code:
 
-: A 32-bit application protocol error code (see {{app-error-codes}}) which
+: A 16-bit application protocol error code (see {{app-error-codes}}) which
   indicates why the stream is being closed.
 
 Final Offset:
@@ -1712,9 +1712,9 @@ The CONNECTION_CLOSE frame is as follows:
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                         Error Code (32)                       |
+|           Error Code (16)     |   Reason Phrase Length (16)   |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|   Reason Phrase Length (16)   |      [Reason Phrase (*)]    ...
+|                      Reason Phrase Length (*)               ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
 
@@ -1722,7 +1722,7 @@ The fields of a TRANSPORT_CLOSE frame are as follows:
 
 Error Code:
 
-: A 32-bit error code which indicates the reason for closing this connection.
+: A 16-bit error code which indicates the reason for closing this connection.
   CONNECTION_CLOSE uses codes from the space defined in {{error-codes}}
   (APPLICATION_CLOSE uses codes from the application protocol error code space,
   see {{app-error-codes}}).
@@ -1994,8 +1994,8 @@ The STOP_SENDING frame is as follows:
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                        Stream ID (32)                         |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                   Application Error Code (32)                 |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|  Application Error Code (16)  |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
 
 The fields are:
@@ -2006,7 +2006,7 @@ Stream ID:
 
 Application Error Code:
 
-: A 32-bit, application-specified reason the sender is ignoring the stream (see
+: A 16-bit, application-specified reason the sender is ignoring the stream (see
   {{app-error-codes}}).
 
 
@@ -3061,7 +3061,7 @@ consistent state between endpoints.
 
 ## Transport Error Codes {#error-codes}
 
-Transport error codes are 32 bits long.
+Transport error codes are 16 bits long.
 
 This section lists the defined QUIC transport error codes that may be used in a
 CONNECTION_CLOSE frame.  These errors apply to the entire connection.
@@ -3135,7 +3135,7 @@ See {{iana-error-codes}} for details of registering new error codes.
 
 ## Application Protocol Error Codes {#app-error-codes}
 
-Application protocol error codes are 32-bits long, but the management of
+Application protocol error codes are 16-bits long, but the management of
 application error codes are left to application protocols.  Application protocol
 error codes are used for the RST_STREAM ({{frame-rst-stream}}) and
 APPLICATION_CLOSE ({{frame-application-close}}) frames.
@@ -3295,7 +3295,7 @@ The initial contents of this registry are shown in {{iana-tp-table}}.
 IANA \[SHALL add/has added] a registry for "QUIC Transport Error Codes" under a
 "QUIC Protocol" heading.
 
-The "QUIC Transport Error Codes" registry governs a 32-bit space.  This space is
+The "QUIC Transport Error Codes" registry governs a 16-bit space.  This space is
 split into two spaces that are governed by different policies.  Values with the
 first byte in the range 0x00 to 0xfe (in hexadecimal) are assigned via the
 Specification Required policy {{!RFC5226}}.  Values with the first byte 0xff are
@@ -3305,8 +3305,8 @@ Registrations MUST include the following fields:
 
 Value:
 
-: The numeric value of the assignment (registrations will be between 0x00000000
-  and 0xfeffffff).
+: The numeric value of the assignment (registrations will be between 0x0000 and
+  0xfeff).
 
 Code:
 
@@ -3323,7 +3323,7 @@ Specification:
 
 The initial contents of this registry are shown in {{iana-error-table}}.  Note
 that FRAME_ERROR takes the range from 0x100 to 0x1FF and private use occupies
-the range from 0XFE000000 to 0XFFFFFFFF.
+the range from 0XFE00 to 0XFFFF.
 
 | Value       | Error                     | Description                   | Specification   |
 |:------------|:--------------------------|:------------------------------|:----------------|
