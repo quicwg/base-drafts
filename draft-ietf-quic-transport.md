@@ -1672,7 +1672,7 @@ The RST_STREAM frame is as follows:
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                        Stream ID (32)                         |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                  App Protocol Error Code (32)                 |
+|               Application Protocol Error Code (32)            |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                                                               |
 +                       Final Offset (64)                       +
@@ -1686,7 +1686,7 @@ Stream ID:
 
 : The 32-bit Stream ID of the stream being terminated.
 
-App Protocol Error Code:
+Application Protocol Error Code:
 
 : A 32-bit application protocol error code (see {{app-error-codes}}) which
   indicates why the stream is being closed.
@@ -1697,7 +1697,7 @@ Final Offset:
   data written on this stream by the RST_STREAM sender.
 
 
-## CONNECTION_CLOSE frame {#frame-connection-close}
+## TRANSPORT_CLOSE frame {#frame-transport-close}
 
 An endpoint sends a CONNECTION_CLOSE frame (type=0x02) to notify its peer that
 the connection is being closed.  CONNECTION_CLOSE is used to signal errors at
@@ -1718,7 +1718,7 @@ The CONNECTION_CLOSE frame is as follows:
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
 
-The fields of a CONNECTION_CLOSE frame are as follows:
+The fields of a TRANSPORT_CLOSE frame are as follows:
 
 Error Code:
 
@@ -1730,7 +1730,7 @@ Error Code:
 Reason Phrase Length:
 
 : A 16-bit unsigned number specifying the length of the reason phrase in bytes.
-  Note that a CONNECTION_CLOSE frame cannot be split between packets, so in
+  Note that a TRANSPORT_CLOSE frame cannot be split between packets, so in
   practice any limits on packet size will also limit the space available for a
   reason phrase.
 
@@ -3144,6 +3144,18 @@ There is no restriction on the use of the 16-bit error code space for
 application protocols.  However, application protocols SHOULD define error codes
 for terminating streams with an error and for use when sending a RST_STREAM in
 response to a STOP_SENDING frame.
+
+
+## Application Protocol Error Codes {#app-error-codes}
+
+Application protocol error codes are 32-bits long, but the management of
+application error codes are left to application protocols.  Application protocol
+error codes are used for the RST_STREAM ({{frame-rst-stream}}) and
+APPLICATION_CLOSE ({{frame-application-close}}) frames.
+
+Application protocols SHOULD define an error codes for use when sending a
+RST_STREAM in response to a STOP_SENDING frame.  Otherwise, there is no
+restriction on the use of the 32-bit error code space for application protocols.
 
 
 # Security and Privacy Considerations
