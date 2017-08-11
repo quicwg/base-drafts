@@ -1695,7 +1695,7 @@ Stream ID:
 
 : The 32-bit Stream ID of the stream being terminated.
 
-Application Protocol Error Code:
+App Protocol Error Code:
 
 : A 32-bit application protocol error code (see {{app-error-codes}}) which
   indicates why the stream is being closed.
