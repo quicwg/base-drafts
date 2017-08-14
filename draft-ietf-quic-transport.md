@@ -1728,7 +1728,7 @@ than the total size of data received on that stream.  Receiving STREAM frames
 might not increase the largest received offset.
 
 The largest offset sent on a stream MUST NOT exceed the largest maximum stream offset
-value advertised by the receiver.  For consistency, the FIN is also subject to this limit.  
+value advertised by the receiver.  For consistency, the FIN is also subject to this limit.
 An endpoint MUST terminate a connection with a FLOW_CONTROL_ERROR error if it receives more 
 data than the largest maximum stream data that it has sent for the affected stream, unless 
 this is a result of a change in the initial limits (see {{zerortt-parameters}}).
