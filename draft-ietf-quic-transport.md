@@ -522,6 +522,10 @@ from the triggering client packet.  This allows clients some assurance that the
 server received the packet and that the Version Negotiation packet was not
 carried in a packet with a spoofed source address.
 
+A Version Negotiation packet is never explicitly acknowledged in an ACK frame by
+a client.  Receiving another Client Initial packet implicitly acknowledges a
+Version Negotiation packet.
+
 The payload of the Version Negotiation packet is a list of 32-bit versions which
 the server supports, as shown below.
 
@@ -542,6 +546,7 @@ the server supports, as shown below.
 
 See {{version-negotiation}} for a description of the version negotiation
 process.
+
 
 
 ## Cleartext Packets {#cleartext-packet}
@@ -594,6 +599,10 @@ by a server that wishes to perform a stateless retry (see
 The packet number and connection ID fields echo the corresponding fields from
 the triggering client packet.  This allows a client to verify that the server
 received its packet.
+
+A Server Stateless Retry packet is never explicitly acknowledged in an ACK frame
+by a client.  Receiving another Client Initial packet implicitly acknowledges a
+Server Stateless Retry packet.
 
 After receiving a Server Stateless Retry packet, the client uses a new Client
 Initial packet containing the next cryptographic handshake message.  The client
@@ -1926,6 +1935,10 @@ received in the past.
 Unlike TCP SACKs, QUIC ACK blocks are irrevocable.  Once a packet has
 been acknowledged, even if it does not appear in a future ACK frame,
 it remains acknowledged.
+
+A client MUST NOT acknowledge Version Negotiation or Server Stateless Retry
+packets.  These packet types contain packet numbers selected by the client, not
+the server.
 
 QUIC ACK frames contain a timestamp section with up to 255 timestamps.
 Timestamps enable better congestion control, but are not required for correct
