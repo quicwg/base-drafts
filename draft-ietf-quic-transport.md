@@ -548,7 +548,6 @@ See {{version-negotiation}} for a description of the version negotiation
 process.
 
 
-
 ## Cleartext Packets {#cleartext-packet}
 
 Cleartext packets are sent during the handshake prior to key negotiation.
