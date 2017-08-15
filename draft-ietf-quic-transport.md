@@ -1680,7 +1680,8 @@ Maximum Offset:
 
 : A 64-bit unsigned integer indicating the sum of maximum offset of data that
   can be sent across all streams, in units of 1024 octets.  That is, the updated
-  connection-level data limit is determined by multiplying the encoded value by 1024.
+  connection-level data limit is determined by multiplying the encoded value by
+  1024.
 
 All data sent in STREAM frames counts toward this limit, with the exception of
 data on stream 0.  The sum of the largest received offsets on all streams -
@@ -1727,11 +1728,11 @@ reordering can mean that the largest received offset on a stream can be greater
 than the total size of data received on that stream.  Receiving STREAM frames
 might not increase the largest received offset.
 
-The largest offset sent on a stream MUST be less than the largest maximum stream offset
-value advertised by the receiver.  An endpoint MUST terminate a connection with a
-FLOW_CONTROL_ERROR error if it receives more data than the largest maximum stream
-data that it has sent for the affected stream, unless this is a result of a change
-in the initial limits (see {{zerortt-parameters}}).
+The largest offset sent on a stream MUST be less than the largest maximum
+stream offset value advertised by the receiver.  An endpoint MUST terminate a
+connection with a FLOW_CONTROL_ERROR error if it receives more data than the
+largest maximum stream data that it has sent for the affected stream, unless
+this is a result of a change in the initial limits (see {{zerortt-parameters}}).
 
 
 ## MAX_STREAM_ID Frame {#frame-max-stream-id}
