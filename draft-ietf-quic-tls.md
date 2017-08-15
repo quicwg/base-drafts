@@ -1507,7 +1507,7 @@ packets as indicative of an attack.
 
 # Error Codes {#errors}
 
-This document defines error codes from the error code space used in
+This section defines error codes from the error code space used in
 {{QUIC-TRANSPORT}}.
 
 The following error codes are defined when TLS is used for the crypto handshake:
