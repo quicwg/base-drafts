@@ -1672,7 +1672,7 @@ The RST_STREAM frame is as follows:
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                        Stream ID (32)                         |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|               Application Protocol Error Code (32)            |
+|  Application Error Code (16)  |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                                                               |
 +                       Final Offset (64)                       +
@@ -1686,7 +1686,7 @@ Stream ID:
 
 : The 32-bit Stream ID of the stream being terminated.
 
-Application Protocol Error Code:
+Application Error Code:
 
 : A 16-bit application protocol error code (see {{app-error-codes}}) which
   indicates why the stream is being closed.
