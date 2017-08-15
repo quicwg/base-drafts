@@ -1678,7 +1678,7 @@ The fields in the MAX_DATA frame are as follows:
 
 Maximum Offset:
 
-: A 64-bit unsigned integer indicating the sum of maximum offset of data that 
+: A 64-bit unsigned integer indicating the sum of maximum offset of data that
   can be sent across all streams, in units of 1024 octets.  That is, the updated
   connection-level data limit is determined by multiplying the encoded value by 1024.
 
