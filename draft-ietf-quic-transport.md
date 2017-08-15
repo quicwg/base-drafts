@@ -846,7 +846,7 @@ explained in more detail as they are referenced later in the document.
 | 0x0a        | STREAM_ID_NEEDED  | {{frame-stream-id-needed}}  |
 | 0x0b        | NEW_CONNECTION_ID | {{frame-new-connection-id}} |
 | 0x0c        | STOP_SENDING      | {{frame-stop-sending}}      |
-| 0x07        | PONG              | {{frame-pong}}              |
+| 0x0d        | PONG              | {{frame-pong}}              |
 | 0xa0 - 0xbf | ACK               | {{frame-ack}}               |
 | 0xc0 - 0xff | STREAM            | {{frame-stream}}            |
 {: #frame-types title="Frame Types"}
