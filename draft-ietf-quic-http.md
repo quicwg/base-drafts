@@ -612,10 +612,9 @@ SETTINGS frames always apply to a connection, never a single stream.  A SETTINGS
 frame MUST be sent as the first frame of the control stream (see
 {{stream-mapping}}) by each peer, and MUST NOT be sent subsequently or on any
 other stream. If an endpoint receives an SETTINGS frame on a different stream,
-the endpoint MUST respond with a connection error of type
-HTTP_SETTINGS_ON_WRONG_STREAM.  If an endpoint receives a second SETTINGS frame,
-the endpoint MUST respond with a connection error of type
-HTTP_MULTIPLE_SETTINGS.
+the endpoint MUST respond with a connection error of type HTTP_WRONG_STREAM.  If
+an endpoint receives a second SETTINGS frame, the endpoint MUST respond with a
+connection error of type HTTP_MULTIPLE_SETTINGS.
 
 The SETTINGS frame affects connection state. A badly formed or incomplete
 SETTINGS frame MUST be treated as a connection error ({{errors}}) of type
@@ -855,14 +854,14 @@ HTTP_MALFORMED_PUSH_PROMISE (0x0C):
 : A PUSH_PROMISE frame has been received with an invalid format.
 
 HTTP_MALFORMED_DATA (0x0D):
-: A HEADERS frame has been received with an invalid format.
+: A DATA frame has been received with an invalid format.
 
 HTTP_INTERRUPTED_HEADERS (0x0E):
 : A HEADERS frame without the End Header Block flag was followed by a frame
   other than HEADERS.
 
-HTTP_SETTINGS_ON_WRONG_STREAM (0x0F):
-: A SETTINGS frame was received on a request control stream.
+HTTP_WRONG_STREAM (0x0F):
+: A frame was received on stream where it is not permitted.
 
 HTTP_MULTIPLE_SETTINGS (0x10):
 : More than one SETTINGS frame was received.
@@ -1237,6 +1236,7 @@ The entries in the following table are registered by this document.
 |  HTTP_MALFORMED_PRIORITY          |  0x0A  |  Invalid PRIORITY frame                | {{http-error-codes}} |
 |  HTTP_MALFORMED_SETTINGS          |  0x0B  |  Invalid SETTINGS frame                | {{http-error-codes}} |
 |  HTTP_MALFORMED_PUSH_PROMISE      |  0x0C  |  Invalid PUSH_PROMISE frame            | {{http-error-codes}} |
+|  HTTP_MALFORMED_DATA              |  0x0D  |  Invalid DATA frame                    | {{http-error-codes}} |
 |  HTTP_INTERRUPTED_HEADERS         |  0x0E  |  Incomplete HEADERS block              | {{http-error-codes}} |
 |  HTTP_WRONG_STREAM                |  0x0F  |  A frame was sent on the wrong stream  | {{http-error-codes}} |
 |  HTTP_MULTIPLE_SETTINGS           |  0x10  |  Multiple SETTINGS frames              | {{http-error-codes}} |
