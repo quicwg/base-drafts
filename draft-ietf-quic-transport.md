@@ -1436,9 +1436,10 @@ connection state if they have neither sent nor received a packet for this time.
 The time at which an idle timeout takes effect won't be perfectly synchronized
 on peers.  Endpoints might allow for the possibility that the remote side might
 attempt to send packets before the timeout.  In this case, an endpoint might
-choose to retain enough information to generate a CONNECTION_CLOSE.  Endpoints
-MAY instead rely on sending Public Reset in response to packets that arrive
-after an idle timeout.
+choose to retain enough information to generate a packet containing
+CONNECTION_CLOSE (see {{immediate-close}}).  Endpoints MAY instead rely on
+sending Stateless Reset in response to packets that arrive after an idle
+timeout.
 
 
 ### Immediate Close
