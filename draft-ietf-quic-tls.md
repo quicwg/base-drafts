@@ -1561,6 +1561,14 @@ many others.
 
 Issue and pull request numbers are listed with a leading octothorp.
 
+## Since draft-ietf-quic-tls-04
+
+- Update labels used in HKDF-Expand-Label to match TLS 1.3 (#642)
+
+## Since draft-ietf-quic-tls-03
+
+No significant changes.
+
 ## Since draft-ietf-quic-tls-02
 
 - Updates to match changes in transport draft

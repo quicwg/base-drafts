@@ -3213,8 +3213,22 @@ Issue and pull request numbers are listed with a leading octothorp.
 
 ## Since draft-ietf-quic-transport-04
 
-- Introduce STOP_SENDING frame (#165)
-- Removed GOAWAY (#696)
+- Introduce STOP_SENDING frame, RST_STREAM only resets in one direction (#165)
+- Removed GOAWAY; application protocols are responsible for graceful shutdown
+  (#696)
+- Reduced the number of error codes (#96, #177, #184, #211)
+- Version validation fields can't move or change (#121)
+- Removed versions from the transport parameters in a NewSessionTicket message
+  (#547)
+- Clarify the meaning of "bytes in flight" (#550)
+- Public reset is now stateless reset and not visible to the path (#215)
+- Reordered bits and fields in STREAM frame (#620)
+- Clarifications to the stream state machine (#572, #571)
+- Increased the maximum length of the Largest Acknowledged field in ACK frames
+  to 64 bits (#629)
+- truncate_connection_id is renamed to omit_connection_id (#659)
+- CONNECTION_CLOSE terminates the connection like TCP RST (#330, #328)
+- Update labels used in HKDF-Expand-Label to match TLS 1.3 (#642)
 
 ## Since draft-ietf-quic-transport-03
 

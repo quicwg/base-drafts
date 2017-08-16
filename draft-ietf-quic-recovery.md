@@ -733,6 +733,14 @@ This document has no IANA actions.  Yet.
 > **RFC Editor's Note:**  Please remove this section prior to
 > publication of a final version of this document.
 
+## Since draft-ietf-quic-recovery-04
+
+No significant changes.
+
+## Since draft-ietf-quic-recovery-03
+
+No significant changes.
+
 ## Since draft-ietf-quic-recovery-02
 
 - Integrate F-RTO (#544, #409)
