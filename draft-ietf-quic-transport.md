@@ -1033,7 +1033,7 @@ language from Section 3 of {{!I-D.ietf-tls-tls13}}.
             QuicVersion initial_version;
 
          case encrypted_extensions:
-            QuicVersion supported_versions<2..2^8-4>;
+            QuicVersion supported_versions<4..2^8-4>;
 
          case new_session_ticket:
             struct {};
