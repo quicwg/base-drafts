@@ -914,7 +914,7 @@ HTTP_MALFORMED_PUSH (0x11):
 : A push stream header was malformed or included an invalid Push ID.
 
 HTTP_MALFORMED_MAX_PUSH_ID (0x12):
-: A MAX_STREAM_ID frame has been received with an invalid format.
+: A MAX_PUSH_ID frame has been received with an invalid format.
 
 
 # Considerations for Transitioning from HTTP/2
