@@ -1668,7 +1668,7 @@ Reason Phrase:
 ## MAX_DATA Frame {#frame-max-data}
 
 The MAX_DATA frame (type=0x04) is used in flow control to inform the peer of
-the maximum amount of data that can be sent on the connection as a whole.
+the maximum offset of data that can be sent on the connection as a whole.
 
 The frame is as follows:
 
@@ -1677,17 +1677,17 @@ The frame is as follows:
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                                                               |
-+                        Maximum Data (64)                      +
++                        Maximum Offset (64)                    +
 |                                                               |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
 
 The fields in the MAX_DATA frame are as follows:
 
-Maximum Data:
+Maximum Offset:
 
-: A 64-bit unsigned integer indicating the maximum amount of data that can be
-  sent on the entire connection, in units of 1024 octets.  That is, the updated
+: A 64-bit unsigned integer indicating the sum of maximum offset of data that
+  can be sent across all streams, in units of 1024 octets.  That is, the updated
   connection-level data limit is determined by multiplying the encoded value by
   1024.
 
@@ -1703,7 +1703,7 @@ initial limits (see {{zerortt-parameters}}).
 ## MAX_STREAM_DATA Frame {#frame-max-stream-data}
 
 The MAX_STREAM_DATA frame (type=0x05) is used in flow control to inform a peer
-of the maximum amount of data that can be sent on a stream.
+of the maximum offset that can be sent on a stream.
 
 The frame is as follows:
 
@@ -1714,7 +1714,7 @@ The frame is as follows:
 |                        Stream ID (32)                         |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                                                               |
-+                    Maximum Stream Data (64)                   +
++                    Maximum Stream Offset (64)                 +
 |                                                               |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
@@ -1725,9 +1725,9 @@ Stream ID:
 
 : The stream ID of the stream that is affected.
 
-Maximum Stream Data:
+Maximum Stream Offset:
 
-: A 64-bit unsigned integer indicating the maximum amount of data that can be
+: A 64-bit unsigned integer indicating the largest data offset that can be
   sent on the identified stream, in units of octets.
 
 When counting data toward this limit, an endpoint accounts for the largest
@@ -1736,11 +1736,11 @@ reordering can mean that the largest received offset on a stream can be greater
 than the total size of data received on that stream.  Receiving STREAM frames
 might not increase the largest received offset.
 
-The data sent on a stream MUST NOT exceed the largest maximum stream data value
-advertised by the receiver.  An endpoint MUST terminate a connection with a
-FLOW_CONTROL_ERROR error if it receives more data than the largest maximum
-stream data that it has sent for the affected stream, unless this is a result of
-a change in the initial limits (see {{zerortt-parameters}}).
+The largest offset sent on a stream MUST be less than the largest maximum
+stream offset value advertised by the receiver.  An endpoint MUST terminate a
+connection with a FLOW_CONTROL_ERROR error if it receives more data than the
+largest maximum stream data that it has sent for the affected stream, unless
+this is a result of a change in the initial limits (see {{zerortt-parameters}}).
 
 
 ## MAX_STREAM_ID Frame {#frame-max-stream-id}
