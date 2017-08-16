@@ -1092,10 +1092,16 @@ idle_timeout (0x0003):
 : The idle timeout is a value in seconds that is encoded as an unsigned 16-bit
   integer.  The maximum value is 600 seconds (10 minutes).
 
-stateless_reset_token (0x0005):
+A server MUST include the following transport parameters:
+
+stateless_reset_token (0x0006):
 
 : The Stateless Reset Token is used in verifying a stateless reset, see
   {{stateless-reset}}.  This parameter is a sequence of 16 octets.
+
+A client MUST NOT include a stateless reset token.  A server MUST treat receipt
+of a stateless_reset_token transport parameter as a connection error of type
+TRANSPORT_PARAMETER_ERROR.
 
 An endpoint MAY use the following transport parameters:
 
