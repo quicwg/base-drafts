@@ -809,7 +809,7 @@ the server MAY send another GOAWAY frame with an updated last stream identifier.
 This ensures that a connection can be cleanly shut down without losing requests.
 
 
-# MAX_PUSH_ID {#frame-max-push-id}
+### MAX_PUSH_ID {#frame-max-push-id}
 
 The MAX_PUSH_ID frame (type=0xD) is used by clients to control the number of
 server pushes that the server can initiate.  This sets the maximum value for a
