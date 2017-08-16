@@ -541,7 +541,7 @@ older than 1.3 is negotiated.
 
 QUIC requires that the initial handshake packet from a client fit within the
 payload of a single packet.  The size limits on QUIC packets mean that a record
-containing a ClientHello needs to fit within 1197 octets.
+containing a ClientHello needs to fit within 1171 octets.
 
 A TLS ClientHello can fit within this limit with ample space remaining.
 However, there are several variables that could cause this limit to be exceeded.
@@ -1262,25 +1262,27 @@ able to inject these packets.  Timing and packet retransmission information from
 `ACK` frames is critical to the functioning of the protocol, but these frames
 might be spoofed or altered.
 
-Endpoints MUST NOT use an unprotected `ACK` frame to acknowledge data that was
-protected by 0-RTT or 1-RTT keys.  An endpoint MUST ignore an unprotected `ACK`
-frame if it claims to acknowledge data that was sent in a protected packet.
-Such an acknowledgement can only serve as a denial of service, since an endpoint
+Endpoints MUST NOT use an `ACK` frame in an unprotected packet to acknowledge
+packets that were protected by 0-RTT or 1-RTT keys.  An endpoint MUST treat
+receipt of an `ACK` frame in an unprotected packet that claims to acknowledge
+protected packets as a connection error of type OPTIMISTIC_ACK.  An endpoint
 that can read protected data is always able to send protected data.
 
-ISSUE:
+Note:
 
-: What about 0-RTT data?  Should we allow acknowledgment of 0-RTT with
-  unprotected frames?  If we don't, then 0-RTT data will be unacknowledged until
-  the handshake completes.  This isn't a problem if the handshake completes
-  without loss, but it could mean that 0-RTT stalls when a handshake packet
-  disappears for any reason.
+: 0-RTT data can be acknowledged by the server as it receives it, but any
+  packets containing acknowledgments of 0-RTT data cannot have packet protection
+  removed by the client until the TLS handshake is complete.  The 1-RTT keys
+  necessary to remove packet protection cannot be derived until the client
+  receives all server handshake messages.
 
-An endpoint SHOULD use data from unprotected or 0-RTT-protected `ACK` frames
-only during the initial handshake and while they have insufficient information
-from 1-RTT-protected `ACK` frames.  Once sufficient information has been
-obtained from protected messages, information obtained from less reliable
-sources can be discarded.
+An endpoint SHOULD use data from `ACK` frames carried in unprotected packets or
+packets protected with 0-RTT keys only during the initial handshake.  All `ACK`
+frames contained in unprotected packets that are received after successful
+receipt of a packet protected with 1-RTT keys MUST be discarded.  An endpoint
+SHOULD therefore include acknowledgments for unprotected and any packets
+protected with 0-RTT keys until it sees an acknowledgment for a packet that is
+both protected with 1-RTT keys and contains an `ACK` frame.
 
 
 ### Updates to Data and Stream Limits
@@ -1558,6 +1560,14 @@ many others.
 > final version of this document.
 
 Issue and pull request numbers are listed with a leading octothorp.
+
+## Since draft-ietf-quic-tls-04
+
+- Update labels used in HKDF-Expand-Label to match TLS 1.3 (#642)
+
+## Since draft-ietf-quic-tls-03
+
+No significant changes.
 
 ## Since draft-ietf-quic-tls-02
 

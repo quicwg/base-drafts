@@ -423,6 +423,10 @@ DATA frames MUST be associated with an HTTP request or response.  If a DATA
 frame is received on the control stream, the recipient MUST respond with a
 connection error ({{errors}}) of type HTTP_WRONG_STREAM.
 
+DATA frames MUST contain a non-zero-length payload.  If a DATA frame is received
+with a payload length of zero, the recipient MUST respond with a stream error
+({{errors}}) of type HTTP_MALFORMED_DATA.
+
 ### HEADERS {#frame-headers}
 
 The HEADERS frame (type=0x1) is used to carry part of a header set, compressed
@@ -1301,6 +1305,10 @@ The original authors of this specification were Robbie Shade and Mike Warres.
 > **RFC Editor's Note:**  Please remove this section prior to publication of a
 > final version of this document.
 
+## Since draft-ietf-quic-http-05
+
+- Made push ID sequential, add MAX_PUSH_ID, remove SETTINGS_ENABLE_PUSH (#709)
+
 ## Since draft-ietf-quic-http-04
 
 - Cite RFC 5234 (#404)
@@ -1309,7 +1317,7 @@ The original authors of this specification were Robbie Shade and Mike Warres.
 - SETTINGS_ENABLE_PUSH instead of SETTINGS_DISABLE_PUSH (#477)
 - Restored GOAWAY (#696)
 - Identify server push using Push ID rather than a stream ID (#702,#281)
-- Made push ID sequential, add MAX_PUSH_ID, remove SETTINGS_ENABLE_PUSH (#709)
+- DATA frames cannot be empty (#700)
 
 ## Since draft-ietf-quic-http-03
 

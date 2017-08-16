@@ -522,6 +522,10 @@ from the triggering client packet.  This allows clients some assurance that the
 server received the packet and that the Version Negotiation packet was not
 carried in a packet with a spoofed source address.
 
+A Version Negotiation packet is never explicitly acknowledged in an ACK frame by
+a client.  Receiving another Client Initial packet implicitly acknowledges a
+Version Negotiation packet.
+
 The payload of the Version Negotiation packet is a list of 32-bit versions which
 the server supports, as shown below.
 
@@ -570,11 +574,11 @@ the packet contents increment the packet number by one, see
 ({{packet-numbers}}).
 
 The payload of a Client Initial packet consists of a STREAM frame (or frames)
-for stream 0 containing a cryptographic handshake message, plus any PADDING
-frames necessary to ensure that the packet is at least the minimum PMTU size
-(see {{packetization}}).  The stream in this packet always starts at an offset
-of 0 (see {{stateless-retry}}) and the complete cyptographic handshake message
-MUST fit in a single packet (see {{handshake}}).
+for stream 0 containing a cryptographic handshake message, with enough PADDING
+frames that the packet is at least 1200 octets (see {{packetization}}).  The
+stream in this packet always starts at an offset of 0 (see {{stateless-retry}})
+and the complete cyptographic handshake message MUST fit in a single packet (see
+{{handshake}}).
 
 The client uses the Client Initial Packet type for any packet that contains an
 initial cryptographic handshake message.  This includes all cases where a new
@@ -594,6 +598,10 @@ by a server that wishes to perform a stateless retry (see
 The packet number and connection ID fields echo the corresponding fields from
 the triggering client packet.  This allows a client to verify that the server
 received its packet.
+
+A Server Stateless Retry packet is never explicitly acknowledged in an ACK frame
+by a client.  Receiving another Client Initial packet implicitly acknowledges a
+Server Stateless Retry packet.
 
 After receiving a Server Stateless Retry packet, the client uses a new Client
 Initial packet containing the next cryptographic handshake message.  The client
@@ -1084,10 +1092,16 @@ idle_timeout (0x0003):
 : The idle timeout is a value in seconds that is encoded as an unsigned 16-bit
   integer.  The maximum value is 600 seconds (10 minutes).
 
-stateless_reset_token (0x0005):
+A server MUST include the following transport parameters:
+
+stateless_reset_token (0x0006):
 
 : The Stateless Reset Token is used in verifying a stateless reset, see
   {{stateless-reset}}.  This parameter is a sequence of 16 octets.
+
+A client MUST NOT include a stateless reset token.  A server MUST treat receipt
+of a stateless_reset_token transport parameter as a connection error of type
+TRANSPORT_PARAMETER_ERROR.
 
 An endpoint MAY use the following transport parameters:
 
@@ -1106,7 +1120,7 @@ max_packet_size (0x0005):
   the endpoint is willing to receive, encoded as an unsigned 16-bit integer.
   This indicates that packets larger than this limit will be dropped.  The
   default for this parameter is the maximum permitted UDP payload of 65527.
-  Values below 1252 are invalid.  This limit only applies to protected packets
+  Values below 1200 are invalid.  This limit only applies to protected packets
   ({{packet-protected}}).
 
 
@@ -1198,6 +1212,15 @@ negotiated_version value is not included in the supported_versions list.  A
 client MUST terminate with a VERSION_NEGOTIATION_ERROR error code if
 version negotiation occurred but it would have selected a different version
 based on the value of the supported_versions list.
+
+When an endpoint accepts multiple QUIC versions, it can potentially interpret
+transport parameters as they are defined by any of the QUIC versions it
+supports.  The version field in the QUIC packet header is authenticated using
+transport parameters.  The position and the format of the version fields in
+transport parameters MUST either be identical across different QUIC versions, or
+be unambiguously different to ensure no confusion about their interpretation.
+One way that a new format could be introduced is to define a TLS extension with
+a different codepoint.
 
 
 ## Stateless Retries {#stateless-retry}
@@ -1918,6 +1941,10 @@ Unlike TCP SACKs, QUIC ACK blocks are irrevocable.  Once a packet has
 been acknowledged, even if it does not appear in a future ACK frame,
 it remains acknowledged.
 
+A client MUST NOT acknowledge Version Negotiation or Server Stateless Retry
+packets.  These packet types contain packet numbers selected by the client, not
+the server.
+
 QUIC ACK frames contain a timestamp section with up to 255 timestamps.
 Timestamps enable better congestion control, but are not required for correct
 loss recovery, and old timestamps are less valuable, so it is not guaranteed
@@ -2268,19 +2295,18 @@ An endpoint MUST NOT reduce their MTU below this number, even if it receives
 signals that indicate a smaller limit might exist.
 
 Clients MUST ensure that the first packet in a connection, and any
-retransmissions of those octets, has a QUIC packet size of least 1232 octets for
-an IPv6 packet and 1252 octets for an IPv4 packet.  In the absence of extensions
-to the IP header, padding to exactly these values will result in an IP packet
-that is 1280 octets.
+retransmissions of those octets, has a QUIC packet size of least 1200 octets.
+The packet size for a QUIC packet includes the QUIC header and integrity check,
+but not the UDP or IP header.
 
-The initial client packet SHOULD be padded to exactly these values unless the
+The initial client packet SHOULD be padded to exactly 1200 octets unless the
 client has a reasonable assurance that the PMTU is larger.  Sending a packet of
 this size ensures that the network path supports an MTU of this size and helps
 reduce the amplitude of amplification attacks caused by server responses toward
 an unverified client address.
 
 Servers MUST ignore an initial plaintext packet from a client if its total size
-is less than 1232 octets for IPv6 or 1252 octets for IPv4.
+is less than 1200 octets.
 
 If a QUIC endpoint determines that the PMTU between any pair of local and remote
 IP addresses has fallen below 1280 octets, it MUST immediately cease sending
@@ -3193,8 +3219,22 @@ Issue and pull request numbers are listed with a leading octothorp.
 
 ## Since draft-ietf-quic-transport-04
 
-- Introduce STOP_SENDING frame (#165)
-- Removed GOAWAY (#696)
+- Introduce STOP_SENDING frame, RST_STREAM only resets in one direction (#165)
+- Removed GOAWAY; application protocols are responsible for graceful shutdown
+  (#696)
+- Reduced the number of error codes (#96, #177, #184, #211)
+- Version validation fields can't move or change (#121)
+- Removed versions from the transport parameters in a NewSessionTicket message
+  (#547)
+- Clarify the meaning of "bytes in flight" (#550)
+- Public reset is now stateless reset and not visible to the path (#215)
+- Reordered bits and fields in STREAM frame (#620)
+- Clarifications to the stream state machine (#572, #571)
+- Increased the maximum length of the Largest Acknowledged field in ACK frames
+  to 64 bits (#629)
+- truncate_connection_id is renamed to omit_connection_id (#659)
+- CONNECTION_CLOSE terminates the connection like TCP RST (#330, #328)
+- Update labels used in HKDF-Expand-Label to match TLS 1.3 (#642)
 
 ## Since draft-ietf-quic-transport-03
 
