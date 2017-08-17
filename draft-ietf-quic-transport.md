@@ -1356,12 +1356,17 @@ recover such as outstanding requests, which might otherwise be lost with no easy
 way to retry them.
 
 An endpoint that receives packets that contain a source IP address and port that
-has not yet been used MUST start sending new packets with those values as a
-destination IP address and port.  Packets exchanged between endpoints now
-follows a new path.  An endpoint MUST validate that its peer can receive packets
-at the new address before sending any significant quantity of data to that
-address, or it risks being used for denial of service.  See {{migrate-validate}}
-for details.
+has not yet been used MUST start sending new packets with those as a destination
+IP address and port.  Packets exchanged between endpoints now follow a new path.
+
+Due to variations in path latency or packet reordering, packets from different
+source addresses might be reordered.  The packet with the highest packet number
+MUST be used to determine which path to use.  Endpoints also need to be prepared
+to receive packets from an older source address.
+
+An endpoint MUST validate that its peer can receive packets at the new address
+before sending any significant quantity of data to that address, or it risks
+being used for denial of service.  See {{migrate-validate}} for details.
 
 
 ### Privacy Implications of Connection Migration {#migration-linkability}
@@ -1434,9 +1439,9 @@ its peer can receive and respond to packets at that new address.  By providing
 copies of the frames that it receives, the peer proves that it is receiving
 packets at the new address and consents to receive data.
 
-Prior to validating the new remote address, and endpoint MUST limit the rate of
-data that it sends to its peer.  At a minimum, this rate needs to consider the
-possibility that it is being sent without congestion feedback.
+Prior to validating the new remote address, and endpoint MUST limit the amount
+of data and packets that it sends to its peer.  At a minimum, this needs to
+consider the possibility that packets are sent without congestion feedback.
 
 Once a connection is established, address validation is relatively simple (see
 {{address-validation}} for the process that is used during the handshake).  An
@@ -1467,9 +1472,9 @@ imperfect; if the new path capacity is significantly reduced, ultimately this
 relies on the congestion controller responding to congestion signals and reduce
 send rates appropriately.
 
-After verifying an address, the endpoint might wish to update address validation
-tokens ({{address-validation}}) that it has issued to its peer.  Previous tokens
-might have been invalidated by the migration.
+After verifying an address, the endpoint SHOULD update any address validation
+tokens ({{address-validation}}) that it has issued to its peer if those are no
+longer valid based on the changed address.
 
 Address validation using the PING frame MAY be used at any time by either peer.
 For instance, an endpoint might check that a peer is still in possession of its
