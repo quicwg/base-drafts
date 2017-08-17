@@ -2358,8 +2358,11 @@ by STREAM or RST_STREAM frames have occurred. Once the packet has been fully
 processed, a receiver acknowledges receipt by sending one or more ACK frames
 containing the packet number of the received packet.
 
-To avoid creating an indefinite feedback loop, an endpoint MUST NOT generate an
-ACK frame in response to a packet containing only ACK or PADDING frames.
+To avoid creating an indefinite feedback loop, an endpoint MUST NOT send an
+ACK frame in response to a packet containing only ACK or PADDING frames, even
+if there are packet gaps which precede the received packet.  The endpoint MUST
+acknowledge packets containing only ACK or PADDING frames in the next ACK frame
+that it sends.
 
 Strategies and implications of the frequency of generating acknowledgments are
 discussed in more detail in {{QUIC-RECOVERY}}.
