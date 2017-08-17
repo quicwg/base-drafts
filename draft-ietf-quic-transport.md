@@ -2361,7 +2361,8 @@ containing the packet number of the received packet.
 To avoid creating an indefinite feedback loop, an endpoint MUST NOT send an
 ACK frame in response to a packet containing only ACK or PADDING frames, even
 if there are packet gaps which precede the received packet.  The endpoint MUST
-ack packets containing only ACK or PADDING frames in the next sent ACK frame.
+acknowledge packets containing only ACK or PADDING frames in the next ACK frame
+that it sends.
 
 Strategies and implications of the frequency of generating acknowledgments are
 discussed in more detail in {{QUIC-RECOVERY}}.
