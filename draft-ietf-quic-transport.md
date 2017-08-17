@@ -2223,12 +2223,10 @@ Offset:
 Related Stream ID:
 
 : A 32-bit value containing the stream ID of a stream in the opposite direction.
-  This field is only present if the Offset field is zero length.  Using a
+  This field is only present if the R bit in the frame type is set.  Using a
   Related Stream ID allows an application protocol to create bidirectional
-  streams by having a stream in one direction refer to another.  The identified
-  stream MUST NOT be in the "idle" state; receipt of a STREAM frame that
-  contains a Related Stream ID for an "idle" stream MUST be treated as a
-  connection error of type PROTOCOL_VIOLATION.
+  streams by having a stream in one direction refer to another (see
+  {{related-streams}}).
 
 Data Length:
 
@@ -2653,12 +2651,12 @@ INVALID_RELATED_STREAM error code can be used by protocols to signal receipt of
 invalid Related Stream ID field values, unless the protocol defines a more
 specific error code for the circumstances.
 
-The Related Stream ID for a stream only needs to be sent once for each (allowing
-for retransmissions due to loss).  Sending the field on all stream frames with
-an offset of 0 ensures that the value is received without duplicating the field
-unnecessarily.  If the value of the Related Stream ID changes for a stream, the
-endpoint that receives the conflicting value MUST treat this as a connection
-error of type INVALID_RELATED_STREAM.
+The Related Stream ID for a stream only needs to be sent once for each stream
+(allowing for retransmissions due to loss).  Sending the field on all stream
+frames with an offset of 0 ensures that the value is received without
+duplicating the field unnecessarily.  If the value of the Related Stream ID
+changes for a stream, the endpoint that receives the conflicting value MUST
+treat this as a connection error of type INVALID_RELATED_STREAM.
 
 A related stream MUST NOT refer to a stream in the "idle" state
 ({{stream-state-idle}}).  Receipt of a STREAM frame that includes a Related
