@@ -2641,7 +2641,7 @@ stream ID of the first in the Related Stream ID of the first stream.  This
 enables straightforward use of QUIC for request-response protocols or protocols
 that rely on bidirectional channels.
 
-This document doesn't proscribe the use of the Related Stream ID field, leaving
+This document doesn't define how to use the Related Stream ID field, leaving
 decisions about the semantics of related streams to protocols that use QUIC.
 Protocols that use QUIC MUST either define the semantics of related streams or
 prohibit the use of the Related Stream ID field.  Protocols MAY define other
@@ -2652,11 +2652,17 @@ invalid Related Stream ID field values, unless the protocol defines a more
 specific error code for the circumstances.
 
 The Related Stream ID for a stream only needs to be sent once for each stream
-(allowing for retransmissions due to loss).  Sending the field on all stream
-frames with an offset of 0 ensures that the value is received without
-duplicating the field unnecessarily.  If the value of the Related Stream ID
-changes for a stream, the endpoint that receives the conflicting value MUST
-treat this as a connection error of type INVALID_RELATED_STREAM.
+(allowing for retransmissions due to loss).  If a stream is related to another
+stream, then all stream frames with an offset of 0 MUST include the Related
+Stream ID field.  This is generally sufficient to ensure that the relationship
+between streams is correctly received.  However, the field MAY be included on
+other STREAM frames, which ensures that the stream relationship can be
+established even if the packet containing the first octets of a stream is lost.
+If the Related Stream ID is present in a STREAM frame and the value is different
+to the value included in other STREAM frames or a STREAM frame with a non-zero
+offset contains the value and a STREAM frame with offset zero does not, the
+recipient of the conflicting information MUST treat this as a connection error
+of type INVALID_RELATED_STREAM.
 
 A related stream MUST NOT refer to a stream in the "idle" state
 ({{stream-state-idle}}).  Receipt of a STREAM frame that includes a Related
