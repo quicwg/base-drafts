@@ -879,8 +879,8 @@ a new connection.
 
 A packet that can be identified as belonging to an existing connection is
 handled according to the current state of that connection.  Packets are
-associated with established connections using connection ID if it is present;
-this might include connection IDs that were advertised using NEW_CONNECTION_ID
+associated with existing connections using connection ID if it is present; this
+might include connection IDs that were advertised using NEW_CONNECTION_ID
 ({{frame-new-connection-id}}).  Packets without connection IDs and long-form
 packets for connections that have incomplete cryptographic handshakes are
 associated using the tuple of source and destination IP addresses and ports.
@@ -896,23 +896,25 @@ discarding these packets could create false loss signals for the congestion
 controllers.  However, limiting the number and size of buffered packets might be
 needed to prevent exposure to denial of service.
 
-For clients, all packets that cannot be associated with a connection MUST be
-discarded.  Discarded packets MAY be logged for diagnostic or security purposes.
+For clients, all packets that cannot be associated with an existing connection
+MUST be discarded.  Discarded packets MAY be logged for diagnostic or security
+purposes.
 
 For servers, packets that aren't associated with a connection potentially create
 a new connection.  However, only packets that use the long packet header and
-packets that meet the minimum size defined for the protocol version can be
-initial packets.  A server MUST discard packets that use the short header form,
-or packets that are smaller than the smallest minimum size for any version that
-the server supports.
+that are at least the minimum size defined for the protocol version can be
+initial packets.  A server MUST discard packets that cannot be associated with a
+connection if they use the short header form, or they are smaller than the
+smallest minimum size for any version that the server supports.
 
 This version of QUIC defines a minimum size for initial packets of 1200 octets.
 Versions of QUIC that define smaller minimum initial packet sizes need to be
-aware that initial packets will be discarded by servers that only support
-versions with larger minimums.  Clients that support multiple QUIC versions can
-avoid this problem by ensuring that they increase the size of their initial
-packets to the largest minimum size across all of the QUIC versions they
-support.
+aware that initial packets will be discarded without action by servers that only
+support versions with larger minimums.  Clients that support multiple QUIC
+versions can avoid this problem by ensuring that they increase the size of their
+initial packets to the largest minimum size across all of the QUIC versions they
+support.  Servers need to recognize initial packets that are the minimum size of
+all QUIC versions they support.
 
 
 ## Version Negotiation {#version-negotiation}
@@ -948,7 +950,7 @@ version if that packet could create a new connection.  This allows a server to
 process packets with unsupported versions without retaining state.  Though
 either the client initial packet or the version negotiation packet that is sent
 in response could be lost, the client will send new packets until it
-successfully receives a response.
+successfully receives a response or it abandons the connection attempt.
 
 
 ### Handling Version Negotiation Packets {#handle-vn}
@@ -960,7 +962,7 @@ packet.  If this check fails, the packet MUST be discarded.
 Once the Version Negotiation packet is determined to be valid, the client then
 selects an acceptable protocol version from the list provided by the server.
 The client then attempts to create a connection using that version.  Though the
-contents of the client initial packet that the client sends might not change in
+contents of the client initial packet the client sends might not change in
 response to version negotiation, a client MUST increase the packet number it
 uses on every packet it sends.  Packets MUST continue to use long headers and
 MUST include the new negotiated protocol version.
