@@ -848,9 +848,9 @@ QUIC connections are persistent.  All of the considerations in Section 9.1 of
 
 HTTP clients are expected to use QUIC PING frames to keep connections open.
 Servers SHOULD NOT use PING frames to keep a connection open.  A client SHOULD
-NOT use PING frames for this purpose unless there are no responses outstanding
-for requests or server pushes.  If the client is not expecting a response from
-the server, allowing an idle connection to time out (based on the idle_timeout
+NOT use PING frames for this purpose unless there are responses outstanding for
+requests or server pushes.  If the client is not expecting a response from the
+server, allowing an idle connection to time out (based on the idle_timeout
 transport parameter) is preferred over expending effort maintaining a connection
 that might not be needed.  A gateway MAY use PING to maintain connections in
 anticipation of need rather than incur the latency cost of connection

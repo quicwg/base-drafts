@@ -1850,19 +1850,19 @@ packet containing this frame.
 A PING frame has no additional fields.
 
 The PING frame can be used to keep a connection alive when an application or
-application protocol wishes to avoid the connection from timing out.  An
+application protocol wishes to prevent the connection from timing out.  An
 application protocol SHOULD provide guidance about the conditions under which
 generating a PING is recommended.  This guidance SHOULD indicate whether it is
 the client or the server that is expected to send the PING.  Having both
 endpoints send PING frames without coordination can cause excessive number of
 packets and poor performance.
 
-A connection will time out if no packets are for a period longer than the time
-specified in the idle_timeout transport parameter (see {{termination}}).
-However, state in middleboxes might time out earlier than that.  Though REQ-5 in
-{{?RFC4787}} recommends a 2 minute timeout interval, experience shows that
-sending packets every 15 to 30 seconds is necessary to prevent the majority of
-middleboxes from losing state for UDP flows.
+A connection will time out if no packets are sent or received for a period
+longer than the time specified in the idle_timeout transport parameter (see
+{{termination}}).  However, state in middleboxes might time out earlier than
+that.  Though REQ-5 in {{?RFC4787}} recommends a 2 minute timeout interval,
+experience shows that sending packets every 15 to 30 seconds is necessary to
+prevent the majority of middleboxes from losing state for UDP flows.
 
 
 ## BLOCKED Frame {#frame-blocked}
