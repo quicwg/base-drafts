@@ -1434,7 +1434,9 @@ longer considered active and usable.
 Different treatment is given to packets that are received while a connection is
 in the draining period depending on how the connection was closed.  In all
 cases, it is possible to acknowledge packets that are received as normal, but
-other reactions might be preferrable depending on how the connection was closed.
+other reactions might be preferable depending on how the connection was closed.
+An endpoint that is in a draining period MUST NOT send packets other than ACK,
+PADDING, or CONNECTION_CLOSE.
 
 Once the draining period has ended, an endpoint SHOULD discard per-connection
 state.  This results in new packets on the connection being discarded.  An
@@ -1476,8 +1478,7 @@ signal the timeout using an immediate close.
 An endpoint sends a CONNECTION_CLOSE frame to terminate the connection
 immediately.  A CONNECTION_CLOSE causes all open streams to immediately become
 closed; open streams can be assumed to be implicitly reset.  After receiving a
-CONNECTION_CLOSE frame, endpoints MUST NOT send additional packets on that
-connection.
+CONNECTION_CLOSE frame, endpoints immediately enter a draining period.
 
 An endpoint that sends a CONNECTION_CLOSE frame SHOULD respond to any packet
 that it receives in the draining period with another packet containing a
