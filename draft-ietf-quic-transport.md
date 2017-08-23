@@ -1425,10 +1425,11 @@ from its peer.  These packets might have been sent prior to receiving any close
 signal, or they might be retransmissions of packets for which acknowledgments
 were lost.
 
-The draining period persists for three times the maximum of the RTO or the RTT
-(see {{QUIC-RECOVERY}} for descriptions of these values).  During this period,
-new packets can be attributed to the correct connection and handled
-appropriately, but the connection is no longer considered active and usable.
+The draining period persists for three times the maximum of minimum RTO
+(kMinRTOTimeout) or the round trip time (smoothed_rtt), see {{QUIC-RECOVERY}}
+for descriptions of these values.  During this period, new packets can be
+attributed to the correct connection and acknowledged, but the connection is no
+longer considered active and usable.
 
 Different treatment is given to packets that are received while a connection is
 in the draining period depending on how the connection was closed.  In all
@@ -1452,9 +1453,9 @@ connection, after which the application requests that the connection be closed.
 A negotiated shutdown might not result in exchanging messages that are visible
 to the transport.
 
-In the draining period ({{draining}}), an endpoint that has been closed by an
-application SHOULD generate and send ACK frames as normal.  This allows the peer
-to receive acknowledgements where previous acknowledgements were lost.
+In the draining period, an endpoint that has been closed by an application
+SHOULD generate and send ACK frames as normal.  This allows the peer to receive
+acknowledgements where previous acknowledgements were lost.
 
 
 ### Idle Timeout
@@ -1478,21 +1479,21 @@ closed; open streams can be assumed to be implicitly reset.  After receiving a
 CONNECTION_CLOSE frame, endpoints MUST NOT send additional packets on that
 connection.
 
-An endpoint SHOULD respond to any packet that it receives in the draining period
-({{draining}}) with another CONNECTION_CLOSE message.  To reduce the state that
-an endpoint maintains in this case, they MAY send the exact same
-CONNECTION_CLOSE packet.  However, endpoints SHOULD limit the number of
-CONNECTION_CLOSE messages they generate.  For instance, an endpoint could
-progressively increase the number of packets that it receives before sending
-additional CONNECTION_CLOSE frames.
+An endpoint that sends a CONNECTION_CLOSE frame SHOULD respond to any packet
+that it receives in the draining period with another packet containing a
+CONNECTION_CLOSE frame.  To reduce the state that an endpoint maintains in this
+case, they MAY send the exact same packet.  However, endpoints SHOULD limit the
+number of CONNECTION_CLOSE messages they generate.  For instance, an endpoint
+could progressively increase the number of packets that it receives before
+sending additional CONNECTION_CLOSE frames.
 
 Note:
 
-: This intentionally contradicts other advice in this document that recommends
-  the creation of new packet numbers for every packet.  Sending new packet
-  numbers is primarily of advantage to loss recovery and congestion control,
-  which are not expected to be relevant for a closed connection.  Retransmitting
-  the final packet requires less state.
+: Allowing retransmision of a packet contradicts other advice in this document
+  that recommends the creation of new packet numbers for every packet.  Sending
+  new packet numbers is primarily of advantage to loss recovery and congestion
+  control, which are not expected to be relevant for a closed connection.
+  Retransmitting the final packet requires less state.
 
 
 ### Stateless Reset {#stateless-reset}
