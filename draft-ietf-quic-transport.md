@@ -1415,31 +1415,59 @@ TODO: see issue #161
 Connections should remain open until they become idle for a pre-negotiated
 period of time.  A QUIC connection, once established, can be terminated in one
 of four ways: negotiated shutdown, idle timeout, immediate close, and a
-connection reset.
+stateless reset.
 
 
-### Negotiated Shutdown
+### Draining Period {#draining}
 
-An application protocol might arrange to abandon a connection after negotiating
-a graceful shutdown.  The application protocol exchanges whatever messages that
-are needed to cause both endpoints to agree to close the connection, after which
-the connection is closed.  A negotiated shutdown might not result in exchanging
-messages that are visible to the transport.
+After a connection is closed for any reason, an endpoint might receive packets
+from its peer.  These packets might have been sent prior to receiving any close
+signal, or they might be retransmissions of packets for which acknowledgments
+were lost.
+
+The draining period persists for three times the maximum of the RTO or the RTT
+(see {{QUIC-RECOVERY}} for descriptions of these values).  During this period,
+new packets can be attributed to the correct connection and handled
+appropriately, but the connection is no longer considered active and usable.
+
+Different treatment is given to packets that are received while a connection is
+in the draining period depending on how the connection was closed.  In all
+cases, it is possible to acknowledge packets that are received as normal, but
+other reactions might be preferrable depending on how the connection was closed.
+
+Once the draining period has ended, an endpoint SHOULD discard per-connection
+state.  This results in new packets on the connection being discarded.  An
+endpoint MAY use a stateless reset in response to any further incoming packets.
+
+The draining period does not apply when a stateless reset ({{stateless-reset}})
+is used.
+
+
+### Application Close
+
+An application protocol can arrange to close a connection.  This might be after
+negotiating a graceful shutdown.  The application protocol exchanges whatever
+messages that are needed to cause both endpoints to agree to close the
+connection, after which the application requests that the connection be closed.
+A negotiated shutdown might not result in exchanging messages that are visible
+to the transport.
+
+In the draining period ({{draining}}), an endpoint that has been closed by an
+application SHOULD generate and send ACK frames as normal.  This allows the peer
+to receive acknowledgements where previous acknowledgements were lost.
 
 
 ### Idle Timeout
 
 A connection that remains idle for longer than the idle timeout (see
-{{transport-parameter-definitions}} becomes closed.  Either peer removes
+{{transport-parameter-definitions}}) becomes closed.  Either peer removes
 connection state if they have neither sent nor received a packet for this time.
 
 The time at which an idle timeout takes effect won't be perfectly synchronized
-on peers.  Endpoints might allow for the possibility that the remote side might
-attempt to send packets before the timeout.  In this case, an endpoint might
-choose to retain enough information to generate a packet containing
-CONNECTION_CLOSE (see {{immediate-close}}).  Endpoints MAY instead rely on
-sending Stateless Reset in response to packets that arrive after an idle
-timeout.
+on peers.  A connection enters the draining period when the idle timeout
+expires.  During this time, an endpoint that receives new packets MAY choose to
+restore the connection.  Alternatively, an endpoint that receives packets MAY
+signal the timeout using an immediate close.
 
 
 ### Immediate Close
@@ -1450,11 +1478,13 @@ closed; open streams can be assumed to be implicitly reset.  After receiving a
 CONNECTION_CLOSE frame, endpoints MUST NOT send additional packets on that
 connection.
 
-An peer that receives a CONNECTION_CLOSE might have sent packets that will
-arrive after the endpoint sends CONNECTION_CLOSE.  An endpoint SHOULD respond to
-these packets with another CONNECTION_CLOSE message.  To minimize the state that
+An endpoint SHOULD respond to any packet that it receives in the draining period
+({{draining}}) with another CONNECTION_CLOSE message.  To reduce the state that
 an endpoint maintains in this case, they MAY send the exact same
-CONNECTION_CLOSE packet.
+CONNECTION_CLOSE packet.  However, endpoints SHOULD limit the number of
+CONNECTION_CLOSE messages they generate.  For instance, an endpoint could
+progressively increase the number of packets that it receives before sending
+additional CONNECTION_CLOSE frames.
 
 Note:
 
@@ -1462,15 +1492,7 @@ Note:
   the creation of new packet numbers for every packet.  Sending new packet
   numbers is primarily of advantage to loss recovery and congestion control,
   which are not expected to be relevant for a closed connection.  Retransmitting
-  the final packet requires less state at the server.
-
-Implementations SHOULD limit the number of CONNECTION_CLOSE messages they
-generate.  For instance, an implementation could exponentially increase the
-number of packets that it receives before sending the packet containing
-CONNECTION_CLOSE.  Once enough time has passed to allow a peer to receive the
-CONNECTION_CLOSE, an endpoint SHOULD discard per-connection state and MAY
-instead rely on sending a stateless reset in response to any further incoming
-packets.
+  the final packet requires less state.
 
 
 ### Stateless Reset {#stateless-reset}
