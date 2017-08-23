@@ -1453,6 +1453,10 @@ return.  A PING frame containing 12 randomly generated {{?RFC4086}} octets is
 sufficient to ensure that it is easier to receive the packet than it is to guess
 the value correctly.
 
+Note:
+
+: Retransmissions of the PING frame MUST also use the same remote address.
+
 If validation of the new remote address fails, after allowing enough time for
 possible loss and recovery of packets carrying PING and PONG frames, the
 endpoint MUST terminate the connection.  When setting this timer,
@@ -1479,6 +1483,49 @@ longer valid based on the changed address.
 Address validation using the PING frame MAY be used at any time by either peer.
 For instance, an endpoint might check that a peer is still in possession of its
 address after a period of quiescence.
+
+Upon seeing a connection migration, an endpoint that sees a new address MUST
+abandon any address validation it is performing with other addresses on the
+expectation that the validation is likely to fail.  Abandoning address
+validation primarily means not closing the connection when a PONG frame is not
+received, but it could also mean ceasing retransmissions of the PING frame.  An
+endpoint that doesn't retransmit a PING frame might receive a PONG frame, which
+it MUST ignore.
+
+
+## Spurious Connection Migrations
+
+A connection migration could be triggered by an attacker that is able to capture
+and forward a packet such that it arrives before the legitimate copy of that
+packet.  Such a packet will appear to be a legitimate connection migration and
+the legitimate copy will be dropped as a duplicate.
+
+After a spurious migration, validation of the source address will fail because
+the entity at the source address does not have the necessary cryptographic keys
+to read or respond to the PING frame that is sent to it, even if it wanted to.
+Such a spurious connection migration could result in the connection being
+dropped when the source address validation fails.  This grants an attacker the
+ability to terminate the connection.
+
+Receipt of packets with higher packet numbers from the legitimate address will
+trigger another connection migration.  This will cause the validation of the
+address of the spurious migration to be abandoned.
+
+To ensure that a peer sends packets from the legitimate address before the
+validation of the new address can fail, an endpoint SHOULD attempt to validate
+the old remote address before attempting to validate the new address.  If the
+connection migration is spurious, then the legitimate address will be used to
+respond and the connection will migrate back to the old address.
+
+As with any address validation, packets containing retransmissions of the PING
+frame validating an address MUST be sent to the address being validated.
+Consequently, during a migration of a peer, an endpoint could be sending to
+multiple remote addresses.
+
+An endpoint MAY abandon address validation for an address that it considers to
+be already valid.  That is, if successive connection migrations occur in quick
+succession with the final remote address being identical to the initial remote
+address, the endpoint MAY abandon address validation for that address.
 
 
 ## Connection Termination {#termination}
