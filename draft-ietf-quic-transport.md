@@ -1487,8 +1487,8 @@ case, they MAY send the exact same packet.  However, endpoints SHOULD limit the
 number of CONNECTION_CLOSE messages they generate.  For instance, an endpoint
 could progressively increase the number of packets that it receives before
 sending additional CONNECTION_CLOSE frames.  An endpoint can cease sending
-CONNECTION_CLOSE frames if it receives an acknowledgement for a packet that
-contained a CONNECTION_CLOSE.
+CONNECTION_CLOSE frames if it receives either a CONNECTION_CLOSE or an
+acknowledgement for a packet that contained a CONNECTION_CLOSE.
 
 Note:
 
