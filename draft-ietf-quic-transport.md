@@ -1414,8 +1414,12 @@ TODO: see issue #161
 
 Connections should remain open until they become idle for a pre-negotiated
 period of time.  A QUIC connection, once established, can be terminated in one
-of four ways: negotiated shutdown, idle timeout, immediate close, and a
-stateless reset.
+of four ways:
+
+* application close ({{application-close}})
+* idle timeout ({{idle-timeout}})
+* immediate close ({{immediate-close}})
+* stateless reset ({{stateless-reset}})
 
 
 ### Draining Period {#draining}
@@ -1435,12 +1439,12 @@ Different treatment is given to packets that are received while a connection is
 in the draining period depending on how the connection was closed.  In all
 cases, it is possible to acknowledge packets that are received as normal, but
 other reactions might be preferable depending on how the connection was closed.
-An endpoint that is in a draining period MUST NOT send packets other than ACK,
-PADDING, or CONNECTION_CLOSE.
+An endpoint that is in a draining period MUST NOT send packets containing frames
+other than ACK, PADDING, or CONNECTION_CLOSE.
 
 Once the draining period has ended, an endpoint SHOULD discard per-connection
 state.  This results in new packets on the connection being discarded.  An
-endpoint MAY use a stateless reset in response to any further incoming packets.
+endpoint MAY send a stateless reset in response to any further incoming packets.
 
 The draining period does not apply when a stateless reset ({{stateless-reset}})
 is used.
@@ -1477,18 +1481,17 @@ signal the timeout using an immediate close.
 
 An endpoint sends a CONNECTION_CLOSE frame to terminate the connection
 immediately.  A CONNECTION_CLOSE causes all open streams to immediately become
-closed; open streams can be assumed to be implicitly reset.  After receiving a
-CONNECTION_CLOSE frame, endpoints immediately enter a draining period.
+closed; open streams can be assumed to be implicitly reset.  After sending or
+receiving a CONNECTION_CLOSE frame, endpoints immediately enter a draining
+period.
 
-An endpoint that sends a CONNECTION_CLOSE frame SHOULD respond to any packet
-that it receives in the draining period with another packet containing a
-CONNECTION_CLOSE frame.  To reduce the state that an endpoint maintains in this
-case, they MAY send the exact same packet.  However, endpoints SHOULD limit the
-number of CONNECTION_CLOSE messages they generate.  For instance, an endpoint
-could progressively increase the number of packets that it receives before
-sending additional CONNECTION_CLOSE frames.  An endpoint can cease sending
-CONNECTION_CLOSE frames if it receives either a CONNECTION_CLOSE or an
-acknowledgement for a packet that contained a CONNECTION_CLOSE.
+During the draining period, an endpoint that sends a CONNECTION_CLOSE frame
+SHOULD respond to any subsequent packet that it receives with another packet
+containing a CONNECTION_CLOSE frame.  To reduce the state that an endpoint
+maintains in this case, it MAY send the exact same packet.  However, endpoints
+SHOULD limit the number of CONNECTION_CLOSE messages they generate.  For
+instance, an endpoint could progressively increase the number of packets that it
+receives before sending additional CONNECTION_CLOSE frames.
 
 Note:
 
@@ -1497,6 +1500,10 @@ Note:
   new packet numbers is primarily of advantage to loss recovery and congestion
   control, which are not expected to be relevant for a closed connection.
   Retransmitting the final packet requires less state.
+
+An endpoint can cease sending CONNECTION_CLOSE frames if it receives either a
+CONNECTION_CLOSE or an acknowledgement for a packet that contained a
+CONNECTION_CLOSE.
 
 
 ### Stateless Reset {#stateless-reset}
