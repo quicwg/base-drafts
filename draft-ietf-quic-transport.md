@@ -1597,10 +1597,9 @@ octet that identifies the frame as a PADDING frame.
 An endpoint may use a RST_STREAM frame (type=0x01) to abruptly terminate a
 stream.
 
-After sending a RST_STREAM, an endpoint ceases transmission of STREAM frames on
-the identified stream.  A receiver of RST_STREAM can discard any data that it
-already received on that stream.  An endpoint sends a RST_STREAM in response to
-a RST_STREAM unless the stream is already closed.
+After sending a RST_STREAM, an endpoint ceases transmission and retransmission
+of STREAM frames on the identified stream.  A receiver of RST_STREAM can discard
+any data that it already received on that stream.
 
 The RST_STREAM frame is as follows:
 
