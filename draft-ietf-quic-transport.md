@@ -721,8 +721,8 @@ increase by at least one after sending any packet, unless otherwise specified
 A QUIC endpoint MUST NOT reuse a packet number within the same connection (that
 is, under the same cryptographic keys).  If the packet number for sending
 reaches 2^64 - 1, the sender MUST close the connection without sending a
-CONNECTION_CLOSE frame or any further packets; the sender MAY send a Public
-Reset packet in response to further packets that it receives.
+CONNECTION_CLOSE frame or any further packets; the sender MAY send a stateless
+reset ({{stateless-reset}}) in response to further packets that it receives.
 
 To reduce the number of bits required to represent the packet number over the
 wire, only the least significant bits of the packet number are transmitted.  The
