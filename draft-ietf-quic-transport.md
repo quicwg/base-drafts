@@ -1429,11 +1429,9 @@ from its peer.  These packets might have been sent prior to receiving any close
 signal, or they might be retransmissions of packets for which acknowledgments
 were lost.
 
-The draining period persists for three times the maximum of minimum RTO
-(kMinRTOTimeout) or the round trip time (smoothed_rtt), see {{QUIC-RECOVERY}}
-for descriptions of these values.  During this period, new packets can be
-attributed to the correct connection and acknowledged, but the connection is no
-longer considered active and usable.
+The draining period persists for three times the current Retransmission Timeout
+(RTO) interval as defined in {{QUIC-RECOVERY}}.  During this period, new packets
+can be acknowledged, but no new application data can be sent on the connection.
 
 Different treatment is given to packets that are received while a connection is
 in the draining period depending on how the connection was closed.  In all
@@ -1495,7 +1493,7 @@ receives before sending additional CONNECTION_CLOSE frames.
 
 Note:
 
-: Allowing retransmision of a packet contradicts other advice in this document
+: Allowing retransmission of a packet contradicts other advice in this document
   that recommends the creation of new packet numbers for every packet.  Sending
   new packet numbers is primarily of advantage to loss recovery and congestion
   control, which are not expected to be relevant for a closed connection.
@@ -1558,7 +1556,7 @@ After the first short header octet and optional connection ID, the server
 includes the value of the Stateless Reset Token that it included in its
 transport parameters.
 
-After the Stateless Reset Token, the endpoint pads the message with an arbitrary
+After the Stateless Reset Token, the server pads the message with an arbitrary
 number of octets containing random values.
 
 This design ensures that a stateless reset packet is - to the extent possible -
