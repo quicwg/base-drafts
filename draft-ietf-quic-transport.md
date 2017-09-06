@@ -845,7 +845,7 @@ explained in more detail as they are referenced later in the document.
 |:------------|:------------------|:----------------------------|
 | 0x00        | PADDING           | {{frame-padding}}           |
 | 0x01        | RST_STREAM        | {{frame-rst-stream}}        |
-| 0x02        | TRANSPORT_CLOSE   | {{frame-transport-close}}   |
+| 0x02        | CONNECTION_CLOSE  | {{frame-connection-close}}  |
 | 0x03        | APPLICATION_CLOSE | {{frame-application-close}} |
 | 0x04        | MAX_DATA          | {{frame-max-data}}          |
 | 0x05        | MAX_STREAM_DATA   | {{frame-max-stream-data}}   |
@@ -1490,19 +1490,10 @@ A connection that remains idle for longer than the idle timeout (see
 connection state if they have neither sent nor received a packet for this time.
 
 The time at which an idle timeout takes effect won't be perfectly synchronized
-<<<<<<< HEAD
 on peers.  A connection enters the draining period when the idle timeout
 expires.  During this time, an endpoint that receives new packets MAY choose to
 restore the connection.  Alternatively, an endpoint that receives packets MAY
 signal the timeout using an immediate close.
-=======
-on peers.  Endpoints might allow for the possibility that the remote side might
-attempt to send packets before the timeout.  In this case, an endpoint might
-choose to retain enough information to generate a packet containing
-TRANSPORT_CLOSE (see {{immediate-close}}).  Endpoints MAY instead rely on
-sending Stateless Reset in response to packets that arrive after an idle
-timeout.
->>>>>>> s/Public Reset/Stateless Reset/
 
 
 ### Immediate Close
@@ -1540,8 +1531,8 @@ A stateless reset is provided as an option of last resort for a server that does
 not have access to the state of a connection.  A server crash or outage might
 result in clients continuing to send data to a server that is unable to properly
 continue the connection.  A server that wishes to communicate a fatal connection
-error MUST use a TRANSPORT_CLOSE or APPLICATION_CLOSE frame if it has sufficient
-state to do so.
+error MUST use a CONNECTION_CLOSE or APPLICATION_CLOSE frame if it has
+sufficient state to do so.
 
 To support this process, the server sends a stateless_reset_token value during
 the handshake in the transport parameters.  This value is protected by
@@ -1595,7 +1586,7 @@ indistinguishable from a regular packet.
 
 A stateless reset is not appropriate for signaling error conditions.  An
 endpoint that wishes to communicate a fatal connection error MUST use a
-TRANSPORT_CLOSE or APPLICATION_CLOSE frame if it has sufficient state to do so.
+CONNECTION_CLOSE or APPLICATION_CLOSE frame if it has sufficient state to do so.
 
 
 #### Detecting a Stateless Reset
@@ -1706,16 +1697,16 @@ Final Offset:
   data written on this stream by the RST_STREAM sender.
 
 
-## TRANSPORT_CLOSE frame {#frame-transport-close}
+## CONNECTION_CLOSE frame {#frame-connection-close}
 
-An endpoint sends a TRANSPORT_CLOSE frame (type=0x02) to notify its peer that
-the connection is being closed.  TRANSPORT_CLOSE is used to signal errors at the
-QUIC layer, or the absence of errors (with the NO_ERROR code).
+An endpoint sends a CONNECTION_CLOSE frame (type=0x02) to notify its peer that
+the connection is being closed.  CONNECTION_CLOSE is used to signal errors at
+the QUIC layer, or the absence of errors (with the NO_ERROR code).
 
 If there are open streams that haven't been explicitly closed, they are
 implicitly closed when the connection is closed.
 
-The TRANSPORT_CLOSE frame is as follows:
+The CONNECTION_CLOSE frame is as follows:
 
 ~~~
  0                   1                   2                   3
@@ -1727,19 +1718,19 @@ The TRANSPORT_CLOSE frame is as follows:
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
 
-The fields of a TRANSPORT_CLOSE frame are as follows:
+The fields of a CONNECTION_CLOSE frame are as follows:
 
 Error Code:
 
 : A 32-bit error code which indicates the reason for closing this connection.
-  TRANSPORT_CLOSE uses codes from the space defined in {{error-codes}};
-  APPLICATION_CLOSE uses codes from the application protocol error code space
-  ({{app-error-codes}}).
+  CONNECTION_CLOSE uses codes from the space defined in {{error-codes}}
+  (APPLICATION_CLOSE uses codes from the application protocol error code space,
+  see {{app-error-codes}}).
 
 Reason Phrase Length:
 
 : A 16-bit unsigned number specifying the length of the reason phrase in bytes.
-  Note that a TRANSPORT_CLOSE frame cannot be split between packets, so in
+  Note that a CONNECTION_CLOSE frame cannot be split between packets, so in
   practice any limits on packet size will also limit the space available for a
   reason phrase.
 
@@ -1753,12 +1744,12 @@ Reason Phrase:
 ## APPLICATION_CLOSE frame {#frame-application-close}
 
 An APPLICATION_CLOSE frame (type=0x03) uses the same format as the
-TRANSPORT_CLOSE frame ({{frame-transport-close}}), except that it uses error
+CONNECTION_CLOSE frame ({{frame-connection-close}}), except that it uses error
 codes from the application protocol error code space ({{app-error-codes}})
 instead of the transport error code space.
 
 Other than the error code space, the format and semantics of the
-APPLICATION_CLOSE frame are identical to the TRANSPORT_CLOSE frame.
+APPLICATION_CLOSE frame are identical to the CONNECTION_CLOSE frame.
 
 
 ## MAX_DATA Frame {#frame-max-data}
@@ -2003,16 +1994,18 @@ The STOP_SENDING frame is as follows:
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                        Stream ID (32)                         |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                      App  Error Code (32)                     |
+|                   Application Error Code (32)                 |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
 
 The fields are:
 
 Stream ID:
+
 : The 32-bit Stream ID of the stream being ignored.
 
-App Error Code:
+Application Error Code:
+
 : A 32-bit, application-specified reason the sender is ignoring the stream (see
   {{app-error-codes}}).
 
@@ -2734,11 +2727,11 @@ connection and stream flow-control windows, even though these frames will be
 discarded upon receipt.  This avoids potential ambiguity about which STREAM
 frames count toward flow control.
 
-Upon receipt of a STOP_SENDING frame on a stream in the "open" or "half-closed
-(remote)" states, an endpoint MUST send a RST_STREAM frame.  If the STOP_SENDING
-frame is received on a stream that is already in the "half-closed (local)" or
-"closed" states, a RST_STREAM frame MAY still be sent in order to cancel
-retransmission of previously-sent STREAM frames.
+A STOP_SENDING frame on a stream in the "open" or "half-closed (remote)" states,
+requests that the the receiving application send a RST_STREAM frame.  If the
+STOP_SENDING frame is received on a stream that is already in the "half-closed
+(local)" or "closed" states, a RST_STREAM frame MAY still be sent in order to
+cancel retransmission of previously-sent STREAM frames.
 
 While STOP_SENDING frames are retransmittable, an implementation MAY choose not
 to retransmit a lost STOP_SENDING frame if the stream has already been closed
@@ -3012,7 +3005,7 @@ frame that signals the error.  Where this specification identifies error
 conditions, it also identifies the error code that is used.
 
 A stateless reset ({{stateless-reset}}) is not suitable for any error that can
-be signaled with a TRANSPORT_CLOSE, APPLICATION_CLOSE, or RST_STREAM frame.  A
+be signaled with a CONNECTION_CLOSE, APPLICATION_CLOSE, or RST_STREAM frame.  A
 stateless reset MUST NOT be used by an endpoint that has the state necessary to
 send a frame on the connection.
 
@@ -3021,17 +3014,17 @@ send a frame on the connection.
 
 Errors that result in the connection being unusable, such as an obvious
 violation of protocol semantics or corruption of state that affects an entire
-connection, MUST be signaled using a TRANSPORT_CLOSE or APPLICATION_CLOSE frame
-({{frame-transport-close}}, {{frame-application-close}}). An endpoint MAY close
+connection, MUST be signaled using a CONNECTION_CLOSE or APPLICATION_CLOSE frame
+({{frame-connection-close}}, {{frame-application-close}}). An endpoint MAY close
 the connection in this manner, even if the error only affects a single stream.
 
 Application protocols can signal application-specific protocol errors using the
 APPLICATION_CLOSE frame.  Errors that are specific to the transport, including
-all those described in this document, are carried in a TRANSPORT_CLOSE frame.
+all those described in this document, are carried in a CONNECTION_CLOSE frame.
 Other than the type of error code they carry, these frames are identical in
 format and semantics.
 
-A TRANSPORT_CLOSE or APPLICATION_CLOSE frame could be sent in a packet that is
+A CONNECTION_CLOSE or APPLICATION_CLOSE frame could be sent in a packet that is
 lost.  An endpoint SHOULD be prepared to retransmit a packet containing either
 frame type if it receives more packets on a terminated connection.  Limiting the
 number of retransmissions and the time over which this final packet is sent
@@ -3039,7 +3032,7 @@ limits the effort expended on terminated connections.  An endpoint that does not
 retransmit this packet could be forced to use the stateless reset process
 ({{stateless-reset}}).
 
-An endpoint that receives an invalid TRANSPORT_CLOSE or APPLICATION_CLOSE frame
+An endpoint that receives an invalid CONNECTION_CLOSE or APPLICATION_CLOSE frame
 MUST NOT signal the existence of the error to its peer.
 
 
@@ -3066,11 +3059,11 @@ consistent state between endpoints.
 Transport error codes are 32 bits long.
 
 This section lists the defined QUIC transport error codes that may be used in a
-TRANSPORT_CLOSE frame.  These errors apply to the entire connection.
+CONNECTION_CLOSE frame.  These errors apply to the entire connection.
 
 NO_ERROR (0x0):
 
-: An endpoint uses this with TRANSPORT_CLOSE to signal that the connection is
+: An endpoint uses this with CONNECTION_CLOSE to signal that the connection is
   being closed abruptly in the absence of any error.
 
 INTERNAL_ERROR (0x1):
