@@ -721,7 +721,7 @@ increase by at least one after sending any packet, unless otherwise specified
 A QUIC endpoint MUST NOT reuse a packet number within the same connection (that
 is, under the same cryptographic keys).  If the packet number for sending
 reaches 2^64 - 1, the sender MUST close the connection without sending a
-CONNECTION_CLOSE frame or any further packets; the sender MAY send a Public
+CONNECTION_CLOSE frame or any further packets; the sender MAY send a Stateless
 Reset packet in response to further packets that it receives.
 
 To reduce the number of bits required to represent the packet number over the
@@ -1428,42 +1428,97 @@ TODO: see issue #161
 
 Connections should remain open until they become idle for a pre-negotiated
 period of time.  A QUIC connection, once established, can be terminated in one
-of three ways:
+of four ways:
 
-1. Explicit Shutdown: An endpoint sends a CONNECTION_CLOSE frame to
-   terminate the connection.  An endpoint MAY use application-layer mechanisms
-   prior to a CONNECTION_CLOSE to indicate that the connection will soon be
-   terminated.  On termination of the active streams, a CONNECTION_CLOSE may be
-   sent.  If an endpoint sends a CONNECTION_CLOSE frame while unterminated
-   streams are active (no FIN bit or RST_STREAM frames have been sent or
-   received for one or more streams), then the peer must assume that the streams
-   were incomplete and were abnormally terminated.
-
-2. Implicit Shutdown: The default idle timeout is a required parameter in
-   connection negotiation.  The maximum is 10 minutes.  If there is no network
-   activity for the duration of the idle timeout, the connection is closed.  By
-   default a CONNECTION_CLOSE frame will be sent.  A silent close option can be
-   enabled when it is expensive to send an explicit close, such as mobile
-   networks that must wake up the radio.
-
-3. Stateless Reset: An endpoint that loses state can use this procedure to cause
-   the connection to terminate early, see {{stateless-reset}} for details.
-
-After receiving either a CONNECTION_CLOSE frame or a Public Reset, an
-endpoint MUST NOT send additional packets on that connection. After
-sending either a CONNECTION_CLOSE frame or a Public Reset packet,
-implementations MUST NOT send any non-closing packets on that
-connection. If additional packets are received after this time and
-before idle_timeout seconds has passed, implementations SHOULD respond
-to them by sending a CONNECTION_CLOSE (which MAY just be a duplicate
-of the previous CONNECTION_CLOSE packet) but MAY also send a Public
-Reset packet.  Implementations SHOULD throttle these responses, for
-instance by exponentially backing off the number of packets which are
-received before sending a response.  After this time, implementations
-SHOULD respond to unexpected packets with a Public Reset packet.
+* application close ({{application-close}})
+* idle timeout ({{idle-timeout}})
+* immediate close ({{immediate-close}})
+* stateless reset ({{stateless-reset}})
 
 
-## Stateless Reset {#stateless-reset}
+### Draining Period {#draining}
+
+After a connection is closed for any reason, an endpoint might receive packets
+from its peer.  These packets might have been sent prior to receiving any close
+signal, or they might be retransmissions of packets for which acknowledgments
+were lost.
+
+The draining period persists for three times the current Retransmission Timeout
+(RTO) interval as defined in {{QUIC-RECOVERY}}.  During this period, new packets
+can be acknowledged, but no new application data can be sent on the connection.
+
+Different treatment is given to packets that are received while a connection is
+in the draining period depending on how the connection was closed.  In all
+cases, it is possible to acknowledge packets that are received as normal, but
+other reactions might be preferable depending on how the connection was closed.
+An endpoint that is in a draining period MUST NOT send packets containing frames
+other than ACK, PADDING, or CONNECTION_CLOSE.
+
+Once the draining period has ended, an endpoint SHOULD discard per-connection
+state.  This results in new packets on the connection being discarded.  An
+endpoint MAY send a stateless reset in response to any further incoming packets.
+
+The draining period does not apply when a stateless reset ({{stateless-reset}})
+is used.
+
+
+### Application Close
+
+An application protocol can arrange to close a connection.  This might be after
+negotiating a graceful shutdown.  The application protocol exchanges whatever
+messages that are needed to cause both endpoints to agree to close the
+connection, after which the application requests that the connection be closed.
+A negotiated shutdown might not result in exchanging messages that are visible
+to the transport.
+
+In the draining period, an endpoint that has been closed by an application
+SHOULD generate and send ACK frames as normal.  This allows the peer to receive
+acknowledgements where previous acknowledgements were lost.
+
+
+### Idle Timeout
+
+A connection that remains idle for longer than the idle timeout (see
+{{transport-parameter-definitions}}) becomes closed.  Either peer removes
+connection state if they have neither sent nor received a packet for this time.
+
+The time at which an idle timeout takes effect won't be perfectly synchronized
+on peers.  A connection enters the draining period when the idle timeout
+expires.  During this time, an endpoint that receives new packets MAY choose to
+restore the connection.  Alternatively, an endpoint that receives packets MAY
+signal the timeout using an immediate close.
+
+
+### Immediate Close
+
+An endpoint sends a CONNECTION_CLOSE frame to terminate the connection
+immediately.  A CONNECTION_CLOSE causes all open streams to immediately become
+closed; open streams can be assumed to be implicitly reset.  After sending or
+receiving a CONNECTION_CLOSE frame, endpoints immediately enter a draining
+period.
+
+During the draining period, an endpoint that sends a CONNECTION_CLOSE frame
+SHOULD respond to any subsequent packet that it receives with another packet
+containing a CONNECTION_CLOSE frame.  To reduce the state that an endpoint
+maintains in this case, it MAY send the exact same packet.  However, endpoints
+SHOULD limit the number of CONNECTION_CLOSE messages they generate.  For
+instance, an endpoint could progressively increase the number of packets that it
+receives before sending additional CONNECTION_CLOSE frames.
+
+Note:
+
+: Allowing retransmission of a packet contradicts other advice in this document
+  that recommends the creation of new packet numbers for every packet.  Sending
+  new packet numbers is primarily of advantage to loss recovery and congestion
+  control, which are not expected to be relevant for a closed connection.
+  Retransmitting the final packet requires less state.
+
+An endpoint can cease sending CONNECTION_CLOSE frames if it receives either a
+CONNECTION_CLOSE or an acknowledgement for a packet that contained a
+CONNECTION_CLOSE.
+
+
+### Stateless Reset {#stateless-reset}
 
 A stateless reset is provided as an option of last resort for a server that does
 not have access to the state of a connection.  A server crash or outage might
@@ -1515,7 +1570,7 @@ After the first short header octet and optional connection ID, the server
 includes the value of the Stateless Reset Token that it included in its
 transport parameters.
 
-After the Stateless Reset Token, the endpoint pads the message with an arbitrary
+After the Stateless Reset Token, the server pads the message with an arbitrary
 number of octets containing random values.
 
 This design ensures that a stateless reset packet is - to the extent possible -
@@ -1526,7 +1581,7 @@ endpoint that wishes to communicate a fatal connection error MUST use a
 CONNECTION_CLOSE frame if it has sufficient state to do so.
 
 
-### Detecting a Stateless Reset
+#### Detecting a Stateless Reset
 
 A client detects a potential stateless reset when a packet with a short header
 cannot be decrypted.  The client then performs a constant-time comparison of the
@@ -1536,7 +1591,7 @@ the connection MUST be terminated immediately.  Otherwise, the packet can be
 discarded.
 
 
-### Calculating a Stateless Reset Token
+#### Calculating a Stateless Reset Token
 
 The stateless reset token MUST be difficult to guess.  In order to create a
 Stateless Reset Token, a server could randomly generate {{!RFC4086}} a secret
