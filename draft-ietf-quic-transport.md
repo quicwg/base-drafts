@@ -606,9 +606,9 @@ Server Stateless Retry packet.
 After receiving a Server Stateless Retry packet, the client uses a new Client
 Initial packet containing the next cryptographic handshake message.  The client
 retains the state of its cryptographic handshake, but discards all transport
-state.  The new Client Initial packet is sent in a packet with a newly
-randomized packet number and starting at a stream offset of 0 and the
-original connection ID.
+state.  The new Client Initial packet includes a newly randomized packet number,
+STREAM frames on stream 0 that start again at an offset of 0, and the original
+connection ID.
 
 Continuing the cryptographic handshake is necessary to ensure that an attacker
 cannot force a downgrade of any cryptographic parameters.  In addition to
