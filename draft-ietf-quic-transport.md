@@ -2800,9 +2800,11 @@ senders from exceeding a receiver's buffer capacity for the connection, and (ii)
 Stream flow control, which prevents a single stream from consuming the entire
 receive buffer for a connection.
 
-A receiver sends MAX_DATA or MAX_STREAM_DATA frames to the sender to advertise
-additional credit by sending the absolute byte offset in the connection or
-stream which it is willing to receive.
+A data receiver sends MAX_STREAM_DATA or MAX_DATA frames to the sender
+to advertise additional credit. MAX_STREAM_DATA frames send the the
+maximum absolute byte offset of a stream, while MAX_DATA sends the
+maximum sum of the absolute byte offsets of all streams other than
+stream 0.
 
 A receiver MAY advertise a larger offset at any point by sending MAX_DATA or
 MAX_STREAM_DATA frames.  A receiver MUST NOT renege on an advertisement; that
