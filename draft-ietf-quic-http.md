@@ -1092,11 +1092,11 @@ QUIC has the same concepts of "stream" and "connection" errors that HTTP/2
 provides. However, because the error code space is shared between multiple
 components, there is no direct portability of HTTP/2 error codes.
 
-The HTTP/2 error codes defined in Section 7 of {{!RFC7540}} map to QUIC error
-codes as follows:
+The HTTP/2 error codes defined in Section 7 of {{!RFC7540}} map to the HTTP over
+QUIC error codes as follows:
 
 NO_ERROR (0x0):
-: HTTP_NO_ERROR
+: HTTP_NO_ERROR in {{http-error-codes}}.
 
 PROTOCOL_ERROR (0x1):
 : No single mapping.  See new HTTP_MALFORMED_* error codes defined in
