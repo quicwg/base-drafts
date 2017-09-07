@@ -851,7 +851,7 @@ explained in more detail as they are referenced later in the document.
 | 0x07        | PING              | {{frame-ping}}              |
 | 0x08        | BLOCKED           | {{frame-blocked}}           |
 | 0x09        | STREAM_BLOCKED    | {{frame-stream-blocked}}    |
-| 0x0a        | STREAM_ID_NEEDED  | {{frame-stream-id-needed}}  |
+| 0x0a        | STREAM_ID_BLOCKED | {{frame-stream-id-blocked}} |
 | 0x0b        | NEW_CONNECTION_ID | {{frame-new-connection-id}} |
 | 0x0c        | STOP_SENDING      | {{frame-stop-sending}}      |
 | 0xa0 - 0xbf | ACK               | {{frame-ack}}               |
@@ -1877,18 +1877,16 @@ Stream ID:
 
 : A 32-bit unsigned number indicating the stream which is flow control blocked.
 
-An endpoint MAY send a STREAM_BLOCKED frame for a stream that exceeds the
-maximum stream ID set by its peer (see {{frame-max-stream-id}}).  This does not
-open the stream, but informs the peer that a new stream was needed, but the
-stream limit prevented the creation of the stream.
 
+## STREAM_ID_BLOCKED Frame {#frame-stream-id-blocked}
 
-## STREAM_ID_NEEDED Frame {#frame-stream-id-needed}
+A sender MAY send a STREAM_ID_BLOCKED frame (type=0x0a) when it wishes to open a
+stream, but is unable to due to the maximum stream ID limit set by its peer (see
+{{frame-max-stream-id}}).  This does not open the stream, but informs the peer
+that a new stream was needed, but the stream limit prevented the creation of the
+stream.
 
-A sender sends a STREAM_ID_NEEDED frame (type=0x0a) when it wishes to open a
-stream, but is unable to due to the maximum stream ID limit.
-
-The STREAM_ID_NEEDED frame does not contain a payload.
+The STREAM_ID_BLOCKED frame does not contain a payload.
 
 
 ## NEW_CONNECTION_ID Frame {#frame-new-connection-id}
