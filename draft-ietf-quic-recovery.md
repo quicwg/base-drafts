@@ -376,7 +376,7 @@ Pseudocode for OnAckReceived and UpdateRtt follow:
        smoothed_rtt = latest_rtt
        rttvar = latest_rtt / 2
      else:
-       rttvar = 3/4 * rttvar + 1/4 * (smoothed_rtt - latest_rtt)
+       rttvar = 3/4 * rttvar + 1/4 * abs(smoothed_rtt - latest_rtt)
        smoothed_rtt = 7/8 * smoothed_rtt + 1/8 * latest_rtt
 ~~~
 
