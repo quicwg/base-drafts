@@ -162,48 +162,49 @@ latency before a userspace QUIC receiver processes a received packet.
 
 # Loss Detection
 
-## Overview {#overview}
-
 QUIC uses a combination of ack information and alarms to detect lost packets.
 An unacknowledged QUIC packet is marked as lost in one of the following ways:
 
-  * A packet is marked as lost if at least one packet that was sent a threshold
-    number of packets (kReorderingThreshold) after it has been
-    acknowledged. This indicates that the unacknowledged packet is either lost
-    or reordered beyond the specified threshold. This mechanism combines both
-    TCP's FastRetransmit and FACK mechanisms.
+  * When at least one packet that was sent a threshold number of packets
+    (kReorderingThreshold) after an unacknowledged packet is acknowledged. This
+    indicates that the unacknowledged packet is either lost or reordered beyond
+    the specified threshold. This mechanism combines both TCP's FastRetransmit
+    and FACK mechanisms.
 
-  * If a packet is near the tail, where fewer than kReorderingThreshold packets
-    are sent after it, the sender cannot expect to detect loss based on the
-    previous mechanism. In this case, a sender uses both ack information and an
-    alarm to detect loss. Specifically, when the last sent packet is
-    acknowledged, the sender waits a short period of time to allow for
-    reordering and then marks any unacknowledged packets as lost. This mechanism
+  * When a short period of time has elapsed after the last sent packet is
+    acknowledged, with unacknowledged packets near the tail (fewer than
+    kReorderingThreshold packets sent after them). The sender cannot expect to
+    detect loss based on the previous mechanism when there are fewer than
+    kReorderingThreshold packets sent after an unacknowledged packet. Here, a
+    sender uses both ack information and an alarm to detect loss. This mechanism
     is based on the Linux implementation of TCP Early Retransmit.
 
-  * If a packet is sent at the tail, there are no packets sent after it, and the
-    sender cannot use ack information to detect its loss. The sender therefore
-    relies on an alarm to detect such tail losses. This mechanism is based on
-    TCP's Tail Loss Probe.
+  * When a Retransmission Timeout (RTO) alarm fires. An RTO alarm is set after
+    Tail Loss Probe attempts at evoking acknowledgements (see below). When this
+    alarm fires, all unacknowledged packets are marked as lost.
 
-  * If all else fails, a Retransmission Timeout (RTO) alarm is always set when
-    any retransmittable packet is outstanding. When this alarm fires, all
-    unacknowledged packets are marked as lost.
+A packet sent at the tail is particularly vulnerable to slow detection, since
+only the RTO alarm detects its loss. To ameliorate this weakness of tail
+packets, QUIC uses Tail Loss Probe (TLP). When a TLP alarm set on the last sent
+packet fires, a QUIC sender sends a packet with new data --- or retransmitted
+data if no new data is available to send --- helping to evoke an acknowledgement
+from the receiver which can trigger loss detection.
 
-  * Instead of a packet threshold to tolerate reordering, a QUIC sender may use
-    a time threshold. This allows for senders to be tolerant of short periods of
-    significant reordering. In this mechanism, a QUIC sender marks a packet as
-    lost when a packet larger than it is acknowledged and a threshold amount of
-    time has passed since the packet was sent.
+The above mechanisms use a packet threshold to tolerate
+reordering. Alternatively, a QUIC sender may use a time threshold. This allows
+for senders to be tolerant of short periods of significant reordering. In this
+mechanism, a QUIC sender marks a packet as lost when a packet larger than it is
+acknowledged and a threshold amount of time has passed since the packet was
+sent.
 
-  * Handshake packets, which contain STREAM frames for stream 0, are
-    critical to QUIC transport and crypto negotiation, so a separate alarm
-    period is used for them.
+Handshake packets, which contain STREAM frames for stream 0, are critical to
+QUIC transport and crypto negotiation, so a separate (more aggressive) alarm
+period is used for them.
 
 
 ## Algorithm Details
 
-### Constants of interest
+### Constants of Interest
 
 Constants used in loss recovery are based on a combination of RFCs, papers,
 and common practice.  Some may need to be changed or negotiated in order to
