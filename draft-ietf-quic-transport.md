@@ -1854,8 +1854,8 @@ application protocol wishes to prevent the connection from timing out.  An
 application protocol SHOULD provide guidance about the conditions under which
 generating a PING is recommended.  This guidance SHOULD indicate whether it is
 the client or the server that is expected to send the PING.  Having both
-endpoints send PING frames without coordination can cause excessive number of
-packets and poor performance.
+endpoints send PING frames without coordination can produce an excessive number
+of packets and poor performance.
 
 A connection will time out if no packets are sent or received for a period
 longer than the time specified in the idle_timeout transport parameter (see
