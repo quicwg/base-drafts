@@ -606,9 +606,9 @@ Server Stateless Retry packet.
 After receiving a Server Stateless Retry packet, the client uses a new Client
 Initial packet containing the next cryptographic handshake message.  The client
 retains the state of its cryptographic handshake, but discards all transport
-state.  In effect, the next cryptographic handshake message is sent on a new
-connection.  The new Client Initial packet is sent in a packet with a newly
-randomized packet number and starting at a stream offset of 0.
+state.  The new Client Initial packet includes a newly randomized packet number,
+STREAM frames on stream 0 that start again at an offset of 0, and the original
+connection ID.
 
 Continuing the cryptographic handshake is necessary to ensure that an attacker
 cannot force a downgrade of any cryptographic parameters.  In addition to
@@ -721,8 +721,8 @@ increase by at least one after sending any packet, unless otherwise specified
 A QUIC endpoint MUST NOT reuse a packet number within the same connection (that
 is, under the same cryptographic keys).  If the packet number for sending
 reaches 2^64 - 1, the sender MUST close the connection without sending a
-CONNECTION_CLOSE frame or any further packets; the sender MAY send a Stateless
-Reset packet in response to further packets that it receives.
+CONNECTION_CLOSE frame or any further packets; a server MAY send a Stateless
+Reset ({{stateless-reset}}) in response to further packets that it receives.
 
 To reduce the number of bits required to represent the packet number over the
 wire, only the least significant bits of the packet number are transmitted.  The
@@ -852,7 +852,7 @@ explained in more detail as they are referenced later in the document.
 | 0x07        | PING              | {{frame-ping}}              |
 | 0x08        | BLOCKED           | {{frame-blocked}}           |
 | 0x09        | STREAM_BLOCKED    | {{frame-stream-blocked}}    |
-| 0x0a        | STREAM_ID_NEEDED  | {{frame-stream-id-needed}}  |
+| 0x0a        | STREAM_ID_BLOCKED | {{frame-stream-id-blocked}} |
 | 0x0b        | NEW_CONNECTION_ID | {{frame-new-connection-id}} |
 | 0x0c        | STOP_SENDING      | {{frame-stop-sending}}      |
 | 0xa0 - 0xbf | ACK               | {{frame-ack}}               |
@@ -887,6 +887,11 @@ If the version selected by the client is not acceptable to the server, the
 server discards the incoming packet and responds with a Version Negotiation
 packet ({{packet-version}}).  This includes a list of versions that the server
 will accept.
+
+To avoid packet amplification attacks a server MUST NOT send a Version
+Negotiation packet that is larger than the packet it responds to.  It is
+anticipated that this is ample space for all QUIC versions that a single server
+might need to advertise.
 
 A server sends a Version Negotiation packet for every packet that it receives
 with an unacceptable version.  This allows a server to process packets with
@@ -1429,32 +1434,65 @@ TODO: see issue #161
 
 Connections should remain open until they become idle for a pre-negotiated
 period of time.  A QUIC connection, once established, can be terminated in one
-of four ways: negotiated shutdown, idle timeout, immediate close, and a
-connection reset.
+of four ways:
+
+* application close ({{application-close}})
+* idle timeout ({{idle-timeout}})
+* immediate close ({{immediate-close}})
+* stateless reset ({{stateless-reset}})
 
 
-### Negotiated Shutdown
+### Draining Period {#draining}
 
-An application protocol might arrange to abandon a connection after negotiating
-a graceful shutdown.  The application protocol exchanges whatever messages that
-are needed to cause both endpoints to agree to close the connection, after which
-the connection is closed.  A negotiated shutdown might not result in exchanging
-messages that are visible to the transport.
+After a connection is closed for any reason, an endpoint might receive packets
+from its peer.  These packets might have been sent prior to receiving any close
+signal, or they might be retransmissions of packets for which acknowledgments
+were lost.
+
+The draining period persists for three times the current Retransmission Timeout
+(RTO) interval as defined in {{QUIC-RECOVERY}}.  During this period, new packets
+can be acknowledged, but no new application data can be sent on the connection.
+
+Different treatment is given to packets that are received while a connection is
+in the draining period depending on how the connection was closed.  In all
+cases, it is possible to acknowledge packets that are received as normal, but
+other reactions might be preferable depending on how the connection was closed.
+An endpoint that is in a draining period MUST NOT send packets containing frames
+other than ACK, PADDING, or CONNECTION_CLOSE.
+
+Once the draining period has ended, an endpoint SHOULD discard per-connection
+state.  This results in new packets on the connection being discarded.  An
+endpoint MAY send a stateless reset in response to any further incoming packets.
+
+The draining period does not apply when a stateless reset ({{stateless-reset}})
+is used.
+
+
+### Application Close
+
+An application protocol can arrange to close a connection.  This might be after
+negotiating a graceful shutdown.  The application protocol exchanges whatever
+messages that are needed to cause both endpoints to agree to close the
+connection, after which the application requests that the connection be closed.
+A negotiated shutdown might not result in exchanging messages that are visible
+to the transport.
+
+In the draining period, an endpoint that has been closed by an application
+SHOULD generate and send ACK frames as normal.  This allows the peer to receive
+acknowledgements where previous acknowledgements were lost.
 
 
 ### Idle Timeout
 
 A connection that remains idle for longer than the idle timeout (see
-{{transport-parameter-definitions}} becomes closed.  Either peer removes
+{{transport-parameter-definitions}}) becomes closed.  Either peer removes
 connection state if they have neither sent nor received a packet for this time.
 
 The time at which an idle timeout takes effect won't be perfectly synchronized
-on peers.  Endpoints might allow for the possibility that the remote side might
-attempt to send packets before the timeout.  In this case, an endpoint might
-choose to retain enough information to generate a packet containing
-CONNECTION_CLOSE (see {{immediate-close}}).  Endpoints MAY instead rely on
-sending Stateless Reset in response to packets that arrive after an idle
-timeout.
+on peers.  A connection enters the draining period when the idle timeout
+expires.  During this time, an endpoint that receives new packets MAY choose to
+restore the connection.  Alternatively, an endpoint that receives packets MAY
+signal the timeout using an immediate close.
 
 
 ### Immediate Close
@@ -1462,30 +1500,30 @@ timeout.
 An endpoint sends a CONNECTION_CLOSE or APPLICATION_CLOSE frame to terminate the
 connection immediately.  These frames causes all open streams to immediately
 become closed; open streams can be assumed to be implicitly reset.  After
-receiving a either a CONNECTION_CLOSE or APPLICATION_CLOSE frame, endpoints MUST
-NOT send additional packets on that connection.
+receiving a either a CONNECTION_CLOSE or APPLICATION_CLOSE frame, endpoints
+immediately enter a draining period.
 
-An peer that receives either close frame might have sent packets that will
-arrive after the endpoint sent the packet.  An endpoint SHOULD respond to these
-packets with another CONNECTION_CLOSE or APPLICATION_CLOSE frame.  To minimize
-the state that an endpoint maintains in this case, they MAY send the exact same
-packet.
+During the draining period, an endpoint that sends a CONNECTION_CLOSE or
+APPLICATION_CLOSE frame SHOULD respond to any subsequent packet that it receives
+with another packet containing another CONNECTION_CLOSE or APPLICATION_CLOSE
+frame.  To reduce the state that an endpoint maintains in this case, it MAY send
+the exact same packet.  However, endpoints SHOULD limit the number of packets
+that they generate while in the draining period.  For instance, an endpoint
+could progressively increase the number of packets that it receives before
+sending additional CONNECTION_CLOSE or APPLICATION_CLOSE frames.
 
 Note:
 
-: This intentionally contradicts other advice in this document that recommends
-  the creation of new packet numbers for every packet.  Sending new packet
-  numbers is primarily of advantage to loss recovery and congestion control,
-  which are not expected to be relevant for a closed connection.  Retransmitting
-  the final packet requires less state at the server.
+: Allowing retransmission of a packet contradicts other advice in this document
+  that recommends the creation of new packet numbers for every packet.  Sending
+  new packet numbers is primarily of advantage to loss recovery and congestion
+  control, which are not expected to be relevant for a closed connection.
+  Retransmitting the final packet requires less state.
 
-Implementations SHOULD limit the number of packets they generate after sending
-either CONNECTION_CLOSE or APPLICATION_CLOSE.  For instance, an implementation
-could exponentially increase the number of packets that it receives before
-sending another packet.  Once enough time has passed to allow a peer to receive
-the final packet, an endpoint SHOULD discard per-connection state and MAY
-instead rely on sending a stateless reset in response to any further incoming
-packets.
+An endpoint can cease sending CONNECTION_CLOSE or APPLICATION_CLOSE frames if it
+receives a CONNECTION_CLOSE frame, an APPLICATION_CLOSE frame, or an
+acknowledgement for a packet that contained CONNECTION_CLOSE or
+APPLICATION_CLOSE.
 
 
 ### Stateless Reset {#stateless-reset}
@@ -1541,7 +1579,7 @@ After the first short header octet and optional connection ID, the server
 includes the value of the Stateless Reset Token that it included in its
 transport parameters.
 
-After the Stateless Reset Token, the endpoint pads the message with an arbitrary
+After the Stateless Reset Token, the server pads the message with an arbitrary
 number of octets containing random values.
 
 This design ensures that a stateless reset packet is - to the extent possible -
@@ -1867,18 +1905,16 @@ Stream ID:
 
 : A 32-bit unsigned number indicating the stream which is flow control blocked.
 
-An endpoint MAY send a STREAM_BLOCKED frame for a stream that exceeds the
-maximum stream ID set by its peer (see {{frame-max-stream-id}}).  This does not
-open the stream, but informs the peer that a new stream was needed, but the
-stream limit prevented the creation of the stream.
 
+## STREAM_ID_BLOCKED Frame {#frame-stream-id-blocked}
 
-## STREAM_ID_NEEDED Frame {#frame-stream-id-needed}
+A sender MAY send a STREAM_ID_BLOCKED frame (type=0x0a) when it wishes to open a
+stream, but is unable to due to the maximum stream ID limit set by its peer (see
+{{frame-max-stream-id}}).  This does not open the stream, but informs the peer
+that a new stream was needed, but the stream limit prevented the creation of the
+stream.
 
-A sender sends a STREAM_ID_NEEDED frame (type=0x0a) when it wishes to open a
-stream, but is unable to due to the maximum stream ID limit.
-
-The STREAM_ID_NEEDED frame does not contain a payload.
+The STREAM_ID_BLOCKED frame does not contain a payload.
 
 
 ## NEW_CONNECTION_ID Frame {#frame-new-connection-id}
@@ -2794,9 +2830,11 @@ senders from exceeding a receiver's buffer capacity for the connection, and (ii)
 Stream flow control, which prevents a single stream from consuming the entire
 receive buffer for a connection.
 
-A receiver sends MAX_DATA or MAX_STREAM_DATA frames to the sender to advertise
-additional credit by sending the absolute byte offset in the connection or
-stream which it is willing to receive.
+A data receiver sends MAX_STREAM_DATA or MAX_DATA frames to the sender
+to advertise additional credit. MAX_STREAM_DATA frames send the the
+maximum absolute byte offset of a stream, while MAX_DATA sends the
+maximum sum of the absolute byte offsets of all streams other than
+stream 0.
 
 A receiver MAY advertise a larger offset at any point by sending MAX_DATA or
 MAX_STREAM_DATA frames.  A receiver MUST NOT renege on an advertisement; that
