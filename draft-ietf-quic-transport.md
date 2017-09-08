@@ -887,6 +887,11 @@ server discards the incoming packet and responds with a Version Negotiation
 packet ({{packet-version}}).  This includes a list of versions that the server
 will accept.
 
+To avoid packet amplification attacks a server MUST NOT send a Version
+Negotiation packet that is larger than the packet it responds to.  It is
+anticipated that this is ample space for all QUIC versions that a single server
+might need to advertise.
+
 A server sends a Version Negotiation packet for every packet that it receives
 with an unacceptable version.  This allows a server to process packets with
 unsupported versions without retaining state.  Though either the initial client
