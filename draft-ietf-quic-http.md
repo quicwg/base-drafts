@@ -767,6 +767,8 @@ indicated in the GOAWAY frame, those requests were not and will not be
 processed.  Endpoints SHOULD reset any streams above this ID with the error code
 HTTP_REQUEST_CANCELLED.  Servers MAY also reset streams below the indicated ID
 with HTTP_REQUEST_CANCELLED if the associated requests were not processed.
+Servers MUST NOT use the HTTP_REQUEST_CANCELLED status for requests which were
+partially or fully processed.
 
 The client can treat requests cancelled by the server as though they had never
 been sent at all, thereby allowing them to be retried later on a new connection.
@@ -774,7 +776,11 @@ Automatically retrying other requests is not possible, unless this is otherwise
 permitted (e.g. idempotent actions like GET, PUT, or DELETE).  Requests on
 stream IDs less than or equal to the stream ID in the GOAWAY frame might have
 been processed; their status cannot be known until they are completed
-successfully, reset, or the connection terminates.
+successfully, reset, or the connection terminates.  If a stream is cancelled
+after receiving a complete response, the client MAY ignore the cancellation and
+use the response.  However, if a stream is cancelled after receiving a partial
+response, the response SHOULD NOT be used and the request cannot be safely
+retried.
 
 Servers SHOULD send a GOAWAY frame when the closing of a connection is known
 in advance, even if the advance notice is small, so that the remote peer can
