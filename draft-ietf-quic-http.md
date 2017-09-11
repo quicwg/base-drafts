@@ -237,6 +237,11 @@ response may contain zero or more header blocks containing the message headers
 of informational (1xx) HTTP responses (see {{!RFC7230}}, Section 3.2 and
 {{!RFC7231}}, Section 6.2).
 
+At any point during a response message, PUSH_PROMISE frames MAY also be present
+indicating a pushed resource related to the response. These PUSH_PROMISE frames
+are not part of the response, but carry the headers of a separate HTTP request
+message.  See {{server-push}} for more details.
+
 The "chunked" transfer encoding defined in Section 4.1 of {{!RFC7230}} MUST NOT
 be used.
 
