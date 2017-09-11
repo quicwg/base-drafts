@@ -193,7 +193,7 @@ An unacknowledged QUIC packet is marked as lost in one of the following ways:
   * Instead of a packet threshold to tolerate reordering, a QUIC sender may use
     a time threshold. This allows for senders to be tolerant of short periods of
     significant reordering. In this mechanism, a QUIC sender marks a packet as
-    lost when a packet larger than it is acknowledged and a threshold amount of
+    lost when a larger packet number is acknowledged and a threshold amount of
     time has passed since the packet was sent.
 
   * Handshake packets, which contain STREAM frames for stream 0, are
