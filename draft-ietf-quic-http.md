@@ -860,9 +860,10 @@ length as a connection error of type HTTP_MALFORMED_MAX_PUSH_ID.
 
 ## STOP_SENDING Frame {#frame-stop-sending}
 
-An endpoint may use a STOP_SENDING frame (type=0x0E) to communicate that
-incoming data is being discarded on receipt at application request.  This
-requests that the recipient send a RST_STREAM on the identified stream.
+An endpoint uses a STOP_SENDING frame (type=0x0E) to communicate that incoming
+data is being discarded on receipt at application request.  This indicates to
+the recipient that sending a RST_STREAM on the identified stream would avoid
+wasting bandwidth.
 
 STOP_SENDING is sent on the control stream.  An endpoint MUST treat receipt of
 STOP_SENDING on any other stream as a connection error of type
