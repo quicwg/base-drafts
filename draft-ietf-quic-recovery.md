@@ -476,7 +476,7 @@ Pseudocode for SetLossDetectionAlarm follows:
       alarm_duration = loss_time - now
     else if (tlp_count < kMaxTLPs):
       // Tail Loss Probe
-      if (retransmittable_packets_outstanding = 1):
+      if (retransmittable_packets_outstanding == 1):
         alarm_duration = 1.5 * smoothed_rtt + kDelayedAckTimeout
       else:
         alarm_duration = kMinTLPTimeout
