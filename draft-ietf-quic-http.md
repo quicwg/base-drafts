@@ -389,6 +389,23 @@ HTTP_PUSH_ALREADY_IN_CACHE; see {{errors}}).  This asks the server not to
 transfer the data and indicates that it will be discarded upon receipt.
 
 
+## Solicited Stream Cancellation
+
+If an endpoint is no longer interested in the data being received, it MAY send a
+STOP_SENDING frame to request prompt closure of the stream in the opposite
+direction.  This typically indicates that the receiving application is no longer
+reading from the stream, but does not guarantee that incoming data will be
+ignored.
+
+Upon receipt of a STOP_SENDING frame on a stream in the "open" or "half-closed
+(remote)" states, an endpoint MUST send a QUIC RST_STREAM frame.  If the
+STOP_SENDING frame is received on a stream that is already in the "half-closed
+(local)" or "closed" states, a RST_STREAM frame MAY still be sent in order to
+cancel retransmission of previously-sent STREAM frames.  Sending a STOP_SENDING
+frame has no effect on the state of the QUIC stream until the RST_STREAM frame
+is sent.
+
+
 # HTTP Framing Layer {#http-framing-layer}
 
 Frames are used on each stream.  This section describes HTTP framing in QUIC and
@@ -841,6 +858,39 @@ A server MUST treat a MAX_PUSH_ID frame payload that is other than 4 octets in
 length as a connection error of type HTTP_MALFORMED_MAX_PUSH_ID.
 
 
+## STOP_SENDING Frame {#frame-stop-sending}
+
+An endpoint uses a STOP_SENDING frame (type=0x0E) to communicate that incoming
+data is being discarded on receipt at application request.  This indicates to
+the recipient that sending a RST_STREAM on the identified stream would avoid
+wasting bandwidth.
+
+STOP_SENDING is sent on the control stream.  An endpoint MUST treat receipt of
+STOP_SENDING on any other stream as a connection error of type
+HTTP_WRONG_STREAM.
+
+The STOP_SENDING frame is as follows:
+
+~~~ drawing
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                        Stream ID (32)                         |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                        Error Code (32)                        |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~
+
+The fields are:
+
+Stream ID:
+: The 32-bit Stream ID of the stream being ignored.
+
+Error Code:
+: A 32-bit error code containing the reason for requesting that the stream be
+  reset (see {{http-error-codes}}).
+
+
 # Error Handling {#errors}
 
 QUIC allows the application to abruptly terminate (reset) individual streams or
@@ -1203,6 +1253,7 @@ The entries in the following table are registered by this document.
 | Reserved       | 0x8  | N/A                      |
 | Reserved       | 0x9  | N/A                      |
 | MAX_PUSH_ID    | 0xD  | {{frame-max-push-id}}    |
+| STOP_SENDING   | 0xE  | {{frame-stop-sending}}   |
 |----------------|------|--------------------------|
 
 ## Settings Parameters {#iana-settings}
@@ -1312,6 +1363,7 @@ The original authors of this specification were Robbie Shade and Mike Warres.
 ## Since draft-ietf-quic-http-05
 
 - Made push ID sequential, add MAX_PUSH_ID, remove SETTINGS_ENABLE_PUSH (#709)
+- Added STOP_SENDING frame (#758)
 
 ## Since draft-ietf-quic-http-04
 
