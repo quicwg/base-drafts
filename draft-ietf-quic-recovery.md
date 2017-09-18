@@ -585,22 +585,54 @@ both the median and mean min_rtt typically observed on the public internet.
 # Congestion Control
 
 QUIC's congestion control is based on TCP NewReno{{?RFC6582}}
-congestion control to determine the congestion window and pacing rate.
+congestion control to determine the congestion window(aka CWND) and 
+pacing rate.  QUIC congestion control is specified in bytes due to
+finer control and the ease of appropriate byte counting{{?RFC3465}}.
 
 ## Slow Start
 
 QUIC begins every connection in slow start and exits slow start upon
-loss. While in slow start, QUIC increases the congestion window by the
+loss. QUIC re-enters slow start after a retransmission timeout.
+While in slow start, QUIC increases the congestion window by the
 number of acknowledged bytes when each ack is processed.
 
-## Recovery
+## Congestion Avoidance
+
+Slow start exits to congestion avoidance.  Congestion avoidance in NewReno
+uses an additive increase multiplicative decrease(AIMD) approach that
+increases the congestion window by one MSS of bytes per congestion window
+acknowledged.  When a loss is detected, NewReno decreases the congestion
+window by the loss reduction factor and sets the slow start threshold
+to the new congestion window.
+
+## Recovery Period
 
 Recovery is a period of time beginning with detection of a lost packet.
 It ends when all packets outstanding at the time recovery began have been
 acknowledged or lost. During recovery, the congestion window is not
-increased or decreased.
+increased or decreased.  As such, multiple lost packets only decrease the
+congestion window once as long as they're lost before exiting recovery.
 
-## Constants of interest
+## Tail Loss Probe
+
+If recovery sends a tail loss probe, no change is made to the congestion
+window or pacing rate.  Acknowledgement or loss of tail loss probes are treated like
+any other packet.
+
+## Retransmission Timeout
+
+When retransmissions are sent due to a retransmission timeout alarm, no
+change is made to the congestion window or pacing rate until the next
+acknowledgement arrives.  When it arrives, if packets prior to the first
+retransmission timeout are acknowledged, then the congestion window
+remains the same.  If no packets prior to the first retransmission timeout
+are acknowledged, the retransmission timeout has been validated and the
+congestion window must be reduced to the minimum congestion window and
+slow start is begun.
+
+## Pseudocode
+
+### Constants of interest
 
 Constants used in congestion control are based on a combination of RFCs,
 papers, and common practice.  Some may need to be changed or negotiated
@@ -620,7 +652,7 @@ kLossReductionFactor (default 0.5):
 : Reduction in congestion window when a new loss event is detected.
 
 
-## Variables of interest
+### Variables of interest
 
 Variables required to implement the congestion control mechanisms
 are described in this section.
@@ -641,7 +673,7 @@ ssthresh
 : Slow start threshold in bytes.  When the congestion window is below
   ssthresh, it grows by the number of bytes acknowledged for each ack.
 
-## Initialization
+### Initialization
 
 At the beginning of the connection, initialize the loss detection variables as
 follows:
@@ -653,7 +685,7 @@ follows:
    ssthresh = infinite
 ~~~
 
-## On Packet Acknowledgement
+### On Packet Acknowledgement
 
 Invoked from loss detection's OnPacketAcked and is supplied with
 acked_packet from sent_packets.
@@ -671,7 +703,7 @@ Pseudocode for OnPacketAckedCC follows:
            acked_packets.bytes / congestion_window
 ~~~
 
-## On Packets Lost
+### On Packets Lost
 
 Invoked by loss detection from DetectLostPackets when new packets
 are detected lost.
@@ -688,7 +720,7 @@ are detected lost.
        ssthresh = congestion_window
 ~~~
 
-## On Retransmission Timeout Verified
+### On Retransmission Timeout Verified
 
 QUIC decreases the congestion window to the minimum value once the
 retransmission timeout has been confirmed to not be spurious when
