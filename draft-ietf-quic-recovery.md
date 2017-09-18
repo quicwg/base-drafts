@@ -616,19 +616,27 @@ congestion window once as long as they're lost before exiting recovery.
 ## Tail Loss Probe
 
 If recovery sends a tail loss probe, no change is made to the congestion
-window or pacing rate.  Acknowledgement or loss of tail loss probes are treated like
-any other packet.
+window or pacing rate.  Acknowledgement or loss of tail loss probes are
+treated like any other packet.
 
 ## Retransmission Timeout
 
 When retransmissions are sent due to a retransmission timeout alarm, no
 change is made to the congestion window or pacing rate until the next
-acknowledgement arrives.  When it arrives, if packets prior to the first
+acknowledgement arrives.  When an ack arrives, if packets prior to the first
 retransmission timeout are acknowledged, then the congestion window
 remains the same.  If no packets prior to the first retransmission timeout
 are acknowledged, the retransmission timeout has been validated and the
 congestion window must be reduced to the minimum congestion window and
 slow start is begun.
+
+## Pacing Rate
+
+The pacing rate is a function of the mode, the congestion window, and
+the smoothed rtt.  Specifically, the pacing rate is 2 times the
+congestion window divided by the smoothed RTT during slow start
+and 1.25 times the congestion window divided by the smoothed RTT during
+slow start.
 
 ## Pseudocode
 
@@ -731,7 +739,7 @@ the first post-RTO acknowledgement is processed.
      congestion_window = kMinimumWindow
 ~~~
 
-## Pacing Packets
+### Pacing Packets
 
 QUIC sends a packet if there is available congestion window and
 sending the packet does not exceed the pacing rate.
