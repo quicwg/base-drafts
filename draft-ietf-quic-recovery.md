@@ -704,7 +704,7 @@ variables as follows:
 
 ### On Packet Sent
 
-Whenever a packet is sent, and is contains non-ACK frames,
+Whenever a packet is sent, and it contains non-ACK frames,
 the packet increases bytes_in_flight.
 
 ~~~
