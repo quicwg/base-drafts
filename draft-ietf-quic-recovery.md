@@ -607,10 +607,15 @@ window and sets the slow start threshold to the new congestion window.
 ## Recovery Period
 
 Recovery is a period of time beginning with detection of a lost packet.
-It ends when all packets outstanding at the time recovery began have been
-acknowledged or lost. During recovery, the congestion window is not
-increased or decreased.  As such, multiple lost packets only decrease the
-congestion window once as long as they're lost before exiting recovery.
+Because QUIC retransmits frames, not packets, it defines the end of
+recovery as all packets outstanding at the start of recovery being
+acknowledged or lost.  This is slightly different from TCP's definition of
+recovery ending when the lost packet that started recovery is acknowledged.
+During recovery, the congestion window is not increased or decreased.
+As such, multiple lost packets only decrease the congestion window once as
+long as they're lost before exiting recovery. This causes QUIC to decrease
+the congestion window multiple times if retransmisions are lost, but limits
+the reduction to once per round trip.
 
 ## Tail Loss Probe
 
