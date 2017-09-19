@@ -705,7 +705,7 @@ Pseudocode for OnPacketAckedCC follows:
      if (acked_packet.packet_number < end_of_recovery):
        return
      if (congestion_window < ssthresh):
-       congestion_window += acket_packets.bytes
+       congestion_window += acked_packets.bytes
      else:
        congestion_window +=
            acked_packets.bytes / congestion_window
