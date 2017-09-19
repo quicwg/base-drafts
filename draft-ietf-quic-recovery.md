@@ -585,7 +585,7 @@ both the median and mean min_rtt typically observed on the public internet.
 # Congestion Control
 
 QUIC's congestion control is based on TCP NewReno{{?RFC6582}}
-congestion control to determine the congestion window(aka CWND) and 
+congestion control to determine the congestion window and
 pacing rate.  QUIC congestion control is specified in bytes due to
 finer control and the ease of appropriate byte counting{{?RFC3465}}.
 
@@ -599,7 +599,7 @@ number of acknowledged bytes when each ack is processed.
 ## Congestion Avoidance
 
 Slow start exits to congestion avoidance.  Congestion avoidance in NewReno
-uses an additive increase multiplicative decrease(AIMD) approach that
+uses an additive increase multiplicative decrease (AIMD) approach that
 increases the congestion window by one MSS of bytes per congestion window
 acknowledged.  When a loss is detected, NewReno decreases the congestion
 window by the loss reduction factor and sets the slow start threshold
