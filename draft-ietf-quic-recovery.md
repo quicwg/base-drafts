@@ -326,11 +326,12 @@ are as follows:
 
 * packet_number: The packet number of the sent packet.
 
-* is_ack_only: A boolean that indicates whether a packet only contains an 
+* is_ack_only: A boolean that indicates whether a packet only contains an
   ACK frame.  If true, it is still expected an ack will be received for
   this packet, but it is not congestion controlled.
 
-* sent_bytes: The number of bytes sent in the packet.
+* sent_bytes: The number of bytes sent in the packet, not including UDP or IP
+  overhead, but including QUIC framing overhead.
 
 Pseudocode for OnPacketSent follows:
 
@@ -635,7 +636,7 @@ the smoothed rtt.  Specifically, the pacing rate is 2 times the
 congestion window divided by the smoothed RTT during slow start
 and 1.25 times the congestion window divided by the smoothed RTT during
 slow start.  In order to fairly compete with flows that are not pacing,
-it is recommended to not pace the first 10 packets sent when exiting
+it is recommended to not pace the first 10 sent packets when exiting
 quiescence.
 
 ## Pseudocode
@@ -713,11 +714,16 @@ acked_packet from sent_packets.
 
 ~~~
    OnPacketAckedCC(acked_packet):
+     // Remove from bytes_in_flight.
+     bytes_in_flight -= acked_packet.bytes
      if (acked_packet.packet_number < end_of_recovery):
+       // Do not increase congestion window in recovery period.
        return
      if (congestion_window < ssthresh):
+       // Slow start.
        congestion_window += acked_packets.bytes
      else:
+       // Congestion avoidance.
        congestion_window +=
            acked_packets.bytes / congestion_window
 ~~~
