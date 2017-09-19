@@ -730,7 +730,7 @@ acked_packet from sent_packets.
      else:
        // Congestion avoidance.
        congestion_window +=
-           acked_packets.bytes / congestion_window
+         kDefaultMss * acked_packets.bytes / congestion_window
 ~~~
 
 ### On Packets Lost
@@ -756,7 +756,7 @@ are detected lost.
 ### On Retransmission Timeout Verified
 
 QUIC decreases the congestion window to the minimum value once the
-retransmission timeout has been confirmed to not be spurious.
+retransmission timeout has been verified.
 
 ~~~
    OnRetransmissionTimeoutVerified()
