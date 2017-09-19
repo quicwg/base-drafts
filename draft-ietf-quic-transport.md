@@ -2638,9 +2638,10 @@ on new STREAM frames.  Retransmission of data that has already been sent on
 STREAM frames is permitted.  An endpoint MAY also send MAX_STREAM_DATA and
 STOP_SENDING in this state.
 
-If application resets a stream in this state, a RST_STREAM frame MAY be sent.
-The final offset carried in a RST_STREAM frame sent in this state MUST be the
-same as any previously indicated final offset.
+An application with a stream in this state may no longer care about data sent on
+the stream and may choose to reset the stream. To permit this behavior, a
+RST_STREAM frame MAY be sent in this state. The final offset carried in this
+RST_STREAM frame MUST be the same as the previously established final offset.
 
 An endpoint that closes a stream MUST NOT send data beyond the final offset that
 it has chosen, see {{state-closed}} for details.
@@ -2672,9 +2673,11 @@ closes a stream SHOULD be discarded.  An endpoint MAY choose to limit the period
 over which it ignores frames and treat frames that arrive after this time as
 being in error.
 
-An endpoint may receive a RST_STREAM after a FIN if the peer resets the stream
-after sending a FIN on it. In this case, the endpoint MAY discard any data that
-it already received on that stream.
+An endpoint may receive a RST_STREAM in this state, such as when the peer resets
+the stream after sending a FIN on it. In this case, the endpoint MAY discard any
+data that it already received on that stream. The endpoint SHOULD close the
+connection with a FINAL_OFFSET_ERROR if the received RST_STREAM carries a
+different offset from the one already established.
 
 An endpoint will know the final offset of the data it receives on a stream when
 it reaches the "half-closed (remote)" state, see {{final-offset}} for details.
