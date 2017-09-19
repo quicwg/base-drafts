@@ -326,23 +326,23 @@ are as follows:
 
 * packet_number: The packet number of the sent packet.
 
-* is_retransmittable: A boolean that indicates whether the packet contains at
-  least one frame requiring reliable deliver.  The retransmittability of various
-  QUIC frames is described in {{QUIC-TRANSPORT}}.  If false, it is still
-  acceptable for an ack to be received for this packet.  However, a caller MUST
-  NOT set is_retransmittable to true if an ack is not expected.
+* is_ack_only: A boolean that indicates whether a packet only contains an
+  ACK frame.  If true, it is still expected an ack will be received for
+  this packet, but it is not congestion controlled.
 
-* sent_bytes: The number of bytes sent in the packet.
+* sent_bytes: The number of bytes sent in the packet, not including UDP or IP
+  overhead, but including QUIC framing overhead.
 
 Pseudocode for OnPacketSent follows:
 
 ~~~
- OnPacketSent(packet_number, is_retransmittable, sent_bytes):
+ OnPacketSent(packet_number, is_ack_only, sent_bytes):
    time_of_last_sent_packet = now
    largest_sent_packet = packet_number
    sent_packets[packet_number].packet_number = packet_number
    sent_packets[packet_number].time = now
-   if is_retransmittable:
+   if !is_ack_only:
+     OnPacketSentCC(sent_bytes)
      sent_packets[packet_number].bytes = sent_bytes
      SetLossDetectionAlarm()
 ~~~
@@ -601,17 +601,21 @@ number of acknowledged bytes when each ack is processed.
 Slow start exits to congestion avoidance.  Congestion avoidance in NewReno
 uses an additive increase multiplicative decrease (AIMD) approach that
 increases the congestion window by one MSS of bytes per congestion window
-acknowledged.  When a loss is detected, NewReno decreases the congestion
-window by the loss reduction factor and sets the slow start threshold
-to the new congestion window.
+acknowledged.  When a loss is detected, NewReno halves the congestion
+window and sets the slow start threshold to the new congestion window.
 
 ## Recovery Period
 
 Recovery is a period of time beginning with detection of a lost packet.
-It ends when all packets outstanding at the time recovery began have been
-acknowledged or lost. During recovery, the congestion window is not
-increased or decreased.  As such, multiple lost packets only decrease the
-congestion window once as long as they're lost before exiting recovery.
+Because QUIC retransmits frames, not packets, it defines the end of
+recovery as all packets outstanding at the start of recovery being
+acknowledged or lost.  This is slightly different from TCP's definition of
+recovery ending when the lost packet that started recovery is acknowledged.
+During recovery, the congestion window is not increased or decreased.
+As such, multiple lost packets only decrease the congestion window once as
+long as they're lost before exiting recovery. This causes QUIC to decrease
+the congestion window multiple times if retransmisions are lost, but limits
+the reduction to once per round trip.
 
 ## Tail Loss Probe
 
@@ -636,7 +640,9 @@ The pacing rate is a function of the mode, the congestion window, and
 the smoothed rtt.  Specifically, the pacing rate is 2 times the
 congestion window divided by the smoothed RTT during slow start
 and 1.25 times the congestion window divided by the smoothed RTT during
-slow start.
+slow start.  In order to fairly compete with flows that are not pacing,
+it is recommended to not pace the first 10 sent packets when exiting
+quiescence.
 
 ## Pseudocode
 
@@ -669,22 +675,25 @@ bytes_in_flight:
 : The sum of the size in bytes of all sent packets that contain at least
   one retransmittable or PADDING frame, and have not been acked or
   declared lost. The size does not include IP or UDP overhead.
-  Ack only frames do not count towards byte_in_flight.
+  Packets only containing ack frames do not count towards byte_in_flight
+  to ensure congestion control does not impede congestion feedback.
 
 congestion_window:
 : Maximum number of bytes in flight that may be sent.
 
 end_of_recovery:
-: The packet number after which QUIC will no longer be in recovery.
+: The largest packet number sent when QUIC detects a loss.  When a larger
+  packet is acknowledged, QUIC exits recovery.
 
 ssthresh
 : Slow start threshold in bytes.  When the congestion window is below
-  ssthresh, it grows by the number of bytes acknowledged for each ack.
+  ssthresh, the mode is slow start and the window grows by the number of
+  bytes acknowledged.
 
 ### Initialization
 
-At the beginning of the connection, initialize the loss detection variables as
-follows:
+At the beginning of the connection, initialize the congestion control
+variables as follows:
 
 ~~~
    congestion_window = kInitialWindow
@@ -693,22 +702,35 @@ follows:
    ssthresh = infinite
 ~~~
 
+### On Packet Sent
+
+Whenever a packet is sent, and is contains non-ACK frames,
+the packet increases bytes_in_flight.
+
+~~~
+   OnPacketSentCC(bytes_sent):
+     bytes_in_flight += bytes_sent
+~~~
+
 ### On Packet Acknowledgement
 
 Invoked from loss detection's OnPacketAcked and is supplied with
 acked_packet from sent_packets.
 
-Pseudocode for OnPacketAckedCC follows:
-
 ~~~
    OnPacketAckedCC(acked_packet):
+     // Remove from bytes_in_flight.
+     bytes_in_flight -= acked_packet.bytes
      if (acked_packet.packet_number < end_of_recovery):
+       // Do not increase congestion window in recovery period.
        return
      if (congestion_window < ssthresh):
+       // Slow start.
        congestion_window += acked_packets.bytes
      else:
+       // Congestion avoidance.
        congestion_window +=
-           acked_packets.bytes / congestion_window
+         kDefaultMss * acked_packets.bytes / congestion_window
 ~~~
 
 ### On Packets Lost
@@ -718,6 +740,9 @@ are detected lost.
 
 ~~~
    OnPacketsLost(lost_packets):
+     // Remove lost packets from bytes_in_flight.
+     for (lost_packet : lost_packets):
+       bytes_in_flight -= lost_packet.bytes
      largest_lost_packet = lost_packets.last()
      // Start a new recovery epoch if the lost packet is larger
      // than the end of the previous recovery epoch.
@@ -731,32 +756,12 @@ are detected lost.
 ### On Retransmission Timeout Verified
 
 QUIC decreases the congestion window to the minimum value once the
-retransmission timeout has been confirmed to not be spurious when
-the first post-RTO acknowledgement is processed.
+retransmission timeout has been verified.
 
 ~~~
    OnRetransmissionTimeoutVerified()
      congestion_window = kMinimumWindow
 ~~~
-
-### Pacing Packets
-
-QUIC sends a packet if there is available congestion window and
-sending the packet does not exceed the pacing rate.
-
-TimeToSend returns infinite if the congestion controller is
-congestion window limited, a time in the past if the packet can be
-sent immediately, and a time in the future if sending is pacing
-limited.
-
-~~~
-   TimeToSend(packet_size):
-     if (bytes_in_flight + packet_size > congestion_window)
-       return infinite
-     return time_of_last_sent_packet +
-         (packet_size * smoothed_rtt) / congestion_window
-~~~
-
 
 # IANA Considerations
 
@@ -772,6 +777,10 @@ This document has no IANA actions.  Yet.
 
 > **RFC Editor's Note:**  Please remove this section prior to
 > publication of a final version of this document.
+
+## Since draft-ietf-quic-recovery-05
+
+- Add more congestion control text (#776)
 
 ## Since draft-ietf-quic-recovery-04
 
