@@ -2635,8 +2635,10 @@ Any frame type that mentions a stream ID can be sent in this state.
 
 A stream that is in the "half-closed (local)" state MUST NOT be used for sending
 on new STREAM frames.  Retransmission of data that has already been sent on
-STREAM frames is permitted.  An endpoint MAY also send MAX_STREAM_DATA and
-STOP_SENDING in this state.
+STREAM frames is permitted.  If the stream is canceled or reset while in this
+state, a RST_STREAM frame MAY be sent. A RST_STREAM frame sent in this state
+MUST carry the stream's final offset. An endpoint MAY also send MAX_STREAM_DATA
+and STOP_SENDING in this state.
 
 An endpoint that closes a stream MUST NOT send data beyond the final offset that
 it has chosen, see {{state-closed}} for details.
@@ -2667,6 +2669,10 @@ even after the stream is closed for sending.  Frames received after a peer
 closes a stream SHOULD be discarded.  An endpoint MAY choose to limit the period
 over which it ignores frames and treat frames that arrive after this time as
 being in error.
+
+An endpoint may receive a RST_STREAM after a FIN if the peer resets the stream
+after sending a FIN on it. In this case, the endpoint MAY discard any data that
+it already received on that stream.
 
 An endpoint will know the final offset of the data it receives on a stream when
 it reaches the "half-closed (remote)" state, see {{final-offset}} for details.
