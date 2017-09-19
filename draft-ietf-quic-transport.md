@@ -2695,11 +2695,12 @@ A stream also becomes "closed" when the endpoint sends a RST_STREAM frame.
 
 ### closed {#state-closed}
 
-The "closed" state is the terminal state for a stream.
+The "closed" state is the terminal state for a stream.  Reordering might cause
+frames to be received after closing, see {{state-hc-remote}}.
 
-Once a stream reaches this state, no frames can be sent that mention the stream.
-Reordering might cause frames to be received after closing, see
-{{state-hc-remote}}.
+If the application resets a stream that is already in the "closed" state, a
+RST_STREAM frame MAY still be sent in order to cancel retransmissions of
+previously-sent STREAM frames.
 
 
 ## Solicited State Transitions
