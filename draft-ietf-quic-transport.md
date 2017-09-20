@@ -667,10 +667,11 @@ that are used to remove packet protection.
 Packets protected with 0-RTT keys use a type value of 0x06.  The connection ID
 field for a 0-RTT packet is selected by the client.
 
-The client can send 0-RTT packets after having received a packet from the server
-if that packet does not complete the handshake.  Even if the client receives a
-different connection ID from the server, it MUST NOT update the connection ID it
-uses for 0-RTT packets.  This enables consistent routing for all 0-RTT packets.
+The client can send 0-RTT packets after receiving a Server Cleartext packet
+({{packet-server-cleartext}}), if that packet does not complete the handshake.
+Even if the client receives a different connection ID in the Server Cleartext
+packet, it MUST continue to use the connection ID selected by the client for
+0-RTT packets, see {{connection-id}}.
 
 Packets protected with 1-RTT keys that use long headers use a type value of 0x07
 for key phase 0 and 0x08 for key phase 1; see {{QUIC-TLS}} for more details on
@@ -697,17 +698,20 @@ as load balancers, to locate and use it.
 
 The client MUST choose a random connection ID and use it in Client Initial
 packets ({{packet-client-initial}}) and 0-RTT packets ({{packet-protected}}).
-If the client has received any packet from the server, it uses the connection ID
-it received from the server for all packets other than 0-RTT packets.
 
 When the server receives a Client Initial packet and decides to proceed with the
 handshake, it chooses a new value for the connection ID and sends that in a
-Server Cleartext packet.  The server MAY choose to use the value that the client
-initially selects.
+Server Cleartext packet ({{packet-server-cleartext}}).  The server MAY choose to
+use the value that the client initially selects.
 
-Once the client receives the connection ID that the server has chosen, it uses
-this for all subsequent packets that it sends, except for any 0-RTT packets,
-which all have the same connection ID.
+Once the client receives the connection ID that the server has chosen, it MUST
+use it for all subsequent Client Cleartext ({{packet-client-cleartext}}) and
+1-RTT ({{packet-protected}}) packets but not for 0-RTT packets
+({{packet-protected}}).
+
+Server's Version Negotiation ({{packet-version}}) and Stateless Retry
+({{packet-server-stateless}}) packets MUST use connection ID selected by the
+client.
 
 
 ## Packet Numbers {#packet-numbers}
