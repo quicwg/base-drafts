@@ -149,7 +149,7 @@ Connection:
 
 Connection ID:
 
-: The identifier for a QUIC connection.
+: The 64-bit unsigned number used as an identifier for a QUIC connection.
 
 QUIC packet:
 
