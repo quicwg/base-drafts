@@ -874,9 +874,9 @@ the cause of a connection or stream error.
 
 ## HTTP-Defined QUIC Error Codes {#http-error-codes}
 
-QUIC allocates error codes 0x0000-0x3FFF to application protocol definition. The
-following error codes are defined by HTTP for use in QUIC RST_STREAM and
-CONNECTION_CLOSE frames.
+QUIC allocates error codes 0x00000000-0x3FFFFFFF to application
+protocol definition. The following error codes are defined by HTTP for
+use in QUIC RST_STREAM, STOP_SENDING, and CONNECTION_CLOSE frames.
 
 HTTP_PUSH_REFUSED (0x01):
 : The server has attempted to push content which the client will not accept
@@ -888,8 +888,8 @@ HTTP_INTERNAL_ERROR (0x02):
 HTTP_PUSH_ALREADY_IN_CACHE (0x03):
 : The server has attempted to push content which the client has cached.
 
-HTTP_REQUEST_CANCELLED (0x04):
-: The client no longer needs the requested data.
+HTTP_CANCELLED (0x04):
+: The peer no longer needs the message body.
 
 HTTP_HPACK_DECOMPRESSION_FAILED (0x05):
 : HPACK failed to decompress a frame and cannot continue.
