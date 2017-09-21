@@ -879,8 +879,8 @@ the cause of a connection or stream error.
 
 ## HTTP/QUIC Error Codes {#http-error-codes}
 
-The following error codes are defined for use in QUIC RST_STREAM and
-APPLICATION_CLOSE frames when using HTTP/QUIC.
+The following error codes are defined for use in QUIC RST_STREAM, STOP_SENDING,
+and CONNECTION_CLOSE frames when using HTTP/QUIC.
 
 STOPPING (0x00):
 : This value is reserved by the transport to be used in response to QUIC
