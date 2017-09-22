@@ -1334,6 +1334,8 @@ The original authors of this specification were Robbie Shade and Mike Warres.
 ## Since draft-ietf-quic-http-05
 
 - Made push ID sequential, add MAX_PUSH_ID, remove SETTINGS_ENABLE_PUSH (#709)
+- Guidance about keep-alive and QUIC PINGs (#729)
+- Expanded text on GOAWAY and cancellation (#757)
 
 ## Since draft-ietf-quic-http-04
 
