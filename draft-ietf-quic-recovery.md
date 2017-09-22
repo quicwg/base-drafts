@@ -161,43 +161,109 @@ latency before a userspace QUIC receiver processes a received packet.
 
 # Loss Detection
 
-## Overview {#overview}
+QUIC uses both ack information and timers to detect lost packets. The ack-based
+loss detection implements the spirit of TCP's Fast Retransmit {{!RFC5681}},
+Early Retransmit {{!RFC5827}}, FACK, and SACK loss recovery {{!RFC6675}}. The
+timer-based loss detection implements the spirit of TCP's Tail Loss Probe and
+retransmission timeout mechanisms.
 
-QUIC uses a combination of ack information and alarms to detect lost packets.
-An unacknowledged QUIC packet is marked as lost in one of the following ways:
+## Ack-based Detection
 
-  * A packet is marked as lost if at least one packet that was sent a threshold
-    number of packets (kReorderingThreshold) after it has been
-    acknowledged. This indicates that the unacknowledged packet is either lost
-    or reordered beyond the specified threshold. This mechanism combines both
-    TCP's FastRetransmit and FACK mechanisms.
+### Fast Retransmit
 
-  * If a packet is near the tail, where fewer than kReorderingThreshold packets
-    are sent after it, the sender cannot expect to detect loss based on the
-    previous mechanism. In this case, a sender uses both ack information and an
-    alarm to detect loss. Specifically, when the last sent packet is
-    acknowledged, the sender waits a short period of time to allow for
-    reordering and then marks any unacknowledged packets as lost. This mechanism
-    is based on the Linux implementation of TCP Early Retransmit.
+An unacknowledged packet is marked as lost when an acknowledgment is received
+for a packet that was sent a threshold number of packets (kReorderingThreshold)
+after the unacknowledged packet. Receipt of the ack indicates that a later
+packet was received, while kReorderingThreshold provides some tolerance for
+reordering of packets in the network. 
 
-  * If a packet is sent at the tail, there are no packets sent after it, and the
-    sender cannot use ack information to detect its loss. The sender therefore
-    relies on an alarm to detect such tail losses. This mechanism is based on
-    TCP's Tail Loss Probe.
+An endpoint SHOULD use a default kReorderingThreshold of 3.
 
-  * If all else fails, a Retransmission Timeout (RTO) alarm is always set when
-    any retransmittable packet is outstanding. When this alarm fires, all
-    unacknowledged packets are marked as lost.
+We derive this default from recommendations for TCP loss recovery {{!RFC5681}}
+{{!RFC6675}}. It is possible for networks to exhibit higher degrees of
+reordering, causing a sender to spuriously detect losses. Spurious loss
+detection leads to unnecessary retransmissions and may result in degraded
+performance due to the actions of the congestion controller on detecting
+loss. Implementers MAY use algorithms developed for TCP, such as TCP-NCR
+{{!RFC4653}}, to improve QUIC's reordering resilience, though care should be
+taken to map TCP specifics to QUIC correctly. Similarly, using time-based loss
+detection to deal with reordering, such as in PR-TCP, should be more readily
+usable in QUIC. Making QUIC deal with such networks is important open research,
+and implementers are encouraged to explore this space.
 
-  * Instead of a packet threshold to tolerate reordering, a QUIC sender may use
-    a time threshold. This allows for senders to be tolerant of short periods of
-    significant reordering. In this mechanism, a QUIC sender marks a packet as
-    lost when a larger packet number is acknowledged and a threshold amount of
-    time has passed since the packet was sent.
+### Early Retransmit
 
-  * Handshake packets, which contain STREAM frames for stream 0, are
-    critical to QUIC transport and crypto negotiation, so a separate alarm
-    period is used for them.
+Unacknowledged packets close to the tail may have fewer than
+kReorderingThreshold number of packets sent after them. Loss of such packets
+cannot be detected via Fast Retransmit. To enable ack-based loss detection of
+such packets, receipt of an acknowledgment for the last outstanding packet
+triggers the Early Retransmit process, as follows.
+
+If there are unacknowledged packets still pending, they ought to be
+retransmitted, since there are no subsequent packets to trigger a Fast
+Retransmit. To compensate for the reduced reordering resilience, the sender
+SHOULD set an alarm for a small period of time. If the unacknowledged packets
+are not acknowledged during this time, then these packets are marked as lost.
+
+An endpoint SHOULD set the alarm such that a packet is marked as lost no earlier
+than 1.25 * max(SRTT, latest_RTT) since when it was sent. 
+
+Using the max(SRTT, latest_RTT) handles the two following cases:
+
+* the latest RTT sample is lower than the SRTT, perhaps due to reordering where
+packet whose ack triggered the Early Retransit process encountered a shorter
+path;
+
+* the latest RTT sample is higher than the SRTT, perhaps due to increase in the
+actual network RTT, but the smoothed SRTT has not yet caught up.
+
+The 1.25 multiplier increases reordering resilience. Implementers MAY experiment
+with using other multipliers, bearing in mind that a lower multiplier reduces
+reordering resilience and increases spurious retransmissions, and a higher
+multipler increases loss recovery delay.
+
+This mechanism is based on Early Retransmit for TCP {{!RFC5827}}. However,
+{{!RFC5827}} does not include the alarm described above. Early Retransmit is
+prone to spurious retransmissions due to its reduced reordering resilence
+without the alarm. This observation led Linux TCP implementers to implement an
+alarm for TCP as well, and this document incorporates this advancement.
+
+
+## Timer-based Detection
+
+### Tail Loss Probe
+
+A packet sent at the tail is particularly vulnerable to slow loss detection,
+since subsequent packets (and acks) are needed to trigger ack-based
+detection. To ameliorate this weakness of tail packets, the sender arms an alarm
+when a tail packet is transmitted. When this alarm fires, the endpoint sends a
+Tail Loss Probe --- a packet with new data, or retransmitted data if no new data
+is available to send --- to evoke an acknowledgement from the receiver.
+
+Since this packet is sent aggressively as a probe into the network, the tail
+packet MUST NOT be marked as lost when this alarm fires.
+
+Commonly, a sender will not know that a packet being sent is a tail
+packet. Consequently, a sender may have to arm or adjust the alarm on every sent
+packet.
+
+### Retransmission Timeout
+
+A Retransmission Timeout (RTO) alarm is the final backstop for loss detection.
+An RTO alarm is set on the last Tail Loss Probe.
+
+### Handshake Timeout
+
+Handshake packets, which contain STREAM frames for stream 0, are critical to
+QUIC transport and crypto negotiation, so a separate alarm period is used for
+them.
+
+
+Instead of a packet threshold to tolerate reordering, a QUIC sender may use a
+time threshold. This allows for senders to be tolerant of short periods of
+significant reordering. In this mechanism, a QUIC sender marks a packet as lost
+when a larger packet number is acknowledged and a threshold amount of time has
+passed since the packet was sent.
 
 
 ## Algorithm Details
