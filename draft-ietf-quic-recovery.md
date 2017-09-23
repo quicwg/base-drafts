@@ -778,6 +778,10 @@ This document has no IANA actions.  Yet.
 > **RFC Editor's Note:**  Please remove this section prior to
 > publication of a final version of this document.
 
+## Since draft-ietf-quic-recovery-06
+
+Nothing yet.
+
 ## Since draft-ietf-quic-recovery-05
 
 - Add more congestion control text (#776)

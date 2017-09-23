@@ -1561,6 +1561,10 @@ many others.
 
 Issue and pull request numbers are listed with a leading octothorp.
 
+## Since draft-ietf-quic-tls-06
+
+Nothing yet.
+
 ## Since draft-ietf-quic-tls-05
 
 No significant changes.

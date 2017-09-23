@@ -3295,6 +3295,10 @@ thanks to all.
 
 Issue and pull request numbers are listed with a leading octothorp.
 
+## Since draft-ietf-quic-transport-06
+
+Nothing yet.
+
 ## Since draft-ietf-quic-transport-05
 
 - Stateless token is server-only (#726)
