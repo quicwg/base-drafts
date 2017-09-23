@@ -3295,6 +3295,15 @@ thanks to all.
 
 Issue and pull request numbers are listed with a leading octothorp.
 
+## Since draft-ietf-quic-transport-05
+
+- Stateless token is server-only (#726)
+- Refactor section on connection termination (#733, #748, #328, #177)
+- Limit size of Version Negotiation packet (#585)
+- Clarify when and what to ack (#736)
+- Renamed STREAM_ID_NEEDED to STREAM_ID_BLOCKED
+- Clarify Keep-alive requirements (#729)
+
 ## Since draft-ietf-quic-transport-04
 
 - Introduce STOP_SENDING frame, RST_STREAM only resets in one direction (#165)
