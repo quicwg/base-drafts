@@ -1061,7 +1061,8 @@ MUST be validated (see {{version-validation}}) before the connection
 establishment is considered properly complete.
 
 Definitions for each of the defined transport parameters are included in
-{{transport-parameter-definitions}}.
+{{transport-parameter-definitions}}. Any given parameter MUST appear
+at most once in a given transport parameters extension.
 
 
 ### Transport Parameter Definitions
