@@ -640,9 +640,9 @@ The pacing rate is a function of the mode, the congestion window, and
 the smoothed rtt.  Specifically, the pacing rate is 2 times the
 congestion window divided by the smoothed RTT during slow start
 and 1.25 times the congestion window divided by the smoothed RTT during
-slow start.  In order to fairly compete with flows that are not pacing,
-it is recommended to not pace the first 10 sent packets when exiting
-quiescence.
+congestion avoidance.  In order to fairly compete with flows that are not
+pacing, it is recommended to not pace the first 10 sent packets when
+exiting quiescence.
 
 ## Pseudocode
 
