@@ -161,13 +161,14 @@ latency before a userspace QUIC receiver processes a received packet.
 
 # Loss Detection
 
-QUIC uses both ack information and timers to detect lost packets. The ack-based
-loss detection implements the spirit of TCP's Fast Retransmit {{!RFC5681}},
-Early Retransmit {{!RFC5827}}, FACK, and SACK loss recovery {{!RFC6675}}. The
-timer-based loss detection implements the spirit of TCP's Tail Loss Probe and
-retransmission timeout mechanisms.
+QUIC uses both ack information and alarms to detect lost packets.
 
 ## Ack-based Detection
+
+Ack-based loss detection implements the spirit of TCP's Fast Retransmit
+{{!RFC5681}}, Early Retransmit {{!RFC5827}}, FACK, and SACK loss recovery
+{{!RFC6675}}. This section provides an overview of how these algorithms are
+implemented in QUIC.
 
 ### Fast Retransmit
 
@@ -177,7 +178,7 @@ after the unacknowledged packet. Receipt of the ack indicates that a later
 packet was received, while kReorderingThreshold provides some tolerance for
 reordering of packets in the network. 
 
-An endpoint SHOULD use a default kReorderingThreshold of 3.
+The RECOMMENDED value for kReorderingThreshold is 3.
 
 We derive this default from recommendations for TCP loss recovery {{!RFC5681}}
 {{!RFC6675}}. It is possible for networks to exhibit higher degrees of
@@ -208,14 +209,14 @@ are not acknowledged during this time, then these packets are marked as lost.
 An endpoint SHOULD set the alarm such that a packet is marked as lost no earlier
 than 1.25 * max(SRTT, latest_RTT) since when it was sent. 
 
-Using the max(SRTT, latest_RTT) handles the two following cases:
+Using max(SRTT, latest_RTT) protects from the two following cases:
 
 * the latest RTT sample is lower than the SRTT, perhaps due to reordering where
 packet whose ack triggered the Early Retransit process encountered a shorter
 path;
 
-* the latest RTT sample is higher than the SRTT, perhaps due to increase in the
-actual network RTT, but the smoothed SRTT has not yet caught up.
+* the SRTT is lower than the latest RTT sample, perhaps due to a sustained
+increase in the actual RTT, but the smoothed SRTT has not yet caught up.
 
 The 1.25 multiplier increases reordering resilience. Implementers MAY experiment
 with using other multipliers, bearing in mind that a lower multiplier reduces
@@ -231,23 +232,67 @@ alarm for TCP as well, and this document incorporates this advancement.
 
 ## Timer-based Detection
 
+Timer-based loss detection implements the spirit of TCP's Tail Loss Probe
+and Retransmission Timeout mechanisms.
+
 ### Tail Loss Probe
+
+The algorithm described in this section is an adaptation of the Tail Loss Probe
+algorithm proposed for TCP {{!I-D.draft-dukkipati-tcpm-tcp-loss-probe}}.
 
 A packet sent at the tail is particularly vulnerable to slow loss detection,
 since subsequent packets (and acks) are needed to trigger ack-based
 detection. To ameliorate this weakness of tail packets, the sender arms an alarm
-when a tail packet is transmitted. When this alarm fires, the endpoint sends a
-Tail Loss Probe --- a packet with new data, or retransmitted data if no new data
-is available to send --- to evoke an acknowledgement from the receiver.
+when a tail packet is transmitted. When this alarm fires, a Tail Loss Probe
+(TLP) packet is sent to evoke an acknowledgement from the receiver.
 
-Since this packet is sent aggressively as a probe into the network, the tail
-packet MUST NOT be marked as lost when this alarm fires.
+The alarm duration, or Probe Timeout (PTO), is set based on the following
+conditions:
 
-Commonly, a sender will not know that a packet being sent is a tail
-packet. Consequently, a sender may have to arm or adjust the alarm on every sent
-packet.
+* If there is exactly one unacknowledged packet, PTO SHOULD be scheduled for
+  max(2*SRTT, 1.5*SRTT+kDelayedAckTimeout)
 
-### Retransmission Timeout
+* If there are more than one unacknowledged packets, PTO SHOULD be scheduled for
+  max(2*SRTT, 10ms).
+
+* If RTO is earlier, schedule a TLP alarm in its place. That is, PTO SHOULD be
+  scheduled for min(RTO, PTO).
+
+kDelayedAckTimeout is the worst case delayed ACK timer.  When the is exactly one
+unacknowledged packet, the alarm duration includes time for an acknowledgment to
+be received, and additionally, a kDelayedAckTimeout period to compensate for the
+delayed acknowledgment timer at the receiver.
+
+The RECOMMENDED value for kDelayedAckTimeout is 25ms.
+
+A PTO value of at least 2*SRTT ensures that the ACK is overdue. Using a PTO of
+exactly 1*SRTT may generate spurious probes, and 2*SRTT is simply the next
+integral value of RTT.
+
+(TODO: These values of 2 and 1.5 are a bit arbitrary. Reconsider these.)
+
+If the Retransmission Timeout (RTO, {{rto}}) is smaller than the computed PTO,
+then a PTO is scheduled for the smaller RTO period.
+
+To reduce latency, it is RECOMMENDED that the sender send two sequential TLP
+packets before setting an RTO alarm. When the first TLP packet is sent, the TLP
+alarm should be scheduled for a second TLP. On the second TLP packet, an RTO
+alarm should be scheduled {{rto}}.
+
+A TLP packet SHOULD carry new data when available. If new data is unavailable, a
+TLP packet MAY retransmit unacknowledged data to potentially reduce recovery
+time. Since a TLP packet is sent as a probe into the network prior to
+establishing any packet loss, data if retransmitted SHOULD NOT be marked as
+lost.
+
+A TLP packet MUST NOT be blocked by the sender's congestion controller. The
+sender SHOULD however count these bytes as additional bytes in flight, since a
+TLP adds network load without establishing packet loss.
+
+A sender will commonly not know that a packet being sent is a tail packet.
+Consequently, a sender may have to arm or adjust the TLP alarm on every sent packet.
+
+### Retransmission Timeout {#rto}
 
 A Retransmission Timeout (RTO) alarm is the final backstop for loss detection.
 An RTO alarm is set on the last Tail Loss Probe.
@@ -257,7 +302,6 @@ An RTO alarm is set on the last Tail Loss Probe.
 Handshake packets, which contain STREAM frames for stream 0, are critical to
 QUIC transport and crypto negotiation, so a separate alarm period is used for
 them.
-
 
 Instead of a packet threshold to tolerate reordering, a QUIC sender may use a
 time threshold. This allows for senders to be tolerant of short periods of
