@@ -159,7 +159,7 @@ QUIC packet:
 
 ## Notational Conventions
 
-Packet and frame diagrams use the format described in {{?RFC2360}} Section 3.1,
+Packet and frame diagrams use the format described in Section 3.1 of {{?RFC2360}},
 with the following additional conventions:
 
 \[x\]
@@ -1422,7 +1422,7 @@ Gap = HKDF-Expand-Label(packet_number_secret,
 
 The output of HKDF-Expand-Label is interpreted as a big-endian
 number. "packet_number_secret" is derived from the TLS key exchange,
-as described in {{QUIC-TLS}} Section 5.6.
+as described in Section 5.6 of {{QUIC-TLS}}.
 
 
 ### Address Validation for Migrated Connections
