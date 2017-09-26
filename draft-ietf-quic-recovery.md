@@ -161,7 +161,14 @@ latency before a userspace QUIC receiver processes a received packet.
 
 # Loss Detection
 
-QUIC uses both ack information and alarms to detect lost packets.
+QUIC uses both ack information and timeouts to detect lost packets, and this
+section provides a description of these algorithms. Estimating the network
+round-trip time (RTT) is critical to these algorithms and is described first.
+
+## Computing the RTT estimate
+
+(To be filled)
+
 
 ## Ack-based Detection
 
@@ -184,7 +191,7 @@ We derive this default from recommendations for TCP loss recovery {{!RFC5681}}
 {{!RFC6675}}. It is possible for networks to exhibit higher degrees of
 reordering, causing a sender to spuriously detect losses. Spurious loss
 detection leads to unnecessary retransmissions and may result in degraded
-performance due to the actions of the congestion controller on detecting
+performance due to the actions of the congestion controller upon detecting
 loss. Implementers MAY use algorithms developed for TCP, such as TCP-NCR
 {{!RFC4653}}, to improve QUIC's reordering resilience, though care should be
 taken to map TCP specifics to QUIC correctly. Similarly, using time-based loss
@@ -295,19 +302,15 @@ Consequently, a sender may have to arm or adjust the TLP alarm on every sent pac
 ### Retransmission Timeout {#rto}
 
 A Retransmission Timeout (RTO) alarm is the final backstop for loss detection.
-An RTO alarm is set on the last Tail Loss Probe.
+An RTO alarm is scheduled when the last TLP packet is sent.
+
+Spurious retransmission detection
 
 ### Handshake Timeout
 
 Handshake packets, which contain STREAM frames for stream 0, are critical to
 QUIC transport and crypto negotiation, so a separate alarm period is used for
 them.
-
-Instead of a packet threshold to tolerate reordering, a QUIC sender may use a
-time threshold. This allows for senders to be tolerant of short periods of
-significant reordering. In this mechanism, a QUIC sender marks a packet as lost
-when a larger packet number is acknowledged and a threshold amount of time has
-passed since the packet was sent.
 
 
 ## Algorithm Details
