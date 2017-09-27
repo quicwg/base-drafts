@@ -829,7 +829,7 @@ delayed significantly.
 
 ## Packet Number Gaps {#packet-number-gaps}
 
-{{QUIC-TRANSPORT}}; Section 7.5.1.1 also requires a secret to compute packet
+Section 7.5.1.1 of {{QUIC-TRANSPORT}} also requires a secret to compute packet
 number gaps on connection ID transitions. That secret is computed as:
 
 ~~~
