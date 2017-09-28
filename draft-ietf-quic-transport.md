@@ -2716,22 +2716,23 @@ Reordering might cause frames to be received after closing, see
 
 ## Solicited State Transitions
 
-If an endpoint is no longer interested in the data being received, it MAY send a
-STOP_SENDING frame on a stream in the "open" or "half-closed (local)" state to
-prompt closure of the stream in the opposite direction.  This typically
-indicates that the receiving application is no longer reading from the stream,
-but is not a guarantee that incoming data will be ignored.
+If an endpoint is no longer interested in the data it is receiving on a stream,
+it MAY send a STOP_SENDING frame identifying that stream to prompt closure of
+the stream in the opposite direction.  This typically indicates that the
+receiving application is no longer reading data it receives from the stream, but
+is not a guarantee that incoming data will be ignored.
 
 STREAM frames received after sending STOP_SENDING are still counted toward the
 connection and stream flow-control windows, even though these frames will be
 discarded upon receipt.  This avoids potential ambiguity about which STREAM
 frames count toward flow control.
 
-A STOP_SENDING frame on a stream in the "open" or "half-closed (remote)" states,
-requests that the the receiving application send a RST_STREAM frame.  If the
-STOP_SENDING frame is received on a stream that is already in the "half-closed
-(local)" or "closed" states, a RST_STREAM frame MAY still be sent in order to
-cancel retransmission of previously-sent STREAM frames.
+STOP_SENDING can only be sent for any stream that is not "idle", however it is
+mostly useful for streams in the "open" or "half-closed (local)" states.  A
+STOP_SENDING frame requests that the receiving application send a RST_STREAM
+frame.  If the STOP_SENDING frame is received on a stream that is already in the
+"half-closed (local)" or "closed" states, a RST_STREAM frame MAY still be sent
+in order to cancel retransmission of previously-sent STREAM frames.
 
 While STOP_SENDING frames are retransmittable, an implementation MAY choose not
 to retransmit a lost STOP_SENDING frame if the stream has already been closed
