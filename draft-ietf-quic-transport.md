@@ -3017,7 +3017,7 @@ Errors that result in the connection being unusable, such as an obvious
 violation of protocol semantics or corruption of state that affects an entire
 connection, MUST be signaled using a CONNECTION_CLOSE or APPLICATION_CLOSE frame
 ({{frame-connection-close}}, {{frame-application-close}}). An endpoint MAY close
-the connection in this manner, even if the error only affects a single stream.
+the connection in this manner even if the error only affects a single stream.
 
 Application protocols can signal application-specific protocol errors using the
 APPLICATION_CLOSE frame.  Errors that are specific to the transport, including
@@ -3029,8 +3029,12 @@ A CONNECTION_CLOSE or APPLICATION_CLOSE frame could be sent in a packet that is
 lost.  An endpoint SHOULD be prepared to retransmit a packet containing either
 frame type if it receives more packets on a terminated connection.  Limiting the
 number of retransmissions and the time over which this final packet is sent
-limits the effort expended on terminated connections.  An endpoint that does not
-retransmit this packet could be forced to use the stateless reset process
+limits the effort expended on terminated connections.
+
+An endpoint that chooses not to retransmit packets containing CONNECTION_CLOSE
+or APPLICATION_CLOSE risks a peer missing the first such packet.  The only
+mechanism available to an endpoint that continues to receive data for a
+terminated connection is to use the stateless reset process
 ({{stateless-reset}}).
 
 An endpoint that receives an invalid CONNECTION_CLOSE or APPLICATION_CLOSE frame
