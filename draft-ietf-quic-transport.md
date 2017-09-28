@@ -2638,10 +2638,10 @@ on new STREAM frames.  Retransmission of data that has already been sent on
 STREAM frames is permitted.  An endpoint MAY also send MAX_STREAM_DATA and
 STOP_SENDING in this state.
 
-An application with a stream in this state may no longer care about data sent on
-the stream and may choose to reset the stream. To permit this behavior, a
-RST_STREAM frame MAY be sent in this state. The final offset carried in this
-RST_STREAM frame MUST be the same as the previously established final offset.
+An application can decide to abandon a stream in this state. An endpoint can
+send RST_STREAM for a stream that was closed with the FIN flag. The final offset
+carried in this RST_STREAM frame MUST be the same as the previously established
+final offset.
 
 An endpoint that closes a stream MUST NOT send data beyond the final offset that
 it has chosen, see {{state-closed}} for details.
