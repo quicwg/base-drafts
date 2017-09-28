@@ -3140,10 +3140,10 @@ application error codes are left to application protocols.  Application protocol
 error codes are used for the RST_STREAM ({{frame-rst-stream}}) and
 APPLICATION_CLOSE ({{frame-application-close}}) frames.
 
-Application protocols SHOULD define error codes for indicating no error and for
-use when sending a RST_STREAM in response to a STOP_SENDING frame.  Otherwise,
-there is no restriction on the use of the 16-bit error code space for
-application protocols.
+There is no restriction on the use of the 16-bit error code space for
+application protocols.  However, application protocols SHOULD define error codes
+for terminating streams with an error and for use when sending a RST_STREAM in
+response to a STOP_SENDING frame.
 
 
 # Security and Privacy Considerations
