@@ -2638,6 +2638,11 @@ on new STREAM frames.  Retransmission of data that has already been sent on
 STREAM frames is permitted.  An endpoint MAY also send MAX_STREAM_DATA and
 STOP_SENDING in this state.
 
+An application can decide to abandon a stream in this state. An endpoint can
+send RST_STREAM for a stream that was closed with the FIN flag. The final offset
+carried in this RST_STREAM frame MUST be the same as the previously established
+final offset.
+
 An endpoint that closes a stream MUST NOT send data beyond the final offset that
 it has chosen, see {{state-closed}} for details.
 
@@ -2668,6 +2673,12 @@ closes a stream SHOULD be discarded.  An endpoint MAY choose to limit the period
 over which it ignores frames and treat frames that arrive after this time as
 being in error.
 
+An endpoint may receive a RST_STREAM in this state, such as when the peer resets
+the stream after sending a FIN on it. In this case, the endpoint MAY discard any
+data that it already received on that stream. The endpoint SHOULD close the
+connection with a FINAL_OFFSET_ERROR if the received RST_STREAM carries a
+different offset from the one already established.
+
 An endpoint will know the final offset of the data it receives on a stream when
 it reaches the "half-closed (remote)" state, see {{final-offset}} for details.
 
@@ -2684,11 +2695,12 @@ A stream also becomes "closed" when the endpoint sends a RST_STREAM frame.
 
 ### closed {#state-closed}
 
-The "closed" state is the terminal state for a stream.
+The "closed" state is the terminal state for a stream.  Reordering might cause
+frames to be received after closing, see {{state-hc-remote}}.
 
-Once a stream reaches this state, no frames can be sent that mention the stream.
-Reordering might cause frames to be received after closing, see
-{{state-hc-remote}}.
+If the application resets a stream that is already in the "closed" state, a
+RST_STREAM frame MAY still be sent in order to cancel retransmissions of
+previously-sent STREAM frames.
 
 
 ## Solicited State Transitions
