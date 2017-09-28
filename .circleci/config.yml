@@ -48,7 +48,7 @@ jobs:
 
       - run:
           name: Upload to Datatracker
-          command: [ -n "$CIRCLE_TAG" ] && make upload
+          command: if [ -n "$CIRCLE_TAG" ]; then make upload; fi
 
       - run:
           name: Save Issues
