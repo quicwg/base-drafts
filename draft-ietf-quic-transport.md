@@ -1061,8 +1061,10 @@ MUST be validated (see {{version-validation}}) before the connection
 establishment is considered properly complete.
 
 Definitions for each of the defined transport parameters are included in
-{{transport-parameter-definitions}}. Any given parameter MUST appear
-at most once in a given transport parameters extension.
+{{transport-parameter-definitions}}.  Any given parameter MUST appear
+at most once in a given transport parameters extension.  An endpoint MUST
+treat receipt of duplicate transport parameters as a connection error of
+type TRANSPORT_PARAMETER_ERROR.
 
 
 ### Transport Parameter Definitions
