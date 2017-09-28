@@ -159,8 +159,8 @@ QUIC packet:
 
 ## Notational Conventions
 
-Packet and frame diagrams use the format described in Section 3.1 of {{?RFC2360}},
-with the following additional conventions:
+Packet and frame diagrams use the format described in Section 3.1 of
+{{?RFC2360}}, with the following additional conventions:
 
 \[x\]
 : Indicates that x is optional
