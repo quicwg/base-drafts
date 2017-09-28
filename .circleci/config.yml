@@ -1,0 +1,55 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: martinthomson/i-d-template:latest
+
+    working_directory: ~/id
+
+    steps:
+      - checkout
+
+      - restore_cache:
+          keys:
+          - template
+
+      - run:
+          name: Update Template
+          command: git -C ~/i-d-template remote update --prune
+
+      - save_cache:
+          key: template
+          paths:
+            - ~/i-d-template
+
+      - restore_cache:
+          keys:
+          - refcache
+
+      - run:
+          name: Build Drafts
+          command: make 'CLONE_ARGS=--reference ~/i-d-template'
+
+      - save_cache:
+          key: refcache
+          paths:
+            - ~/.cache/xml2rfc
+
+      - run:
+          name: Create Artifacts
+          command: make artifacts CI_ARTIFACTS=/tmp/artifacts
+
+      - store_artifacts:
+          path: /tmp/artifacts
+
+      - run:
+          name: Update GitHub Pages
+          command: make gh-pages
+
+      - run:
+          name: Upload to Datatracker
+          command: [ -n "$CIRCLE_TAG" ] && make upload
+
+      - run:
+          name: Save Issues
+          command: make gh-pages
