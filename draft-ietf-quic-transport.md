@@ -2777,9 +2777,9 @@ handshake stream, Stream 0, is exempt from the connection-level data
 limits established by MAX_DATA. Data on stream 0 other than the
 TLS ClientHello is still subject to stream-level data limits and
 MAX_STREAM_DATA. The TLS ClientHello is exempt from flow control because it needs
-to be sent in one piece regardless of the server's flow control
+to be sent in a single packet regardless of the server's flow control
 state. This rule applies even for 0-RTT handshakes where the
-remembered value of MAX_STREAM_DATA would not permit sending
+remembered value of MAX_STREAM_DATA does not permit sending
 a full ClientHello.
 
 Flow control is described in detail in {{flow-control}}, and congestion control
