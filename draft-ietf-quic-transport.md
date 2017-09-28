@@ -2420,6 +2420,11 @@ When a packet is detected as lost, the sender re-sends any frames as necessary:
 * STOP_SENDING frames MUST be retransmitted, unless the stream has become closed
   in the appropriate direction.  See {{solicited-state-transitions}}.
 
+* The most recent MAX_STREAM_DATA and MAX_DATA frames MUST be retransmitted
+  until acked. Any previous unacknowledged MAX_STREAM_DATA and MAX_DATA frames
+  SHOULD NOT be retransmitted since the newer frames obviate the need for
+  delivering the older ones.
+
 * All other frames MUST be retransmitted.
 
 Upon detecting losses, a sender MUST take appropriate congestion control action.
