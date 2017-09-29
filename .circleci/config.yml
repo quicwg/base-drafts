@@ -47,7 +47,7 @@ jobs:
 
       - run:
           name: "Save Issues"
-          command: "make gh-issues"
+          command: "make gh-issues || true"
 
       # For tagged builds, upload to the datatracker.
       - run:
