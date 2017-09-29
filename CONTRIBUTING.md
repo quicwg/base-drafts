@@ -24,7 +24,7 @@ new to this, you may also want to read the [Tao of the IETF](https://www.ietf.or
 
 The Working Group has a few venues for discussion:
 
-* We plan to meet at all [IETF meetings](https://www.ietf.org/meeting/) for the foreseeable future, and hold interim meetings between them, at least through 2017. See our [meeting materials repository](https://github.com/quicwg/wg-materials) and the [official proceedings](https://datatracker.ietf.org/wg/quic/meetings/).
+* We plan to meet at all [IETF meetings](https://www.ietf.org/meeting/) for the foreseeable future, and hold interim meetings between them. See our [meeting materials repository](https://github.com/quicwg/wg-materials) and the [official proceedings](https://datatracker.ietf.org/wg/quic/meetings/).
 
 * Our [mailing list](https://www.ietf.org/mailman/listinfo/quic) is used for most communication, including notifications of meetings, new drafts, consensus calls and other business, as well as issue discussion.
 
