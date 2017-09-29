@@ -41,7 +41,7 @@ their resolution.
 
 Before filing a new issue, please consider a few things:
 
-* Issues should be just that; issues with our deliverables, **not questions or support requests**.
+* Issues should be just that; issues with our deliverables, **not proposals, questions or support requests**.
 * Please review the issues list to make sure that you aren't filing a duplicate.
 * If you're not sure how to phrase your issue, please ask on the [mailing list](https://www.ietf.org/mailman/listinfo/quic).
 
