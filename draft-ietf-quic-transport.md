@@ -578,7 +578,7 @@ The payload of a Client Initial packet consists of a STREAM frame (or frames)
 for stream 0 containing a cryptographic handshake message, with enough PADDING
 frames that the packet is at least 1200 octets (see {{packetization}}).  The
 stream in this packet always starts at an offset of 0 (see {{stateless-retry}})
-and the complete cyptographic handshake message MUST fit in a single packet (see
+and the complete cryptographic handshake message MUST fit in a single packet (see
 {{handshake}}).
 
 The client uses the Client Initial Packet type for any packet that contains an
@@ -2763,12 +2763,12 @@ An endpoint MUST NOT send data on any stream without ensuring that it
 is within the data limits set by its peer.  The cryptographic
 handshake stream, Stream 0, is exempt from the connection-level data
 limits established by MAX_DATA. Data on stream 0 other than the
-TLS ClientHello is still subject to stream-level data limits and
+initial cryptographic handshake message is still subject to stream-level data limits and
 MAX_STREAM_DATA. The TLS ClientHello is exempt from flow control because it needs
 to be sent in a single packet regardless of the server's flow control
 state. This rule applies even for 0-RTT handshakes where the
-remembered value of MAX_STREAM_DATA does not permit sending
-a full ClientHello.
+remembered value of MAX_STREAM_DATA would not permit sending
+a full initial cryptographic handshake message.
 
 Flow control is described in detail in {{flow-control}}, and congestion control
 is described in the companion document {{QUIC-RECOVERY}}.
