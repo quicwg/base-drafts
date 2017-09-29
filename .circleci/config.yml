@@ -3,53 +3,56 @@ jobs:
   build:
     docker:
       - image: martinthomson/i-d-template:latest
-
-    working_directory: ~/id
-
+    working_directory: ~/draft
     steps:
       - checkout
 
+      # Prime caches for faster checkout
       - restore_cache:
           keys:
-          - template
-
+            - template
       - run:
-          name: Update Template
-          command: git -C ~/i-d-template remote update --prune
-
+          name: "Update Template"
+          command: "git -C ~/i-d-template remote update --prune"
       - save_cache:
           key: template
           paths:
             - ~/i-d-template
 
+      # Build txt and html versions of drafts
       - restore_cache:
           keys:
-          - refcache
-
+            - refcache
       - run:
-          name: Build Drafts
-          command: make 'CLONE_ARGS=--reference ~/i-d-template'
-
+          name: "Build Drafts"
+          command: "make 'CLONE_ARGS=--reference ~/i-d-template'"
       - save_cache:
           key: refcache
           paths:
             - ~/.cache/xml2rfc
 
+      # Create and store artifacts
       - run:
-          name: Create Artifacts
-          command: make artifacts CI_ARTIFACTS=/tmp/artifacts
+          name: "Create Artifacts"
+          command: "make artifacts CI_ARTIFACTS=/tmp/artifacts"
 
       - store_artifacts:
           path: /tmp/artifacts
 
+      # Update gh-pages and gh-issues branches
       - run:
-          name: Update GitHub Pages
-          command: make gh-pages
+          name: "Update GitHub Pages"
+          command: "make gh-pages"
+
 
       - run:
-          name: Upload to Datatracker
-          command: if [ -n "$CIRCLE_TAG" ]; then make upload; fi
+          name: "Save Issues"
+          command: "make gh-issues"
 
+      # For tagged builds, upload to the datatracker.
       - run:
-          name: Save Issues
-          command: make gh-pages
+          name: "Upload to Datatracker"
+          command: |
+            if [ "${CIRCLE_TAG#draft-}" != "${CIRCLE_TAG}" ]; then
+              make upload
+            fi
