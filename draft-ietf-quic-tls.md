@@ -25,25 +25,6 @@ author:
     email: sean@sn3rd.com
     role: editor
 
-normative:
-
-  QUIC-TRANSPORT:
-    title: "QUIC: A UDP-Based Multiplexed and Secure Transport"
-    date: {DATE}
-    seriesinfo:
-      Internet-Draft: draft-ietf-quic-transport-latest
-    author:
-      -
-        ins: J. Iyengar
-        name: Jana Iyengar
-        org: Google
-        role: editor
-      -
-        ins: M. Thomson
-        name: Martin Thomson
-        org: Mozilla
-        role: editor
-
 informative:
 
   AEBounds:
@@ -104,14 +85,13 @@ code and issues list for this draft can be found at
 # Introduction
 
 
-This document describes how QUIC {{QUIC-TRANSPORT}} is secured using
-Transport Layer Security (TLS) version 1.3 {{!I-D.ietf-tls-tls13}}.  TLS
-1.3 provides critical latency improvements for connection establishment
-over previous versions.  Absent packet loss, most new connections can be
-established and secured within a single round trip; on subsequent
-connections between the same client and server, the client can often
-send application data immediately, that is, using a zero round trip
-setup.
+This document describes how QUIC {{!I-D.ietf-quic-transport}} is secured using
+Transport Layer Security (TLS) version 1.3 {{!I-D.ietf-tls-tls13}}.  TLS 1.3
+provides critical latency improvements for connection establishment over
+previous versions.  Absent packet loss, most new connections can be established
+and secured within a single round trip; on subsequent connections between the
+same client and server, the client can often send application data immediately,
+that is, using a zero round trip setup.
 
 This document describes how the standardized TLS 1.3 acts a security
 component of QUIC.  The same design could work for TLS 1.2, though few of the
@@ -125,7 +105,7 @@ The words "MUST", "MUST NOT", "SHOULD", and "MAY" are used in this document.
 It's not shouting; when they are capitalized, they have the special meaning
 defined in {{!RFC2119}}.
 
-This document uses the terminology established in {{QUIC-TRANSPORT}}.
+This document uses the terminology established in {{!I-D.ietf-quic-transport}}.
 
 For brevity, the acronym TLS is used to refer to TLS 1.3.
 
@@ -139,9 +119,9 @@ data*, though in the QUIC usage there is no use of TLS application data.
 
 # Protocol Overview
 
-QUIC {{QUIC-TRANSPORT}} assumes responsibility for the confidentiality and
-integrity protection of packets.  For this it uses keys derived from a TLS 1.3
-connection {{!I-D.ietf-tls-tls13}}; QUIC also relies on TLS 1.3 for
+QUIC {{!I-D.ietf-quic-transport}} assumes responsibility for the confidentiality
+and integrity protection of packets.  For this it uses keys derived from a TLS
+1.3 connection {{!I-D.ietf-tls-tls13}}; QUIC also relies on TLS 1.3 for
 authentication and negotiation of parameters that are critical to security and
 performance.
 
@@ -261,7 +241,8 @@ document:
    an additional round trip prior to the basic exchange.  This is needed if the
    server wishes to request a different key exchange key from the client.
    HelloRetryRequest is also used to verify that the client is correctly able to
-   receive packets on the address it claims to have (see {{QUIC-TRANSPORT}}).
+   receive packets on the address it claims to have (see
+   {{!I-D.ietf-quic-transport}}).
 
  * A pre-shared key mode can be used for subsequent handshakes to reduce the
    number of public key operations.  This is the basis for 0-RTT data, even if
@@ -778,7 +759,7 @@ The associated data, A, for the AEAD is the contents of the QUIC header,
 starting from the flags octet in either the short or long header.
 
 The input plaintext, P, for the AEAD is the content of the QUIC frame following
-the header, as described in {{QUIC-TRANSPORT}}.
+the header, as described in {{!I-D.ietf-quic-transport}}.
 
 The output ciphertext, C, of the AEAD is transmitted in place of P.
 
@@ -829,8 +810,9 @@ delayed significantly.
 
 ## Packet Number Gaps {#packet-number-gaps}
 
-Section 7.5.1.1 of {{QUIC-TRANSPORT}} also requires a secret to compute packet
-number gaps on connection ID transitions. That secret is computed as:
+Section 7.5.1.1 of {{!I-D.ietf-quic-transport}} also requires a secret to
+compute packet number gaps on connection ID transitions. That secret is computed
+as:
 
 ~~~
       packet_number_secret
@@ -1421,7 +1403,7 @@ protection for these values.
 The `extension_data` field of the quic_transport_parameters extension contains a
 value that is defined by the version of QUIC that is in use.  The
 quic_transport_parameters extension carries a TransportParameters when the
-version of QUIC defined in {{QUIC-TRANSPORT}} is used.
+version of QUIC defined in {{!I-D.ietf-quic-transport}} is used.
 
 The quic_transport_parameters extension is carried in the ClientHello and the
 EncryptedExtensions messages during the handshake.  The extension MAY be
