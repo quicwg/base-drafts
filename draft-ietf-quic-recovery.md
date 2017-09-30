@@ -25,25 +25,6 @@ author:
     email: ianswett@google.com
     role: editor
 
-normative:
-
-  QUIC-TRANSPORT:
-    title: "QUIC: A UDP-Based Multiplexed and Secure Transport"
-    date: {DATE}
-    seriesinfo:
-      Internet-Draft: draft-ietf-quic-transport-latest
-    author:
-      -
-        ins: J. Iyengar
-        name: Jana Iyengar
-        org: Google
-        role: editor
-      -
-        ins: M. Thomson
-        name: Martin Thomson
-        org: Mozilla
-        role: editor
-
 --- abstract
 
 This document describes loss detection and congestion control mechanisms for
@@ -66,7 +47,7 @@ code and issues list for this draft can be found at
 QUIC is a new multiplexed and secure transport atop UDP.  QUIC builds on decades
 of transport and security experience, and implements mechanisms that make it
 attractive as a modern general-purpose transport.  The QUIC protocol is
-described in {{QUIC-TRANSPORT}}.
+described in {{!I-D.ietf-quic-transport}}.
 
 QUIC implements the spirit of known TCP loss recovery mechanisms, described in
 RFCs, various Internet-drafts, and also those prevalent in the Linux TCP

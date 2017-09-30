@@ -19,27 +19,6 @@ author:
     email: Michael.Bishop@microsoft.com
     role: editor
 
-normative:
-
-  QUIC-TRANSPORT:
-    title: "QUIC: A UDP-Based Multiplexed and Secure Transport"
-    date: {DATE}
-    seriesinfo:
-      Internet-Draft: draft-ietf-quic-transport-latest
-    author:
-      -
-        ins: J. Iyengar
-        name: Jana Iyengar
-        org: Google
-        role: editor
-      -
-        ins: M. Thomson
-        name: Martin Thomson
-        org: Mozilla
-        role: editor
-
-informative:
-
 
 --- abstract
 
@@ -72,8 +51,8 @@ semantics over QUIC, drawing heavily on the existing TCP mapping, HTTP/2.
 Specifically, this document identifies HTTP/2 features that are subsumed by
 QUIC, and describes how the other features can be implemented atop QUIC.
 
-QUIC is described in {{QUIC-TRANSPORT}}.  For a full description of HTTP/2, see
-{{!RFC7540}}.
+QUIC is described in {{!I-D.ietf-quic-transport}}.  For a full description of
+HTTP/2, see {{!RFC7540}}.
 
 
 ## Notational Conventions
@@ -140,9 +119,9 @@ MAY omit supported versions for any reason.
 
 # Connection Establishment {#connection-establishment}
 
-HTTP/QUIC connections are established as described in {{QUIC-TRANSPORT}}. During
-connection establishment, HTTP/QUIC support is indicated by selecting the ALPN
-token "hq" in the crypto handshake.
+HTTP/QUIC connections are established as described in
+{{!I-D.ietf-quic-transport}}. During connection establishment, HTTP/QUIC support
+is indicated by selecting the ALPN token "hq" in the crypto handshake.
 
 While connection-level options pertaining to the core QUIC protocol are set in
 the initial crypto handshake, HTTP-specific settings are conveyed
@@ -872,7 +851,7 @@ establishment to servers.
 QUIC allows the application to abruptly terminate (reset) individual streams or
 the entire connection when an error is encountered.  These are referred to as
 "stream errors" or "connection errors" and are described in more detail in
-[QUIC-TRANSPORT].
+{{!I-D.ietf-quic-transport}}.
 
 This section describes HTTP-specific error codes which can be used to express
 the cause of a connection or stream error.
