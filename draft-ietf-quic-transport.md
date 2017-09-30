@@ -25,42 +25,6 @@ author:
     email: martin.thomson@gmail.com
     role: editor
 
-normative:
-
-  QUIC-RECOVERY:
-    title: "QUIC Loss Detection and Congestion Control"
-    date: {DATE}
-    seriesinfo:
-      Internet-Draft: draft-ietf-quic-recovery-latest
-    author:
-      -
-        ins: J. Iyengar
-        name: Jana Iyengar
-        org: Google
-        role: editor
-      -
-        ins: I. Swett
-        name: Ian Swett
-        org: Google
-        role: editor
-
-  QUIC-TLS:
-    title: "Using Transport Layer Security (TLS) to Secure QUIC"
-    date: {DATE}
-    seriesinfo:
-      Internet-Draft: draft-ietf-quic-tls-latest
-    author:
-      -
-        ins: M. Thomson
-        name: Martin Thomson
-        org: Mozilla
-        role: editor
-      -
-        ins: S. Turner
-        name: Sean Turner
-        org: sn3rd
-        role: editor
-
 informative:
 
   EARLY-DESIGN:
@@ -115,7 +79,8 @@ QUIC protocol for connection establishment, stream multiplexing, stream and
 connection-level flow control, and data reliability.
 
 Accompanying documents describe QUIC's loss detection and congestion control
-{{QUIC-RECOVERY}}, and the use of TLS 1.3 for key negotiation {{QUIC-TLS}}.
+{{!I-D.ietf-quic-recovery}}, and the use of TLS 1.3 for key negotiation
+{{!I-D.ietf-quic-tls}}.
 
 
 # Conventions and Definitions
@@ -210,7 +175,7 @@ the cryptographic handshake and QUIC options negotiation.  The format
 of the QUIC options and parameters used during negotiation are
 described in this document, but the handshake protocol that runs on
 Stream ID 0 is described in the accompanying cryptographic handshake
-draft {{QUIC-TLS}}.
+draft {{!I-D.ietf-quic-tls}}.
 
 ## Stream Multiplexing
 
@@ -302,7 +267,7 @@ The version 0x00000000 is reserved to represent an invalid version.  This
 version of the specification is identified by the number 0x00000001.
 
 Version 0x00000001 of QUIC uses TLS as a cryptographic handshake protocol, as
-described in {{QUIC-TLS}}.
+described in {{!I-D.ietf-quic-tls}}.
 
 Versions with the most significant 16 bits of the version number cleared are
 reserved for use in future IETF consensus documents.
@@ -474,7 +439,7 @@ Key Phase Bit:
 
 : The third bit (0x20) of octet 0 indicates the key phase, which allows a
   recipient of a packet to identify the packet protection keys that are used to
-  protect the packet.  See {{QUIC-TLS}} for details.
+  protect the packet.  See {{!I-D.ietf-quic-tls}} for details.
 
 Short Packet Type:
 
@@ -556,7 +521,7 @@ Cleartext packets are sent during the handshake prior to key negotiation.
 All cleartext packets contain the current QUIC version in the version field.
 
 The payload of cleartext packets also includes an integrity check, which is
-described in {{QUIC-TLS}}.
+described in {{!I-D.ietf-quic-tls}}.
 
 
 ### Client Initial Packet {#packet-client-initial}
@@ -674,18 +639,18 @@ different connection ID from the server, it MUST NOT update the connection ID it
 uses for 0-RTT packets.  This enables consistent routing for all 0-RTT packets.
 
 Packets protected with 1-RTT keys that use long headers use a type value of 0x07
-for key phase 0 and 0x08 for key phase 1; see {{QUIC-TLS}} for more details on
-the use of key phases.  The connection ID field for these packet types MUST
-contain the value selected by the server, see {{connection-id}}.
+for key phase 0 and 0x08 for key phase 1; see {{!I-D.ietf-quic-tls}} for more
+details on the use of key phases.  The connection ID field for these packet
+types MUST contain the value selected by the server, see {{connection-id}}.
 
 The version field for protected packets is the current QUIC version.
 
 The packet number field contains a packet number, which increases with each
 packet sent, see {{packet-numbers}} for details.
 
-The payload is protected using authenticated encryption.  {{QUIC-TLS}} describes
-packet protection in detail.  After decryption, the plaintext consists of a
-sequence of frames, as described in {{frames}}.
+The payload is protected using authenticated encryption.  {{!I-D.ietf-quic-tls}}
+describes packet protection in detail.  After decryption, the plaintext consists
+of a sequence of frames, as described in {{frames}}.
 
 
 ## Connection ID {#connection-id}
@@ -955,8 +920,8 @@ solicit a list of supported versions from a server.
 QUIC relies on a combined cryptographic and transport handshake to minimize
 connection establishment latency.  QUIC allocates stream 0 for the cryptographic
 handshake.  Version 0x00000001 of QUIC uses TLS 1.3 as described in
-{{QUIC-TLS}}; a different QUIC version number could indicate that a different
-cryptographic handshake protocol is in use.
+{{!I-D.ietf-quic-tls}}; a different QUIC version number could indicate that a
+different cryptographic handshake protocol is in use.
 
 QUIC provides this stream with reliable, ordered delivery of data.  In return,
 the cryptographic handshake provides QUIC with:
@@ -998,7 +963,7 @@ a 1232 octet QUIC packet payload.  This includes overheads that reduce the space
 available to the cryptographic handshake protocol.
 
 Details of how TLS is integrated with QUIC is provided in more detail in
-{{QUIC-TLS}}.
+{{!I-D.ietf-quic-tls}}.
 
 
 ## Transport Parameters
@@ -1050,8 +1015,8 @@ language from Section 3 of {{!I-D.ietf-tls-tls13}}.
 {: #figure-transport-parameters title="Definition of TransportParameters"}
 
 The `extension_data` field of the quic_transport_parameters extension defined in
-{{QUIC-TLS}} contains a TransportParameters value.  TLS encoding rules are
-therefore used to encode the transport parameters.
+{{!I-D.ietf-quic-tls}} contains a TransportParameters value.  TLS encoding rules
+are therefore used to encode the transport parameters.
 
 QUIC encodes transport parameters into a sequence of octets, which are then
 included in the cryptographic handshake.  Once the handshake completes, the
@@ -1424,8 +1389,8 @@ Gap = HKDF-Expand-Label(packet_number_secret,
 ~~~
 
 The output of HKDF-Expand-Label is interpreted as a big-endian
-number. "packet_number_secret" is derived from the TLS key exchange,
-as described in Section 5.6 of {{QUIC-TLS}}.
+number. "packet_number_secret" is derived from the TLS key exchange, as
+described in Section 5.6 of {{!I-D.ietf-quic-tls}}.
 
 
 ### Address Validation for Migrated Connections
@@ -1453,8 +1418,9 @@ signal, or they might be retransmissions of packets for which acknowledgments
 were lost.
 
 The draining period persists for three times the current Retransmission Timeout
-(RTO) interval as defined in {{QUIC-RECOVERY}}.  During this period, new packets
-can be acknowledged, but no new application data can be sent on the connection.
+(RTO) interval as defined in {{!I-D.ietf-quic-recovery}}.  During this period,
+new packets can be acknowledged, but no new application data can be sent on the
+connection.
 
 Different treatment is given to packets that are received while a connection is
 in the draining period depending on how the connection was closed.  In all
@@ -2424,7 +2390,7 @@ When a packet is detected as lost, the sender re-sends any frames as necessary:
 
 Upon detecting losses, a sender MUST take appropriate congestion control action.
 The details of loss detection and congestion control are described in
-{{QUIC-RECOVERY}}.
+{{!I-D.ietf-quic-recovery}}.
 
 A packet MUST NOT be acknowledged until packet protection has been successfully
 removed and all frames contained in the packet have been processed.  For STREAM
@@ -2441,7 +2407,7 @@ acknowledge packets containing only ACK or PADDING frames in the next ACK frame
 that it sends.
 
 Strategies and implications of the frequency of generating acknowledgments are
-discussed in more detail in {{QUIC-RECOVERY}}.
+discussed in more detail in {{!I-D.ietf-quic-recovery}}.
 
 ## Special Considerations for PMTU Discovery
 
@@ -2777,7 +2743,7 @@ is exempt from the connection-level data limits established by MAX_DATA.  Stream
 0 is still subject to stream-level data limits and MAX_STREAM_DATA.
 
 Flow control is described in detail in {{flow-control}}, and congestion control
-is described in the companion document {{QUIC-RECOVERY}}.
+is described in the companion document {{!I-D.ietf-quic-recovery}}.
 
 
 ## Stream Prioritization
