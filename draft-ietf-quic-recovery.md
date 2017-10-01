@@ -529,7 +529,8 @@ largest acked packet is supplied.
 
 #### Handshake Packets
 
-The receiver MUST ignore unprotected packets that ack protected packets.
+The receiver MUST close the connection with an error of type OPTIMISTIC_ACK
+when receiving an unprotected packet that acks protected packets.
 The receiver MUST trust protected acks for unprotected packets, however.  Aside
 from this, loss detection for handshake packets when an ack is processed is
 identical to other packets.
