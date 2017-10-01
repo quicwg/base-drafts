@@ -2501,7 +2501,10 @@ for some applications.
 Streams are identified by an unsigned 32-bit integer, referred to as the Stream
 ID.  To avoid Stream ID collision, clients MUST initiate streams using
 odd-numbered Stream IDs; servers MUST initiate streams using
-even-numbered Stream IDs.
+even-numbered Stream IDs. If an endpoint receives a frame which
+corresponds to a stream which is allocated to it (i.e., odd-numbered for
+the client or even-numbered for the server) but which it has not yet
+created, it MUST close the connection with error code STREAM_STATE_ERROR.
 
 Stream ID 0 (0x0) is reserved for the cryptographic handshake.  Stream 0 MUST
 NOT be used for application data, and is the first client-initiated stream.
