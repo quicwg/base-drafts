@@ -2823,7 +2823,7 @@ authentication messages.
 
 STREAM frames that are determined to be lost SHOULD be retransmitted before
 sending new data, unless application priorities indicate otherwise.
-Retransmitting lost STREAM frames can fill in gaps, which allows the peer to
+Retransmitting lost stream data can fill in gaps, which allows the peer to
 consume already received data and free up flow control window.
 
 
