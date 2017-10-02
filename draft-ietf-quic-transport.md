@@ -1992,7 +1992,7 @@ Error Code:
 Receivers send ACK frames to inform senders which packets they have received and
 processed, as well as which packets are considered missing.  The ACK frame
 contains between 1 and 256 ACK blocks.  ACK blocks are ranges of acknowledged
-packets. Implementations SHOULD NOT generate ACK packets in response to packets
+packets. Implementations MUST NOT generate ACK packets in response to packets
 which only contain ACKs. However, they SHOULD ACK those packets when sending
 ACKs for other packets.
 
