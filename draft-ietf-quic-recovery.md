@@ -608,10 +608,12 @@ window and sets the slow start threshold to the new congestion window.
 ## Recovery Period
 
 Recovery is a period of time beginning with detection of a lost packet.
-Because QUIC retransmits frames, not packets, it defines the end of
-recovery as all packets outstanding at the start of recovery being
-acknowledged or lost.  This is slightly different from TCP's definition of
-recovery ending when the lost packet that started recovery is acknowledged.
+Because QUIC retransmits stream data and control frames, not packets,
+it defines the end of recovery as a packet sent after the start of
+recovery being acknowledged.  This is slightly different from TCP's
+definition of recovery ending when the lost packet that started
+recovery is acknowledged.
+
 During recovery, the congestion window is not increased or decreased.
 As such, multiple lost packets only decrease the congestion window once as
 long as they're lost before exiting recovery. This causes QUIC to decrease
