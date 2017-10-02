@@ -618,10 +618,10 @@ any version negotiation that occurred (see {{version-negotiation}}).  The client
 MAY also retain any observed RTT or congestion state that it has accumulated for
 the flow, but other transport state MUST be discarded.
 
-The payload of the Server Stateless Retry packet contains STREAM frames and
-could contain PADDING and ACK frames.  A server can only send a single Server
-Stateless Retry packet in response to each Client Initial packet that is
-receives.
+The payload of the Server Stateless Retry packet contains a single
+STREAM frame with offset 0 containing the server's cryptographic stateless retry
+material. It MUST NOT contain any other frames. Any future messages from
+the server will also start at stream offset 0.
 
 
 ### Server Cleartext Packet {#packet-server-cleartext}
