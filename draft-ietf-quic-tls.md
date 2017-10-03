@@ -966,7 +966,8 @@ employed by an attacker to exhaust server resources.  Limiting the number of
 packets that are saved might be necessary.
 
 The server transitions to using 1-RTT keys after sending its first flight of TLS
-handshake messages.  From this point, the server protects all packets with 1-RTT
+handshake messages, ending in the Finished.
+From this point, the server protects all packets with 1-RTT
 keys.  Future packets are therefore protected with 1-RTT keys.  Initially, these
 are marked with a KEY_PHASE of 0.
 
