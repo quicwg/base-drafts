@@ -569,10 +569,9 @@ unless it has received a packet from the server.  If the client has received a
 packet from the server, the connection ID field uses the value provided by the
 server.
 
-The packet number used for Client Initial packets is initialized with a random
-value each time the new contents are created for the packet.  Retransmissions of
-the packet contents increment the packet number by one, see
-({{packet-numbers}}).
+The first Client Initial packet that is sent by a client contains a random
+31-bit value.  All subsequent packets contain a packet number that is
+incremented by one, see ({{packet-numbers}}).
 
 The payload of a Client Initial packet consists of a STREAM frame (or frames)
 for stream 0 containing a cryptographic handshake message, with enough PADDING
@@ -607,9 +606,9 @@ Server Stateless Retry packet.
 After receiving a Server Stateless Retry packet, the client uses a new Client
 Initial packet containing the next cryptographic handshake message.  The client
 retains the state of its cryptographic handshake, but discards all transport
-state.  The new Client Initial packet includes a newly randomized packet number,
-STREAM frames on stream 0 that start again at an offset of 0, and the original
-connection ID.
+state.  The Client Initial packet that is generated in response to a Server
+Stateless Retry packet includes STREAM frames on stream 0 that start again at an
+offset of 0.
 
 Continuing the cryptographic handshake is necessary to ensure that an attacker
 cannot force a downgrade of any cryptographic parameters.  In addition to
@@ -769,16 +768,6 @@ The first set of packets sent by an endpoint MUST include the low 32-bits of the
 packet number.  Once any packet has been acknowledged, subsequent packets can
 use a shorter packet number encoding.
 
-A client that receives a Version Negotiation ({{packet-version}}) or Server
-Stateless Retry packet ({{packet-server-stateless}}) MUST generate a new initial
-packet number.  This ensures that the first transmission attempt for a Client
-Initial packet ({{packet-client-initial}}) always contains a randomized packet
-number, but packets that contain retransmissions increment the packet number.
-
-A client MUST NOT generate a new initial packet number if it discards the server
-packet.  This might happen if the information the client retransmits its Client
-Initial packet.
-
 
 ## Handling Packets from Different Versions {#version-specific}
 
@@ -907,9 +896,9 @@ When the client receives a Version Negotiation packet from the server, it should
 select an acceptable protocol version.  If the server lists an acceptable
 version, the client selects that version and reattempts to create a connection
 using that version.  Though the contents of a packet might not change in
-response to version negotiation, a client MUST increase the packet number it
-uses on every packet it sends.  Packets MUST continue to use long headers and
-MUST include the new negotiated protocol version.
+response to version negotiation, a client MUST increase the packet number by one
+for every packet it sends.  Packets MUST continue to use long headers and MUST
+include the new negotiated protocol version.
 
 The client MUST use the long header format and include its selected version on
 all packets until it has 1-RTT keys and it has received a packet from the server
