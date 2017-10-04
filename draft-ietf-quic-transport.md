@@ -2730,9 +2730,11 @@ frames count toward flow control.
 STOP_SENDING can only be sent for any stream that is not "idle", however it is
 mostly useful for streams in the "open" or "half-closed (local)" states.  A
 STOP_SENDING frame requests that the receiving application send a RST_STREAM
-frame.  If the STOP_SENDING frame is received on a stream that is already in the
-"half-closed (local)" or "closed" states, a RST_STREAM frame MAY still be sent
-in order to cancel retransmission of previously-sent STREAM frames.
+frame.  An endpoint that receives a STOP_SENDING frame MUST send a RST_STREAM
+frame for that stream with an error code of STOPPING.  If the STOP_SENDING frame
+is received on a stream that is already in the "half-closed (local)" or "closed"
+states, a RST_STREAM frame MAY still be sent in order to cancel retransmission
+of previously-sent STREAM frames.
 
 While STOP_SENDING frames are retransmittable, an implementation MAY choose not
 to retransmit a lost STOP_SENDING frame if the stream has already been closed
@@ -3141,9 +3143,9 @@ error codes are used for the RST_STREAM ({{frame-rst-stream}}) and
 APPLICATION_CLOSE ({{frame-application-close}}) frames.
 
 There is no restriction on the use of the 16-bit error code space for
-application protocols.  However, application protocols SHOULD define error codes
-for terminating streams with an error and for use when sending a RST_STREAM in
-response to a STOP_SENDING frame.
+application protocols.  However, QUIC reserves the error code with a value of 0
+to mean STOPPING.  The application error code of STOPPING (0) is used by the
+transport to cancel a stream in response to receipt of a STOP_SENDING frame.
 
 
 # Security and Privacy Considerations
