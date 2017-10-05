@@ -882,7 +882,7 @@ the cause of a connection or stream error.
 The following error codes are defined for use in QUIC RST_STREAM and
 APPLICATION_CLOSE frames when using HTTP/QUIC.
 
-HTTP_STOPPING (0x00):
+Reserved (0x00):
 : This value is reserved by the transport to be used in response to QUIC
   STOP_SENDING frames.
 
@@ -1306,7 +1306,7 @@ The entries in the following table are registered by this document.
 |-----------------------------------|--------|----------------------------------------|----------------------|
 | Name                              | Code   | Description                            | Specification        |
 |-----------------------------------|--------|----------------------------------------|----------------------|
-|  HTTP_STOPPING                    |  0x00  |  STOPPING (reserved by transport)      | {{http-error-codes}} |
+|  (reserved)                       |  0x00  |  Reserved by transport                 | {{http-error-codes}} |
 |  HTTP_NO_ERROR                    |  0x01  |  No error                              | {{http-error-codes}} |
 |  HTTP_PUSH_REFUSED                |  0x02  |  Client refused pushed content         | {{http-error-codes}} |
 |  HTTP_INTERNAL_ERROR              |  0x03  |  Internal error                        | {{http-error-codes}} |
