@@ -1506,41 +1506,53 @@ SHOULD track redundant packets and treat excessive volumes of any non-productive
 packets as indicative of an attack.
 
 
-# Error codes {#errors}
+# Error Codes {#errors}
 
-The portion of the QUIC error code space allocated for the crypto handshake is
-0xC0000000-0xFFFFFFFF. The following error codes are defined when TLS is used
-for the crypto handshake:
+This section defines error codes from the error code space used in
+{{QUIC-TRANSPORT}}.
 
-TLS_HANDSHAKE_FAILED (0xC000001C):
+The following error codes are defined when TLS is used for the crypto handshake:
+
+TLS_HANDSHAKE_FAILED (0x201):
 : The TLS handshake failed.
 
-TLS_FATAL_ALERT_GENERATED (0xC000001D):
+TLS_FATAL_ALERT_GENERATED (0x202):
 : A TLS fatal alert was sent, causing the TLS connection to end prematurely.
 
-TLS_FATAL_ALERT_RECEIVED (0xC000001E):
+TLS_FATAL_ALERT_RECEIVED (0x203):
 : A TLS fatal alert was received, causing the TLS connection to end prematurely.
 
 
 # IANA Considerations
 
-This document does not create any new IANA registries, but it does utilize the
-following registries:
+This document does not create any new IANA registries, but it registers the
+values in the following registries:
 
-* QUIC Transport Parameter Registry - IANA is to register the three values found
-  in {{errors}}.
+* QUIC Transport Error Codes Registry {{QUIC-TRANSPORT}} - IANA is to register
+  the three error codes found in {{errors}}, these are summarized in
+  {{iana-errors}}.
 
-* TLS ExtensionsType Registry - IANA is to register the
-  quic_transport_parameters extension found in {{quic_parameters}}.  Assigning
-  26 to the extension would be greatly appreciated.  The Recommended column is
-  to be marked Yes.
+* TLS ExtensionsType Registry
+  {{!TLS-REGISTRIES=I-D.ietf-tls-iana-registry-updates}} - IANA is to register
+  the quic_transport_parameters extension found in {{quic_parameters}}.
+  Assigning 26 to the extension would be greatly appreciated.  The Recommended
+  column is to be marked Yes.
 
-* TLS Exporter Label Registry - IANA is requested to register
-  "EXPORTER-QUIC 0-RTT Secret" from {{zero-rtt-secrets}};
+* TLS Exporter Label Registry {{!TLS-REGISTRIES}} - IANA is requested to
+  register "EXPORTER-QUIC 0-RTT Secret" from {{zero-rtt-secrets}};
   "EXPORTER-QUIC client 1-RTT Secret" and "EXPORTER-QUIC server 1-RTT Secret"
   from {{one-rtt-secrets}}; "EXPORTER-QUIC Packet Number Secret"
   {{packet-number-gaps}}.  The DTLS column is to be marked No.  The Recommended
   column is to be marked Yes.
+
+| Value | Error                     | Description           | Specification |
+|:------|:--------------------------|:----------------------|:--------------|
+| 0x201 | TLS_HANDSHAKE_FAILED      | TLS handshake failure | {{errors}}    |
+| 0x202 | TLS_FATAL_ALERT_GENERATED | Sent TLS alert        | {{errors}}    |
+| 0x203 | TLS_FATAL_ALERT_RECEIVED  | Receives TLS alert    | {{errors}}    |
+{: #iana-errors title="QUIC Transport Error Codes for TLS"}
+
+
 
 --- back
 
