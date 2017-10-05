@@ -3144,8 +3144,8 @@ APPLICATION_CLOSE ({{frame-application-close}}) frames.
 
 There is no restriction on the use of the 16-bit error code space for
 application protocols.  However, QUIC reserves the error code with a value of 0
-for use in RST_STREAM.  An application error code of 0 is used by QUIC to cancel
-a stream in response to receipt of a STOP_SENDING frame.
+to mean STOPPING.  The application error code of STOPPING (0) is used by the
+transport to cancel a stream in response to receipt of a STOP_SENDING frame.
 
 
 # Security and Privacy Considerations
