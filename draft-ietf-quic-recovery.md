@@ -102,8 +102,7 @@ important to the loss detection and congestion control machinery below.
   machinery of QUIC underneath.
 
 * ACK frames contain acknowledgment information.  QUIC uses a SACK-based
-  scheme, where acks express up to 256 ranges.  The ACK frame also includes a
-  receive timestamp for each packet newly acked.
+  scheme, where acks express up to 256 ranges.
 
 ## Relevant Differences Between QUIC and TCP
 
