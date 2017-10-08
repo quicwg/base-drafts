@@ -2048,14 +2048,6 @@ A client MUST NOT acknowledge Version Negotiation or Server Stateless Retry
 packets.  These packet types contain packet numbers selected by the client, not
 the server.
 
-QUIC ACK frames contain a timestamp section with up to 255 timestamps.
-Timestamps enable better congestion control, but are not required for correct
-loss recovery, and old timestamps are less valuable, so it is not guaranteed
-every timestamp will be received by the sender.  A receiver SHOULD send a
-timestamp exactly once for each received packet containing retransmittable
-frames. A receiver MAY send timestamps for non-retransmittable packets.
-A receiver MUST not send timestamps in unprotected packets.
-
 A sender MAY intentionally skip packet numbers to introduce entropy into the
 connection, to avoid opportunistic acknowledgement attacks.  The sender SHOULD
 close the connection if an unsent packet number is acknowledged.  The format of
@@ -2085,15 +2077,13 @@ An ACK frame is shown below.
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|[Num Blocks(8)]|   NumTS (8)   |
+|[Num Blocks(8)]|
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                Largest Acknowledged (8/16/32/64)            ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |        ACK Delay (16)         |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                     ACK Block Section (*)                   ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                     Timestamp Section (*)                   ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
 {: #ack-format title="ACK Frame Format"}
@@ -2105,11 +2095,6 @@ Num Blocks (opt):
 : An optional 8-bit unsigned value specifying the number of additional ACK
   blocks (besides the required First ACK Block) in this ACK frame.  Only present
   if the 'N' flag bit is 1.
-
-Num Timestamps:
-
-: An unsigned 8-bit number specifying the total number of <packet number,
-  timestamp> pairs in the Timestamp Section.
 
 Largest Acknowledged:
 
@@ -2127,11 +2112,6 @@ ACK Block Section:
 
 : Contains one or more blocks of packet numbers which have been successfully
   received, see {{ack-block-section}}.
-
-Timestamp Section:
-
-: Contains zero or more timestamps reporting transit delay of received packets.
-  See {{timestamp-section}}.
 
 
 ### ACK Block Section {#ack-block-section}
@@ -2177,59 +2157,6 @@ ACK Block Length (opt, repeated):
 : An unsigned packet number delta that indicates the number of contiguous
   packets being acknowledged starting after the end of the previous gap.
   Repeated "Num Blocks" times.
-
-
-### Timestamp Section {#timestamp-section}
-
-The Timestamp Section contains between zero and 255 measurements of packet
-receive times relative to the beginning of the connection.
-
-~~~
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+
-| [Delta LA (8)]|
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                    [First Timestamp (32)]                     |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|[Delta LA 1(8)]| [Time Since Previous 1 (16)]  |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|[Delta LA 2(8)]| [Time Since Previous 2 (16)]  |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-                       ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|[Delta LA N(8)]| [Time Since Previous N (16)]  |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-~~~
-{: #timestamp-format title="Timestamp Section"}
-
-The fields in the Timestamp Section are:
-
-Delta Largest Acknowledged (opt):
-
-: An optional 8-bit unsigned packet number delta specifying the delta between
-  the largest acknowledged and the first packet whose timestamp is being
-  reported.  In other words, this first packet number may be computed as
-  (Largest Acknowledged - Delta Largest Acknowledged.)
-
-First Timestamp (opt):
-
-: An optional 32-bit unsigned value specifying the time delta in microseconds,
-  from the beginning of the connection to the arrival of the packet indicated by
-  Delta Largest Acknowledged.
-
-Delta Largest Acked 1..N (opt, repeated):
-
-: This field has the same semantics and format as "Delta Largest Acknowledged".
-  Repeated "Num Timestamps - 1" times.
-
-Time Since Previous Timestamp 1..N(opt, repeated):
-
-: An optional 16-bit unsigned value specifying time delta from the previous
-  reported timestamp.  It is encoded in the same format as the ACK Delay.
-  Repeated "Num Timestamps - 1" times.
-
-The timestamp section lists packet receipt timestamps ordered by timestamp.
 
 
 #### Time Format
