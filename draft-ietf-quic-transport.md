@@ -348,7 +348,7 @@ version negotiation and establishment of 1-RTT keys.  Short headers are minimal
 version-specific headers, which can be used after version negotiation and 1-RTT
 keys are established.
 
-## Long Header
+## Long Header {#long-header}
 
 ~~~~~
  0                   1                   2                   3
@@ -877,35 +877,43 @@ Incoming packets are classified on receipt.  Packets can either be associated
 with an existing connection, be discarded, or - for servers - potentially create
 a new connection.
 
-A packet that can be identified as belonging to an existing connection is
-handled according to the current state of that connection.  Packets are
-associated with existing connections using connection ID if it is present; this
-might include connection IDs that were advertised using NEW_CONNECTION_ID
-({{frame-new-connection-id}}).  Packets without connection IDs and long-form
-packets for connections that have incomplete cryptographic handshakes are
-associated using the tuple of source and destination IP addresses and ports.
+Packets that can be associated with an existing connection are handled according
+to the current state of that connection.  Packets are associated with existing
+connections using connection ID if it is present; this might include connection
+IDs that were advertised using NEW_CONNECTION_ID ({{frame-new-connection-id}}).
+Packets without connection IDs and long-form packets for connections that have
+incomplete cryptographic handshakes are associated with an existing connection
+using the tuple of source and destination IP addresses and ports.
 
-A packet that uses the short header form could be associated with an existing
+A packet that uses the short header could be associated with an existing
 connection with an incomplete cryptographic handshake.  Such a packet could be a
 valid packet that has been reordered with respect to the long-form packets that
-will complete the cryptographic handshake.  These packets SHOULD be buffered in
+will complete the cryptographic handshake.  This might happen after the final
+set of cryptographic handshake messages from either peer.  These packets are
+expected to be correlated with a connection using the tuple of IP addresses and
+ports.  Packets that might be reordered in this fashion SHOULD be buffered in
 anticipation of the handshake completing.
+
+0-RTT packets might be received prior to a Client Initial packet at a server.
+If the version of these packets is acceptable to the server, it MAY buffer these
+packets in anticipation of receiving a reordered Client Initial packet.
 
 Buffering ensures that data is not lost, which improves performance; conversely,
 discarding these packets could create false loss signals for the congestion
 controllers.  However, limiting the number and size of buffered packets might be
 needed to prevent exposure to denial of service.
 
-For clients, all packets that cannot be associated with an existing connection
-MUST be discarded.  Discarded packets MAY be logged for diagnostic or security
-purposes.
+For clients, any packet that cannot be associated with an existing connection
+SHOULD be discarded if it not buffered.  Discarded packets MAY be logged for
+diagnostic or security purposes.
 
 For servers, packets that aren't associated with a connection potentially create
 a new connection.  However, only packets that use the long packet header and
 that are at least the minimum size defined for the protocol version can be
-initial packets.  A server MUST discard packets that cannot be associated with a
-connection if they use the short header form, or they are smaller than the
-smallest minimum size for any version that the server supports.
+initial packets.  Unless the server is buffering 0-RTT packets, a server MUST
+discard packets that cannot be associated with a connection if they use the
+short header form, or they are smaller than the smallest minimum size for any
+version that the server supports.
 
 This version of QUIC defines a minimum size for initial packets of 1200 octets.
 Versions of QUIC that define smaller minimum initial packet sizes need to be
