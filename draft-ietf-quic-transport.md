@@ -1554,6 +1554,10 @@ following layout:
 +                     [Connection ID (64)]                      +
 |                                                               |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                     Packet Number (8/16/32)                   |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                        Random Octets (*)                    ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                                                               |
 +                                                               +
 |                                                               |
@@ -1562,27 +1566,28 @@ following layout:
 +                                                               +
 |                                                               |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                        Random Octets (*)                    ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
-
-This packet SHOULD use the short header form with the shortest possible packet
-number encoding.  This minimizes the perceived gap between the last packet that
-the server sent and this packet.  The leading octet of the Stateless Reset Token
-will be interpreted as a packet number.  A server MAY use a different short
-header type, indicating a different packet number length, but this allows for
-the message to be identified as a stateless reset more easily using heuristics.
 
 A server copies the connection ID field from the packet that triggers the
 stateless reset.  A server omits the connection ID if explicitly configured to
 do so, or if the client packet did not include a connection ID.
 
+The Packet Number field is set to a randomized value.  This packet SHOULD use
+the short header form with the shortest possible packet number encoding.  This
+minimizes the perceived gap between the last packet that the server sent and
+this packet.  A server MAY use a different short header type, indicating a
+different packet number length, but this allows for the message to be identified
+as a stateless reset more easily using heuristics.
+
 After the first short header octet and optional connection ID, the server
 includes the value of the Stateless Reset Token that it included in its
 transport parameters.
 
-After the Stateless Reset Token, the server pads the message with an arbitrary
+After the Packet Number, the server pads the message with an arbitrary
 number of octets containing random values.
+
+Finally, the last 16 octets of the packet are set to the value of the Stateless
+Reset Token.
 
 This design ensures that a stateless reset packet is - to the extent possible -
 indistinguishable from a regular packet.
@@ -1595,11 +1600,11 @@ CONNECTION_CLOSE or APPLICATION_CLOSE frame if it has sufficient state to do so.
 #### Detecting a Stateless Reset
 
 A client detects a potential stateless reset when a packet with a short header
-cannot be decrypted.  The client then performs a constant-time comparison of the
-16 octets that follow the Connection ID with the Stateless Reset Token provided
-by the server in its transport parameters.  If this comparison is successful,
-the connection MUST be terminated immediately.  Otherwise, the packet can be
-discarded.
+either cannot be decrypted or is marked as a potential duplicate.  The client
+then performs a constant-time comparison of the last 16 octets of the packet
+with the Stateless Reset Token provided by the server in its transport
+parameters.  If this comparison is successful, the connection MUST be terminated
+immediately.  Otherwise, the packet can be discarded.
 
 
 #### Calculating a Stateless Reset Token
