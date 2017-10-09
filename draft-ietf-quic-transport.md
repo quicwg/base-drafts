@@ -923,7 +923,7 @@ QUIC's connection establishment begins with version negotiation, since all
 communication between the endpoints, including packet and frame formats, relies
 on the two endpoints agreeing on a version.
 
-A QUIC connection begins with a client sending a client initial packet
+A QUIC connection begins with a client sending a Client Initial packet
 ({{packet-client-initial}}). The details of the handshake mechanisms are
 described in {{handshake}}, but all of the initial packets sent from the client
 to the server MUST use the long header format - which includes the version of
@@ -948,7 +948,7 @@ includes a list of versions that the server will accept.
 A server sends a Version Negotiation packet for any packet with an unaccepable
 version if that packet could create a new connection.  This allows a server to
 process packets with unsupported versions without retaining state.  Though
-either the client initial packet or the version negotiation packet that is sent
+either the Client Initial packet or the version negotiation packet that is sent
 in response could be lost, the client will send new packets until it
 successfully receives a response or it abandons the connection attempt.
 
@@ -956,13 +956,13 @@ successfully receives a response or it abandons the connection attempt.
 ### Handling Version Negotiation Packets {#handle-vn}
 
 When the client receives a Version Negotiation packet, it first checks that the
-packet number and connection ID match the values it sent in a client initial
+packet number and connection ID match the values it sent in a Client Initial
 packet.  If this check fails, the packet MUST be discarded.
 
 Once the Version Negotiation packet is determined to be valid, the client then
 selects an acceptable protocol version from the list provided by the server.
 The client then attempts to create a connection using that version.  Though the
-contents of the client initial packet the client sends might not change in
+contents of the Client Initial packet the client sends might not change in
 response to version negotiation, a client MUST increase the packet number it
 uses on every packet it sends.  Packets MUST continue to use long headers and
 MUST include the new negotiated protocol version.
