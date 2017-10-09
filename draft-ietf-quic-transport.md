@@ -555,8 +555,11 @@ Cleartext packets are sent during the handshake prior to key negotiation.
 
 All cleartext packets contain the current QUIC version in the version field.
 
-The payload of cleartext packets also includes an integrity check, which is
-described in {{QUIC-TLS}}.
+In order to prevent tampering by version-unaware middleboxes, Cleartext
+packets are protected with a connection and version specific key, as
+described in {{QUIC-TLS}}. This protection does not provide confidentiality
+or integrity against on-path attackers, but provides some level of
+protection against off-path attackers.
 
 
 ### Client Initial Packet {#packet-client-initial}
@@ -926,8 +929,9 @@ Version Negotiation packet.
 A client MUST ignore a Version Negotiation packet that lists the client's chosen
 version.
 
-Version negotiation uses unprotected data. The result of the negotiation MUST be
-revalidated as part of the cryptographic handshake (see {{version-validation}}).
+Version negotiation packets have no cryptographic protection. The
+result of the negotiation MUST be revalidated as part of the
+cryptographic handshake (see {{version-validation}}).
 
 ### Using Reserved Versions
 
@@ -1637,6 +1641,8 @@ ID, and static key cannot occur for another connection.  A connection ID from a
 connection that is reset by revealing the Stateless Reset Token cannot be
 reused for new connections at the same server without first changing to use a
 different static key or server identifier.
+
+Note that Stateless Reset messages do not have any cryptographic protection.
 
 
 # Frame Types and Formats
@@ -3316,7 +3322,7 @@ Issue and pull request numbers are listed with a leading octothorp.
 
 ## Since draft-ietf-quic-transport-06
 
-Nothing yet.
+- Replaced FNV-1a with AES-GCM for all "Cleartext" packets.
 
 ## Since draft-ietf-quic-transport-05
 

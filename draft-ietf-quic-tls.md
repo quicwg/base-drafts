@@ -632,6 +632,33 @@ QUIC uses HKDF with the same hash function negotiated by TLS for
 key derivation.  For example, if TLS is using the TLS_AES_128_GCM_SHA256, the
 SHA-256 hash function is used.
 
+### Cleartext Packet Secrets {#cleartext-secrets}
+
+Cleartext packets are protected with secrets derived from the client's
+connection ID. Specifically:
+
+~~~
+   quic_version_1_salt = ed 1d a2 c6 0b ae 80 03 eb db 17 d8 92 5d 95 92
+                         4a 6e 87 57 cd 48 d9 bf d2 41 c7 19 cb 80 81 ef
+
+   cleartext_secret = HKDF-Extract(quic_version_1_salt,
+                                   client_connection_id)
+
+   client_cleartext_secret =
+                      HKDF-Expand-Label(cleartext_secret,
+                                        "QUIC client cleartext Secret",
+                                        "", Hash.length)
+   server_cleartext_secret =
+                      HKDF-Expand-Label(cleartext_secret,
+                                        "QUIC server cleartext Secret",
+                                        "", Hash.length)
+~~~
+
+Future versions of QUIC SHOULD generate a new salt value, thus ensuring
+that the keys are different for each version of QUIC. This prevents
+a middlebox that only recognizes one version of QUIC from seeing or
+modifying the contents of cleartext packets from future versions.
+
 
 ### 0-RTT Secret {#zero-rtt-secrets}
 
@@ -758,8 +785,11 @@ used for QUIC packet protection is AEAD that is negotiated for use with the TLS
 connection.  For example, if TLS is using the TLS_AES_128_GCM_SHA256, the
 AEAD_AES_128_GCM function is used.
 
-Regular QUIC packets are protected by an AEAD algorithm {{!RFC5116}}.  Version
-negotiation and public reset packets are not protected.
+All QUIC packets other than version negotiation and public reset packets are
+protected with an AEAD algorithm {{!RFC5116}}. Cleartext packets are protected
+with the AEAD_AES_128_GCM and a key derived from the client's connection ID.
+This provides protection against off-path attackers and robustness against
+QUIC version unaware middleboxes, but not against on-path attackers.
 
 Once TLS has provided a key, the contents of regular QUIC packets immediately
 after any TLS messages have been sent are protected by the AEAD selected by TLS.
@@ -838,64 +868,6 @@ number gaps on connection ID transitions. That secret is computed as:
                          "", Hash.length)
 ~~~
 
-# Unprotected Packets
-
-QUIC adds an integrity check to all cleartext packets.  Cleartext packets are
-not protected by the negotiated AEAD (see {{packet-protection}}), but instead
-include an integrity check.  This check does not prevent the packet from being
-altered, it exists for added resilience against data corruption and to provide
-added assurance that the sender intends to use QUIC.
-
-Cleartext packets all use the long form of the QUIC header and so will include a
-version number.  For this version of QUIC, the integrity check uses the 64-bit
-FNV-1a hash (see {{fnv1a}}).  The output of this hash is appended to the payload
-of the packet.
-
-The integrity check algorithm MAY change for other versions of the protocol.
-
-
-## Integrity Check Processing
-
-An endpoint sending a packet that has a long header and a type that does not
-indicate that the packet will be protected (that is, 0-RTT Encrypted (0x05),
-1-RTT Encrypted (key phase 0) (0x06), or 1-RTT Encrypted (key phase 1) (0x07))
-first constructs the packet that it sends without the integrity check.
-
-The sender then calculates the integrity check over the entire packet, starting
-from the type field.  The output of the hash is appended to the packet.
-
-A receiver that receives an unprotected packet first checks that the version is
-correct, then removes the trailing 8 octets.  It calculates the integrity check
-over the remainder of the packet.  Unprotected packets that do not contain a
-valid integrity check MUST be discarded.
-
-
-## The 64-bit FNV-1a Algorithm {#fnv1a}
-
-QUIC uses the 64-bit version of the alternative Fowler/Noll/Vo hash (FNV-1a)
-{{?FNV=I-D.eastlake-fnv}}.
-
-FNV-1a can be expressed in pseudocode as:
-
-~~~
-hash := offset basis
-for each input octet:
-    hash := hash XOR input octet
-    hash := hash * prime
-~~~
-
-That is, a 64-bit unsigned integer is initialized with an offset basis.  Then,
-for each octet of the input, the exclusive binary OR of the value is taken, then
-multiplied by a prime.  Any overflow from multiplication is discarded.
-
-The offset basis for the 64-bit FNV-1a is the decimal value 14695981039346656037
-(in hex, 0xcbf29ce484222325).  The prime is 1099511628211 (in hex,
-0x100000001b3; or as an expression 2^40 + 2^8 + 0xb3).
-
-Once all octets have been processed in this fashion, the final integer value is
-encoded as 8 octets in network byte order.
-
-
 # Key Phases
 
 As TLS reports the availability of 0-RTT and 1-RTT keys, new keying material can
@@ -924,10 +896,8 @@ ensure that TLS handshake messages are sent with the correct packet protection.
 
 ## Packet Protection for the TLS Handshake {#cleartext-hs}
 
-The initial exchange of packets are sent without protection.  These packets use
-a cleartext packet type.
-
-TLS handshake messages MUST NOT be protected using QUIC packet protection.  All
+The initial exchange of packets are sent using a cleartext packet type and
+AEAD-protected using the initial key as described in {{cleartext-secrets}}.  All
 TLS handshake messages up to the TLS Finished message sent by either endpoint
 use cleartext packets.
 
@@ -944,7 +914,7 @@ client in cleartext packets.
 ### Initial Key Transitions {#first-keys}
 
 Once the TLS handshake is complete, keying material is exported from TLS and
-QUIC packet protection commences.
+used to protect QUIC packets.
 
 Packets protected with 1-RTT keys initially have a KEY_PHASE bit set to 0.  This
 bit inverts with each subsequent key update (see {{key-update}}).
