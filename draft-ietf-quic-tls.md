@@ -638,8 +638,7 @@ Cleartext packets are protected with secrets derived from the client's
 connection ID. Specifically:
 
 ~~~
-   quic_version_1_salt = ed 1d a2 c6 0b ae 80 03 eb db 17 d8 92 5d 95 92
-                         4a 6e 87 57 cd 48 d9 bf d2 41 c7 19 cb 80 81 ef
+   quic_version_1_salt = afc824ec5fc77eca1e9d36f37fb2d46518c36639
 
    cleartext_secret = HKDF-Extract(quic_version_1_salt,
                                    client_connection_id)
@@ -896,10 +895,10 @@ ensure that TLS handshake messages are sent with the correct packet protection.
 
 ## Packet Protection for the TLS Handshake {#cleartext-hs}
 
-The initial exchange of packets are sent using a cleartext packet type and
-AEAD-protected using the initial key as described in {{cleartext-secrets}}.  All
-TLS handshake messages up to the TLS Finished message sent by either endpoint
-use cleartext packets.
+The initial exchange of packets are sent using a cleartext packet type
+and AEAD-protected using the cleartext key generated as described in
+{{cleartext-secrets}}.  All TLS handshake messages up to the TLS
+Finished message sent by either endpoint use cleartext packets.
 
 Any TLS handshake messages that are sent after completing the TLS handshake do
 not need special packet protection rules.  Packets containing these messages use
