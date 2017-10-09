@@ -1605,7 +1605,9 @@ either cannot be decrypted or is marked as a potential duplicate.  The client
 then performs a constant-time comparison of the last 16 octets of the packet
 with the Stateless Reset Token provided by the server in its transport
 parameters.  If this comparison is successful, the connection MUST be terminated
-immediately.  Otherwise, the packet can be discarded.
+immediately, with the client entering the draining period.  The client MUST NOT
+send any further packets on this connection after receiving a stateless
+reset. If the comparison is unsuccessful, the packet can be discarded.
 
 
 #### Calculating a Stateless Reset Token
