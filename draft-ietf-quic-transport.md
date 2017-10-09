@@ -1572,12 +1572,13 @@ A server copies the connection ID field from the packet that triggers the
 stateless reset.  A server omits the connection ID if explicitly configured to
 do so, or if the client packet did not include a connection ID.
 
-The Packet Number field is set to a randomized value.  This packet SHOULD use
-the short header form with the shortest possible packet number encoding.  This
-minimizes the perceived gap between the last packet that the server sent and
-this packet.  A server MAY use a different short header type, indicating a
-different packet number length, but this allows for the message to be identified
-as a stateless reset more easily using heuristics.
+The Packet Number field is set to a randomized value.  The server SHOULD send a
+packet with a short header and a type of 0x01.  This produces the shortest
+possible packet number encoding, which minimizes the perceived gap between the
+last packet that the server sent and this packet.  A server MAY use a different
+short header type, indicating a different packet number length, but this allows
+for the message to be identified as a stateless reset more easily using
+heuristics.
 
 After the first short header octet and optional connection ID, the server
 includes the value of the Stateless Reset Token that it included in its
