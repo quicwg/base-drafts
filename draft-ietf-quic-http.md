@@ -872,74 +872,81 @@ establishment to servers.
 QUIC allows the application to abruptly terminate (reset) individual streams or
 the entire connection when an error is encountered.  These are referred to as
 "stream errors" or "connection errors" and are described in more detail in
-[QUIC-TRANSPORT].
+{{QUIC-TRANSPORT}}.
 
 This section describes HTTP-specific error codes which can be used to express
 the cause of a connection or stream error.
 
-## HTTP-Defined QUIC Error Codes {#http-error-codes}
+## HTTP/QUIC Error Codes {#http-error-codes}
 
-QUIC allocates error codes 0x0000-0x3FFF to application protocol definition. The
-following error codes are defined by HTTP for use in QUIC RST_STREAM and
-CONNECTION_CLOSE frames.
+The following error codes are defined for use in QUIC RST_STREAM, STOP_SENDING,
+and CONNECTION_CLOSE frames when using HTTP/QUIC.
 
-HTTP_PUSH_REFUSED (0x01):
+STOPPING (0x00):
+: This value is reserved by the transport to be used in response to QUIC
+  STOP_SENDING frames.
+
+HTTP_NO_ERROR (0x01):
+: No error.  This is used when the connection or stream needs to be closed, but
+  there is no error to signal.
+
+HTTP_PUSH_REFUSED (0x02):
 : The server has attempted to push content which the client will not accept
   on this connection.
 
-HTTP_INTERNAL_ERROR (0x02):
+HTTP_INTERNAL_ERROR (0x03):
 : An internal error has occurred in the HTTP stack.
 
-HTTP_PUSH_ALREADY_IN_CACHE (0x03):
+HTTP_PUSH_ALREADY_IN_CACHE (0x04):
 : The server has attempted to push content which the client has cached.
 
-HTTP_REQUEST_CANCELLED (0x04):
+HTTP_REQUEST_CANCELLED (0x05):
 : The client no longer needs the requested data.
 
-HTTP_HPACK_DECOMPRESSION_FAILED (0x05):
+HTTP_HPACK_DECOMPRESSION_FAILED (0x06):
 : HPACK failed to decompress a frame and cannot continue.
 
-HTTP_CONNECT_ERROR (0x06):
+HTTP_CONNECT_ERROR (0x07):
 : The connection established in response to a CONNECT request was reset or
   abnormally closed.
 
-HTTP_EXCESSIVE_LOAD (0x07):
+HTTP_EXCESSIVE_LOAD (0x08):
 : The endpoint detected that its peer is exhibiting a behavior that might be
   generating excessive load.
 
-HTTP_VERSION_FALLBACK (0x08):
+HTTP_VERSION_FALLBACK (0x09):
 : The requested operation cannot be served over HTTP/QUIC.  The peer should
   retry over HTTP/2.
 
-HTTP_MALFORMED_HEADERS (0x09):
+HTTP_MALFORMED_HEADERS (0x0A):
 : A HEADERS frame has been received with an invalid format.
 
-HTTP_MALFORMED_PRIORITY (0x0A):
+HTTP_MALFORMED_PRIORITY (0x0B):
 : A PRIORITY frame has been received with an invalid format.
 
-HTTP_MALFORMED_SETTINGS (0x0B):
+HTTP_MALFORMED_SETTINGS (0x0C):
 : A SETTINGS frame has been received with an invalid format.
 
-HTTP_MALFORMED_PUSH_PROMISE (0x0C):
+HTTP_MALFORMED_PUSH_PROMISE (0x0D):
 : A PUSH_PROMISE frame has been received with an invalid format.
 
-HTTP_MALFORMED_DATA (0x0D):
+HTTP_MALFORMED_DATA (0x0E):
 : A DATA frame has been received with an invalid format.
 
-HTTP_INTERRUPTED_HEADERS (0x0E):
+HTTP_INTERRUPTED_HEADERS (0x0F):
 : A HEADERS frame without the End Header Block flag was followed by a frame
   other than HEADERS.
 
-HTTP_WRONG_STREAM (0x0F):
+HTTP_WRONG_STREAM (0x10):
 : A frame was received on stream where it is not permitted.
 
-HTTP_MULTIPLE_SETTINGS (0x10):
+HTTP_MULTIPLE_SETTINGS (0x11):
 : More than one SETTINGS frame was received.
 
-HTTP_MALFORMED_PUSH (0x11):
+HTTP_MALFORMED_PUSH (0x12):
 : A push stream header was malformed or included an invalid Push ID.
 
-HTTP_MALFORMED_MAX_PUSH_ID (0x12):
+HTTP_MALFORMED_MAX_PUSH_ID (0x13):
 : A MAX_PUSH_ID frame has been received with an invalid format.
 
 
@@ -1089,11 +1096,11 @@ QUIC has the same concepts of "stream" and "connection" errors that HTTP/2
 provides. However, because the error code space is shared between multiple
 components, there is no direct portability of HTTP/2 error codes.
 
-The HTTP/2 error codes defined in Section 7 of {{!RFC7540}} map to QUIC error
-codes as follows:
+The HTTP/2 error codes defined in Section 7 of {{!RFC7540}} map to the HTTP over
+QUIC error codes as follows:
 
 NO_ERROR (0x0):
-: QUIC_NO_ERROR
+: HTTP_NO_ERROR in {{http-error-codes}}.
 
 PROTOCOL_ERROR (0x1):
 : No single mapping.  See new HTTP_MALFORMED_* error codes defined in
@@ -1270,7 +1277,7 @@ The entries in the following table are registered by this document.
 ## Error Codes {#iana-error-codes}
 
 This document establishes a registry for HTTP/QUIC error codes.  The
-"HTTP/QUIC Error Code" registry manages a 30-bit space.  The "HTTP/QUIC
+"HTTP/QUIC Error Code" registry manages a 32-bit space.  The "HTTP/QUIC
 Error Code" registry operates under the "Expert Review" policy
 {{?RFC5226}}.
 
@@ -1285,7 +1292,7 @@ Name:
 : A name for the error code.  Specifying an error code name is optional.
 
 Code:
-: The 30-bit error code value.
+: The 32-bit error code value.
 
 Description:
 : A brief description of the error code semantics, longer if no detailed
@@ -1299,24 +1306,26 @@ The entries in the following table are registered by this document.
 |-----------------------------------|--------|----------------------------------------|----------------------|
 | Name                              | Code   | Description                            | Specification        |
 |-----------------------------------|--------|----------------------------------------|----------------------|
-|  HTTP_PUSH_REFUSED                |  0x01  |  Client refused pushed content         | {{http-error-codes}} |
-|  HTTP_INTERNAL_ERROR              |  0x02  |  Internal error                        | {{http-error-codes}} |
-|  HTTP_PUSH_ALREADY_IN_CACHE       |  0x03  |  Pushed content already cached         | {{http-error-codes}} |
-|  HTTP_REQUEST_CANCELLED           |  0x04  |  Data no longer needed                 | {{http-error-codes}} |
-|  HTTP_HPACK_DECOMPRESSION_FAILED  |  0x05  |  HPACK cannot continue                 | {{http-error-codes}} |
-|  HTTP_CONNECT_ERROR               |  0x06  |  TCP reset or error on CONNECT request | {{http-error-codes}} |
-|  HTTP_EXCESSIVE_LOAD              |  0x07  |  Peer generating excessive load        | {{http-error-codes}} |
-|  HTTP_VERSION_FALLBACK            |  0x08  |  Retry over HTTP/2                     | {{http-error-codes}} |
-|  HTTP_MALFORMED_HEADERS           |  0x09  |  Invalid HEADERS frame                 | {{http-error-codes}} |
-|  HTTP_MALFORMED_PRIORITY          |  0x0A  |  Invalid PRIORITY frame                | {{http-error-codes}} |
-|  HTTP_MALFORMED_SETTINGS          |  0x0B  |  Invalid SETTINGS frame                | {{http-error-codes}} |
-|  HTTP_MALFORMED_PUSH_PROMISE      |  0x0C  |  Invalid PUSH_PROMISE frame            | {{http-error-codes}} |
-|  HTTP_MALFORMED_DATA              |  0x0D  |  Invalid DATA frame                    | {{http-error-codes}} |
-|  HTTP_INTERRUPTED_HEADERS         |  0x0E  |  Incomplete HEADERS block              | {{http-error-codes}} |
-|  HTTP_WRONG_STREAM                |  0x0F  |  A frame was sent on the wrong stream  | {{http-error-codes}} |
-|  HTTP_MULTIPLE_SETTINGS           |  0x10  |  Multiple SETTINGS frames              | {{http-error-codes}} |
-|  HTTP_MALFORMED_PUSH              |  0x11  |  Invalid push stream header            | {{http-error-codes}} |
-|  HTTP_MALFORMED_MAX_PUSH_ID       |  0x12  |  Invalid MAX_PUSH_ID frame             | {{http-error-codes}} |
+|  STOPPING                         |  0x00  |  Reserved by QUIC                      | {{QUIC-TRANSPORT}}  |
+|  HTTP_NO_ERROR                    |  0x01  |  No error                              | {{http-error-codes}} |
+|  HTTP_PUSH_REFUSED                |  0x02  |  Client refused pushed content         | {{http-error-codes}} |
+|  HTTP_INTERNAL_ERROR              |  0x03  |  Internal error                        | {{http-error-codes}} |
+|  HTTP_PUSH_ALREADY_IN_CACHE       |  0x04  |  Pushed content already cached         | {{http-error-codes}} |
+|  HTTP_REQUEST_CANCELLED           |  0x05  |  Data no longer needed                 | {{http-error-codes}} |
+|  HTTP_HPACK_DECOMPRESSION_FAILED  |  0x06  |  HPACK cannot continue                 | {{http-error-codes}} |
+|  HTTP_CONNECT_ERROR               |  0x07  |  TCP reset or error on CONNECT request | {{http-error-codes}} |
+|  HTTP_EXCESSIVE_LOAD              |  0x08  |  Peer generating excessive load        | {{http-error-codes}} |
+|  HTTP_VERSION_FALLBACK            |  0x09  |  Retry over HTTP/2                     | {{http-error-codes}} |
+|  HTTP_MALFORMED_HEADERS           |  0x0A  |  Invalid HEADERS frame                 | {{http-error-codes}} |
+|  HTTP_MALFORMED_PRIORITY          |  0x0B  |  Invalid PRIORITY frame                | {{http-error-codes}} |
+|  HTTP_MALFORMED_SETTINGS          |  0x0C  |  Invalid SETTINGS frame                | {{http-error-codes}} |
+|  HTTP_MALFORMED_PUSH_PROMISE      |  0x0D  |  Invalid PUSH_PROMISE frame            | {{http-error-codes}} |
+|  HTTP_MALFORMED_DATA              |  0x0E  |  Invalid DATA frame                    | {{http-error-codes}} |
+|  HTTP_INTERRUPTED_HEADERS         |  0x0F  |  Incomplete HEADERS block              | {{http-error-codes}} |
+|  HTTP_WRONG_STREAM                |  0x10  |  A frame was sent on the wrong stream  | {{http-error-codes}} |
+|  HTTP_MULTIPLE_SETTINGS           |  0x11  |  Multiple SETTINGS frames              | {{http-error-codes}} |
+|  HTTP_MALFORMED_PUSH              |  0x12  |  Invalid push stream header            | {{http-error-codes}} |
+|  HTTP_MALFORMED_MAX_PUSH_ID       |  0x13  |  Invalid MAX_PUSH_ID frame             | {{http-error-codes}} |
 |-----------------------------------|--------|----------------------------------------|----------------------|
 
 

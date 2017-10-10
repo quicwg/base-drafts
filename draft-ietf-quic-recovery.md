@@ -102,8 +102,7 @@ important to the loss detection and congestion control machinery below.
   machinery of QUIC underneath.
 
 * ACK frames contain acknowledgment information.  QUIC uses a SACK-based
-  scheme, where acks express up to 256 ranges.  The ACK frame also includes a
-  receive timestamp for each packet newly acked.
+  scheme, where acks express up to 256 ranges.
 
 ## Relevant Differences Between QUIC and TCP
 
@@ -529,7 +528,8 @@ largest acked packet is supplied.
 
 #### Handshake Packets
 
-The receiver MUST ignore unprotected packets that ack protected packets.
+The receiver MUST close the connection with an error of type OPTIMISTIC_ACK
+when receiving an unprotected packet that acks protected packets.
 The receiver MUST trust protected acks for unprotected packets, however.  Aside
 from this, loss detection for handshake packets when an ack is processed is
 identical to other packets.
@@ -607,10 +607,12 @@ window and sets the slow start threshold to the new congestion window.
 ## Recovery Period
 
 Recovery is a period of time beginning with detection of a lost packet.
-Because QUIC retransmits frames, not packets, it defines the end of
-recovery as all packets outstanding at the start of recovery being
-acknowledged or lost.  This is slightly different from TCP's definition of
-recovery ending when the lost packet that started recovery is acknowledged.
+Because QUIC retransmits stream data and control frames, not packets,
+it defines the end of recovery as a packet sent after the start of
+recovery being acknowledged.  This is slightly different from TCP's
+definition of recovery ending when the lost packet that started
+recovery is acknowledged.
+
 During recovery, the congestion window is not increased or decreased.
 As such, multiple lost packets only decrease the congestion window once as
 long as they're lost before exiting recovery. This causes QUIC to decrease

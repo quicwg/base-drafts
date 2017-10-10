@@ -44,6 +44,14 @@ normative:
         org: Mozilla
         role: editor
 
+  FIPS180:
+    title: NIST FIPS 180-4, Secure Hash Standard
+    author:
+      name: NIST
+      ins: National Institute of Standards and Technology, U.S. Department of Commerce
+    date: 2012-03
+    target: http://csrc.nist.gov/publications/fips/fips180-4/fips-180-4.pdf
+
 informative:
 
   AEBounds:
@@ -633,6 +641,37 @@ key derivation.  For example, if TLS is using the TLS_AES_128_GCM_SHA256, the
 SHA-256 hash function is used.
 
 
+### Cleartext Packet Secrets {#cleartext-secrets}
+
+Cleartext packets are protected with secrets derived from the client's
+connection ID. Specifically:
+
+~~~
+   quic_version_1_salt = afc824ec5fc77eca1e9d36f37fb2d46518c36639
+
+   cleartext_secret = HKDF-Extract(quic_version_1_salt,
+                                   client_connection_id)
+
+   client_cleartext_secret =
+                      HKDF-Expand-Label(cleartext_secret,
+                                        "QUIC client cleartext Secret",
+                                        "", Hash.length)
+   server_cleartext_secret =
+                      HKDF-Expand-Label(cleartext_secret,
+                                        "QUIC server cleartext Secret",
+                                        "", Hash.length)
+~~~
+
+The HKDF for the cleartext packet protection keys uses the SHA-256 hash function
+{{FIPS180}}.
+
+The salt value is a 16 octet sequence shown in the figure in hexadecimal
+notation. Future versions of QUIC SHOULD generate a new salt value, thus
+ensuring that the keys are different for each version of QUIC. This prevents a
+middlebox that only recognizes one version of QUIC from seeing or modifying the
+contents of cleartext packets from future versions.
+
+
 ### 0-RTT Secret {#zero-rtt-secrets}
 
 0-RTT keys are those keys that are used in resumed connections prior to the
@@ -758,8 +797,12 @@ used for QUIC packet protection is AEAD that is negotiated for use with the TLS
 connection.  For example, if TLS is using the TLS_AES_128_GCM_SHA256, the
 AEAD_AES_128_GCM function is used.
 
-Regular QUIC packets are protected by an AEAD algorithm {{!RFC5116}}.  Version
-negotiation and public reset packets are not protected.
+All QUIC packets other than Version Negotiation and Stateless Reset packets are
+protected with an AEAD algorithm {{!RFC5116}}. Cleartext packets are protected
+with AEAD_AES_128_GCM and a key derived from the client's connection ID (see
+{{cleartext-secrets}}).  This provides protection against off-path attackers and
+robustness against QUIC version unaware middleboxes, but not against on-path
+attackers.
 
 Once TLS has provided a key, the contents of regular QUIC packets immediately
 after any TLS messages have been sent are protected by the AEAD selected by TLS.
@@ -838,64 +881,6 @@ number gaps on connection ID transitions. That secret is computed as:
                          "", Hash.length)
 ~~~
 
-# Unprotected Packets
-
-QUIC adds an integrity check to all cleartext packets.  Cleartext packets are
-not protected by the negotiated AEAD (see {{packet-protection}}), but instead
-include an integrity check.  This check does not prevent the packet from being
-altered, it exists for added resilience against data corruption and to provide
-added assurance that the sender intends to use QUIC.
-
-Cleartext packets all use the long form of the QUIC header and so will include a
-version number.  For this version of QUIC, the integrity check uses the 64-bit
-FNV-1a hash (see {{fnv1a}}).  The output of this hash is appended to the payload
-of the packet.
-
-The integrity check algorithm MAY change for other versions of the protocol.
-
-
-## Integrity Check Processing
-
-An endpoint sending a packet that has a long header and a type that does not
-indicate that the packet will be protected (that is, 0-RTT Encrypted (0x05),
-1-RTT Encrypted (key phase 0) (0x06), or 1-RTT Encrypted (key phase 1) (0x07))
-first constructs the packet that it sends without the integrity check.
-
-The sender then calculates the integrity check over the entire packet, starting
-from the type field.  The output of the hash is appended to the packet.
-
-A receiver that receives an unprotected packet first checks that the version is
-correct, then removes the trailing 8 octets.  It calculates the integrity check
-over the remainder of the packet.  Unprotected packets that do not contain a
-valid integrity check MUST be discarded.
-
-
-## The 64-bit FNV-1a Algorithm {#fnv1a}
-
-QUIC uses the 64-bit version of the alternative Fowler/Noll/Vo hash (FNV-1a)
-{{?FNV=I-D.eastlake-fnv}}.
-
-FNV-1a can be expressed in pseudocode as:
-
-~~~
-hash := offset basis
-for each input octet:
-    hash := hash XOR input octet
-    hash := hash * prime
-~~~
-
-That is, a 64-bit unsigned integer is initialized with an offset basis.  Then,
-for each octet of the input, the exclusive binary OR of the value is taken, then
-multiplied by a prime.  Any overflow from multiplication is discarded.
-
-The offset basis for the 64-bit FNV-1a is the decimal value 14695981039346656037
-(in hex, 0xcbf29ce484222325).  The prime is 1099511628211 (in hex,
-0x100000001b3; or as an expression 2^40 + 2^8 + 0xb3).
-
-Once all octets have been processed in this fashion, the final integer value is
-encoded as 8 octets in network byte order.
-
-
 # Key Phases
 
 As TLS reports the availability of 0-RTT and 1-RTT keys, new keying material can
@@ -924,12 +909,10 @@ ensure that TLS handshake messages are sent with the correct packet protection.
 
 ## Packet Protection for the TLS Handshake {#cleartext-hs}
 
-The initial exchange of packets are sent without protection.  These packets use
-a cleartext packet type.
-
-TLS handshake messages MUST NOT be protected using QUIC packet protection.  All
-TLS handshake messages up to the TLS Finished message sent by either endpoint
-use cleartext packets.
+The initial exchange of packets are sent using a cleartext packet type
+and AEAD-protected using the cleartext key generated as described in
+{{cleartext-secrets}}.  All TLS handshake messages up to the TLS
+Finished message sent by either endpoint use cleartext packets.
 
 Any TLS handshake messages that are sent after completing the TLS handshake do
 not need special packet protection rules.  Packets containing these messages use
@@ -944,7 +927,7 @@ client in cleartext packets.
 ### Initial Key Transitions {#first-keys}
 
 Once the TLS handshake is complete, keying material is exported from TLS and
-QUIC packet protection commences.
+used to protect QUIC packets.
 
 Packets protected with 1-RTT keys initially have a KEY_PHASE bit set to 0.  This
 bit inverts with each subsequent key update (see {{key-update}}).
@@ -966,7 +949,8 @@ employed by an attacker to exhaust server resources.  Limiting the number of
 packets that are saved might be necessary.
 
 The server transitions to using 1-RTT keys after sending its first flight of TLS
-handshake messages.  From this point, the server protects all packets with 1-RTT
+handshake messages, ending in the Finished.
+From this point, the server protects all packets with 1-RTT
 keys.  Future packets are therefore protected with 1-RTT keys.  Initially, these
 are marked with a KEY_PHASE of 0.
 
@@ -1505,41 +1489,53 @@ SHOULD track redundant packets and treat excessive volumes of any non-productive
 packets as indicative of an attack.
 
 
-# Error codes {#errors}
+# Error Codes {#errors}
 
-The portion of the QUIC error code space allocated for the crypto handshake is
-0xC0000000-0xFFFFFFFF. The following error codes are defined when TLS is used
-for the crypto handshake:
+This section defines error codes from the error code space used in
+{{QUIC-TRANSPORT}}.
 
-TLS_HANDSHAKE_FAILED (0xC000001C):
+The following error codes are defined when TLS is used for the crypto handshake:
+
+TLS_HANDSHAKE_FAILED (0x201):
 : The TLS handshake failed.
 
-TLS_FATAL_ALERT_GENERATED (0xC000001D):
+TLS_FATAL_ALERT_GENERATED (0x202):
 : A TLS fatal alert was sent, causing the TLS connection to end prematurely.
 
-TLS_FATAL_ALERT_RECEIVED (0xC000001E):
+TLS_FATAL_ALERT_RECEIVED (0x203):
 : A TLS fatal alert was received, causing the TLS connection to end prematurely.
 
 
 # IANA Considerations
 
-This document does not create any new IANA registries, but it does utilize the
-following registries:
+This document does not create any new IANA registries, but it registers the
+values in the following registries:
 
-* QUIC Transport Parameter Registry - IANA is to register the three values found
-  in {{errors}}.
+* QUIC Transport Error Codes Registry {{QUIC-TRANSPORT}} - IANA is to register
+  the three error codes found in {{errors}}, these are summarized in
+  {{iana-errors}}.
 
-* TLS ExtensionsType Registry - IANA is to register the
-  quic_transport_parameters extension found in {{quic_parameters}}.  Assigning
-  26 to the extension would be greatly appreciated.  The Recommended column is
-  to be marked Yes.
+* TLS ExtensionsType Registry
+  {{!TLS-REGISTRIES=I-D.ietf-tls-iana-registry-updates}} - IANA is to register
+  the quic_transport_parameters extension found in {{quic_parameters}}.
+  Assigning 26 to the extension would be greatly appreciated.  The Recommended
+  column is to be marked Yes.
 
-* TLS Exporter Label Registry - IANA is requested to register
-  "EXPORTER-QUIC 0-RTT Secret" from {{zero-rtt-secrets}};
+* TLS Exporter Label Registry {{!TLS-REGISTRIES}} - IANA is requested to
+  register "EXPORTER-QUIC 0-RTT Secret" from {{zero-rtt-secrets}};
   "EXPORTER-QUIC client 1-RTT Secret" and "EXPORTER-QUIC server 1-RTT Secret"
   from {{one-rtt-secrets}}; "EXPORTER-QUIC Packet Number Secret"
   {{packet-number-gaps}}.  The DTLS column is to be marked No.  The Recommended
   column is to be marked Yes.
+
+| Value | Error                     | Description           | Specification |
+|:------|:--------------------------|:----------------------|:--------------|
+| 0x201 | TLS_HANDSHAKE_FAILED      | TLS handshake failure | {{errors}}    |
+| 0x202 | TLS_FATAL_ALERT_GENERATED | Sent TLS alert        | {{errors}}    |
+| 0x203 | TLS_FATAL_ALERT_RECEIVED  | Receives TLS alert    | {{errors}}    |
+{: #iana-errors title="QUIC Transport Error Codes for TLS"}
+
+
 
 --- back
 

@@ -1,6 +1,8 @@
 # Contributing to QUIC
 
-Before submitting feedback, please familiarize yourself with our current [issues list](https://github.com/quicwg/base-drafts/issues) and [charter](https://datatracker.ietf.org/wg/quic/about/). If you're
+Anyone can contribute to QUIC; you don't have to join the Working Group, because there is no "membership" -- anyone who participates in the work, as outlined below, is part of the QUIC Working Group.
+
+Before doing so, it's a good idea to familiarize yourself with our current [issues list](https://github.com/quicwg/base-drafts/issues) and [charter](https://datatracker.ietf.org/wg/quic/about/). If you're
 new to this, you may also want to read the [Tao of the IETF](https://www.ietf.org/tao.html).
 
 **Be aware that all contributions fall under the "NOTE WELL" terms outlined below.**
@@ -24,7 +26,7 @@ new to this, you may also want to read the [Tao of the IETF](https://www.ietf.or
 
 The Working Group has a few venues for discussion:
 
-* We plan to meet at all [IETF meetings](https://www.ietf.org/meeting/) for the foreseeable future, and hold interim meetings between them, at least through 2017. See our [meeting materials repository](https://github.com/quicwg/wg-materials) and the [official proceedings](https://datatracker.ietf.org/wg/quic/meetings/).
+* We plan to meet at all [IETF meetings](https://www.ietf.org/meeting/) for the foreseeable future, and hold interim meetings between them. See our [meeting materials repository](https://github.com/quicwg/wg-materials) and the [official proceedings](https://datatracker.ietf.org/wg/quic/meetings/).
 
 * Our [mailing list](https://www.ietf.org/mailman/listinfo/quic) is used for most communication, including notifications of meetings, new drafts, consensus calls and other business, as well as issue discussion.
 
@@ -41,7 +43,7 @@ their resolution.
 
 Before filing a new issue, please consider a few things:
 
-* Issues should be just that; issues with our deliverables, **not questions or support requests**.
+* Issues should be just that; issues with our deliverables, **not proposals, questions or support requests**.
 * Please review the issues list to make sure that you aren't filing a duplicate.
 * If you're not sure how to phrase your issue, please ask on the [mailing list](https://www.ietf.org/mailman/listinfo/quic).
 
