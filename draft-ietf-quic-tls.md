@@ -911,7 +911,7 @@ ensure that TLS handshake messages are sent with the correct packet protection.
 ## Packet Protection for the TLS Handshake {#hs-protection}
 
 The initial exchange of packets that carry the TLS handshake are AEAD-protected
-using the connection setup key generated as described in {{handshake-secrets}}.
+using the handshake secrets generated as described in {{handshake-secrets}}.
 All TLS handshake messages up to the TLS Finished message sent by either
 endpoint use packets protected with handshake keys.
 
