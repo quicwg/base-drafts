@@ -428,8 +428,6 @@ a long header packet are version-independent. The types of packets defined in
 {{long-packet-types}} are version-specific.  See {{version-specific}} for
 details on how packets from different versions of QUIC are interpreted.
 
-(TODO: Should the list of packet types be version-independent?)
-
 The interpretation of the fields and the payload are specific to a version and
 packet type.  Type-specific semantics for this version are described in the
 following sections.
@@ -795,9 +793,11 @@ constant:
 
 * the location and size of the Connection ID field in both header forms,
 
-* the location and size of the Version field in long headers, and
+* the location and size of the Version field in long headers,
 
-* the location and size of the Packet Number field in long headers.
+* the location and size of the Packet Number field in long headers, and
+
+* the type, format and semantics of the Version Negotiation packet.
 
 Implementations MUST assume that an unsupported version uses an unknown packet
 format. All other fields MUST be ignored when processing a packet that contains
