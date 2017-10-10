@@ -911,9 +911,10 @@ For servers, packets that aren't associated with a connection potentially create
 a new connection.  However, only packets that use the long packet header and
 that are at least the minimum size defined for the protocol version can be
 initial packets.  Unless the server is buffering 0-RTT packets, a server MUST
-discard packets that cannot be associated with a connection if they use the
-short header form, or they are smaller than the smallest minimum size for any
-version that the server supports.
+either discard a packet or generate a stateless reset ({{stateless-reset}}) if
+the packet cannot be associated with a connection if they use the short header
+form, or they are smaller than the smallest minimum size for any version that
+the server supports.
 
 This version of QUIC defines a minimum size for initial packets of 1200 octets.
 Versions of QUIC that define smaller minimum initial packet sizes need to be
