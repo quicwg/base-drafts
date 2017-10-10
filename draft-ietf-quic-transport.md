@@ -1576,9 +1576,9 @@ The Packet Number field is set to a randomized value.  The server SHOULD send a
 packet with a short header and a type of 0x01.  This produces the shortest
 possible packet number encoding, which minimizes the perceived gap between the
 last packet that the server sent and this packet.  A server MAY use a different
-short header type, indicating a different packet number length, but this allows
-for the message to be identified as a stateless reset more easily using
-heuristics.
+short header type, indicating a different packet number length, but a longer
+packet number encoding might allow this message to be identified as a stateless
+reset more easily using heuristics.
 
 After the first short header octet and optional connection ID, the server
 includes the value of the Stateless Reset Token that it included in its
