@@ -895,10 +895,10 @@ version that the client selected.
 When the client receives a Version Negotiation packet from the server, it should
 select an acceptable protocol version.  If the server lists an acceptable
 version, the client selects that version and reattempts to create a connection
-using that version.  Though the contents of a packet might not change in
-response to version negotiation, a client MUST increase the packet number by one
-for every packet it sends.  Packets MUST continue to use long headers and MUST
-include the new negotiated protocol version.
+using that version.  Though the contents of a subsequent Client Initial packet
+might not change, a client MUST increase the packet number by one for every
+packet it sends in response to version negotiation.  Packets MUST continue to
+use long headers and MUST include the new negotiated protocol version.
 
 The client MUST use the long header format and include its selected version on
 all packets until it has 1-RTT keys and it has received a packet from the server
