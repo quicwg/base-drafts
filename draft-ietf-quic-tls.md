@@ -44,6 +44,14 @@ normative:
         org: Mozilla
         role: editor
 
+  FIPS180:
+    title: NIST FIPS 180-4, Secure Hash Standard
+    author:
+      name: NIST
+      ins: National Institute of Standards and Technology, U.S. Department of Commerce
+    date: 2012-03
+    target: http://csrc.nist.gov/publications/fips/fips180-4/fips-180-4.pdf
+
 informative:
 
   AEBounds:
@@ -632,6 +640,7 @@ QUIC uses HKDF with the same hash function negotiated by TLS for
 key derivation.  For example, if TLS is using the TLS_AES_128_GCM_SHA256, the
 SHA-256 hash function is used.
 
+
 ### Cleartext Packet Secrets {#cleartext-secrets}
 
 Cleartext packets are protected with secrets derived from the client's
@@ -653,10 +662,14 @@ connection ID. Specifically:
                                         "", Hash.length)
 ~~~
 
-Future versions of QUIC SHOULD generate a new salt value, thus ensuring
-that the keys are different for each version of QUIC. This prevents
-a middlebox that only recognizes one version of QUIC from seeing or
-modifying the contents of cleartext packets from future versions.
+The HKDF for the cleartext packet protection keys uses the SHA-256 hash function
+{{FIPS180}}.
+
+The salt value is a 16 octet sequence shown in the figure in hexadecimal
+notation. Future versions of QUIC SHOULD generate a new salt value, thus
+ensuring that the keys are different for each version of QUIC. This prevents a
+middlebox that only recognizes one version of QUIC from seeing or modifying the
+contents of cleartext packets from future versions.
 
 
 ### 0-RTT Secret {#zero-rtt-secrets}
@@ -784,11 +797,12 @@ used for QUIC packet protection is AEAD that is negotiated for use with the TLS
 connection.  For example, if TLS is using the TLS_AES_128_GCM_SHA256, the
 AEAD_AES_128_GCM function is used.
 
-All QUIC packets other than version negotiation and public reset packets are
+All QUIC packets other than Version Negotiation and Stateless Reset packets are
 protected with an AEAD algorithm {{!RFC5116}}. Cleartext packets are protected
-with the AEAD_AES_128_GCM and a key derived from the client's connection ID.
-This provides protection against off-path attackers and robustness against
-QUIC version unaware middleboxes, but not against on-path attackers.
+with AEAD_AES_128_GCM and a key derived from the client's connection ID (see
+{{cleartext-secrets}}).  This provides protection against off-path attackers and
+robustness against QUIC version unaware middleboxes, but not against on-path
+attackers.
 
 Once TLS has provided a key, the contents of regular QUIC packets immediately
 after any TLS messages have been sent are protected by the AEAD selected by TLS.
