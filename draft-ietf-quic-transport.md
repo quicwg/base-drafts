@@ -1723,7 +1723,7 @@ The CONNECTION_CLOSE frame is as follows:
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |           Error Code (16)     |   Reason Phrase Length (16)   |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                      Reason Phrase Length (*)               ...
+|                        Reason Phrase (*)                    ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
 
@@ -3025,7 +3025,7 @@ consistent state between endpoints.
 
 ## Transport Error Codes {#error-codes}
 
-QUIC error codes are 16 bit unsigned integers.
+QUIC error codes are 16-bit unsigned integers.
 
 This section lists the defined QUIC transport error codes that may be used in a
 CONNECTION_CLOSE frame.  These errors apply to the entire connection.
@@ -3099,7 +3099,7 @@ See {{iana-error-codes}} for details of registering new error codes.
 
 ## Application Protocol Error Codes {#app-error-codes}
 
-Application protocol error codes are 16 bit unsigned integers, but the
+Application protocol error codes are 16-bit unsigned integers, but the
 management of application error codes are left to application protocols.
 Application protocol error codes are used for the RST_STREAM
 ({{frame-rst-stream}}) and APPLICATION_CLOSE ({{frame-application-close}})
