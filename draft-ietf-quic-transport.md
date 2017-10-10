@@ -345,7 +345,7 @@ describing the value of fields.
 Any QUIC packet has either a long or a short header, as indicated by the Header
 Form bit. Long headers are expected to be used early in the connection before
 version negotiation and establishment of 1-RTT keys.  Short headers are minimal
-version-specific headers, which can be used after version negotiation and 1-RTT
+version-specific headers, which are used after version negotiation and 1-RTT
 keys are established.
 
 ## Long Header
@@ -371,11 +371,10 @@ keys are established.
 
 Long headers are used for packets that are sent prior to the completion of
 version negotiation and establishment of 1-RTT keys. Once both conditions are
-met, a sender SHOULD switch to sending short-form headers. While inefficient,
-long headers MAY be used for packets encrypted with 1-RTT keys. The long form
-allows for special packets - such as the Version Negotiation packet - to be
-represented in this uniform fixed-length packet format. A long header contains
-the following fields:
+met, a sender switches to sending packets using the short header
+({{short-header}}).  The long form allows for special packets - such as the
+Version Negotiation packet - to be represented in this uniform fixed-length
+packet format. A long header contains the following fields:
 
 Header Form:
 
@@ -419,8 +418,6 @@ The following packet types are defined:
 | 0x04 | Server Cleartext              | {{packet-server-cleartext}} |
 | 0x05 | Client Cleartext              | {{packet-client-cleartext}} |
 | 0x06 | 0-RTT Protected               | {{packet-protected}}        |
-| 0x07 | 1-RTT Protected (key phase 0) | {{packet-protected}}        |
-| 0x08 | 1-RTT Protected (key phase 1) | {{packet-protected}}        |
 {: #long-packet-types title="Long Header Packet Types"}
 
 The header form, packet type, connection ID, packet number and version fields of
@@ -663,8 +660,8 @@ ACK frames.
 
 ## Protected Packets {#packet-protected}
 
-Packets that are protected with 0-RTT keys are sent with long headers.  Packets
-that are protected with 1-RTT keys MAY be sent with long headers.  The different
+Packets that are protected with 0-RTT keys are sent with long headers; all
+packets protected with 1-RTT keys are sent with short headers.  The different
 packet types explicitly indicate the encryption level and therefore the keys
 that are used to remove packet protection.
 
@@ -675,11 +672,6 @@ The client can send 0-RTT packets after having received a packet from the server
 if that packet does not complete the handshake.  Even if the client receives a
 different connection ID from the server, it MUST NOT update the connection ID it
 uses for 0-RTT packets.  This enables consistent routing for all 0-RTT packets.
-
-Packets protected with 1-RTT keys that use long headers use a type value of 0x07
-for key phase 0 and 0x08 for key phase 1; see {{QUIC-TLS}} for more details on
-the use of key phases.  The connection ID field for these packet types MUST
-contain the value selected by the server, see {{connection-id}}.
 
 The version field for protected packets is the current QUIC version.
 
