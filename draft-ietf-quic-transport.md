@@ -2405,12 +2405,12 @@ discussed in more detail in {{QUIC-RECOVERY}}.
 
 # Special Considerations for Packetization Layer PMTU Discovery
 
-The PADDING frame provides a useful option for PMTU probe packets that does not
-exist in other transports. QUIC Packets with no frames other than PADDING must be
-acknowledged, but need not be retransmitted if lost. PADDING probe packets, if
-lost, also do not delay delivery of application data. Their only impact on
-application data is the extent that they consume the congestion window and
-connection flow control credits.
+The PADDING frame provides a useful option for PMTU probe packets that does
+not exist in other transports. PADDING frames generate acknowledgements, but
+their content need not be delivered reliably. PADDING frames may delay the
+delivery of application data, as they consume the congestion window. However,
+by definition their likely loss in a probe packet does not require delay-
+inducing retransmission of application data.
 
 ## Special Considerations for PMTU Discovery
 
