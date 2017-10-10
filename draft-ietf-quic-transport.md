@@ -965,8 +965,9 @@ successfully receives a response or it abandons the connection attempt.
 ### Handling Version Negotiation Packets {#handle-vn}
 
 When the client receives a Version Negotiation packet, it first checks that the
-packet number and connection ID match the values it sent in a Client Initial
-packet.  If this check fails, the packet MUST be discarded.
+packet number and connection ID match the values the client sent in a previous
+packet on the same connection.  If this check fails, the packet MUST be
+discarded.
 
 Once the Version Negotiation packet is determined to be valid, the client then
 selects an acceptable protocol version from the list provided by the server.
