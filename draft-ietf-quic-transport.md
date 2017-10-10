@@ -414,13 +414,12 @@ The following packet types are defined:
 | Type | Name                          | Section                     |
 |:-----|:------------------------------|:----------------------------|
 | 0x01 | Version Negotiation           | {{packet-version}}          |
-| 0x02 | Client Initial                | {{packet-client-initial}}   |
-| 0x03 | Server Stateless Retry        | {{packet-server-stateless}} |
-| 0x04 | Server Cleartext              | {{packet-server-cleartext}} |
-| 0x05 | Client Cleartext              | {{packet-client-cleartext}} |
-| 0x06 | 0-RTT Protected               | {{packet-protected}}        |
-| 0x07 | 1-RTT Protected (key phase 0) | {{packet-protected}}        |
-| 0x08 | 1-RTT Protected (key phase 1) | {{packet-protected}}        |
+| 0x02 | Initial                       | {{packet-initial}}          |
+| 0x03 | Retry                         | {{packet-retry}}            |
+| 0x04 | Handshake                     | {{packet-handshake}}        |
+| 0x05 | 0-RTT Protected               | {{packet-protected}}        |
+| 0x06 | 1-RTT Protected (key phase 0) | {{packet-protected}}        |
+| 0x07 | 1-RTT Protected (key phase 1) | {{packet-protected}}        |
 {: #long-packet-types title="Long Header Packet Types"}
 
 The header form, packet type, connection ID, packet number and version fields of
@@ -522,8 +521,8 @@ server received the packet and that the Version Negotiation packet was not
 carried in a packet with a spoofed source address.
 
 A Version Negotiation packet is never explicitly acknowledged in an ACK frame by
-a client.  Receiving another Client Initial packet implicitly acknowledges a
-Version Negotiation packet.
+a client.  Receiving another Initial packet implicitly acknowledges a Version
+Negotiation packet.
 
 The payload of the Version Negotiation packet is a list of 32-bit versions which
 the server supports, as shown below.
@@ -547,70 +546,70 @@ See {{version-negotiation}} for a description of the version negotiation
 process.
 
 
-## Cleartext Packets {#cleartext-packet}
+## Cryptographic Handshake Packets {#handshake-packets}
 
-Cleartext packets are sent during the handshake prior to key negotiation.
+Once version negotiation is complete, the cryptographic handshake is used to
+agree on cryptographic keys.  The cryptographic handshake is carried in Initial
+({{packet-initial}}), Retry ({{packet-retry}}) and Handshake
+({{packet-handshake}}) packets.
 
-All cleartext packets contain the current QUIC version in the version field.
+All these packets use the long header and contain the current QUIC version in
+the version field.
 
-In order to prevent tampering by version-unaware middleboxes, Cleartext
-packets are protected with a connection and version specific key, as
-described in {{QUIC-TLS}}. This protection does not provide confidentiality
-or integrity against on-path attackers, but provides some level of
-protection against off-path attackers.
+In order to prevent tampering by version-unaware middleboxes, handshake packets
+are protected with a connection and version specific key, as described in
+{{QUIC-TLS}}. This protection does not provide confidentiality or integrity
+against on-path attackers, but provides some level of protection against
+off-path attackers.
 
 
-### Client Initial Packet {#packet-client-initial}
+### Initial Packet {#packet-initial}
 
-The Client Initial packet uses long headers with a type value of 0x02.
-It carries the first cryptographic handshake message sent by the client.
+The Initial packet uses long headers with a type value of 0x02.  It carries the
+first cryptographic handshake message sent by the client.
 
 The client populates the connection ID field with randomly selected values,
 unless it has received a packet from the server.  If the client has received a
 packet from the server, the connection ID field uses the value provided by the
 server.
 
-The packet number used for Client Initial packets is initialized with a random
-value each time the new contents are created for the packet.  Retransmissions of
-the packet contents increment the packet number by one, see
-({{packet-numbers}}).
+The packet number used for Initial packets is initialized with a random value
+each time the new contents are created for the packet.  Retransmissions of the
+packet contents increment the packet number by one, see ({{packet-numbers}}).
 
-The payload of a Client Initial packet consists of a STREAM frame (or frames)
+The payload of a Initial packet consists of a STREAM frame (or frames)
 for stream 0 containing a cryptographic handshake message, with enough PADDING
 frames that the packet is at least 1200 octets (see {{packetization}}).  The
 stream in this packet always starts at an offset of 0 (see {{stateless-retry}})
 and the complete cryptographic handshake message MUST fit in a single packet
 (see {{handshake}}).
 
-The client uses the Client Initial Packet type for any packet that contains an
-initial cryptographic handshake message.  This includes all cases where a new
-packet containing the initial cryptographic message needs to be created, this
-includes the packets sent after receiving a Version Negotiation
-({{packet-version}}) or Server Stateless Retry packet
-({{packet-server-stateless}}).
+The client uses the Initial Packet type for any packet that contains an initial
+cryptographic handshake message.  This includes all cases where a new packet
+containing the initial cryptographic message needs to be created, this includes
+the packets sent after receiving a Version Negotiation ({{packet-version}}) or
+Retry packet ({{packet-retry}}).
 
 
-### Server Stateless Retry Packet {#packet-server-stateless}
+### Retry Packet {#packet-retry}
 
-A Server Stateless Retry packet uses long headers with a type value of 0x03.
-It carries cryptographic handshake messages and acknowledgments.  It is used
-by a server that wishes to perform a stateless retry (see
-{{stateless-retry}}).
+A Retry packet uses long headers with a type value of 0x03.  It carries
+cryptographic handshake messages and acknowledgments.  It is used by a server
+that wishes to perform a stateless retry (see {{stateless-retry}}).
 
 The packet number and connection ID fields echo the corresponding fields from
 the triggering client packet.  This allows a client to verify that the server
 received its packet.
 
-A Server Stateless Retry packet is never explicitly acknowledged in an ACK frame
-by a client.  Receiving another Client Initial packet implicitly acknowledges a
-Server Stateless Retry packet.
+A Retry packet is never explicitly acknowledged in an ACK frame
+by a client.  Receiving another Initial packet implicitly acknowledges a Retry
+packet.
 
-After receiving a Server Stateless Retry packet, the client uses a new Client
-Initial packet containing the next cryptographic handshake message.  The client
-retains the state of its cryptographic handshake, but discards all transport
-state.  The new Client Initial packet includes a newly randomized packet number,
-STREAM frames on stream 0 that start again at an offset of 0, and the original
-connection ID.
+After receiving a Retry packet, the client uses a new Initial packet containing
+the next cryptographic handshake message.  The client retains the state of its
+cryptographic handshake, but discards all transport state.  The new Initial
+packet includes a newly randomized packet number, STREAM frames on stream 0 that
+start again at an offset of 0, and the original connection ID.
 
 Continuing the cryptographic handshake is necessary to ensure that an attacker
 cannot force a downgrade of any cryptographic parameters.  In addition to
@@ -619,41 +618,26 @@ any version negotiation that occurred (see {{version-negotiation}}).  The client
 MAY also retain any observed RTT or congestion state that it has accumulated for
 the flow, but other transport state MUST be discarded.
 
-The payload of the Server Stateless Retry packet contains a single STREAM frame
+The payload of the Retry packet contains a single STREAM frame
 on stream 0 with offset 0 containing the server's cryptographic stateless retry
 material. It MUST NOT contain any other frames. The next STREAM frame sent by
 the server will also start at stream offset 0.
 
 
-### Server Cleartext Packet {#packet-server-cleartext}
+### Handshake Packet {#packet-handshake}
 
-A Server Cleartext packet uses long headers with a type value of 0x04.  It is
+A Handshake packet uses long headers with a type value of 0x04.  It is
 used to carry acknowledgments and cryptographic handshake messages from the
-server.
+server and client.
 
-The connection ID field in a Server Cleartext packet contains a connection ID
+The connection ID field in a Handshake packet contains a connection ID
 that is chosen by the server (see {{connection-id}}).
 
-The first Server Cleartext packet contains a randomized packet number.  This
-value is increased for each subsequent packet sent by the server as described in
-{{packet-numbers}}.
-
-The payload of this packet contains STREAM frames and could contain PADDING and
-ACK frames.
-
-
-### Client Cleartext Packet {#packet-client-cleartext}
-
-A Client Cleartext packet uses long headers with a type value of 0x05, and is
-sent when the client has received a Server Cleartext packet from the server.
-
-The connection ID field in a Client Cleartext packet contains a server-selected
-connection ID, see {{connection-id}}.
-
-The Client Cleartext packet includes a packet number that is one higher than the
-last Client Initial, 0-RTT Protected or Client Cleartext packet that was sent.
-The packet number is incremented for each subsequent packet, see
-{{packet-numbers}}.
+The first Handshake packet sent by a server contains a randomized packet number.
+This value is increased for each subsequent packet sent by the server as
+described in {{packet-numbers}}.  The client increments the packet number from
+its previous packet by one for each Handshake packet that it sends (which might
+be an Initial, 0-RTT Protected, or Handshake packet).
 
 The payload of this packet contains STREAM frames and could contain PADDING and
 ACK frames.
@@ -666,7 +650,7 @@ that are protected with 1-RTT keys MAY be sent with long headers.  The different
 packet types explicitly indicate the encryption level and therefore the keys
 that are used to remove packet protection.
 
-Packets protected with 0-RTT keys use a type value of 0x06.  The connection ID
+Packets protected with 0-RTT keys use a type value of 0x05.  The connection ID
 field for a 0-RTT packet is selected by the client.
 
 The client can send 0-RTT packets after having received a packet from the server
@@ -674,8 +658,8 @@ if that packet does not complete the handshake.  Even if the client receives a
 different connection ID from the server, it MUST NOT update the connection ID it
 uses for 0-RTT packets.  This enables consistent routing for all 0-RTT packets.
 
-Packets protected with 1-RTT keys that use long headers use a type value of 0x07
-for key phase 0 and 0x08 for key phase 1; see {{QUIC-TLS}} for more details on
+Packets protected with 1-RTT keys that use long headers use a type value of 0x06
+for key phase 0 and 0x07 for key phase 1; see {{QUIC-TLS}} for more details on
 the use of key phases.  The connection ID field for these packet types MUST
 contain the value selected by the server, see {{connection-id}}.
 
@@ -697,14 +681,14 @@ using the CONNECTION_ID flag.  When present, the Connection ID is in the same
 location in all packet headers, making it straightforward for middleboxes, such
 as load balancers, to locate and use it.
 
-The client MUST choose a random connection ID and use it in Client Initial
-packets ({{packet-client-initial}}) and 0-RTT packets ({{packet-protected}}).
-If the client has received any packet from the server, it uses the connection ID
-it received from the server for all packets other than 0-RTT packets.
+The client MUST choose a random connection ID and use it in Initial packets
+({{packet-initial}}) and 0-RTT packets ({{packet-protected}}).  If the client
+has received any packet from the server, it uses the connection ID it received
+from the server for all packets other than 0-RTT packets.
 
-When the server receives a Client Initial packet and decides to proceed with the
+When the server receives a Initial packet and decides to proceed with the
 handshake, it chooses a new value for the connection ID and sends that in a
-Server Cleartext packet.  The server MAY choose to use the value that the client
+Handshake packet.  The server MAY choose to use the value that the client
 initially selects.
 
 Once the client receives the connection ID that the server has chosen, it uses
@@ -754,9 +738,8 @@ sending a packet with a number of 0x6b4264 requires a 16-bit or larger packet
 number encoding; whereas a 32-bit packet number is needed to send a packet with
 a number of 0x6bc107.
 
-Version Negotiation ({{packet-version}}) and Server Stateless Retry
-({{packet-server-stateless}}) packets have special rules for populating the
-packet number field.
+Version Negotiation ({{packet-version}}) and Retry ({{packet-retry}}) packets
+have special rules for populating the packet number field.
 
 
 ### Initial Packet Number {#initial-packet-number}
@@ -770,11 +753,11 @@ The first set of packets sent by an endpoint MUST include the low 32-bits of the
 packet number.  Once any packet has been acknowledged, subsequent packets can
 use a shorter packet number encoding.
 
-A client that receives a Version Negotiation ({{packet-version}}) or Server
-Stateless Retry packet ({{packet-server-stateless}}) MUST generate a new initial
-packet number.  This ensures that the first transmission attempt for a Client
-Initial packet ({{packet-client-initial}}) always contains a randomized packet
-number, but packets that contain retransmissions increment the packet number.
+A client that receives a Version Negotiation ({{packet-version}}) or Retry
+packet ({{packet-retry}}) MUST generate a new initial packet number.  This
+ensures that the first transmission attempt for a Initial packet
+({{packet-initial}}) always contains a randomized packet number, but packets
+that contain retransmissions increment the packet number.
 
 A client MUST NOT generate a new initial packet number if it discards the server
 packet.  This might happen if the information the client retransmits its Client
@@ -805,8 +788,8 @@ an unsupported version.
 
 # Frames and Frame Types {#frames}
 
-The payload of cleartext packets and the plaintext after decryption of protected
-payloads consists of a sequence of frames, as shown in {{packet-frames}}.
+The payload of Initial, Handshake and all protected packets consists of a
+sequence of frames, as shown in {{packet-frames}}.
 
 ~~~
  0                   1                   2                   3
@@ -1244,17 +1227,16 @@ without committing any state. This allows a server to perform address validation
 ({{address-validation}}, or to defer connection establishment costs.
 
 A server that generates a response to an initial packet without retaining
-connection state MUST use the Server Stateless Retry packet
-({{packet-server-stateless}}).  This packet causes a client to reset its
-transport state and to continue the connection attempt with new connection state
-while maintaining the state of the cryptographic handshake.
+connection state MUST use the Retry packet ({{packet-retry}}).  This packet
+causes a client to reset its transport state and to continue the connection
+attempt with new connection state while maintaining the state of the
+cryptographic handshake.
 
-A server MUST NOT send multiple Server Stateless Retry packets in response to a
-client handshake packet.  Thus, any cryptographic handshake message that is sent
-MUST fit within a single packet.
+A server MUST NOT send multiple Retry packets in response to a client handshake
+packet.  Thus, any cryptographic handshake message that is sent MUST fit within
+a single packet.
 
-In TLS, the Server Stateless Retry packet type is used to carry the
-HelloRetryRequest message.
+In TLS, the Retry packet type is used to carry the HelloRetryRequest message.
 
 
 ## Proof of Source Address Ownership {#address-validation}
@@ -2050,9 +2032,8 @@ Unlike TCP SACKs, QUIC ACK blocks are irrevocable.  Once a packet has
 been acknowledged, even if it does not appear in a future ACK frame,
 it remains acknowledged.
 
-A client MUST NOT acknowledge Version Negotiation or Server Stateless Retry
-packets.  These packet types contain packet numbers selected by the client, not
-the server.
+A client MUST NOT acknowledge Version Negotiation or Retry packets.  These
+packet types contain packet numbers selected by the client, not the server.
 
 A sender MAY intentionally skip packet numbers to introduce entropy into the
 connection, to avoid opportunistic acknowledgement attacks.  The sender SHOULD
