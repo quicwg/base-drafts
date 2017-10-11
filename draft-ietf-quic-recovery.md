@@ -212,7 +212,7 @@ An unacknowledged packet is marked as lost when an acknowledgment is received
 for a packet that was sent a threshold number of packets (kReorderingThreshold)
 after the unacknowledged packet. Receipt of the ack indicates that a later
 packet was received, while kReorderingThreshold provides some tolerance for
-reordering of packets in the network. 
+reordering of packets in the network.
 
 The RECOMMENDED initial value for kReorderingThreshold is 3.
 
@@ -243,7 +243,7 @@ packets are not acknowledged during this time, then these packets MUST be marked
 as lost.
 
 An endpoint SHOULD set the alarm such that a packet is marked as lost no earlier
-than 1.25 * max(SRTT, latest_RTT) since when it was sent. 
+than 1.25 * max(SRTT, latest_RTT) since when it was sent.
 
 Using max(SRTT, latest_RTT) protects from the two following cases:
 
@@ -383,7 +383,7 @@ flight, since this packet adds network load without establishing packet loss.
 Handshake packets, which contain STREAM frames for stream 0, are critical to
 QUIC transport and crypto negotiation, so a separate alarm is used for them.
 
-The handshake timeout SHOULD be set to twice the initial RTT. 
+The handshake timeout SHOULD be set to twice the initial RTT.
 
 There are no prior RTT samples within this connection. However, this may be a
 resumed connection over the same network, in which case, a client SHOULD use the
