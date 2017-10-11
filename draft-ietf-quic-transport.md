@@ -916,14 +916,14 @@ the packet cannot be associated with a connection if they use the short header
 form, or they are smaller than the smallest minimum size for any version that
 the server supports.
 
-This version of QUIC defines a minimum size for initial packets of 1200 octets.
-Versions of QUIC that define smaller minimum initial packet sizes need to be
-aware that initial packets will be discarded without action by servers that only
-support versions with larger minimums.  Clients that support multiple QUIC
-versions can avoid this problem by ensuring that they increase the size of their
-initial packets to the largest minimum size across all of the QUIC versions they
-support.  Servers need to recognize initial packets that are the minimum size of
-all QUIC versions they support.
+This version of QUIC defines a minimum size for initial packets of 1200 octets
+(see {{packetization}}).  Versions of QUIC that define smaller minimum initial
+packet sizes need to be aware that initial packets will be discarded without
+action by servers that only support versions with larger minimums.  Clients that
+support multiple QUIC versions can avoid this problem by ensuring that they
+increase the size of their initial packets to the largest minimum size across
+all of the QUIC versions they support.  Servers need to recognize initial
+packets that are the minimum size of all QUIC versions they support.
 
 
 ## Version Negotiation {#version-negotiation}
