@@ -364,9 +364,9 @@ considered a strong enough signal of packet loss. An RTO alarm fires only when
 there's a prolonged period of network silence, which could be caused by a change
 in the underlying network RTT.
 
-When an acknowledgment is received after one or more consecutive RTO events, any
-packets with lower packet numbers than those acknowledged MUST be marked as
-lost.
+When an acknowledgment is received for a packet sent on an RTO event, any
+unacknowledged packets with lower packet numbers than those acknowledged MUST be
+marked as lost.
 
 A packet sent when an RTO alarm fires MAY carry new data if available or
 unacknowledged data to potentially reduce recovery time. Since this packet is
