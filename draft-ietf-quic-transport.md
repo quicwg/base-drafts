@@ -557,7 +557,7 @@ All these packets use the long header and contain the current QUIC version in
 the version field.
 
 In order to prevent tampering by version-unaware middleboxes, handshake packets
-are protected with a connection and version specific key, as described in
+are protected with a connection- and version-specific key, as described in
 {{QUIC-TLS}}. This protection does not provide confidentiality or integrity
 against on-path attackers, but provides some level of protection against
 off-path attackers.
@@ -584,7 +584,7 @@ stream in this packet always starts at an offset of 0 (see {{stateless-retry}})
 and the complete cryptographic handshake message MUST fit in a single packet
 (see {{handshake}}).
 
-The client uses the Initial Packet type for any packet that contains an initial
+The client uses the Initial packet type for any packet that contains an initial
 cryptographic handshake message.  This includes all cases where a new packet
 containing the initial cryptographic message needs to be created, this includes
 the packets sent after receiving a Version Negotiation ({{packet-version}}) or
@@ -788,8 +788,9 @@ an unsupported version.
 
 # Frames and Frame Types {#frames}
 
-The payload of Initial, Handshake and all protected packets consists of a
-sequence of frames, as shown in {{packet-frames}}.
+The payload of all packets, after removing packet protection, consists of a
+sequence of frames, as shown in {{packet-frames}}.  Version Negotiation and
+Stateless Reset do not contain frames.
 
 ~~~
  0                   1                   2                   3
