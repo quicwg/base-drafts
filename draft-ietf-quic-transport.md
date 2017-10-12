@@ -2031,7 +2031,7 @@ response to other packets.
 
 To limit ACK blocks to those that have not yet been received by the sender, the
 receiver SHOULD track which ACK frames have been acknowledged by its peer.  Once
-an ACK frame has been acknowledged, the packets it acknowledges SHOULD not be
+an ACK frame has been acknowledged, the packets it acknowledges SHOULD NOT be
 acknowledged again.
 
 A receiver that is only sending ACK frames will not receive acknowledgments for
