@@ -1466,7 +1466,7 @@ that is in a draining period MUST NOT send packets unless they contain a
 CONNECTION_CLOSE or APPLICATION_CLOSE frame.
 
 An endpoint that receives either CONNECTION_CLOSE or APPLICATION_CLOSE while in
-the draining period can terminate the draining period immediately.  An endpoint
+the draining period MAY terminate the draining period immediately.  An endpoint
 that receives either of these frames can send a packet containing a
 CONNECTION_CLOSE to allow its peer to exit the draining period more rapidly.
 
