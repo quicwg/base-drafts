@@ -1857,7 +1857,8 @@ The frame is as follows:
 The fields in the MAX_STREAM_ID frame are as follows:
 
 Maximum Stream ID:
-: ID of the maximum peer-initiated stream ID for the connection.
+: ID of the maximum unidirectional or bidirectional (based on the second least
+  signification bit of the stream id) peer-initiated stream ID for the connection.
 
 Loss or reordering can mean that a MAX_STREAM_ID frame can be received which
 states a lower stream limit than the client has previously received.
@@ -2441,7 +2442,8 @@ Streams in QUIC provide a lightweight, ordered, and bidirectional byte-stream
 abstraction modeled closely on HTTP/2 streams {{?RFC7540}}.
 
 Streams can be created either by the client or the server, can concurrently send
-data interleaved with other streams, and can be cancelled.
+data interleaved with other streams, and can be cancelled, and can be opened in
+unidirectional mode.
 
 Data that is received on a stream is delivered in order within that stream, but
 there is no particular delivery order across streams.  Transmit ordering among
@@ -2471,6 +2473,18 @@ even-numbered Stream IDs. If an endpoint receives a frame which
 corresponds to a stream which is allocated to it (i.e., odd-numbered for
 the client or even-numbered for the server) but which it has not yet
 created, it MUST close the connection with error code STREAM_STATE_ERROR.
+
+The second least significant bit differentiates between unidirectional streams
+and bidirectional streams. Unidirectional streams always have this bit set to
+0 and bidirectional streams have this bit set to 1. As a result the initial
+stream ID for various stream types is listed below:
+
+| Stream ID   | Type                          |
+|:------------|:------------------------------|
+| 0x01        | Client Unidirectional         |
+| 0x02        | Server Unidirectional         |
+| 0x03        | Client Bidirectional          |
+| 0x04        | Server Bidirectional          |
 
 Stream ID 0 (0x0) is reserved for the cryptographic handshake.  Stream 0 MUST
 NOT be used for application data, and is the first client-initiated stream.
@@ -2506,6 +2520,7 @@ shown in the following figure and described below.
                                  v
                  recv FIN/  +--------+    send FIN/
                  recv RST   |        |    send RST
+                 recv UNI   |        |    send UNI
                   ,---------|  open  |-----------.
                  /          |        |            \
                 v           +--------+             v
@@ -2525,6 +2540,7 @@ shown in the following figure and described below.
    recv:   endpoint receives this frame
 
    STREAM: a STREAM frame
+   UNI:    a unidirectional stream
    FIN:    FIN flag in a STREAM frame
    RST:    RST_STREAM frame
    MSD:    MAX_STREAM_DATA frame
@@ -2543,6 +2559,12 @@ the state of a stream while the frame is in transit.  Endpoints do not
 coordinate the creation of streams; they are created unilaterally by either
 endpoint.  Endpoints can use acknowledgments to understand the peer's subjective
 view of stream state at any given time.
+
+Only the initiator of a stream may send a STREAM frame without receiving one
+unless otherwise specified by the application.  All implicitly opened streams
+must remain in the IDLE state until a STREAM frame has been received.  If a
+RST is received on a stream reserved for the peer before any STREAM frame
+has been received, it will immediately transition to the closed state.
 
 In the absence of more specific guidance elsewhere in this document,
 implementations SHOULD treat the receipt of a frame that is not expressly
@@ -2605,7 +2627,8 @@ Any frame type that mentions a stream ID can be sent in this state.
 A stream that is in the "half-closed (local)" state MUST NOT be used for sending
 on new STREAM frames.  Retransmission of data that has already been sent on
 STREAM frames is permitted.  An endpoint MAY also send MAX_STREAM_DATA and
-STOP_SENDING in this state.
+STOP_SENDING in this state. Unidirectional streams created by the peer are
+immediately half-closed (local) to the receiver.
 
 An application can decide to abandon a stream in this state. An endpoint can
 send RST_STREAM for a stream that was closed with the FIN flag. The final offset
@@ -2631,7 +2654,8 @@ after a frame bearing the FIN flag is sent.
 A stream is "half-closed (remote)" when the stream is no longer being used by
 the peer to send any data.  An endpoint will have either received all data that
 a peer has sent or will have received a RST_STREAM frame and discarded any
-received data.
+received data. Unidirectional streams created by the locally are immediately
+half-closed (remote) to the creator.
 
 Once all data has been either received or discarded, a sender is no longer
 obligated to update the maximum received data for the connection.
@@ -2941,7 +2965,8 @@ is increased.
 The final offset is the count of the number of octets that are transmitted on a
 stream.  For a stream that is reset, the final offset is carried explicitly in
 the RST_STREAM frame.  Otherwise, the final offset is the offset of the end of
-the data carried in STREAM frame marked with a FIN flag.
+the data carried in STREAM frame marked with a FIN flag, or 0 in the case of
+incoming unidirectional streams.
 
 An endpoint will know the final offset for a stream when the stream enters the
 "half-closed (remote)" state.  However, if there is reordering or loss, an
