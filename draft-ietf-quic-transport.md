@@ -1461,14 +1461,10 @@ The draining period persists for three times the current Retransmission Timeout
 can be acknowledged, but no new application data can be sent on the connection.
 
 Different treatment is given to packets that are received while a connection is
-in the draining period depending on how the connection was closed.  An endpoint
-that is in a draining period MUST NOT send packets unless they contain a
-CONNECTION_CLOSE or APPLICATION_CLOSE frame.
+in the draining period depending on how the connection was closed.
 
-An endpoint that receives either CONNECTION_CLOSE or APPLICATION_CLOSE while in
-the draining period MAY terminate the draining period immediately.  An endpoint
-that receives either of these frames can send a packet containing a
-CONNECTION_CLOSE to allow its peer to exit the draining period more rapidly.
+An endpoint that is in a draining period MUST NOT send packets unless they
+contain a CONNECTION_CLOSE or APPLICATION_CLOSE frame.
 
 Once the draining period has ended, an endpoint SHOULD discard per-connection
 state.  This results in new packets on the connection being discarded.  An
