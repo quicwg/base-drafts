@@ -1442,9 +1442,8 @@ TODO: see issue #161
 
 Connections should remain open until they become idle for a pre-negotiated
 period of time.  A QUIC connection, once established, can be terminated in one
-of four ways:
+of three ways:
 
-* application close ({{application-close}})
 * idle timeout ({{idle-timeout}})
 * immediate close ({{immediate-close}})
 * stateless reset ({{stateless-reset}})
@@ -1474,20 +1473,6 @@ endpoint MAY send a stateless reset in response to any further incoming packets.
 
 The draining period does not apply when a stateless reset ({{stateless-reset}})
 is used.
-
-
-### Application Close
-
-An application protocol can arrange to close a connection.  This might be after
-negotiating a graceful shutdown.  The application protocol exchanges whatever
-messages that are needed to cause both endpoints to agree to close the
-connection, after which the application requests that the connection be closed.
-A negotiated shutdown might not result in exchanging messages that are visible
-to the transport.
-
-In the draining period, an endpoint that has been closed by an application
-SHOULD generate and send ACK frames as normal.  This allows the peer to receive
-acknowledgements where previous acknowledgements were lost.
 
 
 ### Idle Timeout
@@ -1530,6 +1515,14 @@ Note:
 An endpoint can cease sending CONNECTION_CLOSE or APPLICATION_CLOSE frames if it
 receives either a CONNECTION_CLOSE, APPLICATION_CLOSE or an acknowledgement for
 a packet that contained a either close frame.
+
+An immediate close can be used after an application protocol has arranged to
+close a connection.  This might be after the application protocols negotiates a
+graceful shutdown.  The application protocol exchanges whatever messages that
+are needed to cause both endpoints to agree to close the connection, after which
+the application requests that the connection be closed.  The application
+protocol can use an APPLICATION_CLOSE message with an appropriate error code to
+signal closure.
 
 
 ### Stateless Reset {#stateless-reset}
