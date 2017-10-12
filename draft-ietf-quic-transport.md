@@ -910,7 +910,7 @@ diagnostic or security purposes.
 For servers, packets that aren't associated with a connection potentially create
 a new connection.  However, only packets that use the long packet header and
 that are at least the minimum size defined for the protocol version can be
-initial packets.  Unless the server is buffering 0-RTT packets, a server MUST
+initial packets.  Unless the server is buffering 0-RTT packets, a server MAY
 discard packets with a short header or packets that are smaller than the
 smallest minimum size for any version that the server supports.  A server that
 discards a packet that cannot be associated with a connection MAY also generate
