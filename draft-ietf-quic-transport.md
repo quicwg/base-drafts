@@ -904,17 +904,17 @@ controllers.  However, limiting the number and size of buffered packets might be
 needed to prevent exposure to denial of service.
 
 For clients, any packet that cannot be associated with an existing connection
-SHOULD be discarded if it not buffered.  Discarded packets MAY be logged for
+SHOULD be discarded if it is not buffered.  Discarded packets MAY be logged for
 diagnostic or security purposes.
 
 For servers, packets that aren't associated with a connection potentially create
 a new connection.  However, only packets that use the long packet header and
 that are at least the minimum size defined for the protocol version can be
 initial packets.  Unless the server is buffering 0-RTT packets, a server MUST
-either discard a packet or generate a stateless reset ({{stateless-reset}}) if
-the packet cannot be associated with a connection if they use the short header
-form, or they are smaller than the smallest minimum size for any version that
-the server supports.
+discard packets with a short header or packets that are smaller than the
+smallest minimum size for any version that the server supports.  A server that
+discards a packet that cannot be associated with a connection MAY also generate
+a stateless reset ({{stateless-reset}}).
 
 This version of QUIC defines a minimum size for initial packets of 1200 octets
 (see {{packetization}}).  Versions of QUIC that define smaller minimum initial
@@ -954,7 +954,7 @@ If the version selected by the client is not acceptable to the server, the
 server responds with a Version Negotiation packet ({{packet-version}}).  This
 includes a list of versions that the server will accept.
 
-A server sends a Version Negotiation packet for any packet with an unaccepable
+A server sends a Version Negotiation packet for any packet with an unacceptable
 version if that packet could create a new connection.  This allows a server to
 process packets with unsupported versions without retaining state.  Though
 either the Client Initial packet or the version negotiation packet that is sent
