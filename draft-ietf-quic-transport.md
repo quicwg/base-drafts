@@ -2687,10 +2687,10 @@ frames count toward flow control.
 
 STOP_SENDING can only be sent for any stream that is not "idle", however it is
 mostly useful for streams in the "open" or "half-closed (local)" states.  A
-STOP_SENDING frame requests that the receiving application send a RST_STREAM
-frame.  An endpoint that receives a STOP_SENDING frame MUST send a RST_STREAM
-frame for that stream with an error code of STOPPING.  If the STOP_SENDING frame
-is received on a stream that is already in the "half-closed (local)" or "closed"
+STOP_SENDING frame requests that the receiving endpoint send a RST_STREAM frame.
+An endpoint that receives a STOP_SENDING frame MUST send a RST_STREAM frame for
+that stream with an error code of STOPPING.  If the STOP_SENDING frame is
+received on a stream that is already in the "half-closed (local)" or "closed"
 states, a RST_STREAM frame MAY still be sent in order to cancel retransmission
 of previously-sent STREAM frames.
 
