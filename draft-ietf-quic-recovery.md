@@ -766,10 +766,10 @@ Pseudocode for DetectLostPackets follows:
        delay_until_lost = 9/8 * max(latest_rtt, smoothed_rtt)
      foreach (unacked < largest_acked.packet_number):
        time_since_sent = now() - unacked.time_sent
-       packet_delta = largest_acked.packet_number - unacked.packet_number
+       delta = largest_acked.packet_number - unacked.packet_number
        if (time_since_sent > delay_until_lost):
          lost_packets.insert(unacked)
-       else if (packet_delta > reordering_threshold)
+       else if (delta > reordering_threshold)
          lost_packets.insert(unacked)
        else if (loss_time == 0 && delay_until_lost != infinite):
          loss_time = now() + delay_until_lost - time_since_sent
