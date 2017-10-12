@@ -908,7 +908,10 @@ proceeds with the handshake ({{handshake}}).  This commits the server to the
 version that the client selected.
 
 When the client receives a Version Negotiation packet from the server, it should
-select an acceptable protocol version.  If the server lists an acceptable
+select an acceptable protocol version. If the packet contains the version that
+the client initially offered, the client MUST terminate the connection
+using a QUIC_INVALID_VERSION_NEGOTIATION_PACKET error.
+If the server lists an acceptable
 version, the client selects that version and reattempts to create a connection
 using that version.  Though the contents of a packet might not change in
 response to version negotiation, a client MUST increase the packet number it
