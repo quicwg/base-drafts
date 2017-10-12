@@ -1517,11 +1517,12 @@ receives either a CONNECTION_CLOSE, APPLICATION_CLOSE or an acknowledgement for
 a packet that contained a either close frame.
 
 An immediate close can be used after an application protocol has arranged to
-close a connection.  This might be after negotiating a graceful shutdown.  The
-application protocol exchanges whatever messages that are needed to cause both
-endpoints to agree to close the connection, after which the application requests
-that the connection be closed.  The application protocol can use an
-APPLICATION_CLOSE message with an appropriate error code to signal closure.
+close a connection.  This might be after the application protocols negotiates a
+graceful shutdown.  The application protocol exchanges whatever messages that
+are needed to cause both endpoints to agree to close the connection, after which
+the application requests that the connection be closed.  The application
+protocol can use an APPLICATION_CLOSE message with an appropriate error code to
+signal closure.
 
 
 ### Stateless Reset {#stateless-reset}
