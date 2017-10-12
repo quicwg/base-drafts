@@ -1277,7 +1277,7 @@ The entries in the following table are registered by this document.
 ## Error Codes {#iana-error-codes}
 
 This document establishes a registry for HTTP/QUIC error codes.  The
-"HTTP/QUIC Error Code" registry manages a 32-bit space.  The "HTTP/QUIC
+"HTTP/QUIC Error Code" registry manages a 16-bit space.  The "HTTP/QUIC
 Error Code" registry operates under the "Expert Review" policy
 {{?RFC5226}}.
 
@@ -1292,7 +1292,7 @@ Name:
 : A name for the error code.  Specifying an error code name is optional.
 
 Code:
-: The 32-bit error code value.
+: The 16-bit error code value.
 
 Description:
 : A brief description of the error code semantics, longer if no detailed
