@@ -3207,8 +3207,8 @@ IANA \[SHALL add/has added] a registry for "QUIC Transport Parameters" under a
 The "QUIC Transport Parameters" registry governs a 16-bit space.  This space is
 split into two spaces that are governed by different policies.  Values with the
 first byte in the range 0x00 to 0xfe (in hexadecimal) are assigned via the
-Specification Required policy {{!RFC5226}}.  Values with the first byte 0xff are
-reserved for Private Use {{!RFC5226}}.
+Specification Required policy {{!RFC8126}}.  Values with the first byte 0xff are
+reserved for Private Use {{!RFC8126}}.
 
 Registrations MUST include the following fields:
 
@@ -3253,8 +3253,8 @@ IANA \[SHALL add/has added] a registry for "QUIC Transport Error Codes" under a
 The "QUIC Transport Error Codes" registry governs a 16-bit space.  This space is
 split into two spaces that are governed by different policies.  Values with the
 first byte in the range 0x00 to 0xfe (in hexadecimal) are assigned via the
-Specification Required policy {{!RFC5226}}.  Values with the first byte 0xff are
-reserved for Private Use {{!RFC5226}}.
+Specification Required policy {{!RFC8126}}.  Values with the first byte 0xff are
+reserved for Private Use {{!RFC8126}}.
 
 Registrations MUST include the following fields:
 

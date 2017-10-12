@@ -1196,7 +1196,7 @@ This document creates a new registration for version-negotiation hints in the
 This document establishes a registry for HTTP/QUIC frame type codes. The
 "HTTP/QUIC Frame Type" registry manages an 8-bit space.  The "HTTP/QUIC Frame
 Type" registry operates under either of the "IETF Review" or "IESG Approval"
-policies {{?RFC5226}} for values between 0x00 and 0xef, with values between 0xf0
+policies {{?RFC8126}} for values between 0x00 and 0xef, with values between 0xf0
 and 0xff being reserved for Experimental Use.
 
 While this registry is separate from the "HTTP/2 Frame Type" registry defined in
@@ -1239,7 +1239,7 @@ The entries in the following table are registered by this document.
 
 This document establishes a registry for HTTP/QUIC settings.  The "HTTP/QUIC
 Settings" registry manages a 16-bit space.  The "HTTP/QUIC Settings" registry
-operates under the "Expert Review" policy {{?RFC5226}} for values in the range
+operates under the "Expert Review" policy {{?RFC8126}} for values in the range
 from 0x0000 to 0xefff, with values between and 0xf000 and 0xffff being reserved
 for Experimental Use.  The designated experts are the same as those for the
 "HTTP/2 Settings" registry defined in {{RFC7540}}.
@@ -1279,7 +1279,7 @@ The entries in the following table are registered by this document.
 This document establishes a registry for HTTP/QUIC error codes.  The
 "HTTP/QUIC Error Code" registry manages a 16-bit space.  The "HTTP/QUIC
 Error Code" registry operates under the "Expert Review" policy
-{{?RFC5226}}.
+{{?RFC8126}}.
 
 Registrations for error codes are required to include a description
 of the error code.  An expert reviewer is advised to examine new
