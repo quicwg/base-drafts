@@ -665,7 +665,7 @@ connection ID. Specifically:
 The HKDF for the cleartext packet protection keys uses the SHA-256 hash function
 {{FIPS180}}.
 
-The salt value is a 16 octet sequence shown in the figure in hexadecimal
+The salt value is a 20 octet sequence shown in the figure in hexadecimal
 notation. Future versions of QUIC SHOULD generate a new salt value, thus
 ensuring that the keys are different for each version of QUIC. This prevents a
 middlebox that only recognizes one version of QUIC from seeing or modifying the
