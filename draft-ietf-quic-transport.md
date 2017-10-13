@@ -1522,19 +1522,28 @@ from its peer.  These packets might have been sent prior to receiving any close
 signal, or they might be retransmissions of packets for which acknowledgments
 were lost.
 
-The draining period persists for three times the current Retransmission Timeout
-(RTO) interval as defined in {{QUIC-RECOVERY}}.  During this period, new packets
-can be acknowledged, but no new application data can be sent on the connection.
+The draining period exists to ensure that delayed or reordered packets are
+properly discarded.  This state SHOULD persist for three times the current
+Retransmission Timeout (RTO) interval as defined in {{QUIC-RECOVERY}}.  During
+this period no new application data can be sent on the connection.
 
 Different treatment is given to packets that are received while a connection is
-in the draining period depending on how the connection was closed.
-
-An endpoint that is in a draining period MUST NOT send packets unless they
-contain a CONNECTION_CLOSE or APPLICATION_CLOSE frame.
+in the draining period depending on how the connection was closed.  An endpoint
+that is in a draining period MUST NOT send packets unless they contain a
+CONNECTION_CLOSE or APPLICATION_CLOSE frame.
 
 Once the draining period has ended, an endpoint SHOULD discard per-connection
 state.  This results in new packets on the connection being discarded.  An
 endpoint MAY send a stateless reset in response to any further incoming packets.
+
+An endpoint MAY exit the draining period earlier if it can guarantee that its
+peer is also draining.  Receiving a CONNECTION_CLOSE or APPLICATION_CLOSE frame
+is sufficient confirmation.  However, disposing of connection state could result
+in delayed or reordered packets to be handled poorly.  For endpoints that have
+some alternative means to ensure that that late arriving packets on the
+connection are discarded, such as closing the UDP port, an abbreviated draining
+period can allow for faster resource recovery.  Servers that retain an open port
+for accepting new connections SHOULD NOT exit the draining period early.
 
 The draining period does not apply when a stateless reset ({{stateless-reset}})
 is sent.
