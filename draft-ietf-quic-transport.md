@@ -2630,7 +2630,8 @@ A stream that is in the "half-closed (local)" state MUST NOT be used for sending
 on new STREAM frames.  Retransmission of data that has already been sent on
 STREAM frames is permitted.  An endpoint MAY also send MAX_STREAM_DATA and
 STOP_SENDING in this state. Unidirectional streams created by the peer are
-immediately half-closed (local) to the receiver.
+immediately half-closed (local) to the receiver and are subsequently treated
+identically to a half-closed bidirectional stream.
 
 An application can decide to abandon a stream in this state. An endpoint can
 send RST_STREAM for a stream that was closed with the FIN flag. The final offset
