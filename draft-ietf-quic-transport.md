@@ -2542,7 +2542,7 @@ shown in the following figure and described below.
    recv:   endpoint receives this frame
 
    STREAM: a STREAM frame
-   UNI:    a unidirectional stream
+   UNI:    a STREAM frame with a unidirectional stream ID
    FIN:    FIN flag in a STREAM frame
    RST:    RST_STREAM frame
    MSD:    MAX_STREAM_DATA frame
