@@ -2562,12 +2562,6 @@ coordinate the creation of streams; they are created unilaterally by either
 endpoint.  Endpoints can use acknowledgments to understand the peer's subjective
 view of stream state at any given time.
 
-Only the initiator of a stream may send a STREAM frame without receiving one
-unless otherwise specified by the application.  All implicitly opened streams
-must remain in the IDLE state until a STREAM frame has been received.  If a
-RST is received on a stream reserved for the peer before any STREAM frame
-has been received, it will immediately transition to the closed state.
-
 In the absence of more specific guidance elsewhere in this document,
 implementations SHOULD treat the receipt of a frame that is not expressly
 permitted in the description of a state as a connection error (see
