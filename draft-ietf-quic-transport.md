@@ -348,7 +348,7 @@ version negotiation and establishment of 1-RTT keys.  Short headers are minimal
 version-specific headers, which can be used after version negotiation and 1-RTT
 keys are established.
 
-## Long Header
+## Long Header {#long-header}
 
 ~~~~~
  0                   1                   2                   3
@@ -873,44 +873,108 @@ different IP or port at either endpoint, due to NAT rebinding or mobility, as
 described in {{migration}}.  Finally a connection may be terminated by either
 endpoint, as described in {{termination}}.
 
+
+## Matching Packets to Connections {#packet-handling}
+
+Incoming packets are classified on receipt.  Packets can either be associated
+with an existing connection, be discarded, or - for servers - potentially create
+a new connection.
+
+Packets that can be associated with an existing connection are handled according
+to the current state of that connection.  Packets are associated with existing
+connections using connection ID if it is present; this might include connection
+IDs that were advertised using NEW_CONNECTION_ID ({{frame-new-connection-id}}).
+Packets without connection IDs and long-form packets for connections that have
+incomplete cryptographic handshakes are associated with an existing connection
+using the tuple of source and destination IP addresses and ports.
+
+A packet that uses the short header could be associated with an existing
+connection with an incomplete cryptographic handshake.  Such a packet could be a
+valid packet that has been reordered with respect to the long-form packets that
+will complete the cryptographic handshake.  This might happen after the final
+set of cryptographic handshake messages from either peer.  These packets are
+expected to be correlated with a connection using the tuple of IP addresses and
+ports.  Packets that might be reordered in this fashion SHOULD be buffered in
+anticipation of the handshake completing.
+
+0-RTT packets might be received prior to a Client Initial packet at a server.
+If the version of these packets is acceptable to the server, it MAY buffer these
+packets in anticipation of receiving a reordered Client Initial packet.
+
+Buffering ensures that data is not lost, which improves performance; conversely,
+discarding these packets could create false loss signals for the congestion
+controllers.  However, limiting the number and size of buffered packets might be
+needed to prevent exposure to denial of service.
+
+For clients, any packet that cannot be associated with an existing connection
+SHOULD be discarded if it is not buffered.  Discarded packets MAY be logged for
+diagnostic or security purposes.
+
+For servers, packets that aren't associated with a connection potentially create
+a new connection.  However, only packets that use the long packet header and
+that are at least the minimum size defined for the protocol version can be
+initial packets.  A server MAY discard packets with a short header or packets
+that are smaller than the smallest minimum size for any version that the server
+supports.  A server that discards a packet that cannot be associated with a
+connection MAY also generate a stateless reset ({{stateless-reset}}).
+
+This version of QUIC defines a minimum size for initial packets of 1200 octets
+(see {{packetization}}).  Versions of QUIC that define smaller minimum initial
+packet sizes need to be aware that initial packets will be discarded without
+action by servers that only support versions with larger minimums.  Clients that
+support multiple QUIC versions can avoid this problem by ensuring that they
+increase the size of their initial packets to the largest minimum size across
+all of the QUIC versions they support.  Servers need to recognize initial
+packets that are the minimum size of all QUIC versions they support.
+
+
 ## Version Negotiation {#version-negotiation}
 
 QUIC's connection establishment begins with version negotiation, since all
 communication between the endpoints, including packet and frame formats, relies
 on the two endpoints agreeing on a version.
 
-A QUIC connection begins with a client sending a handshake packet. The details
-of the handshake mechanisms are described in {{handshake}}, but all of the
-initial packets sent from the client to the server MUST use the long header
-format and MUST specify the version of the protocol being used.
+A QUIC connection begins with a client sending a Client Initial packet
+({{packet-client-initial}}). The details of the handshake mechanisms are
+described in {{handshake}}, but all of the initial packets sent from the client
+to the server MUST use the long header format - which includes the version of
+the protocol being used - and they MUST be padded to at least 1200 octets.
 
-When the server receives a packet from a client with the long header format, it
-compares the client's version to the versions it supports.
-
-If the version selected by the client is not acceptable to the server, the
-server discards the incoming packet and responds with a Version Negotiation
-packet ({{packet-version}}).  This includes a list of versions that the server
-will accept.
-
-To avoid packet amplification attacks a server MUST NOT send a Version
-Negotiation packet that is larger than the packet it responds to.  It is
-anticipated that this is ample space for all QUIC versions that a single server
-might need to advertise.
-
-A server sends a Version Negotiation packet for every packet that it receives
-with an unacceptable version.  This allows a server to process packets with
-unsupported versions without retaining state.  Though either the initial client
-packet or the version negotiation packet that is sent in response could be lost,
-the client will send new packets until it successfully receives a response.
+The server receives this packet and determines whether it potentially creates a
+new connection (see {{packet-handling}}).  If the packet might generate a new
+connection, the server then checks whether it understands the version that the
+client has selected.
 
 If the packet contains a version that is acceptable to the server, the server
 proceeds with the handshake ({{handshake}}).  This commits the server to the
 version that the client selected.
 
-When the client receives a Version Negotiation packet from the server, it should
-select an acceptable protocol version.  If the server lists an acceptable
-version, the client selects that version and reattempts to create a connection
-using that version.  Though the contents of a packet might not change in
+
+### Sending Version Negotiation Packets {#send-vn}
+
+If the version selected by the client is not acceptable to the server, the
+server responds with a Version Negotiation packet ({{packet-version}}).  This
+includes a list of versions that the server will accept.
+
+A server sends a Version Negotiation packet for any packet with an unacceptable
+version if that packet could create a new connection.  This allows a server to
+process packets with unsupported versions without retaining state.  Though
+either the Client Initial packet or the version negotiation packet that is sent
+in response could be lost, the client will send new packets until it
+successfully receives a response or it abandons the connection attempt.
+
+
+### Handling Version Negotiation Packets {#handle-vn}
+
+When the client receives a Version Negotiation packet, it first checks that the
+packet number and connection ID match the values the client sent in a previous
+packet on the same connection.  If this check fails, the packet MUST be
+discarded.
+
+Once the Version Negotiation packet is determined to be valid, the client then
+selects an acceptable protocol version from the list provided by the server.
+The client then attempts to create a connection using that version.  Though the
+contents of the Client Initial packet the client sends might not change in
 response to version negotiation, a client MUST increase the packet number it
 uses on every packet it sends.  Packets MUST continue to use long headers and
 MUST include the new negotiated protocol version.
@@ -921,7 +985,7 @@ which is not a Version Negotiation packet.
 
 A client MUST NOT change the version it uses unless it is in response to a
 Version Negotiation packet from the server.  Once a client receives a packet
-from the server which is not a Version Negotiation packet, it MUST ignore other
+from the server which is not a Version Negotiation packet, it MUST discard other
 Version Negotiation packets on the same connection.  Similarly, a client MUST
 ignore a Version Negotiation packet if it has already received and acted on a
 Version Negotiation packet.
@@ -932,6 +996,7 @@ version.
 Version negotiation packets have no cryptographic protection. The
 result of the negotiation MUST be revalidated as part of the
 cryptographic handshake (see {{version-validation}}).
+
 
 ### Using Reserved Versions
 
@@ -954,6 +1019,7 @@ variability in the values that a server uses.
 
 A client MAY send a packet using a reserved version number.  This can be used to
 solicit a list of supported versions from a server.
+
 
 ## Cryptographic and Transport Handshake {#handshake}
 
