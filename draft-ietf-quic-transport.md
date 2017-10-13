@@ -1859,8 +1859,8 @@ The fields in the MAX_STREAM_ID frame are as follows:
 Maximum Stream ID:
 : ID of the maximum unidirectional or bidirectional peer-initiated stream ID
   for the connection. The limit applies to unidirectional steams if the second
-  least signification bit of the stream id is 0, and applies to bidirectional
-  streams if it is 1.
+  least signification bit of the stream id is 1, and applies to bidirectional
+  streams if it is 0.
 
 Loss or reordering can mean that a MAX_STREAM_ID frame can be received which
 states a lower stream limit than the client has previously received.
@@ -2478,15 +2478,15 @@ created, it MUST close the connection with error code STREAM_STATE_ERROR.
 
 The second least significant bit differentiates between unidirectional streams
 and bidirectional streams. Unidirectional streams always have this bit set to
-0 and bidirectional streams have this bit set to 1. As a result the initial
+1 and bidirectional streams have this bit set to 0. As a result the initial
 stream ID for various stream types is listed below:
 
 | Stream ID   | Type                          |
 |:------------|:------------------------------|
-| 0x01        | Client Unidirectional         |
-| 0x02        | Server Unidirectional         |
-| 0x03        | Client Bidirectional          |
-| 0x04        | Server Bidirectional          |
+| 0x01        | Client Bidirectional          |
+| 0x02        | Server Bidirectional          |
+| 0x03        | Client Unidirectional         |
+| 0x04        | Server Unidirectional         |
 
 Stream ID 0 (0x0) is reserved for the cryptographic handshake.  Stream 0 MUST
 NOT be used for application data, and is the first client-initiated stream.
