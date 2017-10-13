@@ -1538,12 +1538,13 @@ endpoint MAY send a stateless reset in response to any further incoming packets.
 
 An endpoint MAY exit the draining period earlier if it can guarantee that its
 peer is also draining.  Receiving a CONNECTION_CLOSE or APPLICATION_CLOSE frame
-is sufficient confirmation.  However, disposing of connection state could result
-in delayed or reordered packets to be handled poorly.  For endpoints that have
-some alternative means to ensure that that late arriving packets on the
-connection are discarded, such as closing the UDP port, an abbreviated draining
-period can allow for faster resource recovery.  Servers that retain an open port
-for accepting new connections SHOULD NOT exit the draining period early.
+is sufficient confirmation, as is receiving a stateless reset.  However,
+disposing of connection state could result in delayed or reordered packets to be
+handled poorly.  For endpoints that have some alternative means to ensure that
+that late arriving packets on the connection are discarded, such as closing the
+UDP port, an abbreviated draining period can allow for faster resource recovery.
+Servers that retain an open port for accepting new connections SHOULD NOT exit
+the draining period early.
 
 The draining period does not apply when a stateless reset ({{stateless-reset}})
 is sent.
