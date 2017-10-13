@@ -1662,7 +1662,7 @@ A client detects a potential stateless reset when a packet with a short header
 either cannot be decrypted or is marked as a duplicate packet.  The client then
 compares the last 16 octets of the packet with the Stateless Reset Token
 provided by the server in its transport parameters.  If these values are
-identical, the client MUST discard all connection state and not send any further
+identical, the client MUST enter the draining period and not send any further
 packets on this connection.  If the comparison fails, the packet can be
 discarded.
 
