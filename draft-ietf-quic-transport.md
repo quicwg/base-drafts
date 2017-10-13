@@ -1527,18 +1527,17 @@ The draining period persists for three times the current Retransmission Timeout
 can be acknowledged, but no new application data can be sent on the connection.
 
 Different treatment is given to packets that are received while a connection is
-in the draining period depending on how the connection was closed.  In all
-cases, it is possible to acknowledge packets that are received as normal, but
-other reactions might be preferable depending on how the connection was closed.
-An endpoint that is in a draining period MUST NOT send packets containing frames
-other than ACK, PADDING, or CONNECTION_CLOSE.
+in the draining period depending on how the connection was closed.
+
+An endpoint that is in a draining period MUST NOT send packets unless they
+contain a CONNECTION_CLOSE or APPLICATION_CLOSE frame.
 
 Once the draining period has ended, an endpoint SHOULD discard per-connection
 state.  This results in new packets on the connection being discarded.  An
 endpoint MAY send a stateless reset in response to any further incoming packets.
 
 The draining period does not apply when a stateless reset ({{stateless-reset}})
-is used.
+is sent.
 
 
 ### Idle Timeout
@@ -1577,10 +1576,6 @@ Note:
   new packet numbers is primarily of advantage to loss recovery and congestion
   control, which are not expected to be relevant for a closed connection.
   Retransmitting the final packet requires less state.
-
-An endpoint can cease sending CONNECTION_CLOSE or APPLICATION_CLOSE frames if it
-receives either a CONNECTION_CLOSE, APPLICATION_CLOSE or an acknowledgement for
-a packet that contained a either close frame.
 
 An immediate close can be used after an application protocol has arranged to
 close a connection.  This might be after the application protocols negotiates a
