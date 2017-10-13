@@ -1857,8 +1857,10 @@ The frame is as follows:
 The fields in the MAX_STREAM_ID frame are as follows:
 
 Maximum Stream ID:
-: ID of the maximum unidirectional or bidirectional (based on the second least
-  signification bit of the stream id) peer-initiated stream ID for the connection.
+: ID of the maximum unidirectional or bidirectional peer-initiated stream ID
+  for the connection. The limit applies to unidirectional steams if the second
+  least signification bit of the stream id is 0, and applies to bidirectional
+  streams if it is 1.
 
 Loss or reordering can mean that a MAX_STREAM_ID frame can be received which
 states a lower stream limit than the client has previously received.
@@ -2442,7 +2444,7 @@ Streams in QUIC provide a lightweight, ordered, and bidirectional byte-stream
 abstraction modeled closely on HTTP/2 streams {{?RFC7540}}.
 
 Streams can be created either by the client or the server, can concurrently send
-data interleaved with other streams, and can be cancelled, and can be opened in
+data interleaved with other streams, can be cancelled, and can be opened in
 unidirectional mode.
 
 Data that is received on a stream is delivered in order within that stream, but
@@ -2654,7 +2656,7 @@ after a frame bearing the FIN flag is sent.
 A stream is "half-closed (remote)" when the stream is no longer being used by
 the peer to send any data.  An endpoint will have either received all data that
 a peer has sent or will have received a RST_STREAM frame and discarded any
-received data. Unidirectional streams created by the locally are immediately
+received data. Unidirectional streams created locally are immediately
 half-closed (remote) to the creator.
 
 Once all data has been either received or discarded, a sender is no longer
