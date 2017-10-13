@@ -348,7 +348,7 @@ version negotiation and establishment of 1-RTT keys.  Short headers are minimal
 version-specific headers, which can be used after version negotiation and 1-RTT
 keys are established.
 
-## Long Header
+## Long Header {#long-header}
 
 ~~~~~
  0                   1                   2                   3
@@ -427,8 +427,6 @@ The header form, packet type, connection ID, packet number and version fields of
 a long header packet are version-independent. The types of packets defined in
 {{long-packet-types}} are version-specific.  See {{version-specific}} for
 details on how packets from different versions of QUIC are interpreted.
-
-(TODO: Should the list of packet types be version-independent?)
 
 The interpretation of the fields and the payload are specific to a version and
 packet type.  Type-specific semantics for this version are described in the
@@ -555,8 +553,11 @@ Cleartext packets are sent during the handshake prior to key negotiation.
 
 All cleartext packets contain the current QUIC version in the version field.
 
-The payload of cleartext packets also includes an integrity check, which is
-described in {{QUIC-TLS}}.
+In order to prevent tampering by version-unaware middleboxes, Cleartext
+packets are protected with a connection and version specific key, as
+described in {{QUIC-TLS}}. This protection does not provide confidentiality
+or integrity against on-path attackers, but provides some level of
+protection against off-path attackers.
 
 
 ### Client Initial Packet {#packet-client-initial}
@@ -617,10 +618,10 @@ any version negotiation that occurred (see {{version-negotiation}}).  The client
 MAY also retain any observed RTT or congestion state that it has accumulated for
 the flow, but other transport state MUST be discarded.
 
-The payload of the Server Stateless Retry packet contains STREAM frames and
-could contain PADDING and ACK frames.  A server can only send a single Server
-Stateless Retry packet in response to each Client Initial packet that is
-receives.
+The payload of the Server Stateless Retry packet contains a single STREAM frame
+on stream 0 with offset 0 containing the server's cryptographic stateless retry
+material. It MUST NOT contain any other frames. The next STREAM frame sent by
+the server will also start at stream offset 0.
 
 
 ### Server Cleartext Packet {#packet-server-cleartext}
@@ -780,9 +781,11 @@ constant:
 
 * the location and size of the Connection ID field in both header forms,
 
-* the location and size of the Version field in long headers, and
+* the location and size of the Version field in long headers,
 
-* the location and size of the Packet Number field in long headers.
+* the location and size of the Packet Number field in long headers, and
+
+* the type, format and semantics of the Version Negotiation packet.
 
 Implementations MUST assume that an unsupported version uses an unknown packet
 format. All other fields MUST be ignored when processing a packet that contains
@@ -835,6 +838,7 @@ explained in more detail as they are referenced later in the document.
 | 0x00        | PADDING           | {{frame-padding}}           |
 | 0x01        | RST_STREAM        | {{frame-rst-stream}}        |
 | 0x02        | CONNECTION_CLOSE  | {{frame-connection-close}}  |
+| 0x03        | APPLICATION_CLOSE | {{frame-application-close}} |
 | 0x04        | MAX_DATA          | {{frame-max-data}}          |
 | 0x05        | MAX_STREAM_DATA   | {{frame-max-stream-data}}   |
 | 0x06        | MAX_STREAM_ID     | {{frame-max-stream-id}}     |
@@ -858,47 +862,111 @@ different IP or port at either endpoint, due to NAT rebinding or mobility, as
 described in {{migration}}.  Finally a connection may be terminated by either
 endpoint, as described in {{termination}}.
 
+
+## Matching Packets to Connections {#packet-handling}
+
+Incoming packets are classified on receipt.  Packets can either be associated
+with an existing connection, be discarded, or - for servers - potentially create
+a new connection.
+
+Packets that can be associated with an existing connection are handled according
+to the current state of that connection.  Packets are associated with existing
+connections using connection ID if it is present; this might include connection
+IDs that were advertised using NEW_CONNECTION_ID ({{frame-new-connection-id}}).
+Packets without connection IDs and long-form packets for connections that have
+incomplete cryptographic handshakes are associated with an existing connection
+using the tuple of source and destination IP addresses and ports.
+
+A packet that uses the short header could be associated with an existing
+connection with an incomplete cryptographic handshake.  Such a packet could be a
+valid packet that has been reordered with respect to the long-form packets that
+will complete the cryptographic handshake.  This might happen after the final
+set of cryptographic handshake messages from either peer.  These packets are
+expected to be correlated with a connection using the tuple of IP addresses and
+ports.  Packets that might be reordered in this fashion SHOULD be buffered in
+anticipation of the handshake completing.
+
+0-RTT packets might be received prior to a Client Initial packet at a server.
+If the version of these packets is acceptable to the server, it MAY buffer these
+packets in anticipation of receiving a reordered Client Initial packet.
+
+Buffering ensures that data is not lost, which improves performance; conversely,
+discarding these packets could create false loss signals for the congestion
+controllers.  However, limiting the number and size of buffered packets might be
+needed to prevent exposure to denial of service.
+
+For clients, any packet that cannot be associated with an existing connection
+SHOULD be discarded if it is not buffered.  Discarded packets MAY be logged for
+diagnostic or security purposes.
+
+For servers, packets that aren't associated with a connection potentially create
+a new connection.  However, only packets that use the long packet header and
+that are at least the minimum size defined for the protocol version can be
+initial packets.  A server MAY discard packets with a short header or packets
+that are smaller than the smallest minimum size for any version that the server
+supports.  A server that discards a packet that cannot be associated with a
+connection MAY also generate a stateless reset ({{stateless-reset}}).
+
+This version of QUIC defines a minimum size for initial packets of 1200 octets
+(see {{packetization}}).  Versions of QUIC that define smaller minimum initial
+packet sizes need to be aware that initial packets will be discarded without
+action by servers that only support versions with larger minimums.  Clients that
+support multiple QUIC versions can avoid this problem by ensuring that they
+increase the size of their initial packets to the largest minimum size across
+all of the QUIC versions they support.  Servers need to recognize initial
+packets that are the minimum size of all QUIC versions they support.
+
+
 ## Version Negotiation {#version-negotiation}
 
 QUIC's connection establishment begins with version negotiation, since all
 communication between the endpoints, including packet and frame formats, relies
 on the two endpoints agreeing on a version.
 
-A QUIC connection begins with a client sending a handshake packet. The details
-of the handshake mechanisms are described in {{handshake}}, but all of the
-initial packets sent from the client to the server MUST use the long header
-format and MUST specify the version of the protocol being used.
+A QUIC connection begins with a client sending a Client Initial packet
+({{packet-client-initial}}). The details of the handshake mechanisms are
+described in {{handshake}}, but all of the initial packets sent from the client
+to the server MUST use the long header format - which includes the version of
+the protocol being used - and they MUST be padded to at least 1200 octets.
 
-When the server receives a packet from a client with the long header format, it
-compares the client's version to the versions it supports.
-
-If the version selected by the client is not acceptable to the server, the
-server discards the incoming packet and responds with a Version Negotiation
-packet ({{packet-version}}).  This includes a list of versions that the server
-will accept.
-
-To avoid packet amplification attacks a server MUST NOT send a Version
-Negotiation packet that is larger than the packet it responds to.  It is
-anticipated that this is ample space for all QUIC versions that a single server
-might need to advertise.
-
-A server sends a Version Negotiation packet for every packet that it receives
-with an unacceptable version.  This allows a server to process packets with
-unsupported versions without retaining state.  Though either the initial client
-packet or the version negotiation packet that is sent in response could be lost,
-the client will send new packets until it successfully receives a response.
+The server receives this packet and determines whether it potentially creates a
+new connection (see {{packet-handling}}).  If the packet might generate a new
+connection, the server then checks whether it understands the version that the
+client has selected.
 
 If the packet contains a version that is acceptable to the server, the server
 proceeds with the handshake ({{handshake}}).  This commits the server to the
 version that the client selected.
 
-When the client receives a Version Negotiation packet from the server, it should
-select an acceptable protocol version.  If the server lists an acceptable
-version, the client selects that version and reattempts to create a connection
-using that version.  Though the contents of a subsequent Client Initial packet
-might not change, a client MUST increase the packet number by one for every
-packet it sends in response to version negotiation.  Packets MUST continue to
-use long headers and MUST include the new negotiated protocol version.
+
+### Sending Version Negotiation Packets {#send-vn}
+
+If the version selected by the client is not acceptable to the server, the
+server responds with a Version Negotiation packet ({{packet-version}}).  This
+includes a list of versions that the server will accept.
+
+A server sends a Version Negotiation packet for any packet with an unacceptable
+version if that packet could create a new connection.  This allows a server to
+process packets with unsupported versions without retaining state.  Though
+either the Client Initial packet or the version negotiation packet that is sent
+in response could be lost, the client will send new packets until it
+successfully receives a response or it abandons the connection attempt.
+
+
+### Handling Version Negotiation Packets {#handle-vn}
+
+When the client receives a Version Negotiation packet, it first checks that the
+packet number and connection ID match the values the client sent in a previous
+packet on the same connection.  If this check fails, the packet MUST be
+discarded.
+
+Once the Version Negotiation packet is determined to be valid, the client then
+selects an acceptable protocol version from the list provided by the server.
+The client then attempts to create a connection using that version.  Though the
+contents of the Client Initial packet the client sends might not change in
+response to version negotiation, a client MUST increase the packet number it
+uses on every packet it sends.  Packets MUST continue to use long headers and
+MUST include the new negotiated protocol version.
 
 The client MUST use the long header format and include its selected version on
 all packets until it has 1-RTT keys and it has received a packet from the server
@@ -906,7 +974,7 @@ which is not a Version Negotiation packet.
 
 A client MUST NOT change the version it uses unless it is in response to a
 Version Negotiation packet from the server.  Once a client receives a packet
-from the server which is not a Version Negotiation packet, it MUST ignore other
+from the server which is not a Version Negotiation packet, it MUST discard other
 Version Negotiation packets on the same connection.  Similarly, a client MUST
 ignore a Version Negotiation packet if it has already received and acted on a
 Version Negotiation packet.
@@ -914,8 +982,10 @@ Version Negotiation packet.
 A client MUST ignore a Version Negotiation packet that lists the client's chosen
 version.
 
-Version negotiation uses unprotected data. The result of the negotiation MUST be
-revalidated as part of the cryptographic handshake (see {{version-validation}}).
+Version negotiation packets have no cryptographic protection. The
+result of the negotiation MUST be revalidated as part of the
+cryptographic handshake (see {{version-validation}}).
+
 
 ### Using Reserved Versions
 
@@ -938,6 +1008,7 @@ variability in the values that a server uses.
 
 A client MAY send a packet using a reserved version number.  This can be used to
 solicit a list of supported versions from a server.
+
 
 ## Cryptographic and Transport Handshake {#handshake}
 
@@ -1426,9 +1497,8 @@ TODO: see issue #161
 
 Connections should remain open until they become idle for a pre-negotiated
 period of time.  A QUIC connection, once established, can be terminated in one
-of four ways:
+of three ways:
 
-* application close ({{application-close}})
 * idle timeout ({{idle-timeout}})
 * immediate close ({{immediate-close}})
 * stateless reset ({{stateless-reset}})
@@ -1446,32 +1516,17 @@ The draining period persists for three times the current Retransmission Timeout
 can be acknowledged, but no new application data can be sent on the connection.
 
 Different treatment is given to packets that are received while a connection is
-in the draining period depending on how the connection was closed.  In all
-cases, it is possible to acknowledge packets that are received as normal, but
-other reactions might be preferable depending on how the connection was closed.
-An endpoint that is in a draining period MUST NOT send packets containing frames
-other than ACK, PADDING, or CONNECTION_CLOSE.
+in the draining period depending on how the connection was closed.
+
+An endpoint that is in a draining period MUST NOT send packets unless they
+contain a CONNECTION_CLOSE or APPLICATION_CLOSE frame.
 
 Once the draining period has ended, an endpoint SHOULD discard per-connection
 state.  This results in new packets on the connection being discarded.  An
 endpoint MAY send a stateless reset in response to any further incoming packets.
 
 The draining period does not apply when a stateless reset ({{stateless-reset}})
-is used.
-
-
-### Application Close
-
-An application protocol can arrange to close a connection.  This might be after
-negotiating a graceful shutdown.  The application protocol exchanges whatever
-messages that are needed to cause both endpoints to agree to close the
-connection, after which the application requests that the connection be closed.
-A negotiated shutdown might not result in exchanging messages that are visible
-to the transport.
-
-In the draining period, an endpoint that has been closed by an application
-SHOULD generate and send ACK frames as normal.  This allows the peer to receive
-acknowledgements where previous acknowledgements were lost.
+is sent.
 
 
 ### Idle Timeout
@@ -1489,19 +1544,19 @@ signal the timeout using an immediate close.
 
 ### Immediate Close
 
-An endpoint sends a CONNECTION_CLOSE frame to terminate the connection
-immediately.  A CONNECTION_CLOSE causes all open streams to immediately become
-closed; open streams can be assumed to be implicitly reset.  After sending or
-receiving a CONNECTION_CLOSE frame, endpoints immediately enter a draining
-period.
+An endpoint sends a CONNECTION_CLOSE or APPLICATION_CLOSE frame to terminate the
+connection immediately.  Either frame causes all open streams to immediately
+become closed; open streams can be assumed to be implicitly reset.  After
+sending or receiving a CONNECTION_CLOSE frame, endpoints immediately enter a
+draining period.
 
-During the draining period, an endpoint that sends a CONNECTION_CLOSE frame
-SHOULD respond to any subsequent packet that it receives with another packet
-containing a CONNECTION_CLOSE frame.  To reduce the state that an endpoint
-maintains in this case, it MAY send the exact same packet.  However, endpoints
-SHOULD limit the number of CONNECTION_CLOSE messages they generate.  For
-instance, an endpoint could progressively increase the number of packets that it
-receives before sending additional CONNECTION_CLOSE frames.
+During the draining period, an endpoint that sends a CONNECTION_CLOSE or
+APPLICATION_CLOSE frame SHOULD respond to any subsequent packet that it receives
+with another packet containing either close frame.  To reduce the state that an
+endpoint maintains in this case, it MAY send the exact same packet.  However,
+endpoints SHOULD limit the number of packets they generate containing either
+close frame.  For instance, an endpoint could progressively increase the number
+of packets that it receives before sending additional packets.
 
 Note:
 
@@ -1511,9 +1566,13 @@ Note:
   control, which are not expected to be relevant for a closed connection.
   Retransmitting the final packet requires less state.
 
-An endpoint can cease sending CONNECTION_CLOSE frames if it receives either a
-CONNECTION_CLOSE or an acknowledgement for a packet that contained a
-CONNECTION_CLOSE.
+An immediate close can be used after an application protocol has arranged to
+close a connection.  This might be after the application protocols negotiates a
+graceful shutdown.  The application protocol exchanges whatever messages that
+are needed to cause both endpoints to agree to close the connection, after which
+the application requests that the connection be closed.  The application
+protocol can use an APPLICATION_CLOSE message with an appropriate error code to
+signal closure.
 
 
 ### Stateless Reset {#stateless-reset}
@@ -1522,7 +1581,8 @@ A stateless reset is provided as an option of last resort for a server that does
 not have access to the state of a connection.  A server crash or outage might
 result in clients continuing to send data to a server that is unable to properly
 continue the connection.  A server that wishes to communicate a fatal connection
-error MUST use a CONNECTION_CLOSE frame if it has sufficient state to do so.
+error MUST use a CONNECTION_CLOSE or APPLICATION_CLOSE frame if it has
+sufficient state to do so.
 
 To support this process, the server sends a stateless_reset_token value during
 the handshake in the transport parameters.  This value is protected by
@@ -1541,6 +1601,10 @@ following layout:
 +                     [Connection ID (64)]                      +
 |                                                               |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                     Packet Number (8/16/32)                   |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                        Random Octets (*)                    ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                                                               |
 +                                                               +
 |                                                               |
@@ -1549,43 +1613,46 @@ following layout:
 +                                                               +
 |                                                               |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                        Random Octets (*)                    ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
-
-This packet SHOULD use the short header form with the shortest possible packet
-number encoding.  This minimizes the perceived gap between the last packet that
-the server sent and this packet.  The leading octet of the Stateless Reset Token
-will be interpreted as a packet number.  A server MAY use a different short
-header type, indicating a different packet number length, but this allows for
-the message to be identified as a stateless reset more easily using heuristics.
 
 A server copies the connection ID field from the packet that triggers the
 stateless reset.  A server omits the connection ID if explicitly configured to
 do so, or if the client packet did not include a connection ID.
 
+The Packet Number field is set to a randomized value.  The server SHOULD send a
+packet with a short header and a type of 0x01.  This produces the shortest
+possible packet number encoding, which minimizes the perceived gap between the
+last packet that the server sent and this packet.  A server MAY use a different
+short header type, indicating a different packet number length, but a longer
+packet number encoding might allow this message to be identified as a stateless
+reset more easily using heuristics.
+
 After the first short header octet and optional connection ID, the server
 includes the value of the Stateless Reset Token that it included in its
 transport parameters.
 
-After the Stateless Reset Token, the server pads the message with an arbitrary
+After the Packet Number, the server pads the message with an arbitrary
 number of octets containing random values.
+
+Finally, the last 16 octets of the packet are set to the value of the Stateless
+Reset Token.
 
 This design ensures that a stateless reset packet is - to the extent possible -
 indistinguishable from a regular packet.
 
 A stateless reset is not appropriate for signaling error conditions.  An
 endpoint that wishes to communicate a fatal connection error MUST use a
-CONNECTION_CLOSE frame if it has sufficient state to do so.
+CONNECTION_CLOSE or APPLICATION_CLOSE frame if it has sufficient state to do so.
 
 
 #### Detecting a Stateless Reset
 
 A client detects a potential stateless reset when a packet with a short header
-cannot be decrypted.  The client then performs a constant-time comparison of the
-16 octets that follow the Connection ID with the Stateless Reset Token provided
-by the server in its transport parameters.  If this comparison is successful,
-the connection MUST be terminated immediately.  Otherwise, the packet can be
+either cannot be decrypted or is marked as a duplicate packet.  The client then
+compares the last 16 octets of the packet with the Stateless Reset Token
+provided by the server in its transport parameters.  If these values are
+identical, the client MUST enter the draining period and not send any further
+packets on this connection.  If the comparison fails, the packet can be
 discarded.
 
 
@@ -1625,6 +1692,8 @@ connection that is reset by revealing the Stateless Reset Token cannot be
 reused for new connections at the same server without first changing to use a
 different static key or server identifier.
 
+Note that Stateless Reset messages do not have any cryptographic protection.
+
 
 # Frame Types and Formats
 
@@ -1662,7 +1731,7 @@ The RST_STREAM frame is as follows:
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                        Stream ID (32)                         |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                        Error Code (32)                        |
+|  Application Error Code (16)  |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                                                               |
 +                       Final Offset (64)                       +
@@ -1676,11 +1745,12 @@ Stream ID:
 
 : The 32-bit Stream ID of the stream being terminated.
 
-Error code:
+Application Protocol Error Code:
 
-: A 32-bit error code which indicates why the stream is being closed.
+: A 16-bit application protocol error code (see {{app-error-codes}}) which
+  indicates why the stream is being closed.
 
-Final offset:
+Final Offset:
 
 : A 64-bit unsigned integer indicating the absolute byte offset of the end of
   data written on this stream by the RST_STREAM sender.
@@ -1689,17 +1759,21 @@ Final offset:
 ## CONNECTION_CLOSE frame {#frame-connection-close}
 
 An endpoint sends a CONNECTION_CLOSE frame (type=0x02) to notify its peer that
-the connection is being closed.  If there are open streams that haven't been
-explicitly closed, they are implicitly closed when the connection is closed.
-The frame is as follows:
+the connection is being closed.  CONNECTION_CLOSE is used to signal errors at
+the QUIC layer, or the absence of errors (with the NO_ERROR code).
+
+If there are open streams that haven't been explicitly closed, they are
+implicitly closed when the connection is closed.
+
+The CONNECTION_CLOSE frame is as follows:
 
 ~~~
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                        Error Code (32)                        |
+|           Error Code (16)     |   Reason Phrase Length (16)   |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|   Reason Phrase Length (16)   |      [Reason Phrase (*)]    ...
+|                        Reason Phrase (*)                    ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
 
@@ -1707,7 +1781,10 @@ The fields of a CONNECTION_CLOSE frame are as follows:
 
 Error Code:
 
-: A 32-bit error code which indicates the reason for closing this connection.
+: A 16-bit error code which indicates the reason for closing this connection.
+  CONNECTION_CLOSE uses codes from the space defined in {{error-codes}}
+  (APPLICATION_CLOSE uses codes from the application protocol error code space,
+  see {{app-error-codes}}).
 
 Reason Phrase Length:
 
@@ -1721,6 +1798,17 @@ Reason Phrase:
 : A human-readable explanation for why the connection was closed.  This can be
   zero length if the sender chooses to not give details beyond the Error Code.
   This SHOULD be a UTF-8 encoded string {{!RFC3629}}.
+
+
+## APPLICATION_CLOSE frame {#frame-application-close}
+
+An APPLICATION_CLOSE frame (type=0x03) uses the same format as the
+CONNECTION_CLOSE frame ({{frame-connection-close}}), except that it uses error
+codes from the application protocol error code space ({{app-error-codes}})
+instead of the transport error code space.
+
+Other than the error code space, the format and semantics of the
+APPLICATION_CLOSE frame are identical to the CONNECTION_CLOSE frame.
 
 
 ## MAX_DATA Frame {#frame-max-data}
@@ -1955,8 +2043,9 @@ Stateless Reset Token:
 
 An endpoint may use a STOP_SENDING frame (type=0x0c) to communicate that
 incoming data is being discarded on receipt at application request.  This
-signals a peer to abruptly terminate transmission on a stream.  The frame is as
-follows:
+signals a peer to abruptly terminate transmission on a stream.
+
+The STOP_SENDING frame is as follows:
 
 ~~~
  0                   1                   2                   3
@@ -1964,30 +2053,35 @@ follows:
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                        Stream ID (32)                         |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                        Error Code (32)                        |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|  Application Error Code (16)  |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
 
 The fields are:
 
 Stream ID:
+
 : The 32-bit Stream ID of the stream being ignored.
 
-Error Code:
-: The application-specified reason the sender is ignoring the stream.
+Application Error Code:
+
+: A 16-bit, application-specified reason the sender is ignoring the stream (see
+  {{app-error-codes}}).
+
 
 ## ACK Frame {#frame-ack}
 
 Receivers send ACK frames to inform senders which packets they have received and
 processed, as well as which packets are considered missing.  The ACK frame
 contains between 1 and 256 ACK blocks.  ACK blocks are ranges of acknowledged
-packets. Implementations SHOULD NOT generate ACK packets in response to packets
-which only contain ACKs. However, they SHOULD ACK those packets when sending
-ACKs for other packets.
+packets. Implementations MUST NOT generate packets that only contain ACK frames
+in response to packets which only contain ACK frames. However, they SHOULD
+acknowledge packets containing only ACK frames when sending ACK frames in
+response to other packets.
 
 To limit ACK blocks to those that have not yet been received by the sender, the
 receiver SHOULD track which ACK frames have been acknowledged by its peer.  Once
-an ACK frame has been acknowledged, the packets it acknowledges SHOULD not be
+an ACK frame has been acknowledged, the packets it acknowledges SHOULD NOT be
 acknowledged again.
 
 A receiver that is only sending ACK frames will not receive acknowledgments for
@@ -2009,14 +2103,6 @@ it remains acknowledged.
 A client MUST NOT acknowledge Version Negotiation or Server Stateless Retry
 packets.  These packet types contain packet numbers selected by the client, not
 the server.
-
-QUIC ACK frames contain a timestamp section with up to 255 timestamps.
-Timestamps enable better congestion control, but are not required for correct
-loss recovery, and old timestamps are less valuable, so it is not guaranteed
-every timestamp will be received by the sender.  A receiver SHOULD send a
-timestamp exactly once for each received packet containing retransmittable
-frames. A receiver MAY send timestamps for non-retransmittable packets.
-A receiver MUST not send timestamps in unprotected packets.
 
 A sender MAY intentionally skip packet numbers to introduce entropy into the
 connection, to avoid opportunistic acknowledgement attacks.  The sender SHOULD
@@ -2047,15 +2133,13 @@ An ACK frame is shown below.
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|[Num Blocks(8)]|   NumTS (8)   |
+|[Num Blocks(8)]|
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                Largest Acknowledged (8/16/32/64)            ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |        ACK Delay (16)         |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                     ACK Block Section (*)                   ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                     Timestamp Section (*)                   ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
 {: #ack-format title="ACK Frame Format"}
@@ -2067,11 +2151,6 @@ Num Blocks (opt):
 : An optional 8-bit unsigned value specifying the number of additional ACK
   blocks (besides the required First ACK Block) in this ACK frame.  Only present
   if the 'N' flag bit is 1.
-
-Num Timestamps:
-
-: An unsigned 8-bit number specifying the total number of <packet number,
-  timestamp> pairs in the Timestamp Section.
 
 Largest Acknowledged:
 
@@ -2089,11 +2168,6 @@ ACK Block Section:
 
 : Contains one or more blocks of packet numbers which have been successfully
   received, see {{ack-block-section}}.
-
-Timestamp Section:
-
-: Contains zero or more timestamps reporting transit delay of received packets.
-  See {{timestamp-section}}.
 
 
 ### ACK Block Section {#ack-block-section}
@@ -2139,59 +2213,6 @@ ACK Block Length (opt, repeated):
 : An unsigned packet number delta that indicates the number of contiguous
   packets being acknowledged starting after the end of the previous gap.
   Repeated "Num Blocks" times.
-
-
-### Timestamp Section {#timestamp-section}
-
-The Timestamp Section contains between zero and 255 measurements of packet
-receive times relative to the beginning of the connection.
-
-~~~
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+
-| [Delta LA (8)]|
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                    [First Timestamp (32)]                     |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|[Delta LA 1(8)]| [Time Since Previous 1 (16)]  |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|[Delta LA 2(8)]| [Time Since Previous 2 (16)]  |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-                       ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|[Delta LA N(8)]| [Time Since Previous N (16)]  |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-~~~
-{: #timestamp-format title="Timestamp Section"}
-
-The fields in the Timestamp Section are:
-
-Delta Largest Acknowledged (opt):
-
-: An optional 8-bit unsigned packet number delta specifying the delta between
-  the largest acknowledged and the first packet whose timestamp is being
-  reported.  In other words, this first packet number may be computed as
-  (Largest Acknowledged - Delta Largest Acknowledged.)
-
-First Timestamp (opt):
-
-: An optional 32-bit unsigned value specifying the time delta in microseconds,
-  from the beginning of the connection to the arrival of the packet indicated by
-  Delta Largest Acknowledged.
-
-Delta Largest Acked 1..N (opt, repeated):
-
-: This field has the same semantics and format as "Delta Largest Acknowledged".
-  Repeated "Num Timestamps - 1" times.
-
-Time Since Previous Timestamp 1..N(opt, repeated):
-
-: An optional 16-bit unsigned value specifying time delta from the previous
-  reported timestamp.  It is encoded in the same format as the ACK Delay.
-  Repeated "Num Timestamps - 1" times.
-
-The timestamp section lists packet receipt timestamps ordered by timestamp.
 
 
 #### Time Format
@@ -2342,9 +2363,10 @@ header, protected payload, and any authentication fields.
 
 All QUIC packets SHOULD be sized to fit within the estimated PMTU to avoid IP
 fragmentation or packet drops. To optimize bandwidth efficiency, endpoints
-SHOULD use Packetization Layer PMTU Discovery ({{!RFC4821}}) and MAY use PMTU
-Discovery ({{!RFC1191}}, {{!RFC1981}}) for detecting the PMTU, setting the PMTU
-appropriately, and storing the result of previous PMTU determinations.
+SHOULD use Packetization Layer PMTU Discovery ({{!PLPMTUD=RFC4821}}) and MAY use
+PMTU Discovery ({{!PMTUDv4=RFC1191}}, {{!PMTUDv6=RFC8201}}) for detecting the
+PMTU, setting the PMTU appropriately, and storing the result of previous PMTU
+determinations.
 
 In the absence of these mechanisms, QUIC endpoints SHOULD NOT send IP packets
 larger than 1280 octets. Assuming the minimum IP header size, this results in
@@ -2408,6 +2430,12 @@ When a packet is detected as lost, the sender re-sends any frames as necessary:
 
 * STOP_SENDING frames MUST be retransmitted, unless the stream has become closed
   in the appropriate direction.  See {{solicited-state-transitions}}.
+
+* The most recent MAX_STREAM_DATA frame for a stream MUST be retransmitted. Any
+  previous unacknowledged MAX_STREAM_DATA frame for the same stream SHOULD NOT
+  be retransmitted since a newer MAX_STREAM_DATA frame for a stream obviates the
+  need for delivering older ones. Similarly, the most recent MAX_DATA frame MUST
+  be retransmitted; previous unacknowledged ones SHOULD NOT be retransmitted.
 
 * All other frames MUST be retransmitted.
 
@@ -2697,23 +2725,25 @@ previously-sent STREAM frames.
 
 ## Solicited State Transitions
 
-If an endpoint is no longer interested in the data being received, it MAY send a
-STOP_SENDING frame on a stream in the "open" or "half-closed (local)" state to
-prompt closure of the stream in the opposite direction.  This typically
-indicates that the receiving application is no longer reading from the stream,
-but is not a guarantee that incoming data will be ignored.
+If an endpoint is no longer interested in the data it is receiving on a stream,
+it MAY send a STOP_SENDING frame identifying that stream to prompt closure of
+the stream in the opposite direction.  This typically indicates that the
+receiving application is no longer reading data it receives from the stream, but
+is not a guarantee that incoming data will be ignored.
 
 STREAM frames received after sending STOP_SENDING are still counted toward the
 connection and stream flow-control windows, even though these frames will be
 discarded upon receipt.  This avoids potential ambiguity about which STREAM
 frames count toward flow control.
 
-Upon receipt of a STOP_SENDING frame on a stream in the "open" or "half-closed
-(remote)" states, an endpoint MUST send a RST_STREAM with an error code of
-QUIC_RECEIVED_RST.  If the STOP_SENDING frame is received on a stream that is
-already in the "half-closed (local)" or "closed" states, a RST_STREAM frame MAY
-still be sent in order to cancel retransmission of previously-sent STREAM
-frames.
+STOP_SENDING can only be sent for any stream that is not "idle", however it is
+mostly useful for streams in the "open" or "half-closed (local)" states.  A
+STOP_SENDING frame requests that the receiving endpoint send a RST_STREAM frame.
+An endpoint that receives a STOP_SENDING frame MUST send a RST_STREAM frame for
+that stream with an error code of STOPPING.  If the STOP_SENDING frame is
+received on a stream that is already in the "half-closed (local)" or "closed"
+states, a RST_STREAM frame MAY still be sent in order to cancel retransmission
+of previously-sent STREAM frames.
 
 While STOP_SENDING frames are retransmittable, an implementation MAY choose not
 to retransmit a lost STOP_SENDING frame if the stream has already been closed
@@ -2766,11 +2796,12 @@ limits.
 An endpoint MUST NOT send data on any stream without ensuring that it is within
 the data limits set by its peer.  The cryptographic handshake stream, Stream 0,
 is exempt from the connection-level data limits established by MAX_DATA. Data on
-stream 0 other than the TLS ClientHello is still subject to stream-level data
-limits and MAX_STREAM_DATA. The TLS ClientHello is exempt from flow control
-because it needs to be sent in a single packet regardless of the server's flow
-control state. This rule applies even for 0-RTT handshakes where the remembered
-value of MAX_STREAM_DATA does not permit sending a full ClientHello.
+stream 0 other than the initial cryptographic handshake message is still subject
+to stream-level data limits and MAX_STREAM_DATA. This message is exempt
+from flow control because it needs to be sent in a single packet regardless of
+the server's flow control state. This rule applies even for 0-RTT handshakes
+where the remembered value of MAX_STREAM_DATA would not permit sending a full
+initial cryptographic handshake message.
 
 Flow control is described in detail in {{flow-control}}, and congestion control
 is described in the companion document {{QUIC-RECOVERY}}.
@@ -2991,32 +3022,39 @@ frame that signals the error.  Where this specification identifies error
 conditions, it also identifies the error code that is used.
 
 A stateless reset ({{stateless-reset}}) is not suitable for any error that can
-be signaled with a CONNECTION_CLOSE or RST_STREAM frame.  A stateless reset MUST
-NOT be used by an endpoint that has the state necessary to send a frame on the
-connection.
+be signaled with a CONNECTION_CLOSE, APPLICATION_CLOSE, or RST_STREAM frame.  A
+stateless reset MUST NOT be used by an endpoint that has the state necessary to
+send a frame on the connection.
 
 
 ## Connection Errors
 
 Errors that result in the connection being unusable, such as an obvious
 violation of protocol semantics or corruption of state that affects an entire
-connection, MUST be signaled using a CONNECTION_CLOSE frame
-({{frame-connection-close}}). An endpoint MAY close the connection in this
-manner, even if the error only affects a single stream.
+connection, MUST be signaled using a CONNECTION_CLOSE or APPLICATION_CLOSE frame
+({{frame-connection-close}}, {{frame-application-close}}). An endpoint MAY close
+the connection in this manner even if the error only affects a single stream.
 
-A CONNECTION_CLOSE frame could be sent in a packet that is lost.  An endpoint
-SHOULD be prepared to retransmit a packet containing a CONNECTION_CLOSE frame if
-it receives more packets on a terminated connection.  Limiting the number of
-retransmissions and the time over which this final packet is sent limits the
-effort expended on terminated connections.
+Application protocols can signal application-specific protocol errors using the
+APPLICATION_CLOSE frame.  Errors that are specific to the transport, including
+all those described in this document, are carried in a CONNECTION_CLOSE frame.
+Other than the type of error code they carry, these frames are identical in
+format and semantics.
+
+A CONNECTION_CLOSE or APPLICATION_CLOSE frame could be sent in a packet that is
+lost.  An endpoint SHOULD be prepared to retransmit a packet containing either
+frame type if it receives more packets on a terminated connection.  Limiting the
+number of retransmissions and the time over which this final packet is sent
+limits the effort expended on terminated connections.
 
 An endpoint that chooses not to retransmit packets containing CONNECTION_CLOSE
-risks a peer missing the first such packet.  The only mechanism available to an
-endpoint that continues to receive data for a terminated connection is to use
-the stateless reset process ({{stateless-reset}}).
+or APPLICATION_CLOSE risks a peer missing the first such packet.  The only
+mechanism available to an endpoint that continues to receive data for a
+terminated connection is to use the stateless reset process
+({{stateless-reset}}).
 
-An endpoint that receives an invalid CONNECTION_CLOSE frame MUST NOT signal the
-existence of the error to its peer.
+An endpoint that receives an invalid CONNECTION_CLOSE or APPLICATION_CLOSE frame
+MUST NOT signal the existence of the error to its peer.
 
 
 ## Stream Errors
@@ -3030,74 +3068,46 @@ Stream 0 is critical to the functioning of the entire connection.  If stream 0
 is closed with either a RST_STREAM or STREAM frame bearing the FIN flag, an
 endpoint MUST generate a connection error of type PROTOCOL_VIOLATION.
 
-Some application protocols make other streams critical to that protocol.  An
-application protocol does not need to inform the transport that a stream is
-critical; it can instead generate appropriate errors in response to being
-notified that the critical stream is closed.
-
-An endpoint MAY send a RST_STREAM frame in the same packet as a CONNECTION_CLOSE
-frame.
+RST_STREAM MUST be instigated by the application and MUST carry an application
+error code.  Resetting a stream without knowledge of the application protocol
+could cause the protocol to enter an unrecoverable state.  Application protocols
+might require certain streams to be reliably delivered in order to guarantee
+consistent state between endpoints.
 
 
-## Error Codes
+## Transport Error Codes {#error-codes}
 
-Error codes are 32 bits long, with the first two bits indicating the source of
-the error code:
-
-0x00000000-0x3FFFFFFF:
-: Application-specific error codes.  Defined by each application-layer protocol.
-
-0x40000000-0x7FFFFFFF:
-: Reserved for host-local error codes.  These codes MUST NOT be sent to a peer,
-  but MAY be used in API return codes and logs.
-
-0x80000000-0xBFFFFFFF:
-: QUIC transport error codes, including packet protection errors.  Applicable to
-  all uses of QUIC.
-
-0xC0000000-0xFFFFFFFF:
-: Cryptographic error codes.  Defined by the cryptographic handshake protocol
-  in use.
+QUIC error codes are 16-bit unsigned integers.
 
 This section lists the defined QUIC transport error codes that may be used in a
-CONNECTION_CLOSE or RST_STREAM frame. Error codes share a common code space.
-Some error codes apply only to either streams or the entire connection and have
-no defined semantics in the other context.
+CONNECTION_CLOSE frame.  These errors apply to the entire connection.
 
-NO_ERROR (0x80000000):
+NO_ERROR (0x0):
 
 : An endpoint uses this with CONNECTION_CLOSE to signal that the connection is
-  being closed abruptly in the absence of any error.  An endpoint uses this with
-  RST_STREAM to signal that the stream is no longer wanted or in response to the
-  receipt of a RST_STREAM for that stream.
+  being closed abruptly in the absence of any error.
 
-INTERNAL_ERROR (0x80000001):
+INTERNAL_ERROR (0x1):
 
 : The endpoint encountered an internal error and cannot continue with the
   connection.
 
-CANCELLED (0x80000002):
-
-: An endpoint sends this with RST_STREAM to indicate that the stream is not
-  wanted and that no application action was taken for the stream.  This error
-  code is not valid for use with CONNECTION_CLOSE.
-
-FLOW_CONTROL_ERROR (0x80000003):
+FLOW_CONTROL_ERROR (0x3):
 
 : An endpoint received more data than it permitted in its advertised data limits
   (see {{flow-control}}).
 
-STREAM_ID_ERROR (0x80000004):
+STREAM_ID_ERROR (0x4):
 
 : An endpoint received a frame for a stream identifier that exceeded its
   advertised maximum stream ID.
 
-STREAM_STATE_ERROR (0x80000005):
+STREAM_STATE_ERROR (0x5):
 
 : An endpoint received a frame for a stream that was not in a state that
   permitted that frame (see {{stream-states}}).
 
-FINAL_OFFSET_ERROR (0x80000006):
+FINAL_OFFSET_ERROR (0x6):
 
 : An endpoint received a STREAM frame containing data that exceeded the
   previously established final offset.  Or an endpoint received a RST_STREAM
@@ -3105,40 +3115,52 @@ FINAL_OFFSET_ERROR (0x80000006):
   that was already received.  Or an endpoint received a RST_STREAM frame
   containing a different final offset to the one already established.
 
-FRAME_FORMAT_ERROR (0x80000007):
+FRAME_FORMAT_ERROR (0x7):
 
 : An endpoint received a frame that was badly formatted.  For instance, an empty
   STREAM frame that omitted the FIN flag, or an ACK frame that has more
   acknowledgment ranges than the remainder of the packet could carry.  This is a
   generic error code; an endpoint SHOULD use the more specific frame format
-  error codes (0x800001XX) if possible.
+  error codes (0x1XX) if possible.
 
-TRANSPORT_PARAMETER_ERROR (0x80000008):
+TRANSPORT_PARAMETER_ERROR (0x8):
 
 : An endpoint received transport parameters that were badly formatted, included
   an invalid value, was absent even though it is mandatory, was present though
   it is forbidden, or is otherwise in error.
 
-VERSION_NEGOTIATION_ERROR (0x80000009):
+VERSION_NEGOTIATION_ERROR (0x9):
 
 : An endpoint received transport parameters that contained version negotiation
   parameters that disagreed with the version negotiation that it performed.
   This error code indicates a potential version downgrade attack.
 
-PROTOCOL_VIOLATION (0x8000000A):
+PROTOCOL_VIOLATION (0xA):
 
 : An endpoint detected an error with protocol compliance that was not covered by
   more specific error codes.
 
-QUIC_RECEIVED_RST (0x80000035):
-
-: Terminating stream because peer sent a RST_STREAM or STOP_SENDING.
-
-FRAME_ERROR (0x800001XX):
+FRAME_ERROR (0x1XX):
 
 : An endpoint detected an error in a specific frame type.  The frame type is
   included as the last octet of the error code.  For example, an error in a
-  MAX_STREAM_ID frame would be indicated with the code (0x80000106).
+  MAX_STREAM_ID frame would be indicated with the code (0x106).
+
+See {{iana-error-codes}} for details of registering new error codes.
+
+
+## Application Protocol Error Codes {#app-error-codes}
+
+Application protocol error codes are 16-bit unsigned integers, but the
+management of application error codes are left to application protocols.
+Application protocol error codes are used for the RST_STREAM
+({{frame-rst-stream}}) and APPLICATION_CLOSE ({{frame-application-close}})
+frames.
+
+There is no restriction on the use of the 16-bit error code space for
+application protocols.  However, QUIC reserves the error code with a value of 0
+to mean STOPPING.  The application error code of STOPPING (0) is used by the
+transport to cancel a stream in response to receipt of a STOP_SENDING frame.
 
 
 # Security and Privacy Considerations
@@ -3235,8 +3257,8 @@ IANA \[SHALL add/has added] a registry for "QUIC Transport Parameters" under a
 The "QUIC Transport Parameters" registry governs a 16-bit space.  This space is
 split into two spaces that are governed by different policies.  Values with the
 first byte in the range 0x00 to 0xfe (in hexadecimal) are assigned via the
-Specification Required policy {{!RFC5226}}.  Values with the first byte 0xff are
-reserved for Private Use {{!RFC5226}}.
+Specification Required policy {{!RFC8126}}.  Values with the first byte 0xff are
+reserved for Private Use {{!RFC8126}}.
 
 Registrations MUST include the following fields:
 
@@ -3259,8 +3281,7 @@ accessible.  The expert(s) are encouraged to be biased towards approving
 registrations unless they are abusive, frivolous, or actively harmful (not
 merely aesthetically displeasing, or architecturally dubious).
 
-The initial contents of this registry are shown in
-{{iana-tp-table}}.
+The initial contents of this registry are shown in {{iana-tp-table}}.
 
 | Value  | Parameter Name          | Specification                       |
 |:-------|:------------------------|:------------------------------------|
@@ -3272,6 +3293,57 @@ The initial contents of this registry are shown in
 | 0x0005 | max_packet_size         | {{transport-parameter-definitions}} |
 | 0x0006 | stateless_reset_token   | {{transport-parameter-definitions}} |
 {: #iana-tp-table title="Initial QUIC Transport Parameters Entries"}
+
+
+## QUIC Transport Error Codes Registry {#iana-error-codes}
+
+IANA \[SHALL add/has added] a registry for "QUIC Transport Error Codes" under a
+"QUIC Protocol" heading.
+
+The "QUIC Transport Error Codes" registry governs a 16-bit space.  This space is
+split into two spaces that are governed by different policies.  Values with the
+first byte in the range 0x00 to 0xfe (in hexadecimal) are assigned via the
+Specification Required policy {{!RFC8126}}.  Values with the first byte 0xff are
+reserved for Private Use {{!RFC8126}}.
+
+Registrations MUST include the following fields:
+
+Value:
+
+: The numeric value of the assignment (registrations will be between 0x0000 and
+  0xfeff).
+
+Code:
+
+: A short mnemonic for the parameter.
+
+Description:
+
+: A brief description of the error code semantics, which MAY be a summary if a
+  specification reference is provided.
+
+Specification:
+
+: A reference to a publicly available specification for the value.
+
+The initial contents of this registry are shown in {{iana-error-table}}.  Note
+that FRAME_ERROR takes the range from 0x100 to 0x1FF and private use occupies
+the range from 0xFE00 to 0xFFFF.
+
+| Value       | Error                     | Description                   | Specification   |
+|:------------|:--------------------------|:------------------------------|:----------------|
+| 0x0         | NO_ERROR                  | No error                      | {{error-codes}} |
+| 0x1         | INTERNAL_ERROR            | Implementation error          | {{error-codes}} |
+| 0x3         | FLOW_CONTROL_ERROR        | Flow control error            | {{error-codes}} |
+| 0x4         | STREAM_ID_ERROR           | Invalid stream ID             | {{error-codes}} |
+| 0x5         | STREAM_STATE_ERROR        | Frame received in invalid stream state | {{error-codes}} |
+| 0x6         | FINAL_OFFSET_ERROR        | Change to final stream offset | {{error-codes}} |
+| 0x7         | FRAME_FORMAT_ERROR        | Generic frame format error    | {{error-codes}} |
+| 0x8         | TRANSPORT_PARAMETER_ERROR | Error in transport parameters | {{error-codes}} |
+| 0x9         | VERSION_NEGOTIATION_ERROR | Version negotiation failure   | {{error-codes}} |
+| 0xA         | PROTOCOL_VIOLATION        | Generic protocol violation    | {{error-codes}} |
+| 0x100-0x1FF | FRAME_ERROR               | Specific frame format error   | {{error-codes}} |
+{: #iana-error-table title="Initial QUIC Transport Error Codes Entries"}
 
 
 --- back
@@ -3309,7 +3381,7 @@ Issue and pull request numbers are listed with a leading octothorp.
 
 ## Since draft-ietf-quic-transport-06
 
-Nothing yet.
+- Replaced FNV-1a with AES-GCM for all "Cleartext" packets.
 
 ## Since draft-ietf-quic-transport-05
 
