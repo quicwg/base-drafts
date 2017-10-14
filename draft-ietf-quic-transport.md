@@ -1829,7 +1829,7 @@ The fields in the MAX_DATA frame are as follows:
 Maximum Data:
 
 : A 64-bit unsigned integer indicating the maximum amount of data that can be
-  sent on the entire connection, in units octets.
+  sent on the entire connection, in units of octets.
 
 All data sent in STREAM frames counts toward this limit, with the exception of
 data on stream 0.  The sum of the largest received offsets on all streams -
