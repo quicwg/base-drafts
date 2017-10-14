@@ -50,7 +50,7 @@ jobs:
           command: "make gh-issues || true"
 
       # For tagged builds, upload to the datatracker.
-      - run:
+      - deploy:
           name: "Upload to Datatracker"
           command: |
             if [ "${CIRCLE_TAG#draft-}" != "${CIRCLE_TAG}" ]; then
