@@ -2306,7 +2306,9 @@ An ACK frame is shown below.
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                    Largest Acknowledged (i)                 ...
+|                       ACK Frame Length (i)                  ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                     Largest Acknowledged (i)                ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                          ACK Delay (i)                      ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -2316,6 +2318,11 @@ An ACK frame is shown below.
 {: #ack-format title="ACK Frame Format"}
 
 The fields in the ACK frame are as follows:
+
+ACK Frame Length:
+
+: The length of the remainder of the ACK frame in octets.  The length is
+  measured from the start of the encoded Largest Acknowledged field.
 
 Largest Acknowledged:
 
@@ -2367,11 +2374,12 @@ ensures that each range can be expressed in a small number of octets.
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
                                ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                         Final Gap (i)                       ...
+|                             Gap (i)                         ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                    Additional ACK Block (i)                 ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
 {: #ack-block-format title="ACK Block Section"}
-
 
 Each ACK Block acknowledges a contiguous range of packets by indicating the
 number of packets that acknowledged preceding the largest packet number in that
@@ -2392,20 +2400,20 @@ The largest value for the First ACK Block is determined by the Largest
 Acknowledged field; the largest for Additional ACK Blocks is determined by
 cumulatively subtracting the size of all preceding ACK Blocks and Gaps.
 
-Each Gap indicates a range of packets that are not being acknowledged.  This
-value MUST be non-zero for all gaps except the final gap.  The Final Gap field
-has a value of 0, which is used to indicate the end of the ACK frame.
+Each Gap indicates a range of packets that are not being acknowledged.  The
+number of packets in the gap is one higher than the encoded value of the Gap
+Field.
 
 The value of the Gap field establishes the largest packet number value for the
 ACK block that follows the gap using the following formula:
 
 ~~~
-  largest = previous_smallest - gap - 1
+  largest = previous_smallest - gap - 2
 ~~~
 
 If the calculated value for largest or smallest packet number for any ACK Block
 is negative, an endpoint MUST generate a connection error of type FRAME_ERROR
-indicating an error in an ACK frame (that is, 0x1TBD).
+indicating an error in an ACK frame (that is, 0x10d).
 
 The fields in the ACK Block Section are:
 
@@ -2417,8 +2425,8 @@ First ACK Block:
 Gap (repeated):
 
 : A non-zero, variable-length integer indicating specifying the number of
-  contiguous unacknowledged packets, starting from the packet number one lower
-  than the smallest in the preceding ACK Block.
+  contiguous unacknowledged packets preceding the packet number one lower than
+  the smallest in the preceding ACK Block.
 
 ACK Block (repeated):
 
@@ -2426,9 +2434,11 @@ ACK Block (repeated):
   packets preceding the largest packet number, as determined by the
   preceding Gap.
 
-Final Gap:
-
-: A zero-valued, variable-length integer indicating the end of the ACK frame.
+If the repeated Gap and ACK Block fields do not end precisely at the end of
+sequence of octets indicated by the ACK Frame Length field, or the ACK Frame
+Length field indicates a length that exceeds the space available in the packet,
+an endpoint MUST generate a connection error of type FRAME_ERROR indicating an
+error in an ACK frame (that is, 0x10d)
 
 
 ### ACK Frames and Packet Protection
