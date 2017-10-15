@@ -712,12 +712,11 @@ client.
 
 ## Packet Numbers {#packet-numbers}
 
-The packet number is a 64-bit unsigned number and is used as part of a
-cryptographic nonce for packet encryption.  Only the low 62 bits of this value
-are used (see {{integer-encoding}} for details).  Each endpoint maintains a
-separate packet number for sending and receiving.  The packet number for sending
-MUST increase by at least one after sending any packet, unless otherwise
-specified (see {{initial-packet-number}}).
+The packet number is an integer in the range 0 to 2^62-1. The value is used in
+determining the cryptographic nonce for packet encryption.  Each endpoint
+maintains a separate packet number for sending and receiving.  The packet number
+for sending MUST increase by at least one after sending any packet, unless
+otherwise specified (see {{initial-packet-number}}).
 
 A QUIC endpoint MUST NOT reuse a packet number within the same connection (that
 is, under the same cryptographic keys).  If the packet number for sending
@@ -725,10 +724,11 @@ reaches 2^62 - 1, the sender MUST close the connection without sending a
 CONNECTION_CLOSE frame or any further packets; a server MAY send a Stateless
 Reset ({{stateless-reset}}) in response to further packets that it receives.
 
-To reduce the number of bits required to represent the packet number over the
-wire, only the least significant bits of the packet number are transmitted.  The
-actual packet number for each packet is reconstructed at the receiver based on
-the largest packet number received on a successfully authenticated packet.
+For the packet header, the number of bits required to represent the packet
+number are reduced by including only the least significant bits of the packet
+number.  The actual packet number for each packet is reconstructed at the
+receiver based on the largest packet number received on a successfully
+authenticated packet.
 
 A packet number is decoded by finding the packet number value that is closest to
 the next expected packet.  The next expected packet is the highest received
@@ -1085,7 +1085,7 @@ language from Section 3 of {{!I-D.ietf-tls-tls13}}.
       omit_connection_id(4),
       max_packet_size(5),
       stateless_reset_token(6),
-      ack_delay_scale(7),
+      ack_delay_exponent(7),
       (65535)
    } TransportParameterId;
 
@@ -1837,9 +1837,9 @@ values.  This encoding ensures that smaller integer values need fewer octets to
 encode.
 
 The QUIC variable-length integer encoding reserves the two most significant bits
-of the first octet to encode a length value.  The length of the integer is two
-to the power of the integer value of those two bits, in octets.  The integer
-value is encoded on the remaining bits, in network byte order.
+of the first octet to encode the base 2 logarithm of the integer encoding length
+in octets.  The integer value is encoded on the remaining bits, in network byte
+order.
 
 This means that integers are encoded on 1, 2, 4, or 8 octets and can encode 6,
 14, 30, or 62 bit values respectively.  {{integer-summary}} summarizes the
@@ -2320,7 +2320,7 @@ The fields in the ACK frame are as follows:
 Largest Acknowledged:
 
 : A variable-length integer representing the largest packet number the peer is
-  acknowledging.  Typically, this is the largest packet number that the peer has
+  acknowledging; this is usually the largest packet number that the peer has
   received prior to generating the ACK frame.
 
 ACK Delay:
@@ -2349,7 +2349,7 @@ Blocks.  The sequence ends with a Gap that is set to 0.
 
 ACK Blocks and Gaps use a relative integer encoding for efficiency.  As long as
 contiguous ranges of packets are small, the variable-length integer encoding
-ensures that each range can be expressed in a minimal number of octets.
+ensures that each range can be expressed in a small number of octets.
 
 ~~~
  0                   1                   2                   3
@@ -2411,8 +2411,8 @@ The fields in the ACK Block Section are:
 
 First ACK Block:
 
-: A variable-length indicating the number of contiguous packets in addition to
-  the Largest Acknowledged that are being acknowledged.
+: A variable-length indicating the number of contiguous packets preceding the
+  Largest Acknowledged that are being acknowledged.
 
 Gap (repeated):
 
@@ -2423,10 +2423,10 @@ Gap (repeated):
 ACK Block (repeated):
 
 : A variable-length integer indicating the number of contiguous acknowledged
-  packets in addition to the largest packet number, as determined by the
+  packets preceding the largest packet number, as determined by the
   preceding Gap.
 
-Final Gap (repeated):
+Final Gap:
 
 : A zero-valued, variable-length integer indicating the end of the ACK frame.
 
@@ -2473,13 +2473,14 @@ to decipher the packet.
 
 ## STREAM Frames {#frame-stream}
 
-STREAM frames implicitly create a stream and carry stream data.  There are eight
-types of STREAM frame from 0x10 to 0x17.  The value of the three low-order bits
-of the frame type determine the fields that are present in the frame.
+STREAM frames implicitly create a stream and carry stream data.  The STREAM
+frame takes the form 0b00010XXX (or the set of values from 0x10 to 0x17).  The
+value of the three low-order bits of the frame type determine the fields that
+are present in the frame.
 
 * The FIN bit (0x01) of the frame type is set only on frames that contain the
   final offset of the stream.  Setting this bit indicates that the frame
-  contains the end of the stream data.
+  marks the end of the stream.
 
 * The LEN bit (0x02) in the frame type is set to indicate that there is a Length
   field present.  If this bit is set to 0, the Length field is absent and the
@@ -2489,7 +2490,8 @@ of the frame type determine the fields that are present in the frame.
 * The OFF bit (0x04) in the frame type is set to indicate that there is an
   Offset field present.  When set to 1, the Offset field is present; when set to
   0, the Offset field is absent and the Stream Data starts at an offset of 0
-  (that is, the frame contains the first octets of the stream).
+  (that is, the frame contains the first octets of the stream, or the end of a
+  stream that includes no data).
 
 A STREAM frame is shown below.
 
@@ -2518,13 +2520,15 @@ Stream ID:
 Offset:
 
 : A variable-sized integer specifying the byte offset in the stream for the data
-  in this STREAM frame.  THis field is present when the OFF bit is set to 1.
+  in this STREAM frame.  This field is present when the OFF bit is set to 1.
   When the Offset field is absent, the offset is 0.
 
 Length:
 
-: An variable-length integer specifying the length of the Stream Data field in
-  this STREAM frame.  This field is present when the LEN bit is set to 1.
+: A variable-length integer specifying the length of the Stream Data field in
+  this STREAM frame.  This field is present when the LEN bit is set to 1.  When
+  the LEN bit is set to 0, the Stream Data field consumes all the remaining
+  octets in the packet.
 
 Stream Data:
 
@@ -2728,8 +2732,7 @@ in sequential order.  Open streams can be used in any order.  Streams
 that are used out of order result in lower-numbered streams in the
 same direction being counted as open.
 
-Stream IDs are usually encoded as a variable-length integer
-(see {{integer-encoding}}).
+Stream IDs are encoded as a variable-length integer (see {{integer-encoding}}).
 
 
 ## Life of a Stream {#stream-states}
