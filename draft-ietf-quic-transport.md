@@ -1533,7 +1533,8 @@ sufficient to ensure that it is easier to receive the packet than it is to guess
 the value correctly.
 
 If the PING frame is determined to be lost, a new PING frame SHOULD be
-generated.  This frame MUST include a new payload that is difficult to guess.
+generated.  This PING frame MUST include a new Data field that is similarly
+difficult to guess.
 
 If validation of the new remote address fails, after allowing enough time for
 possible loss and recovery of packets carrying PING and PONG frames, the
