@@ -1503,9 +1503,9 @@ as described in Section 5.6 of {{QUIC-TLS}}.
 
 ### Address Validation for Migrated Connections {#migrate-validate}
 
-An endpoint that see a new source IP address and port (or just a new source
-port) on packets from its peer is likely seeing a connection migration at the
-peer.
+An endpoint that receives a packet from a new remote IP address and port (or
+just a new remote port) on packets from its peer is likely seeing a connection
+migration at the peer.
 
 However, it is also possible that the peer is spoofing its source address in
 order to cause the endpoint to send excessive amounts of data to an unwilling
@@ -1515,7 +1515,7 @@ generate toward a victim.
 
 Thus, when seeing a new remote transport address, an endpoint MUST verify that
 its peer can receive and respond to packets at that new address.  By providing
-copies of the frames that it receives, the peer proves that it is receiving
+copies of the data that it receives, the peer proves that it is receiving
 packets at the new address and consents to receive data.
 
 Prior to validating the new remote address, and endpoint MUST limit the amount
