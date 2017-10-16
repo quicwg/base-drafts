@@ -3172,6 +3172,11 @@ PROTOCOL_VIOLATION (0xA):
 : An endpoint detected an error with protocol compliance that was not covered by
   more specific error codes.
 
+UNSOLICITED_PONG (0xB):
+
+: An endpoint received a PONG frame that did not correspond to any PING frame
+  that it previously sent.
+
 FRAME_ERROR (0x1XX):
 
 : An endpoint detected an error in a specific frame type.  The frame type is
@@ -3374,6 +3379,7 @@ the range from 0xFE00 to 0xFFFF.
 | 0x8         | TRANSPORT_PARAMETER_ERROR | Error in transport parameters | {{error-codes}} |
 | 0x9         | VERSION_NEGOTIATION_ERROR | Version negotiation failure   | {{error-codes}} |
 | 0xA         | PROTOCOL_VIOLATION        | Generic protocol violation    | {{error-codes}} |
+| 0xB         | UNSOLICITED_PONG          | Unsolicited PONG frame        | {{error-codes}} |
 | 0x100-0x1FF | FRAME_ERROR               | Specific frame format error   | {{error-codes}} |
 {: #iana-error-table title="Initial QUIC Transport Error Codes Entries"}
 
