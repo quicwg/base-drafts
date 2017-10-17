@@ -1435,8 +1435,9 @@ recover such as outstanding requests, which might otherwise be lost with no easy
 way to retry them.
 
 An endpoint that receives packets that contain a source IP address and port that
-has not yet been used MUST start sending new packets with those as a destination
-IP address and port.  Packets exchanged between endpoints now follow a new path.
+has not yet been used can start sending new packets with those as a destination
+IP address and port.  Packets exchanged between endpoints can then follow the
+new path.
 
 Due to variations in path latency or packet reordering, packets from different
 source addresses might be reordered.  The packet with the highest packet number
