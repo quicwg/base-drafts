@@ -11,3 +11,4 @@ issues.json
 pulls.json
 lib
 .targets.mk
+*.upload
