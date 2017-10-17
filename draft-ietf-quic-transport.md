@@ -844,6 +844,7 @@ explained in more detail as they are referenced later in the document.
 | 0x0a        | STREAM_ID_BLOCKED | {{frame-stream-id-blocked}} |
 | 0x0b        | NEW_CONNECTION_ID | {{frame-new-connection-id}} |
 | 0x0c        | STOP_SENDING      | {{frame-stop-sending}}      |
+| 0x0d        | PONG              | {{frame-pong}}              |
 | 0xa0 - 0xbf | ACK               | {{frame-ack}}               |
 | 0xc0 - 0xff | STREAM            | {{frame-stream}}            |
 {: #frame-types title="Frame Types"}
@@ -1915,22 +1916,45 @@ than it has sent, unless this is a result of a change in the initial limits (see
 {{zerortt-parameters}}).
 
 
-## PING frame {#frame-ping}
+## PING Frame {#frame-ping}
 
 Endpoints can use PING frames (type=0x07) to verify that their peers are still
-alive or to check reachability to the peer. The PING frame contains no
-additional fields. The receiver of a PING frame simply needs to acknowledge the
-packet containing this frame.
+alive or to check reachability to the peer.
 
-A PING frame has no additional fields.
+The PING frame contains a variable-length payload.
 
-The PING frame can be used to keep a connection alive when an application or
-application protocol wishes to prevent the connection from timing out.  An
+~~~
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|   Length(8)   |                 Data (*)                    ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~
+
+Length:
+
+: This 8-bit value describes the length of the Data field.
+
+Data:
+
+: This variable-length field contains arbitrary data.
+
+A PING frame with an empty Data field causes the packet containing it to be
+acknowledged as normal.  No other action is required of the recipient.
+
+An empty PING frame can be used to keep a connection alive when an application
+or application protocol wishes to prevent the connection from timing out.  An
 application protocol SHOULD provide guidance about the conditions under which
 generating a PING is recommended.  This guidance SHOULD indicate whether it is
 the client or the server that is expected to send the PING.  Having both
 endpoints send PING frames without coordination can produce an excessive number
 of packets and poor performance.
+
+If the Data field is not empty, the recipient of this frame MUST generate a PONG
+frame ({{frame-pong}}) containing the same Data.  A PING frame with data is not
+appropriate for use in keeping a connection alive, because the PONG frame
+elicits an acknowledgement, causing the sender of the original PING to send two
+packets.
 
 A connection will time out if no packets are sent or received for a period
 longer than the time specified in the idle_timeout transport parameter (see
@@ -2061,6 +2085,19 @@ Application Error Code:
 
 : A 16-bit, application-specified reason the sender is ignoring the stream (see
   {{app-error-codes}}).
+
+
+
+## PONG Frame {#frame-pong}
+
+The PONG frame (type=0x0d) is sent in response to a PING frame that contains
+data.  Its format is identical to the PING frame ({{frame-ping}}).
+
+An endpoint that receives an unsolicited PONG frame - that is, a PONG frame
+containing a payload that is empty MUST generate a connection error of type
+FRAME_ERROR, indicating the PONG frame (that is, 0x10d).  If the content of a
+PONG frame does not match the content of a PING frame previously sent by the
+endpoint, the endpoint MAY generate a connection error of type UNSOLICITED_PONG.
 
 
 ## ACK Frame {#frame-ack}
@@ -3134,6 +3171,11 @@ PROTOCOL_VIOLATION (0xA):
 : An endpoint detected an error with protocol compliance that was not covered by
   more specific error codes.
 
+UNSOLICITED_PONG (0xB):
+
+: An endpoint received a PONG frame that did not correspond to any PING frame
+  that it previously sent.
+
 FRAME_ERROR (0x1XX):
 
 : An endpoint detected an error in a specific frame type.  The frame type is
@@ -3336,6 +3378,7 @@ the range from 0xFE00 to 0xFFFF.
 | 0x8         | TRANSPORT_PARAMETER_ERROR | Error in transport parameters | {{error-codes}} |
 | 0x9         | VERSION_NEGOTIATION_ERROR | Version negotiation failure   | {{error-codes}} |
 | 0xA         | PROTOCOL_VIOLATION        | Generic protocol violation    | {{error-codes}} |
+| 0xB         | UNSOLICITED_PONG          | Unsolicited PONG frame        | {{error-codes}} |
 | 0x100-0x1FF | FRAME_ERROR               | Specific frame format error   | {{error-codes}} |
 {: #iana-error-table title="Initial QUIC Transport Error Codes Entries"}
 
