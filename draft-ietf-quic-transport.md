@@ -2094,11 +2094,10 @@ The PONG frame (type=0x0d) is sent in response to a PING frame that contains
 data.  Its format is identical to the PING frame ({{frame-ping}}).
 
 An endpoint that receives an unsolicited PONG frame - that is, a PONG frame
-containing a payload that is either empty or not identical to the content of a
-PING frame that the endpoint previously sent - MUST generate a connection error
-of type UNSOLICITED_PONG.  Note that the Data field of the frame is the only
-thing that allows a recipient to correlate a PONG frame with the original PING
-frame.
+containing a payload that is empty MUST generate a connection error of type
+FRAME_ERROR, indicating the PONG frame (that is, 0x10d).  If the content of a
+PONG frame does not match the content of a PING frame previously sent by the
+endpoint, the endpoint MAY generate a connection error of type UNSOLICITED_PONG.
 
 
 ## ACK Frame {#frame-ack}
