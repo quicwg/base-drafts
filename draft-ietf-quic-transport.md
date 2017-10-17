@@ -2306,11 +2306,11 @@ An ACK frame is shown below.
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                       ACK Frame Length (i)                  ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                     Largest Acknowledged (i)                ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                          ACK Delay (i)                      ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                       ACK Block Count (i)                   ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                          ACK Blocks (*)                     ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -2318,11 +2318,6 @@ An ACK frame is shown below.
 {: #ack-format title="ACK Frame Format"}
 
 The fields in the ACK frame are as follows:
-
-ACK Frame Length:
-
-: The length of the remainder of the ACK frame in octets.  The length is
-  measured from the start of the encoded Largest Acknowledged field.
 
 Largest Acknowledged:
 
@@ -2342,6 +2337,10 @@ ACK Delay:
   larger range of values with a shorter encoding at the cost of lower
   resolution.
 
+ACK Block Count:
+
+: The number of Additional ACK Block (and Gap) fields after the First ACK Block.
+
 ACK Blocks:
 
 : Contains one or more blocks of packet numbers which have been successfully
@@ -2352,11 +2351,14 @@ ACK Blocks:
 
 The ACK Block Section consists of alternating ACK Blocks and Gaps.  A First Ack
 Block is followed by a variable number of alternating Gap and Additional ACK
-Blocks.  The sequence ends with a Gap that is set to 0.
+Blocks.  The number of Additional ACK Blocks and Gaps is determined by the ACK
+Block Count field.
 
-ACK Blocks and Gaps use a relative integer encoding for efficiency.  As long as
-contiguous ranges of packets are small, the variable-length integer encoding
-ensures that each range can be expressed in a small number of octets.
+ACK Blocks and Gaps use a relative integer encoding for efficiency.  Though each
+encoded value is positive, the values are subtracted, so that ACK Blocks
+describe progressively lower-numbered packets.  As long as contiguous ranges of
+packets are small, the variable-length integer encoding ensures that each range
+can be expressed in a small number of octets.
 
 ~~~
  0                   1                   2                   3
