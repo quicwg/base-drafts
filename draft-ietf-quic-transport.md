@@ -2638,14 +2638,19 @@ Too Big messages.
 provisional until QUIC's loss detection algorithm determines that the packet is
 actually lost.
 
+
 # Streams: QUIC's Data Structuring Abstraction {#streams}
 
-Streams in QUIC provide a lightweight, ordered, and bidirectional byte-stream
-abstraction modeled closely on HTTP/2 streams {{?RFC7540}}.
+Streams in QUIC provide a lightweight, ordered byte-stream abstraction.
 
-Streams can be created either by the client or the server, can concurrently send
-data interleaved with other streams, can be cancelled, and can be opened in
-unidirectional mode.
+There are two basic types of stream in QUIC.  Unidirectional streams carry data
+in one direction only; bidirectional streams allow for data to be sent in both
+directions.  Different stream identifiers are used to distinguish between
+unidirectional and bidirectional streams, as well as to create a separation
+between streams that are initiated by the client and server (see {{stream-id}}).
+
+Either type of stream can be created by either endpoint, can concurrently send
+data interleaved with other streams, and can be cancelled.
 
 Data that is received on a stream is delivered in order within that stream, but
 there is no particular delivery order across streams.  Transmit ordering among
@@ -2669,27 +2674,39 @@ for some applications.
 ## Stream Identifiers {#stream-id}
 
 Streams are identified by an unsigned 32-bit integer, referred to as the Stream
-ID.  To avoid Stream ID collision, clients MUST initiate streams using
-odd-numbered Stream IDs; servers MUST initiate streams using
-even-numbered Stream IDs. If an endpoint receives a frame which
-corresponds to a stream which is allocated to it (i.e., odd-numbered for
-the client or even-numbered for the server) but which it has not yet
-created, it MUST close the connection with error code STREAM_STATE_ERROR.
+ID.  The least significant two bits of the Stream ID are used to identify the
+type of stream (unidirectional or bidirectional) and the initiator of the
+stream.
 
-The second least significant bit differentiates between unidirectional streams
-and bidirectional streams. Unidirectional streams always have this bit set to
-1 and bidirectional streams have this bit set to 0. As a result the initial
-stream ID for various stream types is listed below:
+The least significant bit (0x1) of the Stream ID identifies the initiator of the
+stream.  Clients initiate even-numbered streams (those with the least
+significant bit set to 0); servers initiate even-numbered streams (with the bit
+set to 1).  Separation of the stream identifiers ensures that client and server
+are able to open streams without the latency imposed by negotiating for an
+identifier.
 
-| Stream ID   | Type                          |
-|:------------|:------------------------------|
-| 0x01        | Client Bidirectional          |
-| 0x02        | Server Bidirectional          |
-| 0x03        | Client Unidirectional         |
-| 0x04        | Server Unidirectional         |
+If an endpoint receives a frame for a stream that it expects to initiate (i.e.,
+odd-numbered for the client or even-numbered for the server), but which it has
+not yet opened but which it has not yet created, it MUST close the connection
+with error code STREAM_STATE_ERROR.
 
-Stream ID 0 (0x0) is reserved for the cryptographic handshake.  Stream 0 MUST
-NOT be used for application data, and is the first client-initiated stream.
+The second least significant bit (0x2) of the Stream ID differentiates between
+unidirectional streams and bidirectional streams. Unidirectional streams always
+have this bit set to 1 and bidirectional streams have this bit set to 0.
+
+The two type bits from a Stream ID therefore identify streams as summarized in
+{{stream-id-types}}.
+
+| Low Bits | Stream Type                      |
+|:---------|:---------------------------------|
+| 0x0      | Client-Initiated, Bidirectional  |
+| 0x1      | Server-Initiated, Bidirectional  |
+| 0x2      | Client-Initiated, Unidirectional |
+| 0x3      | Server-Initiated, Unidirectional |
+{: #stream-id-types title="Stream ID Types"}
+
+Stream ID 0 (0x0) is a client-initiated, bidirectional stream that is used for
+the cryptographic handshake.  Stream 0 MUST NOT be used for application data.
 
 A QUIC endpoint MUST NOT reuse a Stream ID.  Streams MUST be created
 in sequential order.  Open streams can be used in any order.  Streams
