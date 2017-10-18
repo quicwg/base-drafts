@@ -2739,7 +2739,7 @@ shown in the following figure and described below.
                                  v
                  recv FIN/  +--------+    send FIN/
                  recv RST   |        |    send RST
-                 recv UNI   |        |    send UNI
+                 send UNI   |        |    recv UNI
                   ,---------|  open  |-----------.
                  /          |        |            \
                 v           +--------+             v
@@ -3179,7 +3179,7 @@ is increased.
 The final offset is the count of the number of octets that are transmitted on a
 stream.  For a stream that is reset, the final offset is carried explicitly in
 the RST_STREAM frame.  Otherwise, the final offset is the offset of the end of
-the data carried in STREAM frame marked with a FIN flag, or 0 in the case of
+the data carried in a STREAM frame marked with a FIN flag, or 0 in the case of
 incoming unidirectional streams.
 
 An endpoint will know the final offset for a stream when the stream enters the
