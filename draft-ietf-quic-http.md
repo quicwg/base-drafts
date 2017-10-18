@@ -182,27 +182,32 @@ the HTTP framing layer. A QUIC receiver buffers and orders received STREAM
 frames, exposing the data contained within as a reliable byte stream to the
 application.
 
-QUIC reserves Stream 0 for crypto operations (the handshake, crypto config
-updates). Stream 1 is reserved for sending and receiving HTTP control frames,
-and is analogous to HTTP/2's Stream 0.  This control stream is considered
-critical to the HTTP connection.  If the control stream is closed for any
-reason, this MUST be treated as a connection error of type
-QUIC_CLOSED_CRITICAL_STREAM.
+QUIC reserves the first client-initiated, bidirectional stream (Stream 0) for
+cryptographic operations. HTTP over QUIC reserves the first unidirectional
+stream sent by either peer (Streams 2 and 3) for sending and receiving HTTP
+control frames.  This pair of unidirectional streams is analogous to HTTP/2's
+Stream 0.  The data sent on these streams is critical to the HTTP connection.
+If either control stream is closed for any reason, this MUST be treated as a
+connection error of type QUIC_CLOSED_CRITICAL_STREAM.
 
 When HTTP headers and data are sent over QUIC, the QUIC layer handles most of
-the stream management. An HTTP request/response consumes a single stream: This
-means that the client's first request occurs on QUIC stream 3, the second on
-stream 5, and so on. The server's first push consumes stream 2.
+the stream management.
 
-This stream carries frames related to the request/response (see {{frames}}).
+An HTTP request/response consumes a single client-initiated, bidirectional
+stream.  A bidirectional stream ensures that the response can be readily
+correlated with the request. This means that the client's first request occurs
+on QUIC stream 4, with subsequent requests on stream 8, 12, and so on.
+
+Server push uses server-initiated, unidirectional streams.  Thus, the server's
+first push consumes stream 7 and subsequent pushes use stream 11, 15, and so on.
+
+These streams carry frames related to the request/response (see {{frames}}).
 When a stream terminates cleanly, if the last frame on the stream was truncated,
 this MUST be treated as a connection error (see HTTP_MALFORMED_* in
 {{http-error-codes}}).  Streams which terminate abruptly may be reset at any
 point in the frame.
 
-Streams SHOULD be used sequentially, with no gaps.  Streams used for pushed
-resources MAY be initiated out-of-order, but stream IDs SHOULD be allocated to
-promised resources sequentially.
+Streams SHOULD be used sequentially, with no gaps.
 
 HTTP does not need to do any separate multiplexing when using QUIC - data sent
 over a QUIC stream always maps to a particular HTTP transaction. Requests and
@@ -210,16 +215,21 @@ responses are considered complete when the corresponding QUIC stream is closed
 in the appropriate direction.
 
 
-##  Stream 1: Control Stream
+##  Control Streams
 
 Since most connection-level concerns will be managed by QUIC, the primary use of
-Stream 1 will be for the SETTINGS frame when the connection opens and for
+Streams 2 and 3 will be for the SETTINGS frame when the connection opens and for
 PRIORITY frames subsequently.
+
+A pair of unidirectional streams is used rather than a single bidirectional
+stream.  This allows either peer to send data as soon they are able.  Depending
+on whether 0-RTT is enabled on the connection, either client or server might be
+able to send stream data first after the cryptographic handshake completes.
 
 ## HTTP Message Exchanges {#request-response}
 
-A client sends an HTTP request on a new QUIC stream. A server sends an HTTP
-response on the same stream as the request.
+A client sends an HTTP request on a client-initiated, bidirectional QUIC
+stream. A server sends an HTTP response on the same stream as the request.
 
 An HTTP message (request or response) consists of:
 
@@ -353,7 +363,7 @@ the stream that carries the stream headers references the PUSH_PROMISE.  This
 allows a server to fulfill promises in the order that best suits its needs.
 
 The server push response is conveyed on a push stream.  A push stream is a
-server-initiated stream.  A push stream includes a header (see
+server-initiated, unidirectional stream.  A push stream includes a header (see
 {{fig-push-stream-header}}) that identifies the PUSH_PROMISE that it fulfills.
 This header consists of a 32-bit Push ID, which identifies a server push (see
 {{frame-push-promise}}).
@@ -425,7 +435,7 @@ associated with an HTTP request or response payload.
 The DATA frame defines no flags.
 
 DATA frames MUST be associated with an HTTP request or response.  If a DATA
-frame is received on the control stream, the recipient MUST respond with a
+frame is received on either control stream, the recipient MUST respond with a
 connection error ({{errors}}) of type HTTP_WRONG_STREAM.
 
 DATA frames MUST contain a non-zero-length payload.  If a DATA frame is received
@@ -497,16 +507,16 @@ The flags defined are:
 The PRIORITY frame payload has the following fields:
 
   Prioritized Request ID:
-  : A 32-bit identifier for a request.  This contains the stream ID of a request
+  : A 32-bit identifier for a request.  This contains the Stream ID of a request
     stream when the PUSH_PRIORITIZED flag is clear, or a Push ID when the
     PUSH_PRIORITIZED flag is set.
 
   Stream Dependency ID:
-  : A 32-bit stream identifier for a dependent request.  This contains the
-    stream ID of a request stream when the PUSH_DEPENDENT flag is clear, or a
-    Push ID when the PUSH_DEPENDENT flag is set.  A request stream ID of 0
-    indicates a dependency on the root stream. For details of dependencies,
-    see {{priority}} and {{!RFC7540}}, Section 5.3.
+  : A 32-bit Stream ID for a dependent request.  This contains the stream ID of
+    a request stream when the PUSH_DEPENDENT flag is clear, or a Push ID when
+    the PUSH_DEPENDENT flag is set.  A request Stream ID of 0 indicates a
+    dependency on the root stream. For details of dependencies, see {{priority}}
+    and {{!RFC7540}}, Section 5.3.
 
   Weight:
   : An unsigned 8-bit integer representing a priority weight for the stream (see
@@ -521,16 +531,19 @@ PUSH_PRIORITIZED or PUSH_DEPENDENT flag causes the Prioritized Request ID or
 Stream Dependency ID (respectively) to identify a server push using a Push ID
 (see {{frame-push-promise}} for details).
 
-A PRIORITY frame MAY identify a Stream Dependency ID using a stream ID of 0; as
+A PRIORITY frame MAY identify a Stream Dependency ID using a Stream ID of 0; as
 in {{!RFC7540}}, this makes the request dependent on the root of the dependency
 tree.
 
-Stream ID 0 and stream ID 1 cannot be reprioritized. A Prioritized Request ID
-that identifies Stream 0 or 1 MUST be treated as a connection error of type
-HTTP_MALFORMED_PRIORITY.
+A PRIORITY frame MUST identify a client-initiated, bidirectional stream.  A
+server MUST treat receipt of PRIORITY frame with a Stream ID of any other type
+as a connection error of type HTTP_MALFORMED_PRIORITY.
+
+Stream ID 0 cannot be reprioritized. A Prioritized Request ID that identifies
+Stream 0 MUST be treated as a connection error of type HTTP_MALFORMED_PRIORITY.
 
 A PRIORITY frame that does not reference a request MUST be treated as a
-HTTP_MALFORMED_PRIORITY error, unless it references stream ID 0.  A PRIORITY
+HTTP_MALFORMED_PRIORITY error, unless it references Stream ID 0.  A PRIORITY
 that sets a PUSH_PRIORITIZED or PUSH_DEPENDENT flag, but then references a
 non-existent Push ID MUST be treated as a HTTP_MALFORMED_PRIORITY error.
 
@@ -624,7 +637,7 @@ An implementation MUST ignore the contents for any SETTINGS identifier it does
 not understand.
 
 SETTINGS frames always apply to a connection, never a single stream.  A SETTINGS
-frame MUST be sent as the first frame of the control stream (see
+frame MUST be sent as the first frame of either control stream (see
 {{stream-mapping}}) by each peer, and MUST NOT be sent subsequently or on any
 other stream. If an endpoint receives an SETTINGS frame on a different stream,
 the endpoint MUST respond with a connection error of type HTTP_WRONG_STREAM.  If
@@ -701,9 +714,9 @@ server to client, as in HTTP/2.  The PUSH_PROMISE frame defines no flags.
 The payload consists of:
 
 Push ID:
-: A 32-bit identifier for the server push request.  A push ID is used in push
-  stream header ({{server-push}}), CANCEL_PUSH frames ({{frame-cancel-push}}),
-  and PRIORITY frames ({{frame-priority}}).
+: A 32-bit identifier for the server push request.  A push ID is used in the
+  push stream header ({{server-push}}), CANCEL_PUSH frames
+  ({{frame-cancel-push}}), and PRIORITY frames ({{frame-priority}}).
 
 Header Block:
 : HPACK-compressed request headers for the promised response.
@@ -743,14 +756,19 @@ administrative actions, like server maintenance.  GOAWAY by itself does not
 close a connection.  (Note that clients do not need to send GOAWAY to gracefully
 close a connection; they simply stop making new requests.)
 
-The GOAWAY frame does not define any flags, and the payload is a QUIC stream
-identifier.  The GOAWAY frame applies to the connection, not a specific stream.
-An endpoint MUST treat a GOAWAY frame on a stream other than the control stream
-as a connection error ({{errors}}) of type HTTP_WRONG_STREAM.
+The GOAWAY frame does not define any flags, and the payload is a QUIC Stream ID
+for a client-initiated, bidirectional stream.
+
+A client MUST treat receipt of a GOAWAY frame containing a Stream ID of any
+other type as a connection error of type HTTP_MALFORMED_GOAWAY.
+
+The GOAWAY frame applies to the connection, not a specific stream.  An endpoint
+MUST treat a GOAWAY frame on a stream other than the control stream as a
+connection error ({{errors}}) of type HTTP_WRONG_STREAM.
 
 New client requests might already have been sent before the client receives the
-server's GOAWAY frame.  The GOAWAY frame contains the stream identifier of the
-last client-initiated request that was or might be processed in this connection,
+server's GOAWAY frame.  The GOAWAY frame contains the Stream ID of the last
+client-initiated request that was or might be processed in this connection,
 which enables client and server to agree on which requests were accepted prior
 to the connection shutdown.  This identifier MAY be lower than the stream limit
 identified by a QUIC MAX_STREAM_ID frame, and MAY be zero if no requests were
@@ -763,11 +781,11 @@ GOAWAY frame.
     a result.
 
 Once sent, the server will refuse requests sent on streams with an identifier
-higher than the included last stream identifier.  Clients MUST NOT send new
-requests on the connection after receiving GOAWAY, although requests might
-already be in transit. A new connection can be established for new requests.
+higher than the included last Stream ID.  Clients MUST NOT send new requests on
+the connection after receiving GOAWAY, although requests might already be in
+transit. A new connection can be established for new requests.
 
-If the client has sent requests on streams with a higher stream identifier than
+If the client has sent requests on streams with a higher Stream ID than
 indicated in the GOAWAY frame, those requests were not and will not be
 processed.  Endpoints SHOULD reset any streams above this ID with the error code
 HTTP_REQUEST_CANCELLED.  Servers MAY also reset streams below the indicated ID
@@ -782,7 +800,7 @@ ignore the cancellation and use the response.  However, if a stream is cancelled
 after receiving a partial response, the response SHOULD NOT be used.
 Automatically retrying such requests is not possible, unless this is otherwise
 permitted (e.g. idempotent actions like GET, PUT, or DELETE).  Requests on
-stream IDs less than or equal to the stream ID in the GOAWAY frame might have
+Stream IDs less than or equal to the Stream ID in the GOAWAY frame might have
 been processed; their status cannot be known until they are completed
 successfully, reset individually, or the connection terminates.
 
@@ -797,26 +815,26 @@ might have acted on.
 For unexpected closures caused by error conditions, a QUIC CONNECTION_CLOSE
 frame MUST be used.  However, a GOAWAY MAY be sent first to provide additional
 detail to clients.  If a connection terminates without a GOAWAY frame, the last
-stream identifier is effectively the highest possible stream identifier (as
-determined by QUIC's MAX_STREAM_ID).
+Stream ID is effectively the highest possible Stream ID (as determined by QUIC's
+MAX_STREAM_ID).
 
 An endpoint MAY send multiple GOAWAY frames if circumstances change. For
 instance, an endpoint that sends GOAWAY without an error code during graceful
 shutdown could subsequently encounter an error condition.  The last stream
 identifier from the last GOAWAY frame received indicates which streams could
 have been acted upon.  Endpoints MUST NOT increase the value they send in the
-last stream identifier, since the peers might already have retried unprocessed
-requests on another connection.
+last Stream ID, since the peers might already have retried unprocessed requests
+on another connection.
 
 A client that is unable to retry requests loses all requests that are in flight
 when the server closes the connection.  A server that is attempting to
 gracefully shut down a connection SHOULD send an initial GOAWAY frame with the
-last stream identifier set to the current value of QUIC's MAX_STREAM_ID and
-SHOULD NOT increase the MAX_STREAM_ID thereafter.  This signals to the client
-that a shutdown is imminent and that initiating further requests is prohibited.
-After allowing time for any in-flight requests (at least one round-trip time),
-the server MAY send another GOAWAY frame with an updated last stream identifier.
-This ensures that a connection can be cleanly shut down without losing requests.
+last Stream ID set to the current value of QUIC's MAX_STREAM_ID and SHOULD NOT
+increase the MAX_STREAM_ID thereafter.  This signals to the client that a
+shutdown is imminent and that initiating further requests is prohibited.  After
+allowing time for any in-flight requests (at least one round-trip time), the
+server MAY send another GOAWAY frame with an updated last Stream ID.  This
+ensures that a connection can be cleanly shut down without losing requests.
 
 
 ### MAX_PUSH_ID {#frame-max-push-id}
@@ -827,7 +845,7 @@ Push ID that the server can use in a PUSH_PROMISE frame.  Consequently, this
 also limits the number of push streams that the server can initiate in addition
 to the limit set by the QUIC MAX_STREAM_ID frame.
 
-The MAX_PUSH_ID frame is always sent on the control stream.  Receipt of a
+The MAX_PUSH_ID frame is always sent on a control stream.  Receipt of a
 MAX_PUSH_ID frame on any other stream MUST be treated as a connection error of
 type HTTP_WRONG_STREAM.
 
@@ -949,6 +967,9 @@ HTTP_MALFORMED_PUSH (0x12):
 HTTP_MALFORMED_MAX_PUSH_ID (0x13):
 : A MAX_PUSH_ID frame has been received with an invalid format.
 
+HTTP_MALFORMED_GOAWAY (0x14):
+: A GOAWAY frame has been received with an invalid format.
+
 
 # Considerations for Transitioning from HTTP/2
 
@@ -1000,7 +1021,7 @@ PRIORITY frames are sent on the control stream and the PRIORITY section is
 removed from the HEADERS frame.
 
 Other than this issue, frame type HTTP/2 extensions are typically portable to
-QUIC simply by replacing Stream 0 in HTTP/2 with Stream 1 in HTTP/QUIC.
+QUIC simply by replacing Stream 0 in HTTP/2 with Stream 2 or 3 in HTTP/QUIC.
 HTTP/QUIC extensions will not assume ordering, but would not be harmed by
 ordering, and would be portable to HTTP/2 in the same manner.
 
@@ -1070,7 +1091,7 @@ SETTINGS_ENABLE_PUSH:
   control over server push.
 
 SETTINGS_MAX_CONCURRENT_STREAMS:
-: QUIC controls the largest open stream ID as part of its flow control logic.
+: QUIC controls the largest open Stream ID as part of its flow control logic.
   Specifying SETTINGS_MAX_CONCURRENT_STREAMS in the SETTINGS frame is an error.
 
 SETTINGS_INITIAL_WINDOW_SIZE:
@@ -1326,6 +1347,7 @@ The entries in the following table are registered by this document.
 |  HTTP_MULTIPLE_SETTINGS           |  0x11  |  Multiple SETTINGS frames              | {{http-error-codes}} |
 |  HTTP_MALFORMED_PUSH              |  0x12  |  Invalid push stream header            | {{http-error-codes}} |
 |  HTTP_MALFORMED_MAX_PUSH_ID       |  0x13  |  Invalid MAX_PUSH_ID frame             | {{http-error-codes}} |
+|  HTTP_MALFORMED_GOAWAY            |  0x14  |  Invalid GOAWAY frame                  | {{http-error-codes}} |
 |-----------------------------------|--------|----------------------------------------|----------------------|
 
 
