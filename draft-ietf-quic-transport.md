@@ -2715,7 +2715,7 @@ same direction being counted as open.
 
 Stream IDs are usually encoded as a 32-bit integer, though the STREAM frame
 ({{frame-stream}}) permits a shorter encoding when the leading bits of the
-stream ID are zero.
+Stream ID are zero.
 
 
 ## Life of a Stream {#stream-states}
