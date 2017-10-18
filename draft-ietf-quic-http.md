@@ -358,8 +358,8 @@ allows a server to fulfill promises in the order that best suits its needs.
 The server push response is conveyed on a push stream.  A push stream is a
 server-initiated stream.  A push stream includes a header (see
 {{fig-push-stream-header}}) that identifies the PUSH_PROMISE that it fulfills.
-This header consists of a 32-bit Push ID, which identifies a server push (see
-{{frame-push-promise}}).
+This header consists of a Push ID, encoded as a variable-length integer.  The
+Push ID identifies a server push (see {{frame-push-promise}}).
 
 ~~~~~
  0                   1                   2                   3
@@ -370,9 +370,9 @@ This header consists of a 32-bit Push ID, which identifies a server push (see
 ~~~~~
 {: #fig-push-stream-header title="Push Stream Header"}
 
-A push stream always starts with a 32-bit Push ID.  A client MUST treat
-receiving a push stream that contains fewer than 4 octets as a connection error
-of type HTTP_MALFORMED_PUSH.
+A push stream always starts with a Push ID.  A client MUST treat receiving a
+push stream that contains a truncated variable-length integer as a connection
+error of type HTTP_MALFORMED_PUSH.
 
 A server SHOULD use Push IDs sequentially, starting at 0.  A client uses the
 MAX_PUSH_ID frame ({{frame-max-push-id}}) to limit the number of pushes that a
@@ -981,7 +981,7 @@ These departures are noted in this section.
 HTTP/QUIC permits use of a larger number of streams (2^62-1) then HTTP/2.  The
 considerations about exhaustion of stream identifier space apply, though the
 space is significantly larger such that it is likely that other limits in QUIC
-are reached first, such asthe limit on the connection flow control window.
+are reached first, such as the limit on the connection flow control window.
 
 ## HTTP Frame Types {#h2-frames}
 
