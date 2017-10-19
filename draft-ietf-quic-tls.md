@@ -1287,6 +1287,13 @@ Similarly, there is no need to increase the number of allowed streams until the
 handshake completes.
 
 
+### Handshake Failures
+
+The `CONNECTION_CLOSE` frame MAY be sent by either endpoint during the handshake
+to signal a fatal error with connection establishment.  A `STREAM` frame
+carrying a TLS alert MAY be included in the same packet.
+
+
 ### Denial of Service with Unprotected Packets
 
 Accepting unprotected - specifically unauthenticated - packets presents a denial
