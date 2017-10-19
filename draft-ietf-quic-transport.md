@@ -2349,16 +2349,16 @@ ACK Blocks:
 
 ### ACK Block Section {#ack-block-section}
 
-The ACK Block Section consists of alternating ACK Blocks and Gaps.  A First Ack
-Block is followed by a variable number of alternating Gap and Additional ACK
-Blocks.  The number of Additional ACK Blocks and Gaps is determined by the ACK
-Block Count field.
+The ACK Block Section consists of alternating Gap and ACK Block fields in
+descending packet number order.  A First Ack Block field is followed by a
+variable number of alternating Gap and Additional ACK Blocks.  The number of Gap
+and Additional ACK Block fields is determined by the ACK Block Count field.
 
-ACK Blocks and Gaps use a relative integer encoding for efficiency.  Though each
-encoded value is positive, the values are subtracted, so that ACK Blocks
-describe progressively lower-numbered packets.  As long as contiguous ranges of
-packets are small, the variable-length integer encoding ensures that each range
-can be expressed in a small number of octets.
+Gap and ACK Block fields use a relative integer encoding for efficiency.  Though
+each encoded value is positive, the values are subtracted, so that each ACK
+Block describes progressively lower-numbered packets.  As long as contiguous
+ranges of packets are small, the variable-length integer encoding ensures that
+each range can be expressed in a small number of octets.
 
 ~~~
  0                   1                   2                   3
@@ -2384,7 +2384,7 @@ can be expressed in a small number of octets.
 {: #ack-block-format title="ACK Block Section"}
 
 Each ACK Block acknowledges a contiguous range of packets by indicating the
-number of packets that acknowledged preceding the largest packet number in that
+number of acknowledged packets that precede the largest packet number in that
 block.  A value of zero indicates that only the largest packet number is
 acknowledged.  Larger ACK Block values indicate a larger range, with
 corresponding lower values for the smallest packet number in the range.  Thus,
@@ -2421,26 +2421,20 @@ The fields in the ACK Block Section are:
 
 First ACK Block:
 
-: A variable-length indicating the number of contiguous packets preceding the
-  Largest Acknowledged that are being acknowledged.
+: A variable-length integer indicating the number of contiguous packets
+  preceding the Largest Acknowledged that are being acknowledged.
 
 Gap (repeated):
 
-: A non-zero, variable-length integer indicating specifying the number of
-  contiguous unacknowledged packets preceding the packet number one lower than
-  the smallest in the preceding ACK Block.
+: A variable-length integer indicating specifying the number of contiguous
+  unacknowledged packets preceding the packet number one lower than the smallest
+  in the preceding ACK Block.
 
 ACK Block (repeated):
 
 : A variable-length integer indicating the number of contiguous acknowledged
   packets preceding the largest packet number, as determined by the
   preceding Gap.
-
-If the repeated Gap and ACK Block fields do not end precisely at the end of
-sequence of octets indicated by the ACK Frame Length field, or the ACK Frame
-Length field indicates a length that exceeds the space available in the packet,
-an endpoint MUST generate a connection error of type FRAME_ERROR indicating an
-error in an ACK frame (that is, 0x10d)
 
 
 ### ACK Frames and Packet Protection
@@ -2531,9 +2525,9 @@ Stream ID:
 
 Offset:
 
-: A variable-sized integer specifying the byte offset in the stream for the data
-  in this STREAM frame.  This field is present when the OFF bit is set to 1.
-  When the Offset field is absent, the offset is 0.
+: A variable-length integer specifying the byte offset in the stream for the
+  data in this STREAM frame.  This field is present when the OFF bit is set to
+  1.  When the Offset field is absent, the offset is 0.
 
 Length:
 
