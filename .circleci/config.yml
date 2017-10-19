@@ -4,6 +4,7 @@ jobs:
     docker:
       - image: martinthomson/i-d-template:latest
     working_directory: ~/draft
+
     steps:
       - checkout
 
@@ -44,15 +45,23 @@ jobs:
           name: "Update GitHub Pages"
           command: "make gh-pages"
 
-
       - run:
           name: "Save Issues"
           command: "make gh-issues || true"
 
       # For tagged builds, upload to the datatracker.
-      - run:
+      - deploy:
           name: "Upload to Datatracker"
           command: |
             if [ "${CIRCLE_TAG#draft-}" != "${CIRCLE_TAG}" ]; then
               make upload
             fi
+
+workflows:
+  version: 2
+  build:
+    jobs:
+      - build:
+          filters:
+            tags:
+              only: /.*?/

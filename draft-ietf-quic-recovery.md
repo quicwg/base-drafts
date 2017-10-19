@@ -44,6 +44,33 @@ normative:
         org: Mozilla
         role: editor
 
+
+informative:
+
+  TLP:
+    title: "Tail Loss Probe (TLP): An Algorithm for Fast Recovery of Tail Losses"
+    date: "February 2013"
+    seriesinfo:
+      Internet-Draft: draft-dukkipati-tcpm-tcp-loss-probe-01
+    author:
+      -
+        ins: N. Dukkipati
+        name: Nandita Dukkipati
+        org: Google
+      -
+        ins: N. Cardwell
+        name: Neal Cardwell
+        org: Google
+      -
+        ins: Y. Cheng
+        name: Yuchung Cheng
+        org: Google
+      -
+        ins: M. Mathis
+        name: Matt Mathis
+        org: Google
+
+
 --- abstract
 
 This document describes loss detection and congestion control mechanisms for
@@ -57,7 +84,7 @@ Discussion of this draft takes place on the QUIC working group mailing list
 
 Working Group information can be found at <https://github.com/quicwg>; source
 code and issues list for this draft can be found at
-<https://github.com/quicwg/base-drafts/labels/recovery>.
+<https://github.com/quicwg/base-drafts/labels/-recovery>.
 
 --- middle
 
@@ -161,44 +188,230 @@ latency before a userspace QUIC receiver processes a received packet.
 
 # Loss Detection
 
-## Overview {#overview}
+QUIC senders use both ack information and timeouts to detect lost packets, and
+this section provides a description of these algorithms. Estimating the network
+round-trip time (RTT) is critical to these algorithms and is described first.
 
-QUIC uses a combination of ack information and alarms to detect lost packets.
-An unacknowledged QUIC packet is marked as lost in one of the following ways:
+## Computing the RTT estimate
 
-  * A packet is marked as lost if at least one packet that was sent a threshold
-    number of packets (kReorderingThreshold) after it has been
-    acknowledged. This indicates that the unacknowledged packet is either lost
-    or reordered beyond the specified threshold. This mechanism combines both
-    TCP's FastRetransmit and FACK mechanisms.
+(To be filled)
 
-  * If a packet is near the tail, where fewer than kReorderingThreshold packets
-    are sent after it, the sender cannot expect to detect loss based on the
-    previous mechanism. In this case, a sender uses both ack information and an
-    alarm to detect loss. Specifically, when the last sent packet is
-    acknowledged, the sender waits a short period of time to allow for
-    reordering and then marks any unacknowledged packets as lost. This mechanism
-    is based on the Linux implementation of TCP Early Retransmit.
 
-  * If a packet is sent at the tail, there are no packets sent after it, and the
-    sender cannot use ack information to detect its loss. The sender therefore
-    relies on an alarm to detect such tail losses. This mechanism is based on
-    TCP's Tail Loss Probe.
+## Ack-based Detection
 
-  * If all else fails, a Retransmission Timeout (RTO) alarm is always set when
-    any retransmittable packet is outstanding. When this alarm fires, all
-    unacknowledged packets are marked as lost.
+Ack-based loss detection implements the spirit of TCP's Fast Retransmit
+{{!RFC5681}}, Early Retransmit {{!RFC5827}}, FACK, and SACK loss recovery
+{{!RFC6675}}. This section provides an overview of how these algorithms are
+implemented in QUIC.
 
-  * Instead of a packet threshold to tolerate reordering, a QUIC sender may use
-    a time threshold. This allows for senders to be tolerant of short periods of
-    significant reordering. In this mechanism, a QUIC sender marks a packet as
-    lost when a larger packet number is acknowledged and a threshold amount of
-    time has passed since the packet was sent.
+(TODO: Define unacknowledged packet, ackable packet, outstanding bytes.)
 
-  * Handshake packets, which contain STREAM frames for stream 0, are
-    critical to QUIC transport and crypto negotiation, so a separate alarm
-    period is used for them.
+### Fast Retransmit
 
+An unacknowledged packet is marked as lost when an acknowledgment is received
+for a packet that was sent a threshold number of packets (kReorderingThreshold)
+after the unacknowledged packet. Receipt of the ack indicates that a later
+packet was received, while kReorderingThreshold provides some tolerance for
+reordering of packets in the network.
+
+The RECOMMENDED initial value for kReorderingThreshold is 3.
+
+We derive this default from recommendations for TCP loss recovery {{!RFC5681}}
+{{!RFC6675}}. It is possible for networks to exhibit higher degrees of
+reordering, causing a sender to detect spurious losses. Detecting spurious
+losses leads to unnecessary retransmissions and may result in degraded
+performance due to the actions of the congestion controller upon detecting
+loss. Implementers MAY use algorithms developed for TCP, such as TCP-NCR
+{{!RFC4653}}, to improve QUIC's reordering resilience, though care should be
+taken to map TCP specifics to QUIC correctly. Similarly, using time-based loss
+detection to deal with reordering, such as in PR-TCP, should be more readily
+usable in QUIC. Making QUIC deal with such networks is important open research,
+and implementers are encouraged to explore this space.
+
+### Early Retransmit
+
+Unacknowledged packets close to the tail may have fewer than
+kReorderingThreshold number of ackable packets sent after them. Loss of such
+packets cannot be detected via Fast Retransmit. To enable ack-based loss
+detection of such packets, receipt of an acknowledgment for the last outstanding
+ackable packet triggers the Early Retransmit process, as follows.
+
+If there are unacknowledged ackable packets still pending, they ought to be
+marked as lost. To compensate for the reduced reordering resilience, the sender
+SHOULD set an alarm for a small period of time. If the unacknowledged ackable
+packets are not acknowledged during this time, then these packets MUST be marked
+as lost.
+
+An endpoint SHOULD set the alarm such that a packet is marked as lost no earlier
+than 1.25 * max(SRTT, latest_RTT) since when it was sent.
+
+Using max(SRTT, latest_RTT) protects from the two following cases:
+
+* the latest RTT sample is lower than the SRTT, perhaps due to reordering where
+packet whose ack triggered the Early Retransit process encountered a shorter
+path;
+
+* the latest RTT sample is higher than the SRTT, perhaps due to a sustained
+increase in the actual RTT, but the smoothed SRTT has not yet caught up.
+
+The 1.25 multiplier increases reordering resilience. Implementers MAY experiment
+with using other multipliers, bearing in mind that a lower multiplier reduces
+reordering resilience and increases spurious retransmissions, and a higher
+multipler increases loss recovery delay.
+
+This mechanism is based on Early Retransmit for TCP {{!RFC5827}}. However,
+{{!RFC5827}} does not include the alarm described above. Early Retransmit is
+prone to spurious retransmissions due to its reduced reordering resilence
+without the alarm. This observation led Linux TCP implementers to implement an
+alarm for TCP as well, and this document incorporates this advancement.
+
+
+## Timer-based Detection
+
+Timer-based loss detection implements the spirit of TCP's Tail Loss Probe
+and Retransmission Timeout mechanisms.
+
+### Tail Loss Probe
+
+The algorithm described in this section is an adaptation of the Tail Loss Probe
+algorithm proposed for TCP {{TLP}}.
+
+A packet sent at the tail is particularly vulnerable to slow loss detection,
+since acks of subsequent packets are needed to trigger ack-based detection. To
+ameliorate this weakness of tail packets, the sender schedules an alarm when the
+last ackable packet before quiescence is transmitted. When this alarm fires, a
+Tail Loss Probe (TLP) packet is sent to evoke an acknowledgement from the
+receiver.
+
+The alarm duration, or Probe Timeout (PTO), is set based on the following
+conditions:
+
+* If there is exactly one unacknowledged packet, PTO SHOULD be scheduled for
+  max(2*SRTT, 1.5*SRTT+kDelayedAckTimeout)
+
+* If there are more than one unacknowledged packets, PTO SHOULD be scheduled for
+  max(2*SRTT, 10ms).
+
+* If RTO is earlier, schedule a TLP alarm in its place. That is, PTO SHOULD be
+  scheduled for min(RTO, PTO).
+
+kDelayedAckTimeout is the expected delayed ACK timer.  When there is exactly one
+unacknowledged packet, the alarm duration includes time for an acknowledgment to
+be received, and additionally, a kDelayedAckTimeout period to compensate for the
+delayed acknowledgment timer at the receiver.
+
+The RECOMMENDED value for kDelayedAckTimeout is 25ms.
+
+(TODO: Add negotiability of delayed ack timeout.)
+
+A PTO value of at least 2*SRTT ensures that the ACK is overdue. Using a PTO of
+exactly 1*SRTT may generate spurious probes, and 2*SRTT is simply the next
+integral value of RTT.
+
+(TODO: These values of 2 and 1.5 are a bit arbitrary. Reconsider these.)
+
+If the Retransmission Timeout (RTO, {{rto}}) period is smaller than the computed
+PTO, then a PTO is scheduled for the smaller RTO period.
+
+To reduce latency, it is RECOMMENDED that the sender set and allow the TLP alarm
+to fire twice before setting an RTO alarm. In other words, when the TLP alarm
+fires the first time, a TLP packet is sent, and it is RECOMMENDED that the TLP
+alarm be scheduled for a second time. When the TLP alarm fires the second time,
+a second TLP packet is sent, and an RTO alarm SHOULD be scheduled {{rto}}.
+
+A TLP packet SHOULD carry new data when possible. If new data is unavailable or
+new data cannot be sent due to flow control, a TLP packet MAY retransmit
+unacknowledged data to potentially reduce recovery time. Since a TLP alarm is
+used to send a probe into the network prior to establishing any packet loss,
+prior unacknowledged packets SHOULD NOT be marked as lost when a TLP alarm
+fires.
+
+A TLP packet MUST NOT be blocked by the sender's congestion controller. The
+sender MUST however count these bytes as additional bytes in flight, since a TLP
+adds network load without establishing packet loss.
+
+A sender will commonly not know that a packet being sent is a tail packet.
+Consequently, a sender may have to arm or adjust the TLP alarm on every sent
+ackable packet.
+
+### Retransmission Timeout {#rto}
+
+A Retransmission Timeout (RTO) alarm is the final backstop for loss
+detection. The algorithm used in QUIC is based on the RTO algorithm for TCP
+{{!RFC5681}} and is additionally resilient to spurious RTO events {{!RFC5682}}.
+
+When the last TLP packet is sent, an alarm is scheduled for the RTO period. When
+this alarm fires, the sender sends two packets, to evoke acknowledgements from
+the receiver, and restarts the RTO alarm.
+
+Similar to TCP {{!RFC6298}}, the RTO period is set based on the following
+conditions:
+
+* When the final TLP packet is sent, the RTO period is set to max(SRTT +
+  4*RTTVAR, minRTO)
+
+* When an RTO alarm fires, the RTO period is doubled.
+
+The sender typically has incurred a high latency penalty by the time an RTO
+alarm fires, and this penalty increases exponentially in subsequent consecutive
+RTO events. Sending a single packet on an RTO event therefore makes the
+connection very sensitive to single packet loss. Sending two packets instead of
+one significantly increases resilience to packet drop in both directions, thus
+reducing the probability of consecutive RTO events.
+
+QUIC's RTO algorithm differs from TCP in that the firing of an RTO alarm is not
+considered a strong enough signal of packet loss. An RTO alarm fires only when
+there's a prolonged period of network silence, which could be caused by a change
+in the underlying network RTT.
+
+When an acknowledgment is received for a packet sent on an RTO event, any
+unacknowledged packets with lower packet numbers than those acknowledged MUST be
+marked as lost.
+
+A packet sent when an RTO alarm fires MAY carry new data if available or
+unacknowledged data to potentially reduce recovery time. Since this packet is
+sent as a probe into the network prior to establishing any packet loss, prior
+unacknowledged packets SHOULD NOT be marked as lost.
+
+A packet sent on an RTO alarm MUST NOT be blocked by the sender's congestion
+controller. A sender MUST however count these bytes as additional bytes in
+flight, since this packet adds network load without establishing packet loss.
+
+
+### Handshake Timeout
+
+Handshake packets, which contain STREAM frames for stream 0, are critical to
+QUIC transport and crypto negotiation, so a separate alarm is used for them.
+
+The handshake timeout SHOULD be set to twice the initial RTT.
+
+There are no prior RTT samples within this connection. However, this may be a
+resumed connection over the same network, in which case, a client SHOULD use the
+previous connection's final smoothed RTT value as the resumed connection's
+initial RTT.
+
+If no previous RTT is available, or if the network changes, the initial RTT
+SHOULD be set to 100ms.
+
+When the first handshake packet is sent, the sender SHOULD set an alarm for the
+handshake timeout period.
+
+When the alarm fires, the sender MUST retransmit all unacknowledged handshake
+frames. The sender SHOULD double the handshake timeout and set an alarm for this
+period.
+
+On each consecutive firing of the handshake alarm, the sender SHOULD double the
+handshake timeout period.
+
+When an acknowledgement is received for a handshake packet, the new RTT is
+computed and the alarm SHOULD be set for twice the newly computed smoothed RTT.
+
+Handshake frames may be cancelled by handshake state transitions. In particular,
+all non-protected frames SHOULD no longer be transmitted once packet protection
+is available.
+
+(TODO: Work this section some more. Add text on client vs. server, and on
+stateless retry.)
 
 ## Algorithm Details
 
@@ -553,10 +766,10 @@ Pseudocode for DetectLostPackets follows:
        delay_until_lost = 9/8 * max(latest_rtt, smoothed_rtt)
      foreach (unacked < largest_acked.packet_number):
        time_since_sent = now() - unacked.time_sent
-       packet_delta = largest_acked.packet_number - unacked.packet_number
+       delta = largest_acked.packet_number - unacked.packet_number
        if (time_since_sent > delay_until_lost):
          lost_packets.insert(unacked)
-       else if (packet_delta > reordering_threshold)
+       else if (delta > reordering_threshold)
          lost_packets.insert(unacked)
        else if (loss_time == 0 && delay_until_lost != infinite):
          loss_time = now() + delay_until_lost - time_since_sent
