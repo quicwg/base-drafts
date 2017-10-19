@@ -570,9 +570,9 @@ unless it has received a packet from the server.  If the client has received a
 packet from the server, the connection ID field uses the value provided by the
 server.
 
-The first Initial packet that is sent by a client contains a random
-31-bit value.  All subsequent packets contain a packet number that is
-incremented by one, see ({{packet-numbers}}).
+The first Initial packet that is sent by a client contains a random 31-bit
+value.  All subsequent packets contain a packet number that is incremented by
+one, see ({{packet-numbers}}).
 
 The payload of a Initial packet consists of a STREAM frame (or frames)
 for stream 0 containing a cryptographic handshake message, with enough PADDING
@@ -602,10 +602,10 @@ A Retry packet is never explicitly acknowledged in an ACK frame
 by a client.  Receiving another Initial packet implicitly acknowledges a Retry
 packet.
 
-After receiving a Retry packet, the client uses a new 
+After receiving a Retry packet, the client uses a new
 Initial packet containing the next cryptographic handshake message.  The client
 retains the state of its cryptographic handshake, but discards all transport
-state.  The Initial packet that is generated in response to a Retry packet 
+state.  The Initial packet that is generated in response to a Retry packet
 includes STREAM frames on stream 0 that start again at an offset of 0.
 
 Continuing the cryptographic handshake is necessary to ensure that an attacker
@@ -651,10 +651,10 @@ Packets protected with 0-RTT keys use a type value of 0x05.  The connection ID
 field for a 0-RTT packet is selected by the client.
 
 The client can send 0-RTT packets after receiving a Handshake packet
-({{packet-server-cleartext}}), if that packet does not complete the handshake.
-Even if the client receives a different connection ID in the Handshake
-packet, it MUST continue to use the connection ID selected by the client for
-0-RTT packets, see {{connection-id}}.
+({{packet-handshake}}), if that packet does not complete the handshake.  Even if
+the client receives a different connection ID in the Handshake packet, it MUST
+continue to use the connection ID selected by the client for 0-RTT packets, see
+{{connection-id}}.
 
 The version field for protected packets is the current QUIC version.
 
@@ -674,22 +674,20 @@ using the CONNECTION_ID flag.  When present, the Connection ID is in the same
 location in all packet headers, making it straightforward for middleboxes, such
 as load balancers, to locate and use it.
 
-The client MUST choose a random connection ID and use it in Initial
-packets ({{packet-initial}}) and 0-RTT packets ({{packet-protected}}).
+The client MUST choose a random connection ID and use it in Initial packets
+({{packet-initial}}) and 0-RTT packets ({{packet-protected}}).
 
 When the server receives a Initial packet and decides to proceed with the
 handshake, it chooses a new value for the connection ID and sends that in a
-Handshake packet ({{packet-handshake}}).  The server MAY choose to
-use the value that the client initially selects.
+Handshake packet ({{packet-handshake}}).  The server MAY choose to use the value
+that the client initially selects.
 
 Once the client receives the connection ID that the server has chosen, it MUST
-use it for all subsequent Handshake ({{packet-handshake}}) and
-1-RTT ({{packet-protected}}) packets but not for 0-RTT packets
-({{packet-protected}}).
+use it for all subsequent Handshake ({{packet-handshake}}) and 1-RTT
+({{packet-protected}}) packets but not for 0-RTT packets ({{packet-protected}}).
 
-Server's Version Negotiation ({{packet-version}}) and Retry
-({{packet-retry}}) packets MUST use connection ID selected by the
-client.
+Server's Version Negotiation ({{packet-version}}) and Retry ({{packet-retry}})
+packets MUST use connection ID selected by the client.
 
 
 ## Packet Numbers {#packet-numbers}
@@ -905,11 +903,11 @@ QUIC's connection establishment begins with version negotiation, since all
 communication between the endpoints, including packet and frame formats, relies
 on the two endpoints agreeing on a version.
 
-A QUIC connection begins with a client sending a Client Initial packet
-({{packet-client-initial}}). The details of the handshake mechanisms are
-described in {{handshake}}, but all of the initial packets sent from the client
-to the server MUST use the long header format - which includes the version of
-the protocol being used - and they MUST be padded to at least 1200 octets.
+A QUIC connection begins with a client sending an Initial packet
+({{packet-initial}}). The details of the handshake mechanisms are described in
+{{handshake}}, but any Initial packet sent from the client to the server MUST
+use the long header format - which includes the version of the protocol being
+used - and they MUST be padded to at least 1200 octets.
 
 The server receives this packet and determines whether it potentially creates a
 new connection (see {{packet-handling}}).  If the packet might generate a new
