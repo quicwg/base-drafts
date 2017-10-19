@@ -572,8 +572,9 @@ type HTTP_WRONG_STREAM.
 
 The CANCEL_PUSH frame has no defined flags.
 
-The CANCEL_PUSH frame carries a 32-bit Push ID that identifies the server push
-that is being cancelled (see {{frame-push-promise}}).
+The CANCEL_PUSH frame carries a Push ID encoded as a variable-length integer.
+The Push ID identifies the server push that is being cancelled (see
+{{frame-push-promise}}).
 
 If the client receives a CANCEL_PUSH frame, that frame might identify a Push ID
 that has not yet been mentioned by a PUSH_PROMISE frame.
