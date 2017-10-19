@@ -1848,9 +1848,9 @@ encoding properties.
 | 2Bit | Length | Usable Bits | Range                 |
 |:-----|:-------|:------------|:----------------------|
 | 00   | 1      | 6           | 0-63                  |
-| 01   | 2      | 14          | 0-16384               |
-| 10   | 4      | 30          | 0-1073741824          |
-| 11   | 8      | 62          | 0-4611686018427387904 |
+| 01   | 2      | 14          | 0-16383               |
+| 10   | 4      | 30          | 0-1073741823          |
+| 11   | 8      | 62          | 0-4611686018427387903 |
 {: #integer-summary title="Summary of Integer Encodings"}
 
 For example, the eight octet sequence c2 19 7c 5e ff 14 e8 8c (in hexadecimal)
