@@ -1141,10 +1141,9 @@ initial_max_data (0x0001):
 
 : The initial maximum data parameter contains the initial value for the maximum
   amount of data that can be sent on the connection.  This parameter is encoded
-  as an unsigned 32-bit integer in units of 1024 octets.  That is, the value
-  here is multiplied by 1024 to determine the actual maximum value.  This is
-  equivalent to sending a MAX_DATA ({{frame-max-data}}) for the connection
-  immediately after completing the handshake.
+  as an unsigned 32-bit integer in units of octets.  This is equivalent to
+  sending a MAX_DATA ({{frame-max-data}}) for the connection immediately after
+  completing the handshake.
 
 initial_max_stream_id (0x0002):
 
