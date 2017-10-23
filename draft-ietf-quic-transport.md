@@ -3045,8 +3045,7 @@ terminal states.  A receiver could receive any of these frames in any state, but
 only due to the possibility of delayed delivery of packets carrying them.
 
 The receiver of a stream sends MAX_STREAM_DATA ({{frame-max-stream-data}}) and
-STOP_SENDING frames ({{frame-stop-sending}}) to allow the sender to write stream
-data and to request stream cancellation.
+STOP_SENDING frames ({{frame-stop-sending}}).
 
 The receiver only sends MAX_STREAM_DATA in the "Recv" state.  A receiver can
 send STOP_SENDING in any state where it has not received a RST_STREAM frame;
