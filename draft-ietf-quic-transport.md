@@ -3032,6 +3032,30 @@ stream was reset, the receive stream transitions to the "Reset Read" state,
 which is a terminal state.
 
 
+### Permitted Frame Types
+
+The sender of a stream sends just three frame types that affect the state of a
+stream at either sender or receiver: STREAM ({{frame-stream}}), STREAM_BLOCKED
+({{frame-stream-blocked}}), and RST_STREAM ({{frame-rst-stream}}).
+
+A sender MUST NOT send any of these frames from a terminal state ("Data Recvd"
+or "Reset Recvd").  A sender MUST NOT send STREAM or STREAM_BLOCKED after
+sending a RST_STREAM; that is, in the "Reset Sent" state in addition to the
+terminal states.  A receiver could receive any of these frames in any state, but
+only due to the possibility of delayed delivery of packets carrying them.
+
+The receiver of a stream sends MAX_STREAM_DATA ({{frame-max-stream-data}}) and
+STOP_SENDING frames ({{frame-stop-sending}}) to allow the sender to write stream
+data and to request stream cancellation.
+
+The receiver only sends MAX_STREAM_DATA in the "Recv" state.  A receiver can
+send STOP_SENDING in any state where it has not received a RST_STREAM frame;
+that is states other than "Reset Recvd" or "Reset Read".  However there is
+little value in sending a STOP_SENDING frame after all stream data has been
+received in the "Data Recvd" state.  A sender could receive these frames in any
+state as a result of delayed delivery of packets.
+
+
 ### Bidirectional Stream States {#stream-bidi-states}
 
 A bidirectional stream is composed of a send stream and a receive stream.
