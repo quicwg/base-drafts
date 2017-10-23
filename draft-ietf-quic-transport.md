@@ -3067,7 +3067,9 @@ the states of the pair of streams.  The simplest model presents the stream as
 {{stream-bidi-mapping}} shows a more complex mapping of bidirectional stream
 states that loosely correspond to the stream states in HTTP/2
 {{?HTTP2=RFC7540}}.  This shows that multiple states on send or receive streams
-are mapped to the same composite state.
+are mapped to the same composite state.  Note that this is just one possibility
+for a mapping, one that requires that data is acknowledged before the transition
+to a closed or half-closed state.
 
 | Send Stream            | Receive Stream         | Composite State      |
 |:-----------------------|:-----------------------|:---------------------|
@@ -3082,7 +3084,7 @@ are mapped to the same composite state.
 | Reset Sent/Reset Recvd | Reset Recvd/Reset Read | closed               |
 | Data Recvd             | Data Recvd/Data Read   | closed               |
 | Data Recvd             | Reset Recvd/Reset Read | closed               |
-{: #stream-bidi-mapping title="Mapping of Stream States to HTTP/2"}
+{: #stream-bidi-mapping title="Possible Mapping of Stream States to HTTP/2"}
 
 Note (*1):
 
