@@ -1541,10 +1541,10 @@ peer is also draining.  Receiving a CONNECTION_CLOSE or APPLICATION_CLOSE frame
 is sufficient confirmation, as is receiving a stateless reset.  However,
 disposing of connection state could result in delayed or reordered packets to be
 handled poorly.  For endpoints that have some alternative means to ensure that
-that late arriving packets on the connection are discarded, such as closing the
-UDP port, an abbreviated draining period can allow for faster resource recovery.
-Servers that retain an open port for accepting new connections SHOULD NOT exit
-the draining period early.
+late-arriving packets on the connection do not create QUIC state, such as by
+closing the UDP socket, an abbreviated draining period can allow for faster
+resource recovery.  Servers that retain an open port for accepting new
+connections SHOULD NOT exit the draining period early.
 
 The draining period does not apply when a stateless reset ({{stateless-reset}})
 is sent.
