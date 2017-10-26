@@ -2951,6 +2951,7 @@ protocol.
        o
        | Recv STREAM / STREAM_BLOCKED / RST_STREAM
        | Open Paired Stream (bidirectional)
+       | Recv MAX_STREAM_DATA
        v
    +-------+
    | Recv  | Recv RST_STREAM
@@ -2989,6 +2990,11 @@ immediately transition to the "Reset Recvd".
 The receive stream enters the "Recv" state when the sending part of a
 bidirectional stream initiated by the endpoint (type 0 for a client, type 1 for
 a server) enters the "Open" state.
+
+A bidirectional stream also opens when a MAX_STREAM_DATA frame is received.
+Receiving a MAX_STREAM_DATA frame implies that the remote peer has opened the
+stream and is providing flow control credit.  A MAX_STREAM_DATA frame might
+arrive before a STREAM or STREAM_BLOCKED frame if packets are lost or reordered.
 
 In the "Recv" state, the endpoint receives STREAM and STREAM_BLOCKED frames.
 Incoming data is buffered and reassembled into the correct order for delivery to
