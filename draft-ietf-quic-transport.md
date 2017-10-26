@@ -2032,11 +2032,11 @@ Maximum Data:
 
 All data sent in STREAM frames counts toward this limit, with the exception of
 data on stream 0.  The sum of the largest received offsets on all streams -
-including closed streams, but excluding stream 0 - MUST NOT exceed the value
-advertised by a receiver.  An endpoint MUST terminate a connection with a
-QUIC_FLOW_CONTROL_RECEIVED_TOO_MUCH_DATA error if it receives more data than the
-maximum data value that it has sent, unless this is a result of a change in the
-initial limits (see {{zerortt-parameters}}).
+including streams in terminal states, but excluding stream 0 - MUST NOT exceed
+the value advertised by a receiver.  An endpoint MUST terminate a connection
+with a QUIC_FLOW_CONTROL_RECEIVED_TOO_MUCH_DATA error if it receives more data
+than the maximum data value that it has sent, unless this is a result of a
+change in the initial limits (see {{zerortt-parameters}}).
 
 
 ## MAX_STREAM_DATA Frame {#frame-max-stream-data}
@@ -2681,15 +2681,16 @@ When a packet is detected as lost, the sender re-sends any frames as necessary:
 * ACK and PADDING frames MUST NOT be retransmitted.  ACK frames
   containing updated information will be sent as described in {{frame-ack}}.
 
-* STOP_SENDING frames MUST be retransmitted, unless the stream has become closed
-  in the appropriate direction.  See {{solicited-state-transitions}}.
+* STOP_SENDING frames MUST be retransmitted until the receive stream enters
+  either a "Data Recvd" or "Reset Recvd" state.  See
+  {{solicited-state-transitions}}.
 
-* The most recent MAX_STREAM_DATA frame for a stream MUST be retransmitted. Any
-  previous unacknowledged MAX_STREAM_DATA frame for the same stream SHOULD NOT
-  be retransmitted since a newer MAX_STREAM_DATA frame for a stream obviates the
-  need for delivering older ones. Similarly, the most recent MAX_DATA and
-  MAX_STREAM_ID frames MUST be retransmitted; previous unacknowledged ones
-  SHOULD NOT be retransmitted.
+* The most recent MAX_STREAM_DATA frame for a stream MUST be retransmitted until
+  the receive stream enters a "Size Known" state. Any previous unacknowledged
+  MAX_STREAM_DATA frame for the same stream SHOULD NOT be retransmitted since a
+  newer MAX_STREAM_DATA frame for a stream obviates the need for delivering
+  older ones. Similarly, the most recent MAX_DATA frame MUST be retransmitted;
+  previous unacknowledged ones SHOULD NOT be retransmitted.
 
 * BLOCKED, STREAM_BLOCKED, and STREAM_ID_BLOCKED frames SHOULD be retransmitted
   if the sender is still blocked on the same limit.  If the limit has been
@@ -2838,10 +2839,10 @@ in both directions.
 Opening a stream causes all lower-numbered streams of the same type to
 implicitly open.  This includes both send and receive streams if the stream is
 bidirectional.  For bidirectional streams, an endpoint can send data on an
-implicitly opened a stream.  On both unidirectional and bidirectional streams,
-an endpoint MAY send MAX_STREAM_DATA or STOP_SENDING on implicitly opened
-streams.  An endpoint SHOULD NOT implicitly open streams that it initiates,
-instead opening streams in order.
+implicitly opened stream.  On both unidirectional and bidirectional streams, an
+endpoint MAY send MAX_STREAM_DATA or STOP_SENDING on implicitly opened streams.
+An endpoint SHOULD NOT implicitly open streams that it initiates, instead
+opening streams in order.
 
 Note:
 
@@ -3067,8 +3068,8 @@ the states of the pair of streams.  The simplest model presents the stream as
 states that loosely correspond to the stream states in HTTP/2
 {{?HTTP2=RFC7540}}.  This shows that multiple states on send or receive streams
 are mapped to the same composite state.  Note that this is just one possibility
-for a mapping, one that requires that data is acknowledged before the transition
-to a closed or half-closed state.
+for such a mapping; thi mapping requires that data is acknowledged before the
+transition to a "closed" or "half-closed" state.
 
 | Send Stream            | Receive Stream         | Composite State      |
 |:-----------------------|:-----------------------|:---------------------|
@@ -3088,7 +3089,7 @@ to a closed or half-closed state.
 Note (*1):
 
 : A stream is considered "idle" if it has not yet been created, or if the
-  receive stream is in the Recv state without yet having received any frames.
+  receive stream is in the "Recv" state without yet having received any frames.
 
 
 ## Solicited State Transitions
@@ -3104,19 +3105,21 @@ connection and stream flow-control windows, even though these frames will be
 discarded upon receipt.  This avoids potential ambiguity about which STREAM
 frames count toward flow control.
 
-STOP_SENDING can only be sent for any stream that is not "idle", however it is
-mostly useful for streams in the "open" or "half-closed (local)" states.  A
-STOP_SENDING frame requests that the receiving endpoint send a RST_STREAM frame.
-An endpoint that receives a STOP_SENDING frame MUST send a RST_STREAM frame for
-that stream with an error code of STOPPING.  If the STOP_SENDING frame is
-received on a stream that is already in the "half-closed (local)" or "closed"
-states, a RST_STREAM frame MAY still be sent in order to cancel retransmission
-of previously-sent STREAM frames.
+A STOP_SENDING frame requests that the receiving endpoint send a RST_STREAM
+frame.  An endpoint that receives a STOP_SENDING frame MUST send a RST_STREAM
+frame for that stream, and can use an error code of STOPPING.  If the
+STOP_SENDING frame is received on a send stream that is already in the "Data
+Sent" state, a RST_STREAM frame MAY still be sent in order to cancel
+retransmission of previously-sent STREAM frames.
 
-While STOP_SENDING frames are retransmittable, an implementation MAY choose not
-to retransmit a lost STOP_SENDING frame if the stream has already been closed
-in the appropriate direction since the frame was first generated.
-See {{packetization}}.
+STOP_SENDING can only be sent for a receive stream that has not been
+reset. STOP_SENDING is most useful for streams in the "Recv" or "Size Known"
+states.
+
+An endpoint is expected to send STOP_SENDING frames if packets containing the
+frame are lost.  However, once either all stream data has been received or a
+RST_STREAM frame - that is, any receive stream state other than "Recv" or "Size
+Known" - sending the frame is not necessary.
 
 
 ## Stream Concurrency {#stream-concurrency}
@@ -3363,10 +3366,8 @@ a RST_STREAM frame.  Otherwise, the final offset is the offset of the end of the
 data carried in a STREAM frame marked with a FIN flag, or 0 in the case of
 incoming unidirectional streams.
 
-An endpoint will know the final offset for a stream when the stream enters the
-"half-closed (remote)" state.  However, if there is reordering or loss, an
-endpoint might learn the final offset prior to entering this state if it is
-carried on a STREAM frame.
+An endpoint will know the final offset for a stream when the receive stream
+enters the "Size Known" or "Reset Recvd" state.
 
 An endpoint MUST NOT send data on a stream at or beyond the final offset.
 
