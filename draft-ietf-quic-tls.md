@@ -895,9 +895,7 @@ first packet that triggered the change.  An endpoint that notices a changed
 KEY_PHASE bit can update keys and decrypt the packet that contains the changed
 bit, see {{key-update}}.
 
-The KEY_PHASE bit is included as the 0x20 bit of the QUIC short header, or is
-determined by the packet type from the long header (a type of 0x06 indicates a
-key phase of 0, 0x07 indicates key phase 1).
+The KEY_PHASE bit is included as the 0x20 bit of the QUIC short header.
 
 Transitions between keys during the handshake are complicated by the need to
 ensure that TLS handshake messages are sent with the correct packet protection.
