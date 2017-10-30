@@ -3636,9 +3636,19 @@ thanks to all.
 
 Issue and pull request numbers are listed with a leading octothorp.
 
+## Since draft-ietf-quic-transport-07
+
+- Employ variable-length integer encodings throughout (#595)
+- Draining period can terminate early (#869)
+
 ## Since draft-ietf-quic-transport-06
 
-- Replaced FNV-1a with AES-GCM for all "Cleartext" packets.
+- Replaced FNV-1a with AES-GCM for all "Cleartext" packets (#554)
+- Split error code space between application and transport (#485)
+- Stateless reset token moved to end (#820)
+- 1-RTT-protected long header types removed (#848)
+- No acknowledgments during draining period (#852)
+- Remove "application close" as a separate close type (#854)
 
 ## Since draft-ietf-quic-transport-05
 

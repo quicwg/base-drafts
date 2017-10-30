@@ -16,7 +16,7 @@ author:
     ins: M. Bishop
     name: Mike Bishop
     org: Microsoft
-    email: Michael.Bishop@microsoft.com
+    email: michael.bishop@microsoft.com
     role: editor
 
 normative:
@@ -1364,9 +1364,13 @@ The original authors of this specification were Robbie Shade and Mike Warres.
 > **RFC Editor's Note:**  Please remove this section prior to publication of a
 > final version of this document.
 
-## Since draft-ietf-quic-http-06
+## Since draft-ietf-quic-http-07
 
 - Changes for integer encodings in QUIC (#595)
+
+## Since draft-ietf-quic-http-06
+
+- Track changes in QUIC error code usage (#485)
 
 ## Since draft-ietf-quic-http-05
 
