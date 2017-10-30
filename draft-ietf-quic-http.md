@@ -212,6 +212,10 @@ over a QUIC stream always maps to a particular HTTP transaction. Requests and
 responses are considered complete when the corresponding QUIC stream is closed
 in the appropriate direction.
 
+Stream IDs in HTTP are encoded using a 32-bit unsigned integer.  Though QUIC
+permits use of up to to 2^62-1 streams, HTTP over QUIC only uses streams with
+32-bit identifiers.
+
 
 ##  Stream 1: Control Stream
 
