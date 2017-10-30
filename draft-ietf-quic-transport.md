@@ -1146,10 +1146,9 @@ initial_max_data (0x0001):
 
 : The initial maximum data parameter contains the initial value for the maximum
   amount of data that can be sent on the connection.  This parameter is encoded
-  as an unsigned 32-bit integer in units of 1024 octets.  That is, the value
-  here is multiplied by 1024 to determine the actual maximum value.  This is
-  equivalent to sending a MAX_DATA ({{frame-max-data}}) for the connection
-  immediately after completing the handshake.
+  as an unsigned 32-bit integer in units of octets.  This is equivalent to
+  sending a MAX_DATA ({{frame-max-data}}) for the connection immediately after
+  completing the handshake.
 
 initial_max_stream_id (0x0002):
 
@@ -1638,19 +1637,29 @@ from its peer.  These packets might have been sent prior to receiving any close
 signal, or they might be retransmissions of packets for which acknowledgments
 were lost.
 
-The draining period persists for three times the current Retransmission Timeout
-(RTO) interval as defined in {{QUIC-RECOVERY}}.  During this period, new packets
-can be acknowledged, but no new application data can be sent on the connection.
+The draining period exists to ensure that delayed or reordered packets are
+properly discarded.  This state SHOULD persist for three times the current
+Retransmission Timeout (RTO) interval as defined in {{QUIC-RECOVERY}}.  During
+this period no new application data can be sent on the connection.
 
 Different treatment is given to packets that are received while a connection is
-in the draining period depending on how the connection was closed.
-
-An endpoint that is in a draining period MUST NOT send packets unless they
-contain a CONNECTION_CLOSE or APPLICATION_CLOSE frame.
+in the draining period depending on how the connection was closed.  An endpoint
+that is in a draining period MUST NOT send packets unless they contain a
+CONNECTION_CLOSE or APPLICATION_CLOSE frame.
 
 Once the draining period has ended, an endpoint SHOULD discard per-connection
 state.  This results in new packets on the connection being discarded.  An
 endpoint MAY send a stateless reset in response to any further incoming packets.
+
+An endpoint MAY exit the draining period earlier if it can guarantee that its
+peer is also draining.  Receiving a CONNECTION_CLOSE or APPLICATION_CLOSE frame
+is sufficient confirmation, as is receiving a stateless reset.  However,
+disposing of connection state could result in delayed or reordered packets to be
+handled poorly.  For endpoints that have some alternative means to ensure that
+late-arriving packets on the connection do not create QUIC state, such as by
+closing the UDP socket, an abbreviated draining period can allow for faster
+resource recovery.  Servers that retain an open port for accepting new
+connections SHOULD NOT exit the draining period early.
 
 The draining period does not apply when a stateless reset ({{stateless-reset}})
 is sent.
@@ -1722,7 +1731,7 @@ following layout:
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+
-|0|C|K|  00001  |
+|0|C|K|Type (5) |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                                                               |
 +                     [Connection ID (64)]                      +
@@ -2060,9 +2069,10 @@ The frame is as follows:
 The fields in the MAX_STREAM_ID frame are as follows:
 
 Maximum Stream ID:
-
-: ID of the maximum peer-initiated stream ID for the connection encoded as a
-  variable-length integer.
+: ID of the maximum unidirectional or bidirectional peer-initiated stream ID for
+  the connection encoded as a variable-length integer. The limit applies to
+  unidirectional steams if the second least signification bit of the stream ID
+  is 1, and applies to bidirectional streams if it is 0.
 
 Loss or reordering can mean that a MAX_STREAM_ID frame can be received which
 states a lower stream limit than the client has previously received.
@@ -2693,12 +2703,18 @@ Too Big messages.
 provisional until QUIC's loss detection algorithm determines that the packet is
 actually lost.
 
+
 # Streams: QUIC's Data Structuring Abstraction {#streams}
 
-Streams in QUIC provide a lightweight, ordered, and bidirectional byte-stream
-abstraction modeled closely on HTTP/2 streams {{?RFC7540}}.
+Streams in QUIC provide a lightweight, ordered byte-stream abstraction.
 
-Streams can be created either by the client or the server, can concurrently send
+There are two basic types of stream in QUIC.  Unidirectional streams carry data
+in one direction only; bidirectional streams allow for data to be sent in both
+directions.  Different stream identifiers are used to distinguish between
+unidirectional and bidirectional streams, as well as to create a separation
+between streams that are initiated by the client and server (see {{stream-id}}).
+
+Either type of stream can be created by either endpoint, can concurrently send
 data interleaved with other streams, and can be cancelled.
 
 Data that is received on a stream is delivered in order within that stream, but
@@ -2723,15 +2739,39 @@ for some applications.
 ## Stream Identifiers {#stream-id}
 
 Streams are identified by an unsigned 62-bit integer, referred to as the Stream
-ID.  To avoid Stream ID collision, clients MUST initiate streams using
-odd-numbered Stream IDs; servers MUST initiate streams using even-numbered
-Stream IDs. If an endpoint receives a frame which corresponds to a stream which
-is allocated to it (i.e., odd-numbered for the client or even-numbered for the
-server) but which it has not yet created, it MUST close the connection with
-error code STREAM_STATE_ERROR.
+ID.  The least significant two bits of the Stream ID are used to identify the
+type of stream (unidirectional or bidirectional) and the initiator of the
+stream.
 
-Stream ID 0 (0x0) is reserved for the cryptographic handshake.  Stream 0 MUST
-NOT be used for application data, and is the first client-initiated stream.
+The least significant bit (0x1) of the Stream ID identifies the initiator of the
+stream.  Clients initiate even-numbered streams (those with the least
+significant bit set to 0); servers initiate even-numbered streams (with the bit
+set to 1).  Separation of the stream identifiers ensures that client and server
+are able to open streams without the latency imposed by negotiating for an
+identifier.
+
+If an endpoint receives a frame for a stream that it expects to initiate (i.e.,
+odd-numbered for the client or even-numbered for the server), but which it has
+not yet opened, it MUST close the connection with error code STREAM_STATE_ERROR.
+
+The second least significant bit (0x2) of the Stream ID differentiates between
+unidirectional streams and bidirectional streams. Unidirectional streams always
+have this bit set to 1 and bidirectional streams have this bit set to 0.
+
+The two type bits from a Stream ID therefore identify streams as summarized in
+{{stream-id-types}}.
+
+| Low Bits | Stream Type                      |
+|:---------|:---------------------------------|
+| 0x0      | Client-Initiated, Bidirectional  |
+| 0x1      | Server-Initiated, Bidirectional  |
+| 0x2      | Client-Initiated, Unidirectional |
+| 0x3      | Server-Initiated, Unidirectional |
+{: #stream-id-types title="Stream ID Types"}
+>>>>>>> origin/master
+
+Stream ID 0 (0x0) is a client-initiated, bidirectional stream that is used for
+the cryptographic handshake.  Stream 0 MUST NOT be used for application data.
 
 A QUIC endpoint MUST NOT reuse a Stream ID.  Streams MUST be created
 in sequential order.  Open streams can be used in any order.  Streams
@@ -2762,6 +2802,7 @@ shown in the following figure and described below.
                                  v
                  recv FIN/  +--------+    send FIN/
                  recv RST   |        |    send RST
+                 send UNI   |        |    recv UNI
                   ,---------|  open  |-----------.
                  /          |        |            \
                 v           +--------+             v
@@ -2781,6 +2822,7 @@ shown in the following figure and described below.
    recv:   endpoint receives this frame
 
    STREAM: a STREAM frame
+   UNI:    a STREAM frame with a unidirectional stream ID
    FIN:    FIN flag in a STREAM frame
    RST:    RST_STREAM frame
    MSD:    MAX_STREAM_DATA frame
@@ -2861,7 +2903,9 @@ Any frame type that mentions a stream ID can be sent in this state.
 A stream that is in the "half-closed (local)" state MUST NOT be used for sending
 on new STREAM frames.  Retransmission of data that has already been sent on
 STREAM frames is permitted.  An endpoint MAY also send MAX_STREAM_DATA and
-STOP_SENDING in this state.
+STOP_SENDING in this state. Unidirectional streams created by the peer are
+immediately half-closed (local) to the receiver and are subsequently treated
+identically to a half-closed bidirectional stream.
 
 An application can decide to abandon a stream in this state. An endpoint can
 send RST_STREAM for a stream that was closed with the FIN flag. The final offset
@@ -2887,7 +2931,8 @@ after a frame bearing the FIN flag is sent.
 A stream is "half-closed (remote)" when the stream is no longer being used by
 the peer to send any data.  An endpoint will have either received all data that
 a peer has sent or will have received a RST_STREAM frame and discarded any
-received data.
+received data. Unidirectional streams created locally are immediately
+half-closed (remote) to the creator.
 
 Once all data has been either received or discarded, a sender is no longer
 obligated to update the maximum received data for the connection.
@@ -3196,8 +3241,9 @@ is increased.
 
 The final offset is the count of the number of octets that are transmitted on a
 stream.  For a stream that is reset, the final offset is carried explicitly in
-the RST_STREAM frame.  Otherwise, the final offset is the offset of the end of
-the data carried in STREAM frame marked with a FIN flag.
+a RST_STREAM frame.  Otherwise, the final offset is the offset of the end of the
+data carried in a STREAM frame marked with a FIN flag, or 0 in the case of
+incoming unidirectional streams.
 
 An endpoint will know the final offset for a stream when the stream enters the
 "half-closed (remote)" state.  However, if there is reordering or loss, an
