@@ -2426,9 +2426,9 @@ First ACK Block:
 
 Gap (repeated):
 
-: A variable-length integer indicating specifying the number of contiguous
-  unacknowledged packets preceding the packet number one lower than the smallest
-  in the preceding ACK Block.
+: A variable-length integer indicating the number of contiguous unacknowledged
+  packets preceding the packet number one lower than the smallest in the
+  preceding ACK Block.
 
 ACK Block (repeated):
 
