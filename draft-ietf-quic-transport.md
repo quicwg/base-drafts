@@ -2687,8 +2687,7 @@ identifier.
 
 If an endpoint receives a frame for a stream that it expects to initiate (i.e.,
 odd-numbered for the client or even-numbered for the server), but which it has
-not yet opened but which it has not yet created, it MUST close the connection
-with error code STREAM_STATE_ERROR.
+not yet opened, it MUST close the connection with error code STREAM_STATE_ERROR.
 
 The second least significant bit (0x2) of the Stream ID differentiates between
 unidirectional streams and bidirectional streams. Unidirectional streams always
