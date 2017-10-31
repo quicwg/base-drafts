@@ -508,7 +508,7 @@ The PRIORITY frame payload has the following fields:
     or a Push ID when the PUSH_PRIORITIZED flag is set.
 
   Stream Dependency ID:
-  : A variable length integer that identifies a dependent request.  This
+  : A variable-length integer that identifies a dependent request.  This
     contains the Stream ID of a request stream when the PUSH_DEPENDENT flag is
     clear, or a Push ID when the PUSH_DEPENDENT flag is set.  A request Stream
     ID of 0 indicates a dependency on the root stream. For details of
@@ -519,8 +519,8 @@ The PRIORITY frame payload has the following fields:
     {{!RFC7540}}, Section 5.3). Add one to the value to obtain a weight between
     1 and 256.
 
-A PRIORITY frame identifies a request to priotize, and a request upon which that
-request is dependent.  A Prioritized Request ID or Stream Dependency ID
+A PRIORITY frame identifies a request to prioritize, and a request upon which
+that request is dependent.  A Prioritized Request ID or Stream Dependency ID
 identifies a client-initiated request using the corresponding stream ID when the
 corresponding PUSH_PRIORITIZED or PUSH_DEPENDENT flag is not set.  Setting the
 PUSH_PRIORITIZED or PUSH_DEPENDENT flag causes the Prioritized Request ID or
