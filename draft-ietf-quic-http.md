@@ -12,11 +12,11 @@ stand_alone: yes
 pi: [toc, sortrefs, symrefs, docmapping]
 
 author:
- -
+-
     ins: M. Bishop
     name: Mike Bishop
-    org: Microsoft
-    email: michael.bishop@microsoft.com
+    org: Akamai
+    email: mbishop@evequefou.be
     role: editor
 
 normative:
@@ -1358,6 +1358,9 @@ The entries in the following table are registered by this document.
 # Contributors
 
 The original authors of this specification were Robbie Shade and Mike Warres.
+
+A substantial portion of Mike's contribution was supported by Microsoft during
+his employment there.
 
 # Change Log
 
