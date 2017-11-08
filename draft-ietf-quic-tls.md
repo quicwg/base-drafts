@@ -1289,9 +1289,10 @@ handshake completes.
 
 ### Handshake Failures
 
-The `CONNECTION_CLOSE` frame MAY be sent by either endpoint during the handshake
-to signal a fatal error with connection establishment.  A `STREAM` frame
-carrying a TLS alert MAY be included in the same packet.
+The `CONNECTION_CLOSE` frame MAY be sent by either endpoint in a Handshake
+packet.  This allows an endpoint to signal a fatal error with connection
+establishment.  A `STREAM` frame carrying a TLS alert MAY be included in the
+same packet.
 
 
 ### Denial of Service with Unprotected Packets
