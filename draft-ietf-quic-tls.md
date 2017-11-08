@@ -1298,20 +1298,22 @@ same packet.
 ### Denial of Service with Unprotected Packets
 
 Accepting unprotected - specifically unauthenticated - packets presents a denial
-of service risk to endpoints.  An attacker that is able to inject unprotected
-packets can cause a recipient to drop even protected packets with a matching
-sequence number.  The spurious packet shadows the genuine packet, causing the
-genuine packet to be ignored as redundant.
+of service risk to endpoints.  For example, sending a spurious
+`CONNECTION_CLOSE` frame in a Handshake packet will terminate the connection.
+
+No specific protection against denial of service is provided by the protocol
+prior to the handshake completing.  QUIC provides protection against attackers
+that cannot read packets, but does not attempt to provide additional protection
+against denial of service by an attacker that can observe and inject packets.
+
+For instance, an attacker that is able to inject unprotected packets can cause a
+recipient to drop even protected packets with a matching sequence number.  The
+spurious packet shadows the genuine packet, causing the genuine packet to be
+ignored as redundant.  This is only possible prior to handshake completion, but
+it might be used to cause 0-RTT packets to be dropped.
 
 Once the TLS handshake is complete, both peers MUST ignore unprotected packets.
 From that point onward, unprotected messages can be safely dropped.
-
-Since only TLS handshake packets and acknowledgments are sent in the clear, an
-attacker is able to force implementations to rely on retransmission for packets
-that are lost or shadowed.  Thus, an attacker that intends to deny service to an
-endpoint has to drop or shadow protected packets in order to ensure that their
-victim continues to accept unprotected packets.  The ability to shadow packets
-means that an attacker does not need to be on path.
 
 In addition to causing valid packets to be dropped, an attacker can generate
 packets with an intent of causing the recipient to expend processing resources.
@@ -1319,7 +1321,7 @@ See {{useless}} for a discussion of these risks.
 
 To avoid receiving TLS packets that contain no useful data, a TLS implementation
 MUST reject empty TLS handshake records and any record that is not permitted by
-the TLS state machine.  Any TLS application data or alerts that is received
+the TLS state machine.  Any TLS application data or alerts that are received
 prior to the end of the handshake MUST be treated as a fatal error.
 
 
