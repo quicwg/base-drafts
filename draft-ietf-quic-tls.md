@@ -317,7 +317,7 @@ ensures that TLS handshake messages are delivered in the correct order.
    Replayable QUIC Frames
                             -------->
 
-                                      QUIC STREAM Frame <0>: @C
+                                      QUIC STREAM Frame <0>: @H
                                                ServerHello
                                   {TLS Handshake Messages}
                             <--------
@@ -325,7 +325,7 @@ ensures that TLS handshake messages are delivered in the correct order.
 
                                            QUIC Frames <any> @1
                             <--------
-@C QUIC STREAM Frame(s) <0>:
+@H QUIC STREAM Frame(s) <0>:
      (EndOfEarlyData)
      {Finished}
                             -------->
@@ -338,8 +338,8 @@ In {{quic-tls-handshake}}, symbols mean:
 
 * "<" and ">" enclose stream numbers.
 
-* "@" indicates the keys that are used for protecting the QUIC packet (C =
-  cleartext, with integrity only; 0 = 0-RTT keys; 1 = 1-RTT keys).
+* "@" indicates the keys that are used for protecting the QUIC packet (H =
+  handshake, with integrity only; 0 = 0-RTT keys; 1 = 1-RTT keys).
 
 * "(" and ")" enclose messages that are protected with TLS 0-RTT handshake or
   application keys.
@@ -348,14 +348,16 @@ In {{quic-tls-handshake}}, symbols mean:
 
 If 0-RTT is not attempted, then the client does not send packets protected by
 the 0-RTT key (@0).  In that case, the only key transition on the client is from
-cleartext packets (@C) to 1-RTT protection (@1), which happens after it sends
+handshake packets (@H) to 1-RTT protection (@1), which happens after it sends
 its final set of TLS handshake messages.
 
-Note: the client uses two different types of cleartext packet during the
-handshake.  The Client Initial packet carries a TLS ClientHello message; the
-remainder of the TLS handshake is carried in Client Cleartext packets.
+Note: two different types of packet are used during the handshake by both client
+and server.  The Initial packet carries a TLS ClientHello message; the remainder
+of the TLS handshake is carried in Handshake packets.  The Retry packet carries
+a TLS HelloRetryRequest, if it is needed, and Handshake packets carry the
+remainder of the server handshake.
 
-The server sends TLS handshake messages without protection (@C).  The server
+The server sends TLS handshake messages without protection (@H).  The server
 transitions from no protection (@C) to full 1-RTT protection (@1) after it sends
 the last of its handshake messages.
 
@@ -364,13 +366,13 @@ protection.  These keys are not exported from the TLS connection for use in
 QUIC.  QUIC packets from the server are sent in the clear until the final
 transition to 1-RTT keys.
 
-The client transitions from cleartext (@C) to 0-RTT keys (@0) when sending 0-RTT
+The client transitions from handshake (@H) to 0-RTT keys (@0) when sending 0-RTT
 data, and subsequently to to 1-RTT keys (@1) after its second flight of TLS
 handshake messages.  This creates the potential for unprotected packets to be
 received by a server in close proximity to packets that are protected with 1-RTT
 keys.
 
-More information on key transitions is included in {{cleartext-hs}}.
+More information on key transitions is included in {{hs-protection}}.
 
 
 ## Interface to TLS
@@ -481,8 +483,8 @@ client and server, this occurs after sending the TLS Finished message.
 This ordering means that there could be frames that carry TLS handshake messages
 ready to send at the same time that application data is available.  An
 implementation MUST ensure that TLS handshake messages are always sent in
-cleartext packets.  Separate packets are required for data that needs protection
-from 1-RTT keys.
+packets protected with handshake keys (see {{handshake-secrets}}).  Separate
+packets are required for data that needs protection from 1-RTT keys.
 
 If 0-RTT is possible, it is ready after the client sends a TLS ClientHello
 message or the server receives that message.  After providing a QUIC client with
@@ -617,11 +619,11 @@ As TLS reports the availability of keying material, the packet protection keys
 and initialization vectors (IVs) are updated (see {{key-expansion}}).  The
 selection of AEAD function is also updated to match the AEAD negotiated by TLS.
 
-For packets other than any unprotected handshake packets (see {{cleartext-hs}}),
-once a change of keys has been made, packets with higher packet numbers MUST be
-sent with the new keying material.  The KEY_PHASE bit on these packets is
-inverted each time new keys are installed to signal the use of the new keys to
-the recipient (see {{key-phases}} for details).
+For packets other than any handshake packets (see {{hs-protection}}), once a
+change of keys has been made, packets with higher packet numbers MUST be sent
+with the new keying material.  The KEY_PHASE bit on these packets is inverted
+each time new keys are installed to signal the use of the new keys to the
+recipient (see {{key-phases}} for details).
 
 An endpoint retransmits stream data in a new packet.  New packets have new
 packet numbers and use the latest packet protection keys.  This simplifies key
@@ -639,36 +641,35 @@ QUIC uses HKDF with the same hash function negotiated by TLS for
 key derivation.  For example, if TLS is using the TLS_AES_128_GCM_SHA256, the
 SHA-256 hash function is used.
 
+### Handshake Secrets {#handshake-secrets}
 
-### Cleartext Packet Secrets {#cleartext-secrets}
-
-Cleartext packets are protected with secrets derived from the client's
-connection ID. Specifically:
+Packets that carry the TLS handshake (Initial, Retry, and Handshake) are
+protected with secrets derived from the client's connection ID. Specifically:
 
 ~~~
    quic_version_1_salt = afc824ec5fc77eca1e9d36f37fb2d46518c36639
 
-   cleartext_secret = HKDF-Extract(quic_version_1_salt,
+   handshake_secret = HKDF-Extract(quic_version_1_salt,
                                    client_connection_id)
 
-   client_cleartext_secret =
-                      HKDF-Expand-Label(cleartext_secret,
-                                        "QUIC client cleartext Secret",
+   client_handshake_secret =
+                      HKDF-Expand-Label(handshake_secret,
+                                        "QUIC client handshake secret",
                                         "", Hash.length)
-   server_cleartext_secret =
-                      HKDF-Expand-Label(cleartext_secret,
-                                        "QUIC server cleartext Secret",
+   server_handshake_secret =
+                      HKDF-Expand-Label(handshake_secret,
+                                        "QUIC server handshake secret",
                                         "", Hash.length)
 ~~~
 
-The HKDF for the cleartext packet protection keys uses the SHA-256 hash function
-{{FIPS180}}.
+The HKDF for the handshake secrets and keys derived from them uses the SHA-256
+hash function {{FIPS180}}.
 
 The salt value is a 20 octet sequence shown in the figure in hexadecimal
 notation. Future versions of QUIC SHOULD generate a new salt value, thus
 ensuring that the keys are different for each version of QUIC. This prevents a
 middlebox that only recognizes one version of QUIC from seeing or modifying the
-contents of cleartext packets from future versions.
+contents of handshake packets from future versions.
 
 
 ### 0-RTT Secret {#zero-rtt-secrets}
@@ -799,7 +800,7 @@ AEAD_AES_128_GCM function is used.
 All QUIC packets other than Version Negotiation and Stateless Reset packets are
 protected with an AEAD algorithm {{!AEAD}}. Cleartext packets are protected
 with AEAD_AES_128_GCM and a key derived from the client's connection ID (see
-{{cleartext-secrets}}).  This provides protection against off-path attackers and
+{{handshake-secrets}}).  This provides protection against off-path attackers and
 robustness against QUIC version unaware middleboxes, but not against on-path
 attackers.
 
@@ -895,20 +896,18 @@ first packet that triggered the change.  An endpoint that notices a changed
 KEY_PHASE bit can update keys and decrypt the packet that contains the changed
 bit, see {{key-update}}.
 
-The KEY_PHASE bit is included as the 0x20 bit of the QUIC short header, or is
-determined by the packet type from the long header (a type of 0x06 indicates a
-key phase of 0, 0x07 indicates key phase 1).
+The KEY_PHASE bit is included as the 0x20 bit of the QUIC short header.
 
 Transitions between keys during the handshake are complicated by the need to
 ensure that TLS handshake messages are sent with the correct packet protection.
 
 
-## Packet Protection for the TLS Handshake {#cleartext-hs}
+## Packet Protection for the TLS Handshake {#hs-protection}
 
-The initial exchange of packets are sent using a cleartext packet type
-and AEAD-protected using the cleartext key generated as described in
-{{cleartext-secrets}}.  All TLS handshake messages up to the TLS
-Finished message sent by either endpoint use cleartext packets.
+The initial exchange of packets that carry the TLS handshake are AEAD-protected
+using the handshake secrets generated as described in {{handshake-secrets}}.
+All TLS handshake messages up to the TLS Finished message sent by either
+endpoint use packets protected with handshake keys.
 
 Any TLS handshake messages that are sent after completing the TLS handshake do
 not need special packet protection rules.  Packets containing these messages use
@@ -917,7 +916,7 @@ retransmission).
 
 Like the client, a server MUST send retransmissions of its unprotected handshake
 messages or acknowledgments for unprotected handshake messages sent by the
-client in cleartext packets.
+client in packets protected with handshake keys.
 
 
 ### Initial Key Transitions {#first-keys}
@@ -929,8 +928,8 @@ Packets protected with 1-RTT keys initially have a KEY_PHASE bit set to 0.  This
 bit inverts with each subsequent key update (see {{key-update}}).
 
 If the client sends 0-RTT data, it uses the 0-RTT packet type.  The packet that
-contains the TLS EndOfEarlyData and Finished messages are sent in cleartext
-packets.
+contains the TLS EndOfEarlyData and Finished messages are sent in packets
+protected with handshake keys.
 
 Using distinct packet types during the handshake for handshake messages, 0-RTT
 data, and 1-RTT data ensures that the server is able to distinguish between the
@@ -959,8 +958,9 @@ later messages.  If these handshake messages are included in packets that are
 protected with these keys, they will be indecipherable to the recipient.
 
 Even though newer keys could be available when retransmitting, retransmissions
-of these handshake messages MUST be sent in cleartext packets.  An endpoint
-MUST generate ACK frames for these messages and send them in cleartext packets.
+of these handshake messages MUST be sent in packets protected with handshake
+keys.  An endpoint MUST generate ACK frames for these messages and send them in
+packets protected with handshake keys.
 
 A HelloRetryRequest handshake message might be used to reject an initial
 ClientHello.  A HelloRetryRequest handshake message is sent in a Server

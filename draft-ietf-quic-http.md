@@ -12,11 +12,11 @@ stand_alone: yes
 pi: [toc, sortrefs, symrefs, docmapping]
 
 author:
- -
+-
     ins: M. Bishop
     name: Mike Bishop
-    org: Microsoft
-    email: Michael.Bishop@microsoft.com
+    org: Akamai
+    email: mbishop@evequefou.be
     role: editor
 
 normative:
@@ -84,6 +84,9 @@ defined in {{!RFC2119}}.
 
 Field definitions are given in Augmented Backus-Naur Form (ABNF), as defined in
 {{!RFC5234}}.
+
+This document uses the variable-length integer encoding from
+{{QUIC-TRANSPORT}}.
 
 
 # QUIC Advertisement
@@ -355,21 +358,21 @@ allows a server to fulfill promises in the order that best suits its needs.
 The server push response is conveyed on a push stream.  A push stream is a
 server-initiated stream.  A push stream includes a header (see
 {{fig-push-stream-header}}) that identifies the PUSH_PROMISE that it fulfills.
-This header consists of a 32-bit Push ID, which identifies a server push (see
-{{frame-push-promise}}).
+This header consists of a Push ID, encoded as a variable-length integer.  The
+Push ID identifies a server push (see {{frame-push-promise}}).
 
 ~~~~~
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                         Push ID (32)                          |
+|                         Push ID (i)                           |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~~~
 {: #fig-push-stream-header title="Push Stream Header"}
 
-A push stream always starts with a 32-bit Push ID.  A client MUST treat
-receiving a push stream that contains fewer than 4 octets as a connection error
-of type HTTP_MALFORMED_PUSH.
+A push stream always starts with a Push ID.  A client MUST treat receiving a
+push stream that contains a truncated variable-length integer as a connection
+error of type HTTP_MALFORMED_PUSH.
 
 A server SHOULD use Push IDs sequentially, starting at 0.  A client uses the
 MAX_PUSH_ID frame ({{frame-max-push-id}}) to limit the number of pushes that a
@@ -408,12 +411,29 @@ All frames have the following format:
     0                   1                   2                   3
     0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |           Length (16)         |     Type (8)  |   Flags (8)   |
+   |                           Length (i)                        ...
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |                       Frame Payload (*)                     ...
+   |    Type (8)   |   Flags (8)   |       Frame Payload (*)     ...
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~~~~~~~~
 {: #fig-frame title="HTTP/QUIC frame format"}
+
+A frame includes the following fields:
+
+  Length:
+  : A variable-length integer that describes the length of the Frame Payload.
+    This length does not include the frame header.
+
+  Type:
+  : An 8-bit type for the frame.
+
+  Flags:
+  : An 8-bit field containing flags.  The Type field determines the semantics of
+    flags.
+
+  Frame Payload:
+  : A payload, the semantics of which are determined by the Type field.
+
 
 ## Frame Definitions {#frames}
 
@@ -434,25 +454,13 @@ with a payload length of zero, the recipient MUST respond with a stream error
 
 ### HEADERS {#frame-headers}
 
-The HEADERS frame (type=0x1) is used to carry part of a header set, compressed
-using HPACK {{header-compression}}.
+The HEADERS frame (type=0x1) is used to carry a header block, compressed using
+HPACK {{header-compression}}.
 
-One flag is defined:
+No flags are defined for the HEADERS frame.
 
-  End Header Block (0x4):
-  : This frame concludes a header block.
-
-A HEADERS frame with any other flags set MUST be treated as a connection error
-of type HTTP_MALFORMED_HEADERS.
-
-The next frame on the same stream after a HEADERS frame without the EHB flag set
-MUST be another HEADERS frame. A receiver MUST treat the receipt of any other
-type of frame as a stream error of type HTTP_INTERRUPTED_HEADERS. (Note that
-QUIC can intersperse data from other streams between frames, or even during
-transmission of frames, so multiplexing is not blocked by this requirement.)
-
-A full header block is contained in a sequence of zero or more HEADERS frames
-without EHB set, followed by a HEADERS frame with EHB set.
+A HEADERS frame with any flags set MUST be treated as a connection error of type
+HTTP_MALFORMED_HEADERS.
 
 
 ### PRIORITY {#frame-priority}
@@ -485,9 +493,9 @@ The flags defined are:
     0                   1                   2                   3
     0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |                 Prioritized Request ID (32)                   |
+   |                 Prioritized Request ID (i)                    |
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |                  Stream Dependency ID (32)                    |
+   |                  Stream Dependency ID (i)                     |
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
    |   Weight (8)  |
    +-+-+-+-+-+-+-+-+
@@ -497,24 +505,24 @@ The flags defined are:
 The PRIORITY frame payload has the following fields:
 
   Prioritized Request ID:
-  : A 32-bit identifier for a request.  This contains the stream ID of a request
-    stream when the PUSH_PRIORITIZED flag is clear, or a Push ID when the
-    PUSH_PRIORITIZED flag is set.
+  : A variable-length integer that identifies a request.  This contains
+    the Stream ID of a request stream when the PUSH_PRIORITIZED flag is clear,
+    or a Push ID when the PUSH_PRIORITIZED flag is set.
 
   Stream Dependency ID:
-  : A 32-bit stream identifier for a dependent request.  This contains the
-    stream ID of a request stream when the PUSH_DEPENDENT flag is clear, or a
-    Push ID when the PUSH_DEPENDENT flag is set.  A request stream ID of 0
-    indicates a dependency on the root stream. For details of dependencies,
-    see {{priority}} and {{!RFC7540}}, Section 5.3.
+  : A variable-length integer that identifies a dependent request.  This
+    contains the Stream ID of a request stream when the PUSH_DEPENDENT flag is
+    clear, or a Push ID when the PUSH_DEPENDENT flag is set.  A request Stream
+    ID of 0 indicates a dependency on the root stream. For details of
+    dependencies, see {{priority}} and {{!RFC7540}}, Section 5.3.
 
   Weight:
   : An unsigned 8-bit integer representing a priority weight for the stream (see
     {{!RFC7540}}, Section 5.3). Add one to the value to obtain a weight between
     1 and 256.
 
-A PRIORITY frame identifies a request to priotize, and a request upon which that
-request is dependent.  A Prioritized Request ID or Stream Dependency ID
+A PRIORITY frame identifies a request to prioritize, and a request upon which
+that request is dependent.  A Prioritized Request ID or Stream Dependency ID
 identifies a client-initiated request using the corresponding stream ID when the
 corresponding PUSH_PRIORITIZED or PUSH_DEPENDENT flag is not set.  Setting the
 PUSH_PRIORITIZED or PUSH_DEPENDENT flag causes the Prioritized Request ID or
@@ -534,15 +542,18 @@ HTTP_MALFORMED_PRIORITY error, unless it references stream ID 0.  A PRIORITY
 that sets a PUSH_PRIORITIZED or PUSH_DEPENDENT flag, but then references a
 non-existent Push ID MUST be treated as a HTTP_MALFORMED_PRIORITY error.
 
-The length of a PRIORITY frame is 9 octets.  A PRIORITY frame with any other
-length MUST be treated as a connection error of type HTTP_MALFORMED_PRIORITY.
+A PRIORITY frame MUST contain only the identified fields.  A PRIORITY frame that
+contains more or fewer fields, or a PRIORITY frame that includes a truncated
+integer encoding MUST be treated as a connection error of type
+HTTP_MALFORMED_PRIORITY.
 
 
 ### CANCEL_PUSH {#frame-cancel-push}
 
 The CANCEL_PUSH frame (type=0x3) is used to request cancellation of server push
 prior to the push stream being created.  The CANCEL_PUSH frame identifies a
-server push request by Push ID (see {{frame-push-promise}}).
+server push request by Push ID (see {{frame-push-promise}}) using a
+variable-length integer.
 
 When a server receives this frame, it aborts sending the response for the
 identified server push.  If the server has not yet started to send the server
@@ -563,14 +574,16 @@ type HTTP_WRONG_STREAM.
 
 The CANCEL_PUSH frame has no defined flags.
 
-The CANCEL_PUSH frame carries a 32-bit Push ID that identifies the server push
-that is being cancelled (see {{frame-push-promise}}).
+The CANCEL_PUSH frame carries a Push ID encoded as a variable-length integer.
+The Push ID identifies the server push that is being cancelled (see
+{{frame-push-promise}}).
 
 If the client receives a CANCEL_PUSH frame, that frame might identify a Push ID
 that has not yet been mentioned by a PUSH_PROMISE frame.
 
-A server MUST treat a CANCEL_PUSH frame payload that is other than 4 octets in
-length as a connection error of type HTTP_MALFORMED_CANCEL_PUSH.
+A server MUST treat a CANCEL_PUSH frame payload does not contain exactly one
+variable-length integer as a connection error of type
+HTTP_MALFORMED_CANCEL_PUSH.
 
 
 ### SETTINGS {#frame-settings}
@@ -605,7 +618,7 @@ value.
     0                   1                   2                   3
     0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |        Identifier (16)        |         Length (16)           |
+   |         Identifier (16)       |            Length (i)       ...
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
    |                          Contents (?)                       ...
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -638,20 +651,17 @@ HTTP_MALFORMED_SETTINGS.
 
 #### Integer encoding
 
-Settings which are integers are transmitted in network byte order.  Leading
-zero octets are permitted, but implementations SHOULD use only as many bytes as
-are needed to represent the value.  An integer MUST NOT be represented in more
-bytes than would be used to transfer the maximum permitted value.
+Settings which are integers use the QUIC variable-length integer encoding.
 
 #### Defined SETTINGS Parameters {#settings-parameters}
 
 The following settings are defined in HTTP/QUIC:
 
   SETTINGS_HEADER_TABLE_SIZE (0x1):
-  : An integer with a maximum value of 2^32 - 1.  This value MUST be zero.
+  : An integer with a maximum value of 2^30 - 1.  This value MUST be zero.
 
   SETTINGS_MAX_HEADER_LIST_SIZE (0x6):
-  : An integer with a maximum value of 2^32 - 1
+  : An integer with a maximum value of 2^30 - 1
 
 #### Usage in 0-RTT
 
@@ -691,7 +701,7 @@ server to client, as in HTTP/2.  The PUSH_PROMISE frame defines no flags.
     0                   1                   2                   3
     0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |                          Push ID (32)                         |
+   |                          Push ID (i)                        ...
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
    |                       Header Block (*)                      ...
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -701,9 +711,9 @@ server to client, as in HTTP/2.  The PUSH_PROMISE frame defines no flags.
 The payload consists of:
 
 Push ID:
-: A 32-bit identifier for the server push request.  A push ID is used in push
-  stream header ({{server-push}}), CANCEL_PUSH frames ({{frame-cancel-push}}),
-  and PRIORITY frames ({{frame-priority}}).
+: A variable-length integer that identifies the server push request.  A push ID
+  is used in push stream header ({{server-push}}), CANCEL_PUSH frames
+  ({{frame-cancel-push}}), and PRIORITY frames ({{frame-priority}}).
 
 Header Block:
 : HPACK-compressed request headers for the promised response.
@@ -742,10 +752,12 @@ while still finishing processing of previously received requests.  This enables
 administrative actions, like server maintenance.  GOAWAY by itself does not
 close a connection.
 
-The GOAWAY frame does not define any flags, and the payload is a QUIC stream
-identifier.  The GOAWAY frame applies to the connection, not a specific stream.
-A client MUST treat a GOAWAY frame on a stream other than the control stream
-as a connection error ({{errors}}) of type HTTP_WRONG_STREAM.
+The GOAWAY frame does not define any flags, and the payload is a QUIC Stream ID
+encoded as a variable-length integer.
+
+The GOAWAY frame applies to the connection, not a specific stream.  A client
+MUST treat a GOAWAY frame on a stream other than the control stream as a
+connection error ({{errors}}) of type HTTP_WRONG_STREAM.
 
 Clients do not need to send GOAWAY to initiate a graceful shutdown; they simply
 stop making new requests.  A server MUST treat receipt of a GOAWAY frame as a
@@ -856,14 +868,15 @@ sending a MAX_PUSH_ID frame as the server fulfills or cancels server pushes.
 
 The MAX_PUSH_ID frame has no defined flags.
 
-The MAX_PUSH_ID frame carries a 32-bit Push ID that identifies the maximum value
-for a Push ID that the server can use (see {{frame-push-promise}}).  A
-MAX_PUSH_ID frame cannot reduce the maximum Push ID; receipt of a MAX_PUSH_ID
-that contains a smaller value than previously received MUST be treated as a
-connection error of type HTTP_MALFORMED_MAX_PUSH_ID.
+The MAX_PUSH_ID frame carries a single variable-length integer that identifies
+the maximum value for a Push ID that the server can use (see
+{{frame-push-promise}}).  A MAX_PUSH_ID frame cannot reduce the maximum Push ID;
+receipt of a MAX_PUSH_ID that contains a smaller value than previously received
+MUST be treated as a connection error of type HTTP_MALFORMED_MAX_PUSH_ID.
 
-A server MUST treat a MAX_PUSH_ID frame payload that is other than 4 octets in
-length as a connection error of type HTTP_MALFORMED_MAX_PUSH_ID.
+A server MUST treat a MAX_PUSH_ID frame payload that does not contain a single
+variable-length integer as a connection error of type
+HTTP_MALFORMED_MAX_PUSH_ID.
 
 
 # Connection Management
@@ -984,6 +997,13 @@ applicable to both protocols at once.
 
 These departures are noted in this section.
 
+## Streams {#h2-streams}
+
+HTTP/QUIC permits use of a larger number of streams (2^62-1) then HTTP/2.  The
+considerations about exhaustion of stream identifier space apply, though the
+space is significantly larger such that it is likely that other limits in QUIC
+are reached first, such as the limit on the connection flow control window.
+
 ## HTTP Frame Types {#h2-frames}
 
 Many framing concepts from HTTP/2 can be elided away on QUIC, because the
@@ -1017,7 +1037,13 @@ HEADERS frames. To achieve in-order delivery of priority changes in HTTP/QUIC,
 PRIORITY frames are sent on the control stream and the PRIORITY section is
 removed from the HEADERS frame.
 
-Other than this issue, frame type HTTP/2 extensions are typically portable to
+Frame type definitions in HTTP/QUIC often use the QUIC variable-length integer
+encoding.  In particular, Stream IDs use this encoding, which allow for a larger
+range of possible values than the encoding used in HTTP/2.  Redefinition of the
+encoding of extension frame types might be necessary if the encoding includes a
+Stream ID.
+
+Other than these issues, frame type HTTP/2 extensions are typically portable to
 QUIC simply by replacing Stream 0 in HTTP/2 with Stream 1 in HTTP/QUIC.
 HTTP/QUIC extensions will not assume ordering, but would not be harmed by
 ordering, and would be portable to HTTP/2 in the same manner.
@@ -1354,14 +1380,21 @@ The entries in the following table are registered by this document.
 
 The original authors of this specification were Robbie Shade and Mike Warres.
 
+A substantial portion of Mike's contribution was supported by Microsoft during
+his employment there.
+
 # Change Log
 
 > **RFC Editor's Note:**  Please remove this section prior to publication of a
 > final version of this document.
 
+## Since draft-ietf-quic-http-07
+
+- Changes for integer encodings in QUIC (#595,#905)
+
 ## Since draft-ietf-quic-http-06
 
-Nothing yet.
+- Track changes in QUIC error code usage (#485)
 
 ## Since draft-ietf-quic-http-05
 

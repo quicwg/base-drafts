@@ -174,6 +174,9 @@ x (A)
 x (A/B/C) ...
 : Indicates that x is one of A, B, or C bits long
 
+x (i) ...
+: Indicates that x uses the variable-length encoding in {{integer-encoding}}
+
 x (*) ...
 : Indicates that x is variable-length
 
@@ -413,11 +416,10 @@ The following packet types are defined:
 | Type | Name                          | Section                     |
 |:-----|:------------------------------|:----------------------------|
 | 0x01 | Version Negotiation           | {{packet-version}}          |
-| 0x02 | Client Initial                | {{packet-client-initial}}   |
-| 0x03 | Server Stateless Retry        | {{packet-server-stateless}} |
-| 0x04 | Server Cleartext              | {{packet-server-cleartext}} |
-| 0x05 | Client Cleartext              | {{packet-client-cleartext}} |
-| 0x06 | 0-RTT Protected               | {{packet-protected}}        |
+| 0x02 | Initial                       | {{packet-initial}}          |
+| 0x03 | Retry                         | {{packet-retry}}            |
+| 0x04 | Handshake                     | {{packet-handshake}}        |
+| 0x05 | 0-RTT Protected               | {{packet-protected}}        |
 {: #long-packet-types title="Long Header Packet Types"}
 
 The header form, packet type, connection ID, packet number and version fields of
@@ -519,8 +521,8 @@ server received the packet and that the Version Negotiation packet was not
 carried in a packet with a spoofed source address.
 
 A Version Negotiation packet is never explicitly acknowledged in an ACK frame by
-a client.  Receiving another Client Initial packet implicitly acknowledges a
-Version Negotiation packet.
+a client.  Receiving another Initial packet implicitly acknowledges a Version
+Negotiation packet.
 
 The payload of the Version Negotiation packet is a list of 32-bit versions which
 the server supports, as shown below.
@@ -544,69 +546,70 @@ See {{version-negotiation}} for a description of the version negotiation
 process.
 
 
-## Cleartext Packets {#cleartext-packet}
+## Cryptographic Handshake Packets {#handshake-packets}
 
-Cleartext packets are sent during the handshake prior to key negotiation.
+Once version negotiation is complete, the cryptographic handshake is used to
+agree on cryptographic keys.  The cryptographic handshake is carried in Initial
+({{packet-initial}}), Retry ({{packet-retry}}) and Handshake
+({{packet-handshake}}) packets.
 
-All cleartext packets contain the current QUIC version in the version field.
+All these packets use the long header and contain the current QUIC version in
+the version field.
 
-In order to prevent tampering by version-unaware middleboxes, Cleartext
-packets are protected with a connection and version specific key, as
-described in {{QUIC-TLS}}. This protection does not provide confidentiality
-or integrity against on-path attackers, but provides some level of
-protection against off-path attackers.
+In order to prevent tampering by version-unaware middleboxes, handshake packets
+are protected with a connection- and version-specific key, as described in
+{{QUIC-TLS}}. This protection does not provide confidentiality or integrity
+against on-path attackers, but provides some level of protection against
+off-path attackers.
 
 
-### Client Initial Packet {#packet-client-initial}
+### Initial Packet {#packet-initial}
 
-The Client Initial packet uses long headers with a type value of 0x02.
-It carries the first cryptographic handshake message sent by the client.
+The Initial packet uses long headers with a type value of 0x02.  It carries the
+first cryptographic handshake message sent by the client.
 
 The client populates the connection ID field with randomly selected values,
 unless it has received a packet from the server.  If the client has received a
 packet from the server, the connection ID field uses the value provided by the
 server.
 
-The first Client Initial packet that is sent by a client contains a random
-31-bit value.  All subsequent packets contain a packet number that is
-incremented by one, see ({{packet-numbers}}).
+The first Initial packet that is sent by a client contains a random 31-bit
+value.  All subsequent packets contain a packet number that is incremented by
+one, see ({{packet-numbers}}).
 
-The payload of a Client Initial packet consists of a STREAM frame (or frames)
+The payload of a Initial packet consists of a STREAM frame (or frames)
 for stream 0 containing a cryptographic handshake message, with enough PADDING
 frames that the packet is at least 1200 octets (see {{packetization}}).  The
 stream in this packet always starts at an offset of 0 (see {{stateless-retry}})
 and the complete cryptographic handshake message MUST fit in a single packet
 (see {{handshake}}).
 
-The client uses the Client Initial Packet type for any packet that contains an
-initial cryptographic handshake message.  This includes all cases where a new
-packet containing the initial cryptographic message needs to be created, this
-includes the packets sent after receiving a Version Negotiation
-({{packet-version}}) or Server Stateless Retry packet
-({{packet-server-stateless}}).
+The client uses the Initial packet type for any packet that contains an initial
+cryptographic handshake message.  This includes all cases where a new packet
+containing the initial cryptographic message needs to be created, this includes
+the packets sent after receiving a Version Negotiation ({{packet-version}}) or
+Retry packet ({{packet-retry}}).
 
 
-### Server Stateless Retry Packet {#packet-server-stateless}
+### Retry Packet {#packet-retry}
 
-A Server Stateless Retry packet uses long headers with a type value of 0x03.
-It carries cryptographic handshake messages and acknowledgments.  It is used
-by a server that wishes to perform a stateless retry (see
-{{stateless-retry}}).
+A Retry packet uses long headers with a type value of 0x03.  It carries
+cryptographic handshake messages and acknowledgments.  It is used by a server
+that wishes to perform a stateless retry (see {{stateless-retry}}).
 
 The packet number and connection ID fields echo the corresponding fields from
 the triggering client packet.  This allows a client to verify that the server
 received its packet.
 
-A Server Stateless Retry packet is never explicitly acknowledged in an ACK frame
-by a client.  Receiving another Client Initial packet implicitly acknowledges a
-Server Stateless Retry packet.
+A Retry packet is never explicitly acknowledged in an ACK frame
+by a client.  Receiving another Initial packet implicitly acknowledges a Retry
+packet.
 
-After receiving a Server Stateless Retry packet, the client uses a new Client
+After receiving a Retry packet, the client uses a new
 Initial packet containing the next cryptographic handshake message.  The client
 retains the state of its cryptographic handshake, but discards all transport
-state.  The Client Initial packet that is generated in response to a Server
-Stateless Retry packet includes STREAM frames on stream 0 that start again at an
-offset of 0.
+state.  The Initial packet that is generated in response to a Retry packet
+includes STREAM frames on stream 0 that start again at an offset of 0.
 
 Continuing the cryptographic handshake is necessary to ensure that an attacker
 cannot force a downgrade of any cryptographic parameters.  In addition to
@@ -615,41 +618,26 @@ any version negotiation that occurred (see {{version-negotiation}}).  The client
 MAY also retain any observed RTT or congestion state that it has accumulated for
 the flow, but other transport state MUST be discarded.
 
-The payload of the Server Stateless Retry packet contains a single STREAM frame
+The payload of the Retry packet contains a single STREAM frame
 on stream 0 with offset 0 containing the server's cryptographic stateless retry
 material. It MUST NOT contain any other frames. The next STREAM frame sent by
 the server will also start at stream offset 0.
 
 
-### Server Cleartext Packet {#packet-server-cleartext}
+### Handshake Packet {#packet-handshake}
 
-A Server Cleartext packet uses long headers with a type value of 0x04.  It is
+A Handshake packet uses long headers with a type value of 0x04.  It is
 used to carry acknowledgments and cryptographic handshake messages from the
-server.
+server and client.
 
-The connection ID field in a Server Cleartext packet contains a connection ID
+The connection ID field in a Handshake packet contains a connection ID
 that is chosen by the server (see {{connection-id}}).
 
-The first Server Cleartext packet contains a randomized packet number.  This
-value is increased for each subsequent packet sent by the server as described in
-{{packet-numbers}}.
-
-The payload of this packet contains STREAM frames and could contain PADDING and
-ACK frames.
-
-
-### Client Cleartext Packet {#packet-client-cleartext}
-
-A Client Cleartext packet uses long headers with a type value of 0x05, and is
-sent when the client has received a Server Cleartext packet from the server.
-
-The connection ID field in a Client Cleartext packet contains a server-selected
-connection ID, see {{connection-id}}.
-
-The Client Cleartext packet includes a packet number that is one higher than the
-last Client Initial, 0-RTT Protected or Client Cleartext packet that was sent.
-The packet number is incremented for each subsequent packet, see
-{{packet-numbers}}.
+The first Handshake packet sent by a server contains a randomized packet number.
+This value is increased for each subsequent packet sent by the server as
+described in {{packet-numbers}}.  The client increments the packet number from
+its previous packet by one for each Handshake packet that it sends (which might
+be an Initial, 0-RTT Protected, or Handshake packet).
 
 The payload of this packet contains STREAM frames and could contain PADDING and
 ACK frames.
@@ -662,14 +650,14 @@ packets protected with 1-RTT keys are sent with short headers.  The different
 packet types explicitly indicate the encryption level and therefore the keys
 that are used to remove packet protection.
 
-Packets protected with 0-RTT keys use a type value of 0x06.  The connection ID
+Packets protected with 0-RTT keys use a type value of 0x05.  The connection ID
 field for a 0-RTT packet is selected by the client.
 
-The client can send 0-RTT packets after receiving a Server Cleartext packet
-({{packet-server-cleartext}}), if that packet does not complete the handshake.
-Even if the client receives a different connection ID in the Server Cleartext
-packet, it MUST continue to use the connection ID selected by the client for
-0-RTT packets, see {{connection-id}}.
+The client can send 0-RTT packets after receiving a Handshake packet
+({{packet-handshake}}), if that packet does not complete the handshake.  Even if
+the client receives a different connection ID in the Handshake packet, it MUST
+continue to use the connection ID selected by the client for 0-RTT packets, see
+{{connection-id}}.
 
 The version field for protected packets is the current QUIC version.
 
@@ -689,42 +677,41 @@ using the CONNECTION_ID flag.  When present, the Connection ID is in the same
 location in all packet headers, making it straightforward for middleboxes, such
 as load balancers, to locate and use it.
 
-The client MUST choose a random connection ID and use it in Client Initial
-packets ({{packet-client-initial}}) and 0-RTT packets ({{packet-protected}}).
+The client MUST choose a random connection ID and use it in Initial packets
+({{packet-initial}}) and 0-RTT packets ({{packet-protected}}).
 
-When the server receives a Client Initial packet and decides to proceed with the
+When the server receives a Initial packet and decides to proceed with the
 handshake, it chooses a new value for the connection ID and sends that in a
-Server Cleartext packet ({{packet-server-cleartext}}).  The server MAY choose to
-use the value that the client initially selects.
+Handshake packet ({{packet-handshake}}).  The server MAY choose to use the value
+that the client initially selects.
 
 Once the client receives the connection ID that the server has chosen, it MUST
-use it for all subsequent Client Cleartext ({{packet-client-cleartext}}) and
-1-RTT ({{packet-protected}}) packets but not for 0-RTT packets
-({{packet-protected}}).
+use it for all subsequent Handshake ({{packet-handshake}}) and 1-RTT
+({{packet-protected}}) packets but not for 0-RTT packets ({{packet-protected}}).
 
-Server's Version Negotiation ({{packet-version}}) and Stateless Retry
-({{packet-server-stateless}}) packets MUST use connection ID selected by the
-client.
+Server's Version Negotiation ({{packet-version}}) and Retry ({{packet-retry}})
+packets MUST use connection ID selected by the client.
 
 
 ## Packet Numbers {#packet-numbers}
 
-The packet number is a 64-bit unsigned number and is used as part of a
-cryptographic nonce for packet encryption.  Each endpoint maintains a separate
-packet number for sending and receiving.  The packet number for sending MUST
-increase by at least one after sending any packet, unless otherwise specified
-(see {{initial-packet-number}}).
+The packet number is an integer in the range 0 to 2^62-1. The value is used in
+determining the cryptographic nonce for packet encryption.  Each endpoint
+maintains a separate packet number for sending and receiving.  The packet number
+for sending MUST increase by at least one after sending any packet, unless
+otherwise specified (see {{initial-packet-number}}).
 
 A QUIC endpoint MUST NOT reuse a packet number within the same connection (that
 is, under the same cryptographic keys).  If the packet number for sending
-reaches 2^64 - 1, the sender MUST close the connection without sending a
+reaches 2^62 - 1, the sender MUST close the connection without sending a
 CONNECTION_CLOSE frame or any further packets; a server MAY send a Stateless
 Reset ({{stateless-reset}}) in response to further packets that it receives.
 
-To reduce the number of bits required to represent the packet number over the
-wire, only the least significant bits of the packet number are transmitted.  The
-actual packet number for each packet is reconstructed at the receiver based on
-the largest packet number received on a successfully authenticated packet.
+For the packet header, the number of bits required to represent the packet
+number are reduced by including only the least significant bits of the packet
+number.  The actual packet number for each packet is reconstructed at the
+receiver based on the largest packet number received on a successfully
+authenticated packet.
 
 A packet number is decoded by finding the packet number value that is closest to
 the next expected packet.  The next expected packet is the highest received
@@ -749,9 +736,8 @@ sending a packet with a number of 0x6b4264 requires a 16-bit or larger packet
 number encoding; whereas a 32-bit packet number is needed to send a packet with
 a number of 0x6bc107.
 
-Version Negotiation ({{packet-version}}) and Server Stateless Retry
-({{packet-server-stateless}}) packets have special rules for populating the
-packet number field.
+Version Negotiation ({{packet-version}}) and Retry ({{packet-retry}}) packets
+have special rules for populating the packet number field.
 
 
 ### Initial Packet Number {#initial-packet-number}
@@ -790,8 +776,9 @@ an unsupported version.
 
 # Frames and Frame Types {#frames}
 
-The payload of cleartext packets and the plaintext after decryption of protected
-payloads consists of a sequence of frames, as shown in {{packet-frames}}.
+The payload of all packets, after removing packet protection, consists of a
+sequence of frames, as shown in {{packet-frames}}.  Version Negotiation and
+Stateless Reset do not contain frames.
 
 ~~~
  0                   1                   2                   3
@@ -845,8 +832,8 @@ explained in more detail as they are referenced later in the document.
 | 0x0b        | NEW_CONNECTION_ID | {{frame-new-connection-id}} |
 | 0x0c        | STOP_SENDING      | {{frame-stop-sending}}      |
 | 0x0d        | PONG              | {{frame-pong}}              |
-| 0xa0 - 0xbf | ACK               | {{frame-ack}}               |
-| 0xc0 - 0xff | STREAM            | {{frame-stream}}            |
+| 0x0e        | ACK               | {{frame-ack}}               |
+| 0x10 - 0x17 | STREAM            | {{frame-stream}}            |
 {: #frame-types title="Frame Types"}
 
 # Life of a Connection
@@ -920,11 +907,11 @@ QUIC's connection establishment begins with version negotiation, since all
 communication between the endpoints, including packet and frame formats, relies
 on the two endpoints agreeing on a version.
 
-A QUIC connection begins with a client sending a Client Initial packet
-({{packet-client-initial}}). The details of the handshake mechanisms are
-described in {{handshake}}, but all of the initial packets sent from the client
-to the server MUST use the long header format - which includes the version of
-the protocol being used - and they MUST be padded to at least 1200 octets.
+A QUIC connection begins with a client sending an Initial packet
+({{packet-initial}}). The details of the handshake mechanisms are described in
+{{handshake}}, but any Initial packet sent from the client to the server MUST
+use the long header format - which includes the version of the protocol being
+used - and they MUST be padded to at least 1200 octets.
 
 The server receives this packet and determines whether it potentially creates a
 new connection (see {{packet-handling}}).  If the packet might generate a new
@@ -1081,6 +1068,7 @@ language from Section 3 of {{!I-D.ietf-tls-tls13}}.
       omit_connection_id(4),
       max_packet_size(5),
       stateless_reset_token(6),
+      ack_delay_exponent(7),
       (65535)
    } TransportParameterId;
 
@@ -1187,6 +1175,13 @@ max_packet_size (0x0005):
   default for this parameter is the maximum permitted UDP payload of 65527.
   Values below 1200 are invalid.  This limit only applies to protected packets
   ({{packet-protected}}).
+
+ack_delay_exponent (0x0007):
+
+: An 8-bit unsigned integer value indicating an exponent used to decode the ACK
+  Delay field in the ACK frame, see {{frame-ack}}.  If this value is absent, a
+  default value of 3 is assumed (indicating a multiplier of 8).  Values above 20
+  are invalid.
 
 
 ### Values of Transport Parameters for 0-RTT {#zerortt-parameters}
@@ -1295,17 +1290,16 @@ without committing any state. This allows a server to perform address validation
 ({{address-validation}}, or to defer connection establishment costs.
 
 A server that generates a response to an initial packet without retaining
-connection state MUST use the Server Stateless Retry packet
-({{packet-server-stateless}}).  This packet causes a client to reset its
-transport state and to continue the connection attempt with new connection state
-while maintaining the state of the cryptographic handshake.
+connection state MUST use the Retry packet ({{packet-retry}}).  This packet
+causes a client to reset its transport state and to continue the connection
+attempt with new connection state while maintaining the state of the
+cryptographic handshake.
 
-A server MUST NOT send multiple Server Stateless Retry packets in response to a
-client handshake packet.  Thus, any cryptographic handshake message that is sent
-MUST fit within a single packet.
+A server MUST NOT send multiple Retry packets in response to a client handshake
+packet.  Thus, any cryptographic handshake message that is sent MUST fit within
+a single packet.
 
-In TLS, the Server Stateless Retry packet type is used to carry the
-HelloRetryRequest message.
+In TLS, the Retry packet type is used to carry the HelloRetryRequest message.
 
 
 ## Proof of Source Address Ownership {#address-validation}
@@ -1625,19 +1619,29 @@ from its peer.  These packets might have been sent prior to receiving any close
 signal, or they might be retransmissions of packets for which acknowledgments
 were lost.
 
-The draining period persists for three times the current Retransmission Timeout
-(RTO) interval as defined in {{QUIC-RECOVERY}}.  During this period, new packets
-can be acknowledged, but no new application data can be sent on the connection.
+The draining period exists to ensure that delayed or reordered packets are
+properly discarded.  This state SHOULD persist for three times the current
+Retransmission Timeout (RTO) interval as defined in {{QUIC-RECOVERY}}.  During
+this period no new application data can be sent on the connection.
 
 Different treatment is given to packets that are received while a connection is
-in the draining period depending on how the connection was closed.
-
-An endpoint that is in a draining period MUST NOT send packets unless they
-contain a CONNECTION_CLOSE or APPLICATION_CLOSE frame.
+in the draining period depending on how the connection was closed.  An endpoint
+that is in a draining period MUST NOT send packets unless they contain a
+CONNECTION_CLOSE or APPLICATION_CLOSE frame.
 
 Once the draining period has ended, an endpoint SHOULD discard per-connection
 state.  This results in new packets on the connection being discarded.  An
 endpoint MAY send a stateless reset in response to any further incoming packets.
+
+An endpoint MAY exit the draining period earlier if it can guarantee that its
+peer is also draining.  Receiving a CONNECTION_CLOSE or APPLICATION_CLOSE frame
+is sufficient confirmation, as is receiving a stateless reset.  However,
+disposing of connection state could result in delayed or reordered packets to be
+handled poorly.  For endpoints that have some alternative means to ensure that
+late-arriving packets on the connection do not create QUIC state, such as by
+closing the UDP socket, an abbreviated draining period can allow for faster
+resource recovery.  Servers that retain an open port for accepting new
+connections SHOULD NOT exit the draining period early.
 
 The draining period does not apply when a stateless reset ({{stateless-reset}})
 is sent.
@@ -1817,6 +1821,38 @@ packet. The use of these frames and various frame header bits are described in
 subsequent sections.
 
 
+## Variable-Length Integer Encoding {#integer-encoding}
+
+QUIC frames use a common variable-length encoding for all non-negative integer
+values.  This encoding ensures that smaller integer values need fewer octets to
+encode.
+
+The QUIC variable-length integer encoding reserves the two most significant bits
+of the first octet to encode the base 2 logarithm of the integer encoding length
+in octets.  The integer value is encoded on the remaining bits, in network byte
+order.
+
+This means that integers are encoded on 1, 2, 4, or 8 octets and can encode 6,
+14, 30, or 62 bit values respectively.  {{integer-summary}} summarizes the
+encoding properties.
+
+| 2Bit | Length | Usable Bits | Range                 |
+|:-----|:-------|:------------|:----------------------|
+| 00   | 1      | 6           | 0-63                  |
+| 01   | 2      | 14          | 0-16383               |
+| 10   | 4      | 30          | 0-1073741823          |
+| 11   | 8      | 62          | 0-4611686018427387903 |
+{: #integer-summary title="Summary of Integer Encodings"}
+
+For example, the eight octet sequence c2 19 7c 5e ff 14 e8 8c (in hexadecimal)
+decodes to the decimal value 151288809941952652; the four octet sequence 9d 7f
+3e 7d decodes to 494878333; the two octet sequence 7b bd decodes to 15293; and
+the single octet 25 decodes to 37 (as does the two octet sequence 40 25).
+
+Error codes ({{error-codes}}) are described using integers, but do not use this
+encoding.
+
+
 ## PADDING Frame {#frame-padding}
 
 The PADDING frame (type=0x00) has no semantic value.  PADDING frames can be used
@@ -1843,13 +1879,11 @@ The RST_STREAM frame is as follows:
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                        Stream ID (32)                         |
+|                        Stream ID (i)                        ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |  Application Error Code (16)  |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                                                               |
-+                       Final Offset (64)                       +
-|                                                               |
+|                       Final Offset (i)                     ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
 
@@ -1857,7 +1891,8 @@ The fields are:
 
 Stream ID:
 
-: The 32-bit Stream ID of the stream being terminated.
+: A variable-length integer encoding of the Stream ID of the stream being
+  terminated.
 
 Application Protocol Error Code:
 
@@ -1866,7 +1901,7 @@ Application Protocol Error Code:
 
 Final Offset:
 
-: A 64-bit unsigned integer indicating the absolute byte offset of the end of
+: A variable-length integer indicating the absolute byte offset of the end of
   data written on this stream by the RST_STREAM sender.
 
 
@@ -1885,7 +1920,7 @@ The CONNECTION_CLOSE frame is as follows:
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|           Error Code (16)     |   Reason Phrase Length (16)   |
+|           Error Code (16)     |   Reason Phrase Length (i)  ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                        Reason Phrase (*)                    ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -1902,7 +1937,7 @@ Error Code:
 
 Reason Phrase Length:
 
-: A 16-bit unsigned number specifying the length of the reason phrase in bytes.
+: A variable-length integer specifying the length of the reason phrase in bytes.
   Note that a CONNECTION_CLOSE frame cannot be split between packets, so in
   practice any limits on packet size will also limit the space available for a
   reason phrase.
@@ -1936,9 +1971,7 @@ The frame is as follows:
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                                                               |
-+                        Maximum Data (64)                      +
-|                                                               |
+|                        Maximum Data (i)                     ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
 
@@ -1946,7 +1979,7 @@ The fields in the MAX_DATA frame are as follows:
 
 Maximum Data:
 
-: A 64-bit unsigned integer indicating the maximum amount of data that can be
+: A variable-length integer indicating the maximum amount of data that can be
   sent on the entire connection, in units of octets.
 
 All data sent in STREAM frames counts toward this limit, with the exception of
@@ -1969,11 +2002,9 @@ The frame is as follows:
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                        Stream ID (32)                         |
+|                        Stream ID (i)                        ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                                                               |
-+                    Maximum Stream Data (64)                   +
-|                                                               |
+|                    Maximum Stream Data (i)                  ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
 
@@ -1981,11 +2012,12 @@ The fields in the MAX_STREAM_DATA frame are as follows:
 
 Stream ID:
 
-: The stream ID of the stream that is affected.
+: The stream ID of the stream that is affected encoded as a variable-length
+  integer.
 
 Maximum Stream Data:
 
-: A 64-bit unsigned integer indicating the maximum amount of data that can be
+: A variable-length integer indicating the maximum amount of data that can be
   sent on the identified stream, in units of octets.
 
 When counting data toward this limit, an endpoint accounts for the largest
@@ -2012,14 +2044,17 @@ The frame is as follows:
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                    Maximum Stream ID (32)                     |
+|                    Maximum Stream ID (i)                    ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
 
 The fields in the MAX_STREAM_ID frame are as follows:
 
 Maximum Stream ID:
-: ID of the maximum peer-initiated stream ID for the connection.
+: ID of the maximum unidirectional or bidirectional peer-initiated stream ID for
+  the connection encoded as a variable-length integer. The limit applies to
+  unidirectional steams if the second least signification bit of the stream ID
+  is 1, and applies to bidirectional streams if it is 0.
 
 Loss or reordering can mean that a MAX_STREAM_ID frame can be received which
 states a lower stream limit than the client has previously received.
@@ -2103,7 +2138,7 @@ The STREAM_BLOCKED frame is as follows:
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                        Stream ID (32)                         |
+|                        Stream ID (i)                        ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
 
@@ -2111,7 +2146,7 @@ The STREAM_BLOCKED frame contains a single field:
 
 Stream ID:
 
-: A 32-bit unsigned number indicating the stream which is flow control blocked.
+: A variable-length integer indicating the stream which is flow control blocked.
 
 
 ## STREAM_ID_BLOCKED Frame {#frame-stream-id-blocked}
@@ -2137,7 +2172,7 @@ The NEW_CONNECTION_ID is as follows:
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|       Sequence (16)           |
+|                          Sequence (i)                       ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                                                               |
 +                        Connection ID (64)                     +
@@ -2157,12 +2192,11 @@ The fields are:
 
 Sequence:
 
-: A 16-bit sequence number.  This value starts at 0 and increases by 1 for each
-  connection ID that is provided by the server.  The sequence value can wrap;
-  the value 65535 is followed by 0.  When wrapping the sequence field, the
-  server MUST ensure that a value with the same sequence has been received and
-  acknowledged by the client.  The connection ID that is assigned during the
-  handshake is assumed to have a sequence of 65535.
+: A variable-length integer.  This value starts at 0 and increases by 1 for each
+  connection ID that is provided by the server.  The connection ID that is
+  assigned during the handshake is assumed to have a sequence of -1.  That is,
+  the value selected during the handshake comes immediately before the first
+  value that a server can send.
 
 Connection ID:
 
@@ -2186,7 +2220,7 @@ The STOP_SENDING frame is as follows:
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                        Stream ID (32)                         |
+|                        Stream ID (i)                        ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |  Application Error Code (16)  |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -2196,7 +2230,7 @@ The fields are:
 
 Stream ID:
 
-: The 32-bit Stream ID of the stream being ignored.
+: A variable-length integer carrying the Stream ID of the stream being ignored.
 
 Application Error Code:
 
@@ -2219,13 +2253,169 @@ endpoint, the endpoint MAY generate a connection error of type UNSOLICITED_PONG.
 
 ## ACK Frame {#frame-ack}
 
-Receivers send ACK frames to inform senders which packets they have received and
-processed, as well as which packets are considered missing.  The ACK frame
-contains between 1 and 256 ACK blocks.  ACK blocks are ranges of acknowledged
-packets. Implementations MUST NOT generate packets that only contain ACK frames
-in response to packets which only contain ACK frames. However, they SHOULD
+Receivers send ACK frames (type=0xe) to inform senders which packets they have
+received and processed.  A sent packet that has never been acknowledged is
+missing. The ACK frame contains any number of ACK blocks.  ACK blocks are
+ranges of acknowledged packets.
+
+Unlike TCP SACKs, QUIC acknowledgements are irrevocable.  Once a packet has
+been acknowledged, even if it does not appear in a future ACK frame,
+it remains acknowledged.
+
+A client MUST NOT acknowledge Version Negotiation or Retry packets.  These
+packet types contain packet numbers selected by the client, not the server.
+
+A sender MAY intentionally skip packet numbers to introduce entropy into the
+connection, to avoid opportunistic acknowledgement attacks.  The sender SHOULD
+close the connection if an unsent packet number is acknowledged.  The format of
+the ACK frame is efficient at expressing even long blocks of missing packets,
+allowing for large, unpredictable gaps.
+
+An ACK frame is shown below.
+
+~~~
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                     Largest Acknowledged (i)                ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                          ACK Delay (i)                      ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                       ACK Block Count (i)                   ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                          ACK Blocks (*)                     ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~
+{: #ack-format title="ACK Frame Format"}
+
+The fields in the ACK frame are as follows:
+
+Largest Acknowledged:
+
+: A variable-length integer representing the largest packet number the peer is
+  acknowledging; this is usually the largest packet number that the peer has
+  received prior to generating the ACK frame.
+
+ACK Delay:
+
+: A variable-length integer including the time in microseconds that the largest
+  acknowledged packet, as indicated in the Largest Acknowledged field, was
+  received by this peer to when this ACK was sent.  The value of the ACK Delay
+  field is scaled by multiplying the encoded value by the 2 to the power of the
+  value of the `ack_delay_exponent` transport parameter set by the sender of the
+  ACK frame.  The `ack_delay_exponent` defaults to 3, or a multiplier of 8 (see
+  {{transport-parameter-definitions}}).  Scaling in this fashion allows for a
+  larger range of values with a shorter encoding at the cost of lower
+  resolution.
+
+ACK Block Count:
+
+: The number of Additional ACK Block (and Gap) fields after the First ACK Block.
+
+ACK Blocks:
+
+: Contains one or more blocks of packet numbers which have been successfully
+  received, see {{ack-block-section}}.
+
+
+### ACK Block Section {#ack-block-section}
+
+The ACK Block Section consists of alternating Gap and ACK Block fields in
+descending packet number order.  A First Ack Block field is followed by a
+variable number of alternating Gap and Additional ACK Blocks.  The number of Gap
+and Additional ACK Block fields is determined by the ACK Block Count field.
+
+Gap and ACK Block fields use a relative integer encoding for efficiency.  Though
+each encoded value is positive, the values are subtracted, so that each ACK
+Block describes progressively lower-numbered packets.  As long as contiguous
+ranges of packets are small, the variable-length integer encoding ensures that
+each range can be expressed in a small number of octets.
+
+~~~
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                      First ACK Block (i)                    ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                             Gap (i)                         ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                    Additional ACK Block (i)                 ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                             Gap (i)                         ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                    Additional ACK Block (i)                 ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+                               ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                             Gap (i)                         ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                    Additional ACK Block (i)                 ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~
+{: #ack-block-format title="ACK Block Section"}
+
+Each ACK Block acknowledges a contiguous range of packets by indicating the
+number of acknowledged packets that precede the largest packet number in that
+block.  A value of zero indicates that only the largest packet number is
+acknowledged.  Larger ACK Block values indicate a larger range, with
+corresponding lower values for the smallest packet number in the range.  Thus,
+given a largest packet number for the ACK, the smallest value is determined by
+the formula:
+
+~~~
+   smallest = largest - ack_block
+~~~
+
+The range of packets that are acknowledged by the ACK block include the range
+from the smallest packet number to the largest, inclusive.
+
+The largest value for the First ACK Block is determined by the Largest
+Acknowledged field; the largest for Additional ACK Blocks is determined by
+cumulatively subtracting the size of all preceding ACK Blocks and Gaps.
+
+Each Gap indicates a range of packets that are not being acknowledged.  The
+number of packets in the gap is one higher than the encoded value of the Gap
+Field.
+
+The value of the Gap field establishes the largest packet number value for the
+ACK block that follows the gap using the following formula:
+
+~~~
+  largest = previous_smallest - gap - 2
+~~~
+
+If the calculated value for largest or smallest packet number for any ACK Block
+is negative, an endpoint MUST generate a connection error of type FRAME_ERROR
+indicating an error in an ACK frame (that is, 0x10d).
+
+The fields in the ACK Block Section are:
+
+First ACK Block:
+
+: A variable-length integer indicating the number of contiguous packets
+  preceding the Largest Acknowledged that are being acknowledged.
+
+Gap (repeated):
+
+: A variable-length integer indicating the number of contiguous unacknowledged
+  packets preceding the packet number one lower than the smallest in the
+  preceding ACK Block.
+
+ACK Block (repeated):
+
+: A variable-length integer indicating the number of contiguous acknowledged
+  packets preceding the largest packet number, as determined by the
+  preceding Gap.
+
+### Sending ACK Frames
+
+Implementations MUST NOT generate packets that only contain ACK frames in
+response to packets which only contain ACK frames. However, they MUST
 acknowledge packets containing only ACK frames when sending ACK frames in
-response to other packets.
+response to other packets.  Implementations MUST NOT send more than one ACK
+frame per received packet that contains frames other than ACK frames.  Packets
+containing non-ACK frames MUST be acknowledged immediately or when a delayed
+ack timer expires.
 
 To limit ACK blocks to those that have not yet been received by the sender, the
 receiver SHOULD track which ACK frames have been acknowledged by its peer.  Once
@@ -2242,144 +2432,9 @@ number of ACK blocks it sends.  A receiver can do this even without receiving
 acknowledgment of its ACK frames, with the knowledge this could cause the sender
 to unnecessarily retransmit some data.  When this is necessary, the receiver
 SHOULD acknowledge newly received packets and stop acknowledging packets
-received in the past.
-
-Unlike TCP SACKs, QUIC ACK blocks are irrevocable.  Once a packet has
-been acknowledged, even if it does not appear in a future ACK frame,
-it remains acknowledged.
-
-A client MUST NOT acknowledge Version Negotiation or Server Stateless Retry
-packets.  These packet types contain packet numbers selected by the client, not
-the server.
-
-A sender MAY intentionally skip packet numbers to introduce entropy into the
-connection, to avoid opportunistic acknowledgement attacks.  The sender SHOULD
-close the connection if an unsent packet number is acknowledged.  The format of
-the ACK frame is efficient at expressing blocks of missing packets; skipping
-packet numbers between 1 and 255 effectively provides up to 8 bits of efficient
-entropy on demand, which should be adequate protection against most
-opportunistic acknowledgement attacks.
-
-The type byte for a ACK frame contains embedded flags, and is formatted as
-`101NLLMM`.  These bits are parsed as follows:
-
-* The first three bits must be set to 101 indicating that this is an ACK frame.
-
-* The `N` bit indicates whether the frame contains a Num Blocks field.
-
-* The two `LL` bits encode the length of the Largest Acknowledged field.
-  The values 00, 01, 02, and 03 indicate lengths of 8, 16, 32, and 64
-  bits respectively.
-
-* The two `MM` bits encode the length of the ACK Block Length fields.
-  The values 00, 01, 02, and 03 indicate lengths of 8, 16, 32, and 64
-  bits respectively.
-
-An ACK frame is shown below.
-
-~~~
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|[Num Blocks(8)]|
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                Largest Acknowledged (8/16/32/64)            ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|        ACK Delay (16)         |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                     ACK Block Section (*)                   ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-~~~
-{: #ack-format title="ACK Frame Format"}
-
-The fields in the ACK frame are as follows:
-
-Num Blocks (opt):
-
-: An optional 8-bit unsigned value specifying the number of additional ACK
-  blocks (besides the required First ACK Block) in this ACK frame.  Only present
-  if the 'N' flag bit is 1.
-
-Largest Acknowledged:
-
-: A variable-sized unsigned value representing the largest packet number the
-  peer is acknowledging in this packet (typically the largest that the peer has
-  seen thus far.)
-
-ACK Delay:
-
-: The time from when the largest acknowledged packet, as indicated in the
-  Largest Acknowledged field, was received by this peer to when this ACK was
-  sent.
-
-ACK Block Section:
-
-: Contains one or more blocks of packet numbers which have been successfully
-  received, see {{ack-block-section}}.
-
-
-### ACK Block Section {#ack-block-section}
-
-The ACK Block Section contains between one and 256 blocks of packet numbers
-which have been successfully received. If the Num Blocks field is absent, only
-the First ACK Block length is present in this section. Otherwise, the Num Blocks
-field indicates how many additional blocks follow the First ACK Block Length
-field.
-
-~~~
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|              First ACK Block Length (8/16/32/64)            ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|  [Gap 1 (8)]  |       [ACK Block 1 Length (8/16/32/64)]     ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|  [Gap 2 (8)]  |       [ACK Block 2 Length (8/16/32/64)]     ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-                             ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|  [Gap N (8)]  |       [ACK Block N Length (8/16/32/64)]     ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-~~~
-{: #ack-block-format title="ACK Block Section"}
-
-The fields in the ACK Block Section are:
-
-First ACK Block Length:
-
-: An unsigned packet number delta that indicates the number of contiguous
-  additional packets being acknowledged starting at the Largest Acknowledged.
-
-Gap To Next Block (opt, repeated):
-
-: An unsigned number specifying the number of contiguous missing packets from
-  the end of the previous ACK block to the start of the next.  Repeated "Num
-  Blocks" times.
-
-ACK Block Length (opt, repeated):
-
-: An unsigned packet number delta that indicates the number of contiguous
-  packets being acknowledged starting after the end of the previous gap.
-  Repeated "Num Blocks" times.
-
-
-#### Time Format
-
-DISCUSS_AND_REPLACE: Perhaps make this format simpler.
-
-The time format used in the ACK frame above is a 16-bit unsigned float with 11
-explicit bits of mantissa and 5 bits of explicit exponent, specifying time in
-microseconds.  The bit format is loosely modeled after IEEE 754.  For example, 1
-microsecond is represented as 0x1, which has an exponent of zero, presented in
-the 5 high order bits, and mantissa of 1, presented in the 11 low order bits.
-When the explicit exponent is greater than zero, an implicit high-order 12th bit
-of 1 is assumed in the mantissa.  For example, a floating value of 0x800 has an
-explicit exponent of 1, as well as an explicit mantissa of 0, but then has an
-effective mantissa of 4096 (12th bit is assumed to be 1).  Additionally, the
-actual exponent is one-less than the explicit exponent, and the value represents
-4096 microseconds.  Any values larger than the representable range are clamped
-to 0xFFFF.
-
+received in the past.  Removing ack blocks before the peer has received them
+increases the chances the peer never received an acknowledgement, will declare
+the packet lost, and spuriously retransmit information.
 
 ### ACK Frames and Packet Protection
 
@@ -2421,30 +2476,27 @@ by a client in protected packets, because it is certain that the server is able
 to decipher the packet.
 
 
-## STREAM Frame {#frame-stream}
+## STREAM Frames {#frame-stream}
 
-STREAM frames implicitly create a stream and carry stream data. The type byte
-for a STREAM frame contains embedded flags, and is formatted as `11FSSOOD`.
-These bits are parsed as follows:
+STREAM frames implicitly create a stream and carry stream data.  The STREAM
+frame takes the form 0b00010XXX (or the set of values from 0x10 to 0x17).  The
+value of the three low-order bits of the frame type determine the fields that
+are present in the frame.
 
-* The first two bits must be set to 11, indicating that this is a STREAM frame.
+* The FIN bit (0x01) of the frame type is set only on frames that contain the
+  final offset of the stream.  Setting this bit indicates that the frame
+  marks the end of the stream.
 
-* `F` is the FIN bit, which is used for stream termination.
+* The LEN bit (0x02) in the frame type is set to indicate that there is a Length
+  field present.  If this bit is set to 0, the Length field is absent and the
+  Stream Data field extends to the end of the packet.  If this bit is set to 1,
+  the Length field is present.
 
-* The `SS` bits encode the length of the Stream ID header field.
-  The values 00, 01, 02, and 03 indicate lengths of 8, 16, 24, and 32 bits
-  long respectively.
-
-* The `OO` bits encode the length of the Offset header field.
-  The values 00, 01, 02, and 03 indicate lengths of 0, 16, 32, and
-  64 bits long respectively.
-
-* The `D` bit indicates whether a Data Length field is present in the STREAM
-  header.  When set to 0, this field indicates that the Stream Data field
-  extends to the end of the packet.  When set to 1, this field indicates that
-  Data Length field contains the length (in bytes) of the Stream Data field.
-  The option to omit the length should only be used when the packet is a
-  "full-sized" packet, to avoid the risk of corruption via padding.
+* The OFF bit (0x04) in the frame type is set to indicate that there is an
+  Offset field present.  When set to 1, the Offset field is present; when set to
+  0, the Offset field is absent and the Stream Data starts at an offset of 0
+  (that is, the frame contains the first octets of the stream, or the end of a
+  stream that includes no data).
 
 A STREAM frame is shown below.
 
@@ -2452,11 +2504,13 @@ A STREAM frame is shown below.
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                    Stream ID (8/16/24/32)                   ...
+|                         Stream ID (i)                       ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                      Offset (0/16/32/64)                    ...
+|                         [Offset (i)]                        ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|       [Data Length (16)]      |        Stream Data (*)      ...
+|                         [Length (i)]                        ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                        Stream Data (*)                      ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
 {: #stream-format title="STREAM Frame Format"}
@@ -2465,21 +2519,21 @@ The STREAM frame contains the following fields:
 
 Stream ID:
 
-: The stream ID of the stream (see {{stream-id}}).
+: A variable-length integer indicating the stream ID of the stream (see
+  {{stream-id}}).
 
 Offset:
 
-: A variable-sized unsigned number specifying the byte offset in the stream for
-  the data in this STREAM frame.  When the offset length is 0, the offset is 0.
-  The first byte in the stream has an offset of 0.  The largest offset delivered
-  on a stream - the sum of the re-constructed offset and data length - MUST be
-  less than 2^64.
+: A variable-length integer specifying the byte offset in the stream for the
+  data in this STREAM frame.  This field is present when the OFF bit is set to
+  1.  When the Offset field is absent, the offset is 0.
 
-Data Length:
+Length:
 
-: An optional 16-bit unsigned number specifying the length of the Stream Data
-  field in this STREAM frame.  This field is present when the `D` bit is set to
-  1.
+: A variable-length integer specifying the length of the Stream Data field in
+  this STREAM frame.  This field is present when the LEN bit is set to 1.  When
+  the LEN bit is set to 0, the Stream Data field consumes all the remaining
+  octets in the packet.
 
 Stream Data:
 
@@ -2488,6 +2542,10 @@ Stream Data:
 A stream frame's Stream Data MUST NOT be empty, unless the FIN bit is set.  When
 the FIN flag is sent on an empty STREAM frame, the offset in the STREAM frame is
 the offset of the next byte that would be sent.
+
+The first byte in the stream has an offset of 0.  The largest offset delivered
+on a stream - the sum of the re-constructed offset and data length - MUST be
+less than 2^62.
 
 Stream multiplexing is achieved by interleaving STREAM frames from multiple
 streams into one or more QUIC packets.  A single QUIC packet can include
@@ -2634,12 +2692,18 @@ Too Big messages.
 provisional until QUIC's loss detection algorithm determines that the packet is
 actually lost.
 
+
 # Streams: QUIC's Data Structuring Abstraction {#streams}
 
-Streams in QUIC provide a lightweight, ordered, and bidirectional byte-stream
-abstraction modeled closely on HTTP/2 streams {{?RFC7540}}.
+Streams in QUIC provide a lightweight, ordered byte-stream abstraction.
 
-Streams can be created either by the client or the server, can concurrently send
+There are two basic types of stream in QUIC.  Unidirectional streams carry data
+in one direction only; bidirectional streams allow for data to be sent in both
+directions.  Different stream identifiers are used to distinguish between
+unidirectional and bidirectional streams, as well as to create a separation
+between streams that are initiated by the client and server (see {{stream-id}}).
+
+Either type of stream can be created by either endpoint, can concurrently send
 data interleaved with other streams, and can be cancelled.
 
 Data that is received on a stream is delivered in order within that stream, but
@@ -2663,25 +2727,47 @@ for some applications.
 
 ## Stream Identifiers {#stream-id}
 
-Streams are identified by an unsigned 32-bit integer, referred to as the Stream
-ID.  To avoid Stream ID collision, clients MUST initiate streams using
-odd-numbered Stream IDs; servers MUST initiate streams using
-even-numbered Stream IDs. If an endpoint receives a frame which
-corresponds to a stream which is allocated to it (i.e., odd-numbered for
-the client or even-numbered for the server) but which it has not yet
-created, it MUST close the connection with error code STREAM_STATE_ERROR.
+Streams are identified by an unsigned 62-bit integer, referred to as the Stream
+ID.  The least significant two bits of the Stream ID are used to identify the
+type of stream (unidirectional or bidirectional) and the initiator of the
+stream.
 
-Stream ID 0 (0x0) is reserved for the cryptographic handshake.  Stream 0 MUST
-NOT be used for application data, and is the first client-initiated stream.
+The least significant bit (0x1) of the Stream ID identifies the initiator of the
+stream.  Clients initiate even-numbered streams (those with the least
+significant bit set to 0); servers initiate even-numbered streams (with the bit
+set to 1).  Separation of the stream identifiers ensures that client and server
+are able to open streams without the latency imposed by negotiating for an
+identifier.
+
+If an endpoint receives a frame for a stream that it expects to initiate (i.e.,
+odd-numbered for the client or even-numbered for the server), but which it has
+not yet opened, it MUST close the connection with error code STREAM_STATE_ERROR.
+
+The second least significant bit (0x2) of the Stream ID differentiates between
+unidirectional streams and bidirectional streams. Unidirectional streams always
+have this bit set to 1 and bidirectional streams have this bit set to 0.
+
+The two type bits from a Stream ID therefore identify streams as summarized in
+{{stream-id-types}}.
+
+| Low Bits | Stream Type                      |
+|:---------|:---------------------------------|
+| 0x0      | Client-Initiated, Bidirectional  |
+| 0x1      | Server-Initiated, Bidirectional  |
+| 0x2      | Client-Initiated, Unidirectional |
+| 0x3      | Server-Initiated, Unidirectional |
+{: #stream-id-types title="Stream ID Types"}
+>>>>>>> origin/master
+
+Stream ID 0 (0x0) is a client-initiated, bidirectional stream that is used for
+the cryptographic handshake.  Stream 0 MUST NOT be used for application data.
 
 A QUIC endpoint MUST NOT reuse a Stream ID.  Streams MUST be created
 in sequential order.  Open streams can be used in any order.  Streams
 that are used out of order result in lower-numbered streams in the
 same direction being counted as open.
 
-Stream IDs are usually encoded as a 32-bit integer, though the STREAM frame
-({{frame-stream}}) permits a shorter encoding when the leading bits of the
-stream ID are zero.
+Stream IDs are encoded as a variable-length integer (see {{integer-encoding}}).
 
 
 ## Life of a Stream {#stream-states}
@@ -2705,6 +2791,7 @@ shown in the following figure and described below.
                                  v
                  recv FIN/  +--------+    send FIN/
                  recv RST   |        |    send RST
+                 send UNI   |        |    recv UNI
                   ,---------|  open  |-----------.
                  /          |        |            \
                 v           +--------+             v
@@ -2724,6 +2811,7 @@ shown in the following figure and described below.
    recv:   endpoint receives this frame
 
    STREAM: a STREAM frame
+   UNI:    a STREAM frame with a unidirectional stream ID
    FIN:    FIN flag in a STREAM frame
    RST:    RST_STREAM frame
    MSD:    MAX_STREAM_DATA frame
@@ -2804,7 +2892,9 @@ Any frame type that mentions a stream ID can be sent in this state.
 A stream that is in the "half-closed (local)" state MUST NOT be used for sending
 on new STREAM frames.  Retransmission of data that has already been sent on
 STREAM frames is permitted.  An endpoint MAY also send MAX_STREAM_DATA and
-STOP_SENDING in this state.
+STOP_SENDING in this state. Unidirectional streams created by the peer are
+immediately half-closed (local) to the receiver and are subsequently treated
+identically to a half-closed bidirectional stream.
 
 An application can decide to abandon a stream in this state. An endpoint can
 send RST_STREAM for a stream that was closed with the FIN flag. The final offset
@@ -2830,7 +2920,8 @@ after a frame bearing the FIN flag is sent.
 A stream is "half-closed (remote)" when the stream is no longer being used by
 the peer to send any data.  An endpoint will have either received all data that
 a peer has sent or will have received a RST_STREAM frame and discarded any
-received data.
+received data. Unidirectional streams created locally are immediately
+half-closed (remote) to the creator.
 
 Once all data has been either received or discarded, a sender is no longer
 obligated to update the maximum received data for the connection.
@@ -2935,7 +3026,7 @@ sender or during delivery to the application at the receiver.
 When new data is to be sent on a stream, a sender MUST set the encapsulating
 STREAM frame's offset field to the stream offset of the first byte of this new
 data.  The first byte of data that is sent on a stream has the stream offset 0.
-The largest offset delivered on a stream MUST be less than 2^64. A receiver
+The largest offset delivered on a stream MUST be less than 2^62. A receiver
 MUST ensure that received stream data is delivered to the application as an
 ordered byte-stream.  Data received out of order MUST be buffered for later
 delivery, as long as it is not in violation of the receiver's flow control
@@ -3139,8 +3230,9 @@ is increased.
 
 The final offset is the count of the number of octets that are transmitted on a
 stream.  For a stream that is reset, the final offset is carried explicitly in
-the RST_STREAM frame.  Otherwise, the final offset is the offset of the end of
-the data carried in STREAM frame marked with a FIN flag.
+a RST_STREAM frame.  Otherwise, the final offset is the offset of the end of the
+data carried in a STREAM frame marked with a FIN flag, or 0 in the case of
+incoming unidirectional streams.
 
 An endpoint will know the final offset for a stream when the stream enters the
 "half-closed (remote)" state.  However, if there is reordering or loss, an
@@ -3533,9 +3625,20 @@ thanks to all.
 
 Issue and pull request numbers are listed with a leading octothorp.
 
+## Since draft-ietf-quic-transport-07
+
+- Employ variable-length integer encodings throughout (#595)
+- Draining period can terminate early (#869)
+
 ## Since draft-ietf-quic-transport-06
 
-- Replaced FNV-1a with AES-GCM for all "Cleartext" packets.
+- Replaced FNV-1a with AES-GCM for all "Cleartext" packets (#554)
+- Split error code space between application and transport (#485)
+- Stateless reset token moved to end (#820)
+- 1-RTT-protected long header types removed (#848)
+- No acknowledgments during draining period (#852)
+- Remove "application close" as a separate close type (#854)
+- Remove timestamps from the ACK frame (#841)
 
 ## Since draft-ietf-quic-transport-05
 
