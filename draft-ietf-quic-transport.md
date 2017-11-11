@@ -3638,6 +3638,7 @@ Issue and pull request numbers are listed with a leading octothorp.
 - 1-RTT-protected long header types removed (#848)
 - No acknowledgments during draining period (#852)
 - Remove "application close" as a separate close type (#854)
+- Remove timestamps from the ACK frame (#841)
 
 ## Since draft-ietf-quic-transport-05
 
