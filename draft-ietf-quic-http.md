@@ -750,15 +750,18 @@ The GOAWAY frame (type=0x7) is used to initiate graceful shutdown of a
 connection by a server.  GOAWAY allows a server to stop accepting new requests
 while still finishing processing of previously received requests.  This enables
 administrative actions, like server maintenance.  GOAWAY by itself does not
-close a connection.  (Note that clients do not need to send GOAWAY to gracefully
-close a connection; they simply stop making new requests.)
+close a connection.
 
 The GOAWAY frame does not define any flags, and the payload is a QUIC Stream ID
 encoded as a variable-length integer.
 
-The GOAWAY frame applies to the connection, not a specific stream.  An endpoint
+The GOAWAY frame applies to the connection, not a specific stream.  A client
 MUST treat a GOAWAY frame on a stream other than the control stream as a
 connection error ({{errors}}) of type HTTP_WRONG_STREAM.
+
+Clients do not need to send GOAWAY to initiate a graceful shutdown; they simply
+stop making new requests.  A server MUST treat receipt of a GOAWAY frame as a
+connection error ({{errors}}) of type HTTP_UNEXPECTED_GOAWAY.
 
 New client requests might already have been sent before the client receives the
 server's GOAWAY frame.  The GOAWAY frame contains the stream identifier of the
@@ -793,7 +796,7 @@ If a stream is cancelled after receiving a complete response, the client MAY
 ignore the cancellation and use the response.  However, if a stream is cancelled
 after receiving a partial response, the response SHOULD NOT be used.
 Automatically retrying such requests is not possible, unless this is otherwise
-permitted (e.g. idempotent actions like GET, PUT, or DELETE).  Requests on
+permitted (e.g., idempotent actions like GET, PUT, or DELETE).  Requests on
 stream IDs less than or equal to the stream ID in the GOAWAY frame might have
 been processed; their status cannot be known until they are completed
 successfully, reset individually, or the connection terminates.
@@ -806,18 +809,23 @@ connection, the client cannot know if the server started to process that POST
 request if the server does not send a GOAWAY frame to indicate what streams it
 might have acted on.
 
-For unexpected closures caused by error conditions, a QUIC CONNECTION_CLOSE
-frame MUST be used.  However, a GOAWAY MAY be sent first to provide additional
-detail to clients.  If a connection terminates without a GOAWAY frame, the last
-stream identifier is effectively the highest possible stream identifier (as
-determined by QUIC's MAX_STREAM_ID).
+For unexpected closures caused by error conditions, a QUIC CONNECTION_CLOSE or
+APPLICATION_CLOSE frame MUST be used.  However, a GOAWAY MAY be sent first to
+provide additional detail to clients and to allow the client to retry requests.
+Including the GOAWAY frame in the same packet as the QUIC CONNECTION_CLOSE or
+APPLICATION_CLOSE frame improves the chances of the frame being received by
+clients.
+
+If a connection terminates without a GOAWAY frame, the last stream identifier is
+effectively the highest possible stream identifier (as determined by QUIC's
+MAX_STREAM_ID).
 
 An endpoint MAY send multiple GOAWAY frames if circumstances change. For
 instance, an endpoint that sends GOAWAY without an error code during graceful
 shutdown could subsequently encounter an error condition.  The last stream
 identifier from the last GOAWAY frame received indicates which streams could
-have been acted upon.  Endpoints MUST NOT increase the value they send in the
-last stream identifier, since the peers might already have retried unprocessed
+have been acted upon.  A server MUST NOT increase the value they send in the
+last stream identifier, since clients might already have retried unprocessed
 requests on another connection.
 
 A client that is unable to retry requests loses all requests that are in flight
@@ -829,6 +837,13 @@ that a shutdown is imminent and that initiating further requests is prohibited.
 After allowing time for any in-flight requests (at least one round-trip time),
 the server MAY send another GOAWAY frame with an updated last stream identifier.
 This ensures that a connection can be cleanly shut down without losing requests.
+
+Once all requests on streams at or below the identified stream number have been
+completed or cancelled, and all promised server push responses associated with
+those requests have been completed or cancelled, the connection can be closed
+using an Immediate Close (see {{QUIC-TRANSPORT}}).  An endpoint that completes a
+graceful shutdown SHOULD use the QUIC APPLICATION_CLOSE frame with the
+HTTP_NO_ERROR code.
 
 
 ### MAX_PUSH_ID {#frame-max-push-id}
@@ -961,6 +976,9 @@ HTTP_MALFORMED_PUSH (0x12):
 
 HTTP_MALFORMED_MAX_PUSH_ID (0x13):
 : A MAX_PUSH_ID frame has been received with an invalid format.
+
+HTTP_UNEXPECTED_GOAWAY (0x14):
+: A GOAWAY frame has been received by a server.
 
 
 # Considerations for Transitioning from HTTP/2
@@ -1352,6 +1370,7 @@ The entries in the following table are registered by this document.
 |  HTTP_MULTIPLE_SETTINGS           |  0x11  |  Multiple SETTINGS frames              | {{http-error-codes}} |
 |  HTTP_MALFORMED_PUSH              |  0x12  |  Invalid push stream header            | {{http-error-codes}} |
 |  HTTP_MALFORMED_MAX_PUSH_ID       |  0x13  |  Invalid MAX_PUSH_ID frame             | {{http-error-codes}} |
+|  HTTP_UNEXPECTED_GOAWAY           |  0x14  |  A server received GOAWAY              | {{http-error-codes}} |
 |-----------------------------------|--------|----------------------------------------|----------------------|
 
 
