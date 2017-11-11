@@ -1371,7 +1371,7 @@ his employment there.
 
 ## Since draft-ietf-quic-http-07
 
-- Changes for integer encodings in QUIC (#595)
+- Changes for integer encodings in QUIC (#595,#905)
 
 ## Since draft-ietf-quic-http-06
 
