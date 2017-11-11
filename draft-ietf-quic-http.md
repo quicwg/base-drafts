@@ -411,15 +411,29 @@ All frames have the following format:
     0                   1                   2                   3
     0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |           Length (16)         |     Type (8)  |   Flags (8)   |
+   |                           Length (i)                        ...
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |                       Frame Payload (*)                     ...
+   |    Type (8)   |   Flags (8)   |       Frame Payload (*)     ...
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~~~~~~~~
 {: #fig-frame title="HTTP/QUIC frame format"}
 
-Note that the first four octets of the frame use a fixed-size encoding; a
-variable-length integer encoding is used for the contents of frames.
+A frame includes the following fields:
+
+  Length:
+  : A variable-length integer that describes the length of the Frame Payload.
+    This length does not include the frame header.
+
+  Type:
+  : An 8-bit type for the frame.
+
+  Flags:
+  : An 8-bit field containing flags.  The Type field determines the semantics of
+    flags.
+
+  Frame Payload:
+  : A payload, the semantics of which are determined by the Type field.
+
 
 ## Frame Definitions {#frames}
 
@@ -440,25 +454,13 @@ with a payload length of zero, the recipient MUST respond with a stream error
 
 ### HEADERS {#frame-headers}
 
-The HEADERS frame (type=0x1) is used to carry part of a header set, compressed
-using HPACK {{header-compression}}.
+The HEADERS frame (type=0x1) is used to carry a header block, compressed using
+HPACK {{header-compression}}.
 
-One flag is defined:
+No flags are defined for the HEADERS frame.
 
-  End Header Block (0x4):
-  : This frame concludes a header block.
-
-A HEADERS frame with any other flags set MUST be treated as a connection error
-of type HTTP_MALFORMED_HEADERS.
-
-The next frame on the same stream after a HEADERS frame without the EHB flag set
-MUST be another HEADERS frame. A receiver MUST treat the receipt of any other
-type of frame as a stream error of type HTTP_INTERRUPTED_HEADERS. (Note that
-QUIC can intersperse data from other streams between frames, or even during
-transmission of frames, so multiplexing is not blocked by this requirement.)
-
-A full header block is contained in a sequence of zero or more HEADERS frames
-without EHB set, followed by a HEADERS frame with EHB set.
+A HEADERS frame with any flags set MUST be treated as a connection error of type
+HTTP_MALFORMED_HEADERS.
 
 
 ### PRIORITY {#frame-priority}
