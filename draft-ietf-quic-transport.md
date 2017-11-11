@@ -2414,7 +2414,7 @@ response to packets which only contain ACK frames. However, they MUST
 acknowledge packets containing only ACK frames when sending ACK frames in
 response to other packets.  Implementations MUST NOT send more than one ACK
 frame per received packet that contains frames other than ACK frames.  Packets
-containing non ACK frames MUST be acknowledged immediately or when a delayed
+containing non-ACK frames MUST be acknowledged immediately or when a delayed
 ack timer expires.
 
 To limit ACK blocks to those that have not yet been received by the sender, the
