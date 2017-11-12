@@ -2432,9 +2432,7 @@ number of ACK blocks it sends.  A receiver can do this even without receiving
 acknowledgment of its ACK frames, with the knowledge this could cause the sender
 to unnecessarily retransmit some data.  When this is necessary, the receiver
 SHOULD acknowledge newly received packets and stop acknowledging packets
-received in the past.  Removing ack blocks before the peer has received them
-increases the chances the peer never received an acknowledgement, will declare
-the packet lost, and spuriously retransmit information.
+received in the past.
 
 ### ACK Frames and Packet Protection
 
