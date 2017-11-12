@@ -2432,7 +2432,10 @@ number of ACK blocks it sends.  A receiver can do this even without receiving
 acknowledgment of its ACK frames, with the knowledge this could cause the sender
 to unnecessarily retransmit some data.  When this is necessary, the receiver
 SHOULD acknowledge newly received packets and stop acknowledging packets
-received in the past.
+received in the past.  Standard QUIC {{QUIC-RECOVERY}} algorithms declare
+packets lost after sufficiently newer packets are acknowledged.  Therefore,
+receivers SHOULD NOT stop sending an ack block and then start sending it again
+substantially later in an effort to save bytes sent.
 
 ### ACK Frames and Packet Protection
 
