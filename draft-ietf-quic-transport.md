@@ -3639,6 +3639,7 @@ Issue and pull request numbers are listed with a leading octothorp.
 - No acknowledgments during draining period (#852)
 - Remove "application close" as a separate close type (#854)
 - Remove timestamps from the ACK frame (#841)
+- Require transport parameters to only appear once (#792)
 
 ## Since draft-ietf-quic-transport-05
 
