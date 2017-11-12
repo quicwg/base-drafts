@@ -644,7 +644,8 @@ SHA-256 hash function is used.
 ### Handshake Secrets {#handshake-secrets}
 
 Packets that carry the TLS handshake (Initial, Retry, and Handshake) are
-protected with secrets derived from the client's connection ID. Specifically:
+protected with secrets derived from the connection ID used in the
+client's Inital packet. Specifically:
 
 ~~~
    quic_version_1_salt = afc824ec5fc77eca1e9d36f37fb2d46518c36639
