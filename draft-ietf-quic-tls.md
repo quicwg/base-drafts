@@ -774,7 +774,7 @@ IVs for 1-RTT packets sent by the client and server are derived from the current
 generation of client_pp_secret and server_pp_secret respectively.  The length of
 the output is determined by the requirements of the AEAD function selected by
 TLS. All ciphersuites currently used for QUIC have a 16-byte authentication
-tag, thus producing an ouput 16 bytes larger than their input.
+tag and produce an ouput 16 bytes larger than their input.
 The key length is the AEAD key size.  As defined in Section 5.3 of
 {{!TLS13}}, the IV length is the larger of 8 or N_MIN (see Section
 4 of {{!AEAD=RFC5116}}; all ciphersuites defined in {{?TLS13}} have N_MIN set to
