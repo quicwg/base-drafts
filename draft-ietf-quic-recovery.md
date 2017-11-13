@@ -673,7 +673,7 @@ Pseudocode for SetLossDetectionAlarm follows:
  SetLossDetectionAlarm():
     // Don't arm the alarm if there are no packets with
     // retransmittable data in flight.
-    if (retransmittable_packets_outstanding == 0):
+    if (num_retransmittable_packets_outstanding == 0):
       loss_detection_alarm.cancel()
       return
 
@@ -690,7 +690,7 @@ Pseudocode for SetLossDetectionAlarm follows:
       alarm_duration = loss_time - now
     else if (tlp_count < kMaxTLPs):
       // Tail Loss Probe
-      if (retransmittable_packets_outstanding == 1):
+      if (num_retransmittable_packets_outstanding == 1):
         alarm_duration = 1.5 * smoothed_rtt + kDelayedAckTimeout
       else:
         alarm_duration = kMinTLPTimeout
