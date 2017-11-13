@@ -671,7 +671,9 @@ Pseudocode for SetLossDetectionAlarm follows:
 
 ~~~
  SetLossDetectionAlarm():
-    if (retransmittable packets are not outstanding):
+    // Don't arm the alarm if there are no packets with
+    // retransmittable data in flight.
+    if (retransmittable_packets_outstanding == 0):
       loss_detection_alarm.cancel()
       return
 
