@@ -524,7 +524,7 @@ follows:
      reordering_threshold = infinite
      time_reordering_fraction = kTimeReorderingFraction
    else:
-     reordering_threshold = kReorderingThreshold		
+     reordering_threshold = kReorderingThreshold
      time_reordering_fraction = infinite
    loss_time = 0
    smoothed_rtt = 0
