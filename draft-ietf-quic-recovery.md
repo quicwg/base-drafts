@@ -760,7 +760,7 @@ Pseudocode for DetectLostPackets follows:
      loss_time = 0
      lost_packets = {}
      delay_until_lost = infinite
-     if (time_reordering_fraction != infinite):
+     if (kUsingTimeLossDetection):
        delay_until_lost =
          (1 + time_reordering_fraction) * max(latest_rtt, smoothed_rtt)
      else if (largest_acked.packet_number == largest_sent_packet):
