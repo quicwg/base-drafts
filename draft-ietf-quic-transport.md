@@ -633,11 +633,12 @@ server and client.
 The connection ID field in a Handshake packet contains a connection ID
 that is chosen by the server (see {{connection-id}}).
 
-The first Handshake packet sent by a server contains a randomized packet number.
-This value is increased for each subsequent packet sent by the server as
-described in {{packet-numbers}}.  The client increments the packet number from
-its previous packet by one for each Handshake packet that it sends (which might
-be an Initial, 0-RTT Protected, or Handshake packet).
+The first Handshake packet sent by a server contains a random 31-bit
+packet number.  This value is increased for each subsequent packet
+sent by the server as described in {{packet-numbers}}.  The client
+increments the packet number from its previous packet by one for each
+Handshake packet that it sends (which might be an Initial, 0-RTT
+Protected, or Handshake packet).
 
 The payload of this packet contains STREAM frames and could contain PADDING and
 ACK frames.
