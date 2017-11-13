@@ -523,7 +523,9 @@ follows:
    if (kUsingTimeLossDetection)
      reordering_threshold = infinite
      time_reordering_fraction = kTimeReorderingFraction
-   reordering_threshold = kReorderingThreshold
+   else:
+     reordering_threshold = kReorderingThreshold		
+     time_reordering_fraction = infinite
    loss_time = 0
    smoothed_rtt = 0
    rttvar = 0
