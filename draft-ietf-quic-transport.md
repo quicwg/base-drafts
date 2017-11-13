@@ -2734,7 +2734,7 @@ stream.
 
 The least significant bit (0x1) of the Stream ID identifies the initiator of the
 stream.  Clients initiate even-numbered streams (those with the least
-significant bit set to 0); servers initiate even-numbered streams (with the bit
+significant bit set to 0); servers initiate odd-numbered streams (with the bit
 set to 1).  Separation of the stream identifiers ensures that client and server
 are able to open streams without the latency imposed by negotiating for an
 identifier.
