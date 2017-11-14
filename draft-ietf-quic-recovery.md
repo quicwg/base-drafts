@@ -701,7 +701,8 @@ Pseudocode for SetLossDetectionAlarm follows:
       alarm_duration = max(alarm_duration, kMinRTOTimeout)
       alarm_duration = alarm_duration * (2 ^ rto_count)
 
-    loss_detection_alarm.set(time_of_last_sent_packet + alarm_duration)
+    loss_detection_alarm.set(time_of_last_sent_packet
+        + alarm_duration)
 ~~~
 
 ### On Alarm Firing
