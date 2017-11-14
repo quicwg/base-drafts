@@ -2123,7 +2123,22 @@ unable to due to connection-level flow control (see {{blocking}}). BLOCKED
 frames can be used as input to tuning of flow control algorithms (see
 {{fc-credit}}).
 
-The BLOCKED frame does not contain a payload.
+The BLOCKED frame is as follows:
+
+~~~
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                         Offset (i)                         ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~
+
+The BLOCKED frame contains a single field.
+
+Offset:
+
+: A variable-length integer indicating the connection-level offset at which
+  the blocking occurred.
 
 
 ## STREAM_BLOCKED Frame {#frame-stream-blocked}
@@ -2140,13 +2155,20 @@ The STREAM_BLOCKED frame is as follows:
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                        Stream ID (i)                        ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                         Offset (i)                          ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
 
-The STREAM_BLOCKED frame contains a single field:
+The STREAM_BLOCKED frame contains two fields:
 
 Stream ID:
 
 : A variable-length integer indicating the stream which is flow control blocked.
+
+Offset:
+
+: A variable-length integer indicating the offset of the stream at which the
+  blocking occurred.
 
 
 ## STREAM_ID_BLOCKED Frame {#frame-stream-id-blocked}
@@ -2157,8 +2179,22 @@ stream, but is unable to due to the maximum stream ID limit set by its peer (see
 that a new stream was needed, but the stream limit prevented the creation of the
 stream.
 
-The STREAM_ID_BLOCKED frame does not contain a payload.
+The STREAM_ID_BLOCKED frame is as follows:
 
+~~~
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                        Stream ID (i)                        ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~
+
+The STREAM_ID_BLOCKED frame contains a single field.
+
+Stream ID:
+
+: A variable-length integer indicating the highest stream ID that the sender
+  was permitted to open.
 
 ## NEW_CONNECTION_ID Frame {#frame-new-connection-id}
 
