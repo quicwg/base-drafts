@@ -2431,9 +2431,9 @@ To limit receiver state or the size of ACK frames, a receiver MAY limit the
 number of ACK blocks it sends.  A receiver can do this even without receiving
 acknowledgment of its ACK frames, with the knowledge this could cause the sender
 to unnecessarily retransmit some data.  Standard QUIC {{QUIC-RECOVERY}}
-algorithms declare packets lost after sufficiently newer packets are acknowledged.
-Therefore, the receiver SHOULD repeatedly acknowledge newly received packets in
-preference to packets received in the past.
+algorithms declare packets lost after sufficiently newer packets are
+acknowledged.  Therefore, the receiver SHOULD repeatedly acknowledge newly
+received packets in preference to packets received in the past.
 
 ### ACK Frames and Packet Protection
 
