@@ -2118,9 +2118,9 @@ prevent the majority of middleboxes from losing state for UDP flows.
 
 ## BLOCKED Frame {#frame-blocked}
 
-A sender sends a BLOCKED frame (type=0x08) when it wishes to send data, but is
-unable to due to connection-level flow control (see {{blocking}}). BLOCKED
-frames can be used as input to tuning of flow control algorithms (see
+A sender SHOULD send a BLOCKED frame (type=0x08) when it wishes to send data,
+but is unable to due to connection-level flow control (see {{blocking}}).
+BLOCKED frames can be used as input to tuning of flow control algorithms (see
 {{fc-credit}}).
 
 The BLOCKED frame does not contain a payload.
@@ -2128,9 +2128,9 @@ The BLOCKED frame does not contain a payload.
 
 ## STREAM_BLOCKED Frame {#frame-stream-blocked}
 
-A sender sends a STREAM_BLOCKED frame (type=0x09) when it wishes to send data,
-but is unable to due to stream-level flow control.  This frame is analogous to
-BLOCKED ({{frame-blocked}}).
+A sender SHOULD send a STREAM_BLOCKED frame (type=0x09) when it wishes to send
+data, but is unable to due to stream-level flow control.  This frame is
+analogous to BLOCKED ({{frame-blocked}}).
 
 The STREAM_BLOCKED frame is as follows:
 
@@ -2640,8 +2640,14 @@ When a packet is detected as lost, the sender re-sends any frames as necessary:
 * The most recent MAX_STREAM_DATA frame for a stream MUST be retransmitted. Any
   previous unacknowledged MAX_STREAM_DATA frame for the same stream SHOULD NOT
   be retransmitted since a newer MAX_STREAM_DATA frame for a stream obviates the
-  need for delivering older ones. Similarly, the most recent MAX_DATA frame MUST
-  be retransmitted; previous unacknowledged ones SHOULD NOT be retransmitted.
+  need for delivering older ones. Similarly, the most recent MAX_DATA and
+  MAX_STREAM_ID frames MUST be retransmitted; previous unacknowledged ones
+  SHOULD NOT be retransmitted.
+
+* BLOCKED, STREAM_BLOCKED, and STREAM_ID_BLOCKED frames SHOULD be retransmitted
+  if the sender is still blocked on the same limit.  If the limit has been
+  increased since the frame was originally sent, the frame SHOULD NOT be
+  retransmitted.
 
 * All other frames MUST be retransmitted.
 
@@ -3118,10 +3124,10 @@ A receiver MUST close the connection with a FLOW_CONTROL_ERROR error
 ({{error-handling}}) if the peer violates the advertised connection or stream
 data limits.
 
-A sender MUST send BLOCKED frames to indicate it has data to write but is
-blocked by lack of connection or stream flow control credit.  BLOCKED frames are
-expected to be sent infrequently in common cases, but they are considered useful
-for debugging and monitoring purposes.
+A sender SHOULD send BLOCKED or STREAM_BLOCKED frames to indicate it has data to
+write but is blocked by flow control limits.  These frames are expected to be
+sent infrequently in common cases, but they are considered useful for debugging
+and monitoring purposes.
 
 A receiver advertises credit for a stream by sending a MAX_STREAM_DATA frame
 with the Stream ID set appropriately. A receiver could use the current offset of
@@ -3206,7 +3212,7 @@ based on current activity, system conditions, and other environmental factors.
 ### Blocking on Flow Control {#blocking}
 
 If a sender does not receive a MAX_DATA or MAX_STREAM_DATA frame when it has run
-out of flow control credit, the sender will be blocked and MUST send a BLOCKED
+out of flow control credit, the sender will be blocked and SHOULD send a BLOCKED
 or STREAM_BLOCKED frame.  These frames are expected to be useful for debugging
 at the receiver; they do not require any other action.  A receiver SHOULD NOT
 wait for a BLOCKED or STREAM_BLOCKED frame before sending MAX_DATA or
@@ -3220,10 +3226,10 @@ send a MAX_DATA or MAX_STREAM_DATA frame at least two roundtrips before it
 expects the sender to get blocked.
 
 A sender sends a single BLOCKED or STREAM_BLOCKED frame only once when it
-reaches a data limit.  A sender MUST NOT send multiple BLOCKED or STREAM_BLOCKED
-frames for the same data limit, unless the original frame is determined to be
-lost.  Another BLOCKED or STREAM_BLOCKED frame can be sent after the data limit
-is increased.
+reaches a data limit.  A sender SHOULD NOT send multiple BLOCKED or
+STREAM_BLOCKED frames for the same data limit, unless the original frame is
+determined to be lost.  Another BLOCKED or STREAM_BLOCKED frame can be sent
+after the data limit is increased.
 
 
 ## Stream Final Offset {#final-offset}
