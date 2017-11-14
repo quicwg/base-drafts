@@ -406,9 +406,7 @@ handshake timeout period.
 When an acknowledgement is received for a handshake packet, the new RTT is
 computed and the alarm SHOULD be set for twice the newly computed smoothed RTT.
 
-Handshake frames may be cancelled by handshake state transitions. In particular,
-all non-protected frames SHOULD no longer be transmitted once packet protection
-is available.
+Handshake frames may be cancelled by handshake state transitions.
 
 (TODO: Work this section some more. Add text on client vs. server, and on
 stateless retry.)
