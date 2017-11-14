@@ -432,6 +432,10 @@ kTimeReorderingFraction (default 1/8):
 : Maximum reordering in time space before time based loss detection considers
   a packet lost.  In fraction of an RTT.
 
+kUsingTimeLossDetection (default false):
+: Whether time based loss detection is in use.  If false, uses FACK style
+  loss detection.
+
 kMinTLPTimeout (default 10ms):
 : Minimum time in the future a tail loss probe alarm may be set for.
 
@@ -516,7 +520,7 @@ follows:
    handshake_count = 0
    tlp_count = 0
    rto_count = 0
-   if (UsingTimeLossDetection())
+   if (kUsingTimeLossDetection)
      reordering_threshold = infinite
      time_reordering_fraction = kTimeReorderingFraction
    else:
@@ -760,7 +764,7 @@ Pseudocode for DetectLostPackets follows:
      loss_time = 0
      lost_packets = {}
      delay_until_lost = infinite
-     if (time_reordering_fraction != infinite):
+     if (kUsingTimeLossDetection):
        delay_until_lost =
          (1 + time_reordering_fraction) * max(latest_rtt, smoothed_rtt)
      else if (largest_acked.packet_number == largest_sent_packet):
