@@ -150,9 +150,10 @@ token "hq" in the crypto handshake.
 While connection-level options pertaining to the core QUIC protocol are set in
 the initial crypto handshake, HTTP-specific settings are conveyed
 in the SETTINGS frame. After the QUIC connection is established, a SETTINGS
-frame ({{frame-settings}}) MUST be sent as the initial frame of the HTTP control
-stream (Stream ID 1, see {{stream-mapping}}).  The server MUST NOT send data on
-any other stream until the client's SETTINGS frame has been received.
+frame ({{frame-settings}}) MUST be sent by each endpoint as the initial frame
+of their respective HTTP control stream (Stream ID 2 or 3, see
+{{stream-mapping}}). The server MUST NOT send data on any other stream until
+the client's SETTINGS frame has been received.
 
 ## Draft Version Identification
 
