@@ -978,17 +978,11 @@ unsupported versions. To help ensure this, a server SHOULD include a reserved
 version (see {{versions}}) while generating a Version Negotiation packet.
 
 The design of version negotiation permits a server to avoid maintaining state
-for packets that it rejects in this fashion.  However, when the server generates
-a Version Negotiation packet, it cannot randomly generate a reserved version
-number. This is because the server is required to include the same value in its
-transport parameters (see {{version-validation}}).  To avoid the selected
-version number changing during connection establishment, the reserved version
-SHOULD be generated as a function of values that will be available to the server
-when later generating its handshake packets.
-
-A pseudorandom function that takes client address information (IP and port) and
-the client selected version as input would ensure that there is sufficient
-variability in the values that a server uses.
+for packets that it rejects in this fashion. The validation of version
+negotiation (see {{version-validation}}) only validates the result of version
+negotiation, which is the same no matter which reserved version was sent.
+A server MAY therefore send different reserved version numbers in the Version
+Negotiation Packet and in its transport parameters.
 
 A client MAY send a packet using a reserved version number.  This can be used to
 solicit a list of supported versions from a server.
