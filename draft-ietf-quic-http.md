@@ -88,6 +88,11 @@ Field definitions are given in Augmented Backus-Naur Form (ABNF), as defined in
 This document uses the variable-length integer encoding from
 {{QUIC-TRANSPORT}}.
 
+Protocol elements called "frames" exist in both this document and
+{{QUIC-TRANSPORT}}. Where frames from {{QUIC-TRANSPORT}} are referenced, the
+frame name will be prefaced with "QUIC."  For example, "QUIC APPLICATION_CLOSE
+frames."  References without this preface refer to frames defined in {{frames}}.
+
 
 # QUIC Advertisement
 
