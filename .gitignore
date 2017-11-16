@@ -12,3 +12,4 @@ pulls.json
 lib
 .targets.mk
 *.upload
+.lintcache
