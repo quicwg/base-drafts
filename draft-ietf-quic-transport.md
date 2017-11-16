@@ -397,13 +397,13 @@ Connection ID:
 
 Version:
 
-: Octets 13 to 16 contain the selected protocol version.  This field indicates
+: Octets 9 to 12 contain the selected protocol version.  This field indicates
   which version of QUIC is in use and determines how the rest of the protocol
   fields are interpreted.
 
 Packet Number:
 
-: Octets 9 to 12 contain the packet number.  {{packet-numbers}} describes the
+: Octets 13 to 16 contain the packet number.  {{packet-numbers}} describes the
   use of packet numbers.
 
 Payload:
