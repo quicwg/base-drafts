@@ -363,9 +363,9 @@ keys are established.
 +                       Connection ID (64)                      +
 |                                                               |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                       Packet Number (32)                      |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                         Version (32)                          |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                       Packet Number (32)                      |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                          Payload (*)                        ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -395,16 +395,16 @@ Connection ID:
 : Octets 1 through 8 contain the connection ID. {{connection-id}} describes the
   use of this field in more detail.
 
-Packet Number:
-
-: Octets 9 to 12 contain the packet number.  {{packet-numbers}} describes the
-  use of packet numbers.
-
 Version:
 
 : Octets 13 to 16 contain the selected protocol version.  This field indicates
   which version of QUIC is in use and determines how the rest of the protocol
   fields are interpreted.
+
+Packet Number:
+
+: Octets 9 to 12 contain the packet number.  {{packet-numbers}} describes the
+  use of packet numbers.
 
 Payload:
 
