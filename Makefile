@@ -32,7 +32,8 @@ $(LINT_DIR)/%.lint: %.md $(LINT_DIR)
 		echo "Reused lint of $<"; \
 	else \
 		for draft_lint in $(LINT_DIR)/*.lint; do \
-			if [ -r "$$draft_lint" ] && [ "`cat "$$draft_lint"`" == "$$hash" ]; then \
+			if ["$$draft_lint" != "$@" ] && \
+			 [ -r "$$draft_lint" ] && [ "`cat "$$draft_lint"`" == "$$hash" ]; then \
 				cp "$$draft_lint" "$@"; \
 				echo "Reused lint from $$draft_lint"; \
 			fi; \
