@@ -2758,7 +2758,6 @@ The two type bits from a Stream ID therefore identify streams as summarized in
 | 0x2      | Client-Initiated, Unidirectional |
 | 0x3      | Server-Initiated, Unidirectional |
 {: #stream-id-types title="Stream ID Types"}
->>>>>>> origin/master
 
 Stream ID 0 (0x0) is a client-initiated, bidirectional stream that is used for
 the cryptographic handshake.  Stream 0 MUST NOT be used for application data.
