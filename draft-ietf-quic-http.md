@@ -368,9 +368,9 @@ push to be associated with a request.  Ordering of a PUSH_PROMISE in relation to
 certain parts of the response is important (see Section 8.2.1 of {{!RFC7540}}).
 
 Unlike HTTP/2, the PUSH_PROMISE does not reference a stream; when a server
-fulfills a promise, the stream that carries the stream headers references the
-PUSH_PROMISE.  This allows a server to fulfill promises in the order that best
-suits its needs.
+fulfills a promise, the stream that carries the stream headers references a Push
+ID.  This allows a server to fulfill promises in the order that best suits its
+needs.
 
 The server push response is conveyed on a push stream.  A push stream is a
 server-initiated, unidirectional stream.  A push stream includes a header (see
