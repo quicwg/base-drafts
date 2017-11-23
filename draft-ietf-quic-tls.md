@@ -1424,9 +1424,10 @@ compatible.  The client indicates which ALPN label it has chosen by placing that
 ALPN label first in the ALPN extension. In order to be usable for 0-RTT,
 the NewSessionTicket MUST contain the "max_early_data" extension with the
 value 0xffffffff; the amount of data which the client can send in 0-RTT
-is controlled by the "initial_max_data" and "initial_max_stream_data"
-parameters supplied by the server. It is an error for the server to provide
-any other value for "max_early_data".
+is controlled by the "initial_max_data" transport parameter supplied by the
+server. A client MUST treat receipt of a NewSessionTicket that contains a
+"max_early_data" extension with any other value as a connection error of type
+PROTOCOL_VIOLATION.
 
 The certificate that the server uses MUST be considered valid for both
 connections, which will use different protocol stacks and could use different
