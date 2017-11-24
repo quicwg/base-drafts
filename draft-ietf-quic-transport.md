@@ -1058,12 +1058,13 @@ language from Section 3 of {{!I-D.ietf-tls-tls13}}.
    enum {
       initial_max_stream_data(0),
       initial_max_data(1),
-      initial_max_stream_id(2),
+      initial_max_stream_id_bidi(2),
       idle_timeout(3),
       omit_connection_id(4),
       max_packet_size(5),
       stateless_reset_token(6),
       ack_delay_exponent(7),
+      initial_max_stream_id_uni(8),
       (65535)
    } TransportParameterId;
 
@@ -1128,12 +1129,16 @@ initial_max_data (0x0001):
   sending a MAX_DATA ({{frame-max-data}}) for the connection immediately after
   completing the handshake.
 
-initial_max_stream_id (0x0002):
+initial_max_stream_id_bidi (0x0002):
 
 : The initial maximum stream ID parameter contains the initial maximum stream
-  number the peer may initiate, encoded as an unsigned 32-bit integer.  This is
-  equivalent to sending a MAX_STREAM_ID ({{frame-max-stream-id}}) immediately
-  after completing the handshake.
+  number the peer may initiate for bidirectional streams, encoded as an unsigned
+  32-bit integer.  This value MUST be a valid bidirectional stream ID for a
+  peer-initiated stream (that is, a server includes a value that have the least
+  significant bits set to 0 and a client sets these bits to 1).  If an invalid
+  value is provided, the recipient MUST generate a connection error of type
+  TRANSPORT_PARAMETER_ERROR.  This is equivalent to sending a MAX_STREAM_ID
+  ({{frame-max-stream-id}}) immediately after completing the handshake.
 
 idle_timeout (0x0003):
 
@@ -1146,6 +1151,17 @@ stateless_reset_token (0x0006):
 
 : The Stateless Reset Token is used in verifying a stateless reset, see
   {{stateless-reset}}.  This parameter is a sequence of 16 octets.
+
+initial_max_stream_id_uni (0x0008):
+
+: The initial maximum stream ID parameter contains the initial maximum stream
+  number the peer may initiate for unidirectional streams, encoded as an
+  unsigned 32-bit integer.  The value MUST be a valid unidirectional ID for the
+  recipient (that is, the two least significant bits are set to 2 by a server
+  and to 3 by a client).  If an invalid value is provided, the recipient MUST
+  generate a connection error of type TRANSPORT_PARAMETER_ERROR.  This is
+  equivalent to sending a MAX_STREAM_ID ({{frame-max-stream-id}}) immediately
+  after completing the handshake.
 
 A client MUST NOT include a stateless reset token.  A server MUST treat receipt
 of a stateless_reset_token transport parameter as a connection error of type
@@ -1200,7 +1216,7 @@ might be violated by the client with its 0-RTT data.  In particular, a server
 that accepts 0-RTT data MUST NOT set values for initial_max_data or
 initial_max_stream_data that are smaller than the remembered value of those
 parameters.  Similarly, a server MUST NOT reduce the value of
-initial_max_stream_id.
+initial_max_stream_id_bidi or initial_max_stream_id_uni.
 
 A server MUST reject 0-RTT data or even abort a handshake if the implied values
 for transport parameters cannot be supported.
@@ -3528,15 +3544,17 @@ merely aesthetically displeasing, or architecturally dubious).
 
 The initial contents of this registry are shown in {{iana-tp-table}}.
 
-| Value  | Parameter Name          | Specification                       |
-|:-------|:------------------------|:------------------------------------|
-| 0x0000 | initial_max_stream_data | {{transport-parameter-definitions}} |
-| 0x0001 | initial_max_data        | {{transport-parameter-definitions}} |
-| 0x0002 | initial_max_stream_id   | {{transport-parameter-definitions}} |
-| 0x0003 | idle_timeout            | {{transport-parameter-definitions}} |
-| 0x0004 | omit_connection_id      | {{transport-parameter-definitions}} |
-| 0x0005 | max_packet_size         | {{transport-parameter-definitions}} |
-| 0x0006 | stateless_reset_token   | {{transport-parameter-definitions}} |
+| Value  | Parameter Name             | Specification                       |
+|:-------|:---------------------------|:------------------------------------|
+| 0x0000 | initial_max_stream_data    | {{transport-parameter-definitions}} |
+| 0x0001 | initial_max_data           | {{transport-parameter-definitions}} |
+| 0x0002 | initial_max_stream_id_bidi | {{transport-parameter-definitions}} |
+| 0x0003 | idle_timeout               | {{transport-parameter-definitions}} |
+| 0x0004 | omit_connection_id         | {{transport-parameter-definitions}} |
+| 0x0005 | max_packet_size            | {{transport-parameter-definitions}} |
+| 0x0006 | stateless_reset_token      | {{transport-parameter-definitions}} |
+| 0x0007 | ack_delay_exponent         | {{transport-parameter-definitions}} |
+| 0x0008 | initial_max_stream_id_uni  | {{transport-parameter-definitions}} |
 {: #iana-tp-table title="Initial QUIC Transport Parameters Entries"}
 
 
