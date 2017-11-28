@@ -172,7 +172,7 @@ both sides and reducing memory pressure on the sender.
 ### More ACK Ranges
 
 QUIC supports up to 256 ACK ranges, opposed to TCP's 3 SACK ranges.  In high
-loss environments, this speeds recovery, reduces spuriuos retransmits,
+loss environments, this speeds recovery, reduces spurious retransmits,
 and ensures forward progress without relying on timeouts.
 
 ### Explicit Correction For Delayed Acks
@@ -298,7 +298,7 @@ conditions:
 * If there are more than one unacknowledged packets, PTO SHOULD be scheduled for
   max(2*SRTT, 10ms).
 
-* If RTO (RTO, {{rto}}) is earlier, schedule a TLP alarm in its place. That is,
+* If RTO ({{rto}}) is earlier, schedule a TLP alarm in its place. That is,
   PTO SHOULD be scheduled for min(RTO, PTO).
 
 kDelayedAckTimeout is the expected delayed ACK timer.  When there is exactly one
@@ -313,7 +313,8 @@ A PTO value of at least 2*SRTT ensures that the ACK is overdue. Using a PTO of
 exactly 1*SRTT may generate spurious probes, and 2*SRTT is simply the next
 integral value of RTT.
 
-The values of 2 and 1.5 are based on the TLP draft, but implementations MAY
+The values of 2 and 1.5 are based on
+{{?LOSS-PROBE=I-D.dukkipati-tcpm-tcp-loss-probe}}, but implementations MAY
 experiment with other constants.
 
 To reduce latency, it is RECOMMENDED that the sender set and allow the TLP alarm
