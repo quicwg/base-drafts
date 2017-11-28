@@ -78,9 +78,10 @@ QUIC is described in {{QUIC-TRANSPORT}}.  For a full description of HTTP/2, see
 
 ## Notational Conventions
 
-The words "MUST", "MUST NOT", "SHOULD", and "MAY" are used in this document.
-It's not shouting; when they are capitalized, they have the special meaning
-defined in {{!RFC2119}}.
+The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD",
+"SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this
+document are to be interpreted as described in BCP 14 {{!RFC2119}} {{!RFC8174}}
+when, and only when, they appear in all capitals, as shown here.
 
 Field definitions are given in Augmented Backus-Naur Form (ABNF), as defined in
 {{!RFC5234}}.
@@ -150,9 +151,10 @@ token "hq" in the crypto handshake.
 While connection-level options pertaining to the core QUIC protocol are set in
 the initial crypto handshake, HTTP-specific settings are conveyed
 in the SETTINGS frame. After the QUIC connection is established, a SETTINGS
-frame ({{frame-settings}}) MUST be sent as the initial frame of the HTTP control
-stream (Stream ID 1, see {{stream-mapping}}).  The server MUST NOT send data on
-any other stream until the client's SETTINGS frame has been received.
+frame ({{frame-settings}}) MUST be sent by each endpoint as the initial frame
+of their respective HTTP control stream (Stream ID 2 or 3, see
+{{stream-mapping}}). The server MUST NOT send data on any other stream until
+the client's SETTINGS frame has been received.
 
 ## Draft Version Identification
 
@@ -360,10 +362,15 @@ a MAX_PUSH_ID frame.
 
 As with server push for HTTP/2, the server initiates a server push by sending a
 PUSH_PROMISE frame that includes request header fields attributed to the
-request. The PUSH_PROMISE frame is sent on a response stream.  Unlike HTTP/2,
-the PUSH_PROMISE does not reference a stream; when a server fulfills a promise,
-the stream that carries the stream headers references the PUSH_PROMISE.  This
-allows a server to fulfill promises in the order that best suits its needs.
+request. The PUSH_PROMISE frame is sent on the client-initiated, bidirectional
+stream that carried the request that generated the push.  This allows the server
+push to be associated with a request.  Ordering of a PUSH_PROMISE in relation to
+certain parts of the response is important (see Section 8.2.1 of {{!RFC7540}}).
+
+Unlike HTTP/2, the PUSH_PROMISE does not reference a stream; when a server
+fulfills a promise, the stream that carries the stream headers references a Push
+ID.  This allows a server to fulfill promises in the order that best suits its
+needs.
 
 The server push response is conveyed on a push stream.  A push stream is a
 server-initiated, unidirectional stream.  A push stream includes a header (see

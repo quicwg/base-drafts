@@ -104,9 +104,10 @@ Internet-drafts, academic papers, and/or TCP implementations.
 
 ## Notational Conventions
 
-The words "MUST", "MUST NOT", "SHOULD", and "MAY" are used in this document.
-It's not shouting; when they are capitalized, they have the special meaning
-defined in {{!RFC2119}}.
+The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD",
+"SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this
+document are to be interpreted as described in BCP 14 {{!RFC2119}} {{!RFC8174}}
+when, and only when, they appear in all capitals, as shown here.
 
 
 # Design of the QUIC Transmission Machinery
@@ -432,6 +433,10 @@ kTimeReorderingFraction (default 1/8):
 : Maximum reordering in time space before time based loss detection considers
   a packet lost.  In fraction of an RTT.
 
+kUsingTimeLossDetection (default false):
+: Whether time based loss detection is in use.  If false, uses FACK style
+  loss detection.
+
 kMinTLPTimeout (default 10ms):
 : Minimum time in the future a tail loss probe alarm may be set for.
 
@@ -516,7 +521,7 @@ follows:
    handshake_count = 0
    tlp_count = 0
    rto_count = 0
-   if (UsingTimeLossDetection())
+   if (kUsingTimeLossDetection)
      reordering_threshold = infinite
      time_reordering_fraction = kTimeReorderingFraction
    else:
@@ -664,7 +669,9 @@ Pseudocode for SetLossDetectionAlarm follows:
 
 ~~~
  SetLossDetectionAlarm():
-    if (retransmittable packets are not outstanding):
+    // Don't arm the alarm if there are no packets with
+    // retransmittable data in flight.
+    if (num_retransmittable_packets_outstanding == 0):
       loss_detection_alarm.cancel()
       return
 
@@ -681,7 +688,7 @@ Pseudocode for SetLossDetectionAlarm follows:
       alarm_duration = loss_time - now
     else if (tlp_count < kMaxTLPs):
       // Tail Loss Probe
-      if (retransmittable_packets_outstanding == 1):
+      if (num_retransmittable_packets_outstanding == 1):
         alarm_duration = 1.5 * smoothed_rtt + kDelayedAckTimeout
       else:
         alarm_duration = kMinTLPTimeout
@@ -751,7 +758,7 @@ Pseudocode for DetectLostPackets follows:
      loss_time = 0
      lost_packets = {}
      delay_until_lost = infinite
-     if (time_reordering_fraction != infinite):
+     if (kUsingTimeLossDetection):
        delay_until_lost =
          (1 + time_reordering_fraction) * max(latest_rtt, smoothed_rtt)
      else if (largest_acked.packet_number == largest_sent_packet):
