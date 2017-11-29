@@ -3127,8 +3127,8 @@ states.
 An endpoint is expected to send another STOP_SENDING frame if a packet
 containing the frame is lost.  However, once either all stream data or a
 RST_STREAM frame has been received for the stream - that is, the stream is in
-any state other than "Recv" or "Size Known" - sending a STOP_SENDING frame
-is unnecessary.
+any state other than "Recv" or "Size Known" - sending a STOP_SENDING frame is
+unnecessary.
 
 
 ## Stream Concurrency {#stream-concurrency}
