@@ -302,7 +302,7 @@ deployed and used concurrently. Version negotiation is described in
 
 QUIC versions are identified using a 32-bit unsigned number.
 
-The version 0x00000000 is reserved to represent an invalid version.  This
+The version 0x00000000 is reserved to represent version negotiation.  This
 version of the specification is identified by the number 0x00000001.
 
 Version 0x00000001 of QUIC uses TLS as a cryptographic handshake protocol, as
@@ -416,11 +416,10 @@ The following packet types are defined:
 
 | Type | Name                          | Section                     |
 |:-----|:------------------------------|:----------------------------|
-| 0x7F | Version Negotiation           | {{packet-version}}          |
-| 0x7E | Initial                       | {{packet-initial}}          |
-| 0x7D | Retry                         | {{packet-retry}}            |
-| 0x7C | Handshake                     | {{packet-handshake}}        |
-| 0x7B | 0-RTT Protected               | {{packet-protected}}        |
+| 0x7F | Initial                       | {{packet-initial}}          |
+| 0x7E | Retry                         | {{packet-retry}}            |
+| 0x7D | Handshake                     | {{packet-handshake}}        |
+| 0x7C | 0-RTT Protected               | {{packet-protected}}        |
 {: #long-packet-types title="Long Header Packet Types"}
 
 The header form, packet type, connection ID, packet number and version fields of
@@ -512,14 +511,16 @@ from different versions of QUIC are interpreted.
 
 ## Version Negotiation Packet {#packet-version}
 
-A Version Negotiation packet has long headers with a type value of 0x7F and is
-sent only by servers.  The Version Negotiation packet is a response to a client
-packet that contains a version that is not supported by the server.
+A Version Negotiation packet is inherently not version-specific.  Such a packet
+has long headers and can be identified by the Version field being set to zero.
+Version Negotiation packets are sent only by servers.  The Version Negotiation
+packet is a response to a client packet that contains a version that is not
+supported by the server.
 
-The connection ID and version fields echo corresponding values from the
-triggering client packet.  This allows clients some assurance that the
-server received the packet and that the Version Negotiation packet was not
-carried in a packet with a spoofed source address.
+The Connection ID field echos the corresponding value from the triggering client
+packet.  This allows clients some assurance that the server received the packet
+and that the Version Negotiation packet is in fact from the server.  Values for
+the Packet Number and Type fields are selected at random.
 
 A Version Negotiation packet is never explicitly acknowledged in an ACK frame by
 a client.  Receiving another Initial packet implicitly acknowledges a Version
@@ -768,7 +769,7 @@ constant:
 
 * the location and size of the Packet Number field in long headers, and
 
-* the type, format and semantics of the Version Negotiation packet.
+* the format and semantics of the Version Negotiation packet.
 
 Implementations MUST assume that an unsupported version uses an unknown packet
 format. All other fields MUST be ignored when processing a packet that contains
