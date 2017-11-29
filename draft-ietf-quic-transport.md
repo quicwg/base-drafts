@@ -238,7 +238,7 @@ retransmission ambiguity problem.  QUIC acknowledgments also explicitly encode
 the delay between the receipt of a packet and its acknowledgment being sent, and
 together with the monotonically-increasing packet numbers, this allows for
 precise network roundtrip-time (RTT) calculation.  QUIC's ACK frames support up
-to 256 ACK blocks, so QUIC is more resilient to reordering than TCP with SACK
+multiple ACK blocks, so QUIC is more resilient to reordering than TCP with SACK
 support, as well as able to keep more bytes on the wire when there is reordering
 or loss.
 

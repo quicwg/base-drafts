@@ -130,7 +130,7 @@ important to the loss detection and congestion control machinery below.
   machinery of QUIC underneath.
 
 * ACK frames contain acknowledgment information.  QUIC uses a SACK-based
-  scheme, where acks express up to 256 ranges.
+  scheme.
 
 ## Relevant Differences Between QUIC and TCP
 
@@ -172,9 +172,9 @@ both sides and reducing memory pressure on the sender.
 
 ### More ACK Ranges
 
-QUIC supports up to 256 ACK ranges, opposed to TCP's 3 SACK ranges.  In high
-loss environments, this speeds recovery, reduces spurious retransmits,
-and ensures forward progress without relying on timeouts.
+QUIC supports many ACK ranges, opposed to TCP's 3 SACK ranges.  In high loss
+environments, this speeds recovery, reduces spurious retransmits, and ensures
+forward progress without relying on timeouts.
 
 ### Explicit Correction For Delayed Acks
 
