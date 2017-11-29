@@ -744,9 +744,9 @@ have special rules for populating the packet number field.
 ### Initial Packet Number {#initial-packet-number}
 
 The initial value for packet number MUST be selected randomly from a range
-between 0 and 2^32 - 1024.  This value is selected so that Initial and Handshake
-packets exercise as many possible values for the Packet Number field as
-possible.
+between 0 and 2^32 - 1025 (inclusive).  This value is selected so that Initial
+and Handshake packets exercise as many possible values for the Packet Number
+field as possible.
 
 Limiting the range allows both for loss of packets and for any stateless
 exchanges.  Packet numbers are incremented for subsequent packets, but packet
