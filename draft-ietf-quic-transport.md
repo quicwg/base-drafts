@@ -1618,39 +1618,31 @@ of three ways:
 * stateless reset ({{stateless-reset}})
 
 
-### Draining and Closing Periods {#draining}
+### Closing and Draining Connection States {#draining}
 
-After a connection is closed, an endpoint might receive packets from its peer.
-These packets might have been sent prior to receiving any close signal, or they
-might be retransmissions of packets for which acknowledgments were lost.
-
-The draining period exists to ensure that delayed or reordered packets are
-properly discarded.  This state SHOULD persist for three times the current
-Retransmission Timeout (RTO) interval as defined in {{QUIC-RECOVERY}}.  No
-packets can be sent during this time.
-
-Disposing of connection state prior to the end of the draining period could
-result in delayed or reordered packets to be handled poorly.  Endpoints that
-have some alternative means to ensure that late-arriving packets on the
-connection do not create QUIC state, such as by closing the UDP socket, MAY use
-an abbreviated draining period which can allow for faster resource recovery.
-Servers that retain an open socket for accepting new connections SHOULD NOT exit
-the draining period early.
-
-Once the draining period has ended, an endpoint SHOULD discard per-connection
-state.  This results in new packets on the connection being handled generically.
-For instance, an endpoint MAY send a stateless reset in response to any further
-incoming packets.
+The closing and draining connection states exist to ensure that connections
+close cleanly and that delayed or reordered packets are properly discarded.
+These states SHOULD persist for three times the current Retransmission Timeout
+(RTO) interval as defined in {{QUIC-RECOVERY}}.
 
 An endpoint enters a closing period after initiating an immediate close
 ({{immediate-close}}) and optionally after an idle timeout ({{idle-timeout}}).
-This state runs for the same duration as the draining period.  While in the
-closing period, an endpoint MUST NOT send packets unless they contain a
+While closing, an endpoint MUST NOT send packets unless they contain a
 CONNECTION_CLOSE or APPLICATION_CLOSE frame (see {{immediate-close}} for
 details).
 
-The closing period differs from the draining period only in that closing frames
-can be retransmitted.
+In the closing state, only a packet containing a closing frame can be sent.  An
+endpoint retains only enough information to generate a packet containing a
+closing frame and to identify packets as belonging to the connection.  The
+connection ID and QUIC version is sufficient information to identify packets for
+a closing connection; an endpoint can discard all other connection state.  An
+endpoint MAY retain packet protection keys for incoming packets to allow it to
+read and process a closing frame.
+
+The draining state is entered once an endpoint receives a signal that its peer
+is closing or draining.  While otherwise identical to the closing state, an
+endpoint in the draining state MUST NOT send any packets.  Retaining packet
+protection keys is unnecessary once a connection is in the draining state.
 
 An endpoint MAY transition from the closing period to the draining period if it
 can confirm that its peer is also closing or draining.  Receiving a closing
@@ -1659,6 +1651,19 @@ draining period SHOULD end when the closing period would have ended.  In other
 words, the endpoint can use the same end time, but cease retransmission of the
 closing packet.
 
+Disposing of connection state prior to the end of the closing or draining period
+could cause delayed or reordered packets to be handled poorly.  Endpoints that
+have some alternative means to ensure that late-arriving packets on the
+connection do not create QUIC state, such as those that are able to close the
+UDP socket, MAY use an abbreviated draining period which can allow for faster
+resource recovery.  Servers that retain an open socket for accepting new
+connections SHOULD NOT exit the closing or draining period early.
+
+Once the closing or draining period has ended, an endpoint SHOULD discard all
+connection state.  This results in new packets on the connection being handled
+generically.  For instance, an endpoint MAY send a stateless reset in response
+to any further incoming packets.
+
 The draining and closing periods do not apply when a stateless reset
 ({{stateless-reset}}) is sent.
 
@@ -1666,36 +1671,30 @@ The draining and closing periods do not apply when a stateless reset
 ### Idle Timeout
 
 A connection that remains idle for longer than the idle timeout (see
-{{transport-parameter-definitions}}) is closed.  At implementation discretion, a
-connection enters either the draining or closing period when the idle timeout
-expires.
+{{transport-parameter-definitions}}) is closed.  A connection enters the
+draining state when the idle timeout expires.
 
 The time at which an idle timeout takes effect won't be perfectly synchronized
-on peers.  An endpoint MAY enter a third state where receipt of new packets
-causes the connection to be restored to normal operation.
+on both endpoints.  An endpoint that sends packets near the end of an idle
+period could have those packets discarded if its peer enters the draining state
+before the packet is received.
 
 
 ### Immediate Close
 
 An endpoint sends a closing frame, either CONNECTION_CLOSE or APPLICATION_CLOSE,
-to terminate the connection immediately.  Either closing frame causes all open
+to terminate the connection immediately.  Either closing frame causes all
 streams to immediately become closed; open streams can be assumed to be
 implicitly reset.
 
 After sending a closing frame, endpoints immediately enter a closing period.
-After receiving a closing frame, endpoints enter a draining period.  An endpoint
-that receives a closing frame MAY send a single closing frame before entering a
-draining period, but MUST NOT send further packets, which could result in a
-constant exchange of closing frames until the closing period on either peer
-ended.
-
-During the draining period, an endpoint that sends a closing frame SHOULD
-respond to any subsequent packet that it receives with another packet containing
-either closing frame.  To reduce the state that an endpoint maintains in this
-case, it MAY send the exact same packet.  However, endpoints SHOULD limit the
+During the closing period, an endpoint that sends a closing frame SHOULD respond
+to any packet that it receives with another packet containing a closing frame.
+To minimize the state that an endpoint maintains for a closing connection,
+endpoints MAY send the exact same packet.  However, endpoints SHOULD limit the
 number of packets they generate containing a closing frame.  For instance, an
 endpoint could progressively increase the number of packets that it receives
-before sending additional packets.
+before sending additional packets or increase the time between packets.
 
 Note:
 
@@ -1704,6 +1703,12 @@ Note:
   new packet numbers is primarily of advantage to loss recovery and congestion
   control, which are not expected to be relevant for a closed connection.
   Retransmitting the final packet requires less state.
+
+After receiving a closing frame, endpoints enter a draining period.  An endpoint
+that receives a closing frame MAY send a single packet containing a
+CONNECTION_CLOSE frame before entering a draining period, but MUST NOT send
+further packets, which could result in a constant exchange of closing frames
+until the closing period on either peer ended.
 
 An immediate close can be used after an application protocol has arranged to
 close a connection.  This might be after the application protocols negotiates a
