@@ -364,9 +364,9 @@ keys are established.
 +                       Connection ID (64)                      +
 |                                                               |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                       Packet Number (32)                      |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                         Version (32)                          |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                       Packet Number (32)                      |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                          Payload (*)                        ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -396,16 +396,16 @@ Connection ID:
 : Octets 1 through 8 contain the connection ID. {{connection-id}} describes the
   use of this field in more detail.
 
-Packet Number:
-
-: Octets 9 to 12 contain the packet number.  {{packet-numbers}} describes the
-  use of packet numbers.
-
 Version:
 
-: Octets 13 to 16 contain the selected protocol version.  This field indicates
+: Octets 9 to 12 contain the selected protocol version.  This field indicates
   which version of QUIC is in use and determines how the rest of the protocol
   fields are interpreted.
+
+Packet Number:
+
+: Octets 13 to 16 contain the packet number.  {{packet-numbers}} describes the
+  use of packet numbers.
 
 Payload:
 
@@ -516,8 +516,8 @@ A Version Negotiation packet has long headers with a type value of 0x01 and is
 sent only by servers.  The Version Negotiation packet is a response to a client
 packet that contains a version that is not supported by the server.
 
-The packet number, connection ID and version fields echo corresponding values
-from the triggering client packet.  This allows clients some assurance that the
+The connection ID and version fields echo corresponding values from the
+triggering client packet.  This allows clients some assurance that the
 server received the packet and that the Version Negotiation packet was not
 carried in a packet with a spoofed source address.
 
@@ -941,9 +941,8 @@ successfully receives a response or it abandons the connection attempt.
 ### Handling Version Negotiation Packets {#handle-vn}
 
 When the client receives a Version Negotiation packet, it first checks that the
-packet number and connection ID match the values the client sent in a previous
-packet on the same connection.  If this check fails, the packet MUST be
-discarded.
+connection ID matches the connection ID the client sent.  If this check fails,
+the packet MUST be discarded.
 
 Once the Version Negotiation packet is determined to be valid, the client then
 selects an acceptable protocol version from the list provided by the server.
