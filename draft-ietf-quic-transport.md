@@ -1667,6 +1667,18 @@ to any further incoming packets.
 The draining and closing periods do not apply when a stateless reset
 ({{stateless-reset}}) is sent.
 
+An endpoint is not expected to handle key updates when it is closing or
+draining.  A key update might prevent the endpoint from moving from the closing
+state to draining, but it otherwise has no impact.
+
+An endpoint that receives packets from a new source address, indicating a
+connection migration ({{migration}}), can discard these packets if they are
+identified by connection ID.  An endpoint in the closing state MUST strictly
+limit the number of packets it sends to this new address as though the address
+were not validated (see {{migrate-validate}}).  An server in the closing state
+MAY instead choose to discard packets with a new source address and send a
+stateless reset ({{stateless-reset}}) once connection state is discarded.
+
 
 ### Idle Timeout
 
