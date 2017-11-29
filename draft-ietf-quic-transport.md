@@ -940,8 +940,8 @@ successfully receives a response or it abandons the connection attempt.
 ### Handling Version Negotiation Packets {#handle-vn}
 
 When the client receives a Version Negotiation packet, it first checks that the
-packet number is 0 and the connection ID matches the connection ID the client
-sent.  If this check fails, the packet MUST be discarded.
+connection ID matches the connection ID the client sent.  If this check fails,
+the packet MUST be discarded.
 
 Once the Version Negotiation packet is determined to be valid, the client then
 selects an acceptable protocol version from the list provided by the server.
