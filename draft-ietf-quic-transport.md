@@ -760,9 +760,6 @@ Use of a secure random number generator {{?RFC4086}} is not necessary for
 generating the initial packet number, nor is it necessary that the value be
 uniformly distributed.
 
-Packets with the long header include the low 32-bits of the packet number.
-Packets that use the short header can use a shorter packet number encoding.
-
 
 ## Handling Packets from Different Versions {#version-specific}
 
