@@ -2816,15 +2816,15 @@ Stream ID 0 (0x0) is a client-initiated, bidirectional stream that is used for
 the cryptographic handshake.  Stream 0 MUST NOT be used for application data.
 
 A QUIC endpoint MUST NOT reuse a Stream ID.  Open streams can be used in any
-order.  Streams that are used out of order result in lower-numbered streams in
-the same direction being counted as open.
+order.  Streams that are used out of order result in opening all lower-numbered
+streams of the same type in the same direction.
 
 Stream IDs are encoded as a variable-length integer (see {{integer-encoding}}).
 
 
 ## Stream States {#stream-states}
 
-This section describes the two types of QUIC stream in terms of the states that
+This section describes the two types of QUIC stream in terms of the states of
 their send or receive components.  Two state machines are described: one for
 streams on which an endpoint transmits data ({{stream-send-states}}); another
 for streams from which an endpoint receives data ({{stream-recv-states}}).
@@ -2904,15 +2904,15 @@ The sending part of a bidirectional stream initiated by a peer (type 0 for a
 server, type 1 for a client) enters the "Open" state if the receiving part
 enters the "Recv" state.
 
-Sending the first STREAM or STREAM_BLOCKED frame to be sent causes a send stream
-to enter the "Send" state.  An implementation might choose to defer allocating a
-Stream ID to a send stream until it sends the first frame and enters this state,
-which can allow for better stream prioritization.
+Sending the first STREAM or STREAM_BLOCKED frame causes a send stream to enter
+the "Send" state.  An implementation might choose to defer allocating a Stream
+ID to a send stream until it sends the first frame and enters this state, which
+can allow for better stream prioritization.
 
 In the "Send" state, an endpoint transmits - and retransmits as necessary - data
 in STREAM frames.  The endpoint respects the flow control limits of its peer,
-accepting MAX_STREAM_DATA frames.  It generates STREAM_BLOCKED frames if it
-encounters flow control limits.
+accepting MAX_STREAM_DATA frames.  An endpoint in the "Send" state generates
+STREAM_BLOCKED frames if it encounters flow control limits.
 
 After the application indicates that stream data is complete and a STREAM frame
 containing the FIN bit is sent, the send stream enters the "Data Sent" state.
@@ -2927,25 +2927,26 @@ the "Data Recvd" state, which is a terminal state.
 
 From any of the "Open", "Send", or "Data Sent" states, an application can signal
 that it wishes to abandon transmission of stream data.  Similarly, the endpoint
-might receive a STOP_SENDING frame from its peer.  This causes the endpoint to
-send a RST_STREAM frame, which causes the stream to enter the "Reset Sent"
+might receive a STOP_SENDING frame from its peer.  In either case, the endpoint
+sends a RST_STREAM frame, which causes the stream to enter the "Reset Sent"
 state.
 
-An endpoint MAY send a RST_STREAM to open a send stream; this causes the send
-stream to open and immediately transition to the "Reset Sent" state.
+An endpoint MAY send a RST_STREAM as the first frame on a send stream; this
+causes the send stream to open and then immediately transition to the "Reset
+Sent" state.
 
-Once a packet containing a RST_STREAM has been successfully acknowledged, the
-send stream enters the "Reset Recvd" state, which is a terminal state.
+Once a packet containing a RST_STREAM has been acknowledged, the send stream
+enters the "Reset Recvd" state, which is a terminal state.
 
 
 ### Receive Stream States {#stream-recv-states}
 
 {{fig-stream-recv-states}} shows the states for the part of a stream that
-receives data from a peer.  The states for a receive stream mirror only some the
-states of the send stream at the peer.  A receive stream doesn't track states on
-the send stream that can't be observed, such as the "Open" state; instead,
-receive streams track the delivery of data to the application or application
-protocol.
+receives data from a peer.  The states for a receive stream mirror only some of
+the states of the send stream at the peer.  A receive stream doesn't track
+states on the send stream that can't be observed, such as the "Open" state;
+instead, receive streams track the delivery of data to the application or
+application protocol some of which cannot be observed by the sender.
 
 ~~~
        o
@@ -2982,10 +2983,11 @@ protocol.
 {: #fig-stream-recv-states title="States for Receive Streams"}
 
 The receiving part of a stream initiated by a peer (types 1 and 3 for a client,
-or 0 and 2 for a server) are created when the first STREAM, STREAM_BLOCKED, or
-RST_STREAM is received for that stream.  The initial state for a receive stream
-is "Recv".  Receiving a RST_STREAM frame causes the receive stream to
-immediately transition to the "Reset Recvd".
+or 0 and 2 for a server) are created when the first STREAM, STREAM_BLOCKED,
+RST_STREAM, or MAX_STREAM_DATA (bidirectional only, see below) is received for
+that stream.  The initial state for a receive stream is "Recv".  Receiving a
+RST_STREAM frame causes the receive stream to immediately transition to the
+"Reset Recvd".
 
 The receive stream enters the "Recv" state when the sending part of a
 bidirectional stream initiated by the endpoint (type 0 for a client, type 1 for
@@ -3122,10 +3124,11 @@ STOP_SENDING can only be sent for a receive stream that has not been
 reset. STOP_SENDING is most useful for streams in the "Recv" or "Size Known"
 states.
 
-An endpoint is expected to send STOP_SENDING frames if packets containing the
-frame are lost.  However, once either all stream data has been received or a
-RST_STREAM frame - that is, any receive stream state other than "Recv" or "Size
-Known" - sending the frame is not necessary.
+An endpoint is expected to send another STOP_SENDING frame if a packet
+containing the frame is lost.  However, once either all stream data or a
+RST_STREAM frame has been received for the stream - that is, the stream is in
+any state other than "Recv" or "Size Known" - sending a STOP_SENDING frame
+is unnecessary.
 
 
 ## Stream Concurrency {#stream-concurrency}
