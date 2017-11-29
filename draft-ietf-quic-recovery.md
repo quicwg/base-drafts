@@ -129,8 +129,8 @@ important to the loss detection and congestion control machinery below.
 * Crypto handshake data is sent on stream 0, and uses the reliability
   machinery of QUIC underneath.
 
-* ACK frames contain acknowledgment information.  QUIC uses a SACK-based
-  scheme.
+* ACK frames contain acknowledgment information.  ACK frames contain one or more
+  ranges of acknowledged packets.
 
 ## Relevant Differences Between QUIC and TCP
 
