@@ -1675,7 +1675,7 @@ An endpoint that receives packets from a new source address, indicating a
 connection migration ({{migration}}), can discard these packets if they are
 identified by connection ID.  An endpoint in the closing state MUST strictly
 limit the number of packets it sends to this new address as though the address
-were not validated (see {{migrate-validate}}).  An server in the closing state
+were not validated (see {{migrate-validate}}).  A server in the closing state
 MAY instead choose to discard packets with a new source address and send a
 stateless reset ({{stateless-reset}}) once connection state is discarded.
 
