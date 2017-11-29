@@ -1223,6 +1223,11 @@ initial_max_stream_data that are smaller than the remembered value of those
 parameters.  Similarly, a server MUST NOT reduce the value of
 initial_max_stream_id_bidi or initial_max_stream_id_uni.
 
+Omitting or setting a zero value for certain transport parameters can result in
+0-RTT data being enabled, but not usable.  The following transport parameters
+SHOULD be set to non-zero values for 0-RTT: initial_max_stream_id_bidi,
+initial_max_stream_id_uni, initial_max_data, initial_max_stream_data.
+
 A server MUST reject 0-RTT data or even abort a handshake if the implied values
 for transport parameters cannot be supported.
 
