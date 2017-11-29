@@ -515,8 +515,8 @@ A Version Negotiation packet has long headers with a type value of 0x01 and is
 sent only by servers.  The Version Negotiation packet is a response to a client
 packet that contains a version that is not supported by the server.
 
-The packet number, connection ID and version fields echo corresponding values
-from the triggering client packet.  This allows clients some assurance that the
+The connection ID and version fields echo corresponding values from the
+triggering client packet.  This allows clients some assurance that the
 server received the packet and that the Version Negotiation packet was not
 carried in a packet with a spoofed source address.
 
