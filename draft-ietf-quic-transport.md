@@ -1128,17 +1128,6 @@ initial_max_data (0x0001):
   sending a MAX_DATA ({{frame-max-data}}) for the connection immediately after
   completing the handshake.
 
-initial_max_stream_id_bidi (0x0002):
-
-: The initial maximum stream ID parameter contains the initial maximum stream
-  number the peer may initiate for bidirectional streams, encoded as an unsigned
-  32-bit integer.  This value MUST be a valid bidirectional stream ID for a
-  peer-initiated stream (that is, the two least significant bits are set to 0 by
-  a server and to 1 by a client).  If an invalid value is provided, the
-  recipient MUST generate a connection error of type TRANSPORT_PARAMETER_ERROR.
-  This is equivalent to sending a MAX_STREAM_ID ({{frame-max-stream-id}})
-  immediately after completing the handshake.
-
 idle_timeout (0x0003):
 
 : The idle timeout is a value in seconds that is encoded as an unsigned 16-bit
@@ -1151,6 +1140,27 @@ stateless_reset_token (0x0006):
 : The Stateless Reset Token is used in verifying a stateless reset, see
   {{stateless-reset}}.  This parameter is a sequence of 16 octets.
 
+A client MUST NOT include a stateless reset token.  A server MUST treat receipt
+of a stateless_reset_token transport parameter as a connection error of type
+TRANSPORT_PARAMETER_ERROR.
+
+An endpoint MAY use the following transport parameters:
+
+initial_max_stream_id_bidi (0x0002):
+
+: The initial maximum stream ID parameter contains the initial maximum stream
+  number the peer may initiate for bidirectional streams, encoded as an unsigned
+  32-bit integer.  This value MUST be a valid bidirectional stream ID for a
+  peer-initiated stream (that is, the two least significant bits are set to 0 by
+  a server and to 1 by a client).  If an invalid value is provided, the
+  recipient MUST generate a connection error of type TRANSPORT_PARAMETER_ERROR.
+  This is equivalent to sending a MAX_STREAM_ID ({{frame-max-stream-id}})
+  immediately after completing the handshake.  The maximum stream ID is set to 0
+  if this parameter is absent, preventing the creation of new unidirectional
+  streams until a MAX_STREAM_ID frame is sent.  Note that a default value of 0
+  does not prevent the the cryptographic handshake stream (that is, stream 0) to
+  be used.
+
 initial_max_stream_id_uni (0x0008):
 
 : The initial maximum stream ID parameter contains the initial maximum stream
@@ -1160,13 +1170,9 @@ initial_max_stream_id_uni (0x0008):
   and to 3 by a client).  If an invalid value is provided, the recipient MUST
   generate a connection error of type TRANSPORT_PARAMETER_ERROR.  This is
   equivalent to sending a MAX_STREAM_ID ({{frame-max-stream-id}}) immediately
-  after completing the handshake.
-
-A client MUST NOT include a stateless reset token.  A server MUST treat receipt
-of a stateless_reset_token transport parameter as a connection error of type
-TRANSPORT_PARAMETER_ERROR.
-
-An endpoint MAY use the following transport parameters:
+  after completing the handshake.  The maximum stream ID is set to 0 if this
+  parameter is absent, preventing the creation of new unidirectional streams
+  until a MAX_STREAM_ID frame is sent.
 
 omit_connection_id (0x0004):
 
