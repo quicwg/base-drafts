@@ -743,14 +743,25 @@ have special rules for populating the packet number field.
 
 ### Initial Packet Number {#initial-packet-number}
 
-The initial value for packet number MUST be selected from an uniform random
-distribution between 0 and 2^31-1.  That is, the lower 31 bits of the packet
-number are randomized.  {{?RFC4086}} provides guidance on the generation of
-random values.
+The initial value for packet number MUST be selected randomly from a range
+between 0 and 2^32 - 1024.  This value is selected so that Initial and Handshake
+packets exercise as many possible values for the Packet Number field as
+possible.
 
-The first set of packets sent by an endpoint MUST include the low 32-bits of the
-packet number.  Once any packet has been acknowledged, subsequent packets can
-use a shorter packet number encoding.
+Limiting the range allows both for loss of packets and for any stateless
+exchanges.  Packet numbers are incremented for subsequent packets, but packet
+loss and stateless handling can both mean that the first packet sent by an
+endpoint isn't necessarily the first packet received by its peer.  The first
+packet received by a peer cannot be 2^32 or greater or the recipient will
+incorrectly assume a packet number that is 2^32 values lower and discard the
+packet.
+
+Use of a secure random number generator {{?RFC4086}} is not necessary for
+generating the initial packet number, nor is it necessary that the value be
+uniformly distributed.
+
+Packets with the long header include the low 32-bits of the packet number.
+Packets that use the short header can use a shorter packet number encoding.
 
 
 ## Handling Packets from Different Versions {#version-specific}
