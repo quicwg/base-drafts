@@ -1134,11 +1134,11 @@ initial_max_stream_id_bidi (0x0002):
 : The initial maximum stream ID parameter contains the initial maximum stream
   number the peer may initiate for bidirectional streams, encoded as an unsigned
   32-bit integer.  This value MUST be a valid bidirectional stream ID for a
-  peer-initiated stream (that is, a server includes a value that have the least
-  significant bits set to 0 and a client sets these bits to 1).  If an invalid
-  value is provided, the recipient MUST generate a connection error of type
-  TRANSPORT_PARAMETER_ERROR.  This is equivalent to sending a MAX_STREAM_ID
-  ({{frame-max-stream-id}}) immediately after completing the handshake.
+  peer-initiated stream (that is, the two least significant bits are set to 0 by
+  a server and to 1 by a client).  If an invalid value is provided, the
+  recipient MUST generate a connection error of type TRANSPORT_PARAMETER_ERROR.
+  This is equivalent to sending a MAX_STREAM_ID ({{frame-max-stream-id}})
+  immediately after completing the handshake.
 
 idle_timeout (0x0003):
 
