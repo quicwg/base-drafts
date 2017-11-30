@@ -206,7 +206,10 @@ should be ignored.
 Like TCP, QUIC calculates both smoothed RTT and RTT variance as specified in
 {{?RFC6298}}.
 
-Min RTT is the minimum RTT for a connection prior to adjusting by ack delay.
+Min RTT is the minimum RTT measured over the connection, prior to adjusting
+by ack delay.  Ignoring ack delay for min RTT prevents intentional or
+unintentional underestimation of min RTT, which in turn prevents
+underestimating smoothed RTT.
 
 ## Ack-based Detection
 
