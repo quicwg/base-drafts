@@ -260,9 +260,9 @@ ID from the packet that was received.  This provides some protection against
 injection of Version Negotiation packets by off-path attackers.
 
 An endpoint that receives a Version Negotiation packet might change the version
-that it decides to use for subsequent packets.  This usually involves starting
-an interaction over from scratch.  The conditions under which an endpoint
-changes QUIC version will depend on the version of QUIC that it chooses.
+that it decides to use for subsequent packets.  The conditions under which an
+endpoint changes QUIC version will depend on the version of QUIC that it
+chooses.
 
 See {{QUIC-TRANSPORT}} for a more thorough description of how an endpoint that
 supports QUIC version 1 generates and consumes a Version Negotiation packet.
@@ -276,18 +276,11 @@ underlying semantic is being expressed.  There are potentially many such traits
 (see {{bad-assumptions}}).  Some effort has been made to either eliminate or
 obscure some observable traits in QUIC version 1, but many of these remain.
 Other QUIC versions might make different design decisions and so exhibit
-different traits, intentionally or otherwise.
+different traits.
 
 The QUIC version number does not appear in all QUIC packets, which means that
 reliably extracting information from a flow based on version-specific traits
 requires that middleboxes retain state for every connection ID they see.
-Maintaining state is costly, and therefore it could be easier to make
-assumptions about the properties of packets based on deployment patterns of QUIC
-versions than to use stateful inspection.
-
-Wide use of bad assumptions about the properties of a flow based on
-version-specific traits could make it difficult or even untenable to deploy new
-protocol versions that change affected parts of the packet.
 
 
 # IANA Considerations
