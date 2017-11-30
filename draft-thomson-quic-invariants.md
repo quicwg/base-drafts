@@ -282,6 +282,11 @@ The QUIC version number does not appear in all QUIC packets, which means that
 reliably extracting information from a flow based on version-specific traits
 requires that middleboxes retain state for every connection ID they see.
 
+The Version Negotiation packet described in this document is not
+integrity-protected, it only has modest protection against insertion by off-path
+attackers.  QUIC versions MUST define a mechanism that authenticates the values
+it contains.
+
 
 # IANA Considerations
 
