@@ -1159,7 +1159,7 @@ initial_max_stream_id_bidi (0x0002):
   maximum bidirectional stream ID is set to 0 if this parameter is absent,
   preventing the creation of new bidirectional streams until a MAX_STREAM_ID
   frame is sent.  Note that a default value of 0 does not prevent the
-  cryptographic handshake stream (that is, stream 0) to be used.
+  cryptographic handshake stream (that is, stream 0) from being used.
 
 initial_max_stream_id_uni (0x0008):
 
