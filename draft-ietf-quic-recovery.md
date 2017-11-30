@@ -685,7 +685,7 @@ Pseudocode for SetLossDetectionAlarm follows:
       alarm_duration = alarm_duration * (2 ^ handshake_count)
     else if (loss_time != 0):
       // Early retransmit timer or time loss detection.
-      alarm_duration = loss_time - now
+      alarm_duration = loss_time - time_of_last_sent_packet
     else if (tlp_count < kMaxTLPs):
       // Tail Loss Probe
       if (num_retransmittable_packets_outstanding == 1):
@@ -699,7 +699,8 @@ Pseudocode for SetLossDetectionAlarm follows:
       alarm_duration = max(alarm_duration, kMinRTOTimeout)
       alarm_duration = alarm_duration * (2 ^ rto_count)
 
-    loss_detection_alarm.set(now + alarm_duration)
+    loss_detection_alarm.set(time_of_last_sent_packet
+        + alarm_duration)
 ~~~
 
 ### On Alarm Firing
