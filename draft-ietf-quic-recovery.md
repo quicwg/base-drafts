@@ -587,7 +587,7 @@ Pseudocode for OnAckReceived and UpdateRtt follow:
      // If the largest acked is newly acked, update the RTT.
      if (sent_packets[ack.largest_acked]):
        latest_rtt = now - sent_packets[ack.largest_acked].time
-       UpdateRtt(latest_rtt, ack.ck_delay)
+       UpdateRtt(latest_rtt, ack.ack_delay)
      // Find all newly acked packets.
      for acked_packet in DetermineNewlyAckedPackets():
        OnPacketAcked(acked_packet.packet_number)
@@ -596,7 +596,7 @@ Pseudocode for OnAckReceived and UpdateRtt follow:
      SetLossDetectionAlarm()
 
 
-   UpdateRtt(latest_rtt):
+   UpdateRtt(latest_rtt, ack_delay):
      // min_rtt ignores ack delay.
      min_rtt = min(min_rtt, latest_rtt)
      // Adjust for ack delay if it's plausible.
