@@ -541,9 +541,9 @@ The layout of a Version Negotiation packet is:
 ~~~
 {: #version-negotiation-format title="Version Negotiation Packet"}
 
-The Type field is selected randomly by the server. The Connection ID field echos
-the corresponding value from the triggering client packet.  This allows clients
-some assurance that the server received the packet and that the Version
+The Type field is selected randomly by the server. The Connection ID field
+echoes the corresponding value from the triggering client packet.  This allows
+clients some assurance that the server received the packet and that the Version
 Negotiation packet is in fact from the server.  The Version field MUST be set to
 0x00000000.  The remainder of the Version Negotiation packet is a list of 32-bit
 versions which the server supports.
