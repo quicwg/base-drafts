@@ -199,10 +199,14 @@ RTT is calculated when an ACK frame arrives by computing the difference
 between the current time and the time the largest newly acked packet was sent.
 If no packets are newly acknowledged, RTT cannot be calculated. When RTT is
 calculated, the ack delay field from the ACK frame SHOULD be subtracted from
-the RTT as long as the result is positive.
+the RTT as long as the result is larger than the Min RTT.  If the result is
+smaller than the min_rtt, the RTT should be used, but the ack delay field
+should be ignored.
 
 Like TCP, QUIC calculates both smoothed RTT and RTT variance as specified in
 {{?RFC6298}}.
+
+Min RTT is the minimum RTT for a connection prior to adjusting by ack delay.
 
 ## Ack-based Detection
 
@@ -492,6 +496,9 @@ smoothed_rtt:
 rttvar:
 : The RTT variance, computed as described in {{?RFC6298}}
 
+min_rtt:
+: The minimum RTT seen in the connection, ignoring ack delay.
+
 reordering_threshold:
 : The largest delta between the largest acked
   retransmittable packet and a packet containing retransmittable frames before
@@ -530,6 +537,7 @@ follows:
    loss_time = 0
    smoothed_rtt = 0
    rttvar = 0
+   min_rtt = 0
    largest_sent_before_rto = 0
    time_of_last_sent_packet = 0
    largest_sent_packet = 0
@@ -576,9 +584,7 @@ Pseudocode for OnAckReceived and UpdateRtt follow:
      // If the largest acked is newly acked, update the RTT.
      if (sent_packets[ack.largest_acked]):
        latest_rtt = now - sent_packets[ack.largest_acked].time
-       if (latest_rtt > ack.ack_delay):
-         latest_rtt -= ack.delay
-       UpdateRtt(latest_rtt)
+       UpdateRtt(latest_rtt, ack.ck_delay)
      // Find all newly acked packets.
      for acked_packet in DetermineNewlyAckedPackets():
        OnPacketAcked(acked_packet.packet_number)
@@ -588,6 +594,11 @@ Pseudocode for OnAckReceived and UpdateRtt follow:
 
 
    UpdateRtt(latest_rtt):
+     // min_rtt ignores ack delay.
+     min_rtt = min(min_rtt, latest_rtt)
+     // Adjust for ack delay if it's plausible.
+     if (latest_rtt - min_rtt > ack.ack_delay):
+       latest_rtt -= ack.delay
      // Based on {{?RFC6298}}.
      if (smoothed_rtt == 0):
        smoothed_rtt = latest_rtt
