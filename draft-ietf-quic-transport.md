@@ -1154,12 +1154,12 @@ initial_max_stream_id_bidi (0x0002):
   peer-initiated stream (that is, the two least significant bits are set to 0 by
   a server and to 1 by a client).  If an invalid value is provided, the
   recipient MUST generate a connection error of type TRANSPORT_PARAMETER_ERROR.
-  This is equivalent to sending a MAX_STREAM_ID ({{frame-max-stream-id}})
-  immediately after completing the handshake.  The maximum stream ID is set to 0
-  if this parameter is absent, preventing the creation of new unidirectional
-  streams until a MAX_STREAM_ID frame is sent.  Note that a default value of 0
-  does not prevent the the cryptographic handshake stream (that is, stream 0) to
-  be used.
+  Setting this parameter is equivalent to sending a MAX_STREAM_ID
+  ({{frame-max-stream-id}}) immediately after completing the handshake.  The
+  maximum bidirectional stream ID is set to 0 if this parameter is absent,
+  preventing the creation of new bidirectional streams until a MAX_STREAM_ID
+  frame is sent.  Note that a default value of 0 does not prevent the
+  cryptographic handshake stream (that is, stream 0) to be used.
 
 initial_max_stream_id_uni (0x0008):
 
@@ -1168,11 +1168,11 @@ initial_max_stream_id_uni (0x0008):
   unsigned 32-bit integer.  The value MUST be a valid unidirectional ID for the
   recipient (that is, the two least significant bits are set to 2 by a server
   and to 3 by a client).  If an invalid value is provided, the recipient MUST
-  generate a connection error of type TRANSPORT_PARAMETER_ERROR.  This is
-  equivalent to sending a MAX_STREAM_ID ({{frame-max-stream-id}}) immediately
-  after completing the handshake.  The maximum stream ID is set to 0 if this
-  parameter is absent, preventing the creation of new unidirectional streams
-  until a MAX_STREAM_ID frame is sent.
+  generate a connection error of type TRANSPORT_PARAMETER_ERROR.  Setting this
+  parameter is equivalent to sending a MAX_STREAM_ID ({{frame-max-stream-id}})
+  immediately after completing the handshake.  The maximum unidirectional stream
+  ID is set to 0 if this parameter is absent, preventing the creation of new
+  unidirectional streams until a MAX_STREAM_ID frame is sent.
 
 omit_connection_id (0x0004):
 
