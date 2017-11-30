@@ -213,7 +213,7 @@ order.  Version 0 is reserved for version negotiation (see
 
 A QUIC endpoint that receives a packet with a long header and a version it
 either does not understand or does not support sends a Version Negotiation
-Packet in response.  Packets with a short header do not trigger version
+packet in response.  Packets with a short header do not trigger version
 negotiation and are always associated with an existing connection.
 
 A Version Negotiation packet sets the high bit of the first octet, and thus it
