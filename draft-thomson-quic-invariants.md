@@ -199,6 +199,7 @@ endpoint, the connection ID is used to identify which QUIC connection the packet
 is intended for.
 
 The connection ID is chosen by endpoints using version-specific methods.
+Packets for the same QUIC connection might use different connection ID values.
 
 
 ## Version
