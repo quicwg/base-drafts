@@ -251,9 +251,9 @@ Supported Version fields follow the Version field.  A Version Negotiation packet
 contains no other fields.  An endpoint MUST ignore a packet that contains no
 Supported Version fields, or a truncated Supported Version.
 
-Version Negotiation packets are not integrity or confidentiality protected.  The
-values contained in them might be authenticated as part of the QUIC version that
-is negotiated.
+Version Negotiation packets do not use integrity or confidentiality protection.
+A specific QUIC version might authenticate the packet as part of its connection
+establishment process.
 
 The Connection ID field in a Version Negotiation packet contains the Connection
 ID from the packet that was received.  This provides some protection against
