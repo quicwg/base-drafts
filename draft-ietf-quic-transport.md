@@ -1699,7 +1699,7 @@ to terminate the connection immediately.  Either closing frame causes all
 streams to immediately become closed; open streams can be assumed to be
 implicitly reset.
 
-After sending a closing frame, endpoints immediately enter a closing period.
+After sending a closing frame, endpoints immediately enter a closing state.
 During the closing period, an endpoint that sends a closing frame SHOULD respond
 to any packet that it receives with another packet containing a closing frame.
 To minimize the state that an endpoint maintains for a closing connection,
@@ -1716,11 +1716,12 @@ Note:
   control, which are not expected to be relevant for a closed connection.
   Retransmitting the final packet requires less state.
 
-After receiving a closing frame, endpoints enter a draining period.  An endpoint
+After receiving a closing frame, endpoints enter a draining state.  An endpoint
 that receives a closing frame MAY send a single packet containing a
-CONNECTION_CLOSE frame before entering a draining period, but MUST NOT send
-further packets, which could result in a constant exchange of closing frames
-until the closing period on either peer ended.
+closing frame before entering a draining state, using the NO_ERROR code if no
+other code is more appropriate.  An endpoint MUST NOT send further packets,
+which could result in a constant exchange of closing frames until the closing
+period on either peer ended.
 
 An immediate close can be used after an application protocol has arranged to
 close a connection.  This might be after the application protocols negotiates a
