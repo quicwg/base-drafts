@@ -308,7 +308,7 @@ ensures that TLS handshake messages are delivered in the correct order.
 ~~~
     Client                                             Server
 
-@C QUIC STREAM Frame(s) <0>:
+@H QUIC STREAM Frame(s) <0>:
      ClientHello
        + QUIC Extension
                             -------->
@@ -340,7 +340,8 @@ In {{quic-tls-handshake}}, symbols mean:
 * "<" and ">" enclose stream numbers.
 
 * "@" indicates the keys that are used for protecting the QUIC packet (H =
-  handshake, with integrity only; 0 = 0-RTT keys; 1 = 1-RTT keys).
+  handshake, using keys from the well-known cleartext packet secret;
+  0 = 0-RTT keys; 1 = 1-RTT keys).
 
 * "(" and ")" enclose messages that are protected with TLS 0-RTT handshake or
   application keys.
@@ -359,7 +360,7 @@ a TLS HelloRetryRequest, if it is needed, and Handshake packets carry the
 remainder of the server handshake.
 
 The server sends TLS handshake messages without protection (@H).  The server
-transitions from no protection (@C) to full 1-RTT protection (@1) after it sends
+transitions from no protection (@H) to full 1-RTT protection (@1) after it sends
 the last of its handshake messages.
 
 Some TLS handshake messages are protected by the TLS handshake record
