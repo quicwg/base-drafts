@@ -17,7 +17,6 @@ author:
     name: Martin Thomson
     org: Mozilla
     email: martin.thomson@gmail.com
-    role: editor
 
 normative:
 
