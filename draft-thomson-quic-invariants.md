@@ -217,9 +217,9 @@ packet in response.  Packets with a short header do not trigger version
 negotiation and are always associated with an existing connection.
 
 A Version Negotiation packet sets the high bit of the first octet, and thus it
-conforms with the format of a packet with a long header.  A Version Negotiation
-packets is identifiable as such by the Version field, which is set to
-0x00000000.
+conforms with the format of a packet with a long header as defined in this
+document.  A Version Negotiation packet is identifiable as such by the Version
+field, which is set to 0x00000000.
 
 ~~~
  0                   1                   2                   3
