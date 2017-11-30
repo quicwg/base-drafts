@@ -150,8 +150,11 @@ version-specific semantics are marked with an X.
 ~~~
 {: #fig-long title="QUIC Long Header"}
 
-That is, a packet with the high bit of the first octet set to 1 has two fixed
-fields: a Connection ID (see {{connection-id}}) and a Version (see {{version}}).
+A QUIC packet with a long header has the high bit of the first octet set to 1.
+
+A QUIC packet with a long header has two fixed fields immediately following the
+first octet: a 64-bit Connection ID (see {{connection-id}}) and a 32-bit Version
+(see {{version}}).
 
 
 ## Short Header
@@ -174,10 +177,13 @@ version-specific semantics are marked with an X.
 ~~~~~
 {: #fig-short title="QUIC Short Header"}
 
-A short header has the high bit of the first octet set to 1.  The second bit of
-that octet (that is, 0x40) determines whether the connection ID is present.  If
-cleared, the connection ID is present.  If the second bit is set, the entire
-contents of the packet have version-specific semantics.
+A QUIC packet with a short header has the high bit of the first octet set to 0.
+
+A QUIC packet with a short header includes an optional connection ID and no
+version field.  The second bit of that octet (that is, 0x40) determines whether
+the connection ID is present.  If the second bit is cleared, a 64-bit connection
+ID immediately follows the first octet.  If the second bit is set, the remainder
+of the packet has version-specific semantics.
 
 
 ## Connection ID
