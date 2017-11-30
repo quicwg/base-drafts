@@ -94,17 +94,6 @@ aims to preserve the ability to change any other aspect of the protocol.  Thus,
 unless specifically described in this document, any aspect of the protocol can
 change between different versions.
 
-Part of ensuring that version negotiation works is ensuring that middleboxes are
-able to correctly function with any version of QUIC.  Critical functions that
-rely on middlebox support need to remain constant across versions or deployment
-of new versions.  Otherwise, deployment of new versions could be complicated by
-the need to coordinate with middleboxes that aren't directly involved in the
-version negotiation process.
-
-This document identifies a single critical function for a middlebox: ensuring
-delivery of packets to the intended instance of an endpoint.  To that end, this
-document defines the representation of the connection ID.
-
 {{bad-assumptions}} is a non-exhaustive list of some incorrect assumptions that
 might be made based on knowledge of QUIC version 1; these do not apply to every
 version of QUIC.
