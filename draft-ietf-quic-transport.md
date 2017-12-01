@@ -551,8 +551,8 @@ Version Negotiation packet is in fact from the server.  The Version field MUST
 be set to 0x00000000.  The remainder of the Version Negotiation packet is a list
 of 32-bit versions which the server supports.
 
-A Version Negotiation packet is never explicitly acknowledged in an ACK frame by
-a client.  Receiving another Initial packet implicitly acknowledges a Version
+A Version Negotiation packet cannot be explicitly acknowledged in an ACK frame
+by a client.  Receiving another Initial packet implicitly acknowledges a Version
 Negotiation packet.
 
 See {{version-negotiation}} for a description of the version negotiation
@@ -777,8 +777,6 @@ constant:
 * the location and size of the Connection ID field in both header forms,
 
 * the location and size of the Version field in long headers,
-
-* the location and size of the Packet Number field in long headers, and
 
 * the format and semantics of the Version Negotiation packet.
 
