@@ -1,7 +1,7 @@
 ---
 title: "Version-Independent Properties of QUIC"
 abbrev: QUIC Invariants
-docname: draft-ietf-quic-invariants-latest
+docname: draft-thomson-quic-invariants-latest
 date: {DATE}
 category: std
 ipr: trust200902
