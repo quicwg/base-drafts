@@ -1185,11 +1185,12 @@ initial_max_stream_id_uni (0x0008):
 omit_connection_id (0x0004):
 
 : The omit connection identifier parameter indicates that packets sent to the
-  endpoint that advertises this parameter can omit the connection ID.  This can
-  be used by an endpoint where it knows that source and destination IP address
-  and port are sufficient for it to identify a connection.  This parameter is
-  zero length.  Absence this parameter indicates that the endpoint relies on the
-  connection ID being present in every packet.
+  endpoint that advertises this parameter MAY omit the connection ID in packets
+  using short header format.  This can be used by an endpoint where it knows
+  that source and destination IP address and port are sufficient for it to
+  identify a connection.  This parameter is zero length.  Absence of this
+  parameter means that the connection ID MUST be present in every packet sent to
+  this endpoint.
 
 max_packet_size (0x0005):
 
