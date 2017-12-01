@@ -1699,7 +1699,7 @@ to terminate the connection immediately.  Either closing frame causes all
 streams to immediately become closed; open streams can be assumed to be
 implicitly reset.
 
-After sending a closing frame, endpoints immediately enter a closing state.
+After sending a closing frame, endpoints immediately enter the closing state.
 During the closing period, an endpoint that sends a closing frame SHOULD respond
 to any packet that it receives with another packet containing a closing frame.
 To minimize the state that an endpoint maintains for a closing connection,
