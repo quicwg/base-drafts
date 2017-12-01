@@ -812,10 +812,10 @@ both the median and mean min_rtt typically observed on the public internet.
 
 # Congestion Control
 
-QUIC's congestion control is based on TCP NewReno{{?RFC6582}} congestion control
-to determine the congestion window.  QUIC congestion control is specified in
-bytes due to finer control and the ease of appropriate byte
-counting{{?RFC3465}}.
+QUIC's congestion control is based on TCP NewReno {{?RFC6582}} congestion
+control to determine the congestion window.  QUIC congestion control is
+specified in bytes due to finer control and the ease of appropriate byte
+counting {{?RFC3465}}.
 
 ## Slow Start
 
