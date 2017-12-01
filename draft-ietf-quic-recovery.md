@@ -812,10 +812,10 @@ both the median and mean min_rtt typically observed on the public internet.
 
 # Congestion Control
 
-QUIC's congestion control is based on TCP NewReno{{?RFC6582}}
-congestion control to determine the congestion window and
-pacing rate.  QUIC congestion control is specified in bytes due to
-finer control and the ease of appropriate byte counting{{?RFC3465}}.
+QUIC's congestion control is based on TCP NewReno{{?RFC6582}} congestion control
+to determine the congestion window.  QUIC congestion control is specified in
+bytes due to finer control and the ease of appropriate byte
+counting{{?RFC3465}}.
 
 ## Slow Start
 
@@ -850,30 +850,23 @@ the reduction to once per round trip.
 
 ## Tail Loss Probe
 
-If recovery sends a tail loss probe, no change is made to the congestion
-window or pacing rate.  Acknowledgement or loss of tail loss probes are
-treated like any other packet.
+If recovery sends a tail loss probe, no change is made to the congestion window.
+Acknowledgement or loss of tail loss probes are treated like any other packet.
 
 ## Retransmission Timeout
 
-When retransmissions are sent due to a retransmission timeout alarm, no
-change is made to the congestion window or pacing rate until the next
-acknowledgement arrives.  When an ack arrives, if packets prior to the first
-retransmission timeout are acknowledged, then the congestion window
-remains the same.  If no packets prior to the first retransmission timeout
-are acknowledged, the retransmission timeout has been validated and the
-congestion window must be reduced to the minimum congestion window and
-slow start is begun.
+When retransmissions are sent due to a retransmission timeout alarm, no change
+is made to the congestion window until the next acknowledgement arrives.  When
+an ack arrives, if packets prior to the first retransmission timeout are
+acknowledged, then the congestion window remains the same.  If no packets prior
+to the first retransmission timeout are acknowledged, the retransmission timeout
+has been validated and the congestion window must be reduced to the minimum
+congestion window and slow start is begun.
 
-## Pacing Rate
+## Pacing
 
-The pacing rate is a function of the mode, the congestion window, and
-the smoothed rtt.  Specifically, the pacing rate is 2 times the
-congestion window divided by the smoothed RTT during slow start
-and 1.25 times the congestion window divided by the smoothed RTT during
-congestion avoidance.  In order to fairly compete with flows that are not
-pacing, it is recommended to not pace the first 10 sent packets when
-exiting quiescence.
+It is RECOMMENDED that senders pace sending of all data, distributing the
+congestion window over the SRTT.
 
 ## Pseudocode
 
