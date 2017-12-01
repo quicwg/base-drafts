@@ -916,7 +916,7 @@ end_of_recovery:
 : The largest packet number sent when QUIC detects a loss.  When a larger
   packet is acknowledged, QUIC exits recovery.
 
-ssthresh
+ssthresh:
 : Slow start threshold in bytes.  When the congestion window is below
   ssthresh, the mode is slow start and the window grows by the number of
   bytes acknowledged.
