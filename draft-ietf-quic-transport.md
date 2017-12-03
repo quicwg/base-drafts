@@ -1231,7 +1231,8 @@ detected.
 The client includes the initial_version field in its transport parameters.  The
 initial_version is the version that the client initially attempted to use.  If
 the server did not send a version negotiation packet {{packet-version}}, this
-will be identical to the negotiated_version.
+will be identical to the negotiated_version field in the server transport
+parameters.
 
 A server that processes all packets in a stateful fashion can remember how
 version negotiation was performed and validate the initial_version value.
