@@ -1270,8 +1270,8 @@ would have selected the negotiated version.  A client MUST terminate the
 connection with a VERSION_NEGOTIATION_ERROR error code if the current QUIC
 version is not listed in the supported_versions list.  A client MUST terminate
 with a VERSION_NEGOTIATION_ERROR error code if version negotiation occurred but
-it would have selected a different version if the versions in the
-supported_versions list appears in a Version Negotiation packet.
+it would have selected a different version based on the value of the
+supported_versions list.
 
 When an endpoint accepts multiple QUIC versions, it can potentially interpret
 transport parameters as they are defined by any of the QUIC versions it
