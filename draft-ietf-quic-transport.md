@@ -1219,14 +1219,17 @@ New transport parameters can be registered according to the rules in
 
 ### Version Negotiation Validation {#version-validation}
 
-The transport parameters include three fields that encode version information.
-These retroactively authenticate the version negotiation (see
-{{version-negotiation}}) that is performed prior to the cryptographic handshake.
+Though the cryptographic handshake has integrity protection, two forms of QUIC
+version downgrade are possible.  In the first, an attacker replaces the QUIC
+version in the Initial packet.  In the second, a fake Version Negotiation packet
+is sent by an attacker.  To protect against these attacks, the transport
+parameters include three fields that encode version information.  These
+parameters are used to retroactively authenticate the choice of version (see
+{{version-negotiation}}).
 
 The cryptographic handshake provides integrity protection for the negotiated
 version as part of the transport parameters (see {{transport-parameters}}).  As
-a result, modification of version negotiation packets by an attacker can be
-detected.
+a result, attacks on version negotiation by an attacker can be detected.
 
 The client includes the initial_version field in its transport parameters.  The
 initial_version is the version that the client initially attempted to use.  If
