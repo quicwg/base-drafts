@@ -324,13 +324,14 @@ TCP server; data received from the TCP server is packaged into DATA frames by
 the proxy. Note that the size and number of TCP segments is not guaranteed to
 map predictably to the size and number of HTTP DATA or QUIC STREAM frames.
 
-The TCP connection can be closed by either peer. When the client half-closes the
-request stream, the proxy will set the FIN bit on its connection to the TCP
-server. When the proxy receives a packet with the FIN bit set, it will
-half-close the corresponding stream. TCP connections which remain half-closed in
-a single direction are not invalid, but are often handled poorly by servers, so
-clients SHOULD NOT half-close connections on which they are still expecting
-data.
+The TCP connection can be closed by either peer. When the client ends the
+request stream (that is, the receive stream at the proxy enters the "Data Recvd"
+state), the proxy will set the FIN bit on its connection to the TCP server. When
+the proxy receives a packet with the FIN bit set, it will terminate the send
+stream that it sends to client. TCP connections which remain half-closed in a
+single direction are not invalid, but are often handled poorly by servers, so
+clients SHOULD NOT cause send a STREAM frame with a FIN bit for connections on
+which they are still expecting data.
 
 A TCP connection error is signaled with RST_STREAM. A proxy treats any error in
 the TCP connection, which includes receiving a TCP segment with the RST bit set,
