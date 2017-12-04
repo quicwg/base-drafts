@@ -302,7 +302,7 @@ deployed and used concurrently. Version negotiation is described in
 
 QUIC versions are identified using a 32-bit unsigned number.
 
-The version 0x00000000 is reserved to represent an invalid version.  This
+The version 0x00000000 is reserved to represent version negotiation.  This
 version of the specification is identified by the number 0x00000001.
 
 Version 0x00000001 of QUIC uses TLS as a cryptographic handshake protocol, as
@@ -416,11 +416,10 @@ The following packet types are defined:
 
 | Type | Name                          | Section                     |
 |:-----|:------------------------------|:----------------------------|
-| 0x7F | Version Negotiation           | {{packet-version}}          |
-| 0x7E | Initial                       | {{packet-initial}}          |
-| 0x7D | Retry                         | {{packet-retry}}            |
-| 0x7C | Handshake                     | {{packet-handshake}}        |
-| 0x7B | 0-RTT Protected               | {{packet-protected}}        |
+| 0x7F | Initial                       | {{packet-initial}}          |
+| 0x7E | Retry                         | {{packet-retry}}            |
+| 0x7D | Handshake                     | {{packet-handshake}}        |
+| 0x7C | 0-RTT Protected               | {{packet-protected}}        |
 {: #long-packet-types title="Long Header Packet Types"}
 
 The header form, packet type, connection ID, packet number and version fields of
@@ -512,25 +511,27 @@ from different versions of QUIC are interpreted.
 
 ## Version Negotiation Packet {#packet-version}
 
-A Version Negotiation packet has long headers with a type value of 0x7F and is
-sent only by servers.  The Version Negotiation packet is a response to a client
-packet that contains a version that is not supported by the server.
+A Version Negotiation packet is inherently not version-specific, and does not
+use the packet headers defined above. Upon receipt by a client, it will appear
+to be a packet using the long header, but will be identified as a Version
+Negotiation packet based on the Version field.
 
-The connection ID and version fields echo corresponding values from the
-triggering client packet.  This allows clients some assurance that the
-server received the packet and that the Version Negotiation packet was not
-carried in a packet with a spoofed source address.
+The Version Negotiation packet is a response to a client packet that contains a
+version that is not supported by the server, and is only sent by servers.
 
-A Version Negotiation packet is never explicitly acknowledged in an ACK frame by
-a client.  Receiving another Initial packet implicitly acknowledges a Version
-Negotiation packet.
-
-The payload of the Version Negotiation packet is a list of 32-bit versions which
-the server supports, as shown below.
+The layout of a Version Negotiation packet is:
 
 ~~~
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+
+|1|  Unused (7) |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                                                               |
++                       Connection ID (64)                      +
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                          Version (32)                         |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                    Supported Version 1 (32)                 ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -542,6 +543,17 @@ the server supports, as shown below.
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
 {: #version-negotiation-format title="Version Negotiation Packet"}
+
+The value in the Unused field is selected randomly by the server. The Connection
+ID field echoes the corresponding value from the triggering client packet.  This
+allows clients some assurance that the server received the packet and that the
+Version Negotiation packet is in fact from the server.  The Version field MUST
+be set to 0x00000000.  The remainder of the Version Negotiation packet is a list
+of 32-bit versions which the server supports.
+
+A Version Negotiation packet cannot be explicitly acknowledged in an ACK frame
+by a client.  Receiving another Initial packet implicitly acknowledges a Version
+Negotiation packet.
 
 See {{version-negotiation}} for a description of the version negotiation
 process.
@@ -774,9 +786,7 @@ constant:
 
 * the location and size of the Version field in long headers,
 
-* the location and size of the Packet Number field in long headers, and
-
-* the type, format and semantics of the Version Negotiation packet.
+* the format and semantics of the Version Negotiation packet.
 
 Implementations MUST assume that an unsupported version uses an unknown packet
 format. All other fields MUST be ignored when processing a packet that contains
