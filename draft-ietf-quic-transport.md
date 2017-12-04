@@ -1083,10 +1083,10 @@ language from Section 3 of {{!I-D.ietf-tls-tls13}}.
    struct {
       select (Handshake.msg_type) {
          case client_hello:
-            QuicVersion negotiated_version;
             QuicVersion initial_version;
 
          case encrypted_extensions:
+            QuicVersion negotiated_version;
             QuicVersion supported_versions<4..2^8-4>;
 
          case new_session_ticket:
@@ -1254,54 +1254,62 @@ New transport parameters can be registered according to the rules in
 
 ### Version Negotiation Validation {#version-validation}
 
-The transport parameters include three fields that encode version information.
-These retroactively authenticate the version negotiation (see
-{{version-negotiation}}) that is performed prior to the cryptographic handshake.
+Though the cryptographic handshake has integrity protection, two forms of QUIC
+version downgrade are possible.  In the first, an attacker replaces the QUIC
+version in the Initial packet.  In the second, a fake Version Negotiation packet
+is sent by an attacker.  To protect against these attacks, the transport
+parameters include three fields that encode version information.  These
+parameters are used to retroactively authenticate the choice of version (see
+{{version-negotiation}}).
 
 The cryptographic handshake provides integrity protection for the negotiated
 version as part of the transport parameters (see {{transport-parameters}}).  As
-a result, modification of version negotiation packets by an attacker can be
-detected.
+a result, attacks on version negotiation by an attacker can be detected.
 
-The client includes two fields in the transport parameters:
-
-* The negotiated_version is the version that was finally selected for use.  This
-  MUST be identical to the value that is on the packet that carries the
-  ClientHello.  A server that receives a negotiated_version that does not match
-  the version of QUIC that is in use MUST terminate the connection with a
-  VERSION_NEGOTIATION_ERROR error code.
-
-* The initial_version is the version that the client initially attempted to use.
-  If the server did not send a version negotiation packet {{packet-version}},
-  this will be identical to the negotiated_version.
+The client includes the initial_version field in its transport parameters.  The
+initial_version is the version that the client initially attempted to use.  If
+the server did not send a version negotiation packet {{packet-version}}, this
+will be identical to the negotiated_version field in the server transport
+parameters.
 
 A server that processes all packets in a stateful fashion can remember how
 version negotiation was performed and validate the initial_version value.
 
 A server that does not maintain state for every packet it receives (i.e., a
-stateless server) uses a different process. If the initial and negotiated
-versions are the same, a stateless server can accept the value.
+stateless server) uses a different process. If the initial_version matches the
+version of QUIC that is in use, a stateless server can accept the value.
 
-If the initial version is different from the negotiated_version, a stateless
-server MUST check that it would have sent a version negotiation packet if it had
-received a packet with the indicated initial_version.  If a server would have
-accepted the version included in the initial_version and the value differs from
-the value of negotiated_version, the server MUST terminate the connection with a
-VERSION_NEGOTIATION_ERROR error.
+If the initial_version is different from the version of QUIC that is in use, a
+stateless server MUST check that it would have sent a version negotiation packet
+if it had received a packet with the indicated initial_version.  If a server
+would have accepted the version included in the initial_version and the value
+differs from the QUIC version that is in use, the server MUST terminate the
+connection with a VERSION_NEGOTIATION_ERROR error.
+
+The server includes both the version of QUIC that is in use and a list of the
+QUIC versions that the server supports.
+
+The negotiated_version field is the version that is in use.  This MUST be set by
+the server to the value that is on the Initial packet that it accepts (not an
+Initial packet that triggers a Retry or Version Negotiation packet).  A client
+that receives a negotiated_version that does not match the version of QUIC that
+is in use MUST terminate the connection with a VERSION_NEGOTIATION_ERROR error
+code.
 
 The server includes a list of versions that it would send in any version
-negotiation packet ({{packet-version}}) in supported_versions.  The server
-populates this field even if it did not send a version negotiation packet.  This
-field is absent if the parameters are included in a NewSessionTicket message.
+negotiation packet ({{packet-version}}) in the supported_versions field.  The
+server populates this field even if it did not send a version negotiation
+packet.  This field is absent if the parameters are included in a
+NewSessionTicket message.
 
-The client can validate that the negotiated_version is included in the
+The client validates that the negotiated_version is included in the
 supported_versions list and - if version negotiation was performed - that it
 would have selected the negotiated version.  A client MUST terminate the
-connection with a VERSION_NEGOTIATION_ERROR error code if the
-negotiated_version value is not included in the supported_versions list.  A
-client MUST terminate with a VERSION_NEGOTIATION_ERROR error code if
-version negotiation occurred but it would have selected a different version
-based on the value of the supported_versions list.
+connection with a VERSION_NEGOTIATION_ERROR error code if the current QUIC
+version is not listed in the supported_versions list.  A client MUST terminate
+with a VERSION_NEGOTIATION_ERROR error code if version negotiation occurred but
+it would have selected a different version based on the value of the
+supported_versions list.
 
 When an endpoint accepts multiple QUIC versions, it can potentially interpret
 transport parameters as they are defined by any of the QUIC versions it
