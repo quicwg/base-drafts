@@ -574,9 +574,9 @@ unless it has received a packet from the server.  If the client has received a
 packet from the server, the connection ID field uses the value provided by the
 server.
 
-The first Initial packet that is sent by a client contains a random 31-bit
-packet number.  All subsequent packets contain a packet number that is
-incremented by one, see ({{packet-numbers}}).
+The first Initial packet that is sent by a client contains a randomized packet
+number.  All subsequent packets contain a packet number that is incremented by
+one, see ({{packet-numbers}}).
 
 The payload of a Initial packet consists of a STREAM frame (or frames)
 for stream 0 containing a cryptographic handshake message, with enough PADDING
