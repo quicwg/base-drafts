@@ -300,11 +300,7 @@ receiver.
 The alarm duration, or Probe Timeout (PTO), is set based on the following
 conditions:
 
-* If there is exactly one unacknowledged packet, PTO SHOULD be scheduled for
-  max(2*SRTT, 1.5*SRTT+MaxAckDelay)
-
-* If there are more than one unacknowledged packets, PTO SHOULD be scheduled for
-  max(2*SRTT, 10ms).
+* PTO SHOULD be scheduled for max(1.5*SRTT+MaxAckDelay, 10ms)
 
 * If RTO ({{rto}}) is earlier, schedule a TLP alarm in its place. That is,
   PTO SHOULD be scheduled for min(RTO, PTO).
@@ -316,15 +312,14 @@ exactly one unacknowledged packet, the alarm duration includes time for a
 delayed acknowledgment to be received by including MaxAckDelay.
 
 QUIC diverges from TCP by calculating MaxAckDelay dynamically, instead of
-assuming a constant value for all connections.
+assuming a constant value for all connections.  It includes this in all probe
+timeouts, because it assume the ack delay may come into play, regardless of
+the number of packets outstanding, where as TCP's TLP assumes if at least 2
+packets are outstanding, acks will not be delayed.
 
-A PTO value of at least 2*SRTT ensures that the ACK is overdue. Using a PTO of
-exactly 1*SRTT may generate spurious probes, and 2*SRTT is simply the next
-integral value of RTT.
-
-The values of 2 and 1.5 are based on
-{{?LOSS-PROBE=I-D.dukkipati-tcpm-tcp-loss-probe}}, but implementations MAY
-experiment with other constants.
+A PTO value of at least 1.5*SRTT ensures that the ACK is overdue.  The of 1.5
+is based on {{?LOSS-PROBE=I-D.dukkipati-tcpm-tcp-loss-probe}}, but
+implementations MAY experiment with other constants.
 
 To reduce latency, it is RECOMMENDED that the sender set and allow the TLP alarm
 to fire twice before setting an RTO alarm. In other words, when the TLP alarm
