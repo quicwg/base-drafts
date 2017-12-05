@@ -964,11 +964,12 @@ the packet MUST be discarded.
 
 Once the Version Negotiation packet is determined to be valid, the client then
 selects an acceptable protocol version from the list provided by the server.
-The client then attempts to create a connection using that version.  Though the
-contents of the Client Initial packet the client sends might not change in
-response to version negotiation, a client MUST increase the packet number it
-uses on every packet it sends.  Packets MUST continue to use long headers and
-MUST include the new negotiated protocol version.
+The client then attempts to create a connection using that version.  The client
+generates a new Client Initial packet with a new packet number.  Even if the
+cryptographic protocol used does not change as a result of a change in version,
+the cryptographic handshake message MUST be updated to include updated transport
+parameters that reflect the change of version.  This packet and any subsequent
+packets that use a long header MUST include the selected protocol version.
 
 The client MUST use the long header format and include its selected version on
 all packets until it has 1-RTT keys and it has received a packet from the server
