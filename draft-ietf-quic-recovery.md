@@ -310,7 +310,7 @@ conditions:
   PTO SHOULD be scheduled for min(RTO, PTO).
 
 MaxAckDelay is the maximum ack delay supplied in an incoming ack frame.
-Ack delays that are aren't used for RTT sample or reference ack-only packets
+Ack delays that are aren't used for an RTT sample or reference ack-only packets
 are excluded.  When there is exactly one unacknowledged packet, the alarm
 duration includes time for a delayed acknowledgment to be received by including
 MaxAckDelay.
