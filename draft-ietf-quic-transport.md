@@ -3087,11 +3087,10 @@ state as a result of delayed delivery of packets.
 ### Bidirectional Stream States {#stream-bidi-states}
 
 A bidirectional stream is composed of a send stream and a receive stream.
-Implementations might represent the state of the bidirectional stream as a
-composite of the states of the constituent send and receive streams.  The
-simplest model presents the stream as "open" when either send or receive stream
-is in a non-terminal state and "closed" when both send and receive streams are
-in a terminal state.
+Implementations may represent states of the bidirectional stream as composites
+of send and receive stream states.  The simplest model presents the stream as
+"open" when either send or receive stream is in a non-terminal state and
+"closed" when both send and receive streams are in a terminal state.
 
 {{stream-bidi-mapping}} shows a more complex mapping of bidirectional stream
 states that loosely correspond to the stream states in HTTP/2
