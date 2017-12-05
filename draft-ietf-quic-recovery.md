@@ -310,9 +310,9 @@ MaxAckDelay excludes ack delays that aren't included in an RTT sample because
 they're too large and excludes those which reference an ack-only packet.
 
 QUIC diverges from TCP by calculating MaxAckDelay dynamically, instead of
-assuming a constant value for all connections.  It includes this in all probe
-timeouts, because it assume the ack delay may come into play, regardless of
-the number of packets outstanding.  TCP's TLP assumes if at least 2
+assuming a constant delayed ack timeout for all connections.  QUIC includes
+this in all probe timeouts, because it assume the ack delay may come into play,
+regardless of the number of packets outstanding.  TCP's TLP assumes if at least 2
 packets are outstanding, acks will not be delayed.
 
 A PTO value of at least 1.5*SRTT ensures that the ACK is overdue.  The 1.5
@@ -367,15 +367,14 @@ reducing the probability of consecutive RTO events.
 
 QUIC's RTO algorithm differs from TCP in that the firing of an RTO alarm is not
 considered a strong enough signal of packet loss, so does not result in an
-immediate change to CWND or recovery state. An RTO alarm fires only when
-there's a prolonged period of network silence, which could be caused by a change
-in the underlying network RTT.
+immediate change to congestion window or recovery state. An RTO alarm fires only
+when there's a prolonged period of network silence, which could be caused by a
+change in the underlying network RTT.
 
 QUIC also diverges from TCP by including MaxAckDelay in the RTO period.  QUIC is
 able to explicitly model the ack delay via the ack delay field in the ack frame.
-Because QUIC is subtracting this delay from both SRTT and it is expected to
-reduce RTTVar, it is necessary to add it back, in order to compensate for
-the smaller SRTT and RTTVar.
+Since QUIC corrects for this delay in its SRTT and RTTVAR computations, it is
+necessary to add this delay explicitly in the RTO computation.
 
 When an acknowledgment is received for a packet sent on an RTO event, any
 unacknowledged packets with lower packet numbers than those acknowledged MUST be
