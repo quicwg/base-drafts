@@ -307,9 +307,7 @@ conditions:
 
 MaxAckDelay is the maximum ack delay supplied in an incoming ack frame.
 MaxAckDelay excludes Ack delays that aren't included in an RTT sample because
-they're too large and those which reference an ack-only packet.  When there is
-exactly one unacknowledged packet, the alarm duration includes time for a
-delayed acknowledgment to be received by including MaxAckDelay.
+they're too large and those which reference an ack-only packet.
 
 QUIC diverges from TCP by calculating MaxAckDelay dynamically, instead of
 assuming a constant value for all connections.  It includes this in all probe
