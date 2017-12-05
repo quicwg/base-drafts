@@ -312,8 +312,8 @@ they're too large and excludes those which reference an ack-only packet.
 QUIC diverges from TCP by calculating MaxAckDelay dynamically, instead of
 assuming a constant delayed ack timeout for all connections.  QUIC includes
 this in all probe timeouts, because it assume the ack delay may come into play,
-regardless of the number of packets outstanding.  TCP's TLP assumes if at least 2
-packets are outstanding, acks will not be delayed.
+regardless of the number of packets outstanding.  TCP's TLP assumes if at least
+2 packets are outstanding, acks will not be delayed.
 
 A PTO value of at least 1.5*SRTT ensures that the ACK is overdue.  The 1.5
 is based on {{?LOSS-PROBE=I-D.dukkipati-tcpm-tcp-loss-probe}}, but
