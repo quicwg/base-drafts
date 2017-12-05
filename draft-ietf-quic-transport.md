@@ -1547,11 +1547,6 @@ of a new Path Probe Reply.  After some delay, as discussed in
 probes, the client SHOULD abandon the new path and stop transmitting Path Probe
 packets.
 
-- TODO: sections in {{QUIC-RECOVERY}}
-- Mention here instead of just below (and -
-alluding to it here) that we generate a new Data field for a new Path Probe and
-never retransmit the old one.
-
 
 ### Migrating the Connection {#migration-commit}
 
@@ -1586,9 +1581,6 @@ Due to variations in path latency or packet reordering, packets from different
 source addresses might be reordered.  The packet with the highest packet number
 MUST be used to determine which path to use.  Endpoints also need to be prepared
 to receive packets from an older source address.
-
-- Additional discussion on how the reordering can affect congestion needs to go
-  in the loss recovery draft.
 
 
 ### Privacy Implications of Connection Migration {#migration-linkability}
@@ -1670,10 +1662,6 @@ outstanding data relative to the congestion window, and they SHOULD NOT incur a
 loss event for the congestion control algorithm.  However, care should be taken
 not to overwhelm the (potentially unknown) capacity of the new link.
 
-- TODO: Put some of this in recovery draft instead
-
-- Describe what this means. Old packets from the previous
-
 An endpoint validates a remote address by sending a PATH_CHALLENGE frame
 containing a payload that is hard to guess.  This frame MUST be sent in a packet
 to the new address.  Once a PATH_RESPONSE frame containing the same payload is
@@ -1748,9 +1736,6 @@ validation of the new address can fail, an endpoint SHOULD attempt to validate
 the old remote address before attempting to validate the new address.  If the
 connection migration is spurious, then the legitimate address will be used to
 respond and the connection will migrate back to the old address.
-
-- This means that above we need to say "MUST NOT" send any frames other than
-PATH_CHALLENGE, not just MUST switch. This gets ugly really quickly.
 
 As with any address validation, packets containing retransmissions of the
 PATH_CHALLENGE frame validating an address MUST be sent to the address being
@@ -2280,16 +2265,10 @@ PATH_RESPONSE frame ({{frame-path-response}}) containing the same Data.
 
 A PATH_CHALLENGE frame MUST NOT elicit acknowledgements, as a valid
 PATH_RESPONSE serves to indicate receipt of the PATH_CHALLENGE. These frames are
-included in loss recovery, as they will be retransmitted separately.
-
-- Re-work the above to properly specify its stance with regards to:
-  - Flow control
-  - Congestion control
+not included in loss recovery, as they will be retransmitted separately.
 
 A packet containing a PATH_CHALLENGE frame with a non-empty Data field MUST be
 padded such that it has a QUIC packet size of least 1200 octets.
-
-- Multiple places to update how to refer to max padding size
 
 
 ## BLOCKED Frame {#frame-blocked}
