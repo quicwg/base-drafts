@@ -837,18 +837,15 @@ explained in more detail as they are referenced later in the document.
 | 0x04        | MAX_DATA          | {{frame-max-data}}          |
 | 0x05        | MAX_STREAM_DATA   | {{frame-max-stream-data}}   |
 | 0x06        | MAX_STREAM_ID     | {{frame-max-stream-id}}     |
-| 0x07        | PING              | {{frame-ping}}              |
+| 0x07        | PATH_CHALLENGE    | {{frame-path-challenge}}    |
 | 0x08        | BLOCKED           | {{frame-blocked}}           |
 | 0x09        | STREAM_BLOCKED    | {{frame-stream-blocked}}    |
 | 0x0a        | STREAM_ID_BLOCKED | {{frame-stream-id-blocked}} |
 | 0x0b        | NEW_CONNECTION_ID | {{frame-new-connection-id}} |
 | 0x0c        | STOP_SENDING      | {{frame-stop-sending}}      |
-| 0x0d        | PONG              | {{frame-pong}}              |
+| 0x0d        | PATH_RESPONSE     | {{frame-path-response}}     |
 | 0x0e        | ACK               | {{frame-ack}}               |
 | 0x10 - 0x17 | STREAM            | {{frame-stream}}            |
-| 0x18        | PATH_PROBE        | {{frame-path-probe}}        |
-| 0x19        | PATH_CHALLENGE    | {{frame-path-challenge}}    |
-| 0x1a        | PATH_RESPONSE     | {{frame-path-response}}     |
 {: #frame-types title="Frame Types"}
 
 # Life of a Connection
@@ -2172,15 +2169,50 @@ than it has sent, unless this is a result of a change in the initial limits (see
 {{zerortt-parameters}}).
 
 
-## PING Frame {#frame-ping}
+## PATH_CHALLENGE Frame {#frame-path-challenge}
 
-Endpoints can use PING frames (type=0x07) to verify that their peers are still
-alive or to check reachability to the peer.
+Endpoints can use PATH_CHALLENGE frames (type=0x07) to verify that their peers
+are still alive or to check reachability to the peer. A PATH_CHALLENGE frame can
+also carry arbitrary data to perform address validation during connection
+migration.
 
-The PING frame does not contain a payload.
+PATH_CHALLENGE frames contain a variable-length payload.
 
-- Should you still be able to exchange data so you know which ping/pong is
-- which?
+~~~
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|   Length(8)   |                 Data (*)                    ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~
+
+Length:
+
+: This 8-bit value describes the length of the Data field.
+
+Data:
+
+: This variable-length field contains arbitrary data.
+
+If the Data field is not empty, the recipient of this frame MUST generate a
+PATH_RESPONSE frame ({{frame-path-response}}) containing the same Data.  A
+PATH_CHALLENGE frame with data is not appropriate for use in keeping a
+connection alive, because the PATH_RESPONSE frame elicits an acknowledgement,
+causing the sender of the original PATH_CHALLENGE to send two packets.
+
+- PATH_RESPONSE no longer elicits an ack, right?
+
+A PATH_CHALLENGE frame MUST NOT elicit acknowledgements, as a valid
+PATH_RESPONSE serves to indicate receipt of the PATH_CHALLENGE.
+
+- Re-work the above to properly specify its stance with regards to:
+  - Flow control
+  - Congestion control
+
+A packet containing a PATH_CHALLENGE frame with a non-empty Data field MUST be
+padded such that it has a QUIC packet size of least 1200 octets.
+
+- Multiple places to update how to refer to max padding size
 
 
 ## BLOCKED Frame {#frame-blocked}
@@ -2305,17 +2337,18 @@ Application Error Code:
   {{app-error-codes}}).
 
 
+## PATH_RESPONSE Frame {#frame-path-response}
 
-## PONG Frame {#frame-pong}
+The PATH_RESPONSE frame (type=0x0d) is sent in response to a PATH_CHALLENGE
+frame that contains data.  Its format is identical to the PATH_CHALLENGE frame
+({{frame-path-challenge}}).
 
-The PONG frame (type=0x0d) is sent in response to a PING frame that contains
-data.  Its format is identical to the PING frame ({{frame-ping}}).
-
-An endpoint that receives an unsolicited PONG frame - that is, a PONG frame
-containing a payload that is empty - MUST generate a connection error of type
-FRAME_ERROR, indicating the PONG frame (that is, 0x10d).  If the content of a
-PONG frame does not match the content of a PING frame previously sent by the
-endpoint, the endpoint MAY generate a connection error of type UNSOLICITED_PONG.
+An endpoint that receives an unsolicited PATH_RESPONSE frame - that is, a
+PATH_RESPONSE frame containing a payload that is empty - MUST generate a
+connection error of type FRAME_ERROR, indicating the PATH_RESPONSE frame (that
+is, 0x0d).  If the content of a PATH_RESPONSE frame does not match the content
+of a PATH_CHALLENGE frame previously sent by the endpoint, the endpoint MAY
+generate a connection error of type UNSOLICITED_PATH_RESPONSE.
 
 
 ## ACK Frame {#frame-ack}
@@ -2651,62 +2684,7 @@ size.  This allows the client to perform MTU discovery, and also prevents
 amplification attacks by requiring that packets containing PATH_PROBE frames and
 packets containing their resulting PATH_RESPONSE frames are of equivalent size.
 
-## PATH_CHALLENGE Frame {#frame-path-challenge}
 
-A server sends a PATH_CHALLENGE frame (type=0x19) to perform address
-validation during connection migration.
-
-PATH_CHALLENGE frames contain a variable-length payload.
-
-~~~
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|   Length(8)   |                 Data (*)                    ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-~~~
-
-Length:
-
-: This 8-bit value describes the length of the Data field.
-
-Data:
-
-: This variable-length field contains arbitrary data.
-
-A PATH_CHALLENGE frame is sent by the server in response to incoming packets
-from an unvalidated client.
-
-If the Data field is not empty, the recipient of this frame MUST generate a
-PATH_RESPONSE frame ({{frame-path-response}}) containing the same Data.  A
-PATH_CHALLENGE frame with data is not appropriate for use in keeping a
-connection alive, because the PONG frame elicits an acknowledgement, causing the
-sender of the original PING to send two packets.
-
-- Seems like it actually is appropriate because it (a) generates no acks and (b)
-  serves to validate that the mapping hasn't changed/the other side is who they
-  say they are.
-
-An endpoint MUST NOT generate more than one PATH_CHALLENGE frame per incoming
-packet.
-
-A PATH_CHALLENGE frame MUST NOT generate acknowledgements, as a valid
-PATH_RESPONSE serves to indicate receipt of the PATH_CHALLENGE.
-
-- To pad this frame?
-- Allow data field to be empty or say MUST be > 0 length. SHOULD?
-
-## PATH_RESPONSE Frame {#frame-path-response}
-
-The PATH_RESPONSE frame (type=0x1a) is sent in response to a PATH_PROBE frame or
-a PATH_CHALLENGE frame.  Its format is identical to the PATH_CHALLENGE frame
-({{frame-path-challenge}}).
-
-A packet containing a PATH_RESPONSE frame generated in response to a PATH_PROBE
-frame MUST be padded to the maximum size.  However, a PATH_RESPONSE frame
-generated in response to a PATH_CHALLENGE frame does not require any padding.
-
-- Multiple places to update how to refer to max padding size
 
 # Packetization and Reliability {#packetization}
 
@@ -3532,10 +3510,10 @@ PROTOCOL_VIOLATION (0xA):
 : An endpoint detected an error with protocol compliance that was not covered by
   more specific error codes.
 
-UNSOLICITED_PONG (0xB):
+UNSOLICITED_PATH_RESPONSE (0xB):
 
-: An endpoint received a PONG frame that did not correspond to any PING frame
-  that it previously sent.
+: An endpoint received a PATH_RESPONSE frame that did not correspond to any
+  PATH_CHALLENGE frame that it previously sent.
 
 FRAME_ERROR (0x1XX):
 
@@ -3741,7 +3719,7 @@ the range from 0xFE00 to 0xFFFF.
 | 0x8         | TRANSPORT_PARAMETER_ERROR | Error in transport parameters | {{error-codes}} |
 | 0x9         | VERSION_NEGOTIATION_ERROR | Version negotiation failure   | {{error-codes}} |
 | 0xA         | PROTOCOL_VIOLATION        | Generic protocol violation    | {{error-codes}} |
-| 0xB         | UNSOLICITED_PONG          | Unsolicited PONG frame        | {{error-codes}} |
+| 0xB         | UNSOLICITED_PATH_RESPONSE | Unsolicited PATH_RESPONSE frame | {{error-codes}} |
 | 0x100-0x1FF | FRAME_ERROR               | Specific frame format error   | {{error-codes}} |
 {: #iana-error-table title="Initial QUIC Transport Error Codes Entries"}
 
