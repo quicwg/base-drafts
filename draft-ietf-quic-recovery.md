@@ -300,30 +300,24 @@ receiver.
 The alarm duration, or Probe Timeout (PTO), is set based on the following
 conditions:
 
-* If there is exactly one unacknowledged packet, PTO SHOULD be scheduled for
-  max(2*SRTT, 1.5*SRTT+kDelayedAckTimeout)
-
-* If there are more than one unacknowledged packets, PTO SHOULD be scheduled for
-  max(2*SRTT, 10ms).
+* PTO SHOULD be scheduled for max(1.5*SRTT+MaxAckDelay, 10ms)
 
 * If RTO ({{rto}}) is earlier, schedule a TLP alarm in its place. That is,
   PTO SHOULD be scheduled for min(RTO, PTO).
 
-kDelayedAckTimeout is the expected delayed ACK timer.  When there is exactly one
-unacknowledged packet, the alarm duration includes time for a delayed
-acknowledgment to be received by including kDelayedAckTimeout.
+MaxAckDelay is the maximum ack delay supplied in an incoming ACK frame.
+MaxAckDelay excludes ack delays that aren't included in an RTT sample because
+they're too large and excludes those which reference an ack-only packet.
 
-The RECOMMENDED value for kDelayedAckTimeout is 25ms.
+QUIC diverges from TCP by calculating MaxAckDelay dynamically, instead of
+assuming a constant delayed ack timeout for all connections.  QUIC includes
+this in all probe timeouts, because it assume the ack delay may come into play,
+regardless of the number of packets outstanding.  TCP's TLP assumes if at least
+2 packets are outstanding, acks will not be delayed.
 
-(TODO: Add negotiability of delayed ack timeout.)
-
-A PTO value of at least 2*SRTT ensures that the ACK is overdue. Using a PTO of
-exactly 1*SRTT may generate spurious probes, and 2*SRTT is simply the next
-integral value of RTT.
-
-The values of 2 and 1.5 are based on
-{{?LOSS-PROBE=I-D.dukkipati-tcpm-tcp-loss-probe}}, but implementations MAY
-experiment with other constants.
+A PTO value of at least 1.5*SRTT ensures that the ACK is overdue.  The 1.5
+is based on {{?LOSS-PROBE=I-D.dukkipati-tcpm-tcp-loss-probe}}, but
+implementations MAY experiment with other constants.
 
 To reduce latency, it is RECOMMENDED that the sender set and allow the TLP alarm
 to fire twice before setting an RTO alarm. In other words, when the TLP alarm
@@ -360,7 +354,7 @@ Similar to TCP {{!RFC6298}}, the RTO period is set based on the following
 conditions:
 
 * When the final TLP packet is sent, the RTO period is set to max(SRTT +
-  4*RTTVAR, minRTO)
+  4*RTTVAR + MaxAckDelay, minRTO)
 
 * When an RTO alarm fires, the RTO period is doubled.
 
@@ -372,9 +366,16 @@ one significantly increases resilience to packet drop in both directions, thus
 reducing the probability of consecutive RTO events.
 
 QUIC's RTO algorithm differs from TCP in that the firing of an RTO alarm is not
-considered a strong enough signal of packet loss. An RTO alarm fires only when
-there's a prolonged period of network silence, which could be caused by a change
-in the underlying network RTT.
+considered a strong enough signal of packet loss, so does not result in an
+immediate change to congestion window or recovery state. An RTO alarm fires only
+when there's a prolonged period of network silence, which could be caused by a
+change in the underlying network RTT.
+
+QUIC also diverges from TCP by including MaxAckDelay in the RTO period.  QUIC is
+able to explicitly model delay at the receiver via the ack delay field in the
+ACK frame.  Since QUIC corrects for this delay in its SRTT and RTTVAR
+computations, it is necessary to add this delay explicitly in the TLP and RTO
+computation.
 
 When an acknowledgment is received for a packet sent on an RTO event, any
 unacknowledged packets with lower packet numbers than those acknowledged MUST be
@@ -486,7 +487,7 @@ largest_sent_packet:
 : The packet number of the most recently sent packet.
 
 largest_acked_packet:
-: The largest packet number acknowledged in an ack frame.
+: The largest packet number acknowledged in an ACK frame.
 
 latest_rtt:
 : The most recent RTT measurement made when receiving an ack for
@@ -501,6 +502,11 @@ rttvar:
 
 min_rtt:
 : The minimum RTT seen in the connection, ignoring ack delay.
+
+max_ack_delay:
+: The maximum ack delay in an incoming ACK frame for this connection.
+  Excludes ack delays for ack only packets and those that create an
+  RTT sample less than min_rtt.
 
 reordering_threshold:
 : The largest delta between the largest acked
@@ -517,9 +523,9 @@ transmit or exceeding the reordering window in time.
 sent_packets:
 : An association of packet numbers to information about them, including a number
   field indicating the packet number, a time field indicating the time a packet
-  was sent, and a bytes field indicating the packet's size.  sent_packets is
-  ordered by packet number, and packets remain in sent_packets until
-  acknowledged or lost.
+  was sent, a boolean indicating whether the packet is ack only, and a bytes
+  field indicating the packet's size.  sent_packets is ordered by packet
+  number, and packets remain in sent_packets until acknowledged or lost.
 
 ### Initialization
 
@@ -541,6 +547,7 @@ follows:
    smoothed_rtt = 0
    rttvar = 0
    min_rtt = 0
+   max_ack_delay = 0
    largest_sent_before_rto = 0
    time_of_last_sent_packet = 0
    largest_sent_packet = 0
@@ -569,6 +576,7 @@ Pseudocode for OnPacketSent follows:
    largest_sent_packet = packet_number
    sent_packets[packet_number].packet_number = packet_number
    sent_packets[packet_number].time = now
+   sent_packets[packet_number].ack_only = is_ack_only
    if !is_ack_only:
      OnPacketSentCC(sent_bytes)
      sent_packets[packet_number].bytes = sent_bytes
@@ -602,6 +610,10 @@ Pseudocode for OnAckReceived and UpdateRtt follow:
      // Adjust for ack delay if it's plausible.
      if (latest_rtt - min_rtt > ack_delay):
        latest_rtt -= ack_delay
+       // Only save into max ack delay if it's used
+       // for rtt calculation and is not ack only.
+       if (!sent_packets[ack.largest_acked].ack_only)
+         max_ack_delay = max(max_ack_delay, ack_delay)
      // Based on {{?RFC6298}}.
      if (smoothed_rtt == 0):
        smoothed_rtt = latest_rtt
@@ -702,11 +714,8 @@ Pseudocode for SetLossDetectionAlarm follows:
       alarm_duration = loss_time - time_of_last_sent_packet
     else if (tlp_count < kMaxTLPs):
       // Tail Loss Probe
-      if (num_retransmittable_packets_outstanding == 1):
-        alarm_duration = 1.5 * smoothed_rtt + kDelayedAckTimeout
-      else:
-        alarm_duration = kMinTLPTimeout
-      alarm_duration = max(alarm_duration, 2 * smoothed_rtt)
+      alarm_duration = max(1.5 * smoothed_rtt + max_ack_delay,
+                           kMinTLPTimeout)
     else:
       // RTO alarm
       alarm_duration = smoothed_rtt + 4 * rttvar
@@ -906,7 +915,7 @@ bytes_in_flight:
 : The sum of the size in bytes of all sent packets that contain at least
   one retransmittable or PADDING frame, and have not been acked or
   declared lost. The size does not include IP or UDP overhead.
-  Packets only containing ack frames do not count towards byte_in_flight
+  Packets only containing ACK frames do not count towards byte_in_flight
   to ensure congestion control does not impede congestion feedback.
 
 congestion_window:
