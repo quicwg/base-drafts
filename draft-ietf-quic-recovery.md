@@ -593,7 +593,7 @@ Pseudocode for OnAckReceived and UpdateRtt follow:
      // If the largest acked is newly acked and is a packet
      // that would normally cause an ack, update the RTT.
      if (sent_packets[ack.largest_acked] and
-         not ack_only(sent_packets[ack.largest_acked])):
+         is_ackable(sent_packets[ack.largest_acked])):
        latest_rtt = now - sent_packets[ack.largest_acked].time
        UpdateRtt(latest_rtt, ack.ack_delay)
      // Find all newly acked packets.
