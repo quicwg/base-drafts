@@ -579,10 +579,11 @@ Pseudocode for OnPacketSent follows:
 
 When an acknowledgment is received, it may acknowledge 0 or more packets.
 
-The first acknowledgment for the largest acknowledged packet is used to update
-the estimate of minimum and smoothed RTT.  However, if the largest acknowledged
-packet would not have caused an acknowledgment to be sent, RTT estimates are not
-updated, because the acknowledgment could be significantly delayed.
+The first acknowledgment received for the largest acknowledged packet is used to
+update the estimate of minimum and smoothed RTT.  However, if the largest
+acknowledged packet would not have caused an acknowledgment to be sent, RTT
+estimates MUST NOT be updated, because the acknowledgment could be significantly
+delayed.
 
 Pseudocode for OnAckReceived and UpdateRtt follow:
 
