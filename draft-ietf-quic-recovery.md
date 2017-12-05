@@ -301,7 +301,7 @@ The alarm duration, or Probe Timeout (PTO), is set based on the following
 conditions:
 
 * If there is exactly one unacknowledged packet, PTO SHOULD be scheduled for
-  max(2*SRTT, 1.5*SRTT+kDelayedAckTimeout)
+  max(2*SRTT, 1.5*SRTT+MaxAckDelay)
 
 * If there are more than one unacknowledged packets, PTO SHOULD be scheduled for
   max(2*SRTT, 10ms).
@@ -309,13 +309,11 @@ conditions:
 * If RTO ({{rto}}) is earlier, schedule a TLP alarm in its place. That is,
   PTO SHOULD be scheduled for min(RTO, PTO).
 
-kDelayedAckTimeout is the expected delayed ACK timer.  When there is exactly one
-unacknowledged packet, the alarm duration includes time for a delayed
-acknowledgment to be received by including kDelayedAckTimeout.
-
-The RECOMMENDED value for kDelayedAckTimeout is 25ms.
-
-(TODO: Add negotiability of delayed ack timeout.)
+MaxAckDelay is the maximum ack delay supplied in an incoming ack frame.
+Ack delays that are aren't used for RTT sample or reference ack-only packets
+are excluded.  When there is exactly one unacknowledged packet, the alarm
+duration includes time for a delayed acknowledgment to be received by including
+MaxAckDelay.
 
 A PTO value of at least 2*SRTT ensures that the ACK is overdue. Using a PTO of
 exactly 1*SRTT may generate spurious probes, and 2*SRTT is simply the next
@@ -360,7 +358,7 @@ Similar to TCP {{!RFC6298}}, the RTO period is set based on the following
 conditions:
 
 * When the final TLP packet is sent, the RTO period is set to max(SRTT +
-  4*RTTVAR, minRTO)
+  4*RTTVAR + MaxAckDelay, minRTO)
 
 * When an RTO alarm fires, the RTO period is doubled.
 
@@ -502,6 +500,9 @@ rttvar:
 min_rtt:
 : The minimum RTT seen in the connection, ignoring ack delay.
 
+max_ack_delay:
+: The maximum ack delay a peer's ack frame used in this connection.
+
 reordering_threshold:
 : The largest delta between the largest acked
   retransmittable packet and a packet containing retransmittable frames before
@@ -541,6 +542,7 @@ follows:
    smoothed_rtt = 0
    rttvar = 0
    min_rtt = 0
+   max_ack_delay = 0
    largest_sent_before_rto = 0
    time_of_last_sent_packet = 0
    largest_sent_packet = 0
@@ -602,6 +604,10 @@ Pseudocode for OnAckReceived and UpdateRtt follow:
      // Adjust for ack delay if it's plausible.
      if (latest_rtt - min_rtt > ack_delay):
        latest_rtt -= ack_delay
+       // Only save into max ack delay if it's used
+       // for rtt calculation and is not ack only.
+       if (!sent_packets[ack.largest_acked].ack_only)
+         max_ack_delay = max(max_ack_delay, ack_delay)
      // Based on {{?RFC6298}}.
      if (smoothed_rtt == 0):
        smoothed_rtt = latest_rtt
@@ -703,7 +709,7 @@ Pseudocode for SetLossDetectionAlarm follows:
     else if (tlp_count < kMaxTLPs):
       // Tail Loss Probe
       if (num_retransmittable_packets_outstanding == 1):
-        alarm_duration = 1.5 * smoothed_rtt + kDelayedAckTimeout
+        alarm_duration = 1.5 * smoothed_rtt + max_ack_delay
       else:
         alarm_duration = kMinTLPTimeout
       alarm_duration = max(alarm_duration, 2 * smoothed_rtt)
