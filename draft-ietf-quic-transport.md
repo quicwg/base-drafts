@@ -1830,6 +1830,13 @@ A stateless reset is not appropriate for signaling error conditions.  An
 endpoint that wishes to communicate a fatal connection error MUST use a
 CONNECTION_CLOSE or APPLICATION_CLOSE frame if it has sufficient state to do so.
 
+This stateless reset design is specific to QUIC version 1.  A server that
+supports multiple versions of QUIC needs to generate a stateless reset that will
+be accepted by clients that support any version that the server might support
+(or might have supported prior to losing state).  Designers of new versions of
+QUIC need to be aware of this and either reuse this design, or use a portion of
+the packet other than the last 16 octets for carrying data.
+
 
 #### Detecting a Stateless Reset
 
