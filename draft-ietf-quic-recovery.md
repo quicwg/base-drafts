@@ -306,8 +306,8 @@ conditions:
   PTO SHOULD be scheduled for min(RTO, PTO).
 
 MaxAckDelay is the maximum ack delay supplied in an incoming ack frame.
-MaxAckDelay excludes Ack delays that aren't included in an RTT sample because
-they're too large and those which reference an ack-only packet.
+MaxAckDelay excludes ack delays that aren't included in an RTT sample because
+they're too large and excludes those which reference an ack-only packet.
 
 QUIC diverges from TCP by calculating MaxAckDelay dynamically, instead of
 assuming a constant value for all connections.  It includes this in all probe
