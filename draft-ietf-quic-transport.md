@@ -2964,7 +2964,7 @@ enters the "Reset Recvd" state, which is a terminal state.
 {{fig-stream-recv-states}} shows the states for the part of a stream that
 receives data from a peer.  The states for a receive stream mirror only some of
 the states of the send stream at the peer.  A receive stream doesn't track
-states on the send stream that can't be observed, such as the "Open" state;
+states on the send stream that cannot be observed, such as the "Open" state;
 instead, receive streams track the delivery of data to the application or
 application protocol some of which cannot be observed by the sender.
 
