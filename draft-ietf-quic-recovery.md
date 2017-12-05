@@ -501,7 +501,9 @@ min_rtt:
 : The minimum RTT seen in the connection, ignoring ack delay.
 
 max_ack_delay:
-: The maximum ack delay a peer's ack frame used in this connection.
+: The maximum ack delay in an incoming ack frame for this connection.
+  Excludes ack delays for ack only packets and those that create an
+  RTT sample less than min_rtt.
 
 reordering_threshold:
 : The largest delta between the largest acked
@@ -518,9 +520,9 @@ transmit or exceeding the reordering window in time.
 sent_packets:
 : An association of packet numbers to information about them, including a number
   field indicating the packet number, a time field indicating the time a packet
-  was sent, and a bytes field indicating the packet's size.  sent_packets is
-  ordered by packet number, and packets remain in sent_packets until
-  acknowledged or lost.
+  was sent, a boolean indicating whether the packet is ack only, and a bytes
+  field indicating the packet's size.  sent_packets is ordered by packet
+  number, and packets remain in sent_packets until acknowledged or lost.
 
 ### Initialization
 
@@ -571,6 +573,7 @@ Pseudocode for OnPacketSent follows:
    largest_sent_packet = packet_number
    sent_packets[packet_number].packet_number = packet_number
    sent_packets[packet_number].time = now
+   sent_packets[packet_number].ack_only = is_ack_only
    if !is_ack_only:
      OnPacketSentCC(sent_bytes)
      sent_packets[packet_number].bytes = sent_bytes
