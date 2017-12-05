@@ -305,7 +305,7 @@ conditions:
 * If RTO ({{rto}}) is earlier, schedule a TLP alarm in its place. That is,
   PTO SHOULD be scheduled for min(RTO, PTO).
 
-MaxAckDelay is the maximum ack delay supplied in an incoming ack frame.
+MaxAckDelay is the maximum ack delay supplied in an incoming ACK frame.
 MaxAckDelay excludes ack delays that aren't included in an RTT sample because
 they're too large and excludes those which reference an ack-only packet.
 
@@ -372,9 +372,10 @@ when there's a prolonged period of network silence, which could be caused by a
 change in the underlying network RTT.
 
 QUIC also diverges from TCP by including MaxAckDelay in the RTO period.  QUIC is
-able to explicitly model the ack delay via the ack delay field in the ack frame.
-Since QUIC corrects for this delay in its SRTT and RTTVAR computations, it is
-necessary to add this delay explicitly in the RTO computation.
+able to explicitly model delay at the receiver via the ack delay field in the
+ACK frame.  Since QUIC corrects for this delay in its SRTT and RTTVAR
+computations, it is necessary to add this delay explicitly in the TLP and RTO
+computation.
 
 When an acknowledgment is received for a packet sent on an RTO event, any
 unacknowledged packets with lower packet numbers than those acknowledged MUST be
@@ -486,7 +487,7 @@ largest_sent_packet:
 : The packet number of the most recently sent packet.
 
 largest_acked_packet:
-: The largest packet number acknowledged in an ack frame.
+: The largest packet number acknowledged in an ACK frame.
 
 latest_rtt:
 : The most recent RTT measurement made when receiving an ack for
@@ -503,7 +504,7 @@ min_rtt:
 : The minimum RTT seen in the connection, ignoring ack delay.
 
 max_ack_delay:
-: The maximum ack delay in an incoming ack frame for this connection.
+: The maximum ack delay in an incoming ACK frame for this connection.
   Excludes ack delays for ack only packets and those that create an
   RTT sample less than min_rtt.
 
@@ -914,7 +915,7 @@ bytes_in_flight:
 : The sum of the size in bytes of all sent packets that contain at least
   one retransmittable or PADDING frame, and have not been acked or
   declared lost. The size does not include IP or UDP overhead.
-  Packets only containing ack frames do not count towards byte_in_flight
+  Packets only containing ACK frames do not count towards byte_in_flight
   to ensure congestion control does not impede congestion feedback.
 
 congestion_window:
