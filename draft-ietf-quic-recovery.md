@@ -310,10 +310,13 @@ conditions:
   PTO SHOULD be scheduled for min(RTO, PTO).
 
 MaxAckDelay is the maximum ack delay supplied in an incoming ack frame.
-Ack delays that are aren't used for an RTT sample or reference ack-only packets
-are excluded.  When there is exactly one unacknowledged packet, the alarm
-duration includes time for a delayed acknowledgment to be received by including
-MaxAckDelay.
+MaxAckDelay excludes Ack delays that aren't included in an RTT sample because
+they're too large and those which reference an ack-only packet.  When there is
+exactly one unacknowledged packet, the alarm duration includes time for a
+delayed acknowledgment to be received by including MaxAckDelay.
+
+QUIC diverges from TCP by calculating MaxAckDelay dynamically, instead of
+assuming a constant value for all connections.
 
 A PTO value of at least 2*SRTT ensures that the ACK is overdue. Using a PTO of
 exactly 1*SRTT may generate spurious probes, and 2*SRTT is simply the next
@@ -370,9 +373,16 @@ one significantly increases resilience to packet drop in both directions, thus
 reducing the probability of consecutive RTO events.
 
 QUIC's RTO algorithm differs from TCP in that the firing of an RTO alarm is not
-considered a strong enough signal of packet loss. An RTO alarm fires only when
+considered a strong enough signal of packet loss, so does not result in an
+immediate change to CWND or recovery state. An RTO alarm fires only when
 there's a prolonged period of network silence, which could be caused by a change
 in the underlying network RTT.
+
+QUIC also diverges from TCP by including MaxAckDelay in the RTO period.  QUIC is
+able to explicitly model the ack delay via the ack delay field in the ack frame.
+Because QUIC is subtracting this delay from both SRTT and it is expected to
+reduce RTTVar, it is necessary to add it back, in order to compensate for
+the smaller SRTT and RTTVar.
 
 When an acknowledgment is received for a packet sent on an RTO event, any
 unacknowledged packets with lower packet numbers than those acknowledged MUST be
