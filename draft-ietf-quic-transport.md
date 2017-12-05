@@ -1551,7 +1551,6 @@ packets.
 - Mention here instead of just below (and -
 alluding to it here) that we generate a new Data field for a new Path Probe and
 never retransmit the old one.
-- Mention MTU discovery?
 
 
 ### Migrating the Connection {#migration-commit}
@@ -3814,6 +3813,8 @@ Issue and pull request numbers are listed with a leading octothorp.
 
 - Employ variable-length integer encodings throughout (#595)
 - Draining period can terminate early (#869)
+- Replace PING and PONG frames with PATH_CHALLENGE and PATH_RESPONSE frames,
+  clarify connection migration text (#000)
 
 ## Since draft-ietf-quic-transport-06
 
