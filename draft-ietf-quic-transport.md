@@ -1460,82 +1460,96 @@ connection if the integrity check fails with a PROTOCOL_VIOLATION error code.
 
 ## Connection Migration {#migration}
 
-QUIC's use of connection IDs allows a client to switch between network paths of
-communication with a server while retaining any shared state between the
-endpoints.  Optionally, NEW_CONNECTION_ID frames may be used by the server to
-provide the client with additional connection IDs to be used during migration
-(see {{migration-linkability}}).  Each endpoint involved in migration will
-validate the reachability over the network path to the other, and it MUST
-validate the identity of the remote endpoint found on that path
-({{migration-validate}}).
+Since QUIC uses connection IDs to distinguish connections, the IP addresses and
+ports associated with a given connection may change over time without losing
+shared state. Any instance of connections moving to new addresses or ports is
+referred to as connection migration. This occurs either when a client chooses to
+send traffic from a different local endpoint, or when a NAT changes address or
+port mappings.
 
-An endpoint may choose to probe a network path before migrating the connection,
-or it may choose to migrate the connection immediately.  For example, a client
-that detects that its current network path is degraded may choose to probe
-alternate paths and only migrate if an alternate path is considered better (as
-defined by the implementation) than the current one.  A client may also find
-that a path suddenly becomes inoperable, such as when a user unplugs a cable or
-other network state changes, and may elect to migrate without probing since it
-has no alternative if it wishes to maintain the connection.
+In order to make it more difficult for passive eavesdroppers to track a
+connection as it migrates, a client can use different connection IDs when
+sending from different addresses. The server can send NEW_CONNECTION_ID
+frames to provide the client with additional connection IDs to be used during
+migration ({{migration-linkability}}).
+
+Any time a new remote endpoint is detected, such as when a server
+receives a packet for a known connection ID from a different address, the remote
+endpoint MUST be validated ({{migration-validate}}).
+
+Any time a new local endpoint is used, such as when a client chooses
+to migrate a connection onto a different network interface, the path can be
+probed to check reachability ({{migration-probe}}). An endpoint may choose to
+probe a network path before migrating the connection, or it may choose to
+migrate the connection immediately. For example, a client that detects that its
+current network path is degraded may choose to probe alternate paths and only
+migrate if an alternate path is preferred over the current one. A client may
+also find that a path suddenly becomes inoperable, such as when a user
+unplugs a cable or other network state changes, and may elect to migrate
+without probing since it has no alternative if it wishes to maintain the
+connection.
 
 
 ### Probing a Network Path {#migration-probe}
 
-To establish the reachability of a server over a new network path, a client may
+To check the reachability of a server over a new network path, a client may
 optionally send a probe packet to which the server will respond.  This process
 is optional, as the client may choose to migrate the connection without using a
 probe.  The probe, among other potential uses, serves to establish reachability,
 validates the new endpoints, helps the client measure timing over the new path,
 and provides validation of the remote endpoint.
 
-A probe consists of a PATH_PROBE packet, which is defined as a QUIC packet
+A probe consists of a "Path Probe" packet, which is defined as a QUIC packet
 containing a PATH_CHALLENGE frame ({{frame-path-challenge}}) and a PADDING frame
 ({{frame-padding}}) such that the QUIC packet size is at least 1200 bytes.
 
-When a server receives a PATH_PROBE packet, it generates a response to the
-PATH_CHALLENGE frame by echoing the Data from the PATH_CHALLENGE frame in a
+When a server receives a Path Probe packet, it generates a response to the
+PATH_CHALLENGE frame by echoing the data from the PATH_CHALLENGE frame in a
 PATH_RESPONSE frame.  In addition to echoing the client's validation data, a
 server MUST also include a PATH_CHALLENGE frame with its own validation data,
 performing address validation (see {{migration-validate}}) on the new address
 provided by the client.
 
-This response consists of a PATH_PROBE_REPLY packet, which is defined as a QUIC
-packet containing a PATH_RESPONSE ({{frame-path-response}}) frame, a
-PATH_CHALLENGE ({{frame-path-challenge}}) frame, and a PADDING frame
+This response consists of a "Path Probe Reply" packet, which is defined as a
+QUIC packet containing a PATH_RESPONSE ({{frame-path-response}}) frame,
+a PATH_CHALLENGE ({{frame-path-challenge}}) frame, and a PADDING frame
 ({{frame-padding}}) such that the QUIC packet size is at least 1200 bytes.
 
 A client responds to the PATH_CHALLENGE from the server with its own
 PATH_RESPONSE frame, which can be sent in any QUIC packet and does not require
-additional padding.  When the server receives and validates that the echoed Data
-field matches the Data field that was sent, the server is considered to have
-completed validation.
+additional padding.  This may be sent as a standalone packet without other
+frames, in which case the connection is not yet migrated, or else along with
+a packet that includes other frames as part of migrating the connection
+({{migration-commit}}). When the server receives and validates that the
+echoed data field matches the data field that was sent, the server is
+considered to have completed validation.
 
-All PATH_PROBE packets and PATH_PROBE_REPLY packets MUST be padded to at least
+All Path Probe packets and Path Probe Reply packets MUST be padded to at least
 1200 bytes to prevent amplification attacks against unsuspecting endpoints.  In
 this way, an endpoint that modifies its source address can cause
-PATH_PROBE_REPLY packets to be generated and sent to an arbitrary victim only by
-generating equally sized PATH_PROBE packets.
+Path Probe Reply packets to be generated and sent to an arbitrary victim only by
+generating equally sized Path Probe packets.
 
-Once the server and client have both validated that their Data field was
-properly echoed by the other endpoint, the probe is complete.  A client may
-choose to send additional probes as necessary to collect additional data, for
-example timing data about the new network path.  It should be careful to balance
-the resources and bandwidth required for such additional probes with the
-benefits provided by the additional data.
+Once the server and client have both validated that the data in their
+PATH_CHALLENGE frames was echoed by the other endpoint, the probe is
+complete.  A client may choose to send additional probes as necessary to collect
+additional data, for example timing data about the new network path.  It should
+be careful to balance the resources and bandwidth required for such
+additional probes with the benefits provided by the additional data.
 
-PATH_PROBE packets SHOULD <<MUST?>> be subject to loss recovery via an
+Path Probe packets MUST be subject to loss recovery via an
 independent timer-based recovery mechanism, as defined in as defined in
-{{QUIC-RECOVERY}}.  PATH_PROBE_REPLY packets MUST NOT be retransmitted and are
-not subject to loss recovery, as a lost PATH_PROBE_REPLY will trigger a
-generation of a new PATH_PROBE by the client, in turn triggering the generation
-of a new PATH_PROBE_REPLY.  After some delay, as discussed in
+{{QUIC-RECOVERY}}.  Path Probe Reply packets MUST NOT be retransmitted and are
+not subject to loss recovery, as a lost Path Probe Reply will trigger a
+generation of a new Path Probe by the client, in turn triggering the generation
+of a new Path Probe Reply.  After some delay, as discussed in
 {{migration-validate}}, if the client never receives a reply in response to its
-probes, the client SHOULD abandon the new path and stop transmitting PATH_PROBE
+probes, the client SHOULD abandon the new path and stop transmitting Path Probe
 packets.
 
 - TODO: sections in {{QUIC-RECOVERY}}
 - Mention here instead of just below (and -
-alluding to it here) that we generate a new Data field for a new PATH_PROBE and
+alluding to it here) that we generate a new Data field for a new Path Probe and
 never retransmit the old one.
 - Mention MTU discovery?
 
@@ -1556,20 +1570,18 @@ Upon migration to a new path, a server MUST validate the client over the new
 path if it has not already done so, for example by completing the probing
 mechanism in {{migration-probe}}.  If the probing process has not yet completed,
 or the client elected not to probe, the server can validate the client's new
-source IP and port by sending a PATH_CHALLENGE frame containing a Data field for
+source IP and port by sending a PATH_CHALLENGE frame containing a data field for
 the client to echo.  Note that the QUIC packet that includes this PATH_CHALLENGE
 frame does not require additional padding.  When the server receives the
 corresponding PATH_RESPONSE frame containing the correctly echoed data,
-validation of the client is complete.
+validation of the client is complete. The server MAY send multiple
+PATH_CHALLENGE frames in separate packets until it receives a
+PATH_RESPONSE.
 
-- How often to retransmit said PATH_CHALLENGE?
-
-Until an endpoint has validated the its peer's new address and port, it MUST
-limit the amount of data that it sends to an unvalidated peer, as described with
-more detail in {{migration-validate}}.  Without this limit, the endpoint risks
-being used for denial of service.
-
-- Put this back as client/server or leave as endpoint/peer?
+Until the server has validated the the client's new address and port, it MUST
+limit the amount of data that it sends to an unvalidated client, as described
+with more detail in {{migration-validate}}.  Without this limit, the server
+risks being used for denial of service.
 
 Due to variations in path latency or packet reordering, packets from different
 source addresses might be reordered.  The packet with the highest packet number
@@ -1578,7 +1590,6 @@ to receive packets from an older source address.
 
 - Additional discussion on how the reordering can affect congestion needs to go
   in the loss recovery draft.
-- Switch to using endpoint/peer more than client/server?
 
 
 ### Privacy Implications of Connection Migration {#migration-linkability}
