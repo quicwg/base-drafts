@@ -289,7 +289,6 @@ decrypting packets. The consistent connection ID can be used to allow migration
 of the connection to a new server IP address as well, since the Connection ID
 remains consistent across changes in the client's and the server's network
 addresses.
-<< Do we want to change the above sentence?>>
 
 
 ## Version Negotiation {#benefit-version-negotiation}
@@ -694,7 +693,9 @@ use it for all subsequent Handshake ({{packet-handshake}}) and 1-RTT
 Server's Version Negotiation ({{packet-version}}) and Retry ({{packet-retry}})
 packets MUST use connection ID selected by the client.
 
-<< Note about connection id selected by client during connection migration >>
+Note that the connection ID may change during the connection via the use of
+NEW_CONNECTION_ID frames ({{frame-new-connection-id}}) and connection migration
+({{migration}}).
 
 
 ## Packet Numbers {#packet-numbers}
