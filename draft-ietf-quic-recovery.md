@@ -585,15 +585,23 @@ Pseudocode for OnPacketSent follows:
 
 ### On Ack Receipt
 
-When an ack is received, it may acknowledge 0 or more packets.
+When an acknowledgment is received, it may acknowledge 0 or more packets.
+
+The first acknowledgment received for the largest acknowledged packet is used to
+update the estimate of minimum and smoothed RTT.  However, if the largest
+acknowledged packet would not have caused an acknowledgment to be sent, RTT
+estimates MUST NOT be updated, because the acknowledgment could be significantly
+delayed.
 
 Pseudocode for OnAckReceived and UpdateRtt follow:
 
 ~~~
    OnAckReceived(ack):
      largest_acked_packet = ack.largest_acked
-     // If the largest acked is newly acked, update the RTT.
-     if (sent_packets[ack.largest_acked]):
+     // If the largest acked is newly acked and is a packet
+     // that would normally cause an ack, update the RTT.
+     if (sent_packets[ack.largest_acked] and
+         is_ackable(sent_packets[ack.largest_acked])):
        latest_rtt = now - sent_packets[ack.largest_acked].time
        UpdateRtt(latest_rtt, ack.ack_delay)
      // Find all newly acked packets.
