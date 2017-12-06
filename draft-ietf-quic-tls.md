@@ -1572,9 +1572,13 @@ many others.
 
 Issue and pull request numbers are listed with a leading octothorp.
 
-## Since draft-ietf-quic-tls-06
+## Since draft-ietf-quic-tls-08
 
-Nothing yet.
+No significant changes.
+
+## Since draft-ietf-quic-tls-07
+
+- Handshake errors can be reported with CONNECTION_CLOSE (#608, #891)
 
 ## Since draft-ietf-quic-tls-05
 
