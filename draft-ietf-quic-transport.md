@@ -1461,24 +1461,23 @@ connection if the integrity check fails with a PROTOCOL_VIOLATION error code.
 
 ## Connection Migration {#migration}
 
-Since QUIC uses connection IDs to distinguish connections, the IP addresses and
-ports associated with a given connection may change over time without losing
-shared state. Any instance of connections moving to new addresses or ports is
-referred to as connection migration. This occurs either when a client chooses to
-send traffic from a different local endpoint, or when a NAT changes address or
-port mappings.
+QUIC connections are identified by their 64-bit Connection ID, which allows
+connections to survive changes to the client's IP address and/or port. Any
+instance of connections moving to new addresses or ports is referred to as
+connection migration. This occurs either when a client chooses to send traffic
+over a different network, or when a NAT changes address or port mappings.
 
-In order to make it more difficult for passive eavesdroppers to track a
-connection as it migrates, a client can use different connection IDs when
-sending from different addresses. The server can send NEW_CONNECTION_ID
-frames to provide the client with additional connection IDs to be used during
-migration ({{migration-linkability}}).
+If a new connection ID is provided by the server to be used during connection
+migration, a client that is choosing to use a new address MUST use a new
+connection ID on packets sent from this address. As discussed in
+{{migration-validate}}, this makes it more difficult for passive observers
+to track a connection as it migrates across networks.
 
-Any time a new remote endpoint is detected, such as when a server
+Any time a new remote address is detected, such as when a server
 receives a packet for a known connection ID from a different address, the remote
-endpoint MUST be validated ({{migration-validate}}).
+address MUST be validated ({{migration-validate}}).
 
-Any time a new local endpoint is used, such as when a client chooses
+Any time a new local address is used, such as when a client chooses
 to migrate a connection onto a different network interface, the path can be
 probed to check reachability ({{migration-probe}}). An endpoint may choose to
 probe a network path before migrating the connection, or it may choose to
@@ -1497,8 +1496,8 @@ To check the reachability of a server over a new network path, a client may
 optionally send a probe packet to which the server will respond.  This process
 is optional, as the client may choose to migrate the connection without using a
 probe.  The probe, among other potential uses, serves to establish reachability,
-validates the new endpoints, helps the client measure timing over the new path,
-and provides validation of the remote endpoint.
+validates the new addresses, helps the client measure timing over the new path,
+and provides validation of the remote address.
 
 A probe consists of a "Path Probe" packet, which is defined as a QUIC packet
 containing a PATH_CHALLENGE frame ({{frame-path-challenge}}) and a PADDING frame
@@ -1658,10 +1657,9 @@ Prior to validating the new remote address, an endpoint MUST limit the amount
 of data and packets that it sends to its peer.
 
 Retransmissions of packets that were originally sent on the previous path MUST
-instead be sent on the new path, and they SHOULD NOT count against the
-outstanding data relative to the congestion window, and they SHOULD NOT incur a
-loss event for the congestion control algorithm.  However, care should be taken
-not to overwhelm the (potentially unknown) capacity of the new link.
+instead be sent on the new path, as allowed by the congestion controller. Any
+losses detected on packets that were not sent on the new path SHOULD not count
+as a loss event for the congestion control purposes.
 
 An endpoint validates a remote address by sending a PATH_CHALLENGE frame
 containing a payload that is hard to guess.  This frame MUST be sent in a packet
@@ -1697,13 +1695,11 @@ After verifying an address, the endpoint SHOULD update any address validation
 tokens ({{address-validation}}) that it has issued to its peer if those are no
 longer valid based on the changed address.
 
-A client MAY treat an incoming PATH_CHALLENGE frame that includes data as
-an indication that the server’s view of the client’s endpoint has changed.
-This acts as a hint to the client that the network path may have changed,
-such as when a NAT rebinding occurs. Because of this, servers SHOULD NOT
-send PATH_CHALLENGE frames that include data unless there is a need to
-re-validate the client’s address (such as any address or port change, or an
-extended period without traffic).
+A client MAY treat an incoming PATH_CHALLENGE frame that includes data as an
+indication that the server’s view of the client’s address has changed.  This
+acts as a hint to the client that the network path may have changed, such as
+when a NAT rebinding occurs. A server SHOULD NOT send a PATH_CHALLENGE frames
+unless there is an observed change in the client’s address.
 
 Upon seeing a connection migration, an endpoint that sees a new address MUST
 abandon any address validation it is performing with other addresses on the
