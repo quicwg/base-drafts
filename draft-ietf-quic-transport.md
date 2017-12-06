@@ -3829,6 +3829,10 @@ thanks to all.
 
 Issue and pull request numbers are listed with a leading octothorp.
 
+## Since draft-ietf-quic-transport-08
+
+No significant changes.
+
 ## Since draft-ietf-quic-transport-07
 
 - The long header now has version before packet number (#926, #939)
