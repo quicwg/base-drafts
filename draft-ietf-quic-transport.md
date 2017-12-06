@@ -1461,33 +1461,35 @@ connection if the integrity check fails with a PROTOCOL_VIOLATION error code.
 
 ## Connection Migration {#migration}
 
-QUIC connections are identified by their 64-bit Connection ID, which allows
-connections to survive changes to the client's IP address and/or port. Any
-instance of connections moving to new addresses or ports is referred to as
-connection migration. This occurs either when a client chooses to send traffic
-over a different network, or when a NAT changes address or port mappings.
+QUIC connections are identified by 64-bit Connection IDs. QUIC's connection IDs
+allow connections to survive changes to the client's IP address and/or port -
+collectively referred to as the client's address - such as those caused by a
+client migrating to a new network or a NAT rebinding changing the publicly
+observable client address.
 
-If a new connection ID is provided by the server to be used during connection
-migration, a client that is choosing to use a new address MUST use a new
-connection ID on packets sent from this address. As discussed in
-{{migration-validate}}, this makes it more difficult for passive observers
-to track a connection as it migrates across networks.
+A high-level summary of connection migration follows.  A client desiring
+migration to a new network may probe the new network for reachability and to get
+a roundtrip time measurement, while continuing to send and receive packets over
+the extant network, see {{migration-probe}}. When the probe succeeds and if the
+client decides to migrate, the client latches to the new network, sending all
+packets over the new network.  Alternatively, a client may latch to the new
+network immediately without probing, such as would be the case when the only
+network available to the client is the new network.  A server that receives a
+probe packet from a new client address simply responds to the probe.
+Additionally, when a non-probe packet is received from a client on a new
+address, the server issues a challenge: it sends random bytes to the client on
+the new address.  The server limits its rate to the new address until the client
+echoes back the random bytes, validating the new address.
 
-Any time a new remote address is detected, such as when a server
-receives a packet for a known connection ID from a different address, the remote
-address MUST be validated ({{migration-validate}}).
+A client migrating to a new network MUST use a new connection ID for packets
+sent from the new address if an additional connection ID has been provided by
+the server, see {{migration-linkability}}.  Using a new connection ID on
+migration makes it harder for passive observers to track connections migrating
+across networks. A client may be unaware of connection migration due to NAT
+rebinding and may consequently not change its connection ID on NAT rebindings.
 
-Any time a new local address is used, such as when a client chooses
-to migrate a connection onto a different network interface, the path can be
-probed to check reachability ({{migration-probe}}). An endpoint may choose to
-probe a network path before migrating the connection, or it may choose to
-migrate the connection immediately. For example, a client that detects that its
-current network path is degraded may choose to probe alternate paths and only
-migrate if an alternate path is preferred over the current one. A client may
-also find that a path suddenly becomes inoperable, such as when a user
-unplugs a cable or other network state changes, and may elect to migrate
-without probing since it has no alternative if it wishes to maintain the
-connection.
+A server that receives a oacket for a known connection ID from an unknown client
+address MUST validate this new address, see {{migration-validate}},
 
 
 ### Probing a Network Path {#migration-probe}
