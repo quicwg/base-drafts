@@ -1422,9 +1422,16 @@ his employment there.
 > **RFC Editor's Note:**  Please remove this section prior to publication of a
 > final version of this document.
 
+## Since draft-ietf-quic-http-08
+
+No significant changes.
+
 ## Since draft-ietf-quic-http-07
 
 - Changes for integer encodings in QUIC (#595,#905)
+- Use unidirectional streams as appropriate (#515, #240, #281, #886)
+- Improvement to the description of GOAWAY (#604, #898)
+- Improve description of server push usage (#947, #950, #957)
 
 ## Since draft-ietf-quic-http-06
 
