@@ -3130,8 +3130,8 @@ state as a result of delayed delivery of packets.
 ### Bidirectional Stream States {#stream-bidi-states}
 
 A bidirectional stream is composed of a send stream and a receive stream.
-Implementations might present the state of the pair of streams as a composite of
-the states of the pair of streams.  The simplest model presents the stream as
+Implementations may represent states of the bidirectional stream as composites
+of send and receive stream states.  The simplest model presents the stream as
 "open" when either send or receive stream is in a non-terminal state and
 "closed" when both send and receive streams are in a terminal state.
 
@@ -3139,7 +3139,7 @@ the states of the pair of streams.  The simplest model presents the stream as
 states that loosely correspond to the stream states in HTTP/2
 {{?HTTP2=RFC7540}}.  This shows that multiple states on send or receive streams
 are mapped to the same composite state.  Note that this is just one possibility
-for such a mapping; thi mapping requires that data is acknowledged before the
+for such a mapping; this mapping requires that data is acknowledged before the
 transition to a "closed" or "half-closed" state.
 
 | Send Stream            | Receive Stream         | Composite State      |
@@ -3183,15 +3183,15 @@ STOP_SENDING frame is received on a send stream that is already in the "Data
 Sent" state, a RST_STREAM frame MAY still be sent in order to cancel
 retransmission of previously-sent STREAM frames.
 
-STOP_SENDING can only be sent for a receive stream that has not been
+STOP_SENDING SHOULD only be sent for a receive stream that has not been
 reset. STOP_SENDING is most useful for streams in the "Recv" or "Size Known"
 states.
 
 An endpoint is expected to send another STOP_SENDING frame if a packet
-containing the frame is lost.  However, once either all stream data or a
-RST_STREAM frame has been received for the stream - that is, the stream is in
-any state other than "Recv" or "Size Known" - sending a STOP_SENDING frame is
-unnecessary.
+containing a previous STOP_SENDING is lost.  However, once either all stream
+data or a RST_STREAM frame has been received for the stream - that is, the
+stream is in any state other than "Recv" or "Size Known" - sending a
+STOP_SENDING frame is unnecessary.
 
 
 ## Stream Concurrency {#stream-concurrency}
