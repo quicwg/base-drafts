@@ -629,9 +629,9 @@ When a packet is acked for the first time, the following OnPacketAcked function
 is called.  Note that a single ACK frame may newly acknowledge several packets.
 OnPacketAcked must be called once for each of these newly acked packets.
 
-OnPacketAcked takes one parameter, acked_packet, which is the packet number of
-the newly acked packet, and returns a list of packet numbers that are detected
-as lost.
+OnPacketAcked takes one parameter, acked_packet_number, which is the packet
+number of the newly acked packet, and returns a list of packet numbers that
+are detected as lost.
 
 If this is the first acknowledgement following RTO, check if the smallest newly
 acknowledged packet is one sent by the RTO, and if so, inform congestion control
@@ -966,11 +966,11 @@ acked_packet from sent_packets.
        return
      if (congestion_window < ssthresh):
        // Slow start.
-       congestion_window += acked_packets.bytes
+       congestion_window += acked_packet.bytes
      else:
        // Congestion avoidance.
        congestion_window +=
-         kDefaultMss * acked_packets.bytes / congestion_window
+         kDefaultMss * acked_packet.bytes / congestion_window
 ~~~
 
 ### On Packets Lost
