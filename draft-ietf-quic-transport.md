@@ -3831,8 +3831,28 @@ Issue and pull request numbers are listed with a leading octothorp.
 
 ## Since draft-ietf-quic-transport-07
 
+- The long header now has version before packet number (#926, #939)
+- Rename and consolidate packet types (#846, #822, #847)
+- Packet types are assigned new codepoints and the Connection ID Flag is
+  inverted (#426, #956)
+- Removed type for Version Negotiation and use Version 0 (#963, #968)
+- Streams are split into unidirectional and bidirectional (#643, #656, #720,
+  #872, #175, #885)
+  * Stream limits now have separate uni- and bi-directinal transport parameters
+    (#909, #958)
+  * Stream limit transport parameters are now optional and default to 0 (#970,
+    #971)
+- The stream state machine has been split into read and write (#634, #894)
 - Employ variable-length integer encodings throughout (#595)
-- Draining period can terminate early (#869)
+- Improvements to connection close
+  * Added distinct closing and draining states (#899, #871)
+  * Draining period can terminate early (#869, #870)
+  * Clarifications about stateless reset (#889, #890)
+- Address validation for connection migration (#161, #732, #878)
+- Clearly defined retransmission rules for BLOCKED (#452, #65, #924)
+- negotiated_version is sent in server transport parameters (#710, #959)
+- Increased the range over which packet numbers are randomized (#864, #850,
+  #964)
 
 ## Since draft-ietf-quic-transport-06
 
