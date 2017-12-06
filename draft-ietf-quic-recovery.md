@@ -1018,9 +1018,16 @@ This document has no IANA actions.  Yet.
 > **RFC Editor's Note:**  Please remove this section prior to
 > publication of a final version of this document.
 
+## Since draft-ietf-quic-recovery-07
+
+- Include Ack Delay in RTO(and TLP) computations (#981)
+- Ack Delay in SRTT computation (#961)
+- Default RTT and Slow Start (#590)
+- Many editorial fixes.
+
 ## Since draft-ietf-quic-recovery-06
 
-Nothing yet.
+No significant changes.
 
 ## Since draft-ietf-quic-recovery-05
 
