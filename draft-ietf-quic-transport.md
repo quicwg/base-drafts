@@ -2416,7 +2416,8 @@ Largest Acknowledged:
 
 : A variable-length integer representing the largest packet number the peer is
   acknowledging; this is usually the largest packet number that the peer has
-  received prior to generating the ACK frame.
+  received prior to generating the ACK frame.  Unlike the packet number in the
+  QUIC long or short header, the value in an ACK frame is not truncated.
 
 ACK Delay:
 
