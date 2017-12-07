@@ -1525,12 +1525,12 @@ some elapsed time.
 Servers MUST ignore a PATH_CHALLENGE frame from a client if the packet
 containing it is smaller than 1200 octets.
 
-A server that receives a PATH_CHALLENGE frame responds by echoing the data from
-the PATH_CHALLENGE frame in a PATH_RESPONSE frame (see
-{{frame-path-response}}). In addition, the server MUST send a PATH_CHALLENGE
-frame with its own validation data to verify the client's ownership of this new
-address (see {{migration-validate}}). The server MUST bundle its PATH_RESPONSE
-and its PATH_CHALLENGE in the same packet.
+A server that receives a PATH_CHALLENGE frame from a client responds by echoing
+the data in the frame in a PATH_RESPONSE frame (see {{frame-path-response}}). In
+addition, the server MUST send a PATH_CHALLENGE frame with its own validation
+data to verify the client's ownership of this new address (see
+{{migration-validate}}). The server MUST bundle its PATH_RESPONSE and its
+PATH_CHALLENGE in the same packet.
 
 The packet containing the server's PATH_RESPONSE and PATH_CHALLENGE MUST be
 padded to the same size as the client's packet carrying the PATH_CHALLENGE,
@@ -1554,37 +1554,49 @@ considers the client's new address as valid.
 
 ### Committing to a Network Path {#migration-commit}
 
-When the client chooses to perform the migration, it sends a QUIC packet
-containing any frame type other than PATH_CHALLENGE, PATH_RESPONSE, or PADDING.
-Upon receipt of such a packet from a different source IP address and port, the
-server MUST begin sending all new packets with those as a destination IP address
-and port.  Similarly, once such a packet has been sent, the client has committed
-to using the new path through the network and MUST stop sending new packets on
-the old path.  A client that continues to send new packets on the old path with
-higher packet numbers than those sent on the new path will trigger an entirely
-new migration back to that path.
+A cient may commit to using a new address for sending all packets when it is the
+only available address or after the client has established reachability from
+that address.
 
-Upon migration to a new path, a server MUST validate the client over the new
-path if it has not already done so, for example by completing the probing
-mechanism in {{migration-probe}}.  If the probing process has not yet completed,
-or the client elected not to probe, the server can validate the client's new
-source IP and port by sending a PATH_CHALLENGE frame containing a data field for
-the client to echo.  Note that the QUIC packet that includes this PATH_CHALLENGE
-frame does not require additional padding.  When the server receives the
-corresponding PATH_RESPONSE frame containing the correctly echoed data,
-validation of the client is complete. The server MAY send multiple
-PATH_CHALLENGE frames in separate packets until it receives a
-PATH_RESPONSE.
+Upon receiving a packet from a new client address with a packet number that is
+the largest seen thus far on the connection, containing a frame other than
+PATH_CHALLENGE, PATH_RESPONSE, and PADDING, the server commits to the client's
+new address. The server MUST send all subsequent packets, with the exception of
+those containing PATH_RESPONSE and PATH_CHALLENGE frames, to the new address.
 
-Until the server has validated the the client's new address and port, it MUST
-limit the amount of data that it sends to an unvalidated client, as described
-with more detail in {{migration-validate}}.  Without this limit, the server
-risks being used for denial of service.
+Once committed to a new address, the client should stop sending any subsequent
+packets from the old address.  A client that sends new packets from the old
+address with higher packet numbers than those sent from the new address will
+cause the server to commit back to old address.
 
-Due to variations in path latency or packet reordering, packets from different
-source addresses might be reordered.  The packet with the highest packet number
-MUST be used to determine which path to use.  Endpoints also need to be prepared
-to receive packets from an older source address.
+Upon committing to a new address, a server MUST validate that the client is
+reachable at the new address, if it has not already done so. This can happen if
+the client-initiated probing process from the new address has not yet completed,
+or if the client elected not to probe the server from the new address.
+
+When sending a packet carrying a frame other than PATH_CHALLENGE, PATH_RESPONSE,
+or PADDING to a new client address that has not yet been validated, the server
+MUST also send a PATH_CHALLENGE frame with random bytes to verify the client's
+ownership of this new address (see {{migration-validate}}).
+
+The PATH_CHALLENGE frame need not be bundled with any other frame, and the
+packet carrying this PATH_CHALLENGE frame does not need to be padded.
+
+(XXX I think we need to pad these packets for PMTU)
+
+When the server subsequently receives and verifies the contents of a
+PATH_RESPONSE from the client against a previously sent PATH_CHALLENGE, the new
+address is considered valid.
+
+The server MUST respond to every packet received from a not-yet-validated client
+address with a PATH_CHALLENGE frame. The PATH_CHALLENGE MAY be bundled with
+other frames, but one packet MUST NOT contain more than one PATH_CHALLENGE
+frame.
+
+Until the client's new address is deemed valid, the server MUST limit the rate
+at which it sends data to the new address; see {{migration-validate}}.  In the
+absence of this limit, the server risks being used for launching a denial of
+service attack against an unsuspecting victim.
 
 
 ### Privacy Implications of Connection Migration {#migration-linkability}
