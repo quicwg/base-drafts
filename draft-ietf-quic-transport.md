@@ -1469,7 +1469,7 @@ observable client address.
 
 A high-level summary of connection migration follows.  A client desiring
 migration to a new network may probe the new network for reachability and to get
-a roundtrip time measurement, while continuing to send and receive packets over
+a roundtrip-time measurement, while continuing to send and receive packets over
 the extant network, see {{migration-probe}}. When the probe succeeds and if the
 client decides to migrate, the client latches to the new network, sending all
 packets over the new network.  Alternatively, a client may latch to the new
@@ -1488,69 +1488,71 @@ migration makes it harder for passive observers to track connections migrating
 across networks. A client may be unaware of connection migration due to NAT
 rebinding and may consequently not change its connection ID on NAT rebindings.
 
-A server that receives a oacket for a known connection ID from an unknown client
-address MUST validate this new address, see {{migration-validate}},
+A server that receives a packet for a known connection ID from a new client
+address SHOULD validate this new address, see {{migration-validate}},
 
 
 ### Probing a Network Path {#migration-probe}
 
-To check the reachability of a server over a new network path, a client may
-optionally send a probe packet to which the server will respond.  This process
-is optional, as the client may choose to migrate the connection without using a
-probe.  The probe, among other potential uses, serves to establish reachability,
-validates the new addresses, helps the client measure timing over the new path,
-and provides validation of the remote address.
+When a new local address is available, a client MAY send a packet containing a
+PATH_CHALLENGE frame ({{frame-path-challenge}}) from this address to detect
+server reachability from it and to measure the roundtrip-time to the server from
+it.  This packet SHOULD be padded to exactly 1200 octets unless the client has a
+reasonable assurance that the PMTU is larger.  Sending a packet of this size
+confirms that the network path from the client to the server supports an MTU of
+this size and helps reduce the amplitude of amplification attacks caused by
+server responses toward an unverified client address.
 
-A probe consists of a "Path Probe" packet, which is defined as a QUIC packet
-containing a PATH_CHALLENGE frame ({{frame-path-challenge}}) and a PADDING frame
-({{frame-padding}}) such that the QUIC packet size is at least 1200 bytes.
+A client MAY send additional packets containing PATH_CHALLENGE frames to handle
+packet loss or to get more measurements on the new network path. The client MUST
+limit the number of such probes it considers outstanding in the network to limit
+load on an untested network path.
 
-When a server receives a Path Probe packet, it generates a response to the
-PATH_CHALLENGE frame by echoing the data from the PATH_CHALLENGE frame in a
-PATH_RESPONSE frame.  In addition to echoing the client's validation data, a
-server MUST also include a PATH_CHALLENGE frame with its own validation data,
-performing address validation (see {{migration-validate}}) on the new address
-provided by the client.
+For example, a client may send a PATH_CHALLENGE frame and arm an alarm for the
+handshake timeout period {{QUIC-RECOVERY}}. When a corresponding PATH_RESPONSE
+is received, the alarm is canceled. If the alarm fires without the client having
+received a PATH_RESPONSE, the client may send a new PATH_CHALLENGE frame with
+fresh random data and set the alarm again, but for twice the previous
+period. Sending fresh random data allows a client to know which PATH_CHALLENGE
+succeeded when a PATH_RESPONSE is received, yielding an unambiguous roundtrip
+time sample.
 
-This response consists of a "Path Probe Reply" packet, which is defined as a
-QUIC packet containing a PATH_RESPONSE ({{frame-path-response}}) frame,
-a PATH_CHALLENGE ({{frame-path-challenge}}) frame, and a PADDING frame
-({{frame-padding}}) such that the QUIC packet size is at least 1200 bytes.
+A client may conclude that it is unable to reach the server from the new address
+and SHOULD abandon the new address when it does not receive a server's
+PATH_RESPONSE after sending some number of PATH_CHALLENGE frames and/or after
+some elapsed time.
 
-A client responds to the PATH_CHALLENGE from the server with its own
-PATH_RESPONSE frame, which can be sent in any QUIC packet and does not require
-additional padding.  This may be sent as a standalone packet without other
-frames, in which case the connection is not yet migrated, or else along with
-a packet that includes other frames as part of migrating the connection
-({{migration-commit}}). When the server receives and validates that the
-echoed data field matches the data field that was sent, the server is
-considered to have completed validation.
+Servers MUST ignore a PATH_CHALLENGE frame from a client if the packet
+containing it is smaller than 1200 octets.
 
-All Path Probe packets and Path Probe Reply packets MUST be padded to at least
-1200 bytes to prevent amplification attacks against unsuspecting endpoints.  In
-this way, an endpoint that modifies its source address can cause
-Path Probe Reply packets to be generated and sent to an arbitrary victim only by
-generating equally sized Path Probe packets.
+A server that receives a PATH_CHALLENGE frame responds by echoing the data from
+the PATH_CHALLENGE frame in a PATH_RESPONSE frame (see
+{{frame-path-response}}). In addition, the server MUST send a PATH_CHALLENGE
+frame with its own validation data to verify the client's ownership of this new
+address (see {{migration-validate}}). The server MUST bundle its PATH_RESPONSE
+and its PATH_CHALLENGE in the same packet.
 
-Once the server and client have both validated that the data in their
-PATH_CHALLENGE frames was echoed by the other endpoint, the probe is
-complete.  A client may choose to send additional probes as necessary to collect
-additional data, for example timing data about the new network path.  It should
-be careful to balance the resources and bandwidth required for such
-additional probes with the benefits provided by the additional data.
+The packet containing the server's PATH_RESPONSE and PATH_CHALLENGE MUST be
+padded to the same size as the client's packet carrying the PATH_CHALLENGE,
+enabling a client to confirm that this MTU size is supported by the network path
+from the server to the client.
 
-Path Probe packets MUST be subject to loss recovery via an
-independent timer-based recovery mechanism, as defined in as defined in
-{{QUIC-RECOVERY}}.  Path Probe Reply packets MUST NOT be retransmitted and are
-not subject to loss recovery, as a lost Path Probe Reply will trigger a
-generation of a new Path Probe by the client, in turn triggering the generation
-of a new Path Probe Reply.  After some delay, as discussed in
-{{migration-validate}}, if the client never receives a reply in response to its
-probes, the client SHOULD abandon the new path and stop transmitting Path Probe
-packets.
+The server need not retransmit its PATH_RESPONSE, since an interested client is
+expected to persist and send a new PATH_CHALLENGE when a response is not
+received for a prior one.
+
+Upon receiving a PATH_CHALLENGE frame from the server, a client responds by
+echoing the data from the PATH_CHALLENGE frame in a PATH_RESPONSE frame.  This
+response MAY be bundled with other frames and does not require additional
+padding.  The client MAY send this response immediately to let a server finish
+validation of the client's new address. Alternatively, the client MAY send this
+response eventually when it commits to the migration ({{migration-commit}}).
+
+Upon receiving and validating the PATH_RESPONSE from the client, the server
+considers the client's new address as valid.
 
 
-### Migrating the Connection {#migration-commit}
+### Committing to a Network Path {#migration-commit}
 
 When the client chooses to perform the migration, it sends a QUIC packet
 containing any frame type other than PATH_CHALLENGE, PATH_RESPONSE, or PADDING.
