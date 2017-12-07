@@ -2794,6 +2794,25 @@ that it sends.
 Strategies and implications of the frequency of generating acknowledgments are
 discussed in more detail in {{QUIC-RECOVERY}}.
 
+# Special Considerations for Packetization Layer PMTU Discovery
+
+The PADDING frame provides a useful option for PMTU probe packets that does
+not exist in other transports. PADDING frames generate acknowledgements, but
+their content need not be delivered reliably. PADDING frames may delay the
+delivery of application data, as they consume the congestion window. However,
+by definition their likely loss in a probe packet does not require delay-
+inducing retransmission of application data.
+
+When implementing the algorithm in Section 7.2 of {{!RFC4821}}, the initial
+value of search_low SHOULD be consistent with the IPv6 minimum packet size.
+Paths that do not support this size cannot deliver Client Initial packets,
+and therefore are not QUIC-compliant.
+
+Section 7.3 of {{!RFC4821}} discusses tradeoffs between small and large
+increases in the size of probe packets. As QUIC probe packets need not
+contain application data, aggressive increases in probe size carry fewer
+consequences.
+
 ## Special Considerations for PMTU Discovery
 
 Traditional ICMP-based path MTU discovery in IPv4 {{!RFC1191}} is potentially
