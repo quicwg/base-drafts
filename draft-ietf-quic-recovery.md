@@ -856,12 +856,13 @@ Acknowledgement or loss of tail loss probes are treated like any other packet.
 ## Retransmission Timeout
 
 When retransmissions are sent due to a retransmission timeout alarm, no change
-is made to the congestion window until the next acknowledgement arrives.  When
-an ack arrives, if packets prior to the first retransmission timeout are
-acknowledged, then the congestion window remains the same.  If no packets prior
-to the first retransmission timeout are acknowledged, the retransmission timeout
-has been validated and the congestion window must be reduced to the minimum
-congestion window and slow start is begun.
+is made to the congestion window until the next acknowledgement arrives.  The
+retransmission timeout is considered spurious when an ack is received that
+acknowledges packets sent prior to the first retransmission timeout.  The
+retransmission timeout is considered valid when an ack is received that
+acknowledges no packets sent prior to the first retransmission timeout.  In this
+case, the congestion window MUST be reduced to the minimum congestion window and
+slow start is re-entered.
 
 ## Pacing
 
