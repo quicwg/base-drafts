@@ -865,8 +865,11 @@ congestion window and slow start is begun.
 
 ## Pacing
 
-It is RECOMMENDED that senders pace sending of all data, distributing the
-congestion window over the SRTT.
+It is RECOMMENDED that a sender pace sending of all data, distributing the
+congestion window over the SRTT.  This document does not specify a pacer.  As an
+example pacer, implementers are referred to the Fair Queue packet scheduler (fq
+qdisc) in Linux (3.11 onwards) as a well-known and publicly available
+implementation of a flow pacer.
 
 ## Pseudocode
 
