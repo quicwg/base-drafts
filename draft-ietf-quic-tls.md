@@ -678,9 +678,9 @@ completion of the TLS handshake.  Data sent using 0-RTT keys might be replayed
 and so has some restrictions on its use, see {{using-early-data}}.  0-RTT keys
 are used after sending or receiving a ClientHello.
 
-The secret is exported from TLS using the exporter label "EXPORTER-QUIC 0-RTT
-Secret" and an empty context.  The size of the secret MUST be the size of the
-hash output for the PRF hash function negotiated by TLS.  This uses the TLS
+The secret is exported from TLS using the exporter label "EXPORTER-QUIC 0rtt"
+and an empty context.  The size of the secret MUST be the size of the hash
+output for the PRF hash function negotiated by TLS.  This uses the TLS
 early_exporter_secret.  The QUIC 0-RTT secret is only used for protection of
 packets sent by the client.
 
@@ -698,10 +698,10 @@ keys for packets sent by the client, the other for packet protection keys on
 packets sent by the server.
 
 The initial client packet protection secret is exported from TLS using the
-exporter label "EXPORTER-QUIC client 1-RTT Secret"; the initial server packet
-protection secret uses the exporter label "EXPORTER-QUIC server 1-RTT Secret".
-Both exporters use an empty context.  The size of the secret MUST be the size of
-the hash output for the PRF hash function negotiated by TLS.
+exporter label "EXPORTER-QUIC client 1rtt"; the initial server packet protection
+secret uses the exporter label "EXPORTER-QUIC server 1rtt".  Both exporters use
+an empty context.  The size of the secret MUST be the size of the hash output
+for the PRF hash function negotiated by TLS.
 
 ~~~
    client_pp_secret_0 =
@@ -758,20 +758,21 @@ For example, the client packet protection secret uses an info parameter of:
 ### Packet Protection Key and IV
 
 The complete key expansion uses an identical process for key expansion as
-defined in Section 7.3 of {{!TLS13}}, using different values for
-the input secret.  QUIC uses the AEAD function negotiated by TLS.
+defined in Section 7.3 of {{!TLS13}}, using different values for the input
+secret and labels.  QUIC uses the AEAD function negotiated by TLS.
 
 The packet protection key and IV used to protect the 0-RTT packets sent by a
 client are derived from the QUIC 0-RTT secret. The packet protection keys and
 IVs for 1-RTT packets sent by the client and server are derived from the current
-generation of client_pp_secret and server_pp_secret respectively.  The length of
-the output is determined by the requirements of the AEAD function selected by
-TLS. All ciphersuites currently used for QUIC have a 16-byte authentication
-tag and produce an ouput 16 bytes larger than their input.
-The key length is the AEAD key size.  As defined in Section 5.3 of
-{{!TLS13}}, the IV length is the larger of 8 or N_MIN (see Section
-4 of {{!AEAD=RFC5116}}; all ciphersuites defined in {{?TLS13}} have N_MIN set to
-12). For any secret S, the corresponding key and IV are derived as shown below:
+generation of client and server 1-RTT secrets (client_pp_secret_\<i> and
+server_pp_secret_\<i>) respectively.  The length of the output is determined by
+the requirements of the AEAD function selected by TLS.  All ciphersuites
+currently used for QUIC have a 16-byte authentication tag and produce an ouput
+16 bytes larger than their input.  The key length is the AEAD key size.  As
+defined in Section 5.3 of {{!TLS13}}, the IV length is the larger of 8 or N_MIN
+(see Section 4 of {{!AEAD=RFC5116}}; all ciphersuites defined in {{?TLS13}} have
+N_MIN set to 12). For any secret S, the corresponding key and IV are derived as
+shown below:
 
 ~~~
    key = QHKDF-Expand(S, "key", key_length)
