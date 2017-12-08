@@ -1130,15 +1130,22 @@ the transport will be lost at the server.  This includes the stream offset of
 stream 0, the packet number that the server selects, and any opportunity to
 measure round trip time.
 
-A server MUST send a TLS HelloRetryRequest in a Server Stateless Retry packet.
-Using a Server Stateless Retry packet causes the client to reset stream offsets.
-It also avoids the need for the server select an initial packet number, which
-would need to be remembered so that subsequent packets could be correctly
-numbered.
+A server MUST send a TLS HelloRetryRequest in a Retry packet.  Using a Retry
+packet causes the client to reset stream offsets.  It also avoids the need for
+the server select an initial packet number, which would need to be remembered so
+that subsequent packets could be correctly numbered.
 
-A HelloRetryRequest message MUST NOT be split between multiple Server Stateless
-Retry packets.  This means that HelloRetryRequest is subject to the same size
-constraints as a ClientHello (see {{clienthello-size}}).
+A HelloRetryRequest message MUST NOT be split between multiple Retry packets.
+This means that HelloRetryRequest is subject to the same size constraints as a
+ClientHello (see {{clienthello-size}}).
+
+A client might send multiple Initial packets in response to loss.  If a server
+sends a Retry packet in response to an Initial packet, it does not have to
+generate the same Retry packet each time.  Variations in Retry packet, if used
+by a client, could lead to multiple connections derived from the same
+ClientHello.  Reuse of the client nonce is not supported by TLS and could lead
+to security vulnerabilities.  Clients that receive multiple Retry packets MUST
+use only one and discard the remainder.
 
 
 ## NewSessionTicket Address Validation
