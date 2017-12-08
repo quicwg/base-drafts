@@ -1467,20 +1467,6 @@ collectively referred to as the client's address - such as those caused by a
 client migrating to a new network or a NAT rebinding changing the publicly
 observable client address.
 
-A high-level summary of connection migration follows.  A client desiring
-migration to a new network may probe the new network for reachability and to get
-a roundtrip-time measurement, while continuing to send and receive packets over
-the extant network, see {{migration-probe}}. When the probe succeeds and if the
-client decides to migrate, the client latches to the new network, sending all
-packets over the new network.  Alternatively, a client may latch to the new
-network immediately without probing, such as would be the case when the only
-network available to the client is the new network.  A server that receives a
-probe packet from a new client address simply responds to the probe.
-Additionally, when a non-probe packet is received from a client on a new
-address, the server issues a challenge: it sends random bytes to the client on
-the new address.  The server limits its rate to the new address until the client
-echoes back the random bytes, validating the new address.
-
 A client migrating to a new network MUST use a new connection ID for packets
 sent from the new address if an additional connection ID has been provided by
 the server, see {{migration-linkability}}.  Using a new connection ID on
@@ -1492,7 +1478,116 @@ A server that receives a packet for a known connection ID from a new client
 address SHOULD validate this new address, see {{migration-validate}},
 
 
+### Path Validation and PMTU Verification
+
+PATH_CHALLENGE ({{frame-path-challenge}}) and PATH_RESPONSE
+({{frame-path-response}}) frames MAY be used for confirming that an endpoint
+owns an address, or to verify the PMTU to/from an address.
+
+An endpoint validates a peer's address by sending a PATH_CHALLENGE frame
+containing a payload that is hard to guess.  This frame MUST be sent in a packet
+to the new address.  Once a PATH_RESPONSE frame containing the same payload is
+received from the peer, the address is considered to be valid.  A PATH_CHALLENGE
+frame MUST contain at least 12 randomly generated octets {{?RFC4086}}, making
+the payload sufficiently hard to guess.
+
+An endpoint SHOULD not generate two PATH_CHALLENGE frames with the same payload.
+
+
+### Client Behavior {{migration-client}}
+
+When a new local address is available, a client MUST first send a packet
+containing a PATH_CHALLENGE frame from this new address before sending any other
+packets.  The PATH_CHALLENGE frame MAY be bundled with other frames, but this
+packet MUST be padded to exactly 1200 octets unless the client has a reasonable
+assurance that the PMTU is larger.  Sending a packet of this size confirms that
+the network path from the client to the server supports an MTU of this size and
+helps reduce the amplitude of amplification attacks caused by server responses
+toward an unverified client address.
+
+A client MAY send additional PATH_CHALLENGE frames to handle packet loss or to
+get more measurements on the new network path, subject to the congestion
+controller's limits. The client SHOULD use fresh random data in each
+PATH_CHALLENGE frame so that it can associate the server's response with the
+causative PATH_CHALLENGE.
+
+When the client receives a PATH_RESPONSE from the server and verifies that the
+included data matches that sent by the client in a previous PATH_CHALLENGE, the
+server is considered reachable from the new address and the PMTU of the new
+network path is considered verified.
+
+A client SHOULD abandon the new address when it does not receive a PATH_RESPONSE
+after sending some number of PATH_CHALLENGE frames and/or after some time has
+passed. Note that the client may be receiving data from the server during this
+period, but not receiving a PATH_RESPONSE may be indicative of a PMTU detection
+failure.
+
+A client may receive a PATH challenge from a server that is validating the
+client's ownership of an address. A client responds to this frame by echoing the
+data from the PATH_CHALLENGE frame in a PATH_RESPONSE frame.  This response MAY
+be bundled with other frames and does not require additional padding.
+
+
+### Server Behavior {{migration-server}}
+
+When a server receives a PATH_CHALLENGE frame from a client, it MUST respond by
+copying the included data in a PATH_RESPONSE frame, and send it in a packet
+padded to the size of the packet carrying the PATH_CHALLENGE. This PATH_RESPONSE
+MUST be sent to the address that the PATH_CHALLENGE was received from.
+
+The server need not retransmit its PATH_RESPONSE, since an interested client is
+expected to send more PATH_CHALLENGE frames when a response is not received for
+a prior one.
+
+Before sending any other packets to a client address that is not yet considered
+valid, the server MUST send a PATH_CHALLENGE frame with its own validation data
+to verify the client's ownership of this address. The server's PATH_CHALLENGE
+MAY be bundled with other frames in a packet that does not need to be padded.
+
+When the server receives a PATH_RESPONSE from the client and verifies that the
+included data matches that sent by the server in a previous PATH_CHALLENGE, the
+server considers the client's address to which the corresponding PATH_CHALLENGE
+was sent as valid.
+
+A server MAY send additional PATH_CHALLENGE frames to handle packet loss,
+subject to the congestion controller's limits. The server MUST use fresh random
+data in each PATH_CHALLENGE frame so that it can associate the client's response
+with the causative PATH_CHALLENGE.
+
+Until the client's new address is deemed valid, the server MUST limit the rate
+at which it sends data to the new address to . In the absence of this limit, the
+server risks being used for launching a denial of service attack against an
+unsuspecting victim.
+
+Until a client's address is deemed valid, the server MUST limit the rate at
+which it sends data to the address. The server SHOULD NOT send more than an
+initial window's worth of bytes (as defined in {{QUIC-RECOVERY}}}) per roundtrip
+time.  In the absence of this limit, the server risks being used for launching a
+denial of service attack against an unsuspecting victim.
+
+When a server receives a packet containing a frame other than PATH_CHALLENGE,
+PATH_RESPONSE, or PADDING from a client address with a packet number that is the
+largest seen thus far on the connection, the server commits to this client
+address. The server MUST send all subsequent packets, with the exception of
+those containing PATH_RESPONSE and PATH_CHALLENGE frames, to this address.
+
+
 ### Probing a Network Path {#migration-probe}
+
+A high-level summary of connection migration follows.  A client desiring
+migration to a new network may start sending data from a new address.  A client
+may also probe the new network for reachability and to get a roundtrip-time
+measurement, while continuing to send and receive other packets over the extant
+network, see {{migration-probe}}. When the probe succeeds and if the client
+decides to migrate, the client latches to the new network, sending all packets
+over the new network.  Alternatively, a client may latch to the new network
+immediately without probing, such as would be the case when the only network
+available to the client is the new network.  A server that receives a probe
+packet from a new client address simply responds to the probe.  Additionally,
+when a non-probe packet is received from a client on a new address, the server
+issues a challenge: it sends random bytes to the client on the new address.  The
+server limits its rate to the new address until the client echoes back the
+random bytes, validating the new address.
 
 When a new local address is available, a client MAY send a packet containing a
 PATH_CHALLENGE frame ({{frame-path-challenge}}) from this address to detect
@@ -1503,10 +1598,18 @@ confirms that the network path from the client to the server supports an MTU of
 this size and helps reduce the amplitude of amplification attacks caused by
 server responses toward an unverified client address.
 
-A client MAY send additional packets containing PATH_CHALLENGE frames to handle
-packet loss or to get more measurements on the new network path. The client MUST
-limit the number of such probes it considers outstanding in the network to limit
-load on an untested network path.
+A server that receives a PATH_CHALLENGE from a client responds by echoing the
+data in the frame in a PATH_RESPONSE frame (see {{frame-path-response}}). The
+server additionally sends its own PATH_CHALLENGE to the client, as discussed
+further in {{migration-validate}}.
+
+When the client receives a PATH_RESPONSE from the server and verifies the
+included data, the path is considered reachable.
+
+A client MAY send additional PATH_CHALLENGEs to handle packet loss or to get
+more measurements on the new network path. The client MUST limit the number of
+such probes it considers outstanding in the network to limit load on an untested
+network path.
 
 For example, a client may send a PATH_CHALLENGE frame and arm an alarm for the
 handshake timeout period {{QUIC-RECOVERY}}. When a corresponding PATH_RESPONSE
@@ -1525,11 +1628,37 @@ some elapsed time.
 Servers MUST ignore a PATH_CHALLENGE frame from a client if the packet
 containing it is smaller than 1200 octets.
 
+
+### Validating a New Client Address {#migration-validate}
+
+
+ with a PATH_CHALLENGE frame. The PATH_CHALLENGE MAY be bundled
+with other frames, but one packet MUST NOT contain more than one PATH_CHALLENGE
+frame.
+
+The server
+MUST also send a PATH_CHALLENGE frame with random bytes to verify the client's
+ownership of this new address (see {{migration-validate}}).
+
+The PATH_CHALLENGE frame need not be bundled with any other frame, and the
+packet carrying this PATH_CHALLENGE frame does not need to be padded.
+
+(XXX I think we need to pad these packets for PMTU)
+
+When the server subsequently receives and verifies the contents of a
+PATH_RESPONSE from the client against a previously sent PATH_CHALLENGE, the new
+address is considered valid.
+
+Until the client's new address is deemed valid, the server MUST limit the rate
+at which it sends data to the new address; see {{migration-validate}}.  In the
+absence of this limit, the server risks being used for launching a denial of
+service attack against an unsuspecting victim.
+
 A server that receives a PATH_CHALLENGE frame from a client responds by echoing
 the data in the frame in a PATH_RESPONSE frame (see {{frame-path-response}}). In
 addition, the server MUST send a PATH_CHALLENGE frame with its own validation
 data to verify the client's ownership of this new address (see
-{{migration-validate}}). The server MUST bundle its PATH_RESPONSE and its
+{{migration-validate}}). The server should bundle its PATH_RESPONSE and its
 PATH_CHALLENGE in the same packet.
 
 The packet containing the server's PATH_RESPONSE and PATH_CHALLENGE MUST be
@@ -1552,17 +1681,18 @@ Upon receiving and validating the PATH_RESPONSE from the client, the server
 considers the client's new address as valid.
 
 
-### Committing to a Network Path {#migration-commit}
+### Committing to a New Address {#migration-commit}
 
 A cient may commit to using a new address for sending all packets when it is the
 only available address or after the client has established reachability from
 that address.
 
-Upon receiving a packet from a new client address with a packet number that is
-the largest seen thus far on the connection, containing a frame other than
-PATH_CHALLENGE, PATH_RESPONSE, and PADDING, the server commits to the client's
-new address. The server MUST send all subsequent packets, with the exception of
-those containing PATH_RESPONSE and PATH_CHALLENGE frames, to the new address.
+Upon receiving a packet containing a frame other than PATH_CHALLENGE,
+PATH_RESPONSE, or PADDING from a new client address with a packet number that
+is the largest seen thus far on the connection, the server commits to the
+client's new address. The server MUST send all subsequent packets, with the
+exception of those containing PATH_RESPONSE and PATH_CHALLENGE frames, to the
+new address.
 
 Once committed to a new address, the client should stop sending any subsequent
 packets from the old address.  A client that sends new packets from the old
@@ -1580,9 +1710,7 @@ MUST also send a PATH_CHALLENGE frame with random bytes to verify the client's
 ownership of this new address (see {{migration-validate}}).
 
 The PATH_CHALLENGE frame need not be bundled with any other frame, and the
-packet carrying this PATH_CHALLENGE frame does not need to be padded.
-
-(XXX I think we need to pad these packets for PMTU)
+packet carrying this PATH_CHALLENGE frame is not required to be padded.
 
 When the server subsequently receives and verifies the contents of a
 PATH_RESPONSE from the client against a previously sent PATH_CHALLENGE, the new
@@ -1593,10 +1721,11 @@ address with a PATH_CHALLENGE frame. The PATH_CHALLENGE MAY be bundled with
 other frames, but one packet MUST NOT contain more than one PATH_CHALLENGE
 frame.
 
-Until the client's new address is deemed valid, the server MUST limit the rate
-at which it sends data to the new address; see {{migration-validate}}.  In the
-absence of this limit, the server risks being used for launching a denial of
-service attack against an unsuspecting victim.
+Until a client's address is deemed valid, the server MUST limit the rate at
+which it sends data to the address. The server SHOULD NOT send more than an
+initial window's worth of bytes (as defined in {{QUIC-RECOVERY}}}) per roundtrip
+time.  In the absence of this limit, the server risks being used for launching a
+denial of service attack against an unsuspecting victim.
 
 
 ### Privacy Implications of Connection Migration {#migration-linkability}
@@ -1652,9 +1781,9 @@ number. "packet_number_secret" is derived from the TLS key exchange,
 as described in Section 5.6 of {{QUIC-TLS}}.
 
 
-### Address Validation for Migrated Connections {#migration-validate}
+### Validating a Client's New Address {#migration-validate}
 
-An endpoint that receives a packet from a new remote IP address and port (or
+A server that receives a packet from a new remote IP address and port (or
 just a new remote port) on packets from its peer is likely seeing a connection
 migration at the peer.
 
