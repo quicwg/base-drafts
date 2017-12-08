@@ -803,11 +803,11 @@ connection.  For example, if TLS is using the TLS_AES_128_GCM_SHA256, the
 AEAD_AES_128_GCM function is used.
 
 All QUIC packets other than Version Negotiation and Stateless Reset packets are
-protected with an AEAD algorithm {{!AEAD}}. Cleartext packets are protected
-with AEAD_AES_128_GCM and a key derived from the client's connection ID (see
-{{handshake-secrets}}).  This provides protection against off-path attackers and
-robustness against QUIC version unaware middleboxes, but not against on-path
-attackers.
+protected with an AEAD algorithm {{!AEAD}}. Prior to establishing a shared
+secret, packets are protected with AEAD_AES_128_GCM and a key derived from the
+client's connection ID (see {{handshake-secrets}}).  This provides protection
+against off-path attackers and robustness against QUIC version unaware
+middleboxes, but not against on-path attackers.
 
 Once TLS has provided a key, the contents of regular QUIC packets immediately
 after any TLS messages have been sent are protected by the AEAD selected by TLS.
@@ -968,13 +968,13 @@ keys.  An endpoint MUST generate ACK frames for these messages and send them in
 packets protected with handshake keys.
 
 A HelloRetryRequest handshake message might be used to reject an initial
-ClientHello.  A HelloRetryRequest handshake message is sent in a Server
-Stateless Retry packet; any second ClientHello that is sent in response uses a
-Client Initial packet type.  Neither packet is protected.  This is natural,
-because no new keying material will be available when these messages need to be
-sent.  Upon receipt of a HelloRetryRequest, a client SHOULD cease any
-transmission of 0-RTT data; 0-RTT data will only be discarded by any server that
-sends a HelloRetryRequest.
+ClientHello.  A HelloRetryRequest handshake message is sent in a Retry packet;
+any second ClientHello that is sent in response uses a Initial packet type.
+These packets are only protected with a predictable key (see
+{{handshake-secrets}}).  This is natural, because no shared secret will be
+available when these messages need to be sent.  Upon receipt of a
+HelloRetryRequest, a client SHOULD cease any transmission of 0-RTT data; 0-RTT
+data will only be discarded by any server that sends a HelloRetryRequest.
 
 The packet type ensures that protected packets are clearly distinguished from
 unprotected packets.  Loss or reordering might cause unprotected packets to
