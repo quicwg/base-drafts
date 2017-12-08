@@ -656,13 +656,9 @@ client's Initial packet. Specifically:
                                    client_connection_id)
 
    client_handshake_secret =
-                      HKDF-Expand-Label(handshake_secret,
-                                        "QUIC client handshake secret",
-                                        "", Hash.length)
+      QHKDF-Expand(handshake_secret, "client hs", Hash.length)
    server_handshake_secret =
-                      HKDF-Expand-Label(handshake_secret,
-                                        "QUIC server handshake secret",
-                                        "", Hash.length)
+      QHKDF-Expand(handshake_secret, "server hs", Hash.length)
 ~~~
 
 The HKDF for the handshake secrets and keys derived from them uses the SHA-256
@@ -690,8 +686,7 @@ packets sent by the client.
 
 ~~~
    client_0rtt_secret
-       = TLS-Exporter("EXPORTER-QUIC 0-RTT Secret"
-                      "", Hash.length)
+       = TLS-Exporter("EXPORTER-QUIC 0rtt", "", Hash.length)
 ~~~
 
 
@@ -709,59 +704,54 @@ Both exporters use an empty context.  The size of the secret MUST be the size of
 the hash output for the PRF hash function negotiated by TLS.
 
 ~~~
-   client_pp_secret_0
-       = TLS-Exporter("EXPORTER-QUIC client 1-RTT Secret"
-                      "", Hash.length)
-   server_pp_secret_0
-       = TLS-Exporter("EXPORTER-QUIC server 1-RTT Secret"
-                      "", Hash.length)
+   client_pp_secret_0 =
+      TLS-Exporter("EXPORTER-QUIC client 1rtt", "", Hash.length)
+   server_pp_secret_0 =
+      TLS-Exporter("EXPORTER-QUIC server 1rtt", "", Hash.length)
 ~~~
 
 These secrets are used to derive the initial client and server packet protection
 keys.
 
 After a key update (see {{key-update}}), these secrets are updated using the
-HKDF-Expand-Label function defined in Section 7.1 of {{!TLS13}}.
-HKDF-Expand-Label uses the PRF hash function negotiated by TLS.  The replacement
-secret is derived using the existing Secret, a Label of "QUIC client 1-RTT
-Secret" for the client and "QUIC server 1-RTT Secret" for the server, an empty
-HashValue, and the same output Length as the hash function selected by TLS for
-its PRF.
+QHKDF-Expand function.  The QHKDF-Expand function is similar in definition to
+HKDF-Expand-Label defined in Section 7.1 of {{!TLS13}}, but it has a different
+base label and omits the hash argument.  QHKDF-Expand uses the PRF hash function
+negotiated by TLS.  The replacement secret is derived using the existing Secret,
+a Label of "client 1rtt" for the client and "server 1rtt" for the server, and
+the same output Length as the PRF hash function selected by TLS.
 
 ~~~
-   client_pp_secret_<N+1>
-       = HKDF-Expand-Label(client_pp_secret_<N>,
-                           "QUIC client 1-RTT Secret",
-                           "", Hash.length)
-   server_pp_secret_<N+1>
-       = HKDF-Expand-Label(server_pp_secret_<N>,
-                           "QUIC server 1-RTT Secret",
-                           "", Hash.length)
+   client_pp_secret_<N+1> =
+      QHKDF-Expand(client_pp_secret_<N>, "client 1rtt", Hash.length)
+   server_pp_secret_<N+1> =
+      QHKDF-Expand(server_pp_secret_<N>, "server 1rtt", Hash.length)
 ~~~
 
 This allows for a succession of new secrets to be created as needed.
 
-HKDF-Expand-Label uses HKDF-Expand {{!RFC5869}} with a specially formatted info
-parameter, as shown:
+HKDF-Expand-Label uses HKDF-Expand {{!RFC5869}} as shown:
 
 ~~~
-    HKDF-Expand-Label(Secret, Label, HashValue, Length) =
-         HKDF-Expand(Secret, HkdfLabel, Length)
+    QHKDF-Expand(Secret, Label, Length) =
+         HKDF-Expand(Secret, QuicHkdfLabel, Length)
+~~~
 
-    Where HkdfLabel is specified as:
+Where the info parameter, QuicHkdfLabel, is specified as:
 
+~~~
     struct {
         uint16 length = Length;
-        opaque label<10..255> = "tls13 " + Label;
-        uint8 hashLength;     // Always 0
-    } HkdfLabel;
+        opaque label<6..255> = "QUIC " + Label;
+        uint8 hashLength = 0;
+    } QuicHkdfLabel;
 ~~~
 
 For example, the client packet protection secret uses an info parameter of:
 
 ~~~
    info = (HashLen / 256) || (HashLen % 256) || 0x1f ||
-          "tls13 QUIC client 1-RTT secret" || 0x00
+          "QUIC client 1rtt" || 0x00
 ~~~
 
 
@@ -784,8 +774,8 @@ The key length is the AEAD key size.  As defined in Section 5.3 of
 12). For any secret S, the corresponding key and IV are derived as shown below:
 
 ~~~
-   key = HKDF-Expand-Label(S, "key", "", key_length)
-   iv  = HKDF-Expand-Label(S, "iv", "", iv_length)
+   key = QHKDF-Expand(S, "key", key_length)
+   iv  = QHKDF-Expand(S, "iv", iv_length)
 ~~~
 
 The QUIC record protection initially starts without keying material.  When the
@@ -812,15 +802,15 @@ attackers.
 Once TLS has provided a key, the contents of regular QUIC packets immediately
 after any TLS messages have been sent are protected by the AEAD selected by TLS.
 
-The key, K, is either the client packet protection key (client_pp_key_n) or the
-server packet protection key (server_pp_key_n), derived as defined in
+The key, K, is either the client packet protection key (client_pp_key_\<i>) or
+the server packet protection key (server_pp_key_\<i>), derived as defined in
 {{key-expansion}}.
 
 The nonce, N, is formed by combining the packet protection IV (either
-client_pp_iv_n or server_pp_iv_n) with the packet number.  The 64 bits of the
-reconstructed QUIC packet number in network byte order is left-padded with zeros
-to the size of the IV.  The exclusive OR of the padded packet number and the IV
-forms the AEAD nonce.
+client_pp_iv_\<i\> or server_pp_iv_\<i\>) with the packet number.  The 64 bits
+of the reconstructed QUIC packet number in network byte order is left-padded
+with zeros to the size of the IV.  The exclusive OR of the padded packet number
+and the IV forms the AEAD nonce.
 
 The associated data, A, for the AEAD is the contents of the QUIC header,
 starting from the flags octet in either the short or long header.
@@ -878,9 +868,8 @@ Section 7.5.1.1 of {{QUIC-TRANSPORT}} also requires a secret to compute packet
 number gaps on connection ID transitions. That secret is computed as:
 
 ~~~
-      packet_number_secret
-          = TLS-Exporter("EXPORTER-QUIC Packet Number Secret"
-                         "", Hash.length)
+   packet_number_secret =
+      TLS-Exporter("EXPORTER-QUIC packet number", "", Hash.length)
 ~~~
 
 # Key Phases
