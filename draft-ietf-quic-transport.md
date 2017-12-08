@@ -166,9 +166,6 @@ Packet and frame diagrams use the format described in Section 3.1 of
 \[x\]
 : Indicates that x is optional
 
-\{x\}
-: Indicates that x is encrypted
-
 x (A)
 : Indicates that x is A bits long
 
