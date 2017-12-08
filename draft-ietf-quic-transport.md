@@ -1563,12 +1563,12 @@ denial of service attack against an unsuspecting victim.
 A server MAY skip address validation for a client address that it considers to
 be already valid.
 
+After validating a client address, the server MAY send an updated address
+validation token to the client ({{address-validation}}).
+
 When validation of an address fails, the server SHOULD revert back to using the
 last validated client address, absent which the server MUST close the
 connection.
-
-After validating a client address, the server MAY send an updated address
-validation token to the client ({{address-validation}}).
 
 When a server receives a packet containing a frame other than PATH_CHALLENGE,
 PATH_RESPONSE, or PADDING from a client address with a packet number that is the
@@ -1577,10 +1577,10 @@ address. The server MUST send all subsequent packets, with the exception of
 those containing PATH_RESPONSE and PATH_CHALLENGE frames, to this address.
 
 When a server receives a packet from a new client address that causes it to
-commit to this new address, it MUST abandon any address validation that may be
-in progress to a different client address.  The server MAY ignore any
-subsequently received PATH_RESPONSE frames from the abandoned address.
-
+commit to this new address, it MAY abandon any address validation that may be in
+progress to a different client address.  The server however SHOULD NOT ignore
+any subsequently received PATH_RESPONSE frames from the abandoned address, since
+the server may need to revert back to this address if the new validation fails.
 
 
 ### Privacy Implications of Connection Migration {#migration-linkability}
