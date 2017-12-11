@@ -838,14 +838,15 @@ explained in more detail as they are referenced later in the document.
 | 0x04        | MAX_DATA          | {{frame-max-data}}          |
 | 0x05        | MAX_STREAM_DATA   | {{frame-max-stream-data}}   |
 | 0x06        | MAX_STREAM_ID     | {{frame-max-stream-id}}     |
-| 0x07        | PATH_CHALLENGE    | {{frame-path-challenge}}    |
+| 0x07        | PING              | {{frame-ping}}              |
 | 0x08        | BLOCKED           | {{frame-blocked}}           |
 | 0x09        | STREAM_BLOCKED    | {{frame-stream-blocked}}    |
 | 0x0a        | STREAM_ID_BLOCKED | {{frame-stream-id-blocked}} |
 | 0x0b        | NEW_CONNECTION_ID | {{frame-new-connection-id}} |
 | 0x0c        | STOP_SENDING      | {{frame-stop-sending}}      |
-| 0x0d        | PATH_RESPONSE     | {{frame-path-response}}     |
-| 0x0e        | ACK               | {{frame-ack}}               |
+| 0x0d        | ACK               | {{frame-ack}}               |
+| 0x0e        | PATH_CHALLENGE    | {{frame-path-challenge}}    |
+| 0x0f        | PATH_RESPONSE     | {{frame-path-response}}     |
 | 0x10 - 0x17 | STREAM            | {{frame-stream}}            |
 {: #frame-types title="Frame Types"}
 
@@ -2212,40 +2213,29 @@ than it has sent, unless this is a result of a change in the initial limits (see
 {{zerortt-parameters}}).
 
 
-## PATH_CHALLENGE Frame {#frame-path-challenge}
+## PING Frame {#frame-ping}
 
-Endpoints can use PATH_CHALLENGE frames (type=0x07) to verify that their peers
-are still alive or to check reachability to the peer. A PATH_CHALLENGE frame can
-also carry arbitrary data to perform address validation during connection
-migration.
+Endpoints can use PING frames (type=0x07) to verify that their peers are still
+alive or to check reachability to the peer.  The PING frame contains no
+additional fields.  The receiver of a PING frame simply needs to acknowledge the
+packet containing this frame.
 
-PATH_CHALLENGE frames contain a variable-length payload.
+A PING frame has no additional fields.
 
-~~~
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|   Length(8)   |                 Data (*)                    ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-~~~
+The PING frame can be used to keep a connection alive when an application or
+application protocol wishes to prevent the connection from timing out.  An
+application protocol SHOULD provide guidance about the conditions under which
+generating a PING is recommended.  This guidance SHOULD indicate whether it is
+the client or the server that is expected to send the PING.  Having both
+endpoints send PING frames without coordination can produce an excessive number
+of packets and poor performance.
 
-Length:
-
-: This 8-bit value describes the length of the Data field.
-
-Data:
-
-: This variable-length field contains arbitrary data.
-
-If the Data field is not empty, the recipient of this frame MUST generate a
-PATH_RESPONSE frame ({{frame-path-response}}) containing the same Data.
-
-A PATH_CHALLENGE frame MUST NOT elicit acknowledgements, as a valid
-PATH_RESPONSE serves to indicate receipt of the PATH_CHALLENGE. These frames are
-not included in loss recovery, as they will be retransmitted separately.
-
-A packet containing a PATH_CHALLENGE frame with a non-empty Data field MUST be
-padded such that it has a QUIC packet size of least 1200 octets.
+A connection will time out if no packets are sent or received for a period
+longer than the time specified in the idle_timeout transport parameter (see
+{{termination}}).  However, state in middleboxes might time out earlier than
+that.  Though REQ-5 in {{?RFC4787}} recommends a 2 minute timeout interval,
+experience shows that sending packets every 15 to 30 seconds is necessary to
+prevent the majority of middleboxes from losing state for UDP flows.
 
 
 ## BLOCKED Frame {#frame-blocked}
@@ -2370,18 +2360,56 @@ Application Error Code:
   {{app-error-codes}}).
 
 
+## PATH_CHALLENGE Frame {#frame-path-challenge}
+
+Endpoints can use PATH_CHALLENGE frames (type=0x07) to check reachability to the
+peer, to verify a new path's PMTU, and to perform address validation during
+connection migration.
+
+PATH_CHALLENGE frames contain a variable-length payload.
+
+~~~
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|   Length(8)   |                 Data (*)                    ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~
+
+Length:
+
+: This 8-bit value describes the length of the Data field.
+
+Data:
+
+: This variable-length field contains arbitrary data.
+
+
+The sender of this frame MUST include at least one octet of data in the Data
+field.
+
+The recipient of this frame MUST generate a PATH_RESPONSE frame
+({{frame-path-response}}) containing the same Data.  An endpoint that receives a
+PATH_CHALLENGE frame containing an empty payload MUST generate a connection
+error of type FRAME_ERROR, indicating the PATH_CHALLENGE frame (that is, 0x0d).
+
+A PATH_CHALLENGE frame MUST NOT elicit acknowledgements; the corresponding
+PATH_RESPONSE serves to indicate receipt of the PATH_CHALLENGE.
+
+
 ## PATH_RESPONSE Frame {#frame-path-response}
 
 The PATH_RESPONSE frame (type=0x0d) is sent in response to a PATH_CHALLENGE
-frame that contains data.  Its format is identical to the PATH_CHALLENGE frame
+frame.  Its format is identical to the PATH_CHALLENGE frame
 ({{frame-path-challenge}}).
 
-An endpoint that receives an unsolicited PATH_RESPONSE frame - that is, a
-PATH_RESPONSE frame containing a payload that is empty - MUST generate a
-connection error of type FRAME_ERROR, indicating the PATH_RESPONSE frame (that
-is, 0x0d).  If the content of a PATH_RESPONSE frame does not match the content
-of a PATH_CHALLENGE frame previously sent by the endpoint, the endpoint MAY
-generate a connection error of type UNSOLICITED_PATH_RESPONSE.
+An endpoint that receives a PATH_RESPONSE frame containing an empty payload MUST
+generate a connection error of type FRAME_ERROR, indicating the PATH_RESPONSE
+frame (that is, 0x0e).  If the content of a PATH_RESPONSE frame does not match
+the content of a PATH_CHALLENGE frame previously sent by the endpoint, the
+endpoint MAY generate a connection error of type UNSOLICITED_PATH_RESPONSE.
+
+A PATH_RESPONSE frame MUST NOT elicit acknowledgements.
 
 
 ## ACK Frame {#frame-ack}
@@ -2558,8 +2586,7 @@ acknowledged again.
 A receiver that is only sending ACK frames will not receive acknowledgments for
 its packets.  Sending an occasional MAX_DATA or MAX_STREAM_DATA frame as data is
 received will ensure that acknowledgements are generated by a peer.  Otherwise,
-an endpoint MAY send a PATH_CHALLENGE frame once per RTT to solicit an
-acknowledgment.
+an endpoint MAY send a PING frame once per RTT to solicit an acknowledgment.
 
 To limit receiver state or the size of ACK frames, a receiver MAY limit the
 number of ACK blocks it sends.  A receiver can do this even without receiving
@@ -3769,8 +3796,8 @@ Issue and pull request numbers are listed with a leading octothorp.
 
 - Employ variable-length integer encodings throughout (#595)
 - Draining period can terminate early (#869)
-- Replace PING and PONG frames with PATH_CHALLENGE and PATH_RESPONSE frames,
-  clarify connection migration text (#000)
+- Added PATH_CHALLENGE and PATH_RESPONSE frames, removed PING with Data,
+  and rewrote connection migration (#000)
 
 ## Since draft-ietf-quic-transport-06
 
