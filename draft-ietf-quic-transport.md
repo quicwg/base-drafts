@@ -1212,8 +1212,9 @@ ack_delay_exponent (0x0007):
 
 : An 8-bit unsigned integer value indicating an exponent used to decode the ACK
   Delay field in the ACK frame, see {{frame-ack}}.  If this value is absent, a
-  default value of 3 is assumed (indicating a multiplier of 8).  Values above 20
-  are invalid.
+  default value of 3 is assumed (indicating a multiplier of 8).  The default
+  value is also used for ACK frames that are sent in Initial, Handshake, and
+  Retry packets.  Values above 20 are invalid.
 
 
 ### Values of Transport Parameters for 0-RTT {#zerortt-parameters}
