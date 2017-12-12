@@ -838,14 +838,15 @@ explained in more detail as they are referenced later in the document.
 | 0x04        | MAX_DATA          | {{frame-max-data}}          |
 | 0x05        | MAX_STREAM_DATA   | {{frame-max-stream-data}}   |
 | 0x06        | MAX_STREAM_ID     | {{frame-max-stream-id}}     |
-| 0x07        | PATH_CHALLENGE    | {{frame-path-challenge}}    |
+| 0x07        | PING              | {{frame-ping}}              |
 | 0x08        | BLOCKED           | {{frame-blocked}}           |
 | 0x09        | STREAM_BLOCKED    | {{frame-stream-blocked}}    |
 | 0x0a        | STREAM_ID_BLOCKED | {{frame-stream-id-blocked}} |
 | 0x0b        | NEW_CONNECTION_ID | {{frame-new-connection-id}} |
 | 0x0c        | STOP_SENDING      | {{frame-stop-sending}}      |
-| 0x0d        | PATH_RESPONSE     | {{frame-path-response}}     |
-| 0x0e        | ACK               | {{frame-ack}}               |
+| 0x0d        | ACK               | {{frame-ack}}               |
+| 0x0e        | PATH_CHALLENGE    | {{frame-path-challenge}}    |
+| 0x0f        | PATH_RESPONSE     | {{frame-path-response}}     |
 | 0x10 - 0x17 | STREAM            | {{frame-stream}}            |
 {: #frame-types title="Frame Types"}
 
@@ -1461,127 +1462,214 @@ connection if the integrity check fails with a PROTOCOL_VIOLATION error code.
 
 ## Connection Migration {#migration}
 
-Since QUIC uses connection IDs to distinguish connections, the IP addresses and
-ports associated with a given connection may change over time without losing
-shared state. Any instance of connections moving to new addresses or ports is
-referred to as connection migration. This occurs either when a client chooses to
-send traffic from a different local endpoint, or when a NAT changes address or
-port mappings.
+QUIC connections are identified by 64-bit connection IDs. QUIC's connection IDs
+allow connections to survive changes to the client's address (client's IP
+address and/or port), such as those caused by a client migrating to a new
+network or a NAT rebinding changing the client's public address.
 
-In order to make it more difficult for passive eavesdroppers to track a
-connection as it migrates, a client can use different connection IDs when
-sending from different addresses. The server can send NEW_CONNECTION_ID
-frames to provide the client with additional connection IDs to be used during
-migration ({{migration-linkability}}).
 
-Any time a new remote endpoint is detected, such as when a server
-receives a packet for a known connection ID from a different address, the remote
-endpoint MUST be validated ({{migration-validate}}).
+### Path Validation and PMTU Verification
 
-Any time a new local endpoint is used, such as when a client chooses
-to migrate a connection onto a different network interface, the path can be
-probed to check reachability ({{migration-probe}}). An endpoint may choose to
-probe a network path before migrating the connection, or it may choose to
-migrate the connection immediately. For example, a client that detects that its
-current network path is degraded may choose to probe alternate paths and only
-migrate if an alternate path is preferred over the current one. A client may
-also find that a path suddenly becomes inoperable, such as when a user
-unplugs a cable or other network state changes, and may elect to migrate
-without probing since it has no alternative if it wishes to maintain the
+PATH_CHALLENGE ({{frame-path-challenge}}) and PATH_RESPONSE
+({{frame-path-response}}) frames MAY be used for validating that an endpoint
+owns an address, or to verify the PMTU to/from an address.
+
+A server validates a client's address by sending a PATH_CHALLENGE frame
+containing a payload that is hard to guess to that address.  The server
+considers the address to be valid when a PATH_RESPONSE frame containing the same
+payload is received from the client.
+
+Similarly, a client verifies the PMTU of a network path from a new client
+address to the server by sending a PMTU-sized packet carrying a PATH_CHALLENGE
+frame. The client considers the PMTU verified when a PATH_RESPONSE frame
+containing the same payload sent by the server to the new client address is
+received.
+
+
+### Client Behavior {#migration-client}
+
+A client triggers connection migration to a new address by sending a
+PATH_CHALLENGE as a probe or by switching to sending all packets to the new
+address. The client SHOULD do PMTU verification before considering migration
+complete. The client also participates in an address validation that the server
+may initiate to confirm the client's ownership of its address (see
+{{migration-server}}).
+
+A client migrating to a new network SHOULD use a new connection ID for packets
+sent from the new address if at all possible, see {{migration-linkability}} for
+further discussion.  A client may be unaware of connection migration due to NAT
+rebinding and may consequently not change its connection ID on NAT rebindings.
+
+
+#### Verifying the PMTU
+
+When the client intends to use a new local address, it MAY establish server
+reachability from the new address, and it SHOULD verify the new path's MTU.  To
+achieve these ends, the client sends a packet containing a PATH_CHALLENGE frame
+from this new address before sending any other packets.  The PATH_CHALLENGE
+frame MAY be bundled with other frames, but this packet MUST be padded to
+exactly 1200 octets unless the client has a reasonable assurance that the PMTU
+is larger.  Sending a packet of this size confirms that the network path from
+the client to the server supports an MTU of this size.
+
+A client MAY send additional PATH_CHALLENGE frames to handle packet loss or to
+get more measurements on the new network path, subject to the congestion
+controller's limits {{QUIC-RECOVERY}}.
+
+The client SHOULD use fresh random data in every PATH_CHALLENGE frame so that it
+can perform more accurate measurements by associating the server's response with
+the causative PATH_CHALLENGE.
+
+When the client receives a PATH_RESPONSE from the server and verifies that the
+included data matches the data it sent in a previous PATH_CHALLENGE, the server
+is considered reachable from the new address and the PMTU of the new network
+path is considered verified.
+
+A client SHOULD abandon the new address if it does not receive a PATH_RESPONSE
+after sending some number of PATH_CHALLENGE frames and/or after some time has
+passed. Note that the client may be receiving data from the server during this
+period, but not receiving a PATH_RESPONSE may be indicative of a PMTU detection
+failure.
+
+
+#### Responding to a Server's Validation
+
+A client may receive a PATH_CHALLENGE from a server that is validating the
+client's ownership of its address, as described in {{migration-server}}. The
+client MUST respond to this frame by echoing the data from the server's
+PATH_CHALLENGE frame in a PATH_RESPONSE frame.
+
+A client's PATH_RESPONSE MAY be bundled with other frames and does not require
+additional padding.
+
+A client MAY send more than one PATH_RESPONSE in response to a PATH_CHALLENGE,
+as allowed by the congestion controller, to ensure that packet loss does not
+unduly delay or cause failure of the server's validation process.
+
+A client may trigger the server's validation unwittingly when its public address
+changes, such as when a NAT rebinds the client's private address to a new public
+address.  Though the client may be oblivious of such an address change, it MUST
+respond to the consequent validation.  Receiving a PATH_CHALLENGE from the
+server when the client is not actively changing addresses may be indicative of
+other network activity causing its public address to change, or it may be
+indicative of a server choosing to validate a client's address after a period of
+quiescence.
+
+
+### Server Behavior {#migration-server}
+
+The server responds to any probes sent by the client from a new address,
+participates in the client's PMTU verification, and validates that the client
+owns the new address.  The server MAY validate any client's address at any time,
+but it MUST limit the rate at which data is sent to an unvalidated address, and
+it MUST limit the amount of time for which it sends data to an unvalidated
+address.
+
+
+#### Responding to a Client's Probe
+
+When a server receives a PATH_CHALLENGE frame from a client, it MUST generate a
+PATH_RESPONSE frame that contains the same data as the challenge. The server's
+PATH_RESPONSE MUST be sent to the address from which the client's PATH_CHALLENGE
+was received.
+
+The server sends the PATH_RESPONSE in a packet that is padded to no more than
+the size of the client's packet carrying the PATH_CHALLENGE.  The server SHOULD
+pad the packet to the same size as the client's packet, unless the server has
+reasonable assurance of a smaller PMTU.
+
+The server need not retransmit its PATH_RESPONSE, since it is the client's
+responsibility to send more PATH_CHALLENGE frames when a response is not
+received for a prior one.
+
+Servers MUST ignore a PATH_CHALLENGE frame from a client that is carried in a
+packet smaller than 1200 octets in size.
+
+
+#### Validating an Unvalidated Client Address {#migration-validate}
+
+Before sending any other packets to a client address that is not yet considered
+valid, the server MUST send a PATH_CHALLENGE frame with its own validation data
+to this address to verify the client's ownership of it. The server's
+PATH_CHALLENGE MAY be bundled with other frames and does not require additional
+padding.
+
+When the server receives a PATH_RESPONSE from a client and verifies that the
+included data matches that sent by the server in a previous PATH_CHALLENGE to
+the client, the server considers the client address to which the corresponding
+PATH_CHALLENGE was sent as valid.
+
+A server MAY send additional PATH_CHALLENGE frames to handle packet loss,
+subject to the congestion controller's limits.
+
+A PATH_CHALLENGE frame used for validation MUST contain at least 12 randomly
+generated octets {{?RFC4086}}, making the payload sufficiently hard to guess.
+
+The server MUST use fresh random data in every PATH_CHALLENGE frame so that it
+can associate the client's response with the causative PATH_CHALLENGE.  Not
+using fresh random data risks exposing the server to an attacker defeating
+validation by sending a spoofed PATH_RESPONSE from a victim's address.
+
+Until a client address is deemed valid, the server MUST limit the rate at
+which it sends data to this address. The server SHOULD NOT send more than an
+initial window's worth of bytes (as defined in {{QUIC-RECOVERY}}}) per estimated
+roundtrip period.  In the absence of this limit, the server risks being used for
+a denial of service attack against an unsuspecting victim.
+
+When validation of an address fails, the server SHOULD revert back to using the
+last validated client address, absent which the server MUST close the connection
+silently, and discard any further packets received from the client for this
 connection.
 
+A server MAY skip address validation for a client address that it considers to
+be already valid.
 
-### Probing a Network Path {#migration-probe}
-
-To check the reachability of a server over a new network path, a client may
-optionally send a probe packet to which the server will respond.  This process
-is optional, as the client may choose to migrate the connection without using a
-probe.  The probe, among other potential uses, serves to establish reachability,
-validates the new endpoints, helps the client measure timing over the new path,
-and provides validation of the remote endpoint.
-
-A probe consists of a "Path Probe" packet, which is defined as a QUIC packet
-containing a PATH_CHALLENGE frame ({{frame-path-challenge}}) and a PADDING frame
-({{frame-padding}}) such that the QUIC packet size is at least 1200 bytes.
-
-When a server receives a Path Probe packet, it generates a response to the
-PATH_CHALLENGE frame by echoing the data from the PATH_CHALLENGE frame in a
-PATH_RESPONSE frame.  In addition to echoing the client's validation data, a
-server MUST also include a PATH_CHALLENGE frame with its own validation data,
-performing address validation (see {{migration-validate}}) on the new address
-provided by the client.
-
-This response consists of a "Path Probe Reply" packet, which is defined as a
-QUIC packet containing a PATH_RESPONSE ({{frame-path-response}}) frame,
-a PATH_CHALLENGE ({{frame-path-challenge}}) frame, and a PADDING frame
-({{frame-padding}}) such that the QUIC packet size is at least 1200 bytes.
-
-A client responds to the PATH_CHALLENGE from the server with its own
-PATH_RESPONSE frame, which can be sent in any QUIC packet and does not require
-additional padding.  This may be sent as a standalone packet without other
-frames, in which case the connection is not yet migrated, or else along with
-a packet that includes other frames as part of migrating the connection
-({{migration-commit}}). When the server receives and validates that the
-echoed data field matches the data field that was sent, the server is
-considered to have completed validation.
-
-All Path Probe packets and Path Probe Reply packets MUST be padded to at least
-1200 bytes to prevent amplification attacks against unsuspecting endpoints.  In
-this way, an endpoint that modifies its source address can cause
-Path Probe Reply packets to be generated and sent to an arbitrary victim only by
-generating equally sized Path Probe packets.
-
-Once the server and client have both validated that the data in their
-PATH_CHALLENGE frames was echoed by the other endpoint, the probe is
-complete.  A client may choose to send additional probes as necessary to collect
-additional data, for example timing data about the new network path.  It should
-be careful to balance the resources and bandwidth required for such
-additional probes with the benefits provided by the additional data.
-
-Path Probe packets MUST be subject to loss recovery via an
-independent timer-based recovery mechanism, as defined in as defined in
-{{QUIC-RECOVERY}}.  Path Probe Reply packets MUST NOT be retransmitted and are
-not subject to loss recovery, as a lost Path Probe Reply will trigger a
-generation of a new Path Probe by the client, in turn triggering the generation
-of a new Path Probe Reply.  After some delay, as discussed in
-{{migration-validate}}, if the client never receives a reply in response to its
-probes, the client SHOULD abandon the new path and stop transmitting Path Probe
-packets.
+After validating a client address, the server MAY send an updated address
+validation token to the client ({{address-validation}}).
 
 
-### Migrating the Connection {#migration-commit}
+#### Committing to a New Address
 
-When the client chooses to perform the migration, it sends a QUIC packet
-containing any frame type other than PATH_CHALLENGE, PATH_RESPONSE, or PADDING.
-Upon receipt of such a packet from a different source IP address and port, the
-server MUST begin sending all new packets with those as a destination IP address
-and port.  Similarly, once such a packet has been sent, the client has committed
-to using the new path through the network and MUST stop sending new packets on
-the old path.  A client that continues to send new packets on the old path with
-higher packet numbers than those sent on the new path will trigger an entirely
-new migration back to that path.
+When a server receives a packet containing a frame other than PATH_CHALLENGE,
+PATH_RESPONSE, or PADDING from a client address with a packet number that is the
+largest seen thus far on the connection, the server "commits" to this client
+address. The server MUST send all subsequent packets to this address, with the
+following exception.  PATH_CHALLENGE, PATH_RESPONSE, and PADDING frames are used
+for probing a network path, and receiving only these frames MUST NOT cause the
+server to commit to a new address.
 
-Upon migration to a new path, a server MUST validate the client over the new
-path if it has not already done so, for example by completing the probing
-mechanism in {{migration-probe}}.  If the probing process has not yet completed,
-or the client elected not to probe, the server can validate the client's new
-source IP and port by sending a PATH_CHALLENGE frame containing a data field for
-the client to echo.  Note that the QUIC packet that includes this PATH_CHALLENGE
-frame does not require additional padding.  When the server receives the
-corresponding PATH_RESPONSE frame containing the correctly echoed data,
-validation of the client is complete. The server MAY send multiple
-PATH_CHALLENGE frames in separate packets until it receives a
-PATH_RESPONSE.
+Receiving a packet from a new address but with a packet number that is not the
+largest seen thus far suggests that a reordered packet was received and MUST NOT
+cause the server to change its commitment.
 
-Until the server has validated the the client's new address and port, it MUST
-limit the amount of data that it sends to an unvalidated client, as described
-with more detail in {{migration-validate}}.  Without this limit, the server
-risks being used for denial of service.
+Upon committing to a new address, the server SHOULD reset its congestion
+controller and roundtrip time estimator to start new estimations.
 
-Due to variations in path latency or packet reordering, packets from different
-source addresses might be reordered.  The packet with the highest packet number
-MUST be used to determine which path to use.  Endpoints also need to be prepared
-to receive packets from an older source address.
+When a server receives a packet from a new client address that causes it to
+commit to this new address, it may still need to validate the new client
+address.  The server MAY abandon any address validation already in progress to a
+different client address.  The server however SHOULD NOT ignore any subsequently
+received PATH_RESPONSE frames from the abandoned address, since the server may
+need to revert back to a validated but abandoned address if the later validation
+fails.
+
+
+### Loss Detection and Congestion Control
+
+There may be apparent reordering at the receiver when an endpoint sends data and
+probes from/to multiple addresses during the migration period, since the two
+resulting paths may have different rountrip times.  A receiver of packets on
+multiple paths will still send ACK frames covering all received packets.
+
+Both endpoints use one congestion control and one loss recovery context, as
+described in {{QUIC-RECOVERY}}.  A sender MAY make an exception for probe
+packets so that their loss detection is independent and does not unduly cause
+the congestion controller to reduce its sending rate.
+
+For instance, an endpoint may run a separate alarm when a PATH_CHALLENGE is
+sent, which is disarmed when the corresponding PATH_RESPONSE is received. If the
+alarm fires before the PATH_RESPONSE is received, the endpoint might send a new
+PATH_CHALLENGE, and restart the alarm, but for a longer period of time.
 
 
 ### Privacy Implications of Connection Migration {#migration-linkability}
@@ -1635,118 +1723,6 @@ Gap = HKDF-Expand-Label(packet_number_secret,
 The output of HKDF-Expand-Label is interpreted as a big-endian
 number. "packet_number_secret" is derived from the TLS key exchange,
 as described in Section 5.6 of {{QUIC-TLS}}.
-
-
-### Address Validation for Migrated Connections {#migration-validate}
-
-An endpoint that receives a packet from a new remote IP address and port (or
-just a new remote port) on packets from its peer is likely seeing a connection
-migration at the peer.
-
-However, it is also possible that the peer is spoofing its source address in
-order to cause the endpoint to send excessive amounts of data to an unwilling
-host.  If the endpoint sends significantly more data than the peer, connection
-migration might be used to amplify the volume of data that an attacker can
-generate toward a victim.
-
-Thus, when seeing a new remote transport address, an endpoint MUST verify that
-its peer can receive and respond to packets at that new address.  By providing
-copies of the data that it receives, the peer proves that it is receiving
-packets at the new address and consents to receiving data.
-
-Prior to validating the new remote address, an endpoint MUST limit the amount
-of data and packets that it sends to its peer.
-
-Retransmissions of packets that were originally sent on the previous path MUST
-instead be sent on the new path, and they SHOULD NOT count against the
-outstanding data relative to the congestion window, and they SHOULD NOT incur a
-loss event for the congestion control algorithm.  However, care should be taken
-not to overwhelm the (potentially unknown) capacity of the new link.
-
-An endpoint validates a remote address by sending a PATH_CHALLENGE frame
-containing a payload that is hard to guess.  This frame MUST be sent in a packet
-to the new address.  Once a PATH_RESPONSE frame containing the same payload is
-received, the address is considered to be valid.  A PATH_CHALLENGE frame
-containing 12 randomly generated {{?RFC4086}} octets is sufficient to ensure
-that it is easier to receive the packet than it is to guess the value correctly.
-
-If the PATH_CHALLENGE frame is determined to be lost, a new PATH_CHALLENGE frame
-SHOULD be generated.  This PATH_CHALLENGE frame MUST include a new Data field
-that is similarly difficult to guess.
-
-If validation of the new remote address fails, after allowing enough time for
-possible loss and recovery of packets carrying PATH_CHALLENGE and their
-associated PATH_RESPONSE frames, the endpoint MUST terminate the connection.
-When setting this timer, implementations are cautioned that the new path could
-have a longer round trip time than the original.  The endpoint MUST NOT send a
-CONNECTION_CLOSE frame in this case; it has to assume that the remote peer does
-not want to receive any more packets.
-
-If the remote address is validated successfully, the endpoint MAY increase the
-rate that it sends on the new path using the state from the previous path.  The
-capacity available on the new path might not be the same as the old path.  An
-endpoint MUST NOT restore its send rate unless it is reasonably sure that the
-path is the same as the previous path.  For instance, a change in only port
-number is likely indicative of a rebinding in a middlebox and not a complete
-change in path.  This determination likely depends on heuristics, which could be
-imperfect; if the new path capacity is significantly reduced, ultimately this
-relies on the congestion controller responding to congestion signals and
-reducing send rates appropriately.
-
-After verifying an address, the endpoint SHOULD update any address validation
-tokens ({{address-validation}}) that it has issued to its peer if those are no
-longer valid based on the changed address.
-
-A client MAY treat an incoming PATH_CHALLENGE frame that includes data as
-an indication that the server’s view of the client’s endpoint has changed.
-This acts as a hint to the client that the network path may have changed,
-such as when a NAT rebinding occurs. Because of this, servers SHOULD NOT
-send PATH_CHALLENGE frames that include data unless there is a need to
-re-validate the client’s address (such as any address or port change, or an
-extended period without traffic).
-
-Upon seeing a connection migration, an endpoint that sees a new address MUST
-abandon any address validation it is performing with other addresses on the
-expectation that the validation is likely to fail.  Abandoning address
-validation primarily means not closing the connection when a PATH_RESPONSE frame
-is not received, but it could also mean ceasing retransmissions of the
-PATH_CHALLENGE frame.  An endpoint that doesn't retransmit a PATH_CHALLENGE
-frame might receive a PATH_RESPONSE frame, which it MUST ignore.
-
-
-### Spurious Connection Migrations {#migrate-spurious}
-
-A connection migration could be triggered by an attacker that is able to capture
-and forward a packet such that it arrives before the legitimate copy of that
-packet.  Such a packet will appear to be a legitimate connection migration and
-the legitimate copy will be dropped as a duplicate.
-
-After a spurious migration, validation of the source address will fail because
-the entity at the source address does not have the necessary cryptographic keys
-to read or respond to the PATH_CHALLENGE frame that is sent to it, even if it
-wanted to. Such a spurious connection migration could result in the connection
-being dropped when the source address validation fails.  This grants an attacker
-the ability to terminate the connection.
-
-Receipt of packets with higher packet numbers from the legitimate address will
-trigger another connection migration.  This will cause the validation of the
-address of the spurious migration to be abandoned.
-
-To ensure that a peer sends packets from the legitimate address before the
-validation of the new address can fail, an endpoint SHOULD attempt to validate
-the old remote address before attempting to validate the new address.  If the
-connection migration is spurious, then the legitimate address will be used to
-respond and the connection will migrate back to the old address.
-
-As with any address validation, packets containing retransmissions of the
-PATH_CHALLENGE frame validating an address MUST be sent to the address being
-validated. Consequently, during a migration of a peer, an endpoint could be
-sending to multiple remote addresses.
-
-An endpoint MAY abandon address validation for an address that it considers to
-be already valid.  That is, if successive connection migrations occur in quick
-succession with the final remote address being identical to the initial remote
-address, the endpoint MAY abandon address validation for that address.
 
 
 ## Connection Termination {#termination}
@@ -2236,40 +2212,29 @@ than it has sent, unless this is a result of a change in the initial limits (see
 {{zerortt-parameters}}).
 
 
-## PATH_CHALLENGE Frame {#frame-path-challenge}
+## PING Frame {#frame-ping}
 
-Endpoints can use PATH_CHALLENGE frames (type=0x07) to verify that their peers
-are still alive or to check reachability to the peer. A PATH_CHALLENGE frame can
-also carry arbitrary data to perform address validation during connection
-migration.
+Endpoints can use PING frames (type=0x07) to verify that their peers are still
+alive or to check reachability to the peer.  The PING frame contains no
+additional fields.
 
-PATH_CHALLENGE frames contain a variable-length payload.
+The receiver of a PING frame simply needs to acknowledge the packet containing
+this frame.
 
-~~~
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|   Length(8)   |                 Data (*)                    ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-~~~
+The PING frame can be used to keep a connection alive when an application or
+application protocol wishes to prevent the connection from timing out.  An
+application protocol SHOULD provide guidance about the conditions under which
+generating a PING is recommended.  This guidance SHOULD indicate whether it is
+the client or the server that is expected to send the PING.  Having both
+endpoints send PING frames without coordination can produce an excessive number
+of packets and poor performance.
 
-Length:
-
-: This 8-bit value describes the length of the Data field.
-
-Data:
-
-: This variable-length field contains arbitrary data.
-
-If the Data field is not empty, the recipient of this frame MUST generate a
-PATH_RESPONSE frame ({{frame-path-response}}) containing the same Data.
-
-A PATH_CHALLENGE frame MUST NOT elicit acknowledgements, as a valid
-PATH_RESPONSE serves to indicate receipt of the PATH_CHALLENGE. These frames are
-not included in loss recovery, as they will be retransmitted separately.
-
-A packet containing a PATH_CHALLENGE frame with a non-empty Data field MUST be
-padded such that it has a QUIC packet size of least 1200 octets.
+A connection will time out if no packets are sent or received for a period
+longer than the time specified in the idle_timeout transport parameter (see
+{{termination}}).  However, state in middleboxes might time out earlier than
+that.  Though REQ-5 in {{?RFC4787}} recommends a 2 minute timeout interval,
+experience shows that sending packets every 15 to 30 seconds is necessary to
+prevent the majority of middleboxes from losing state for UDP flows.
 
 
 ## BLOCKED Frame {#frame-blocked}
@@ -2394,18 +2359,56 @@ Application Error Code:
   {{app-error-codes}}).
 
 
+## PATH_CHALLENGE Frame {#frame-path-challenge}
+
+Endpoints can use PATH_CHALLENGE frames (type=0x0e) to check reachability to the
+peer, to verify a new path's PMTU, and to perform address validation during
+connection migration.
+
+PATH_CHALLENGE frames contain a variable-length payload.
+
+~~~
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|   Length(8)   |                 Data (*)                    ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~
+
+Length:
+
+: This 8-bit value describes the length of the Data field.
+
+Data:
+
+: This variable-length field contains arbitrary data.
+
+
+The sender of this frame MUST include at least one octet of data in the Data
+field.
+
+The recipient of this frame MUST generate a PATH_RESPONSE frame
+({{frame-path-response}}) containing the same Data.  An endpoint that receives a
+PATH_CHALLENGE frame containing an empty payload MUST generate a connection
+error of type FRAME_ERROR, indicating the PATH_CHALLENGE frame (that is, 0x0e).
+
+A PATH_CHALLENGE frame MUST NOT elicit acknowledgements; the corresponding
+PATH_RESPONSE serves to indicate receipt of the PATH_CHALLENGE.
+
+
 ## PATH_RESPONSE Frame {#frame-path-response}
 
-The PATH_RESPONSE frame (type=0x0d) is sent in response to a PATH_CHALLENGE
-frame that contains data.  Its format is identical to the PATH_CHALLENGE frame
+The PATH_RESPONSE frame (type=0x0f) is sent in response to a PATH_CHALLENGE
+frame.  Its format is identical to the PATH_CHALLENGE frame
 ({{frame-path-challenge}}).
 
-An endpoint that receives an unsolicited PATH_RESPONSE frame - that is, a
-PATH_RESPONSE frame containing a payload that is empty - MUST generate a
-connection error of type FRAME_ERROR, indicating the PATH_RESPONSE frame (that
-is, 0x0d).  If the content of a PATH_RESPONSE frame does not match the content
-of a PATH_CHALLENGE frame previously sent by the endpoint, the endpoint MAY
-generate a connection error of type UNSOLICITED_PATH_RESPONSE.
+An endpoint that receives a PATH_RESPONSE frame containing an empty payload MUST
+generate a connection error of type FRAME_ERROR, indicating the PATH_RESPONSE
+frame (that is, 0x0e).  If the content of a PATH_RESPONSE frame does not match
+the content of a PATH_CHALLENGE frame previously sent by the endpoint, the
+endpoint MAY generate a connection error of type UNSOLICITED_PATH_RESPONSE.
+
+A PATH_RESPONSE frame MUST NOT elicit acknowledgements.
 
 
 ## ACK Frame {#frame-ack}
@@ -2582,8 +2585,7 @@ acknowledged again.
 A receiver that is only sending ACK frames will not receive acknowledgments for
 its packets.  Sending an occasional MAX_DATA or MAX_STREAM_DATA frame as data is
 received will ensure that acknowledgements are generated by a peer.  Otherwise,
-an endpoint MAY send a PATH_CHALLENGE frame once per RTT to solicit an
-acknowledgment.
+an endpoint MAY send a PING frame once per RTT to solicit an acknowledgment.
 
 To limit receiver state or the size of ACK frames, a receiver MAY limit the
 number of ACK blocks it sends.  A receiver can do this even without receiving
@@ -3793,8 +3795,8 @@ Issue and pull request numbers are listed with a leading octothorp.
 
 - Employ variable-length integer encodings throughout (#595)
 - Draining period can terminate early (#869)
-- Replace PING and PONG frames with PATH_CHALLENGE and PATH_RESPONSE frames,
-  clarify connection migration text (#000)
+- Added PATH_CHALLENGE and PATH_RESPONSE frames, removed PING with Data, removed
+  PONG frame and rewrote connection migration (#000)
 
 ## Since draft-ietf-quic-transport-06
 
