@@ -874,7 +874,7 @@ delayed significantly.
 
 ## Packet Number Gaps {#packet-number-gaps}
 
-Section 7.5.1.1 of {{QUIC-TRANSPORT}} also requires a secret to compute packet
+Section 7.7.1.1 of {{QUIC-TRANSPORT}} also requires a secret to compute packet
 number gaps on connection ID transitions. That secret is computed as:
 
 ~~~
@@ -1572,9 +1572,13 @@ many others.
 
 Issue and pull request numbers are listed with a leading octothorp.
 
-## Since draft-ietf-quic-tls-06
+## Since draft-ietf-quic-tls-08
 
-Nothing yet.
+No significant changes.
+
+## Since draft-ietf-quic-tls-07
+
+- Handshake errors can be reported with CONNECTION_CLOSE (#608, #891)
 
 ## Since draft-ietf-quic-tls-05
 
