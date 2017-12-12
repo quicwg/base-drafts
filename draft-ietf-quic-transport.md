@@ -1462,20 +1462,10 @@ connection if the integrity check fails with a PROTOCOL_VIOLATION error code.
 
 ## Connection Migration {#migration}
 
-QUIC connections are identified by 64-bit Connection IDs. QUIC's connection IDs
+QUIC connections are identified by 64-bit connection IDs. QUIC's connection IDs
 allow connections to survive changes to the client's address (client's IP
 address and/or port), such as those caused by a client migrating to a new
 network or a NAT rebinding changing the client's public address.
-
-A client migrating to a new network SHOULD use a new connection ID for packets
-sent from the new address if at all possible, as discussed in
-{{migration-linkability}}.  A client may be unaware of connection migration due
-to NAT rebinding and may consequently not change its connection ID on NAT
-rebindings.
-
-A server that receives a packet for a known connection ID from a new client
-address SHOULD validate this new address, as discussed in
-{{migration-validate}},
 
 
 ### Path Validation and PMTU Verification
@@ -1496,14 +1486,19 @@ containing the same payload sent by the server to the new client address is
 received.
 
 
-### Client Behavior {{migration-client}}
+### Client Behavior {#migration-client}
 
 A client triggers connection migration to a new address by sending a
 PATH_CHALLENGE as a probe or by switching to sending all packets to the new
 address. The client SHOULD do PMTU verification before considering migration
-complete. The client also participates in a validation that the server may
-initiate to confirm the client's ownership of its address (see
+complete. The client also participates in an address validation that the server
+may initiate to confirm the client's ownership of its address (see
 {{migration-server}}).
+
+A client migrating to a new network SHOULD use a new connection ID for packets
+sent from the new address if at all possible, see {{migration-linkability}} for
+further discussion.  A client may be unaware of connection migration due to NAT
+rebinding and may consequently not change its connection ID on NAT rebindings.
 
 
 #### Verifying the PMTU
@@ -1519,16 +1514,16 @@ the client to the server supports an MTU of this size.
 
 A client MAY send additional PATH_CHALLENGE frames to handle packet loss or to
 get more measurements on the new network path, subject to the congestion
-controller's limits.
+controller's limits {{QUIC-RECOVERY}}.
 
 The client SHOULD use fresh random data in every PATH_CHALLENGE frame so that it
 can perform more accurate measurements by associating the server's response with
 the causative PATH_CHALLENGE.
 
 When the client receives a PATH_RESPONSE from the server and verifies that the
-included data matches that sent by the client in a previously sent
-PATH_CHALLENGE, the server is considered reachable from the new address and the
-PMTU of the new network path is considered verified.
+included data matches the data it sent in a previous PATH_CHALLENGE, the server
+is considered reachable from the new address and the PMTU of the new network
+path is considered verified.
 
 A client SHOULD abandon the new address if it does not receive a PATH_RESPONSE
 after sending some number of PATH_CHALLENGE frames and/or after some time has
@@ -1537,7 +1532,7 @@ period, but not receiving a PATH_RESPONSE may be indicative of a PMTU detection
 failure.
 
 
-#### Responding to Server's Validation
+#### Responding to a Server's Validation
 
 A client may receive a PATH_CHALLENGE from a server that is validating the
 client's ownership of its address, as described in {{migration-server}}. The
@@ -1561,36 +1556,43 @@ indicative of a server choosing to validate a client's address after a period of
 quiescence.
 
 
-### Server Behavior {{migration-server}}
+### Server Behavior {#migration-server}
 
 The server responds to any probes sent by the client from a new address,
-participates in the client's PMTU verification, and MUST validate that the
-client owns its new address.  The server MAY validate any client's address at
-any time, but it MUST limit the rate at which data is sent to an unvalidated
-address, and it MUST limit the amount of time for which it sends data to an
-unvalidated address.
+participates in the client's PMTU verification, and validates that the client
+owns the new address.  The server MAY validate any client's address at any time,
+but it MUST limit the rate at which data is sent to an unvalidated address, and
+it MUST limit the amount of time for which it sends data to an unvalidated
+address.
 
 
-#### Responding to Client's Probe
+#### Responding to a Client's Probe
 
 When a server receives a PATH_CHALLENGE frame from a client, it MUST generate a
-PATH_RESPONSE frame that contains the same data as the challenge, and send it in
-a packet padded to the size of the client's packet that included the
-PATH_CHALLENGE. This PATH_RESPONSE MUST be sent to the address from which the
-PATH_CHALLENGE was received.
+PATH_RESPONSE frame that contains the same data as the challenge. The server's
+PATH_RESPONSE MUST be sent to the address from which the client's PATH_CHALLENGE
+was received.
+
+The server sends the PATH_RESPONSE in a packet that is padded to no more than
+the size of the client's packet carrying the PATH_CHALLENGE.  The server SHOULD
+pad the packet to the same size as the client's packet, unless the server has
+reasonable assurance of a smaller PMTU.
 
 The server need not retransmit its PATH_RESPONSE, since it is the client's
 responsibility to send more PATH_CHALLENGE frames when a response is not
 received for a prior one.
 
+Servers MUST ignore a PATH_CHALLENGE frame from a client that is carried in a
+packet smaller than 1200 octets in size.
 
-#### Validating an Unvalidated Client Address
+
+#### Validating an Unvalidated Client Address {#migration-validate}
 
 Before sending any other packets to a client address that is not yet considered
 valid, the server MUST send a PATH_CHALLENGE frame with its own validation data
 to this address to verify the client's ownership of it. The server's
-PATH_CHALLENGE MAY be bundled with other frames in a packet that does not need
-to be padded.
+PATH_CHALLENGE MAY be bundled with other frames and does not require additional
+padding.
 
 When the server receives a PATH_RESPONSE from a client and verifies that the
 included data matches that sent by the server in a previous PATH_CHALLENGE to
@@ -1631,12 +1633,10 @@ validation token to the client ({{address-validation}}).
 When a server receives a packet containing a frame other than PATH_CHALLENGE,
 PATH_RESPONSE, or PADDING from a client address with a packet number that is the
 largest seen thus far on the connection, the server "commits" to this client
-address. The server MUST send all subsequent packets, with the exception of
-those containing PATH_RESPONSE and PATH_CHALLENGE frames, to this address.
-
-PATH_CHALLENGE, PATH_RESPONSE, and PADDING frames are used for probing a network
-path. Receiving these frames MUST NOT cause the server to commit to a new
-address.
+address. The server MUST send all subsequent packets to this address, with the
+following exception.  PATH_CHALLENGE, PATH_RESPONSE, and PADDING frames are used
+for probing a network path, and receiving only these frames MUST NOT cause the
+server to commit to a new address.
 
 Receiving a packet from a new address but with a packet number that is not the
 largest seen thus far suggests that a reordered packet was received and MUST NOT
@@ -1644,7 +1644,6 @@ cause the server to change its commitment.
 
 Upon committing to a new address, the server SHOULD reset its congestion
 controller and roundtrip time estimator to start new estimations.
-
 
 When a server receives a packet from a new client address that causes it to
 commit to this new address, it may still need to validate the new client
@@ -2217,10 +2216,10 @@ than it has sent, unless this is a result of a change in the initial limits (see
 
 Endpoints can use PING frames (type=0x07) to verify that their peers are still
 alive or to check reachability to the peer.  The PING frame contains no
-additional fields.  The receiver of a PING frame simply needs to acknowledge the
-packet containing this frame.
+additional fields.
 
-A PING frame has no additional fields.
+The receiver of a PING frame simply needs to acknowledge the packet containing
+this frame.
 
 The PING frame can be used to keep a connection alive when an application or
 application protocol wishes to prevent the connection from timing out.  An
@@ -2362,7 +2361,7 @@ Application Error Code:
 
 ## PATH_CHALLENGE Frame {#frame-path-challenge}
 
-Endpoints can use PATH_CHALLENGE frames (type=0x07) to check reachability to the
+Endpoints can use PATH_CHALLENGE frames (type=0x0e) to check reachability to the
 peer, to verify a new path's PMTU, and to perform address validation during
 connection migration.
 
@@ -2391,7 +2390,7 @@ field.
 The recipient of this frame MUST generate a PATH_RESPONSE frame
 ({{frame-path-response}}) containing the same Data.  An endpoint that receives a
 PATH_CHALLENGE frame containing an empty payload MUST generate a connection
-error of type FRAME_ERROR, indicating the PATH_CHALLENGE frame (that is, 0x0d).
+error of type FRAME_ERROR, indicating the PATH_CHALLENGE frame (that is, 0x0e).
 
 A PATH_CHALLENGE frame MUST NOT elicit acknowledgements; the corresponding
 PATH_RESPONSE serves to indicate receipt of the PATH_CHALLENGE.
@@ -2399,7 +2398,7 @@ PATH_RESPONSE serves to indicate receipt of the PATH_CHALLENGE.
 
 ## PATH_RESPONSE Frame {#frame-path-response}
 
-The PATH_RESPONSE frame (type=0x0d) is sent in response to a PATH_CHALLENGE
+The PATH_RESPONSE frame (type=0x0f) is sent in response to a PATH_CHALLENGE
 frame.  Its format is identical to the PATH_CHALLENGE frame
 ({{frame-path-challenge}}).
 
@@ -3796,8 +3795,8 @@ Issue and pull request numbers are listed with a leading octothorp.
 
 - Employ variable-length integer encodings throughout (#595)
 - Draining period can terminate early (#869)
-- Added PATH_CHALLENGE and PATH_RESPONSE frames, removed PING with Data,
-  and rewrote connection migration (#000)
+- Added PATH_CHALLENGE and PATH_RESPONSE frames, removed PING with Data, removed
+  PONG frame and rewrote connection migration (#000)
 
 ## Since draft-ietf-quic-transport-06
 
