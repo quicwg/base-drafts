@@ -770,7 +770,7 @@ the requirements of the AEAD function selected by TLS.  All ciphersuites
 currently used for QUIC have a 16-byte authentication tag and produce an ouput
 16 bytes larger than their input.  The key length is the AEAD key size.  As
 defined in Section 5.3 of {{!TLS13}}, the IV length is the larger of 8 or N_MIN
-(see Section 4 of {{!AEAD=RFC5116}}; all ciphersuites defined in {{?TLS13}} have
+(see Section 4 of {{!AEAD=RFC5116}}; all ciphersuites defined in {{!TLS13}} have
 N_MIN set to 12). For any secret S, the corresponding key and IV are derived as
 shown below:
 
