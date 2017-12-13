@@ -2714,12 +2714,18 @@ but not the UDP or IP header.
 
 The initial client packet SHOULD be padded to exactly 1200 octets unless the
 client has a reasonable assurance that the PMTU is larger.  Sending a packet of
-this size ensures that the network path supports an MTU of this size and helps
-reduce the amplitude of amplification attacks caused by server responses toward
-an unverified client address.
+this size ensures that the network path from the client to the server supports
+an MTU of this size and helps reduce the amplitude of amplification attacks
+caused by server responses toward an unverified client address.
 
 Servers MUST ignore an initial plaintext packet from a client if its total size
 is less than 1200 octets.
+
+Similarly, servers MUST ensure that the first handshake packet they send to
+clients, and any retransmissions of those octets, has a QUIC packet size that is
+the same as the received initial client packet, unless the server knows the PMTU
+to the client to be smaller. Sending a packet of this size ensures that the
+network path from the server to the client supports an MTU of this size.
 
 If a QUIC endpoint determines that the PMTU between any pair of local and remote
 IP addresses has fallen below 1280 octets, it MUST immediately cease sending
