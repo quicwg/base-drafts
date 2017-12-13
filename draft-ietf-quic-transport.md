@@ -154,8 +154,7 @@ Connection ID:
 
 QUIC packet:
 
-: A well-formed UDP payload that can be parsed by a QUIC receiver.  QUIC packet
-  size in this document refers to the UDP payload size.
+: A well-formed UDP payload that can be parsed by a QUIC receiver.
 
 
 ## Notational Conventions
@@ -2683,49 +2682,6 @@ transmission efficiency to underfilled packets.
 
 # Packetization and Reliability {#packetization}
 
-The Path Maximum Transmission Unit (PMTU) is the maximum size of the entire IP
-header, UDP header, and UDP payload. The UDP payload includes the QUIC packet
-header, protected payload, and any authentication fields.
-
-All QUIC packets SHOULD be sized to fit within the estimated PMTU to avoid IP
-fragmentation or packet drops. To optimize bandwidth efficiency, endpoints
-SHOULD use Packetization Layer PMTU Discovery ({{!PLPMTUD=RFC4821}}) and MAY use
-PMTU Discovery ({{!PMTUDv4=RFC1191}}, {{!PMTUDv6=RFC8201}}) for detecting the
-PMTU, setting the PMTU appropriately, and storing the result of previous PMTU
-determinations.
-
-In the absence of these mechanisms, QUIC endpoints SHOULD NOT send IP packets
-larger than 1280 octets. Assuming the minimum IP header size, this results in
-a QUIC packet size of 1232 octets for IPv6 and 1252 octets for IPv4.
-
-QUIC endpoints that implement any kind of PMTU discovery SHOULD maintain an
-estimate for each combination of local and remote IP addresses (as each pairing
-could have a different maximum MTU in the path).
-
-QUIC depends on the network path supporting a MTU of at least 1280 octets. This
-is the IPv6 minimum and therefore also supported by most modern IPv4 networks.
-An endpoint MUST NOT reduce their MTU below this number, even if it receives
-signals that indicate a smaller limit might exist.
-
-Clients MUST ensure that the first packet in a connection, and any
-retransmissions of those octets, has a QUIC packet size of least 1200 octets.
-The packet size for a QUIC packet includes the QUIC header and integrity check,
-but not the UDP or IP header.
-
-The initial client packet SHOULD be padded to exactly 1200 octets unless the
-client has a reasonable assurance that the PMTU is larger.  Sending a packet of
-this size ensures that the network path supports an MTU of this size and helps
-reduce the amplitude of amplification attacks caused by server responses toward
-an unverified client address.
-
-Servers MUST ignore an initial plaintext packet from a client if its total size
-is less than 1200 octets.
-
-If a QUIC endpoint determines that the PMTU between any pair of local and remote
-IP addresses has fallen below 1280 octets, it MUST immediately cease sending
-QUIC packets on the affected path.  This could result in termination of the
-connection if an alternative path cannot be found.
-
 A sender bundles one or more frames in a Regular QUIC packet (see {{frames}}).
 
 A sender SHOULD minimize per-packet bandwidth and computational costs by
@@ -2793,7 +2749,58 @@ that it sends.
 Strategies and implications of the frequency of generating acknowledgments are
 discussed in more detail in {{QUIC-RECOVERY}}.
 
-## Special Considerations for PMTU Discovery
+
+## Packet Size
+
+The QUIC packet size includes the QUIC header and integrity check, but not the
+UDP or IP header.
+
+Clients MUST ensure that any Initial packet it sends has a QUIC packet size of
+least 1200 octets.
+
+An Initial packet MUST be padded to at least 1200 octets unless the client knows
+that the Path Maximum Transmission Unit (PMTU) supports the size that it
+chooses.  Sending an Initial packet of this size ensures that the network path
+supports an MTU of this size and helps reduce the amplitude of amplification
+attacks caused by server responses toward an unverified client address.
+
+A server MUST NOT allow receipt of a packet that is smaller than 1200 octets to
+start a new connection.
+
+
+## Path Maximum Transmission Unit
+
+The Path Maximum Transmission Unit (PMTU) is the maximum size of the entire IP
+header, UDP header, and UDP payload. The UDP payload includes the QUIC packet
+header, protected payload, and any authentication fields.
+
+All QUIC packets SHOULD be sized to fit within the estimated PMTU to avoid IP
+fragmentation or packet drops. To optimize bandwidth efficiency, endpoints
+SHOULD use Packetization Layer PMTU Discovery ({{!PLPMTUD=RFC4821}}).  Endpoints
+MAY use PMTU Discovery ({{!PMTUDv4=RFC1191}}, {{!PMTUDv6=RFC8201}}) for
+detecting the PMTU, setting the PMTU appropriately, and storing the result of
+previous PMTU determinations.
+
+In the absence of these mechanisms, QUIC endpoints SHOULD NOT send IP packets
+larger than 1280 octets. Assuming the minimum IP header size, this results in
+a QUIC packet size of 1232 octets for IPv6 and 1252 octets for IPv4.
+
+QUIC endpoints that implement any kind of PMTU discovery SHOULD maintain an
+estimate for each combination of local and remote IP addresses.  Each pairing of
+local and remote addresses could have a different maximum MTU in the path.
+
+QUIC depends on the network path supporting a MTU of at least 1280 octets. This
+is the IPv6 minimum MTU and therefore also supported by most modern IPv4
+networks.  An endpoint MUST NOT reduce its MTU below this number, even if it
+receives signals that indicate a smaller limit might exist.
+
+If a QUIC endpoint determines that the PMTU between any pair of local and remote
+IP addresses has fallen below 1280 octets, it MUST immediately cease sending
+QUIC packets on the affected path.  This could result in termination of the
+connection if an alternative path cannot be found.
+
+
+### Special Considerations for PMTU Discovery
 
 Traditional ICMP-based path MTU discovery in IPv4 {{!RFC1191}} is potentially
 vulnerable to off-path attacks that successfully guess the IP/port 4-tuple and
@@ -2818,6 +2825,26 @@ Too Big messages.
 * Any reduction in PMTU due to a report contained in an ICMP packet is
 provisional until QUIC's loss detection algorithm determines that the packet is
 actually lost.
+
+
+### Special Considerations for Packetization Layer PMTU Discovery
+
+
+The PADDING frame provides a useful option for PMTU probe packets that does not
+exist in other transports. PADDING frames generate acknowledgements, but their
+content need not be delivered reliably. PADDING frames may delay the delivery of
+application data, as they consume the congestion window. However, by definition
+their likely loss in a probe packet does not require delay-inducing
+retransmission of application data.
+
+When implementing the algorithm in Section 7.2 of {{!RFC4821}}, the initial
+value of search_low SHOULD be consistent with the IPv6 minimum packet size.
+Paths that do not support this size cannot deliver Initial packets, and
+therefore are not QUIC-compliant.
+
+Section 7.3 of {{!RFC4821}} discusses tradeoffs between small and large
+increases in the size of probe packets. As QUIC probe packets need not contain
+application data, aggressive increases in probe size carry fewer consequences.
 
 
 # Streams: QUIC's Data Structuring Abstraction {#streams}
