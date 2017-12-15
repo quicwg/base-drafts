@@ -412,10 +412,10 @@ The following packet types are defined:
 
 | Type | Name                          | Section                     |
 |:-----|:------------------------------|:----------------------------|
-| 0x7F | Initial                       | {{packet-initial}}          |
-| 0x7E | Retry                         | {{packet-retry}}            |
-| 0x7D | Handshake                     | {{packet-handshake}}        |
-| 0x7C | 0-RTT Protected               | {{packet-protected}}        |
+| 0x01 | Initial                       | {{packet-initial}}          |
+| 0x02 | Retry                         | {{packet-retry}}            |
+| 0x03 | Handshake                     | {{packet-handshake}}        |
+| 0x04 | 0-RTT Protected               | {{packet-protected}}        |
 {: #long-packet-types title="Long Header Packet Types"}
 
 The header form, packet type, connection ID, packet number and version fields of
@@ -454,10 +454,10 @@ Header Form:
 
 : The most significant bit (0x80) of octet 0 is set to 0 for the short header.
 
-Omit Connection ID Flag:
+Connection ID Flag:
 
 : The second bit (0x40) of octet 0 indicates whether the Connection ID field is
-  omitted.  If set to 0, then the Connection ID field is present; if set to 1,
+  present.  If set to 1, then the Connection ID field is present; if set to 0,
   the Connection ID field is omitted.  The Connection ID field can
   only be omitted if the omit_connection_id transport parameter
   ({{transport-parameter-definitions}}) is specified by the intended recipient
@@ -476,7 +476,7 @@ Short Packet Type:
 
 Connection ID:
 
-: If the Omit Connection ID Flag is not set, a connection ID occupies octets
+: If the Connection ID Flag is not set, a connection ID occupies octets
   1 through 8 of the packet.  See {{connection-id}} for more details.
 
 Packet Number:
@@ -494,9 +494,9 @@ other fields.
 
 | Type | Packet Number Size |
 |:-----|:-------------------|
-| 0x1F | 1 octet            |
-| 0x1E | 2 octets           |
-| 0x1D | 4 octets           |
+| 0x01 | 1 octet            |
+| 0x02 | 2 octets           |
+| 0x03 | 4 octets           |
 {: #short-packet-types title="Short Header Packet Types"}
 
 The header form, omit connection ID flag, and connection ID of a short header
@@ -574,7 +574,7 @@ off-path attackers.
 
 ### Initial Packet {#packet-initial}
 
-The Initial packet uses long headers with a type value of 0x7E.  It carries the
+The Initial packet uses long headers with a type value of 0x01.  It carries the
 first cryptographic handshake message sent by the client.
 
 The client populates the connection ID field with randomly selected values,
@@ -602,7 +602,7 @@ Retry packet ({{packet-retry}}).
 
 ### Retry Packet {#packet-retry}
 
-A Retry packet uses long headers with a type value of 0x7D.  It carries
+A Retry packet uses long headers with a type value of 0x02.  It carries
 cryptographic handshake messages and acknowledgments.  It is used by a server
 that wishes to perform a stateless retry (see {{stateless-retry}}).
 
@@ -635,7 +635,7 @@ the server will also start at stream offset 0.
 
 ### Handshake Packet {#packet-handshake}
 
-A Handshake packet uses long headers with a type value of 0x7C.  It is
+A Handshake packet uses long headers with a type value of 0x03.  It is
 used to carry acknowledgments and cryptographic handshake messages from the
 server and client.
 
@@ -659,7 +659,7 @@ packets protected with 1-RTT keys are sent with short headers.  The different
 packet types explicitly indicate the encryption level and therefore the keys
 that are used to remove packet protection.
 
-Packets protected with 0-RTT keys use a type value of 0x7B.  The connection ID
+Packets protected with 0-RTT keys use a type value of 0x04.  The connection ID
 field for a 0-RTT packet is selected by the client.
 
 The client can send 0-RTT packets after receiving a Handshake packet
@@ -682,7 +682,7 @@ sequence of frames, as described in {{frames}}.
 
 QUIC connections are identified by their 64-bit Connection ID.  All long headers
 contain a Connection ID.  Short headers indicate the presence of a Connection ID
-using the Omit Connection ID flag.  When present, the Connection ID is in the
+using the Connection ID flag.  When present, the Connection ID is in the
 same location in all packet headers, making it straightforward for middleboxes,
 such as load balancers, to locate and use it.
 
@@ -776,7 +776,7 @@ constant:
 
 * the location of the header form flag,
 
-* the location of the Omit Connection ID flag in short headers,
+* the location of the Connection ID flag in short headers,
 
 * the location and size of the Connection ID field in both header forms,
 
@@ -1814,7 +1814,7 @@ stateless reset.  A server omits the connection ID if explicitly configured to
 do so, or if the client packet did not include a connection ID.
 
 The Packet Number field is set to a randomized value.  The server SHOULD send a
-packet with a short header and a type of 0x1F.  This produces the shortest
+packet with a short header and a type of 0x01.  This produces the shortest
 possible packet number encoding, which minimizes the perceived gap between the
 last packet that the server sent and this packet.  A server MAY use a different
 short header type, indicating a different packet number length, but a longer
