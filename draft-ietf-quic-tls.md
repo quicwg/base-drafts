@@ -794,11 +794,11 @@ connection.  For example, if TLS is using the TLS_AES_128_GCM_SHA256, the
 AEAD_AES_128_GCM function is used.
 
 All QUIC packets other than Version Negotiation and Stateless Reset packets are
-protected with an AEAD algorithm {{!AEAD}}. Cleartext packets are protected
-with AEAD_AES_128_GCM and a key derived from the client's connection ID (see
-{{handshake-secrets}}).  This provides protection against off-path attackers and
-robustness against QUIC version unaware middleboxes, but not against on-path
-attackers.
+protected with an AEAD algorithm {{!AEAD}}. Prior to establishing a shared
+secret, packets are protected with AEAD_AES_128_GCM and a key derived from the
+client's connection ID (see {{handshake-secrets}}).  This provides protection
+against off-path attackers and robustness against QUIC version unaware
+middleboxes, but not against on-path attackers.
 
 Once TLS has provided a key, the contents of regular QUIC packets immediately
 after any TLS messages have been sent are protected by the AEAD selected by TLS.
@@ -958,13 +958,13 @@ keys.  An endpoint MUST generate ACK frames for these messages and send them in
 packets protected with handshake keys.
 
 A HelloRetryRequest handshake message might be used to reject an initial
-ClientHello.  A HelloRetryRequest handshake message is sent in a Server
-Stateless Retry packet; any second ClientHello that is sent in response uses a
-Client Initial packet type.  Neither packet is protected.  This is natural,
-because no new keying material will be available when these messages need to be
-sent.  Upon receipt of a HelloRetryRequest, a client SHOULD cease any
-transmission of 0-RTT data; 0-RTT data will only be discarded by any server that
-sends a HelloRetryRequest.
+ClientHello.  A HelloRetryRequest handshake message is sent in a Retry packet;
+any second ClientHello that is sent in response uses a Initial packet type.
+These packets are only protected with a predictable key (see
+{{handshake-secrets}}).  This is natural, because no shared secret will be
+available when these messages need to be sent.  Upon receipt of a
+HelloRetryRequest, a client SHOULD cease any transmission of 0-RTT data; 0-RTT
+data will only be discarded by any server that sends a HelloRetryRequest.
 
 The packet type ensures that protected packets are clearly distinguished from
 unprotected packets.  Loss or reordering might cause unprotected packets to
@@ -1120,15 +1120,22 @@ the transport will be lost at the server.  This includes the stream offset of
 stream 0, the packet number that the server selects, and any opportunity to
 measure round trip time.
 
-A server MUST send a TLS HelloRetryRequest in a Server Stateless Retry packet.
-Using a Server Stateless Retry packet causes the client to reset stream offsets.
-It also avoids the need for the server select an initial packet number, which
-would need to be remembered so that subsequent packets could be correctly
-numbered.
+A server MUST send a TLS HelloRetryRequest in a Retry packet.  Using a Retry
+packet causes the client to reset stream offsets.  It also avoids the need for
+the server select an initial packet number, which would need to be remembered so
+that subsequent packets could be correctly numbered.
 
-A HelloRetryRequest message MUST NOT be split between multiple Server Stateless
-Retry packets.  This means that HelloRetryRequest is subject to the same size
-constraints as a ClientHello (see {{clienthello-size}}).
+A HelloRetryRequest message MUST NOT be split between multiple Retry packets.
+This means that HelloRetryRequest is subject to the same size constraints as a
+ClientHello (see {{clienthello-size}}).
+
+A client might send multiple Initial packets in response to loss.  If a server
+sends a Retry packet in response to an Initial packet, it does not have to
+generate the same Retry packet each time.  Variations in Retry packet, if used
+by a client, could lead to multiple connections derived from the same
+ClientHello.  Reuse of the client nonce is not supported by TLS and could lead
+to security vulnerabilities.  Clients that receive multiple Retry packets MUST
+use only one and discard the remainder.
 
 
 ## NewSessionTicket Address Validation
