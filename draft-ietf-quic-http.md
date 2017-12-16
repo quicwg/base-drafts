@@ -371,39 +371,34 @@ stream that carried the request that generated the push.  This allows the server
 push to be associated with a request.  Ordering of a PUSH_PROMISE in relation to
 certain parts of the response is important (see Section 8.2.1 of {{!RFC7540}}).
 
-Unlike HTTP/2, the PUSH_PROMISE does not reference a stream; when a server
-fulfills a promise, the stream that carries the stream headers references a Push
-ID.  This allows a server to fulfill promises in the order that best suits its
-needs.
+Unlike HTTP/2, the PUSH_PROMISE does not reference a stream; it contains a Push
+ID. The Push ID uniquely identifies a server push (see {{frame-push-promise}}).
+This allows a server to fulfill promises in the order that best suits its needs.
 
-The server push response is conveyed on a push stream.  A push stream is a
-server-initiated, unidirectional stream.  A push stream includes a header (see
-{{fig-push-stream-header}}) that identifies the PUSH_PROMISE that it fulfills.
-This header consists of a Push ID, encoded as a variable-length integer.  The
-Push ID identifies a server push (see {{frame-push-promise}}).
+When a server later fulfills a promise, the server push response is conveyed on
+a push stream.  A push stream is a server-initiated, unidirectional stream.  A
+push stream always begins with a header (see {{fig-push-stream-header}}) that
+identifies the Push ID of the PUSH_PROMISE that it fulfills, encoded as a
+variable-length integer.
 
 ~~~~~
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                         Push ID (i)                           |
+|                         Push ID (i)                         ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~~~
 {: #fig-push-stream-header title="Push Stream Header"}
-
-A push stream always starts with a Push ID.  A client MUST treat receiving a
-push stream that contains a truncated variable-length integer as a connection
-error of type HTTP_MALFORMED_FRAME.
 
 A server SHOULD use Push IDs sequentially, starting at 0.  A client uses the
 MAX_PUSH_ID frame ({{frame-max-push-id}}) to limit the number of pushes that a
 server can promise.  A client MUST treat receipt of a push stream with a Push ID
 that is greater than the maximum Push ID as a connection error of type
-HTTP_MALFORMED_FRAME.
+HTTP_PUSH_LIMIT_EXCEEDED.
 
 Each Push ID MUST only be used once in a push stream header.  If a push stream
 header includes a Push ID that was used in another push stream header, the
-client MUST treat this as a connection error of type HTTP_MALFORMED_FRAME.  The
+client MUST treat this as a connection error of type HTTP_DUPLICATE_PUSH.  The
 same Push ID can be used in multiple PUSH_PROMISE frames (see
 {{frame-push-promise}}).
 
@@ -605,8 +600,8 @@ The Push ID identifies the server push that is being cancelled (see
 If the client receives a CANCEL_PUSH frame, that frame might identify a Push ID
 that has not yet been mentioned by a PUSH_PROMISE frame.
 
-A server MUST treat a CANCEL_PUSH frame payload does not contain exactly one
-variable-length integer as a connection error of type
+An endpoint MUST treat a CANCEL_PUSH frame which does not contain exactly one
+properly-formatted variable-length integer as a connection error of type
 HTTP_MALFORMED_FRAME.
 
 
@@ -976,6 +971,12 @@ HTTP_VERSION_FALLBACK (0x09):
 
 HTTP_WRONG_STREAM (0x0A):
 : A frame was received on stream where it is not permitted.
+
+HTTP_PUSH_LIMIT_EXCEEDED (0x0B):
+: A Push ID greater than the current maximum Push ID was referenced.
+
+HTTP_DUPLICATE_PUSH (0x0C):
+: A Push ID was referenced on two different Push streams.
 
 HTTP_MALFORMED_FRAME (0x01XX):
 : An error in a specific frame type.  The frame type is included as the last
@@ -1364,6 +1365,8 @@ The entries in the following table are registered by this document.
 |  HTTP_EXCESSIVE_LOAD              |  0x0008  |  Peer generating excessive load        | {{http-error-codes}} |
 |  HTTP_VERSION_FALLBACK            |  0x0009  |  Retry over HTTP/2                     | {{http-error-codes}} |
 |  HTTP_WRONG_STREAM                |  0x000A  |  A frame was sent on the wrong stream  | {{http-error-codes}} |
+|  HTTP_PUSH_LIMIT_EXCEEDED         |  0x000B  |  Maximum Push ID exceeded              | {{http-error-codes}} |
+|  HTTP_DUPLICATE_PUSH              |  0x000C  |  Push ID was fulfilled multiple times  | {{http-error-codes}} |
 |  HTTP_MALFORMED_FRAME             |  0x01XX  |  Error in frame formatting or use      | {{http-error-codes}} |
 |-----------------------------------|----------|----------------------------------------|----------------------|
 
