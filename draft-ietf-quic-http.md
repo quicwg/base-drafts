@@ -95,7 +95,9 @@ frame name will be prefaced with "QUIC."  For example, "QUIC APPLICATION_CLOSE
 frames."  References without this preface refer to frames defined in {{frames}}.
 
 
-# QUIC Advertisement
+# Connection Setup and Management
+
+## Discovering an HTTP/QUIC Endpoint
 
 An HTTP origin advertises the availability of an equivalent HTTP/QUIC endpoint
 via the Alt-Svc HTTP response header or the HTTP/2 ALTSVC frame ({{!RFC7838}}),
@@ -121,7 +123,7 @@ Servers MAY serve HTTP/QUIC on any UDP port.  Servers MUST use the same port
 across all IP addresses that serve a single domain, and SHOULD NOT change this
 port.
 
-## QUIC Version Hints {#alt-svc-version-hint}
+### QUIC Version Hints {#alt-svc-version-hint}
 
 This document defines the "quic" parameter for Alt-Svc, which MAY be used to
 provide version-negotiation hints to HTTP/QUIC clients. QUIC versions are
@@ -147,11 +149,16 @@ Origins SHOULD list only versions which are supported by the alternative, but
 MAY omit supported versions for any reason.
 
 
-# Connection Establishment {#connection-establishment}
+## Connection Establishment {#connection-establishment}
 
-HTTP/QUIC connections are established as described in {{QUIC-TRANSPORT}}. During
+HTTP/QUIC relies on QUIC as the underlying transport.  The QUIC version being
+used MUST use TLS version 1.3 or greater as its handshake protocol.  The Server
+Name Indication extension {{!RFC6066}} MUST be included in the TLS handshake.
+
+QUIC connections are established as described in {{QUIC-TRANSPORT}}. During
 connection establishment, HTTP/QUIC support is indicated by selecting the ALPN
-token "hq" in the crypto handshake.
+token "hq" in the crypto handshake.  Support for other application-layer
+protocols MAY be offered in the same handshake.
 
 While connection-level options pertaining to the core QUIC protocol are set in
 the initial crypto handshake, HTTP-specific settings are conveyed
@@ -161,7 +168,7 @@ of their respective HTTP control stream (Stream ID 2 or 3, see
 {{stream-mapping}}). The server MUST NOT send data on any other stream until
 the client's SETTINGS frame has been received.
 
-## Draft Version Identification
+### Draft Version Identification
 
 > **RFC Editor's Note:**  Please remove this section prior to publication of a
 > final version of this document.
@@ -182,6 +189,22 @@ itself as "hq-09-rickroll". Note that any label MUST conform to the "token"
 syntax defined in Section 3.2.6 of [RFC7230]. Experimenters are encouraged to
 coordinate their experiments on the quic@ietf.org mailing list.
 
+## Connection Reuse
+
+Once a connection exists to a server endpoint, this connection MAY be reused for
+requests with multiple different URI authority components.  The client MAY send
+any requests for which the client considers the server authoritative.
+
+This typically means that the client has received an Alt-Svc record from the
+request's origin in question which nominates the server endpoint as a valid HTTP
+Alternative Service for that origin.  Clients SHOULD NOT assume that an
+HTTP/QUIC endpoint is authoritative for other origins without an explicit
+signal.
+
+A server that does not wish clients to reuse connections for a particular origin
+can indicate that it is not authoritative for a request by sending a 421
+(Misdirected Request) status code in response to the request (see Section 9.1.2
+of {{!RFC7540}}).
 
 # Stream Mapping and Usage {#stream-mapping}
 
