@@ -195,11 +195,13 @@ Once a connection exists to a server endpoint, this connection MAY be reused for
 requests with multiple different URI authority components.  The client MAY send
 any requests for which the client considers the server authoritative.
 
-This typically means that the client has received an Alt-Svc record from the
-request's origin in question which nominates the server endpoint as a valid HTTP
-Alternative Service for that origin.  Clients SHOULD NOT assume that an
-HTTP/QUIC endpoint is authoritative for other origins without an explicit
-signal.
+An authoritative HTTP/QUIC endpoint is typically discovered because the client
+has received an Alt-Svc record from the request's origin which nominates the
+endpoint as a valid HTTP Alternative Service for that origin.  As required by
+{{RFC7838}}, clients MUST validate that the nominated server can present a
+validated certificate for the origin before considering it authoritative.
+Clients SHOULD NOT assume that an HTTP/QUIC endpoint is authoritative for other
+origins without an explicit signal.
 
 A server that does not wish clients to reuse connections for a particular origin
 can indicate that it is not authoritative for a request by sending a 421
