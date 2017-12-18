@@ -310,8 +310,8 @@ host for similar purposes.
 
 A CONNECT request in HTTP/QUIC functions in the same manner as in HTTP/2. The
 request MUST be formatted as described in {{!RFC7540}}, Section 8.3. A CONNECT
-request that does not conform to these restrictions is malformed. The message
-data stream MUST NOT be closed at the end of the request.
+request that does not conform to these restrictions is malformed. The request
+stream MUST NOT be half-closed at the end of the request.
 
 A proxy that supports CONNECT establishes a TCP connection ({{!RFC0793}}) to the
 server identified in the ":authority" pseudo-header field. Once this connection
