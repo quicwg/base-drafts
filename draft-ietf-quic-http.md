@@ -1030,7 +1030,7 @@ These departures are noted in this section.
 
 ## Streams {#h2-streams}
 
-HTTP/QUIC permits use of a larger number of streams (2^62-1) then HTTP/2.  The
+HTTP/QUIC permits use of a larger number of streams (2^62-1) than HTTP/2.  The
 considerations about exhaustion of stream identifier space apply, though the
 space is significantly larger such that it is likely that other limits in QUIC
 are reached first, such as the limit on the connection flow control window.
@@ -1161,7 +1161,7 @@ SETTINGS_MAX_FRAME_SIZE:
 SETTINGS_MAX_HEADER_LIST_SIZE:
 : See {{settings-parameters}}.
 
-Settings need to be defined separately for HTTP/2 and  HTTP/QUIC.  The IDs of
+Settings need to be defined separately for HTTP/2 and HTTP/QUIC.  The IDs of
 settings defined in {{!RFC7540}} have been reserved for simplicity.  See
 {{iana-settings}}.
 
