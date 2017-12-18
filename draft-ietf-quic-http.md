@@ -349,11 +349,9 @@ another request, which expresses the preference that the latter stream (the
 connection form a dependency tree. The structure of the dependency tree changes
 as PRIORITY frames add, remove, or change the dependency links between requests.
 
-HTTP/2 defines its priorities in terms of streams whereas HTTP over QUIC
-identifies requests.  The PRIORITY frame {{frame-priority}} identifies a request
+The PRIORITY frame {{frame-priority}} identifies a request
 either by identifying the stream that carries a request or by using a Push ID
-({{frame-push-promise}}).  Other than the means of identifying requests, the
-prioritization system is identical to that in HTTP/2.
+({{frame-push-promise}}).
 
 Only a client can send PRIORITY frames.  A server MUST NOT send a PRIORITY
 frame.
@@ -1072,9 +1070,10 @@ removed from the HEADERS frame.
 
 Frame type definitions in HTTP/QUIC often use the QUIC variable-length integer
 encoding.  In particular, Stream IDs use this encoding, which allow for a larger
-range of possible values than the encoding used in HTTP/2.  Redefinition of the
-encoding of extension frame types might be necessary if the encoding includes a
-Stream ID.
+range of possible values than the encoding used in HTTP/2.  Some frames in
+HTTP/QUIC use an identifier rather than a Stream ID (e.g. Push IDs in PRIORITY
+frames). Redefinition of the encoding of extension frame types might be
+necessary if the encoding includes a Stream ID.
 
 Other than this issue, frame type HTTP/2 extensions are typically portable to
 QUIC simply by replacing Stream 0 in HTTP/2 with Stream 2 or 3 in HTTP/QUIC.
@@ -1092,8 +1091,8 @@ HEADERS (0x1):
   frames.  See {{frame-headers}}.
 
 PRIORITY (0x2):
-: As described above, the PRIORITY frame is sent on the control stream.  See
-  {{frame-priority}}.
+: As described above, the PRIORITY frame is sent on the control stream and can
+  reference either a Stream ID or a Push ID.  See {{frame-priority}}.
 
 RST_STREAM (0x3):
 : RST_STREAM frames do not exist, since QUIC provides stream lifecycle
