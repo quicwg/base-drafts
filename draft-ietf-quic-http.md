@@ -378,7 +378,7 @@ This allows a server to fulfill promises in the order that best suits its needs.
 When a server later fulfills a promise, the server push response is conveyed on
 a push stream.  A push stream is a server-initiated, unidirectional stream.  A
 push stream always begins with a header (see {{fig-push-stream-header}}) that
-identifies the Push ID of the PUSH_PROMISE that it fulfills, encoded as a
+identifies the Push ID of the promise that it fulfills, encoded as a
 variable-length integer.
 
 ~~~~~
@@ -976,7 +976,7 @@ HTTP_PUSH_LIMIT_EXCEEDED (0x0B):
 : A Push ID greater than the current maximum Push ID was referenced.
 
 HTTP_DUPLICATE_PUSH (0x0C):
-: A Push ID was referenced on two different Push streams.
+: A Push ID was referenced in two different stream headers.
 
 HTTP_MALFORMED_FRAME (0x01XX):
 : An error in a specific frame type.  The frame type is included as the last
