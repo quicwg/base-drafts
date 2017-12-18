@@ -2602,20 +2602,20 @@ frame takes the form 0b00010XXX (or the set of values from 0x10 to 0x17).  The
 value of the three low-order bits of the frame type determine the fields that
 are present in the frame.
 
-* The FIN bit (0x01) of the frame type is set only on frames that contain the
-  final offset of the stream.  Setting this bit indicates that the frame
-  marks the end of the stream.
+* The OFF bit (0x04) in the frame type is set to indicate that there is an
+  Offset field present.  When set to 1, the Offset field is present; when set to
+  0, the Offset field is absent and the Stream Data starts at an offset of 0
+  (that is, the frame contains the first octets of the stream, or the end of a
+  stream that includes no data).
 
 * The LEN bit (0x02) in the frame type is set to indicate that there is a Length
   field present.  If this bit is set to 0, the Length field is absent and the
   Stream Data field extends to the end of the packet.  If this bit is set to 1,
   the Length field is present.
 
-* The OFF bit (0x04) in the frame type is set to indicate that there is an
-  Offset field present.  When set to 1, the Offset field is present; when set to
-  0, the Offset field is absent and the Stream Data starts at an offset of 0
-  (that is, the frame contains the first octets of the stream, or the end of a
-  stream that includes no data).
+* The FIN bit (0x01) of the frame type is set only on frames that contain the
+  final offset of the stream.  Setting this bit indicates that the frame
+  marks the end of the stream.
 
 A STREAM frame is shown below.
 
