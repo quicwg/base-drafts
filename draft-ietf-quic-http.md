@@ -153,12 +153,13 @@ MAY omit supported versions for any reason.
 
 HTTP/QUIC relies on QUIC as the underlying transport.  The QUIC version being
 used MUST use TLS version 1.3 or greater as its handshake protocol.  The Server
-Name Indication extension {{!RFC6066}} MUST be included in the TLS handshake.
+Name Indication (SNI) extension {{!RFC6066}} MUST be included in the TLS
+handshake.
 
 QUIC connections are established as described in {{QUIC-TRANSPORT}}. During
 connection establishment, HTTP/QUIC support is indicated by selecting the ALPN
-token "hq" in the crypto handshake.  Support for other application-layer
-protocols MAY be offered in the same handshake.
+token "hq" in the TLS handshake.  Support for other application-layer protocols
+MAY be offered in the same handshake.
 
 While connection-level options pertaining to the core QUIC protocol are set in
 the initial crypto handshake, HTTP-specific settings are conveyed
@@ -198,10 +199,10 @@ any requests for which the client considers the server authoritative.
 An authoritative HTTP/QUIC endpoint is typically discovered because the client
 has received an Alt-Svc record from the request's origin which nominates the
 endpoint as a valid HTTP Alternative Service for that origin.  As required by
-{{RFC7838}}, clients MUST validate that the nominated server can present a
-validated certificate for the origin before considering it authoritative.
-Clients SHOULD NOT assume that an HTTP/QUIC endpoint is authoritative for other
-origins without an explicit signal.
+{{RFC7838}}, clients MUST check that the nominated server can present a valid
+certificate for the origin before considering it authoritative. Clients SHOULD
+NOT assume that an HTTP/QUIC endpoint is authoritative for other origins without
+an explicit signal.
 
 A server that does not wish clients to reuse connections for a particular origin
 can indicate that it is not authoritative for a request by sending a 421
