@@ -17,8 +17,8 @@ LINT_DIR := .lintcache/$(CURRENT_BRANCH)
 
 lint_files:= $(addprefix $(LINT_DIR)/,$(addsuffix .lint,$(drafts)))
 
-latest:: lint
-lint:: lint-purge $(lint_files)
+latest:: lint lint-purge
+lint:: $(lint_files)
 
 .PHONY: lint lint-purge
 
@@ -35,7 +35,7 @@ $(LINT_DIR)/%.lint: %.md $(LINT_DIR)
 			if ["$$draft_lint" != "$@" ] && \
 			 [ -r "$$draft_lint" ] && [ "`cat "$$draft_lint"`" == "$$hash" ]; then \
 				cp "$$draft_lint" "$@"; \
-				echo "Reused lint from $$draft_lint"; \
+				echo "Reused lint of $$draft_lint for $@"; \
 			fi; \
 		done; \
 		if [ ! -r "$@" ] || [ "`cat "$@"`" != "$$hash" ]; then \
@@ -68,7 +68,7 @@ $(LINT_DIR)/%.lint: %.md $(LINT_DIR)
 		fi; \
 	fi;
 
-lint-purge:: $(LINT_DIR)
+lint-purge:: $(LINT_DIR) | lint
 	@MAYBE_OBSOLETE=`comm -13 <(git branch | sed -e 's,.*[ /],,' | sort | uniq) <(ls ".lintcache" | sed -e 's,.*/,,')`; \
 	for item in $$MAYBE_OBSOLETE; do \
 			rm -rf ".lintcache/$$item"; \
