@@ -722,10 +722,10 @@ a Label of "client 1rtt" for the client and "server 1rtt" for the server, and
 the same output Length as the PRF hash function selected by TLS.
 
 ~~~
-   client_pp_secret_<N+1> =
-      QHKDF-Expand(client_pp_secret_<N>, "client 1rtt", Hash.length)
-   server_pp_secret_<N+1> =
-      QHKDF-Expand(server_pp_secret_<N>, "server 1rtt", Hash.length)
+client_pp_secret_<N+1> =
+  QHKDF-Expand(client_pp_secret_<N>, "client 1rtt", Hash.length)
+server_pp_secret_<N+1> =
+  QHKDF-Expand(server_pp_secret_<N>, "server 1rtt", Hash.length)
 ~~~
 
 This allows for a succession of new secrets to be created as needed.
@@ -869,8 +869,8 @@ Section 7.7.1.1 of {{QUIC-TRANSPORT}} also requires a secret to compute packet
 number gaps on connection ID transitions. That secret is computed as:
 
 ~~~
-   packet_number_secret =
-      TLS-Exporter("EXPORTER-QUIC packet number", "", Hash.length)
+packet_number_secret =
+  TLS-Exporter("EXPORTER-QUIC packet number", "", Hash.length)
 ~~~
 
 # Key Phases

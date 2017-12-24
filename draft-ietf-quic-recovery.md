@@ -590,37 +590,38 @@ When an ack is received, it may acknowledge 0 or more packets.
 Pseudocode for OnAckReceived and UpdateRtt follow:
 
 ~~~
-   OnAckReceived(ack):
-     largest_acked_packet = ack.largest_acked
-     // If the largest acked is newly acked, update the RTT.
-     if (sent_packets[ack.largest_acked]):
-       latest_rtt = now - sent_packets[ack.largest_acked].time
-       UpdateRtt(latest_rtt, ack.ack_delay)
-     // Find all newly acked packets.
-     for acked_packet in DetermineNewlyAckedPackets():
-       OnPacketAcked(acked_packet.packet_number)
+  OnAckReceived(ack):
+    largest_acked_packet = ack.largest_acked
+    // If the largest acked is newly acked, update the RTT.
+    if (sent_packets[ack.largest_acked]):
+      latest_rtt = now - sent_packets[ack.largest_acked].time
+      UpdateRtt(latest_rtt, ack.ack_delay)
+    // Find all newly acked packets.
+    for acked_packet in DetermineNewlyAckedPackets():
+      OnPacketAcked(acked_packet.packet_number)
 
-     DetectLostPackets(ack.largest_acked_packet)
-     SetLossDetectionAlarm()
+    DetectLostPackets(ack.largest_acked_packet)
+    SetLossDetectionAlarm()
 
 
-   UpdateRtt(latest_rtt, ack_delay):
-     // min_rtt ignores ack delay.
-     min_rtt = min(min_rtt, latest_rtt)
-     // Adjust for ack delay if it's plausible.
-     if (latest_rtt - min_rtt > ack_delay):
-       latest_rtt -= ack_delay
-       // Only save into max ack delay if it's used
-       // for rtt calculation and is not ack only.
-       if (!sent_packets[ack.largest_acked].ack_only)
-         max_ack_delay = max(max_ack_delay, ack_delay)
-     // Based on {{?RFC6298}}.
-     if (smoothed_rtt == 0):
-       smoothed_rtt = latest_rtt
-       rttvar = latest_rtt / 2
-     else:
-       rttvar = 3/4 * rttvar + 1/4 * abs(smoothed_rtt - latest_rtt)
-       smoothed_rtt = 7/8 * smoothed_rtt + 1/8 * latest_rtt
+  UpdateRtt(latest_rtt, ack_delay):
+    // min_rtt ignores ack delay.
+    min_rtt = min(min_rtt, latest_rtt)
+    // Adjust for ack delay if it's plausible.
+    if (latest_rtt - min_rtt > ack_delay):
+      latest_rtt -= ack_delay
+      // Only save into max ack delay if it's used
+      // for rtt calculation and is not ack only.
+      if (!sent_packets[ack.largest_acked].ack_only)
+        max_ack_delay = max(max_ack_delay, ack_delay)
+    // Based on {{?RFC6298}}.
+    if (smoothed_rtt == 0):
+      smoothed_rtt = latest_rtt
+      rttvar = latest_rtt / 2
+    else:
+      rttvar = 3/4 * rttvar + 1/4 *
+        abs(smoothed_rtt - latest_rtt)
+      smoothed_rtt = 7/8 * smoothed_rtt + 1/8 * latest_rtt
 ~~~
 
 ### On Packet Acknowledgment
@@ -778,32 +779,33 @@ DetectLostPackets takes one parameter, acked, which is the largest acked packet.
 Pseudocode for DetectLostPackets follows:
 
 ~~~
-   DetectLostPackets(largest_acked):
-     loss_time = 0
-     lost_packets = {}
-     delay_until_lost = infinite
-     if (kUsingTimeLossDetection):
-       delay_until_lost =
-         (1 + time_reordering_fraction) * max(latest_rtt, smoothed_rtt)
-     else if (largest_acked.packet_number == largest_sent_packet):
-       // Early retransmit alarm.
-       delay_until_lost = 5/4 * max(latest_rtt, smoothed_rtt)
-     foreach (unacked < largest_acked.packet_number):
-       time_since_sent = now() - unacked.time_sent
-       delta = largest_acked.packet_number - unacked.packet_number
-       if (time_since_sent > delay_until_lost):
-         lost_packets.insert(unacked)
-       else if (delta > reordering_threshold)
-         lost_packets.insert(unacked)
-       else if (loss_time == 0 && delay_until_lost != infinite):
-         loss_time = now() + delay_until_lost - time_since_sent
+DetectLostPackets(largest_acked):
+  loss_time = 0
+  lost_packets = {}
+  delay_until_lost = infinite
+  if (kUsingTimeLossDetection):
+    delay_until_lost =
+      (1 + time_reordering_fraction) *
+          max(latest_rtt, smoothed_rtt)
+  else if (largest_acked.packet_number == largest_sent_packet):
+    // Early retransmit alarm.
+    delay_until_lost = 5/4 * max(latest_rtt, smoothed_rtt)
+  foreach (unacked < largest_acked.packet_number):
+    time_since_sent = now() - unacked.time_sent
+    delta = largest_acked.packet_number - unacked.packet_number
+    if (time_since_sent > delay_until_lost):
+      lost_packets.insert(unacked)
+    else if (delta > reordering_threshold)
+      lost_packets.insert(unacked)
+    else if (loss_time == 0 && delay_until_lost != infinite):
+      loss_time = now() + delay_until_lost - time_since_sent
 
-     // Inform the congestion controller of lost packets and
-     // lets it decide whether to retransmit immediately.
-     if (!lost_packets.empty())
-       OnPacketsLost(lost_packets)
-       foreach (packet in lost_packets)
-         sent_packets.remove(packet.packet_number)
+  // Inform the congestion controller of lost packets and
+  // lets it decide whether to retransmit immediately.
+  if (!lost_packets.empty())
+    OnPacketsLost(lost_packets)
+    foreach (packet in lost_packets)
+      sent_packets.remove(packet.packet_number)
 ~~~
 
 ## Discussion
