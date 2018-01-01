@@ -574,7 +574,7 @@ off-path attackers.
 
 ### Initial Packet {#packet-initial}
 
-The Initial packet uses long headers with a type value of 0x7E.  It carries the
+The Initial packet uses long headers with a type value of 0x7F.  It carries the
 first cryptographic handshake message sent by the client.
 
 The client populates the connection ID field with randomly selected values,
@@ -602,7 +602,7 @@ Retry packet ({{packet-retry}}).
 
 ### Retry Packet {#packet-retry}
 
-A Retry packet uses long headers with a type value of 0x7D.  It carries
+A Retry packet uses long headers with a type value of 0x7E.  It carries
 cryptographic handshake messages and acknowledgments.  It is used by a server
 that wishes to perform a stateless retry (see {{stateless-retry}}).
 
@@ -635,7 +635,7 @@ the server will also start at stream offset 0.
 
 ### Handshake Packet {#packet-handshake}
 
-A Handshake packet uses long headers with a type value of 0x7C.  It is
+A Handshake packet uses long headers with a type value of 0x7D.  It is
 used to carry acknowledgments and cryptographic handshake messages from the
 server and client.
 
@@ -659,7 +659,7 @@ packets protected with 1-RTT keys are sent with short headers.  The different
 packet types explicitly indicate the encryption level and therefore the keys
 that are used to remove packet protection.
 
-Packets protected with 0-RTT keys use a type value of 0x7B.  The connection ID
+Packets protected with 0-RTT keys use a type value of 0x7C.  The connection ID
 field for a 0-RTT packet is selected by the client.
 
 The client can send 0-RTT packets after receiving a Handshake packet
