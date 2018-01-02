@@ -1821,10 +1821,6 @@ short header type, indicating a different packet number length, but a longer
 packet number encoding might allow this message to be identified as a stateless
 reset more easily using heuristics.
 
-After the first short header octet and optional connection ID, the server
-includes the value of the Stateless Reset Token that it included in its
-transport parameters.
-
 After the Packet Number, the server pads the message with an arbitrary
 number of octets containing random values.
 
