@@ -11,7 +11,7 @@ def main(argv):
     try:
         opts,args = getopt.getopt(argv,"i:lf")
     except getopt.GetoptError:
-        print('.lint.py -i <input_file> [-l <line-length>] [-f <figure-line-length>]')
+        sys.stderr.write('.lint.py -i <input_file> [-l <line-length>] [-f <figure-line-length>]\n')
         sys.exit(2)
 
     for opt,arg in opts:
@@ -27,6 +27,11 @@ def main(argv):
     with open(inputfile,'U') as draft:
         linecounter = 1
         lines = draft.readlines()
+
+        abstract = re.compile('^--- abstract')
+        table = re.compile('^\s*(?:\||{:)')
+        figure = re.compile('^[~`]{3,}')
+
         for line in lines:
             line = line.rstrip('\r\n')
             linenumber = linecounter
@@ -34,20 +39,20 @@ def main(argv):
 
             ## Skip everything before abstract
             if beforeAbstract:
-                matchObj = re.match('^--- abstract',line)
+                matchObj = abstract.match(line)
                 if matchObj:
                     beforeAbstract = False
                 continue
 
             ## Skip tables
-            matchObj = re.match('^\s*\|',line)
+            matchObj = table.match(line)
             if matchObj:
                 continue
 
             ## Toggle figure state
-            matchObj = re.match('^[~`]{3,}',line)
+            matchObj = figure.match(line)
             if matchObj:
-                insideFigure = False if insideFigure else True
+                insideFigure = not insideFigure
                 continue
 
             ## Check length
