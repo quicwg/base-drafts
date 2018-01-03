@@ -50,7 +50,7 @@ for inputfile in args.files:
             limit = args.maxFigureLineLength if insideFigure else args.maxLineLength
             if length > limit:
                 foundError = True
-                print("{0}: Line is {1} characters; limit is {2}".format(linenumber,length,limit))
-                print(line)
+                sys.stderr.write("{0}: Line is {1} characters; limit is {2}\n".format(linenumber,length,limit))
+                sys.stderr.write("{0}\n".format(line))
 
 sys.exit( 1 if foundError else 0)
