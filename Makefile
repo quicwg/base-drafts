@@ -15,6 +15,4 @@ endif
 latest:: lint
 .PHONY: lint
 lint::
-	@err=0; for f in draft-*.md ; do \
-	  ./.lint.py -i $$f || err=1; \
-	done; [ "$$err" -eq 0 ]
+	@./.lint.py draft-*.md

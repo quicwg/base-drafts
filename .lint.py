@@ -1,27 +1,17 @@
 #!/usr/bin/env python3
 
-import sys,getopt,re
+import sys,argparse,re
 
-def main(argv):
-    inputfile = ''
-    maxLineLength = 80
-    maxFigureLineLength = 65
-    foundError = False
+parser = argparse.ArgumentParser(description='Lint markdown drafts.')
+parser.add_argument('files', metavar='file', nargs='+', help='Files to lint')
+parser.add_argument('-l', dest='maxLineLength', default=80)
+parser.add_argument('-f', dest='maxFigureLineLength', default=65)
 
-    try:
-        opts,args = getopt.getopt(argv,"i:lf")
-    except getopt.GetoptError:
-        sys.stderr.write('.lint.py -i <input_file> [-l <line-length>] [-f <figure-line-length>]\n')
-        sys.exit(2)
+args = parser.parse_args()
 
-    for opt,arg in opts:
-        if opt == "-i":
-            inputfile = arg
-        elif opt == "-l":
-            maxLineLength = arg
-        elif opt == "-f":
-            maxFigureLineLength = arg
+foundError = False
 
+for inputfile in args.files:
     insideFigure = False
     beforeAbstract = True
     with open(inputfile,'U') as draft:
@@ -57,13 +47,10 @@ def main(argv):
 
             ## Check length
             length = len(line)
-            limit = maxFigureLineLength if insideFigure else maxLineLength
+            limit = args.maxFigureLineLength if insideFigure else args.maxLineLength
             if length > limit:
                 foundError = True
                 print("{0}: Line is {1} characters; limit is {2}".format(linenumber,length,limit))
                 print(line)
 
-    sys.exit( 1 if foundError else 0)
-
-if __name__ == "__main__":
-   main(sys.argv[1:])
+sys.exit( 1 if foundError else 0)
