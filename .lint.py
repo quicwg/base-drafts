@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 
-import sys,argparse,re
+import sys
+import argparse
+import re
 
 parser = argparse.ArgumentParser(description='Lint markdown drafts.')
 parser.add_argument('files', metavar='file', nargs='+', help='Files to lint')
@@ -14,7 +16,7 @@ foundError = False
 for inputfile in args.files:
     insideFigure = False
     beforeAbstract = True
-    with open(inputfile,'U') as draft:
+    with open(inputfile, 'U') as draft:
         linecounter = 1
         lines = draft.readlines()
 
@@ -27,30 +29,31 @@ for inputfile in args.files:
             linenumber = linecounter
             linecounter += 1
 
-            ## Skip everything before abstract
+            # Skip everything before abstract
             if beforeAbstract:
                 matchObj = abstract.match(line)
                 if matchObj:
                     beforeAbstract = False
                 continue
 
-            ## Skip tables
+            # Skip tables
             matchObj = table.match(line)
             if matchObj:
                 continue
 
-            ## Toggle figure state
+            # Toggle figure state
             matchObj = figure.match(line)
             if matchObj:
                 insideFigure = not insideFigure
                 continue
 
-            ## Check length
+            # Check length
             length = len(line)
             limit = args.maxFigureLineLength if insideFigure else args.maxLineLength
             if length > limit:
                 foundError = True
-                sys.stderr.write("{0}: Line is {1} characters; limit is {2}\n".format(linenumber,length,limit))
+                sys.stderr.write("{0}: Line is {1} characters; limit is {2}\n".format(
+                    linenumber, length, limit))
                 sys.stderr.write("{0}\n".format(line))
 
-sys.exit( 1 if foundError else 0)
+sys.exit(1 if foundError else 0)
