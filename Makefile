@@ -15,12 +15,7 @@ endif
 latest:: lint
 .PHONY: lint
 
-PYTHON := $(shell which python3)
-ifeq ($(PYTHON),)
-PYTHON := $(shell which python)
-endif
+PYTHON := $(or $(shell which python3),$(shell which python))
 
-ifneq ($(PYTHON),)
 lint::
 	@$(PYTHON) ./.lint.py draft-*.md
-endif
