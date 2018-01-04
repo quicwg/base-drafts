@@ -2842,6 +2842,15 @@ Section 7.3 of {{!RFC4821}} discusses tradeoffs between small and large
 increases in the size of probe packets. As QUIC probe packets need not contain
 application data, aggressive increases in probe size carry fewer consequences.
 
+### Special Considerations for User Land Implementations
+
+A QUIC implementation that works in operating system user land may in some cases
+lack accurate information of the overhead of the lower layers. The general assumption
+is that IPv6/IPv4 and UDP is used to transport QUIC packets. That may either be 
+false as some other message transport is used, or there may be additional layers 
+inserted, for example the use of TURN Relays {{!RFC5766}}. Implementations needs 
+to consider API functions to configure worst case overhead based on intended usage, 
+or to query current expected overhead from the used lower layers. 
 
 # Streams: QUIC's Data Structuring Abstraction {#streams}
 
