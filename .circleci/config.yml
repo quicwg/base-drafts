@@ -25,6 +25,9 @@ jobs:
           keys:
             - refcache
       - run:
+          name: "Lint Drafts"
+          command: "make 'CLONE_ARGS=--reference ~/i-d-template' -k lint"
+      - run:
           name: "Build Drafts"
           command: "make 'CLONE_ARGS=--reference ~/i-d-template'"
       - save_cache:
