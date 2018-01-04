@@ -200,9 +200,9 @@ An authoritative HTTP/QUIC endpoint is typically discovered because the client
 has received an Alt-Svc record from the request's origin which nominates the
 endpoint as a valid HTTP Alternative Service for that origin.  As required by
 {{RFC7838}}, clients MUST check that the nominated server can present a valid
-certificate for the origin before considering it authoritative. Clients SHOULD
-NOT assume that an HTTP/QUIC endpoint is authoritative for other origins without
-an explicit signal.
+certificate for the origin before considering it authoritative. Clients MUST NOT
+assume that an HTTP/QUIC endpoint is authoritative for other origins without an
+explicit signal.
 
 A server that does not wish clients to reuse connections for a particular origin
 can indicate that it is not authoritative for a request by sending a 421
