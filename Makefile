@@ -14,5 +14,13 @@ endif
 
 latest:: lint
 .PHONY: lint
+
+PYTHON := $(shell which python3)
+ifeq ($(PYTHON),)
+PYTHON := $(shell which python)
+endif
+
+ifneq ($(PYTHON),)
 lint::
-	@./.lint.py draft-*.md
+	@$(PYTHON) ./.lint.py draft-*.md
+endif
