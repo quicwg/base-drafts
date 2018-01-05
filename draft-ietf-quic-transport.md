@@ -2779,7 +2779,9 @@ previous PMTU determinations.
 
 In the absence of these mechanisms, QUIC endpoints SHOULD NOT send IP packets
 larger than 1280 octets. Assuming the minimum IP header size, this results in
-a QUIC packet size of 1232 octets for IPv6 and 1252 octets for IPv4.
+a QUIC packet size of 1232 octets for IPv6 and 1252 octets for IPv4. Some 
+QUIC implementations MAY wish to be more conservative in computing allowed 
+QUIC packet size given unknown tunneling overheads or IP header options.
 
 QUIC endpoints that implement any kind of PMTU discovery SHOULD maintain an
 estimate for each combination of local and remote IP addresses.  Each pairing of
@@ -2842,15 +2844,6 @@ Section 7.3 of {{!RFC4821}} discusses tradeoffs between small and large
 increases in the size of probe packets. As QUIC probe packets need not contain
 application data, aggressive increases in probe size carry fewer consequences.
 
-### Special Considerations for User Land Implementations
-
-A QUIC implementation that works in operating system user land may in some cases
-lack accurate information of the overhead of the lower layers. The general assumption
-is that IPv6/IPv4 and UDP is used to transport QUIC packets. That may either be 
-false as some other message transport is used, or there may be additional layers 
-inserted, for example the use of TURN Relays {{!RFC5766}}. Implementations needs 
-to consider API functions to configure worst case overhead based on intended usage, 
-or to query current expected overhead from the used lower layers. 
 
 # Streams: QUIC's Data Structuring Abstraction {#streams}
 
