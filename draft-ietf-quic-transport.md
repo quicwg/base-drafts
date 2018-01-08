@@ -2779,7 +2779,9 @@ previous PMTU determinations.
 
 In the absence of these mechanisms, QUIC endpoints SHOULD NOT send IP packets
 larger than 1280 octets. Assuming the minimum IP header size, this results in
-a QUIC packet size of 1232 octets for IPv6 and 1252 octets for IPv4.
+a QUIC packet size of 1232 octets for IPv6 and 1252 octets for IPv4. Some
+QUIC implementations MAY wish to be more conservative in computing allowed
+QUIC packet size given unknown tunneling overheads or IP header options.
 
 QUIC endpoints that implement any kind of PMTU discovery SHOULD maintain an
 estimate for each combination of local and remote IP addresses.  Each pairing of
