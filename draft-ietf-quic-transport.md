@@ -868,13 +868,14 @@ Incoming packets are classified on receipt.  Packets can either be associated
 with an existing connection, or - for servers - potentially create a new
 connection.
 
-Packets that can be associated with an existing connection are handled according
-to the current state of that connection.  Packets are associated with existing
-connections using connection ID if it is present; this might include connection
-IDs that were advertised using NEW_CONNECTION_ID ({{frame-new-connection-id}}).
-Packets without connection IDs and long-form packets for connections that have
-incomplete cryptographic handshakes are associated with an existing connection
-using the tuple of source and destination IP addresses and ports.
+Host handle packets that can be associated with an existing connection
+according to the current state of that connection. Short form packets without
+connection IDs, and long-form packets for connections that have incomplete
+cryptographic handshakes, are associated with an existing connection using the
+tuple of source and destination IP addresses and ports. Other packets are
+associated with existing connections using connection ID the connection ID
+in the header; this might include connection IDs that were advertised using
+NEW_CONNECTION_ID ({{frame-new-connection-id}}).
 
 Clients SHOULD discard any packet that cannot be associated with an existing
 connection.  Discarded packets MAY be logged for diagnostic or security
