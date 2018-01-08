@@ -2757,7 +2757,7 @@ of amplification attacks caused by server responses toward an unverified client
 address.
 
 An Initial packet MAY exceed 1200 octets if the client knows that the Path
-Maximum Transmission Unit (PMTU) supports the size that it chooses.  
+Maximum Transmission Unit (PMTU) supports the size that it chooses.
 
 A server MAY send a CONNECTION_CLOSE frame with error code PROTOCOL_VIOLATION in
 response to an Initial packet smaller than 1200 octets. It MUST NOT send any
