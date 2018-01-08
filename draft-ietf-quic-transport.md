@@ -865,8 +865,8 @@ endpoint, as described in {{termination}}.
 ## Matching Packets to Connections {#packet-handling}
 
 Incoming packets are classified on receipt.  Packets can either be associated
-with an existing connection, be discarded, or - for servers - potentially create
-a new connection.
+with an existing connection, or - for servers - potentially create a new
+connection.
 
 Packets that can be associated with an existing connection are handled according
 to the current state of that connection.  Packets are associated with existing
@@ -876,56 +876,62 @@ Packets without connection IDs and long-form packets for connections that have
 incomplete cryptographic handshakes are associated with an existing connection
 using the tuple of source and destination IP addresses and ports.
 
-A packet that uses the short header could be associated with an existing
-connection with an incomplete cryptographic handshake.  Such a packet could be a
-valid packet that has been reordered with respect to the long-form packets that
-will complete the cryptographic handshake.  This might happen after the final
-set of cryptographic handshake messages from either peer.  These packets are
-expected to be correlated with a connection using the tuple of IP addresses and
-ports.  Packets that might be reordered in this fashion SHOULD be buffered in
-anticipation of the handshake completing.
+Clients SHOULD discard any packet that cannot be associated with an existing
+connection.  Discarded packets MAY be logged for diagnostic or security
+purposes.
 
-0-RTT packets might be received prior to a Client Initial packet at a server.
-If the version of these packets is acceptable to the server, it MAY buffer these
-packets in anticipation of receiving a reordered Client Initial packet.
+If a server receives a packet not associated with an existing connection, it
+executes the following steps, in order:
+
+The server MUST check if the packet uses a short form header, or is not long
+enough for the size required for the initial packet of any QUIC version that
+the server supports. See {{packet-size}} for the definition of packet size
+and the minimum size in this version of QUIC. If either condition is true,
+the packet cannot create a new connection. In this case, the server MUST
+either buffer the packet (see {{handshake-buffer}}), send a stateless reset
+({{stateless-reset}}), or silently drop it.
+
+Otherwise, the server checks the version field in the long header. If the
+server does not support the chosen version, it MUST send a Version
+Negotiation packet as described in {{send-vn}}.
+
+If the server supports the version, the server operates in accordance with
+the specification of that version. For the version described in this
+specification, it checks if the packet is a correctly formatted Initial packet.
+If so, the server MUST proceed with the handshake ({{handshake}}).  This
+commits the server to the version that the client selected. If not an Initial
+packet, the server MUST either buffer the packet or silently drop it.
+
+### Handshake Buffering {{#handshake-buffer}}
+
+Due to packet reordering or loss, subsequent packets for a handshake might
+arrive at the server prior to the intended Initial packet. As described above,
+servers MAY buffer these packets in anticipation of the Initial packet
+arriving later. This is especially useful for 0-RTT packets that routinely
+accompany Initial packets.
 
 Buffering ensures that data is not lost, which improves performance; conversely,
 discarding these packets could create false loss signals for the congestion
 controllers.  However, limiting the number and size of buffered packets might be
 needed to prevent exposure to denial of service.
 
-For clients, any packet that cannot be associated with an existing connection
-SHOULD be discarded if it is not buffered.  Discarded packets MAY be logged for
-diagnostic or security purposes.
+Servers MUST NOT send packets in response to these buffered packets until
+the initial packet arrives.
 
-For servers, packets that aren't associated with a connection potentially create
-a new connection. A series of tests dictate the allowed actions.
+In this version of QUIC, clients cannot send short form headers prior to a
+response from the server. Servers that do not support a version of QUIC that
+allows early short headers MUST either respond with a stateless reset or drop
+the packet silently.
 
-If the packet uses a short form header, or is not long enough for the size
-required for the initial packet of any of its supported versions (as defined
-in {{packet-size}}), it cannot create a new connection. In this case, the server
-MUST either buffer the packet in case more packets arrive, send a stateless
-reset ({{stateless-reset}}), or silently drop it.
+## Version Negotiation
 
-If the packet could create a new connection, the server checks the version
-field in the packet header. If a supported version, but not a valid Initial
-packet for that version, the server MUST either drop the packet or buffer it in
-anticipation of additional packets.
+{{packet-handling}} describes the conditions under which endpoints negotiate
+versions.
 
-If a supported version, and a valid Initial packet for that version, the server
-proceeds with the handshake ({{handshake}}).  This commits the server to the
-version that the client selected.
-
-If an unsupported version, the server MUST send a version negotiation packet
-as described in {{send-vn}}.
-
-Versions of QUIC that define smaller minimum initial packet sizes need to be
-aware that initial packets will be discarded without action by servers that only
-support versions with larger minimums.  Clients that support multiple QUIC
-versions can avoid this problem by ensuring that they increase the size of their
-initial packets to the largest minimum size across all of the QUIC versions they
-support.  Servers need to recognize initial packets that are the minimum size of
-all QUIC versions they support.
+Clients that support multiple QUIC versions SHOULD pad their Initial packets
+to reflect the largest minimum Initial packet size of all their versions.
+This ensures that that the server respond if there are any mutually supported
+versions.
 
 ### Sending Version Negotiation Packets {#send-vn}
 
