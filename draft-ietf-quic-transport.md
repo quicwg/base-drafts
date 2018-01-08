@@ -899,44 +899,33 @@ SHOULD be discarded if it is not buffered.  Discarded packets MAY be logged for
 diagnostic or security purposes.
 
 For servers, packets that aren't associated with a connection potentially create
-a new connection.  However, only packets that use the long packet header and
-that are at least the minimum size defined for the protocol version can be
-initial packets.  A server MAY discard packets with a short header or packets
-that are smaller than the smallest minimum size for any version that the server
-supports.  A server that discards a packet that cannot be associated with a
-connection MAY also generate a stateless reset ({{stateless-reset}}).
+a new connection. A series of tests dictate the allowed actions.
 
-This version of QUIC defines a minimum size for initial packets of 1200 octets
-(see {{packetization}}).  Versions of QUIC that define smaller minimum initial
-packet sizes need to be aware that initial packets will be discarded without
-action by servers that only support versions with larger minimums.  Clients that
-support multiple QUIC versions can avoid this problem by ensuring that they
-increase the size of their initial packets to the largest minimum size across
-all of the QUIC versions they support.  Servers need to recognize initial
-packets that are the minimum size of all QUIC versions they support.
+If the packet uses a short form header, or is not long enough for the size
+required for the initial packet of any of its supported versions (as defined
+in {{packet-size}}), it cannot create a new connection. In this case, the server
+MUST either buffer the packet in case more packets arrive, send a stateless
+reset ({{stateless-reset}}), or silently drop it.
 
+If the packet could create a new connection, the server checks the version
+field in the packet header. If a supported version, but not a valid Initial
+packet for that version, the server MUST either drop the packet or buffer it in
+anticipation of additional packets.
 
-## Version Negotiation {#version-negotiation}
-
-QUIC's connection establishment begins with version negotiation, since all
-communication between the endpoints, including packet and frame formats, relies
-on the two endpoints agreeing on a version.
-
-A QUIC connection begins with a client sending an Initial packet
-({{packet-initial}}). The details of the handshake mechanisms are described in
-{{handshake}}, but any Initial packet sent from the client to the server MUST
-use the long header format - which includes the version of the protocol being
-used - and they MUST be padded to at least 1200 octets.
-
-The server receives this packet and determines whether it potentially creates a
-new connection (see {{packet-handling}}).  If the packet might generate a new
-connection, the server then checks whether it understands the version that the
-client has selected.
-
-If the packet contains a version that is acceptable to the server, the server
+If a supported version, and a valid Initial packet for that version, the server
 proceeds with the handshake ({{handshake}}).  This commits the server to the
 version that the client selected.
 
+If an unsupported version, the server MUST send a version negotiation packet
+as described in {{send-vn}}.
+
+Versions of QUIC that define smaller minimum initial packet sizes need to be
+aware that initial packets will be discarded without action by servers that only
+support versions with larger minimums.  Clients that support multiple QUIC
+versions can avoid this problem by ensuring that they increase the size of their
+initial packets to the largest minimum size across all of the QUIC versions they
+support.  Servers need to recognize initial packets that are the minimum size of
+all QUIC versions they support.
 
 ### Sending Version Negotiation Packets {#send-vn}
 
@@ -944,13 +933,10 @@ If the version selected by the client is not acceptable to the server, the
 server responds with a Version Negotiation packet ({{packet-version}}).  This
 includes a list of versions that the server will accept.
 
-A server sends a Version Negotiation packet for any packet with an unacceptable
-version if that packet could create a new connection.  This allows a server to
-process packets with unsupported versions without retaining state.  Though
-either the Client Initial packet or the version negotiation packet that is sent
-in response could be lost, the client will send new packets until it
-successfully receives a response or it abandons the connection attempt.
-
+This system allows a server to process packets with unsupported versions without
+retaining state.  Though either the Initial packet or the version negotiation
+packet that is sent in response could be lost, the client will send new packets
+until it successfully receives a response or it abandons the connection attempt.
 
 ### Handling Version Negotiation Packets {#handle-vn}
 
@@ -2746,7 +2732,7 @@ Strategies and implications of the frequency of generating acknowledgments are
 discussed in more detail in {{QUIC-RECOVERY}}.
 
 
-## Packet Size
+## Packet Size {#packet-size}
 
 The QUIC packet size includes the QUIC header and integrity check, but not the
 UDP or IP header.
