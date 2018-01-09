@@ -3649,12 +3649,13 @@ transport to cancel a stream in response to receipt of a STOP_SENDING frame.
 
 ## Spoofed ACK Attack
 
-An attacker receives an STK from the server and then releases the IP address on
-which it received the STK.  The attacker may, in the future, spoof this same
+An attacker might be able to receive an address validation token
+({{address-validation}}) from the server and then releases the IP address it
+used to acquire that token.  The attacker may, in the future, spoof this same
 address (which now presumably addresses a different endpoint), and initiate a
-0-RTT connection with a server on the victim's behalf.  The attacker then spoofs
-ACK frames to the server which cause the server to potentially drown the victim
-in data.
+0-RTT connection with a server on the victim's behalf.  The attacker can then
+spoof ACK frames to the server which cause the server to send excessive amounts
+of data toward the new owner of the IP address.
 
 There are two possible mitigations to this attack.  The simplest one is that a
 server can unilaterally create a gap in packet-number space.  In the non-attack
