@@ -690,9 +690,9 @@ The client MUST choose a random connection ID and use it in Initial packets
 ({{packet-initial}}) and 0-RTT packets ({{packet-protected}}).
 
 When the server receives a Initial packet and decides to proceed with the
-handshake, it may chooses a new value for the connection ID and sends that in
-the server_connection_id transport parameter ({{transport-parameter-definitions}})
-of the Handshake packet ({{packet-handshake}}).
+handshake, it MAY choose a new value for the connection ID and sends that in
+the server_connection_id transport parameter
+({{transport-parameter-definitions}}).
 
 If the client receives a new connection ID that the server has chosen, it MUST
 use it for all subsequent Handshake ({{packet-handshake}}) and 1-RTT
