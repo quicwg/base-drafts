@@ -434,7 +434,7 @@ following sections.
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+
-|0|C|K| Type (5)|
+|0|C|K|S|Type(4)|
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                                                               |
 +                     [Connection ID (64)]                      +
@@ -469,9 +469,14 @@ Key Phase Bit:
   recipient of a packet to identify the packet protection keys that are used to
   protect the packet.  See {{QUIC-TLS}} for details.
 
+Latency Spin Bit: 
+
+: The fourth bit (0x10) of octet 0 is the latency spin bit; which is set as
+described in {{spin-bit}}.
+
 Short Packet Type:
 
-: The remaining 5 bits of octet 0 include one of 32 packet types.
+: The remaining 4 bits of octet 0 include one of 16 packet types.
   {{short-packet-types}} lists the types that are defined for short packets.
 
 Connection ID:
@@ -494,9 +499,9 @@ other fields.
 
 | Type | Packet Number Size |
 |:-----|:-------------------|
-| 0x1F | 1 octet            |
-| 0x1E | 2 octets           |
-| 0x1D | 4 octets           |
+|  0xF | 1 octet            |
+|  0xE | 2 octets           |
+|  0xD | 4 octets           |
 {: #short-packet-types title="Short Header Packet Types"}
 
 The header form, omit connection ID flag, and connection ID of a short header
@@ -788,6 +793,29 @@ Implementations MUST assume that an unsupported version uses an unknown packet
 format. All other fields MUST be ignored when processing a packet that contains
 an unsupported version.
 
+## The Latency Spin Bit {#spin-bit}
+
+The latency spin bit enables latency monitoring from observation points on the
+network path. Each endpoint, client and server, maintains a spin value, 0 or
+1, for each QUIC connection, and sets the spin bit on packets it sends for
+that connection to the appropriate value. It also maintains the highest packet
+number seen from its peer on the connection. The value is then determined at
+each endpoint as follows:
+
+* The server initializes its spin value to 0. When it receives a packet from
+  the client, if that packet has a short header and if it increments the
+  highest packet number seen by the server from the client, it sets the spin
+  value to the spin bit in the received packet.
+
+* The client initializes its spin value to 0. When it receives a packet from
+  the server, if the packet has a short header and if it increments the
+  highest packet number seen by the client from the server, it sets the spin
+  value to the opposite of the spin bit in the received packet.
+
+This procedure will cause the spin bit to change value in each direction once
+per round trip. Observation points can estimate the network latency by
+observing these changes in the latency spin bit, as described in
+{{?QUIC-MAN:I-D.ietf-quic-manageability}}
 
 # Frames and Frame Types {#frames}
 
