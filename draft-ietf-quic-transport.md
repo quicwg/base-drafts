@@ -639,7 +639,7 @@ A Handshake packet uses long headers with a type value of 0x7D.  It is
 used to carry acknowledgments and cryptographic handshake messages from the
 server and client.
 
-The connection ID field in a Handshake packet contains a connection ID
+The connection ID field in a Handshake packet may contain a connection ID
 that is chosen by the server (see {{connection-id}}).
 
 The first Handshake packet sent by a server contains a randomized packet number.
@@ -690,14 +690,16 @@ The client MUST choose a random connection ID and use it in Initial packets
 ({{packet-initial}}) and 0-RTT packets ({{packet-protected}}).
 
 When the server receives a Initial packet and decides to proceed with the
-handshake, it chooses a new value for the connection ID and sends that in a
-Handshake packet ({{packet-handshake}}).  The server MAY choose to use the value
-that the client initially selects.
+handshake, it may chooses a new value for the connection ID and sends that in
+the server_connection_id transport parameter ({{transport-parameter-definitions}})
+of the Handshake packet ({{packet-handshake}}).
 
-Once the client receives the connection ID that the server has chosen, it MUST
+If the client receives a new connection ID that the server has chosen, it MUST
 use it for all subsequent Handshake ({{packet-handshake}}) and 1-RTT
 ({{packet-protected}}) packets but not for 0-RTT packets ({{packet-protected}}).
 
+The server MUST NOT switch to the new connection ID until has received a
+packet containing the connection ID from the client.  In particular, the
 Server's Version Negotiation ({{packet-version}}) and Retry ({{packet-retry}})
 packets MUST use connection ID selected by the client.
 
@@ -1078,6 +1080,7 @@ language from Section 3 of {{!I-D.ietf-tls-tls13}}.
       stateless_reset_token(6),
       ack_delay_exponent(7),
       initial_max_stream_id_uni(8),
+      server_connection_id(9),
       (65535)
    } TransportParameterId;
 
@@ -1214,6 +1217,11 @@ ack_delay_exponent (0x0007):
   default value of 3 is assumed (indicating a multiplier of 8).  The default
   value is also used for ACK frames that are sent in Initial, Handshake, and
   Retry packets.  Values above 20 are invalid.
+  
+server_connection_id (0x0009):
+: An 8 byte value to be used by the client on all future packets sent to the
+  server.  The server will switch to sending this connection ID once it
+  receives a packet using the connection ID from the client.
 
 
 ### Values of Transport Parameters for 0-RTT {#zerortt-parameters}
@@ -3776,6 +3784,7 @@ The initial contents of this registry are shown in {{iana-tp-table}}.
 | 0x0006 | stateless_reset_token      | {{transport-parameter-definitions}} |
 | 0x0007 | ack_delay_exponent         | {{transport-parameter-definitions}} |
 | 0x0008 | initial_max_stream_id_uni  | {{transport-parameter-definitions}} |
+| 0x0009 | server_connection_id       | {{transport-parameter-definitions}} |
 {: #iana-tp-table title="Initial QUIC Transport Parameters Entries"}
 
 
