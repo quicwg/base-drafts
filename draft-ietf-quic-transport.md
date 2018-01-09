@@ -747,8 +747,9 @@ sending a packet with a number of 0x6b4264 requires a 16-bit or larger packet
 number encoding; whereas a 32-bit packet number is needed to send a packet with
 a number of 0x6bc107.
 
-Version Negotiation ({{packet-version}}) and Retry ({{packet-retry}}) packets
-have special rules for populating the packet number field.
+A Version Negotiation packet ({{packet-version}}) does not include a packet
+number.  The Retry packet ({{packet-retry}}) has special rules for populating
+the packet number field.
 
 
 ### Initial Packet Number {#initial-packet-number}
@@ -2375,8 +2376,11 @@ Unlike TCP SACKs, QUIC acknowledgements are irrevocable.  Once a packet has
 been acknowledged, even if it does not appear in a future ACK frame,
 it remains acknowledged.
 
-A client MUST NOT acknowledge Version Negotiation or Retry packets.  These
-packet types contain packet numbers selected by the client, not the server.
+A client MUST NOT acknowledge Version Negotiation or Retry packets.  Version
+Negotiation packets don't contain a packet number and Retry packets include the
+packet number from the Initial packet it responds to.  Rather than relying on
+ACK frames, these packets are implicitly acknowledged by the next Initial packet
+sent by the client.
 
 A sender MAY intentionally skip packet numbers to introduce entropy into the
 connection, to avoid opportunistic acknowledgement attacks.  The sender SHOULD
