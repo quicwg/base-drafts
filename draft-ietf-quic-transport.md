@@ -1217,7 +1217,7 @@ ack_delay_exponent (0x0007):
   default value of 3 is assumed (indicating a multiplier of 8).  The default
   value is also used for ACK frames that are sent in Initial, Handshake, and
   Retry packets.  Values above 20 are invalid.
-  
+
 server_connection_id (0x0009):
 : An 8 byte value to be used by the client on all future packets sent to the
   server.  The server will switch to sending this connection ID once it
