@@ -469,7 +469,7 @@ Key Phase Bit:
   recipient of a packet to identify the packet protection keys that are used to
   protect the packet.  See {{QUIC-TLS}} for details.
 
-Latency Spin Bit: 
+Latency Spin Bit:
 
 : The fourth bit (0x10) of octet 0 is the latency spin bit; which is set as
 described in {{spin-bit}}.
@@ -806,7 +806,7 @@ each endpoint as follows:
   the server, if the packet has a short header and if it increases the
   highest packet number seen by the client from the server, it sets the spin
   value to the opposite of the spin bit in the received packet.
-  
+
   * The server initializes its spin value to 0. When it receives a packet from
   the client, if that packet has a short header and if it increases the
   highest packet number seen by the server from the client, it sets the spin
