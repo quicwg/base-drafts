@@ -606,9 +606,8 @@ A Retry packet uses long headers with a type value of 0x7E.  It carries
 cryptographic handshake messages and acknowledgments.  It is used by a server
 that wishes to perform a stateless retry (see {{stateless-retry}}).
 
-The connection ID field echoes the corresponding fields from the triggering
-client packet.  This allows a client to correlate a Retry with the Initial
-packet that it sends that the server received its packet.
+The connection ID field echoes the corresponding field from the triggering
+client packet.
 
 A Retry packet includes the packet number from the client's Initial packet
 number.  This is obscured as normal.
@@ -645,11 +644,8 @@ server and client.
 The connection ID field in a Handshake packet contains a connection ID
 that is chosen by the server (see {{connection-id}}).
 
-The first Handshake packet sent by a server contains a packet number of 0.  This
-value is increased for each subsequent packet sent by the server as described in
-{{packet-numbers}}.  The client increments the packet number from its previous
-packet by one for each packet that it sends (which might be an
-Initial, 0-RTT Protected, or Handshake packet).
+The first Handshake packet sent by a server contains a packet number of 0.
+Packet numbers are incremented normally for other Handshake packets.
 
 The payload of this packet contains STREAM frames and could contain PADDING and
 ACK frames.

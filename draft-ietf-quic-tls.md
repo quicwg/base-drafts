@@ -754,7 +754,8 @@ keys.
 
 After a key update (see {{key-update}}), the 1-RTT secrets are updated using a
 variant of the QHKDF-Expand function.  The QHKDF-Update function uses the same
-basic definition as QHKDF-Expand, but it does not include a connection ID.
+basic definition as QHKDF-Expand, but it includes a zero-length in place of a
+connection ID.
 
 ~~~
 QHKDF-Update(Secret, Label, Length) =
