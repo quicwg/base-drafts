@@ -768,7 +768,7 @@ parameter of HKDF-Expand is encoded as a `QhkdfUpdateInfo` structure as shown:
 struct {
    uint16 length = Length;
    opaque label<6..255> = "QUIC " + Label;
-   uint8 connectionId<0>;
+   uint8 connectionIdLength = 0;
 } QhkdfUpdateInfo;
 ~~~
 
