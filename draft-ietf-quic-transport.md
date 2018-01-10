@@ -1817,7 +1817,7 @@ following layout:
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+
-|0|C|K|Type (5) |
+|0|C|K|S|Type(4)|
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                                                               |
 +                     [Connection ID (64)]                      +
@@ -1840,6 +1840,8 @@ following layout:
 A server copies the connection ID field from the packet that triggers the
 stateless reset.  A server omits the connection ID if explicitly configured to
 do so, or if the client packet did not include a connection ID.
+
+The Spin Bit is set to zero.
 
 The Packet Number field is set to a randomized value.  The server SHOULD send a
 packet with a short header and a type of 0x1F.  This produces the shortest
