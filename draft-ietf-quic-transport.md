@@ -802,20 +802,20 @@ that connection to the appropriate value. It also maintains the highest packet
 number seen from its peer on the connection. The value is then determined at
 each endpoint as follows:
 
-* The server initializes its spin value to 0. When it receives a packet from
-  the client, if that packet has a short header and if it increments the
-  highest packet number seen by the server from the client, it sets the spin
-  value to the spin bit in the received packet.
-
 * The client initializes its spin value to 0. When it receives a packet from
-  the server, if the packet has a short header and if it increments the
+  the server, if the packet has a short header and if it increases the
   highest packet number seen by the client from the server, it sets the spin
   value to the opposite of the spin bit in the received packet.
+  
+  * The server initializes its spin value to 0. When it receives a packet from
+  the client, if that packet has a short header and if it increases the
+  highest packet number seen by the server from the client, it sets the spin
+  value to the spin bit in the received packet.
 
 This procedure will cause the spin bit to change value in each direction once
 per round trip. Observation points can estimate the network latency by
 observing these changes in the latency spin bit, as described in
-{{?QUIC-MAN:I-D.ietf-quic-manageability}}
+{{?QUIC-MAN=I-D.ietf-quic-manageability}}
 
 # Frames and Frame Types {#frames}
 
