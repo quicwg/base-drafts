@@ -710,8 +710,8 @@ packets MUST use connection ID selected by the client.
 The packet number is an integer in the range 0 to 2^62-1. The value is used in
 determining the cryptographic nonce for packet encryption.  Each endpoint
 maintains a separate packet number for sending and receiving.  The packet number
-for sending starts at zero for the first packet set and MUST increase by one
-after sending a packet.
+for sending starts at zero for the first packet set and MUST increase by at
+least one after sending a packet.
 
 A QUIC endpoint MUST NOT reuse a packet number within the same connection (that
 is, under the same cryptographic keys).  If the packet number for sending
