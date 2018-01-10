@@ -3650,7 +3650,7 @@ transport to cancel a stream in response to receipt of a STOP_SENDING frame.
 ## Spoofed ACK Attack
 
 An attacker might be able to receive an address validation token
-({{address-validation}}) from the server and then releases the IP address it
+({{address-validation}}) from the server and then release the IP address it
 used to acquire that token.  The attacker may, in the future, spoof this same
 address (which now presumably addresses a different endpoint), and initiate a
 0-RTT connection with a server on the victim's behalf.  The attacker can then
