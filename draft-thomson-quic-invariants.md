@@ -215,6 +215,9 @@ either does not understand or does not support sends a Version Negotiation
 packet in response.  Packets with a short header do not trigger version
 negotiation and are always associated with an existing connection.
 
+Consequently, until an endpoint has confirmed that its peer supports the QUIC
+version it has chosen, it can only send packets that use the long header.
+
 A Version Negotiation packet sets the high bit of the first octet, and thus it
 conforms with the format of a packet with a long header as defined in this
 document.  A Version Negotiation packet is identifiable as such by the Version
