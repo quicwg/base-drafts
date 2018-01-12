@@ -2745,24 +2745,24 @@ that it sends.
 Strategies and implications of the frequency of generating acknowledgments are
 discussed in more detail in {{QUIC-RECOVERY}}.
 
-
 ## Packet Size
 
 The QUIC packet size includes the QUIC header and integrity check, but not the
 UDP or IP header.
 
-Clients MUST ensure that any Initial packet it sends has a QUIC packet size of
-least 1200 octets.
+Clients MUST pad any Initial packet it sends to have a QUIC packet size of at
+least 1200 octets. Sending an Initial packet of this size ensures that the
+network path supports a reasonably sized packet, and helps reduce the amplitude
+of amplification attacks caused by server responses toward an unverified client
+address.
 
-An Initial packet MUST be padded to at least 1200 octets unless the client knows
-that the Path Maximum Transmission Unit (PMTU) supports the size that it
-chooses.  Sending an Initial packet of this size ensures that the network path
-supports an MTU of this size and helps reduce the amplitude of amplification
-attacks caused by server responses toward an unverified client address.
+An Initial packet MAY exceed 1200 octets if the client knows that the Path
+Maximum Transmission Unit (PMTU) supports the size that it chooses.
 
-A server MUST NOT allow receipt of a packet that is smaller than 1200 octets to
-start a new connection.
-
+A server MAY send a CONNECTION_CLOSE frame with error code PROTOCOL_VIOLATION in
+response to an Initial packet smaller than 1200 octets. It MUST NOT send any
+other frame type in response, or otherwise behave as if any part of the
+offending packet was processed as valid.
 
 ## Path Maximum Transmission Unit
 
