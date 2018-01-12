@@ -1098,7 +1098,7 @@ language from Section 3 of {{!I-D.ietf-tls-tls13}}.
          case new_session_ticket:
             struct {};
       };
-      TransportParameter parameters<30..2^16-1>;
+      TransportParameter parameters<22..2^16-1>;
    } TransportParameters;
 ~~~
 {: #figure-transport-parameters title="Definition of TransportParameters"}
