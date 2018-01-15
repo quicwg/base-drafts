@@ -1093,7 +1093,7 @@ language from Section 3 of {{!I-D.ietf-tls-tls13}}.
          case new_session_ticket:
             struct {};
       };
-      TransportParameter parameters<30..2^16-1>;
+      TransportParameter parameters<22..2^16-1>;
    } TransportParameters;
 ~~~
 {: #figure-transport-parameters title="Definition of TransportParameters"}
@@ -2740,24 +2740,24 @@ that it sends.
 Strategies and implications of the frequency of generating acknowledgments are
 discussed in more detail in {{QUIC-RECOVERY}}.
 
-
 ## Packet Size {#packet-size}
 
 The QUIC packet size includes the QUIC header and integrity check, but not the
 UDP or IP header.
 
-Clients MUST ensure that any Initial packet it sends has a QUIC packet size of
-least 1200 octets.
+Clients MUST pad any Initial packet it sends to have a QUIC packet size of at
+least 1200 octets. Sending an Initial packet of this size ensures that the
+network path supports a reasonably sized packet, and helps reduce the amplitude
+of amplification attacks caused by server responses toward an unverified client
+address.
 
-An Initial packet MUST be padded to at least 1200 octets unless the client knows
-that the Path Maximum Transmission Unit (PMTU) supports the size that it
-chooses.  Sending an Initial packet of this size ensures that the network path
-supports an MTU of this size and helps reduce the amplitude of amplification
-attacks caused by server responses toward an unverified client address.
+An Initial packet MAY exceed 1200 octets if the client knows that the Path
+Maximum Transmission Unit (PMTU) supports the size that it chooses.
 
-A server MUST NOT allow receipt of a packet that is smaller than 1200 octets to
-start a new connection.
-
+A server MAY send a CONNECTION_CLOSE frame with error code PROTOCOL_VIOLATION in
+response to an Initial packet smaller than 1200 octets. It MUST NOT send any
+other frame type in response, or otherwise behave as if any part of the
+offending packet was processed as valid.
 
 ## Path Maximum Transmission Unit
 
@@ -3644,12 +3644,13 @@ transport to cancel a stream in response to receipt of a STOP_SENDING frame.
 
 ## Spoofed ACK Attack
 
-An attacker receives an STK from the server and then releases the IP address on
-which it received the STK.  The attacker may, in the future, spoof this same
+An attacker might be able to receive an address validation token
+({{address-validation}}) from the server and then release the IP address it
+used to acquire that token.  The attacker may, in the future, spoof this same
 address (which now presumably addresses a different endpoint), and initiate a
-0-RTT connection with a server on the victim's behalf.  The attacker then spoofs
-ACK frames to the server which cause the server to potentially drown the victim
-in data.
+0-RTT connection with a server on the victim's behalf.  The attacker can then
+spoof ACK frames to the server which cause the server to send excessive amounts
+of data toward the new owner of the IP address.
 
 There are two possible mitigations to this attack.  The simplest one is that a
 server can unilaterally create a gap in packet-number space.  In the non-attack
