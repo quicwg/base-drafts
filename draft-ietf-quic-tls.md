@@ -1418,38 +1418,6 @@ EncryptedExtensions messages during the handshake.  The extension MAY be
 included in a NewSessionTicket message.
 
 
-## Priming 0-RTT
-
-QUIC uses TLS without modification.  Therefore, it is possible to use a
-pre-shared key that was established in a TLS handshake over TCP to enable 0-RTT
-in QUIC.  Similarly, QUIC can provide a pre-shared key that can be used to
-enable 0-RTT in TCP.
-
-All the restrictions on the use of 0-RTT apply, with the exception of the ALPN
-label, which MUST only change to a label that is explicitly designated as being
-compatible.  The client indicates which ALPN label it has chosen by placing that
-ALPN label first in the ALPN extension. In order to be usable for 0-RTT,
-the NewSessionTicket MUST contain the "max_early_data" extension with the
-value 0xffffffff; the amount of data which the client can send in 0-RTT
-is controlled by the "initial_max_data" transport parameter supplied by the
-server. A client MUST treat receipt of a NewSessionTicket that contains a
-"max_early_data" extension with any other value as a connection error of type
-PROTOCOL_VIOLATION.
-
-The certificate that the server uses MUST be considered valid for both
-connections, which will use different protocol stacks and could use different
-port numbers.  For instance, HTTP/1.1 and HTTP/2 operate over TLS and TCP,
-whereas QUIC operates over UDP.
-
-Source address validation is not completely portable between different protocol
-stacks.  Even if the source IP address remains constant, the port number is
-likely to be different.  Packet reflection attacks are still possible in this
-situation, though the set of hosts that can initiate these attacks is greatly
-reduced.  A server might choose to avoid source address validation for such a
-connection, or allow an increase to the amount of data that it sends toward the
-client without source validation.
-
-
 # Security Considerations
 
 There are likely to be some real clangers here eventually, but the current set
