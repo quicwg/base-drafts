@@ -2960,7 +2960,7 @@ data to a peer.
 
 ~~~
        o
-       | Application Open
+       | Open Stream
        | Open Paired Stream (bidirectional)
        v
    +-------+
