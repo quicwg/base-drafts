@@ -1538,11 +1538,15 @@ this, a server sends multiple NEW_CONNECTION_ID messages.  Each
 NEW_CONNECTION_ID is marked with a sequence number.  Connection IDs MUST be used
 in the order in which they are numbered.
 
-A client which wishes to break linkability upon changing networks MUST use the
-connection ID provided by the server.  Using a new connection ID will produce a
-new packet protection key and IV.  New values for obscuring header fields (see
-{{header-obscuring}}) ensure that packet numbers can't be used to link activity
-on paths that use different connection IDs.
+A client that wishes to support connection migration MUST include the connection
+ID provided by the server on every packet it sends.  Selectively including the
+connection ID (for instance, in anticipation of a need to migrate a connection)
+creates a signal that will make correlation easier.
+
+When using a new connection ID new packet protection key and IV will be
+produced.  New values for obscuring header fields (see {{header-obscuring}})
+ensure that packet numbers can't be used to link activity on paths that use
+different connection IDs.
 
 
 ### Address Validation for Migrated Connections {#migrate-validate}
