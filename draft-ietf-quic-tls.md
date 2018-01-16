@@ -632,6 +632,20 @@ packet numbers and use the latest packet protection keys.  This simplifies key
 management when there are key updates (see {{key-update}}).
 
 
+## Enabling 0-RTT {#enable-0rtt}
+
+In order to be usable for 0-RTT, TLS MUST provide a NewSessionTicket message
+that contains the "max_early_data" extension with the value 0xffffffff; the
+amount of data which the client can send in 0-RTT is controlled by the
+"initial_max_data" transport parameter supplied by the server.  A client MUST
+treat receipt of a NewSessionTicket that contains a "max_early_data" extension
+with any other value as a connection error of type PROTOCOL_VIOLATION.
+
+Early data within the TLS connection MUST NOT be used.  As it is for other TLS
+application data, a server MUST treat receiving early data on the TLS connection
+as a connection error of type PROTOCOL_VIOLATION.
+
+
 ## QUIC Key Expansion {#key-expansion}
 
 QUIC uses a system of packet protection secrets, keys and IVs that are modelled
@@ -1318,13 +1332,15 @@ See {{useless}} for a discussion of these risks.
 To avoid receiving TLS packets that contain no useful data, a TLS implementation
 MUST reject empty TLS handshake records and any record that is not permitted by
 the TLS state machine.  Any TLS application data or alerts that is received
-prior to the end of the handshake MUST be treated as a fatal error.
+prior to the end of the handshake MUST be treated as a connection error of type
+PROTOCOL_VIOLATION.
 
 
 ## Use of 0-RTT Keys {#using-early-data}
 
-If 0-RTT keys are available, the lack of replay protection means that
-restrictions on their use are necessary to avoid replay attacks on the protocol.
+If 0-RTT keys are available (see {{enable-0rtt}}), the lack of replay protection
+means that restrictions on their use are necessary to avoid replay attacks on
+the protocol.
 
 A client MUST only use 0-RTT keys to protect data that is idempotent.  A client
 MAY wish to apply additional restrictions on what data it sends prior to the
