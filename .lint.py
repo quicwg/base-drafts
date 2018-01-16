@@ -22,7 +22,7 @@ for inputfile in args.files:
 
         abstract = re.compile('^--- abstract')
         table = re.compile('^\s*(?:\||{:)')
-        figure = re.compile('^[~`]{3,}')
+        figure = re.compile('^[~`]{3}')
 
         for line in lines:
             line = line.rstrip('\r\n')
