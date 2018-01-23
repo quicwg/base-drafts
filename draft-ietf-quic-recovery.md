@@ -682,7 +682,7 @@ acknowledgement has not been received in a timely manner.
 
 The TLP and RTO timers are armed when there is not unacknowledged handshake
 data.  The TLP alarm is set until the max number of TLP packets have been
-sent, and then the RTO tiemr is set.
+sent, and then the RTO timer is set.
 
 #### Early Retransmit Alarm
 
