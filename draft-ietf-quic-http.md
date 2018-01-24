@@ -12,11 +12,11 @@ stand_alone: yes
 pi: [toc, sortrefs, symrefs, docmapping]
 
 author:
- -
+-
     ins: M. Bishop
     name: Mike Bishop
-    org: Microsoft
-    email: Michael.Bishop@microsoft.com
+    org: Akamai
+    email: mbishop@evequefou.be
     role: editor
 
 normative:
@@ -57,7 +57,7 @@ Discussion of this draft takes place on the QUIC working group mailing list
 
 Working Group information can be found at <https://github.com/quicwg>; source
 code and issues list for this draft can be found at
-<https://github.com/quicwg/base-drafts/labels/http>.
+<https://github.com/quicwg/base-drafts/labels/-http>.
 
 
 --- middle
@@ -78,15 +78,26 @@ QUIC is described in {{QUIC-TRANSPORT}}.  For a full description of HTTP/2, see
 
 ## Notational Conventions
 
-The words "MUST", "MUST NOT", "SHOULD", and "MAY" are used in this document.
-It's not shouting; when they are capitalized, they have the special meaning
-defined in {{!RFC2119}}.
+The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD",
+"SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this
+document are to be interpreted as described in BCP 14 {{!RFC2119}} {{!RFC8174}}
+when, and only when, they appear in all capitals, as shown here.
 
 Field definitions are given in Augmented Backus-Naur Form (ABNF), as defined in
 {{!RFC5234}}.
 
+This document uses the variable-length integer encoding from
+{{QUIC-TRANSPORT}}.
 
-# QUIC Advertisement
+Protocol elements called "frames" exist in both this document and
+{{QUIC-TRANSPORT}}. Where frames from {{QUIC-TRANSPORT}} are referenced, the
+frame name will be prefaced with "QUIC."  For example, "QUIC APPLICATION_CLOSE
+frames."  References without this preface refer to frames defined in {{frames}}.
+
+
+# Connection Setup and Management
+
+## Discovering an HTTP/QUIC Endpoint
 
 An HTTP origin advertises the availability of an equivalent HTTP/QUIC endpoint
 via the Alt-Svc HTTP response header or the HTTP/2 ALTSVC frame ({{!RFC7838}}),
@@ -112,7 +123,7 @@ Servers MAY serve HTTP/QUIC on any UDP port.  Servers MUST use the same port
 across all IP addresses that serve a single domain, and SHOULD NOT change this
 port.
 
-## QUIC Version Hints {#alt-svc-version-hint}
+### QUIC Version Hints {#alt-svc-version-hint}
 
 This document defines the "quic" parameter for Alt-Svc, which MAY be used to
 provide version-negotiation hints to HTTP/QUIC clients. QUIC versions are
@@ -138,20 +149,27 @@ Origins SHOULD list only versions which are supported by the alternative, but
 MAY omit supported versions for any reason.
 
 
-# Connection Establishment {#connection-establishment}
+## Connection Establishment {#connection-establishment}
 
-HTTP/QUIC connections are established as described in {{QUIC-TRANSPORT}}. During
+HTTP/QUIC relies on QUIC as the underlying transport.  The QUIC version being
+used MUST use TLS version 1.3 or greater as its handshake protocol.  The Server
+Name Indication (SNI) extension {{!RFC6066}} MUST be included in the TLS
+handshake.
+
+QUIC connections are established as described in {{QUIC-TRANSPORT}}. During
 connection establishment, HTTP/QUIC support is indicated by selecting the ALPN
-token "hq" in the crypto handshake.
+token "hq" in the TLS handshake.  Support for other application-layer protocols
+MAY be offered in the same handshake.
 
 While connection-level options pertaining to the core QUIC protocol are set in
 the initial crypto handshake, HTTP-specific settings are conveyed
 in the SETTINGS frame. After the QUIC connection is established, a SETTINGS
-frame ({{frame-settings}}) MUST be sent as the initial frame of the HTTP control
-stream (Stream ID 1, see {{stream-mapping}}).  The server MUST NOT send data on
-any other stream until the client's SETTINGS frame has been received.
+frame ({{frame-settings}}) MUST be sent by each endpoint as the initial frame
+of their respective HTTP control stream (Stream ID 2 or 3, see
+{{stream-mapping}}). The server MUST NOT send data on any other stream until
+the client's SETTINGS frame has been received.
 
-## Draft Version Identification
+### Draft Version Identification
 
 > **RFC Editor's Note:**  Please remove this section prior to publication of a
 > final version of this document.
@@ -172,6 +190,24 @@ itself as "hq-09-rickroll". Note that any label MUST conform to the "token"
 syntax defined in Section 3.2.6 of [RFC7230]. Experimenters are encouraged to
 coordinate their experiments on the quic@ietf.org mailing list.
 
+## Connection Reuse
+
+Once a connection exists to a server endpoint, this connection MAY be reused for
+requests with multiple different URI authority components.  The client MAY send
+any requests for which the client considers the server authoritative.
+
+An authoritative HTTP/QUIC endpoint is typically discovered because the client
+has received an Alt-Svc record from the request's origin which nominates the
+endpoint as a valid HTTP Alternative Service for that origin.  As required by
+{{RFC7838}}, clients MUST check that the nominated server can present a valid
+certificate for the origin before considering it authoritative. Clients MUST NOT
+assume that an HTTP/QUIC endpoint is authoritative for other origins without an
+explicit signal.
+
+A server that does not wish clients to reuse connections for a particular origin
+can indicate that it is not authoritative for a request by sending a 421
+(Misdirected Request) status code in response to the request (see Section 9.1.2
+of {{!RFC7540}}).
 
 # Stream Mapping and Usage {#stream-mapping}
 
@@ -182,27 +218,32 @@ the HTTP framing layer. A QUIC receiver buffers and orders received STREAM
 frames, exposing the data contained within as a reliable byte stream to the
 application.
 
-QUIC reserves Stream 0 for crypto operations (the handshake, crypto config
-updates). Stream 1 is reserved for sending and receiving HTTP control frames,
-and is analogous to HTTP/2's Stream 0.  This control stream is considered
-critical to the HTTP connection.  If the control stream is closed for any
-reason, this MUST be treated as a connection error of type
-QUIC_CLOSED_CRITICAL_STREAM.
+QUIC reserves the first client-initiated, bidirectional stream (Stream 0) for
+cryptographic operations. HTTP over QUIC reserves the first unidirectional
+stream sent by either peer (Streams 2 and 3) for sending and receiving HTTP
+control frames.  This pair of unidirectional streams is analogous to HTTP/2's
+Stream 0.  The data sent on these streams is critical to the HTTP connection.
+If either control stream is closed for any reason, this MUST be treated as a
+connection error of type QUIC_CLOSED_CRITICAL_STREAM.
 
 When HTTP headers and data are sent over QUIC, the QUIC layer handles most of
-the stream management. An HTTP request/response consumes a single stream: This
-means that the client's first request occurs on QUIC stream 3, the second on
-stream 5, and so on. The server's first push consumes stream 2.
+the stream management.
 
-This stream carries frames related to the request/response (see {{frames}}).
+An HTTP request/response consumes a single client-initiated, bidirectional
+stream.  A bidirectional stream ensures that the response can be readily
+correlated with the request. This means that the client's first request occurs
+on QUIC stream 4, with subsequent requests on stream 8, 12, and so on.
+
+Server push uses server-initiated, unidirectional streams.  Thus, the server's
+first push consumes stream 7 and subsequent pushes use stream 11, 15, and so on.
+
+These streams carry frames related to the request/response (see {{frames}}).
 When a stream terminates cleanly, if the last frame on the stream was truncated,
-this MUST be treated as a connection error (see HTTP_MALFORMED_* in
+this MUST be treated as a connection error (see HTTP_MALFORMED_FRAME in
 {{http-error-codes}}).  Streams which terminate abruptly may be reset at any
 point in the frame.
 
-Streams SHOULD be used sequentially, with no gaps.  Streams used for pushed
-resources MAY be initiated out-of-order, but stream IDs SHOULD be allocated to
-promised resources sequentially.
+Streams SHOULD be used sequentially, with no gaps.
 
 HTTP does not need to do any separate multiplexing when using QUIC - data sent
 over a QUIC stream always maps to a particular HTTP transaction. Requests and
@@ -210,16 +251,21 @@ responses are considered complete when the corresponding QUIC stream is closed
 in the appropriate direction.
 
 
-##  Stream 1: Control Stream
+##  Control Streams
 
 Since most connection-level concerns will be managed by QUIC, the primary use of
-Stream 1 will be for the SETTINGS frame when the connection opens and for
+Streams 2 and 3 will be for the SETTINGS frame when the connection opens and for
 PRIORITY frames subsequently.
+
+A pair of unidirectional streams is used rather than a single bidirectional
+stream.  This allows either peer to send data as soon they are able.  Depending
+on whether 0-RTT is enabled on the connection, either client or server might be
+able to send stream data first after the cryptographic handshake completes.
 
 ## HTTP Message Exchanges {#request-response}
 
-A client sends an HTTP request on a new QUIC stream. A server sends an HTTP
-response on the same stream as the request.
+A client sends an HTTP request on a client-initiated, bidirectional QUIC
+stream. A server sends an HTTP response on the same stream as the request.
 
 An HTTP message (request or response) consists of:
 
@@ -290,8 +336,8 @@ host for similar purposes.
 
 A CONNECT request in HTTP/QUIC functions in the same manner as in HTTP/2. The
 request MUST be formatted as described in {{!RFC7540}}, Section 8.3. A CONNECT
-request that does not conform to these restrictions is malformed. The message
-data stream MUST NOT be closed at the end of the request.
+request that does not conform to these restrictions is malformed. The request
+stream MUST NOT be half-closed at the end of the request.
 
 A proxy that supports CONNECT establishes a TCP connection ({{!RFC0793}}) to the
 server identified in the ":authority" pseudo-header field. Once this connection
@@ -304,13 +350,14 @@ TCP server; data received from the TCP server is packaged into DATA frames by
 the proxy. Note that the size and number of TCP segments is not guaranteed to
 map predictably to the size and number of HTTP DATA or QUIC STREAM frames.
 
-The TCP connection can be closed by either peer. When the client half-closes the
-request stream, the proxy will set the FIN bit on its connection to the TCP
-server. When the proxy receives a packet with the FIN bit set, it will
-half-close the corresponding stream. TCP connections which remain half-closed in
-a single direction are not invalid, but are often handled poorly by servers, so
-clients SHOULD NOT half-close connections on which they are still expecting
-data.
+The TCP connection can be closed by either peer. When the client ends the
+request stream (that is, the receive stream at the proxy enters the "Data Recvd"
+state), the proxy will set the FIN bit on its connection to the TCP server. When
+the proxy receives a packet with the FIN bit set, it will terminate the send
+stream that it sends to client. TCP connections which remain half-closed in a
+single direction are not invalid, but are often handled poorly by servers, so
+clients SHOULD NOT cause send a STREAM frame with a FIN bit for connections on
+which they are still expecting data.
 
 A TCP connection error is signaled with RST_STREAM. A proxy treats any error in
 the TCP connection, which includes receiving a TCP segment with the RST bit set,
@@ -328,11 +375,9 @@ another request, which expresses the preference that the latter stream (the
 connection form a dependency tree. The structure of the dependency tree changes
 as PRIORITY frames add, remove, or change the dependency links between requests.
 
-HTTP/2 defines its priorities in terms of streams whereas HTTP over QUIC
-identifies requests.  The PRIORITY frame {{frame-priority}} identifies a request
+The PRIORITY frame {{frame-priority}} identifies a request
 either by identifying the stream that carries a request or by using a Push ID
-({{frame-push-promise}}).  Other than the means of identifying requests, the
-prioritization system is identical to that in HTTP/2.
+({{frame-push-promise}}).
 
 Only a client can send PRIORITY frames.  A server MUST NOT send a PRIORITY
 frame.
@@ -347,39 +392,39 @@ a MAX_PUSH_ID frame.
 
 As with server push for HTTP/2, the server initiates a server push by sending a
 PUSH_PROMISE frame that includes request header fields attributed to the
-request. The PUSH_PROMISE frame is sent on a response stream.  Unlike HTTP/2,
-the PUSH_PROMISE does not reference a stream; when a server fulfills a promise,
-the stream that carries the stream headers references the PUSH_PROMISE.  This
-allows a server to fulfill promises in the order that best suits its needs.
+request. The PUSH_PROMISE frame is sent on the client-initiated, bidirectional
+stream that carried the request that generated the push.  This allows the server
+push to be associated with a request.  Ordering of a PUSH_PROMISE in relation to
+certain parts of the response is important (see Section 8.2.1 of {{!RFC7540}}).
 
-The server push response is conveyed on a push stream.  A push stream is a
-server-initiated stream.  A push stream includes a header (see
-{{fig-push-stream-header}}) that identifies the PUSH_PROMISE that it fulfills.
-This header consists of a 32-bit Push ID, which identifies a server push (see
-{{frame-push-promise}}).
+Unlike HTTP/2, the PUSH_PROMISE does not reference a stream; it contains a Push
+ID. The Push ID uniquely identifies a server push (see {{frame-push-promise}}).
+This allows a server to fulfill promises in the order that best suits its needs.
+
+When a server later fulfills a promise, the server push response is conveyed on
+a push stream.  A push stream is a server-initiated, unidirectional stream.  A
+push stream always begins with a header (see {{fig-push-stream-header}}) that
+identifies the Push ID of the promise that it fulfills, encoded as a
+variable-length integer.
 
 ~~~~~
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                         Push ID (32)                          |
+|                         Push ID (i)                         ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~~~
 {: #fig-push-stream-header title="Push Stream Header"}
-
-A push stream always starts with a 32-bit Push ID.  A client MUST treat
-receiving a push stream that contains fewer than 4 octets as a connection error
-of type HTTP_MALFORMED_PUSH.
 
 A server SHOULD use Push IDs sequentially, starting at 0.  A client uses the
 MAX_PUSH_ID frame ({{frame-max-push-id}}) to limit the number of pushes that a
 server can promise.  A client MUST treat receipt of a push stream with a Push ID
 that is greater than the maximum Push ID as a connection error of type
-HTTP_MALFORMED_PUSH.
+HTTP_PUSH_LIMIT_EXCEEDED.
 
 Each Push ID MUST only be used once in a push stream header.  If a push stream
 header includes a Push ID that was used in another push stream header, the
-client MUST treat this as a connection error of type HTTP_MALFORMED_PUSH.  The
+client MUST treat this as a connection error of type HTTP_DUPLICATE_PUSH.  The
 same Push ID can be used in multiple PUSH_PROMISE frames (see
 {{frame-push-promise}}).
 
@@ -405,15 +450,32 @@ from HTTP/2, see {{h2-frames}}.
 All frames have the following format:
 
 ~~~~~~~~~~ drawing
-    0                   1                   2                   3
-    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |           Length (16)         |     Type (8)  |   Flags (8)   |
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |                       Frame Payload (*)                     ...
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                           Length (i)                        ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|    Type (8)   |   Flags (8)   |       Frame Payload (*)     ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~~~~~~~~
 {: #fig-frame title="HTTP/QUIC frame format"}
+
+A frame includes the following fields:
+
+  Length:
+  : A variable-length integer that describes the length of the Frame Payload.
+    This length does not include the frame header.
+
+  Type:
+  : An 8-bit type for the frame.
+
+  Flags:
+  : An 8-bit field containing flags.  The Type field determines the semantics of
+    flags.
+
+  Frame Payload:
+  : A payload, the semantics of which are determined by the Type field.
+
 
 ## Frame Definitions {#frames}
 
@@ -425,34 +487,22 @@ associated with an HTTP request or response payload.
 The DATA frame defines no flags.
 
 DATA frames MUST be associated with an HTTP request or response.  If a DATA
-frame is received on the control stream, the recipient MUST respond with a
+frame is received on either control stream, the recipient MUST respond with a
 connection error ({{errors}}) of type HTTP_WRONG_STREAM.
 
 DATA frames MUST contain a non-zero-length payload.  If a DATA frame is received
 with a payload length of zero, the recipient MUST respond with a stream error
-({{errors}}) of type HTTP_MALFORMED_DATA.
+({{errors}}) of type HTTP_MALFORMED_FRAME.
 
 ### HEADERS {#frame-headers}
 
-The HEADERS frame (type=0x1) is used to carry part of a header set, compressed
-using HPACK {{header-compression}}.
+The HEADERS frame (type=0x1) is used to carry a header block, compressed using
+HPACK {{header-compression}}.
 
-One flag is defined:
+No flags are defined for the HEADERS frame.
 
-  End Header Block (0x4):
-  : This frame concludes a header block.
-
-A HEADERS frame with any other flags set MUST be treated as a connection error
-of type HTTP_MALFORMED_HEADERS.
-
-The next frame on the same stream after a HEADERS frame without the EHB flag set
-MUST be another HEADERS frame. A receiver MUST treat the receipt of any other
-type of frame as a stream error of type HTTP_INTERRUPTED_HEADERS. (Note that
-QUIC can intersperse data from other streams between frames, or even during
-transmission of frames, so multiplexing is not blocked by this requirement.)
-
-A full header block is contained in a sequence of zero or more HEADERS frames
-without EHB set, followed by a HEADERS frame with EHB set.
+A HEADERS frame with any flags set MUST be treated as a connection error of type
+HTTP_MALFORMED_FRAME.
 
 
 ### PRIORITY {#frame-priority}
@@ -482,67 +532,73 @@ The flags defined are:
     5.3).
 
 ~~~~~~~~~~  drawing
-    0                   1                   2                   3
-    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |                 Prioritized Request ID (32)                   |
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |                  Stream Dependency ID (32)                    |
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |   Weight (8)  |
-   +-+-+-+-+-+-+-+-+
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                 Prioritized Request ID (i)                    |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                  Stream Dependency ID (i)                     |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|   Weight (8)  |
++-+-+-+-+-+-+-+-+
 ~~~~~~~~~~
 {: #fig-priority title="PRIORITY frame payload"}
 
 The PRIORITY frame payload has the following fields:
 
   Prioritized Request ID:
-  : A 32-bit identifier for a request.  This contains the stream ID of a request
-    stream when the PUSH_PRIORITIZED flag is clear, or a Push ID when the
-    PUSH_PRIORITIZED flag is set.
+  : A variable-length integer that identifies a request.  This contains
+    the Stream ID of a request stream when the PUSH_PRIORITIZED flag is clear,
+    or a Push ID when the PUSH_PRIORITIZED flag is set.
 
   Stream Dependency ID:
-  : A 32-bit stream identifier for a dependent request.  This contains the
-    stream ID of a request stream when the PUSH_DEPENDENT flag is clear, or a
-    Push ID when the PUSH_DEPENDENT flag is set.  A request stream ID of 0
-    indicates a dependency on the root stream. For details of dependencies,
-    see {{priority}} and {{!RFC7540}}, Section 5.3.
+  : A variable-length integer that identifies a dependent request.  This
+    contains the Stream ID of a request stream when the PUSH_DEPENDENT flag is
+    clear, or a Push ID when the PUSH_DEPENDENT flag is set.  A request Stream
+    ID of 0 indicates a dependency on the root stream. For details of
+    dependencies, see {{priority}} and {{!RFC7540}}, Section 5.3.
 
   Weight:
   : An unsigned 8-bit integer representing a priority weight for the stream (see
     {{!RFC7540}}, Section 5.3). Add one to the value to obtain a weight between
     1 and 256.
 
-A PRIORITY frame identifies a request to priotize, and a request upon which that
-request is dependent.  A Prioritized Request ID or Stream Dependency ID
+A PRIORITY frame identifies a request to prioritize, and a request upon which
+that request is dependent.  A Prioritized Request ID or Stream Dependency ID
 identifies a client-initiated request using the corresponding stream ID when the
 corresponding PUSH_PRIORITIZED or PUSH_DEPENDENT flag is not set.  Setting the
 PUSH_PRIORITIZED or PUSH_DEPENDENT flag causes the Prioritized Request ID or
 Stream Dependency ID (respectively) to identify a server push using a Push ID
 (see {{frame-push-promise}} for details).
 
-A PRIORITY frame MAY identify a Stream Dependency ID using a stream ID of 0; as
+A PRIORITY frame MAY identify a Stream Dependency ID using a Stream ID of 0; as
 in {{!RFC7540}}, this makes the request dependent on the root of the dependency
 tree.
 
-Stream ID 0 and stream ID 1 cannot be reprioritized. A Prioritized Request ID
-that identifies Stream 0 or 1 MUST be treated as a connection error of type
-HTTP_MALFORMED_PRIORITY.
+A PRIORITY frame MUST identify a client-initiated, bidirectional stream.  A
+server MUST treat receipt of PRIORITY frame with a Stream ID of any other type
+as a connection error of type HTTP_MALFORMED_FRAME.
+
+Stream ID 0 cannot be reprioritized. A Prioritized Request ID that identifies
+Stream 0 MUST be treated as a connection error of type HTTP_MALFORMED_FRAME.
 
 A PRIORITY frame that does not reference a request MUST be treated as a
-HTTP_MALFORMED_PRIORITY error, unless it references stream ID 0.  A PRIORITY
+HTTP_MALFORMED_FRAME error, unless it references Stream ID 0.  A PRIORITY
 that sets a PUSH_PRIORITIZED or PUSH_DEPENDENT flag, but then references a
-non-existent Push ID MUST be treated as a HTTP_MALFORMED_PRIORITY error.
+non-existent Push ID MUST be treated as a HTTP_MALFORMED_FRAME error.
 
-The length of a PRIORITY frame is 9 octets.  A PRIORITY frame with any other
-length MUST be treated as a connection error of type HTTP_MALFORMED_PRIORITY.
+A PRIORITY frame MUST contain only the identified fields.  A PRIORITY frame that
+contains more or fewer fields, or a PRIORITY frame that includes a truncated
+integer encoding MUST be treated as a connection error of type
+HTTP_MALFORMED_FRAME.
 
 
 ### CANCEL_PUSH {#frame-cancel-push}
 
 The CANCEL_PUSH frame (type=0x3) is used to request cancellation of server push
 prior to the push stream being created.  The CANCEL_PUSH frame identifies a
-server push request by Push ID (see {{frame-push-promise}}).
+server push request by Push ID (see {{frame-push-promise}}) using a
+variable-length integer.
 
 When a server receives this frame, it aborts sending the response for the
 identified server push.  If the server has not yet started to send the server
@@ -563,14 +619,16 @@ type HTTP_WRONG_STREAM.
 
 The CANCEL_PUSH frame has no defined flags.
 
-The CANCEL_PUSH frame carries a 32-bit Push ID that identifies the server push
-that is being cancelled (see {{frame-push-promise}}).
+The CANCEL_PUSH frame carries a Push ID encoded as a variable-length integer.
+The Push ID identifies the server push that is being cancelled (see
+{{frame-push-promise}}).
 
 If the client receives a CANCEL_PUSH frame, that frame might identify a Push ID
 that has not yet been mentioned by a PUSH_PROMISE frame.
 
-A server MUST treat a CANCEL_PUSH frame payload that is other than 4 octets in
-length as a connection error of type HTTP_MALFORMED_CANCEL_PUSH.
+An endpoint MUST treat a CANCEL_PUSH frame which does not contain exactly one
+properly-formatted variable-length integer as a connection error of type
+HTTP_MALFORMED_FRAME.
 
 
 ### SETTINGS {#frame-settings}
@@ -593,7 +651,7 @@ while servers are more cautious about request size.
 
 Parameters MUST NOT occur more than once.  A receiver MAY treat the presence of
 the same parameter more than once as a connection error of type
-HTTP_MALFORMED_SETTINGS.
+HTTP_MALFORMED_FRAME.
 
 The SETTINGS frame defines no flags.
 
@@ -602,13 +660,13 @@ consisting of an unsigned 16-bit setting identifier and a length-prefixed binary
 value.
 
 ~~~~~~~~~~~~~~~  drawing
-    0                   1                   2                   3
-    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |        Identifier (16)        |         Length (16)           |
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |                          Contents (?)                       ...
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|         Identifier (16)       |            Length (i)       ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                          Contents (?)                       ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~~~~~~~~~~~~~
 {: #fig-ext-settings title="SETTINGS value format"}
 
@@ -618,40 +676,37 @@ False is indicated by the absence of the setting.
 Non-zero-length values MUST be compared against the remaining length of the
 SETTINGS frame.  Any value which purports to cross the end of the frame MUST
 cause the SETTINGS frame to be considered malformed and trigger a connection
-error of type HTTP_MALFORMED_SETTINGS.
+error of type HTTP_MALFORMED_FRAME.
 
 An implementation MUST ignore the contents for any SETTINGS identifier it does
 not understand.
 
 SETTINGS frames always apply to a connection, never a single stream.  A SETTINGS
-frame MUST be sent as the first frame of the control stream (see
+frame MUST be sent as the first frame of either control stream (see
 {{stream-mapping}}) by each peer, and MUST NOT be sent subsequently or on any
 other stream. If an endpoint receives an SETTINGS frame on a different stream,
 the endpoint MUST respond with a connection error of type HTTP_WRONG_STREAM.  If
 an endpoint receives a second SETTINGS frame, the endpoint MUST respond with a
-connection error of type HTTP_MULTIPLE_SETTINGS.
+connection error of type HTTP_MALFORMED_FRAME.
 
 The SETTINGS frame affects connection state. A badly formed or incomplete
 SETTINGS frame MUST be treated as a connection error ({{errors}}) of type
-HTTP_MALFORMED_SETTINGS.
+HTTP_MALFORMED_FRAME.
 
 
 #### Integer encoding
 
-Settings which are integers are transmitted in network byte order.  Leading
-zero octets are permitted, but implementations SHOULD use only as many bytes as
-are needed to represent the value.  An integer MUST NOT be represented in more
-bytes than would be used to transfer the maximum permitted value.
+Settings which are integers use the QUIC variable-length integer encoding.
 
 #### Defined SETTINGS Parameters {#settings-parameters}
 
 The following settings are defined in HTTP/QUIC:
 
   SETTINGS_HEADER_TABLE_SIZE (0x1):
-  : An integer with a maximum value of 2^32 - 1.  This value MUST be zero.
+  : An integer with a maximum value of 2^30 - 1.  This value MUST be zero.
 
   SETTINGS_MAX_HEADER_LIST_SIZE (0x6):
-  : An integer with a maximum value of 2^32 - 1
+  : An integer with a maximum value of 2^30 - 1
 
 #### Usage in 0-RTT
 
@@ -688,22 +743,22 @@ The PUSH_PROMISE frame (type=0x05) is used to carry a request header set from
 server to client, as in HTTP/2.  The PUSH_PROMISE frame defines no flags.
 
 ~~~~~~~~~~  drawing
-    0                   1                   2                   3
-    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |                          Push ID (32)                         |
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |                       Header Block (*)                      ...
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                          Push ID (i)                        ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                       Header Block (*)                      ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~~~~~~~~
 {: #fig-push-promise title="PUSH_PROMISE frame payload"}
 
 The payload consists of:
 
 Push ID:
-: A 32-bit identifier for the server push request.  A push ID is used in push
-  stream header ({{server-push}}), CANCEL_PUSH frames ({{frame-cancel-push}}),
-  and PRIORITY frames ({{frame-priority}}).
+: A variable-length integer that identifies the server push request.  A push ID
+  is used in push stream header ({{server-push}}), CANCEL_PUSH frames
+  ({{frame-cancel-push}}), and PRIORITY frames ({{frame-priority}}).
 
 Header Block:
 : HPACK-compressed request headers for the promised response.
@@ -711,7 +766,7 @@ Header Block:
 A server MUST NOT use a Push ID that is larger than the client has provided in a
 MAX_PUSH_ID frame ({{frame-max-push-id}}).  A client MUST treat receipt of a
 PUSH_PROMISE that contains a larger Push ID than the client has advertised as a
-connection error of type HTTP_MALFORMED_PUSH_PROMISE.
+connection error of type HTTP_MALFORMED_FRAME.
 
 A server MAY use the same Push ID in multiple PUSH_PROMISE frames.  This allows
 the server to use the same server push in response to multiple concurrent
@@ -724,7 +779,7 @@ the same header fields each time.  The octets of the header block MAY be
 different due to differing encoding, but the header fields and their values MUST
 be identical.  Note that ordering of header fields is significant.  A client
 MUST treat receipt of a PUSH_PROMISE with conflicting header field values for
-the same Push ID as a connection error of type HTTP_MALFORMED_PUSH_PROMISE.
+the same Push ID as a connection error of type HTTP_MALFORMED_FRAME.
 
 Allowing duplicate references to the same Push ID is primarily to reduce
 duplication caused by concurrent requests.  A server SHOULD avoid reusing a Push
@@ -740,17 +795,26 @@ The GOAWAY frame (type=0x7) is used to initiate graceful shutdown of a
 connection by a server.  GOAWAY allows a server to stop accepting new requests
 while still finishing processing of previously received requests.  This enables
 administrative actions, like server maintenance.  GOAWAY by itself does not
-close a connection.  (Note that clients do not need to send GOAWAY to gracefully
-close a connection; they simply stop making new requests.)
+close a connection.
 
-The GOAWAY frame does not define any flags, and the payload is a QUIC stream
-identifier.  The GOAWAY frame applies to the connection, not a specific stream.
-An endpoint MUST treat a GOAWAY frame on a stream other than the control stream
-as a connection error ({{errors}}) of type HTTP_WRONG_STREAM.
+The GOAWAY frame does not define any flags, and the payload is a QUIC Stream ID
+for a client-initiated, bidirectional stream encoded as a variable-length
+integer.
+
+Clients do not need to send GOAWAY to initiate a graceful shutdown; they simply
+stop making new requests.  A server MUST treat receipt of a GOAWAY frame as a
+connection error ({{errors}}) of type HTTP_UNEXPECTED_GOAWAY.
+
+A client MUST treat receipt of a GOAWAY frame containing a Stream ID of any
+other type as a connection error of type HTTP_MALFORMED_FRAME.
+
+The GOAWAY frame applies to the connection, not a specific stream.  An endpoint
+MUST treat a GOAWAY frame on a stream other than the control stream as a
+connection error ({{errors}}) of type HTTP_WRONG_STREAM.
 
 New client requests might already have been sent before the client receives the
-server's GOAWAY frame.  The GOAWAY frame contains the stream identifier of the
-last client-initiated request that was or might be processed in this connection,
+server's GOAWAY frame.  The GOAWAY frame contains the Stream ID of the last
+client-initiated request that was or might be processed in this connection,
 which enables client and server to agree on which requests were accepted prior
 to the connection shutdown.  This identifier MAY be lower than the stream limit
 identified by a QUIC MAX_STREAM_ID frame, and MAY be zero if no requests were
@@ -763,11 +827,11 @@ GOAWAY frame.
     a result.
 
 Once sent, the server will refuse requests sent on streams with an identifier
-higher than the included last stream identifier.  Clients MUST NOT send new
-requests on the connection after receiving GOAWAY, although requests might
-already be in transit. A new connection can be established for new requests.
+higher than the included last Stream ID.  Clients MUST NOT send new requests on
+the connection after receiving GOAWAY, although requests might already be in
+transit. A new connection can be established for new requests.
 
-If the client has sent requests on streams with a higher stream identifier than
+If the client has sent requests on streams with a higher Stream ID than
 indicated in the GOAWAY frame, those requests were not and will not be
 processed.  Endpoints SHOULD reset any streams above this ID with the error code
 HTTP_REQUEST_CANCELLED.  Servers MAY also reset streams below the indicated ID
@@ -781,8 +845,8 @@ If a stream is cancelled after receiving a complete response, the client MAY
 ignore the cancellation and use the response.  However, if a stream is cancelled
 after receiving a partial response, the response SHOULD NOT be used.
 Automatically retrying such requests is not possible, unless this is otherwise
-permitted (e.g. idempotent actions like GET, PUT, or DELETE).  Requests on
-stream IDs less than or equal to the stream ID in the GOAWAY frame might have
+permitted (e.g., idempotent actions like GET, PUT, or DELETE).  Requests on
+Stream IDs less than or equal to the Stream ID in the GOAWAY frame might have
 been processed; their status cannot be known until they are completed
 successfully, reset individually, or the connection terminates.
 
@@ -794,29 +858,41 @@ connection, the client cannot know if the server started to process that POST
 request if the server does not send a GOAWAY frame to indicate what streams it
 might have acted on.
 
-For unexpected closures caused by error conditions, a QUIC CONNECTION_CLOSE
-frame MUST be used.  However, a GOAWAY MAY be sent first to provide additional
-detail to clients.  If a connection terminates without a GOAWAY frame, the last
-stream identifier is effectively the highest possible stream identifier (as
-determined by QUIC's MAX_STREAM_ID).
+For unexpected closures caused by error conditions, a QUIC CONNECTION_CLOSE or
+APPLICATION_CLOSE frame MUST be used.  However, a GOAWAY MAY be sent first to
+provide additional detail to clients and to allow the client to retry requests.
+Including the GOAWAY frame in the same packet as the QUIC CONNECTION_CLOSE or
+APPLICATION_CLOSE frame improves the chances of the frame being received by
+clients.
+
+If a connection terminates without a GOAWAY frame, the last Stream ID is
+effectively the highest possible Stream ID (as determined by QUIC's
+MAX_STREAM_ID).
 
 An endpoint MAY send multiple GOAWAY frames if circumstances change. For
 instance, an endpoint that sends GOAWAY without an error code during graceful
 shutdown could subsequently encounter an error condition.  The last stream
 identifier from the last GOAWAY frame received indicates which streams could
-have been acted upon.  Endpoints MUST NOT increase the value they send in the
-last stream identifier, since the peers might already have retried unprocessed
-requests on another connection.
+have been acted upon.  A server MUST NOT increase the value they send in the
+last Stream ID, since clients might already have retried unprocessed requests on
+another connection.
 
 A client that is unable to retry requests loses all requests that are in flight
 when the server closes the connection.  A server that is attempting to
 gracefully shut down a connection SHOULD send an initial GOAWAY frame with the
-last stream identifier set to the current value of QUIC's MAX_STREAM_ID and
-SHOULD NOT increase the MAX_STREAM_ID thereafter.  This signals to the client
-that a shutdown is imminent and that initiating further requests is prohibited.
-After allowing time for any in-flight requests (at least one round-trip time),
-the server MAY send another GOAWAY frame with an updated last stream identifier.
-This ensures that a connection can be cleanly shut down without losing requests.
+last Stream ID set to the current value of QUIC's MAX_STREAM_ID and SHOULD NOT
+increase the MAX_STREAM_ID thereafter.  This signals to the client that a
+shutdown is imminent and that initiating further requests is prohibited.  After
+allowing time for any in-flight requests (at least one round-trip time), the
+server MAY send another GOAWAY frame with an updated last Stream ID.  This
+ensures that a connection can be cleanly shut down without losing requests.
+
+Once all requests on streams at or below the identified stream number have been
+completed or cancelled, and all promised server push responses associated with
+those requests have been completed or cancelled, the connection can be closed
+using an Immediate Close (see {{QUIC-TRANSPORT}}).  An endpoint that completes a
+graceful shutdown SHOULD use the QUIC APPLICATION_CLOSE frame with the
+HTTP_NO_ERROR code.
 
 
 ### MAX_PUSH_ID {#frame-max-push-id}
@@ -827,12 +903,12 @@ Push ID that the server can use in a PUSH_PROMISE frame.  Consequently, this
 also limits the number of push streams that the server can initiate in addition
 to the limit set by the QUIC MAX_STREAM_ID frame.
 
-The MAX_PUSH_ID frame is always sent on the control stream.  Receipt of a
+The MAX_PUSH_ID frame is always sent on a control stream.  Receipt of a
 MAX_PUSH_ID frame on any other stream MUST be treated as a connection error of
 type HTTP_WRONG_STREAM.
 
 A server MUST NOT send a MAX_PUSH_ID frame.  A client MUST treat the receipt of
-a MAX_PUSH_ID frame as a connection error of type HTTP_MALFORMED_MAX_PUSH_ID.
+a MAX_PUSH_ID frame as a connection error of type HTTP_MALFORMED_FRAME.
 
 The maximum Push ID is unset when a connection is created, meaning that a server
 cannot push until it receives a MAX_PUSH_ID frame.  A client that wishes to
@@ -841,14 +917,15 @@ sending a MAX_PUSH_ID frame as the server fulfills or cancels server pushes.
 
 The MAX_PUSH_ID frame has no defined flags.
 
-The MAX_PUSH_ID frame carries a 32-bit Push ID that identifies the maximum value
-for a Push ID that the server can use (see {{frame-push-promise}}).  A
-MAX_PUSH_ID frame cannot reduce the maximum Push ID; receipt of a MAX_PUSH_ID
-that contains a smaller value than previously received MUST be treated as a
-connection error of type HTTP_MALFORMED_MAX_PUSH_ID.
+The MAX_PUSH_ID frame carries a single variable-length integer that identifies
+the maximum value for a Push ID that the server can use (see
+{{frame-push-promise}}).  A MAX_PUSH_ID frame cannot reduce the maximum Push ID;
+receipt of a MAX_PUSH_ID that contains a smaller value than previously received
+MUST be treated as a connection error of type HTTP_MALFORMED_FRAME.
 
-A server MUST treat a MAX_PUSH_ID frame payload that is other than 4 octets in
-length as a connection error of type HTTP_MALFORMED_MAX_PUSH_ID.
+A server MUST treat a MAX_PUSH_ID frame payload that does not contain a single
+variable-length integer as a connection error of type
+HTTP_MALFORMED_FRAME.
 
 
 # Connection Management
@@ -918,36 +995,19 @@ HTTP_VERSION_FALLBACK (0x09):
 : The requested operation cannot be served over HTTP/QUIC.  The peer should
   retry over HTTP/2.
 
-HTTP_MALFORMED_HEADERS (0x0A):
-: A HEADERS frame has been received with an invalid format.
-
-HTTP_MALFORMED_PRIORITY (0x0B):
-: A PRIORITY frame has been received with an invalid format.
-
-HTTP_MALFORMED_SETTINGS (0x0C):
-: A SETTINGS frame has been received with an invalid format.
-
-HTTP_MALFORMED_PUSH_PROMISE (0x0D):
-: A PUSH_PROMISE frame has been received with an invalid format.
-
-HTTP_MALFORMED_DATA (0x0E):
-: A DATA frame has been received with an invalid format.
-
-HTTP_INTERRUPTED_HEADERS (0x0F):
-: A HEADERS frame without the End Header Block flag was followed by a frame
-  other than HEADERS.
-
-HTTP_WRONG_STREAM (0x10):
+HTTP_WRONG_STREAM (0x0A):
 : A frame was received on stream where it is not permitted.
 
-HTTP_MULTIPLE_SETTINGS (0x11):
-: More than one SETTINGS frame was received.
+HTTP_PUSH_LIMIT_EXCEEDED (0x0B):
+: A Push ID greater than the current maximum Push ID was referenced.
 
-HTTP_MALFORMED_PUSH (0x12):
-: A push stream header was malformed or included an invalid Push ID.
+HTTP_DUPLICATE_PUSH (0x0C):
+: A Push ID was referenced in two different stream headers.
 
-HTTP_MALFORMED_MAX_PUSH_ID (0x13):
-: A MAX_PUSH_ID frame has been received with an invalid format.
+HTTP_MALFORMED_FRAME (0x01XX):
+: An error in a specific frame type.  The frame type is included as the last
+  octet of the error code.  For example, an error in a MAX_PUSH_ID frame would
+  be indicated with the code (0x10D).
 
 
 # Considerations for Transitioning from HTTP/2
@@ -965,6 +1025,13 @@ make it difficult or impossible to build extensions with the same semantics
 applicable to both protocols at once.
 
 These departures are noted in this section.
+
+## Streams {#h2-streams}
+
+HTTP/QUIC permits use of a larger number of streams (2^62-1) than HTTP/2.  The
+considerations about exhaustion of stream identifier space apply, though the
+space is significantly larger such that it is likely that other limits in QUIC
+are reached first, such as the limit on the connection flow control window.
 
 ## HTTP Frame Types {#h2-frames}
 
@@ -999,8 +1066,15 @@ HEADERS frames. To achieve in-order delivery of priority changes in HTTP/QUIC,
 PRIORITY frames are sent on the control stream and the PRIORITY section is
 removed from the HEADERS frame.
 
+Frame type definitions in HTTP/QUIC often use the QUIC variable-length integer
+encoding.  In particular, Stream IDs use this encoding, which allow for a larger
+range of possible values than the encoding used in HTTP/2.  Some frames in
+HTTP/QUIC use an identifier rather than a Stream ID (e.g. Push IDs in PRIORITY
+frames). Redefinition of the encoding of extension frame types might be
+necessary if the encoding includes a Stream ID.
+
 Other than this issue, frame type HTTP/2 extensions are typically portable to
-QUIC simply by replacing Stream 0 in HTTP/2 with Stream 1 in HTTP/QUIC.
+QUIC simply by replacing Stream 0 in HTTP/2 with Stream 2 or 3 in HTTP/QUIC.
 HTTP/QUIC extensions will not assume ordering, but would not be harmed by
 ordering, and would be portable to HTTP/2 in the same manner.
 
@@ -1015,8 +1089,8 @@ HEADERS (0x1):
   frames.  See {{frame-headers}}.
 
 PRIORITY (0x2):
-: As described above, the PRIORITY frame is sent on the control stream.  See
-  {{frame-priority}}.
+: As described above, the PRIORITY frame is sent on the control stream and can
+  reference either a Stream ID or a Push ID.  See {{frame-priority}}.
 
 RST_STREAM (0x3):
 : RST_STREAM frames do not exist, since QUIC provides stream lifecycle
@@ -1070,7 +1144,7 @@ SETTINGS_ENABLE_PUSH:
   control over server push.
 
 SETTINGS_MAX_CONCURRENT_STREAMS:
-: QUIC controls the largest open stream ID as part of its flow control logic.
+: QUIC controls the largest open Stream ID as part of its flow control logic.
   Specifying SETTINGS_MAX_CONCURRENT_STREAMS in the SETTINGS frame is an error.
 
 SETTINGS_INITIAL_WINDOW_SIZE:
@@ -1085,7 +1159,7 @@ SETTINGS_MAX_FRAME_SIZE:
 SETTINGS_MAX_HEADER_LIST_SIZE:
 : See {{settings-parameters}}.
 
-Settings need to be defined separately for HTTP/2 and  HTTP/QUIC.  The IDs of
+Settings need to be defined separately for HTTP/2 and HTTP/QUIC.  The IDs of
 settings defined in {{!RFC7540}} have been reserved for simplicity.  See
 {{iana-settings}}.
 
@@ -1103,7 +1177,7 @@ NO_ERROR (0x0):
 : HTTP_NO_ERROR in {{http-error-codes}}.
 
 PROTOCOL_ERROR (0x1):
-: No single mapping.  See new HTTP_MALFORMED_* error codes defined in
+: No single mapping.  See new HTTP_MALFORMED_FRAME error codes defined in
   {{http-error-codes}}.
 
 INTERNAL_ERROR (0x2):
@@ -1303,30 +1377,24 @@ Specification:
 
 The entries in the following table are registered by this document.
 
-|-----------------------------------|--------|----------------------------------------|----------------------|
-| Name                              | Code   | Description                            | Specification        |
-|-----------------------------------|--------|----------------------------------------|----------------------|
-|  STOPPING                         |  0x00  |  Reserved by QUIC                      | {{QUIC-TRANSPORT}}  |
-|  HTTP_NO_ERROR                    |  0x01  |  No error                              | {{http-error-codes}} |
-|  HTTP_PUSH_REFUSED                |  0x02  |  Client refused pushed content         | {{http-error-codes}} |
-|  HTTP_INTERNAL_ERROR              |  0x03  |  Internal error                        | {{http-error-codes}} |
-|  HTTP_PUSH_ALREADY_IN_CACHE       |  0x04  |  Pushed content already cached         | {{http-error-codes}} |
-|  HTTP_REQUEST_CANCELLED           |  0x05  |  Data no longer needed                 | {{http-error-codes}} |
-|  HTTP_HPACK_DECOMPRESSION_FAILED  |  0x06  |  HPACK cannot continue                 | {{http-error-codes}} |
-|  HTTP_CONNECT_ERROR               |  0x07  |  TCP reset or error on CONNECT request | {{http-error-codes}} |
-|  HTTP_EXCESSIVE_LOAD              |  0x08  |  Peer generating excessive load        | {{http-error-codes}} |
-|  HTTP_VERSION_FALLBACK            |  0x09  |  Retry over HTTP/2                     | {{http-error-codes}} |
-|  HTTP_MALFORMED_HEADERS           |  0x0A  |  Invalid HEADERS frame                 | {{http-error-codes}} |
-|  HTTP_MALFORMED_PRIORITY          |  0x0B  |  Invalid PRIORITY frame                | {{http-error-codes}} |
-|  HTTP_MALFORMED_SETTINGS          |  0x0C  |  Invalid SETTINGS frame                | {{http-error-codes}} |
-|  HTTP_MALFORMED_PUSH_PROMISE      |  0x0D  |  Invalid PUSH_PROMISE frame            | {{http-error-codes}} |
-|  HTTP_MALFORMED_DATA              |  0x0E  |  Invalid DATA frame                    | {{http-error-codes}} |
-|  HTTP_INTERRUPTED_HEADERS         |  0x0F  |  Incomplete HEADERS block              | {{http-error-codes}} |
-|  HTTP_WRONG_STREAM                |  0x10  |  A frame was sent on the wrong stream  | {{http-error-codes}} |
-|  HTTP_MULTIPLE_SETTINGS           |  0x11  |  Multiple SETTINGS frames              | {{http-error-codes}} |
-|  HTTP_MALFORMED_PUSH              |  0x12  |  Invalid push stream header            | {{http-error-codes}} |
-|  HTTP_MALFORMED_MAX_PUSH_ID       |  0x13  |  Invalid MAX_PUSH_ID frame             | {{http-error-codes}} |
-|-----------------------------------|--------|----------------------------------------|----------------------|
+|-----------------------------------|----------|----------------------------------------|----------------------|
+| Name                              | Code     | Description                            | Specification        |
+|-----------------------------------|----------|----------------------------------------|----------------------|
+|  STOPPING                         |  0x0000  |  Reserved by QUIC                      | {{QUIC-TRANSPORT}}   |
+|  HTTP_NO_ERROR                    |  0x0001  |  No error                              | {{http-error-codes}} |
+|  HTTP_PUSH_REFUSED                |  0x0002  |  Client refused pushed content         | {{http-error-codes}} |
+|  HTTP_INTERNAL_ERROR              |  0x0003  |  Internal error                        | {{http-error-codes}} |
+|  HTTP_PUSH_ALREADY_IN_CACHE       |  0x0004  |  Pushed content already cached         | {{http-error-codes}} |
+|  HTTP_REQUEST_CANCELLED           |  0x0005  |  Data no longer needed                 | {{http-error-codes}} |
+|  HTTP_HPACK_DECOMPRESSION_FAILED  |  0x0006  |  HPACK cannot continue                 | {{http-error-codes}} |
+|  HTTP_CONNECT_ERROR               |  0x0007  |  TCP reset or error on CONNECT request | {{http-error-codes}} |
+|  HTTP_EXCESSIVE_LOAD              |  0x0008  |  Peer generating excessive load        | {{http-error-codes}} |
+|  HTTP_VERSION_FALLBACK            |  0x0009  |  Retry over HTTP/2                     | {{http-error-codes}} |
+|  HTTP_WRONG_STREAM                |  0x000A  |  A frame was sent on the wrong stream  | {{http-error-codes}} |
+|  HTTP_PUSH_LIMIT_EXCEEDED         |  0x000B  |  Maximum Push ID exceeded              | {{http-error-codes}} |
+|  HTTP_DUPLICATE_PUSH              |  0x000C  |  Push ID was fulfilled multiple times  | {{http-error-codes}} |
+|  HTTP_MALFORMED_FRAME             |  0x01XX  |  Error in frame formatting or use      | {{http-error-codes}} |
+|-----------------------------------|----------|----------------------------------------|----------------------|
 
 
 --- back
@@ -1335,14 +1403,28 @@ The entries in the following table are registered by this document.
 
 The original authors of this specification were Robbie Shade and Mike Warres.
 
+A substantial portion of Mike's contribution was supported by Microsoft during
+his employment there.
+
 # Change Log
 
 > **RFC Editor's Note:**  Please remove this section prior to publication of a
 > final version of this document.
 
+## Since draft-ietf-quic-http-08
+
+No significant changes.
+
+## Since draft-ietf-quic-http-07
+
+- Changes for integer encodings in QUIC (#595,#905)
+- Use unidirectional streams as appropriate (#515, #240, #281, #886)
+- Improvement to the description of GOAWAY (#604, #898)
+- Improve description of server push usage (#947, #950, #957)
+
 ## Since draft-ietf-quic-http-06
 
-Nothing yet.
+- Track changes in QUIC error code usage (#485)
 
 ## Since draft-ietf-quic-http-05
 
