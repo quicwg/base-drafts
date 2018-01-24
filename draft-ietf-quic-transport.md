@@ -609,7 +609,7 @@ that wishes to perform a stateless retry (see {{stateless-retry}}).
 The server includes a connection ID of its choice in the connection ID field.
 The client MUST use this connection ID for any subsequent packets that it sends.
 
-The packet number field echoes the corresponding fields from the triggering
+The packet number field echoes the packet number field from the triggering
 client packet.
 
 A Retry packet is never explicitly acknowledged in an ACK frame
