@@ -2860,10 +2860,9 @@ between streams that are initiated by the client and server (see {{stream-id}}).
 Either type of stream can be created by either endpoint, can concurrently send
 data interleaved with other streams, and can be cancelled.
 
-Stream offsets allow for the octets on a stream to be placed in order.  An
-endpoint MUST be capable of delivering data received on a stream in order.
-Implementations MAY choose to offer the ability to deliver data out of order.
-There is means of ensuring ordering between octets on different streams.
+Data that is received on a stream is delivered in order within that stream, but
+there is no particular delivery order across streams.  Transmit ordering among
+streams is left to the implementation.
 
 The creation and destruction of streams are expected to have minimal bandwidth
 and computational cost.  A single STREAM frame may create, carry data for, and
@@ -3100,10 +3099,10 @@ stream and is providing flow control credit.  A MAX_STREAM_DATA frame might
 arrive before a STREAM or STREAM_BLOCKED frame if packets are lost or reordered.
 
 In the "Recv" state, the endpoint receives STREAM and STREAM_BLOCKED frames.
-Incoming data is buffered and can be reassembled into the correct order for
-delivery to the application.  As data is consumed by the application and buffer
-space becomes available, the endpoint sends MAX_STREAM_DATA frames to allow the
-peer to send more data.
+Incoming data is buffered and reassembled into the correct order for delivery to
+the application.  As data is consumed by the application and buffer space
+becomes available, the endpoint sends MAX_STREAM_DATA frames to allow the peer
+to send more data.
 
 When a STREAM frame with a FIN bit is received, the final offset (see
 {{final-offset}}) is known.  The receive stream enters the "Size Known" state.
@@ -3267,7 +3266,7 @@ sender or during delivery to the application at the receiver.
 
 When new data is to be sent on a stream, a sender MUST set the encapsulating
 STREAM frame's offset field to the stream offset of the first byte of this new
-data.  The first byte of data that is sent on a stream has an offset of 0.
+data.  The first byte of data that is sent on a stream has the stream offset 0.
 The largest offset delivered on a stream MUST be less than 2^62. A receiver
 MUST ensure that received stream data is delivered to the application as an
 ordered byte-stream.  Data received out of order MUST be buffered for later
@@ -3278,11 +3277,11 @@ An endpoint MUST NOT send data on any stream without ensuring that it is within
 the data limits set by its peer.  The cryptographic handshake stream, Stream 0,
 is exempt from the connection-level data limits established by MAX_DATA. Data on
 stream 0 other than the initial cryptographic handshake message is still subject
-to stream-level data limits and MAX_STREAM_DATA. This message is exempt from
-flow control because it needs to be sent in a single packet regardless of the
-server's flow control state. This rule applies even for 0-RTT handshakes where
-the remembered value of MAX_STREAM_DATA would not permit sending a full initial
-cryptographic handshake message.
+to stream-level data limits and MAX_STREAM_DATA. This message is exempt
+from flow control because it needs to be sent in a single packet regardless of
+the server's flow control state. This rule applies even for 0-RTT handshakes
+where the remembered value of MAX_STREAM_DATA would not permit sending a full
+initial cryptographic handshake message.
 
 Flow control is described in detail in {{flow-control}}, and congestion control
 is described in the companion document {{QUIC-RECOVERY}}.
