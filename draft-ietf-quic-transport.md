@@ -2863,7 +2863,7 @@ data interleaved with other streams, and can be cancelled.
 Stream offsets allow for the octets on a stream to be placed in order.  An
 endpoint MUST be capable of delivering data received on a stream in order.
 Implementations MAY choose to offer the ability to deliver data out of order.
-There is means of ensuring ordering between octets on different streams.
+There is no means of ensuring ordering between octets on different streams.
 
 The creation and destruction of streams are expected to have minimal bandwidth
 and computational cost.  A single STREAM frame may create, carry data for, and
@@ -3267,12 +3267,12 @@ sender or during delivery to the application at the receiver.
 
 When new data is to be sent on a stream, a sender MUST set the encapsulating
 STREAM frame's offset field to the stream offset of the first byte of this new
-data.  The first byte of data that is sent on a stream has an offset of 0.
-The largest offset delivered on a stream MUST be less than 2^62. A receiver
-MUST ensure that received stream data is delivered to the application as an
-ordered byte-stream.  Data received out of order MUST be buffered for later
-delivery, as long as it is not in violation of the receiver's flow control
-limits.
+data.  The first octet of data on a stream has an offset of 0.  An endpoint is
+expected to send every stream octet.  The largest offset delivered on a stream
+MUST be less than 2^62. A receiver MUST ensure that received stream data is
+delivered to the application as an ordered byte-stream.  Data received out of
+order MUST be buffered for later delivery, as long as it is not in violation of
+the receiver's flow control limits.
 
 An endpoint MUST NOT send data on any stream without ensuring that it is within
 the data limits set by its peer.  The cryptographic handshake stream, Stream 0,
