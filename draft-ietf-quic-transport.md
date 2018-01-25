@@ -2752,11 +2752,6 @@ peer and for path validation during connection establishment and connection
 migration.
 
 PATH_CHALLENGE frames contain an 8-byte payload.
-
-~~~
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                                                               |
 +                            Data (8)                           +
 |                                                               |
@@ -4108,6 +4103,41 @@ the range from 0xFE00 to 0xFFFF.
 {: #iana-error-table title="Initial QUIC Transport Error Codes Entries"}
 
 
+## EXTENSION Frame Types {#iana-extension-types}
+
+IANA \[SHALL add/has added] a registry for "QUIC EXTENSION Frame Types" under a
+"QUIC Protocol" heading.
+
+The "QUIC EXTENSION Frame Types" registry governs a 16-bit space.  Values are
+assigned using the Expert Review policy {{!RFC8126}}.  Registrations can be
+provisional or non-provisional.  Non-provisional registrations can only be made
+with the inclusion of a specification, as defined by the Specification Required
+policy {{!RFC8126}}.  Provisional registrations can be removed at the discretion
+of the assigned expert after 1 year unless they are renewed.  Provisional
+registrations do not require that a specification be referenced.
+
+Registrations MUST include the following fields:
+
+Extension Type:
+
+: The numeric value of the assignment (registrations will be between 0x0000 and
+  0xffff).
+
+Code:
+
+: A short mnemonic for the extension.
+
+Specification:
+
+: A reference to a publicly available specification for the extension.  This may
+  be omitted for a provisional registration.
+
+Provisional Expiration:
+
+: For a provisional registration, the date at which the registration needs to be
+  renewed.  Provisional registrations can be removed beyond this date.
+
+
 --- back
 
 # Contributors
@@ -4140,6 +4170,10 @@ thanks to all.
 > final version of this document.
 
 Issue and pull request numbers are listed with a leading octothorp.
+
+## Since draft-ietf-quic-transport-10
+
+- Add frame extension negotiation (#58, #1068)
 
 ## Since draft-ietf-quic-transport-09
 
