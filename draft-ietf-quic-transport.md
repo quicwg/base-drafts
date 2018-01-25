@@ -4110,11 +4110,11 @@ IANA \[SHALL add/has added] a registry for "QUIC EXTENSION Frame Types" under a
 
 The "QUIC EXTENSION Frame Types" registry governs a 16-bit space.  Values are
 assigned using the Expert Review policy {{!RFC8126}}.  Registrations can be
-provisional or non-provisional.  Non-provisional registrations can only be made
-with the inclusion of a specification, as defined by the Specification Required
-policy {{!RFC8126}}.  Provisional registrations can be removed at the discretion
-of the assigned expert after 1 year unless they are renewed.  Provisional
-registrations do not require that a specification be referenced.
+provisional or permanent.  Permanent registrations can only be made with the
+inclusion of a specification, as defined by the Specification Required policy
+{{!RFC8126}}.  Provisional registrations can be removed at the discretion of the
+assigned expert after 1 year unless they are renewed.  Provisional registrations
+do not require that a specification be referenced.
 
 Registrations MUST include the following fields:
 
