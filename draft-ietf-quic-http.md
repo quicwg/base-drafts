@@ -407,13 +407,13 @@ push stream always begins with a header (see {{fig-push-stream-header}}) that
 identifies the Push ID of the promise that it fulfills, encoded as a
 variable-length integer.
 
-~~~~~
+~~~~~~~~~~ drawing
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                         Push ID (i)                         ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-~~~~~
+~~~~~~~~~~
 {: #fig-push-stream-header title="Push Stream Header"}
 
 A server SHOULD use Push IDs sequentially, starting at 0.  A client uses the
