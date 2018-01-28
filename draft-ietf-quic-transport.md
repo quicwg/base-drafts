@@ -1096,9 +1096,6 @@ language from Section 3 of {{!I-D.ietf-tls-tls13}}.
          case encrypted_extensions:
             QuicVersion negotiated_version;
             QuicVersion supported_versions<4..2^8-4>;
-
-         case new_session_ticket:
-            struct {};
       };
       TransportParameter parameters<22..2^16-1>;
    } TransportParameters;
@@ -1220,12 +1217,12 @@ ack_delay_exponent (0x0007):
 
 ### Values of Transport Parameters for 0-RTT {#zerortt-parameters}
 
-Transport parameters from the server MUST be remembered by the client for use
-with 0-RTT data.  If the TLS NewSessionTicket message includes the
-quic_transport_parameters extension, then those values are used for the server
-values when establishing a new connection using that ticket.  Otherwise, the
-transport parameters that the server advertises during connection establishment
-are used.
+A client that attempts to send 0-RTT data MUST remember the transport parameters
+used by the server.  The transport parameters that the server advertises during
+connection establishment apply to all connections that are resumed using the
+keying material established during that handshake.  Remembered transport
+parameters apply to the new connection until the handshake completes and new
+transport parameters from the server can be provided.
 
 A server can remember the transport parameters that it advertised, or store an
 integrity-protected copy of the values in the ticket and recover the information
@@ -1308,8 +1305,7 @@ code.
 The server includes a list of versions that it would send in any version
 negotiation packet ({{packet-version}}) in the supported_versions field.  The
 server populates this field even if it did not send a version negotiation
-packet.  This field is absent if the parameters are included in a
-NewSessionTicket message.
+packet.
 
 The client validates that the negotiated_version is included in the
 supported_versions list and - if version negotiation was performed - that it
@@ -3869,7 +3865,7 @@ Issue and pull request numbers are listed with a leading octothorp.
 
 ## Since draft-ietf-quic-transport-08
 
-No significant changes.
+- Removed transport parameters from NewSessionTicket (#1015)
 
 ## Since draft-ietf-quic-transport-07
 
