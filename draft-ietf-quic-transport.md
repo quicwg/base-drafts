@@ -3375,9 +3375,9 @@ one of the packets is lost.
 Connection flow control is a limit to the total bytes of stream data sent in
 STREAM frames on all streams except stream 0.  A receiver advertises credit for
 a connection by sending a MAX_DATA frame.  A receiver maintains a cumulative sum
-of bytes received on all streams, which are used to check for flow control
-violations. A receiver might use a sum of bytes consumed on all contributing
-streams to determine the maximum data limit to be advertised.
+of bytes received on all contributing streams, which are used to check for flow
+control violations. A receiver might use a sum of bytes consumed on all
+contributing streams to determine the maximum data limit to be advertised.
 
 ## Edge Cases and Other Considerations
 
