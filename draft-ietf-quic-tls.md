@@ -44,14 +44,6 @@ normative:
         org: Mozilla
         role: editor
 
-  FIPS180:
-    title: NIST FIPS 180-4, Secure Hash Standard
-    author:
-      name: NIST
-      ins: National Institute of Standards and Technology, U.S. Department of Commerce
-    date: 2012-03
-    target: http://csrc.nist.gov/publications/fips/fips180-4/fips-180-4.pdf
-
 informative:
 
   AEBounds:
@@ -729,8 +721,8 @@ server_handshake_secret =
 ~~~
 
 The hash function for HKDF when deriving handshake secrets and keys is SHA-256
-{{FIPS180}}.  The connection ID used with QHKDF-Expand is the connection ID
-chosen by the client.
+{{!SHA=DOI.10.6028/NIST.FIPS.180-4}}.  The connection ID used with QHKDF-Expand
+is the connection ID chosen by the client.
 
 The handshake salt is a 20 octet sequence shown in the figure in hexadecimal
 notation. Future versions of QUIC SHOULD generate a new salt value, thus
@@ -825,12 +817,16 @@ in Section 5.3 of {{!TLS13}}, the IV length is the larger of 8 or N_MIN (see
 Section 4 of {{!AEAD=RFC5116}}; all ciphersuites defined in {{!TLS13}} have
 N_MIN set to 12).
 
-For any secret S, the AEAD key uses a label of "key", and the IV uses a label of
-"iv":
+The size of the packet protection key is determined by the packet protection
+algorithm, see {{pn-encrypt}}.
+
+For any secret S, the AEAD key uses a label of "key", the IV uses a label of
+"iv", packet number encryption uses a label of "pn":
 
 ~~~
 key = QHKDF-Expand(S, "key", key_length)
-iv  = QHKDF-Expand(S, "iv", iv_length)
+iv = QHKDF-Expand(S, "iv", iv_length)
+pn_key = QHKDF-Expand(S, "pn", pn_key_length)
 ~~~
 
 Separate keys are derived for packet protection by clients and servers.  Each
@@ -842,9 +838,10 @@ derived from 1-RTT secrets as follows:
 ~~~
 client_pp_key<i> = QHKDF-Expand(client_pp_secret<i>, "key", 16)
 client_pp_iv<i>  = QHKDF-Expand(client_pp_secret<i>, "iv", 12)
+client_pp_pn<i>  = QHKDF-Expand(client_pp_secret<i>, "pn", 12)
 ~~~
 
-The QUIC record protection initially starts with keying material derived from
+The QUIC packet protection initially starts with keying material derived from
 handshake keys.  For a client, when the TLS state machine reports that the
 ClientHello has been sent, 0-RTT keys can be generated and installed for
 writing, if 0-RTT is available.  Finally, the TLS state machine reports
@@ -858,6 +855,11 @@ The Authentication Encryption with Associated Data (AEAD) {{!AEAD}} function
 used for QUIC packet protection is AEAD that is negotiated for use with the TLS
 connection.  For example, if TLS is using the TLS_AES_128_GCM_SHA256, the
 AEAD_AES_128_GCM function is used.
+
+QUIC packets are protected prior to applying packet number encryption
+({{pn-encrypt}}).  Thus, the unprotected packet number is part of the AAD.  When
+removing packet protection, an endpoint first removes the protection from the
+packet number.
 
 All QUIC packets other than Version Negotiation and Stateless Reset packets are
 protected with an AEAD algorithm {{!AEAD}}. Prior to establishing a shared
@@ -919,6 +921,85 @@ the connection that is hosted on stream 0.  This sequence number is not visible
 to QUIC.
 
 
+## Packet Number Protection {#pn-encrypt}
+
+QUIC packets are protected using a key that is derived from the current set of
+secrets.  The key derived using the "pn" label is used to protect the packet
+number from casual observation.  The packet number protection algorithm depends
+on the negotiated AEAD.
+
+Packet number protection is applied after packet protection is applied (see
+{{aead}}).  The ciphertext of the packet is sampled and used as input to an
+encryption algorithm.  For packets with a long header, the ciphertext starting
+immediately after the packet number is used (that is, octet 17 onwards).  For
+packets with a short header, the packet number length is not known, so it is
+assumed to be its largest possible length (4 octets).  Thus, for a short header,
+the sampled ciphertext starts at either octet 5 when the connection ID is
+omitted, or octet 13 when the connection is present.
+
+The protected packet might not have produced enough input for the negotiated
+packet protection algorithm.  This might happen if a packet with a short header
+contains minimal data and uses a packet number encoding that is shorter than 4
+octets.  Additional zero octets are added to the end of the sequence to reach
+the required amount of data.
+
+Before a TLS ciphersuite can be used with QUIC, a packet protection algorithm
+MUST be specifed for the AEAD used with that ciphersuite.  This document defines
+algorithms for AEAD_AES_128_GCM, AEAD_AES_128_CCM, AEAD_AES_256_GCM,
+AEAD_AES_256_CCM (all AES AEADs are defined in {{!RFC5116}}), and
+AEAD_CHACHA20_POLY1305 ({{!CHACHA=RFC7539}}).
+
+
+### AES-Based Packet Number Protection
+
+This section defines the packet protection algorithm for AEAD_AES_128_GCM,
+AEAD_AES_128_CCM, AEAD_AES_256_GCM, and AEAD_AES_256_CCM. AEAD_AES_128_GCM and
+AEAD_AES_128_CCM use 128-bit AES {{!AES=DOI.10.6028/NIST.FIPS.197}} in ECB mode.
+AEAD_AES_256_GCM, and AEAD_AES_256_CCM use 256-bit AES in ECB mode.
+
+This algorithm samples 16 octets from the packet ciphertext.  This input is used
+as the AES initialization vector (IV).  This value is input to AES that is keyed
+using the current packet protection key.
+
+The output of AES is truncated to the length of the encoded packet number.  The
+protected packet number is the exclusive-OR (XOR) of the encoded packet number
+and the truncated output.
+
+In summary, packet protection with AES uses the following pseudocode:
+
+~~~
+encoded = EncodePacketNumber(packet_number)
+len = Length(encoded)
+sample = ZeroPadSlice(ciphertext, offset, 16)
+encrypted_pn = encoded XOR AES(pn_key, sample)[0..len]
+~~~
+
+
+### ChaCha20-Based Packet Number Protection
+
+When AEAD_CHACHA20_POLY1305 is in use, packet number protection uses the
+ChaCha20 block function as defined in Section 2.3 of {{!CHACHA}}.  This uses a
+256-bit key and 16 octets sampled from the packet protection output.
+
+The first 4 octets of the sampled ciphertext are interpreted as a 32-bit number
+in little-endian order and are used as the block count.  The remaining 12 octets
+are interpreted as three concatenated 32-bit numbers in little-endian order and
+used as the nonce.
+
+The output of the ChaCha20 block function is truncated to the length of the
+encoded packet number.  The protected packet number is the exclusive-OR (XOR) of
+the encoded packet number and the truncated output.
+
+In summary, packet protection with ChaCha20 uses the following pseudocode:
+
+~~~
+encoded = EncodePacketNumber(packet_number)
+len = Length(encoded)
+sample = ZeroPadSlice(ciphertext, offset, 16)
+encrypted_pn = encoded XOR ChaCha20(pn_key, sample)[0..len]
+~~~
+
+
 ## Receiving Protected Packets
 
 Once an endpoint successfully receives a packet with a given packet number, it
@@ -932,17 +1013,6 @@ Failure to unprotect a packet does not necessarily indicate the existence of a
 protocol error in a peer or an attack.  The truncated packet number encoding
 used in QUIC can cause packet numbers to be decoded incorrectly if they are
 delayed significantly.
-
-
-## Packet Number Gaps {#packet-number-gaps}
-
-Section 6.8.5.1 of {{QUIC-TRANSPORT}} also requires a secret to compute packet
-number gaps on connection ID transitions. That secret is computed as:
-
-~~~
-packet_number_secret =
-  TLS-Exporter("EXPORTER-QUIC packet number", "", Hash.length)
-~~~
 
 
 # Key Phases
@@ -1549,6 +1619,43 @@ PROTOCOL_VIOLATION.
 While there are legitimate uses for some redundant packets, implementations
 SHOULD track redundant packets and treat excessive volumes of any non-productive
 packets as indicative of an attack.
+
+
+## Packet Number Protection Analysis {#pn-encrypt-analysis}
+
+Packet number protection relies on the randomness of the AEAD output, which is a
+property that AEAD algorithms do not guarantee.  Therefore, no strong assurances
+about the general security of this mechanism can be proven.
+
+Use of the same key and nonce for encryption for encryption can weaken
+encryption.  For the schemes described, protecting two packet numbers with the
+same key and nonce would reveal the packet number.  For packet number protection
+to be effective, the output of the packet protection AEAD needs to be
+effectively random.
+
+All the AEAD functions used meet indistinguishability under (adaptive) chosen
+plaintext attack (IND-CPA, IND-CPA2) goals and produce minimal expansion of the
+plaintext, adding only an authentication tag.  Therefore, this document assumes
+that the sampled AEAD output is unpredictable and not subject to influence by an
+attacker.  Based on this assumption, the odds of producing identical input to a
+packet protection algorithm approach the birthday bound on the size of the input
+(that is, one divided by the square root of the number of possible values).
+
+Note:
+
+: In some cases, inputs shorter than the full size required by the packet
+  protection algorithm might be used.
+
+To prevent an attacker from modifying packet numbers, values of packet numbers
+are transitively authenticated using the packet number protection.  A falsified
+or modified packet number can only be detected once the packet protection is
+removed.
+
+For authentication to be effective, packet number protection MUST be applied and
+removed without timing or other side-channels.  For a recipient of a packet, the
+process for recovering the full packet number also needs to free from
+side-channels.  This includes recovery of variable-length packet numbers.
+
 
 
 # Error Codes {#errors}
