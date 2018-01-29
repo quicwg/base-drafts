@@ -1636,10 +1636,11 @@ effectively random.
 All the AEAD functions used meet indistinguishability under (adaptive) chosen
 plaintext attack (IND-CPA, IND-CPA2) goals and produce minimal expansion of the
 plaintext, adding only an authentication tag.  Therefore, this document assumes
-that the sampled AEAD output is unpredictable and not subject to influence by an
-attacker.  Based on this assumption, the odds of producing identical input to a
-packet protection algorithm approach the birthday bound on the size of the input
-(that is, one divided by the square root of the number of possible values).
+that each bit of sampled AEAD output contains one bit of entropy and that an
+attacker is unable to reduce this without knowledge of the key.  Based on this
+assumption, the odds of producing identical input to a packet protection
+algorithm approach the birthday bound on the size of the input (that is, one
+divided by the square root of the number of possible values).
 
 Note:
 
