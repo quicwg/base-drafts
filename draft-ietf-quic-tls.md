@@ -1654,11 +1654,12 @@ removed.
 
 An attacker can guess values for packet numbers and have an endpoint confirm
 guesses through timing side channels.  If the recipient of a packet discards
-duplicate packets without attempting to remove packet protection they will
-reveal through timing side-channels that the packet number matches a received
-packet.  For authentication to be free from side-channels, the entire process of
-packet number protection removal, packet number recovery, and packet protection
-removal MUST be applied together without timing and other side-channels.
+packets with duplicate packet numbers without attempting to remove packet
+protection they could reveal through timing side-channels that the packet number
+matches a received packet.  For authentication to be free from side-channels,
+the entire process of packet number protection removal, packet number recovery,
+and packet protection removal MUST be applied together without timing and other
+side-channels.
 
 For the sending of packets, construction and protection of packet payloads and
 packet numbers MUST be free from side-channels that would reveal the packet
