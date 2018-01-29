@@ -3867,7 +3867,6 @@ Issue and pull request numbers are listed with a leading octothorp.
 
 - Clarified requirements for BLOCKED usage (#65,  #924)
 - BLOCKED frame now includes reason for blocking (#452, #924, #927, #928)
-- Cleartext integrity as version independent (#568)
 - GAP limitation in ACK Frame (#613)
 - Improved PMTUD description (#614, #1036)
 - Clarified stream state machine (#634, #662, #894)
