@@ -2376,11 +2376,11 @@ Unlike TCP SACKs, QUIC acknowledgements are irrevocable.  Once a packet has
 been acknowledged, even if it does not appear in a future ACK frame,
 it remains acknowledged.
 
-A client MUST NOT acknowledge Version Negotiation or Retry packets.  Version
-Negotiation packets don't contain a packet number and Retry packets include the
-packet number from the Initial packet it responds to.  Rather than relying on
-ACK frames, these packets are implicitly acknowledged by the next Initial packet
-sent by the client.
+A client MUST NOT acknowledge Retry packets.  Retry packets include the packet
+number from the Initial packet it responds to.  Version Negotiation packets
+cannot be acknowledged because they do not contain a packet number.  Rather than
+relying on ACK frames, these packets are implicitly acknowledged by the next
+Initial packet sent by the client.
 
 A sender MAY intentionally skip packet numbers to introduce entropy into the
 connection, to avoid opportunistic acknowledgement attacks.  The sender SHOULD
