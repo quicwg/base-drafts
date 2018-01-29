@@ -1651,11 +1651,17 @@ are transitively authenticated using the packet number protection.  A falsified
 or modified packet number can only be detected once the packet protection is
 removed.
 
-For authentication to be effective, packet number protection MUST be applied and
-removed without timing or other side-channels.  For a recipient of a packet, the
-process for recovering the full packet number also needs to free from
-side-channels.  This includes recovery of variable-length packet numbers.
+An attacker can guess values for packet numbers and have an endpoint confirm
+guesses through timing side channels.  If the recipient of a packet discards
+duplicate packets without attempting to remove packet protection they will
+reveal through timing side-channels that the packet number matches a received
+packet.  For authentication to be free from side-channels, the entire process of
+packet number protection removal, packet number recovery, and packet protection
+removal MUST be applied together without timing and other side-channels.
 
+For the sending of packets, construction and protection of packet payloads and
+packet numbers MUST be free from side-channels that would reveal the packet
+number or its encoded size.
 
 
 # Error Codes {#errors}
