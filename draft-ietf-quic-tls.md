@@ -1570,7 +1570,8 @@ Issue and pull request numbers are listed with a leading octothorp.
 
 ## Since draft-ietf-quic-tls-08
 
-No significant changes.
+- Specify value for max_early_data_size to enable 0-RTT (#942)
+- Update key derivation function (#1003, #1004)
 
 ## Since draft-ietf-quic-tls-07
 

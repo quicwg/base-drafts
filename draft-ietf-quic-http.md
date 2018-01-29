@@ -1413,7 +1413,7 @@ his employment there.
 
 ## Since draft-ietf-quic-http-08
 
-No significant changes.
+- Clarified connection coalescing rules (#940, #1024)
 
 ## Since draft-ietf-quic-http-07
 
