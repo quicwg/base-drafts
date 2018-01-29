@@ -1638,9 +1638,9 @@ plaintext attack (IND-CPA, IND-CPA2) goals and produce minimal expansion of the
 plaintext, adding only an authentication tag.  Therefore, this document assumes
 that each bit of sampled AEAD output contains one bit of entropy and that an
 attacker is unable to reduce this without knowledge of the key.  Based on this
-assumption, the odds of producing identical input to a packet protection
-algorithm approach the birthday bound on the size of the input (that is, one
-divided by the square root of the number of possible values).
+assumption, the odds of two samples of ciphertext approach the birthday bound
+for the size of the sample (that is, two to the negative power of half the
+number of sampled bits).
 
 Note:
 
