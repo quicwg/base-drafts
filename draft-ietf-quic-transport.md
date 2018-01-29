@@ -650,6 +650,11 @@ described in {{packet-numbers}}.  The client increments the packet number from
 its previous packet by one for each Handshake packet that it sends (which might
 be an Initial, 0-RTT Protected, or Handshake packet).
 
+Servers MUST NOT send more than three Handshake packets in response to a
+client's Initial packet without validating the client's ownership of the
+address, either via a Retry packet or by receiving packets from the client
+in response to the server's Handshake packets.
+
 The payload of this packet contains STREAM frames and could contain PADDING and
 ACK frames.
 
@@ -3368,11 +3373,11 @@ the sender receives an update before running out of flow control credit, even if
 one of the packets is lost.
 
 Connection flow control is a limit to the total bytes of stream data sent in
-STREAM frames on all streams.  A receiver advertises credit for a connection by
-sending a MAX_DATA frame.  A receiver maintains a cumulative sum of bytes
-received on all streams, which are used to check for flow control violations. A
-receiver might use a sum of bytes consumed on all contributing streams to
-determine the maximum data limit to be advertised.
+STREAM frames on all streams except stream 0.  A receiver advertises credit for
+a connection by sending a MAX_DATA frame.  A receiver maintains a cumulative sum
+of bytes received on all streams, which are used to check for flow control
+violations. A receiver might use a sum of bytes consumed on all contributing
+streams to determine the maximum data limit to be advertised.
 
 ## Edge Cases and Other Considerations
 
@@ -3426,6 +3431,17 @@ it increases data limits based on a roundtrip time estimate and the rate at
 which the receiving application consumes data, similar to common TCP
 implementations.
 
+### Handshake Exemption
+
+During the initial handshake, a server could need to send a larger message than
+would ordinarily be permitted by the client's initial stream flow control
+window. Since MAX_STREAM_DATA frames are not permitted in Handshake packets, the
+client cannot respond to server requests for additional flow control window in
+order to complete the handshake.
+
+Servers MAY exceed the flow control limits on stream 0 prior to the completion
+of the cryptographic handshake.  However, once the handshake is complete,
+servers MUST NOT send data beyond the client's permitted offset.
 
 ## Stream Limit Increment
 
