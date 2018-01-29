@@ -1638,9 +1638,9 @@ plaintext attack (IND-CPA, IND-CPA2) goals and produce minimal expansion of the
 plaintext, adding only an authentication tag.  Therefore, this document assumes
 that each bit of sampled AEAD output contains one bit of entropy and that an
 attacker is unable to reduce this without knowledge of the key.  Based on this
-assumption, the odds of two samples of ciphertext approach the birthday bound
-for the size of the sample (that is, two to the negative power of half the
-number of sampled bits).
+assumption, the odds of two samples of ciphertext being identical approach the
+birthday bound for the size of the sample (that is, two to the negative power of
+half the number of sampled bits).
 
 Note:
 
@@ -1648,9 +1648,9 @@ Note:
   protection algorithm might be used.
 
 To prevent an attacker from modifying packet numbers, values of packet numbers
-are transitively authenticated using the packet number protection.  A falsified
-or modified packet number can only be detected once the packet protection is
-removed.
+are transitively authenticated using packet protection; packet numbers are part
+of the authenticated additional data.  A falsified or modified packet number can
+only be detected once the packet protection is removed.
 
 An attacker can guess values for packet numbers and have an endpoint confirm
 guesses through timing side channels.  If the recipient of a packet discards

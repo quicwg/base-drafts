@@ -580,8 +580,8 @@ The client populates the Source Connection ID field with a value of its choosing
 and sets the low bits of the ConnID Len field to match.
 
 The first Initial packet that is sent by a client contains a packet number of 0.
-All subsequent packets contain a packet number that is incremented by one, see
-({{packet-numbers}}).
+All subsequent packets contain a packet number that is incremented by at least
+one, see ({{packet-numbers}}).
 
 The payload of an Initial packet conveys a STREAM frame (or frames) for stream
 0 containing a cryptographic handshake message.  The stream in this packet
@@ -775,7 +775,7 @@ response to connection migration ({{migration}}). NEW_CONNECTION_ID frames
 The packet number is an integer in the range 0 to 2^62-1. The value is used in
 determining the cryptographic nonce for packet encryption.  Each endpoint
 maintains a separate packet number for sending and receiving.  The packet number
-for sending MUST starts at zero for the first packet set and MUST increase by at
+for sending MUST start at zero for the first packet sent and MUST increase by at
 least one after sending a packet.
 
 A QUIC endpoint MUST NOT reuse a packet number within the same connection (that
