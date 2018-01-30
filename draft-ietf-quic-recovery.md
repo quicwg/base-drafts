@@ -708,7 +708,8 @@ Pseudocode for SetLossDetectionAlarm follows:
         alarm_duration = 2 * kDefaultInitialRtt
       else:
         alarm_duration = 2 * smoothed_rtt
-      alarm_duration = max(alarm_duration, kMinTLPTimeout)
+      alarm_duration = max(alarm_duration + max_ack_delay,
+                           kMinTLPTimeout)
       alarm_duration = alarm_duration * (2 ^ handshake_count)
     else if (loss_time != 0):
       // Early retransmit timer or time loss detection.
@@ -719,7 +720,8 @@ Pseudocode for SetLossDetectionAlarm follows:
                            kMinTLPTimeout)
     else:
       // RTO alarm
-      alarm_duration = smoothed_rtt + 4 * rttvar
+      alarm_duration =
+        smoothed_rtt + 4 * rttvar + max_ack_delay
       alarm_duration = max(alarm_duration, kMinRTOTimeout)
       alarm_duration = alarm_duration * (2 ^ rto_count)
 
