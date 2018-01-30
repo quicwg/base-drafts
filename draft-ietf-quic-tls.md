@@ -978,7 +978,7 @@ encrypted_pn = encoded XOR AES(pn_key, sample)[0..len]
 ### ChaCha20-Based Packet Number Protection
 
 When AEAD_CHACHA20_POLY1305 is in use, packet number protection uses the
-ChaCha20 block function as defined in Section 2.3 of {{!CHACHA}}.  This uses a
+raw ChaCha20 function as defined in Section 2.4 of {{!CHACHA}}.  This uses a
 256-bit key and 16 octets sampled from the packet protection output.
 
 The first 4 octets of the sampled ciphertext are interpreted as a 32-bit number
@@ -986,17 +986,13 @@ in little-endian order and are used as the block count.  The remaining 12 octets
 are interpreted as three concatenated 32-bit numbers in little-endian order and
 used as the nonce.
 
-The output of the ChaCha20 block function is truncated to the length of the
-encoded packet number.  The protected packet number is the exclusive-OR (XOR) of
-the encoded packet number and the truncated output.
-
-In summary, packet protection with ChaCha20 uses the following pseudocode:
+The encoded packet number is encrypted with ChaCha20 directly.  In pseudocode:
 
 ~~~
 encoded = EncodePacketNumber(packet_number)
-len = Length(encoded)
-sample = ZeroPadSlice(ciphertext, offset, 16)
-encrypted_pn = encoded XOR ChaCha20(pn_key, sample)[0..len]
+counter = DecodeLE(sample[0..3])
+nonce = DecodeLE(sample[4..7], sample[8..11], sample[12..15])
+encrypted_pn = ChaCha20(pn_key, counter, nonce, encoded)
 ~~~
 
 
