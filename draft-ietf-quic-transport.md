@@ -3376,19 +3376,17 @@ connection-level data limits established by MAX_DATA.  That is, data sent on
 stream 0 is not counted against the limit expressed by MAX_DATA.  Data on stream
 0 is still subject to stream-level data limits and MAX_STREAM_DATA.
 
-Data sent in the Initial and Retry packets do not count toward stream 0 flow
-control limits.  These packet types do not permit the sending of data in
-multiple packets, so there is no opportunity for a peer to send MAX_STREAM_DATA
-frames.  Note that sending a Retry causes stream offsets and flow control to be
-reset for subsequent packets.  Thus, the only limit on the size of the
-cryptographic handshake messages these packets contain is determined by the MTU.
+Data sent in the Initial and Retry packets are allowed to temporarily exceed
+flow control limits on stream 0.  These packet types do not permit the sending
+of data in multiple packets, so there is no opportunity for a peer to send
+MAX_STREAM_DATA frames.  Note that sending a Retry causes stream offsets and
+flow control to be reset for subsequent packets.  Thus, the only limit on the
+size of the cryptographic handshake messages these packets contain is determined
+by the MTU.
 
-Endpoints MUST respect the stream flow control limit set by their peer when
-sending STREAM frames for stream 0 in packets other than Initial or Retry.  A
-client might exceed stream flow control limits when sending an Initial packet
-and so might need to await a MAX_STREAM_DATA frame from the server before it can
-sent additional STREAM frames.  Endpoints MAY send STREAM_BLOCKED frames for
-stream 0 if they are unable to send due to flow control limits.
+A client might reach or exceed stream flow control limits when sending an
+Initial packet and so might need to await a MAX_STREAM_DATA frame from the
+server before it can send additional STREAM frames.
 
 Flow control for stream 0 is reset after the handshake is completed.  The limit
 is set to the greater of the initial_max_stream_data transport parameter and
@@ -3396,6 +3394,9 @@ current stream offset (that is, the amount of data sent on the stream, excluding
 that sent in Retry and any Initial packet that caused a Retry packet to be
 sent).  This prevents an attacker from modifying an unauthenticated
 MAX_STREAM_DATA frame to inflate the flow control limit.
+
+Endpoints MAY send STREAM_BLOCKED frames for stream 0 in Handshake packets if
+they are unable to send due to flow control limits.
 
 
 ## Edge Cases and Other Considerations
