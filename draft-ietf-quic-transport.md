@@ -2825,7 +2825,6 @@ actually lost.
 
 ### Special Considerations for Packetization Layer PMTU Discovery
 
-
 The PADDING frame provides a useful option for PMTU probe packets that does not
 exist in other transports. PADDING frames generate acknowledgements, but their
 content need not be delivered reliably. PADDING frames may delay the delivery of
@@ -3251,6 +3250,7 @@ advertise a smaller maximum ID.  A sender may receive MAX_STREAM_ID frames out
 of order; a sender MUST therefore ignore any MAX_STREAM_ID that does not
 increase the maximum.
 
+
 ## Sending and Receiving Data
 
 Once a stream is created, endpoints may use the stream to send and receive data.
@@ -3270,14 +3270,7 @@ delivery, as long as it is not in violation of the receiver's flow control
 limits.
 
 An endpoint MUST NOT send data on any stream without ensuring that it is within
-the data limits set by its peer.  The cryptographic handshake stream, Stream 0,
-is exempt from the connection-level data limits established by MAX_DATA. Data on
-stream 0 other than the initial cryptographic handshake message is still subject
-to stream-level data limits and MAX_STREAM_DATA. This message is exempt
-from flow control because it needs to be sent in a single packet regardless of
-the server's flow control state. This rule applies even for 0-RTT handshakes
-where the remembered value of MAX_STREAM_DATA would not permit sending a full
-initial cryptographic handshake message.
+the data limits set by its peer.
 
 Flow control is described in detail in {{flow-control}}, and congestion control
 is described in the companion document {{QUIC-RECOVERY}}.
@@ -3370,9 +3363,41 @@ one of the packets is lost.
 Connection flow control is a limit to the total bytes of stream data sent in
 STREAM frames on all streams.  A receiver advertises credit for a connection by
 sending a MAX_DATA frame.  A receiver maintains a cumulative sum of bytes
-received on all streams, which are used to check for flow control violations. A
-receiver might use a sum of bytes consumed on all contributing streams to
-determine the maximum data limit to be advertised.
+received on all contributing streams (those other than stream 0), which are used
+to check for flow control violations. A receiver might use a sum of bytes
+consumed on all contributing streams to determine the maximum data limit to be
+advertised.
+
+
+## Stream 0 Flow Control
+
+The cryptographic handshake stream, Stream 0, is exempt from the
+connection-level data limits established by MAX_DATA.  That is, data sent on
+stream 0 is not counted against the limit expressed by MAX_DATA.  Data on stream
+0 is still subject to stream-level data limits and MAX_STREAM_DATA.
+
+Data sent in the Initial and Retry packets are allowed to temporarily exceed
+flow control limits on stream 0.  These packet types do not permit the sending
+of data in multiple packets, so there is no opportunity for a peer to send
+MAX_STREAM_DATA frames.  Note that sending a Retry causes stream offsets and
+flow control to be reset for subsequent packets.  Thus, the only limit on the
+size of the cryptographic handshake messages these packets contain is determined
+by the MTU.
+
+A client might reach or exceed stream flow control limits when sending an
+Initial packet and so might need to await a MAX_STREAM_DATA frame from the
+server before it can send additional STREAM frames.
+
+Flow control for stream 0 is reset after the handshake is completed.  The limit
+is set to the greater of the initial_max_stream_data transport parameter and
+current stream offset (that is, the amount of data sent on the stream, excluding
+that sent in Retry and any Initial packet that caused a Retry packet to be
+sent).  This prevents an attacker from modifying an unauthenticated
+MAX_STREAM_DATA frame to inflate the flow control limit.
+
+Endpoints MAY send STREAM_BLOCKED frames for stream 0 in Handshake packets if
+they are unable to send due to flow control limits.
+
 
 ## Edge Cases and Other Considerations
 

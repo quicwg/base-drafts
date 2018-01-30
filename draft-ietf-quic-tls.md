@@ -1269,20 +1269,12 @@ both protected with 1-RTT keys and contains an `ACK` frame.
 
 ### Updates to Data and Stream Limits
 
-`MAX_DATA`, `MAX_STREAM_DATA`, `BLOCKED`, `STREAM_BLOCKED`, and `MAX_STREAM_ID`
-frames MUST NOT be sent unprotected.
+`MAX_DATA`, `BLOCKED`, `MAX_STREAM_ID`, and `STREAM_ID_BLOCKED` frames MUST NOT
+be sent unprotected.
 
-Though data is exchanged on stream 0, the initial flow control window on that
-stream is sufficiently large to allow the TLS handshake to complete.  This
-limits the maximum size of the TLS handshake and would prevent a server or
-client from using an abnormally large certificate chain.
-
-Stream 0 is exempt from the connection-level flow control window.
-
-Consequently, there is no need to signal being blocked on flow control.
-
-Similarly, there is no need to increase the number of allowed streams until the
-handshake completes.
+`MAX_STREAM_DATA` and `STREAM_BLOCKED` frames MUST NOT be sent unprotected
+unless they identify stream 0.  Stream 0 is exempt from the connection-level
+flow control window and stream limits.
 
 
 ### Handshake Failures
