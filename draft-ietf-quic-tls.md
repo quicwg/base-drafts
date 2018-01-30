@@ -971,7 +971,7 @@ In summary, packet protection with AES uses the following pseudocode:
 encoded = EncodePacketNumber(packet_number)
 len = Length(encoded)
 sample = ZeroPadSlice(ciphertext, offset, 16)
-encrypted_pn = encoded XOR AES(pn_key, sample)[0..len]
+encrypted_pn = encoded XOR AES(pn_key, sample)[0..len-1]
 ~~~
 
 
