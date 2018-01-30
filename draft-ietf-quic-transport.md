@@ -3363,12 +3363,13 @@ one of the packets is lost.
 Connection flow control is a limit to the total bytes of stream data sent in
 STREAM frames on all streams.  A receiver advertises credit for a connection by
 sending a MAX_DATA frame.  A receiver maintains a cumulative sum of bytes
-received on all streams, which are used to check for flow control violations. A
-receiver might use a sum of bytes consumed on all contributing streams to
-determine the maximum data limit to be advertised.
+received on all contributing streams (those other than stream 0), which are used
+to check for flow control violations. A receiver might use a sum of bytes
+consumed on all contributing streams to determine the maximum data limit to be
+advertised.
 
 
-### Stream 0 Flow Control
+## Stream 0 Flow Control
 
 The cryptographic handshake stream, Stream 0, is exempt from the
 connection-level data limits established by MAX_DATA.  That is, data sent on
