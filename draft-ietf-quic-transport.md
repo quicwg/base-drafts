@@ -464,14 +464,14 @@ Key Phase Bit:
 
 Short Packet Type:
 
-: The remaining 6 bits of octet 0 include one of 32 packet types.
+: The remaining 6 bits of octet 0 include one of 64 packet types.
   {{short-packet-types}} lists the types that are defined for short packets.
 
 Connection ID:
 
 : A connection ID occupies between 0 and 17 octets inclusive, starting from
-  octet 1.  This value is truncated from the full 17 octet connection ID.  See
-  {{connection-id}} for more details.
+  octet 1.  This value can be truncated from the full 17 octet connection ID.
+  See {{connection-id}} for more details.
 
 Packet Number:
 
@@ -682,11 +682,10 @@ sequence of frames, as described in {{frames}}.
 
 ## Connection ID {#connection-id}
 
-QUIC connections are identified by their 136-bit Connection ID.  All long
-headers contain a connection ID.  The connection ID is truncated in the short
+QUIC connections are identified by their 136-bit connection ID.  All long
+headers contain a connection ID.  The connection ID can truncated in the short
 header, using between 0 and 17 octets.  When present, the connection ID is in
-the same location in all packet headers, making it straightforward for
-middleboxes, such as load balancers, to locate and use it.
+the same location in all packet headers.
 
 The client MUST choose a random connection ID and use it in Initial packets
 ({{packet-initial}}) and 0-RTT packets ({{packet-protected}}).
@@ -706,18 +705,19 @@ packets MUST use connection ID selected by the client.
 A connection ID is truncated when included in short headers.  Each endpoint
 expresses how many octets of the connection ID they require in packets that are
 sent to that endpoint.  The truncate_connection_id transport parameter
-({{transport-parameter-definitions}}) determines the number of octets that are
-included.  An endpoint can request that the connection ID to be omitted entirely
-by setting truncate_connection_id to 0, or include any number of octets up to
-the full connection ID length of 17 octets.  Connection IDs are not truncated
-for any other use.
+({{transport-parameter-definitions}}) of a receiving endpoint determines the
+number of octets that are included by the sending peer.  A truncated connection
+ID includes the indicated number of octets, starting from the first octet.  An
+endpoint can request that the connection ID to be omitted entirely by setting
+truncate_connection_id to 0, or include any number of octets up to the full
+connection ID length of 17 octets.  Connection IDs are not truncated for any
+other use.
 
 Note:
 
 : The odd length of the connection ID is chosen to enable efficient construction
-  of the value using 128-bit ciphers with additional space for overhead.
-  Endpoints might negotiate the use of a truncated connection ID for use with
-  the short header.
+  of the value using 128-bit ciphers with an additional octet for overheads such
+  as key identifiers.
 
 
 ## Packet Numbers {#packet-numbers}
@@ -890,18 +890,19 @@ Packets that can be associated with an existing connection are handled according
 to the current state of that connection.  Packets are associated with existing
 connections using connection ID if it is present; this might include connection
 IDs that were advertised using NEW_CONNECTION_ID ({{frame-new-connection-id}}).
-Long-form packets for connections with incomplete cryptographic handshakes and
-short-form packets that have a zero-length connection ID are associated with an
-existing connection using the tuple of source and destination IP addresses and
-ports.
+For connections with incomplete cryptographic handshakes packets with the long
+header are associated with an existing connection using the tuple of source and
+destination IP addresses and ports.  An endpoint that chooses a zero-length
+connection ID also uses the address tuple to identify which connection a packet
+with a short header is intended for.
 
-A packet that uses the short header could be associated with an existing
-connection with an incomplete cryptographic handshake.  Such a packet could be a
-valid packet that has been reordered with respect to the long-form packets that
-will complete the cryptographic handshake.  This might happen after the final
-set of cryptographic handshake messages from either peer.  These packets are
-expected to be correlated with a connection using the tuple of IP addresses and
-ports.  Packets that might be reordered in this fashion SHOULD be buffered in
+A packet that uses the short header could be intended for an existing connection
+with an incomplete cryptographic handshake.  Such a packet could be a valid
+packet that has been reordered with respect to the packets that will complete
+the cryptographic handshake.  This might happen after the final set of
+cryptographic handshake messages from either peer.  These packets are expected
+to be correlated with a connection using the tuple of IP addresses and ports.
+Packets that might be reordered in this fashion SHOULD be buffered in
 anticipation of the handshake completing.
 
 0-RTT packets might be received prior to a Client Initial packet at a server.
@@ -1479,13 +1480,13 @@ connection if the integrity check fails with a PROTOCOL_VIOLATION error code.
 
 ## Connection Migration {#migration}
 
-QUIC connections are identified by their 136-bit Connection ID or whatever part
-thereof is transmitted.  QUIC's consistent connection ID allows connections to
-survive changes to the client's IP and/or port, such as those caused by client
-or server migrating to a new network.  Connection migration allows a client to
-retain any shared state with a connection when they move networks.  This
-includes state that can be hard to recover such as outstanding requests, which
-might otherwise be lost with no easy way to retry them.
+QUIC connections are identified by their 136-bit connection ID.  QUIC's
+consistent connection ID allows connections to survive changes to the client's
+IP and/or port, such as those caused by client or server migrating to a new
+network.  Connection migration allows a client to retain any shared state with a
+connection when they move networks.  This includes state that can be hard to
+recover such as outstanding requests, which might otherwise be lost with no easy
+way to retry them.
 
 An endpoint that receives packets that contain a source IP address and port that
 has not yet been used can start sending new packets with those as a destination
@@ -1922,19 +1923,21 @@ reset is not a regular packet.  This is not a serious issue, as it is already
 possible to use other fields to distinguish them from other packet.
 
 If a client requires more octets of the connection ID for routing than the
-server requires, those octets will not appear in the packet that the server
-receives.  In this case, the stateless reset might not reach the client.
+length that the server chooses, those additional octets will not appear in the
+packet that the server receives.  In this case, the server is unable to
+construct a stateless reset with a connection ID that guarantees that it reaches
+the client.
 
-A server can avoid this by ensuring that it always receives a connection ID that
-is equal to or longer than the connection ID requested by the client.  In
-choosing a connection ID, the server already knows the client's preferred
-transaction ID length, and so can request that the client provide a similarly
-long connection ID.
+A server can ensure that it always receives a connection ID that is equal to or
+longer than the connection ID requested by the client.  When choosing a
+connection ID, the server already knows the client's preferred transaction ID
+length.  Thus, a server can set its transport parameters so that it always
+receives a sufficient number of connection ID octets from the client.
 
-A server can construct the connection ID such that it includes a record the
-length required by the client.  This allows the server to ensure that it sends a
-connection ID of the size that the client needs when generating a stateless
-reset.
+A server can also construct the connection ID such that it includes a record of
+the truncate_connection_id transport parameter set by the client.  This allows
+the server to ensure that it sends a connection ID of the size that the client
+needs when generating a stateless reset.
 
 
 # Frame Types and Formats
