@@ -129,8 +129,9 @@ version-specific and of arbitrary length.
 
 ## Long Header
 
-Long headers take the form described in {{fig-long}}.  Bits that have
-version-specific semantics are marked with an X.
+Long headers are always 22 octets in length.  These headers take the form
+described in {{fig-long}}.  Bits that have version-specific semantics are marked
+with an X.
 
 ~~~
  0                   1                   2                   3
@@ -139,8 +140,14 @@ version-specific semantics are marked with an X.
 |1|X X X X X X X|
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                                                               |
-+                       Connection ID (64)                      +
++                                                               +
 |                                                               |
++                       Connection ID (136)                     +
+|                                                               |
++                                                               +
+|                                                               |
++               +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|               |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                         Version (32)                          |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -152,8 +159,8 @@ version-specific semantics are marked with an X.
 A QUIC packet with a long header has the high bit of the first octet set to 1.
 
 A QUIC packet with a long header has two fixed fields immediately following the
-first octet: a 64-bit Connection ID (see {{connection-id}}) and a 32-bit Version
-(see {{version}}).
+first octet: a 136-bit Connection ID (see {{connection-id}}) and a 32-bit
+Version (see {{version}}).
 
 
 ## Short Header
@@ -164,12 +171,8 @@ version-specific semantics are marked with an X.
 ~~~~~
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+
-|0|C|X X X X X X|
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                                                               |
-+                     [Connection ID (64)]                      +
-|                                                               |
+|0|X X X X X X X|        Connection ID (0..136)               ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X  ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -178,16 +181,14 @@ version-specific semantics are marked with an X.
 
 A QUIC packet with a short header has the high bit of the first octet set to 0.
 
-A QUIC packet with a short header includes an optional connection ID and no
-version field.  The second bit of that octet (that is, 0x40) determines whether
-the connection ID is present.  If the second bit is cleared, a 64-bit connection
-ID immediately follows the first octet.  If the second bit is set, the remainder
-of the packet has version-specific semantics.
+A QUIC packet with a short header includes a truncated connection ID and no
+version field.  The connection ID could be any length from 0 octets to the full
+17 octets included in the long header.
 
 
 ## Connection ID
 
-A connection ID is an opaque 64-bit field.
+A connection ID is an opaque 136-bit field.
 
 The primary function of a connection ID is to ensure that changes in addressing
 at lower protocol layers (UDP, IP, and below) don't cause packets for a QUIC
@@ -230,8 +231,14 @@ field, which is set to 0x00000000.
 |1|X X X X X X X|
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                                                               |
-+                       Connection ID (64)                      +
++                                                               +
 |                                                               |
++                       Connection ID (136)                     +
+|                                                               |
++                                                               +
+|                                                               |
++               +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|               |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                       Version (32) = 0                        |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
