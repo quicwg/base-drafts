@@ -849,8 +849,9 @@ explained in more detail as they are referenced later in the document.
 | 0x0a        | STREAM_ID_BLOCKED | {{frame-stream-id-blocked}} |
 | 0x0b        | NEW_CONNECTION_ID | {{frame-new-connection-id}} |
 | 0x0c        | STOP_SENDING      | {{frame-stop-sending}}      |
-| 0x0d        | PONG              | {{frame-pong}}              |
-| 0x0e        | ACK               | {{frame-ack}}               |
+| 0x0d        | ACK               | {{frame-ack}}               |
+| 0x0e        | PATH_CHALLENGE    | {{frame-path-challenge}}    |
+| 0x0f        | PATH_RESPONSE     | {{frame-path-response}}     |
 | 0x10 - 0x17 | STREAM            | {{frame-stream}}            |
 {: #frame-types title="Frame Types"}
 
@@ -1562,25 +1563,32 @@ consider the possibility that packets are sent without congestion feedback.
 
 Once a connection is established, address validation is relatively simple (see
 {{address-validation}} for the process that is used during the handshake).  An
-endpoint validates a remote address by sending a PING frame containing a payload
-that is hard to guess.  This frame MUST be sent in a packet that is sent to the
-new address.  Once a PONG frame containing the same payload is received, the
-address is considered to be valid.  The PONG frame can use any path on its
-return.  A PING frame containing 12 randomly generated {{?RFC4086}} octets is
-sufficient to ensure that it is easier to receive the packet than it is to guess
-the value correctly.
+endpoint validates a remote address by sending a PATH_CHALLENGE frame containing
+a payload that is hard to guess.  This frame MUST be sent in a packet that is
+sent to the new address.  Once a PATH_RESPONSE frame containing the same payload
+is received, the address is considered to be valid.  The PATH_RESPONSE frame can
+use any path on its return.  A PATH_CHALLENGE frame containing 12 randomly
+generated {{?RFC4086}} octets is sufficient to ensure that it is easier to
+receive the packet than it is to guess the value correctly.
 
-If the PING frame is determined to be lost, a new PING frame SHOULD be
-generated.  This PING frame MUST include a new Data field that is similarly
-difficult to guess.
+An endpoint MAY send multiple PATH_CHALLENGE frames to handle packet loss or to
+make additional measurements on a new network path.
+
+An endpoint MUST use fresh random data in every PATH_CHALLENGE frame so that it
+can associate the peer's response with the causative PATH_CHALLENGE,
+additionally helping the endpoint make more accurate path measurements.
+
+If the PATH_CHALLENGE frame is determined to be lost, a new PATH_CHALLENGE frame
+SHOULD be generated.  This PATH_CHALLENGE frame MUST include new data that is
+similarly difficult to guess.
 
 If validation of the new remote address fails, after allowing enough time for
-possible loss and recovery of packets carrying PING and PONG frames, the
-endpoint MUST terminate the connection.  When setting this timer,
-implementations are cautioned that the new path could have a longer round trip
-time than the original.  The endpoint MUST NOT send a CONNECTION_CLOSE frame in
-this case; it has to assume that the remote peer does not want to receive any
-more packets.
+recovering from possible loss of packets carrying PATH_CHALLENGE and
+PATH_RESPONSE frames, the endpoint MUST terminate the connection.  When setting
+this timer, implementations are cautioned that the new path could have a longer
+round trip time than the original.  The endpoint MUST NOT send a
+CONNECTION_CLOSE frame in this case; it has to assume that the remote peer does
+not want to receive any more packets.
 
 If the remote address is validated successfully, the endpoint MAY increase the
 rate that it sends on the new path using the state from the previous path.  The
@@ -1597,17 +1605,17 @@ After verifying an address, the endpoint SHOULD update any address validation
 tokens ({{address-validation}}) that it has issued to its peer if those are no
 longer valid based on the changed address.
 
-Address validation using the PING frame MAY be used at any time by either peer.
-For instance, an endpoint might check that a peer is still in possession of its
-address after a period of quiescence.
+Address validation using the PATH_CHALLENGE frame MAY be used at any time by
+either peer.  For instance, an endpoint might check that a peer is still in
+possession of its address after a period of quiescence.
 
 Upon seeing a connection migration, an endpoint that sees a new address MUST
 abandon any address validation it is performing with other addresses on the
 expectation that the validation is likely to fail.  Abandoning address
-validation primarily means not closing the connection when a PONG frame is not
-received, but it could also mean ceasing retransmissions of the PING frame.  An
-endpoint that doesn't retransmit a PING frame might receive a PONG frame, which
-it MUST ignore.
+validation primarily means not closing the connection when a PATH_RESPONSE frame
+is not received, but it could also mean ceasing subsequent transmissions of the
+PATH_CHALLENGE frame.  An endpoint MUST ignore any subsequently received
+PATH_RESPONSE frames from that address.
 
 
 ## Spurious Connection Migrations
@@ -1619,10 +1627,10 @@ the legitimate copy will be dropped as a duplicate.
 
 After a spurious migration, validation of the source address will fail because
 the entity at the source address does not have the necessary cryptographic keys
-to read or respond to the PING frame that is sent to it, even if it wanted to.
-Such a spurious connection migration could result in the connection being
-dropped when the source address validation fails.  This grants an attacker the
-ability to terminate the connection.
+to read or respond to the PATH_CHALLENGE frame that is sent to it, even if it
+wanted to.  Such a spurious connection migration could result in the connection
+being dropped when the source address validation fails.  This grants an attacker
+the ability to terminate the connection.
 
 Receipt of packets with higher packet numbers from the legitimate address will
 trigger another connection migration.  This will cause the validation of the
@@ -1634,8 +1642,8 @@ the old remote address before attempting to validate the new address.  If the
 connection migration is spurious, then the legitimate address will be used to
 respond and the connection will migrate back to the old address.
 
-As with any address validation, packets containing retransmissions of the PING
-frame validating an address MUST be sent to the address being validated.
+As with any address validation, packets containing a PATH_CHALLENGE frame
+validating an address MUST be sent to the address being validated.
 Consequently, during a migration of a peer, an endpoint could be sending to
 multiple remote addresses.
 
@@ -2149,42 +2157,19 @@ than it has sent, unless this is a result of a change in the initial limits (see
 ## PING Frame {#frame-ping}
 
 Endpoints can use PING frames (type=0x07) to verify that their peers are still
-alive or to check reachability to the peer.
+alive or to check reachability to the peer. The PING frame contains no
+additional fields.
 
-The PING frame contains a variable-length payload.
+The receiver of a PING frame simply need to acknowledge the packet containing
+this frame.
 
-~~~
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|   Length(8)   |                 Data (*)                    ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-~~~
-
-Length:
-
-: This 8-bit value describes the length of the Data field.
-
-Data:
-
-: This variable-length field contains arbitrary data.
-
-A PING frame with an empty Data field causes the packet containing it to be
-acknowledged as normal.  No other action is required of the recipient.
-
-An empty PING frame can be used to keep a connection alive when an application
-or application protocol wishes to prevent the connection from timing out.  An
+The PING frame can be used to keep a connection alive when an application or
+application protocol wishes to prevent the connection from timing out. An
 application protocol SHOULD provide guidance about the conditions under which
 generating a PING is recommended.  This guidance SHOULD indicate whether it is
 the client or the server that is expected to send the PING.  Having both
 endpoints send PING frames without coordination can produce an excessive number
 of packets and poor performance.
-
-If the Data field is not empty, the recipient of this frame MUST generate a PONG
-frame ({{frame-pong}}) containing the same Data.  A PING frame with data is not
-appropriate for use in keeping a connection alive, because the PONG frame
-elicits an acknowledgement, causing the sender of the original PING to send two
-packets.
 
 A connection will time out if no packets are sent or received for a period
 longer than the time specified in the idle_timeout transport parameter (see
@@ -2352,17 +2337,56 @@ Application Error Code:
   {{app-error-codes}}).
 
 
+## PATH_CHALLENGE Frame {#frame-path-challenge}
 
-## PONG Frame {#frame-pong}
+Endpoints can use PATH_CHALLENGE frames (type=0x0e) to check reachability to the
+peer, to verify a new path's PMTU, and for address validation during connection
+establishment and connection migration.
 
-The PONG frame (type=0x0d) is sent in response to a PING frame that contains
-data.  Its format is identical to the PING frame ({{frame-ping}}).
+PATH_CHALLENGE frames contain a variable-length payload.
 
-An endpoint that receives an unsolicited PONG frame - that is, a PONG frame
-containing a payload that is empty MUST generate a connection error of type
-FRAME_ERROR, indicating the PONG frame (that is, 0x10d).  If the content of a
-PONG frame does not match the content of a PING frame previously sent by the
-endpoint, the endpoint MAY generate a connection error of type UNSOLICITED_PONG.
+~~~
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|   Length(8)   |                 Data (*)                    ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~
+
+Length:
+
+: This 8-bit value describes the length of the Data field.
+
+Data:
+
+: This variable-length field contains arbitrary data.
+
+
+The sender of this frame MUST include at least one octet of data in the Data
+field.
+
+The recipient of this frame MUST generate a PATH_RESPONSE frame
+({{frame-path-response}}) containing the same Data.  An endpoint that receives a
+PATH_CHALLENGE frame containing an empty payload MUST generate a connection
+error of type FRAME_ERROR, indicating the PATH_CHALLENGE frame (that is, 0x0e).
+
+A PATH_CHALLENGE frame MUST NOT elicit acknowledgements; the corresponding
+PATH_RESPONSE serves to indicate receipt of the PATH_CHALLENGE.
+
+
+## PATH_RESPONSE Frame {#frame-path-response}
+
+The PATH_RESPONSE frame (type=0x0f) is sent in response to a PATH_CHALLENGE
+frame.  Its format is identical to the PATH_CHALLENGE frame
+({{frame-path-challenge}}).
+
+An endpoint that receives a PATH_RESPONSE frame containing an empty payload MUST
+generate a connection error of type FRAME_ERROR, indicating the PATH_RESPONSE
+frame (that is, 0x0e).  If the content of a PATH_RESPONSE frame does not match
+the content of a PATH_CHALLENGE frame previously sent by the endpoint, the
+endpoint MAY generate a connection error of type UNSOLICITED_PATH_RESPONSE.
+
+A PATH_RESPONSE frame MUST NOT elicit an acknowledgement.
 
 
 ## ACK Frame {#frame-ack}
@@ -2722,6 +2746,10 @@ When a packet is detected as lost, the sender re-sends any frames as necessary:
 * BLOCKED, STREAM_BLOCKED, and STREAM_ID_BLOCKED frames SHOULD be retransmitted
   if the sender is still blocked on the same limit.  If the limit has been
   increased since the frame was originally sent, the frame SHOULD NOT be
+  retransmitted.
+
+* PATH_CHALLENGE frames MUST NOT be retransmitted, but a new PATH_CHALLENGE
+  frame MAY be sent with new random data.  PATH_RESPONSE frames MUST NOT be
   retransmitted.
 
 * All other frames MUST be retransmitted.
@@ -3620,10 +3648,10 @@ PROTOCOL_VIOLATION (0xA):
 : An endpoint detected an error with protocol compliance that was not covered by
   more specific error codes.
 
-UNSOLICITED_PONG (0xB):
+UNSOLICITED_PATH_RESPONSE (0xB):
 
-: An endpoint received a PONG frame that did not correspond to any PING frame
-  that it previously sent.
+: An endpoint received a PATH_RESPONSE frame that did not correspond to any
+  PATH_CHALLENGE frame that it previously sent.
 
 FRAME_ERROR (0x1XX):
 
@@ -3830,7 +3858,7 @@ the range from 0xFE00 to 0xFFFF.
 | 0x8         | TRANSPORT_PARAMETER_ERROR | Error in transport parameters | {{error-codes}} |
 | 0x9         | VERSION_NEGOTIATION_ERROR | Version negotiation failure   | {{error-codes}} |
 | 0xA         | PROTOCOL_VIOLATION        | Generic protocol violation    | {{error-codes}} |
-| 0xB         | UNSOLICITED_PONG          | Unsolicited PONG frame        | {{error-codes}} |
+| 0xB         | UNSOLICITED_PATH_RESPONSE | Unsolicited PATH_RESPONSE frame | {{error-codes}} |
 | 0x100-0x1FF | FRAME_ERROR               | Specific frame format error   | {{error-codes}} |
 {: #iana-error-table title="Initial QUIC Transport Error Codes Entries"}
 
@@ -3867,6 +3895,11 @@ thanks to all.
 > final version of this document.
 
 Issue and pull request numbers are listed with a leading octothorp.
+
+## Since draft-ietf-quic-transport-09
+
+- Added PATH_CHALLENGE and PATH_RESPONSE frames to replace PING with Data and
+  PONG frame. Changed ACK frame type from 0x0e to 0x0d. (#000)
 
 ## Since draft-ietf-quic-transport-08
 
