@@ -2708,21 +2708,11 @@ implementation decision, and an implementation should be careful to delay
 conservatively, since any delay is likely to increase application-visible
 latency.
 
-Regular QUIC packets are "containers" of frames.  When an endpoint receives an
-ACK frame for one or more transmitted packets, all frames in the acknowledged
-packets are considered to have been received and processed by the peer, with one
-exception.  A PATH_CHALLENGE frame (see {{frame-path-challenge}}) is used to
-validate a peer's ownership of its address.  An ACK frame received for a
-PATH_CHALLENGE frame is not adequate to indicate that the PATH_CHALLENGE was in
-fact received.  A PATH_CHALLENGE is considered acknowledged only when the
-corresponding PATH_RESPONSE (see {{frame-path-response}}) is received for it.
-
-A packet is never retransmitted whole.  How an endpoint handles the loss of a
-frame depends on the type of the frame.  Some frames are simply retransmitted,
-some have their contents moved to new frames, and others are never
-retransmitted.
-
-When a packet is detected as lost, the sender re-sends any frames as necessary:
+Regular QUIC packets are "containers" of frames.  A packet is never
+retransmitted whole.  How an endpoint handles the loss of a frame depends on the
+type of the frame.  Some frames are simply retransmitted, some have their
+contents moved to new frames, and others are never retransmitted.  When a packet
+is detected as lost, the sender re-sends any frames as necessary:
 
 * All application data sent in STREAM frames MUST be retransmitted, unless the
   endpoint has sent a RST_STREAM for that stream.  When an endpoint sends a
