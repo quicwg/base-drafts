@@ -1566,7 +1566,7 @@ Once a connection is established, address validation is relatively simple (see
 endpoint validates a remote address by sending a PATH_CHALLENGE frame containing
 a payload that is hard to guess.  This frame MUST be sent in a packet that is
 sent to the new address.  Once a PATH_RESPONSE frame containing the same payload
-is received, the address is considered to be valid. 
+is received, the address is considered to be valid.
 
 The new address is not considered valid until a PATH_RESPONSE frame containing
 the same payload is received, even if the packet containing the PATH_CHALLENGE
