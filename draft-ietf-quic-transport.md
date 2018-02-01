@@ -1566,16 +1566,19 @@ Once a connection is established, address validation is relatively simple (see
 endpoint validates a remote address by sending a PATH_CHALLENGE frame containing
 a payload that is hard to guess.  This frame MUST be sent in a packet that is
 sent to the new address.  Once a PATH_RESPONSE frame containing the same payload
-is received, the address is considered to be valid.  The PATH_RESPONSE frame can
-use any path on its return.
+is received, the address is considered to be valid. 
+
+The new address is not considered valid until a PATH_RESPONSE frame containing
+the same payload is received, even if the packet containing the PATH_CHALLENGE
+frame is acknowledged.
+
+The PATH_RESPONSE frame can use any path on its return.
 
 An endpoint MAY send multiple PATH_CHALLENGE frames to handle packet loss or to
 make additional measurements on a new network path.
 
 An endpoint MUST use fresh random data in every PATH_CHALLENGE frame so that it
-can associate the peer's response with the causative PATH_CHALLENGE.  Using
-fresh values allows the endpoint to measure the time taken to respond to a
-challenge.
+can associate the peer's response with the causative PATH_CHALLENGE.
 
 If the PATH_CHALLENGE frame is determined to be lost, a new PATH_CHALLENGE frame
 SHOULD be generated.  This PATH_CHALLENGE frame MUST include new data that is
@@ -1586,8 +1589,8 @@ recovering from possible loss of packets carrying PATH_CHALLENGE and
 PATH_RESPONSE frames, the endpoint MUST terminate the connection.  When setting
 this timer, implementations are cautioned that the new path could have a longer
 round trip time than the original.  The endpoint MUST NOT send a
-CONNECTION_CLOSE frame in this case; it has to assume that the remote peer does
-not want to receive any more packets.
+CONNECTION_CLOSE frame in this case; it has to assume that the remote peer
+cannot want to receive any more packets.
 
 If the remote address is validated successfully, the endpoint MAY increase the
 rate that it sends on the new path using the state from the previous path.  The
@@ -2592,9 +2595,7 @@ to ensure that it is easier to receive the packet than it is to guess the value
 correctly.
 
 The recipient of this frame MUST generate a PATH_RESPONSE frame
-({{frame-path-response}}) containing the same Data.  An endpoint that receives a
-PATH_CHALLENGE frame containing an empty payload MUST generate a connection
-error of type FRAME_ERROR, indicating the PATH_CHALLENGE frame (that is, 0x0e).
+({{frame-path-response}}) containing the same Data.
 
 
 ## PATH_RESPONSE Frame {#frame-path-response}
@@ -2603,11 +2604,9 @@ The PATH_RESPONSE frame (type=0x0f) is sent in response to a PATH_CHALLENGE
 frame.  Its format is identical to the PATH_CHALLENGE frame
 ({{frame-path-challenge}}).
 
-An endpoint that receives a PATH_RESPONSE frame containing an empty payload MUST
-generate a connection error of type FRAME_ERROR, indicating the PATH_RESPONSE
-frame (that is, 0x0f).  If the content of a PATH_RESPONSE frame does not match
-the content of a PATH_CHALLENGE frame previously sent by the endpoint, the
-endpoint MAY generate a connection error of type UNSOLICITED_PATH_RESPONSE.
+If the content of a PATH_RESPONSE frame does not match the content of a
+PATH_CHALLENGE frame previously sent by the endpoint, the endpoint MAY generate
+a connection error of type UNSOLICITED_PATH_RESPONSE.
 
 
 ## STREAM Frames {#frame-stream}
@@ -2711,12 +2710,12 @@ latency.
 
 Regular QUIC packets are "containers" of frames.  When an endpoint receives an
 ACK frame for one or more transmitted packets, all frames in the acknowledged
-packets are considered to have been delivered to the peer, with one exception.
-A PATH_CHALLENGE frame (see {{frame-path-challenge}}) is used to validate a
-peer's ownership of its address.  An ACK frame received for a PATH_CHALLENGE
-frame is not adequate to indicate that the PATH_CHALLENGE was in fact received.
-A PATH_CHALLENGE is considered acknowledged only when the corresponding
-PATH_RESPONSE (see {{frame-path-response}}) is received for it.
+packets are considered to have been received and processed by the peer, with one
+exception.  A PATH_CHALLENGE frame (see {{frame-path-challenge}}) is used to
+validate a peer's ownership of its address.  An ACK frame received for a
+PATH_CHALLENGE frame is not adequate to indicate that the PATH_CHALLENGE was in
+fact received.  A PATH_CHALLENGE is considered acknowledged only when the
+corresponding PATH_RESPONSE (see {{frame-path-response}}) is received for it.
 
 A packet is never retransmitted whole.  How an endpoint handles the loss of a
 frame depends on the type of the frame.  Some frames are simply retransmitted,
