@@ -1623,11 +1623,11 @@ Packet number protection relies on the randomness of the AEAD output, which is a
 property that AEAD algorithms do not guarantee.  Therefore, no strong assurances
 about the general security of this mechanism can be proven.
 
-Use of the same key and nonce for encryption for encryption can weaken
-encryption.  For the schemes described, protecting two different packet numbers
-with the same key and nonce reveals the exclusive OR of those packet numbers,
-which might be used to compromise confidentiality.  For packet number protection
-to be effective, the output of the packet protection AEAD needs to be
+Use of the same key and nonce more than once can weaken the guarantees provided
+by this protection.  For the schemes described, protecting two different packet
+numbers with the same key and nonce reveals the exclusive OR of those packet
+numbers, which might be used to compromise confidentiality.  For packet number
+protection to be effective, the output of the packet protection AEAD needs to be
 effectively random.
 
 All the AEAD functions used meet indistinguishability under (adaptive) chosen
