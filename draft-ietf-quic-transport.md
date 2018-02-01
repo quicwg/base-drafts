@@ -1567,16 +1567,15 @@ endpoint validates a remote address by sending a PATH_CHALLENGE frame containing
 a payload that is hard to guess.  This frame MUST be sent in a packet that is
 sent to the new address.  Once a PATH_RESPONSE frame containing the same payload
 is received, the address is considered to be valid.  The PATH_RESPONSE frame can
-use any path on its return.  A PATH_CHALLENGE frame containing 12 randomly
-generated {{?RFC4086}} octets is sufficient to ensure that it is easier to
-receive the packet than it is to guess the value correctly.
+use any path on its return.
 
 An endpoint MAY send multiple PATH_CHALLENGE frames to handle packet loss or to
 make additional measurements on a new network path.
 
 An endpoint MUST use fresh random data in every PATH_CHALLENGE frame so that it
-can associate the peer's response with the causative PATH_CHALLENGE,
-additionally helping the endpoint make more accurate path measurements.
+can associate the peer's response with the causative PATH_CHALLENGE.  Using
+fresh values allows the endpoint to measure the path's roundtrip time more
+accurately.
 
 If the PATH_CHALLENGE frame is determined to be lost, a new PATH_CHALLENGE frame
 SHOULD be generated.  This PATH_CHALLENGE frame MUST include new data that is
@@ -2160,7 +2159,7 @@ Endpoints can use PING frames (type=0x07) to verify that their peers are still
 alive or to check reachability to the peer. The PING frame contains no
 additional fields.
 
-The receiver of a PING frame simply need to acknowledge the packet containing
+The receiver of a PING frame simply needs to acknowledge the packet containing
 this frame.
 
 The PING frame can be used to keep a connection alive when an application or
@@ -2337,61 +2336,9 @@ Application Error Code:
   {{app-error-codes}}).
 
 
-## PATH_CHALLENGE Frame {#frame-path-challenge}
-
-Endpoints can use PATH_CHALLENGE frames (type=0x0e) to check reachability to the
-peer, to verify a new path's PMTU, and for address validation during connection
-establishment and connection migration.
-
-PATH_CHALLENGE frames contain a variable-length payload.
-
-~~~
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|   Length(8)   |                 Data (*)                    ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-~~~
-
-Length:
-
-: This 8-bit value describes the length of the Data field.
-
-Data:
-
-: This variable-length field contains arbitrary data.
-
-
-The sender of this frame MUST include at least one octet of data in the Data
-field.
-
-The recipient of this frame MUST generate a PATH_RESPONSE frame
-({{frame-path-response}}) containing the same Data.  An endpoint that receives a
-PATH_CHALLENGE frame containing an empty payload MUST generate a connection
-error of type FRAME_ERROR, indicating the PATH_CHALLENGE frame (that is, 0x0e).
-
-A PATH_CHALLENGE frame MUST NOT elicit acknowledgements; the corresponding
-PATH_RESPONSE serves to indicate receipt of the PATH_CHALLENGE.
-
-
-## PATH_RESPONSE Frame {#frame-path-response}
-
-The PATH_RESPONSE frame (type=0x0f) is sent in response to a PATH_CHALLENGE
-frame.  Its format is identical to the PATH_CHALLENGE frame
-({{frame-path-challenge}}).
-
-An endpoint that receives a PATH_RESPONSE frame containing an empty payload MUST
-generate a connection error of type FRAME_ERROR, indicating the PATH_RESPONSE
-frame (that is, 0x0e).  If the content of a PATH_RESPONSE frame does not match
-the content of a PATH_CHALLENGE frame previously sent by the endpoint, the
-endpoint MAY generate a connection error of type UNSOLICITED_PATH_RESPONSE.
-
-A PATH_RESPONSE frame MUST NOT elicit an acknowledgement.
-
-
 ## ACK Frame {#frame-ack}
 
-Receivers send ACK frames (type=0xe) to inform senders which packets they have
+Receivers send ACK frames (type=0x0d) to inform senders which packets they have
 received and processed.  A sent packet that has never been acknowledged is
 missing. The ACK frame contains any number of ACK blocks.  ACK blocks are
 ranges of acknowledged packets.
@@ -2617,6 +2564,52 @@ by a client in protected packets, because it is certain that the server is able
 to decipher the packet.
 
 
+## PATH_CHALLENGE Frame {#frame-path-challenge}
+
+Endpoints can use PATH_CHALLENGE frames (type=0x0e) to check reachability to the
+peer and for address validation during connection establishment and connection
+migration.
+
+PATH_CHALLENGE frames contain an 8-byte payload.
+
+~~~
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                                                               |
++                            Data (8)                           +
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+~~~
+
+Data:
+
+: This 8-byte field contains arbitrary data.
+
+A PATH_CHALLENGE frame containing at least 8 randomly generated {{?RFC4086}}
+octets is sufficient to ensure that it is easier to receive the packet than it
+is to guess the value correctly.
+
+The recipient of this frame MUST generate a PATH_RESPONSE frame
+({{frame-path-response}}) containing the same Data.  An endpoint that receives a
+PATH_CHALLENGE frame containing an empty payload MUST generate a connection
+error of type FRAME_ERROR, indicating the PATH_CHALLENGE frame (that is, 0x0e).
+
+
+## PATH_RESPONSE Frame {#frame-path-response}
+
+The PATH_RESPONSE frame (type=0x0f) is sent in response to a PATH_CHALLENGE
+frame.  Its format is identical to the PATH_CHALLENGE frame
+({{frame-path-challenge}}).
+
+An endpoint that receives a PATH_RESPONSE frame containing an empty payload MUST
+generate a connection error of type FRAME_ERROR, indicating the PATH_RESPONSE
+frame (that is, 0x0f).  If the content of a PATH_RESPONSE frame does not match
+the content of a PATH_CHALLENGE frame previously sent by the endpoint, the
+endpoint MAY generate a connection error of type UNSOLICITED_PATH_RESPONSE.
+
+
 ## STREAM Frames {#frame-stream}
 
 STREAM frames implicitly create a stream and carry stream data.  The STREAM
@@ -2716,10 +2709,19 @@ implementation decision, and an implementation should be careful to delay
 conservatively, since any delay is likely to increase application-visible
 latency.
 
-Regular QUIC packets are "containers" of frames; a packet is never retransmitted
-whole.  How an endpoint handles the loss of the frame depends on the type of the
-frame.  Some frames are simply retransmitted, some have their contents moved to
-new frames, and others are never retransmitted.
+Regular QUIC packets are "containers" of frames.  When an endpoint receives an
+ACK frame for one or more transmitted packets, all frames in the acknowledged
+packets are considered to have been delivered to the peer, with one exception.
+A PATH_CHALLENGE frame (see {{path-challenge}}) is used to validate a peer's
+ownership of its address.  An ACK frame received for a PATH_CHALLENGE frame is
+not adequate to indicate that the PATH_CHALLENGE was in fact received.  A
+PATH_CHALLENGE is considered acknowledged only when the corresponding
+PATH_RESPONSE (see {{path-response}}) is received for it.
+
+A packet is never retransmitted whole.  How an endpoint handles the loss of a
+frame depends on the type of the frame.  Some frames are simply retransmitted,
+some have their contents moved to new frames, and others are never
+retransmitted.
 
 When a packet is detected as lost, the sender re-sends any frames as necessary:
 
@@ -2749,7 +2751,7 @@ When a packet is detected as lost, the sender re-sends any frames as necessary:
   retransmitted.
 
 * PATH_CHALLENGE frames MUST NOT be retransmitted, but a new PATH_CHALLENGE
-  frame MAY be sent with new random data.  PATH_RESPONSE frames MUST NOT be
+  frame MAY be sent with new data.  PATH_RESPONSE frames MUST NOT be
   retransmitted.
 
 * All other frames MUST be retransmitted.
