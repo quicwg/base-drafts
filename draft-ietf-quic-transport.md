@@ -1574,8 +1574,8 @@ make additional measurements on a new network path.
 
 An endpoint MUST use fresh random data in every PATH_CHALLENGE frame so that it
 can associate the peer's response with the causative PATH_CHALLENGE.  Using
-fresh values allows the endpoint to measure the path's roundtrip time more
-accurately.
+fresh values allows the endpoint to measure the time taken to respond to a
+challenge.
 
 If the PATH_CHALLENGE frame is determined to be lost, a new PATH_CHALLENGE frame
 SHOULD be generated.  This PATH_CHALLENGE frame MUST include new data that is
