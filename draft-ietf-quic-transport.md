@@ -650,11 +650,6 @@ described in {{packet-numbers}}.  The client increments the packet number from
 its previous packet by one for each Handshake packet that it sends (which might
 be an Initial, 0-RTT Protected, or Handshake packet).
 
-Servers MUST NOT send more than three Handshake packets in response to a
-client's Initial packet without validating the client's ownership of the
-address, either via a Retry packet or by receiving packets from the client
-in response to the server's Handshake packets.
-
 The payload of this packet contains STREAM frames and could contain PADDING and
 ACK frames.
 
