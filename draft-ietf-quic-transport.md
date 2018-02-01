@@ -650,8 +650,18 @@ described in {{packet-numbers}}.  The client increments the packet number from
 its previous packet by one for each Handshake packet that it sends (which might
 be an Initial, 0-RTT Protected, or Handshake packet).
 
-The payload of this packet contains STREAM frames and could contain PADDING and
-ACK frames.
+Servers MUST NOT send more than three Handshake packets without receiving a
+packet from a verified source address.  If the server expects to generate more
+than three Handshake packets in response to an Initial packet, it SHOULD include
+a PATH_CHALLENGE frame in each Handshake packet that it sends.  After receiving
+at least one valid PATH_RESPONSE frame in a Handshake packet, the server can
+send its remaining Handshake packets.  (Servers MAY instead perform address
+validation using a Retry packet; this requires less state on the server, but
+could involve additional computational effort depending on implementation
+choices.)
+
+The payload of this packet contains STREAM frames and could contain PADDING,
+ACK, PATH_CHALLENGE, or PATH_RESPONSE frames.
 
 
 ## Protected Packets {#packet-protected}
