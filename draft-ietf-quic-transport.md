@@ -683,9 +683,9 @@ sequence of frames, as described in {{frames}}.
 ## Connection ID {#connection-id}
 
 QUIC connections are identified by their 136-bit connection ID.  All long
-headers contain a connection ID.  The connection ID can truncated in the short
-header, using between 0 and 17 octets.  When present, the connection ID is in
-the same location in all packet headers.
+headers contain a connection ID.  The connection ID can be truncated in the
+short header, using between 0 and 17 octets.  When present, the connection ID is
+in the same location in all packet headers.
 
 The client MUST choose a random connection ID and use it in Initial packets
 ({{packet-initial}}) and 0-RTT packets ({{packet-protected}}).
@@ -796,7 +796,7 @@ constant:
 
 * the location and size of the Connection ID field in long headers,
 
-* the location of the Connection ID field in short headers,
+* the location - but not the size - of the Connection ID field in short headers,
 
 * the location and size of the Version field in long headers,
 
@@ -890,7 +890,7 @@ Packets that can be associated with an existing connection are handled according
 to the current state of that connection.  Packets are associated with existing
 connections using connection ID if it is present; this might include connection
 IDs that were advertised using NEW_CONNECTION_ID ({{frame-new-connection-id}}).
-For connections with incomplete cryptographic handshakes packets with the long
+For connections with incomplete cryptographic handshakes, packets with the long
 header are associated with an existing connection using the tuple of source and
 destination IP addresses and ports.  An endpoint that chooses a zero-length
 connection ID also uses the address tuple to identify which connection a packet
