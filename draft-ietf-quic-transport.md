@@ -3890,7 +3890,7 @@ Issue and pull request numbers are listed with a leading octothorp.
 ## Since draft-ietf-quic-transport-09
 
 - Added PATH_CHALLENGE and PATH_RESPONSE frames to replace PING with Data and
-  PONG frame. Changed ACK frame type from 0x0e to 0x0d. (#000)
+  PONG frame. Changed ACK frame type from 0x0e to 0x0d. (#1091, #1086)
 
 ## Since draft-ietf-quic-transport-08
 
