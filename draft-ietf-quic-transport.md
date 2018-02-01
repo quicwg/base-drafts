@@ -3439,8 +3439,8 @@ of the cryptographic handshake.  (That is, in Initial, Retry, and Handshake
 packets.)  However, once the handshake is complete, endpoints MUST NOT send
 additional data beyond the peer's permitted offset.  If the amount of data sent
 during the handshake exceeds the peer's maximum offset, the endpoint cannot send
-additional data until the peer has sent a MAX_STREAM_DATA frame indicating a
-larger maximum offset.
+additional data on stream 0 until the peer has sent a MAX_STREAM_DATA frame
+indicating a larger maximum offset.
 
 ## Stream Limit Increment
 
