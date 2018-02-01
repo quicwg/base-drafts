@@ -1293,6 +1293,13 @@ establishment.  A `STREAM` frame carrying a TLS alert MAY be included in the
 same packet.
 
 
+### Address Verification
+
+In order to perform source-address verification before the handshake is
+complete, `PATH_CHALLENGE` and `PATH_RESPONSE` frames MAY be exchanged
+unprotected.
+
+
 ### Denial of Service with Unprotected Packets
 
 Accepting unprotected - specifically unauthenticated - packets presents a denial
