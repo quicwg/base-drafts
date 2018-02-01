@@ -2587,9 +2587,9 @@ Data:
 
 : This 8-byte field contains arbitrary data.
 
-A PATH_CHALLENGE frame containing at least 8 randomly generated {{?RFC4086}}
-octets is sufficient to ensure that it is easier to receive the packet than it
-is to guess the value correctly.
+A PATH_CHALLENGE frame containing 8 octets that are hard to guess is sufficient
+to ensure that it is easier to receive the packet than it is to guess the value
+correctly.
 
 The recipient of this frame MUST generate a PATH_RESPONSE frame
 ({{frame-path-response}}) containing the same Data.  An endpoint that receives a
