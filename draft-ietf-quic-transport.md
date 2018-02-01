@@ -2712,11 +2712,11 @@ latency.
 Regular QUIC packets are "containers" of frames.  When an endpoint receives an
 ACK frame for one or more transmitted packets, all frames in the acknowledged
 packets are considered to have been delivered to the peer, with one exception.
-A PATH_CHALLENGE frame (see {{path-challenge}}) is used to validate a peer's
-ownership of its address.  An ACK frame received for a PATH_CHALLENGE frame is
-not adequate to indicate that the PATH_CHALLENGE was in fact received.  A
-PATH_CHALLENGE is considered acknowledged only when the corresponding
-PATH_RESPONSE (see {{path-response}}) is received for it.
+A PATH_CHALLENGE frame (see {{frame-path-challenge}}) is used to validate a
+peer's ownership of its address.  An ACK frame received for a PATH_CHALLENGE
+frame is not adequate to indicate that the PATH_CHALLENGE was in fact received.
+A PATH_CHALLENGE is considered acknowledged only when the corresponding
+PATH_RESPONSE (see {{frame-path-response}}) is received for it.
 
 A packet is never retransmitted whole.  How an endpoint handles the loss of a
 frame depends on the type of the frame.  Some frames are simply retransmitted,
