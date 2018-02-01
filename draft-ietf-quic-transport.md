@@ -3428,15 +3428,19 @@ implementations.
 
 ### Handshake Exemption
 
-During the initial handshake, a server could need to send a larger message than
-would ordinarily be permitted by the client's initial stream flow control
-window. Since MAX_STREAM_DATA frames are not permitted in Handshake packets, the
-client cannot respond to server requests for additional flow control window in
-order to complete the handshake.
+During the initial handshake, an endpoint could need to send a larger message on
+stream 0 than would ordinarily be permitted by the peer's initial stream flow
+control window. Since MAX_STREAM_DATA frames are not permitted in these early
+packets, the peer cannot provide additional flow control window in order to
+complete the handshake.
 
-Servers MAY exceed the flow control limits on stream 0 prior to the completion
-of the cryptographic handshake.  However, once the handshake is complete,
-servers MUST NOT send data beyond the client's permitted offset.
+Endpoints MAY exceed the flow control limits on stream 0 prior to the completion
+of the cryptographic handshake.  (That is, in Initial, Retry, and Handshake
+packets.)  However, once the handshake is complete, endpoints MUST NOT send
+additional data beyond the peer's permitted offset.  If the amount of data sent
+during the handshake exceeds the peer's maximum offset, the endpoint cannot send
+additional data until the peer has sent a MAX_STREAM_DATA frame indicating a
+larger maximum offset.
 
 ## Stream Limit Increment
 
