@@ -3405,11 +3405,11 @@ the sender receives an update before running out of flow control credit, even if
 one of the packets is lost.
 
 Connection flow control is a limit to the total bytes of stream data sent in
-STREAM frames on all streams.  A receiver advertises credit for a connection by
-sending a MAX_DATA frame.  A receiver maintains a cumulative sum of bytes
-received on all streams, which are used to check for flow control violations. A
-receiver might use a sum of bytes consumed on all contributing streams to
-determine the maximum data limit to be advertised.
+STREAM frames on all streams except stream 0.  A receiver advertises credit for
+a connection by sending a MAX_DATA frame.  A receiver maintains a cumulative sum
+of bytes received on all contributing streams, which are used to check for flow
+control violations. A receiver might use a sum of bytes consumed on all
+contributing streams to determine the maximum data limit to be advertised.
 
 ## Edge Cases and Other Considerations
 
@@ -3463,6 +3463,21 @@ it increases data limits based on a roundtrip time estimate and the rate at
 which the receiving application consumes data, similar to common TCP
 implementations.
 
+### Handshake Exemption
+
+During the initial handshake, an endpoint could need to send a larger message on
+stream 0 than would ordinarily be permitted by the peer's initial stream flow
+control window. Since MAX_STREAM_DATA frames are not permitted in these early
+packets, the peer cannot provide additional flow control window in order to
+complete the handshake.
+
+Endpoints MAY exceed the flow control limits on stream 0 prior to the completion
+of the cryptographic handshake.  (That is, in Initial, Retry, and Handshake
+packets.)  However, once the handshake is complete, endpoints MUST NOT send
+additional data beyond the peer's permitted offset.  If the amount of data sent
+during the handshake exceeds the peer's maximum offset, the endpoint cannot send
+additional data on stream 0 until the peer has sent a MAX_STREAM_DATA frame
+indicating a larger maximum offset.
 
 ## Stream Limit Increment
 
