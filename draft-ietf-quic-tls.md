@@ -972,20 +972,14 @@ AEAD_CHACHA20_POLY1305 ({{!CHACHA=RFC7539}}).
 This section defines the packet protection algorithm for AEAD_AES_128_GCM,
 AEAD_AES_128_CCM, AEAD_AES_256_GCM, and AEAD_AES_256_CCM. AEAD_AES_128_GCM and
 AEAD_AES_128_CCM use 128-bit AES {{!AES=DOI.10.6028/NIST.FIPS.197}} in
-Electronic Code-Book (ECB) mode. AEAD_AES_256_GCM, and AEAD_AES_256_CCM use
-256-bit AES in ECB mode.
+counter (CTR) mode. AEAD_AES_256_GCM, and AEAD_AES_256_CCM use
+256-bit AES in CTR mode.
 
 This algorithm samples 16 octets from the packet ciphertext. This value is
-input to AES that is keyed using the packet protection key.
-
-The output of AES is truncated to the length of the encoded packet number.  The
-protected packet number is the exclusive-OR (XOR) of the encoded packet number
-and the truncated output.
-
-In summary, packet protection with AES uses the following form:
+used as the counter input to AES-CTR.
 
 ~~~
-encrypted_pn = packet_number XOR AES(pn_key, sample)
+encrypted_pn = AES-CTR(pn_key, sample, packet_number)
 ~~~
 
 
