@@ -54,6 +54,15 @@ informative:
     date: 2016-03-08
     target: "http://www.isg.rhul.ac.uk/~kp/TLS-AEbounds.pdf"
 
+  IMC:
+    title: "Introduction to Modern Cryptography, Second Edition"
+    author:
+      - ins: J. Katz
+      - ins: Y. Lindell
+    date: 2014-11-06
+    seriesinfo:
+      ISBN: 978-1466570269
+
   QUIC-HTTP:
     title: "Hypertext Transfer Protocol (HTTP) over QUIC"
     date: {DATE}
@@ -930,18 +939,26 @@ on the negotiated AEAD.
 
 Packet number protection is applied after packet protection is applied (see
 {{aead}}).  The ciphertext of the packet is sampled and used as input to an
-encryption algorithm.  For packets with a long header, the ciphertext starting
-immediately after the packet number is used (that is, octet 17 onwards).  For
-packets with a short header, the packet number length is not known, so it is
-assumed to be its largest possible length (4 octets).  Thus, for a short header,
-the sampled ciphertext starts at either octet 5 when the connection ID is
-omitted, or octet 13 when the connection is present.
+encryption algorithm.
 
-The protected packet might not have produced enough input for the negotiated
-packet protection algorithm.  This might happen if a packet with a short header
-contains minimal data and uses a packet number encoding that is shorter than 4
-octets.  Additional zero octets are added to the end of the sequence to reach
-the required amount of data.
+For packets with a long header, the ciphertext starting
+immediately after the packet number is used (that is, octet 17 onwards).
+
+For packets with a short header, the packet number length is not known before
+decryption, so it is assumed to be the smaller of the maximum possible packet
+number encoding (4 octets), or the size of the protected packet minus the
+minimum expansion for the AEAD. Thus, the sampled ciphertext for a short header
+can be determined by:
+
+```
+sample_offset = min(1 + connection_id_length + 4,
+                    packet_length - aead_expansion)
+sample = packet[sample_offset..sample_offset+sample_length]
+```
+
+To ensure that this process does not sample the packet number, packet number
+protection algorithms MUST NOT sample more ciphertext than the minimum
+expansion of the corresponding AEAD.
 
 Before a TLS ciphersuite can be used with QUIC, a packet protection algorithm
 MUST be specifed for the AEAD used with that ciphersuite.  This document defines
@@ -954,24 +971,21 @@ AEAD_CHACHA20_POLY1305 ({{!CHACHA=RFC7539}}).
 
 This section defines the packet protection algorithm for AEAD_AES_128_GCM,
 AEAD_AES_128_CCM, AEAD_AES_256_GCM, and AEAD_AES_256_CCM. AEAD_AES_128_GCM and
-AEAD_AES_128_CCM use 128-bit AES {{!AES=DOI.10.6028/NIST.FIPS.197}} in ECB mode.
-AEAD_AES_256_GCM, and AEAD_AES_256_CCM use 256-bit AES in ECB mode.
+AEAD_AES_128_CCM use 128-bit AES {{!AES=DOI.10.6028/NIST.FIPS.197}} in
+Electronic Code-Book (ECB) mode. AEAD_AES_256_GCM, and AEAD_AES_256_CCM use
+256-bit AES in ECB mode.
 
-This algorithm samples 16 octets from the packet ciphertext.  This input is used
-as the AES initialization vector (IV).  This value is input to AES that is keyed
-using the current packet protection key.
+This algorithm samples 16 octets from the packet ciphertext. This value is
+input to AES that is keyed using the packet protection key.
 
 The output of AES is truncated to the length of the encoded packet number.  The
 protected packet number is the exclusive-OR (XOR) of the encoded packet number
 and the truncated output.
 
-In summary, packet protection with AES uses the following pseudocode:
+In summary, packet protection with AES uses the following form:
 
 ~~~
-encoded = EncodePacketNumber(packet_number)
-len = Length(encoded)
-sample = ZeroPadSlice(ciphertext, offset, 16)
-encrypted_pn = encoded XOR AES(pn_key, sample)[0..len-1]
+encrypted_pn = packet_number XOR AES(pn_key, sample)
 ~~~
 
 
@@ -986,13 +1000,13 @@ in little-endian order and are used as the block count.  The remaining 12 octets
 are interpreted as three concatenated 32-bit numbers in little-endian order and
 used as the nonce.
 
-The encoded packet number is encrypted with ChaCha20 directly.  In pseudocode:
+The encoded packet number is then encrypted with ChaCha20 directly. In
+pseudocode:
 
 ~~~
-encoded = EncodePacketNumber(packet_number)
 counter = DecodeLE(sample[0..3])
 nonce = DecodeLE(sample[4..7], sample[8..11], sample[12..15])
-encrypted_pn = ChaCha20(pn_key, counter, nonce, encoded)
+encrypted_pn = ChaCha20(pn_key, counter, nonce, packet_number)
 ~~~
 
 
@@ -1619,25 +1633,29 @@ packets as indicative of an attack.
 
 ## Packet Number Protection Analysis {#pn-encrypt-analysis}
 
-Packet number protection relies on the randomness of the AEAD output, which is a
-property that AEAD algorithms do not guarantee.  Therefore, no strong assurances
-about the general security of this mechanism can be proven.
+Packet number protection relies the packet protection AEAD being a
+pseudorandom function (PRF), which is not a property that AEAD algorithms
+guarantee. Therefore, no strong assurances about the general security of this
+mechanism can be shown in the general case. The AEAD algorithms described in
+this document are assumed to be PRFs.
 
-Use of the same key and nonce more than once can weaken the guarantees provided
-by this protection.  For the schemes described, protecting two different packet
-numbers with the same key and nonce reveals the exclusive OR of those packet
-numbers, which might be used to compromise confidentiality.  For packet number
-protection to be effective, the output of the packet protection AEAD needs to be
-effectively random.
+The packet number protection algorithms defined in this document take the
+form:
 
-All the AEAD functions used meet indistinguishability under (adaptive) chosen
-plaintext attack (IND-CPA, IND-CPA2) goals and produce minimal expansion of the
-plaintext, adding only an authentication tag.  Therefore, this document assumes
-that each bit of sampled AEAD output contains one bit of entropy and that an
-attacker is unable to reduce this without knowledge of the key.  Based on this
-assumption, the odds of two samples of ciphertext being identical approach the
-birthday bound for the size of the sample (that is, two to the negative power of
-half the number of sampled bits).
+```
+encrypted_pn = packet_number XOR PRF(pn_key, sample)
+```
+
+This construction is secure against chosen plaintext attacks (IND-CPA)
+{{IMC}}.
+
+Use of the same key and ciphertext sample more than once risks compromising
+packet number protection. Protecting two different packet numbers with the same
+key and ciphertext sample reveals the exclusive OR of those packet numbers.
+Assuming that the AEAD acts as a PRF, if L bits are sampled, the odds of two
+ciphertext samples being identical approach 2^(-L/2), that is, the birthday
+bound. For the algorithms described in this document, that probability is one
+in 2^64.
 
 Note:
 
