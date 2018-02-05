@@ -130,23 +130,22 @@ provide version-negotiation hints to HTTP/QUIC clients. QUIC versions are
 four-octet sequences with no additional constraints on format. Syntax:
 
 ~~~ abnf
-quic = version-number
+quic = DQUOTE version-number [ "," version-number ] * DQUOTE
 version-number = 1*8HEXDIG; hex-encoded QUIC version
 ~~~
 
-Leading zeros SHOULD be omitted for brevity.  When multiple versions are
-supported, the "quic" parameter MAY be repeated multiple times in a single
-Alt-Svc entry.  For example, if a server supported both version 0x00000001 and
-the version rendered in ASCII as "Q034", it could specify the following header:
+For example, if a server supported both version 0x00000001 and the version
+rendered in ASCII as "Q034", it could specify the following header:
 
 ~~~ example
-Alt-Svc: hq=":49288";quic=1;quic=51303334
+Alt-Svc: hq=":49288";quic="1,51303334"
 ~~~
 
 Where multiple versions are listed, the order of the values reflects the
 server's preference (with the first value being the most preferred version).
-Origins SHOULD list only versions which are supported by the alternative, but
-MAY omit supported versions for any reason.
+Leading zeros SHOULD be omitted for brevity. Origins SHOULD list only versions
+which are supported by the alternative, but MAY omit supported versions for any
+reason.
 
 
 ## Connection Establishment {#connection-establishment}
