@@ -127,7 +127,10 @@ port.
 
 This document defines the "quic" parameter for Alt-Svc, which MAY be used to
 provide version-negotiation hints to HTTP/QUIC clients. QUIC versions are
-four-octet sequences with no additional constraints on format. Syntax:
+four-octet sequences with no additional constraints on format.  Leading zeros
+SHOULD be omitted for brevity.
+
+Syntax:
 
 ~~~ abnf
 quic = DQUOTE version-number [ "," version-number ] * DQUOTE
@@ -138,14 +141,16 @@ For example, if a server supported both version 0x00000001 and the version
 rendered in ASCII as "Q034", it could specify the following header:
 
 ~~~ example
-Alt-Svc: hq=":49288";quic="1,51303334"
+Alt-Svc: hq=":49288";quic="1,dadababa,51303334"
 ~~~
 
 Where multiple versions are listed, the order of the values reflects the
 server's preference (with the first value being the most preferred version).
-Leading zeros SHOULD be omitted for brevity. Origins SHOULD list only versions
-which are supported by the alternative, but MAY omit supported versions for any
-reason.
+Reserved versions MAY be listed, but unreserved versions which are not supported
+by the alternative SHOULD NOT be present in the list. Origins MAY omit supported
+versions for any reason.
+
+Clients MUST ignore any included versions which they do not support.
 
 
 ## Connection Establishment {#connection-establishment}
