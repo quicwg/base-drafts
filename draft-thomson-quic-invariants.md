@@ -119,9 +119,9 @@ protocol state between those endpoints.
 A QUIC packet is the content of the UDP datagrams exchanged by QUIC endpoints.
 This document describes the contents of those datagrams.
 
-QUIC defines two types of packet header: long and short.  Long packets are
-identified by the most significant bit of the first octet being set; short
-packets have that bit cleared.
+QUIC defines two types of packet header: long and short.  Packets with long
+headers are identified by the most significant bit of the first octet being set;
+packets with a short header have that bit cleared.
 
 Aside from the values described here, the payload of QUIC packets is
 version-specific and of arbitrary length.
