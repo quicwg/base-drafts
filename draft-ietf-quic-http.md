@@ -163,7 +163,7 @@ not support them), then attempt to connect to the alternative using the first
 version in the list which it does support.
 
 
-### QUIC-Only Origins
+### QUIC-Only Origins {#httpq}
 
 An HTTP endpoint where the authoritative endpoint is served over QUIC can be
 identified using the "httpq" URI scheme.
