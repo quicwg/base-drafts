@@ -656,13 +656,9 @@ client's Initial packet. Specifically:
                                    client_connection_id)
 
    client_handshake_secret =
-                      HKDF-Expand-Label(handshake_secret,
-                                        "QUIC client handshake secret",
-                                        "", Hash.length)
+      QHKDF-Expand(handshake_secret, "client hs", Hash.length)
    server_handshake_secret =
-                      HKDF-Expand-Label(handshake_secret,
-                                        "QUIC server handshake secret",
-                                        "", Hash.length)
+      QHKDF-Expand(handshake_secret, "server hs", Hash.length)
 ~~~
 
 The HKDF for the handshake secrets and keys derived from them uses the SHA-256
@@ -682,16 +678,15 @@ completion of the TLS handshake.  Data sent using 0-RTT keys might be replayed
 and so has some restrictions on its use, see {{using-early-data}}.  0-RTT keys
 are used after sending or receiving a ClientHello.
 
-The secret is exported from TLS using the exporter label "EXPORTER-QUIC 0-RTT
-Secret" and an empty context.  The size of the secret MUST be the size of the
-hash output for the PRF hash function negotiated by TLS.  This uses the TLS
+The secret is exported from TLS using the exporter label "EXPORTER-QUIC 0rtt"
+and an empty context.  The size of the secret MUST be the size of the hash
+output for the PRF hash function negotiated by TLS.  This uses the TLS
 early_exporter_secret.  The QUIC 0-RTT secret is only used for protection of
 packets sent by the client.
 
 ~~~
    client_0rtt_secret
-       = TLS-Exporter("EXPORTER-QUIC 0-RTT Secret"
-                      "", Hash.length)
+       = TLS-Exporter("EXPORTER-QUIC 0rtt", "", Hash.length)
 ~~~
 
 
@@ -703,89 +698,85 @@ keys for packets sent by the client, the other for packet protection keys on
 packets sent by the server.
 
 The initial client packet protection secret is exported from TLS using the
-exporter label "EXPORTER-QUIC client 1-RTT Secret"; the initial server packet
-protection secret uses the exporter label "EXPORTER-QUIC server 1-RTT Secret".
-Both exporters use an empty context.  The size of the secret MUST be the size of
-the hash output for the PRF hash function negotiated by TLS.
+exporter label "EXPORTER-QUIC client 1rtt"; the initial server packet protection
+secret uses the exporter label "EXPORTER-QUIC server 1rtt".  Both exporters use
+an empty context.  The size of the secret MUST be the size of the hash output
+for the PRF hash function negotiated by TLS.
 
 ~~~
-   client_pp_secret_0
-       = TLS-Exporter("EXPORTER-QUIC client 1-RTT Secret"
-                      "", Hash.length)
-   server_pp_secret_0
-       = TLS-Exporter("EXPORTER-QUIC server 1-RTT Secret"
-                      "", Hash.length)
+   client_pp_secret_0 =
+      TLS-Exporter("EXPORTER-QUIC client 1rtt", "", Hash.length)
+   server_pp_secret_0 =
+      TLS-Exporter("EXPORTER-QUIC server 1rtt", "", Hash.length)
 ~~~
 
 These secrets are used to derive the initial client and server packet protection
 keys.
 
 After a key update (see {{key-update}}), these secrets are updated using the
-HKDF-Expand-Label function defined in Section 7.1 of {{!TLS13}}.
-HKDF-Expand-Label uses the PRF hash function negotiated by TLS.  The replacement
-secret is derived using the existing Secret, a Label of "QUIC client 1-RTT
-Secret" for the client and "QUIC server 1-RTT Secret" for the server, an empty
-HashValue, and the same output Length as the hash function selected by TLS for
-its PRF.
+QHKDF-Expand function.  The QHKDF-Expand function is similar in definition to
+HKDF-Expand-Label defined in Section 7.1 of {{!TLS13}}, but it has a different
+base label and omits the hash argument.  QHKDF-Expand uses the PRF hash function
+negotiated by TLS.  The replacement secret is derived using the existing Secret,
+a Label of "client 1rtt" for the client and "server 1rtt" for the server, and
+the same output Length as the PRF hash function selected by TLS.
 
 ~~~
-   client_pp_secret_<N+1>
-       = HKDF-Expand-Label(client_pp_secret_<N>,
-                           "QUIC client 1-RTT Secret",
-                           "", Hash.length)
-   server_pp_secret_<N+1>
-       = HKDF-Expand-Label(server_pp_secret_<N>,
-                           "QUIC server 1-RTT Secret",
-                           "", Hash.length)
+client_pp_secret_<N+1> =
+  QHKDF-Expand(client_pp_secret_<N>, "client 1rtt", Hash.length)
+server_pp_secret_<N+1> =
+  QHKDF-Expand(server_pp_secret_<N>, "server 1rtt", Hash.length)
 ~~~
 
 This allows for a succession of new secrets to be created as needed.
 
-HKDF-Expand-Label uses HKDF-Expand {{!RFC5869}} with a specially formatted info
-parameter, as shown:
+HKDF-Expand-Label uses HKDF-Expand {{!RFC5869}} as shown:
 
 ~~~
-    HKDF-Expand-Label(Secret, Label, HashValue, Length) =
-         HKDF-Expand(Secret, HkdfLabel, Length)
+    QHKDF-Expand(Secret, Label, Length) =
+         HKDF-Expand(Secret, QuicHkdfLabel, Length)
+~~~
 
-    Where HkdfLabel is specified as:
+Where the info parameter, QuicHkdfLabel, is specified as:
 
+~~~
     struct {
         uint16 length = Length;
-        opaque label<10..255> = "tls13 " + Label;
-        uint8 hashLength;     // Always 0
-    } HkdfLabel;
+        opaque label<6..255> = "QUIC " + Label;
+        uint8 hashLength = 0;
+    } QuicHkdfLabel;
 ~~~
 
 For example, the client packet protection secret uses an info parameter of:
 
 ~~~
    info = (HashLen / 256) || (HashLen % 256) || 0x1f ||
-          "tls13 QUIC client 1-RTT secret" || 0x00
+          "QUIC client 1rtt" || 0x00
 ~~~
 
 
 ### Packet Protection Key and IV
 
 The complete key expansion uses an identical process for key expansion as
-defined in Section 7.3 of {{!TLS13}}, using different values for
-the input secret.  QUIC uses the AEAD function negotiated by TLS.
+defined in Section 7.3 of {{!TLS13}}, using different values for the input
+secret and labels.  QUIC uses the AEAD function negotiated by TLS.
 
 The packet protection key and IV used to protect the 0-RTT packets sent by a
 client are derived from the QUIC 0-RTT secret. The packet protection keys and
 IVs for 1-RTT packets sent by the client and server are derived from the current
-generation of client_pp_secret and server_pp_secret respectively.  The length of
-the output is determined by the requirements of the AEAD function selected by
-TLS. All ciphersuites currently used for QUIC have a 16-byte authentication
-tag and produce an ouput 16 bytes larger than their input.
-The key length is the AEAD key size.  As defined in Section 5.3 of
-{{!TLS13}}, the IV length is the larger of 8 or N_MIN (see Section
-4 of {{!AEAD=RFC5116}}; all ciphersuites defined in {{?TLS13}} have N_MIN set to
-12). For any secret S, the corresponding key and IV are derived as shown below:
+generation of client and server 1-RTT secrets (client_pp_secret_\<i> and
+server_pp_secret_\<i>) respectively.  The length of the output is determined by
+the requirements of the AEAD function selected by TLS.  All ciphersuites
+currently used for QUIC have a 16-byte authentication tag and produce an ouput
+16 bytes larger than their input.  The key length is the AEAD key size.  As
+defined in Section 5.3 of {{!TLS13}}, the IV length is the larger of 8 or N_MIN
+(see Section 4 of {{!AEAD=RFC5116}}; all ciphersuites defined in {{!TLS13}} have
+N_MIN set to 12). For any secret S, the corresponding key and IV are derived as
+shown below:
 
 ~~~
-   key = HKDF-Expand-Label(S, "key", "", key_length)
-   iv  = HKDF-Expand-Label(S, "iv", "", iv_length)
+   key = QHKDF-Expand(S, "key", key_length)
+   iv  = QHKDF-Expand(S, "iv", iv_length)
 ~~~
 
 The QUIC record protection initially starts without keying material.  When the
@@ -803,24 +794,24 @@ connection.  For example, if TLS is using the TLS_AES_128_GCM_SHA256, the
 AEAD_AES_128_GCM function is used.
 
 All QUIC packets other than Version Negotiation and Stateless Reset packets are
-protected with an AEAD algorithm {{!AEAD}}. Cleartext packets are protected
-with AEAD_AES_128_GCM and a key derived from the client's connection ID (see
-{{handshake-secrets}}).  This provides protection against off-path attackers and
-robustness against QUIC version unaware middleboxes, but not against on-path
-attackers.
+protected with an AEAD algorithm {{!AEAD}}. Prior to establishing a shared
+secret, packets are protected with AEAD_AES_128_GCM and a key derived from the
+client's connection ID (see {{handshake-secrets}}).  This provides protection
+against off-path attackers and robustness against QUIC version unaware
+middleboxes, but not against on-path attackers.
 
 Once TLS has provided a key, the contents of regular QUIC packets immediately
 after any TLS messages have been sent are protected by the AEAD selected by TLS.
 
-The key, K, is either the client packet protection key (client_pp_key_n) or the
-server packet protection key (server_pp_key_n), derived as defined in
+The key, K, is either the client packet protection key (client_pp_key_\<i>) or
+the server packet protection key (server_pp_key_\<i>), derived as defined in
 {{key-expansion}}.
 
 The nonce, N, is formed by combining the packet protection IV (either
-client_pp_iv_n or server_pp_iv_n) with the packet number.  The 64 bits of the
-reconstructed QUIC packet number in network byte order is left-padded with zeros
-to the size of the IV.  The exclusive OR of the padded packet number and the IV
-forms the AEAD nonce.
+client_pp_iv_\<i\> or server_pp_iv_\<i\>) with the packet number.  The 64 bits
+of the reconstructed QUIC packet number in network byte order is left-padded
+with zeros to the size of the IV.  The exclusive OR of the padded packet number
+and the IV forms the AEAD nonce.
 
 The associated data, A, for the AEAD is the contents of the QUIC header,
 starting from the flags octet in either the short or long header.
@@ -878,9 +869,8 @@ Section 7.7.1.1 of {{QUIC-TRANSPORT}} also requires a secret to compute packet
 number gaps on connection ID transitions. That secret is computed as:
 
 ~~~
-      packet_number_secret
-          = TLS-Exporter("EXPORTER-QUIC Packet Number Secret"
-                         "", Hash.length)
+packet_number_secret =
+  TLS-Exporter("EXPORTER-QUIC packet number", "", Hash.length)
 ~~~
 
 # Key Phases
@@ -968,13 +958,13 @@ keys.  An endpoint MUST generate ACK frames for these messages and send them in
 packets protected with handshake keys.
 
 A HelloRetryRequest handshake message might be used to reject an initial
-ClientHello.  A HelloRetryRequest handshake message is sent in a Server
-Stateless Retry packet; any second ClientHello that is sent in response uses a
-Client Initial packet type.  Neither packet is protected.  This is natural,
-because no new keying material will be available when these messages need to be
-sent.  Upon receipt of a HelloRetryRequest, a client SHOULD cease any
-transmission of 0-RTT data; 0-RTT data will only be discarded by any server that
-sends a HelloRetryRequest.
+ClientHello.  A HelloRetryRequest handshake message is sent in a Retry packet;
+any second ClientHello that is sent in response uses a Initial packet type.
+These packets are only protected with a predictable key (see
+{{handshake-secrets}}).  This is natural, because no shared secret will be
+available when these messages need to be sent.  Upon receipt of a
+HelloRetryRequest, a client SHOULD cease any transmission of 0-RTT data; 0-RTT
+data will only be discarded by any server that sends a HelloRetryRequest.
 
 The packet type ensures that protected packets are clearly distinguished from
 unprotected packets.  Loss or reordering might cause unprotected packets to
@@ -1130,15 +1120,22 @@ the transport will be lost at the server.  This includes the stream offset of
 stream 0, the packet number that the server selects, and any opportunity to
 measure round trip time.
 
-A server MUST send a TLS HelloRetryRequest in a Server Stateless Retry packet.
-Using a Server Stateless Retry packet causes the client to reset stream offsets.
-It also avoids the need for the server select an initial packet number, which
-would need to be remembered so that subsequent packets could be correctly
-numbered.
+A server MUST send a TLS HelloRetryRequest in a Retry packet.  Using a Retry
+packet causes the client to reset stream offsets.  It also avoids the need for
+the server select an initial packet number, which would need to be remembered so
+that subsequent packets could be correctly numbered.
 
-A HelloRetryRequest message MUST NOT be split between multiple Server Stateless
-Retry packets.  This means that HelloRetryRequest is subject to the same size
-constraints as a ClientHello (see {{clienthello-size}}).
+A HelloRetryRequest message MUST NOT be split between multiple Retry packets.
+This means that HelloRetryRequest is subject to the same size constraints as a
+ClientHello (see {{clienthello-size}}).
+
+A client might send multiple Initial packets in response to loss.  If a server
+sends a Retry packet in response to an Initial packet, it does not have to
+generate the same Retry packet each time.  Variations in Retry packet, if used
+by a client, could lead to multiple connections derived from the same
+ClientHello.  Reuse of the client nonce is not supported by TLS and could lead
+to security vulnerabilities.  Clients that receive multiple Retry packets MUST
+use only one and discard the remainder.
 
 
 ## NewSessionTicket Address Validation
@@ -1296,6 +1293,13 @@ establishment.  A `STREAM` frame carrying a TLS alert MAY be included in the
 same packet.
 
 
+### Address Verification
+
+In order to perform source-address verification before the handshake is
+complete, `PATH_CHALLENGE` and `PATH_RESPONSE` frames MAY be exchanged
+unprotected.
+
+
 ### Denial of Service with Unprotected Packets
 
 Accepting unprotected - specifically unauthenticated - packets presents a denial
@@ -1417,8 +1421,7 @@ quic_transport_parameters extension carries a TransportParameters when the
 version of QUIC defined in {{QUIC-TRANSPORT}} is used.
 
 The quic_transport_parameters extension is carried in the ClientHello and the
-EncryptedExtensions messages during the handshake.  The extension MAY be
-included in a NewSessionTicket message.
+EncryptedExtensions messages during the handshake.
 
 
 ## Priming 0-RTT
@@ -1574,7 +1577,8 @@ Issue and pull request numbers are listed with a leading octothorp.
 
 ## Since draft-ietf-quic-tls-08
 
-No significant changes.
+- Specify value for max_early_data_size to enable 0-RTT (#942)
+- Update key derivation function (#1003, #1004)
 
 ## Since draft-ietf-quic-tls-07
 
