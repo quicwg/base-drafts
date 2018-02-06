@@ -137,21 +137,26 @@ quic = DQUOTE version-number [ "," version-number ] * DQUOTE
 version-number = 1*8HEXDIG; hex-encoded QUIC version
 ~~~
 
-For example, if a server supported both version 0x00000001 and the version
-rendered in ASCII as "Q034", it could specify the following header:
-
-~~~ example
-Alt-Svc: hq=":49288";quic="1,dadababa,51303334"
-~~~
-
 Where multiple versions are listed, the order of the values reflects the
 server's preference (with the first value being the most preferred version).
 Reserved versions MAY be listed, but unreserved versions which are not supported
 by the alternative SHOULD NOT be present in the list. Origins MAY omit supported
 versions for any reason.
 
-Clients MUST ignore any included versions which they do not support.
+Clients MUST ignore any included versions which they do not support.  The "quic"
+parameter MUST NOT occur more than once; clients SHOULD process only the first
+occurrence.
 
+For example, if a server supported both version 0x00000001 and the version
+rendered in ASCII as "Q034", it could specify the following header:
+
+~~~ example
+Alt-Svc: hq=":49288";quic="1,1abadaba,51303334,0"
+~~~
+
+A client acting on this header would drop the reserved versions (because it does
+not support them), then attempt to connect to the alternative using the first
+version in the list which it does support.
 
 ## Connection Establishment {#connection-establishment}
 
