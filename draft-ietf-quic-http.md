@@ -127,27 +127,38 @@ port.
 
 This document defines the "quic" parameter for Alt-Svc, which MAY be used to
 provide version-negotiation hints to HTTP/QUIC clients. QUIC versions are
-four-octet sequences with no additional constraints on format. Syntax:
+four-octet sequences with no additional constraints on format.  Leading zeros
+SHOULD be omitted for brevity.
+
+Syntax:
 
 ~~~ abnf
-quic = version-number
+quic = DQUOTE version-number [ "," version-number ] * DQUOTE
 version-number = 1*8HEXDIG; hex-encoded QUIC version
-~~~
-
-Leading zeros SHOULD be omitted for brevity.  When multiple versions are
-supported, the "quic" parameter MAY be repeated multiple times in a single
-Alt-Svc entry.  For example, if a server supported both version 0x00000001 and
-the version rendered in ASCII as "Q034", it could specify the following header:
-
-~~~ example
-Alt-Svc: hq=":49288";quic=1;quic=51303334
 ~~~
 
 Where multiple versions are listed, the order of the values reflects the
 server's preference (with the first value being the most preferred version).
-Origins SHOULD list only versions which are supported by the alternative, but
-MAY omit supported versions for any reason.
+Reserved versions MAY be listed, but unreserved versions which are not supported
+by the alternative SHOULD NOT be present in the list. Origins MAY omit supported
+versions for any reason.
 
+Clients MUST ignore any included versions which they do not support.  The "quic"
+parameter MUST NOT occur more than once; clients SHOULD process only the first
+occurrence.
+
+For example, suppose a server supported both version 0x00000001 and the version
+rendered in ASCII as "Q034".  If it opted to include the reserved versions (from
+Section 4 of {{QUIC-TRANSPORT}}) 0x0 and 0x1abadaba, it could specify the
+following header:
+
+~~~ example
+Alt-Svc: hq=":49288";quic="1,1abadaba,51303334,0"
+~~~
+
+A client acting on this header would drop the reserved versions (because it does
+not support them), then attempt to connect to the alternative using the first
+version in the list which it does support.
 
 ## Connection Establishment {#connection-establishment}
 
