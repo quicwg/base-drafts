@@ -147,8 +147,10 @@ Clients MUST ignore any included versions which they do not support.  The "quic"
 parameter MUST NOT occur more than once; clients SHOULD process only the first
 occurrence.
 
-For example, if a server supported both version 0x00000001 and the version
-rendered in ASCII as "Q034", it could specify the following header:
+For example, suppose a server supported both version 0x00000001 and the version
+rendered in ASCII as "Q034".  If it opted to include the reserved versions (from
+Section 4 of {{QUIC-TRANSPORT}}) 0x0 and 0x1abadaba, it could specify the
+following header:
 
 ~~~ example
 Alt-Svc: hq=":49288";quic="1,1abadaba,51303334,0"
