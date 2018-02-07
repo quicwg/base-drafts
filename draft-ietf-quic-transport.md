@@ -786,10 +786,13 @@ Reset ({{stateless-reset}}) in response to further packets that it receives.
 
 For the packet header, the number of bits required to represent the packet
 number are reduced by including only the least significant bits of the packet
-number.  The encoded packet number is protected as described in {{QUIC-TLS}}.
-Protection of the packet number is removed prior to recovering the full packet
-number.  The full packet number is reconstructed at the receiver based on the
-largest packet number received on a successfully authenticated packet.
+number.
+
+The encoded packet number is protected as described in {{QUIC-TLS}}. Protection
+of the packet number is removed prior to recovering the full packet number. The
+full packet number is reconstructed at the receiver based on the largest packet
+number received on a successfully authenticated packet. Recovering the full
+packet number is necessary to successfully remove packet protection.
 
 Once packet number protection is removed, the packet number is decoded by
 finding the packet number value that is closest to the next expected packet.
