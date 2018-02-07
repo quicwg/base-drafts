@@ -383,12 +383,12 @@ RST_STREAM or STOP_SENDING frames, as appropriate) with an error type of
 HTTP_REQUEST_CANCELLED ({{http-error-codes}}).  When the client cancels a
 request or response, it indicates that the response is no longer of interest.
 
-When the server cancels (HTTP_REQUEST_CANCELLED) either direction of the request
-stream, it indicates that no application processing was performed.  The client
-can treat requests cancelled by the server as though they had never been sent at
-all, thereby allowing them to be retried later on a new connection.  Servers
-MUST NOT use the HTTP_REQUEST_CANCELLED status for requests which were partially
-or fully processed.
+When the server cancels either direction of the request stream using
+HTTP_REQUEST_CANCELLED, it indicates that no application processing was
+performed.  The client can treat requests cancelled by the server as though they
+had never been sent at all, thereby allowing them to be retried later on a new
+connection.  Servers MUST NOT use the HTTP_REQUEST_CANCELLED status for requests
+which were partially or fully processed.
 
   Note:
   : In this context, "processed" means that some data from the stream was
