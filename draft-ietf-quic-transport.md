@@ -1481,11 +1481,9 @@ connection if the integrity check fails with a PROTOCOL_VIOLATION error code.
 
 ## Connection Migration {#migration}
 
-QUIC connections are identified by 64-bit connection IDs. QUIC's connection IDs
-allow connections to survive changes to the client's address (client's IP
-address and/or port), such as those caused by a client migrating to a new
-network or a NAT rebinding changing the client's public address.
-
+QUIC's connection IDs allow connections to survive changes to the client's
+address (client's IP address and/or port), such as those caused by a client
+migrating to a new network.
 
 ### Path Validation and PMTU Verification
 
