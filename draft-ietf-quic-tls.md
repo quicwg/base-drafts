@@ -730,7 +730,7 @@ server_pp_secret_<N+1> =
 
 This allows for a succession of new secrets to be created as needed.
 
-HKDF-Expand-Label uses HKDF-Expand {{!RFC5869}} as shown:
+QHKDF-Expand uses HKDF-Expand {{!RFC5869}} as shown:
 
 ~~~
     QHKDF-Expand(Secret, Label, Length) =
