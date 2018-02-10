@@ -750,7 +750,7 @@ Where the info parameter, QuicHkdfLabel, is specified as:
 For example, the client packet protection secret uses an info parameter of:
 
 ~~~
-   info = (HashLen / 256) || (HashLen % 256) || 0x1f ||
+   info = (HashLen / 256) || (HashLen % 256) || 0x10 ||
           "QUIC client 1rtt" || 0x00
 ~~~
 
