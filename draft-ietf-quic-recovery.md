@@ -959,10 +959,13 @@ Invoked from loss detection's OnPacketAcked and is supplied with
 acked_packet from sent_packets.
 
 ~~~
+   InRecovery()
+     return acked_packet.packet_number <= end_of_recovery
+
    OnPacketAckedCC(acked_packet):
      // Remove from bytes_in_flight.
      bytes_in_flight -= acked_packet.bytes
-     if (acked_packet.packet_number < end_of_recovery):
+     if (InRecovery()):
        // Do not increase congestion window in recovery period.
        return
      if (congestion_window < ssthresh):
