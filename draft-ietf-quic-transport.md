@@ -1399,7 +1399,7 @@ connection.  TLS provides the tools that support the feature, but basic
 validation is performed by the core transport protocol.
 
 A different type of source address validation is performed after a connection
-migration, see {{migration-validate}}.
+migration, see {{migrate-validate}}.
 
 
 ### Client Address Validation Procedure
@@ -1602,7 +1602,7 @@ immediately migrating if
 * the packet is a "non-probing" packet. That is, it contains a frame other than
 PATH_CHALLENGE, PATH_RESPONSE, or PADDING; and
 
-* the packet carries a packet number that is the largest seen thus far. 
+* the packet carries a packet number that is the largest seen thus far.
 
 Upon receiving such a packet, the server MUST abandon any path validation it is
 performing with other addresses on the expectation that those validations are
@@ -1825,9 +1825,9 @@ state to draining, but it otherwise has no impact.
 An endpoint could receive packets from a new source address, indicating a
 connection migration ({{migration}}), while in the closing period. An endpoint
 in the closing state MUST strictly limit the number of packets it sends to this
-new address as though the address were not validated (see
-{{migration-validate}}). A server in the closing state MAY instead choose to
-discard packets received from a new source address.
+new address since the address is not validated (see {{migrate-validate}}). A
+server in the closing state MAY instead choose to discard packets received from
+a new source address.
 
 
 ### Idle Timeout
