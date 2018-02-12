@@ -2103,6 +2103,12 @@ of the maximum amount of data that can be sent on a stream.
 An endpoint that receives a MAX_STREAM_DATA frame for a receive-only stream
 MUST terminate the connection with error PROTOCOL_VIOLATION.
 
+An endpoint that receives a MAX_STREAM_DATA frame for a send-only stream
+it has not opened MUST terminate the connection with error PROTOCOL_VIOLATION.
+
+Note that an endpoint may legally receive a MAX_STREAM_DATA frame on a
+bidirectional stream it has not opened.
+
 The frame is as follows:
 
 ~~~
