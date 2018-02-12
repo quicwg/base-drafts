@@ -1974,6 +1974,9 @@ After sending a RST_STREAM, an endpoint ceases transmission and retransmission
 of STREAM frames on the identified stream.  A receiver of RST_STREAM can discard
 any data that it already received on that stream.
 
+An endpoint that receives a RST_STREAM frame for a send-only stream MUST
+terminate the connection with error PROTOCOL_VIOLATION.
+
 The RST_STREAM frame is as follows:
 
 ~~~
@@ -2096,6 +2099,15 @@ change in the initial limits (see {{zerortt-parameters}}).
 
 The MAX_STREAM_DATA frame (type=0x05) is used in flow control to inform a peer
 of the maximum amount of data that can be sent on a stream.
+
+An endpoint that receives a MAX_STREAM_DATA frame for a receive-only stream
+MUST terminate the connection with error PROTOCOL_VIOLATION.
+
+An endpoint that receives a MAX_STREAM_DATA frame for a send-only stream
+it has not opened MUST terminate the connection with error PROTOCOL_VIOLATION.
+
+Note that an endpoint may legally receive a MAX_STREAM_DATA frame on a
+bidirectional stream it has not opened.
 
 The frame is as follows:
 
@@ -2225,6 +2237,9 @@ A sender SHOULD send a STREAM_BLOCKED frame (type=0x09) when it wishes to send
 data, but is unable to due to stream-level flow control.  This frame is
 analogous to BLOCKED ({{frame-blocked}}).
 
+An endpoint that receives a STREAM_BLOCKED frame for a send-only stream MUST
+terminate the connection with error PROTOCOL_VIOLATION.
+
 The STREAM_BLOCKED frame is as follows:
 
 ~~~
@@ -2327,6 +2342,9 @@ Stateless Reset Token:
 An endpoint may use a STOP_SENDING frame (type=0x0c) to communicate that
 incoming data is being discarded on receipt at application request.  This
 signals a peer to abruptly terminate transmission on a stream.
+
+An endpoint that receives a STOP_SENDING frame for a receive-only stream MUST
+terminate the connection with error PROTOCOL_VIOLATION.
 
 The STOP_SENDING frame is as follows:
 
@@ -2643,6 +2661,9 @@ are present in the frame.
 * The FIN bit (0x01) of the frame type is set only on frames that contain the
   final offset of the stream.  Setting this bit indicates that the frame
   marks the end of the stream.
+
+An endpoint that receives a STREAM frame for a send-only stream MUST terminate
+the connection with error PROTOCOL_VIOLATION.
 
 A STREAM frame is shown below.
 
