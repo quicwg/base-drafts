@@ -861,67 +861,62 @@ different IP or port at either endpoint, due to NAT rebinding or mobility, as
 described in {{migration}}.  Finally a connection may be terminated by either
 endpoint, as described in {{termination}}.
 
-
 ## Matching Packets to Connections {#packet-handling}
 
 Incoming packets are classified on receipt.  Packets can either be associated
 with an existing connection, or - for servers - potentially create a new
 connection.
 
-Hosts handle packets that can be associated with an existing connection
-according to the current state of that connection. Both short form packets
-without connection IDs and long-form packets for connections that have
-incomplete cryptographic handshakes are associated with an existing
-connection using the tuple of source and destination IP addresses and ports.
-Other packets are associated with existing connections using connection ID
-the connection ID in the header; this might include connection IDs that were
-advertised using NEW_CONNECTION_ID ({{frame-new-connection-id}}).
+First, hosts try to associate the packet with an existing connection. If the
+packet has a connection ID corresponding to an existing connection, QUIC
+processes that packet accordingly. Note that a NEW_CONNECTION_ID frame
+({{frame-new-connection-id}}) would associate more than one connection ID
+with a connection.
 
-Clients SHOULD discard any packet that cannot be associated with an existing
-connection.  Discarded packets MAY be logged for diagnostic or security
-purposes.
+If there is no connection ID, but the packet matches the address/port tuple
+of a connection where the host did not require connection IDs, QUIC processes
+the packet as part of that connection. Endpoints MUST drop packets that omit
+connection IDs if they do not meet both of these criteria.
 
-If a server receives a packet not associated with an existing connection, it
-executes the following steps, in order:
 
-1. The server MUST check if the packet uses a short form header, or is not
-long enough for the size required for the first packet of any QUIC version
-that the server supports. See {{packet-size}} for the definition of packet size
-and the minimum size of the first packet in this version of QUIC. If either
-condition is true, the packet cannot create a new connection. In this case, the
-server MUST either buffer the packet (see {{handshake-buffer}}), send a
-stateless reset ({{stateless-reset}}), or silently drop it.
+### Client-Specific Behaviors {#client-specific-behaviors}
 
-2. Otherwise, the server checks the version field in the long header. If the
-server does not support the chosen version, it MUST send a Version
-Negotiation packet as described in {{send-vn}}.
+If a client receives a packet with an unknown connection ID, and it matches
+the tuple of a connection with no received packets, it is a reply to an
+Initial packet with a server-generated connection ID and will be processed
+accordingly. Clients SHOULD discard any packets with new connection IDs that
+do not meet these criteria.
 
-3. If the server supports the version, the server operates in accordance with
-the specification of that version. For the version described in this
-specification, it checks if the packet is a correctly formatted Initial packet.
-If so, the server MUST proceed with the handshake ({{handshake}}).  This
-commits the server to the version that the client selected. If not an Initial
-packet, the server MUST either buffer the packet or silently drop it.
+Note that a successfully associated packet may be a Version Negotiation
+packet, which is handled in accordance with {{handle-vn}}. 
 
-### Handshake Buffering {#handshake-buffer}
+Due to packet reordering or loss, clients might receive packets associated
+with a connection for which it does not yet have the keys to decrypt it.
+Clients MAY drop these packets, or MAY buffer them in anticipation of
+later packets that allow it to compute the key.
 
-Due to packet reordering or loss, subsequent packets might arrive at the server
-prior to the Initial packet. As described above, servers MAY buffer these
-packets in anticipation of the Initial packet arriving later. This is
-especially useful for 0-RTT packets that routinely accompany Initial packets.
 
-Buffering ensures that data is not lost, which improves performance; conversely,
-discarding these packets could create false loss signals for the congestion
-controllers.  However, limiting the number and size of buffered packets might be
-needed to prevent exposure to denial of service.
+### Server-Specific Behaviors {#server-specific-behaviors}
 
-Servers MUST NOT send packets in response to these buffered packets until
-the initial packet arrives.
+If a server receives a packet with an unknown connection ID, an unsupported
+version, and is long enough to be an Initial packet for some version
+supported by the server, it SHOULD send a Version Negotiation packet as
+described in {{send-vn}}.
 
-In this version of QUIC, clients cannot send short form headers prior to a
-response from the server. Servers that do not support a version of QUIC that
-allows early short headers MUST either respond with a stateless reset or drop
-the packet silently.
+Servers MUST drop other packets that contain unsupported versions.
+
+If the packet is a supported version, and an Initial Packet fully
+conforming with the specification, the server MUST proceed with the
+handshake ({{handshake}}).  This commits the server to the version that the
+client selected.
+
+If the packet is a supported version, and a Handshake or 0RTT packet, the
+server MAY buffer a limited number of these packets in anticipation of
+a late-arriving Initial Packet. In the event the server later generates
+a RETRY packet, this buffer should be purged. Servers MUST NOT send packets
+in response to these buffered packets until the Initial packet arrives.
+
+Servers MUST drop incoming packets under all other circumstances.
 
 ## Version Negotiation
 
@@ -946,6 +941,7 @@ This system allows a server to process packets with unsupported versions without
 retaining state.  Though either the Initial packet or the version negotiation
 packet that is sent in response could be lost, the client will send new packets
 until it successfully receives a response or it abandons the connection attempt.
+
 
 ### Handling Version Negotiation Packets {#handle-vn}
 
@@ -975,9 +971,9 @@ Version Negotiation packet.
 A client MUST ignore a Version Negotiation packet that lists the client's chosen
 version.
 
-Version negotiation packets have no cryptographic protection. The
-result of the negotiation MUST be revalidated as part of the
-cryptographic handshake (see {{version-validation}}).
+Version negotiation packets have no cryptographic protection. The result of the
+negotiation MUST be revalidated as part of the cryptographic handshake (see
+{{version-validation}}).
 
 
 ### Using Reserved Versions
