@@ -2656,8 +2656,8 @@ are present in the frame.
   final offset of the stream.  Setting this bit indicates that the frame
   marks the end of the stream.
 
-An endpoint that receives a STREAM frame for a send-only stream MUST terminate the
-connection with error PROTOCOL_VIOLATION.
+An endpoint that receives a STREAM frame for a send-only stream MUST terminate
+the connection with error PROTOCOL_VIOLATION.
 
 A STREAM frame is shown below.
 
