@@ -2767,8 +2767,12 @@ discussed in more detail in {{QUIC-RECOVERY}}.
 QUIC packets that are determined to be lost are not retransmitted whole. The
 same applies to the frames that are contained within lost packets. Instead, the
 information that might be carried in frames is sent again in new frames as
-needed. New frames and packets are used to carry information that is determined
-to have been lost.
+needed.
+
+New frames and packets are used to carry information that is determined to have
+been lost.  In general, information is sent again when a packet containing that
+information is determined to be lost and sending ceases when a packet
+containing that information is acknowledged.
 
 * Application data sent in STREAM frames is retransmitted in new STREAM frames
   unless the endpoint has sent a RST_STREAM for that stream.  Once an endpoint
@@ -2806,26 +2810,31 @@ to have been lost.
   endpoint SHOULD stop sending MAX_STREAM_DATA frames when the receive stream
   enters a "Size Known" state.
 
-* The maximum stream ID is sent in MAX_STREAM_ID frames.  Like MAX_DATA, an
-  updated value is sent when a packet containing the most recent MAX_STREAM_ID
-  frame is declared lost or when the limit is updated, with care taken to
-  prevent the frame from being sent too often.
+* The maximum stream ID for a stream of a given type is sent in MAX_STREAM_ID
+  frames.  Like MAX_DATA, an updated value is sent when a packet containing the
+  most recent MAX_STREAM_ID for a stream type frame is declared lost or when
+  the limit is updated, with care taken to prevent the frame from being sent
+  too often.
 
 * Blocked signals are carried in BLOCKED, STREAM_BLOCKED, and STREAM_ID_BLOCKED
-  frames until acknowledged, but only while the endpoint is blocked on the
-  corresponding limit.  These frames always include the limit that is causing
-  blocking at the time that they are transmitted.
+  frames. BLOCKED streams have connection scope, STREAM_BLOCKED frames have
+  stream scope, and STREAM_ID_BLOCKED frames are scoped to a specific stream
+  type. New frames are sent if packets containing the most recent frame for a
+  scope is lost, but only while the endpoint is blocked on the corresponding
+  limit. These frames always include the limit that is causing blocking at the
+  time that they are transmitted.
 
-* A liveness or path validation check using PATH_CHALLENGE frames is sent until
-  acknowledged or until there is no remaining need for liveness or path
-  validation checking.  PATH_CHALLENGE frames with a payload SHOULD include a
-  different payload each time they are sent.
+* A liveness or path validation check using PATH_CHALLENGE frames is sent
+  periodically until a matching PATH_RESPONSE frame is received or until there
+  is no remaining need for liveness or path validation checking. PATH_CHALLENGE
+  frames include a different payload each time they are sent.
 
 * Responses to path validation using PATH_RESPONSE frames are sent just once.
   A new PATH_CHALLENGE frame will be sent if another PATH_RESPONSE frame is
   needed.
 
-* New connection IDs are sent in NEW_CONNECTION_ID frames until acknowledged.
+* New connection IDs are sent in NEW_CONNECTION_ID frames and retransmitted if
+  the packet containing them is lost.
 
 * PADDING frames contain no information, so lost PADDING frames do not require
   repair.
