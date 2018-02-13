@@ -888,33 +888,32 @@ accordingly. Clients SHOULD discard any packets with new connection IDs that
 do not meet these criteria.
 
 Note that a successfully associated packet may be a Version Negotiation
-packet, which is handled in accordance with {{handle-vn}}. 
+packet, which is handled in accordance with {{handle-vn}}.
 
-Due to packet reordering or loss, clients might receive packets associated
-with a connection for which it does not yet have the keys to decrypt it.
-Clients MAY drop these packets, or MAY buffer them in anticipation of
-later packets that allow it to compute the key.
+Due to packet reordering or loss, clients might receive packets for a
+connection encrypted with a key it has not yet computed. Clients MAY drop
+these packets, or MAY buffer them in anticipation of later packets that
+allow it to compute the key.
 
 
 ### Server-Specific Behaviors {#server-specific-behaviors}
 
-If a server receives a packet with an unknown connection ID, an unsupported
-version, and is long enough to be an Initial packet for some version
-supported by the server, it SHOULD send a Version Negotiation packet as
-described in {{send-vn}}.
+If a server receives a packet that has an unknown connection ID, an
+unsupported version, and a sufficient length to be an Initial packet for
+some version supported by the server, it SHOULD send a Version Negotiation
+packet as described in {{send-vn}}.
 
 Servers MUST drop other packets that contain unsupported versions.
 
-If the packet is a supported version, and an Initial Packet fully
-conforming with the specification, the server MUST proceed with the
-handshake ({{handshake}}).  This commits the server to the version that the
-client selected.
+If the packet is a supported version, and an Initial packet fully
+conforming with the specification, the server proceeds with the handshake
+({{handshake}}).  This commits the server to the version that the client
+selected.
 
-If the packet is a supported version, and a Handshake or 0RTT packet, the
-server MAY buffer a limited number of these packets in anticipation of
-a late-arriving Initial Packet. In the event the server later generates
-a RETRY packet, this buffer should be purged. Servers MUST NOT send packets
-in response to these buffered packets until the Initial packet arrives.
+If the packet is a supported version and a 0-RTT packet, the server MAY
+buffer a limited number of these packets in anticipation of a late-arriving
+Initial Packet. Clients are forbidden from sending Handshake packets prior
+to receiving a server response, so servers SHOULD ignore any such packets.
 
 Servers MUST drop incoming packets under all other circumstances.
 
@@ -922,7 +921,7 @@ Servers MUST drop incoming packets under all other circumstances.
 
 Version negotiation ensures that client and server agree to a QUIC version
 that is mutually supported. A server sends a Version Negotiation packet in
-response to a packet that might initiate a new connection, see
+response to each packet that might initiate a new connection, see
 {{packet-handling}} for details.
 
 The size of the first packet sent by a client will determine whether a server
@@ -938,7 +937,7 @@ server responds with a Version Negotiation packet ({{packet-version}}).  This
 includes a list of versions that the server will accept.
 
 This system allows a server to process packets with unsupported versions without
-retaining state.  Though either the Initial packet or the version negotiation
+retaining state.  Though either the Initial packet or the Version Negotiation
 packet that is sent in response could be lost, the client will send new packets
 until it successfully receives a response or it abandons the connection attempt.
 
