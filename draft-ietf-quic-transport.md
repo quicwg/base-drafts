@@ -1916,10 +1916,8 @@ Note that Stateless Reset messages do not have any cryptographic protection.
 
 # Frame Types and Formats
 
-As described in {{frames}}, packets contain one or more frames.  We now
-describe the various QUIC frame types that can be present in a packet. The use
-of these frames and various frame header bits are described in subsequent
-sections.
+As described in {{frames}}, packets contain one or more frames. This section
+describes the format and semantics of the core QUIC frame types.
 
 
 ## Variable-Length Integer Encoding {#integer-encoding}
@@ -2766,27 +2764,27 @@ discussed in more detail in {{QUIC-RECOVERY}}.
 
 ## Retransmission of Information
 
-QUIC packets that are determined to be lost are never retransmitted whole.  The
-same applies to the frames that are contained within lost packets.  Instead, the
-different types of information that might be carried in frames is sent again as
-needed.  New frames and packets are used to carry information that is determined
+QUIC packets that are determined to be lost are not retransmitted whole. The
+same applies to the frames that are contained within lost packets. Instead, the
+information that might be carried in frames is sent again in new frames as
+needed. New frames and packets are used to carry information that is determined
 to have been lost.
 
 * Application data sent in STREAM frames is retransmitted in new STREAM frames
   unless the endpoint has sent a RST_STREAM for that stream.  Once an endpoint
   sends a RST_STREAM frame, no further STREAM frames are needed.
 
-* The most recent set of acknowledgments is sent in ACK frames.  An ACK frame
+* The most recent set of acknowledgments are sent in ACK frames.  An ACK frame
   SHOULD contain all unacknowledged acknowledgments, as described in
   {{sending-ack-frames}}.
 
-* Cancellation of stream transmission, as carried in a RST_STREAM frame, is sent
-  until acknowledged or until acknowledgments for all stream data is received
-  from the peer (that is, either the "Reset Recvd" or "Data Recvd" state is
-  reached on the send stream).  The content of a RST_STREAM frame MUST NOT
-  change when it is sent again.
+* Cancellation of stream transmission, as carried in a RST_STREAM frame, is
+  sent until acknowledged or until all stream data is acknowledged by the peer
+  (that is, either the "Reset Recvd" or "Data Recvd" state is reached on the
+  send stream). The content of a RST_STREAM frame MUST NOT change when it is
+  sent again.
 
-* Similarly, requests to cancel stream transmission, as encoded in a
+* Similarly, a request to cancel stream transmission, as encoded in a
   STOP_SENDING frame, is sent until the receive stream enters either a "Data
   Recvd" or "Reset Recvd" state, see {{solicited-state-transitions}}.
 
@@ -2794,25 +2792,31 @@ to have been lost.
   APPLICATION_CLOSE frames, are not sent again when packet loss is detected, but
   as described in {{termination}}.
 
-* The current maximum data offset is sent in MAX_DATA frames until acknowledged.
-  Note that increases to the offset might separately cause new MAX_DATA frames
-  to be sent.  Care is necessary to limit the number of times this frame is
-  sent.
+* The current connection maximum data is sent in MAX_DATA frames. An updated
+  value is sent in a MAX_DATA frame if the packet containing the most recently
+  sent MAX_DATA frame is declared lost, or when the endpoint decides to update
+  the limit.  Care is necessary to avoid sending this frame too often as the
+  limit can increase frequently and cause an unnecessarily large number of
+  MAX_DATA frames to be sent.
 
-* The current maximum stream data offset is sent in MAX_STREAM_DATA frames until
-  acknowledged or the receive stream enters a "Size Known" state.  Like
-  MAX_DATA, endpoints need to limit the rate at which this frame is sent.
+* The current maximum stream data offset is sent in MAX_STREAM_DATA frames.
+  Like MAX_DATA, an updated value is sent when the packet containing
+  the most recent MAX_STREAM_DATA frame for a stream is lost or when the limit
+  is updated, with care taken to prevent the frame from being sent too often. An
+  endpoint SHOULD stop sending MAX_STREAM_DATA frames when the receive stream
+  enters a "Size Known" state.
 
-* The maximum stream ID is sent in MAX_STREAM_ID frames until acknowledged.
-  Like MAX_DATA and MAX_STREAM_DATA, endpoints might need to limit the rate at
-  which this frame is sent.
+* The maximum stream ID is sent in MAX_STREAM_ID frames.  Like MAX_DATA, an
+  updated value is sent when a packet containing the most recent MAX_STREAM_ID
+  frame is declared lost or when the limit is updated, with care taken to
+  prevent the frame from being sent too often.
 
 * Blocked signals are carried in BLOCKED, STREAM_BLOCKED, and STREAM_ID_BLOCKED
   frames until acknowledged, but only while the endpoint is blocked on the
   corresponding limit.  These frames always include the limit that is causing
   blocking at the time that they are transmitted.
 
-* An liveness or path validation check using PATH_CHALLENGE frames is sent until
+* A liveness or path validation check using PATH_CHALLENGE frames is sent until
   acknowledged or until there is no remaining need for liveness or path
   validation checking.  PATH_CHALLENGE frames with a payload SHOULD include a
   different payload each time they are sent.
@@ -2823,8 +2827,8 @@ to have been lost.
 
 * New connection IDs are sent in NEW_CONNECTION_ID frames until acknowledged.
 
-* Note that PADDING frames contain no information, so loss of PADDING frames
-  does not require repair.
+* PADDING frames contain no information, so lost PADDING frames do not require
+  repair.
 
 Upon detecting losses, a sender MUST take appropriate congestion control action.
 The details of loss detection and congestion control are described in
