@@ -2960,8 +2960,8 @@ data to a peer.
 
 ~~~
        o
-       | Open Stream
-       | Open Bidirectional Receive Stream
+       | Open Stream (Sending)
+       | Open Bidirectional Stream (Receiving)
        v
    +-------+
    | Open  | Send RST_STREAM
@@ -3049,7 +3049,7 @@ application protocol some of which cannot be observed by the sender.
 ~~~
        o
        | Recv STREAM / STREAM_BLOCKED / RST_STREAM
-       | Open Bidirectional Send Stream
+       | Open Bidirectional Stream (Sending)
        | Recv MAX_STREAM_DATA
        v
    +-------+
