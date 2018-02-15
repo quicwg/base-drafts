@@ -314,7 +314,7 @@ brute force in exchange a small amount of additional space.  For example, a set
 of pairs (of indices), representing non-overlapping sub-ranges can be used.
 Each operation (add, or query) can be done within O(log M) complexity.  Here set
 size M is the number of sub-ranges. In practice M would be very small, as most
-table entries would be concentrated in the first sub-range [1, M].
+table entries would be concentrated in the first sub-range `[1,M]`.
 
 To track blocked streams, an ordered map (e.g. multi-map) from `Depends Index`
 values to streams can be used.  Whenever the decoder processes a header block,
