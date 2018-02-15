@@ -42,6 +42,16 @@ to HoL blocking, because of HPACK's assumption of in-order delivery.  This draft
 defines QCRAM, a variation of HPACK and mechanisms in the HTTP/QUIC mapping that
 allow the flexibility to avoid header-compression-induced HoL blocking.
 
+--- note_Note_to_Readers
+
+Discussion of this draft takes place on the QUIC working group mailing list
+(quic@ietf.org), which is archived at
+<https://mailarchive.ietf.org/arch/search/?email_list=quic>.
+
+Working Group information can be found at <https://github.com/quicwg>; source
+code and issues list for this draft can be found at
+<https://github.com/quicwg/base-drafts/labels/-qcram>.
+
 --- middle
 
 # Introduction
