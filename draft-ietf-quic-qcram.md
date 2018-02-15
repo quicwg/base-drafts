@@ -103,7 +103,7 @@ PUSH_PROMISE frames (see {{hq-frames}}).
 If a header block contains no vulnerable header fields, BLOCKING MUST be 0.
 This implies that the header fields are represented either as references
 to dynamic table entries which are known to have been received, or as
-Literal header fields (see {{RFC7541}} Section 6.2).
+Literal header fields (see Section 6.2 of {{RFC7541}} ).
 
 If a header block contains any header field which references dynamic table
 state which the peer might not have received yet, the BLOCKING flag MUST be
@@ -362,7 +362,7 @@ the number of concurrently blocked streams.
 
 ### Fixed overhead.
 
-HPACK defines overhead as 32 bytes ({{!RFC7541}} Section 4.1).  As described
+HPACK defines overhead as 32 bytes ({{!RFC7541}}, Section 4.1).  As described
 above, QCRAM adds some per-connection state, and possibly some per-entry state
 to track acknowledgment status and eviction reference count.  A larger value
 than 32 might be more accurate for QCRAM.
