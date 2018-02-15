@@ -867,7 +867,7 @@ Incoming packets are classified on receipt.  Packets can either be associated
 with an existing connection, or - for servers - potentially create a new
 connection.
 
-First, hosts try to associate the packet with an existing connection. If the
+Hosts try to associate the packet with an existing connection. If the
 packet has a connection ID corresponding to an existing connection, QUIC
 processes that packet accordingly. Note that a NEW_CONNECTION_ID frame
 ({{frame-new-connection-id}}) would associate more than one connection ID
@@ -879,7 +879,7 @@ the packet as part of that connection. Endpoints MUST drop packets that omit
 connection IDs if they do not meet both of these criteria.
 
 
-### Client-Specific Behaviors {#client-specific-behaviors}
+### Client Packet Handling {#client-pkt-handling}
 
 If a client receives a packet with an unknown connection ID, and it matches
 the tuple of a connection with no received packets, it is a reply to an
@@ -896,24 +896,29 @@ these packets, or MAY buffer them in anticipation of later packets that
 allow it to compute the key.
 
 
-### Server-Specific Behaviors {#server-specific-behaviors}
+### Server Packet Handling {#server-pkt-handling}
 
-If a server receives a packet that has an unknown connection ID, an
-unsupported version, and a sufficient length to be an Initial packet for
-some version supported by the server, it SHOULD send a Version Negotiation
-packet as described in {{send-vn}}.
+If a server receives a packet that has an unsupported version. and a
+sufficient length to be an Initial packet for some version supported
+by the server, it SHOULD send a Version Negotiation packet as
+described in {{send-vn}}. Servers MAY rate control these packets to
+avoid storms of Version Negotiaion packets.
 
 Servers MUST drop other packets that contain unsupported versions.
 
-If the packet is a supported version, and an Initial packet fully
-conforming with the specification, the server proceeds with the handshake
-({{handshake}}).  This commits the server to the version that the client
-selected.
+Packets with a supported version, or no version field, are matched to
+a connection as described in {{packet-handling}}. If not matched, the
+server continues below.
 
-If the packet is a supported version and a 0-RTT packet, the server MAY
-buffer a limited number of these packets in anticipation of a late-arriving
-Initial Packet. Clients are forbidden from sending Handshake packets prior
-to receiving a server response, so servers SHOULD ignore any such packets.
+If the packet is an Initial packet fully conforming with the
+specification, the server proceeds with the handshake ({{handshake}}).
+This commits the server to the version that the client
+selected. 
+
+If the packet is a 0-RTT packet, the server MAY buffer a limited
+number of these packets in anticipation of a late-arriving Initial
+Packet. Clients are forbidden from sending Handshake packets prior to 
+receiving a server response, so servers SHOULD ignore any such packets.
 
 Servers MUST drop incoming packets under all other circumstances.
 
