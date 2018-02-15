@@ -32,8 +32,8 @@ author:
 
 --- abstract
 
-This specification defines QCRAM, a compression format for efficiently 
-representing HTTP header fields, to be used in HTTP over QUIC. This is a 
+This specification defines QCRAM, a compression format for efficiently
+representing HTTP header fields, to be used in HTTP over QUIC. This is a
 variation of HPACK header compression that avoids head-of-line blocking.
 
 --- middle
