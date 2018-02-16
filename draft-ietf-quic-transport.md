@@ -898,11 +898,11 @@ allow it to compute the key.
 
 ### Server Packet Handling {#server-pkt-handling}
 
-If a server receives a packet that has an unsupported version. and a
+If a server receives a packet that has an unsupported version and
 sufficient length to be an Initial packet for some version supported
 by the server, it SHOULD send a Version Negotiation packet as
 described in {{send-vn}}. Servers MAY rate control these packets to
-avoid storms of Version Negotiaion packets.
+avoid storms of Version Negotiation packets.
 
 Servers MUST drop other packets that contain unsupported versions.
 
