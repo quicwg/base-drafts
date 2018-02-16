@@ -913,11 +913,11 @@ server continues below.
 If the packet is an Initial packet fully conforming with the
 specification, the server proceeds with the handshake ({{handshake}}).
 This commits the server to the version that the client
-selected. 
+selected.
 
 If the packet is a 0-RTT packet, the server MAY buffer a limited
 number of these packets in anticipation of a late-arriving Initial
-Packet. Clients are forbidden from sending Handshake packets prior to 
+Packet. Clients are forbidden from sending Handshake packets prior to
 receiving a server response, so servers SHOULD ignore any such packets.
 
 Servers MUST drop incoming packets under all other circumstances.
