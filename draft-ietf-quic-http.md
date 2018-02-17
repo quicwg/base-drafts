@@ -344,18 +344,9 @@ abort a response in progress as a result of receiving a solicited RST_STREAM.
 
 ### Header Compression
 
-HTTP/QUIC uses HPACK header compression as described in {{!RFC7541}}. HPACK was
-designed for HTTP/2 with the assumption of in-order delivery such as that
-provided by TCP. A sequence of encoded header blocks must arrive (and be
-decoded) at an endpoint in the same order in which they were encoded. This
-ensures that the dynamic state at the two endpoints remains in sync.
-
-QUIC streams provide in-order delivery of data sent on those streams, but there
-are no guarantees about order of delivery between streams. QUIC anticipates
-moving to a modified version of HPACK without this assumption.  In the meantime,
-by fixing the size of the dynamic table at zero, HPACK can be used in an
-unordered environment.
-
+HTTP/QUIC uses QCRAM header compression as described in [QCRAM], a variation of
+HPACK which allows the flexibility to avoid header-compression-induced HoL
+blocking.  See that document for additional details.
 
 ### The CONNECT Method
 
@@ -739,7 +730,7 @@ Settings which are integers use the QUIC variable-length integer encoding.
 The following settings are defined in HTTP/QUIC:
 
   SETTINGS_HEADER_TABLE_SIZE (0x1):
-  : An integer with a maximum value of 2^30 - 1.  This value MUST be zero.
+  : An integer with a maximum value of 2^30 - 1.
 
   SETTINGS_MAX_HEADER_LIST_SIZE (0x6):
   : An integer with a maximum value of 2^30 - 1
@@ -1132,6 +1123,12 @@ HTTP/2 specifies priority assignments in PRIORITY frames and (optionally) in
 HEADERS frames. To achieve in-order delivery of priority changes in HTTP/QUIC,
 PRIORITY frames are sent on the control stream and the PRIORITY section is
 removed from the HEADERS frame.
+
+Likewise, HPACK was designed with the assumption of in-order delivery. A
+sequence of encoded header blocks must arrive (and be decoded) at an endpoint in
+the same order in which they were encoded. This ensures that the dynamic state
+at the two endpoints remains in sync.  As a result, HTTP/QUIC uses a modified
+version of HPACK, described in [QCRAM].
 
 Frame type definitions in HTTP/QUIC often use the QUIC variable-length integer
 encoding.  In particular, Stream IDs use this encoding, which allow for a larger
