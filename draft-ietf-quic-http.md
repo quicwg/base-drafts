@@ -376,6 +376,31 @@ as a stream error of type HTTP_CONNECT_ERROR ({{http-error-codes}}).
 Correspondingly, a proxy MUST send a TCP segment with the RST bit set if it
 detects an error with the stream or the QUIC connection.
 
+### Request Cancellation
+
+Either client or server can cancel requests by closing the stream (QUIC
+RST_STREAM or STOP_SENDING frames, as appropriate) with an error type of
+HTTP_REQUEST_CANCELLED ({{http-error-codes}}).  When the client cancels a
+request or response, it indicates that the response is no longer of interest.
+
+When the server cancels either direction of the request stream using
+HTTP_REQUEST_CANCELLED, it indicates that no application processing was
+performed.  The client can treat requests cancelled by the server as though they
+had never been sent at all, thereby allowing them to be retried later on a new
+connection.  Servers MUST NOT use the HTTP_REQUEST_CANCELLED status for requests
+which were partially or fully processed.
+
+  Note:
+  : In this context, "processed" means that some data from the stream was
+    passed to some higher layer of software that might have taken some action as
+    a result.
+
+If a stream is cancelled after receiving a complete response, the client MAY
+ignore the cancellation and use the response.  However, if a stream is cancelled
+after receiving a partial response, the response SHOULD NOT be used.
+Automatically retrying such requests is not possible, unless this is otherwise
+permitted (e.g., idempotent actions like GET, PUT, or DELETE).
+
 ## Request Prioritization {#priority}
 
 HTTP/QUIC uses the priority scheme described in {{!RFC7540}}, Section 5.3. In
@@ -810,14 +835,12 @@ close a connection.
 
 The GOAWAY frame does not define any flags, and the payload is a QUIC Stream ID
 for a client-initiated, bidirectional stream encoded as a variable-length
-integer.
+integer.  A client MUST treat receipt of a GOAWAY frame containing a Stream ID
+of any other type as a connection error of type HTTP_MALFORMED_FRAME.
 
 Clients do not need to send GOAWAY to initiate a graceful shutdown; they simply
 stop making new requests.  A server MUST treat receipt of a GOAWAY frame as a
 connection error ({{errors}}) of type HTTP_UNEXPECTED_GOAWAY.
-
-A client MUST treat receipt of a GOAWAY frame containing a Stream ID of any
-other type as a connection error of type HTTP_MALFORMED_FRAME.
 
 The GOAWAY frame applies to the connection, not a specific stream.  An endpoint
 MUST treat a GOAWAY frame on a stream other than the control stream as a
@@ -832,33 +855,19 @@ identified by a QUIC MAX_STREAM_ID frame, and MAY be zero if no requests were
 processed.  Servers SHOULD NOT increase the MAX_STREAM_ID limit after sending a
 GOAWAY frame.
 
-  Note:
-  : In this context, "processed" means that some data from the stream was
-    passed to some higher layer of software that might have taken some action as
-    a result.
-
-Once sent, the server will refuse requests sent on streams with an identifier
+Once sent, the server MUST cancel requests sent on streams with an identifier
 higher than the included last Stream ID.  Clients MUST NOT send new requests on
 the connection after receiving GOAWAY, although requests might already be in
 transit. A new connection can be established for new requests.
 
 If the client has sent requests on streams with a higher Stream ID than
-indicated in the GOAWAY frame, those requests were not and will not be
-processed.  Endpoints SHOULD reset any streams above this ID with the error code
-HTTP_REQUEST_CANCELLED.  Servers MAY also reset streams below the indicated ID
-with HTTP_REQUEST_CANCELLED if the associated requests were not processed.
-Servers MUST NOT use the HTTP_REQUEST_CANCELLED status for requests which were
-partially or fully processed.
+indicated in the GOAWAY frame, those requests are considered cancelled
+({{request-cancellation}}).  Clients SHOULD reset any streams above this ID with
+the error code HTTP_REQUEST_CANCELLED.  Servers MAY also cancel requests on
+streams below the indicated ID if these requests were not processed.
 
-The client can treat requests cancelled by the server as though they had never
-been sent at all, thereby allowing them to be retried later on a new connection.
-If a stream is cancelled after receiving a complete response, the client MAY
-ignore the cancellation and use the response.  However, if a stream is cancelled
-after receiving a partial response, the response SHOULD NOT be used.
-Automatically retrying such requests is not possible, unless this is otherwise
-permitted (e.g., idempotent actions like GET, PUT, or DELETE).  Requests on
-Stream IDs less than or equal to the Stream ID in the GOAWAY frame might have
-been processed; their status cannot be known until they are completed
+Requests on Stream IDs less than or equal to the Stream ID in the GOAWAY frame
+might have been processed; their status cannot be known until they are completed
 successfully, reset individually, or the connection terminates.
 
 Servers SHOULD send a GOAWAY frame when the closing of a connection is known
