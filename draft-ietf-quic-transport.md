@@ -63,6 +63,17 @@ normative:
 
 informative:
 
+  QUIC-INVARIANTS:
+    title: "Version-Independent Properties of QUIC"
+    date: {DATE}
+    seriesinfo:
+      Internet-Draft: draft-ietf-quic-invariants-latest
+    author:
+      -
+        ins: M. Thomson
+        name: Martin Thomson
+        org: Mozilla
+
   EARLY-DESIGN:
     title: "QUIC: Multiplexed Transport Over UDP"
     author:
@@ -116,6 +127,8 @@ connection-level flow control, and data reliability.
 
 Accompanying documents describe QUIC's loss detection and congestion control
 {{QUIC-RECOVERY}}, and the use of TLS 1.3 for key negotiation {{QUIC-TLS}}.
+
+QUIC version 1 conforms to the protocol invariants in {{QUIC-INVARIANTS}}.
 
 
 # Conventions and Definitions
@@ -301,6 +314,10 @@ QUIC versions are identified using a 32-bit unsigned number.
 The version 0x00000000 is reserved to represent version negotiation.  This
 version of the specification is identified by the number 0x00000001.
 
+Other versions of QUIC might have different properties to this version.  The
+properties of QUIC that are guaranteed to be consistent across all versions of
+the protocol are described in {{QUIC-INVARIANTS}}.
+
 Version 0x00000001 of QUIC uses TLS as a cryptographic handshake protocol, as
 described in {{QUIC-TLS}}.
 
@@ -420,7 +437,7 @@ The following packet types are defined:
 
 The header form, packet type, connection ID, packet number and version fields of
 a long header packet are version-independent. The types of packets defined in
-{{long-packet-types}} are version-specific.  See {{version-specific}} for
+{{long-packet-types}} are version-specific.  See {{QUIC-INVARIANTS}} for
 details on how packets from different versions of QUIC are interpreted.
 
 The interpretation of the fields and the payload are specific to a version and
@@ -501,7 +518,7 @@ other fields.
 
 The header form, omit connection ID flag, and connection ID of a short header
 packet are version-independent.  The remaining fields are specific to the
-selected QUIC version.  See {{version-specific}} for details on how packets
+selected QUIC version.  See {{QUIC-INVARIANTS}} for details on how packets
 from different versions of QUIC are interpreted.
 
 
@@ -783,26 +800,6 @@ packet.
 Use of a secure random number generator {{?RFC4086}} is not necessary for
 generating the initial packet number, nor is it necessary that the value be
 uniformly distributed.
-
-
-## Handling Packets from Different Versions {#version-specific}
-
-Between different versions the following things are guaranteed to remain
-constant:
-
-* the location of the header form flag,
-
-* the location of the Omit Connection ID flag in short headers,
-
-* the location and size of the Connection ID field in both header forms,
-
-* the location and size of the Version field in long headers,
-
-* the format and semantics of the Version Negotiation packet.
-
-Implementations MUST assume that an unsupported version uses an unknown packet
-format. All other fields MUST be ignored when processing a packet that contains
-an unsupported version.
 
 
 # Frames and Frame Types {#frames}
