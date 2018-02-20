@@ -32,15 +32,10 @@ author:
 
 --- abstract
 
-The design of the core QUIC transport subsumes many HTTP/2 features, prominent
-among them stream multiplexing.  A key advantage of the QUIC transport is stream
-multiplexing free of head-of-line (HoL) blocking between streams. In HTTP/2,
-multiplexed streams can suffer HoL blocking due to TCP.
-
-If HTTP/2's HPACK is used for header compression, HTTP/QUIC is still vulnerable
-to HoL blocking, because of HPACK's assumption of in-order delivery.  This draft
-defines QCRAM, a variation of HPACK and mechanisms in the HTTP/QUIC mapping that
-allow the flexibility to avoid header-compression-induced HoL blocking.
+This specification defines QCRAM, a compression format for efficiently
+representing HTTP header fields, to be used in HTTP over QUIC. This is a
+variation of HPACK header compression that seeks to reduce head-of-line
+blocking.
 
 --- note_Note_to_Readers
 
