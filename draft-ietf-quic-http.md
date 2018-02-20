@@ -928,12 +928,17 @@ HTTP_NO_ERROR code.
 
 ### HEADER_ACK {#frame-header-ack}
 
-The HEADER_ACK frame (type=0x8) is sent from the decoder to the encoder on the
-Control Stream when the decoder has fully processed a header block.  It is used
-by the encoder to determine whether subsequent indexed representations that
-might reference that block are vulnerable to head-of-line blocking, and to
-prevent eviction races.  See [QCRAM] for more details on the use of this
-information.
+The HEADER_ACK frame (type=0x8) is used by header compression to ensure
+consistency. The frames are sent from the QCRAM decoder to the QCRAM encoder;
+that is, the server sends them to the client to acknowledge processing of the
+client's header blocks, and the client sends them to the server to acknowledge
+processing of the server's header blocks.
+
+The HEADER_ACK frame is sent on the Control Stream when the QCRAM decoder has
+fully processed a header block.  It is used by the peer's QCRAM encoder to
+determine whether subsequent indexed representations that might reference that
+block are vulnerable to head-of-line blocking, and to prevent eviction races.
+See [QCRAM] for more details on the use of this information.
 
 The HEADER_ACK frame indicates the stream on which the header block was
 processed by encoding the Stream ID as a variable-length integer. The same
