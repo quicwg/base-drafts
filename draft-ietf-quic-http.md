@@ -951,8 +951,8 @@ feedback on which header blocks within a stream have been fully processed.
 ~~~~~~~~~~
   0   1   2   3   4   5   6   7
 +---+---+---+---+---+---+---+---+
-|        Stream ID [i]          |
-+---+---------------------------+
+|        Stream ID (i)        ...
++---+---+---+---+---+---+---+---+
 ~~~~~~~~~~
 {: title="HEADER_ACK frame"}
 
