@@ -345,8 +345,8 @@ abort a response in progress as a result of receiving a solicited RST_STREAM.
 ### Header Compression
 
 HTTP/QUIC uses QCRAM header compression as described in [QCRAM], a variation of
-HPACK which allows the flexibility to avoid header-compression-induced HoL
-blocking.  See that document for additional details.
+HPACK which allows the flexibility to avoid header-compression-induced
+head-of-line blocking.  See that document for additional details.
 
 ### The CONNECT Method
 
@@ -931,8 +931,9 @@ HTTP_NO_ERROR code.
 The HEADER_ACK frame (type=0x8) is sent from the decoder to the encoder on the
 Control Stream when the decoder has fully processed a header block.  It is used
 by the encoder to determine whether subsequent indexed representations that
-might reference that block are vulnerable to HoL blocking, and to prevent
-eviction races.  See [QCRAM] for more details on the use of this information.
+might reference that block are vulnerable to head-of-line blocking, and to
+prevent eviction races.  See [QCRAM] for more details on the use of this
+information.
 
 The HEADER_ACK frame indicates the stream on which the header block was
 processed by encoding the Stream ID as a variable-length integer. The same
