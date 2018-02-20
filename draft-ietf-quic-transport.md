@@ -1487,8 +1487,8 @@ network.  This section describes the protocol for migrating a connection to a
 new client address.
 
 Migrating a connection to a new server address is left for future work. If a
-client receives packets from a new server address that are decryptable, the
-client MAY discard these packets.
+client receives packets in the connection from a new server address, the client
+MAY discard these packets.
 
 
 ### Path Validation {#migrate-validate}
@@ -1558,7 +1558,10 @@ ways.
 
 The client may immediately migrate the connection by sending all packets from
 the new local address.  Receiving acknowledgments for this data serves as proof
-of the server's reachability from the new address.
+of the server's reachability from the new address.  Note that since
+acknowledgments may be received on any path, return reachability on the new path
+is not established. To establish return reachability on the new path, a client
+MAY concurrently initiate path validation {{migrate-validate}} on the new path.
 
 Alternatively, the client may probe for server reachability from the new local
 address first using path validation {{migrate-validate}} and migrate the
@@ -1674,8 +1677,9 @@ validation of the address of the spurious migration to be abandoned.
 ### Loss Detection and Congestion Control
 
 The capacity available on the new path might not be the same as the old path.
-
-A client SHOULD reset its congestion controller and roundtrip time estimator
+Packets sent on the old path SHOULD NOT contribute to the state of the
+congestion control and RTT estimation on the new path. If it is using a single
+congestion controller and roundtrip time estimator, the client SHOULD reset them
 prior to sending any non-probing packets from a new local address.
 
 After successful validation of the client's new address, the server SHOULD reset
