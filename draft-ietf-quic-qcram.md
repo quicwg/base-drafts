@@ -98,7 +98,7 @@ the reference from being usable.
 The encoder can choose on a per-header-block basis whether to favor higher
 compression ratio (by permitting vulnerable references) or HoL resilience (by
 avoiding them). This is signaled by the BLOCKING flag in HEADERS and
-PUSH_PROMISE frames (see {{hq-frames}}).
+PUSH_PROMISE frames (see {{QUIC-HTTP}}).
 
 If a header block contains no vulnerable header fields, BLOCKING MUST be 0.
 This implies that the header fields are represented either as references
@@ -122,51 +122,9 @@ considered blocked by the decoder and can not be processed until all entries in
 the range `[1, Depends Index]` have been added.  While blocked, header
 field data MUST remain in the blocked stream's flow control window.
 
-# HTTP over QUIC mapping extensions {#hq-frames}
-
-## HEADERS and PUSH_PROMISE
-
-HEADERS and PUSH_PROMISE frames define a new flag.
-
-BLOCKING (0x01):
-: Indicates the stream might need to wait for dependent headers before
-  processing.  If 0, the frame can be processed immediately upon receipt.
-
-HEADERS frames can be sent on the Connection Control Stream as well as on
-request / push streams.  The value of BLOCKING MUST be 0 for HEADERS frames on
-the Connection Control Stream, since they can only depend on previous HEADERS on
-the same stream.
-
-## HEADER_ACK
-
-The HEADER_ACK frame (type=0x8) is sent from the decoder to the encoder on the
-Control Stream when the decoder has fully processed a header block.  It is used
-by the encoder to determine whether subsequent indexed representations that
-might reference that block are vulnerable to HoL blocking, and to prevent
-eviction races (see {{evictions}}).
-
-The HEADER_ACK frame indicates the stream on which the header block was
-processed by encoding the Stream ID as a variable-length integer. The same
-Stream ID can be identified multiple times, as multiple header-containing blocks
-can be sent on a single stream in the case of intermediate responses, trailers,
-pushed requests, etc. as well as on the Control Streams.  Since header frames on
-each stream are received and processed in order, this gives the encoder precise
-feedback on which header blocks within a stream have been fully processed.
-
-~~~~~~~~~~
-  0   1   2   3   4   5   6   7
-+---+---+---+---+---+---+---+---+
-|        Stream ID [i]          |
-+---+---------------------------+
-~~~~~~~~~~
-{: title="HEADER_ACK frame"}
-
-The HEADER_ACK frame does not define any flags.
-
 # HPACK extensions
 
 ## Allowed Instructions
-
 
 HEADERS frames on the Control Stream SHOULD contain only Literal with
 Incremental Indexing and Indexed with Duplication (see {{indexed-duplicate}})

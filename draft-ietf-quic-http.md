@@ -38,6 +38,27 @@ normative:
         org: Mozilla
         role: editor
 
+  QCRAM:
+    title: "Header Compression for HTTP over QUIC"
+    date: {DATE}
+    seriesinfo:
+      Internet-Draft: draft-ietf-quic-qcram-latest
+    author:
+      -
+          ins: C. Krasic
+          name: Charles 'Buck' Krasic
+          org: Google, Inc
+      -
+          ins: M. Bishop
+          name: Mike Bishop
+          org: Akamai Technologies
+      -
+          ins: A. Frindell
+          name: Alan Frindell
+          org: Facebook
+          role: editor
+
+
 informative:
 
 
@@ -323,18 +344,9 @@ abort a response in progress as a result of receiving a solicited RST_STREAM.
 
 ### Header Compression
 
-HTTP/QUIC uses HPACK header compression as described in {{!RFC7541}}. HPACK was
-designed for HTTP/2 with the assumption of in-order delivery such as that
-provided by TCP. A sequence of encoded header blocks must arrive (and be
-decoded) at an endpoint in the same order in which they were encoded. This
-ensures that the dynamic state at the two endpoints remains in sync.
-
-QUIC streams provide in-order delivery of data sent on those streams, but there
-are no guarantees about order of delivery between streams. QUIC anticipates
-moving to a modified version of HPACK without this assumption.  In the meantime,
-by fixing the size of the dynamic table at zero, HPACK can be used in an
-unordered environment.
-
+HTTP/QUIC uses QCRAM header compression as described in [QCRAM], a variation of
+HPACK which allows the flexibility to avoid header-compression-induced
+head-of-line blocking.  See that document for additional details.
 
 ### The CONNECT Method
 
@@ -535,11 +547,15 @@ with a payload length of zero, the recipient MUST respond with a stream error
 The HEADERS frame (type=0x1) is used to carry a header block, compressed using
 HPACK {{header-compression}}.
 
-No flags are defined for the HEADERS frame.
+The HEADERS frame defines a single flag:
 
-A HEADERS frame with any flags set MUST be treated as a connection error of type
-HTTP_MALFORMED_FRAME.
+BLOCKING (0x01):
+: Indicates the stream might need to wait for dependent headers before
+  processing.  If 0, the frame can be processed immediately upon receipt.
 
+HEADERS frames can be sent on the Control Stream as well as on request / push
+streams.  The value of BLOCKING MUST be 0 for HEADERS frames on the Control
+Stream, since they can only depend on previous HEADERS on the same stream.
 
 ### PRIORITY {#frame-priority}
 
@@ -739,7 +755,7 @@ Settings which are integers use the QUIC variable-length integer encoding.
 The following settings are defined in HTTP/QUIC:
 
   SETTINGS_HEADER_TABLE_SIZE (0x1):
-  : An integer with a maximum value of 2^30 - 1.  This value MUST be zero.
+  : An integer with a maximum value of 2^30 - 1.
 
   SETTINGS_MAX_HEADER_LIST_SIZE (0x6):
   : An integer with a maximum value of 2^30 - 1
@@ -776,7 +792,11 @@ the defaults above on the next connection.
 ### PUSH_PROMISE {#frame-push-promise}
 
 The PUSH_PROMISE frame (type=0x05) is used to carry a request header set from
-server to client, as in HTTP/2.  The PUSH_PROMISE frame defines no flags.
+server to client, as in HTTP/2.  The PUSH_PROMISE frame defines a single flag:
+
+BLOCKING (0x01):
+: Indicates the stream might need to wait for dependent headers before
+  processing.  If 0, the frame can be processed immediately upon receipt.
 
 ~~~~~~~~~~  drawing
  0                   1                   2                   3
@@ -797,7 +817,8 @@ Push ID:
   ({{frame-cancel-push}}), and PRIORITY frames ({{frame-priority}}).
 
 Header Block:
-: HPACK-compressed request headers for the promised response.
+: QCRAM-compressed request headers for the promised response.  See [QCRAM] for
+  more details.
 
 A server MUST NOT use a Push ID that is larger than the client has provided in a
 MAX_PUSH_ID frame ({{frame-max-push-id}}).  A client MUST treat receipt of a
@@ -913,6 +934,38 @@ those requests have been completed or cancelled, the connection can be closed
 using an Immediate Close (see {{QUIC-TRANSPORT}}).  An endpoint that completes a
 graceful shutdown SHOULD use the QUIC APPLICATION_CLOSE frame with the
 HTTP_NO_ERROR code.
+
+### HEADER_ACK {#frame-header-ack}
+
+The HEADER_ACK frame (type=0x8) is used by header compression to ensure
+consistency. The frames are sent from the QCRAM decoder to the QCRAM encoder;
+that is, the server sends them to the client to acknowledge processing of the
+client's header blocks, and the client sends them to the server to acknowledge
+processing of the server's header blocks.
+
+The HEADER_ACK frame is sent on the Control Stream when the QCRAM decoder has
+fully processed a header block.  It is used by the peer's QCRAM encoder to
+determine whether subsequent indexed representations that might reference that
+block are vulnerable to head-of-line blocking, and to prevent eviction races.
+See [QCRAM] for more details on the use of this information.
+
+The HEADER_ACK frame indicates the stream on which the header block was
+processed by encoding the Stream ID as a variable-length integer. The same
+Stream ID can be identified multiple times, as multiple header-containing blocks
+can be sent on a single stream in the case of intermediate responses, trailers,
+pushed requests, etc. as well as on the Control Streams.  Since header frames on
+each stream are received and processed in order, this gives the encoder precise
+feedback on which header blocks within a stream have been fully processed.
+
+~~~~~~~~~~
+  0   1   2   3   4   5   6   7
++---+---+---+---+---+---+---+---+
+|        Stream ID (i)        ...
++---+---+---+---+---+---+---+---+
+~~~~~~~~~~
+{: title="HEADER_ACK frame"}
+
+The HEADER_ACK frame does not define any flags.
 
 
 ### MAX_PUSH_ID {#frame-max-push-id}
@@ -1085,6 +1138,12 @@ HTTP/2 specifies priority assignments in PRIORITY frames and (optionally) in
 HEADERS frames. To achieve in-order delivery of priority changes in HTTP/QUIC,
 PRIORITY frames are sent on the control stream and the PRIORITY section is
 removed from the HEADERS frame.
+
+Likewise, HPACK was designed with the assumption of in-order delivery. A
+sequence of encoded header blocks must arrive (and be decoded) at an endpoint in
+the same order in which they were encoded. This ensures that the dynamic state
+at the two endpoints remains in sync.  As a result, HTTP/QUIC uses a modified
+version of HPACK, described in [QCRAM].
 
 Frame type definitions in HTTP/QUIC often use the QUIC variable-length integer
 encoding.  In particular, Stream IDs use this encoding, which allow for a larger
@@ -1324,7 +1383,7 @@ The entries in the following table are registered by this document.
 | PUSH_PROMISE   | 0x5  | {{frame-push-promise}}   |
 | Reserved       | 0x6  | N/A                      |
 | GOAWAY         | 0x7  | {{frame-goaway}}         |
-| Reserved       | 0x8  | N/A                      |
+| HEADER_ACK     | 0x8  | {{frame-header-ack}      |
 | Reserved       | 0x9  | N/A                      |
 | MAX_PUSH_ID    | 0xD  | {{frame-max-push-id}}    |
 |----------------|------|--------------------------|
