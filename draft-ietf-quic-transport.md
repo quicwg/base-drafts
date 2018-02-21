@@ -3724,10 +3724,6 @@ PROTOCOL_VIOLATION (0xA):
 : An endpoint detected an error with protocol compliance that was not covered by
   more specific error codes.
 
-TLS_NEGOTIATION_FAILURE (0xB):
-
-: An endpoint detected an error during the TLS negotiation.
-
 UNSOLICITED_PATH_RESPONSE (0xB):
 
 : An endpoint received a PATH_RESPONSE frame that did not correspond to any
@@ -3739,7 +3735,9 @@ FRAME_ERROR (0x1XX):
   included as the last octet of the error code.  For example, an error in a
   MAX_STREAM_ID frame would be indicated with the code (0x106).
 
-See {{iana-error-codes}} for details of registering new error codes.
+Codes for error occuring when TLS is used for the crypto handshake are defined
+in Section 11 of {{QUIC-TLS}}.
+See {{iana-error-codes}} for details of registering new error codes. 
 
 
 ## Application Protocol Error Codes {#app-error-codes}
