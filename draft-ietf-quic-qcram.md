@@ -108,7 +108,7 @@ PUSH_PROMISE frames (see {{QUIC-HTTP}}).
 If a header block contains no vulnerable header fields, BLOCKING MUST be 0.
 This implies that the header fields are represented either as references
 to dynamic table entries which are known to have been received, or as
-Literal header fields (see Section 6.2 of {{RFC7541}} ).
+Literal header fields (see Section 6.2 of {{RFC7541}}).
 
 If a header block contains any header field which references dynamic table
 state which the peer might not have received yet, the BLOCKING flag MUST be
@@ -346,10 +346,6 @@ need to be added to the IANA Considerations of {{QUIC-HTTP}}.
 
 This draft draws heavily on the text of {{!RFC7541}}.  The indirect input of
 those authors is gratefully acknowledged, as well as ideas from:
-
-* Mike Bishop
-
-* Alan Frindell
 
 * Ryan Hamilton
 
