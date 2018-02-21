@@ -730,7 +730,7 @@ server_pp_secret_<N+1> =
 
 This allows for a succession of new secrets to be created as needed.
 
-HKDF-Expand-Label uses HKDF-Expand {{!RFC5869}} as shown:
+QHKDF-Expand uses HKDF-Expand {{!RFC5869}} as shown:
 
 ~~~
     QHKDF-Expand(Secret, Label, Length) =
@@ -750,7 +750,7 @@ Where the info parameter, QuicHkdfLabel, is specified as:
 For example, the client packet protection secret uses an info parameter of:
 
 ~~~
-   info = (HashLen / 256) || (HashLen % 256) || 0x1f ||
+   info = (HashLen / 256) || (HashLen % 256) || 0x10 ||
           "QUIC client 1rtt" || 0x00
 ~~~
 
@@ -1293,6 +1293,13 @@ establishment.  A `STREAM` frame carrying a TLS alert MAY be included in the
 same packet.
 
 
+### Address Verification
+
+In order to perform source-address verification before the handshake is
+complete, `PATH_CHALLENGE` and `PATH_RESPONSE` frames MAY be exchanged
+unprotected.
+
+
 ### Denial of Service with Unprotected Packets
 
 Accepting unprotected - specifically unauthenticated - packets presents a denial
@@ -1414,8 +1421,7 @@ quic_transport_parameters extension carries a TransportParameters when the
 version of QUIC defined in {{QUIC-TRANSPORT}} is used.
 
 The quic_transport_parameters extension is carried in the ClientHello and the
-EncryptedExtensions messages during the handshake.  The extension MAY be
-included in a NewSessionTicket message.
+EncryptedExtensions messages during the handshake.
 
 
 ## Priming 0-RTT
@@ -1571,7 +1577,8 @@ Issue and pull request numbers are listed with a leading octothorp.
 
 ## Since draft-ietf-quic-tls-08
 
-No significant changes.
+- Specify value for max_early_data_size to enable 0-RTT (#942)
+- Update key derivation function (#1003, #1004)
 
 ## Since draft-ietf-quic-tls-07
 
