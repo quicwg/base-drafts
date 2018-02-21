@@ -3724,6 +3724,10 @@ PROTOCOL_VIOLATION (0xA):
 : An endpoint detected an error with protocol compliance that was not covered by
   more specific error codes.
 
+TLS_NEGOTIATION_FAILURE (0xB):
+
+: An endpoint detected an error during the TLS negotiation.
+
 UNSOLICITED_PATH_RESPONSE (0xB):
 
 : An endpoint received a PATH_RESPONSE frame that did not correspond to any
