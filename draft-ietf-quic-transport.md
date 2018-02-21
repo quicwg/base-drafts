@@ -3735,6 +3735,8 @@ FRAME_ERROR (0x1XX):
   included as the last octet of the error code.  For example, an error in a
   MAX_STREAM_ID frame would be indicated with the code (0x106).
 
+Codes for errors occuring when TLS is used for the crypto handshake are defined
+in Section 11 of {{QUIC-TLS}}.
 See {{iana-error-codes}} for details of registering new error codes.
 
 
