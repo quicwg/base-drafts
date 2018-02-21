@@ -486,6 +486,9 @@ Key Phase Bit:
   recipient of a packet to identify the packet protection keys that are used to
   protect the packet.  See {{QUIC-TLS}} for details.
 
+\[\[RFC editor: please remove the Google QUIC Demultipexing bit before
+publication.]]
+
 Google QUIC Demultipexing Bit:
 
 : The fifth bit (0x8) of octet 0 is set to 0. This allows implementations of
