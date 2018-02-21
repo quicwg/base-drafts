@@ -451,7 +451,7 @@ following sections.
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+
-|0|C|K| Type (5)|
+|0|C|K|1|0|T T T|
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                                                               |
 +                     [Connection ID (64)]                      +
@@ -486,9 +486,18 @@ Key Phase Bit:
   recipient of a packet to identify the packet protection keys that are used to
   protect the packet.  See {{QUIC-TLS}} for details.
 
+Google QUIC Demultipexing Bit:
+
+: The fifth bit (0x8) of octet 0 is set to 0. This allows implementations of
+  Google QUIC to distinguish Google QUIC packets from short header packets sent
+  by a client.
+  The special interpretation of this bit SHOULD be removed from this
+  specification when Google QUIC has finished transitioning to the new header
+  format.
+
 Short Packet Type:
 
-: The remaining 5 bits of octet 0 include one of 32 packet types.
+: The remaining 3 bits of octet 0 include one of 8 packet types.
   {{short-packet-types}} lists the types that are defined for short packets.
 
 Connection ID:
@@ -511,9 +520,9 @@ other fields.
 
 | Type | Packet Number Size |
 |:-----|:-------------------|
-| 0x1F | 1 octet            |
-| 0x1E | 2 octets           |
-| 0x1D | 4 octets           |
+| 0x7  | 1 octet            |
+| 0x6  | 2 octets           |
+| 0x5  | 4 octets           |
 {: #short-packet-types title="Short Header Packet Types"}
 
 The header form, omit connection ID flag, and connection ID of a short header
