@@ -431,7 +431,7 @@ enforce a maximum ack delay to avoid causing the peer spurious
 timeouts.  The default maximum ack delay in QUIC is 25ms.
 
 An acknowledgement MAY be sent for every second full-sized segment,
-as TCP does {{RFC5681}}, or may be sent less frequently, as long as
+as TCP does {{!RFC5681}}, or may be sent less frequently, as long as
 the delay does not exceed the maximum ack delay.  QUIC recovery algorithms
 do not assume the peer generates an acknowledgement immediately when
 receiving a second full-sized segment.
