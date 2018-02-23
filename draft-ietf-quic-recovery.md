@@ -422,6 +422,49 @@ is available.
 (TODO: Work this section some more. Add text on client vs. server, and on
 stateless retry.)
 
+## Generating Acknowledgements
+
+QUIC SHOULD delay sending acknowledgements in response to packets,
+but MUST NOT excessively delay acknowledgements of packets containing
+non-ack frames.  Specifically, implementaions MUST attempt to
+enforce a maximum ack delay to avoid causing the peer spurious
+timeouts.  The default maximum ack delay in QUIC is 25ms.
+
+An acknowledgement MAY be sent for every second full-sized segment,
+as TCP does {{RFC5681}}, or may be sent less frequently, as long as
+the delay does not exceed the maximum ack delay.  QUIC recovery algorithms
+do not assume the peer generates an acknowledgement immediately when
+receiving a second full-sized segment.
+
+Out-of-order packets SHOULD be acknowledged more quickly, in order
+to accelerate loss recovery.  The receiver SHOULD send an immediate
+ACK when it receives a packet that fills in a gap in the packet numbers
+if it has already acknowledged a larger packet number.  If it has not
+sent an acknowledgement for the larger packet and there are no other
+recent gaps, then it may revert to the standard delayed ack algorithm.
+
+### Ack Ranges
+
+When an ACK frame is sent, one or more ranges of acknowledged packets may
+be included.  Including older packets reduces the chances previous ACK
+frames were lost, causing spurious retransmits, at the cost of larger acks.
+
+ACK frames SHOULD always acknowledge the most recently received packets,
+and the more out of order packets are, the more important it is to send
+an updated ACK frame quickly, in order to prevent the peer from declaring
+a packet as lost.
+
+Below is one recommended approach for determining what packets to include
+in an ACK frame.
+
+#### Track the most recently acknowledged ACK frame
+
+When a packet containing an ACK frame is sent, the largest acked in that
+frame can be saved.  When a packet containing and ACK frame is acknowledged,
+the receiver stops acknowledging packets less than or equal to the largest
+acked in the sent ACK frame.  This allows for very high packet loss and
+over 1 round trip of reordering.
+
 ## Pseudocode
 
 ### Constants of interest
