@@ -493,7 +493,8 @@ Google QUIC Demultipexing Bit:
 
 : The fifth bit (0x8) of octet 0 is set to 0. This allows implementations of
   Google QUIC to distinguish Google QUIC packets from short header packets sent
-  by a client.
+  by a client because Google QUIC servers expect the connection ID to always be
+  present.
   The special interpretation of this bit SHOULD be removed from this
   specification when Google QUIC has finished transitioning to the new header
   format.
