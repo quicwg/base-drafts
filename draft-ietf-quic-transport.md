@@ -3736,8 +3736,8 @@ FRAME_ERROR (0x1XX):
   MAX_STREAM_ID frame would be indicated with the code (0x106).
 
 Codes for errors occuring when TLS is used for the crypto handshake are defined
-in Section 11 of {{QUIC-TLS}}.
-See {{iana-error-codes}} for details of registering new error codes.
+in Section 11 of {{QUIC-TLS}}. See {{iana-error-codes}} for details of
+registering new error codes.
 
 
 ## Application Protocol Error Codes {#app-error-codes}
