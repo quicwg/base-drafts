@@ -460,10 +460,10 @@ in an ACK frame.
 #### Track the most recently acknowledged ACK frame
 
 When a packet containing an ACK frame is sent, the largest acked in that
-frame can be saved.  When a packet containing and ACK frame is acknowledged,
+frame is saved.  When a packet containing an ACK frame is acknowledged,
 the receiver stops acknowledging packets less than or equal to the largest
-acked in the sent ACK frame.  This allows for very high packet loss and
-over 1 round trip of reordering.
+acked in the sent ACK frame.  This approach is not sensitive to packet loss
+and allows for over 1 round trip of reordering.
 
 ## Pseudocode
 
