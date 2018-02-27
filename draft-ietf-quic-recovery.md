@@ -437,33 +437,44 @@ do not assume the peer generates an acknowledgement immediately when
 receiving a second full-sized segment.
 
 Out-of-order packets SHOULD be acknowledged more quickly, in order
-to accelerate loss recovery.  The receiver SHOULD send an immediate
-ACK when it receives a packet that fills in a gap in the packet numbers
-if it has already acknowledged a larger packet number.  If it has not
-sent an acknowledgement for the larger packet and there are no other
-recent gaps, then it may revert to the standard delayed ack algorithm.
+to accelerate loss recovery.  Specifically, the receiver SHOULD send an
+immediate ACK when it receieves a packet with a packet number more than
+1 larger than the previous largest received packet number. The receiver
+SHOULD also send an immediate ACK when it receives a packet that fills
+in a gap in the packet numbers.  If no packet larger than the packet that
+fills a gap has been acknowledged, then the peer will not invoke fast
+recovery and it may use the standard delayed ack algorithm.  This
+circumstance may arise from delaying ack transmission when
+processing multiple packets.
 
 ### Ack Ranges
 
-When an ACK frame is sent, one or more ranges of acknowledged packets may
-be included.  Including older packets reduces the chances previous ACK
-frames were lost, causing spurious retransmits, at the cost of larger acks.
+When an ACK frame is sent, one or more ranges of acknowledged packets are
+included.  Including older packets reduces the chance of spurious
+retransmits caused by losing previously sent ACK frames, at the cost of
+larger ACK frames.
 
 ACK frames SHOULD always acknowledge the most recently received packets,
-and the more out of order packets are, the more important it is to send
-an updated ACK frame quickly, in order to prevent the peer from declaring
-a packet as lost.
+and the more out-of-order the packets are, the more important it is to send
+an updated ACK frame quickly, to prevent the peer from declaring a packet
+as lost and spuriusly retransmitting the frames it contains.
 
 Below is one recommended approach for determining what packets to include
 in an ACK frame.
 
-#### Track the most recently acknowledged ACK frame
+### Receiver Tracking of ACK Frames
 
 When a packet containing an ACK frame is sent, the largest acked in that
-frame is saved.  When a packet containing an ACK frame is acknowledged,
-the receiver stops acknowledging packets less than or equal to the largest
-acked in the sent ACK frame.  This approach is not sensitive to packet loss
-and allows for over 1 round trip of reordering.
+frame may be saved.  When a packet containing an ACK frame is acknowledged,
+the receiver can stop acknowledging packets less than or equal to the
+largest acked in the sent ACK frame. 
+
+This approach does not guarantee every acknowledgement is seen by the
+sender before it is no longer included in the ack frame, because packets
+could be received out of order and all subsequent ACK frames containing them
+could be lost.  It does guarantee the sender is making forward progress and
+allows for a minumum of one RTT of reordering in cases without ACK frame
+loss.
 
 ## Pseudocode
 
