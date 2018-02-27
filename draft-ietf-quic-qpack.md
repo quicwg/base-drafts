@@ -100,9 +100,10 @@ which might not yet have been processed by the recipient.  Such references
 are called "vulnerable," because the loss of a different packet can keep
 the reference from being usable.
 
-The encoder can choose on a per-header-block basis whether to favor higher
-compression ratio (by permitting vulnerable references) or HoL resilience (by
-avoiding them).
+The decoder can signal that it is willing to process vulnerable references by
+setting SETTINGS_BLOCKING_HEADER_REFERENCES to true.  In this case, the encoder
+can choose on a per-header-block basis whether to favor higher compression ratio
+(by permitting vulnerable references) or HoL resilience (by avoiding them).
 
 The header block contains a Base Index (see {{absolute-index}}) which is used to
 correctly index entries, regardless of reordering in the transport (see
@@ -112,6 +113,7 @@ least the value of the Base Index.  While blocked, header field data MUST remain
 in the blocked stream's flow control window.  When the Base Index is zero, the
 frame contains no references to the dynamic table and can always be processed
 immediately.
+
 
 # Wire Format
 

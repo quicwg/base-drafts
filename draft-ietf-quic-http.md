@@ -783,6 +783,9 @@ The following settings are defined in HTTP/QUIC:
   SETTINGS_MAX_HEADER_LIST_SIZE (0x6):
   : An integer with a maximum value of 2^30 - 1
 
+  SETTINGS_BLOCKING_HEADER_REFERENCES (0x7):
+  : A Boolean
+
 #### Initial SETTINGS Values
 
 When a 0-RTT QUIC connection is being used, the client's initial requests will
