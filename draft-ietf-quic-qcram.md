@@ -154,14 +154,18 @@ to an existing entry in either table or as a string literal. For entries which
 already exist in the dynamic table, the full entry can also be used by
 reference, creating a duplicate entry.
 
-### Insert
+### Insert With Name Reference
 
-An addition to the header table starts with the '1' one-bit pattern. This
-instruction can reference an existing table entry and use its name. The `S` bit
-indicates whether the entry is in the static table (where `S` is 1) or the
-dynamic table (where `S` is 0). The index of the entry is represented as an
-integer with an 6-bit prefix (see Section 5.1 of [RFC7541]). Table indices are
-always non-zero; a zero index is reserved for literal names.
+An addition to the header table where the header field name matches the header
+field name of an entry stored in the static table or the dynamic table starts
+with the '1' one-bit pattern.  The `S` bit indicates whether the reference is to
+the static (S=1) or dynamic (S=0) table. The header field name is represented
+using the index of that entry, which is represented as an integer with a 6-bit
+prefix (see Section 5.1 of [RFC7541]). Table indices are always non-zero; a zero
+index MUST be treated as a decoding error.
+
+The header name reference is followed by the header field value represented as a
+string literal (see Section 5.2 of [RFC7541]).
 
 ~~~~~~~~~~ drawing
      0   1   2   3   4   5   6   7
@@ -175,14 +179,17 @@ always non-zero; a zero index is reserved for literal names.
 ~~~~~~~~~~
 {: title="Insert Header Field -- Indexed Name"}
 
-Otherwise, the header field name is represented as a string literal (see Section
-5.2 of [RFC7541]). A value 0 is used in place of the table reference, followed
-by the header field name.
+
+### Insert Without Reference
+
+An addition to the header table where both the header field name and the header
+field value are represented as string literals (see Section 5.2 of [RFC7541])
+starts with the '00' two-bit pattern.
 
 ~~~~~~~~~~ drawing
      0   1   2   3   4   5   6   7
    +---+---+---+---+---+---+---+---+
-   | 1 | 0 |           0           |
+   | 0 | 0 |           0           |
    +---+---+-----------------------+
    | H |     Name Length (7+)      |
    +---+---------------------------+
@@ -195,20 +202,19 @@ by the header field name.
 ~~~~~~~~~~
 {: title="Insert Header Field -- New Name"}
 
-Either form of header field name representation is followed by the header field
-value represented as a string literal (see Section 5.2 of [RFC7541]).
+
 
 ### Duplicate {#indexed-duplicate}
 
-Duplication of an existing entry in the dynamic table starts with the '0'
-one-bit pattern.  The index of the existing entry is represented as an integer
-with a 7-bit prefix. Table indices are always non-zero; a table index of zero
+Duplication of an existing entry in the dynamic table starts with the '01'
+two-bit pattern.  The index of the existing entry is represented as an integer
+with a 6-bit prefix. Table indices are always non-zero; a table index of zero
 MUST be treated as a decoding error.
 
 ~~~~~~~~~~ drawing
      0   1   2   3   4   5   6   7
    +---+---+---+---+---+---+---+---+
-   | 0 |         Index (7+)        |
+   | 0 | 1 |      Index (7+)       |
    +---+---------------------------+
 ~~~~~~~~~~
 {:#fig-index-with-duplication title="Duplicate"}
