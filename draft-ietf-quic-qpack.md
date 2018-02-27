@@ -496,7 +496,9 @@ Indexed-Duplicate representation instead (see {{indexed-duplicate}}).
 
 For header blocks encoded in non-blocking mode, the encoder needs to forego
 indexed representations that refer to table updates which have not yet been
-acknowledged with {{feedback}}.
+acknowledged with {{feedback}}.  Since all table updates are processed in
+sequence on the control stream, an index into the dynamic table is sufficient to
+track which entries have been processed.
 
 To track blocked streams, the necessary Base Index value for each stream
 can be used.  Whenever the decoder processes a table update, it can begin
