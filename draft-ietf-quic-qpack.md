@@ -127,23 +127,119 @@ considered blocked by the decoder and can not be processed until all entries in
 the range `[1, Depends Index]` have been added.  While blocked, header
 field data MUST remain in the blocked stream's flow control window.
 
-# HPACK extensions
+# Wire Format
 
-## Allowed Instructions
+QCRAM instructions occur on three stream types, each of which uses a separate
+instruction space:
 
-HEADERS frames on the Control Stream SHOULD contain only Literal with
-Incremental Indexing and Indexed with Duplication (see {{indexed-duplicate}})
-representations.  Frames on this stream modify the dynamic table state
-without generating output to any particular request.
+ - Table updates are carried by HEADERS frames on the control stream, as defined
+   by {{QUIC-HTTP}}.  Frames on this stream modify the dynamic table state
+   without generating output to any particular request.
+ - Acknowledgement of header frame processing is carried by HEADER_ACK frames,
+   running from decoder to encoder.
+ - Finally, the contents of HEADERS and PUSH_PROMISE frames on request streams
+   reference the QPACK table state.
 
-HEADERS and PUSH_PROMISE frames on request and push streams MUST NOT contain
-Literal with Incremental Indexing and Indexed with Duplication representations.
-Frames on these streams reference the dynamic table in a particular state
-without modifying it, but emit the headers for an HTTP request or response.
+This section describes the instructions which are possible on each stream type.
 
-## Header Block Prefix {#absolute-index}
+In order to ensure table consistency, all modifications of the header table
+occur on the control stream rather than on request streams. Request streams
+contain only indexed and literal header entries.
 
-For request and push promise streams, in HEADERS and PUSH_PROMISE frames, HPACK
+## HEADERS Frames on the Control Stream
+
+### Insert
+
+An addition to the header table starts with the '1' one-bit pattern. If the
+header field name matches the header field name of an entry stored in the static
+table or the dynamic table, the header field name can be represented using the
+index of that entry. In this case, the `S` bit indicates whether the reference
+is to the static (S=1) or dynamic (S=0) table and the index of the entry is
+represented as an integer with an 7-bit prefix (see Section 5.1 of [RFC7541]).
+This value is always non-zero.
+
+~~~~~~~~~~ drawing
+     0   1   2   3   4   5   6   7
+   +---+---+---+---+---+---+---+---+
+   | 1 | S |    Name Index (6+)    |
+   +---+---+-----------------------+
+   | H |     Value Length (7+)     |
+   +---+---------------------------+
+   | Value String (Length octets)  |
+   +-------------------------------+
+~~~~~~~~~~
+{: title="Insert Header Field -- Indexed Name"}
+
+Otherwise, the header field name is represented as a string literal (see Section
+5.2 of [RFC7541]). A value 0 is used in place of the table reference, followed
+by the header field name.
+
+~~~~~~~~~~ drawing
+     0   1   2   3   4   5   6   7
+   +---+---+---+---+---+---+---+---+
+   | 1 |             0             |
+   +---+---------------------------+
+   | H |     Name Length (7+)      |
+   +---+---------------------------+
+   |  Name String (Length octets)  |
+   +---+---------------------------+
+   | H |     Value Length (7+)     |
+   +---+---------------------------+
+   | Value String (Length octets)  |
+   +-------------------------------+
+~~~~~~~~~~
+{: title="Insert Header Field -- New Name"}
+
+Either form of header field name representation is followed by the header field
+value represented as a string literal (see Section 5.2 of [RFC7541]).
+
+### Duplicate {#indexed-duplicate}
+
+An entry currently in the dynamic table can be re-inserted into the dynamic
+table without resending the header.
+
+~~~~~~~~~~ drawing
+     0   1   2   3   4   5   6   7
+   +---+---+---+---+---+---+---+---+
+   | 0 |         Index (7+)        |
+   +---+---------------------------+
+~~~~~~~~~~
+{:#fig-index-with-duplication title="Duplicate"}
+
+This is useful to mitigate the eviction of older entries which are frequently
+referenced, both to avoid the need to resend the header and to avoid the entry
+in the table blocking the ability to insert new headers.
+
+## HEADER_ACK Frames
+
+HEADER_ACK frames on the control stream carry information used to ensure
+consistency of the dynamic table. Information is sent from the QCRAM decoder to
+the QCRAM encoder; that is, the server informs the client about the processing
+of the client's header blocks, and the client informs the server about the
+processing of the server's header blocks.
+
+Each frame represents a header block which the QCRAM decoder has fully
+processed.  It is used by the peer's QCRAM encoder to determine whether
+subsequent indexed representations that might reference that block are
+vulnerable to head-of-line blocking, and to prevent eviction races.
+
+The frame payload contains contains a variable-length integer (as defined in
+{{QUIC-TRANSPORT}}) which indicates the stream on which the header block was
+processed. The same Stream ID can be identified multiple times, as multiple
+header-containing blocks can be sent on a single stream in the case of
+intermediate responses, trailers, pushed requests, etc. as well as on the
+Control Streams.  Since header frames on each stream are received and processed
+in order, this gives the encoder precise feedback on which header blocks within
+a stream have been fully processed.
+
+## Request Streams
+
+HEADERS and PUSH_PROMISE frames on request and push streams reference the
+dynamic table in a particular state without modifying it, but emit the headers
+for an HTTP request or response.
+
+### Index Encoding {#absolute-index}
+
 Header data is prefixed by an integer: `Base Index`.  `Base index` is the
 cumulative number of entries added to the dynamic table prior to encoding the
 current block, including any entries already evicted.  It is encoded as a single
@@ -178,7 +274,7 @@ is the largest (absolute) index referenced by the following header block.  To
 help keep the prefix smaller, `Depends Index` is converted to a relative value:
 `Depends = Base Index - Depends Index`.
 
-## Hybrid absolute-relative indexing {#overview-absolute}
+#### Hybrid absolute-relative indexing {#overview-absolute}
 
 HPACK indexed entries refer to an entry by its current position in the dynamic
 table.  As Figure 1 of {{!RFC7541}} illustrates, newer entries have smaller
@@ -223,7 +319,88 @@ It is an error if the HPACK decoder encounters an indexed representation that
 refers to an entry missing from the table, and the connection MUST be closed
 with the `HTTP_HPACK_DECOMPRESSION_FAILED` error code.
 
-## Preventing Eviction Races {#evictions}
+### Instructions
+
+#### Indexed Header Field Representation
+
+An indexed header field representation identifies an entry in either the static
+table or the dynamic table and causes that header field to be added to the
+decoded header list, as described in Section 3.2 of [RFC7541].
+
+~~~~~~~~~~ drawing
+  0   1   2   3   4   5   6   7
++---+---+---+---+---+---+---+---+
+| 1 | S |      Index (6+)       |
++---+---------------------------+
+~~~~~~~~~~
+{: title="Indexed Header Field"}
+
+An indexed header field starts with the '1' 1-bit pattern, followed by the `S`
+bit indicating whether the reference is into the static (S=1) or dynamic (S=0)
+table. Finally, the index of the matching header field is represented as an
+integer with a 6-bit prefix (see Section 5.1 of [RFC7541]).
+
+The index value of 0 is not used.  It MUST be treated as a decoding error if
+found in an indexed header field representation.
+
+#### Literal Header Field Representation
+
+A literal header field representation starts with the '0' 1-bit pattern and
+causes a header field to be added the decoded header list.
+
+The second bit, 'N', indicates whether an intermediary is permitted to add this
+header to the dynamic header table on subsequent hops. When the 'N' bit is set,
+the encoded header MUST always be encoded with this specific literal
+representation. In particular, when a peer sends a header field that it received
+represented as a literal header field with the 'N' bit set, it MUST use the same
+representation to forward this header field.  This bit is intended for
+protecting header field values that are not to be put at risk by compressing
+them (see Section 7.1 of [RFC7541] for more details).
+
+If the header field name matches the header field name of an entry stored in the
+static table or the dynamic table, the header field name can be represented
+using the index of that entry. In this case, the `S` bit indicates whether the
+reference is to the static (S=1) or dynamic (S=0) table and the index of the
+entry is represented as an integer with an 5-bit prefix (see Section 5.1 of
+[RFC7541]). This value is always non-zero.
+
+~~~~~~~~~~
+     0   1   2   3   4   5   6   7
+   +---+---+---+---+---+---+---+---+
+   | 0 | N | S |  Name Index (5+)  |
+   +---+---+-----------------------+
+   | H |     Value Length (7+)     |
+   +---+---------------------------+
+   | Value String (Length octets)  |
+   +-------------------------------+
+~~~~~~~~~~
+{: title="Literal Header Field -- Indexed Name"}
+
+Otherwise, the header field name is represented as a string literal (see Section
+5.2 of [RFC7541]). A value 0 is used in place of the 6-bit index, followed by
+the header field name.
+
+~~~~~~~~~~
+     0   1   2   3   4   5   6   7
+   +---+---+---+---+---+---+---+---+
+   | 0 | N |           0           |
+   +---+---+-----------------------+
+   | H |     Name Length (7+)      |
+   +---+---------------------------+
+   |  Name String (Length octets)  |
+   +---+---------------------------+
+   | H |     Value Length (7+)     |
+   +---+---------------------------+
+   | Value String (Length octets)  |
+   +-------------------------------+
+~~~~~~~~~~
+{: title="Literal Header Field -- Literal Name"}
+
+Either form of header field name representation is followed by the header field
+value represented as a string literal (see Section 5.2 of [RFC7541]).
+
+
+# Encoding Strategies
 
 Due to out-of-order arrival, QPACK's eviction algorithm requires changes
 (relative to HPACK) to avoid the possibility that an indexed representation is
@@ -231,7 +408,28 @@ decoded after the referenced entry has already been evicted.  QPACK employs a
 two-phase eviction algorithm, in which the encoder will not evict entries that
 have outstanding (unacknowledged) references.
 
-### Blocked Evictions
+## Reference Tracking
+
+An encoder MUST ensure that an indexed representation is not received by the
+encoder after the referenced entry has already been evicted, and might wish to
+ensure that the decoder will not suffer head-of-line blocking when encoding
+particular references.
+
+In order to enable this, the encoder MUST track outstanding (unacknowledged)
+header blocks on request streams and MAY track outstanding header blocks on the
+control stream.
+
+When the encoder receives feedback from the decoder, it dereferences table
+entries that were indexed in the acknowledged header.  To track which entries
+must be dereferenced, it can maintain a map from unacknowledged headers to lists
+of (absolute) indices.  The simplest place to store the actual reference count
+might be the table entries.  In practice the number of entries in the table with
+a non-zero reference count is likely to stay quite small.  A data structure
+tracking only entries with non-zero reference counts, separate from the main
+header table, could be more space efficient.
+
+
+### Blocked Eviction
 
 The encoder MUST NOT permit an entry to be evicted while a reference to that
 entry remains unacknowledged.  If a new header to be inserted into the dynamic
@@ -248,37 +446,7 @@ entries in the dynamic table SHOULD be avoided.  When one of the oldest entries
 in the table is still actively used for references, the encoder SHOULD emit an
 Indexed-Duplicate representation instead (see {{indexed-duplicate}}).
 
-## Refreshing Entries with Duplication {#indexed-duplicate}
-
-~~~~~~~~~~  drawing
-    0 1 2 3 4 5 6 7
-   +-+-+-+-+-+-+-+-+
-   |0|0|1|Index(5+)|
-   +-+-+-+---------+
-~~~~~~~~~~
-{:#fig-index-with-duplication title="Indexed Header Field with Duplication"}
-
-*Indexed-Duplicates* insert a new entry into the dynamic table which duplicates
-an existing entry. {{RFC7541}} allows duplicate HPACK table entries, that is
-entries that have the same name and value.
-
-This replaces the HPACK instruction for Dynamic Table Size Update (see Section
-6.3 of {{RFC7541}}, which is not supported by HTTP over QUIC.
-
-# Performance considerations
-
-## Speculative table updates {#speculative-updates}
-
-Implementations can *speculatively* send header frames on the HTTP Control
-Streams which are not needed for any current HTTP request or response.  Such
-headers could be used strategically to improve performance.  For instance, the
-encoder might decide to *refresh* by sending Indexed-Duplicate representations
-for popular header fields ({{absolute-index}}), ensuring they have small indices
-and hence minimal size on the wire.
-
-## Additional state beyond HPACK.
-
-### Vulnerable Entries
+## Blocked Decoding
 
 For header blocks encoded in non-blocking mode, the encoder needs to forego
 indexed representations that refer to vulnerable entries (see
@@ -289,39 +457,19 @@ the total number of entries, so a data tracking only vulnerable
 (un-acknowledged) entries, separate from the main header table, might be more
 space efficient.
 
-### Safe evictions
-
-Section {{evictions}} describes how QPACK avoids invalid references that might
-result from out-of-order delivery.  When the encoder processes a HEADER_ACK, it
-dereferences table entries that were indexed in the acknowledged header.  To
-track which entries must be dereferenced, it can maintain a map from
-unacknowledged headers to lists of (absolute) indices.  The simplest place to
-store the actual reference count might be the table entries.  In practice the
-number of entries in the table with a non-zero reference count is likely to stay
-quite small.  A data structure tracking only entries with non-zero reference
-counts, separate from the main header table, could be more space efficient.
-
-### Decoder Blocking
-
-To support blocking, the decoder needs to keep track of entries it has added to
-the dynamic table (see {{overview-hol-avoidance}}), and it needs to track
-blocked streams.
-
-Tracking added entries might be done in a brute force fashion without additional
-space.  However, this would have O(N) cost where N is the number of entries in
-the dynamic table.  Alternatively, a dedicated data structure might improve on
-brute force in exchange a small amount of additional space.  For example, a set
-of pairs (of indices), representing non-overlapping sub-ranges can be used.
-Each operation (add, or query) can be done within O(log M) complexity.  Here set
-size M is the number of sub-ranges. In practice M would be very small, as most
-table entries would be concentrated in the first sub-range `[1,M]`.
-
 To track blocked streams, an ordered map (e.g. multi-map) from `Depends Index`
-values to streams can be used.  Whenever the decoder processes a header block,
-it can drain any members of the blocked streams map that have `Depends
-Index <= M` where `[1,M]` is the first member of the added- entries sub-ranges
-set.  Again, the complexity of operations would be at most O(log N), N being
-the number of concurrently blocked streams.
+values to streams can be used.  Whenever the decoder processes a header block on
+the control stream, it can drain any members of the blocked streams map that now
+have their dependencies satisfied.
+
+## Speculative table updates {#speculative-updates}
+
+Implementations can *speculatively* send header frames on the HTTP Control
+Streams which are not needed for any current HTTP request or response.  Such
+headers could be used strategically to improve performance.  For instance, the
+encoder might decide to *refresh* by sending Indexed-Duplicate representations
+for popular header fields ({{absolute-index}}), ensuring they have small indices
+and hence minimal size on the wire.
 
 # Security Considerations
 
