@@ -467,7 +467,7 @@ in an ACK frame.
 When a packet containing an ACK frame is sent, the largest acked in that
 frame may be saved.  When a packet containing an ACK frame is acknowledged,
 the receiver can stop acknowledging packets less than or equal to the
-largest acked in the sent ACK frame. 
+largest acked in the sent ACK frame.
 
 This approach does not guarantee every acknowledgement is seen by the
 sender before it is no longer included in the ack frame, because packets
