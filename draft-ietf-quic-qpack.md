@@ -142,21 +142,26 @@ instruction space:
 
 This section describes the instructions which are possible on each stream type.
 
-In order to ensure table consistency, all modifications of the header table
-occur on the control stream rather than on request streams. Request streams
-contain only indexed and literal header entries.
+In order to ensure table consistency and simplify update management, all table
+updates occur on the control stream rather than on request streams. Request
+streams contain only header blocks, which do not modify the state of the table.
 
 ## HEADERS Frames on the Control Stream
 
+Table updates can add a table entry, possibly using existing entries to avoid
+transmitting redundant information.  The name can be transmitted as a reference
+to an existing entry in either table or as a string literal. For entries which
+already exist in the dynamic table, the full entry can also be used by
+reference, creating a duplicate entry.
+
 ### Insert
 
-An addition to the header table starts with the '1' one-bit pattern. If the
-header field name matches the header field name of an entry stored in the static
-table or the dynamic table, the header field name can be represented using the
-index of that entry. In this case, the `S` bit indicates whether the reference
-is to the static (S=1) or dynamic (S=0) table and the index of the entry is
-represented as an integer with an 7-bit prefix (see Section 5.1 of [RFC7541]).
-This value is always non-zero.
+An addition to the header table starts with the '1' one-bit pattern. This
+instruction can reference an existing table entry and use its name. The `S` bit
+indicates whether the entry is in the static table (where `S` is 1) or the
+dynamic table (where `S` is 0). The index of the entry is represented as an
+integer with an 6-bit prefix (see Section 5.1 of [RFC7541]). Table indices are
+always non-zero; a zero index is reserved for literal names.
 
 ~~~~~~~~~~ drawing
      0   1   2   3   4   5   6   7
@@ -177,8 +182,8 @@ by the header field name.
 ~~~~~~~~~~ drawing
      0   1   2   3   4   5   6   7
    +---+---+---+---+---+---+---+---+
-   | 1 |             0             |
-   +---+---------------------------+
+   | 1 | 0 |           0           |
+   +---+---+-----------------------+
    | H |     Name Length (7+)      |
    +---+---------------------------+
    |  Name String (Length octets)  |
@@ -195,8 +200,10 @@ value represented as a string literal (see Section 5.2 of [RFC7541]).
 
 ### Duplicate {#indexed-duplicate}
 
-An entry currently in the dynamic table can be re-inserted into the dynamic
-table without resending the header.
+Duplication of an existing entry in the dynamic table starts with the '0'
+one-bit pattern.  The index of the existing entry is represented as an integer
+with a 7-bit prefix. Table indices are always non-zero; a table index of zero
+MUST be treated as a decoding error.
 
 ~~~~~~~~~~ drawing
      0   1   2   3   4   5   6   7
@@ -206,31 +213,36 @@ table without resending the header.
 ~~~~~~~~~~
 {:#fig-index-with-duplication title="Duplicate"}
 
-This is useful to mitigate the eviction of older entries which are frequently
-referenced, both to avoid the need to resend the header and to avoid the entry
-in the table blocking the ability to insert new headers.
+The existing entry is re-inserted into the dynamic table without resending
+either the name or the value. This is useful to mitigate the eviction of older
+entries which are frequently referenced, both to avoid the need to resend the
+header and to avoid the entry in the table blocking the ability to insert new
+headers.
 
-## HEADER_ACK Frames
+## HEADER_ACK Frames {#feedback}
 
 HEADER_ACK frames on the control stream carry information used to ensure
 consistency of the dynamic table. Information is sent from the QCRAM decoder to
 the QCRAM encoder; that is, the server informs the client about the processing
-of the client's header blocks, and the client informs the server about the
-processing of the server's header blocks.
+of the client's header blocks and table updates, and the client informs the
+server about the processing of the server's header blocks and table updates.
 
-Each frame represents a header block which the QCRAM decoder has fully
-processed.  It is used by the peer's QCRAM encoder to determine whether
-subsequent indexed representations that might reference that block are
+Each frame represents a header block or table update which the QCRAM decoder has
+fully processed.  It is used by the peer's QCRAM encoder to determine whether
+subsequent indexed representations that might reference impacted entries are
 vulnerable to head-of-line blocking, and to prevent eviction races.
 
 The frame payload contains contains a variable-length integer (as defined in
 {{QUIC-TRANSPORT}}) which indicates the stream on which the header block was
-processed. The same Stream ID can be identified multiple times, as multiple
-header-containing blocks can be sent on a single stream in the case of
-intermediate responses, trailers, pushed requests, etc. as well as on the
-Control Streams.  Since header frames on each stream are received and processed
-in order, this gives the encoder precise feedback on which header blocks within
-a stream have been fully processed.
+processed. The same Stream ID can be identified in multiple frames, as multiple
+header blocks can be sent on a single request or push stream.  (Requests can
+have trailers; responses can have intermediate status codes and PUSH_PROMISE
+frames.) As the control stream carries multiple table updates, the control
+stream can also be identified in multiple frames.
+
+Since header frames on each stream are received and processed in
+order, this gives the encoder precise feedback on which header blocks within a
+stream have been fully processed.
 
 ## Request Streams
 
@@ -274,7 +286,7 @@ is the largest (absolute) index referenced by the following header block.  To
 help keep the prefix smaller, `Depends Index` is converted to a relative value:
 `Depends = Base Index - Depends Index`.
 
-#### Hybrid absolute-relative indexing {#overview-absolute}
+### Hybrid absolute-relative indexing {#overview-absolute}
 
 HPACK indexed entries refer to an entry by its current position in the dynamic
 table.  As Figure 1 of {{!RFC7541}} illustrates, newer entries have smaller
@@ -331,7 +343,7 @@ decoded header list, as described in Section 3.2 of [RFC7541].
   0   1   2   3   4   5   6   7
 +---+---+---+---+---+---+---+---+
 | 1 | S |      Index (6+)       |
-+---+---------------------------+
++---+---+-----------------------+
 ~~~~~~~~~~
 {: title="Indexed Header Field"}
 
@@ -362,7 +374,8 @@ static table or the dynamic table, the header field name can be represented
 using the index of that entry. In this case, the `S` bit indicates whether the
 reference is to the static (S=1) or dynamic (S=0) table and the index of the
 entry is represented as an integer with an 5-bit prefix (see Section 5.1 of
-[RFC7541]). This value is always non-zero.
+[RFC7541]). Valid table indices are always non-zero; a table index of zero
+MUST be treated as a decoding error.
 
 ~~~~~~~~~~
      0   1   2   3   4   5   6   7
@@ -410,14 +423,13 @@ have outstanding (unacknowledged) references.
 
 ## Reference Tracking
 
-An encoder MUST ensure that an indexed representation is not received by the
-encoder after the referenced entry has already been evicted, and might wish to
-ensure that the decoder will not suffer head-of-line blocking when encoding
-particular references.
+An encoder MUST ensure that a header block which references a dynamic table
+entry is not received by the decoder after the referenced entry has already been
+evicted, and might wish to ensure that the decoder will not suffer head-of-line
+blocking when encoding particular references.
 
 In order to enable this, the encoder MUST track outstanding (unacknowledged)
-header blocks on request streams and MAY track outstanding header blocks on the
-control stream.
+header blocks and MAY track outstanding table updates.
 
 When the encoder receives feedback from the decoder, it dereferences table
 entries that were indexed in the acknowledged header.  To track which entries
@@ -449,18 +461,16 @@ Indexed-Duplicate representation instead (see {{indexed-duplicate}}).
 ## Blocked Decoding
 
 For header blocks encoded in non-blocking mode, the encoder needs to forego
-indexed representations that refer to vulnerable entries (see
-{{overview-hol-avoidance}}).  An implementation could extend the header table
-entry with a boolean to track vulnerability.  However, the number of entries in
-the table that are vulnerable is likely to be small in practice, much less than
-the total number of entries, so a data tracking only vulnerable
-(un-acknowledged) entries, separate from the main header table, might be more
-space efficient.
+indexed representations that refer to table updates which have not yet been
+acknowledged with {{feedback}}.  An implementation could extend the header table
+entry with a boolean to track acknowledgement state.  However, the number of
+entries in the table that are unacknowledged is likely to be small in practice,
+much less than the total number of entries, so tracking only un-acknowledged
+entries separate from the main header table might be more space efficient.
 
-To track blocked streams, an ordered map (e.g. multi-map) from `Depends Index`
-values to streams can be used.  Whenever the decoder processes a header block on
-the control stream, it can drain any members of the blocked streams map that now
-have their dependencies satisfied.
+To track blocked streams, the necessary `Depends Index` values for each stream
+can be used.  Whenever the decoder processes a table update, it can begin
+decoding any blocked streams that now have their dependencies satisfied.
 
 ## Speculative table updates {#speculative-updates}
 
@@ -477,8 +487,7 @@ TBD.
 
 # IANA Considerations
 
-This document registers a new frame type, HEADER_ACK, for HTTP/QUIC. This will
-need to be added to the IANA Considerations of {{QUIC-HTTP}}.
+None.
 
 --- back
 
