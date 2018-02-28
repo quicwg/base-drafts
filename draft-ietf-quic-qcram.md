@@ -198,11 +198,11 @@ string literal (see Section 5.2 of [RFC7541]).
 {: title="Insert Header Field -- Indexed Name"}
 
 
-### Insert Without Reference
+### Insert Without Name Reference
 
 An addition to the header table where both the header field name and the header
 field value are represented as string literals (see {{primitives}}) starts with
-the '00' two-bit pattern.
+the '01' two-bit pattern.
 
 The name is represented as a 6-bit prefix string literal, while the value is
 represented as an 8-bit prefix string literal.
@@ -210,7 +210,7 @@ represented as an 8-bit prefix string literal.
 ~~~~~~~~~~ drawing
      0   1   2   3   4   5   6   7
    +---+---+---+---+---+---+---+---+
-   | 0 | 0 | H | Name Length (5+)  |
+   | 0 | 1 | H | Name Length (5+)  |
    +---+---+---+-------------------+
    |  Name String (Length octets)  |
    +---+---------------------------+
@@ -224,7 +224,7 @@ represented as an 8-bit prefix string literal.
 
 ### Duplicate {#indexed-duplicate}
 
-Duplication of an existing entry in the dynamic table starts with the '01'
+Duplication of an existing entry in the dynamic table starts with the '00'
 two-bit pattern.  The index of the existing entry is represented as an integer
 with a 6-bit prefix. Table indices are always non-zero; a table index of zero
 MUST be treated as a decoding error.
@@ -232,7 +232,7 @@ MUST be treated as a decoding error.
 ~~~~~~~~~~ drawing
      0   1   2   3   4   5   6   7
    +---+---+---+---+---+---+---+---+
-   | 0 | 1 |      Index (6+)       |
+   | 0 | 0 |      Index (6+)       |
    +---+---------------------------+
 ~~~~~~~~~~
 {:#fig-index-with-duplication title="Duplicate"}
