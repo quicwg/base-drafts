@@ -2690,7 +2690,7 @@ advised to bundle as few streams as necessary in outgoing packets without losing
 transmission efficiency to underfilled packets.
 
 
-## Extension Frames (#extension-frames)
+## Extension Frames {#extension-frames}
 
 During the handshake, the client may offer the server a list of extensions it
 supports as a part of transport parameters, and the server may reply with the
