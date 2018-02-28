@@ -233,7 +233,7 @@ MUST be treated as a decoding error.
      0   1   2   3   4   5   6   7
    +---+---+---+---+---+---+---+---+
    | 0 | 0 | 0 |    Index (5+)     |
-   +---+---------------------------+
+   +---+---+---+-------------------+
 ~~~~~~~~~~
 {:#fig-index-with-duplication title="Duplicate"}
 
@@ -251,7 +251,7 @@ A dynamic table size update signals a change to the size of the dynamic table.
   0   1   2   3   4   5   6   7
 +---+---+---+---+---+---+---+---+
 | 0 | 0 | 1 |   Max size (5+)   |
-+---+---------------------------+
++---+---+---+-------------------+
 ~~~~~~~~~~
 {:#fig-size-change title="Maximum Dynamic Table Size Change"}
 
