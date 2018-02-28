@@ -382,7 +382,7 @@ with the `HTTP_HPACK_DECOMPRESSION_FAILED` error code.
 
 ### Instructions
 
-#### Indexed Header Field Representation
+#### Indexed Header Field
 
 An indexed header field representation identifies an entry in either the static
 table or the dynamic table and causes that header field to be added to the
@@ -404,51 +404,62 @@ integer with a 6-bit prefix (see Section 5.1 of [RFC7541]).
 The index value of 0 is not used.  It MUST be treated as a decoding error if
 found in an indexed header field representation.
 
-#### Literal Header Field Representation
+#### Literal Header Field With Name Reference
 
-A literal header field representation starts with the '0' 1-bit pattern and
-causes a header field to be added the decoded header list.
+A header where the header field name matches the header field name of an entry
+stored in the static table or the dynamic table starts with the '00' two-bit
+pattern.
 
-The second bit, 'N', indicates whether an intermediary is permitted to add this
+The third bit, 'N', indicates whether an intermediary is permitted to add this
 header to the dynamic header table on subsequent hops. When the 'N' bit is set,
-the encoded header MUST always be encoded with this specific literal
-representation. In particular, when a peer sends a header field that it received
-represented as a literal header field with the 'N' bit set, it MUST use the same
-representation to forward this header field.  This bit is intended for
-protecting header field values that are not to be put at risk by compressing
-them (see Section 7.1 of [RFC7541] for more details).
+the encoded header MUST always be encoded with a literal representation. In
+particular, when a peer sends a header field that it received represented as a
+literal header field with the 'N' bit set, it MUST use a literal representation
+to forward this header field.  This bit is intended for protecting header field
+values that are not to be put at risk by compressing them (see Section 7.1 of
+[RFC7541] for more details).
 
-If the header field name matches the header field name of an entry stored in the
-static table or the dynamic table, the header field name can be represented
-using the index of that entry. In this case, the `S` bit indicates whether the
-reference is to the static (S=1) or dynamic (S=0) table and the index of the
-entry is represented as an integer with an 5-bit prefix (see Section 5.1 of
-[RFC7541]). Valid table indices are always non-zero; a table index of zero
-MUST be treated as a decoding error.
+The header field name is represented using the index of that entry, which is
+represented as an integer with a 4-bit prefix (see Section 5.1 of [RFC7541]).
+The `S` bit indicates whether the reference is to the static (S=1) or dynamic
+(S=0) table.  Table indices are always non-zero; a zero index MUST be treated as
+a decoding error.
 
-~~~~~~~~~~
+~~~~~~~~~~ drawing
      0   1   2   3   4   5   6   7
    +---+---+---+---+---+---+---+---+
-   | 0 | N | S |  Name Index (5+)  |
+   | 0 | 0 | N | S |Name Index (4+)|
    +---+---+-----------------------+
    | H |     Value Length (7+)     |
    +---+---------------------------+
    | Value String (Length octets)  |
    +-------------------------------+
 ~~~~~~~~~~
-{: title="Literal Header Field -- Indexed Name"}
+{: title="Literal Header Field With Name Reference"}
 
-Otherwise, the header field name is represented as a string literal (see Section
-5.2 of [RFC7541]). A value 0 is used in place of the 6-bit index, followed by
-the header field name.
+#### Literal Header Field Without Name Reference
 
-~~~~~~~~~~
+An addition to the header table where both the header field name and the header
+field value are represented as string literals (see {{primitives}}) starts with
+the '01' two-bit pattern.
+
+The third bit, 'N', indicates whether an intermediary is permitted to add this
+header to the dynamic header table on subsequent hops. When the 'N' bit is set,
+the encoded header MUST always be encoded with a literal representation. In
+particular, when a peer sends a header field that it received represented as a
+literal header field with the 'N' bit set, it MUST use a literal representation
+to forward this header field.  This bit is intended for protecting header field
+values that are not to be put at risk by compressing them (see Section 7.1 of
+[RFC7541] for more details).
+
+The name is represented as a 5-bit prefix string literal, while the value is
+represented as an 8-bit prefix string literal.
+
+~~~~~~~~~~ drawing
      0   1   2   3   4   5   6   7
    +---+---+---+---+---+---+---+---+
-   | 0 | N |           0           |
-   +---+---+-----------------------+
-   | H |     Name Length (7+)      |
-   +---+---------------------------+
+   | 0 | 1 | N | H |Name Length(4+)|
+   +---+---+---+-------------------+
    |  Name String (Length octets)  |
    +---+---------------------------+
    | H |     Value Length (7+)     |
@@ -456,11 +467,7 @@ the header field name.
    | Value String (Length octets)  |
    +-------------------------------+
 ~~~~~~~~~~
-{: title="Literal Header Field -- Literal Name"}
-
-Either form of header field name representation is followed by the header field
-value represented as a string literal (see Section 5.2 of [RFC7541]).
-
+{: title="Literal Header Field Without Name Reference"}
 
 # Encoding Strategies
 
