@@ -474,20 +474,14 @@ have outstanding (unacknowledged) references.
 
 An encoder MUST ensure that a header block which references a dynamic table
 entry is not received by the decoder after the referenced entry has already been
-evicted, and might wish to ensure that the decoder will not suffer head-of-line
-blocking when encoding particular references.
+evicted, and MUST ensure that the decoder will not suffer head-of-line blocking
+if the decoder has not opted to receive blocking references. Even if the decoder
+is willing to process blocking references, the encoder might choose to avoid
+them in certain cases.
 
-In order to enable this, the encoder MUST track outstanding (unacknowledged)
-header blocks and MAY track outstanding table updates.
-
-When the encoder receives feedback from the decoder, it dereferences table
-entries that were indexed in the acknowledged header.  To track which entries
-must be dereferenced, it can maintain a map from unacknowledged headers to lists
-of (absolute) indices.  The simplest place to store the actual reference count
-might be the table entries.  In practice the number of entries in the table with
-a non-zero reference count is likely to stay quite small.  A data structure
-tracking only entries with non-zero reference counts, separate from the main
-header table, could be more space efficient.
+In order to enable this, the encoder will need to track outstanding
+(unacknowledged) header blocks and table updates using feedback received from
+the decoder.
 
 
 ### Blocked Eviction
