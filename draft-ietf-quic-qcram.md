@@ -157,8 +157,12 @@ single flag (indicating whether the string is Huffman-coded), followed by the
 Length encoded as a 7-bit prefix integer, and finally Length octets of data.
 
 QCRAM permits strings to begin other than on a byte boundary.  An "N-bit prefix
-string" begins with the same Huffman flag, followed by the length encoded as an
-(N-1)-bit prefix integer.  The remainder of the string literal is unmodified.
+string literal" begins with the same Huffman flag, followed by the length
+encoded as an (N-1)-bit prefix integer.  The remainder of the string literal is
+unmodified.
+
+A string literal without a prefix length noted is an 8-bit prefix string literal
+and follows the definitions in [RFC7541] without modification.
 
 ## HEADERS Frames on the Control Stream
 
@@ -199,6 +203,9 @@ string literal (see Section 5.2 of [RFC7541]).
 An addition to the header table where both the header field name and the header
 field value are represented as string literals (see {{primitives}}) starts with
 the '00' two-bit pattern.
+
+The name is represented as a 6-bit prefix string literal, while the value is
+represented as an 8-bit prefix string literal.
 
 ~~~~~~~~~~ drawing
      0   1   2   3   4   5   6   7
