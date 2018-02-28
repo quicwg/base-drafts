@@ -224,15 +224,15 @@ represented as an 8-bit prefix string literal.
 
 ### Duplicate {#indexed-duplicate}
 
-Duplication of an existing entry in the dynamic table starts with the '00'
-two-bit pattern.  The index of the existing entry is represented as an integer
-with a 6-bit prefix. Table indices are always non-zero; a table index of zero
+Duplication of an existing entry in the dynamic table starts with the '000'
+three-bit pattern.  The index of the existing entry is represented as an integer
+with a 5-bit prefix. Table indices are always non-zero; a table index of zero
 MUST be treated as a decoding error.
 
 ~~~~~~~~~~ drawing
      0   1   2   3   4   5   6   7
    +---+---+---+---+---+---+---+---+
-   | 0 | 0 |      Index (6+)       |
+   | 0 | 0 | 0 |    Index (5+)     |
    +---+---------------------------+
 ~~~~~~~~~~
 {:#fig-index-with-duplication title="Duplicate"}
@@ -242,6 +242,31 @@ either the name or the value. This is useful to mitigate the eviction of older
 entries which are frequently referenced, both to avoid the need to resend the
 header and to avoid the entry in the table blocking the ability to insert new
 headers.
+
+### Dynamic Table Size Update
+
+A dynamic table size update signals a change to the size of the dynamic table.
+
+~~~~~~~~~~ drawing
+  0   1   2   3   4   5   6   7
++---+---+---+---+---+---+---+---+
+| 0 | 0 | 1 |   Max size (5+)   |
++---+---------------------------+
+~~~~~~~~~~
+{:#fig-size-change title="Maximum Dynamic Table Size Change"}
+
+A dynamic table size update starts with the '001' 3-bit pattern, followed by the
+new maximum size, represented as an integer with a 5-bit prefix (see Section
+5.1 of [RFC7541]).
+
+The new maximum size MUST be lower than or equal to the limit determined by the
+protocol using QCRAM.  A value that exceeds this limit MUST be treated as a
+decoding error.  In HTTP/QUIC, this limit is the value of the
+SETTINGS_HEADER_TABLE_SIZE parameter (see [QUIC-HTTP]) received from the
+decoder.
+
+Reducing the maximum size of the dynamic table can cause entries to
+be evicted (see Section 4.3 of [RFC7541]).
 
 ## HEADER_ACK Frames {#feedback}
 
