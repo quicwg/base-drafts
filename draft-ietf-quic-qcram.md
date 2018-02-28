@@ -146,6 +146,20 @@ In order to ensure table consistency and simplify update management, all table
 updates occur on the control stream rather than on request streams. Request
 streams contain only header blocks, which do not modify the state of the table.
 
+## Primitives
+
+The prefixed integer from Section 5.1 of [RFC7541] is used heavily throughout
+this document.  The string literal, defined by Section 5.2 of [RFC7541], is used
+with the following modification.
+
+HPACK defines string literals to begin on a byte boundary.  They begin with a
+single flag (indicating whether the string is Huffman-coded), followed by the
+Length encoded as a 7-bit prefix integer, and finally Length octets of data.
+
+QCRAM permits strings to begin other than on a byte boundary.  An "N-bit prefix
+string" begins with the same Huffman flag, followed by the length encoded as an
+(N-1)-bit prefix integer.  The remainder of the string literal is unmodified.
+
 ## HEADERS Frames on the Control Stream
 
 Table updates can add a table entry, possibly using existing entries to avoid
@@ -183,16 +197,14 @@ string literal (see Section 5.2 of [RFC7541]).
 ### Insert Without Reference
 
 An addition to the header table where both the header field name and the header
-field value are represented as string literals (see Section 5.2 of [RFC7541])
-starts with the '00' two-bit pattern.
+field value are represented as string literals (see {{primitives}}) starts with
+the '00' two-bit pattern.
 
 ~~~~~~~~~~ drawing
      0   1   2   3   4   5   6   7
    +---+---+---+---+---+---+---+---+
-   | 0 | 0 |           0           |
-   +---+---+-----------------------+
-   | H |     Name Length (7+)      |
-   +---+---------------------------+
+   | 0 | 0 | H | Name Length (5+)  |
+   +---+---+---+-------------------+
    |  Name String (Length octets)  |
    +---+---------------------------+
    | H |     Value Length (7+)     |
@@ -201,7 +213,6 @@ starts with the '00' two-bit pattern.
    +-------------------------------+
 ~~~~~~~~~~
 {: title="Insert Header Field -- New Name"}
-
 
 
 ### Duplicate {#indexed-duplicate}
@@ -214,7 +225,7 @@ MUST be treated as a decoding error.
 ~~~~~~~~~~ drawing
      0   1   2   3   4   5   6   7
    +---+---+---+---+---+---+---+---+
-   | 0 | 1 |      Index (7+)       |
+   | 0 | 1 |      Index (6+)       |
    +---+---------------------------+
 ~~~~~~~~~~
 {:#fig-index-with-duplication title="Duplicate"}
