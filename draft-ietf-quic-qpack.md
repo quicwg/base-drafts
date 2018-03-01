@@ -138,7 +138,7 @@ instruction space:
  - Acknowledgement of header frame processing is carried by HEADER_ACK frames,
    running from decoder to encoder.
  - Finally, the contents of HEADERS and PUSH_PROMISE frames on request streams
-   reference the QPACK table state.
+   reference the QCRAM table state.
 
 This section describes the instructions which are possible on each stream type.
 
@@ -168,9 +168,9 @@ and follows the definitions in [RFC7541] without modification.
 
 Table updates can add a table entry, possibly using existing entries to avoid
 transmitting redundant information.  The name can be transmitted as a reference
-to an existing entry in either table or as a string literal. For entries which
-already exist in the dynamic table, the full entry can also be used by
-reference, creating a duplicate entry.
+to an existing entry in the static or the dynamic table or as a string literal.
+For entries which already exist in the dynamic table, the full entry can also be
+used by reference, creating a duplicate entry.
 
 ### Insert With Name Reference
 
@@ -245,7 +245,10 @@ headers.
 
 ### Dynamic Table Size Update
 
-A dynamic table size update signals a change to the size of the dynamic table.
+An encoder informs the decoder of a change to the size of the dynamic table
+using an instruction which begins with the '001' three-bit pattern.  The new
+maximum table size is represented as an integer with a 5-bit prefix (see Section
+5.1 of [RFC7541]).
 
 ~~~~~~~~~~ drawing
   0   1   2   3   4   5   6   7
@@ -255,18 +258,15 @@ A dynamic table size update signals a change to the size of the dynamic table.
 ~~~~~~~~~~
 {:#fig-size-change title="Maximum Dynamic Table Size Change"}
 
-A dynamic table size update starts with the '001' 3-bit pattern, followed by the
-new maximum size, represented as an integer with a 5-bit prefix (see Section
-5.1 of [RFC7541]).
-
 The new maximum size MUST be lower than or equal to the limit determined by the
 protocol using QCRAM.  A value that exceeds this limit MUST be treated as a
 decoding error.  In HTTP/QUIC, this limit is the value of the
 SETTINGS_HEADER_TABLE_SIZE parameter (see [QUIC-HTTP]) received from the
 decoder.
 
-Reducing the maximum size of the dynamic table can cause entries to
-be evicted (see Section 4.3 of [RFC7541]).
+Reducing the maximum size of the dynamic table can cause entries to be evicted
+(see Section 4.3 of [RFC7541]).  This MUST NOT cause the eviction of entries
+with outstanding references (see {{reference-tracking}}).
 
 ## HEADER_ACK Frames {#feedback}
 
@@ -490,7 +490,6 @@ In order to enable this, the encoder will need to track outstanding
 (unacknowledged) header blocks and table updates using feedback received from
 the decoder.
 
-
 ### Blocked Eviction
 
 The encoder MUST NOT permit an entry to be evicted while a reference to that
@@ -508,19 +507,17 @@ entries in the dynamic table SHOULD be avoided.  When one of the oldest entries
 in the table is still actively used for references, the encoder SHOULD emit an
 Indexed-Duplicate representation instead (see {{indexed-duplicate}}).
 
+
 ## Blocked Decoding
 
 For header blocks encoded in non-blocking mode, the encoder needs to forego
 indexed representations that refer to table updates which have not yet been
-acknowledged with {{feedback}}.  An implementation could extend the header table
-entry with a boolean to track acknowledgement state.  However, the number of
-entries in the table that are unacknowledged is likely to be small in practice,
-much less than the total number of entries, so tracking only un-acknowledged
-entries separate from the main header table might be more space efficient.
+acknowledged with {{feedback}}.
 
 To track blocked streams, the necessary `Depends Index` values for each stream
 can be used.  Whenever the decoder processes a table update, it can begin
 decoding any blocked streams that now have their dependencies satisfied.
+
 
 ## Speculative table updates {#speculative-updates}
 
