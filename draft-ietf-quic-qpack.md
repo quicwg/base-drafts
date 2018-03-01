@@ -129,14 +129,14 @@ field data MUST remain in the blocked stream's flow control window.
 
 # Wire Format
 
-QCRAM instructions occur on three stream types, each of which uses a separate
+QCRAM instructions occur in three locations, each of which uses a separate
 instruction space:
 
  - Table updates are carried by HEADERS frames on the control stream, as defined
    by {{QUIC-HTTP}}.  Frames on this stream modify the dynamic table state
    without generating output to any particular request.
- - Acknowledgement of header frame processing is carried by HEADER_ACK frames,
-   running from decoder to encoder.
+ - Acknowledgement of header frame processing is carried by HEADER_ACK frames on
+   the control stream, running from decoder to encoder.
  - Finally, the contents of HEADERS and PUSH_PROMISE frames on request streams
    reference the QCRAM table state.
 
