@@ -1,4 +1,4 @@
-MD_PREPROCESSOR := sed -e 's/{DATE}/$(shell date '+%Y-%m')/g'
+MD_PREPROCESSOR := sed -e 's/{DATE}/$(shell date '+%Y-%m-%d')/g'
 
 LIBDIR := lib
 include $(LIBDIR)/main.mk

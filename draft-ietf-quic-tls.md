@@ -764,7 +764,6 @@ server_pp_secret_<N+1> =
 
 This allows for a succession of new secrets to be created as needed.
 
-
 ### Packet Protection Keys
 
 The complete key expansion uses a similar process for key expansion to that
@@ -1310,6 +1309,13 @@ The `CONNECTION_CLOSE` frame MAY be sent by either endpoint in a Handshake
 packet.  This allows an endpoint to signal a fatal error with connection
 establishment.  A `STREAM` frame carrying a TLS alert MAY be included in the
 same packet.
+
+
+### Address Verification
+
+In order to perform source-address verification before the handshake is
+complete, `PATH_CHALLENGE` and `PATH_RESPONSE` frames MAY be exchanged
+unprotected.
 
 
 ### Denial of Service with Unprotected Packets

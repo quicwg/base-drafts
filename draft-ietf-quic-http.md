@@ -38,6 +38,27 @@ normative:
         org: Mozilla
         role: editor
 
+  QCRAM:
+    title: "Header Compression for HTTP over QUIC"
+    date: {DATE}
+    seriesinfo:
+      Internet-Draft: draft-ietf-quic-qcram-latest
+    author:
+      -
+          ins: C. Krasic
+          name: Charles 'Buck' Krasic
+          org: Google, Inc
+      -
+          ins: M. Bishop
+          name: Mike Bishop
+          org: Akamai Technologies
+      -
+          ins: A. Frindell
+          name: Alan Frindell
+          org: Facebook
+          role: editor
+
+
 informative:
 
 
@@ -127,27 +148,38 @@ port.
 
 This document defines the "quic" parameter for Alt-Svc, which MAY be used to
 provide version-negotiation hints to HTTP/QUIC clients. QUIC versions are
-four-octet sequences with no additional constraints on format. Syntax:
+four-octet sequences with no additional constraints on format.  Leading zeros
+SHOULD be omitted for brevity.
+
+Syntax:
 
 ~~~ abnf
-quic = version-number
+quic = DQUOTE version-number [ "," version-number ] * DQUOTE
 version-number = 1*8HEXDIG; hex-encoded QUIC version
-~~~
-
-Leading zeros SHOULD be omitted for brevity.  When multiple versions are
-supported, the "quic" parameter MAY be repeated multiple times in a single
-Alt-Svc entry.  For example, if a server supported both version 0x00000001 and
-the version rendered in ASCII as "Q034", it could specify the following header:
-
-~~~ example
-Alt-Svc: hq=":49288";quic=1;quic=51303334
 ~~~
 
 Where multiple versions are listed, the order of the values reflects the
 server's preference (with the first value being the most preferred version).
-Origins SHOULD list only versions which are supported by the alternative, but
-MAY omit supported versions for any reason.
+Reserved versions MAY be listed, but unreserved versions which are not supported
+by the alternative SHOULD NOT be present in the list. Origins MAY omit supported
+versions for any reason.
 
+Clients MUST ignore any included versions which they do not support.  The "quic"
+parameter MUST NOT occur more than once; clients SHOULD process only the first
+occurrence.
+
+For example, suppose a server supported both version 0x00000001 and the version
+rendered in ASCII as "Q034".  If it opted to include the reserved versions (from
+Section 4 of {{QUIC-TRANSPORT}}) 0x0 and 0x1abadaba, it could specify the
+following header:
+
+~~~ example
+Alt-Svc: hq=":49288";quic="1,1abadaba,51303334,0"
+~~~
+
+A client acting on this header would drop the reserved versions (because it does
+not support them), then attempt to connect to the alternative using the first
+version in the list which it does support.
 
 ## Connection Establishment {#connection-establishment}
 
@@ -312,18 +344,9 @@ abort a response in progress as a result of receiving a solicited RST_STREAM.
 
 ### Header Compression
 
-HTTP/QUIC uses HPACK header compression as described in {{!RFC7541}}. HPACK was
-designed for HTTP/2 with the assumption of in-order delivery such as that
-provided by TCP. A sequence of encoded header blocks must arrive (and be
-decoded) at an endpoint in the same order in which they were encoded. This
-ensures that the dynamic state at the two endpoints remains in sync.
-
-QUIC streams provide in-order delivery of data sent on those streams, but there
-are no guarantees about order of delivery between streams. QUIC anticipates
-moving to a modified version of HPACK without this assumption.  In the meantime,
-by fixing the size of the dynamic table at zero, HPACK can be used in an
-unordered environment.
-
+HTTP/QUIC uses QCRAM header compression as described in [QCRAM], a variation of
+HPACK which allows the flexibility to avoid header-compression-induced
+head-of-line blocking.  See that document for additional details.
 
 ### The CONNECT Method
 
@@ -364,6 +387,31 @@ the TCP connection, which includes receiving a TCP segment with the RST bit set,
 as a stream error of type HTTP_CONNECT_ERROR ({{http-error-codes}}).
 Correspondingly, a proxy MUST send a TCP segment with the RST bit set if it
 detects an error with the stream or the QUIC connection.
+
+### Request Cancellation
+
+Either client or server can cancel requests by closing the stream (QUIC
+RST_STREAM or STOP_SENDING frames, as appropriate) with an error type of
+HTTP_REQUEST_CANCELLED ({{http-error-codes}}).  When the client cancels a
+request or response, it indicates that the response is no longer of interest.
+
+When the server cancels either direction of the request stream using
+HTTP_REQUEST_CANCELLED, it indicates that no application processing was
+performed.  The client can treat requests cancelled by the server as though they
+had never been sent at all, thereby allowing them to be retried later on a new
+connection.  Servers MUST NOT use the HTTP_REQUEST_CANCELLED status for requests
+which were partially or fully processed.
+
+  Note:
+  : In this context, "processed" means that some data from the stream was
+    passed to some higher layer of software that might have taken some action as
+    a result.
+
+If a stream is cancelled after receiving a complete response, the client MAY
+ignore the cancellation and use the response.  However, if a stream is cancelled
+after receiving a partial response, the response SHOULD NOT be used.
+Automatically retrying such requests is not possible, unless this is otherwise
+permitted (e.g., idempotent actions like GET, PUT, or DELETE).
 
 ## Request Prioritization {#priority}
 
@@ -499,11 +547,15 @@ with a payload length of zero, the recipient MUST respond with a stream error
 The HEADERS frame (type=0x1) is used to carry a header block, compressed using
 HPACK {{header-compression}}.
 
-No flags are defined for the HEADERS frame.
+The HEADERS frame defines a single flag:
 
-A HEADERS frame with any flags set MUST be treated as a connection error of type
-HTTP_MALFORMED_FRAME.
+BLOCKING (0x01):
+: Indicates the stream might need to wait for dependent headers before
+  processing.  If 0, the frame can be processed immediately upon receipt.
 
+HEADERS frames can be sent on the Control Stream as well as on request / push
+streams.  The value of BLOCKING MUST be 0 for HEADERS frames on the Control
+Stream, since they can only depend on previous HEADERS on the same stream.
 
 ### PRIORITY {#frame-priority}
 
@@ -703,7 +755,7 @@ Settings which are integers use the QUIC variable-length integer encoding.
 The following settings are defined in HTTP/QUIC:
 
   SETTINGS_HEADER_TABLE_SIZE (0x1):
-  : An integer with a maximum value of 2^30 - 1.  This value MUST be zero.
+  : An integer with a maximum value of 2^30 - 1.
 
   SETTINGS_MAX_HEADER_LIST_SIZE (0x6):
   : An integer with a maximum value of 2^30 - 1
@@ -740,7 +792,11 @@ the defaults above on the next connection.
 ### PUSH_PROMISE {#frame-push-promise}
 
 The PUSH_PROMISE frame (type=0x05) is used to carry a request header set from
-server to client, as in HTTP/2.  The PUSH_PROMISE frame defines no flags.
+server to client, as in HTTP/2.  The PUSH_PROMISE frame defines a single flag:
+
+BLOCKING (0x01):
+: Indicates the stream might need to wait for dependent headers before
+  processing.  If 0, the frame can be processed immediately upon receipt.
 
 ~~~~~~~~~~  drawing
  0                   1                   2                   3
@@ -761,7 +817,8 @@ Push ID:
   ({{frame-cancel-push}}), and PRIORITY frames ({{frame-priority}}).
 
 Header Block:
-: HPACK-compressed request headers for the promised response.
+: QCRAM-compressed request headers for the promised response.  See [QCRAM] for
+  more details.
 
 A server MUST NOT use a Push ID that is larger than the client has provided in a
 MAX_PUSH_ID frame ({{frame-max-push-id}}).  A client MUST treat receipt of a
@@ -799,14 +856,12 @@ close a connection.
 
 The GOAWAY frame does not define any flags, and the payload is a QUIC Stream ID
 for a client-initiated, bidirectional stream encoded as a variable-length
-integer.
+integer.  A client MUST treat receipt of a GOAWAY frame containing a Stream ID
+of any other type as a connection error of type HTTP_MALFORMED_FRAME.
 
 Clients do not need to send GOAWAY to initiate a graceful shutdown; they simply
 stop making new requests.  A server MUST treat receipt of a GOAWAY frame as a
 connection error ({{errors}}) of type HTTP_UNEXPECTED_GOAWAY.
-
-A client MUST treat receipt of a GOAWAY frame containing a Stream ID of any
-other type as a connection error of type HTTP_MALFORMED_FRAME.
 
 The GOAWAY frame applies to the connection, not a specific stream.  An endpoint
 MUST treat a GOAWAY frame on a stream other than the control stream as a
@@ -821,33 +876,19 @@ identified by a QUIC MAX_STREAM_ID frame, and MAY be zero if no requests were
 processed.  Servers SHOULD NOT increase the MAX_STREAM_ID limit after sending a
 GOAWAY frame.
 
-  Note:
-  : In this context, "processed" means that some data from the stream was
-    passed to some higher layer of software that might have taken some action as
-    a result.
-
-Once sent, the server will refuse requests sent on streams with an identifier
+Once sent, the server MUST cancel requests sent on streams with an identifier
 higher than the included last Stream ID.  Clients MUST NOT send new requests on
 the connection after receiving GOAWAY, although requests might already be in
 transit. A new connection can be established for new requests.
 
 If the client has sent requests on streams with a higher Stream ID than
-indicated in the GOAWAY frame, those requests were not and will not be
-processed.  Endpoints SHOULD reset any streams above this ID with the error code
-HTTP_REQUEST_CANCELLED.  Servers MAY also reset streams below the indicated ID
-with HTTP_REQUEST_CANCELLED if the associated requests were not processed.
-Servers MUST NOT use the HTTP_REQUEST_CANCELLED status for requests which were
-partially or fully processed.
+indicated in the GOAWAY frame, those requests are considered cancelled
+({{request-cancellation}}).  Clients SHOULD reset any streams above this ID with
+the error code HTTP_REQUEST_CANCELLED.  Servers MAY also cancel requests on
+streams below the indicated ID if these requests were not processed.
 
-The client can treat requests cancelled by the server as though they had never
-been sent at all, thereby allowing them to be retried later on a new connection.
-If a stream is cancelled after receiving a complete response, the client MAY
-ignore the cancellation and use the response.  However, if a stream is cancelled
-after receiving a partial response, the response SHOULD NOT be used.
-Automatically retrying such requests is not possible, unless this is otherwise
-permitted (e.g., idempotent actions like GET, PUT, or DELETE).  Requests on
-Stream IDs less than or equal to the Stream ID in the GOAWAY frame might have
-been processed; their status cannot be known until they are completed
+Requests on Stream IDs less than or equal to the Stream ID in the GOAWAY frame
+might have been processed; their status cannot be known until they are completed
 successfully, reset individually, or the connection terminates.
 
 Servers SHOULD send a GOAWAY frame when the closing of a connection is known
@@ -893,6 +934,38 @@ those requests have been completed or cancelled, the connection can be closed
 using an Immediate Close (see {{QUIC-TRANSPORT}}).  An endpoint that completes a
 graceful shutdown SHOULD use the QUIC APPLICATION_CLOSE frame with the
 HTTP_NO_ERROR code.
+
+### HEADER_ACK {#frame-header-ack}
+
+The HEADER_ACK frame (type=0x8) is used by header compression to ensure
+consistency. The frames are sent from the QCRAM decoder to the QCRAM encoder;
+that is, the server sends them to the client to acknowledge processing of the
+client's header blocks, and the client sends them to the server to acknowledge
+processing of the server's header blocks.
+
+The HEADER_ACK frame is sent on the Control Stream when the QCRAM decoder has
+fully processed a header block.  It is used by the peer's QCRAM encoder to
+determine whether subsequent indexed representations that might reference that
+block are vulnerable to head-of-line blocking, and to prevent eviction races.
+See [QCRAM] for more details on the use of this information.
+
+The HEADER_ACK frame indicates the stream on which the header block was
+processed by encoding the Stream ID as a variable-length integer. The same
+Stream ID can be identified multiple times, as multiple header-containing blocks
+can be sent on a single stream in the case of intermediate responses, trailers,
+pushed requests, etc. as well as on the Control Streams.  Since header frames on
+each stream are received and processed in order, this gives the encoder precise
+feedback on which header blocks within a stream have been fully processed.
+
+~~~~~~~~~~
+  0   1   2   3   4   5   6   7
++---+---+---+---+---+---+---+---+
+|        Stream ID (i)        ...
++---+---+---+---+---+---+---+---+
+~~~~~~~~~~
+{: title="HEADER_ACK frame"}
+
+The HEADER_ACK frame does not define any flags.
 
 
 ### MAX_PUSH_ID {#frame-max-push-id}
@@ -1065,6 +1138,12 @@ HTTP/2 specifies priority assignments in PRIORITY frames and (optionally) in
 HEADERS frames. To achieve in-order delivery of priority changes in HTTP/QUIC,
 PRIORITY frames are sent on the control stream and the PRIORITY section is
 removed from the HEADERS frame.
+
+Likewise, HPACK was designed with the assumption of in-order delivery. A
+sequence of encoded header blocks must arrive (and be decoded) at an endpoint in
+the same order in which they were encoded. This ensures that the dynamic state
+at the two endpoints remains in sync.  As a result, HTTP/QUIC uses a modified
+version of HPACK, described in [QCRAM].
 
 Frame type definitions in HTTP/QUIC often use the QUIC variable-length integer
 encoding.  In particular, Stream IDs use this encoding, which allow for a larger
@@ -1304,7 +1383,7 @@ The entries in the following table are registered by this document.
 | PUSH_PROMISE   | 0x5  | {{frame-push-promise}}   |
 | Reserved       | 0x6  | N/A                      |
 | GOAWAY         | 0x7  | {{frame-goaway}}         |
-| Reserved       | 0x8  | N/A                      |
+| HEADER_ACK     | 0x8  | {{frame-header-ack}      |
 | Reserved       | 0x9  | N/A                      |
 | MAX_PUSH_ID    | 0xD  | {{frame-max-push-id}}    |
 |----------------|------|--------------------------|

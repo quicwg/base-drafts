@@ -708,7 +708,8 @@ Pseudocode for SetLossDetectionAlarm follows:
         alarm_duration = 2 * kDefaultInitialRtt
       else:
         alarm_duration = 2 * smoothed_rtt
-      alarm_duration = max(alarm_duration, kMinTLPTimeout)
+      alarm_duration = max(alarm_duration + max_ack_delay,
+                           kMinTLPTimeout)
       alarm_duration = alarm_duration * (2 ^ handshake_count)
     else if (loss_time != 0):
       // Early retransmit timer or time loss detection.
@@ -719,7 +720,8 @@ Pseudocode for SetLossDetectionAlarm follows:
                            kMinTLPTimeout)
     else:
       // RTO alarm
-      alarm_duration = smoothed_rtt + 4 * rttvar
+      alarm_duration =
+        smoothed_rtt + 4 * rttvar + max_ack_delay
       alarm_duration = max(alarm_duration, kMinRTOTimeout)
       alarm_duration = alarm_duration * (2 ^ rto_count)
 
@@ -957,10 +959,13 @@ Invoked from loss detection's OnPacketAcked and is supplied with
 acked_packet from sent_packets.
 
 ~~~
+   InRecovery(packet_number)
+     return packet_number <= end_of_recovery
+
    OnPacketAckedCC(acked_packet):
      // Remove from bytes_in_flight.
      bytes_in_flight -= acked_packet.bytes
-     if (acked_packet.packet_number < end_of_recovery):
+     if (InRecovery(acked_packet.packet_number)):
        // Do not increase congestion window in recovery period.
        return
      if (congestion_window < ssthresh):
@@ -985,7 +990,7 @@ are detected lost.
      largest_lost_packet = lost_packets.last()
      // Start a new recovery epoch if the lost packet is larger
      // than the end of the previous recovery epoch.
-     if (end_of_recovery < largest_lost_packet.packet_number):
+     if (!InRecovery(largest_lost_packet.packet_number)):
        end_of_recovery = largest_sent_packet
        congestion_window *= kLossReductionFactor
        congestion_window = max(congestion_window, kMinimumWindow)

@@ -11,14 +11,14 @@ jobs:
       # Prime caches for faster checkout
       - restore_cache:
           keys:
-            - template
+            - git-reference
       - run:
-          name: "Update Template"
-          command: "git -C ~/i-d-template remote update --prune"
+          name: "Update Cache"
+          command: "git -C ~/git-reference fetch --all --prune"
       - save_cache:
-          key: template
+          key: git-reference
           paths:
-            - ~/i-d-template
+            - ~/git-reference
 
       # Build txt and html versions of drafts
       - restore_cache:
@@ -26,7 +26,7 @@ jobs:
             - refcache
       - run:
           name: "Build Drafts"
-          command: "make 'CLONE_ARGS=--reference ~/i-d-template'"
+          command: "make 'CLONE_ARGS=--reference ~/git-reference'"
       - save_cache:
           key: refcache
           paths:
@@ -40,14 +40,10 @@ jobs:
       - store_artifacts:
           path: /tmp/artifacts
 
-      # Update gh-pages and gh-issues branches
+      # Update editor's copy on gh-pages
       - run:
           name: "Update GitHub Pages"
           command: "make gh-pages"
-
-      - run:
-          name: "Save Issues"
-          command: "make gh-issues || true"
 
       # For tagged builds, upload to the datatracker.
       - deploy:
@@ -56,6 +52,11 @@ jobs:
             if [ "${CIRCLE_TAG#draft-}" != "${CIRCLE_TAG}" ]; then
               make upload
             fi
+
+      # Save GitHub issues
+      - run:
+          name: "Save GitHub Issues"
+          command: "make issues || make issues DISABLE_ISSUE_FETCH=true && make gh-issues"
 
 workflows:
   version: 2
