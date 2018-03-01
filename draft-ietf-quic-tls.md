@@ -639,32 +639,65 @@ on the system used in TLS {{!TLS13}}.  The secrets that QUIC uses
 as the basis of its key schedule are obtained using TLS exporters (see Section
 7.5 of {{!TLS13}}).
 
-QUIC uses HKDF with the same hash function negotiated by TLS for
-key derivation.  For example, if TLS is using the TLS_AES_128_GCM_SHA256, the
-SHA-256 hash function is used.
+
+### QHKDF-Expand
+
+QUIC uses the Hash-based Key Derivation Function (HKDF) {{!HKDF=RFC5869}} with
+the same hash function negotiated by TLS for key derivation.  For example, if
+TLS is using the TLS_AES_128_GCM_SHA256, the SHA-256 hash function is used.
+
+Most key derivations in this document use the QHKDF-Expand function, which uses
+the HKDF expand function and is modelled on the HKDF-Expand-Label function from
+TLS 1.3 (see Section 7.1 of {{!TLS13}}). QHKDF-Expand differs from
+HKDF-Expand-Label in that it uses a different base label and omits the Context
+argument.
+
+~~~
+QHKDF-Expand(Secret, Label, Length) =
+   HKDF-Expand(Secret, QhkdfExpandInfo, Length)
+~~~
+
+The HKDF-Expand function used by QHKDF-Expand uses the PRF hash function
+negotiated by TLS, except for handshake secrets and keys derived from them (see
+{{handshake-secrets}}).
+
+Where the `info` parameter of HKDF-Expand is an encoded `QhkdfExpandInfo`
+structure:
+
+~~~
+struct {
+   uint16 length = Length;
+   opaque label<6..255> = "QUIC " + Label;
+} QhkdfExpandInfo;
+~~~
+
+For example, assuming a hash function with a 32 octet output, derivation for a
+client packet protection key would use HKDF-Expand with an `info` parameter of
+0x00200851554943206b6579.
+
 
 ### Handshake Secrets {#handshake-secrets}
 
 Packets that carry the TLS handshake (Initial, Retry, and Handshake) are
-protected with secrets derived from the connection ID used in the
-client's Initial packet. Specifically:
+protected with a secret derived from the connection ID used in the client's
+Initial packet.  Specifically:
 
 ~~~
-   quic_version_1_salt = afc824ec5fc77eca1e9d36f37fb2d46518c36639
+handshake_salt = 0x9c108f98520a5c5c32968e950e8a2c5fe06d6c38
+handshake_secret =
+    HKDF-Extract(handshake_salt, client_connection_id)
 
-   handshake_secret = HKDF-Extract(quic_version_1_salt,
-                                   client_connection_id)
-
-   client_handshake_secret =
-      QHKDF-Expand(handshake_secret, "client hs", Hash.length)
-   server_handshake_secret =
-      QHKDF-Expand(handshake_secret, "server hs", Hash.length)
+client_handshake_secret =
+   QHKDF-Expand(handshake_secret, "client hs", Hash.length)
+server_handshake_secret =
+   QHKDF-Expand(handshake_secret, "server hs", Hash.length)
 ~~~
 
-The HKDF for the handshake secrets and keys derived from them uses the SHA-256
-hash function {{FIPS180}}.
+The hash function for HKDF when deriving handshake secrets and keys is SHA-256
+{{FIPS180}}.  The connection ID used with QHKDF-Expand is the connection ID
+chosen by the client.
 
-The salt value is a 20 octet sequence shown in the figure in hexadecimal
+The handshake salt is a 20 octet sequence shown in the figure in hexadecimal
 notation. Future versions of QUIC SHOULD generate a new salt value, thus
 ensuring that the keys are different for each version of QUIC. This prevents a
 middlebox that only recognizes one version of QUIC from seeing or modifying the
@@ -685,8 +718,8 @@ early_exporter_secret.  The QUIC 0-RTT secret is only used for protection of
 packets sent by the client.
 
 ~~~
-   client_0rtt_secret
-       = TLS-Exporter("EXPORTER-QUIC 0rtt", "", Hash.length)
+client_0rtt_secret =
+   TLS-Early-Exporter("EXPORTER-QUIC 0rtt", "", Hash.length)
 ~~~
 
 
@@ -704,85 +737,64 @@ an empty context.  The size of the secret MUST be the size of the hash output
 for the PRF hash function negotiated by TLS.
 
 ~~~
-   client_pp_secret_0 =
-      TLS-Exporter("EXPORTER-QUIC client 1rtt", "", Hash.length)
-   server_pp_secret_0 =
-      TLS-Exporter("EXPORTER-QUIC server 1rtt", "", Hash.length)
+client_pp_secret_0 =
+   TLS-Exporter("EXPORTER-QUIC client 1rtt", "", Hash.length)
+server_pp_secret_0 =
+   TLS-Exporter("EXPORTER-QUIC server 1rtt", "", Hash.length)
 ~~~
 
 These secrets are used to derive the initial client and server packet protection
 keys.
 
-After a key update (see {{key-update}}), these secrets are updated using the
-QHKDF-Expand function.  The QHKDF-Expand function is similar in definition to
-HKDF-Expand-Label defined in Section 7.1 of {{!TLS13}}, but it has a different
-base label and omits the hash argument.  QHKDF-Expand uses the PRF hash function
-negotiated by TLS.  The replacement secret is derived using the existing Secret,
-a Label of "client 1rtt" for the client and "server 1rtt" for the server, and
-the same output Length as the PRF hash function selected by TLS.
+
+### Updating 1-RTT Secrets
+
+After a key update (see {{key-update}}), the 1-RTT secrets are updated using
+QHKDF-Expand.  Updated secrets are derived from the existing packet protection
+secret.  A Label parameter of "client 1rtt" is used for the client secret and
+"server 1rtt" for the server.  The Length is the same as the native output of
+the PRF hash function.
 
 ~~~
 client_pp_secret_<N+1> =
-  QHKDF-Expand(client_pp_secret_<N>, "client 1rtt", Hash.length)
+  QHKDF-Update(client_pp_secret_<N>, "client 1rtt", Hash.length)
 server_pp_secret_<N+1> =
-  QHKDF-Expand(server_pp_secret_<N>, "server 1rtt", Hash.length)
+  QHKDF-Update(server_pp_secret_<N>, "server 1rtt", Hash.length)
 ~~~
 
 This allows for a succession of new secrets to be created as needed.
 
-QHKDF-Expand uses HKDF-Expand {{!RFC5869}} as shown:
+### Packet Protection Keys
 
-~~~
-    QHKDF-Expand(Secret, Label, Length) =
-         HKDF-Expand(Secret, QuicHkdfLabel, Length)
-~~~
-
-Where the info parameter, QuicHkdfLabel, is specified as:
-
-~~~
-    struct {
-        uint16 length = Length;
-        opaque label<6..255> = "QUIC " + Label;
-        uint8 hashLength = 0;
-    } QuicHkdfLabel;
-~~~
-
-For example, the client packet protection secret uses an info parameter of:
-
-~~~
-   info = (HashLen / 256) || (HashLen % 256) || 0x10 ||
-          "QUIC client 1rtt" || 0x00
-~~~
-
-
-### Packet Protection Key and IV
-
-The complete key expansion uses an identical process for key expansion as
-defined in Section 7.3 of {{!TLS13}}, using different values for the input
-secret and labels.  QUIC uses the AEAD function negotiated by TLS.
+The complete key expansion uses a similar process for key expansion to that
+defined in Section 7.3 of {{!TLS13}}, using QHKDF-Expand in place of
+HKDF-Expand-Label.  QUIC uses the AEAD function negotiated by TLS.
 
 The packet protection key and IV used to protect the 0-RTT packets sent by a
 client are derived from the QUIC 0-RTT secret. The packet protection keys and
 IVs for 1-RTT packets sent by the client and server are derived from the current
 generation of client and server 1-RTT secrets (client_pp_secret_\<i> and
-server_pp_secret_\<i>) respectively.  The length of the output is determined by
-the requirements of the AEAD function selected by TLS.  All ciphersuites
-currently used for QUIC have a 16-byte authentication tag and produce an ouput
-16 bytes larger than their input.  The key length is the AEAD key size.  As
-defined in Section 5.3 of {{!TLS13}}, the IV length is the larger of 8 or N_MIN
-(see Section 4 of {{!AEAD=RFC5116}}; all ciphersuites defined in {{!TLS13}} have
-N_MIN set to 12). For any secret S, the corresponding key and IV are derived as
-shown below:
+server_pp_secret_\<i>) respectively.
+
+The length of the QHKDF-Expand output is determined by the requirements of the
+AEAD function selected by TLS.  The key length is the AEAD key size.  As defined
+in Section 5.3 of {{!TLS13}}, the IV length is the larger of 8 or N_MIN (see
+Section 4 of {{!AEAD=RFC5116}}; all ciphersuites defined in {{!TLS13}} have
+N_MIN set to 12).
+
+For any secret S, the AEAD key uses a label of "key", and the IV uses a label of
+"iv":
 
 ~~~
    key = QHKDF-Expand(S, "key", key_length)
    iv  = QHKDF-Expand(S, "iv", iv_length)
 ~~~
 
-The QUIC record protection initially starts without keying material.  When the
-TLS state machine reports that the ClientHello has been sent, the 0-RTT keys can
-be generated and installed for writing.  When the TLS state machine reports
-completion of the handshake, the 1-RTT keys can be generated and installed for
+The QUIC record protection initially starts with keying material derived from
+handshake keys.  For a client, when the TLS state machine reports that the
+ClientHello has been sent, 0-RTT keys can be generated and installed for
+writing, if 0-RTT is available.  Finally, the TLS state machine reports
+completion of the handshake and 1-RTT keys can be generated and installed for
 writing.
 
 
@@ -799,6 +811,10 @@ secret, packets are protected with AEAD_AES_128_GCM and a key derived from the
 client's connection ID (see {{handshake-secrets}}).  This provides protection
 against off-path attackers and robustness against QUIC version unaware
 middleboxes, but not against on-path attackers.
+
+All ciphersuites currently defined for TLS 1.3 - and therefore QUIC - have a
+16-byte authentication tag and produce an output 16 bytes larger than their
+input.
 
 Once TLS has provided a key, the contents of regular QUIC packets immediately
 after any TLS messages have been sent are protected by the AEAD selected by TLS.
@@ -836,7 +852,7 @@ where packets are dropped in other ways.  QUIC is therefore not affected by this
 form of truncation.
 
 The QUIC packet number is not reset and it is not permitted to go higher than
-its maximum value of 2^64-1.  This establishes a hard limit on the number of
+its maximum value of 2^62-1.  This establishes a hard limit on the number of
 packets that can be sent.
 
 Some AEAD functions have limits for how many packets can be encrypted under the
@@ -863,6 +879,7 @@ protocol error in a peer or an attack.  The truncated packet number encoding
 used in QUIC can cause packet numbers to be decoded incorrectly if they are
 delayed significantly.
 
+
 ## Packet Number Gaps {#packet-number-gaps}
 
 Section 7.7.1.1 of {{QUIC-TRANSPORT}} also requires a secret to compute packet
@@ -872,6 +889,7 @@ number gaps on connection ID transitions. That secret is computed as:
 packet_number_secret =
   TLS-Exporter("EXPORTER-QUIC packet number", "", Hash.length)
 ~~~
+
 
 # Key Phases
 
@@ -1540,11 +1558,9 @@ values in the following registries:
   column is to be marked Yes.
 
 * TLS Exporter Label Registry {{!TLS-REGISTRIES}} - IANA is requested to
-  register "EXPORTER-QUIC 0-RTT Secret" from {{zero-rtt-secrets}};
-  "EXPORTER-QUIC client 1-RTT Secret" and "EXPORTER-QUIC server 1-RTT Secret"
-  from {{one-rtt-secrets}}; "EXPORTER-QUIC Packet Number Secret"
-  {{packet-number-gaps}}.  The DTLS column is to be marked No.  The Recommended
-  column is to be marked Yes.
+  register "EXPORTER-QUIC 0rtt" from {{zero-rtt-secrets}}; "EXPORTER-QUIC client
+  1rtt" and "EXPORTER-QUIC server 1-RTT" from {{one-rtt-secrets}}.  The DTLS
+  column is to be marked No.  The Recommended column is to be marked Yes.
 
 | Value | Error                     | Description           | Specification |
 |:------|:--------------------------|:----------------------|:--------------|
