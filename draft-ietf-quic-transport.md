@@ -928,9 +928,9 @@ If the packet is an Initial packet fully conforming with the
 specification, the server proceeds with the handshake ({{handshake}}).
 This commits the server to the version that the client selected.
 
-If the server currently doesn't accept any new connections, it SHOULD send a
-SERVER_BUSY error code. A client that receives this error code SHOULD NOT
-immediately try to reconnect to this server.
+If a server isn't currently accepting any new connections, it SHOULD send a
+Handshake packet containing a CONNECTION_CLOSE frame with error code
+SERVER_BUSY.
 
 If the packet is a 0-RTT packet, the server MAY buffer a limited
 number of these packets in anticipation of a late-arriving Initial
@@ -3680,6 +3680,7 @@ INTERNAL_ERROR (0x1):
   connection.
 
 SERVER_BUSY (0x2):
+
 : The server is currently busy and does not accept any new connections.
 
 FLOW_CONTROL_ERROR (0x3):
