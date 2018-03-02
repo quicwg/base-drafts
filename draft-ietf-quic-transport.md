@@ -3935,6 +3935,7 @@ the range from 0xFE00 to 0xFFFF.
 |:------------|:--------------------------|:------------------------------|:----------------|
 | 0x0         | NO_ERROR                  | No error                      | {{error-codes}} |
 | 0x1         | INTERNAL_ERROR            | Implementation error          | {{error-codes}} |
+| 0x2         | SERVER_BUSY               | Server currently busy         | {{error-codes}} |
 | 0x3         | FLOW_CONTROL_ERROR        | Flow control error            | {{error-codes}} |
 | 0x4         | STREAM_ID_ERROR           | Invalid stream ID             | {{error-codes}} |
 | 0x5         | STREAM_STATE_ERROR        | Frame received in invalid stream state | {{error-codes}} |
