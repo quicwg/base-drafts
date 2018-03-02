@@ -437,15 +437,12 @@ do not assume the peer generates an acknowledgement immediately when
 receiving a second full-sized segment.
 
 Out-of-order packets SHOULD be acknowledged more quickly, in order
-to accelerate loss recovery.  Specifically, the receiver SHOULD send an
-immediate ACK when it receieves a packet with a packet number more than
-1 larger than the previous largest received packet number. The receiver
-SHOULD also send an immediate ACK when it receives a packet that fills
-in a gap in the packet numbers.  If no packet larger than the packet that
-fills a gap has been acknowledged, then the peer will not invoke fast
-recovery and it may use the standard delayed ack algorithm.  This
-circumstance may arise from delaying ack transmission when
-processing multiple packets.
+to accelerate loss recovery.  The receiver SHOULD send an immediate ACK
+when it receives a new packet which is not one greater than the
+largest received packet number.  If a receiver processes multiple
+packets before sending any ACK frames in response, they MAY not 
+send an immediate ack if the received packets form a contiguous
+sequence starting one larger than the largest acked.
 
 ### Ack Ranges
 
@@ -469,12 +466,13 @@ frame may be saved.  When a packet containing an ACK frame is acknowledged,
 the receiver can stop acknowledging packets less than or equal to the
 largest acked in the sent ACK frame.
 
-This approach does not guarantee every acknowledgement is seen by the
-sender before it is no longer included in the ack frame, because packets
-could be received out of order and all subsequent ACK frames containing them
-could be lost.  It does guarantee the sender is making forward progress and
-allows for a minumum of one RTT of reordering in cases without ACK frame
-loss.
+In cases without ACK frame loss, this algorithm allows for a minimum of
+1 RTT of reordering. In cases with ACk frame loss, this approach does not
+guarantee that every acknowledgement is seen by the sender before it is no
+longer included in the ACK frame. Packets could be received out of order
+and all subsequent ACK frames containing them could be lost. In this case,
+the loss recovery algorithm may cause spurious retransmits, but the sender
+will continue making forward progress.
 
 ## Pseudocode
 
