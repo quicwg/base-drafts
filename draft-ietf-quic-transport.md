@@ -926,8 +926,11 @@ server continues below.
 
 If the packet is an Initial packet fully conforming with the
 specification, the server proceeds with the handshake ({{handshake}}).
-This commits the server to the version that the client
-selected.
+This commits the server to the version that the client selected.
+
+If a server isn't currently accepting any new connections, it SHOULD send a
+Handshake packet containing a CONNECTION_CLOSE frame with error code
+SERVER_BUSY.
 
 If the packet is a 0-RTT packet, the server MAY buffer a limited
 number of these packets in anticipation of a late-arriving Initial
@@ -3676,6 +3679,10 @@ INTERNAL_ERROR (0x1):
 : The endpoint encountered an internal error and cannot continue with the
   connection.
 
+SERVER_BUSY (0x2):
+
+: The server is currently busy and does not accept any new connections.
+
 FLOW_CONTROL_ERROR (0x3):
 
 : An endpoint received more data than it permitted in its advertised data limits
@@ -3928,6 +3935,7 @@ the range from 0xFE00 to 0xFFFF.
 |:------------|:--------------------------|:------------------------------|:----------------|
 | 0x0         | NO_ERROR                  | No error                      | {{error-codes}} |
 | 0x1         | INTERNAL_ERROR            | Implementation error          | {{error-codes}} |
+| 0x2         | SERVER_BUSY               | Server currently busy         | {{error-codes}} |
 | 0x3         | FLOW_CONTROL_ERROR        | Flow control error            | {{error-codes}} |
 | 0x4         | STREAM_ID_ERROR           | Invalid stream ID             | {{error-codes}} |
 | 0x5         | STREAM_STATE_ERROR        | Frame received in invalid stream state | {{error-codes}} |
