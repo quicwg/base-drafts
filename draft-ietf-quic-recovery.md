@@ -430,17 +430,17 @@ non-ack frames.  Specifically, implementaions MUST attempt to
 enforce a maximum ack delay to avoid causing the peer spurious
 timeouts.  The default maximum ack delay in QUIC is 25ms.
 
-An acknowledgement MAY be sent for every second full-sized segment,
+An acknowledgement MAY be sent for every second full-sized packet,
 as TCP does {{!RFC5681}}, or may be sent less frequently, as long as
 the delay does not exceed the maximum ack delay.  QUIC recovery algorithms
 do not assume the peer generates an acknowledgement immediately when
-receiving a second full-sized segment.
+receiving a second full-sized packet.
 
 Out-of-order packets SHOULD be acknowledged more quickly, in order
 to accelerate loss recovery.  The receiver SHOULD send an immediate ACK
 when it receives a new packet which is not one greater than the
 largest received packet number.  If a receiver processes multiple
-packets before sending any ACK frames in response, they MAY not 
+packets before sending any ACK frames in response, they MAY not
 send an immediate ack if the received packets form a contiguous
 sequence starting one larger than the largest acked.
 
