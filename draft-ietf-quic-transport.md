@@ -603,7 +603,7 @@ The first Initial packet that is sent by a client contains a randomized packet
 number.  All subsequent packets contain a packet number that is incremented by
 one, see ({{packet-numbers}}).
 
-The payload of a Initial packet consists of a STREAM frame (or frames)
+The payload of an Initial packet consists of a STREAM frame (or frames)
 for stream 0 containing a cryptographic handshake message, with enough PADDING
 frames that the packet is at least 1200 octets (see {{packetization}}).  The
 stream in this packet always starts at an offset of 0 (see {{stateless-retry}})
@@ -1284,7 +1284,7 @@ a result, attacks on version negotiation by an attacker can be detected.
 
 The client includes the initial_version field in its transport parameters.  The
 initial_version is the version that the client initially attempted to use.  If
-the server did not send a version negotiation packet {{packet-version}}, this
+the server did not send a Version Negotiation packet {{packet-version}}, this
 will be identical to the negotiated_version field in the server transport
 parameters.
 
@@ -1296,7 +1296,7 @@ stateless server) uses a different process. If the initial_version matches the
 version of QUIC that is in use, a stateless server can accept the value.
 
 If the initial_version is different from the version of QUIC that is in use, a
-stateless server MUST check that it would have sent a version negotiation packet
+stateless server MUST check that it would have sent a Version Negotiation packet
 if it had received a packet with the indicated initial_version.  If a server
 would have accepted the version included in the initial_version and the value
 differs from the QUIC version that is in use, the server MUST terminate the
