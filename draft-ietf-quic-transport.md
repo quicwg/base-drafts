@@ -938,6 +938,14 @@ by the server, it SHOULD send a Version Negotiation packet as
 described in {{send-vn}}. Servers MAY rate control these packets to
 avoid storms of Version Negotiation packets.
 
+The first packet for an unsupported version can use different semantics and
+encodings for any version-specific field.  In particular, different packet
+protection keys might be used for different versions.  Servers that do not
+support a particular version are unlikely to be able to decrypt the content of
+the packet.  Servers SHOULD NOT attempt to decode or decrypt a packet from an
+unknown version, but instead send Version Negotiation packet, provided that the
+packet is sufficiently long.
+
 Servers MUST drop other packets that contain unsupported versions.
 
 Packets with a supported version, or no version field, are matched to
