@@ -538,6 +538,15 @@ DATA frames MUST be associated with an HTTP request or response.  If a DATA
 frame is received on either control stream, the recipient MUST respond with a
 connection error ({{errors}}) of type HTTP_WRONG_STREAM.
 
+~~~~~~~~~~ drawing
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                         Payload (*)                         ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~~~~~~~~
+{: #fig-data title="DATA frame payload"}
+
 DATA frames MUST contain a non-zero-length payload.  If a DATA frame is received
 with a payload length of zero, the recipient MUST respond with a stream error
 ({{errors}}) of type HTTP_MALFORMED_FRAME.
@@ -545,13 +554,22 @@ with a payload length of zero, the recipient MUST respond with a stream error
 ### HEADERS {#frame-headers}
 
 The HEADERS frame (type=0x1) is used to carry a header block, compressed using
-HPACK {{header-compression}}.
+QCRAM. See [QCRAM] for more details.
 
 The HEADERS frame defines a single flag:
 
 BLOCKING (0x01):
 : Indicates the stream might need to wait for dependent headers before
   processing.  If 0, the frame can be processed immediately upon receipt.
+
+~~~~~~~~~~  drawing
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                       Header Block (*)                      ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~~~~~~~~
+{: #fig-headers title="HEADERS frame payload"}
 
 HEADERS frames can be sent on the Control Stream as well as on request / push
 streams.  The value of BLOCKING MUST be 0 for HEADERS frames on the Control
@@ -670,6 +688,15 @@ on a stream other than the control stream MUST be treated as a stream error of
 type HTTP_WRONG_STREAM.
 
 The CANCEL_PUSH frame has no defined flags.
+
+~~~~~~~~~~  drawing
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                          Push ID (i)                        ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~~~~~~~~
+{: #fig-cancel-push title="CANCEL_PUSH frame payload"}
 
 The CANCEL_PUSH frame carries a Push ID encoded as a variable-length integer.
 The Push ID identifies the server push that is being cancelled (see
@@ -854,10 +881,21 @@ while still finishing processing of previously received requests.  This enables
 administrative actions, like server maintenance.  GOAWAY by itself does not
 close a connection.
 
-The GOAWAY frame does not define any flags, and the payload is a QUIC Stream ID
-for a client-initiated, bidirectional stream encoded as a variable-length
-integer.  A client MUST treat receipt of a GOAWAY frame containing a Stream ID
-of any other type as a connection error of type HTTP_MALFORMED_FRAME.
+The GOAWAY frame does not define any flags.
+
+~~~~~~~~~~  drawing
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                          Stream ID (i)                      ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~~~~~~~~
+{: #fig-goaway title="GOAWAY frame payload"}
+
+The GOAWAY frame carries a QUIC Stream ID for a client-initiated, bidirectional
+stream encoded as a variable-length integer.  A client MUST treat receipt of a
+GOAWAY frame containing a Stream ID of any other type as a connection error of
+type HTTP_MALFORMED_FRAME.
 
 Clients do not need to send GOAWAY to initiate a graceful shutdown; they simply
 stop making new requests.  A server MUST treat receipt of a GOAWAY frame as a
@@ -989,6 +1027,15 @@ manage the number of promised server pushes can increase the maximum Push ID by
 sending a MAX_PUSH_ID frame as the server fulfills or cancels server pushes.
 
 The MAX_PUSH_ID frame has no defined flags.
+
+~~~~~~~~~~  drawing
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                          Push ID (i)                        ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~~~~~~~~
+{: #fig-max-push title="MAX_PUSH_ID frame payload"}
 
 The MAX_PUSH_ID frame carries a single variable-length integer that identifies
 the maximum value for a Push ID that the server can use (see
