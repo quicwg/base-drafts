@@ -1022,6 +1022,10 @@ This document has no IANA actions.  Yet.
 > **RFC Editor's Note:**  Please remove this section prior to
 > publication of a final version of this document.
 
+## Since draft-ietf-quic-recovery-09
+
+No significant changes.
+
 ## Since draft-ietf-quic-recovery-08
 
 - Clarified pacing and RTO (#967, #977)

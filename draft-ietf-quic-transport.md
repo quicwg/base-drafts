@@ -3986,6 +3986,15 @@ Issue and pull request numbers are listed with a leading octothorp.
 
 - Added PATH_CHALLENGE and PATH_RESPONSE frames to replace PING with Data and
   PONG frame. Changed ACK frame type from 0x0e to 0x0d. (#1091, #1086)
+- A server can now only send 3 packets without validating the client address
+  (#38, #1090)
+- Delivery order of stream data is no longer strongly specified (#252, #1070)
+- Rework of packet handling and version negotiation (#1038)
+- Stream 0 is now exempt from flow control until the handshake completes (#1074,
+  #725, #1082)
+- Improved retransmission rules for all frame types: information is
+  retransmitted, not packets or frames (#463, #765, #1095, #1053)
+- Added an error code for server busy signals (#1137)
 
 ## Since draft-ietf-quic-transport-08
 

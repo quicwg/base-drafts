@@ -1490,6 +1490,12 @@ his employment there.
 > **RFC Editor's Note:**  Please remove this section prior to publication of a
 > final version of this document.
 
+## Since draft-ietf-quic-http-09
+
+- Selected QCRAM for header compression (#228, #1117)
+- The server_name TLS extension is now mandatory (#296, #495)
+- Specified handling of unsupported versions in Alt-Svc (#1093, #1097)
+
 ## Since draft-ietf-quic-http-08
 
 - Clarified connection coalescing rules (#940, #1024)
