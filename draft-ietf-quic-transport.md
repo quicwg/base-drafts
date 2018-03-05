@@ -937,7 +937,9 @@ number of these packets in anticipation of a late-arriving Initial
 Packet. Clients are forbidden from sending Handshake packets prior to
 receiving a server response, so servers SHOULD ignore any such packets.
 
-Servers MUST drop incoming packets under all other circumstances.
+Servers MUST drop incoming packets under all other circumstances. They
+SHOULD send a Stateless Reset ({{stateless-reset}}) if a connection ID
+is present in the header.
 
 ## Version Negotiation
 
