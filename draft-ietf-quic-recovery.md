@@ -422,6 +422,58 @@ is available.
 (TODO: Work this section some more. Add text on client vs. server, and on
 stateless retry.)
 
+## Generating Acknowledgements
+
+QUIC SHOULD delay sending acknowledgements in response to packets,
+but MUST NOT excessively delay acknowledgements of packets containing
+non-ack frames.  Specifically, implementaions MUST attempt to
+enforce a maximum ack delay to avoid causing the peer spurious
+timeouts.  The default maximum ack delay in QUIC is 25ms.
+
+An acknowledgement MAY be sent for every second full-sized packet,
+as TCP does {{!RFC5681}}, or may be sent less frequently, as long as
+the delay does not exceed the maximum ack delay.  QUIC recovery algorithms
+do not assume the peer generates an acknowledgement immediately when
+receiving a second full-sized packet.
+
+Out-of-order packets SHOULD be acknowledged more quickly, in order
+to accelerate loss recovery.  The receiver SHOULD send an immediate ACK
+when it receives a new packet which is not one greater than the
+largest received packet number.  If a receiver processes multiple
+packets before sending any ACK frames in response, they MAY not
+send an immediate ack if the received packets form a contiguous
+sequence starting one larger than the largest acked.
+
+### ACK Ranges
+
+When an ACK frame is sent, one or more ranges of acknowledged packets are
+included.  Including older packets reduces the chance of spurious
+retransmits caused by losing previously sent ACK frames, at the cost of
+larger ACK frames.
+
+ACK frames SHOULD always acknowledge the most recently received packets,
+and the more out-of-order the packets are, the more important it is to send
+an updated ACK frame quickly, to prevent the peer from declaring a packet
+as lost and spuriusly retransmitting the frames it contains.
+
+Below is one recommended approach for determining what packets to include
+in an ACK frame.
+
+### Receiver Tracking of ACK Frames
+
+When a packet containing an ACK frame is sent, the largest acknowledged in
+that frame may be saved.  When a packet containing an ACK frame is
+acknowledged, the receiver can stop acknowledging packets less than or equal
+to the largest acknowledged in the sent ACK frame.
+
+In cases without ACK frame loss, this algorithm allows for a minimum of
+1 RTT of reordering. In cases with ACK frame loss, this approach does not
+guarantee that every acknowledgement is seen by the sender before it is no
+longer included in the ACK frame. Packets could be received out of order
+and all subsequent ACK frames containing them could be lost. In this case,
+the loss recovery algorithm may cause spurious retransmits, but the sender
+will continue making forward progress.
+
 ## Pseudocode
 
 ### Constants of interest
