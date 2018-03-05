@@ -772,10 +772,10 @@ peer.
 
 During the handshake, packets with the long header are used to establish the
 Destination Connection ID that each endpoint uses.  Each endpoint uses the
-Source Connection ID field to communicate the connection that is used in the
+Source Connection ID field to specify the connection ID that is used in the
 Destination Connection ID field of packets being sent to them.  Upon receiving a
-packet, each endpoint sets the Destination Connection ID to match the value of
-the Source Connection ID that they receive.
+packet, each endpoint sets the Destination Connection ID it sends to match the
+value of the Source Connection ID that they receive.
 
 During the handshake, an endpoint might receive multiple packets with the long
 header, and thus be given multiple opportunities to update the Destination
@@ -1567,7 +1567,7 @@ provide an unlinkable connection ID for use in case a peer wishes to explicitly
 break linkability between two points of network attachment.
 
 An endpoint might need to send packets on multiple networks without receiving
-any response from the server.  To ensure that the endpoint is not linkable
+any response from its peer.  To ensure that the endpoint is not linkable
 across each of these changes, a new connection ID and packet number gap are
 needed for each network.  To support this, each endpoint sends multiple
 NEW_CONNECTION_ID messages.  Each NEW_CONNECTION_ID is marked with a sequence
@@ -4087,7 +4087,7 @@ Issue and pull request numbers are listed with a leading octothorp.
   retransmitted, not packets or frames (#463, #765, #1095, #1053)
 - Added an error code for server busy signals (#1137)
 
-- Endpoint now set the connection ID that their peer uses.  Connection IDs are
+- Endpoints now set the connection ID that their peer uses.  Connection IDs are
   variable length.  Removed omit_connection_id and the corresponding short
   header flag. (#TBD)
 
