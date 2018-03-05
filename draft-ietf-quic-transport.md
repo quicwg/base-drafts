@@ -943,8 +943,8 @@ encodings for any version-specific field.  In particular, different packet
 protection keys might be used for different versions.  Servers that do not
 support a particular version are unlikely to be able to decrypt the content of
 the packet.  Servers SHOULD NOT attempt to decode or decrypt a packet from an
-unknown version, but instead send Version Negotiation packet, provided that the
-packet is sufficiently long.
+unknown version, but instead send a Version Negotiation packet, provided that
+the packet is sufficiently long.
 
 Servers MUST drop other packets that contain unsupported versions.
 
