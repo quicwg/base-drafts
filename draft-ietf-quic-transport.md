@@ -524,9 +524,9 @@ other fields.
 
 | Type | Packet Number Size |
 |:-----|:-------------------|
-| 0x7  | 1 octet            |
-| 0x6  | 2 octets           |
-| 0x5  | 4 octets           |
+| 0x0  | 1 octet            |
+| 0x1  | 2 octets           |
+| 0x2  | 4 octets           |
 {: #short-packet-types title="Short Header Packet Types"}
 
 The header form, omit connection ID flag, and connection ID of a short header
