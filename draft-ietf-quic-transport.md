@@ -489,6 +489,13 @@ Key Phase Bit:
 \[\[Editor's Note: this section should be removed and the bit definitions
 changed before this draft goes to the IESG.]]
 
+Fourth bit:
+
+: The fourth bit (0x10) of octet 0 is set to 1.
+
+\[\[Editor's Note: this section should be removed and the bit definitions
+changed before this draft goes to the IESG.]]
+
 Google QUIC Demultipexing Bit:
 
 : The fifth bit (0x8) of octet 0 is set to 0. This allows implementations of
