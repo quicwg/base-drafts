@@ -444,7 +444,7 @@ packets before sending any ACK frames in response, they MAY not
 send an immediate ack if the received packets form a contiguous
 sequence starting one larger than the largest acked.
 
-### Ack Ranges
+### ACK Ranges
 
 When an ACK frame is sent, one or more ranges of acknowledged packets are
 included.  Including older packets reduces the chance of spurious
@@ -461,13 +461,13 @@ in an ACK frame.
 
 ### Receiver Tracking of ACK Frames
 
-When a packet containing an ACK frame is sent, the largest acked in that
-frame may be saved.  When a packet containing an ACK frame is acknowledged,
-the receiver can stop acknowledging packets less than or equal to the
-largest acked in the sent ACK frame.
+When a packet containing an ACK frame is sent, the largest acknowledged in
+that frame may be saved.  When a packet containing an ACK frame is
+acknowledged, the receiver can stop acknowledging packets less than or equal
+to the largest acknowledged in the sent ACK frame.
 
 In cases without ACK frame loss, this algorithm allows for a minimum of
-1 RTT of reordering. In cases with ACk frame loss, this approach does not
+1 RTT of reordering. In cases with ACK frame loss, this approach does not
 guarantee that every acknowledgement is seen by the sender before it is no
 longer included in the ACK frame. Packets could be received out of order
 and all subsequent ACK frames containing them could be lost. In this case,
