@@ -16,7 +16,7 @@ author:
     ins: J. Iyengar
     name: Jana Iyengar
     org: Fastly
-    email: jri.ietf@gmail.com 
+    email: jri.ietf@gmail.com
     role: editor
  -
     ins: I. Swett
