@@ -893,7 +893,7 @@ The GOAWAY frame does not define any flags.
 {: #fig-goaway title="GOAWAY frame payload"}
 
 The GOAWAY frame carries a QUIC Stream ID for a client-initiated, bidirectional
-stream encoded as a variable-length integer.  A client MUST treat receipt of a 
+stream encoded as a variable-length integer.  A client MUST treat receipt of a
 GOAWAY frame containing a Stream ID of any other type as a connection error of
 type HTTP_MALFORMED_FRAME.
 
