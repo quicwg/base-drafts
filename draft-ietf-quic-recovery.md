@@ -15,8 +15,8 @@ author:
  -
     ins: J. Iyengar
     name: Jana Iyengar
-    org: Google
-    email: jri@google.com
+    org: Fastly
+    email: jri.ietf@gmail.com
     role: editor
  -
     ins: I. Swett
@@ -36,7 +36,7 @@ normative:
       -
         ins: J. Iyengar
         name: Jana Iyengar
-        org: Google
+        org: Fastly
         role: editor
       -
         ins: M. Thomson

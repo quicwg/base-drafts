@@ -30,7 +30,7 @@ normative:
       -
         ins: J. Iyengar
         name: Jana Iyengar
-        org: Google
+        org: Fastly
         role: editor
       -
         ins: M. Thomson
