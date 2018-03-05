@@ -704,21 +704,13 @@ ensuring that the keys are different for each version of QUIC. This prevents a
 middlebox that only recognizes one version of QUIC from seeing or modifying the
 contents of handshake packets from future versions.
 
-Note(1):
+Note:
 
 : The Destination Connection ID is of arbitrary length, and it could be zero
   length if the server sends a Retry packet with a zero-length Source Connection
   ID field.  In this case, the handshake keys provide no assurance to the client
   that the server received its packet; the client has to rely on the exchange
   that included the Retry packet for that property.
-
-Note(2):
-
-: HKDF-Extract uses HMAC {{?RFC2104}}, which produces the same output for values
-  ending in zero octets and values that omit those octets.  Thus,
-  0x12345678900000 and 0x1234567890 produce the same result.  A client is
-  required to randomize the value of Destination Connection ID, which avoids
-  this problem.
 
 
 ### 0-RTT Secret {#zero-rtt-secrets}
