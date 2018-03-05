@@ -1592,6 +1592,11 @@ many others.
 
 Issue and pull request numbers are listed with a leading octothorp.
 
+## Since draft-ietf-quic-tls-09
+
+- Cleaned up key schedule and updated the salt used for handshake packet
+  protection (#1077)
+
 ## Since draft-ietf-quic-tls-08
 
 - Specify value for max_early_data_size to enable 0-RTT (#942)
