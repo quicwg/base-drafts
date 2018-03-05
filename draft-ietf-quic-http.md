@@ -561,7 +561,7 @@ The HEADERS frame defines a single flag:
 BLOCKING (0x01):
 : Indicates the stream might need to wait for dependent headers before
   processing.  If 0, the frame can be processed immediately upon receipt.
-  
+
 ~~~~~~~~~~  drawing
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
