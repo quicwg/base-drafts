@@ -439,10 +439,9 @@ receiving a second full-sized packet.
 Out-of-order packets SHOULD be acknowledged more quickly, in order
 to accelerate loss recovery.  The receiver SHOULD send an immediate ACK
 when it receives a new packet which is not one greater than the
-largest received packet number.  If a receiver processes multiple
-packets before sending any ACK frames in response, they MAY not
-send an immediate ack if the received packets form a contiguous
-sequence starting one larger than the largest acked.
+largest received packet number.  A receiver MAY delay acknowledgment by up
+to its maximum ack delay as long as it receives a contiguous sequence
+starting at the largest acknowledged.
 
 ### ACK Ranges
 
