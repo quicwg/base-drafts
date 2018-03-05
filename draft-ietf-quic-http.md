@@ -1383,7 +1383,7 @@ The entries in the following table are registered by this document.
 | PUSH_PROMISE   | 0x5  | {{frame-push-promise}}   |
 | Reserved       | 0x6  | N/A                      |
 | GOAWAY         | 0x7  | {{frame-goaway}}         |
-| HEADER_ACK     | 0x8  | {{frame-header-ack}      |
+| HEADER_ACK     | 0x8  | {{frame-header-ack}}     |
 | Reserved       | 0x9  | N/A                      |
 | MAX_PUSH_ID    | 0xD  | {{frame-max-push-id}}    |
 |----------------|------|--------------------------|
