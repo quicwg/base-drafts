@@ -4089,7 +4089,7 @@ Issue and pull request numbers are listed with a leading octothorp.
 
 - Endpoints now set the connection ID that their peer uses.  Connection IDs are
   variable length.  Removed the omit_connection_id transport parameter and the
-  corresponding short header flag. (#1089, #1052, #1146, #1151)
+  corresponding short header flag. (#1089, #1052, #1146, #821, #1151)
 
 ## Since draft-ietf-quic-transport-08
 
