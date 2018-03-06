@@ -176,7 +176,7 @@ QUIC supports many ACK ranges, opposed to TCP's 3 SACK ranges.  In high loss
 environments, this speeds recovery, reduces spurious retransmits, and ensures
 forward progress without relying on timeouts.
 
-### Explicit Correction For Delayed Acks
+### Explicit Correction For Delayed ACKs
 
 QUIC ACKs explicitly encode the delay incurred at the receiver between when a
 packet is received and when the corresponding ACK is sent.  This allows the
@@ -439,10 +439,12 @@ receiving a second full-sized packet.
 Out-of-order packets SHOULD be acknowledged more quickly, in order
 to accelerate loss recovery.  The receiver SHOULD send an immediate ACK
 when it receives a new packet which is not one greater than the
-largest received packet number.  If a receiver processes multiple
-packets before sending any ACK frames in response, they MAY not
-send an immediate ack if the received packets form a contiguous
-sequence starting one larger than the largest acked.
+largest received packet number.
+
+As an optimization, a receiver MAY process multiple packets before
+sending any ACK frames in response.  In this case they can determine
+whether an immediate or delayed acknowledgement should be generated
+after processing incoming packets.
 
 ### ACK Ranges
 
