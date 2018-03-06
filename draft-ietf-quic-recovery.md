@@ -537,6 +537,9 @@ largest_sent_before_rto:
 time_of_last_sent_packet:
 : The time the most recent packet was sent.
 
+time_of_last_sent_handshake_packet:
+: The time the most reccent handshake packet was sent.
+
 largest_sent_packet:
 : The packet number of the most recently sent packet.
 
@@ -604,6 +607,7 @@ follows:
    max_ack_delay = 0
    largest_sent_before_rto = 0
    time_of_last_sent_packet = 0
+   time_of_last_sent_handshake_packet = 0
    largest_sent_packet = 0
 ~~~
 
@@ -619,18 +623,23 @@ are as follows:
   ACK frame.  If true, it is still expected an ack will be received for
   this packet, but it is not congestion controlled.
 
+* is_handshake_packet: A boolean that indicates whether a packet is part of
+  the QUIC crypto handshake.
+
 * sent_bytes: The number of bytes sent in the packet, not including UDP or IP
   overhead, but including QUIC framing overhead.
 
 Pseudocode for OnPacketSent follows:
 
 ~~~
- OnPacketSent(packet_number, is_ack_only, sent_bytes):
+ OnPacketSent(packet_number, is_ack_only, is_handshake_packet, sent_bytes):
    time_of_last_sent_packet = now
    largest_sent_packet = packet_number
    sent_packets[packet_number].packet_number = packet_number
    sent_packets[packet_number].time = now
    sent_packets[packet_number].ack_only = is_ack_only
+   if is_handshake_packet:
+     time_of_last_sent_handshake_packet = now
    if !is_ack_only:
      OnPacketSentCC(sent_bytes)
      sent_packets[packet_number].bytes = sent_bytes
@@ -765,6 +774,9 @@ Pseudocode for SetLossDetectionAlarm follows:
       alarm_duration = max(alarm_duration + max_ack_delay,
                            kMinTLPTimeout)
       alarm_duration = alarm_duration * (2 ^ handshake_count)
+      loss_detection_alarm.set(
+        time_of_last_sent_handshake_packet + alarm_duration)
+      return;
     else if (loss_time != 0):
       // Early retransmit timer or time loss detection.
       alarm_duration = loss_time - time_of_last_sent_packet
