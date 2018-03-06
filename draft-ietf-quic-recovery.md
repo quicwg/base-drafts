@@ -882,6 +882,9 @@ control to determine the congestion window.  QUIC congestion control is
 specified in bytes due to finer control and the ease of appropriate byte
 counting {{?RFC3465}}.
 
+QUIC hosts MUST NOT send packets if they would increase bytes_in_flight
+(defined in {{vars-of-interest}}) beyond the available congestion window.
+
 ## Slow Start
 
 QUIC begins every connection in slow start and exits slow start upon
@@ -959,7 +962,7 @@ kLossReductionFactor (default 0.5):
 : Reduction in congestion window when a new loss event is detected.
 
 
-### Variables of interest
+### Variables of interest {#vars-of-interest}
 
 Variables required to implement the congestion control mechanisms
 are described in this section.
