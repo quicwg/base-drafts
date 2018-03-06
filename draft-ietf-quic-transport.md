@@ -370,9 +370,9 @@ keys are established.
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |1|   Type (7)  |DCIL(4)|SCIL(4)|
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|               Destination Connection ID (0/64..176)         ...
+|               Destination Connection ID (0/32..148)         ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                 Source Connection ID (0/64..176)            ...
+|                 Source Connection ID (0/32..148)            ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                         Version (32)                          |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -408,21 +408,21 @@ DCIL and SCIL:
   Connection ID Length (DCIL) field occupies the 4 high bits of the octet and
   the Source Connection ID Length (SCIL) field occupies the 4 low bits of the
   octet.  An encoded length of 0 indicates that the connection ID is also 0
-  octets in length.  Non-zero encoded lengths are increased by 7 to get the full
-  length of the connection ID, producing a length between 8 and 22 octets
-  inclusive.  For example, an octet with the value 0xa0 describes a 17 octet
+  octets in length.  Non-zero encoded lengths are increased by 3 to get the full
+  length of the connection ID, producing a length between 4 and 18 octets
+  inclusive.  For example, an octet with the value 0x50 describes an 8 octet
   Destination Connection ID and a zero octet Source Connection ID.
 
 Destination Connection ID:
 
 : The Destination Connection ID field starts at octet 2 and is either 0 octets
-  in length or between 8 and 22 octets. {{connection-id}} describes the use of
+  in length or between 4 and 18 octets. {{connection-id}} describes the use of
   this field in more detail.
 
 Source Connection ID:
 
 : The Source Connection ID field starts at octet 2 and is either 0 octets in
-  length or between 8 and 22 octets. {{connection-id}} describes the use of this
+  length or between 4 and 18 octets. {{connection-id}} describes the use of this
   field in more detail.
 
 Version:
@@ -469,7 +469,7 @@ following sections.
 +-+-+-+-+-+-+-+-+
 |0|K|1|1|0|T T T|
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                Destination Connection ID (0..176)           ...
+|                Destination Connection ID (0..148)           ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                      Packet Number (8/16/32)                ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -572,9 +572,9 @@ The layout of a Version Negotiation packet is:
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |1|  Unused (7) |DCIL(4)|SCIL(4)|
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|               Destination Connection ID (0/64..176)         ...
+|               Destination Connection ID (0/32..148)         ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                 Source Connection ID (0/64..176)            ...
+|                 Source Connection ID (0/32..148)            ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                          Version (32)                         |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -1883,7 +1883,7 @@ following layout:
 +-+-+-+-+-+-+-+-+
 |0|K| Type (6)  |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                  Destination Connection ID (176)            ...
+|                  Destination Connection ID (148)            ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                     Packet Number (8/16/32)                   |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -1902,7 +1902,7 @@ following layout:
 This design ensures that a stateless reset packet is - to the extent possible -
 indistinguishable from a regular packet.
 
-A server generates a random 22-octet Destination Connection ID field.  For a
+A server generates a random 18-octet Destination Connection ID field.  For a
 client that requires that the server include a connection ID, this will mean
 that this value differs from previous packets with two consequences:
 
@@ -2379,7 +2379,7 @@ The NEW_CONNECTION_ID is as follows:
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                          Sequence (i)                       ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|   Length (8)  |        Connection ID (0,64..176)            ...
+|   Length (8)  |          Connection ID (32..148)            ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                                                               |
 +                                                               +
@@ -2404,7 +2404,7 @@ Sequence:
 Length:
 
 : An 8-bit unsigned integer containing the length of the connection ID.  Values
-  less than 8 and greater than 22 are invalid and MUST be treated as a
+  less than 4 and greater than 18 are invalid and MUST be treated as a
   connection error of type PROTOCOL_VIOLATION.
 
 Connection ID:

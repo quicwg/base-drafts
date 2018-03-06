@@ -138,9 +138,9 @@ version-specific semantics are marked with an X.
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |1|X X X X X X X|DCIL(4)|SCIL(4)|
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|               Destination Connection ID (0/64..176)         ...
+|               Destination Connection ID (0/32..148)         ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                 Source Connection ID (0/64..176)            ...
+|                 Source Connection ID (0/32..148)            ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                         Version (32)                          |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -157,10 +157,11 @@ The next octet contains the length in octets of the two Connection IDs (see
 integer.  The length of the Destination Connection ID (DCIL) occupies the high
 bits of the octet and the length of the Source Connection ID (SCIL) occupying
 the low bits of the octet.  An encoded length of 0 indicates that the connection
-ID is also 0 octets in length.  Non-zero encoded lengths are increased by 7 to
-get the full length of the connection ID.  For example, an octet with the value
-0xa0 describes a 17 octet Destination Connection ID and a zero octet Source
-Connection ID.
+ID is also 0 octets in length.  Non-zero encoded lengths are increased by 3 to
+get the full length of the connection ID; the final value is therefore either 0
+or between 4 and 18 octets in length (inclusive).  For example, an octet with
+the value 0xe0 describes a 17 octet Destination Connection ID and a zero octet
+Source Connection ID.
 
 The connection ID lengths are followed by a two connection IDs.  The connection
 ID associated with the recipient of the packet (the Destination Connection ID)
@@ -182,7 +183,7 @@ version-specific semantics are marked with an X.
 +-+-+-+-+-+-+-+-+
 |0|X X X X X X X|
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                Destination Connection ID (0..176)           ...
+|                Destination Connection ID (0..148)           ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X  ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -201,7 +202,7 @@ The remainder of the packet has version-specific semantics.
 ## Connection ID
 
 A connection ID is an opaque field.  A connection ID can be 0 octets in length,
-or between 8 and 22 octets (inclusive).
+or between 4 and 18 octets (inclusive).
 
 The primary function of a connection ID is to ensure that changes in addressing
 at lower protocol layers (UDP, IP, and below) don't cause packets for a QUIC
@@ -243,9 +244,9 @@ Version field, which is set to 0x00000000.
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |1|X X X X X X X|DCIL(4)|SCIL(4)|
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|               Destination Connection ID (0/64..176)         ...
+|               Destination Connection ID (0/32..148)         ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                 Source Connection ID (0/64..176)            ...
+|                 Source Connection ID (0/32..148)            ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                       Version (32) = 0                        |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
