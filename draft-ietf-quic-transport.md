@@ -783,7 +783,7 @@ value of the Source Connection ID that they receive.
 
 During the handshake, an endpoint might receive multiple packets with the long
 header, and thus be given multiple opportunities to update the Destination
-Connection ID it sends.  An client MUST only change the value it sends in the
+Connection ID it sends.  A client MUST only change the value it sends in the
 Destination Connection ID field in response to the first packet of each type
 (Retry, or Handshake) that it receives; a server MUST only change its value
 based on an Initial packet.  This avoids problems that might arise from
