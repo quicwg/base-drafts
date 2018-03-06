@@ -1590,12 +1590,14 @@ recovers the packet number by adding the cumulative packet number gap to its
 expected packet number.  An endpoint MUST discard packets that contain a smaller
 gap than it advertised.
 
-An endpoint that receives a packet either with a previously unused connection ID
-or with an empty connection ID and from a new remote address MUST use the next
-available connection ID for any packets it sends to that address.  Failing to do
-this would allow for use of that connection ID to link activity on new paths.
-An endpoint SHOULD use a new connection ID if it observes a change in address
-without a change in connection ID.
+An endpoint that receives a successfully authenticated packet with a previously
+unused connection ID MUST use the next available connection ID for any packets
+it sends to that address.  To avoid changing connection IDs multiple times when
+packets arrive out of order, endpoints MUST change only in response to a packet
+that increases the largest received packet number.  Failing to do this could
+allow for use of that connection ID to link activity on new paths.  There is no
+need to move to a new connection ID if the address of a peer changes without
+also changing the connection ID.
 
 For instance, a server might provide a packet number gap of 7 associated with a
 new connection ID.  If the server received packet 10 using the previous
