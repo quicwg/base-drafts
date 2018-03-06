@@ -538,7 +538,7 @@ time_of_last_sent_packet:
 : The time the most recent packet was sent.
 
 time_of_last_sent_handshake_packet:
-: The time the most reccent handshake packet was sent.
+: The time the most recent handshake packet was sent.
 
 largest_sent_packet:
 : The packet number of the most recently sent packet.
