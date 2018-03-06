@@ -135,14 +135,16 @@ version-specific semantics are marked with an X.
 ~~~
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|1|X X X X X X X|DCIL(4)|SCIL(4)|
++-+-+-+-+-+-+-+-+
+|1|X X X X X X X|
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                         Version (32)                          |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|DCIL(4)|SCIL(4)|
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |               Destination Connection ID (0/64..176)         ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                 Source Connection ID (0/64..176)            ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                         Version (32)                          |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X  ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -151,6 +153,8 @@ version-specific semantics are marked with an X.
 
 A QUIC packet with a long header has the high bit of the first octet set to 1.
 All other bits in that octet are version specific.
+
+The next four octets include a 32-bit Version field (see {{version}}).
 
 The next octet contains the length in octets of the two Connection IDs (see
 {{connection-id}}) that follow.  Each length is encoded as a 4 bit unsigned
@@ -167,8 +171,7 @@ ID associated with the recipient of the packet (the Destination Connection ID)
 is followed by the connection ID associated with the sender of the packet (the
 Source Connection ID).
 
-After both Connection IDs, a 32-bit Version (see {{version}}) is followed by a
-version-specific payload.
+The remainder of the packet contains version-specific content.
 
 
 ## Short Header
@@ -240,14 +243,16 @@ Version field, which is set to 0x00000000.
 ~~~
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|1|X X X X X X X| DL(4) | SL(4) |
++-+-+-+-+-+-+-+-+
+|1|X X X X X X X|
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                       Version (32) = 0                        |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| DL(4) | SL(4) |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |               Destination Connection ID (0/64..176)         ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                 Source Connection ID (0/64..176)            ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                       Version (32) = 0                        |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                    Supported Version 1 (32)                   |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
