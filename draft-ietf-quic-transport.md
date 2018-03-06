@@ -883,6 +883,7 @@ explained in more detail as they are referenced later in the document.
 | 0x0e        | PATH_CHALLENGE    | {{frame-path-challenge}}    |
 | 0x0f        | PATH_RESPONSE     | {{frame-path-response}}     |
 | 0x10 - 0x17 | STREAM            | {{frame-stream}}            |
+| 0x80 - 0xff | extension frames  | {{extension-frames}}        |
 {: #frame-types title="Frame Types"}
 
 # Life of a Connection
@@ -1253,6 +1254,17 @@ ack_delay_exponent (0x0007):
   default value of 3 is assumed (indicating a multiplier of 8).  The default
   value is also used for ACK frames that are sent in Initial, Handshake, and
   Retry packets.  Values above 20 are invalid.
+
+extension_map (0x0009):
+
+: An ordered vector of distinct 16-bit integers.  When used by the client,
+  indicates the list of extensions that the client is able and willing to use.
+  When sent by the server, indicates the list of extensions that the server has
+  accepted.  The server list MUST only contain the extensions offered by the
+  client; the ordering of the frames dictates the assignment of extension frame
+  numbers, as described in {{extension-frames}}.  In case of 0-RTT, the server
+  MUST either accept all extensions which it accepted in the original session,
+  or reject 0-RTT.
 
 
 ### Values of Transport Parameters for 0-RTT {#zerortt-parameters}
@@ -2751,6 +2763,29 @@ advised to bundle as few streams as necessary in outgoing packets without losing
 transmission efficiency to underfilled packets.
 
 
+## Extension Frames {#extension-frames}
+
+During the handshake, the client may offer the server a list of extensions it
+supports as a part of transport parameters, and the server may reply with the
+list of extensions it has accepted.
+
+Every extension that defines a codepoint in the transport parameters extension
+list MUST have a well-defined and ordered list of new frames it provides (that
+list MAY be empty), as well as the rules for parsing said frames.  The extension
+frame codepoints are allocated by assigning the frame numbers in order starting
+from 0x80, where the order is defined first by the order of extensions as
+specified in the server handshake, and then by the order they are specified in
+the extension definition.  So, for instance, consider the situation where there
+are two extensions, A and B; extension A defines frames A1 and A2, in that
+order, and extension B defines only the frame B.  Then server accepting "A, B"
+results in assignment "0x80 = A1, 0x81=A2, 0x82 = B", whereas "B, A" would
+result in "0x80 = B, 0x81 = A1, 0x82= A2".
+
+The extension frames defined in this manner MUST NOT be used within the initial
+packets.  The client MAY use an extension in 0-RTT data if it was negotiated in
+the preceeding session, in which case the client MUST offer it again on
+resumption.
+
 # Packetization and Reliability {#packetization}
 
 A sender bundles one or more frames in a QUIC packet (see {{frames}}).
@@ -3923,6 +3958,7 @@ The initial contents of this registry are shown in {{iana-tp-table}}.
 | 0x0006 | stateless_reset_token      | {{transport-parameter-definitions}} |
 | 0x0007 | ack_delay_exponent         | {{transport-parameter-definitions}} |
 | 0x0008 | initial_max_stream_id_uni  | {{transport-parameter-definitions}} |
+| 0x0009 | extensions                 | {{transport-parameter-definitions}} |
 {: #iana-tp-table title="Initial QUIC Transport Parameters Entries"}
 
 
