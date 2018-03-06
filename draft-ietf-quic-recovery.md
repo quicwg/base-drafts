@@ -632,7 +632,8 @@ are as follows:
 Pseudocode for OnPacketSent follows:
 
 ~~~
- OnPacketSent(packet_number, is_ack_only, is_handshake_packet, sent_bytes):
+ OnPacketSent(packet_number, is_ack_only, is_handshake_packet,
+                sent_bytes):
    time_of_last_sent_packet = now
    largest_sent_packet = packet_number
    sent_packets[packet_number].packet_number = packet_number
