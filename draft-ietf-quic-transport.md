@@ -1568,7 +1568,7 @@ implementations are cautioned that the new path could have a longer round-trip
 time than the original.  Again, to avoid excessive network load, an endpoint
 SHOULD NOT send more PATH_CHALLENGE frames than it would a client INITIAL,
 ensuring that connection migration is no more load on a new path than
-establishing a new connection.  
+establishing a new connection.
 
 The endpoint may receive packets containing other frames during this period, but
 a PATH_RESPONSE frame with appropriate data is required for the path validation
