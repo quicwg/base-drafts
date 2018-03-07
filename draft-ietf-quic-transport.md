@@ -1487,8 +1487,8 @@ network.  This section describes the protocol for migrating a connection to a
 new client address.
 
 Migrating a connection to a new server address is left for future work. If a
-client receives packets in the connection from a new server address, the client
-MAY discard these packets.
+client receives packets from a new server address, the client MAY discard these
+packets.
 
 
 ### Path Validation {#migrate-validate}
@@ -1514,11 +1514,10 @@ with its own PATH_CHALLENGE.
 To initiate path validation, an endpoint sends a PATH_CHALLENGE frame containing
 a payload that is hard to guess on the path to be validated.
 
-An endpoint MAY send additional PATH_CHALLENGE frames to handle packet loss,
-but is subject to the following limit to avoid excessive network load: an
-endpoint SHOULD NOT send a PATH_CHALLENGE more frequently than it would a client
-INITIAL, ensuring that connection migration is no more load on a new path than
-establishing a new connection.
+An endpoint MAY send additional PATH_CHALLENGE frames to handle packet loss.  An
+endpoint SHOULD NOT send a PATH_CHALLENGE more frequently than it would an
+Initial packet, ensuring that connection migration is no more load on a new path
+than establishing a new connection.
 
 The endpoint MUST use fresh random data in every PATH_CHALLENGE frame so that it
 can associate the peer's response with the causative PATH_CHALLENGE.
@@ -1528,7 +1527,7 @@ can associate the peer's response with the causative PATH_CHALLENGE.
 
 On receiving a PATH_CHALLENGE frame, an endpoint MUST respond immediately by
 echoing the data contained in the PATH_CHALLENGE frame in a PATH_RESPONSE frame,
-with the following stipulation.  Since a PATH_CHALLENGE may be sent from a
+with the following stipulation.  Since a PATH_CHALLENGE might be sent from a
 spoofed address, an endpoint MAY limit the rate at which it sends PATH_RESPONSE
 frames and MAY silently discard PATH_CHALLENGE frames that would cause it to
 respond at a higher rate.
@@ -1577,23 +1576,20 @@ to succeed.
 
 ### Initiating Connection Migration {#initiating-migration}
 
-A client MAY initiate connection migration to a new local address in one of two
-ways.
-
-The client MAY immediately migrate the connection by sending all packets from
-the new local address.  Since the server's address is validated during
+A client can migrate a connection to a new local address by sending all packets
+from the new local address.  Since the server's address is validated during
 connection establishment, receiving acknowledgments for this data serves as
 proof of the server's reachability from the new address.  Note that since
 acknowledgments may be received on any path, return reachability on the new path
 is not established. To establish return reachability on the new path, a client
 MAY concurrently initiate path validation {{migrate-validate}} on the new path.
 
-Alternatively, the client could probe for server reachability from the new local
-address first using path validation {{migrate-validate}} and migrate the
-connection to the new address later.  Failure of path validation simply means
-that the new local address is not usable for this connection.  Failure to
-validate a path does not cause the connection to end unless there are no valid
-alternative paths available.
+If it has the opportunity, a client MAY probe for server reachability from a
+new local address using path validation {{migrate-validate}} prior to migrating
+the connection to it.  Failure of path validation simply means that the new
+local address is not usable for this connection.  Failure to validate a path
+does not cause the connection to end unless there are no valid alternative paths
+available.
 
 A client migrating to a new local address SHOULD use a new connection ID for
 packets sent from that address, see {{migration-linkability}} for further
@@ -1695,13 +1691,16 @@ PATH_CHALLENGE frame that is sent to it, even if it wanted to.
 
 To protect the connection from failing due to such a spurious migration, the
 server MUST revert to using the last validated client address when validation of
-a new client address fails. If the server has no state about the last validated
-client address, it MUST close the connection silently and discard any further
-packets received from the client for this connection.
+a new client address fails.
 
-Receipt of packets with higher packet numbers from the legitimate client address
-will trigger another connection migration.  This will cause the validation of
-the address of the spurious migration to be abandoned.
+If the server has no state about the last validated client address, it MUST
+close the connection silently by discarding all connection state. This results
+in new packets on the connection being handled generically. For instance, an
+endpoint MAY send a stateless reset in response to any further incoming packets.
+
+Note that receipt of packets with higher packet numbers from the legitimate
+client address will trigger another connection migration.  This will cause the
+validation of the address of the spurious migration to be abandoned.
 
 
 ### Loss Detection and Congestion Control
