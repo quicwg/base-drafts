@@ -1512,7 +1512,7 @@ with its own PATH_CHALLENGE.
 #### Initiation
 
 To initiate path validation, an endpoint sends a PATH_CHALLENGE frame containing
-a payload that is hard to guess on the path to be validated.
+a random payload that is hard to guess on the path to be validated.
 
 An endpoint MAY send additional PATH_CHALLENGE frames to handle packet loss.  An
 endpoint SHOULD NOT send a PATH_CHALLENGE more frequently than it would an
@@ -1540,28 +1540,29 @@ received, to the same remote address from which the PATH_CHALLENGE was received.
 
 #### Completion
 
-The new address is not considered valid until a PATH_RESPONSE frame containing
-the same payload is received, even if the packet containing the PATH_CHALLENGE
-frame is acknowledged.
+A new address is considered valid when a PATH_RESPONSE frame is received
+containing data that was sent in a previous PATH_CHALLENGE. Receipt of an
+acknowledgment for a packet containing a PATH_CHALLENGE frame is not adequate
+validation, since the acknowledgment can be spoofed by a malicious client.
 
-The PATH_RESPONSE frame MUST be received from the same remote address to which
-the corresponding PATH_CHALLENGE was sent. If a PATH_RESPONSE frame is received
-from a different remote address than the one to which the PATH_CHALLENGE was
-sent, path validation is considered to have failed, even if the data matches
-that sent in the PATH_CHALLENGE.
+For path validation to be successful, a PATH_RESPONSE frame MUST be received
+from the same remote address to which the corresponding PATH_CHALLENGE was
+sent. If a PATH_RESPONSE frame is received from a different remote address than
+the one to which the PATH_CHALLENGE was sent, path validation is considered to
+have failed, even if the data matches that sent in the PATH_CHALLENGE.
 
-The PATH_RESPONSE frame MUST be received on the same local address from which
-the corresponding PATH_CHALLENGE was sent.  If a PATH_RESPONSE frame is received
-on a different local address than the one from which the PATH_CHALLENGE was
-sent, path validation is considered to have failed, even if the data matches
-that sent in the PATH_CHALLENGE.  Thus, the endpoint considers the path to be
-valid when a PATH_RESPONSE frame is received on the same path with the same
-payload as the PATH_CHALLENGE frame.
+Additionally, the PATH_RESPONSE frame MUST be received on the same local address
+from which the corresponding PATH_CHALLENGE was sent.  If a PATH_RESPONSE frame
+is received on a different local address than the one from which the
+PATH_CHALLENGE was sent, path validation is considered to have failed, even if
+the data matches that sent in the PATH_CHALLENGE.  Thus, the endpoint considers
+the path to be valid when a PATH_RESPONSE frame is received on the same path
+with the same payload as the PATH_CHALLENGE frame.
 
 
 #### Abandonment
 
-The endpoint SHOULD abandon path validation after sending some number of
+An endpoint SHOULD abandon path validation after sending some number of
 PATH_CHALLENGE frames or after some time has passed.  When setting this timer,
 implementations are cautioned that the new path could have a longer round-trip
 time than the original.  Again, to avoid excessive network load, an endpoint
@@ -1569,9 +1570,9 @@ SHOULD NOT send more PATH_CHALLENGE frames than it would a client INITIAL,
 ensuring that connection migration is no more load on a new path than
 establishing a new connection.
 
-The endpoint may receive packets containing other frames during this period, but
-a PATH_RESPONSE frame with appropriate data is required for the path validation
-to succeed.
+Note that the endpoint might receive packets containing other frames on the new
+path, but a PATH_RESPONSE frame with appropriate data is required for path
+validation to succeed.
 
 
 ### Initiating Connection Migration {#initiating-migration}
@@ -1584,12 +1585,12 @@ acknowledgments may be received on any path, return reachability on the new path
 is not established. To establish return reachability on the new path, a client
 MAY concurrently initiate path validation {{migrate-validate}} on the new path.
 
-If it has the opportunity, a client MAY probe for server reachability from a
-new local address using path validation {{migrate-validate}} prior to migrating
-the connection to it.  Failure of path validation simply means that the new
-local address is not usable for this connection.  Failure to validate a path
-does not cause the connection to end unless there are no valid alternative paths
-available.
+If it has an opportunity, a client MAY probe for server reachability from a new
+local address using path validation {{migrate-validate}} prior to migrating the
+connection to the new local address.  Failure of path validation simply means
+that the new local address is not usable for this connection.  Failure to
+validate a path does not cause the connection to end unless there are no valid
+alternative paths available.
 
 A client migrating to a new local address SHOULD use a new connection ID for
 packets sent from that address, see {{migration-linkability}} for further
@@ -1618,20 +1619,20 @@ PATH_CHALLENGE, PATH_RESPONSE, and PADDING frames are "probing" frames, and
 receiving only these frames from a new client address MUST NOT result in the
 server sending any other frames to that address.
 
-#### Responding to an Immediate Migration
+#### Responding to an Immediate Migration {#migration-response}
 
 Receiving a packet from a new client address indicates that the client may be
 immediately migrating if
 
 * the packet is a "non-probing" packet. That is, it contains a frame other than
-PATH_CHALLENGE, PATH_RESPONSE, or PADDING; and
+PATH_CHALLENGE, PATH_RESPONSE, and PADDING; and
 
 * the packet carries a packet number that is the largest seen thus far.
 
 Upon receiving such a packet, the server MUST abandon any path validation it is
 performing with other addresses on the expectation that those validations are
 likely to fail.  Abandoning path validation primarily means ceasing subsequent
-transmissions of the PATH_CHALLENGE frame.  An endpoint MUST ignore any
+transmissions of the PATH_CHALLENGE frame.  An endpoint MAY ignore any
 subsequently received PATH_RESPONSE frames from abandoned addresses.
 
 In response to such a packet, the server MUST start sending subsequent packets
@@ -1665,10 +1666,8 @@ sends significantly more data than the client, connection migration might be
 used to amplify the volume of data that an attacker can generate toward a
 victim.
 
-Thus, on receiving and decrypting a packet from an unvalidated address, the
-server MUST immediately validate the client's new address to confirm the
-client's possession of the new address.
-
+As described in {{migration-response}}, a server is required to validate the
+client's new address to confirm the client's possession of the new address.
 Until a client's address is deemed valid, the server MUST limit the rate at
 which it sends data to this address.  The server MUST NOT send more than a
 minimum congestion window's worth of data per estimated RTO period (as defined
@@ -1678,6 +1677,8 @@ since the server will not have any round-trip time estimates to the new address,
 the RTO period is likely to be estimated based on the default initial RTT (see
 {{QUIC-RECOVERY}}).
 
+A server SHOULD NOT apply this rate limit when the server skips validation of a
+client address, as described in {{migration-response}}.
 
 ### Handling Address Spoofing by an On-path Attacker {#on-path-spoofing}
 
@@ -1715,13 +1716,13 @@ After successful validation of the client's new address, the server SHOULD reset
 its congestion controller and round-trip time estimator prior to sending any
 further non-probing packets.
 
-An endpoint MUST NOT restore its send rate unless it is reasonably sure that the
-path is the same as the previous path.  For instance, a change in the client's
-port number is likely indicative of a rebinding in a middlebox and not a
-complete change in path.  This determination likely depends on heuristics, which
-could be imperfect; if the new path capacity is significantly reduced,
-ultimately this relies on the congestion controller responding to congestion
-signals and reducing send rates appropriately.
+An endpoint MUST NOT return to the send rate used for the previous path unless
+it is reasonably sure that the previous send rate is valid for the new path.
+For instance, a change in the client's port number is likely indicative of a
+rebinding in a middlebox and not a complete change in path.  This determination
+likely depends on heuristics, which could be imperfect; if the new path capacity
+is significantly reduced, ultimately this relies on the congestion controller
+responding to congestion signals and reducing send rates appropriately.
 
 There may be apparent reordering at the receiver when an endpoint sends data and
 probes from/to multiple addresses during the migration period, since the two
