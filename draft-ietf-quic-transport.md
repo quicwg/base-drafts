@@ -553,6 +553,14 @@ version-independent.  The remaining fields are specific to the selected QUIC
 version.  See {{QUIC-INVARIANTS}} for details on how packets from different
 versions of QUIC are interpreted.
 
+The short header omits the Connection ID Lengths, Source Connection ID,
+and Version fields that appear in the long header.  The length of the
+Destination Connecton ID field is expected to be known to endpoints.  Endpoints
+with a load balancer that uses the connection ID can agree to a fixed or minimum
+length for connection IDs with necessary information in the fixed portion.
+If that fixed portion instead encodes an explicit length, the entire connection
+ID can vary in length and still be used by the load balancer.
+
 
 ## Version Negotiation Packet {#packet-version}
 
