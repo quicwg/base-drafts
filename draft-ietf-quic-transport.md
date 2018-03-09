@@ -163,8 +163,8 @@ Connection:
 
 Connection ID:
 
-: An opaque identifier that is used to identify a QUIC connection.  Each
-  endpoint sets a value that its peer includes in packets.
+: An opaque identifier that is used to identify a QUIC connection at an
+  endpoint.  Each endpoint sets a value that its peer includes in packets.
 
 QUIC packet:
 
@@ -410,20 +410,20 @@ DCIL and SCIL:
   octet.  An encoded length of 0 indicates that the connection ID is also 0
   octets in length.  Non-zero encoded lengths are increased by 3 to get the full
   length of the connection ID, producing a length between 4 and 18 octets
-  inclusive.  For example, an octet with the value 0x50 describes an 8 octet
-  Destination Connection ID and a zero octet Source Connection ID.
+  inclusive.  For example, an octet with the value 0x50 describes an 8-octet
+  Destination Connection ID and a zero-length Source Connection ID.
 
 Destination Connection ID:
 
-: The Destination Connection ID field starts at octet 2 and is either 0 octets
-  in length or between 4 and 18 octets. {{connection-id}} describes the use of
-  this field in more detail.
+: The Destination Connection ID field follows the connection ID lengths and is
+  either 0 octets in length or between 4 and 18 octets. {{connection-id}}
+  describes the use of this field in more detail.
 
 Source Connection ID:
 
-: The Source Connection ID field starts at octet 2 and is either 0 octets in
-  length or between 4 and 18 octets. {{connection-id}} describes the use of this
-  field in more detail.
+: The Source Connection ID field follows the Destination Connection ID and is
+  either 0 octets in length or between 4 and 18 octets. {{connection-id}}
+  describes the use of this field in more detail.
 
 Version:
 
@@ -553,14 +553,6 @@ version-independent.  The remaining fields are specific to the selected QUIC
 version.  See {{QUIC-INVARIANTS}} for details on how packets from different
 versions of QUIC are interpreted.
 
-The short header omits the Connection ID Lengths, Source Connection ID,
-and Version fields that appear in the long header.  The length of the
-Destination Connecton ID field is expected to be known to endpoints.  Endpoints
-with a load balancer that uses the connection ID can agree to a fixed or minimum
-length for connection IDs with necessary information in the fixed portion.
-If that fixed portion instead encodes an explicit length, the entire connection
-ID can vary in length and still be used by the load balancer.
-
 
 ## Version Negotiation Packet {#packet-version}
 
@@ -644,8 +636,14 @@ first cryptographic handshake message sent by the client.
 
 If the client has not previously received a Retry packet from the server, it
 populates the Destination Connection ID field with a randomly selected value.
-This MUST be at least 8 octets in length.  If the client received a Retry packet
-and is sending a second Initial packet, then it uses the value from the Source
+This MUST be at least 8 octets in length.  Until a packet is received from the
+server, the client MUST use the same random value unless it also changes the
+Source Connection ID (which effectively starts a new connection attempt).  The
+randomized Destination Connection ID is used to determine packet protection
+keys, but is not included in server packets.
+
+If the client received a Retry packet and is sending a second Initial packet,
+then it sets the Destination Connection ID to the value from the Source
 Connection ID in the Retry packet.
 
 The client populates the Source Connection ID field with a value of its choosing
@@ -779,32 +777,37 @@ Source Connection ID is used to set the Destination Connection ID used by a
 peer.
 
 During the handshake, packets with the long header are used to establish the
-Destination Connection ID that each endpoint uses.  Each endpoint uses the
-Source Connection ID field to specify the connection ID that is used in the
-Destination Connection ID field of packets being sent to them.  Upon receiving a
-packet, each endpoint sets the Destination Connection ID it sends to match the
-value of the Source Connection ID that they receive.
+connection ID that each endpoint uses.  Each endpoint uses the Source Connection
+ID field to specify the connection ID that is used in the Destination Connection
+ID field of packets being sent to them.  Upon receiving a packet, each endpoint
+sets the Destination Connection ID it sends to match the value of the Source
+Connection ID that they receive.
 
 During the handshake, an endpoint might receive multiple packets with the long
 header, and thus be given multiple opportunities to update the Destination
 Connection ID it sends.  A client MUST only change the value it sends in the
-Destination Connection ID field in response to the first packet of each type
-(Retry, or Handshake) that it receives; a server MUST only change its value
-based on an Initial packet.  This avoids problems that might arise from
-stateless processing of multiple Initial packets producing different connection
-IDs.
+Destination Connection ID in response to the first packet of each type (Retry,
+or Handshake) that it receives; a server MUST set its value based on the Initial
+packet.  If subsequent packets of those types include a different Source
+Connection ID, they MUST be discarded.  This avoids problems that might arise
+from stateless processing of multiple Initial packets producing different
+connection IDs.
 
 Short headers only include the Destination Connection ID and omit the explicit
-length.
+length.  The length of the Destination Connecton ID field is expected to be
+known to endpoints.  Endpoints with a load balancer that uses a connection ID
+can agree to a fixed or minimum length for connection IDs with necessary
+information in the fixed portion.  If that fixed portion instead encodes an
+explicit length, the entire connection ID can vary in length and still be used
+by the load balancer.
 
-The very first packet sent by a client client includes a random value for
-Destination Connection ID.  The same value MUST be used for all 0-RTT packets
-sent on that connection ({{packet-protected}}).  This randomized value is used
-to determine the handshake packet protection keys (see Section 5.2.2 of
-{{QUIC-TLS}}).
+The very first packet sent by a client includes a random value for Destination
+Connection ID.  The same value MUST be used for all 0-RTT packets sent on that
+connection ({{packet-protected}}).  This randomized value is used to determine
+the handshake packet protection keys (see Section 5.2.2 of {{QUIC-TLS}}).
 
 A Version Negotiation ({{packet-version}}) packet MUST use both connection IDs
-selected by the client, inverted to ensure correct routing toward the client.
+selected by the client, swapped to ensure correct routing toward the client.
 
 
 ## Packet Numbers {#packet-numbers}
@@ -1911,19 +1914,19 @@ This design ensures that a stateless reset packet is - to the extent possible -
 indistinguishable from a regular packet.
 
 A server generates a random 18-octet Destination Connection ID field.  For a
-client that requires that the server include a connection ID, this will mean
-that this value differs from previous packets with two consequences:
+client that depends on the server including a connection ID, this will mean that
+this value differs from previous packets.  Ths results in two problems:
 
 * The packet might not reach the client.  If the Destination Connection ID is
   critical for routing toward the client, then this packet could be incorrectly
-  routed and dropped.  This causes the stateless reset to be ineffective in
-  causing errors to be quickly detected and recovered.  In this case, clients
-  will need to rely on other methods such as timers to detect that the
-  connection has failed.
+  routed.  This causes the stateless reset to be ineffective in causing errors
+  to be quickly detected and recovered.  In this case, clients will need to rely
+  on other methods - such as timers - to detect that the connection has failed.
 
-* The connection ID can be used by entities other than the client to identify
-  this as a potential stateless reset.  A server that occasionally uses
-  different connection IDs might introduce some uncertainty about this.
+* The randomly generated connection ID can be used by entities other than the
+  client to identify this as a potential stateless reset.  A server that
+  occasionally uses different connection IDs might introduce some uncertainty
+  about this.
 
 The Packet Number field is set to a randomized value.  The server SHOULD send a
 packet with a short header and a type of 0x1F.  This produces the shortest
@@ -2426,8 +2429,8 @@ Stateless Reset Token:
 
 An endpoint MUST NOT send this frame if it currently requires that its peer send
 packets with a zero-length Destination Connection ID.  Changing the length of a
-connection ID to or from zero-length makes it very difficult to identify when
-the new connection ID was used.  An endpoint that is sending packets with a a
+connection ID to or from zero-length makes it difficult to identify when the
+value of the connection ID changed.  An endpoint that is sending packets with a
 zero-length Destination Connection ID MUST treat receipt of a NEW_CONNECTION_ID
 frame as a connection error of type PROTOCOL_VIOLATION.
 
