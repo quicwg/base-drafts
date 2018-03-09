@@ -1494,7 +1494,7 @@ packets.
 ### Path Validation {#migrate-validate}
 
 Path validation is used by the migrating endpoint to verify reachability of
-its peer from a new local address. Path validation is also used by the peer to
+a peer from a new local address. Path validation is also used by the peer to
 verify that the migrating endpoint is able to receive packets sent to that
 address.  That is, that the packets received from the migrating endpoint do
 not carry a spoofed source address.
@@ -1565,10 +1565,7 @@ with the same payload as the PATH_CHALLENGE frame.
 An endpoint SHOULD abandon path validation after sending some number of
 PATH_CHALLENGE frames or after some time has passed.  When setting this timer,
 implementations are cautioned that the new path could have a longer round-trip
-time than the original.  Again, to avoid excessive network load, an endpoint
-SHOULD NOT send more PATH_CHALLENGE frames than it would a client INITIAL,
-ensuring that connection migration is no more load on a new path than
-establishing a new connection.
+time than the original.
 
 Note that the endpoint might receive packets containing other frames on the new
 path, but a PATH_RESPONSE frame with appropriate data is required for path
