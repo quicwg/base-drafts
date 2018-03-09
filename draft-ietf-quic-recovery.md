@@ -405,7 +405,7 @@ connection's final smoothed RTT value as the resumed connection's initial RTT.
 If no previous RTT is available, or if the network changes, the initial RTT
 SHOULD be set to 100ms.
 
-When the first handshake packet is sent, the sender SHOULD set an alarm for the
+When a handshake packet is sent, the sender SHOULD set an alarm for the
 handshake timeout period.
 
 When the alarm fires, the sender MUST retransmit all unacknowledged handshake
@@ -538,7 +538,7 @@ time_of_last_sent_packet:
 : The time the most recent packet was sent.
 
 time_of_last_sent_handshake_packet:
-: The time the most recent handshake packet was sent.
+: The time the most recent packet containing handshake data was sent.
 
 largest_sent_packet:
 : The packet number of the most recently sent packet.
@@ -623,8 +623,8 @@ are as follows:
   ACK frame.  If true, it is still expected an ack will be received for
   this packet, but it is not congestion controlled.
 
-* is_handshake_packet: A boolean that indicates whether a packet is part of
-  the QUIC crypto handshake.
+* is_handshake_packet: A boolean that indicates whether a packet contains
+  handshake data.
 
 * sent_bytes: The number of bytes sent in the packet, not including UDP or IP
   overhead, but including QUIC framing overhead.
@@ -639,9 +639,9 @@ Pseudocode for OnPacketSent follows:
    sent_packets[packet_number].packet_number = packet_number
    sent_packets[packet_number].time = now
    sent_packets[packet_number].ack_only = is_ack_only
-   if is_handshake_packet:
-     time_of_last_sent_handshake_packet = now
    if !is_ack_only:
+     if is_handshake_packet:
+       time_of_last_sent_handshake_packet = now
      OnPacketSentCC(sent_bytes)
      sent_packets[packet_number].bytes = sent_bytes
      SetLossDetectionAlarm()
