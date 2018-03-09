@@ -1712,10 +1712,9 @@ These states SHOULD persist for three times the current Retransmission Timeout
 (RTO) interval as defined in {{QUIC-RECOVERY}}.
 
 An endpoint enters a closing period after initiating an immediate close
-({{immediate-close}}) and optionally after an idle timeout ({{idle-timeout}}).
-While closing, an endpoint MUST NOT send packets unless they contain a
-CONNECTION_CLOSE or APPLICATION_CLOSE frame (see {{immediate-close}} for
-details).
+({{immediate-close}}).  While closing, an endpoint MUST NOT send packets unless
+they contain a CONNECTION_CLOSE or APPLICATION_CLOSE frame (see
+{{immediate-close}} for details).
 
 In the closing state, only a packet containing a closing frame can be sent.  An
 endpoint retains only enough information to generate a packet containing a
