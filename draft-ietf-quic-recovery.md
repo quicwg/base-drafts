@@ -285,7 +285,7 @@ alarm for TCP as well, and this document incorporates this advancement.
 Timer-based loss detection implements the spirit of TCP's Tail Loss Probe
 and Retransmission Timeout mechanisms.
 
-### Tail Loss Probe
+### Tail Loss Probe {#tlp}
 
 The algorithm described in this section is an adaptation of the Tail Loss Probe
 algorithm proposed for TCP {{TLP}}.
@@ -885,7 +885,9 @@ specified in bytes due to finer control and the ease of appropriate byte
 counting {{?RFC3465}}.
 
 QUIC hosts MUST NOT send packets if they would increase bytes_in_flight
-(defined in {{vars-of-interest}}) beyond the available congestion window.
+(defined in {{vars-of-interest}}) beyond the available congestion window, unless
+the packet is a probe packet sent after the TLP or RTO alarm fires, as described
+in {{tlp}} and {{rto}}.
 
 ## Slow Start
 
