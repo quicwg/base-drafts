@@ -38,11 +38,11 @@ normative:
         org: Mozilla
         role: editor
 
-  QCRAM:
-    title: "Header Compression for HTTP over QUIC"
+  QPACK:
+    title: "QPACK: Header Compression for HTTP over QUIC"
     date: {DATE}
     seriesinfo:
-      Internet-Draft: draft-ietf-quic-qcram-latest
+      Internet-Draft: draft-ietf-quic-qpack-latest
     author:
       -
           ins: C. Krasic
@@ -344,7 +344,7 @@ abort a response in progress as a result of receiving a solicited RST_STREAM.
 
 ### Header Compression
 
-HTTP/QUIC uses QCRAM header compression as described in [QCRAM], a variation of
+HTTP/QUIC uses QPACK header compression as described in [QPACK], a variation of
 HPACK which allows the flexibility to avoid header-compression-induced
 head-of-line blocking.  See that document for additional details.
 
@@ -554,7 +554,7 @@ with a payload length of zero, the recipient MUST respond with a stream error
 ### HEADERS {#frame-headers}
 
 The HEADERS frame (type=0x1) is used to carry a header block, compressed using
-QCRAM. See [QCRAM] for more details.
+QPACK. See [QPACK] for more details.
 
 The HEADERS frame defines a single flag:
 
@@ -844,7 +844,7 @@ Push ID:
   ({{frame-cancel-push}}), and PRIORITY frames ({{frame-priority}}).
 
 Header Block:
-: QCRAM-compressed request headers for the promised response.  See [QCRAM] for
+: QPACK-compressed request headers for the promised response.  See [QPACK] for
   more details.
 
 A server MUST NOT use a Push ID that is larger than the client has provided in a
@@ -976,16 +976,16 @@ HTTP_NO_ERROR code.
 ### HEADER_ACK {#frame-header-ack}
 
 The HEADER_ACK frame (type=0x8) is used by header compression to ensure
-consistency. The frames are sent from the QCRAM decoder to the QCRAM encoder;
+consistency. The frames are sent from the QPACK decoder to the QPACK encoder;
 that is, the server sends them to the client to acknowledge processing of the
 client's header blocks, and the client sends them to the server to acknowledge
 processing of the server's header blocks.
 
-The HEADER_ACK frame is sent on the Control Stream when the QCRAM decoder has
-fully processed a header block.  It is used by the peer's QCRAM encoder to
+The HEADER_ACK frame is sent on the Control Stream when the QPACK decoder has
+fully processed a header block.  It is used by the peer's QPACK encoder to
 determine whether subsequent indexed representations that might reference that
 block are vulnerable to head-of-line blocking, and to prevent eviction races.
-See [QCRAM] for more details on the use of this information.
+See [QPACK] for more details on the use of this information.
 
 The HEADER_ACK frame indicates the stream on which the header block was
 processed by encoding the Stream ID as a variable-length integer. The same
@@ -1190,7 +1190,7 @@ Likewise, HPACK was designed with the assumption of in-order delivery. A
 sequence of encoded header blocks must arrive (and be decoded) at an endpoint in
 the same order in which they were encoded. This ensures that the dynamic state
 at the two endpoints remains in sync.  As a result, HTTP/QUIC uses a modified
-version of HPACK, described in [QCRAM].
+version of HPACK, described in [QPACK].
 
 Frame type definitions in HTTP/QUIC often use the QUIC variable-length integer
 encoding.  In particular, Stream IDs use this encoding, which allow for a larger
