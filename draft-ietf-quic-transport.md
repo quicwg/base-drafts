@@ -644,7 +644,8 @@ keys, but is not included in server packets.
 
 If the client received a Retry packet and is sending a second Initial packet,
 then it sets the Destination Connection ID to the value from the Source
-Connection ID in the Retry packet.
+Connection ID in the Retry packet.  Changing Destination Connection ID also
+results in a change to the keys used to protect the Initial packet.
 
 The client populates the Source Connection ID field with a value of its choosing
 and sets the low bits of the ConnID Len field to match.
@@ -773,7 +774,7 @@ sequence of frames, as described in {{frames}}.
 A connection ID is used to ensure consistent routing of packets.  The long
 header contains two connection IDs: the Destination Connection ID is chosen by
 the recipient of the packet and is used to provide consistent routing; the
-Source Connection ID is used to set the Destination Connection ID used by a
+Source Connection ID is used to set the Destination Connection ID used by the
 peer.
 
 During the handshake, packets with the long header are used to establish the
