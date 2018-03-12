@@ -2391,7 +2391,7 @@ The NEW_CONNECTION_ID is as follows:
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                          Sequence (i)                       ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|   Length (8)  |          Connection ID (32..144)            ...
+|                    Connection ID (32..144)                  ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                                                               |
 +                                                               +
@@ -2413,27 +2413,21 @@ Sequence:
   the value selected during the handshake comes immediately before the first
   value that a server can send.
 
-Length:
-
-: An 8-bit unsigned integer containing the length of the connection ID.  Values
-  less than 4 and greater than 18 are invalid and MUST be treated as a
-  connection error of type PROTOCOL_VIOLATION.
-
 Connection ID:
 
-: A connection ID of the specified length.
+: A connection ID.  This field is the same length as the connection ID currently
+  in use.
 
 Stateless Reset Token:
 
 : A 128-bit value that will be used to for a stateless reset when the associated
   connection ID is used (see {{stateless-reset}}).
 
-An endpoint MUST NOT send this frame if it currently requires that its peer send
-packets with a zero-length Destination Connection ID.  Changing the length of a
-connection ID to or from zero-length makes it difficult to identify when the
-value of the connection ID changed.  An endpoint that is sending packets with a
-zero-length Destination Connection ID MUST treat receipt of a NEW_CONNECTION_ID
-frame as a connection error of type PROTOCOL_VIOLATION.
+The NEW_CONNECTION_ID frame does not include an explicit length.  The length of
+the connection ID chosen by an endpoint cannot change.  An endpoint MUST treat
+receipt of a NEW_CONNECTION_ID frame as a connection error of type
+PROTOCOL_VIOLATION if its peer chooses a zero-length connection ID during the
+handshake.
 
 
 ## STOP_SENDING Frame {#frame-stop-sending}
