@@ -121,7 +121,9 @@ general-purpose secure transport for multiple applications.
 
 * Authenticated and encrypted header and payload
 
-* Multiplexing without head-of-line blocking
+* Stream multiplexing
+
+* Connection and stream-level flow control
 
 * Connection migration and resilience to NAT rebinding
 
