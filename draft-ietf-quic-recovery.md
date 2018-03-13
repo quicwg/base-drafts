@@ -176,7 +176,7 @@ QUIC supports many ACK ranges, opposed to TCP's 3 SACK ranges.  In high loss
 environments, this speeds recovery, reduces spurious retransmits, and ensures
 forward progress without relying on timeouts.
 
-### Explicit Correction For Delayed Acks
+### Explicit Correction For Delayed ACKs
 
 QUIC ACKs explicitly encode the delay incurred at the receiver between when a
 packet is received and when the corresponding ACK is sent.  This allows the
@@ -285,7 +285,7 @@ alarm for TCP as well, and this document incorporates this advancement.
 Timer-based loss detection implements the spirit of TCP's Tail Loss Probe
 and Retransmission Timeout mechanisms.
 
-### Tail Loss Probe
+### Tail Loss Probe {#tlp}
 
 The algorithm described in this section is an adaptation of the Tail Loss Probe
 algorithm proposed for TCP {{TLP}}.
@@ -405,7 +405,7 @@ connection's final smoothed RTT value as the resumed connection's initial RTT.
 If no previous RTT is available, or if the network changes, the initial RTT
 SHOULD be set to 100ms.
 
-When the first handshake packet is sent, the sender SHOULD set an alarm for the
+When a handshake packet is sent, the sender SHOULD set an alarm for the
 handshake timeout period.
 
 When the alarm fires, the sender MUST retransmit all unacknowledged handshake
@@ -439,10 +439,12 @@ receiving a second full-sized packet.
 Out-of-order packets SHOULD be acknowledged more quickly, in order
 to accelerate loss recovery.  The receiver SHOULD send an immediate ACK
 when it receives a new packet which is not one greater than the
-largest received packet number.  If a receiver processes multiple
-packets before sending any ACK frames in response, they MAY not
-send an immediate ack if the received packets form a contiguous
-sequence starting one larger than the largest acked.
+largest received packet number.
+
+As an optimization, a receiver MAY process multiple packets before
+sending any ACK frames in response.  In this case they can determine
+whether an immediate or delayed acknowledgement should be generated
+after processing incoming packets.
 
 ### ACK Ranges
 
@@ -535,6 +537,9 @@ largest_sent_before_rto:
 time_of_last_sent_packet:
 : The time the most recent packet was sent.
 
+time_of_last_sent_handshake_packet:
+: The time the most recent packet containing handshake data was sent.
+
 largest_sent_packet:
 : The packet number of the most recently sent packet.
 
@@ -602,6 +607,7 @@ follows:
    max_ack_delay = 0
    largest_sent_before_rto = 0
    time_of_last_sent_packet = 0
+   time_of_last_sent_handshake_packet = 0
    largest_sent_packet = 0
 ~~~
 
@@ -617,19 +623,25 @@ are as follows:
   ACK frame.  If true, it is still expected an ack will be received for
   this packet, but it is not congestion controlled.
 
+* is_handshake_packet: A boolean that indicates whether a packet contains
+  handshake data.
+
 * sent_bytes: The number of bytes sent in the packet, not including UDP or IP
   overhead, but including QUIC framing overhead.
 
 Pseudocode for OnPacketSent follows:
 
 ~~~
- OnPacketSent(packet_number, is_ack_only, sent_bytes):
+ OnPacketSent(packet_number, is_ack_only, is_handshake_packet,
+                sent_bytes):
    time_of_last_sent_packet = now
    largest_sent_packet = packet_number
    sent_packets[packet_number].packet_number = packet_number
    sent_packets[packet_number].time = now
    sent_packets[packet_number].ack_only = is_ack_only
    if !is_ack_only:
+     if is_handshake_packet:
+       time_of_last_sent_handshake_packet = now
      OnPacketSentCC(sent_bytes)
      sent_packets[packet_number].bytes = sent_bytes
      SetLossDetectionAlarm()
@@ -763,6 +775,9 @@ Pseudocode for SetLossDetectionAlarm follows:
       alarm_duration = max(alarm_duration + max_ack_delay,
                            kMinTLPTimeout)
       alarm_duration = alarm_duration * (2 ^ handshake_count)
+      loss_detection_alarm.set(
+        time_of_last_sent_handshake_packet + alarm_duration)
+      return;
     else if (loss_time != 0):
       // Early retransmit timer or time loss detection.
       alarm_duration = loss_time - time_of_last_sent_packet
@@ -882,6 +897,11 @@ control to determine the congestion window.  QUIC congestion control is
 specified in bytes due to finer control and the ease of appropriate byte
 counting {{?RFC3465}}.
 
+QUIC hosts MUST NOT send packets if they would increase bytes_in_flight
+(defined in {{vars-of-interest}}) beyond the available congestion window, unless
+the packet is a probe packet sent after the TLP or RTO alarm fires, as described
+in {{tlp}} and {{rto}}.
+
 ## Slow Start
 
 QUIC begins every connection in slow start and exits slow start upon
@@ -959,7 +979,7 @@ kLossReductionFactor (default 0.5):
 : Reduction in congestion window when a new loss event is detected.
 
 
-### Variables of interest
+### Variables of interest {#vars-of-interest}
 
 Variables required to implement the congestion control mechanisms
 are described in this section.

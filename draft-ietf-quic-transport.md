@@ -113,7 +113,19 @@ code and issues list for this draft can be found at
 
 QUIC is a multiplexed and secure transport protocol that runs on top of UDP.
 QUIC aims to provide a flexible set of features that allow it to be a
-general-purpose transport for multiple applications.
+general-purpose secure transport for multiple applications.
+
+* Version negotiation
+
+* Low-latency connection establishment
+
+* Authenticated and encrypted header and payload
+
+* Stream multiplexing
+
+* Stream and connection-level flow control
+
+* Connection migration and resilience to NAT rebinding
 
 QUIC implements techniques learned from experience with TCP, SCTP and other
 transport protocols.  QUIC uses UDP as substrate so as to not require changes to
@@ -123,7 +135,7 @@ including its signaling.  This allows the protocol to evolve without incurring a
 dependency on upgrades to middleboxes.  This document describes the core QUIC
 protocol, including the conceptual design, wire format, and mechanisms of the
 QUIC protocol for connection establishment, stream multiplexing, stream and
-connection-level flow control, and data reliability.
+connection-level flow control, connection migration, and data reliability.
 
 Accompanying documents describe QUIC's loss detection and congestion control
 {{QUIC-RECOVERY}}, and the use of TLS 1.3 for key negotiation {{QUIC-TLS}}.
@@ -163,8 +175,8 @@ Connection:
 
 Connection ID:
 
-: An opaque identifier that is used to identify a QUIC connection.  Each
-  endpoint sets a value that its peer includes in packets.
+: An opaque identifier that is used to identify a QUIC connection at an
+  endpoint.  Each endpoint sets a value that its peer includes in packets.
 
 QUIC packet:
 
@@ -190,118 +202,6 @@ x (i) ...
 
 x (*) ...
 : Indicates that x is variable-length
-
-
-# A QUIC Overview
-
-This section briefly describes QUIC's key mechanisms and benefits.  Key
-strengths of QUIC include:
-
-* Low-latency connection establishment
-
-* Multiplexing without head-of-line blocking
-
-* Authenticated and encrypted header and payload
-
-* Rich signaling for congestion control and loss recovery
-
-* Stream and connection flow control
-
-* Connection migration and resilience to NAT rebinding
-
-* Version negotiation
-
-
-## Low-Latency Connection Establishment
-
-QUIC relies on a combined cryptographic and transport handshake for
-setting up a secure transport connection.  QUIC connections are
-expected to commonly use 0-RTT handshakes, meaning that for most QUIC
-connections, data can be sent immediately following the client
-handshake packet, without waiting for a reply from the server.  QUIC
-provides a dedicated stream (Stream ID 0) to be used for performing
-the cryptographic handshake and QUIC options negotiation.  The format
-of the QUIC options and parameters used during negotiation are
-described in this document, but the handshake protocol that runs on
-Stream ID 0 is described in the accompanying cryptographic handshake
-draft {{QUIC-TLS}}.
-
-## Stream Multiplexing
-
-When application messages are transported over TCP, independent application
-messages can suffer from head-of-line blocking.  When an application multiplexes
-many streams atop TCP's single-bytestream abstraction, a loss of a TCP segment
-results in blocking of all subsequent segments until a retransmission arrives,
-irrespective of the application streams that are encapsulated in subsequent
-segments.  QUIC ensures that lost packets carrying data for an individual stream
-only impact that specific stream.  Data received on other streams can continue
-to be reassembled and delivered to the application.
-
-## Rich Signaling for Congestion Control and Loss Recovery
-
-QUIC's packet framing and acknowledgments carry rich information that help both
-congestion control and loss recovery in fundamental ways.  Each QUIC packet
-carries a new packet number, including those carrying retransmitted data.  This
-obviates the need for a separate mechanism to distinguish acknowledgments for
-retransmissions from those for original transmissions, avoiding TCP's
-retransmission ambiguity problem.  QUIC acknowledgments also explicitly encode
-the delay between the receipt of a packet and its acknowledgment being sent, and
-together with the monotonically-increasing packet numbers, this allows for
-precise network roundtrip-time (RTT) calculation.  QUIC's ACK frames support
-multiple ACK blocks, so QUIC is more resilient to reordering than TCP with SACK
-support, as well as able to keep more bytes on the wire when there is reordering
-or loss.
-
-## Stream and Connection Flow Control
-
-QUIC implements stream- and connection-level flow control.  At a high level, a
-QUIC receiver advertises the maximum amount of data that it is willing to
-receive on each stream.  As data is sent, received, and delivered on a
-particular stream, the receiver sends MAX_STREAM_DATA frames that increase the
-advertised limit for that stream, allowing the peer to send more data on that
-stream.
-
-In addition to this stream-level flow control, QUIC implements connection-level
-flow control to limit the aggregate buffer that a QUIC receiver is willing to
-allocate to all streams on a connection.  Connection-level flow control works in
-the same way as stream-level flow control, but the bytes delivered and the
-limits are aggregated across all streams.
-
-## Authenticated and Encrypted Header and Payload
-
-TCP headers appear in plaintext on the wire and are not authenticated, causing a
-plethora of injection and header manipulation issues for TCP, such as
-receive-window manipulation and sequence-number overwriting.  While some of
-these are mechanisms used by middleboxes to improve TCP performance, others are
-active attacks.  Even "performance-enhancing" middleboxes that routinely
-interpose on the transport state machine end up limiting the evolvability of the
-transport protocol, as has been observed in the design of MPTCP {{?RFC6824}} and
-in its subsequent deployability issues.
-
-Generally, QUIC packets are always authenticated and the payload is typically
-fully encrypted.  The parts of the packet header which are not encrypted are
-still authenticated by the receiver, so as to thwart any packet injection or
-manipulation by third parties.  Some early handshake packets, such as the
-Version Negotiation packet, are not encrypted, but information sent in these
-unencrypted handshake packets is later verified as part of cryptographic
-processing.
-
-
-## Connection Migration and Resilience to NAT Rebinding
-
-QUIC packets carry a connection ID, an opaque value assigned by the intended
-recipient of the packet.  Using a consistent connection ID allows connections to
-survive changes to the sender's IP and port, such as those caused by NAT
-rebindings or by changes in network connectivity.  QUIC provides mechanisms that
-verify possession of a changed address to mitigate attacks enabled by source
-address spoofing.
-
-
-## Version Negotiation {#benefit-version-negotiation}
-
-QUIC version negotiation allows for multiple versions of the protocol to be
-deployed and used concurrently. Version negotiation is described in
-{{version-negotiation}}.
 
 
 # Versions {#versions}
@@ -374,9 +274,9 @@ keys are established.
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |DCIL(4)|SCIL(4)|
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|               Destination Connection ID (0/64..176)         ...
+|               Destination Connection ID (0/32..144)         ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                 Source Connection ID (0/64..176)            ...
+|                 Source Connection ID (0/32..144)            ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                       Packet Number (32)                      |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -416,22 +316,22 @@ DCIL and SCIL:
   Connection ID Length (DCIL) field occupies the 4 high bits of the octet and
   the Source Connection ID Length (SCIL) field occupies the 4 low bits of the
   octet.  An encoded length of 0 indicates that the connection ID is also 0
-  octets in length.  Non-zero encoded lengths are increased by 7 to get the full
-  length of the connection ID, producing a length between 8 and 22 octets
-  inclusive.  For example, an octet with the value 0xa0 describes a 17 octet
-  Destination Connection ID and a zero octet Source Connection ID.
+  octets in length.  Non-zero encoded lengths are increased by 3 to get the full
+  length of the connection ID, producing a length between 4 and 18 octets
+  inclusive.  For example, an octet with the value 0x50 describes an 8-octet
+  Destination Connection ID and a zero-length Source Connection ID.
 
 Destination Connection ID:
 
-: The Destination Connection ID field starts at octet 2 and is either 0 octets
-  in length or between 8 and 22 octets. {{connection-id}} describes the use of
-  this field in more detail.
+: The Destination Connection ID field follows the connection ID lengths and is
+  either 0 octets in length or between 4 and 18 octets. {{connection-id}}
+  describes the use of this field in more detail.
 
 Source Connection ID:
 
-: The Source Connection ID field starts at octet 2 and is either 0 octets in
-  length or between 8 and 22 octets. {{connection-id}} describes the use of this
-  field in more detail.
+: The Source Connection ID field follows the Destination Connection ID and is
+  either 0 octets in length or between 4 and 18 octets. {{connection-id}}
+  describes the use of this field in more detail.
 
 Packet Number:
 
@@ -471,7 +371,7 @@ following sections.
 +-+-+-+-+-+-+-+-+
 |0|K|1|1|0|T T T|
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                Destination Connection ID (0..176)           ...
+|                Destination Connection ID (0..144)           ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                      Packet Number (8/16/32)                ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -578,9 +478,9 @@ The layout of a Version Negotiation packet is:
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |DCIL(4)|SCIL(4)|
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|               Destination Connection ID (0/64..176)         ...
+|               Destination Connection ID (0/32..144)         ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                 Source Connection ID (0/64..176)            ...
+|                 Source Connection ID (0/32..144)            ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                    Supported Version 1 (32)                 ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -640,9 +540,16 @@ first cryptographic handshake message sent by the client.
 
 If the client has not previously received a Retry packet from the server, it
 populates the Destination Connection ID field with a randomly selected value.
-This MUST be at least 8 octets in length.  If the client received a Retry packet
-and is sending a second Initial packet, then it uses the value from the Source
-Connection ID in the Retry packet.
+This MUST be at least 8 octets in length.  Until a packet is received from the
+server, the client MUST use the same random value unless it also changes the
+Source Connection ID (which effectively starts a new connection attempt).  The
+randomized Destination Connection ID is used to determine packet protection
+keys, but is not included in server packets.
+
+If the client received a Retry packet and is sending a second Initial packet,
+then it sets the Destination Connection ID to the value from the Source
+Connection ID in the Retry packet.  Changing Destination Connection ID also
+results in a change to the keys used to protect the Initial packet.
 
 The client populates the Source Connection ID field with a value of its choosing
 and sets the low bits of the ConnID Len field to match.
@@ -771,36 +678,42 @@ sequence of frames, as described in {{frames}}.
 A connection ID is used to ensure consistent routing of packets.  The long
 header contains two connection IDs: the Destination Connection ID is chosen by
 the recipient of the packet and is used to provide consistent routing; the
-Source Connection ID is used to set the Destination Connection ID used by a
+Source Connection ID is used to set the Destination Connection ID used by the
 peer.
 
 During the handshake, packets with the long header are used to establish the
-Destination Connection ID that each endpoint uses.  Each endpoint uses the
-Source Connection ID field to specify the connection ID that is used in the
-Destination Connection ID field of packets being sent to them.  Upon receiving a
-packet, each endpoint sets the Destination Connection ID it sends to match the
-value of the Source Connection ID that they receive.
+connection ID that each endpoint uses.  Each endpoint uses the Source Connection
+ID field to specify the connection ID that is used in the Destination Connection
+ID field of packets being sent to them.  Upon receiving a packet, each endpoint
+sets the Destination Connection ID it sends to match the value of the Source
+Connection ID that they receive.
 
 During the handshake, an endpoint might receive multiple packets with the long
 header, and thus be given multiple opportunities to update the Destination
 Connection ID it sends.  A client MUST only change the value it sends in the
-Destination Connection ID field in response to the first packet of each type
-(Retry, or Handshake) that it receives; a server MUST only change its value
-based on an Initial packet.  This avoids problems that might arise from
-stateless processing of multiple Initial packets producing different connection
-IDs.
+Destination Connection ID in response to the first packet of each type it
+receives from the server (Retry or Handshake); a server MUST set its value based
+on the Initial packet.  Any additional changes are not permitted; if subsequent
+packets of those types include a different Source Connection ID, they MUST be
+discarded.  This avoids problems that might arise from stateless processing of
+multiple Initial packets producing different connection IDs.
 
 Short headers only include the Destination Connection ID and omit the explicit
-length.
+length.  The length of the Destination Connection ID field is expected to be
+known to endpoints.
 
-The very first packet sent by a client client includes a random value for
-Destination Connection ID.  The same value MUST be used for all 0-RTT packets
-sent on that connection ({{packet-protected}}).  This randomized value is used
-to determine the handshake packet protection keys (see Section 5.2.2 of
-{{QUIC-TLS}}).
+Endpoints using a connection-ID based load balancer could agree with the load
+balancer on a fixed or minimum length and on an encoding for connection IDs.
+This fixed portion could encode an explicit length, which allows the entire
+connection ID to vary in length and still be used by the load balancer.
+
+The very first packet sent by a client includes a random value for Destination
+Connection ID.  The same value MUST be used for all 0-RTT packets sent on that
+connection ({{packet-protected}}).  This randomized value is used to determine
+the handshake packet protection keys (see Section 5.2.2 of {{QUIC-TLS}}).
 
 A Version Negotiation ({{packet-version}}) packet MUST use both connection IDs
-selected by the client, inverted to ensure correct routing toward the client.
+selected by the client, swapped to ensure correct routing toward the client.
 
 
 ## Packet Numbers {#packet-numbers}
@@ -950,7 +863,7 @@ Incoming packets are classified on receipt.  Packets can either be associated
 with an existing connection, or - for servers - potentially create a new
 connection.
 
-Hosts try to associate the packet with an existing connection. If the packet has
+Hosts try to associate a packet with an existing connection. If the packet has
 a Destination Connection ID corresponding to an existing connection, QUIC
 processes that packet accordingly. Note that a NEW_CONNECTION_ID frame
 ({{frame-new-connection-id}}) would associate more than one connection ID with a
@@ -968,7 +881,7 @@ correspond to a single connection.
 Valid packets sent to clients always include a Destination Connection ID that
 matches the value the client selects.  Clients that choose to receive
 zero-length connection IDs can use the address/port tuple to identify a
-connection.  Packets that don't match an existing connection can be discarded.
+connection.  Packets that don't match an existing connection MAY be discarded.
 
 Due to packet reordering or loss, clients might receive packets for a connection
 that are encrypted with a key it has not yet computed. Clients MAY drop these
@@ -1050,7 +963,7 @@ packet MUST be discarded.
 Once the Version Negotiation packet is determined to be valid, the client then
 selects an acceptable protocol version from the list provided by the server.
 The client then attempts to create a connection using that version.  Though the
-contents of the Client Initial packet the client sends might not change in
+contents of the Initial packet the client sends might not change in
 response to version negotiation, a client MUST increase the packet number it
 uses on every packet it sends.  Packets MUST continue to use long headers and
 MUST include the new negotiated protocol version.
@@ -1761,10 +1674,9 @@ These states SHOULD persist for three times the current Retransmission Timeout
 (RTO) interval as defined in {{QUIC-RECOVERY}}.
 
 An endpoint enters a closing period after initiating an immediate close
-({{immediate-close}}) and optionally after an idle timeout ({{idle-timeout}}).
-While closing, an endpoint MUST NOT send packets unless they contain a
-CONNECTION_CLOSE or APPLICATION_CLOSE frame (see {{immediate-close}} for
-details).
+({{immediate-close}}).  While closing, an endpoint MUST NOT send packets unless
+they contain a CONNECTION_CLOSE or APPLICATION_CLOSE frame (see
+{{immediate-close}} for details).
 
 In the closing state, only a packet containing a closing frame can be sent.  An
 endpoint retains only enough information to generate a packet containing a
@@ -1887,7 +1799,7 @@ following layout:
 +-+-+-+-+-+-+-+-+
 |0|K| Type (6)  |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                  Destination Connection ID (176)            ...
+|                  Destination Connection ID (144)            ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                     Packet Number (8/16/32)                   |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -1906,20 +1818,20 @@ following layout:
 This design ensures that a stateless reset packet is - to the extent possible -
 indistinguishable from a regular packet.
 
-A server generates a random 22-octet Destination Connection ID field.  For a
-client that requires that the server include a connection ID, this will mean
-that this value differs from previous packets with two consequences:
+A server generates a random 18-octet Destination Connection ID field.  For a
+client that depends on the server including a connection ID, this will mean that
+this value differs from previous packets.  Ths results in two problems:
 
 * The packet might not reach the client.  If the Destination Connection ID is
   critical for routing toward the client, then this packet could be incorrectly
-  routed and dropped.  This causes the stateless reset to be ineffective in
-  causing errors to be quickly detected and recovered.  In this case, clients
-  will need to rely on other methods such as timers to detect that the
-  connection has failed.
+  routed.  This causes the stateless reset to be ineffective in causing errors
+  to be quickly detected and recovered.  In this case, clients will need to rely
+  on other methods - such as timers - to detect that the connection has failed.
 
-* The connection ID can be used by entities other than the client to identify
-  this as a potential stateless reset.  A server that occasionally uses
-  different connection IDs might introduce some uncertainty about this.
+* The randomly generated connection ID can be used by entities other than the
+  client to identify this as a potential stateless reset.  A server that
+  occasionally uses different connection IDs might introduce some uncertainty
+  about this.
 
 The Packet Number field is set to a randomized value.  The server SHOULD send a
 packet with a short header and a type of 0x1F.  This produces the shortest
@@ -2383,7 +2295,7 @@ The NEW_CONNECTION_ID is as follows:
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                          Sequence (i)                       ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|   Length (8)  |        Connection ID (0,64..176)            ...
+|   Length (8)  |          Connection ID (32..144)            ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                                                               |
 +                                                               +
@@ -2408,7 +2320,7 @@ Sequence:
 Length:
 
 : An 8-bit unsigned integer containing the length of the connection ID.  Values
-  less than 8 and greater than 22 are invalid and MUST be treated as a
+  less than 4 and greater than 18 are invalid and MUST be treated as a
   connection error of type PROTOCOL_VIOLATION.
 
 Connection ID:
@@ -2422,8 +2334,8 @@ Stateless Reset Token:
 
 An endpoint MUST NOT send this frame if it currently requires that its peer send
 packets with a zero-length Destination Connection ID.  Changing the length of a
-connection ID to or from zero-length makes it very difficult to identify when
-the new connection ID was used.  An endpoint that is sending packets with a a
+connection ID to or from zero-length makes it difficult to identify when the
+value of the connection ID changed.  An endpoint that is sending packets with a
 zero-length Destination Connection ID MUST treat receipt of a NEW_CONNECTION_ID
 frame as a connection error of type PROTOCOL_VIOLATION.
 
@@ -2477,12 +2389,6 @@ number from the Initial packet it responds to.  Version Negotiation packets
 cannot be acknowledged because they do not contain a packet number.  Rather than
 relying on ACK frames, these packets are implicitly acknowledged by the next
 Initial packet sent by the client.
-
-A sender MAY intentionally skip packet numbers to introduce entropy into the
-connection, to avoid opportunistic acknowledgement attacks.  The sender SHOULD
-close the connection if an unsent packet number is acknowledged.  The format of
-the ACK frame is efficient at expressing even long blocks of missing packets,
-allowing for large, unpredictable gaps.
 
 An ACK frame is shown below.
 
@@ -3886,6 +3792,15 @@ forward-secure key, then any acknowledgments that are received for them MUST
 also be forward-secure protected.  Since the attacker will not have the forward
 secure key, the attacker will not be able to generate forward-secure protected
 packets with ACK frames.
+
+
+## Opportunistic ACK Attack
+
+An endpoint that acknowledges packets it has not received might cause a
+congestion controller to permit sending at rates beyond what the network
+supports.  An endpoint MAY skip packet numbers when sending packets to detect
+this behavior.  An endpoint can then immediately close the connection (see
+{{immediate-close}}).
 
 
 ## Slowloris Attacks

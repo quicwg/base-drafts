@@ -1524,10 +1524,7 @@ effort.
 TLS records SHOULD always contain at least one octet of a handshake messages or
 alert.  Records containing only padding are permitted during the handshake, but
 an excessive number might be used to generate unnecessary work.  Once the TLS
-handshake is complete, endpoints SHOULD NOT send TLS application data records
-unless it is to hide the length of QUIC records.  QUIC packet protection does
-not include any allowance for padding; padded TLS application data records can
-be used to mask the length of QUIC frames.
+handshake is complete, endpoints MUST NOT send TLS application data records.
 
 While there are legitimate uses for some redundant packets, implementations
 SHOULD track redundant packets and treat excessive volumes of any non-productive

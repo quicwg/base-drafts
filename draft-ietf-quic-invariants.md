@@ -142,9 +142,9 @@ version-specific semantics are marked with an X.
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |DCIL(4)|SCIL(4)|
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|               Destination Connection ID (0/64..176)         ...
+|               Destination Connection ID (0/32..144)         ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                 Source Connection ID (0/64..176)            ...
+|                 Source Connection ID (0/32..144)            ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X  ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -157,21 +157,23 @@ All other bits in that octet are version specific.
 The next four octets include a 32-bit Version field (see {{version}}).
 
 The next octet contains the length in octets of the two Connection IDs (see
-{{connection-id}}) that follow.  Each length is encoded as a 4 bit unsigned
+{{connection-id}}) that follow.  Each length is encoded as a 4-bit unsigned
 integer.  The length of the Destination Connection ID (DCIL) occupies the high
 bits of the octet and the length of the Source Connection ID (SCIL) occupying
 the low bits of the octet.  An encoded length of 0 indicates that the connection
-ID is also 0 octets in length.  Non-zero encoded lengths are increased by 7 to
-get the full length of the connection ID.  For example, an octet with the value
-0xa0 describes a 17 octet Destination Connection ID and a zero octet Source
-Connection ID.
+ID is also 0 octets in length.  Non-zero encoded lengths are increased by 3 to
+get the full length of the connection ID; the final value is therefore either 0
+or between 4 and 18 octets in length (inclusive).  For example, an octet with
+the value 0xe0 describes a 17 octet Destination Connection ID and a zero octet
+Source Connection ID.
 
 The connection ID lengths are followed by a two connection IDs.  The connection
 ID associated with the recipient of the packet (the Destination Connection ID)
 is followed by the connection ID associated with the sender of the packet (the
 Source Connection ID).
 
-The remainder of the packet contains version-specific content.
+The Connection IDs are followed by a 32-bit Version (see {{version}}) and a
+version-specific payload.
 
 
 ## Short Header
@@ -185,7 +187,7 @@ version-specific semantics are marked with an X.
 +-+-+-+-+-+-+-+-+
 |0|X X X X X X X|
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                Destination Connection ID (0..176)           ...
+|                Destination Connection ID (0..144)           ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X  ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -194,9 +196,9 @@ version-specific semantics are marked with an X.
 
 A QUIC packet with a short header has the high bit of the first octet set to 0.
 
-A QUIC packet with a short header includes a Destination Connection ID.  The
-short header does not include the Connection ID Lengths, Source Connection ID,
-or Version fields.
+A QUIC packet with a short header includes an optional Destination Connection
+ID.  The short header does not include the Connection ID Lengths, Source
+Connection ID, or Version fields.
 
 The remainder of the packet has version-specific semantics.
 
@@ -204,7 +206,7 @@ The remainder of the packet has version-specific semantics.
 ## Connection ID
 
 A connection ID is an opaque field.  A connection ID can be 0 octets in length,
-or between 8 and 22 octets (inclusive).
+or between 4 and 18 octets (inclusive).
 
 The primary function of a connection ID is to ensure that changes in addressing
 at lower protocol layers (UDP, IP, and below) don't cause packets for a QUIC
@@ -250,9 +252,9 @@ Version field, which is set to 0x00000000.
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |DCIL(4)|SCIL(4)|
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|               Destination Connection ID (0/64..176)         ...
+|               Destination Connection ID (0/32..144)         ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                 Source Connection ID (0/64..176)            ...
+|                 Source Connection ID (0/32..144)            ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                    Supported Version 1 (32)                   |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -276,12 +278,13 @@ Version Negotiation packets do not use integrity or confidentiality protection.
 A specific QUIC version might authenticate the packet as part of its connection
 establishment process.
 
-The Connection ID fields in a Version Negotiation packet contain the Connection
-ID values from the packet that was received by the server, inverted to ensure
-correct routing of the packet toward the client based on the Destination
-Connection ID.  Echoing the value of the client's Destination Connection ID in
-the Source Connection ID field can provide some protection against injection of
-Version Negotiation packets by off-path attackers.
+The server MUST include the value from the Source Connection ID field of the
+packet it receives in the Destination Connection ID field.  The value for Source
+Connection ID MUST be copied from the Destination Connection ID of the received
+packet, which is initially randomly selected by a client.  Echoing both
+connection IDs gives clients some assurance that the server received the packet
+and that the Version Negotiation packet was not generated by an off-path
+attacker.
 
 An endpoint that receives a Version Negotiation packet might change the version
 that it decides to use for subsequent packets.  The conditions under which an
