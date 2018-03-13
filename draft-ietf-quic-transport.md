@@ -2486,12 +2486,6 @@ cannot be acknowledged because they do not contain a packet number.  Rather than
 relying on ACK frames, these packets are implicitly acknowledged by the next
 Initial packet sent by the client.
 
-A sender MAY intentionally skip packet numbers to introduce entropy into the
-connection, to avoid opportunistic acknowledgement attacks.  The sender SHOULD
-close the connection if an unsent packet number is acknowledged.  The format of
-the ACK frame is efficient at expressing even long blocks of missing packets,
-allowing for large, unpredictable gaps.
-
 An ACK frame is shown below.
 
 ~~~
@@ -3894,6 +3888,15 @@ forward-secure key, then any acknowledgments that are received for them MUST
 also be forward-secure protected.  Since the attacker will not have the forward
 secure key, the attacker will not be able to generate forward-secure protected
 packets with ACK frames.
+
+
+## Opportunistic ACK Attack
+
+An endpoint that acknowledges packets it has not received might cause a
+congestion controller to permit sending at rates beyond what the network
+supports.  An endpoint MAY skip packet numbers when sending packets to detect
+this behavior.  An endpoint can then immediately close the connection (see
+{{immediate-close}}).
 
 
 ## Slowloris Attacks
