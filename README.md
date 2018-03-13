@@ -27,11 +27,11 @@ QUIC protocol suite.
 * [Working Group Draft](https://tools.ietf.org/html/draft-ietf-quic-http)
 * [Compare Working Group Draft and Editor's copy](https://tools.ietf.org/rfcdiff?url1=https://tools.ietf.org/id/draft-ietf-quic-http&url2=https://quicwg.github.io/base-drafts/draft-ietf-quic-http.txt)
 
-## QCRAM
+## QPACK
 
-* [Editor's copy](https://quicwg.github.io/base-drafts/draft-ietf-quic-qcram.html)
-* [Working Group Draft](https://tools.ietf.org/html/draft-ietf-quic-qcram)
-* [Compare Working Group Draft and Editor's copy](https://tools.ietf.org/rfcdiff?url1=https://tools.ietf.org/id/draft-ietf-quic-qcram&url2=https://quicwg.github.io/base-drafts/draft-ietf-quic-qcram.txt)
+* [Editor's copy](https://quicwg.github.io/base-drafts/draft-ietf-quic-qpack.html)
+* [Working Group Draft](https://tools.ietf.org/html/draft-ietf-quic-qpack)
+* [Compare Working Group Draft and Editor's copy](https://tools.ietf.org/rfcdiff?url1=https://tools.ietf.org/id/draft-ietf-quic-qpack&url2=https://quicwg.github.io/base-drafts/draft-ietf-quic-qpack.txt)
 
 ## Building the Draft
 
