@@ -787,12 +787,12 @@ Connection ID that they receive.
 During the handshake, an endpoint might receive multiple packets with the long
 header, and thus be given multiple opportunities to update the Destination
 Connection ID it sends.  A client MUST only change the value it sends in the
-Destination Connection ID in response to the first packet of each type (Retry,
-or Handshake) that it receives; a server MUST set its value based on the Initial
-packet.  If subsequent packets of those types include a different Source
-Connection ID, they MUST be discarded.  This avoids problems that might arise
-from stateless processing of multiple Initial packets producing different
-connection IDs.
+Destination Connection ID in response to the first packet of each type it
+receives from the server (Retry or Handshake); a server MUST set its value based
+on the Initial packet.  Any additional changes are not permitted; subsequent
+packets of those types include a different Source Connection ID, they MUST be
+discarded.  This avoids problems that might arise from stateless processing of
+multiple Initial packets producing different connection IDs.
 
 Short headers only include the Destination Connection ID and omit the explicit
 length.  The length of the Destination Connecton ID field is expected to be
