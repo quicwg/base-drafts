@@ -3794,13 +3794,13 @@ secure key, the attacker will not be able to generate forward-secure protected
 packets with ACK frames.
 
 
-## Opportunistic ACK Attack
+## Optimistic ACK Attack
 
 An endpoint that acknowledges packets it has not received might cause a
 congestion controller to permit sending at rates beyond what the network
 supports.  An endpoint MAY skip packet numbers when sending packets to detect
-this behavior.  An endpoint can then immediately close the connection (see
-{{immediate-close}}).
+this behavior.  An endpoint can then immediately close the connection with a
+connection error of type PROTOCOL_VIOLATION (see {{immediate-close}}).
 
 
 ## Slowloris Attacks
