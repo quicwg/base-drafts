@@ -552,7 +552,8 @@ older than 1.3 is negotiated.
 
 QUIC requires that the initial handshake packet from a client fit within the
 payload of a single packet.  The size limits on QUIC packets mean that a record
-containing a ClientHello needs to fit within 1171 octets.
+containing a ClientHello needs to fit within 1131 octets, though endpoints can
+reduce the size of their connection ID to increase by up to 22 octets.
 
 A TLS ClientHello can fit within this limit with ample space remaining.
 However, there are several variables that could cause this limit to be exceeded.
@@ -679,13 +680,13 @@ client packet protection key would use HKDF-Expand with an `info` parameter of
 ### Handshake Secrets {#handshake-secrets}
 
 Packets that carry the TLS handshake (Initial, Retry, and Handshake) are
-protected with a secret derived from the connection ID used in the client's
-Initial packet.  Specifically:
+protected with a secret derived from the Destination Connection ID field from
+the client's Initial packet.  Specifically:
 
 ~~~
 handshake_salt = 0x9c108f98520a5c5c32968e950e8a2c5fe06d6c38
 handshake_secret =
-    HKDF-Extract(handshake_salt, client_connection_id)
+    HKDF-Extract(handshake_salt, client_dst_connection_id)
 
 client_handshake_secret =
    QHKDF-Expand(handshake_secret, "client hs", Hash.length)
@@ -702,6 +703,14 @@ notation. Future versions of QUIC SHOULD generate a new salt value, thus
 ensuring that the keys are different for each version of QUIC. This prevents a
 middlebox that only recognizes one version of QUIC from seeing or modifying the
 contents of handshake packets from future versions.
+
+Note:
+
+: The Destination Connection ID is of arbitrary length, and it could be zero
+  length if the server sends a Retry packet with a zero-length Source Connection
+  ID field.  In this case, the handshake keys provide no assurance to the client
+  that the server received its packet; the client has to rely on the exchange
+  that included the Retry packet for that property.
 
 
 ### 0-RTT Secret {#zero-rtt-secrets}

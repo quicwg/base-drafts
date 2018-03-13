@@ -135,12 +135,12 @@ version-specific semantics are marked with an X.
 ~~~
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+
-|1|X X X X X X X|
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|1|X X X X X X X|DCIL(4)|SCIL(4)|
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                                                               |
-+                       Connection ID (64)                      +
-|                                                               |
+|               Destination Connection ID (0/32..144)         ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                 Source Connection ID (0/32..144)            ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                         Version (32)                          |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -150,10 +150,26 @@ version-specific semantics are marked with an X.
 {: #fig-long title="QUIC Long Header"}
 
 A QUIC packet with a long header has the high bit of the first octet set to 1.
+All other bits in that octet are version specific.
 
-A QUIC packet with a long header has two fixed fields immediately following the
-first octet: a 64-bit Connection ID (see {{connection-id}}) and a 32-bit Version
-(see {{version}}).
+The next octet contains the length in octets of the two Connection IDs (see
+{{connection-id}}) that follow.  Each length is encoded as a 4-bit unsigned
+integer.  The length of the Destination Connection ID (DCIL) occupies the high
+bits of the octet and the length of the Source Connection ID (SCIL) occupying
+the low bits of the octet.  An encoded length of 0 indicates that the connection
+ID is also 0 octets in length.  Non-zero encoded lengths are increased by 3 to
+get the full length of the connection ID; the final value is therefore either 0
+or between 4 and 18 octets in length (inclusive).  For example, an octet with
+the value 0xe0 describes a 17 octet Destination Connection ID and a zero octet
+Source Connection ID.
+
+The connection ID lengths are followed by two connection IDs.  The connection ID
+chosen by the recipient of the packet (the Destination Connection ID) is
+followed by the connection ID chosen by the sender of the packet (the Source
+Connection ID).
+
+The Connection IDs are followed by a 32-bit Version (see {{version}}) and a
+version-specific payload.
 
 
 ## Short Header
@@ -165,11 +181,9 @@ version-specific semantics are marked with an X.
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+
-|0|C|X X X X X X|
+|0|X X X X X X X|
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                                                               |
-+                     [Connection ID (64)]                      +
-|                                                               |
+|                Destination Connection ID (0..144)           ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X  ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -178,16 +192,17 @@ version-specific semantics are marked with an X.
 
 A QUIC packet with a short header has the high bit of the first octet set to 0.
 
-A QUIC packet with a short header includes an optional connection ID and no
-version field.  The second bit of that octet (that is, 0x40) determines whether
-the connection ID is present.  If the second bit is cleared, a 64-bit connection
-ID immediately follows the first octet.  If the second bit is set, the remainder
-of the packet has version-specific semantics.
+A QUIC packet with a short header includes an optional Destination Connection
+ID.  The short header does not include the Connection ID Lengths, Source
+Connection ID, or Version fields.
+
+The remainder of the packet has version-specific semantics.
 
 
 ## Connection ID
 
-A connection ID is an opaque 64-bit field.
+A connection ID is an opaque field.  A connection ID can be 0 octets in length,
+or between 4 and 18 octets (inclusive).
 
 The primary function of a connection ID is to ensure that changes in addressing
 at lower protocol layers (UDP, IP, and below) don't cause packets for a QUIC
@@ -197,7 +212,7 @@ packet can be delivered to the correct instance of an endpoint.  At the
 endpoint, the connection ID is used to identify which QUIC connection the packet
 is intended for.
 
-The connection ID is chosen by endpoints using version-specific methods.
+The connection ID is chosen by each endpoint using version-specific methods.
 Packets for the same QUIC connection might use different connection ID values.
 
 
@@ -219,19 +234,19 @@ Consequently, until an endpoint has confirmed that its peer supports the QUIC
 version it has chosen, it can only send packets that use the long header.
 
 A Version Negotiation packet sets the high bit of the first octet, and thus it
-conforms with the format of a packet with a long header as defined in this
-document.  A Version Negotiation packet is identifiable as such by the Version
-field, which is set to 0x00000000.
+conforms with the format of a packet with a long header as defined in
+{{long-header}}.  A Version Negotiation packet is identifiable as such by the
+Version field, which is set to 0x00000000.
 
 ~~~
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+
-|1|X X X X X X X|
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|1|X X X X X X X|DCIL(4)|SCIL(4)|
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                                                               |
-+                       Connection ID (64)                      +
-|                                                               |
+|               Destination Connection ID (0/32..144)         ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                 Source Connection ID (0/32..144)            ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                       Version (32) = 0                        |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -257,9 +272,13 @@ Version Negotiation packets do not use integrity or confidentiality protection.
 A specific QUIC version might authenticate the packet as part of its connection
 establishment process.
 
-The Connection ID field in a Version Negotiation packet contains the Connection
-ID from the packet that was received.  This provides some protection against
-injection of Version Negotiation packets by off-path attackers.
+The server MUST include the value from the Source Connection ID field of the
+packet it receives in the Destination Connection ID field.  The value for Source
+Connection ID MUST be copied from the Destination Connection ID of the received
+packet, which is initially randomly selected by a client.  Echoing both
+connection IDs gives clients some assurance that the server received the packet
+and that the Version Negotiation packet was not generated by an off-path
+attacker.
 
 An endpoint that receives a Version Negotiation packet might change the version
 that it decides to use for subsequent packets.  The conditions under which an
@@ -334,10 +353,6 @@ The following statements are NOT guaranteed to be true for every QUIC version:
 * A QUIC Version Negotiation packet is only sent by a server
 
 * A QUIC connection ID changes infrequently
-
-* The same connection ID is used for packets sent by both endpoints
-
-* A QUIC server chooses the connection ID
 
 * QUIC endpoints change the version they speak if they are sent a Version
   Negotiation packet
