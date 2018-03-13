@@ -789,18 +789,19 @@ header, and thus be given multiple opportunities to update the Destination
 Connection ID it sends.  A client MUST only change the value it sends in the
 Destination Connection ID in response to the first packet of each type it
 receives from the server (Retry or Handshake); a server MUST set its value based
-on the Initial packet.  Any additional changes are not permitted; subsequent
+on the Initial packet.  Any additional changes are not permitted; if subsequent
 packets of those types include a different Source Connection ID, they MUST be
 discarded.  This avoids problems that might arise from stateless processing of
 multiple Initial packets producing different connection IDs.
 
 Short headers only include the Destination Connection ID and omit the explicit
-length.  The length of the Destination Connecton ID field is expected to be
-known to endpoints.  Endpoints with a load balancer that uses a connection ID
-can agree to a fixed or minimum length for connection IDs with necessary
-information in the fixed portion.  If that fixed portion instead encodes an
-explicit length, the entire connection ID can vary in length and still be used
-by the load balancer.
+length.  The length of the Destination Connection ID field is expected to be
+known to endpoints.
+
+Endpoints using a connection-ID based load balancer could agree with the load
+balancer on a fixed or minimum length and on an encoding for connection IDs.
+This fixed portion could encode an explicit length, which allows the entire
+connection ID to vary in length and still be used by the load balancer.
 
 The very first packet sent by a client includes a random value for Destination
 Connection ID.  The same value MUST be used for all 0-RTT packets sent on that
@@ -958,7 +959,7 @@ Incoming packets are classified on receipt.  Packets can either be associated
 with an existing connection, or - for servers - potentially create a new
 connection.
 
-Hosts try to associate the packet with an existing connection. If the packet has
+Hosts try to associate a packet with an existing connection. If the packet has
 a Destination Connection ID corresponding to an existing connection, QUIC
 processes that packet accordingly. Note that a NEW_CONNECTION_ID frame
 ({{frame-new-connection-id}}) would associate more than one connection ID with a
@@ -976,7 +977,7 @@ correspond to a single connection.
 Valid packets sent to clients always include a Destination Connection ID that
 matches the value the client selects.  Clients that choose to receive
 zero-length connection IDs can use the address/port tuple to identify a
-connection.  Packets that don't match an existing connection can be discarded.
+connection.  Packets that don't match an existing connection MAY be discarded.
 
 Due to packet reordering or loss, clients might receive packets for a connection
 that are encrypted with a key it has not yet computed. Clients MAY drop these
