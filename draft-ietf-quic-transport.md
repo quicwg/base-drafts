@@ -113,7 +113,19 @@ code and issues list for this draft can be found at
 
 QUIC is a multiplexed and secure transport protocol that runs on top of UDP.
 QUIC aims to provide a flexible set of features that allow it to be a
-general-purpose transport for multiple applications.
+general-purpose secure transport for multiple applications.
+
+* Version negotiation
+
+* Low-latency connection establishment
+
+* Authenticated and encrypted header and payload
+
+* Stream multiplexing
+
+* Stream and connection-level flow control
+
+* Connection migration and resilience to NAT rebinding
 
 QUIC implements techniques learned from experience with TCP, SCTP and other
 transport protocols.  QUIC uses UDP as substrate so as to not require changes to
@@ -123,7 +135,7 @@ including its signaling.  This allows the protocol to evolve without incurring a
 dependency on upgrades to middleboxes.  This document describes the core QUIC
 protocol, including the conceptual design, wire format, and mechanisms of the
 QUIC protocol for connection establishment, stream multiplexing, stream and
-connection-level flow control, and data reliability.
+connection-level flow control, connection migration, and data reliability.
 
 Accompanying documents describe QUIC's loss detection and congestion control
 {{QUIC-RECOVERY}}, and the use of TLS 1.3 for key negotiation {{QUIC-TLS}}.
@@ -190,118 +202,6 @@ x (i) ...
 
 x (*) ...
 : Indicates that x is variable-length
-
-
-# A QUIC Overview
-
-This section briefly describes QUIC's key mechanisms and benefits.  Key
-strengths of QUIC include:
-
-* Low-latency connection establishment
-
-* Multiplexing without head-of-line blocking
-
-* Authenticated and encrypted header and payload
-
-* Rich signaling for congestion control and loss recovery
-
-* Stream and connection flow control
-
-* Connection migration and resilience to NAT rebinding
-
-* Version negotiation
-
-
-## Low-Latency Connection Establishment
-
-QUIC relies on a combined cryptographic and transport handshake for
-setting up a secure transport connection.  QUIC connections are
-expected to commonly use 0-RTT handshakes, meaning that for most QUIC
-connections, data can be sent immediately following the client
-handshake packet, without waiting for a reply from the server.  QUIC
-provides a dedicated stream (Stream ID 0) to be used for performing
-the cryptographic handshake and QUIC options negotiation.  The format
-of the QUIC options and parameters used during negotiation are
-described in this document, but the handshake protocol that runs on
-Stream ID 0 is described in the accompanying cryptographic handshake
-draft {{QUIC-TLS}}.
-
-## Stream Multiplexing
-
-When application messages are transported over TCP, independent application
-messages can suffer from head-of-line blocking.  When an application multiplexes
-many streams atop TCP's single-bytestream abstraction, a loss of a TCP segment
-results in blocking of all subsequent segments until a retransmission arrives,
-irrespective of the application streams that are encapsulated in subsequent
-segments.  QUIC ensures that lost packets carrying data for an individual stream
-only impact that specific stream.  Data received on other streams can continue
-to be reassembled and delivered to the application.
-
-## Rich Signaling for Congestion Control and Loss Recovery
-
-QUIC's packet framing and acknowledgments carry rich information that help both
-congestion control and loss recovery in fundamental ways.  Each QUIC packet
-carries a new packet number, including those carrying retransmitted data.  This
-obviates the need for a separate mechanism to distinguish acknowledgments for
-retransmissions from those for original transmissions, avoiding TCP's
-retransmission ambiguity problem.  QUIC acknowledgments also explicitly encode
-the delay between the receipt of a packet and its acknowledgment being sent, and
-together with the monotonically-increasing packet numbers, this allows for
-precise network roundtrip-time (RTT) calculation.  QUIC's ACK frames support
-multiple ACK blocks, so QUIC is more resilient to reordering than TCP with SACK
-support, as well as able to keep more bytes on the wire when there is reordering
-or loss.
-
-## Stream and Connection Flow Control
-
-QUIC implements stream- and connection-level flow control.  At a high level, a
-QUIC receiver advertises the maximum amount of data that it is willing to
-receive on each stream.  As data is sent, received, and delivered on a
-particular stream, the receiver sends MAX_STREAM_DATA frames that increase the
-advertised limit for that stream, allowing the peer to send more data on that
-stream.
-
-In addition to this stream-level flow control, QUIC implements connection-level
-flow control to limit the aggregate buffer that a QUIC receiver is willing to
-allocate to all streams on a connection.  Connection-level flow control works in
-the same way as stream-level flow control, but the bytes delivered and the
-limits are aggregated across all streams.
-
-## Authenticated and Encrypted Header and Payload
-
-TCP headers appear in plaintext on the wire and are not authenticated, causing a
-plethora of injection and header manipulation issues for TCP, such as
-receive-window manipulation and sequence-number overwriting.  While some of
-these are mechanisms used by middleboxes to improve TCP performance, others are
-active attacks.  Even "performance-enhancing" middleboxes that routinely
-interpose on the transport state machine end up limiting the evolvability of the
-transport protocol, as has been observed in the design of MPTCP {{?RFC6824}} and
-in its subsequent deployability issues.
-
-Generally, QUIC packets are always authenticated and the payload is typically
-fully encrypted.  The parts of the packet header which are not encrypted are
-still authenticated by the receiver, so as to thwart any packet injection or
-manipulation by third parties.  Some early handshake packets, such as the
-Version Negotiation packet, are not encrypted, but information sent in these
-unencrypted handshake packets is later verified as part of cryptographic
-processing.
-
-
-## Connection Migration and Resilience to NAT Rebinding
-
-QUIC packets carry a connection ID, an opaque value assigned by the intended
-recipient of the packet.  Using a consistent connection ID allows connections to
-survive changes to the sender's IP and port, such as those caused by NAT
-rebindings or by changes in network connectivity.  QUIC provides mechanisms that
-verify possession of a changed address to mitigate attacks enabled by source
-address spoofing.
-
-
-## Version Negotiation {#benefit-version-negotiation}
-
-QUIC version negotiation allows for multiple versions of the protocol to be
-deployed and used concurrently. Version negotiation is described in
-{{version-negotiation}}.
 
 
 # Versions {#versions}
