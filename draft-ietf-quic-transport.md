@@ -123,7 +123,7 @@ general-purpose secure transport for multiple applications.
 
 * Stream multiplexing
 
-* Connection and stream-level flow control
+* Stream and connection-level flow control
 
 * Connection migration and resilience to NAT rebinding
 
