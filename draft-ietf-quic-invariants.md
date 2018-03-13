@@ -172,8 +172,7 @@ ID associated with the recipient of the packet (the Destination Connection ID)
 is followed by the connection ID associated with the sender of the packet (the
 Source Connection ID).
 
-The Connection IDs are followed by a 32-bit Version (see {{version}}) and a
-version-specific payload.
+The remainder of the packet contains version-specific content.
 
 
 ## Short Header
