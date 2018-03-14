@@ -203,8 +203,8 @@ the RTT as long as the result is larger than the Min RTT.  If the result is
 smaller than the min_rtt, the RTT should be used, but the ack delay field
 should be ignored.
 
-Like TCP, QUIC calculates both smoothed RTT and RTT variance as specified in
-{{?RFC6298}}.
+Like TCP, QUIC calculates both smoothed RTT and RTT variance similar to those
+specified in {{?RFC6298}}.
 
 Min RTT is the minimum RTT measured over the connection, prior to adjusting
 by ack delay.  Ignoring ack delay for min RTT prevents intentional or
@@ -214,8 +214,8 @@ underestimating smoothed RTT.
 ## Ack-based Detection
 
 Ack-based loss detection implements the spirit of TCP's Fast Retransmit
-{{!RFC5681}}, Early Retransmit {{!RFC5827}}, FACK, and SACK loss recovery
-{{!RFC6675}}. This section provides an overview of how these algorithms are
+{{?RFC5681}}, Early Retransmit {{?RFC5827}}, FACK, and SACK loss recovery
+{{?RFC6675}}. This section provides an overview of how these algorithms are
 implemented in QUIC.
 
 (TODO: Define unacknowledged packet, ackable packet, outstanding bytes.)
@@ -230,13 +230,13 @@ reordering of packets in the network.
 
 The RECOMMENDED initial value for kReorderingThreshold is 3.
 
-We derive this default from recommendations for TCP loss recovery {{!RFC5681}}
-{{!RFC6675}}. It is possible for networks to exhibit higher degrees of
+We derive this default from recommendations for TCP loss recovery {{?RFC5681}}
+{{?RFC6675}}. It is possible for networks to exhibit higher degrees of
 reordering, causing a sender to detect spurious losses. Detecting spurious
 losses leads to unnecessary retransmissions and may result in degraded
 performance due to the actions of the congestion controller upon detecting
 loss. Implementers MAY use algorithms developed for TCP, such as TCP-NCR
-{{!RFC4653}}, to improve QUIC's reordering resilience, though care should be
+{{?RFC4653}}, to improve QUIC's reordering resilience, though care should be
 taken to map TCP specifics to QUIC correctly. Similarly, using time-based loss
 detection to deal with reordering, such as in PR-TCP, should be more readily
 usable in QUIC. Making QUIC deal with such networks is important open research,
@@ -273,8 +273,8 @@ with using other multipliers, bearing in mind that a lower multiplier reduces
 reordering resilience and increases spurious retransmissions, and a higher
 multipler increases loss recovery delay.
 
-This mechanism is based on Early Retransmit for TCP {{!RFC5827}}. However,
-{{!RFC5827}} does not include the alarm described above. Early Retransmit is
+This mechanism is based on Early Retransmit for TCP {{?RFC5827}}. However,
+{{?RFC5827}} does not include the alarm described above. Early Retransmit is
 prone to spurious retransmissions due to its reduced reordering resilence
 without the alarm. This observation led Linux TCP implementers to implement an
 alarm for TCP as well, and this document incorporates this advancement.
@@ -344,13 +344,13 @@ ackable packet.
 
 A Retransmission Timeout (RTO) alarm is the final backstop for loss
 detection. The algorithm used in QUIC is based on the RTO algorithm for TCP
-{{!RFC5681}} and is additionally resilient to spurious RTO events {{!RFC5682}}.
+{{?RFC5681}} and is additionally resilient to spurious RTO events {{?RFC5682}}.
 
 When the last TLP packet is sent, an alarm is scheduled for the RTO period. When
 this alarm fires, the sender sends two packets, to evoke acknowledgements from
 the receiver, and restarts the RTO alarm.
 
-Similar to TCP {{!RFC6298}}, the RTO period is set based on the following
+Similar to TCP {{?RFC6298}}, the RTO period is set based on the following
 conditions:
 
 * When the final TLP packet is sent, the RTO period is set to max(SRTT +
@@ -431,7 +431,7 @@ enforce a maximum ack delay to avoid causing the peer spurious
 timeouts.  The default maximum ack delay in QUIC is 25ms.
 
 An acknowledgement MAY be sent for every second full-sized packet,
-as TCP does {{!RFC5681}}, or may be sent less frequently, as long as
+as TCP does {{?RFC5681}}, or may be sent less frequently, as long as
 the delay does not exceed the maximum ack delay.  QUIC recovery algorithms
 do not assume the peer generates an acknowledgement immediately when
 receiving a second full-sized packet.
