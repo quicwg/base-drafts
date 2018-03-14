@@ -1145,17 +1145,6 @@ idle_timeout (0x0003):
 : The idle timeout is a value in seconds that is encoded as an unsigned 16-bit
   integer.  The maximum value is 600 seconds (10 minutes).
 
-A server MUST include the following transport parameters:
-
-stateless_reset_token (0x0006):
-
-: The Stateless Reset Token is used in verifying a stateless reset, see
-  {{stateless-reset}}.  This parameter is a sequence of 16 octets.
-
-A client MUST NOT include a stateless reset token.  A server MUST treat receipt
-of a stateless_reset_token transport parameter as a connection error of type
-TRANSPORT_PARAMETER_ERROR.
-
 An endpoint MAY use the following transport parameters:
 
 initial_max_stream_id_bidi (0x0002):
@@ -1202,6 +1191,17 @@ ack_delay_exponent (0x0007):
   default value of 3 is assumed (indicating a multiplier of 8).  The default
   value is also used for ACK frames that are sent in Initial, Handshake, and
   Retry packets.  Values above 20 are invalid.
+
+A server MAY include the following transport parameters:
+
+stateless_reset_token (0x0006):
+
+: The Stateless Reset Token is used in verifying a stateless reset, see
+  {{stateless-reset}}.  This parameter is a sequence of 16 octets.
+
+A client MUST NOT include a stateless reset token.  A server MUST treat receipt
+of a stateless_reset_token transport parameter as a connection error of type
+TRANSPORT_PARAMETER_ERROR.
 
 
 ### Values of Transport Parameters for 0-RTT {#zerortt-parameters}
