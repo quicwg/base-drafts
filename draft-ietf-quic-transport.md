@@ -3603,8 +3603,9 @@ state for closed streams, which could mean a significant state commitment.
 # Error Handling
 
 An endpoint that detects an error SHOULD signal the existence of that error to
-its peer.  Errors can affect an entire connection (see {{connection-errors}}),
-or a single stream (see {{stream-errors}}).
+its peer.  Both transport-level and application-level errors can affect an
+entire connection (see {{connection-errors}}), while only application-level
+errors can be isolated to a single stream (see {{stream-errors}}).
 
 The most appropriate error code ({{error-codes}}) SHOULD be included in the
 frame that signals the error.  Where this specification identifies error
@@ -3648,8 +3649,8 @@ MUST NOT signal the existence of the error to its peer.
 
 ## Stream Errors
 
-If the error affects a single stream, but otherwise leaves the connection in a
-recoverable state, the endpoint can send a RST_STREAM frame
+If an application-level error affects a single stream, but otherwise leaves the
+connection in a recoverable state, the endpoint can send a RST_STREAM frame
 ({{frame-rst-stream}}) with an appropriate error code to terminate just the
 affected stream.
 
@@ -3657,11 +3658,12 @@ Stream 0 is critical to the functioning of the entire connection.  If stream 0
 is closed with either a RST_STREAM or STREAM frame bearing the FIN flag, an
 endpoint MUST generate a connection error of type PROTOCOL_VIOLATION.
 
-RST_STREAM MUST be instigated by the application and MUST carry an application
-error code.  Resetting a stream without knowledge of the application protocol
-could cause the protocol to enter an unrecoverable state.  Application protocols
-might require certain streams to be reliably delivered in order to guarantee
-consistent state between endpoints.
+Other than STOPPING ({{solicited-state-transitions}}), RST_STREAM MUST be
+instigated by the application and MUST carry an application error code.
+Resetting a stream without knowledge of the application protocol could cause the
+protocol to enter an unrecoverable state.  Application protocols might require
+certain streams to be reliably delivered in order to guarantee consistent state
+between endpoints.
 
 
 ## Transport Error Codes {#error-codes}
