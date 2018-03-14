@@ -2873,8 +2873,8 @@ header, protected payload, and any authentication fields.
 
 All QUIC packets SHOULD be sized to fit within the estimated PMTU to avoid IP
 fragmentation or packet drops. To optimize bandwidth efficiency, endpoints
-SHOULD use Packetization Layer PMTU Discovery ({{!PLPMTUD=RFC4821}}).  Endpoints
-MAY use PMTU Discovery ({{!PMTUDv4=RFC1191}}, {{!PMTUDv6=RFC8201}}) for
+SHOULD use Packetization Layer PMTU Discovery ({{!RFC4821}}).  Endpoints
+MAY use PMTU Discovery ({{!RFC1191}}, {{!RFC8201}}) for
 detecting the PMTU, setting the PMTU appropriately, and storing the result of
 previous PMTU determinations.
 
