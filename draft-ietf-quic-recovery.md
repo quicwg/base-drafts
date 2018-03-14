@@ -738,7 +738,7 @@ response to 0RTT packets.
 
 #### Tail Loss Probe and Retransmission Alarm
 
-Tail loss probes {{?TLS}} and
+Tail loss probes {{?TLP}} and
 retransmission timeouts {{?RFC6298}} are an alarm based mechanism to recover
 from cases when there are outstanding retransmittable packets, but an
 acknowledgement has not been received in a timely manner.
