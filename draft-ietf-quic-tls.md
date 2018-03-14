@@ -1068,7 +1068,7 @@ key updates in a short time frame succession and significant packet reordering.
 As shown in {{quic-tls-handshake}} and {{ex-key-update}}, there is never a
 situation where there are more than two different sets of keying material that
 might be received by a peer.  Once both sending and receiving keys have been
-updated,
+updated, the peers immediately begin to use them.
 
 A server cannot initiate a key update until it has received the client's
 Finished message.  Otherwise, packets protected by the updated keys could be
