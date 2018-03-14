@@ -288,7 +288,7 @@ and Retransmission Timeout mechanisms.
 ### Tail Loss Probe {#tlp}
 
 The algorithm described in this section is an adaptation of the Tail Loss Probe
-algorithm proposed for TCP {{?TLP==I-D.dukkipati-tcpm-tcp-loss-probe}}.
+algorithm proposed for TCP {{?TLP=I-D.dukkipati-tcpm-tcp-loss-probe}}.
 
 A packet sent at the tail is particularly vulnerable to slow loss detection,
 since acks of subsequent packets are needed to trigger ack-based detection. To
