@@ -888,6 +888,9 @@ that are encrypted with a key it has not yet computed. Clients MAY drop these
 packets, or MAY buffer them in anticipation of later packets that allow it to
 compute the key.
 
+If a client receives a packet that has an unsupported version, it MUST discard
+that packet.
+
 
 ### Server Packet Handling {#server-pkt-handling}
 
