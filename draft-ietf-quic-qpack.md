@@ -323,13 +323,6 @@ Index <= M` where `[1,M]` is the first member of the added- entries sub-ranges
 set.  Again, the complexity of operations would be at most O(log N), N being
 the number of concurrently blocked streams.
 
-### Fixed overhead.
-
-HPACK defines overhead as 32 bytes ({{!RFC7541}}, Section 4.1).  As described
-above, QPACK adds some per-connection state, and possibly some per-entry state
-to track acknowledgment status and eviction reference count.  A larger value
-than 32 might be more accurate for QPACK.
-
 # Security Considerations
 
 TBD.
