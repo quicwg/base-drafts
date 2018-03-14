@@ -288,7 +288,7 @@ and Retransmission Timeout mechanisms.
 ### Tail Loss Probe {#tlp}
 
 The algorithm described in this section is an adaptation of the Tail Loss Probe
-algorithm proposed for TCP {{TLP}}.
+algorithm proposed for TCP {{?TLP}}.
 
 A packet sent at the tail is particularly vulnerable to slow loss detection,
 since acks of subsequent packets are needed to trigger ack-based detection. To
@@ -316,8 +316,7 @@ regardless of the number of packets outstanding.  TCP's TLP assumes if at least
 2 packets are outstanding, acks will not be delayed.
 
 A PTO value of at least 1.5*SRTT ensures that the ACK is overdue.  The 1.5
-is based on {{?LOSS-PROBE=I-D.dukkipati-tcpm-tcp-loss-probe}}, but
-implementations MAY experiment with other constants.
+is based on {{?TLP}}, but implementations MAY experiment with other constants.
 
 To reduce latency, it is RECOMMENDED that the sender set and allow the TLP alarm
 to fire twice before setting an RTO alarm. In other words, when the TLP alarm
@@ -739,7 +738,7 @@ response to 0RTT packets.
 
 #### Tail Loss Probe and Retransmission Alarm
 
-Tail loss probes {{?LOSS-PROBE=I-D.dukkipati-tcpm-tcp-loss-probe}} and
+Tail loss probes {{?TLS}} and
 retransmission timeouts {{?RFC6298}} are an alarm based mechanism to recover
 from cases when there are outstanding retransmittable packets, but an
 acknowledgement has not been received in a timely manner.
