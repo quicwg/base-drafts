@@ -716,10 +716,9 @@ use it for all subsequent Handshake ({{packet-handshake}}) and 1-RTT
 Server's Version Negotiation ({{packet-version}}) and Retry ({{packet-retry}})
 packets MUST use connection ID selected by the client.
 
-Note that the connection ID may change during the connection via the use of
-NEW_CONNECTION_ID frames ({{frame-new-connection-id}}) and connection migration
-({{migration}}).
-
+The connection ID could change over the lifetime of a connection, especially in
+response to connection migration ({{migration}}). NEW_CONNECTION_ID frames
+({{frame-new-connection-id}}) are used to provide new connection ID values.
 
 ## Packet Numbers {#packet-numbers}
 
@@ -1479,37 +1478,39 @@ failure.  If integrity protection is performed by QUIC, QUIC MUST abort the
 connection if the integrity check fails with a PROTOCOL_VIOLATION error code.
 
 
-## Client Connection Migration {#migration}
+## Path Validation {#migrate-validate}
 
-QUIC allows connections to survive changes to endpoint addresses (that is, IP
-address and/or port), such as those caused by a client migrating to a new
-network.  This section describes the protocol for migrating a connection to a
-new client address.
+Path validation is used by an endpoint to verify reachability of a peer over a
+specific path.  That is, it tests reachability between a specific local address
+and a specific peer address, where an address is the two-tuple of IP address and
+port.  Path validation tests that packets can be both sent to and received from
+a peer.
 
-Migrating a connection to a new server address is left for future work. If a
-client receives packets from a new server address, the client MAY discard these
-packets.
+Path validation is used during connection migration (see {{migration}}) by the
+migrating endpoint to verify reachability of a peer from a new local address.
+Path validation is also used by the peer to verify that the migrating endpoint
+is able to receive packets sent to the its new address.  That is, that the
+packets received from the migrating endpoint do not carry a spoofed source
+address.
 
-
-### Path Validation {#migrate-validate}
-
-Path validation is used by the migrating endpoint to verify reachability of
-a peer from a new local address. Path validation is also used by the peer to
-verify that the migrating endpoint is able to receive packets sent to that
-address.  That is, that the packets received from the migrating endpoint do
-not carry a spoofed source address.
-
-Path validation MAY be used at any time by either endpoint.  For instance, an
+Path validation can be used at any time by either endpoint.  For instance, an
 endpoint might check that a peer is still in possession of its address after a
 period of quiescence.
 
-An endpoint MAY bundle PATH_CHALLENGE and PATH_RESPONSE frames with other
-frames, as appropriate.  For instance, an endpoint may pad a packet carrying a
-PATH_CHALLENGE for PMTU discovery, or an endpoint may bundle a PATH_RESPONSE
-with its own PATH_CHALLENGE.
+Path validation is not designed as a NAT traversal mechanism. Though the
+mechanism described here might be effective for the creation of NAT bindings
+that support NAT traversal, the expectation is that one or other peer is able to
+receive packets without first having sent a packet on that path. Effective NAT
+traversal needs additional synchronization mechanisms that are not provided
+here.
+
+An endpoint MAY bundle PATH_CHALLENGE and PATH_RESPONSE frames that are used for
+path validation with other frames.  For instance, an endpoint may pad a packet
+carrying a PATH_CHALLENGE for PMTU discovery, or an endpoint may bundle a
+PATH_RESPONSE with its own PATH_CHALLENGE.
 
 
-#### Initiation
+### Initiation
 
 To initiate path validation, an endpoint sends a PATH_CHALLENGE frame containing
 a random payload that is hard to guess on the path to be validated.
@@ -1523,7 +1524,7 @@ The endpoint MUST use fresh random data in every PATH_CHALLENGE frame so that it
 can associate the peer's response with the causative PATH_CHALLENGE.
 
 
-#### Response
+### Response
 
 On receiving a PATH_CHALLENGE frame, an endpoint MUST respond immediately by
 echoing the data contained in the PATH_CHALLENGE frame in a PATH_RESPONSE frame,
@@ -1532,13 +1533,13 @@ spoofed address, an endpoint MAY limit the rate at which it sends PATH_RESPONSE
 frames and MAY silently discard PATH_CHALLENGE frames that would cause it to
 respond at a higher rate.
 
-Path validation tests both directions of a path.  To ensure reachability in both
-directions, the PATH_RESPONSE MUST be sent on the same path as the triggering
-PATH_CHALLENGE: from the same local address on which the PATH_CHALLENGE was
-received, to the same remote address from which the PATH_CHALLENGE was received.
+To ensure that packets can be both sent to and received from the peer, the
+PATH_RESPONSE MUST be sent on the same path as the triggering PATH_CHALLENGE:
+from the same local address on which the PATH_CHALLENGE was received, to the
+same remote address from which the PATH_CHALLENGE was received.
 
 
-#### Completion
+### Completion
 
 A new address is considered valid when a PATH_RESPONSE frame is received
 containing data that was sent in a previous PATH_CHALLENGE. Receipt of an
@@ -1560,7 +1561,7 @@ the path to be valid when a PATH_RESPONSE frame is received on the same path
 with the same payload as the PATH_CHALLENGE frame.
 
 
-#### Abandonment
+### Abandonment
 
 An endpoint SHOULD abandon path validation after sending some number of
 PATH_CHALLENGE frames or after some time has passed.  When setting this timer,
@@ -1570,6 +1571,27 @@ time than the original.
 Note that the endpoint might receive packets containing other frames on the new
 path, but a PATH_RESPONSE frame with appropriate data is required for path
 validation to succeed.
+
+If path validation fails, the path is deemed unusable.  This does not
+necessarily imply a failure of the connection - endpoints can continue sending
+packets over other paths as appropriate.  If no paths are available, an endpoint
+can wait for a new path to become available or close the connection.
+
+A path validation might be abandoned for other reasons besides
+failure. Primarily, this happens if a connection migration to a new path is
+initiated while a path validation on the old path is in progress.
+
+
+## Client Connection Migration {#migration}
+
+QUIC allows connections to survive changes to endpoint addresses (that is, IP
+address and/or port), such as those caused by a client migrating to a new
+network.  This section describes the protocol for migrating a connection to a
+new client address.
+
+Migrating a connection to a new server address is left for future work. If a
+client receives packets from a new server address, the client MAY discard these
+packets.
 
 
 ### Initiating Connection Migration {#initiating-migration}
@@ -1589,7 +1611,7 @@ that the new local address is not usable for this connection.  Failure to
 validate a path does not cause the connection to end unless there are no valid
 alternative paths available.
 
-A client migrating to a new local address SHOULD use a new connection ID for
+A client migrating to a new local address should use a new connection ID for
 packets sent from that address, see {{migration-linkability}} for further
 discussion.
 
@@ -1603,6 +1625,7 @@ A server may receive a packet from a new client address at any time during the
 connection after the handshake is complete. If the packet is authenticated, the
 client might be either probing from a new address or migrating immediately, as
 described in {{initiating-migration}}.
+
 
 #### Responding to a Client Probe
 
@@ -1655,7 +1678,7 @@ validation tokens ({{address-validation}}) to the client if the current ones
 will not be adequate to validate the new client address.
 
 
-### Handling Address Spoofing by a Client {#address-spoofing}
+#### Handling Address Spoofing by a Client {#address-spoofing}
 
 It is possible that the client is spoofing its source address to cause the
 server to send excessive amounts of data to an unwilling host.  If the server
@@ -1667,17 +1690,18 @@ As described in {{migration-response}}, a server is required to validate the
 client's new address to confirm the client's possession of the new address.
 Until a client's address is deemed valid, the server MUST limit the rate at
 which it sends data to this address.  The server MUST NOT send more than a
-minimum congestion window's worth of data per estimated RTO period (as defined
-in {{QUIC-RECOVERY}}).  In the absence of this limit, the server risks being
-used for a denial of service attack against an unsuspecting victim.  Note that
-since the server will not have any round-trip time estimates to the new address,
-the RTO period is likely to be estimated based on the default initial RTT (see
+minimum congestion window's worth of data per estimated round-trip time (as
+defined in {{QUIC-RECOVERY}}).  In the absence of this limit, the server risks
+being used for a denial of service attack against an unsuspecting victim.  Note
+that since the server will not have any round-trip time measurements to the new
+address, the estimate SHOULD be the default initial value (see
 {{QUIC-RECOVERY}}).
 
 A server SHOULD NOT apply this rate limit when the server skips validation of a
 client address, as described in {{migration-response}}.
 
-### Handling Address Spoofing by an On-path Attacker {#on-path-spoofing}
+
+#### Handling Address Spoofing by an On-path Attacker {#on-path-spoofing}
 
 An on-path attacker could cause a spurious connection migration by capturing and
 forwarding a packet such that it arrives before the legitimate copy of that
