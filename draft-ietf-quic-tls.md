@@ -406,6 +406,11 @@ TLS if it is able.  Each time that TLS is provided with new data, new handshake
 octets are requested from TLS.  TLS might not provide any octets if the
 handshake messages it has received are incomplete or it has no data to send.
 
+At the server, when TLS provides handshake octets, it also needs to indicate
+whether the octets contain a HelloRetryRequest.  A HelloRetryRequest MUST always
+be sent in a Retry packet, so the QUIC server needs to know whether the octets
+are a HelloRetryRequest.
+
 Once the TLS handshake is complete, this is indicated to QUIC along with any
 final handshake octets that TLS needs to send.  TLS also provides QUIC with the
 transport parameters that the peer advertised during the handshake.
