@@ -598,7 +598,7 @@ follows:
    loss_time = 0
    smoothed_rtt = 0
    rttvar = 0
-   min_rtt = 0
+   min_rtt = infinite
    max_ack_delay = 0
    largest_sent_before_rto = 0
    time_of_last_sent_packet = 0
