@@ -1163,7 +1163,7 @@ An endpoint MAY use the following transport parameters:
 initial_max_streams_bidi (0x0002):
 
 : The initial maximum streams parameter contains the initial maximum number of
-  bidirectional streams the peer may initiate, encoded as an unsigned 32-bit
+  bidirectional streams the peer may initiate, encoded as an unsigned 16-bit
   integer.  The maximum bidirectional stream ID is set to 0 if this parameter is
   absent or zero, preventing the creation of new bidirectional streams until a
   MAX_STREAM_ID frame is sent.  Note that a value of 0 does not prevent the
@@ -1177,7 +1177,7 @@ initial_max_streams_bidi (0x0002):
 initial_max_stream_id_uni (0x0008):
 
 : The initial maximum streams parameter contains the initial maximum number of
-  unidirectional streams the peer may initiate, encoded as an unsigned 32-bit
+  unidirectional streams the peer may initiate, encoded as an unsigned 16-bit
   integer.  The maximum unidirectional stream ID is set to 0 if this parameter
   is absent or zero, preventing the creation of new unidirectional streams until
   a MAX_STREAM_ID frame is sent.  Non-zero values are converted to a valid
