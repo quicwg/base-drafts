@@ -85,7 +85,8 @@ over time in response to new requirements.  Many characteristics of the protocol
 will change between versions.
 
 This document describes the subset of QUIC that is intended to remain stable as
-new versions are developed and deployed.
+new versions are developed and deployed.  All of these invariants are
+IP-version-independent.
 
 The primary goal of this document is to ensure that it is possible deploy new
 versions of QUIC.  By documenting the things that can't change, this document
