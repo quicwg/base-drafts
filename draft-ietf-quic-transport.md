@@ -3033,16 +3033,11 @@ Unidirectional streams use the applicable state machine directly.  Bidirectional
 streams use both state machines.  For the most part, the use of these state
 machines is the same whether the stream is unidirectional or bidirectional.  The
 conditions for opening a stream are slightly more complex for a bidirectional
-stream because the opening of either send or receive causes the stream to open
-in both directions.
+stream because the opening of either send or receive sides causes the stream
+to open in both directions.
 
-Opening a stream causes all lower-numbered streams of the same type to
-implicitly open.  This includes both send and receive streams if the stream is
-bidirectional.  For bidirectional streams, an endpoint can send data on an
-implicitly opened stream.  On both unidirectional and bidirectional streams, an
-endpoint MAY send MAX_STREAM_DATA or STOP_SENDING on implicitly opened streams.
-An endpoint SHOULD NOT implicitly open streams that it initiates, instead
-opening streams in order.
+An endpoint can open streams up to its maximum stream limit in any order,
+however endpoints SHOULD open the send side of streams for each type in order.
 
 Note:
 
