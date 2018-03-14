@@ -331,10 +331,6 @@ used to send a probe into the network prior to establishing any packet loss,
 prior unacknowledged packets SHOULD NOT be marked as lost when a TLP alarm
 fires.
 
-A TLP packet MUST NOT be blocked by the sender's congestion controller. The
-sender MUST however count these bytes as additional bytes in flight, since a TLP
-adds network load without establishing packet loss.
-
 A sender may not know that a packet being sent is a tail packet.
 Consequently, a sender may have to arm or adjust the TLP alarm on every sent
 ackable packet.
@@ -934,7 +930,10 @@ the reduction to once per round trip.
 
 ## Tail Loss Probe
 
-If recovery sends a tail loss probe, no change is made to the congestion window.
+A TLP packet MUST NOT be blocked by the sender's congestion controller. The
+sender MUST however count these bytes as additional bytes in flight, since a TLP
+adds network load without establishing packet loss.
+
 Acknowledgement or loss of tail loss probes are treated like any other packet.
 
 ## Retransmission Timeout
