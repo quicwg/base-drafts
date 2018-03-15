@@ -787,34 +787,19 @@ The following settings are defined in HTTP/QUIC:
   SETTINGS_MAX_HEADER_LIST_SIZE (0x6):
   : An integer with a maximum value of 2^30 - 1
 
-#### Usage in 0-RTT
+#### Initial SETTINGS Values
 
 When a 0-RTT QUIC connection is being used, the client's initial requests will
-be sent before the arrival of the server's SETTINGS frame.  Clients SHOULD
-cache at least the following settings about servers:
-
-  - SETTINGS_HEADER_TABLE_SIZE
-  - SETTINGS_MAX_HEADER_LIST_SIZE
-
-Clients MUST comply with cached settings until the server's current settings are
-received.  If a client does not have cached values, it SHOULD assume the
-following values:
-
-  - SETTINGS_HEADER_TABLE_SIZE:  0 octets
-  - SETTINGS_MAX_HEADER_LIST_SIZE:  16,384 octets
+be sent before the arrival of the server's SETTINGS frame.  Clients MUST store
+the settings the server provided in the session being resumed and MUST comply
+with stored settings until the server's current settings are received.
 
 Servers MAY continue processing data from clients which exceed its current
 configuration during the initial flight.  In this case, the client MUST apply
 the new settings immediately upon receipt.
 
-If the connection is closed because these or other constraints were violated
-during the 0-RTT flight (e.g. with HTTP_HPACK_DECOMPRESSION_FAILED), clients MAY
-establish a new connection and retry any 0-RTT requests using the settings sent
-by the server on the closed connection. (This assumes that only requests that
-are safe to retry are sent in 0-RTT.) If the connection was closed before the
-SETTINGS frame was received, clients SHOULD discard any cached values and use
-the defaults above on the next connection.
-
+When a 1-RTT QUIC connection is being used, the client MUST NOT send requests
+prior to receiving and processing the server's SETTINGS frame.
 
 ### PUSH_PROMISE {#frame-push-promise}
 
