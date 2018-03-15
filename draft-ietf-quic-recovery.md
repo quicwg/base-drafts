@@ -108,7 +108,7 @@ important to the loss detection and congestion control machinery below.
   machinery of QUIC underneath.
 
 * ACK frames contain acknowledgment information.  ACK frames contain one or more
-  ranges of acknowledged packets and are not congestion controlled.
+  ranges of acknowledged packets.
 
 ## Relevant Differences Between QUIC and TCP
 
