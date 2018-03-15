@@ -629,9 +629,9 @@ the flow, but other transport state MUST be discarded.
 
 The payload of the Retry packet contains at least two frames. It MUST include a
 STREAM frame on stream 0 with offset 0 containing the server's cryptographic
-stateless retry material. It MUST also include an ACK frame to allow the client
-a first RTT measurement. It MAY additionally include one ore more PADDING frames.
-The next STREAM frame sent by the server will also start at stream offset 0.
+stateless retry material. It MUST also include an ACK frame to acknowledge the
+client's Initial packet. It MAY additionally include one ore more PADDING
+frames. The next STREAM frame sent by the server will also start at stream offset 0.
 
 
 ### Handshake Packet {#packet-handshake}
