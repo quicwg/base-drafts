@@ -606,6 +606,11 @@ QUIC.
 A client that attempts 0-RTT MUST also consider 0-RTT to be rejected if it
 receives a Retry or Version Negotiation packet.
 
+When 0-RTT is rejected, all connection characteristics that the client assumed
+might be incorrect.  This includes the choice of application protocol, transport
+parameters, and any application configuration.  The client therefore MUST reset
+the state of all streams, including application state bound to those streams.
+
 
 ## TLS Errors
 
