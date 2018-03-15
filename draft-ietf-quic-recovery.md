@@ -47,29 +47,6 @@ normative:
 
 informative:
 
-  TLP:
-    title: "Tail Loss Probe (TLP): An Algorithm for Fast Recovery of Tail Losses"
-    date: "February 2013"
-    seriesinfo:
-      Internet-Draft: draft-dukkipati-tcpm-tcp-loss-probe-01
-    author:
-      -
-        ins: N. Dukkipati
-        name: Nandita Dukkipati
-        org: Google
-      -
-        ins: N. Cardwell
-        name: Neal Cardwell
-        org: Google
-      -
-        ins: Y. Cheng
-        name: Yuchung Cheng
-        org: Google
-      -
-        ins: M. Mathis
-        name: Matt Mathis
-        org: Google
-
 
 --- abstract
 
