@@ -3419,7 +3419,7 @@ cryptographic handshake.  This includes the retransmission of the second flight
 of client handshake messages, that is, the TLS Finished and any client
 authentication messages.
 
-STREAM frames that are determined to be lost SHOULD be retransmitted before
+STREAM data in frames determined to be lost SHOULD be retransmitted before
 sending new data, unless application priorities indicate otherwise.
 Retransmitting lost stream data can fill in gaps, which allows the peer to
 consume already received data and free up flow control window.
