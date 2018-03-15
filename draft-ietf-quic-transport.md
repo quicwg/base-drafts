@@ -1151,33 +1151,31 @@ idle_timeout (0x0003):
 
 An endpoint MAY use the following transport parameters:
 
-initial_max_stream_id_bidi (0x0002):
+initial_max_streams_bidi (0x0002):
 
-: The initial maximum stream ID parameter contains the initial maximum stream
-  number the peer may initiate for bidirectional streams, encoded as an unsigned
-  32-bit integer.  This value MUST be a valid bidirectional stream ID for a
-  peer-initiated stream (that is, the two least significant bits are set to 0 by
-  a server and to 1 by a client).  If an invalid value is provided, the
-  recipient MUST generate a connection error of type TRANSPORT_PARAMETER_ERROR.
-  Setting this parameter is equivalent to sending a MAX_STREAM_ID
-  ({{frame-max-stream-id}}) immediately after completing the handshake.  The
-  maximum bidirectional stream ID is set to 0 if this parameter is absent,
-  preventing the creation of new bidirectional streams until a MAX_STREAM_ID
-  frame is sent.  Note that a default value of 0 does not prevent the
-  cryptographic handshake stream (that is, stream 0) from being used.
+: The initial maximum bidirectional streams parameter contains the initial
+  maximum number of application-owned bidirectional streams the peer may
+  initiate, encoded as an unsigned 16-bit integer.  If this parameter is absent
+  or zero, application-owned bidirectional streams cannot be created until a
+  MAX_STREAM_ID frame is sent.  Note that a value of 0 does not prevent the
+  cryptographic handshake stream (that is, stream 0) from being used. Setting
+  this parameter is equivalent to sending a MAX_STREAM_ID
+  ({{frame-max-stream-id}}) immediately after completing the handshake
+  containing the corresponding Stream ID. For example, a value of 0x05 would be
+  equivalent to receiving a MAX_STREAM_ID containing 20 when received by a
+  client or 17 when received by a server.
 
 initial_max_stream_id_uni (0x0008):
 
-: The initial maximum stream ID parameter contains the initial maximum stream
-  number the peer may initiate for unidirectional streams, encoded as an
-  unsigned 32-bit integer.  The value MUST be a valid unidirectional ID for the
-  recipient (that is, the two least significant bits are set to 2 by a server
-  and to 3 by a client).  If an invalid value is provided, the recipient MUST
-  generate a connection error of type TRANSPORT_PARAMETER_ERROR.  Setting this
-  parameter is equivalent to sending a MAX_STREAM_ID ({{frame-max-stream-id}})
-  immediately after completing the handshake.  The maximum unidirectional stream
-  ID is set to 0 if this parameter is absent, preventing the creation of new
-  unidirectional streams until a MAX_STREAM_ID frame is sent.
+: The initial maximum unidirectional streams parameter contains the initial
+  maximum number of application-owned unidirectional streams the peer may
+  initiate, encoded as an unsigned 16-bit integer.  If this parameter is absent
+  or zero, unidirectional streams cannot be created until a MAX_STREAM_ID frame
+  is sent.  Setting this parameter is equivalent to sending a MAX_STREAM_ID
+  ({{frame-max-stream-id}}) immediately after completing the handshake
+  containing the corresponding Stream ID. For example, a value of 0x05 would be
+  equivalent to receiving a MAX_STREAM_ID containing 18 when received by a
+  client or 19 when received by a server.
 
 max_packet_size (0x0005):
 
