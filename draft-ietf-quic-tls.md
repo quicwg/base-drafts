@@ -1377,6 +1377,9 @@ that 0-RTT data has been rejected.
 
 A server MUST NOT use 0-RTT keys to protect packets.
 
+If a server rejects 0-RTT, then the TLS stream will not include any TLS records
+protected with 0-RTT keys.
+
 
 ## Receiving Out-of-Order Protected Frames {#pre-hs-protected}
 
