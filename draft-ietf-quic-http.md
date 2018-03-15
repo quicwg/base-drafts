@@ -433,16 +433,20 @@ frame.
 
 ## Server Push
 
-HTTP/QUIC supports server push as described in {{!RFC7540}}. During connection
-establishment, the client enables server push by sending a MAX_PUSH_ID frame
-(see {{frame-max-push-id}}).  A server cannot use server push until it receives
-a MAX_PUSH_ID frame.
+HTTP/QUIC supports server push in a similar manner to {{!RFC7540}}, but uses
+different mechanisms. During connection establishment, the client enables server
+push by sending a MAX_PUSH_ID frame (see {{frame-max-push-id}}). A server cannot
+use server push until it receives a MAX_PUSH_ID frame.
 
 As with server push for HTTP/2, the server initiates a server push by sending a
 PUSH_PROMISE frame that includes request header fields attributed to the
-request. The PUSH_PROMISE frame is sent on the client-initiated, bidirectional
-stream that carried the request that generated the push.  This allows the server
-push to be associated with a request.  Ordering of a PUSH_PROMISE in relation to
+request.  Promised requests MUST be cacheable (see {{!RFC7231}}, Section 4.2.3),
+MUST be safe (see {{RFC7231}}, Section 4.2.1), and MUST NOT include a request
+body.
+
+The PUSH_PROMISE frame is sent on the client-initiated, bidirectional stream
+that carried the request that generated the push.  This allows the server push
+to be associated with a request.  Ordering of a PUSH_PROMISE in relation to
 certain parts of the response is important (see Section 8.2.1 of {{!RFC7540}}).
 
 Unlike HTTP/2, the PUSH_PROMISE does not reference a stream; it contains a Push
