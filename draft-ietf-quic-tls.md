@@ -597,6 +597,21 @@ A server MUST NOT use post-handshake client authentication (see Section 4.6.2 of
 {{!TLS13}}).
 
 
+## Rejecting 0-RTT
+
+A server rejects 0-RTT by rejecting 0-RTT at the TLS layer.  This results in
+early exporter keys being unavailable, thereby preventing the use of 0-RTT for
+QUIC.
+
+A client that attempts 0-RTT MUST also consider 0-RTT to be rejected if it
+receives a Retry or Version Negotiation packet.
+
+When 0-RTT is rejected, all connection characteristics that the client assumed
+might be incorrect.  This includes the choice of application protocol, transport
+parameters, and any application configuration.  The client therefore MUST reset
+the state of all streams, including application state bound to those streams.
+
+
 ## TLS Errors
 
 Errors in the TLS connection SHOULD be signaled using TLS alerts on stream 0.  A
@@ -1376,6 +1391,9 @@ messages.  A client SHOULD stop sending 0-RTT data if it receives an indication
 that 0-RTT data has been rejected.
 
 A server MUST NOT use 0-RTT keys to protect packets.
+
+If a server rejects 0-RTT, then the TLS stream will not include any TLS records
+protected with 0-RTT keys.
 
 
 ## Receiving Out-of-Order Protected Frames {#pre-hs-protected}
