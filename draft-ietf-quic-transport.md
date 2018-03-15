@@ -1170,7 +1170,7 @@ initial_max_streams_bidi (0x0002):
   cryptographic handshake stream (that is, stream 0) from being used. Setting
   this parameter is equivalent to sending a MAX_STREAM_ID
   ({{frame-max-stream-id}}) immediately after completing the handshake
-  containing the resulting Stream ID. For example, a value of 0x05 would be
+  containing the corresponding Stream ID. For example, a value of 0x05 would be
   equivalent to receiving a MAX_STREAM_ID containing 20 when received by a
   client or 17 when received by a server.
 
@@ -1182,7 +1182,7 @@ initial_max_stream_id_uni (0x0008):
   or zero, unidirectional streams cannot be created until a MAX_STREAM_ID frame
   is sent.  Setting this parameter is equivalent to sending a MAX_STREAM_ID
   ({{frame-max-stream-id}}) immediately after completing the handshake
-  containing the resulting Stream ID. For example, a value of 0x05 would be
+  containing the corresponding Stream ID. For example, a value of 0x05 would be
   equivalent to receiving a MAX_STREAM_ID containing 18 when received by a
   client or 19 when received by a server.
 
