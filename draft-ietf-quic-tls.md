@@ -1385,7 +1385,7 @@ See {{useless}} for a discussion of these risks.
 
 To avoid receiving TLS packets that contain no useful data, a TLS implementation
 MUST reject empty TLS handshake records and any record that is not permitted by
-the TLS state machine.  Any TLS application data or alerts that is received
+the TLS state machine.  Any TLS application data or alerts that are received
 prior to the end of the handshake MUST be treated as a connection error of type
 PROTOCOL_VIOLATION.
 
