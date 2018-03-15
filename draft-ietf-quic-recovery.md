@@ -100,14 +100,15 @@ interpretation of TCP loss detection mechanisms.
 Every packet may contain several frames.  We outline the frames that are
 important to the loss detection and congestion control machinery below.
 
-* Retransmittable frames are frames requiring reliable delivery.  The most
-  common are STREAM frames, which typically contain application data.
+* Congestion controlled frames are frames that count towards bytes in
+  flight and need acknowledgement.  The most common are STREAM frames,
+  which typically contain application data.
 
 * Crypto handshake data is sent on stream 0, and uses the reliability
   machinery of QUIC underneath.
 
 * ACK frames contain acknowledgment information.  ACK frames contain one or more
-  ranges of acknowledged packets.
+  ranges of acknowledged packets and are not congestion controlled.
 
 ## Relevant Differences Between QUIC and TCP
 
@@ -538,9 +539,9 @@ max_ack_delay:
   RTT sample less than min_rtt.
 
 reordering_threshold:
-: The largest delta between the largest acked
-  retransmittable packet and a packet containing retransmittable frames before
-  it's declared lost.
+: The largest packet number gap between the largest acked
+  congestion controlled packet and smaller unacknowledged congestion
+  controlled packet before it is declared lost.
 
 time_reordering_fraction:
 : The reordering window as a fraction of max(smoothed_rtt, latest_rtt).
@@ -711,10 +712,10 @@ response to 0RTT packets.
 
 #### Tail Loss Probe and Retransmission Alarm
 
-Tail loss probes {{?TLP}} and
-retransmission timeouts {{?RFC6298}} are an alarm based mechanism to recover
-from cases when there are outstanding retransmittable packets, but an
-acknowledgement has not been received in a timely manner.
+Tail loss probes {{?TLP}} and retransmission timeouts {{?RFC6298}}
+are an alarm based mechanism to recover from cases when there are
+outstanding congestion controlled packets, but an acknowledgement has
+not been received in a timely manner.
 
 The TLP and RTO timers are armed when there is not unacknowledged handshake
 data.  The TLP alarm is set until the max number of TLP packets have been
@@ -733,8 +734,8 @@ Pseudocode for SetLossDetectionAlarm follows:
 ~~~
  SetLossDetectionAlarm():
     // Don't arm the alarm if there are no packets with
-    // retransmittable data in flight.
-    if (num_retransmittable_packets_outstanding == 0):
+    // congestion controlled data in flight.
+    if (bytes_in_flight == 0):
       loss_detection_alarm.cancel()
       return
 
@@ -970,9 +971,9 @@ are described in this section.
 
 bytes_in_flight:
 : The sum of the size in bytes of all sent packets that contain at least
-  one retransmittable or PADDING frame, and have not been acked or
-  declared lost. The size does not include IP or UDP overhead.
-  Packets only containing ACK frames do not count towards byte_in_flight
+  one congestion controlled frame, and have not been acked or declared
+  lost. The size does not include IP or UDP overhead.
+  Packets only containing ACK frames do not count towards bytes_in_flight
   to ensure congestion control does not impede congestion feedback.
 
 congestion_window:
