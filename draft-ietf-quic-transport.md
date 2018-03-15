@@ -2349,8 +2349,12 @@ An endpoint may use a STOP_SENDING frame (type=0x0c) to communicate that
 incoming data is being discarded on receipt at application request.  This
 signals a peer to abruptly terminate transmission on a stream.
 
-An endpoint that receives a STOP_SENDING frame for a receive-only stream MUST
-terminate the connection with error PROTOCOL_VIOLATION.
+Receipt of a STOP_SENDING frame is only valid for a send stream that exists and
+is not in the Open state (see {{stream-send-states}}).  Receiving a STOP_SENDING
+frame for a send stream that is Open or non-existent MUST be treated as a
+connection error of type PROTOCOL_VIOLATION.  An endpoint that receives a
+STOP_SENDING frame for a receive-only stream MUST terminate the connection with
+error PROTOCOL_VIOLATION.
 
 The STOP_SENDING frame is as follows:
 
