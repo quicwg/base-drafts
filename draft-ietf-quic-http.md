@@ -790,9 +790,9 @@ The following settings are defined in HTTP/QUIC:
 #### Initial SETTINGS Values
 
 When a 0-RTT QUIC connection is being used, the client's initial requests will
-be sent before the arrival of the server's SETTINGS frame.  Clients MUST cache
+be sent before the arrival of the server's SETTINGS frame.  Clients MUST store
 the settings the server provided in the session being resumed and MUST comply
-with cached settings until the server's current settings are received.
+with stored settings until the server's current settings are received.
 
 Servers MAY continue processing data from clients which exceed its current
 configuration during the initial flight.  In this case, the client MUST apply
