@@ -1167,22 +1167,23 @@ initial_max_streams_bidi (0x0002):
   unsigned 16-bit integer.  If this parameter is absent or zero,
   application-owned bidirectional streams cannot be created until a
   MAX_STREAM_ID frame is sent.  Note that a value of 0 does not prevent the
-  cryptographic handshake stream (that is, stream 0) from being used. For
-  example, a value of 0x05 would be translated to a bidirectional stream ID of
-  20 by a client or 17 by a server.  Setting this parameter is equivalent to
-  sending a MAX_STREAM_ID ({{frame-max-stream-id}}) immediately after completing
-  the handshake containing the resulting Stream ID.
+  cryptographic handshake stream (that is, stream 0) from being used. Setting
+  this parameter is equivalent to sending a MAX_STREAM_ID
+  ({{frame-max-stream-id}}) immediately after completing the handshake
+  containing the resulting Stream ID. For example, a value of 0x05 would be
+  equivalent to receiving a MAX_STREAM_ID containing 20 when received by a
+  client or 17 when received by a server.
 
 initial_max_stream_id_uni (0x0008):
 
 : The initial maximum streams parameter contains the initial maximum number of
   application-owned unidirectional streams the peer may initiate, encoded as an
   unsigned 16-bit integer.  If this parameter is absent or zero, unidirectional
-  streams cannot be created until a MAX_STREAM_ID frame is sent.  For example, a
-  value of 0x05 would be translated to a value of 18 by a client or 19 by a
-  server.  Setting this parameter is equivalent to sending a MAX_STREAM_ID
-  ({{frame-max-stream-id}}) immediately after completing the handshake
-  containing the resulting Stream ID.
+  streams cannot be created until a MAX_STREAM_ID frame is sent.  Setting this
+  parameter is equivalent to sending a MAX_STREAM_ID ({{frame-max-stream-id}})
+  immediately after completing the handshake containing the resulting Stream ID.
+  For example, a value of 0x05 would be equivalent to receiving a MAX_STREAM_ID
+  containing 18 when received by a client or 19 when received by a server.
 
 omit_connection_id (0x0004):
 
