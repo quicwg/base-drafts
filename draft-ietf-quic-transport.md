@@ -2350,11 +2350,11 @@ incoming data is being discarded on receipt at application request.  This
 signals a peer to abruptly terminate transmission on a stream.
 
 Receipt of a STOP_SENDING frame is only valid for a send stream that exists and
-is not in the Open state (see {{stream-send-states}}).  Receiving a STOP_SENDING
-frame for a send stream that is Open or non-existent MUST be treated as a
-connection error of type PROTOCOL_VIOLATION.  An endpoint that receives a
-STOP_SENDING frame for a receive-only stream MUST terminate the connection with
-error PROTOCOL_VIOLATION.
+is not in the "Ready" state (see {{stream-send-states}}).  Receiving a
+STOP_SENDING frame for a send stream that is "Ready" or non-existent MUST be
+treated as a connection error of type PROTOCOL_VIOLATION.  An endpoint that
+receives a STOP_SENDING frame for a receive-only stream MUST terminate the
+connection with error PROTOCOL_VIOLATION.
 
 The STOP_SENDING frame is as follows:
 
@@ -3019,9 +3019,9 @@ The two type bits from a Stream ID therefore identify streams as summarized in
 Stream ID 0 (0x0) is a client-initiated, bidirectional stream that is used for
 the cryptographic handshake.  Stream 0 MUST NOT be used for application data.
 
-A QUIC endpoint MUST NOT reuse a Stream ID.  Open streams can be used in any
-order.  Streams that are used out of order result in opening all lower-numbered
-streams of the same type in the same direction.
+A QUIC endpoint MUST NOT reuse a Stream ID.  Streams can be used in any order.
+Streams that are used out of order result in opening all lower-numbered streams
+of the same type in the same direction.
 
 Stream IDs are encoded as a variable-length integer (see {{integer-encoding}}).
 
@@ -3061,11 +3061,11 @@ data to a peer.
 
 ~~~
        o
-       | Open Stream (Sending)
-       | Open Bidirectional Stream (Receiving)
+       | Create Stream (Sending)
+       | Create Bidirectional Stream (Receiving)
        v
    +-------+
-   | Open  | Send RST_STREAM
+   | Ready | Send RST_STREAM
    |       |-----------------------.
    +-------+                       |
        |                           |
@@ -3095,12 +3095,12 @@ data to a peer.
 
 The sending part of stream that the endpoint initiates (types 0 and 2 for
 clients, 1 and 3 for servers) is opened by the application or application
-protocol.  The "Open" state represents a newly created stream that is able to
+protocol.  The "Ready" state represents a newly created stream that is able to
 accept data from the application.  Stream data might be buffered in this state
 in preparation for sending.
 
 The sending part of a bidirectional stream initiated by a peer (type 0 for a
-server, type 1 for a client) enters the "Open" state if the receiving part
+server, type 1 for a client) enters the "Ready" state if the receiving part
 enters the "Recv" state.
 
 Sending the first STREAM or STREAM_BLOCKED frame causes a send stream to enter
@@ -3124,11 +3124,11 @@ frames might be received until the peer receives the final stream offset.
 Once all stream data has been successfully acknowledged, the send stream enters
 the "Data Recvd" state, which is a terminal state.
 
-From any of the "Open", "Send", or "Data Sent" states, an application can signal
-that it wishes to abandon transmission of stream data.  Similarly, the endpoint
-might receive a STOP_SENDING frame from its peer.  In either case, the endpoint
-sends a RST_STREAM frame, which causes the stream to enter the "Reset Sent"
-state.
+From any of the "Ready", "Send", or "Data Sent" states, an application can
+signal that it wishes to abandon transmission of stream data.  Similarly, the
+endpoint might receive a STOP_SENDING frame from its peer.  In either case, the
+endpoint sends a RST_STREAM frame, which causes the stream to enter the "Reset
+Sent" state.
 
 An endpoint MAY send a RST_STREAM as the first frame on a send stream; this
 causes the send stream to open and then immediately transition to the "Reset
@@ -3143,14 +3143,14 @@ enters the "Reset Recvd" state, which is a terminal state.
 {{fig-stream-recv-states}} shows the states for the part of a stream that
 receives data from a peer.  The states for a receive stream mirror only some of
 the states of the send stream at the peer.  A receive stream doesn't track
-states on the send stream that cannot be observed, such as the "Open" state;
+states on the send stream that cannot be observed, such as the "Ready" state;
 instead, receive streams track the delivery of data to the application or
 application protocol some of which cannot be observed by the sender.
 
 ~~~
        o
        | Recv STREAM / STREAM_BLOCKED / RST_STREAM
-       | Open Bidirectional Stream (Sending)
+       | Create Bidirectional Stream (Sending)
        | Recv MAX_STREAM_DATA
        v
    +-------+
@@ -3190,7 +3190,7 @@ RST_STREAM frame causes the receive stream to immediately transition to the
 
 The receive stream enters the "Recv" state when the sending part of a
 bidirectional stream initiated by the endpoint (type 0 for a client, type 1 for
-a server) enters the "Open" state.
+a server) enters the "Ready" state.
 
 A bidirectional stream also opens when a MAX_STREAM_DATA frame is received.
 Receiving a MAX_STREAM_DATA frame implies that the remote peer has opened the
@@ -3280,10 +3280,10 @@ transition to a "closed" or "half-closed" state.
 
 | Send Stream            | Receive Stream         | Composite State      |
 |:-----------------------|:-----------------------|:---------------------|
-| No Stream/Open         | No Stream/Recv *1      | idle                 |
-| Open/Send/Data Sent    | Recv/Size Known        | open                 |
-| Open/Send/Data Sent    | Data Recvd/Data Read   | half-closed (remote) |
-| Open/Send/Data Sent    | Reset Recvd/Reset Read | half-closed (remote) |
+| No Stream/Ready        | No Stream/Recv *1      | idle                 |
+| Ready/Send/Data Sent   | Recv/Size Known        | open                 |
+| Ready/Send/Data Sent   | Data Recvd/Data Read   | half-closed (remote) |
+| Ready/Send/Data Sent   | Reset Recvd/Reset Read | half-closed (remote) |
 | Data Recvd             | Recv/Size Known        | half-closed (local)  |
 | Reset Sent/Reset Recvd | Recv/Size Known        | half-closed (local)  |
 | Data Recvd             | Recv/Size Known        | half-closed (local)  |
