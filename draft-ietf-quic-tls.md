@@ -597,6 +597,16 @@ A server MUST NOT use post-handshake client authentication (see Section 4.6.2 of
 {{!TLS13}}).
 
 
+## Rejecting 0-RTT
+
+A server rejects 0-RTT by rejecting 0-RTT at the TLS layer.  This results in
+early exporter keys being unavailable, thereby preventing the use of 0-RTT for
+QUIC.
+
+A client that attempts 0-RTT MUST also consider 0-RTT to be rejected if it
+receives a Retry or Version Negotiation packet.
+
+
 ## TLS Errors
 
 Errors in the TLS connection SHOULD be signaled using TLS alerts on stream 0.  A
