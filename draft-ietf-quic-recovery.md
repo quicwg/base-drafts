@@ -277,7 +277,7 @@ receiver.
 The alarm duration, or Probe Timeout (PTO), is set based on the following
 conditions:
 
-* PTO SHOULD be scheduled for max(1.5*SRTT+MaxAckDelay, 10ms)
+* PTO SHOULD be scheduled for max(1.5*SRTT+MaxAckDelay, kMinTLPTimeout)
 
 * If RTO ({{rto}}) is earlier, schedule a TLP alarm in its place. That is,
   PTO SHOULD be scheduled for min(RTO, PTO).
