@@ -132,7 +132,7 @@ following header in any response:
 Alt-Svc: hq=":50781"
 ~~~
 
-On receipt of an Alt-Svc header indicating HTTP/QUIC support, a client MAY
+On receipt of an Alt-Svc record indicating HTTP/QUIC support, a client MAY
 attempt to establish a QUIC connection to the indicated host and port and, if
 successful, send HTTP requests using the mapping described in this document.
 
@@ -140,9 +140,8 @@ Connectivity problems (e.g. firewall blocking UDP) can result in QUIC connection
 establishment failure, in which case the client SHOULD continue using the
 existing connection or try another alternative endpoint offered by the origin.
 
-Servers MAY serve HTTP/QUIC on any UDP port.  Servers MUST use the same port
-across all IP addresses that serve a single domain, and SHOULD NOT change this
-port.
+Servers MAY serve HTTP/QUIC on any UDP port, since an alternative always
+includes an explicit port.
 
 ### QUIC Version Hints {#alt-svc-version-hint}
 
