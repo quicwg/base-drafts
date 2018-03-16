@@ -506,8 +506,8 @@ largest_sent_before_rto:
 : The last packet number sent prior to the first retransmission
   timeout.
 
-time_of_last_sent_packet:
-: The time the most recent packet was sent.
+time_of_last_sent_retransmittable_packet:
+: The time the most recent retransmittable packet was sent.
 
 time_of_last_sent_handshake_packet:
 : The time the most recent packet containing handshake data was sent.
@@ -578,7 +578,7 @@ follows:
    min_rtt = infinite
    max_ack_delay = 0
    largest_sent_before_rto = 0
-   time_of_last_sent_packet = 0
+   time_of_last_sent_retransmittable_packet = 0
    time_of_last_sent_handshake_packet = 0
    largest_sent_packet = 0
 ~~~
@@ -606,7 +606,6 @@ Pseudocode for OnPacketSent follows:
 ~~~
  OnPacketSent(packet_number, is_ack_only, is_handshake_packet,
                 sent_bytes):
-   time_of_last_sent_packet = now
    largest_sent_packet = packet_number
    sent_packets[packet_number].packet_number = packet_number
    sent_packets[packet_number].time = now
@@ -614,6 +613,7 @@ Pseudocode for OnPacketSent follows:
    if !is_ack_only:
      if is_handshake_packet:
        time_of_last_sent_handshake_packet = now
+     time_of_last_sent_retransmittable_packet = now
      OnPacketSentCC(sent_bytes)
      sent_packets[packet_number].bytes = sent_bytes
      SetLossDetectionAlarm()
@@ -752,7 +752,8 @@ Pseudocode for SetLossDetectionAlarm follows:
       return;
     else if (loss_time != 0):
       // Early retransmit timer or time loss detection.
-      alarm_duration = loss_time - time_of_last_sent_packet
+      alarm_duration = loss_time -
+        time_of_last_sent_retransmittable_packet
     else if (tlp_count < kMaxTLPs):
       // Tail Loss Probe
       alarm_duration = max(1.5 * smoothed_rtt + max_ack_delay,
@@ -764,8 +765,8 @@ Pseudocode for SetLossDetectionAlarm follows:
       alarm_duration = max(alarm_duration, kMinRTOTimeout)
       alarm_duration = alarm_duration * (2 ^ rto_count)
 
-    loss_detection_alarm.set(time_of_last_sent_packet
-        + alarm_duration)
+    loss_detection_alarm.set(
+      time_of_last_sent_retransmittable_packet + alarm_duration)
 ~~~
 
 ### On Alarm Firing
