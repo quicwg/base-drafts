@@ -326,7 +326,7 @@ Similar to TCP {{?RFC6298}}, the RTO period is set based on the following
 conditions:
 
 * When the final TLP packet is sent, the RTO period is set to max(SRTT +
-  4*RTTVAR + MaxAckDelay, minRTO)
+  4*RTTVAR + MaxAckDelay, kMinRTOTimeout)
 
 * When an RTO alarm fires, the RTO period is doubled.
 
