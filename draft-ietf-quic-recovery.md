@@ -100,12 +100,12 @@ interpretation of TCP loss detection mechanisms.
 Every packet may contain several frames.  We outline the frames that are
 important to the loss detection and congestion control machinery below.
 
-* Congestion-controlled frames are those that count towards bytes in
+* Retransmittable frames are those that count towards bytes in
   flight and need acknowledgement.  The most common are STREAM frames,
   which typically contain application data.
 
-* Congestion-controlled packets are those that contain at least one
-  congestion-controlled frame.
+* Retransmittable packets are those that contain at least one
+  retransmittable frame.
 
 * Crypto handshake data is sent on stream 0, and uses the reliability
   machinery of QUIC underneath.
@@ -224,16 +224,16 @@ and implementers are encouraged to explore this space.
 ### Early Retransmit
 
 Unacknowledged packets close to the tail may have fewer than
-kReorderingThreshold congestion-controlled packets sent after them.
+kReorderingThreshold retransmittable packets sent after them.
 Loss of such packets cannot be detected via Fast Retransmit. To enable
 ack-based loss detection of such packets, receipt of an acknowledgment for the
-last outstanding congestion-controlled packet triggers the Early Retransmit
+last outstanding retransmittable packet triggers the Early Retransmit
 process, as follows.
 
-If there are unacknowledged congestion-controlled packets still pending, they
+If there are unacknowledged retransmittable packets still pending, they
 should be marked as lost. To compensate for the reduced reordering resilience,
 the sender SHOULD set an alarm for a small period of time. If the unacknowledged
-congestion-controlled packets are not acknowledged during this time, then these
+retransmittable packets are not acknowledged during this time, then these
 packets MUST be marked as lost.
 
 An endpoint SHOULD set the alarm such that a packet is marked as lost no earlier
@@ -273,7 +273,7 @@ algorithm proposed for TCP {{?TLP=I-D.dukkipati-tcpm-tcp-loss-probe}}.
 A packet sent at the tail is particularly vulnerable to slow loss detection,
 since acks of subsequent packets are needed to trigger ack-based detection. To
 ameliorate this weakness of tail packets, the sender schedules an alarm when the
-last congestion-controlled packet before quiescence is transmitted. When this
+last retrasnmittable packet before quiescence is transmitted. When this
 alarm fires, a Tail Loss Probe (TLP) packet is sent to evoke an acknowledgement
 from the receiver.
 
@@ -313,7 +313,7 @@ fires.
 
 A sender may not know that a packet being sent is a tail packet.
 Consequently, a sender may have to arm or adjust the TLP alarm on every sent
-congestion-controlled packet.
+retransmittable packet.
 
 ### Retransmission Timeout {#rto}
 
@@ -542,8 +542,8 @@ max_ack_delay:
 
 reordering_threshold:
 : The largest packet number gap between the largest acked
-  congestion-controlled packet and an unacknowledged
-  congestion-controlled packet before it is declared lost.
+  retransmittable packet and an unacknowledged
+  retransmittable packet before it is declared lost.
 
 time_reordering_fraction:
 : The reordering window as a fraction of max(smoothed_rtt, latest_rtt).
@@ -596,7 +596,7 @@ are as follows:
 
 * is_ack_only: A boolean that indicates whether a packet only contains an
   ACK frame.  If true, it is still expected an ack will be received for
-  this packet, but it is not congestion-controlled.
+  this packet, but it is not retransmittable.
 
 * is_handshake_packet: A boolean that indicates whether a packet contains
   handshake data.
@@ -716,7 +716,7 @@ response to 0RTT packets.
 
 Tail loss probes {{?TLP}} and retransmission timeouts {{?RFC6298}}
 are an alarm based mechanism to recover from cases when there are
-outstanding congestion-controlled packets, but an acknowledgement has
+outstanding retransmittable packets, but an acknowledgement has
 not been received in a timely manner.
 
 The TLP and RTO timers are armed when there is not unacknowledged handshake
@@ -736,7 +736,7 @@ Pseudocode for SetLossDetectionAlarm follows:
 ~~~
  SetLossDetectionAlarm():
     // Don't arm the alarm if there are no packets with
-    // congestion-controlled data in flight.
+    // retransmittable data in flight.
     if (bytes_in_flight == 0):
       loss_detection_alarm.cancel()
       return
@@ -973,7 +973,7 @@ are described in this section.
 
 bytes_in_flight:
 : The sum of the size in bytes of all sent packets that contain at least
-  one congestion-controlled frame, and have not been acked or declared
+  one retransmittable frame, and have not been acked or declared
   lost. The size does not include IP or UDP overhead.
   Packets only containing ACK frames do not count towards bytes_in_flight
   to ensure congestion control does not impede congestion feedback.
