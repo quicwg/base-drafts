@@ -201,6 +201,21 @@ implemented in QUIC.
 
 ### Fast Retransmit
 
+Fast retransmit can be run two different modes: packet number based and time
+based.
+
+We derive this default from recommendations for TCP loss recovery {{?RFC5681}}
+{{?RFC6675}}. It is possible for networks to exhibit higher degrees of
+reordering, causing a sender to detect spurious losses. Making QUIC deal with
+such networks is important open research, and implementers are encouraged to
+explore this space. Detecting spurious losses leads to unnecessary
+retransmissions and may result in degraded performance due to the actions of
+the congestion controller upon detecting loss. Implementers MAY use algorithms
+developed for TCP, such as TCP-NCR {{?RFC4653}}, to improve QUIC's reordering
+resilience, though care should be taken to map TCP specifics to QUIC correctly.
+
+#### Packet number based Fast Retransmit
+
 An unacknowledged packet is marked as lost when an acknowledgment is received
 for a packet that was sent a threshold number of packets (kReorderingThreshold)
 after the unacknowledged packet. Receipt of the ack indicates that a later
@@ -209,19 +224,18 @@ reordering of packets in the network.
 
 The RECOMMENDED initial value for kReorderingThreshold is 3.
 
-We derive this default from recommendations for TCP loss recovery {{?RFC5681}}
-{{?RFC6675}}. It is possible for networks to exhibit higher degrees of
-reordering, causing a sender to detect spurious losses. Detecting spurious
-losses leads to unnecessary retransmissions and may result in degraded
-performance due to the actions of the congestion controller upon detecting
-loss. Implementers MAY use algorithms developed for TCP, such as TCP-NCR
-{{?RFC4653}}, to improve QUIC's reordering resilience, though care should be
-taken to map TCP specifics to QUIC correctly. Similarly, using time-based loss
-detection to deal with reordering, such as in PR-TCP, should be more readily
-usable in QUIC. Making QUIC deal with such networks is important open research,
-and implementers are encouraged to explore this space.
+#### Time-based Fast Retransmit
+
+Using time-based loss detection to deal with reordering, such as in PR-TCP,
+should be more readily usable in QUIC.  An unacknowledged packet is marked as
+lost when an acknowledgment for a higher packet number is received, and the
+packet was sent before(1 + kTimeReorderingFraction) * max(SRTT, latest_RTT).
 
 ### Early Retransmit
+
+Early Retransmit is only used in packet number Fast Retransmit mode. Since
+time-based Fast Retransmit already sets a timer there is no need to set an early
+Retransmit timer.
 
 Unacknowledged packets close to the tail may have fewer than
 kReorderingThreshold retransmittable packets sent after them.
@@ -467,11 +481,11 @@ kReorderingThreshold (default 3):
   considers a packet lost.
 
 kTimeReorderingFraction (default 1/8):
-: Maximum reordering in time space before time based loss detection considers
+: Maximum reordering in time space before time-based loss detection considers
   a packet lost.  In fraction of an RTT.
 
 kUsingTimeLossDetection (default false):
-: Whether time based loss detection is in use.  If false, uses FACK style
+: Whether time-based loss detection is in use.  If false, uses FACK style
   loss detection.
 
 kMinTLPTimeout (default 10ms):
@@ -540,14 +554,6 @@ max_ack_delay:
   Excludes ack delays for ack only packets and those that create an
   RTT sample less than min_rtt.
 
-reordering_threshold:
-: The largest packet number gap between the largest acked
-  retransmittable packet and an unacknowledged
-  retransmittable packet before it is declared lost.
-
-time_reordering_fraction:
-: The reordering window as a fraction of max(smoothed_rtt, latest_rtt).
-
 loss_time:
 : The time at which the next packet will be considered lost based on early
 transmit or exceeding the reordering window in time.
@@ -569,12 +575,6 @@ follows:
    handshake_count = 0
    tlp_count = 0
    rto_count = 0
-   if (kUsingTimeLossDetection)
-     reordering_threshold = infinite
-     time_reordering_fraction = kTimeReorderingFraction
-   else:
-     reordering_threshold = kReorderingThreshold
-     time_reordering_fraction = infinite
    loss_time = 0
    smoothed_rtt = 0
    rttvar = 0
@@ -725,9 +725,9 @@ sent, and then the RTO timer is set.
 
 #### Early Retransmit Alarm
 
-Early retransmit {{?RFC5827}} is implemented with a 1/4 RTT timer. It is
-part of QUIC's time based loss detection, but is always enabled, even when
-only packet reordering loss detection is enabled.
+Early retransmit {{?RFC5827}} is only used when using Fast Retransmit in packet
+number mode. It is implemented with a 1/4 RTT timer. It is part of QUIC's time
+based loss detection.
 
 #### Pseudocode
 
@@ -819,21 +819,18 @@ identical to other packets.
 
 #### Pseudocode
 
-DetectLostPackets takes one parameter, acked, which is the largest acked packet.
+DetectLostPackets takes one parameter, largest_acked, which is the largest acked
+packet.
 
-Pseudocode for DetectLostPackets follows:
+When detecting reordering in packet number space:
 
 ~~~
 DetectLostPackets(largest_acked):
   loss_time = 0
   lost_packets = {}
   delay_until_lost = infinite
-  if (kUsingTimeLossDetection):
-    delay_until_lost =
-      (1 + time_reordering_fraction) *
-          max(latest_rtt, smoothed_rtt)
-  else if (largest_acked.packet_number == largest_sent_packet):
-    // Early retransmit alarm.
+  // Early retransmit
+  if (largest_acked.packet_number == largest_sent_packet):
     delay_until_lost = 5/4 * max(latest_rtt, smoothed_rtt)
   foreach (unacked < largest_acked.packet_number):
     time_since_sent = now() - unacked.time_sent
@@ -844,6 +841,29 @@ DetectLostPackets(largest_acked):
       if (!unacked.is_ack_only):
         lost_packets.insert(unacked)
     else if (loss_time == 0 && delay_until_lost != infinite):
+      loss_time = now() + delay_until_lost - time_since_sent
+
+  // Inform the congestion controller of lost packets and
+  // lets it decide whether to retransmit immediately.
+  if (!lost_packets.empty())
+    OnPacketsLost(lost_packets)
+~~~
+
+When using time-based reordering detection:
+
+~~~
+DetectLostPackets(largest_acked):
+  loss_time = 0
+  lost_packets = {}
+  delay_until_lost =
+    (1 + kTimeReorderingFraction) * max(latest_rtt, smoothed_rtt)
+  foreach (unacked < largest_acked.packet_number):
+    time_since_sent = now() - unacked.time_sent
+    if (time_since_sent > delay_until_lost):
+      sent_packets.remove(unacked.packet_number)
+      if (!unacked.is_ack_only):
+        lost_packets.insert(unacked)
+    else if (loss_time == 0):
       loss_time = now() + delay_until_lost - time_since_sent
 
   // Inform the congestion controller of lost packets and
