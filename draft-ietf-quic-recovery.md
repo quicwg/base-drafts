@@ -737,7 +737,7 @@ Pseudocode for SetLossDetectionAlarm follows:
 ~~~
  SetLossDetectionAlarm():
     // Don't arm the alarm if there are no packets with
-    // congestion controlled data in flight.
+    // congestion-controlled data in flight.
     if (bytes_in_flight == 0):
       loss_detection_alarm.cancel()
       return
