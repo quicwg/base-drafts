@@ -199,8 +199,6 @@ Ack-based loss detection implements the spirit of TCP's Fast Retransmit
 {{?RFC6675}}. This section provides an overview of how these algorithms are
 implemented in QUIC.
 
-(TODO: Define unacknowledged packet, ackable packet, outstanding bytes.)
-
 ### Fast Retransmit
 
 An unacknowledged packet is marked as lost when an acknowledgment is received
@@ -226,16 +224,16 @@ and implementers are encouraged to explore this space.
 ### Early Retransmit
 
 Unacknowledged packets close to the tail may have fewer than
-kReorderingThreshold number of ackable packets sent after them. Loss of such
-packets cannot be detected via Fast Retransmit. To enable ack-based loss
+kReorderingThreshold number of congestion-controlled packets sent after them.
+Loss of such packets cannot be detected via Fast Retransmit. To enable ack-based loss
 detection of such packets, receipt of an acknowledgment for the last outstanding
-ackable packet triggers the Early Retransmit process, as follows.
+congestion-controlled packet triggers the Early Retransmit process, as follows.
 
-If there are unacknowledged ackable packets still pending, they ought to be
-marked as lost. To compensate for the reduced reordering resilience, the sender
-SHOULD set an alarm for a small period of time. If the unacknowledged ackable
-packets are not acknowledged during this time, then these packets MUST be marked
-as lost.
+If there are unacknowledged congestion-controlled packets still pending, they should
+be marked as lost. To compensate for the reduced reordering resilience, the sender
+SHOULD set an alarm for a small period of time. If the unacknowledged
+congstion-controlled packets are not acknowledged during this time, then these
+packets MUST be marked as lost.
 
 An endpoint SHOULD set the alarm such that a packet is marked as lost no earlier
 than 1.25 * max(SRTT, latest_RTT) since when it was sent.
@@ -274,9 +272,9 @@ algorithm proposed for TCP {{?TLP=I-D.dukkipati-tcpm-tcp-loss-probe}}.
 A packet sent at the tail is particularly vulnerable to slow loss detection,
 since acks of subsequent packets are needed to trigger ack-based detection. To
 ameliorate this weakness of tail packets, the sender schedules an alarm when the
-last ackable packet before quiescence is transmitted. When this alarm fires, a
-Tail Loss Probe (TLP) packet is sent to evoke an acknowledgement from the
-receiver.
+last congestion-controlled packet before quiescence is transmitted. When this
+alarm fires, a Tail Loss Probe (TLP) packet is sent to evoke an acknowledgement
+from the receiver.
 
 The alarm duration, or Probe Timeout (PTO), is set based on the following
 conditions:
@@ -314,7 +312,7 @@ fires.
 
 A sender may not know that a packet being sent is a tail packet.
 Consequently, a sender may have to arm or adjust the TLP alarm on every sent
-ackable packet.
+congestion-controlled packet.
 
 ### Retransmission Timeout {#rto}
 
