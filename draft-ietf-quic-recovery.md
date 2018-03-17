@@ -231,8 +231,8 @@ last outstanding congestion-controlled packet triggers the Early Retransmit
 process, as follows.
 
 If there are unacknowledged congestion-controlled packets still pending, they
-should be marked as lost. To compensate for the reduced reordering resilience, the
-sender SHOULD set an alarm for a small period of time. If the unacknowledged
+should be marked as lost. To compensate for the reduced reordering resilience,
+the sender SHOULD set an alarm for a small period of time. If the unacknowledged
 congestion-controlled packets are not acknowledged during this time, then these
 packets MUST be marked as lost.
 
