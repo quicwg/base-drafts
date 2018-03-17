@@ -544,8 +544,7 @@ max_ack_delay:
 reordering_threshold:
 : The largest packet number gap between the largest acked
   congestion-controlled packet and an unacknowledged
-  congestion-controlled packet with a lower packet number
-  before it is declared lost.
+  congestion-controlled packet before it is declared lost.
 
 time_reordering_fraction:
 : The reordering window as a fraction of max(smoothed_rtt, latest_rtt).
