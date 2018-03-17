@@ -100,9 +100,12 @@ interpretation of TCP loss detection mechanisms.
 Every packet may contain several frames.  We outline the frames that are
 important to the loss detection and congestion control machinery below.
 
-* Congestion controlled frames are frames that count towards bytes in
+* Congestion-controlled frames are those that count towards bytes in
   flight and need acknowledgement.  The most common are STREAM frames,
   which typically contain application data.
+
+* Congestion-controlled packets are those that contain at least one
+  congestion-controlled frame.
 
 * Crypto handshake data is sent on stream 0, and uses the reliability
   machinery of QUIC underneath.
@@ -540,8 +543,9 @@ max_ack_delay:
 
 reordering_threshold:
 : The largest packet number gap between the largest acked
-  congestion controlled packet and smaller unacknowledged congestion
-  controlled packet before it is declared lost.
+  congestion-controlled packet and an unacknowledged
+  congestion-controlled packet with a lower packet number
+  before it is declared lost.
 
 time_reordering_fraction:
 : The reordering window as a fraction of max(smoothed_rtt, latest_rtt).
@@ -909,7 +913,7 @@ the reduction to once per round trip.
 ## Tail Loss Probe
 
 A TLP packet MUST NOT be blocked by the sender's congestion controller. The
-sender MUST however count these bytes as additional bytes in flight, since a TLP
+sender MUST however count these bytes as additional bytes-in-flight, since a TLP
 adds network load without establishing packet loss.
 
 Acknowledgement or loss of tail loss probes are treated like any other packet.
@@ -971,13 +975,13 @@ are described in this section.
 
 bytes_in_flight:
 : The sum of the size in bytes of all sent packets that contain at least
-  one congestion controlled frame, and have not been acked or declared
+  one congestion-controlled frame, and have not been acked or declared
   lost. The size does not include IP or UDP overhead.
   Packets only containing ACK frames do not count towards bytes_in_flight
   to ensure congestion control does not impede congestion feedback.
 
 congestion_window:
-: Maximum number of bytes in flight that may be sent.
+: Maximum number of bytes-in-flight that may be sent.
 
 end_of_recovery:
 : The largest packet number sent when QUIC detects a loss.  When a larger
