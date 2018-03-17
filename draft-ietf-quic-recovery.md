@@ -928,14 +928,17 @@ slow start is re-entered.
 
 This document does not specify a pacer, but it is RECOMMENDED that a sender pace
 sending of all retransmittable packets based on input from the congestion
-controller.  For example, a pacer might distribute the congestion window over the
-SRTT when used with a window-based controller, and a pacer might use the rate
-estimate of a rate-based controller.
+controller. For example, a pacer might distribute the congestion window over
+the SRTT when used with a window-based controller, and a pacer might use the
+rate estimate of a rate-based controller.
 
 An implementation should take care to architect its congestion controller to
 work well with a pacer.  For instance, a pacer might wrap the congestion
 controller and control the availability of the congestion window, or a pacer
-might pace out packets handed to it by the congestion controller.
+might pace out packets handed to it by the congestion controller.  In either
+arrangement, packets only containing ACK frames should not be paced, to prevent
+spurious timeout based retransmissions and to ensure the intended max ack delay
+is honored.
 
 As an example of a well-known and publicly available implementation of a flow
 pacer, implementers are referred to the Fair Queue packet scheduler (fq qdisc)
