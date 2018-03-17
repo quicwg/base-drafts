@@ -273,7 +273,7 @@ algorithm proposed for TCP {{?TLP=I-D.dukkipati-tcpm-tcp-loss-probe}}.
 A packet sent at the tail is particularly vulnerable to slow loss detection,
 since acks of subsequent packets are needed to trigger ack-based detection. To
 ameliorate this weakness of tail packets, the sender schedules an alarm when the
-last retrasnmittable packet before quiescence is transmitted. When this
+last retransmittable packet before quiescence is transmitted. When this
 alarm fires, a Tail Loss Probe (TLP) packet is sent to evoke an acknowledgement
 from the receiver.
 
