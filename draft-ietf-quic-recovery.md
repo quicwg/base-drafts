@@ -100,8 +100,12 @@ interpretation of TCP loss detection mechanisms.
 Every packet may contain several frames.  We outline the frames that are
 important to the loss detection and congestion control machinery below.
 
-* Retransmittable frames are frames requiring reliable delivery.  The most
-  common are STREAM frames, which typically contain application data.
+* Retransmittable frames are those that count towards bytes in
+  flight and need acknowledgement.  The most common are STREAM frames,
+  which typically contain application data.
+
+* Retransmittable packets are those that contain at least one
+  retransmittable frame.
 
 * Crypto handshake data is sent on stream 0, and uses the reliability
   machinery of QUIC underneath.
@@ -195,8 +199,6 @@ Ack-based loss detection implements the spirit of TCP's Fast Retransmit
 {{?RFC6675}}. This section provides an overview of how these algorithms are
 implemented in QUIC.
 
-(TODO: Define unacknowledged packet, ackable packet, outstanding bytes.)
-
 ### Fast Retransmit
 
 An unacknowledged packet is marked as lost when an acknowledgment is received
@@ -222,16 +224,17 @@ and implementers are encouraged to explore this space.
 ### Early Retransmit
 
 Unacknowledged packets close to the tail may have fewer than
-kReorderingThreshold number of ackable packets sent after them. Loss of such
-packets cannot be detected via Fast Retransmit. To enable ack-based loss
-detection of such packets, receipt of an acknowledgment for the last outstanding
-ackable packet triggers the Early Retransmit process, as follows.
+kReorderingThreshold retransmittable packets sent after them.
+Loss of such packets cannot be detected via Fast Retransmit. To enable
+ack-based loss detection of such packets, receipt of an acknowledgment for the
+last outstanding retransmittable packet triggers the Early Retransmit
+process, as follows.
 
-If there are unacknowledged ackable packets still pending, they ought to be
-marked as lost. To compensate for the reduced reordering resilience, the sender
-SHOULD set an alarm for a small period of time. If the unacknowledged ackable
-packets are not acknowledged during this time, then these packets MUST be marked
-as lost.
+If there are unacknowledged retransmittable packets still pending, they
+should be marked as lost. To compensate for the reduced reordering resilience,
+the sender SHOULD set an alarm for a small period of time. If the unacknowledged
+retransmittable packets are not acknowledged during this time, then these
+packets MUST be marked as lost.
 
 An endpoint SHOULD set the alarm such that a packet is marked as lost no earlier
 than 1.25 * max(SRTT, latest_RTT) since when it was sent.
@@ -270,9 +273,9 @@ algorithm proposed for TCP {{?TLP=I-D.dukkipati-tcpm-tcp-loss-probe}}.
 A packet sent at the tail is particularly vulnerable to slow loss detection,
 since acks of subsequent packets are needed to trigger ack-based detection. To
 ameliorate this weakness of tail packets, the sender schedules an alarm when the
-last ackable packet before quiescence is transmitted. When this alarm fires, a
-Tail Loss Probe (TLP) packet is sent to evoke an acknowledgement from the
-receiver.
+last retransmittable packet before quiescence is transmitted. When this
+alarm fires, a Tail Loss Probe (TLP) packet is sent to evoke an acknowledgement
+from the receiver.
 
 The alarm duration, or Probe Timeout (PTO), is set based on the following
 conditions:
@@ -310,7 +313,7 @@ fires.
 
 A sender may not know that a packet being sent is a tail packet.
 Consequently, a sender may have to arm or adjust the TLP alarm on every sent
-ackable packet.
+retransmittable packet.
 
 ### Retransmission Timeout {#rto}
 
@@ -538,9 +541,9 @@ max_ack_delay:
   RTT sample less than min_rtt.
 
 reordering_threshold:
-: The largest delta between the largest acked
-  retransmittable packet and a packet containing retransmittable frames before
-  it's declared lost.
+: The largest packet number gap between the largest acked
+  retransmittable packet and an unacknowledged
+  retransmittable packet before it is declared lost.
 
 time_reordering_fraction:
 : The reordering window as a fraction of max(smoothed_rtt, latest_rtt).
@@ -593,7 +596,7 @@ are as follows:
 
 * is_ack_only: A boolean that indicates whether a packet only contains an
   ACK frame.  If true, it is still expected an ack will be received for
-  this packet, but it is not congestion controlled.
+  this packet, but it is not retransmittable.
 
 * is_handshake_packet: A boolean that indicates whether a packet contains
   handshake data.
@@ -711,10 +714,10 @@ response to 0RTT packets.
 
 #### Tail Loss Probe and Retransmission Alarm
 
-Tail loss probes {{?TLP}} and
-retransmission timeouts {{?RFC6298}} are an alarm based mechanism to recover
-from cases when there are outstanding retransmittable packets, but an
-acknowledgement has not been received in a timely manner.
+Tail loss probes {{?TLP}} and retransmission timeouts {{?RFC6298}}
+are an alarm based mechanism to recover from cases when there are
+outstanding retransmittable packets, but an acknowledgement has
+not been received in a timely manner.
 
 The TLP and RTO timers are armed when there is not unacknowledged handshake
 data.  The TLP alarm is set until the max number of TLP packets have been
@@ -734,7 +737,7 @@ Pseudocode for SetLossDetectionAlarm follows:
  SetLossDetectionAlarm():
     // Don't arm the alarm if there are no packets with
     // retransmittable data in flight.
-    if (num_retransmittable_packets_outstanding == 0):
+    if (bytes_in_flight == 0):
       loss_detection_alarm.cancel()
       return
 
@@ -908,7 +911,7 @@ the reduction to once per round trip.
 ## Tail Loss Probe
 
 A TLP packet MUST NOT be blocked by the sender's congestion controller. The
-sender MUST however count these bytes as additional bytes in flight, since a TLP
+sender MUST however count these bytes as additional bytes-in-flight, since a TLP
 adds network load without establishing packet loss.
 
 Acknowledgement or loss of tail loss probes are treated like any other packet.
@@ -970,13 +973,13 @@ are described in this section.
 
 bytes_in_flight:
 : The sum of the size in bytes of all sent packets that contain at least
-  one retransmittable or PADDING frame, and have not been acked or
-  declared lost. The size does not include IP or UDP overhead.
-  Packets only containing ACK frames do not count towards byte_in_flight
+  one retransmittable frame, and have not been acked or declared
+  lost. The size does not include IP or UDP overhead.
+  Packets only containing ACK frames do not count towards bytes_in_flight
   to ensure congestion control does not impede congestion feedback.
 
 congestion_window:
-: Maximum number of bytes in flight that may be sent.
+: Maximum number of bytes-in-flight that may be sent.
 
 end_of_recovery:
 : The largest packet number sent when QUIC detects a loss.  When a larger
