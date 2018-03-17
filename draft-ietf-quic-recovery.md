@@ -597,7 +597,7 @@ are as follows:
 
 * is_ack_only: A boolean that indicates whether a packet only contains an
   ACK frame.  If true, it is still expected an ack will be received for
-  this packet, but it is not congestion controlled.
+  this packet, but it is not congestion-controlled.
 
 * is_handshake_packet: A boolean that indicates whether a packet contains
   handshake data.
@@ -717,7 +717,7 @@ response to 0RTT packets.
 
 Tail loss probes {{?TLP}} and retransmission timeouts {{?RFC6298}}
 are an alarm based mechanism to recover from cases when there are
-outstanding congestion controlled packets, but an acknowledgement has
+outstanding congestion-controlled packets, but an acknowledgement has
 not been received in a timely manner.
 
 The TLP and RTO timers are armed when there is not unacknowledged handshake
