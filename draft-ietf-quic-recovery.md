@@ -223,15 +223,16 @@ and implementers are encouraged to explore this space.
 
 ### Early Retransmit
 
-Unacknowledged packets close to the tail may have fewer than kReorderingThreshold
-congestion-controlled packets sent after them.
-Loss of such packets cannot be detected via Fast Retransmit. To enable ack-based loss
-detection of such packets, receipt of an acknowledgment for the last outstanding
-congestion-controlled packet triggers the Early Retransmit process, as follows.
+Unacknowledged packets close to the tail may have fewer than
+kReorderingThreshold congestion-controlled packets sent after them.
+Loss of such packets cannot be detected via Fast Retransmit. To enable
+ack-based loss detection of such packets, receipt of an acknowledgment for the
+last outstanding congestion-controlled packet triggers the Early Retransmit
+process, as follows.
 
-If there are unacknowledged congestion-controlled packets still pending, they should
-be marked as lost. To compensate for the reduced reordering resilience, the sender
-SHOULD set an alarm for a small period of time. If the unacknowledged
+If there are unacknowledged congestion-controlled packets still pending, they
+should be marked as lost. To compensate for the reduced reordering resilience, the
+sender SHOULD set an alarm for a small period of time. If the unacknowledged
 congestion-controlled packets are not acknowledged during this time, then these
 packets MUST be marked as lost.
 
