@@ -785,7 +785,7 @@ Pseudocode for OnLossDetectionAlarm follows:
    OnLossDetectionAlarm():
      if (handshake packets are outstanding):
        // Handshake retransmission alarm.
-       RetransmitAllHandshakePackets()
+       RetransmitAllUnackedHandshakeData()
        handshake_count++
      else if (loss_time != 0):
        // Early retransmit or Time Loss Detection
