@@ -440,9 +440,8 @@ use server push until it receives a MAX_PUSH_ID frame.
 
 As with server push for HTTP/2, the server initiates a server push by sending a
 PUSH_PROMISE frame (see {{frame-push-promise}}) that includes request headers
-for the promised request.  Promised requests MUST be cacheable (see
-{{!RFC7231}}, Section 4.2.3), MUST be safe (see {{RFC7231}}, Section 4.2.1), and
-MUST NOT include a request body.
+for the promised request.  Promised requests MUST conform to the requirements in
+Section 8.2 of {{!RFC7540}}.
 
 The PUSH_PROMISE frame is sent on the client-initiated, bidirectional stream
 that carried the request that generated the push.  This allows the server push
