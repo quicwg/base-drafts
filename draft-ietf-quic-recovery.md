@@ -262,8 +262,41 @@ alarm for TCP as well, and this document incorporates this advancement.
 
 ## Timer-based Detection
 
-Timer-based loss detection implements the spirit of TCP's Tail Loss Probe
+Timer-based loss detection implements a handshake retransmission timer that
+is optimized for QUIC as well as the spirit of TCP's Tail Loss Probe
 and Retransmission Timeout mechanisms.
+
+### Handshake Timeout
+
+Handshake packets, which contain STREAM frames for stream 0, are critical to
+QUIC transport and crypto negotiation, so a separate alarm is used for them.
+
+The initial handshake timeout SHOULD be set to twice the initial RTT.
+
+At the beginning, there are no prior RTT samples within a connection.
+Resumed connections over the same network SHOULD use the previous
+connection's final smoothed RTT value as the resumed connection's initial RTT.
+
+If no previous RTT is available, or if the network changes, the initial RTT
+SHOULD be set to 100ms.
+
+When a handshake packet is sent, the sender SHOULD set an alarm for the
+handshake timeout period.
+
+When the alarm fires, the sender MUST retransmit all unacknowledged handshake
+data, by calling RetransmitAllUnackedHandshakeData(). On each consecutive
+firing of the handshake alarm, the sender SHOULD double the handshake timeout
+and set an alarm for this period.
+
+When an acknowledgement is received for a handshake packet, the new RTT is
+computed and the alarm SHOULD be set for twice the newly computed smoothed RTT.
+
+Handshake data may be cancelled by handshake state transitions. In particular,
+all non-protected data SHOULD no longer be transmitted once packet protection
+is available.
+
+(TODO: Work this section some more. Add text on client vs. server, and on
+stateless retry.)
 
 ### Tail Loss Probe {#tlp}
 
@@ -364,38 +397,6 @@ unacknowledged packets SHOULD NOT be marked as lost.
 A packet sent on an RTO alarm MUST NOT be blocked by the sender's congestion
 controller. A sender MUST however count these bytes as additional bytes in
 flight, since this packet adds network load without establishing packet loss.
-
-
-### Handshake Timeout
-
-Handshake packets, which contain STREAM frames for stream 0, are critical to
-QUIC transport and crypto negotiation, so a separate alarm is used for them.
-
-The initial handshake timeout SHOULD be set to twice the initial RTT.
-
-At the beginning, there are no prior RTT samples within a connection.
-Resumed connections over the same network SHOULD use the previous
-connection's final smoothed RTT value as the resumed connection's initial RTT.
-
-If no previous RTT is available, or if the network changes, the initial RTT
-SHOULD be set to 100ms.
-
-When a handshake packet is sent, the sender SHOULD set an alarm for the
-handshake timeout period.
-
-When the alarm fires, the sender MUST retransmit all unacknowledged handshake
-data. On each consecutive firing of the handshake alarm, the sender SHOULD
-double the handshake timeout and set an alarm for this period.
-
-When an acknowledgement is received for a handshake packet, the new RTT is
-computed and the alarm SHOULD be set for twice the newly computed smoothed RTT.
-
-Handshake data may be cancelled by handshake state transitions. In particular,
-all non-protected data SHOULD no longer be transmitted once packet protection
-is available.
-
-(TODO: Work this section some more. Add text on client vs. server, and on
-stateless retry.)
 
 ## Generating Acknowledgements
 
