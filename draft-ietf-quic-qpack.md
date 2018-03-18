@@ -253,7 +253,7 @@ Indexed-Duplicate representation instead (see {{indexed-duplicate}}).
 ~~~~~~~~~~  drawing
     0 1 2 3 4 5 6 7
    +-+-+-+-+-+-+-+-+
-   |0|0|1|Index(5+)|
+   |1|Index(7+)    |
    +-+-+-+---------+
 ~~~~~~~~~~
 {:#fig-index-with-duplication title="Indexed Header Field with Duplication"}
@@ -262,8 +262,8 @@ Indexed-Duplicate representation instead (see {{indexed-duplicate}}).
 an existing entry. {{RFC7541}} allows duplicate HPACK table entries, that is
 entries that have the same name and value.
 
-This replaces the HPACK instruction for Dynamic Table Size Update (see Section
-6.3 of {{RFC7541}}, which is not supported by HTTP over QUIC.
+This repurposes the HPACK instruction for Indexed Header Field (see Section
+6.1 of {{RFC7541}}.
 
 # Performance considerations
 
