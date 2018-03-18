@@ -838,19 +838,18 @@ DetectLostPackets(largest_acked):
   foreach (unacked < largest_acked.packet_number):
     time_since_sent = now() - unacked.time_sent
     delta = largest_acked.packet_number - unacked.packet_number
-    if (time_since_sent > delay_until_lost):
-      lost_packets.insert(unacked)
-    else if (delta > reordering_threshold)
-      lost_packets.insert(unacked)
+    if (time_since_sent > delay_until_lost ||
+        delta > reordering_threshold):
+      sent_packets.remove(unacked.packet_number)
+      if (!unacked.is_ack_only):
+        lost_packets.insert(unacked)
     else if (loss_time == 0 && delay_until_lost != infinite):
       loss_time = now() + delay_until_lost - time_since_sent
 
   // Inform the congestion controller of lost packets and
   // lets it decide whether to retransmit immediately.
-  if (!lost_packets.empty())
+  if (!lost_packets.empty()):
     OnPacketsLost(lost_packets)
-    foreach (packet in lost_packets)
-      sent_packets.remove(packet.packet_number)
 ~~~
 
 ## Discussion
