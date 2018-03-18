@@ -1764,9 +1764,9 @@ gap than it advertised.
 
 Clients MAY change connection ID at any time based on implementation-specific
 concerns.  For example, after a period of network inactivity NAT rebinding might
-occur when the client begins sending data again. A client might wish to break
-linkability by employing a new connection ID when resuming traffic after
-inactivity.
+occur when the client begins sending data again. A client might wish to reduce
+linkability by employing a new connection ID when sending traffic after a period
+of inactivity.
 
 An endpoint that receives a successfully authenticated packet with a previously
 unused connection ID MUST use the next available connection ID for any packets
