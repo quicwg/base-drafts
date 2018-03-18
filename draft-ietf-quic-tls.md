@@ -800,9 +800,9 @@ the PRF hash function.
 
 ~~~
 client_pp_secret_<N+1> =
-  QHKDF-Update(client_pp_secret_<N>, "client 1rtt", Hash.length)
+  QHKDF-Expand(client_pp_secret_<N>, "client 1rtt", Hash.length)
 server_pp_secret_<N+1> =
-  QHKDF-Update(server_pp_secret_<N>, "server 1rtt", Hash.length)
+  QHKDF-Expand(server_pp_secret_<N>, "server 1rtt", Hash.length)
 ~~~
 
 This allows for a succession of new secrets to be created as needed.
