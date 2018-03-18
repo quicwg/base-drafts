@@ -432,27 +432,41 @@ frame.
 
 ## Server Push
 
-HTTP/QUIC supports server push as described in {{!RFC7540}}. During connection
-establishment, the client enables server push by sending a MAX_PUSH_ID frame
-(see {{frame-max-push-id}}).  A server cannot use server push until it receives
-a MAX_PUSH_ID frame.
+HTTP/QUIC supports server push in a similar manner to {{!RFC7540}}, but uses
+different mechanisms. During connection establishment, the client enables server
+push by sending a MAX_PUSH_ID frame (see {{frame-max-push-id}}). A server cannot
+use server push until it receives a MAX_PUSH_ID frame.
 
 As with server push for HTTP/2, the server initiates a server push by sending a
-PUSH_PROMISE frame that includes request header fields attributed to the
-request. The PUSH_PROMISE frame is sent on the client-initiated, bidirectional
-stream that carried the request that generated the push.  This allows the server
-push to be associated with a request.  Ordering of a PUSH_PROMISE in relation to
+PUSH_PROMISE frame (see {{frame-push-promise}}) that includes request headers
+for the promised request.  Promised requests MUST conform to the requirements in
+Section 8.2 of {{!RFC7540}}.
+
+The PUSH_PROMISE frame is sent on the client-initiated, bidirectional stream
+that carried the request that generated the push.  This allows the server push
+to be associated with a request.  Ordering of a PUSH_PROMISE in relation to
 certain parts of the response is important (see Section 8.2.1 of {{!RFC7540}}).
 
 Unlike HTTP/2, the PUSH_PROMISE does not reference a stream; it contains a Push
-ID. The Push ID uniquely identifies a server push (see {{frame-push-promise}}).
-This allows a server to fulfill promises in the order that best suits its needs.
+ID. The Push ID uniquely identifies a server push. This allows a server to
+fulfill promises in the order that best suits its needs.
 
 When a server later fulfills a promise, the server push response is conveyed on
 a push stream.  A push stream is a server-initiated, unidirectional stream.  A
-push stream always begins with a header (see {{fig-push-stream-header}}) that
-identifies the Push ID of the promise that it fulfills, encoded as a
+push stream identifies the Push ID of the promise that it fulfills, encoded as a
 variable-length integer.
+
+A server SHOULD use Push IDs sequentially, starting at 0.  A client uses the
+MAX_PUSH_ID frame ({{frame-max-push-id}}) to limit the number of pushes that a
+server can promise.  A client MUST treat receipt of a push stream with a Push ID
+that is greater than the maximum Push ID as a connection error of type
+HTTP_PUSH_LIMIT_EXCEEDED.
+
+If a promised server push is not needed by the client, the client SHOULD send a
+CANCEL_PUSH frame; if the push stream is already open, a QUIC STOP_SENDING frame
+with an appropriate error code can be used instead (e.g., HTTP_PUSH_REFUSED,
+HTTP_PUSH_ALREADY_IN_CACHE; see {{errors}}).  This asks the server not to
+transfer the data and indicates that it will be discarded upon receipt.
 
 ~~~~~~~~~~ drawing
  0                   1                   2                   3
@@ -463,27 +477,15 @@ variable-length integer.
 ~~~~~~~~~~
 {: #fig-push-stream-header title="Push Stream Header"}
 
-A server SHOULD use Push IDs sequentially, starting at 0.  A client uses the
-MAX_PUSH_ID frame ({{frame-max-push-id}}) to limit the number of pushes that a
-server can promise.  A client MUST treat receipt of a push stream with a Push ID
-that is greater than the maximum Push ID as a connection error of type
-HTTP_PUSH_LIMIT_EXCEEDED.
+Push streams always begin with a header containing the Push ID.  Each Push ID
+MUST only be used once in a push stream header.  If a push stream header
+includes a Push ID that was used in another push stream header, the client MUST
+treat this as a connection error of type HTTP_DUPLICATE_PUSH.  The same Push ID
+can be used in multiple PUSH_PROMISE frames (see {{frame-push-promise}}).
 
-Each Push ID MUST only be used once in a push stream header.  If a push stream
-header includes a Push ID that was used in another push stream header, the
-client MUST treat this as a connection error of type HTTP_DUPLICATE_PUSH.  The
-same Push ID can be used in multiple PUSH_PROMISE frames (see
-{{frame-push-promise}}).
-
-After the push stream header, a push contains a response ({{request-response}}),
+After the header, a push stream contains a response ({{request-response}}),
 with response headers, a response body (if any) carried by DATA frames, then
 trailers (if any) carried by HEADERS frames.
-
-If a promised server push is not needed by the client, the client SHOULD send a
-CANCEL_PUSH frame; if the push stream is already open, a QUIC STOP_SENDING frame
-with an appropriate error code can be used instead (e.g., HTTP_PUSH_REFUSED,
-HTTP_PUSH_ALREADY_IN_CACHE; see {{errors}}).  This asks the server not to
-transfer the data and indicates that it will be discarded upon receipt.
 
 
 # HTTP Framing Layer {#http-framing-layer}
