@@ -759,7 +759,7 @@ Pseudocode for SetLossDetectionAlarm follows:
         time_of_last_sent_retransmittable_packet
     else:
       // RTO or TLP alarm
-      // calculate RTO duration
+      // Calculate RTO duration
       alarm_duration =
         smoothed_rtt + 4 * rttvar + max_ack_delay
       alarm_duration = max(alarm_duration, kMinRTOTimeout)
