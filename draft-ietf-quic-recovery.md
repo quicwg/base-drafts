@@ -757,16 +757,18 @@ Pseudocode for SetLossDetectionAlarm follows:
       // Early retransmit timer or time loss detection.
       alarm_duration = loss_time -
         time_of_last_sent_retransmittable_packet
-    else if (tlp_count < kMaxTLPs):
-      // Tail Loss Probe
-      alarm_duration = max(1.5 * smoothed_rtt + max_ack_delay,
-                           kMinTLPTimeout)
     else:
-      // RTO alarm
+      // RTO or TLP alarm
+      // calculate RTO duration
       alarm_duration =
         smoothed_rtt + 4 * rttvar + max_ack_delay
       alarm_duration = max(alarm_duration, kMinRTOTimeout)
       alarm_duration = alarm_duration * (2 ^ rto_count)
+      if (tlp_count < kMaxTLPs):
+        // Tail Loss Probe
+        tlp_alarm_duration = max(1.5 * smoothed_rtt
+                           + max_ack_delay, kMinTLPTimeout)
+        alarm_duration = min(tlp_alarm_duration, alarm_duration)
 
     loss_detection_alarm.set(
       time_of_last_sent_retransmittable_packet + alarm_duration)
