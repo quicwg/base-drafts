@@ -253,9 +253,12 @@ QUIC reserves the first client-initiated, bidirectional stream (Stream 0) for
 cryptographic operations. HTTP over QUIC reserves the first unidirectional
 stream sent by either peer (Streams 2 and 3) for sending and receiving HTTP
 control frames.  This pair of unidirectional streams is analogous to HTTP/2's
-Stream 0.  The data sent on these streams is critical to the HTTP connection.
-If either control stream is closed for any reason, this MUST be treated as a
-connection error of type QUIC_CLOSED_CRITICAL_STREAM.
+Stream 0.  HTTP over QUIC also reserves the second and third unidirectional
+streams for each peer's QPACK encoder and decoder.  The client's QPACK encoder
+uses stream 6 and decoder uses stream 10.  The server's encoder and decoder use
+streams 7 and 11, respectively.  The data sent on these streams is critical to
+the HTTP connection. If any control stream is closed for any reason, this
+MUST be treated as a connection error of type QUIC_CLOSED_CRITICAL_STREAM.
 
 When HTTP headers and data are sent over QUIC, the QUIC layer handles most of
 the stream management.
@@ -568,8 +571,7 @@ The HEADERS frame defines no flags.
 ~~~~~~~~~~
 {: #fig-headers title="HEADERS frame payload"}
 
-HEADERS frames can be sent on the Control Stream as well as on request / push
-streams.
+HEADERS frames can only be sent on request / push streams.
 
 ### PRIORITY {#frame-priority}
 
@@ -949,38 +951,6 @@ those requests have been completed or cancelled, the connection can be closed
 using an Immediate Close (see {{QUIC-TRANSPORT}}).  An endpoint that completes a
 graceful shutdown SHOULD use the QUIC APPLICATION_CLOSE frame with the
 HTTP_NO_ERROR code.
-
-### HEADER_ACK {#frame-header-ack}
-
-The HEADER_ACK frame (type=0x8) is used by header compression to ensure
-consistency. The frames are sent from the QPACK decoder to the QPACK encoder;
-that is, the server sends them to the client to acknowledge processing of the
-client's header blocks, and the client sends them to the server to acknowledge
-processing of the server's header blocks.
-
-The HEADER_ACK frame is sent on the Control Stream when the QPACK decoder has
-fully processed a header block.  It is used by the peer's QPACK encoder to
-determine whether subsequent indexed representations that might reference that
-block are vulnerable to head-of-line blocking, and to prevent eviction races.
-See [QPACK] for more details on the use of this information.
-
-The HEADER_ACK frame indicates the stream on which the header block was
-processed by encoding the Stream ID as a variable-length integer. The same
-Stream ID can be identified multiple times, as multiple header-containing blocks
-can be sent on a single stream in the case of intermediate responses, trailers,
-pushed requests, etc. as well as on the Control Streams.  Since header frames on
-each stream are received and processed in order, this gives the encoder precise
-feedback on which header blocks within a stream have been fully processed.
-
-~~~~~~~~~~
-  0   1   2   3   4   5   6   7
-+---+---+---+---+---+---+---+---+
-|        Stream ID (i)        ...
-+---+---+---+---+---+---+---+---+
-~~~~~~~~~~
-{: title="HEADER_ACK frame"}
-
-The HEADER_ACK frame does not define any flags.
 
 
 ### MAX_PUSH_ID {#frame-max-push-id}
@@ -1407,7 +1377,7 @@ The entries in the following table are registered by this document.
 | PUSH_PROMISE   | 0x5  | {{frame-push-promise}}   |
 | Reserved       | 0x6  | N/A                      |
 | GOAWAY         | 0x7  | {{frame-goaway}}         |
-| HEADER_ACK     | 0x8  | {{frame-header-ack}}     |
+| Reserved       | 0x8  | N/A                      |
 | Reserved       | 0x9  | N/A                      |
 | MAX_PUSH_ID    | 0xD  | {{frame-max-push-id}}    |
 |----------------|------|--------------------------|
