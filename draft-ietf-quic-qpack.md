@@ -276,7 +276,7 @@ encoder might decide to *refresh* by sending Indexed-Duplicate representations
 for popular header fields ({{absolute-index}}), ensuring they have small indices
 and hence minimal size on the wire.
 
-## Additional state beyond HPACK.
+## Additional state beyond HPACK
 
 ### Vulnerable Entries
 
@@ -292,14 +292,16 @@ space efficient.
 ### Safe evictions
 
 Section {{evictions}} describes how QPACK avoids invalid references that might
-result from out-of-order delivery.  When the encoder processes a HEADER_ACK, it
-dereferences table entries that were indexed in the acknowledged header.  To
-track which entries must be dereferenced, it can maintain a map from
-unacknowledged headers to lists of (absolute) indices.  The simplest place to
-store the actual reference count might be the table entries.  In practice the
-number of entries in the table with a non-zero reference count is likely to stay
-quite small.  A data structure tracking only entries with non-zero reference
-counts, separate from the main header table, could be more space efficient.
+result from out-of-order delivery.  One possible mechanism for tracking this is
+as follows: while encoding a block, the encoder maintains a reference set,
+which is the set of absolute indexes of dynamic entries that are referenced at
+least once in the block.  Each time a new entry is added to the reference set,
+its reference count is incremented.  When encoding is complete, the reference
+set is appended to a queue associated with the stream.  When a HEADER_ACK for a
+stream is received, the encoder dequeues the first reference set from the
+stream's queue and decrements the associated reference counts.  If a stream is
+reset, the encoder processes all queued reference sets for that stream as if all
+header blocks had been acknowledged.
 
 ### Decoder Blocking
 
