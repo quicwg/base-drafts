@@ -823,7 +823,7 @@ followed by additional type-dependent fields:
 {: #frame-layout title="Generic Frame Layout"}
 
 Frame types are listed in {{frame-types}}. Note that the Frame Type byte in
-STREAM and ACK frames is used to carry other frame-specific flags.  For all
+STREAM frames is used to carry other frame-specific flags.  For all
 other frames, the Frame Type byte simply identifies the frame.  These frames are
 explained in more detail as they are referenced later in the document.
 
