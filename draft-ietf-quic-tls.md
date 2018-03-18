@@ -631,7 +631,7 @@ connection (see {{key-expansion}}).
 
 Different keys are used for QUIC packet protection and TLS record protection.
 TLS handshake messages are protected solely with TLS record protection,
-but post-handshake messages are redundantly proteted with both
+but post-handshake messages are redundantly protected with
 both the QUIC packet protection and the TLS record protection. These messages
 are limited in number, and so the additional overhead is small.
 
@@ -1077,7 +1077,7 @@ the transition between keys.  Packets with higher packet numbers always use the
 updated keys and MUST NOT be decrypted with old keys.
 
 Keys and their corresponding secrets SHOULD be discarded when an endpoint has
-received all packets with sequence numbers lower than the lowest sequence number
+received all packets with packet numbers lower than the lowest packet number
 used for the new key.  An endpoint might discard keys if it determines that the
 length of the delay to affected packets is excessive.
 
@@ -1366,7 +1366,7 @@ unprotected.
 Accepting unprotected - specifically unauthenticated - packets presents a denial
 of service risk to endpoints.  An attacker that is able to inject unprotected
 packets can cause a recipient to drop even protected packets with a matching
-sequence number.  The spurious packet shadows the genuine packet, causing the
+packet number.  The spurious packet shadows the genuine packet, causing the
 genuine packet to be ignored as redundant.
 
 Once the TLS handshake is complete, both peers MUST ignore unprotected packets.
