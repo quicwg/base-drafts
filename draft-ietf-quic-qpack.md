@@ -508,7 +508,7 @@ in the table is still actively used for references, the encoder SHOULD emit an
 Indexed-Duplicate representation instead (see {{indexed-duplicate}}).
 
 
-## Blocked Decoding
+### Blocked Decoding
 
 For header blocks encoded in non-blocking mode, the encoder needs to forego
 indexed representations that refer to table updates which have not yet been
