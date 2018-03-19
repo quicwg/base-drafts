@@ -2551,11 +2551,8 @@ acknowledged again.
 Because ACK-only packets are not acknowledged, a receiver that is only
 sending ACK frames will only receive acknowledgements for its packets
 if the sender piggybacks them on other packets. In order to enable
-this, senders SHOULD prioritize sending ACKs along with their data.
-In addition, if a receiver regularly issues additional flow control
-credit rather than just issuing infinite flow control credit at the
-beginning of the connection, the MAX_DATA and MAX_STREAM_DATA frames
-will elicit acknowledgements from the sender
+this, when sending non-ACK frames, senders SHOULD bundle ACKs when
+possible.
 
 To limit receiver state or the size of ACK frames, a receiver MAY limit the
 number of ACK blocks it sends.  A receiver can do this even without receiving
