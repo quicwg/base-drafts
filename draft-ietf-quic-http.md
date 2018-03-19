@@ -559,10 +559,6 @@ QPACK. See [QPACK] for more details.
 
 The HEADERS frame defines a single flag:
 
-BLOCKING (0x01):
-: Indicates the stream might need to wait for dependent headers before
-  processing.  If 0, the frame can be processed immediately upon receipt.
-
 ~~~~~~~~~~  drawing
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
@@ -573,8 +569,7 @@ BLOCKING (0x01):
 {: #fig-headers title="HEADERS frame payload"}
 
 HEADERS frames can be sent on the Control Stream as well as on request / push
-streams.  The value of BLOCKING MUST be 0 for HEADERS frames on the Control
-Stream, since they can only depend on previous HEADERS on the same stream.
+streams.
 
 ### PRIORITY {#frame-priority}
 
@@ -806,10 +801,6 @@ prior to receiving and processing the server's SETTINGS frame.
 
 The PUSH_PROMISE frame (type=0x05) is used to carry a request header set from
 server to client, as in HTTP/2.  The PUSH_PROMISE frame defines a single flag:
-
-BLOCKING (0x01):
-: Indicates the stream might need to wait for dependent headers before
-  processing.  If 0, the frame can be processed immediately upon receipt.
 
 ~~~~~~~~~~  drawing
  0                   1                   2                   3
