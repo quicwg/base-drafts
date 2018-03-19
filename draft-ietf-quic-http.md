@@ -781,10 +781,10 @@ The following settings are defined in HTTP/QUIC:
   : An integer with a maximum value of 2^30 - 1.
 
   SETTINGS_MAX_HEADER_LIST_SIZE (0x6):
-  : An integer with a maximum value of 2^30 - 1
+  : An integer with a maximum value of 2^30 - 1.
 
   SETTINGS_BLOCKING_HEADER_REFERENCES (0x7):
-  : A Boolean
+  : An integer with a maximum value of 2^16 - 1.
 
 #### Initial SETTINGS Values
 
