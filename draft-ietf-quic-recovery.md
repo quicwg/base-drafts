@@ -959,8 +959,9 @@ kDefaultMss (default 1460 bytes):
 : The default max packet size used for calculating default and minimum
   congestion windows.
 
-kInitialWindow (default 10 * kDefaultMss):
-: Default limit on the amount of outstanding data in bytes.
+kInitialWindow (default 14600 bytes):
+: Default limit on the initial amount of outstanding data in bytes.
+  Taken from {{?RFC6928}}.
 
 kMinimumWindow (default 2 * kDefaultMss):
 : Default minimum congestion window.
