@@ -959,9 +959,6 @@ kInitialWindow (default 14600 bytes):
 : Default limit on the initial amount of outstanding data in bytes.
   Taken from {{?RFC6928}}.
 
-kMinimumWindow (default 2 * kDefaultMss):
-: Default minimum congestion window.
-
 kLossReductionFactor (default 0.5):
 : Reduction in congestion window when a new loss event is detected.
 
@@ -974,6 +971,9 @@ are described in this section.
 sender_mss:
 : The sender's maximum payload size.  Does not include UDP or IP
   overhead. Similar to SMSS defined for TCP in {{?RFC5681}}
+
+minimum_window :
+: Minimum congestion window.  Set to 2 * sender_mss.
 
 bytes_in_flight:
 : The sum of the size in bytes of all sent packets that contain at least
@@ -1001,6 +1001,7 @@ variables as follows:
 
 ~~~
    congestion_window = kInitialWindow
+   minimum_window = 2 * sender_mss
    bytes_in_flight = 0
    end_of_recovery = 0
    ssthresh = infinite
@@ -1037,7 +1038,7 @@ acked_packet from sent_packets.
      else:
        // Congestion avoidance.
        congestion_window +=
-         kDefaultMss * acked_packet.bytes / congestion_window
+         sender_mss * acked_packet.bytes / congestion_window
 ~~~
 
 ### On Packets Lost
@@ -1056,7 +1057,7 @@ are detected lost.
      if (!InRecovery(largest_lost_packet.packet_number)):
        end_of_recovery = largest_sent_packet
        congestion_window *= kLossReductionFactor
-       congestion_window = max(congestion_window, kMinimumWindow)
+       congestion_window = max(congestion_window, minimum_window)
        ssthresh = congestion_window
 ~~~
 
@@ -1067,7 +1068,7 @@ retransmission timeout has been verified.
 
 ~~~
    OnRetransmissionTimeoutVerified()
-     congestion_window = kMinimumWindow
+     congestion_window = minimum_window
 ~~~
 
 # IANA Considerations
