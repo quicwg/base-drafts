@@ -935,10 +935,10 @@ rate estimate of a rate-based controller.
 An implementation should take care to architect its congestion controller to
 work well with a pacer.  For instance, a pacer might wrap the congestion
 controller and control the availability of the congestion window, or a pacer
-might pace out packets handed to it by the congestion controller.  In either
-arrangement, packets only containing ACK frames should not be paced, to prevent
-spurious timeout based retransmissions and to ensure the intended max ack delay
-is honored.
+might pace out packets handed to it by the congestion controller. Timely
+delivery of ACK frames is important for efficient loss recovery. Packets
+containing only ACK frames should therefore not be paced, to avoid delaying
+their delivery to the peer.
 
 As an example of a well-known and publicly available implementation of a flow
 pacer, implementers are referred to the Fair Queue packet scheduler (fq qdisc)
