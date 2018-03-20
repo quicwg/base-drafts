@@ -253,17 +253,17 @@ Indexed-Duplicate representation instead (see {{indexed-duplicate}}).
 ~~~~~~~~~~  drawing
     0 1 2 3 4 5 6 7
    +-+-+-+-+-+-+-+-+
-   |1|Index(7+)    |
+   |1|  Index (7+) |
    +-+-+-+---------+
 ~~~~~~~~~~
 {:#fig-index-with-duplication title="Indexed Header Field with Duplication"}
 
-*Indexed-Duplicates* insert a new entry into the dynamic table which duplicates
+*Indexed-Duplicate* inserts a new entry into the dynamic table which duplicates
 an existing entry. {{RFC7541}} allows duplicate HPACK table entries, that is
 entries that have the same name and value.
 
 This repurposes the HPACK instruction for Indexed Header Field (see Section
-6.1 of {{RFC7541}}.
+6.1 of {{RFC7541}} in the context of the control stream.
 
 # Performance considerations
 
