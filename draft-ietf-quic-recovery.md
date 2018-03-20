@@ -955,10 +955,6 @@ Constants used in congestion control are based on a combination of RFCs,
 papers, and common practice.  Some may need to be changed or negotiated
 in order to better suit a variety of environments.
 
-kDefaultMss (default 1460 bytes):
-: The default max packet size used for calculating default and minimum
-  congestion windows.
-
 kInitialWindow (default 14600 bytes):
 : Default limit on the initial amount of outstanding data in bytes.
   Taken from {{?RFC6928}}.
@@ -974,6 +970,10 @@ kLossReductionFactor (default 0.5):
 
 Variables required to implement the congestion control mechanisms
 are described in this section.
+
+sender_mss:
+: The sender's maximum payload size.  Does not include UDP or IP
+  overhead. Similar to SMSS defined for TCP in {{?RFC5681}}
 
 bytes_in_flight:
 : The sum of the size in bytes of all sent packets that contain at least
