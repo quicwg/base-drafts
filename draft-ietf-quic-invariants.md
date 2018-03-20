@@ -88,7 +88,7 @@ This document describes the subset of QUIC that is intended to remain stable as
 new versions are developed and deployed.  All of these invariants are
 IP-version-independent.
 
-The primary goal of this document is to ensure that it is possible deploy new
+The primary goal of this document is to ensure that it is possible to deploy new
 versions of QUIC.  By documenting the things that can't change, this document
 aims to preserve the ability to change any other aspect of the protocol.  Thus,
 unless specifically described in this document, any aspect of the protocol can
@@ -168,7 +168,7 @@ or between 4 and 18 octets in length (inclusive).  For example, an octet with
 the value 0xe0 describes a 17 octet Destination Connection ID and a zero octet
 Source Connection ID.
 
-The connection ID lengths are followed by a two connection IDs.  The connection
+The connection ID lengths are followed by two connection IDs.  The connection
 ID associated with the recipient of the packet (the Destination Connection ID)
 is followed by the connection ID associated with the sender of the packet (the
 Source Connection ID).
