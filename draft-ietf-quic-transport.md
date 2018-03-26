@@ -1726,32 +1726,46 @@ PATH_CHALLENGE, and restart the alarm for a longer period of time.
 
 ### Privacy Implications of Connection Migration {#migration-linkability}
 
+
 Using a stable connection ID on multiple network paths allows a passive observer
-to correlate activity between those paths.  A client that moves between networks
-might not wish to have their activity correlated by any entity other than a
-server.  The NEW_CONNECTION_ID message can be sent by a server to provide an
-unlinkable connection ID for use in case the client wishes to explicitly break
-linkability between two points of network attachment.
+to correlate activity between those paths.  An endpoint that moves between
+networks might not wish to have their activity correlated by any entity other
+than a server. The NEW_CONNECTION_ID message can be sent by both endpoints to
+provide an unlinkable connection ID for use in case a peer wishes to explicitly
+break linkability between two points of network attachment.
 
-A client might need to send packets on multiple networks without receiving any
-response from the server.  To ensure that the client is not linkable across each
-of these changes, a new connection ID and packet number gap are needed for each
-network.  To support this, a server sends multiple NEW_CONNECTION_ID messages.
-Each NEW_CONNECTION_ID is marked with a sequence number.  Connection IDs MUST be
-used in the order in which they are numbered.
+An endpoint might need to send packets on multiple networks without receiving
+any response from its peer.  To ensure that the endpoint is not linkable
+across each of these changes, a new connection ID and packet number gap are
+needed for each network.  To support this, each endpoint sends multiple
+NEW_CONNECTION_ID messages.  Each NEW_CONNECTION_ID is marked with a sequence
+number.  Connection IDs MUST be used in the order in which they are numbered.
 
-A client which wishes to break linkability upon changing networks MUST use the
-connection ID provided by the server as well as incrementing the packet sequence
-number by an externally unpredictable value computed as described in
-{{packet-number-gap}}.  Packet number gaps are cumulative.  A client might skip
-connection IDs, but it MUST ensure that it applies the associated packet number
-gaps for connection IDs that it skips in addition to the packet number gap
-associated with the connection ID that it does use.
+An endpoint that does not require the use of a connection ID should not request
+that its peer use a connection ID.  Such an endpoint does not need to provide
+new connection IDs using the NEW_CONNECTION_ID frame.
 
-A server that receives a packet that is marked with a new connection ID recovers
-the packet number by adding the cumulative packet number gap to its expected
-packet number.  A server SHOULD discard packets that contain a smaller gap than
-it advertised.
+An endpoint which wishes to break linkability upon changing networks MUST use
+the connection ID provided by its peer as well as incrementing the packet
+sequence number by an externally unpredictable value computed as described in
+{{packet-number-gap}}. Packet number gaps are cumulative.  An endpoint might
+skip connection IDs, but it MUST ensure that it applies the associated packet
+number gaps for connection IDs that it skips in addition to the packet number
+gap associated with the connection ID that it does use.
+
+An endpoint that receives a packet that is marked with a new connection ID
+recovers the packet number by adding the cumulative packet number gap to its
+expected packet number.  An endpoint MUST discard packets that contain a smaller
+gap than it advertised.
+
+An endpoint that receives a successfully authenticated packet with a previously
+unused connection ID MUST use the next available connection ID for any packets
+it sends to that address.  To avoid changing connection IDs multiple times when
+packets arrive out of order, endpoints MUST change only in response to a packet
+that increases the largest received packet number.  Failing to do this could
+allow for use of that connection ID to link activity on new paths.  There is no
+need to move to a new connection ID if the address of a peer changes without
+also changing the connection ID.
 
 For instance, a server might provide a packet number gap of 7 associated with a
 new connection ID.  If the server received packet 10 using the previous
