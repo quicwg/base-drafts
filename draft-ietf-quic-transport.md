@@ -1558,123 +1558,111 @@ failure. Primarily, this happens if a connection migration to a new path is
 initiated while a path validation on the old path is in progress.
 
 
-## Client Connection Migration {#migration}
+## Connection Migration {#migration}
 
 QUIC allows connections to survive changes to endpoint addresses (that is, IP
-address and/or port), such as those caused by a client migrating to a new
-network.  This section describes the protocol for migrating a connection to a
-new client address.
+address and/or port), such as those caused by a endpoint migrating to a new
+network.  This section describes the process by which an endpoint migrates to a
+new address.
 
+An endpoint MUST NOT initiate connection migration before the handshake is
+finished and the endpoint has 1-RTT keys.
+
+This document limits migration of connections to new client addresses.
 Migrating a connection to a new server address is left for future work. If a
 client receives packets from a new server address, the client MAY discard these
 packets.
 
 
+### Probing a New Path
+
+An endpoint MAY probe for peer reachability from a new local address using path
+validation {{migrate-validate}} prior to migrating the connection to the new
+local address.  Failure of path validation simply means that the new path is not
+usable for this connection.  Failure to validate a path does not cause the
+connection to end unless there are no valid alternative paths available.
+
+An endpoint uses a new connection ID for probes sent from a new local address,
+see {{migration-linkability}} for further discussion.
+
+Receiving a PATH_CHALLENGE frame from a peer indicates that the peer is probing
+for reachability on a path. An endpoint sends a PATH_RESPONSE in response as per
+{{migrate-validate}}.
+
+PATH_CHALLENGE, PATH_RESPONSE, and PADDING frames are "probing" frames. If an
+endpoint has received packets containing only these frames from a given peer
+address, it MUST NOT send other types of frames to that address.
+
+
 ### Initiating Connection Migration {#initiating-migration}
 
-A client can migrate a connection to a new local address by sending all packets
-from the new local address.  Since the server's address is validated during
-connection establishment, receiving acknowledgments for this data serves as
-proof of the server's reachability from the new address.  Note that since
-acknowledgments may be received on any path, return reachability on the new path
-is not established. To establish return reachability on the new path, a client
-MAY concurrently initiate path validation {{migrate-validate}} on the new path.
+A endpoint can migrate a connection to a new local address by sending packets
+containing frames other than probing frames from that address.
 
-If it has an opportunity, a client MAY probe for server reachability from a new
-local address using path validation {{migrate-validate}} prior to migrating the
-connection to the new local address.  Failure of path validation simply means
-that the new local address is not usable for this connection.  Failure to
-validate a path does not cause the connection to end unless there are no valid
-alternative paths available.
+Each endpoint validates its peer's address during connection establishment.
+Therefore, a migrating endpoint can send to its peer knowing that the peer is
+willing to receive at the peer's current address. Thus an endpoint can migrate
+to a new local address without first validating the peer's address.
 
-A client migrating to a new local address should use a new connection ID for
-packets sent from that address, see {{migration-linkability}} for further
-discussion.
+However, the new path might not support the endpoint's current sending
+rate. Therefore, the endpoint resets its congestion controller, as described in
+{{migration-cc}}.
 
-A client MUST NOT initiate connection migration before the handshake is
-finished and the client has 1-RTT keys.
+Receiving acknowledgments for this data serves as proof of the peer's
+reachability from the new address.  Note that since acknowledgments may be
+received on any path, return reachability on the new path is not
+established. To establish return reachability on the new path, an endpoint MAY
+concurrently initiate path validation {{migrate-validate}} on the new path.
 
 
-### Responding to Connection Migration
+### Responding to Connection Migration {#migration-response}
 
-A server may receive a packet from a new client address at any time during the
-connection after the handshake is complete. If the packet is authenticated, the
-client might be either probing from a new address or migrating immediately, as
-described in {{initiating-migration}}.
+Receiving a packet from a new peer address containing a non-probing frame
+indicates that the peer has migrated to that address.
 
+In response to such a packet, an endpoint MUST start sending subsequent packets
+to the new peer address and MUST initiate path validation ({{migrate-validate}})
+to verify the peer's ownership of the unvalidated address.
 
-#### Responding to a Client Probe
+An endpoint MAY send data to an unvalidated peer address, but it MUST protect
+against potential attacks as described in {{address-spoofing}} and
+{{on-path-spoofing}}.  An endpoint MAY skip validation of a peer address if that
+address has been seen recently.
 
-Receiving a PATH_CHALLENGE frame from the client indicates that the client is
-probing for server reachability on this new path.  The server sends a
-PATH_RESPONSE to the new client address as per {{migrate-validate}}, but the
-server MUST continue using the current client address for sending all other
-packets.
+An endpoint only changes the address that it sends packets to in response to the
+highest-numbered non-probing packet. This ensures that an endpoint does not send
+packets to an old peer address in the case that it receives reordered packets.
 
-PATH_CHALLENGE, PATH_RESPONSE, and PADDING frames are "probing" frames, and
-receiving only these frames from a new client address MUST NOT result in the
-server sending any other frames to that address.
+After changing the address to which it sends non-probing packets, an endpoint
+could abandon any path validation for other addresses.
 
-#### Responding to an Immediate Migration {#migration-response}
-
-Receiving a packet from a new client address indicates that the client may be
-immediately migrating if
-
-* the packet is a "non-probing" packet. That is, it contains a frame other than
-PATH_CHALLENGE, PATH_RESPONSE, and PADDING; and
-
-* the packet carries a packet number that is the largest seen thus far.
-
-Upon receiving such a packet, the server MUST abandon any path validation it is
-performing with other addresses on the expectation that those validations are
-likely to fail.  Abandoning path validation primarily means ceasing subsequent
-transmissions of the PATH_CHALLENGE frame.  An endpoint MAY ignore any
-subsequently received PATH_RESPONSE frames from abandoned addresses.
-
-In response to such a packet, the server MUST start sending subsequent packets
-to this client address and MUST initiate path validation to verify client
-ownership of the unvalidated address.
-
-A server MAY skip validation of a client address if it has been seen recently or
-if the server has reasonable certainty that the new address is the result of a
-NAT rebinding.
-
-Note that the server MAY send data to an unvalidated client address, but it MUST
-protect against potential attacks as described in {{address-spoofing}} and
-{{on-path-spoofing}}.
-
-If a non-probing packet is received from a new client address but with a packet
-number that is not the largest seen thus far, it is likely that it is a
-reordered packet sent from an older client address.  The server processes this
-packet as usual, but it MUST ignore this client address under the assumption
-that it is not the client's most recent address.
+Receiving a packet from a new peer address might be the result of a NAT
+rebinding at the peer.
 
 After verifying a new client address, the server SHOULD send new address
-validation tokens ({{address-validation}}) to the client if the current ones
-will not be adequate to validate the new client address.
+validation tokens ({{address-validation}}) to the client.
 
 
-#### Handling Address Spoofing by a Client {#address-spoofing}
+#### Handling Address Spoofing by a Peer {#address-spoofing}
 
-It is possible that the client is spoofing its source address to cause the
-server to send excessive amounts of data to an unwilling host.  If the server
-sends significantly more data than the client, connection migration might be
+It is possible that a peer is spoofing its source address to cause an endpoint
+to send excessive amounts of data to an unwilling host.  If the endpoint sends
+significantly more data than the spoofing peer, connection migration might be
 used to amplify the volume of data that an attacker can generate toward a
 victim.
 
-As described in {{migration-response}}, a server is required to validate the
-client's new address to confirm the client's possession of the new address.
-Until a client's address is deemed valid, the server MUST limit the rate at
-which it sends data to this address.  The server MUST NOT send more than a
-minimum congestion window's worth of data per estimated round-trip time (as
-defined in {{QUIC-RECOVERY}}).  In the absence of this limit, the server risks
-being used for a denial of service attack against an unsuspecting victim.  Note
-that since the server will not have any round-trip time measurements to the new
-address, the estimate SHOULD be the default initial value (see
-{{QUIC-RECOVERY}}).
+As described in {{migration-response}}, an endpoint is required to validate a
+peer's new address to confirm the peer's possession of the new address.  Until a
+peer's address is deemed valid, an endpoint MUST limit the rate at which it
+sends data to this address.  The endpoint MUST NOT send more than a minimum
+congestion window's worth of data per estimated round-trip time (as defined in
+{{QUIC-RECOVERY}}).  In the absence of this limit, an endpoint risks being used
+for a denial of service attack against an unsuspecting victim.  Note that since
+the endpoint will not have any round-trip time measurements to this address, the
+estimate SHOULD be the default initial value (see {{QUIC-RECOVERY}}).
 
-A server SHOULD NOT apply this rate limit when the server skips validation of a
-client address, as described in {{migration-response}}.
+An endpoint SHOULD NOT apply this rate limit when the endpoint skips validation
+of the peer's address, as described in {{migration-response}}.
 
 
 #### Handling Address Spoofing by an On-path Attacker {#on-path-spoofing}
@@ -1687,21 +1675,21 @@ validation of the source address will fail because the entity at the source
 address does not have the necessary cryptographic keys to read or respond to the
 PATH_CHALLENGE frame that is sent to it, even if it wanted to.
 
-To protect the connection from failing due to such a spurious migration, the
-server MUST revert to using the last validated client address when validation of
-a new client address fails.
+To protect the connection from failing due to such a spurious migration, an
+endpoint MUST revert to using the last validated peer address when validation of
+a new peer address fails.
 
-If the server has no state about the last validated client address, it MUST
-close the connection silently by discarding all connection state. This results
-in new packets on the connection being handled generically. For instance, an
-endpoint MAY send a stateless reset in response to any further incoming packets.
+If an endpoint has no state about the last validated peer address, it MUST close
+the connection silently by discarding all connection state. This results in new
+packets on the connection being handled generically. For instance, an endpoint
+MAY send a stateless reset in response to any further incoming packets.
 
-Note that receipt of packets with higher packet numbers from the legitimate
-client address will trigger another connection migration.  This will cause the
+Note that receipt of packets with higher packet numbers from the legitimate peer
+address will trigger another connection migration.  This will cause the
 validation of the address of the spurious migration to be abandoned.
 
 
-### Loss Detection and Congestion Control
+### Loss Detection and Congestion Control {#migration-cc}
 
 The capacity available on the new path might not be the same as the old path.
 Packets sent on the old path SHOULD NOT contribute to the state of the
