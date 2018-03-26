@@ -670,9 +670,8 @@ When a packet is acked for the first time, the following OnPacketAcked function
 is called.  Note that a single ACK frame may newly acknowledge several packets.
 OnPacketAcked must be called once for each of these newly acked packets.
 
-OnPacketAcked takes one parameter, acked_packet_number, which is the packet
-number of the newly acked packet, and returns a list of packet numbers that
-are detected as lost.
+OnPacketAcked takes one parameter, acked_packet, which is the struct of the
+newly acked packet.
 
 If this is the first acknowledgement following RTO, check if the smallest newly
 acknowledged packet is one sent by the RTO, and if so, inform congestion control
@@ -681,17 +680,18 @@ of a verified RTO, similar to F-RTO {{?RFC5682}}
 Pseudocode for OnPacketAcked follows:
 
 ~~~
-   OnPacketAcked(acked_packet_number):
-     OnPacketAckedCC(acked_packet_number)
+   OnPacketAcked(acked_packet):
+     if (!acked_packet.is_ack_only):
+       OnPacketAckedCC(acked_packet)
      // If a packet sent prior to RTO was acked, then the RTO
      // was spurious.  Otherwise, inform congestion control.
      if (rto_count > 0 &&
-         acked_packet_number > largest_sent_before_rto)
+         acked_packet.packet_number > largest_sent_before_rto)
        OnRetransmissionTimeoutVerified()
      handshake_count = 0
      tlp_count = 0
      rto_count = 0
-     sent_packets.remove(acked_packet_number)
+     sent_packets.remove(acked_packet.packet_number)
 ~~~
 
 ### Setting the Loss Detection Alarm
