@@ -1589,9 +1589,9 @@ Receiving a PATH_CHALLENGE frame from a peer indicates that the peer is probing
 for reachability on a path. An endpoint sends a PATH_RESPONSE in response as per
 {{migrate-validate}}.
 
-PATH_CHALLENGE, PATH_RESPONSE, and PADDING frames are "probing" frames. If an
-endpoint has received packets containing only these frames from a given peer
-address, it MUST NOT send other types of frames to that address.
+PATH_CHALLENGE, PATH_RESPONSE, and PADDING frames are "probing" frames. Until an
+endpoint receives packets containing other frames from a given peer address, it
+MUST NOT send other types of frames to that address.
 
 
 ### Initiating Connection Migration {#initiating-migration}
@@ -1604,13 +1604,13 @@ Therefore, a migrating endpoint can send to its peer knowing that the peer is
 willing to receive at the peer's current address. Thus an endpoint can migrate
 to a new local address without first validating the peer's address.
 
-However, the new path might not support the endpoint's current sending
+When migrating, the new path might not support the endpoint's current sending
 rate. Therefore, the endpoint resets its congestion controller, as described in
 {{migration-cc}}.
 
-Receiving acknowledgments for this data serves as proof of the peer's
-reachability from the new address.  Note that since acknowledgments may be
-received on any path, return reachability on the new path is not
+Receiving acknowledgments for data sent on the new path serves as proof of the
+peer's reachability from the new address.  Note that since acknowledgments may
+be received on any path, return reachability on the new path is not
 established. To establish return reachability on the new path, an endpoint MAY
 concurrently initiate path validation {{migrate-validate}} on the new path.
 
@@ -1655,25 +1655,27 @@ As described in {{migration-response}}, an endpoint is required to validate a
 peer's new address to confirm the peer's possession of the new address.  Until a
 peer's address is deemed valid, an endpoint MUST limit the rate at which it
 sends data to this address.  The endpoint MUST NOT send more than a minimum
-congestion window's worth of data per estimated round-trip time (as defined in
-{{QUIC-RECOVERY}}).  In the absence of this limit, an endpoint risks being used
-for a denial of service attack against an unsuspecting victim.  Note that since
-the endpoint will not have any round-trip time measurements to this address, the
-estimate SHOULD be the default initial value (see {{QUIC-RECOVERY}}).
+congestion window's worth of data per estimated round-trip time (kMinimumWindow,
+as defined in {{QUIC-RECOVERY}}).  In the absence of this limit, an endpoint
+risks being used for a denial of service attack against an unsuspecting victim.
+Note that since the endpoint will not have any round-trip time measurements to
+this address, the estimate SHOULD be the default initial value (see
+{{QUIC-RECOVERY}}).
 
-An endpoint SHOULD NOT apply this rate limit when the endpoint skips validation
-of the peer's address, as described in {{migration-response}}.
+If an endpoint skips validation of a peer address as described in
+{{migration-responses}}, it does not need to limit its sending rate.
 
 
 #### Handling Address Spoofing by an On-path Attacker {#on-path-spoofing}
 
-An on-path attacker could cause a spurious connection migration by capturing and
-forwarding a packet such that it arrives before the legitimate copy of that
-packet.  Such a packet will appear to be a legitimate connection migration and
-the legitimate copy will be dropped as a duplicate. After a spurious migration,
-validation of the source address will fail because the entity at the source
-address does not have the necessary cryptographic keys to read or respond to the
-PATH_CHALLENGE frame that is sent to it, even if it wanted to.
+An on-path attacker could cause a spurious connection migration by copying and
+forwarding a packet with a spoofed address such that it arrives before the
+original packet.  The packet with the spoofed address will be seen to come from
+a migrating connection, and the original packet will be seen as a duplicate and
+dropped. After a spurious migration, validation of the source address will fail
+because the entity at the source address does not have the necessary
+cryptographic keys to read or respond to the PATH_CHALLENGE frame that is sent
+to it even if it wanted to.
 
 To protect the connection from failing due to such a spurious migration, an
 endpoint MUST revert to using the last validated peer address when validation of
@@ -1725,7 +1727,6 @@ PATH_CHALLENGE, and restart the alarm for a longer period of time.
 
 
 ### Privacy Implications of Connection Migration {#migration-linkability}
-
 
 Using a stable connection ID on multiple network paths allows a passive observer
 to correlate activity between those paths.  An endpoint that moves between
