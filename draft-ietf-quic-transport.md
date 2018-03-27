@@ -1465,7 +1465,7 @@ a peer.
 Path validation is used during connection migration (see {{migration}}) by the
 migrating endpoint to verify reachability of a peer from a new local address.
 Path validation is also used by the peer to verify that the migrating endpoint
-is able to receive packets sent to the its new address.  That is, that the
+is able to receive packets sent to its new address.  That is, that the
 packets received from the migrating endpoint do not carry a spoofed source
 address.
 
@@ -1489,7 +1489,7 @@ PATH_RESPONSE with its own PATH_CHALLENGE.
 ### Initiation
 
 To initiate path validation, an endpoint sends a PATH_CHALLENGE frame containing
-a random payload that is hard to guess on the path to be validated.
+a random payload on the path to be validated.
 
 An endpoint MAY send additional PATH_CHALLENGE frames to handle packet loss.  An
 endpoint SHOULD NOT send a PATH_CHALLENGE more frequently than it would an
@@ -1520,7 +1520,7 @@ same remote address from which the PATH_CHALLENGE was received.
 A new address is considered valid when a PATH_RESPONSE frame is received
 containing data that was sent in a previous PATH_CHALLENGE. Receipt of an
 acknowledgment for a packet containing a PATH_CHALLENGE frame is not adequate
-validation, since the acknowledgment can be spoofed by a malicious client.
+validation, since the acknowledgment can be spoofed by a malicious peer.
 
 For path validation to be successful, a PATH_RESPONSE frame MUST be received
 from the same remote address to which the corresponding PATH_CHALLENGE was
@@ -1694,14 +1694,12 @@ validation of the address of the spurious migration to be abandoned.
 ### Loss Detection and Congestion Control {#migration-cc}
 
 The capacity available on the new path might not be the same as the old path.
-Packets sent on the old path SHOULD NOT contribute to the state of the
-congestion control and RTT estimation on the new path. If it is using a single
-congestion controller and round-trip time estimator, the client SHOULD reset
-them prior to sending any non-probing packets from a new local address.
+Packets sent on the old path SHOULD NOT contribute to congestion control or RTT
+estimation for the new path.
 
-After successful validation of the client's new address, the server SHOULD reset
-its congestion controller and round-trip time estimator prior to sending any
-further non-probing packets.
+On confirming a peer's ownership of its new address, an endpoint SHOULD
+immediately reset the congestion controller and round-trip time estimator for
+the new path.
 
 An endpoint MUST NOT return to the send rate used for the previous path unless
 it is reasonably sure that the previous send rate is valid for the new path.
@@ -1716,14 +1714,15 @@ probes from/to multiple addresses during the migration period, since the two
 resulting paths may have different round-trip times.  A receiver of packets on
 multiple paths will still send ACK frames covering all received packets.
 
-An endpoint MAY use a single congestion control context and a single loss
-recovery context, as described in {{QUIC-RECOVERY}}.  A sender MAY make
-exceptions for probe packets so that their loss detection is independent and
-does not unduly cause the congestion controller to reduce its sending rate.  For
-instance, an endpoint may run a separate alarm when a PATH_CHALLENGE is sent,
-which is disarmed when the corresponding PATH_RESPONSE is received.  If the
-alarm fires before the PATH_RESPONSE is received, the endpoint might send a new
-PATH_CHALLENGE, and restart the alarm for a longer period of time.
+While multiple paths might be used during connection migration, a single
+congestion control context and a single loss recovery context (as described in
+{{QUIC-RECOVERY}}) may be adequate.  A sender can make exceptions for probe
+packets so that their loss detection is independent and does not unduly cause
+the congestion controller to reduce its sending rate.  An endpoint might arm a
+separate alarm when a PATH_CHALLENGE is sent, which is disarmed when the
+corresponding PATH_RESPONSE is received.  If the alarm fires before the
+PATH_RESPONSE is received, the endpoint might send a new PATH_CHALLENGE, and
+restart the alarm for a longer period of time.
 
 
 ### Privacy Implications of Connection Migration {#migration-linkability}
