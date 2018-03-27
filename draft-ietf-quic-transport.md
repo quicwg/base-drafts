@@ -716,7 +716,7 @@ the handshake packet protection keys (see Section 5.2.2 of {{QUIC-TLS}}).
 A Version Negotiation ({{packet-version}}) packet MUST use both connection IDs
 selected by the client, swapped to ensure correct routing toward the client.
 
-The connection ID could change over the lifetime of a connection, especially in
+The connection ID can change over the lifetime of a connection, especially in
 response to connection migration ({{migration}}). NEW_CONNECTION_ID frames
 ({{frame-new-connection-id}}) are used to provide new connection ID values.
 
@@ -1570,8 +1570,8 @@ finished and the endpoint has 1-RTT keys.
 
 This document limits migration of connections to new client addresses.
 Migrating a connection to a new server address is left for future work. If a
-client receives packets from a new server address, the client MAY discard these
-packets.
+client receives packets from an unknown server address, the client MAY discard
+these packets.
 
 
 ### Probing a New Path
@@ -1589,9 +1589,13 @@ Receiving a PATH_CHALLENGE frame from a peer indicates that the peer is probing
 for reachability on a path. An endpoint sends a PATH_RESPONSE in response as per
 {{migrate-validate}}.
 
-PATH_CHALLENGE, PATH_RESPONSE, and PADDING frames are "probing" frames. Until an
-endpoint receives packets containing other frames from a given peer address, it
-MUST NOT send other types of frames to that address.
+PATH_CHALLENGE, PATH_RESPONSE, and PADDING frames are "probing frames", and all
+other frames are "non-probing frames".  A packet containing only probing frames
+is a "probing packet", and a packet containing any other frame is a "non-probing
+packet".
+
+A server MUST NOT send non-probing frames to a client's address until the server
+receives a non-probing packet from that address.
 
 
 ### Initiating Connection Migration {#initiating-migration}
