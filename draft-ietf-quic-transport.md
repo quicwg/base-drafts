@@ -1589,9 +1589,13 @@ Receiving a PATH_CHALLENGE frame from a peer indicates that the peer is probing
 for reachability on a path. An endpoint sends a PATH_RESPONSE in response as per
 {{migrate-validate}}.
 
-PATH_CHALLENGE, PATH_RESPONSE, and PADDING frames are "probing" frames. Until an
-endpoint receives packets containing other frames from a given peer address, it
-MUST NOT send other types of frames to that address.
+PATH_CHALLENGE, PATH_RESPONSE, and PADDING frames are "probing frames", and all
+other frames are "non-probing frames".  A packet containing only probing frames
+is a "probing packet", and a packet containing any other frame is a "non-probing
+packet".
+
+An endpoint MUST NOT send non-probing frames to a peer address until it receives
+a non-probing packet from that address.
 
 
 ### Initiating Connection Migration {#initiating-migration}
