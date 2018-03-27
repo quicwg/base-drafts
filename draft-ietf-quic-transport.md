@@ -716,7 +716,7 @@ the handshake packet protection keys (see Section 5.2.2 of {{QUIC-TLS}}).
 A Version Negotiation ({{packet-version}}) packet MUST use both connection IDs
 selected by the client, swapped to ensure correct routing toward the client.
 
-The connection ID could change over the lifetime of a connection, especially in
+The connection ID can change over the lifetime of a connection, especially in
 response to connection migration ({{migration}}). NEW_CONNECTION_ID frames
 ({{frame-new-connection-id}}) are used to provide new connection ID values.
 
