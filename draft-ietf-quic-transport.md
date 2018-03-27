@@ -1570,8 +1570,8 @@ finished and the endpoint has 1-RTT keys.
 
 This document limits migration of connections to new client addresses.
 Migrating a connection to a new server address is left for future work. If a
-client receives packets from a new server address, the client MAY discard these
-packets.
+client receives packets from an unknown server address, the client MAY discard
+these packets.
 
 
 ### Probing a New Path
@@ -1594,8 +1594,8 @@ other frames are "non-probing frames".  A packet containing only probing frames
 is a "probing packet", and a packet containing any other frame is a "non-probing
 packet".
 
-An endpoint MUST NOT send non-probing frames to a peer address until it receives
-a non-probing packet from that address.
+A server MUST NOT send non-probing frames to a client's address until the server
+receives a non-probing packet from that address.
 
 
 ### Initiating Connection Migration {#initiating-migration}
