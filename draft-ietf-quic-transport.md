@@ -1663,7 +1663,7 @@ this address, the estimate SHOULD be the default initial value (see
 {{QUIC-RECOVERY}}).
 
 If an endpoint skips validation of a peer address as described in
-{{migration-responses}}, it does not need to limit its sending rate.
+{{migration-response}}, it does not need to limit its sending rate.
 
 
 #### Handling Address Spoofing by an On-path Attacker {#on-path-spoofing}
