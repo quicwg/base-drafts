@@ -1594,9 +1594,6 @@ other frames are "non-probing frames".  A packet containing only probing frames
 is a "probing packet", and a packet containing any other frame is a "non-probing
 packet".
 
-A server MUST NOT send non-probing frames to a client's address until the server
-receives a non-probing packet from that address.
-
 
 ### Initiating Connection Migration {#initiating-migration}
 
