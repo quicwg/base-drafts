@@ -1485,6 +1485,11 @@ path validation with other frames.  For instance, an endpoint may pad a packet
 carrying a PATH_CHALLENGE for PMTU discovery, or an endpoint may bundle a
 PATH_RESPONSE with its own PATH_CHALLENGE.
 
+Differences in routing on the Internet might cause the same destination address
+and connection ID to reach a different server instance which does not posses the
+necessary connection state. Receiving a Stateless Reset in response to a probing
+packet SHOULD NOT terminate the connection, but MUST cause the endpoint to
+consider path validation to have failed.
 
 ### Initiation
 
