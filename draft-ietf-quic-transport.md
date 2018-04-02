@@ -762,9 +762,8 @@ A Version Negotiation ({{packet-version}}) packet MUST use both connection IDs
 selected by the client, swapped to ensure correct routing toward the client.
 
 The connection ID can change over the lifetime of a connection, especially in
-response to connection migration ({{migration-client}}}). NEW_CONNECTION_ID
-frames ({{frame-new-connection-id}}) are used to provide new connection ID
-values.
+response to connection migration ({{migration}}}). NEW_CONNECTION_ID frames
+({{frame-new-connection-id}}) are used to provide new connection ID values.
 
 ## Packet Numbers {#packet-numbers}
 
@@ -904,8 +903,8 @@ connection establishment intertwines version negotiation with the cryptographic
 and transport handshakes to reduce connection establishment latency, as
 described in {{handshake}}.  Once established, a connection may migrate to a
 different IP or port at either endpoint, due to NAT rebinding or mobility, as
-described in {{migration-client}}}.  Finally a connection may be terminated by
-either endpoint, as described in {{termination}}.
+described in {{migration}}}.  Finally a connection may be terminated by either
+endpoint, as described in {{termination}}.
 
 ## Matching Packets to Connections {#packet-handling}
 
@@ -1262,7 +1261,7 @@ stateless_reset_token (0x0006):
 preferred_address (0x0004):
 
 : The server's Preferred Address is used to effect a server address migration at
-  the end of the handshake, as described in {{migration-server}}.
+  the end of the handshake, as described in {{preferred-address}}.
 
 A client MUST NOT include a stateless reset token or a preferred address.  A
 server MUST treat receipt of either transport parameter as a connection error of
@@ -1491,7 +1490,7 @@ therefore unlikely to be successful.
 This token can be provided to the cryptographic handshake immediately after
 establishing a connection.  QUIC might also generate an updated token if
 significant time passes or the client address changes for any reason (see
-{{migration-client}}}).  The cryptographic handshake is responsible for
+{{migration}}}).  The cryptographic handshake is responsible for
 providing the client with the token.  In TLS the token is included in the ticket
 that is used for resumption and 0-RTT, which is carried in a NewSessionTicket
 message.
@@ -1527,8 +1526,8 @@ and a specific peer address, where an address is the two-tuple of IP address and
 port.  Path validation tests that packets can be both sent to and received from
 a peer.
 
-Path validation is used during connection migration (see {{migration-client}}
-and {{migration-server}}) by the migrating endpoint to verify reachability of a
+Path validation is used during connection migration (see {{migration}} and
+{{preferred-address}}) by the migrating endpoint to verify reachability of a
 peer from a new local address. Path validation is also used by the peer to
 verify that the migrating endpoint is able to receive packets sent to the its
 new address.  That is, that the packets received from the migrating endpoint do
@@ -1623,7 +1622,7 @@ failure. Primarily, this happens if a connection migration to a new path is
 initiated while a path validation on the old path is in progress.
 
 
-## Client Connection Migration {#migration-client}
+## Connection Migration {#migration}
 
 QUIC allows connections to survive changes to endpoint addresses (that is, IP
 address and/or port), such as those caused by a endpoint migrating to a new
@@ -1872,31 +1871,32 @@ number. "packet_number_secret" is derived from the TLS key exchange,
 as described in Section 5.6 of {{QUIC-TLS}}.
 
 
-## Server Connection Migration {#migration-server}
+## Server's Preferred Address {#preferred-address}
 
 QUIC allows servers to accept connections on one IP address and attempt to
 transfer these connections to a more preferred address shortly after the
 handshake.  This section describes the protocol for migrating a connection to a
-new server address.
+preferred server address.
 
 Migrating a connection to a new server address mid-connection is left for future
 work. If a client receives packets from a new server address not indicated by
 the preferred_address transport parameter, the client SHOULD discard these
 packets.
 
-### Initiating Connection Migration
+### Communicating A Preferred Address
 
-A server initiates connection migration by including the preferred_address
+A server conveys a preferred address by including the preferred_address
 transport parameter in the TLS handshake.
 
 Once the handshake is finished, the client MUST initiate path validation (see
-{{migrate-validate}}) of the server's preferred IP address using the connection
-ID provided in the preferred_address transport parameter.
+{{migrate-validate}}) of the server's preferred address using the connection ID
+provided in the preferred_address transport parameter.
 
 If path validation succeeds, the client SHOULD immediately begin sending all
 non-probe packets to the new server address using the new connection ID and
 discontinue use of the old server address.  If path validation fails, the client
 MUST continue sending all future packets to the server's original IP address.
+
 
 ### Responding to Connection Migration
 
@@ -1911,12 +1911,12 @@ is the largest packet number seen so far, the server begins sending to the
 client exclusively from its preferred IP address.
 
 
-## Interaction of Client and Server Migration
+### Interaction of Client Migration and Preferred Address
 
-A client might need to perform a connection migration before the server's
-connection migration has completed.  In this case, the client SHOULD perform
-path validation to both the original and preferred server address from the
-client's new address concurrently.
+A client might need to perform a connection migration before it has migrated to
+the server's preferred address.  In this case, the client SHOULD perform path
+validation to both the original and preferred server address from the client's
+new address concurrently.
 
 If path validation of the server's preferred address succeeds, the client MUST
 abandon validation of the original address and migrate to using the server's
@@ -1929,6 +1929,7 @@ address, the server MUST protect against potential attacks as described in
 {{address-spoofing}} and {{on-path-spoofing}}.  In addition to intentional
 simultaneous migration, this might also occur because the client's access
 network used a different NAT binding for the server's preferred address.
+
 
 ## Connection Termination {#termination}
 
@@ -1994,11 +1995,11 @@ draining.  A key update might prevent the endpoint from moving from the closing
 state to draining, but it otherwise has no impact.
 
 An endpoint could receive packets from a new source address, indicating a client
-connection migration ({{migration-client}}}), while in the closing period. An
-endpoint in the closing state MUST strictly limit the number of packets it sends
-to this new address until the address is validated (see {{migrate-validate}}). A
-server in the closing state MAY instead choose to discard packets received from
-a new source address.
+connection migration ({{migration}}}), while in the closing period. An endpoint
+in the closing state MUST strictly limit the number of packets it sends to this
+new address until the address is validated (see {{migrate-validate}}). A server
+in the closing state MAY instead choose to discard packets received from a new
+source address.
 
 
 ### Idle Timeout
