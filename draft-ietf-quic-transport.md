@@ -1153,10 +1153,10 @@ language from Section 3 of {{!I-D.ietf-tls-tls13}}.
    } TransportParameters;
 
    struct {
-     enum { IPv4(4), IPv6(6), (15)} ip_version;
-     opaque ip_address<4..2^8-1>;
+     enum { IPv4(4), IPv6(6), (15)} ipVersion;
+     opaque ipAddress<4..2^8-1>;
      uint16 port;
-     opaque connectionId<4..18>;
+     opaque connectionId<0..18>;
      opaque statelessResetToken[16];
    } PreferredAddress;
 ~~~
@@ -1875,8 +1875,10 @@ as described in Section 5.6 of {{QUIC-TLS}}.
 
 QUIC allows servers to accept connections on one IP address and attempt to
 transfer these connections to a more preferred address shortly after the
-handshake.  This section describes the protocol for migrating a connection to a
-preferred server address.
+handshake.  This is particularly useful when clients initially connect to an
+address shared by multiple servers but would prefer to use a unicast address to
+ensure connection stability. This section describes the protocol for migrating a
+connection to a preferred server address.
 
 Migrating a connection to a new server address mid-connection is left for future
 work. If a client receives packets from a new server address not indicated by
@@ -1888,12 +1890,12 @@ packets.
 A server conveys a preferred address by including the preferred_address
 transport parameter in the TLS handshake.
 
-Once the handshake is finished, the client MUST initiate path validation (see
+Once the handshake is finished, the client SHOULD initiate path validation (see
 {{migrate-validate}}) of the server's preferred address using the connection ID
 provided in the preferred_address transport parameter.
 
 If path validation succeeds, the client SHOULD immediately begin sending all
-non-probe packets to the new server address using the new connection ID and
+future packets to the new server address using the new connection ID and
 discontinue use of the old server address.  If path validation fails, the client
 MUST continue sending all future packets to the server's original IP address.
 
@@ -1901,14 +1903,19 @@ MUST continue sending all future packets to the server's original IP address.
 ### Responding to Connection Migration
 
 A server might receive a packet addressed to its preferred IP address at any
-time during the connection after the handshake is completed.  If this packet
-contains a PATH_CHALLENGE frame, the server sends a PATH_RESPONSE frame as per
-{{migrate-validate}}, but the server MUST continue sending all other packets
-from its original IP address.
+time after the handshake is completed.  If this packet contains a PATH_CHALLENGE
+frame, the server sends a PATH_RESPONSE frame as per {{migrate-validate}}, but
+the server MUST continue sending all other packets from its original IP address.
 
-Once the server has received a non-probing packet on its preferred address which
-is the largest packet number seen so far, the server begins sending to the
-client exclusively from its preferred IP address.
+The server SHOULD also initiate path validation of the client using its
+preferred address and the address from which it received the client probe.  This
+helps to guard against spurious migration initiated by an attacker.
+
+Once the server has completed its path validation and has received a non-probing
+packet on its preferred address which is the largest packet number seen so far,
+the server begins sending to the client exclusively from its preferred IP
+address.  It SHOULD drop packets for this connection received on the old IP
+address, but MAY continue to process delayed packets.
 
 
 ### Interaction of Client Migration and Preferred Address
