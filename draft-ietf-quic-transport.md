@@ -2548,8 +2548,8 @@ receiver SHOULD track which ACK frames have been acknowledged by its peer.  Once
 an ACK frame has been acknowledged, the packets it acknowledges SHOULD NOT be
 acknowledged again.
 
-Because ACK-only packets are not acknowledged, a receiver that is only
-sending ACK frames will only receive acknowledgements for its packets
+Because ACK frames are not sent in response to ACK-only packets, a receiver that
+is only sending ACK frames will only receive acknowledgements for its packets
 if the sender piggybacks them on other packets. In order to enable
 this, when sending non-ACK frames, senders SHOULD bundle ACKs when
 possible.
