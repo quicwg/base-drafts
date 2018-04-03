@@ -2002,7 +2002,7 @@ draining.  A key update might prevent the endpoint from moving from the closing
 state to draining, but it otherwise has no impact.
 
 An endpoint could receive packets from a new source address, indicating a client
-connection migration ({{migration}}}), while in the closing period. An endpoint
+connection migration ({{migration}}), while in the closing period. An endpoint
 in the closing state MUST strictly limit the number of packets it sends to this
 new address until the address is validated (see {{migrate-validate}}). A server
 in the closing state MAY instead choose to discard packets received from a new
