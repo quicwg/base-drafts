@@ -1762,6 +1762,12 @@ recovers the packet number by adding the cumulative packet number gap to its
 expected packet number.  An endpoint MUST discard packets that contain a smaller
 gap than it advertised.
 
+Clients MAY change connection ID at any time based on implementation-specific
+concerns.  For example, after a period of network inactivity NAT rebinding might
+occur when the client begins sending data again. A client might wish to reduce
+linkability by employing a new connection ID when sending traffic after a period
+of inactivity.
+
 An endpoint that receives a successfully authenticated packet with a previously
 unused connection ID MUST use the next available connection ID for any packets
 it sends to that address.  To avoid changing connection IDs multiple times when
