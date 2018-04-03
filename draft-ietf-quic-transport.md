@@ -2550,9 +2550,8 @@ acknowledged again.
 
 Because ACK frames are not sent in response to ACK-only packets, a receiver that
 is only sending ACK frames will only receive acknowledgements for its packets
-if the sender piggybacks them on other packets. In order to enable
-this, when sending non-ACK frames, senders SHOULD bundle ACKs when
-possible.
+if the sender includes them in packets with non-ACK frames.  A sender SHOULD
+bundle ACK frames with other frames when possible.
 
 To limit receiver state or the size of ACK frames, a receiver MAY limit the
 number of ACK blocks it sends.  A receiver can do this even without receiving
