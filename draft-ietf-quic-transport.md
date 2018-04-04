@@ -830,25 +830,26 @@ STREAM frames is used to carry other frame-specific flags.  For all
 other frames, the Frame Type byte simply identifies the frame.  These frames are
 explained in more detail as they are referenced later in the document.
 
-| Type Value  | Frame Type Name   | Definition                  |
-|:------------|:------------------|:----------------------------|
-| 0x00        | PADDING           | {{frame-padding}}           |
-| 0x01        | RST_STREAM        | {{frame-rst-stream}}        |
-| 0x02        | CONNECTION_CLOSE  | {{frame-connection-close}}  |
-| 0x03        | APPLICATION_CLOSE | {{frame-application-close}} |
-| 0x04        | MAX_DATA          | {{frame-max-data}}          |
-| 0x05        | MAX_STREAM_DATA   | {{frame-max-stream-data}}   |
-| 0x06        | MAX_STREAM_ID     | {{frame-max-stream-id}}     |
-| 0x07        | PING              | {{frame-ping}}              |
-| 0x08        | BLOCKED           | {{frame-blocked}}           |
-| 0x09        | STREAM_BLOCKED    | {{frame-stream-blocked}}    |
-| 0x0a        | STREAM_ID_BLOCKED | {{frame-stream-id-blocked}} |
-| 0x0b        | NEW_CONNECTION_ID | {{frame-new-connection-id}} |
-| 0x0c        | STOP_SENDING      | {{frame-stop-sending}}      |
-| 0x0d        | ACK               | {{frame-ack}}               |
-| 0x0e        | PATH_CHALLENGE    | {{frame-path-challenge}}    |
-| 0x0f        | PATH_RESPONSE     | {{frame-path-response}}     |
-| 0x10 - 0x17 | STREAM            | {{frame-stream}}            |
+| Type Value  | Frame Type Name    | Definition                  |
+|:------------|:-------------------|:----------------------------|
+| 0x00        | PADDING            | {{frame-padding}}           |
+| 0x01        | RST_STREAM         | {{frame-rst-stream}}        |
+| 0x02        | CONNECTION_CLOSE   | {{frame-connection-close}}  |
+| 0x03        | APPLICATION_CLOSE  | {{frame-application-close}} |
+| 0x04        | MAX_DATA           | {{frame-max-data}}          |
+| 0x05        | MAX_STREAM_DATA    | {{frame-max-stream-data}}   |
+| 0x06        | MAX_STREAM_ID      | {{frame-max-stream-id}}     |
+| 0x07        | PING               | {{frame-ping}}              |
+| 0x08        | BLOCKED            | {{frame-blocked}}           |
+| 0x09        | STREAM_BLOCKED     | {{frame-stream-blocked}}    |
+| 0x0a        | STREAM_ID_BLOCKED  | {{frame-stream-id-blocked}} |
+| 0x0b        | NEW_CONNECTION_ID  | {{frame-new-connection-id}} |
+| 0x0c        | STOP_SENDING       | {{frame-stop-sending}}      |
+| 0x0d        | ACK                | {{frame-ack}}               |
+| 0x0e        | PATH_CHALLENGE     | {{frame-path-challenge}}    |
+| 0x0f        | PATH_RESPONSE      | {{frame-path-response}}     |
+| 0x10 - 0x17 | STREAM             | {{frame-stream}}            |
+| 0x80 - 0xff | (extension frames) | {{frame-extension}}         |
 {: #frame-types title="Frame Types"}
 
 # Life of a Connection
@@ -1086,8 +1087,14 @@ language from Section 3 of {{!I-D.ietf-tls-tls13}}.
       stateless_reset_token(6),
       ack_delay_exponent(7),
       initial_max_stream_id_uni(8),
+      extension_frames(9),
       (65535)
    } TransportParameterId;
+
+   struct {
+      uint8 frame_type;
+      uint16 extension_frame_identifier;
+   } ExtensionFrameMappings<3..2^16-1>;
 
    struct {
       TransportParameterId parameter;
@@ -1197,6 +1204,16 @@ ack_delay_exponent (0x0007):
   value is also used for ACK frames that are sent in Initial, Handshake, and
   Retry packets.  Values above 20 are invalid.
 
+extension_frames (0x0009):
+
+: A list of extension frame mappings, encoded using the ExtensionFrameMappings
+  struct.  That is, a 2 octet length field, followed by 1 or more repetitions of
+  a one octet frame type and a two octet identifiers.  Each entry defines a
+  mapping of frame type to the 16-bit extension frame types defined in
+  {{frame-extension}}.  Valid frame types MUST be from 0x80 to 0xff, other
+  values MUST be treated as a connection error of type
+  TRANSPORT_PARAMETER_ERROR.
+
 A server MAY include the following transport parameters:
 
 stateless_reset_token (0x0006):
@@ -1231,6 +1248,12 @@ that accepts 0-RTT data MUST NOT set values for initial_max_data or
 initial_max_stream_data that are smaller than the remembered value of those
 parameters.  Similarly, a server MUST NOT reduce the value of
 initial_max_stream_id_bidi or initial_max_stream_id_uni.
+
+A server that accepts 0-RTT MUST also be able to understand any extension frames
+and the mapping to frame types that it previously advertised (see
+{{frame-extension}} for details).  Additional extension frame identifiers can be
+advertised, but extension frames that were previously advertised cannot be
+reassigned a new frame type or removed.
 
 Omitting or setting a zero value for certain transport parameters can result in
 0-RTT data being enabled, but not usable.  The following transport parameters
@@ -2752,6 +2775,11 @@ peer and for path validation during connection establishment and connection
 migration.
 
 PATH_CHALLENGE frames contain an 8-byte payload.
+
+~~~
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                                                               |
 +                            Data (8)                           +
 |                                                               |
@@ -2868,6 +2896,37 @@ multiple streams is bundled into a single QUIC packet, loss of that packet
 blocks all those streams from making progress.  An implementation is therefore
 advised to bundle as few streams as necessary in outgoing packets without losing
 transmission efficiency to underfilled packets.
+
+
+## Extension Frames {#frame-extension}
+
+During the handshake endpoints advertise the set of extension frame types they
+support.
+
+Extension frames are identified using a 16-bit identifier.  See
+{{iana-extension-types}} for the process by which new extension frame
+identifiers are defined.
+
+The `extension_frames` transport parameter establishes a mapping from the 16-bit
+frame extension identifier to a frame type octet in the range from 0x80 to 0xff
+inclusive.  Each endpoint establishes their own preferred mapping; this
+determines the mapping for frames that they receive.  An endpoint translates the
+16-bit extension frame identifier into a frame type using the `extension_frames`
+transport parameter advertised by their peer.
+
+This design allows the same extension frame to use a different frame type in
+each direction.  It also allows for extension frames to be used in one direction
+only.
+
+An endpoint MUST NOT use extension frames in packets protected with handshake
+keys.  A client can use extension frames in 0-RTT based on the value of the
+server's transport parameters used in a previous connection.
+
+The definition of a extension frame identifier MUST include the format of the
+extension frame and its semantics.  QUIC frames are not length-delimited, so
+knowledge of the format of frames is necessary for decoding packets.  Each
+extension frame identifier definition MUST include the versions of QUIC that the
+frame can be used with.
 
 
 # Packetization and Reliability {#packetization}
@@ -4103,25 +4162,32 @@ the range from 0xFE00 to 0xFFFF.
 {: #iana-error-table title="Initial QUIC Transport Error Codes Entries"}
 
 
-## EXTENSION Frame Types {#iana-extension-types}
+## Extension Frame Identifiers {#iana-extension-types}
 
-IANA \[SHALL add/has added] a registry for "QUIC EXTENSION Frame Types" under a
-"QUIC Protocol" heading.
+IANA \[SHALL add/has added] a registry for "QUIC Extension Frame Identifiers"
+under a "QUIC Protocol" heading.
 
-The "QUIC EXTENSION Frame Types" registry governs a 16-bit space.  Values are
-assigned using the Expert Review policy {{!RFC8126}}.  Registrations can be
-provisional or permanent.  Permanent registrations can only be made with the
-inclusion of a specification, as defined by the Specification Required policy
-{{!RFC8126}}.  Provisional registrations can be removed at the discretion of the
-assigned expert after 1 year unless they are renewed.  Provisional registrations
-do not require that a specification be referenced.
+The "QUIC Extension Frame Identifiers" registry governs a 16-bit space.  Values
+up to 0xfeff are assigned using the Expert Review policy {{!RFC8126}}; values
+from 0xff00 to 0xffff are reserved for Private Use {{!RFC8126}}.
+
+Registrations can be provisional or permanent.  Permanent registrations can only
+be made with the inclusion of a specification, as defined by the Specification
+Required policy {{!RFC8126}}.  Provisional registrations can be removed at the
+discretion of the assigned expert after 1 year unless they are renewed.
+Provisional registrations do not require that a specification be referenced.
+
+Requests for provisional registration of a single codepoint SHALL be
+automatically granted.  Experts reviewing registrations are advised to avoid
+rejecting a request unless the specification is inaccessible, there is obvious
+duplication, or registration for too many values.
 
 Registrations MUST include the following fields:
 
-Extension Type:
+Extension Frame Identifier:
 
 : The numeric value of the assignment (registrations will be between 0x0000 and
-  0xffff).
+  0xfeff).
 
 Code:
 
@@ -4129,8 +4195,12 @@ Code:
 
 Specification:
 
-: A reference to a publicly available specification for the extension.  This may
-  be omitted for a provisional registration.
+: A reference to a publicly available specification for the extension frame.
+  This may be omitted for a provisional registration.
+
+QUIC Versions:
+
+: A list of QUIC versions that the extension frame can be used with.
 
 Provisional Expiration:
 
