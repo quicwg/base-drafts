@@ -690,9 +690,10 @@ sequence of frames, as described in {{frames}}.
 ## Compound Packets {#packet-compound}
 
 Compound packets allow the sender to assemble an Initial ({{packet-initial}})
-or a Handshake ({{packet-handshake}}) packet and a Protected ({{packet-protected}})
-packet into one UDP packet, thereby reducing the number of packets required to
-be emitted when application data can be sent during the handshake.
+or a Handshake ({{packet-handshake}}) packet and a Protected
+({{packet-protected}}) packet into one UDP packet, thereby reducing the number
+of packets required to be emitted when application data can be sent during the
+handshake.
 
 A Compound-Initial packet is identical to an Initial packet with the exception
 being that it has the Payload Length field.  The field designates the length of
@@ -702,7 +703,8 @@ the payload of the Initial packet.  The remainder of the UDP packet contains a
 A Compound-Handshake packet is identical to a Handshake packet with the
 exception being that it has the Payload Length field.  The field designates the
 length of the payload of the Handshake packet.  The remainder of the UDP packet
-contains either a 0-RTT Protected packet or a short header packet ({{short-header}}).
+contains either a 0-RTT Protected packet or a short header packet
+({{short-header}}).
 
 The sender MUST NOT assemble QUIC packets belonging to different QUIC
 connections into a single Compound packet.
