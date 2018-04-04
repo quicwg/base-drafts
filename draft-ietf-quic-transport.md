@@ -364,6 +364,8 @@ keys are established.
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                       Packet Number (32)                      |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|     [Payload Length (16)]     |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                          Payload (*)                        ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~~~
@@ -403,6 +405,11 @@ Packet Number:
 : Octets 13 to 16 contain the packet number.  {{packet-numbers}} describes the
   use of packet numbers.
 
+Payload Length:
+
+: If Type is one of the Compound packets, the length of the Payload field in
+  octets.
+
 Payload:
 
 : Octets from 17 onwards (the rest of QUIC packet) are the payload of the
@@ -416,6 +423,8 @@ The following packet types are defined:
 | 0x7E | Retry                         | {{packet-retry}}            |
 | 0x7D | Handshake                     | {{packet-handshake}}        |
 | 0x7C | 0-RTT Protected               | {{packet-protected}}        |
+| 0x7B | Compound-Initial              | {{packet-compound}}         |
+| 0x7A | Compound-Handshake            | {{packet-compound}}         |
 {: #long-packet-types title="Long Header Packet Types"}
 
 The header form, packet type, connection ID, packet number and version fields of
@@ -559,8 +568,8 @@ process.
 
 Once version negotiation is complete, the cryptographic handshake is used to
 agree on cryptographic keys.  The cryptographic handshake is carried in Initial
-({{packet-initial}}), Retry ({{packet-retry}}) and Handshake
-({{packet-handshake}}) packets.
+({{packet-initial}}), Retry ({{packet-retry}}), Handshake
+({{packet-handshake}}) packets or their Compound variants ({{packet-compound}}).
 
 All these packets use the long header and contain the current QUIC version in
 the version field.
@@ -676,6 +685,32 @@ packet sent, see {{packet-numbers}} for details.
 The payload is protected using authenticated encryption.  {{QUIC-TLS}} describes
 packet protection in detail.  After decryption, the plaintext consists of a
 sequence of frames, as described in {{frames}}.
+
+
+## Compound Packets {#packet-compound}
+
+Compound packets allow the sender to assemble an Initial ({{packet-initial}})
+or a Handshake ({{packet-handshake}}) packet and a Protected ({{packet-protected}})
+packet into one UDP packet, thereby reducing the number of packets required to
+be emitted when application data can be sent during the handshake.
+
+A Compound-Initial packet is identical to an Initial packet with the exception
+being that it has the Payload Length field.  The field designates the length of
+the payload of the Initial packet.  The remainder of the UDP packet contains a
+0-RTT Protected packet.
+
+A Compound-Handshake packet is identical to a Handshake packet with the
+exception being that it has the Payload Length field.  The field designates the
+length of the payload of the Handshake packet.  The remainder of the UDP packet
+contains either a 0-RTT Protected packet or a short header packet ({{short-header}}).
+
+The sender MUST NOT assemble QUIC packets belonging to different QUIC
+connections into a single Compound packet.
+
+The receiver of a Compound packet MUST individually process the Cryptographic
+Handshake packet and the Protected packet being contained.  It MUST process the
+Cryptographic Handshake packet of a Compound packet even when the Protected
+packet being contained is deemed invalid.
 
 
 ## Connection ID {#connection-id}
