@@ -2873,8 +2873,8 @@ header, protected payload, and any authentication fields.
 
 All QUIC packets SHOULD be sized to fit within the estimated PMTU to avoid IP
 fragmentation or packet drops. To optimize bandwidth efficiency, endpoints
-SHOULD use Packetization Layer PMTU Discovery ({{!RFC4821}}).  Endpoints
-MAY use PMTU Discovery ({{!RFC1191}}, {{!RFC8201}}) for
+SHOULD use Packetization Layer PMTU Discovery ({{!PLPMTUD=RFC4821}}).  Endpoints
+MAY use PMTU Discovery ({{!PMTUDv4=RFC1191}}, {{!PMTUDv6=RFC8201}}) for
 detecting the PMTU, setting the PMTU appropriately, and storing the result of
 previous PMTU determinations.
 
@@ -2901,7 +2901,7 @@ connection if an alternative path cannot be found.
 
 ### Special Considerations for PMTU Discovery
 
-Traditional ICMP-based path MTU discovery in IPv4 {{!RFC1191}} is potentially
+Traditional ICMP-based path MTU discovery in IPv4 {{!PMTUDv4}} is potentially
 vulnerable to off-path attacks that successfully guess the IP/port 4-tuple and
 reduce the MTU to a bandwidth-inefficient value. TCP connections mitigate this
 risk by using the (at minimum) 8 bytes of transport header echoed in the ICMP
@@ -2936,12 +2936,12 @@ application data, as they consume the congestion window. However, by definition
 their likely loss in a probe packet does not require delay-inducing
 retransmission of application data.
 
-When implementing the algorithm in Section 7.2 of {{!RFC4821}}, the initial
+When implementing the algorithm in Section 7.2 of {{!PLPMTUD}}, the initial
 value of search_low SHOULD be consistent with the IPv6 minimum packet size.
 Paths that do not support this size cannot deliver Initial packets, and
 therefore are not QUIC-compliant.
 
-Section 7.3 of {{!RFC4821}} discusses tradeoffs between small and large
+Section 7.3 of {{!PLPMTUD}} discusses tradeoffs between small and large
 increases in the size of probe packets. As QUIC probe packets need not contain
 application data, aggressive increases in probe size carry fewer consequences.
 
