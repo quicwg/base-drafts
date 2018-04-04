@@ -2784,8 +2784,11 @@ frame.  Its format is identical to the PATH_CHALLENGE frame
 
 If the content of a PATH_RESPONSE frame does not match the content of a
 PATH_CHALLENGE frame previously sent by the endpoint, the endpoint MAY generate
-a connection error of type UNSOLICITED_PATH_RESPONSE.
-
+a connection error of type UNSOLICITED_PATH_RESPONSE. Endpoints MUST NOT
+generate this error in response to a PATH_RESPONSE frame in a Handshake Packet.
+Endpoints SHOULD NOT generate this error if they are not storing the
+PATH_CHALLENGE data well in excess of any plausible packet round-trip time on
+a new path, as a late response would result in connection teardown.
 
 ## STREAM Frames {#frame-stream}
 
