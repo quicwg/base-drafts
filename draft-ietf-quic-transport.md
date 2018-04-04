@@ -1490,8 +1490,8 @@ and connection ID to reach a different server instance which does not posses the
 necessary connection state. Receiving a Stateless Reset in response to a probing
 packet SHOULD NOT terminate the connection, but MUST cause the endpoint to
 consider path validation to have failed.  After receiving a Stateless Reset, the
-client MUST NOT send additional packets with the Connection ID used on the
-probing packet.
+client MUST NOT send additional packets on the same connection the Connection ID
+used on the probing packet.
 
 ### Initiation
 
