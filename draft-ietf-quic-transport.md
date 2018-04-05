@@ -762,7 +762,7 @@ A Version Negotiation ({{packet-version}}) packet MUST use both connection IDs
 selected by the client, swapped to ensure correct routing toward the client.
 
 The connection ID can change over the lifetime of a connection, especially in
-response to connection migration ({{migration}}}). NEW_CONNECTION_ID frames
+response to connection migration ({{migration}}). NEW_CONNECTION_ID frames
 ({{frame-new-connection-id}}) are used to provide new connection ID values.
 
 ## Packet Numbers {#packet-numbers}
@@ -903,7 +903,7 @@ connection establishment intertwines version negotiation with the cryptographic
 and transport handshakes to reduce connection establishment latency, as
 described in {{handshake}}.  Once established, a connection may migrate to a
 different IP or port at either endpoint, due to NAT rebinding or mobility, as
-described in {{migration}}}.  Finally a connection may be terminated by either
+described in {{migration}}.  Finally a connection may be terminated by either
 endpoint, as described in {{termination}}.
 
 ## Matching Packets to Connections {#packet-handling}
@@ -1490,7 +1490,7 @@ therefore unlikely to be successful.
 This token can be provided to the cryptographic handshake immediately after
 establishing a connection.  QUIC might also generate an updated token if
 significant time passes or the client address changes for any reason (see
-{{migration}}}).  The cryptographic handshake is responsible for
+{{migration}}).  The cryptographic handshake is responsible for
 providing the client with the token.  In TLS the token is included in the ticket
 that is used for resumption and 0-RTT, which is carried in a NewSessionTicket
 message.
