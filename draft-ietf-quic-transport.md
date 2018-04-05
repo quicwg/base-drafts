@@ -405,8 +405,8 @@ Packet Number:
 
 Payload Length:
 
-: If Type is one of the Compound packets, the length of the Payload field in
-  octets.
+: If Type is either Initial-with-Length or Handshake-with-Length, the length of
+  the Payload field in octets.
 
 Payload:
 
@@ -421,8 +421,8 @@ The following packet types are defined:
 | 0x7E | Retry                         | {{packet-retry}}            |
 | 0x7D | Handshake                     | {{packet-handshake}}        |
 | 0x7C | 0-RTT Protected               | {{packet-protected}}        |
-| 0x7B | Compound-Initial              | {{packet-compound}}         |
-| 0x7A | Compound-Handshake            | {{packet-compound}}         |
+| 0x7B | Initial-with-Length           | {{packet-compound}}         |
+| 0x7A | Handshake-with-Length         | {{packet-compound}}         |
 {: #long-packet-types title="Long Header Packet Types"}
 
 The header form, packet type, connection ID, packet number and version fields of
@@ -567,7 +567,7 @@ process.
 Once version negotiation is complete, the cryptographic handshake is used to
 agree on cryptographic keys.  The cryptographic handshake is carried in Initial
 ({{packet-initial}}), Retry ({{packet-retry}}), Handshake
-({{packet-handshake}}) packets or their Compound variants ({{packet-compound}}).
+({{packet-handshake}}) packets or their compound variants ({{packet-compound}}).
 
 All these packets use the long header and contain the current QUIC version in
 the version field.
@@ -687,30 +687,28 @@ sequence of frames, as described in {{frames}}.
 
 ## Compound Packets {#packet-compound}
 
-Compound packets allow the sender to assemble an Initial ({{packet-initial}})
-or a Handshake ({{packet-handshake}}) packet and a Protected
-({{packet-protected}}) packet into one UDP packet, thereby reducing the number
-of packets required to be emitted when application data can be sent during the
+Initial-with-Length and Handshake-with-Length packets allow the sender to
+combine the Cryptographic Handshake packet and a Protected packet
+({{packet-protected}}) into one UDP packet, thereby reducing the number of
+packets required to be emitted when application data can be sent during the
 handshake.
 
-A Compound-Initial packet is identical to an Initial packet with the exception
-being that it has the Payload Length field.  The field designates the length of
-the payload of the Initial packet.  The remainder of the UDP packet contains a
-0-RTT Protected packet.
+A Initial-with-Length packet is identical to an Initial packet with the
+exception being that it has the Payload Length field.  The field designates the
+length of the payload of the Initial packet.  The remainder of the UDP packet
+contains a 0-RTT Protected packet.
 
-A Compound-Handshake packet is identical to a Handshake packet with the
+A Handshake-with-Length packet is identical to a Handshake packet with the
 exception being that it has the Payload Length field.  The field designates the
 length of the payload of the Handshake packet.  The remainder of the UDP packet
 contains either a 0-RTT Protected packet or a short header packet
 ({{short-header}}).
 
 The sender MUST NOT assemble QUIC packets belonging to different QUIC
-connections into a single Compound packet.
+connections into a single UDP packet.
 
-The receiver of a Compound packet MUST individually process the Cryptographic
-Handshake packet and the Protected packet being contained.  It MUST process the
-Cryptographic Handshake packet of a Compound packet even when the Protected
-packet being contained is deemed invalid.
+The receiver of a compound UDP packet MUST individually process each of the QUIC
+packets being conveyed, as if they were received as separate UDP packets.
 
 
 ## Connection ID {#connection-id}
