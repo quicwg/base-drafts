@@ -688,21 +688,16 @@ sequence of frames, as described in {{frames}}.
 ## Compound Packets {#packet-compound}
 
 Initial-with-Length and Handshake-with-Length packets allow the sender to
-combine the Cryptographic Handshake packet and a Protected packet
+combine the Cryptographic Handshake packets and a Protected packet
 ({{packet-protected}}) into one UDP packet, thereby reducing the number of
 packets required to be emitted when application data can be sent during the
 handshake.
 
-A Initial-with-Length packet is identical to an Initial packet with the
-exception being that it has the Payload Length field.  The field designates the
-length of the payload of the Initial packet.  The remainder of the UDP packet
-contains a 0-RTT Protected packet.
-
-A Handshake-with-Length packet is identical to a Handshake packet with the
-exception being that it has the Payload Length field.  The field designates the
-length of the payload of the Handshake packet.  The remainder of the UDP packet
-contains either a 0-RTT Protected packet or a short header packet
-({{short-header}}).
+Initial-with-Length and Handshake-with-Length packets are identical to Initial
+({{packet-initical}}) and Handshake ({{packet-handshake}}) packets, with the
+exception being that they have the Payload Length field.  The field designates
+the length of the Payload field.  The remainder of the UDP packet MAY contain
+another QUIC packet.
 
 The sender MUST NOT assemble QUIC packets belonging to different QUIC
 connections into a single UDP packet.
