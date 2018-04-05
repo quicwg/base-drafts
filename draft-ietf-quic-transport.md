@@ -1569,12 +1569,11 @@ An endpoint MUST NOT initiate connection migration before the handshake is
 finished and the endpoint has 1-RTT keys.
 
 This document limits migration of connections to new client addresses.
-Additionally, clients are responsible for initiating all migrations.  Servers
-do not send non-probing packets (see {{probing}}) toward a client address until
-it sees a non-probing packet from that address.  Additionally, if a client
-receives packets from an unknown server address, the client MAY discard these
-packets.  Migrating a connection to a new server address is left for future
-work.
+Clients are responsible for initiating all migrations.  Servers do not send
+non-probing packets (see {{probing}}) toward a client address until it sees a
+non-probing packet from that address.  If a client receives packets from an
+unknown server address, the client MAY discard these packets.  Migrating a
+connection to a new server address is left for future work.
 
 
 ### Probing a New Path {#probing}
