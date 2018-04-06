@@ -1210,7 +1210,7 @@ extension_frames (0x0009):
   struct.  That is, a 2 octet length field, followed by 1 or more repetitions of
   a one octet frame type and a two octet identifiers.  Each entry defines a
   mapping of frame type to the 16-bit extension frame types defined in
-  {{frame-extension}}.  Valid frame types MUST be from 0x80 to 0xff, other
+  {{frame-extension}}.  Valid frame types MUST be from 0x80 to 0xff; other
   values MUST be treated as a connection error of type
   TRANSPORT_PARAMETER_ERROR.
 
@@ -2922,11 +2922,11 @@ An endpoint MUST NOT use extension frames in packets protected with handshake
 keys.  A client can use extension frames in 0-RTT based on the value of the
 server's transport parameters used in a previous connection.
 
-The definition of a extension frame identifier MUST include the format of the
+The definition of an extension frame identifier MUST include the format of the
 extension frame and its semantics.  QUIC frames are not length-delimited, so
 knowledge of the format of frames is necessary for decoding packets.  Each
-extension frame identifier definition MUST include the versions of QUIC that the
-frame can be used with.
+extension frame definition MUST include the versions of QUIC that the frame can
+be used with.
 
 
 # Packetization and Reliability {#packetization}
