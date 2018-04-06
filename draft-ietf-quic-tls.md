@@ -829,8 +829,16 @@ For any secret S, the AEAD key uses a label of "key", and the IV uses a label of
 "iv":
 
 ~~~
-   key = QHKDF-Expand(S, "key", key_length)
-   iv  = QHKDF-Expand(S, "iv", iv_length)
+key = QHKDF-Expand(S, "key", key_length)
+iv  = QHKDF-Expand(S, "iv", iv_length)
+~~~
+
+For example, client packet protection keys and IVs for AEAD_AES_128_GCM are
+derived from 1-RTT secrets as follows:
+
+~~~
+client_pp_key_<i> = QHKDF-Expand(client_pp_secret_<i>, "key", 16)
+client_pp_iv_<i>  = QHKDF-Expand(client_pp_secret_<i>, "iv", 12)
 ~~~
 
 The QUIC record protection initially starts with keying material derived from
