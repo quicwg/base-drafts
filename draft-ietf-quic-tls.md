@@ -780,9 +780,9 @@ an empty context.  The size of the secret MUST be the size of the hash output
 for the PRF hash function negotiated by TLS.
 
 ~~~
-client_pp_secret_0 =
+client_pp_secret<0> =
    TLS-Exporter("EXPORTER-QUIC client 1rtt", "", Hash.length)
-server_pp_secret_0 =
+server_pp_secret<0> =
    TLS-Exporter("EXPORTER-QUIC server 1rtt", "", Hash.length)
 ~~~
 
@@ -799,10 +799,10 @@ secret.  A Label parameter of "client 1rtt" is used for the client secret and
 the PRF hash function.
 
 ~~~
-client_pp_secret_<N+1> =
-  QHKDF-Expand(client_pp_secret_<N>, "client 1rtt", Hash.length)
-server_pp_secret_<N+1> =
-  QHKDF-Expand(server_pp_secret_<N>, "server 1rtt", Hash.length)
+client_pp_secret<N+1> =
+  QHKDF-Expand(client_pp_secret<N>, "client 1rtt", Hash.length)
+server_pp_secret<N+1> =
+  QHKDF-Expand(server_pp_secret<N>, "server 1rtt", Hash.length)
 ~~~
 
 This allows for a succession of new secrets to be created as needed.
@@ -816,8 +816,8 @@ HKDF-Expand-Label.  QUIC uses the AEAD function negotiated by TLS.
 The packet protection key and IV used to protect the 0-RTT packets sent by a
 client are derived from the QUIC 0-RTT secret. The packet protection keys and
 IVs for 1-RTT packets sent by the client and server are derived from the current
-generation of client and server 1-RTT secrets (client_pp_secret_\<i> and
-server_pp_secret_\<i>) respectively.
+generation of client and server 1-RTT secrets (client_pp_secret\<i> and
+server_pp_secret\<i>) respectively.
 
 The length of the QHKDF-Expand output is determined by the requirements of the
 AEAD function selected by TLS.  The key length is the AEAD key size.  As defined
@@ -829,8 +829,19 @@ For any secret S, the AEAD key uses a label of "key", and the IV uses a label of
 "iv":
 
 ~~~
-   key = QHKDF-Expand(S, "key", key_length)
-   iv  = QHKDF-Expand(S, "iv", iv_length)
+key = QHKDF-Expand(S, "key", key_length)
+iv  = QHKDF-Expand(S, "iv", iv_length)
+~~~
+
+Separate keys are derived for packet protection by clients and servers.  Each
+endpoint uses the packet protection key of its peer to remove packet protection.
+For example, client packet protection keys and IVs - which are also used by the
+server to remove the protection added by a client - for AEAD_AES_128_GCM are
+derived from 1-RTT secrets as follows:
+
+~~~
+client_pp_key<i> = QHKDF-Expand(client_pp_secret<i>, "key", 16)
+client_pp_iv<i>  = QHKDF-Expand(client_pp_secret<i>, "iv", 12)
 ~~~
 
 The QUIC record protection initially starts with keying material derived from
@@ -862,12 +873,12 @@ input.
 Once TLS has provided a key, the contents of regular QUIC packets immediately
 after any TLS messages have been sent are protected by the AEAD selected by TLS.
 
-The key, K, is either the client packet protection key (client_pp_key_\<i>) or
-the server packet protection key (server_pp_key_\<i>), derived as defined in
+The key, K, is either the client packet protection key (client_pp_key\<i>) or
+the server packet protection key (server_pp_key\<i>), derived as defined in
 {{key-expansion}}.
 
 The nonce, N, is formed by combining the packet protection IV (either
-client_pp_iv_\<i\> or server_pp_iv_\<i\>) with the packet number.  The 64 bits
+client_pp_iv\<i\> or server_pp_iv\<i\>) with the packet number.  The 64 bits
 of the reconstructed QUIC packet number in network byte order is left-padded
 with zeros to the size of the IV.  The exclusive OR of the padded packet number
 and the IV forms the AEAD nonce.
