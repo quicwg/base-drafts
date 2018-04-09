@@ -593,12 +593,15 @@ The first Initial packet that is sent by a client contains a randomized packet
 number.  All subsequent packets contain a packet number that is incremented by
 one, see ({{packet-numbers}}).
 
-The payload of a Initial packet consists of a STREAM frame (or frames)
-for stream 0 containing a cryptographic handshake message, with enough PADDING
-frames that the packet is at least 1200 octets (see {{packetization}}).  The
-stream in this packet always starts at an offset of 0 (see {{stateless-retry}})
-and the complete cryptographic handshake message MUST fit in a single packet
-(see {{handshake}}).
+The payload of an Initial packet conveys a STREAM frame (or frames) for stream
+0 containing a cryptographic handshake message.  The stream in this packet
+always starts at an offset of 0 (see {{stateless-retry}}) and the complete
+cryptographic handshake message MUST fit in a single packet (see {{handshake}}).
+
+The payload of a UDP packet carrying the Initial packet MUST be expanded to at
+least 1200 octets (see {{packetization}}), by adding PADDING frames to the
+Initial packet and/or by combining the Initial packet with a Protected packet
+(see {{compound-packet}}).
 
 The client uses the Initial packet type for any packet that contains an initial
 cryptographic handshake message.  This includes all cases where a new packet
