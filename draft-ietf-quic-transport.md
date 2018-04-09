@@ -398,7 +398,7 @@ changed before this draft goes to the IESG.]]
 
 Third Bit:
 
-: The third bit (0x10) of octet 0 is set to 1.
+: The third bit (0x20) of octet 0 is set to 1.
 
 \[\[Editor's Note: this section should be removed and the bit definitions
 changed before this draft goes to the IESG.]]
