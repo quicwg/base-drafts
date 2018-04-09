@@ -601,7 +601,7 @@ cryptographic handshake message MUST fit in a single packet (see {{handshake}}).
 The payload of a UDP packet carrying the Initial packet MUST be expanded to at
 least 1200 octets (see {{packetization}}), by adding PADDING frames to the
 Initial packet and/or by combining the Initial packet with a Protected packet
-(see {{compound-packet}}).
+(see {{packet-compound}}).
 
 The client uses the Initial packet type for any packet that contains an initial
 cryptographic handshake message.  This includes all cases where a new packet
@@ -697,7 +697,7 @@ packets required to be emitted when application data can be sent during the
 handshake.
 
 Initial-with-Length and Handshake-with-Length packets are identical to Initial
-({{packet-initical}}) and Handshake ({{packet-handshake}}) packets, with the
+({{packet-initial}}) and Handshake ({{packet-handshake}}) packets, with the
 exception being that they have the Payload Length field.  The field designates
 the length of the Payload field.  The remainder of the UDP packet MAY contain
 another QUIC packet.
