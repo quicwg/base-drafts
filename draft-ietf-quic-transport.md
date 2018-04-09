@@ -699,11 +699,14 @@ exception being that they have the Payload Length field.  The field designates
 the length of the Payload field.  The remainder of the UDP packet MAY contain
 another QUIC packet.
 
-The sender MUST NOT assemble QUIC packets belonging to different QUIC
+The sender MUST NOT combine QUIC packets belonging to different QUIC
 connections into a single UDP packet.
 
-The receiver of a compound UDP packet MUST individually process each of the QUIC
-packets being conveyed, as if they were received as separate UDP packets.
+The QUIC packet that is being conveyed in the remainder of a compound UDP
+packet is a complete QUIC packet.  No fields in the packet header are omitted.
+The receiver of a compound UDP packet MUST individually process each of the
+QUIC packets being conveyed and separately acknowledge them, as if they were
+received as distinct UDP packets.
 
 
 ## Connection ID {#connection-id}
