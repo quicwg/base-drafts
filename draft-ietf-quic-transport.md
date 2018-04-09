@@ -1770,7 +1770,9 @@ source UDP port when sending traffic after a period of inactivity.  Changing the
 UDP port from which it sends packets at the same time might cause the packet to
 appear as a connection migration. This ensures that the mechanisms that support
 migration are exercised even for clients that don't experience NAT rebindings or
-genuine migrations.
+genuine migrations.  Changing port number can cause a peer to reset its
+congestion state (see {{migration-cc}}), so this action SHOULD only be changed
+infrequently.
 
 An endpoint that receives a successfully authenticated packet with a previously
 unused connection ID MUST use the next available connection ID for any packets
