@@ -711,7 +711,7 @@ connection ID to vary in length and still be used by the load balancer.
 The very first packet sent by a client includes a random value for Destination
 Connection ID.  The same value MUST be used for all 0-RTT packets sent on that
 connection ({{packet-protected}}).  This randomized value is used to determine
-the handshake packet protection keys (see Section 5.2.2 of {{QUIC-TLS}}).
+the handshake packet protection keys (see Section 5.3.2 of {{QUIC-TLS}}).
 
 A Version Negotiation ({{packet-version}}) packet MUST use both connection IDs
 selected by the client, swapped to ensure correct routing toward the client.
