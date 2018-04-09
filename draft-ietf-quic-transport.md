@@ -644,7 +644,8 @@ but could involve additional computational effort depending on implementation
 choices.
 
 The payload of this packet contains STREAM frames and could contain PADDING,
-ACK, PATH_CHALLENGE, or PATH_RESPONSE frames.
+ACK, PATH_CHALLENGE, or PATH_RESPONSE frames.  Handshake packets MAY contain
+CONNECTION_CLOSE frames if the handshake is unsuccessful.
 
 
 ## Protected Packets {#packet-protected}
