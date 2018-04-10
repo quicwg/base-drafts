@@ -693,19 +693,18 @@ sequence of frames, as described in {{frames}}.
 
 ## Compound Packets {#packet-compound}
 
-A sender can combine a Cryptographic Handshake packet and a Protected packet
-({{packet-protected}}) into one UDP packet, thereby reducing the number of
-packets required to be emitted when application data can be sent during the
-handshake.
+A sender can combine multiple QUIC packets (typically a Cryptographic Handshake
+packet and a Protected packet) into one UDP packet, thereby reducing the number
+of UDP packets required to be emitted when application data can be sent during
+the handshake.
 
 The sender MUST NOT combine QUIC packets belonging to different QUIC
 connections into a single UDP packet.
 
-The QUIC packet that is being conveyed in the remainder of a compound UDP
-packet is a complete QUIC packet.  No fields in the packet header are omitted.
-The receiver of a compound UDP packet MUST individually process each of the
-QUIC packets being conveyed and separately acknowledge them, as if they were
-received as distinct UDP packets.
+Every QUIC packet that is being conveyed in a compound UDP packet is a complete
+QUIC packet.  No fields in the packet header are omitted.  The receiver of a
+compound UDP packet MUST individually process each QUIC packet and separately
+acknowledge them, as if they were received as distinct UDP packets.
 
 
 ## Connection ID {#connection-id}
