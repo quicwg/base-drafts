@@ -1763,9 +1763,16 @@ gap than it advertised.
 
 Clients MAY change connection ID at any time based on implementation-specific
 concerns.  For example, after a period of network inactivity NAT rebinding might
-occur when the client begins sending data again. A client might wish to reduce
-linkability by employing a new connection ID when sending traffic after a period
-of inactivity.
+occur when the client begins sending data again.
+
+A client might wish to reduce linkability by employing a new connection ID and
+source UDP port when sending traffic after a period of inactivity.  Changing the
+UDP port from which it sends packets at the same time might cause the packet to
+appear as a connection migration. This ensures that the mechanisms that support
+migration are exercised even for clients that don't experience NAT rebindings or
+genuine migrations.  Changing port number can cause a peer to reset its
+congestion state (see {{migration-cc}}), so the port SHOULD only be changed
+infrequently.
 
 An endpoint that receives a successfully authenticated packet with a previously
 unused connection ID MUST use the next available connection ID for any packets
