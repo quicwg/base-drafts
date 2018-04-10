@@ -89,16 +89,6 @@ informative:
     target:
      "https://web.archive.org/web/20150315054838/http://ha.ckers.org/slowloris/"
 
-  QUIC-SPIN-EXP:
-    title: "The QUIC Latency Spin Bit"
-    date: {DATE}
-    seriesinfo:
-      Internet-Draft: draft-ietf-quic-spin-exp
-    author:
-      -
-        ins: B. Trammell
-      -
-        ins: M. Kuehlewind
 
 --- abstract
 
@@ -379,7 +369,7 @@ following sections.
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+
-|0|K|1|1|0|S|T T|
+|0|K|1|1|0|R|T T|
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                Destination Connection ID (0..144)           ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -430,10 +420,9 @@ Google QUIC Demultipexing Bit:
   specification when Google QUIC has finished transitioning to the new header
   format.
 
-Spin Bit Reservation:
+Reserved:
 
-: The sixth bit (0x4) of octet 0 is reserved for experimentation with the
-Latency Spin Bit, as described in {{QUIC-SPIN-EXP}}.
+: The sixth bit (0x4) of octet 0 is reserved for experimentation.
 
 Short Packet Type:
 
