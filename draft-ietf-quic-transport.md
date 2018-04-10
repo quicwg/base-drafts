@@ -137,8 +137,7 @@ protocol, including the conceptual design, wire format, and mechanisms of the
 QUIC protocol for connection establishment, stream multiplexing, stream and
 connection-level flow control, connection migration, and data reliability.
 
-QUIC used to be known as 'Quick UDP  Internet Connections', but the present
-document advises it be used no  more: QUIC does not stand for anything.
+QUIC is a name, not an acronym.
 
 Accompanying documents describe QUIC's loss detection and congestion control
 {{QUIC-RECOVERY}}, and the use of TLS 1.3 for key negotiation {{QUIC-TLS}}.
