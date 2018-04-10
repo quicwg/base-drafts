@@ -89,7 +89,7 @@ informative:
     target:
      "https://web.archive.org/web/20150315054838/http://ha.ckers.org/slowloris/"
 
-  SPIN-BIT-EXP:
+  QUIC-SPIN-EXP:
     title: "The QUIC Latency Spin Bit"
     date: {DATE}
     seriesinfo:
@@ -433,7 +433,7 @@ Google QUIC Demultipexing Bit:
 Spin Bit Reservation:
 
 : The sixth bit (0x4) of octet 0 is reserved for experimentation with the
-Latency Spin Bit, as described in {{SPIN-BIT-EXP}}.
+Latency Spin Bit, as described in {{QUIC-SPIN-EXP}}.
 
 Short Packet Type:
 
