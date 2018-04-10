@@ -703,7 +703,8 @@ connections into a single UDP datagram.
 Every QUIC packet that is being conveyed in a compound UDP datagram is a
 complete QUIC packet.  No fields in the packet header are omitted.  The receiver
 of a compound UDP datagram MUST individually process each QUIC packet and
-separately acknowledge them, as if they were received as distinct UDP datagrams.
+separately acknowledge them, as if they were received as the payload of
+different UDP datagrams.
 
 
 ## Connection ID {#connection-id}
