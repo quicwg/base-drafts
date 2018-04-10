@@ -370,7 +370,7 @@ following sections.
 
 End of the Payload field (which is also the end of the long header packet) is
 determined by the value of the Payload Length field.  Senders can combine
-multiple long header packets into one UDP packet.  See {{packet-compound}} for
+multiple long header packets into one UDP datagram.  See {{packet-compound}} for
 more details.
 
 
@@ -574,7 +574,7 @@ The payload of an Initial packet conveys a STREAM frame (or frames) for stream
 always starts at an offset of 0 (see {{stateless-retry}}) and the complete
 cryptographic handshake message MUST fit in a single packet (see {{handshake}}).
 
-The payload of a UDP packet carrying the Initial packet MUST be expanded to at
+The payload of a UDP datagram carrying the Initial packet MUST be expanded to at
 least 1200 octets (see {{packetization}}), by adding PADDING frames to the
 Initial packet and/or by combining the Initial packet with a Protected packet
 (see {{packet-compound}}).
@@ -691,17 +691,17 @@ sequence of frames, as described in {{frames}}.
 ## Compound Packets {#packet-compound}
 
 A sender can combine multiple QUIC packets (typically a Cryptographic Handshake
-packet and a Protected packet) into one UDP packet, thereby reducing the number
-of UDP packets required to be emitted when application data can be sent during
-the handshake.
+packet and a Protected packet) into one UDP datagram, thereby reducing the
+number of UDP datagram required to be emitted when application data can be sent
+during the handshake.
 
 The sender MUST NOT combine QUIC packets belonging to different QUIC
-connections into a single UDP packet.
+connections into a single UDP datagram.
 
-Every QUIC packet that is being conveyed in a compound UDP packet is a complete
-QUIC packet.  No fields in the packet header are omitted.  The receiver of a
-compound UDP packet MUST individually process each QUIC packet and separately
-acknowledge them, as if they were received as distinct UDP packets.
+Every QUIC packet that is being conveyed in a compound UDP datagram is a
+complete QUIC packet.  No fields in the packet header are omitted.  The receiver
+of a compound UDP datagram MUST individually process each QUIC packet and
+separately acknowledge them, as if they were received as distinct UDP datagrams.
 
 
 ## Connection ID {#connection-id}
