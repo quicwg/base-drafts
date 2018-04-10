@@ -577,7 +577,7 @@ cryptographic handshake message MUST fit in a single packet (see {{handshake}}).
 
 The payload of a UDP datagram carrying the Initial packet MUST be expanded to at
 least 1200 octets (see {{packetization}}), by adding PADDING frames to the
-Initial packet and/or by combining the Initial packet with a Protected packet
+Initial packet and/or by combining the Initial packet with a 0-RTT packet
 (see {{packet-compound}}).
 
 The client uses the Initial packet type for any packet that contains an initial
