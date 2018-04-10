@@ -342,7 +342,8 @@ Packet Number:
 
 Payload Length:
 
-: The length of the Payload field in octets.
+: The length of the Payload field in octets, encoded as a variable-length
+  integer ({{integer-encoding}}).
 
 Payload:
 
