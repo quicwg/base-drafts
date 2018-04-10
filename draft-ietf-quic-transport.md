@@ -692,8 +692,8 @@ sequence of frames, as described in {{frames}}.
 ## Compound Packets {#packet-compound}
 
 A sender can combine multiple QUIC packets (typically a Cryptographic Handshake
-packet and a Protected packet) into one UDP datagram, thereby reducing the
-number of UDP datagram required to be emitted when application data can be sent
+packet and a Protected packet) into one UDP datagram.  This can reduce the
+number of UDP datagrams required to be emitted when application data can be sent
 during the handshake.
 
 The sender MUST NOT combine QUIC packets belonging to different QUIC
