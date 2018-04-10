@@ -364,7 +364,9 @@ keys are established.
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                       Packet Number (32)                      |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|     [Payload Length (16)]     |         Payload (*)         ...
+|                       Payload Length (i)                    ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                          Payload (*)                        ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~~~
 {: #fig-long-header title="Long Header Format"}
@@ -405,13 +407,11 @@ Packet Number:
 
 Payload Length:
 
-: If Type is either Initial-with-Length or Handshake-with-Length, the length of
-  the Payload field in octets.
+: The length of the Payload field in octets.
 
 Payload:
 
-: Octets from 17 onwards (the rest of QUIC packet) are the payload of the
-  packet.
+: The payload of the packet.
 
 The following packet types are defined:
 
@@ -421,8 +421,6 @@ The following packet types are defined:
 | 0x7E | Retry                         | {{packet-retry}}            |
 | 0x7D | Handshake                     | {{packet-handshake}}        |
 | 0x7C | 0-RTT Protected               | {{packet-protected}}        |
-| 0x7B | Initial-with-Length           | {{packet-compound}}         |
-| 0x7A | Handshake-with-Length         | {{packet-compound}}         |
 {: #long-packet-types title="Long Header Packet Types"}
 
 The header form, packet type, connection ID, packet number and version fields of
@@ -433,6 +431,11 @@ details on how packets from different versions of QUIC are interpreted.
 The interpretation of the fields and the payload are specific to a version and
 packet type.  Type-specific semantics for this version are described in the
 following sections.
+
+End of the Payload field (which is also the end of the long header packet) is
+determined by the value of the Payload Length field.  Senders can combine
+multiple long header packets into one UDP packet.  See {{packet-compound}} for
+more details.
 
 
 ## Short Header
@@ -566,8 +569,8 @@ process.
 
 Once version negotiation is complete, the cryptographic handshake is used to
 agree on cryptographic keys.  The cryptographic handshake is carried in Initial
-({{packet-initial}}), Retry ({{packet-retry}}), Handshake
-({{packet-handshake}}) packets or their compound variants ({{packet-compound}}).
+({{packet-initial}}), Retry ({{packet-retry}}) and Handshake
+({{packet-handshake}}) packets.
 
 All these packets use the long header and contain the current QUIC version in
 the version field.
@@ -690,17 +693,10 @@ sequence of frames, as described in {{frames}}.
 
 ## Compound Packets {#packet-compound}
 
-Initial-with-Length and Handshake-with-Length packets allow the sender to
-combine the Cryptographic Handshake packets and a Protected packet
+A sender can combine a Cryptographic Handshake packet and a Protected packet
 ({{packet-protected}}) into one UDP packet, thereby reducing the number of
 packets required to be emitted when application data can be sent during the
 handshake.
-
-Initial-with-Length and Handshake-with-Length packets are identical to Initial
-({{packet-initial}}) and Handshake ({{packet-handshake}}) packets, with the
-exception being that they have the Payload Length field.  The field designates
-the length of the Payload field.  The remainder of the UDP packet MAY contain
-another QUIC packet.
 
 The sender MUST NOT combine QUIC packets belonging to different QUIC
 connections into a single UDP packet.
