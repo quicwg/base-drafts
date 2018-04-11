@@ -137,8 +137,6 @@ protocol, including the conceptual design, wire format, and mechanisms of the
 QUIC protocol for connection establishment, stream multiplexing, stream and
 connection-level flow control, connection migration, and data reliability.
 
-QUIC is a name, not an acronym.
-
 Accompanying documents describe QUIC's loss detection and congestion control
 {{QUIC-RECOVERY}}, and the use of TLS 1.3 for key negotiation {{QUIC-TLS}}.
 
@@ -183,6 +181,8 @@ Connection ID:
 QUIC packet:
 
 : A well-formed UDP payload that can be parsed by a QUIC receiver.
+
+QUIC is a name, not an acronym.
 
 
 ## Notational Conventions
