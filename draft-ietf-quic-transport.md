@@ -528,6 +528,10 @@ A Version Negotiation packet cannot be explicitly acknowledged in an ACK frame
 by a client.  Receiving another Initial packet implicitly acknowledges a Version
 Negotiation packet.
 
+The Version Negotiation packet does not include the Packet Number and Length
+fields present in other packets that use the long header form.  Consequently,
+a Version Negotiation packet consumes an entire UDP datagram.
+
 See {{version-negotiation}} for a description of the version negotiation
 process.
 
@@ -698,18 +702,18 @@ sequence of frames, as described in {{frames}}.
 
 A sender can combine multiple QUIC packets (typically a Cryptographic Handshake
 packet and a Protected packet) into one UDP datagram.  This can reduce the
-number of UDP datagrams required to be emitted when application data can be sent
-during the handshake.  A packet with a short header does not include a length,
-so it has to be the last packet included in a UDP datagram.
+number of UDP datagrams sent when application data is sent during the handshake
+or immediately afterwards.  A packet with a short header does not include a
+length, so it has to be the last packet included in a UDP datagram.
 
 The sender MUST NOT combine QUIC packets belonging to different QUIC
 connections into a single UDP datagram.
 
-Every QUIC packet that is being conveyed in a compound UDP datagram is a
-complete QUIC packet.  No fields in the packet header are omitted.  The receiver
-of a compound UDP datagram MUST individually process each QUIC packet and
-separately acknowledge them, as if they were received as the payload of
-different UDP datagrams.
+Every QUIC packet that is conveyed in a compound UDP datagram is a complete QUIC
+packet.  Though the values of some fields in the packet header might be
+redundant, no fields are omitted.  The receiver of a compound UDP datagram MUST
+individually process each QUIC packet and separately acknowledge them, as if
+they were received as the payload of different UDP datagrams.
 
 
 ## Connection ID {#connection-id}
@@ -2006,7 +2010,7 @@ following layout:
 ~~~
 
 This design ensures that a stateless reset packet is - to the extent possible -
-indistinguishable from a regular packet.
+indistinguishable from a regular packet with a short header.
 
 A server generates a random 18-octet Destination Connection ID field.  For a
 client that depends on the server including a connection ID, this will mean that
