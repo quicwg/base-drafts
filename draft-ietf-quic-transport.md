@@ -369,7 +369,7 @@ following sections.
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+
-|0|K|1|1|0|T T T|
+|0|K|1|1|0|R|T T|
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                Destination Connection ID (0..144)           ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -420,9 +420,13 @@ Google QUIC Demultipexing Bit:
   specification when Google QUIC has finished transitioning to the new header
   format.
 
+Reserved:
+
+: The sixth bit (0x4) of octet 0 is reserved for experimentation.
+
 Short Packet Type:
 
-: The remaining 3 bits of octet 0 include one of 8 packet types.
+: The remaining 2 bits of octet 0 include one of 4 packet types.
   {{short-packet-types}} lists the types that are defined for short packets.
 
 Destination Connection ID:
