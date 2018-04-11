@@ -280,6 +280,8 @@ keys are established.
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                       Packet Number (32)                      |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                       Payload Length (i)                    ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                          Payload (*)                        ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~~~
@@ -338,9 +340,14 @@ Packet Number:
 : The Packet Number is a 32-bit field that follows the two connection IDs.
   {{packet-numbers}} describes the use of packet numbers.
 
+Payload Length:
+
+: The length of the Payload field in octets, encoded as a variable-length
+  integer ({{integer-encoding}}).
+
 Payload:
 
-: All remaining octets in the packet are the payload of the packet.
+: The payload of the packet.
 
 The following packet types are defined:
 
@@ -361,6 +368,11 @@ on how packets from different versions of QUIC are interpreted.
 The interpretation of the fields and the payload are specific to a version and
 packet type.  Type-specific semantics for this version are described in the
 following sections.
+
+End of the Payload field (which is also the end of the long header packet) is
+determined by the value of the Payload Length field.  Senders can combine
+multiple long header packets into one UDP datagram.  See {{packet-compound}} for
+more details.
 
 
 ## Short Header
@@ -562,12 +574,15 @@ The first Initial packet that is sent by a client contains a randomized packet
 number.  All subsequent packets contain a packet number that is incremented by
 one, see ({{packet-numbers}}).
 
-The payload of an Initial packet consists of a STREAM frame (or frames)
-for stream 0 containing a cryptographic handshake message, with enough PADDING
-frames that the packet is at least 1200 octets (see {{packetization}}).  The
-stream in this packet always starts at an offset of 0 (see {{stateless-retry}})
-and the complete cryptographic handshake message MUST fit in a single packet
-(see {{handshake}}).
+The payload of an Initial packet conveys a STREAM frame (or frames) for stream
+0 containing a cryptographic handshake message.  The stream in this packet
+always starts at an offset of 0 (see {{stateless-retry}}) and the complete
+cryptographic handshake message MUST fit in a single packet (see {{handshake}}).
+
+The payload of a UDP datagram carrying the Initial packet MUST be expanded to at
+least 1200 octets (see {{packetization}}), by adding PADDING frames to the
+Initial packet and/or by combining the Initial packet with a 0-RTT packet
+(see {{packet-compound}}).
 
 The client uses the Initial packet type for any packet that contains an initial
 cryptographic handshake message.  This includes all cases where a new packet
@@ -677,6 +692,24 @@ packet sent, see {{packet-numbers}} for details.
 The payload is protected using authenticated encryption.  {{QUIC-TLS}} describes
 packet protection in detail.  After decryption, the plaintext consists of a
 sequence of frames, as described in {{frames}}.
+
+
+## Compound Packets {#packet-compound}
+
+A sender can combine multiple QUIC packets (typically a Cryptographic Handshake
+packet and a Protected packet) into one UDP datagram.  This can reduce the
+number of UDP datagrams required to be emitted when application data can be sent
+during the handshake.  A packet with a short header does not include a length,
+so it has to be the last packet included in a UDP datagram.
+
+The sender MUST NOT combine QUIC packets belonging to different QUIC
+connections into a single UDP datagram.
+
+Every QUIC packet that is being conveyed in a compound UDP datagram is a
+complete QUIC packet.  No fields in the packet header are omitted.  The receiver
+of a compound UDP datagram MUST individually process each QUIC packet and
+separately acknowledge them, as if they were received as the payload of
+different UDP datagrams.
 
 
 ## Connection ID {#connection-id}
