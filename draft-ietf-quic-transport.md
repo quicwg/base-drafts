@@ -182,6 +182,8 @@ QUIC packet:
 
 : A well-formed UDP payload that can be parsed by a QUIC receiver.
 
+QUIC is a name, not an acronym.
+
 
 ## Notational Conventions
 
