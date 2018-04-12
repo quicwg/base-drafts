@@ -698,7 +698,7 @@ packet protection in detail.  After decryption, the plaintext consists of a
 sequence of frames, as described in {{frames}}.
 
 
-## Coaslescing Packets {#packet-compound}
+## Coaslescing Packets {#packet-coalesce}
 
 A sender can coalesce multiple QUIC packets (typically a Cryptographic Handshake
 packet and a Protected packet) into one UDP datagram.  This can reduce the
