@@ -698,9 +698,9 @@ packet protection in detail.  After decryption, the plaintext consists of a
 sequence of frames, as described in {{frames}}.
 
 
-## Compound Packets {#packet-compound}
+## Coaslescing Packets {#packet-compound}
 
-A sender can combine multiple QUIC packets (typically a Cryptographic Handshake
+A sender can coalesce multiple QUIC packets (typically a Cryptographic Handshake
 packet and a Protected packet) into one UDP datagram.  This can reduce the
 number of UDP datagrams needed to send application data during the handshake and
 immediately afterwards.  A packet with a short header does not include a length,
@@ -709,9 +709,9 @@ so it has to be the last packet included in a UDP datagram.
 The sender MUST NOT combine QUIC packets belonging to different QUIC
 connections into a single UDP datagram.
 
-Every QUIC packet that is conveyed in a compound UDP datagram is a complete QUIC
-packet.  Though the values of some fields in the packet header might be
-redundant, no fields are omitted.  The receiver of a compound UDP datagram MUST
+Every QUIC packet that is coalesced into a single UDP datagram is separate and
+complete.  Though the values of some fields in the packet header might be
+redundant, no fields are omitted.  The receiver of coalesced QUIC packets MUST
 individually process each QUIC packet and separately acknowledge them, as if
 they were received as the payload of different UDP datagrams.
 
