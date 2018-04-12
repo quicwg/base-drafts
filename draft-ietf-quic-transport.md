@@ -4212,8 +4212,8 @@ Issue and pull request numbers are listed with a leading octothorp.
 - GAP limitation in ACK Frame (#613)
 - Improved PMTUD description (#614, #1036)
 - Clarified stream state machine (#634, #662, #894)
-- Reserved versions do not need to be generated deterministically (#831, #931)
-- You do not always need the draining period (#871)
+- Reserved versions don't need to be generated deterministically (#831, #931)
+- You don't always need the draining period (#871)
 - Stateless reset clarified as version-specific (#930, #986)
 - initial_max_stream_id_x transport parameters are optional (#970, #971)
 - Ack Delay assumes a default value during the handshake (#1007, #1009)
@@ -4270,7 +4270,7 @@ Issue and pull request numbers are listed with a leading octothorp.
 - Removed GOAWAY; application protocols are responsible for graceful shutdown
   (#696)
 - Reduced the number of error codes (#96, #177, #184, #211)
-- Version validation fields cannot move or change (#121)
+- Version validation fields can't move or change (#121)
 - Removed versions from the transport parameters in a NewSessionTicket message
   (#547)
 - Clarify the meaning of "bytes in flight" (#550)
@@ -4343,7 +4343,7 @@ Issue and pull request numbers are listed with a leading octothorp.
 - Forbid acknowledgment of packets containing only ACK and PADDING (#291)
 - Require that frames are processed when packets are acknowledged (#381, #341)
 - Removed the STOP_WAITING frame (#66)
-- Do not require retransmission of old timestamps for lost ACK frames (#308)
+- Don't require retransmission of old timestamps for lost ACK frames (#308)
 - Clarified that frames are not retransmitted, but the information in them can
   be (#157, #298)
 
