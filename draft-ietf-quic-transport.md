@@ -371,7 +371,7 @@ following sections.
 
 End of the Payload field (which is also the end of the long header packet) is
 determined by the value of the Payload Length field.  Senders can coalesce
-multiple long header packets into one UDP datagram.  See {{packet-compound}} for
+multiple long header packets into one UDP datagram.  See {{packet-coalesce}} for
 more details.
 
 
@@ -586,7 +586,7 @@ cryptographic handshake message MUST fit in a single packet (see {{handshake}}).
 The payload of a UDP datagram carrying the Initial packet MUST be expanded to at
 least 1200 octets (see {{packetization}}), by adding PADDING frames to the
 Initial packet and/or by combining the Initial packet with a 0-RTT packet
-(see {{packet-compound}}).
+(see {{packet-coalesce}}).
 
 The client uses the Initial packet type for any packet that contains an initial
 cryptographic handshake message.  This includes all cases where a new packet
