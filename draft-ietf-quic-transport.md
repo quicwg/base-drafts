@@ -370,7 +370,7 @@ packet type.  Type-specific semantics for this version are described in the
 following sections.
 
 End of the Payload field (which is also the end of the long header packet) is
-determined by the value of the Payload Length field.  Senders can combine
+determined by the value of the Payload Length field.  Senders can coalesce
 multiple long header packets into one UDP datagram.  See {{packet-compound}} for
 more details.
 
@@ -706,7 +706,7 @@ number of UDP datagrams needed to send application data during the handshake and
 immediately afterwards.  A packet with a short header does not include a length,
 so it has to be the last packet included in a UDP datagram.
 
-The sender MUST NOT combine QUIC packets belonging to different QUIC
+The sender MUST NOT coalesce QUIC packets belonging to different QUIC
 connections into a single UDP datagram.
 
 Every QUIC packet that is coalesced into a single UDP datagram is separate and
