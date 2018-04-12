@@ -702,9 +702,9 @@ sequence of frames, as described in {{frames}}.
 
 A sender can combine multiple QUIC packets (typically a Cryptographic Handshake
 packet and a Protected packet) into one UDP datagram.  This can reduce the
-number of UDP datagrams sent when application data is sent during the handshake
-or immediately afterwards.  A packet with a short header does not include a
-length, so it has to be the last packet included in a UDP datagram.
+number of UDP datagrams needed to send application data during the handshake and
+immediately afterwards.  A packet with a short header does not include a length,
+so it has to be the last packet included in a UDP datagram.
 
 The sender MUST NOT combine QUIC packets belonging to different QUIC
 connections into a single UDP datagram.
