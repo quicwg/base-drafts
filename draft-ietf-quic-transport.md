@@ -372,8 +372,8 @@ packet type.  Type-specific semantics for this version are described in the
 following sections.
 
 End of the Payload field (which is also the end of the long header packet) is
-determined by the value of the Payload Length field.  Senders can combine
-multiple long header packets into one UDP datagram.  See {{packet-compound}} for
+determined by the value of the Payload Length field.  Senders can coalesce
+multiple long header packets into one UDP datagram.  See {{packet-coalesce}} for
 more details.
 
 
@@ -530,6 +530,10 @@ A Version Negotiation packet cannot be explicitly acknowledged in an ACK frame
 by a client.  Receiving another Initial packet implicitly acknowledges a Version
 Negotiation packet.
 
+The Version Negotiation packet does not include the Packet Number and Length
+fields present in other packets that use the long header form.  Consequently,
+a Version Negotiation packet consumes an entire UDP datagram.
+
 See {{version-negotiation}} for a description of the version negotiation
 process.
 
@@ -584,7 +588,7 @@ cryptographic handshake message MUST fit in a single packet (see {{handshake}}).
 The payload of a UDP datagram carrying the Initial packet MUST be expanded to at
 least 1200 octets (see {{packetization}}), by adding PADDING frames to the
 Initial packet and/or by combining the Initial packet with a 0-RTT packet
-(see {{packet-compound}}).
+(see {{packet-coalesce}}).
 
 The client uses the Initial packet type for any packet that contains an initial
 cryptographic handshake message.  This includes all cases where a new packet
@@ -696,22 +700,22 @@ packet protection in detail.  After decryption, the plaintext consists of a
 sequence of frames, as described in {{frames}}.
 
 
-## Compound Packets {#packet-compound}
+## Coaslescing Packets {#packet-coalesce}
 
-A sender can combine multiple QUIC packets (typically a Cryptographic Handshake
+A sender can coalesce multiple QUIC packets (typically a Cryptographic Handshake
 packet and a Protected packet) into one UDP datagram.  This can reduce the
-number of UDP datagrams required to be emitted when application data can be sent
-during the handshake.  A packet with a short header does not include a length,
+number of UDP datagrams needed to send application data during the handshake and
+immediately afterwards.  A packet with a short header does not include a length,
 so it has to be the last packet included in a UDP datagram.
 
-The sender MUST NOT combine QUIC packets belonging to different QUIC
+The sender MUST NOT coalesce QUIC packets belonging to different QUIC
 connections into a single UDP datagram.
 
-Every QUIC packet that is being conveyed in a compound UDP datagram is a
-complete QUIC packet.  No fields in the packet header are omitted.  The receiver
-of a compound UDP datagram MUST individually process each QUIC packet and
-separately acknowledge them, as if they were received as the payload of
-different UDP datagrams.
+Every QUIC packet that is coalesced into a single UDP datagram is separate and
+complete.  Though the values of some fields in the packet header might be
+redundant, no fields are omitted.  The receiver of coalesced QUIC packets MUST
+individually process each QUIC packet and separately acknowledge them, as if
+they were received as the payload of different UDP datagrams.
 
 
 ## Connection ID {#connection-id}
@@ -2008,7 +2012,7 @@ following layout:
 ~~~
 
 This design ensures that a stateless reset packet is - to the extent possible -
-indistinguishable from a regular packet.
+indistinguishable from a regular packet with a short header.
 
 A server generates a random 18-octet Destination Connection ID field.  For a
 client that depends on the server including a connection ID, this will mean that
