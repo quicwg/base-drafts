@@ -3106,7 +3106,7 @@ entropy to mitigate off-path attacks.
 As a result, endpoints that implement PMTUD in IPv4 SHOULD take steps to
 mitigate this risk. For instance, an application could:
 
-* Set the IPv4 Do Not Fragment (DF) bit on a small proportion of packets, so that
+* Set the IPv4 Don't Fragment (DF) bit on a small proportion of packets, so that
 most invalid ICMP messages arrive when there are no DF packets outstanding, and
 can therefore be identified as spurious.
 
