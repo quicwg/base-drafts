@@ -818,7 +818,7 @@ field as possible.
 Limiting the range allows both for loss of packets and for any stateless
 exchanges.  Packet numbers are incremented for subsequent packets, but packet
 loss and stateless handling can both mean that the first packet sent by an
-endpoint isn't necessarily the first packet received by its peer.  The first
+endpoint is not necessarily the first packet received by its peer.  The first
 packet received by a peer cannot be 2^32 or greater or the recipient will
 incorrectly assume a packet number that is 2^32 values lower and discard the
 packet.
@@ -925,7 +925,7 @@ correspond to a single connection.
 Valid packets sent to clients always include a Destination Connection ID that
 matches the value the client selects.  Clients that choose to receive
 zero-length connection IDs can use the address/port tuple to identify a
-connection.  Packets that don't match an existing connection MAY be discarded.
+connection.  Packets that do not match an existing connection MAY be discarded.
 
 Due to packet reordering or loss, clients might receive packets for a connection
 that are encrypted with a key it has not yet computed. Clients MAY drop these
@@ -962,7 +962,7 @@ If the packet is an Initial packet fully conforming with the
 specification, the server proceeds with the handshake ({{handshake}}).
 This commits the server to the version that the client selected.
 
-If a server isn't currently accepting any new connections, it SHOULD send a
+If a server is not currently accepting any new connections, it SHOULD send a
 Handshake packet containing a CONNECTION_CLOSE frame with error code
 SERVER_BUSY.
 
@@ -1809,7 +1809,7 @@ A client might wish to reduce linkability by employing a new connection ID and
 source UDP port when sending traffic after a period of inactivity.  Changing the
 UDP port from which it sends packets at the same time might cause the packet to
 appear as a connection migration. This ensures that the mechanisms that support
-migration are exercised even for clients that don't experience NAT rebindings or
+migration are exercised even for clients that do not experience NAT rebindings or
 genuine migrations.  Changing port number can cause a peer to reset its
 congestion state (see {{migration-cc}}), so the port SHOULD only be changed
 infrequently.
@@ -1924,7 +1924,7 @@ A connection that remains idle for longer than the idle timeout (see
 {{transport-parameter-definitions}}) is closed.  A connection enters the
 draining state when the idle timeout expires.
 
-The time at which an idle timeout takes effect won't be perfectly synchronized
+The time at which an idle timeout takes effect will not be perfectly synchronized
 on both endpoints.  An endpoint that sends packets near the end of an idle
 period could have those packets discarded if its peer enters the draining state
 before the packet is received.
@@ -2199,7 +2199,7 @@ An endpoint sends a CONNECTION_CLOSE frame (type=0x02) to notify its peer that
 the connection is being closed.  CONNECTION_CLOSE is used to signal errors at
 the QUIC layer, or the absence of errors (with the NO_ERROR code).
 
-If there are open streams that haven't been explicitly closed, they are
+If there are open streams that have not been explicitly closed, they are
 implicitly closed when the connection is closed.
 
 The CONNECTION_CLOSE frame is as follows:
@@ -3106,7 +3106,7 @@ entropy to mitigate off-path attacks.
 As a result, endpoints that implement PMTUD in IPv4 SHOULD take steps to
 mitigate this risk. For instance, an application could:
 
-* Set the IPv4 Don't Fragment (DF) bit on a small proportion of packets, so that
+* Set the IPv4 Do Not Fragment (DF) bit on a small proportion of packets, so that
 most invalid ICMP messages arrive when there are no DF packets outstanding, and
 can therefore be identified as spurious.
 
@@ -3238,7 +3238,7 @@ Note:
   describe rules for when and how different types of frames can be sent and the
   reactions that are expected when different types of frames are received.
   Though these state machines are intended to be useful in implementing QUIC,
-  these states aren't intended to constrain implementations.  An implementation
+  these states are not intended to constrain implementations.  An implementation
   can define a different state machine as long as its behavior is consistent
   with an implementation that implements these states.
 
@@ -3331,7 +3331,7 @@ enters the "Reset Recvd" state, which is a terminal state.
 
 {{fig-stream-recv-states}} shows the states for the part of a stream that
 receives data from a peer.  The states for a receive stream mirror only some of
-the states of the send stream at the peer.  A receive stream doesn't track
+the states of the send stream at the peer.  A receive stream does not track
 states on the send stream that cannot be observed, such as the "Ready" state;
 instead, receive streams track the delivery of data to the application or
 application protocol some of which cannot be observed by the sender.
@@ -4212,8 +4212,8 @@ Issue and pull request numbers are listed with a leading octothorp.
 - GAP limitation in ACK Frame (#613)
 - Improved PMTUD description (#614, #1036)
 - Clarified stream state machine (#634, #662, #894)
-- Reserved versions don't need to be generated deterministically (#831, #931)
-- You don't always need the draining period (#871)
+- Reserved versions do not need to be generated deterministically (#831, #931)
+- You do not always need the draining period (#871)
 - Stateless reset clarified as version-specific (#930, #986)
 - initial_max_stream_id_x transport parameters are optional (#970, #971)
 - Ack Delay assumes a default value during the handshake (#1007, #1009)
@@ -4270,7 +4270,7 @@ Issue and pull request numbers are listed with a leading octothorp.
 - Removed GOAWAY; application protocols are responsible for graceful shutdown
   (#696)
 - Reduced the number of error codes (#96, #177, #184, #211)
-- Version validation fields can't move or change (#121)
+- Version validation fields cannot move or change (#121)
 - Removed versions from the transport parameters in a NewSessionTicket message
   (#547)
 - Clarify the meaning of "bytes in flight" (#550)
@@ -4343,7 +4343,7 @@ Issue and pull request numbers are listed with a leading octothorp.
 - Forbid acknowledgment of packets containing only ACK and PADDING (#291)
 - Require that frames are processed when packets are acknowledged (#381, #341)
 - Removed the STOP_WAITING frame (#66)
-- Don't require retransmission of old timestamps for lost ACK frames (#308)
+- Do not require retransmission of old timestamps for lost ACK frames (#308)
 - Clarified that frames are not retransmitted, but the information in them can
   be (#157, #298)
 
