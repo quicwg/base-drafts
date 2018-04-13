@@ -24,3 +24,6 @@ ifneq ($(PYTHON),)
 lint::
 	@$(PYTHON) ./.lint.py draft-*.md
 endif
+
+show-next:
+	@echo $(drafts_next)
