@@ -1,5 +1,9 @@
 #!/bin/bash
 # Tag files for submission.
+#
+# You shouldn't need to use this unless you are tagging files for which you are
+# not an author.  Use `git tag -a` instead.
+#
 # This script exists because
 # https://trac.tools.ietf.org/tools/ietfdb/ticket/2390 still isn't fixed.
 
