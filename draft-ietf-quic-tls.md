@@ -1618,6 +1618,10 @@ many others.
 
 Issue and pull request numbers are listed with a leading octothorp.
 
+## Since draft-ietf-quic-tls-10
+
+- No significant changes.
+
 ## Since draft-ietf-quic-tls-09
 
 - Cleaned up key schedule and updated the salt used for handshake packet

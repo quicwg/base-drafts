@@ -1087,6 +1087,12 @@ This document has no IANA actions.  Yet.
 > **RFC Editor's Note:**  Please remove this section prior to
 > publication of a final version of this document.
 
+## Since draft-ietf-quic-recovery-10
+
+- Added signal from TLS the data it includes needs to be sent in a Retry packet
+  (#1061, #1199)
+- Minimum RTT (min_rtt) is initialized with an infinite value (#1169)
+
 ## Since draft-ietf-quic-recovery-09
 
 No significant changes.

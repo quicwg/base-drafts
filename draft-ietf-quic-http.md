@@ -1523,6 +1523,11 @@ his employment there.
 > **RFC Editor's Note:**  Please remove this section prior to publication of a
 > final version of this document.
 
+## Since draft-ietf-quic-http-10
+
+- Settings need to be remembered when attempting and accepting 0-RTT (#1157,
+  #1207)
+
 ## Since draft-ietf-quic-http-09
 
 - Selected QCRAM for header compression (#228, #1117)

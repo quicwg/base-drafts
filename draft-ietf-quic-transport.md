@@ -4187,23 +4187,39 @@ thanks to all.
 
 Issue and pull request numbers are listed with a leading octothorp.
 
+## Since draft-ietf-quic-transport-10
+
+- Refine opportunistic ACK defense text (#305, #1030, #1185)
+- A Stateless Reset Token isn't mandatory (#818, #1191)
+- Removed implicit stream opening (#896, #1193)
+- An empty STREAM frame can be used to open a stream without sending data (#901,
+  #1194)
+- Define stream counts in transport parameters rather than a maximum stream ID
+  (#1023, #1065)
+- STOP_SENDING is now prohibited before streams are used (#1050)
+- Recommend including ACK in Retry packets and allow PADDING (#1067, #882)
+- Endpoints now become closing after an idle timeout (#1178, #1179)
+- Remove implication that Version Negotiation is sent when a packet of the wrong
+  version is received (#1197)
+
 ## Since draft-ietf-quic-transport-09
 
 - Added PATH_CHALLENGE and PATH_RESPONSE frames to replace PING with Data and
-  PONG frame. Changed ACK frame type from 0x0e to 0x0d. (#1091, #1086)
+  PONG frame. Changed ACK frame type from 0x0e to 0x0d. (#1091, #725, #1086)
 - A server can now only send 3 packets without validating the client address
   (#38, #1090)
 - Delivery order of stream data is no longer strongly specified (#252, #1070)
 - Rework of packet handling and version negotiation (#1038)
 - Stream 0 is now exempt from flow control until the handshake completes (#1074,
-  #725, #1082)
+  #725, #825, #1082)
 - Improved retransmission rules for all frame types: information is
   retransmitted, not packets or frames (#463, #765, #1095, #1053)
 - Added an error code for server busy signals (#1137)
 
 - Endpoints now set the connection ID that their peer uses.  Connection IDs are
   variable length.  Removed the omit_connection_id transport parameter and the
-  corresponding short header flag. (#1089, #1052, #1146, #821, #1151)
+  corresponding short header flag. (#1089, #1052, #1146, #821, #745, #821,
+  #1166, #1151)
 
 ## Since draft-ietf-quic-transport-08
 
@@ -4211,7 +4227,7 @@ Issue and pull request numbers are listed with a leading octothorp.
 - BLOCKED frame now includes reason for blocking (#452, #924, #927, #928)
 - GAP limitation in ACK Frame (#613)
 - Improved PMTUD description (#614, #1036)
-- Clarified stream state machine (#634, #662, #894)
+- Clarified stream state machine (#634, #662, #743, #894)
 - Reserved versions don't need to be generated deterministically (#831, #931)
 - You don't always need the draining period (#871)
 - Stateless reset clarified as version-specific (#930, #986)
