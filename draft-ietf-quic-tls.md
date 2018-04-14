@@ -557,7 +557,7 @@ older than 1.3 is negotiated.
 
 QUIC requires that the initial handshake packet from a client fit within the
 payload of a single packet.  The size limits on QUIC packets mean that a record
-containing a ClientHello needs to fit within 1131 octets, though endpoints can
+containing a ClientHello needs to fit within 1129 octets, though endpoints can
 reduce the size of their connection ID to increase by up to 22 octets.
 
 A TLS ClientHello can fit within this limit with ample space remaining.
@@ -1020,7 +1020,7 @@ are marked with a KEY_PHASE of 0.
 ### Retransmission and Acknowledgment of Unprotected Packets
 
 TLS handshake messages from both client and server are critical to the key
-exchange.  The contents of these messages determines the keys used to protect
+exchange.  The contents of these messages determine the keys used to protect
 later messages.  If these handshake messages are included in packets that are
 protected with these keys, they will be indecipherable to the recipient.
 

@@ -182,6 +182,8 @@ QUIC packet:
 
 : A well-formed UDP payload that can be parsed by a QUIC receiver.
 
+QUIC is a name, not an acronym.
+
 
 ## Notational Conventions
 
@@ -280,6 +282,8 @@ keys are established.
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                       Packet Number (32)                      |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                       Payload Length (i)                    ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                          Payload (*)                        ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~~~
@@ -338,9 +342,14 @@ Packet Number:
 : The Packet Number is a 32-bit field that follows the two connection IDs.
   {{packet-numbers}} describes the use of packet numbers.
 
+Payload Length:
+
+: The length of the Payload field in octets, encoded as a variable-length
+  integer ({{integer-encoding}}).
+
 Payload:
 
-: All remaining octets in the packet are the payload of the packet.
+: The payload of the packet.
 
 The following packet types are defined:
 
@@ -362,6 +371,11 @@ The interpretation of the fields and the payload are specific to a version and
 packet type.  Type-specific semantics for this version are described in the
 following sections.
 
+End of the Payload field (which is also the end of the long header packet) is
+determined by the value of the Payload Length field.  Senders can coalesce
+multiple long header packets into one UDP datagram.  See {{packet-coalesce}} for
+more details.
+
 
 ## Short Header
 
@@ -369,7 +383,7 @@ following sections.
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+
-|0|K|1|1|0|T T T|
+|0|K|1|1|0|R|T T|
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                Destination Connection ID (0..144)           ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -398,7 +412,7 @@ changed before this draft goes to the IESG.]]
 
 Third Bit:
 
-: The third bit (0x10) of octet 0 is set to 1.
+: The third bit (0x20) of octet 0 is set to 1.
 
 \[\[Editor's Note: this section should be removed and the bit definitions
 changed before this draft goes to the IESG.]]
@@ -420,9 +434,13 @@ Google QUIC Demultipexing Bit:
   specification when Google QUIC has finished transitioning to the new header
   format.
 
+Reserved:
+
+: The sixth bit (0x4) of octet 0 is reserved for experimentation.
+
 Short Packet Type:
 
-: The remaining 3 bits of octet 0 include one of 8 packet types.
+: The remaining 2 bits of octet 0 include one of 4 packet types.
   {{short-packet-types}} lists the types that are defined for short packets.
 
 Destination Connection ID:
@@ -512,6 +530,10 @@ A Version Negotiation packet cannot be explicitly acknowledged in an ACK frame
 by a client.  Receiving another Initial packet implicitly acknowledges a Version
 Negotiation packet.
 
+The Version Negotiation packet does not include the Packet Number and Length
+fields present in other packets that use the long header form.  Consequently,
+a Version Negotiation packet consumes an entire UDP datagram.
+
 See {{version-negotiation}} for a description of the version negotiation
 process.
 
@@ -558,12 +580,15 @@ The first Initial packet that is sent by a client contains a randomized packet
 number.  All subsequent packets contain a packet number that is incremented by
 one, see ({{packet-numbers}}).
 
-The payload of an Initial packet consists of a STREAM frame (or frames)
-for stream 0 containing a cryptographic handshake message, with enough PADDING
-frames that the packet is at least 1200 octets (see {{packetization}}).  The
-stream in this packet always starts at an offset of 0 (see {{stateless-retry}})
-and the complete cryptographic handshake message MUST fit in a single packet
-(see {{handshake}}).
+The payload of an Initial packet conveys a STREAM frame (or frames) for stream
+0 containing a cryptographic handshake message.  The stream in this packet
+always starts at an offset of 0 (see {{stateless-retry}}) and the complete
+cryptographic handshake message MUST fit in a single packet (see {{handshake}}).
+
+The payload of a UDP datagram carrying the Initial packet MUST be expanded to at
+least 1200 octets (see {{packetization}}), by adding PADDING frames to the
+Initial packet and/or by combining the Initial packet with a 0-RTT packet
+(see {{packet-coalesce}}).
 
 The client uses the Initial packet type for any packet that contains an initial
 cryptographic handshake message.  This includes all cases where a new packet
@@ -644,7 +669,8 @@ but could involve additional computational effort depending on implementation
 choices.
 
 The payload of this packet contains STREAM frames and could contain PADDING,
-ACK, PATH_CHALLENGE, or PATH_RESPONSE frames.
+ACK, PATH_CHALLENGE, or PATH_RESPONSE frames.  Handshake packets MAY contain
+CONNECTION_CLOSE frames if the handshake is unsuccessful.
 
 
 ## Protected Packets {#packet-protected}
@@ -672,6 +698,24 @@ packet sent, see {{packet-numbers}} for details.
 The payload is protected using authenticated encryption.  {{QUIC-TLS}} describes
 packet protection in detail.  After decryption, the plaintext consists of a
 sequence of frames, as described in {{frames}}.
+
+
+## Coaslescing Packets {#packet-coalesce}
+
+A sender can coalesce multiple QUIC packets (typically a Cryptographic Handshake
+packet and a Protected packet) into one UDP datagram.  This can reduce the
+number of UDP datagrams needed to send application data during the handshake and
+immediately afterwards.  A packet with a short header does not include a length,
+so it has to be the last packet included in a UDP datagram.
+
+The sender MUST NOT coalesce QUIC packets belonging to different QUIC
+connections into a single UDP datagram.
+
+Every QUIC packet that is coalesced into a single UDP datagram is separate and
+complete.  Though the values of some fields in the packet header might be
+redundant, no fields are omitted.  The receiver of coalesced QUIC packets MUST
+individually process each QUIC packet and separately acknowledge them, as if
+they were received as the payload of different UDP datagrams.
 
 
 ## Connection ID {#connection-id}
@@ -711,7 +755,7 @@ connection ID to vary in length and still be used by the load balancer.
 The very first packet sent by a client includes a random value for Destination
 Connection ID.  The same value MUST be used for all 0-RTT packets sent on that
 connection ({{packet-protected}}).  This randomized value is used to determine
-the handshake packet protection keys (see Section 5.2.2 of {{QUIC-TLS}}).
+the handshake packet protection keys (see Section 5.3.2 of {{QUIC-TLS}}).
 
 A Version Negotiation ({{packet-version}}) packet MUST use both connection IDs
 selected by the client, swapped to ensure correct routing toward the client.
@@ -1763,9 +1807,16 @@ gap than it advertised.
 
 Clients MAY change connection ID at any time based on implementation-specific
 concerns.  For example, after a period of network inactivity NAT rebinding might
-occur when the client begins sending data again. A client might wish to reduce
-linkability by employing a new connection ID when sending traffic after a period
-of inactivity.
+occur when the client begins sending data again.
+
+A client might wish to reduce linkability by employing a new connection ID and
+source UDP port when sending traffic after a period of inactivity.  Changing the
+UDP port from which it sends packets at the same time might cause the packet to
+appear as a connection migration. This ensures that the mechanisms that support
+migration are exercised even for clients that don't experience NAT rebindings or
+genuine migrations.  Changing port number can cause a peer to reset its
+congestion state (see {{migration-cc}}), so the port SHOULD only be changed
+infrequently.
 
 An endpoint that receives a successfully authenticated packet with a previously
 unused connection ID MUST use the next available connection ID for any packets
@@ -1961,7 +2012,7 @@ following layout:
 ~~~
 
 This design ensures that a stateless reset packet is - to the extent possible -
-indistinguishable from a regular packet.
+indistinguishable from a regular packet with a short header.
 
 A server generates a random 18-octet Destination Connection ID field.  For a
 client that depends on the server including a connection ID, this will mean that
@@ -2681,20 +2732,20 @@ ACK Block (repeated):
 Implementations MUST NOT generate packets that only contain ACK frames in
 response to packets which only contain ACK frames. However, they MUST
 acknowledge packets containing only ACK frames when sending ACK frames in
-response to other packets.  Implementations MUST NOT send more than one ACK
-frame per received packet that contains frames other than ACK frames.  Packets
-containing non-ACK frames MUST be acknowledged immediately or when a delayed
-ack timer expires.
+response to other packets.  Implementations MUST NOT send more than one packet
+containing only ACK frames per received packet that contains frames other than
+ACK frames.  Packets containing non-ACK frames MUST be acknowledged immediately
+or when a delayed ack timer expires.
 
 To limit ACK blocks to those that have not yet been received by the sender, the
 receiver SHOULD track which ACK frames have been acknowledged by its peer.  Once
 an ACK frame has been acknowledged, the packets it acknowledges SHOULD NOT be
 acknowledged again.
 
-A receiver that is only sending ACK frames will not receive acknowledgments for
-its packets.  Sending an occasional MAX_DATA or MAX_STREAM_DATA frame as data is
-received will ensure that acknowledgements are generated by a peer.  Otherwise,
-an endpoint MAY send a PING frame once per RTT to solicit an acknowledgment.
+Because ACK frames are not sent in response to ACK-only packets, a receiver that
+is only sending ACK frames will only receive acknowledgements for its packets
+if the sender includes them in packets with non-ACK frames.  A sender SHOULD
+bundle ACK frames with other frames when possible.
 
 To limit receiver state or the size of ACK frames, a receiver MAY limit the
 number of ACK blocks it sends.  A receiver can do this even without receiving
