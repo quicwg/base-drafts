@@ -280,9 +280,9 @@ keys are established.
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                 Source Connection ID (0/32..144)            ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                       Packet Number (32)                      |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                       Payload Length (i)                    ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                       Packet Number (32)                      |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                          Payload (*)                        ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -337,15 +337,16 @@ Source Connection ID:
   either 0 octets in length or between 4 and 18 octets. {{connection-id}}
   describes the use of this field in more detail.
 
+Payload Length:
+
+: The length of the Payload field in octets, encoded as a variable-length
+  integer ({{integer-encoding}}).
+
 Packet Number:
 
 : The Packet Number is a 32-bit field that follows the two connection IDs.
   {{packet-numbers}} describes the use of packet numbers.
 
-Payload Length:
-
-: The length of the Payload field in octets, encoded as a variable-length
-  integer ({{integer-encoding}}).
 
 Payload:
 
