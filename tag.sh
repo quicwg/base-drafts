@@ -1,4 +1,3 @@
-#!/bin/bash
 # Tag files for submission.
 #
 # You shouldn't need to use this unless you are tagging files for which you are
@@ -24,7 +23,7 @@ tag() {
     git -c user.email="$1" tag -am "$message" "$2"
 }
 
-declare -a authors=( \
+declare -A authors=( \
     [transport]=martin.thomson@gmail.com \
     [tls]=martin.thomson@gmail.com \
     [recovery]=ianswett@google.com \
