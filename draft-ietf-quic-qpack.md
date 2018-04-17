@@ -129,7 +129,7 @@ field data MUST remain in the blocked stream's flow control window.
 
 # Wire Format
 
-QCRAM instructions occur in three locations, each of which uses a separate
+QPACK instructions occur in three locations, each of which uses a separate
 instruction space:
 
  - Table updates are carried by HEADERS frames on the control stream, as defined
@@ -138,7 +138,7 @@ instruction space:
  - Acknowledgement of header frame processing is carried by HEADER_ACK frames on
    the control stream, running from decoder to encoder.
  - Finally, the contents of HEADERS and PUSH_PROMISE frames on request streams
-   reference the QCRAM table state.
+   reference the QPACK table state.
 
 This section describes the instructions which are possible on each stream type.
 
@@ -156,7 +156,7 @@ HPACK defines string literals to begin on a byte boundary.  They begin with a
 single flag (indicating whether the string is Huffman-coded), followed by the
 Length encoded as a 7-bit prefix integer, and finally Length octets of data.
 
-QCRAM permits strings to begin other than on a byte boundary.  An "N-bit prefix
+QPACK permits strings to begin other than on a byte boundary.  An "N-bit prefix
 string literal" begins with the same Huffman flag, followed by the length
 encoded as an (N-1)-bit prefix integer.  The remainder of the string literal is
 unmodified.
@@ -259,7 +259,7 @@ maximum table size is represented as an integer with a 5-bit prefix (see Section
 {:#fig-size-change title="Maximum Dynamic Table Size Change"}
 
 The new maximum size MUST be lower than or equal to the limit determined by the
-protocol using QCRAM.  A value that exceeds this limit MUST be treated as a
+protocol using QPACK.  A value that exceeds this limit MUST be treated as a
 decoding error.  In HTTP/QUIC, this limit is the value of the
 SETTINGS_HEADER_TABLE_SIZE parameter (see [QUIC-HTTP]) received from the
 decoder.
@@ -271,13 +271,13 @@ with outstanding references (see {{reference-tracking}}).
 ## HEADER_ACK Frames {#feedback}
 
 HEADER_ACK frames on the control stream carry information used to ensure
-consistency of the dynamic table. Information is sent from the QCRAM decoder to
-the QCRAM encoder; that is, the server informs the client about the processing
+consistency of the dynamic table. Information is sent from the QPACK decoder to
+the QPACK encoder; that is, the server informs the client about the processing
 of the client's header blocks and table updates, and the client informs the
 server about the processing of the server's header blocks and table updates.
 
-Each frame represents a header block or table update which the QCRAM decoder has
-fully processed.  It is used by the peer's QCRAM encoder to determine whether
+Each frame represents a header block or table update which the QPACK decoder has
+fully processed.  It is used by the peer's QPACK encoder to determine whether
 subsequent indexed representations that might reference impacted entries are
 vulnerable to head-of-line blocking, and to prevent eviction races.
 
