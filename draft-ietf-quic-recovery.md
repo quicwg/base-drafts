@@ -1087,6 +1087,15 @@ This document has no IANA actions.  Yet.
 > **RFC Editor's Note:**  Please remove this section prior to
 > publication of a final version of this document.
 
+## Since draft-ietf-quic-recovery-10
+
+- Improved text on ack generation (#1139, #1159)
+- Make references to TCP recovery mechanisms informational (#1195)
+- Define time_of_last_sent_handshake_packet (#1171)
+- Added signal from TLS the data it includes needs to be sent in a Retry packet
+  (#1061, #1199)
+- Minimum RTT (min_rtt) is initialized with an infinite value (#1169)
+
 ## Since draft-ietf-quic-recovery-09
 
 No significant changes.
