@@ -21,10 +21,10 @@ enabled() {
 
 tag() {
     message="Tag for $2 created by $(git config --get user.name)"
-    git tag -c user.email="$1" tag -am "$message" "$2"
+    git -c user.email="$1" tag -am "$message" "$2"
 }
 
-declare -A authors=( \
+declare -a authors=( \
     [transport]=martin.thomson@gmail.com \
     [tls]=martin.thomson@gmail.com \
     [recovery]=ianswett@google.com \
