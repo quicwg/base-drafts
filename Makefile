@@ -24,3 +24,23 @@ ifneq ($(PYTHON),)
 lint::
 	@$(PYTHON) ./.lint.py draft-*.md
 endif
+
+PERL := $(shell which perl)
+ifneq ($(PERL),)
+MD_DRAFTS := $(wildcard draft-*.md)
+GEN_TAGS :=            'if (/^(\#+\s+.+?)\s+\{\#(.+?)}/) {'
+GEN_TAGS := $(GEN_TAGS)'    $$re = quotemeta $$1;'
+GEN_TAGS := $(GEN_TAGS)'    push @tags, "$$2\t$$ARGV\t/^$$re/\n";'
+GEN_TAGS := $(GEN_TAGS)'}'
+GEN_TAGS := $(GEN_TAGS)'END { print sort @tags }'
+# Generate tags file for section anchors in the Markdown drafts.  This
+# facilitates jumping to the section from the reference.
+#
+# (In vim, add the dash to the keyword definition via :set iskeyword+=-
+# to be able to jump to anchors with dashes in them.)
+tags:: $(MD_DRAFTS)
+	$(PERL) -ne $(GEN_TAGS) $(MD_DRAFTS) > tags
+
+clean::
+	-rm -f tags
+endif
