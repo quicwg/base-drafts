@@ -670,9 +670,8 @@ When a packet is acked for the first time, the following OnPacketAcked function
 is called.  Note that a single ACK frame may newly acknowledge several packets.
 OnPacketAcked must be called once for each of these newly acked packets.
 
-OnPacketAcked takes one parameter, acked_packet_number, which is the packet
-number of the newly acked packet, and returns a list of packet numbers that
-are detected as lost.
+OnPacketAcked takes one parameter, acked_packet, which is the struct of the
+newly acked packet.
 
 If this is the first acknowledgement following RTO, check if the smallest newly
 acknowledged packet is one sent by the RTO, and if so, inform congestion control
@@ -681,17 +680,18 @@ of a verified RTO, similar to F-RTO {{?RFC5682}}
 Pseudocode for OnPacketAcked follows:
 
 ~~~
-   OnPacketAcked(acked_packet_number):
-     OnPacketAckedCC(acked_packet_number)
+   OnPacketAcked(acked_packet):
+     if (!acked_packet.is_ack_only):
+       OnPacketAckedCC(acked_packet)
      // If a packet sent prior to RTO was acked, then the RTO
      // was spurious.  Otherwise, inform congestion control.
      if (rto_count > 0 &&
-         acked_packet_number > largest_sent_before_rto)
+         acked_packet.packet_number > largest_sent_before_rto)
        OnRetransmissionTimeoutVerified()
      handshake_count = 0
      tlp_count = 0
      rto_count = 0
-     sent_packets.remove(acked_packet_number)
+     sent_packets.remove(acked_packet.packet_number)
 ~~~
 
 ### Setting the Loss Detection Alarm
@@ -933,15 +933,18 @@ slow start is re-entered.
 ## Pacing
 
 This document does not specify a pacer, but it is RECOMMENDED that a sender pace
-sending of all data based on input from the congestion controller.  For example,
-a pacer might distribute the congestion window over the SRTT when used with a
-window-based controller, and a pacer might use the rate estimate of a rate-based
-controller.
+sending of all retransmittable packets based on input from the congestion
+controller. For example, a pacer might distribute the congestion window over
+the SRTT when used with a window-based controller, and a pacer might use the
+rate estimate of a rate-based controller.
 
 An implementation should take care to architect its congestion controller to
 work well with a pacer.  For instance, a pacer might wrap the congestion
 controller and control the availability of the congestion window, or a pacer
-might pace out packets handed to it by the congestion controller.
+might pace out packets handed to it by the congestion controller. Timely
+delivery of ACK frames is important for efficient loss recovery. Packets
+containing only ACK frames should therefore not be paced, to avoid delaying
+their delivery to the peer.
 
 As an example of a well-known and publicly available implementation of a flow
 pacer, implementers are referred to the Fair Queue packet scheduler (fq qdisc)
