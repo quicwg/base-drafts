@@ -4189,6 +4189,11 @@ Issue and pull request numbers are listed with a leading octothorp.
 
 ## Since draft-ietf-quic-transport-10
 
+- Swap payload length and packed number fields in long header (#1294)
+- Clarified that CONNECTION_CLOSE is allowed in Handshake packet (#1274)
+- Spin bit reserved (#1283)
+- Coalescing multiple QUIC packets in a UDP datagram (#1262, #1285)
+- A more complete connection migration (#1249)
 - Refine opportunistic ACK defense text (#305, #1030, #1185)
 - A Stateless Reset Token isn't mandatory (#818, #1191)
 - Removed implicit stream opening (#896, #1193)
