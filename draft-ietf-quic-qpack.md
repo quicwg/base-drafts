@@ -337,7 +337,6 @@ need to be added to the IANA Considerations of {{QUIC-HTTP}}.
 --- back
 
 # Acknowledgments
-{:numbered="false"}
 
 This draft draws heavily on the text of {{!RFC7541}}.  The indirect input of
 those authors is gratefully acknowledged, as well as ideas from:
