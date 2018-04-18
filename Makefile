@@ -27,3 +27,13 @@ endif
 
 show-next:
 	@echo $(drafts_next)
+
+PERL := $(shell which perl)
+ifneq ($(PERL),)
+MD_DRAFTS := $(wildcard draft-*.md)
+tags:: $(MD_DRAFTS) .gen-tags.pl
+	$(PERL) .gen-tags.pl $(MD_DRAFTS) > tags
+
+clean::
+	-rm -f tags
+endif
