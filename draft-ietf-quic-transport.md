@@ -1260,7 +1260,7 @@ stateless_reset_token (0x0006):
 
 preferred_address (0x0004):
 
-: The server's Preferred Address is used to effect a server address migration at
+: The server's Preferred Address is used to effect a change in server address at
   the end of the handshake, as described in {{preferred-address}}.
 
 A client MUST NOT include a stateless reset token or a preferred address.  A
@@ -1912,10 +1912,10 @@ preferred address and the address from which it received the client probe.  This
 helps to guard against spurious migration initiated by an attacker.
 
 Once the server has completed its path validation and has received a non-probing
-packet on its preferred address which is the largest packet number seen so far,
-the server begins sending to the client exclusively from its preferred IP
-address.  It SHOULD drop packets for this connection received on the old IP
-address, but MAY continue to process delayed packets.
+packet with a new largest packet number on its preferred address, the server
+begins sending to the client exclusively from its preferred IP address.  It
+SHOULD drop packets for this connection received on the old IP address, but MAY
+continue to process delayed packets.
 
 
 ### Interaction of Client Migration and Preferred Address
@@ -1936,6 +1936,11 @@ address, the server MUST protect against potential attacks as described in
 {{address-spoofing}} and {{on-path-spoofing}}.  In addition to intentional
 simultaneous migration, this might also occur because the client's access
 network used a different NAT binding for the server's preferred address.
+
+Servers SHOULD initiate path validation to the client's new address upon
+receiving a probe packet from a different address.  Servers MUST NOT send more
+than a minimum congestion window's worth of non-probing packets to the new
+address before path validation is complete.
 
 
 ## Connection Termination {#termination}
