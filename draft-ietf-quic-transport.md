@@ -1835,7 +1835,7 @@ A packet with the new connection ID and a packet number of 17 is discarded as
 being in error.
 
 
-#### Packet Number Gap
+#### Packet Number Gap {#packet-number-gap}
 
 In order to avoid linkage, the packet number gap MUST be externally
 indistinguishable from random. The packet number gap for a connection
