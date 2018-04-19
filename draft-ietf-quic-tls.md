@@ -268,8 +268,6 @@ document:
  * The server can respond to a ClientHello with a HelloRetryRequest, which adds
    an additional round trip prior to the basic exchange.  This is needed if the
    server wishes to request a different key exchange key from the client.
-   HelloRetryRequest is also used to verify that the client is correctly able to
-   receive packets on the address it claims to have (see {{QUIC-TRANSPORT}}).
 
  * A pre-shared key mode can be used for subsequent handshakes to reduce the
    number of public key operations.  This is the basis for 0-RTT data, even if
@@ -355,9 +353,7 @@ its final set of TLS handshake messages.
 
 Note: two different types of packet are used during the handshake by both client
 and server.  The Initial packet carries a TLS ClientHello message; the remainder
-of the TLS handshake is carried in Handshake packets.  The Retry packet carries
-a TLS HelloRetryRequest, if it is needed, and Handshake packets carry the
-remainder of the server handshake.
+of the TLS handshake is carried in Handshake packets.
 
 The server sends TLS handshake messages without protection (@H).  The server
 transitions from no protection (@H) to full 1-RTT protection (@1) after it sends
@@ -406,11 +402,6 @@ TLS if it is able.  Each time that TLS is provided with new data, new handshake
 octets are requested from TLS.  TLS might not provide any octets if the
 handshake messages it has received are incomplete or it has no data to send.
 
-At the server, when TLS provides handshake octets, it also needs to indicate
-whether the octets contain a HelloRetryRequest.  A HelloRetryRequest MUST always
-be sent in a Retry packet, so the QUIC server needs to know whether the octets
-are a HelloRetryRequest.
-
 Once the TLS handshake is complete, this is indicated to QUIC along with any
 final handshake octets that TLS needs to send.  TLS also provides QUIC with the
 transport parameters that the peer advertised during the handshake.
@@ -441,35 +432,6 @@ Important:
 
 
 ### Source Address Validation
-
-During the processing of the TLS ClientHello, TLS requests that the transport
-make a decision about whether to request source address validation from the
-client.
-
-An initial TLS ClientHello that resumes a session includes an address validation
-token in the session ticket; this includes all attempts at 0-RTT.  If the client
-does not attempt session resumption, no token will be present.  While processing
-the initial ClientHello, TLS provides QUIC with any token that is present. In
-response, QUIC provides one of three responses:
-
-* proceed with the connection,
-
-* ask for client address validation, or
-
-* abort the connection.
-
-If QUIC requests source address validation, it also provides a new address
-validation token.  TLS includes that along with any information it requires in
-the cookie extension of a TLS HelloRetryRequest message.  In the other cases,
-the connection either proceeds or terminates with a handshake error.
-
-The client echoes the cookie extension in a second ClientHello.  A ClientHello
-that contains a valid cookie extension will always be in response to a
-HelloRetryRequest.  If address validation was requested by QUIC, then this will
-include an address validation token.  TLS makes a second address validation
-request of QUIC, including the value extracted from the cookie extension.  In
-response to this request, QUIC cannot ask for client address validation, it can
-only abort or permit the connection attempt to proceed.
 
 QUIC can provide a new address validation token for use in session resumption at
 any time after the handshake is complete.  Each time a new token is provided TLS
@@ -604,7 +566,7 @@ early exporter keys being unavailable, thereby preventing the use of 0-RTT for
 QUIC.
 
 A client that attempts 0-RTT MUST also consider 0-RTT to be rejected if it
-receives a Retry or Version Negotiation packet.
+receives a Version Negotiation packet.
 
 When 0-RTT is rejected, all connection characteristics that the client assumed
 might be incorrect.  This includes the choice of application protocol, transport
@@ -713,9 +675,9 @@ client packet protection key would use HKDF-Expand with an `info` parameter of
 
 ### Handshake Secrets {#handshake-secrets}
 
-Packets that carry the TLS handshake (Initial, Retry, and Handshake) are
-protected with a secret derived from the Destination Connection ID field from
-the client's Initial packet.  Specifically:
+Packets that carry the TLS handshake (Initial and Handshake) are protected with
+a secret derived from the Destination Connection ID field from the client's
+Initial packet.  Specifically:
 
 ~~~
 handshake_salt = 0x9c108f98520a5c5c32968e950e8a2c5fe06d6c38
@@ -1029,15 +991,6 @@ of these handshake messages MUST be sent in packets protected with handshake
 keys.  An endpoint MUST generate ACK frames for these messages and send them in
 packets protected with handshake keys.
 
-A HelloRetryRequest handshake message might be used to reject an initial
-ClientHello.  A HelloRetryRequest handshake message is sent in a Retry packet;
-any second ClientHello that is sent in response uses a Initial packet type.
-These packets are only protected with a predictable key (see
-{{handshake-secrets}}).  This is natural, because no shared secret will be
-available when these messages need to be sent.  Upon receipt of a
-HelloRetryRequest, a client SHOULD cease any transmission of 0-RTT data; 0-RTT
-data will only be discarded by any server that sends a HelloRetryRequest.
-
 The packet type ensures that protected packets are clearly distinguished from
 unprotected packets.  Loss or reordering might cause unprotected packets to
 arrive once 1-RTT keys are in use, unprotected packets are easily distinguished
@@ -1130,101 +1083,18 @@ MUST immediately terminate the connection if it detects this condition.
 
 # Client Address Validation {#client-address-validation}
 
-Two tools are provided by TLS to enable validation of client source addresses at
-a server: the cookie in the HelloRetryRequest message, and the ticket in the
-NewSessionTicket message.
-
-
-## HelloRetryRequest Address Validation
-
-The cookie extension in the TLS HelloRetryRequest message allows a server to
-perform source address validation during the handshake.
-
-When QUIC requests address validation during the processing of the first
-ClientHello, the token it provides is included in the cookie extension of a
-HelloRetryRequest.  As long as the cookie cannot be successfully guessed by a
-client, the server can be assured that the client received the HelloRetryRequest
-if it includes the value in a second ClientHello.
-
-An initial ClientHello never includes a cookie extension.  Thus, if a server
-constructs a cookie that contains all the information necessary to reconstruct
-state, it can discard local state after sending a HelloRetryRequest.  Presence
-of a valid cookie in a ClientHello indicates that the ClientHello is a second
-attempt from the client.
-
-An address validation token can be extracted from a second ClientHello and
-passed to the transport for further validation.  If that validation fails, the
-server MUST fail the TLS handshake and send an illegal_parameter alert.
-
-Combining address validation with the other uses of HelloRetryRequest ensures
-that there are fewer ways in which an additional round-trip can be added to the
-handshake.  In particular, this makes it possible to combine a request for
-address validation with a request for a different client key share.
-
-If TLS needs to send a HelloRetryRequest for other reasons, it needs to ensure
-that it can correctly identify the reason that the HelloRetryRequest was
-generated.  During the processing of a second ClientHello, TLS does not need to
-consult the transport protocol regarding address validation if address
-validation was not requested originally.  In such cases, the cookie extension
-could either be absent or it could indicate that an address validation token is
-not present.
-
-
-### Stateless Address Validation
-
-A server can use the cookie extension to store all state necessary to continue
-the connection.  This allows a server to avoid committing state for clients that
-have unvalidated source addresses.
-
-For instance, a server could use a statically-configured key to encrypt the
-information that it requires and include that information in the cookie.  In
-addition to address validation information, a server that uses encryption also
-needs to be able recover the hash of the ClientHello and its length, plus any
-information it needs in order to reconstruct the HelloRetryRequest.
-
-
-### Sending HelloRetryRequest
-
-A server does not need to maintain state for the connection when sending a
-HelloRetryRequest message.  This might be necessary to avoid creating a denial
-of service exposure for the server.  However, this means that information about
-the transport will be lost at the server.  This includes the stream offset of
-stream 0, the packet number that the server selects, and any opportunity to
-measure round trip time.
-
-A server MUST send a TLS HelloRetryRequest in a Retry packet.  Using a Retry
-packet causes the client to reset stream offsets.  It also avoids the need for
-the server select an initial packet number, which would need to be remembered so
-that subsequent packets could be correctly numbered.
-
-A HelloRetryRequest message MUST NOT be split between multiple Retry packets.
-This means that HelloRetryRequest is subject to the same size constraints as a
-ClientHello (see {{clienthello-size}}).
-
-A client might send multiple Initial packets in response to loss.  If a server
-sends a Retry packet in response to an Initial packet, it does not have to
-generate the same Retry packet each time.  Variations in Retry packet, if used
-by a client, could lead to multiple connections derived from the same
-ClientHello.  Reuse of the client nonce is not supported by TLS and could lead
-to security vulnerabilities.  Clients that receive multiple Retry packets MUST
-use only one and discard the remainder.
+Generally, validation of the client source address is done at the QUIC layer,
+but TLS has one tool to help here: the ticket in the NewSessionTicket message.
 
 
 ## NewSessionTicket Address Validation
 
 The ticket in the TLS NewSessionTicket message allows a server to provide a
-client with a similar sort of token.  When a client resumes a TLS connection -
-whether or not 0-RTT is attempted - it includes the ticket in the handshake
-message.  As with the HelloRetryRequest cookie, the server includes the address
-validation token in the ticket.  TLS provides the token it extracts from the
-session ticket to the transport when it asks whether source address validation
-is needed.
-
-If both a HelloRetryRequest cookie and a session ticket are present in the
-ClientHello, only the token from the cookie is passed to the transport.  The
-presence of a cookie indicates that this is a second ClientHello - the token
-from the session ticket will have been provided to the transport when it
-appeared in the first ClientHello.
+client with an address validation token.  When a client resumes a TLS
+connection - whether or not 0-RTT is attempted - it includes the ticket in the
+handshake message.  The server includes the address validation token in the
+ticket.  TLS provides the token it extracts from the session ticket to the
+transport.
 
 A server can send a NewSessionTicket message at any time.  This allows it to
 update the state - and the address validation token - that is included in the
@@ -1521,9 +1391,7 @@ messages significantly.
 
 QUIC requires that the packet containing a ClientHello be padded to a minimum
 size.  A server is less likely to generate a packet reflection attack if the
-data it sends is a small multiple of this size.  A server SHOULD use a
-HelloRetryRequest if the size of the handshake messages it sends is likely to
-significantly exceed the size of the packet containing the ClientHello.
+data it sends is a small multiple of this size.
 
 
 ## Peer Denial of Service {#useless}
