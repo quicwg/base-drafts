@@ -543,8 +543,7 @@ process.
 
 Once version negotiation is complete, the cryptographic handshake is used to
 agree on cryptographic keys.  The cryptographic handshake is carried in Initial
-({{packet-initial}}), Retry ({{packet-retry}}) and Handshake
-({{packet-handshake}}) packets.
+({{packet-initial}}) and Handshake ({{packet-handshake}}) packets.
 
 All these packets use the long header and contain the current QUIC version in
 the version field.
@@ -589,7 +588,7 @@ cryptographic handshake message MUST fit in a single packet (see {{handshake}}).
 The payload of a UDP datagram carrying the Initial packet MUST be expanded to at
 least 1200 octets (see {{packetization}}), by adding PADDING frames to the
 Initial packet and/or by combining the Initial packet with a 0-RTT packet
-(see {{packet-coalesce}}).
+(see {{packet-coalesce}}) or Retry packet (see {{stateless-retry}}).
 
 The client uses the Initial packet type for any packet that contains an initial
 cryptographic handshake message.  This includes all cases where a new packet
@@ -600,9 +599,9 @@ Retry packet ({{packet-retry}}).
 
 ### Retry Packet {#packet-retry}
 
-A Retry packet uses long headers with a type value of 0x7E.  It carries
-cryptographic handshake messages and acknowledgments.  It is used by a server
-that wishes to perform a stateless retry (see {{stateless-retry}}).
+A Retry packet uses long headers with a type value of 0x7E.  It caries address
+validation token created by the server.  It is used by a server that wishes to
+perform a stateless retry (see {{stateless-retry}}).
 
 The server populates the Destination Connection ID with the connection ID that
 the client included in the Source Connection ID of the Initial packet.  This
@@ -615,28 +614,17 @@ of subsequent packets that it sends.
 The packet number field echoes the packet number field from the triggering
 client packet.
 
-A Retry packet is never explicitly acknowledged in an ACK frame
-by a client.  Receiving another Initial packet implicitly acknowledges a Retry
-packet.
+A Retry packet is never explicitly acknowledged in an ACK frame by a client.
 
-After receiving a Retry packet, the client uses a new
-Initial packet containing the next cryptographic handshake message.  The client
-retains the state of its cryptographic handshake, but discards all transport
-state.  The Initial packet that is generated in response to a Retry packet
-includes STREAM frames on stream 0 that start again at an offset of 0.
+After receiving a Retry packet, the client creates a new compound packet with
+with a copy of the Retry packet received as the first packet and the Initial
+packet sent previously.  The Initial packet that is generated in response to a
+Retry packet includes STREAM frames on stream 0 that start again at an offset
+of 0.
 
-Continuing the cryptographic handshake is necessary to ensure that an attacker
-cannot force a downgrade of any cryptographic parameters.  In addition to
-continuing the cryptographic handshake, the client MUST remember the results of
-any version negotiation that occurred (see {{version-negotiation}}).  The client
-MAY also retain any observed RTT or congestion state that it has accumulated for
-the flow, but other transport state MUST be discarded.
-
-The payload of the Retry packet contains at least two frames. It MUST include a
-STREAM frame on stream 0 with offset 0 containing the server's cryptographic
-stateless retry material. It MUST also include an ACK frame to acknowledge the
-client's Initial packet. It MAY additionally include PADDING frames. The next
-STREAM frame sent by the server will also start at stream offset 0.
+The payload of the Retry packet is completely opaque to the client.  It doesn't
+use the normal format of an encrypted set of frames.  The server may populate
+payload with whatever is necessary to validate the client address.
 
 
 ### Handshake Packet {#packet-handshake}
@@ -1239,8 +1227,8 @@ ack_delay_exponent (0x0007):
 : An 8-bit unsigned integer value indicating an exponent used to decode the ACK
   Delay field in the ACK frame, see {{frame-ack}}.  If this value is absent, a
   default value of 3 is assumed (indicating a multiplier of 8).  The default
-  value is also used for ACK frames that are sent in Initial, Handshake, and
-  Retry packets.  Values above 20 are invalid.
+  value is also used for ACK frames that are sent in Initial and Handshake
+  packets.  Values above 20 are invalid.
 
 A server MAY include the following transport parameters:
 
@@ -1373,15 +1361,8 @@ without committing any state. This allows a server to perform address validation
 
 A server that generates a response to an initial packet without retaining
 connection state MUST use the Retry packet ({{packet-retry}}).  This packet
-causes a client to reset its transport state and to continue the connection
-attempt with new connection state while maintaining the state of the
-cryptographic handshake.
-
-A server MUST NOT send multiple Retry packets in response to a client handshake
-packet.  Thus, any cryptographic handshake message that is sent MUST fit within
-a single packet.
-
-In TLS, the Retry packet type is used to carry the HelloRetryRequest message.
+causes a client to restart the connection attempt amd includes the Retry packet
+to prove source address ownership.
 
 
 ## Proof of Source Address Ownership {#address-validation}
@@ -1415,7 +1396,7 @@ To send additional data prior to completing the cryptographic handshake, the
 server then needs to validate that the client owns the address that it claims.
 
 Source address validation is therefore performed during the establishment of a
-connection.  TLS provides the tools that support the feature, but basic
+connection.  TLS provides some tools that support the feature, but basic
 validation is performed by the core transport protocol.
 
 A different type of source address validation is performed after a connection
@@ -1430,24 +1411,19 @@ token cannot be easily guessed (see {{token-integrity}}), if the client is able
 to return that token, it proves to the server that it received the token.
 
 During the processing of the cryptographic handshake messages from a client, TLS
-will request that QUIC make a decision about whether to proceed based on the
-information it has.  TLS will provide QUIC with any token that was provided by
-the client.  For an initial packet, QUIC can decide to abort the connection,
-allow it to proceed, or request address validation.
+will provide QUIC with any token that was provided by the client.
 
-If QUIC decides to request address validation, it provides the cryptographic
-handshake with a token.  The contents of this token are consumed by the server
-that generates the token, so there is no need for a single well-defined format.
-A token could include information about the claimed client address (IP and
-port), a timestamp, and any other supplementary information the server will need
-to validate the token in the future.
+If QUIC decides to request address validation, it encodes the token in a Retry
+packet.  The contents of this token are consumed by the server that generates
+the token, so there is no need for a single well-defined format.  A token could
+include information about the claimed client address (IP and port), a
+timestamp, and any other supplementary information the server will need to
+validate the token in the future.
 
-The cryptographic handshake is responsible for enacting validation by sending
-the address validation token to the client.  A legitimate client will include a
-copy of the token when it attempts to continue the handshake.  The cryptographic
-handshake extracts the token then asks QUIC a second time whether the token is
-acceptable.  In response, QUIC can either abort the connection or permit it to
-proceed.
+The Retry packet is sent to the client and then a legitimate client will
+include a copy of the Retry packet when it attempts to continue the connection
+attempt.  In response to receiving the compound Retry and Initial packet, QUIC
+can either abort the connection or permit it to proceed.
 
 A connection MAY be accepted without address validation - or with only limited
 validation - but a server SHOULD limit the data it sends toward an unvalidated
@@ -1463,7 +1439,7 @@ especially important with 0-RTT because a server potentially sends a significant
 amount of data to a client in response to 0-RTT data.
 
 A different type of token is needed when resuming.  Unlike the token that is
-created during a handshake, there might be some time between when the token is
+created for a Retry packet, there might be some time between when the token is
 created and when the token is subsequently used.  Thus, a resumption token
 SHOULD include an expiration time.  It is also unlikely that the client port
 number is the same on two different connections; validating the port is
@@ -3732,10 +3708,10 @@ packets, the peer cannot provide additional flow control window in order to
 complete the handshake.
 
 Endpoints MAY exceed the flow control limits on stream 0 prior to the completion
-of the cryptographic handshake.  (That is, in Initial, Retry, and Handshake
-packets.)  However, once the handshake is complete, endpoints MUST NOT send
-additional data beyond the peer's permitted offset.  If the amount of data sent
-during the handshake exceeds the peer's maximum offset, the endpoint cannot send
+of the cryptographic handshake.  (That is, in Initial and Handshake packets.)
+However, once the handshake is complete, endpoints MUST NOT send additional
+data beyond the peer's permitted offset.  If the amount of data sent during the
+handshake exceeds the peer's maximum offset, the endpoint cannot send
 additional data on stream 0 until the peer has sent a MAX_STREAM_DATA frame
 indicating a larger maximum offset.
 
@@ -4191,6 +4167,10 @@ thanks to all.
 > final version of this document.
 
 Issue and pull request numbers are listed with a leading octothorp.
+
+## Since draft-ietf-quic-transport-11
+
+- Move stateless retry to the QUIC layer.
 
 ## Since draft-ietf-quic-transport-10
 
