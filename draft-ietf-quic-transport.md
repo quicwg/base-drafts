@@ -1219,9 +1219,9 @@ initial_max_stream_id_uni (0x0008):
   an unsigned 16-bit integer.  If this parameter is absent or zero,
   unidirectional streams cannot be created until a MAX_STREAM_ID frame is
   sent. Setting this parameter is equivalent to sending a MAX_STREAM_ID
-  ({{frame-max-stream-id}}) immediately after completing the handshake 
-  containing the corresponding Stream ID. For example, a value of 0x05 would be 
-  equivalent to receiving a MAX_STREAM_ID containing 18 when received by a 
+  ({{frame-max-stream-id}}) immediately after completing the handshake
+  containing the corresponding Stream ID. For example, a value of 0x05 would be
+  equivalent to receiving a MAX_STREAM_ID containing 18 when received by a
   client, or 19 when received by a server.
 
 max_packet_size (0x0005):
