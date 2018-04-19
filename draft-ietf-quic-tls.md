@@ -934,10 +934,10 @@ used in QUIC can cause packet numbers to be decoded incorrectly if they are
 delayed significantly.
 
 
-## Packet Number Gaps {#packet-number-gaps}
+## Packet Number Offset {#packet-number-offset}
 
 Section 6.8.5.1 of {{QUIC-TRANSPORT}} also requires a secret to compute packet
-number gaps on connection ID transitions. That secret is computed as:
+number offset per connection ID. That secret is computed as:
 
 ~~~
 packet_number_secret =

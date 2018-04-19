@@ -832,6 +832,27 @@ Use of a secure random number generator {{?RFC4086}} is not necessary for
 generating the initial packet number, nor is it necessary that the value be
 uniformly distributed.
 
+### New Connection ID Packet Numbers
+
+Packets with with new connection IDs have special rules for encoding the packet
+number in the headers.  They use an offset (see {{packet-number-offset}}) to
+transform the packet number via the following:
+
+~~~
+transformed_packet_number = (packet_number + offset) % 2^62
+~~~
+
+Once transformed, the normal rules of packet number encoding are followed, only
+encoding the least number of bits required.
+
+When receiving a packet with a new connection ID, the full transformed packet
+number must be first computed. It is decoded similarly to how a normal packet
+number would be decoded, but instead of comparing the number with the largest
+acknowledged packet number, it compares it to the largest packet number
+transformed with the same equation above. Once the full transformed packet
+number is decoded, the packet number offset can be subtracted to get the true
+packet number.
+
 
 # Frames and Frame Types {#frames}
 
@@ -1784,7 +1805,7 @@ break linkability between two points of network attachment.
 
 An endpoint might need to send packets on multiple networks without receiving
 any response from its peer.  To ensure that the endpoint is not linkable
-across each of these changes, a new connection ID and packet number gap are
+across each of these changes, a new connection ID and packet number offset are
 needed for each network.  To support this, each endpoint sends multiple
 NEW_CONNECTION_ID messages.  Each NEW_CONNECTION_ID is marked with a sequence
 number.  Connection IDs MUST be used in the order in which they are numbered.
@@ -1796,15 +1817,11 @@ new connection IDs using the NEW_CONNECTION_ID frame.
 An endpoint which wishes to break linkability upon changing networks MUST use
 the connection ID provided by its peer as well as incrementing the packet
 sequence number by an externally unpredictable value computed as described in
-{{packet-number-gap}}. Packet number gaps are cumulative.  An endpoint might
-skip connection IDs, but it MUST ensure that it applies the associated packet
-number gaps for connection IDs that it skips in addition to the packet number
-gap associated with the connection ID that it does use.
+{{packet-number-offset}}. A packet number offset is computed per connection ID,
+and is independent of any other packet number offset.
 
 An endpoint that receives a packet that is marked with a new connection ID
-recovers the packet number by adding the cumulative packet number gap to its
-expected packet number.  An endpoint MUST discard packets that contain a smaller
-gap than it advertised.
+recovers the packet number by subtracting the packet number offset.
 
 Clients MAY change connection ID at any time based on implementation-specific
 concerns.  For example, after a period of network inactivity NAT rebinding might
@@ -1828,23 +1845,16 @@ allow for use of that connection ID to link activity on new paths.  There is no
 need to move to a new connection ID if the address of a peer changes without
 also changing the connection ID.
 
-For instance, a server might provide a packet number gap of 7 associated with a
-new connection ID.  If the server received packet 10 using the previous
-connection ID, it should expect packets on the new connection ID to start at 18.
-A packet with the new connection ID and a packet number of 17 is discarded as
-being in error.
 
+#### Packet Number Offset {#packet-number-offset}
 
-#### Packet Number Gap
-
-In order to avoid linkage, the packet number gap MUST be externally
-indistinguishable from random. The packet number gap for a connection
-ID with sequence number is computed by encoding the sequence number
-as a 32-bit integer in big-endian format, and then computing:
+In order to avoid linkage, the packet number offset MUST be externally
+indistinguishable from random. The packet number offset for a connection
+ID is computed via the following:
 
 ~~~
-Gap = HKDF-Expand-Label(packet_number_secret,
-                        "QUIC packet sequence gap", sequence, 4)
+Offset = HKDF-Expand-Label(packet_number_secret,
+                           "QUIC PN offset", connection_id, 8)
 ~~~
 
 The output of HKDF-Expand-Label is interpreted as a big-endian
@@ -4191,6 +4201,10 @@ thanks to all.
 > final version of this document.
 
 Issue and pull request numbers are listed with a leading octothorp.
+
+## Since draft-ietf-quic-transport-11
+
+- Change packet number gaps to packet number offsets
 
 ## Since draft-ietf-quic-transport-10
 
