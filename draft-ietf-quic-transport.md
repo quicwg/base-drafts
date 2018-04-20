@@ -2577,9 +2577,8 @@ Application Error Code:
 ## ACK Frame {#frame-ack}
 
 Receivers send ACK frames (type=0x0d) to inform senders which packets they have
-received and processed.  A sent packet that has never been acknowledged is
-missing. The ACK frame contains any number of ACK blocks.  ACK blocks are
-ranges of acknowledged packets.
+received and processed. The ACK frame contains any number of ACK blocks.
+ACK blocks are ranges of acknowledged packets.
 
 Unlike TCP SACKs, QUIC acknowledgements are irrevocable.  Once a packet has
 been acknowledged, even if it does not appear in a future ACK frame,
