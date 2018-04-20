@@ -1086,8 +1086,8 @@ HTTP_PUSH_ALREADY_IN_CACHE (0x04):
 HTTP_REQUEST_CANCELLED (0x05):
 : The client no longer needs the requested data.
 
-HTTP_HPACK_DECOMPRESSION_FAILED (0x06):
-: HPACK failed to decompress a frame and cannot continue.
+HTTP_QPACK_DECOMPRESSION_FAILED (0x06):
+: QPACK failed to decompress a frame and cannot continue.
 
 HTTP_CONNECT_ERROR (0x07):
 : The connection established in response to a CONNECT request was reset or
