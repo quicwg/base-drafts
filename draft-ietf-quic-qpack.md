@@ -53,7 +53,7 @@ code and issues list for this draft can be found at
 
 The QUIC transport protocol was designed from the outset to support HTTP
 semantics, and its design subsumes many of the features of HTTP/2.  QUIC's
-stream multiplexing comes into some conflict with  header compression.  A key
+stream multiplexing comes into some conflict with header compression.  A key
 goal of the design of QUIC is to improve stream multiplexing relative to HTTP/2
 by eliminating HoL (head of line) blocking, which can occur in HTTP/2.  HoL
 blocking can happen because all HTTP/2 streams are multiplexed onto a single TCP
@@ -102,30 +102,16 @@ the reference from being usable.
 
 The encoder can choose on a per-header-block basis whether to favor higher
 compression ratio (by permitting vulnerable references) or HoL resilience (by
-avoiding them). This is signaled by the BLOCKING flag in HEADERS and
-PUSH_PROMISE frames (see {{QUIC-HTTP}}).
+avoiding them).
 
-If a header block contains no vulnerable header fields, BLOCKING MUST be 0.
-This implies that the header fields are represented either as references
-to dynamic table entries which are known to have been received, or as
-Literal header fields (see Section 6.2 of {{RFC7541}}).
+QPACK header blocks contains a prefix ({{absolute-index}}) that specifies the
+minimum state of the decoder required to process the block. If the decoder does
+not yet have the required state, it must defer processing until it reaches the
+required state.  While blocked, the portion of the header block data after the
+prefix MUST remain in the blocked stream's flow control window.  Conversely, a
+header block that contains no vulnerable headers may be processed by the decoder
+immediately upon receipt.
 
-If a header block contains any header field which references dynamic table
-state which the peer might not have received yet, the BLOCKING flag MUST be
-set.  If the peer does not yet have the appropriate state, such blocks
-might not be processed on arrival.
-
-The header block contains a prefix ({{absolute-index}}). This prefix contains
-table offset information that establishes total ordering among all headers,
-regardless of reordering in the transport (see {{overview-absolute}}).
-
-In blocking mode, the prefix additionally identifies the minimum state required
-to process any vulnerable references in the header block (see `Depends Index` in
-{{overview-absolute}}).  The decoder keeps track of which entries have been
-added to its dynamic table.  The stream for a header with BLOCKING flag set is
-considered blocked by the decoder and can not be processed until all entries in
-the range `[1, Depends Index]` have been added.  While blocked, header
-field data MUST remain in the blocked stream's flow control window.
 
 # HPACK extensions
 
@@ -143,40 +129,34 @@ without modifying it, but emit the headers for an HTTP request or response.
 
 ## Header Block Prefix {#absolute-index}
 
-For request and push promise streams, in HEADERS and PUSH_PROMISE frames, HPACK
-Header data is prefixed by an integer: `Base Index`.  `Base index` is the
-cumulative number of entries added to the dynamic table prior to encoding the
-current block, including any entries already evicted.  It is encoded as a single
-8-bit prefix integer:
+Header block data in HEADERS and PUSH_PROMISE frames begin with a prefix.  The
+prefix contains two logical values: `Largest Reference` and `Base Index`.
+`Largest Reference` is the largest absolute dynamic index referenced in the
+block.  Blocking decoders use the Largest Reference to determine when it is safe
+to process the rest of the block.  `Base Index` is the cumulative number of
+entries added to the dynamic table prior to encoding the current block,
+including any entries already evicted.  To save space, Base Index is encoded
+relative to Largest Reference using a one-bit sign flag.
+
+`baseDelta = largestReference - baseIndex`
+
+If the encoder inserted entries to the table while the encoding the block,
+baseDelta will be positive, and is encoded with S=1.  If the block did not
+reference the most recent entry in the table and did not insert any new entries,
+baseDelta will be negative and is encoded with S=0.  baseDelta of 0 is encoded
+with S=1.
 
 ~~~~~~~~~~  drawing
     0 1 2 3 4 5 6 7
    +-+-+-+-+-+-+-+-+
-   |Base Index (8+)|
+   |Largest Ref(8+)|
+   +-+-+-+-+-+-+-+-+
+   |S|BaseDelta(7+)|
    +---------------+
 ~~~~~~~~~~
-{:#fig-base-index title="Absolute indexing (BLOCKING=0x0)"}
+{:#fig-base-index title="Header Block Prefix"}
 
 {{overview-absolute}} describes the role of `Base Index`.
-
-When the BLOCKING flag is 0x1, a the prefix additionally contains a second HPACK
-integer (8-bit prefix) 'Depends':
-
-~~~~~~~~~~  drawing
-    0 1 2 3 4 5 6 7
-   +-+-+-+-+-+-+-+-+
-   |Base Index (8+)|
-   +---------------+
-   |Depends    (8+)|
-   +---------------+
-~~~~~~~~~~
-{:#fig-prefix-long title="Absolute indexing (BLOCKING=0x1)"}
-
-Depends is used to identify header dependencies (see
-{{overview-hol-avoidance}}).  The encoder computes a value `Depends Index` which
-is the largest (absolute) index referenced by the following header block.  To
-help keep the prefix smaller, `Depends Index` is converted to a relative value:
-`Depends = Base Index - Depends Index`.
 
 ## Hybrid absolute-relative indexing {#overview-absolute}
 
@@ -219,9 +199,50 @@ In this way, even if request or push stream headers are decoded in a different
 order than encoded, the absolute indices will still identify the correct table
 entries.
 
-It is an error if the HPACK decoder encounters an indexed representation that
+It is an error if the decoder encounters an indexed representation that
 refers to an entry missing from the table, and the connection MUST be closed
 with the `HTTP_HPACK_DECOMPRESSION_FAILED` error code.
+
+## Single pass encoding
+
+An encoder making a single pass over a list of headers must choose Base Index
+before knowing Largest Reference.  An exception occurs when trying to reference
+a header inserted to the table after encoding has begun.  In this case,
+`relativeIndex = baseIndex - entry.absoluteIndex + staticTable.size` would
+either appear to be a static table reference, or a negative number that cannot
+be encoded using HPACK integer representation.  Instead, the index is encoded as
+`aboveBaseIndex = entry.absoluteIndex - baseIndex + staticTable.size`, and is
+used with different instructions that tell the decoder to use a different
+mechanism to calculate an entry's absolute index.
+
+### Literal with Above Base Name Index
+
+Literal with Above Base Name Index reuses the Literal with Incremental
+Indexing instruction, and is represented as follows:
+
+~~~~~~~~~~  drawing
+    0 1 2 3 4 5 6 7
+   +-+-+-+-+-+-+-+-+
+   |0|1| Index (6+)|
+   +---------------+
+   |H|Value Len(8+)|
+   +---------------+
+   |Value (*)      |
+   +---------------+
+~~~~~~~~~~
+
+### Indexed Header Field with Above Base Index
+
+Indexed Header Field with Above Base Index reuses the Table Size Update
+instruction, and is represented as follows:
+
+~~~~~~~~~~  drawing
+    0 1 2 3 4 5 6 7
+   +-+-+-+-+-+-+-+-+
+   |0|0|1|Index(5+)|
+   +---------------+
+~~~~~~~~~~
+
 
 ## Preventing Eviction Races {#evictions}
 
@@ -324,6 +345,57 @@ it can drain any members of the blocked streams map that have `Depends
 Index <= M` where `[1,M]` is the first member of the added- entries sub-ranges
 set.  Again, the complexity of operations would be at most O(log N), N being
 the number of concurrently blocked streams.
+
+## Sample One Pass Encoding Algorithm
+
+Pseudo-code for single pass encoding, excluding handling of duplicates,
+non-blocking mode, and reference tracking.
+
+~~~
+baseIndex = dynamicTable.baseIndex
+largestReference = 0
+for header in headers:
+  staticIdx = staticTable.getIndex(header)
+  if staticIdx:
+    encodeIndexReference(streamBuffer, staticIdx)
+    continue
+
+  dynamicIdx = dynamicTable.getIndex(header)
+  if !dynamicIdx:
+    # No matching entry.  Either insert+index or encode literal
+    nameIdx = getNameIndex(header)
+    if shouldIndex(header) and dynamicTable.canIndex(header):
+      encodeLiteralWithIncrementalIndex(controlBuffer, nameIdx,
+                                        header)
+      dynamicTable.add(header)
+      dynamicIdx = dynamicTable.baseIndex
+
+  if !dynamicIdx:
+    # Couldn't index it, literal
+    if nameIdx <= staticTable.size:
+      encodeLiteral(streamBuffer, nameIndex, header)
+    else:
+      # encode literal, possibly with nameIdx above baseIndex
+      encodeDynamicLiteral(streamBuffer, nameIndex, baseIndex,
+                           header)
+      largestReference = max(largestReference,
+                             dynamicTable.toAbsolute(nameIdx))
+  else:
+    # Dynamic index reference
+    assert(dynamicIdx)
+    largestReference = max(largestReference, dynamicIdx)
+    # Encode dynamicIdx, possibly with dynamicIdx above baseIndex
+    encodeDynamicIndexReference(streamBuffer, dynamicIdx,
+                                baseIndex)
+
+# encode the prefix
+encodeInteger(prefixBuffer, 0x00, largestReference, 8)
+delta = largestReference - baseIndex
+sign = delta > 0 ? 0x80 : 0
+encodeInteger(prefixBuffer, sign, delta, 7)
+
+return controlBuffer, prefixBuffer + streamBuffer
+~~~
 
 # Security Considerations
 
