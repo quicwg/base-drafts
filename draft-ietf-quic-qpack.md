@@ -127,23 +127,180 @@ considered blocked by the decoder and can not be processed until all entries in
 the range `[1, Depends Index]` have been added.  While blocked, header
 field data MUST remain in the blocked stream's flow control window.
 
-# HPACK extensions
+# Wire Format
 
-## Allowed Instructions
+QPACK instructions occur in three locations, each of which uses a separate
+instruction space:
 
-HEADERS frames on the Control Stream SHOULD contain only Literal with
-Incremental Indexing and Indexed with Duplication (see {{indexed-duplicate}})
-representations.  Frames on this stream modify the dynamic table state
-without generating output to any particular request.
+ - Table updates are carried by HEADERS frames on the control stream, as defined
+   by {{QUIC-HTTP}}.  Frames on this stream modify the dynamic table state
+   without generating output to any particular request.
+ - Acknowledgement of header frame processing is carried by HEADER_ACK frames on
+   the control stream, running from decoder to encoder.
+ - Finally, the contents of HEADERS and PUSH_PROMISE frames on request streams
+   reference the QPACK table state.
 
-HEADERS and PUSH_PROMISE frames on request and push streams MUST NOT contain
-Literal with Incremental Indexing and Indexed with Duplication representations.
-Frames on these streams reference the dynamic table in a particular state
-without modifying it, but emit the headers for an HTTP request or response.
+This section describes the instructions which are possible on each stream type.
 
-## Header Block Prefix {#absolute-index}
+In order to ensure table consistency and simplify update management, all table
+updates occur on the control stream rather than on request streams. Request
+streams contain only header blocks, which do not modify the state of the table.
 
-For request and push promise streams, in HEADERS and PUSH_PROMISE frames, HPACK
+## Primitives
+
+The prefixed integer from Section 5.1 of [RFC7541] is used heavily throughout
+this document.  The string literal, defined by Section 5.2 of [RFC7541], is used
+with the following modification.
+
+HPACK defines string literals to begin on a byte boundary.  They begin with a
+single flag (indicating whether the string is Huffman-coded), followed by the
+Length encoded as a 7-bit prefix integer, and finally Length octets of data.
+
+QPACK permits strings to begin other than on a byte boundary.  An "N-bit prefix
+string literal" begins with the same Huffman flag, followed by the length
+encoded as an (N-1)-bit prefix integer.  The remainder of the string literal is
+unmodified.
+
+A string literal without a prefix length noted is an 8-bit prefix string literal
+and follows the definitions in [RFC7541] without modification.
+
+## HEADERS Frames on the Control Stream
+
+Table updates can add a table entry, possibly using existing entries to avoid
+transmitting redundant information.  The name can be transmitted as a reference
+to an existing entry in the static or the dynamic table or as a string literal.
+For entries which already exist in the dynamic table, the full entry can also be
+used by reference, creating a duplicate entry.
+
+### Insert With Name Reference
+
+An addition to the header table where the header field name matches the header
+field name of an entry stored in the static table or the dynamic table starts
+with the '1' one-bit pattern.  The `S` bit indicates whether the reference is to
+the static (S=1) or dynamic (S=0) table. The header field name is represented
+using the index of that entry, which is represented as an integer with a 6-bit
+prefix (see Section 5.1 of [RFC7541]). Table indices are always non-zero; a zero
+index MUST be treated as a decoding error.
+
+The header name reference is followed by the header field value represented as a
+string literal (see Section 5.2 of [RFC7541]).
+
+~~~~~~~~~~ drawing
+     0   1   2   3   4   5   6   7
+   +---+---+---+---+---+---+---+---+
+   | 1 | S |    Name Index (6+)    |
+   +---+---+-----------------------+
+   | H |     Value Length (7+)     |
+   +---+---------------------------+
+   | Value String (Length octets)  |
+   +-------------------------------+
+~~~~~~~~~~
+{: title="Insert Header Field -- Indexed Name"}
+
+
+### Insert Without Name Reference
+
+An addition to the header table where both the header field name and the header
+field value are represented as string literals (see {{primitives}}) starts with
+the '01' two-bit pattern.
+
+The name is represented as a 6-bit prefix string literal, while the value is
+represented as an 8-bit prefix string literal.
+
+~~~~~~~~~~ drawing
+     0   1   2   3   4   5   6   7
+   +---+---+---+---+---+---+---+---+
+   | 0 | 1 | H | Name Length (5+)  |
+   +---+---+---+-------------------+
+   |  Name String (Length octets)  |
+   +---+---------------------------+
+   | H |     Value Length (7+)     |
+   +---+---------------------------+
+   | Value String (Length octets)  |
+   +-------------------------------+
+~~~~~~~~~~
+{: title="Insert Header Field -- New Name"}
+
+
+### Duplicate {#indexed-duplicate}
+
+Duplication of an existing entry in the dynamic table starts with the '000'
+three-bit pattern.  The index of the existing entry is represented as an integer
+with a 5-bit prefix. Table indices are always non-zero; a table index of zero
+MUST be treated as a decoding error.
+
+~~~~~~~~~~ drawing
+     0   1   2   3   4   5   6   7
+   +---+---+---+---+---+---+---+---+
+   | 0 | 0 | 0 |    Index (5+)     |
+   +---+---+---+-------------------+
+~~~~~~~~~~
+{:#fig-index-with-duplication title="Duplicate"}
+
+The existing entry is re-inserted into the dynamic table without resending
+either the name or the value. This is useful to mitigate the eviction of older
+entries which are frequently referenced, both to avoid the need to resend the
+header and to avoid the entry in the table blocking the ability to insert new
+headers.
+
+### Dynamic Table Size Update
+
+An encoder informs the decoder of a change to the size of the dynamic table
+using an instruction which begins with the '001' three-bit pattern.  The new
+maximum table size is represented as an integer with a 5-bit prefix (see Section
+5.1 of [RFC7541]).
+
+~~~~~~~~~~ drawing
+  0   1   2   3   4   5   6   7
++---+---+---+---+---+---+---+---+
+| 0 | 0 | 1 |   Max size (5+)   |
++---+---+---+-------------------+
+~~~~~~~~~~
+{:#fig-size-change title="Maximum Dynamic Table Size Change"}
+
+The new maximum size MUST be lower than or equal to the limit determined by the
+protocol using QPACK.  A value that exceeds this limit MUST be treated as a
+decoding error.  In HTTP/QUIC, this limit is the value of the
+SETTINGS_HEADER_TABLE_SIZE parameter (see [QUIC-HTTP]) received from the
+decoder.
+
+Reducing the maximum size of the dynamic table can cause entries to be evicted
+(see Section 4.3 of [RFC7541]).  This MUST NOT cause the eviction of entries
+with outstanding references (see {{reference-tracking}}).
+
+## HEADER_ACK Frames {#feedback}
+
+HEADER_ACK frames on the control stream carry information used to ensure
+consistency of the dynamic table. Information is sent from the QPACK decoder to
+the QPACK encoder; that is, the server informs the client about the processing
+of the client's header blocks and table updates, and the client informs the
+server about the processing of the server's header blocks and table updates.
+
+Each frame represents a header block or table update which the QPACK decoder has
+fully processed.  It is used by the peer's QPACK encoder to determine whether
+subsequent indexed representations that might reference impacted entries are
+vulnerable to head-of-line blocking, and to prevent eviction races.
+
+The frame payload contains contains a variable-length integer (as defined in
+{{QUIC-TRANSPORT}}) which indicates the stream on which the header block was
+processed. The same Stream ID can be identified in multiple frames, as multiple
+header blocks can be sent on a single request or push stream.  (Requests can
+have trailers; responses can have intermediate status codes and PUSH_PROMISE
+frames.) As the control stream carries multiple table updates, the control
+stream can also be identified in multiple frames.
+
+Since header frames on each stream are received and processed in
+order, this gives the encoder precise feedback on which header blocks within a
+stream have been fully processed.
+
+## Request Streams
+
+HEADERS and PUSH_PROMISE frames on request and push streams reference the
+dynamic table in a particular state without modifying it, but emit the headers
+for an HTTP request or response.
+
+### Index Encoding {#absolute-index}
+
 Header data is prefixed by an integer: `Base Index`.  `Base index` is the
 cumulative number of entries added to the dynamic table prior to encoding the
 current block, including any entries already evicted.  It is encoded as a single
@@ -178,7 +335,7 @@ is the largest (absolute) index referenced by the following header block.  To
 help keep the prefix smaller, `Depends Index` is converted to a relative value:
 `Depends = Base Index - Depends Index`.
 
-## Hybrid absolute-relative indexing {#overview-absolute}
+### Hybrid absolute-relative indexing {#overview-absolute}
 
 HPACK indexed entries refer to an entry by its current position in the dynamic
 table.  As Figure 1 of {{!RFC7541}} illustrates, newer entries have smaller
@@ -223,7 +380,96 @@ It is an error if the HPACK decoder encounters an indexed representation that
 refers to an entry missing from the table, and the connection MUST be closed
 with the `HTTP_HPACK_DECOMPRESSION_FAILED` error code.
 
-## Preventing Eviction Races {#evictions}
+### Instructions
+
+#### Indexed Header Field
+
+An indexed header field representation identifies an entry in either the static
+table or the dynamic table and causes that header field to be added to the
+decoded header list, as described in Section 3.2 of [RFC7541].
+
+~~~~~~~~~~ drawing
+  0   1   2   3   4   5   6   7
++---+---+---+---+---+---+---+---+
+| 1 | S |      Index (6+)       |
++---+---+-----------------------+
+~~~~~~~~~~
+{: title="Indexed Header Field"}
+
+An indexed header field starts with the '1' 1-bit pattern, followed by the `S`
+bit indicating whether the reference is into the static (S=1) or dynamic (S=0)
+table. Finally, the index of the matching header field is represented as an
+integer with a 6-bit prefix (see Section 5.1 of [RFC7541]).
+
+The index value of 0 is not used.  It MUST be treated as a decoding error if
+found in an indexed header field representation.
+
+#### Literal Header Field With Name Reference
+
+A header where the header field name matches the header field name of an entry
+stored in the static table or the dynamic table starts with the '00' two-bit
+pattern.
+
+The third bit, 'N', indicates whether an intermediary is permitted to add this
+header to the dynamic header table on subsequent hops. When the 'N' bit is set,
+the encoded header MUST always be encoded with a literal representation. In
+particular, when a peer sends a header field that it received represented as a
+literal header field with the 'N' bit set, it MUST use a literal representation
+to forward this header field.  This bit is intended for protecting header field
+values that are not to be put at risk by compressing them (see Section 7.1 of
+[RFC7541] for more details).
+
+The header field name is represented using the index of that entry, which is
+represented as an integer with a 4-bit prefix (see Section 5.1 of [RFC7541]).
+The `S` bit indicates whether the reference is to the static (S=1) or dynamic
+(S=0) table.  Table indices are always non-zero; a zero index MUST be treated as
+a decoding error.
+
+~~~~~~~~~~ drawing
+     0   1   2   3   4   5   6   7
+   +---+---+---+---+---+---+---+---+
+   | 0 | 0 | N | S |Name Index (4+)|
+   +---+---+-----------------------+
+   | H |     Value Length (7+)     |
+   +---+---------------------------+
+   | Value String (Length octets)  |
+   +-------------------------------+
+~~~~~~~~~~
+{: title="Literal Header Field With Name Reference"}
+
+#### Literal Header Field Without Name Reference
+
+An addition to the header table where both the header field name and the header
+field value are represented as string literals (see {{primitives}}) starts with
+the '01' two-bit pattern.
+
+The third bit, 'N', indicates whether an intermediary is permitted to add this
+header to the dynamic header table on subsequent hops. When the 'N' bit is set,
+the encoded header MUST always be encoded with a literal representation. In
+particular, when a peer sends a header field that it received represented as a
+literal header field with the 'N' bit set, it MUST use a literal representation
+to forward this header field.  This bit is intended for protecting header field
+values that are not to be put at risk by compressing them (see Section 7.1 of
+[RFC7541] for more details).
+
+The name is represented as a 5-bit prefix string literal, while the value is
+represented as an 8-bit prefix string literal.
+
+~~~~~~~~~~ drawing
+     0   1   2   3   4   5   6   7
+   +---+---+---+---+---+---+---+---+
+   | 0 | 1 | N | H |Name Length(4+)|
+   +---+---+---+-------------------+
+   |  Name String (Length octets)  |
+   +---+---------------------------+
+   | H |     Value Length (7+)     |
+   +---+---------------------------+
+   | Value String (Length octets)  |
+   +-------------------------------+
+~~~~~~~~~~
+{: title="Literal Header Field Without Name Reference"}
+
+# Encoding Strategies
 
 Due to out-of-order arrival, QPACK's eviction algorithm requires changes
 (relative to HPACK) to avoid the possibility that an indexed representation is
@@ -231,7 +477,20 @@ decoded after the referenced entry has already been evicted.  QPACK employs a
 two-phase eviction algorithm, in which the encoder will not evict entries that
 have outstanding (unacknowledged) references.
 
-### Blocked Evictions
+## Reference Tracking
+
+An encoder MUST ensure that a header block which references a dynamic table
+entry is not received by the decoder after the referenced entry has already been
+evicted, and MUST ensure that the decoder will not suffer head-of-line blocking
+if the decoder has not opted to receive blocking references. Even if the decoder
+is willing to process blocking references, the encoder might choose to avoid
+them in certain cases.
+
+In order to enable this, the encoder will need to track outstanding
+(unacknowledged) header blocks and table updates using feedback received from
+the decoder.
+
+### Blocked Eviction
 
 The encoder MUST NOT permit an entry to be evicted while a reference to that
 entry remains unacknowledged.  If a new header to be inserted into the dynamic
@@ -248,24 +507,17 @@ entries in the dynamic table SHOULD be avoided.  When one of the oldest entries
 in the table is still actively used for references, the encoder SHOULD emit an
 Indexed-Duplicate representation instead (see {{indexed-duplicate}}).
 
-## Refreshing Entries with Duplication {#indexed-duplicate}
 
-~~~~~~~~~~  drawing
-    0 1 2 3 4 5 6 7
-   +-+-+-+-+-+-+-+-+
-   |0|0|1|Index(5+)|
-   +-+-+-+---------+
-~~~~~~~~~~
-{:#fig-index-with-duplication title="Indexed Header Field with Duplication"}
+### Blocked Decoding
 
-*Indexed-Duplicates* insert a new entry into the dynamic table which duplicates
-an existing entry. {{RFC7541}} allows duplicate HPACK table entries, that is
-entries that have the same name and value.
+For header blocks encoded in non-blocking mode, the encoder needs to forego
+indexed representations that refer to table updates which have not yet been
+acknowledged with {{feedback}}.
 
-This replaces the HPACK instruction for Dynamic Table Size Update (see Section
-6.3 of {{RFC7541}}, which is not supported by HTTP over QUIC.
+To track blocked streams, the necessary `Depends Index` values for each stream
+can be used.  Whenever the decoder processes a table update, it can begin
+decoding any blocked streams that now have their dependencies satisfied.
 
-# Performance considerations
 
 ## Speculative table updates {#speculative-updates}
 
@@ -276,63 +528,13 @@ encoder might decide to *refresh* by sending Indexed-Duplicate representations
 for popular header fields ({{absolute-index}}), ensuring they have small indices
 and hence minimal size on the wire.
 
-## Additional state beyond HPACK
-
-### Vulnerable Entries
-
-For header blocks encoded in non-blocking mode, the encoder needs to forego
-indexed representations that refer to vulnerable entries (see
-{{overview-hol-avoidance}}).  An implementation could extend the header table
-entry with a boolean to track vulnerability.  However, the number of entries in
-the table that are vulnerable is likely to be small in practice, much less than
-the total number of entries, so a data tracking only vulnerable
-(un-acknowledged) entries, separate from the main header table, might be more
-space efficient.
-
-### Safe evictions
-
-Section {{evictions}} describes how QPACK avoids invalid references that might
-result from out-of-order delivery.  One possible mechanism for tracking this is
-as follows: while encoding a block, the encoder maintains a reference set,
-which is the set of absolute indexes of dynamic entries that are referenced at
-least once in the block.  Each time a new entry is added to the reference set,
-its reference count is incremented.  When encoding is complete, the reference
-set is appended to a queue associated with the stream.  When a HEADER_ACK for a
-stream is received, the encoder dequeues the first reference set from the
-stream's queue and decrements the associated reference counts.  If a stream is
-reset, the encoder processes all queued reference sets for that stream as if all
-header blocks had been acknowledged.
-
-### Decoder Blocking
-
-To support blocking, the decoder needs to keep track of entries it has added to
-the dynamic table (see {{overview-hol-avoidance}}), and it needs to track
-blocked streams.
-
-Tracking added entries might be done in a brute force fashion without additional
-space.  However, this would have O(N) cost where N is the number of entries in
-the dynamic table.  Alternatively, a dedicated data structure might improve on
-brute force in exchange a small amount of additional space.  For example, a set
-of pairs (of indices), representing non-overlapping sub-ranges can be used.
-Each operation (add, or query) can be done within O(log M) complexity.  Here set
-size M is the number of sub-ranges. In practice M would be very small, as most
-table entries would be concentrated in the first sub-range `[1,M]`.
-
-To track blocked streams, an ordered map (e.g. multi-map) from `Depends Index`
-values to streams can be used.  Whenever the decoder processes a header block,
-it can drain any members of the blocked streams map that have `Depends
-Index <= M` where `[1,M]` is the first member of the added- entries sub-ranges
-set.  Again, the complexity of operations would be at most O(log N), N being
-the number of concurrently blocked streams.
-
 # Security Considerations
 
 TBD.
 
 # IANA Considerations
 
-This document registers a new frame type, HEADER_ACK, for HTTP/QUIC. This will
-need to be added to the IANA Considerations of {{QUIC-HTTP}}.
+None.
 
 --- back
 
