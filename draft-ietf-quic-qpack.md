@@ -417,17 +417,12 @@ decoded header list, as described in Section 3.2 of [RFC7541].
 ~~~~~~~~~~
 {: title="Indexed Header Field"}
 
-An indexed header field starts with the '1' 1-bit pattern, followed by the `S`
-bit indicating whether the reference is into the static (S=1) or dynamic (S=0)
-table. Finally, the relative index of the matching header field is represented
-as an integer with a 6-bit prefix (see Section 5.1 of [RFC7541]).
-
-#### Post-Base Indexed Header Field
-
-A post-base indexed header field representation identifies an entry in the
-dynamic table with an absolute index greater than Base Index.  It causes that
-header field to be added to the decoded header list, as described in Section 3.2
-of [RFC7541].
+If the entry is in the static table, or in the dynamic table with an absolute
+index less than Base Index, this representation starts with the '1' 1-bit
+pattern, followed by the `S` bit indicating whether the reference is into the
+static (S=1) or dynamic (S=0) table. Finally, the relative index of the matching
+header field is represented as an integer with a 6-bit prefix (see Section 5.1
+of [RFC7541]).
 
 ~~~~~~~~~~ drawing
   0   1   2   3   4   5   6   7
@@ -437,29 +432,30 @@ of [RFC7541].
 ~~~~~~~~~~
 {: title="Indexed Header Field"}
 
-A post-base indexed header field starts with the '0100' 4-bit pattern, followed
-by the post-base index (see {{indexing}}) of the matching header field,
-represented as an integer with a 4-bit prefix (see Section 5.1 of [RFC7541]).
+If the entry is in the dynamic table with an absolute index greater than Base
+Index, the representation starts with the '0100' 4-bit pattern, followed by the
+post-base index (see {{indexing}}) of the matching header field, represented as
+an integer with a 4-bit prefix (see Section 5.1 of [RFC7541]).
 
 #### Literal Header Field With Name Reference
 
-A header where the header field name matches the header field name of an entry
-stored in the static table or the dynamic table starts with the '00' two-bit
-pattern.
+A literal header field with a name reference represents a header where the
+header field name matches the header field name of an entry stored in the static
+table or the dynamic table.
 
-The third bit, 'N', indicates whether an intermediary is permitted to add this
-header to the dynamic header table on subsequent hops. When the 'N' bit is set,
-the encoded header MUST always be encoded with a literal representation. In
+If the entry is in the static table, or in the dynamic table with an absolute
+index less than Base Index, this representation starts with the '00' two-bit
+pattern.  If the entry is in the dynamic table with an absolute index greater
+than Base Index, the representation starts with the '0101' four-bit pattern.
+
+The following bit, 'N', indicates whether an intermediary is permitted to add
+this header to the dynamic header table on subsequent hops. When the 'N' bit is
+set, the encoded header MUST always be encoded with a literal representation. In
 particular, when a peer sends a header field that it received represented as a
 literal header field with the 'N' bit set, it MUST use a literal representation
 to forward this header field.  This bit is intended for protecting header field
 values that are not to be put at risk by compressing them (see Section 7.1 of
 [RFC7541] for more details).
-
-The header field name is represented using the relative index of that entry,
-which is represented as an integer with a 4-bit prefix (see Section 5.1 of
-[RFC7541]). The `S` bit indicates whether the reference is to the static (S=1)
-or dynamic (S=0) table.
 
 ~~~~~~~~~~ drawing
      0   1   2   3   4   5   6   7
@@ -473,24 +469,11 @@ or dynamic (S=0) table.
 ~~~~~~~~~~
 {: title="Literal Header Field With Name Reference"}
 
-
-#### Literal Header Field With Post-Base Name Reference
-
-A header where the header field name matches the header field name of an entry
-in the dynamic table with an index greater than Base Index starts with the
-'0101' four-bit pattern.
-
-The fifth bit, 'N', indicates whether an intermediary is permitted to add this
-header to the dynamic header table on subsequent hops. When the 'N' bit is set,
-the encoded header MUST always be encoded with a literal representation. In
-particular, when a peer sends a header field that it received represented as a
-literal header field with the 'N' bit set, it MUST use a literal representation
-to forward this header field.  This bit is intended for protecting header field
-values that are not to be put at risk by compressing them (see Section 7.1 of
-[RFC7541] for more details).
-
-The header field name is represented using the post-base index of that entry
-(see {{indexing}}).
+For entries in the static table or in the dynamic table with an absolute index
+less than Base Index, the header field name is represented using the relative
+index of that entry, which is represented as an integer with a 4-bit prefix (see
+Section 5.1 of [RFC7541]). The `S` bit indicates whether the reference is to the
+static (S=1) or dynamic (S=0) table.
 
 ~~~~~~~~~~ drawing
      0   1   2   3   4   5   6   7
@@ -504,6 +487,9 @@ The header field name is represented using the post-base index of that entry
 ~~~~~~~~~~
 {: title="Literal Header Field With Post-Base Name Reference"}
 
+For entries in the dynamic table with an absolute index greater than Base Index,
+the header field name is represented using the post-base index of that entry
+(see {{indexing}}).
 
 #### Literal Header Field Without Name Reference
 
