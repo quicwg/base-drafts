@@ -778,13 +778,15 @@ Settings which are integers use the QUIC variable-length integer encoding.
 The following settings are defined in HTTP/QUIC:
 
   SETTINGS_HEADER_TABLE_SIZE (0x1):
-  : An integer with a maximum value of 2^30 - 1.
+  : An integer with a maximum value of 2^30 - 1.  The default value is 4,096
+    bytes.
 
   SETTINGS_MAX_HEADER_LIST_SIZE (0x6):
-  : An integer with a maximum value of 2^30 - 1.
+  : An integer with a maximum value of 2^30 - 1.  The default value is
+    unlimited.
 
   SETTINGS_BLOCKING_HEADER_REFERENCES (0x7):
-  : An integer with a maximum value of 2^16 - 1.
+  : An integer with a maximum value of 2^16 - 1.  The default value is 100.
 
 #### Initial SETTINGS Values
 

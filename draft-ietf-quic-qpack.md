@@ -95,10 +95,10 @@ reintroduced by HPACK when the loss includes a HEADERS frame.
 
 ## Avoiding Head-of-Line Blocking in HTTP/QUIC {#overview-hol-avoidance}
 
-In the example above, the second stream contained a reference to data
-which might not yet have been processed by the recipient.  Such references
-are called "vulnerable," because the loss of a different packet can keep
-the reference from being usable.
+In the example above, the header block on the second stream contained a
+reference to data which might not yet have been processed by the recipient. Such
+references are called "vulnerable," because the loss of a different packet can
+keep the reference from being usable.
 
 The decoder can signal that it is willing to process vulnerable references by
 setting SETTINGS_BLOCKING_HEADER_REFERENCES to a non-zero value.  In this case,
@@ -108,6 +108,11 @@ avoiding them).
 
 An encoder MUST NOT have more header blocks which contain vulnerable references
 outstanding than the value of SETTINGS_BLOCKING_HEADER_REFERENCES at any time.
+Note that the decoder's count of references which are actually blocking will be
+less than or equal to the encoder's count of references which are vulnerable
+(potentially blocking).  If the decoder encounters more blocking references than
+it promised to support, it SHOULD treat this as a stream error of type
+HTTP_QPACK_DECOMPRESSION_FAILED.
 
 The header block contains a Base Index (see {{absolute-index}}) which is used to
 correctly index entries, regardless of reordering in the transport (see
@@ -469,9 +474,9 @@ have outstanding (unacknowledged) references.
 An encoder MUST ensure that a header block which references a dynamic table
 entry is not received by the decoder after the referenced entry has already been
 evicted, and MUST ensure that the decoder will not suffer head-of-line blocking
-if the decoder has not opted to receive blocking references. Even if the decoder
-is willing to process blocking references, the encoder might choose to avoid
-them in certain cases.
+if the decoder has not opted to receive vulnerable references. Even if the
+decoder is willing to process blocking references, the encoder might choose to
+avoid them in certain cases.
 
 In order to enable this, the encoder will need to track outstanding
 (unacknowledged) header blocks and table updates using feedback received from
