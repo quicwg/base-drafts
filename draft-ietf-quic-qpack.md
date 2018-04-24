@@ -210,7 +210,7 @@ Entries with an absolute index greater than a frame's Base Index cannot be
 referenced by that frame.  If the decoder encounters a reference to an entry
 which has already been dropped from the table, this MUST be treated as a stream
 error of type `HTTP_QPACK_DECOMPRESSION_FAILED`.  If this reference occurs on
-the control stream, this MUST be treated as a session error.
+the control stream, this MUST be treated as a connection error.
 
 
 ## HEADERS Frames on the Control Stream
