@@ -2033,10 +2033,9 @@ this value differs from previous packets.  Ths results in two problems:
 The Packet Number field is set to a randomized value.  The server SHOULD send a
 packet with a short header and a packet number length of 1 octet. Using the
 shortest possible packet number encoding minimizes the perceived gap between the
-last packet that the server sent and this packet.  A server MAY use a different
-short header type, indicating a different packet number length, but a longer
-packet number encoding might allow this message to be identified as a stateless
-reset more easily using heuristics.
+last packet that the server sent and this packet.  A server MAY indicate a
+different packet number length, but a longer packet number encoding might allow
+this message to be identified as a stateless reset more easily using heuristics.
 
 After the Packet Number, the server pads the message with an arbitrary
 number of octets containing random values.
