@@ -567,7 +567,7 @@ This MUST be at least 8 octets in length.  Until a packet is received from the
 server, the client MUST use the same random value unless it also changes the
 Source Connection ID (which effectively starts a new connection attempt).  The
 randomized Destination Connection ID is used to determine packet protection
-keys, but is not included in server packets.
+keys.
 
 If the client received a Retry packet and is sending a second Initial packet,
 then it sets the Destination Connection ID to the value from the Source
