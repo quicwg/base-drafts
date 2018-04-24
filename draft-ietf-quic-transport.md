@@ -4283,6 +4283,10 @@ thanks to all.
 
 Issue and pull request numbers are listed with a leading octothorp.
 
+## Since draft-ietf-quic-transport-11
+
+- Enable server to prompt migration to a preferred address (#560,#1251).
+
 ## Since draft-ietf-quic-transport-10
 
 - Swap payload length and packed number fields in long header (#1294)
