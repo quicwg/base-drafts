@@ -369,7 +369,7 @@ decoder MAY coalesce multiple synchronization updates into a single update.
   0   1   2   3   4   5   6   7
 +---+---+---+---+---+---+---+---+
 | 1 |     Insert Count (7+)     |
-+---+---+---+-------------------+
++---+---------------------------+
 ~~~~~~~~~~
 {:#fig-size-sync title="Table Size Synchronize"}
 
@@ -389,7 +389,7 @@ blocks within a stream have been fully processed.
   0   1   2   3   4   5   6   7
 +---+---+---+---+---+---+---+---+
 | 1 |      Stream ID (7+)       |
-+---+---+---+-------------------+
++---+---------------------------+
 ~~~~~~~~~~
 {:#fig-header-ack title="Header Acknowledgement"}
 
