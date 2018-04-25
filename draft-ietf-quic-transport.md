@@ -1996,10 +1996,6 @@ following layout:
 +-+-+-+-+-+-+-+-+
 |0|K| Type (6)  |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                  Destination Connection ID (144)            ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                     Packet Number (8/16/32)                   |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                        Random Octets (*)                    ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                                                               |
@@ -2015,9 +2011,20 @@ following layout:
 This design ensures that a stateless reset packet is - to the extent possible -
 indistinguishable from a regular packet with a short header.
 
-A server generates a random 18-octet Destination Connection ID field.  For a
-client that depends on the server including a connection ID, this will mean that
-this value differs from previous packets.  Ths results in two problems:
+The random octets MUST be of a length equal to at least 18 octets plus the
+packet number length implied by the type field. A packet of this length
+simulates a packet with a short header, the maximum-length destination
+connection ID, a packet number of the appropriate length and (with the
+Stateless Reset Token) an authentication trailer, with no packet payload.
+
+Beyond this limit, the server pads the message with an arbitrary number of
+octets containing random values.
+
+In response to a packet with a short header, the server has no means of
+determining the source connection ID and is effectively using a random one
+instead. For a client that depends on the server including a connection ID,
+this will mean that this value differs from previous packets.  Ths results in
+two problems:
 
 * The packet might not reach the client.  If the Destination Connection ID is
   critical for routing toward the client, then this packet could be incorrectly
@@ -2030,15 +2037,12 @@ this value differs from previous packets.  Ths results in two problems:
   occasionally uses different connection IDs might introduce some uncertainty
   about this.
 
-The Packet Number field is set to a randomized value.  The server SHOULD send a
-packet with a short header and a packet number length of 1 octet. Using the
-shortest possible packet number encoding minimizes the perceived gap between the
-last packet that the server sent and this packet.  A server MAY indicate a
-different packet number length, but a longer packet number encoding might allow
-this message to be identified as a stateless reset more easily using heuristics.
-
-After the Packet Number, the server pads the message with an arbitrary
-number of octets containing random values.
+The server SHOULD send a packet with a short header and a packet number length
+of 1 octet. Using the hortest possible packet number encoding minimizes the
+perceived gap between the last packet that the server sent and this packet.  A
+server MAY indicate a different packet number length, but a longer packet number
+encoding might allow this message to be identified as a stateless reset more
+easily using heuristics.
 
 Finally, the last 16 octets of the packet are set to the value of the Stateless
 Reset Token.
