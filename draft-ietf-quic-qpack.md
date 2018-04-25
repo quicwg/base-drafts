@@ -204,7 +204,7 @@ while interpreting headers on a request or push stream.
 n = count of entries inserted
 d = count of entries dropped
 ~~~~~
-{: title="Dynamic Table Indexing - Request Stream"}
+{: title="Example Dynamic Table Indexing - Request Stream"}
 
 Entries with an absolute index greater than a frame's Base Index cannot be
 referenced by that frame.  If the decoder encounters a reference to an entry
