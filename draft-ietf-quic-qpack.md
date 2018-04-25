@@ -182,7 +182,7 @@ Insertion Point         Dropping Point
 n = count of entries inserted
 d = count of entries dropped
 ~~~~~
-{: title="Dynamic Table Indexing - Control Stream"}
+{: title="Example Dynamic Table Indexing - Control Stream"}
 
 Because frames from request streams can be delivered out of order with
 instructions on the control stream, relative indices are relative to the Base
@@ -273,7 +273,7 @@ represented as an 8-bit prefix string literal.
 ### Duplicate {#indexed-duplicate}
 
 Duplication of an existing entry in the dynamic table starts with the '000'
-three-bit pattern.  The absolute index of the existing entry is represented as
+three-bit pattern.  The relative index of the existing entry is represented as
 an integer with a 5-bit prefix.
 
 ~~~~~~~~~~ drawing
