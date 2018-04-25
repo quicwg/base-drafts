@@ -1125,12 +1125,12 @@ language from Section 3 of {{!I-D.ietf-tls-tls13}}.
    enum {
       initial_max_stream_data(0),
       initial_max_data(1),
-      initial_max_streams_bidi(2),
+      initial_max_bidi_streams(2),
       idle_timeout(3),
       max_packet_size(5),
       stateless_reset_token(6),
       ack_delay_exponent(7),
-      initial_max_streams_uni(8),
+      initial_max_uni_streams(8),
       (65535)
    } TransportParameterId;
 
@@ -1199,7 +1199,7 @@ idle_timeout (0x0003):
 
 An endpoint MAY use the following transport parameters:
 
-initial_max_streams_bidi (0x0002):
+initial_max_bidi_streams (0x0002):
 
 : The initial maximum bidirectional streams parameter contains the initial
   maximum number of application-owned bidirectional streams the peer may
@@ -1213,7 +1213,7 @@ initial_max_streams_bidi (0x0002):
   equivalent to receiving a MAX_STREAM_ID containing 20 when received by a
   client or 17 when received by a server.
 
-initial_max_streams_uni (0x0008):
+initial_max_uni_streams (0x0008):
 
 : The initial maximum unidirectional streams parameter contains the initial
   maximum number of application-owned unidirectional streams the peer may
@@ -1275,12 +1275,12 @@ might be violated by the client with its 0-RTT data.  In particular, a server
 that accepts 0-RTT data MUST NOT set values for initial_max_data or
 initial_max_stream_data that are smaller than the remembered value of those
 parameters.  Similarly, a server MUST NOT reduce the value of
-initial_max_streams_bidi or initial_max_streams_uni.
+initial_max_bidi_streams or initial_max_uni_streams.
 
 Omitting or setting a zero value for certain transport parameters can result in
 0-RTT data being enabled, but not usable.  The following transport parameters
-SHOULD be set to non-zero values for 0-RTT: initial_max_streams_bidi,
-initial_max_streams_uni, initial_max_data, initial_max_stream_data.
+SHOULD be set to non-zero values for 0-RTT: initial_max_bidi_streams,
+initial_max_uni_streams, initial_max_data, initial_max_stream_data.
 
 A server MUST reject 0-RTT data or even abort a handshake if the implied values
 for transport parameters cannot be supported.
@@ -4097,12 +4097,12 @@ The initial contents of this registry are shown in {{iana-tp-table}}.
 |:-------|:---------------------------|:------------------------------------|
 | 0x0000 | initial_max_stream_data    | {{transport-parameter-definitions}} |
 | 0x0001 | initial_max_data           | {{transport-parameter-definitions}} |
-| 0x0002 | initial_max_streams_bidi   | {{transport-parameter-definitions}} |
+| 0x0002 | initial_max_bidi_streams   | {{transport-parameter-definitions}} |
 | 0x0003 | idle_timeout               | {{transport-parameter-definitions}} |
 | 0x0005 | max_packet_size            | {{transport-parameter-definitions}} |
 | 0x0006 | stateless_reset_token      | {{transport-parameter-definitions}} |
 | 0x0007 | ack_delay_exponent         | {{transport-parameter-definitions}} |
-| 0x0008 | initial_max_streams_uni    | {{transport-parameter-definitions}} |
+| 0x0008 | initial_max_uni_streams    | {{transport-parameter-definitions}} |
 {: #iana-tp-table title="Initial QUIC Transport Parameters Entries"}
 
 
