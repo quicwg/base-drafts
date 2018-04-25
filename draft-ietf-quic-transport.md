@@ -372,10 +372,10 @@ The interpretation of the fields and the payload are specific to a version and
 packet type.  Type-specific semantics for this version are described in the
 following sections.
 
-End of the Payload field (which is also the end of the long header packet) is
-determined by the value of the Payload Length field.  Senders can coalesce
-multiple long header packets into one UDP datagram.  See {{packet-coalesce}} for
-more details.
+The end of the Payload field (which is also the end of the long header
+packet) is determined by the value of the Payload Length field.
+Senders can sometimes coalesce multiple packets into one UDP datagram.
+See {{packet-coalesce}} for more details.
 
 
 ## Short Header
