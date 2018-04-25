@@ -209,17 +209,17 @@ d = count of entries dropped
 
 Entries with an absolute index greater than a frame's Base Index can be
 referenced using specific Post-Base instructions.  The relative indices of
-Post-Base references count in the opposite direction from Base Index.
+Post-Base references count up from Base Index.
 
 ~~~~~ drawing
+             Base Index
+                 |
+                 V
     +---+-----+-----+-----+-----+
     | n | n-1 | n-2 | ... | d+1 |  Absolute Index
     +---+-----+-----+-----+-----+
     | 1 |  0  |                    Post-Base Index
     +---+-----+
-                 ^
-                 |
-             Base Index
 
 n = count of entries inserted
 d = count of entries dropped
@@ -418,11 +418,11 @@ decoded header list, as described in Section 3.2 of [RFC7541].
 {: title="Indexed Header Field"}
 
 If the entry is in the static table, or in the dynamic table with an absolute
-index less than Base Index, this representation starts with the '1' 1-bit
-pattern, followed by the `S` bit indicating whether the reference is into the
-static (S=1) or dynamic (S=0) table. Finally, the relative index of the matching
-header field is represented as an integer with a 6-bit prefix (see Section 5.1
-of [RFC7541]).
+index less than or equal to Base Index, this representation starts with the '1'
+1-bit pattern, followed by the `S` bit indicating whether the reference is into
+the static (S=1) or dynamic (S=0) table. Finally, the relative index of the
+matching header field is represented as an integer with a 6-bit prefix (see
+Section 5.1 of [RFC7541]).
 
 ~~~~~~~~~~ drawing
   0   1   2   3   4   5   6   7
@@ -444,9 +444,10 @@ header field name matches the header field name of an entry stored in the static
 table or the dynamic table.
 
 If the entry is in the static table, or in the dynamic table with an absolute
-index less than Base Index, this representation starts with the '00' two-bit
-pattern.  If the entry is in the dynamic table with an absolute index greater
-than Base Index, the representation starts with the '0101' four-bit pattern.
+index less than or equal to Base Index, this representation starts with the '00'
+two-bit pattern.  If the entry is in the dynamic table with an absolute index
+greater than Base Index, the representation starts with the '0101' four-bit
+pattern.
 
 The following bit, 'N', indicates whether an intermediary is permitted to add
 this header to the dynamic header table on subsequent hops. When the 'N' bit is
@@ -470,10 +471,10 @@ values that are not to be put at risk by compressing them (see Section 7.1 of
 {: title="Literal Header Field With Name Reference"}
 
 For entries in the static table or in the dynamic table with an absolute index
-less than Base Index, the header field name is represented using the relative
-index of that entry, which is represented as an integer with a 4-bit prefix (see
-Section 5.1 of [RFC7541]). The `S` bit indicates whether the reference is to the
-static (S=1) or dynamic (S=0) table.
+less than or equal to Base Index, the header field name is represented using the
+relative index of that entry, which is represented as an integer with a 4-bit
+prefix (see Section 5.1 of [RFC7541]). The `S` bit indicates whether the
+reference is to the static (S=1) or dynamic (S=0) table.
 
 ~~~~~~~~~~ drawing
      0   1   2   3   4   5   6   7
@@ -489,7 +490,7 @@ static (S=1) or dynamic (S=0) table.
 
 For entries in the dynamic table with an absolute index greater than Base Index,
 the header field name is represented using the post-base index of that entry
-(see {{indexing}}).
+(see {{indexing}}) encoded as an integer with a 3-bit prefix.
 
 #### Literal Header Field Without Name Reference
 
