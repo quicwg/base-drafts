@@ -186,26 +186,26 @@ d = count of entries dropped
 {: title="Dynamic Table Indexing - Control Stream"}
 
 Because frames from request streams can be delivered out of order with
-instructions on the control stream, relative indices are based on the Base Index
-(see {{absolute-index}}) included in the HEADERS or PUSH_PROMISE frame.  The
-Base Index is the absolute index of the entry which has the relative index of
-zero when interpreting the frame.  The relative indices of entries do not change
+instructions on the control stream, relative indices are relative to the Base
+Index at the beginning of the header block (see {{absolute-index}}). The Base
+Index is the absolute index of the entry which has the relative index of zero
+when interpreting the frame.  The relative indices of entries do not change
 while interpreting headers on a request or push stream.
 
 ~~~~~ drawing
+             Base Index
+                 |
+                 V
     +---+-----+-----+-----+-------+
     | n | n-1 | n-2 | ... |  d+1  |  Absolute Index
     +---+-----+  -  +-----+   -   +
               |  0  | ... | n-d-3 |  Relative Index
               +-----+-----+-------+
-                 ^
-                 |
-             Base Index
 
 n = count of entries inserted
 d = count of entries dropped
 ~~~~~
-{: title="Dynamic Table Indexing - Request Stream"}
+{: title="Example Dynamic Table Indexing - Request Stream"}
 
 Entries with an absolute index greater than a frame's Base Index can be
 referenced using specific Post-Base instructions.  The relative indices of
