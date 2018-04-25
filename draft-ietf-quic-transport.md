@@ -346,7 +346,7 @@ Packet Number:
 
 : The Packet Number is a 32-bit field that follows the two connection IDs.
   {{packet-numbers}} describes the use of packet numbers.  Packet numbers are
-  protected separate to the packet payload.
+  protected separately to the packet payload.
 
 
 Payload:
