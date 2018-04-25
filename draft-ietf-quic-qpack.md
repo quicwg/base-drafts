@@ -194,7 +194,7 @@ while interpreting headers on a request or push stream.
 
 ~~~~~ drawing
     +---+-----+-----+-----+-------+
-    | n | n-2 | n-3 | ... |  d+1  |  Absolute Index
+    | n | n-1 | n-2 | ... |  d+1  |  Absolute Index
     +---+-----+  -  +-----+   -   +
               |  0  | ... | n-d-3 |  Relative Index
               +-----+-----+-------+
@@ -213,7 +213,7 @@ Post-Base references count in the opposite direction from Base Index.
 
 ~~~~~ drawing
     +---+-----+-----+-----+-----+
-    | n | n-2 | n-3 | ... | d+1 |  Absolute Index
+    | n | n-1 | n-2 | ... | d+1 |  Absolute Index
     +---+-----+-----+-----+-----+
     | 1 |  0  |                    Post-Base Index
     +---+-----+
