@@ -1766,26 +1766,28 @@ restart the alarm for a longer period of time.
 ### Privacy Implications of Connection Migration {#migration-linkability}
 
 Using a stable connection ID on multiple network paths allows a passive observer
-to correlate activity between those paths.  A client that moves between networks
-might not wish to have their activity correlated by any entity other than a
-server. The NEW_CONNECTION_ID message can be sent by a server to provide an
-unlinkable connection ID for use in case the client wishes to explicitly break
+to correlate activity between those paths.  An endpoint that moves between
+networks might not wish to have their activity correlated by any entity other
+than their peer. The NEW_CONNECTION_ID message can be sent to provide an
+unlinkable connection ID for use in case a peer wishes to explicitly break
 linkability between two points of network attachment.
 
 An endpoint that does not require the use of a connection ID should not request
 that its peer use a connection ID.  Such an endpoint does not need to provide
 new connection IDs using the NEW_CONNECTION_ID frame.
 
-A client might need to send packets on multiple networks without receiving any
-response from the server.  To ensure that the client is not linkable across each
-of these changes, a new connection ID is needed for each network.  To support
-this, a server sends multiple NEW_CONNECTION_ID messages.  Each
+An endpoint might need to send packets on multiple networks without receiving
+any response from its peer.  To ensure that the endpoint is not linkable across
+each of these changes, a new connection ID is needed for each network.  To
+support this, multiple NEW_CONNECTION_ID messages are needed.  Each
 NEW_CONNECTION_ID is marked with a sequence number.  Connection IDs MUST be used
 in the order in which they are numbered.
 
-A client which wishes to break linkability upon changing networks MUST use the
-connection ID provided by the server.  Protection of packet numbers ensures that
-packet numbers cannot be used to correlate connections.
+An endpoint that to break linkability upon changing networks MUST use a
+previously unused connection ID provided by its peer.  Protection of packet
+numbers ensures that packet numbers cannot be used to correlate connections.
+Other properties of packets, such as timing and size, might be used to correlate
+activity, but no explicit correlation can be used to link activity across paths.
 
 Clients MAY change connection ID at any time based on implementation-specific
 concerns.  For example, after a period of network inactivity NAT rebinding might
