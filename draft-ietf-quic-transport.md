@@ -101,11 +101,11 @@ Accompanying documents describe the cryptographic handshake and loss detection.
 
 Discussion of this draft takes place on the QUIC working group mailing list
 (quic@ietf.org), which is archived at
-<https://mailarchive.ietf.org/arch/search/?email_list=quic>.
+\<https://mailarchive.ietf.org/arch/search/?email_list=quic\>.
 
-Working Group information can be found at <https://github.com/quicwg>; source
+Working Group information can be found at \<https://github.com/quicwg\>; source
 code and issues list for this draft can be found at
-<https://github.com/quicwg/base-drafts/labels/-transport>.
+\<https://github.com/quicwg/base-drafts/labels/-transport\>.
 
 --- middle
 
@@ -243,9 +243,9 @@ Version numbers used to identify IETF drafts are created by adding the draft
 number to 0xff000000.  For example, draft-ietf-quic-transport-13 would be
 identified as 0xff00000D.
 
-Implementors are encouraged to register version numbers of QUIC that they
-are using for private experimentation on the
-[github wiki](https://github.com/quicwg/base-drafts/wiki/QUIC-Versions).
+Implementors are encouraged to register version numbers of QUIC that they are
+using for private experimentation on the GitHub wiki at
+\<https://github.com/quicwg/base-drafts/wiki/QUIC-Versions\>.
 
 
 # Packet Types and Formats
@@ -3097,7 +3097,7 @@ connection if an alternative path cannot be found.
 
 ### Special Considerations for PMTU Discovery
 
-Traditional ICMP-based path MTU discovery in IPv4 {{!RFC1191}} is potentially
+Traditional ICMP-based path MTU discovery in IPv4 {{!PMTUDv4}} is potentially
 vulnerable to off-path attacks that successfully guess the IP/port 4-tuple and
 reduce the MTU to a bandwidth-inefficient value. TCP connections mitigate this
 risk by using the (at minimum) 8 bytes of transport header echoed in the ICMP
@@ -3132,12 +3132,12 @@ application data, as they consume the congestion window. However, by definition
 their likely loss in a probe packet does not require delay-inducing
 retransmission of application data.
 
-When implementing the algorithm in Section 7.2 of {{!RFC4821}}, the initial
+When implementing the algorithm in Section 7.2 of {{!PLPMTUD}}, the initial
 value of search_low SHOULD be consistent with the IPv6 minimum packet size.
 Paths that do not support this size cannot deliver Initial packets, and
 therefore are not QUIC-compliant.
 
-Section 7.3 of {{!RFC4821}} discusses tradeoffs between small and large
+Section 7.3 of {{!PLPMTUD}} discusses tradeoffs between small and large
 increases in the size of probe packets. As QUIC probe packets need not contain
 application data, aggressive increases in probe size carry fewer consequences.
 
@@ -3961,7 +3961,7 @@ to mean STOPPING.  The application error code of STOPPING (0) is used by the
 transport to cancel a stream in response to receipt of a STOP_SENDING frame.
 
 
-# Security and Privacy Considerations
+# Security Considerations
 
 ## Spoofed ACK Attack
 
