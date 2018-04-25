@@ -496,7 +496,7 @@ loss_detection_alarm:
 : Multi-modal alarm used for loss detection.
 
 handshake_count:
-: The number of times the handshake packets have been
+: The number of times all unacknowledged handshake data has been
   retransmitted without receiving an ack.
 
 tlp_count:
