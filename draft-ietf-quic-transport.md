@@ -2581,9 +2581,9 @@ received and processed.  A sent packet that has never been acknowledged is
 missing. The ACK frame contains any number of ACK blocks.  ACK blocks are
 ranges of acknowledged packets.
 
-QUIC acknowledgements are irrevocable:  Once a packet has been acknowledged,
-even if it does not appear in a future ACK frame, it remains acknowledged.
-(This is unlike TCP SACKs.)
+QUIC acknowledgements are irrevocable.  Once acknowledged, a packet remains
+acknowledged, even if it does not appear in a future ACK frame.  This is unlike
+TCP SACKs ({{?RFC2018}}).
 
 A client MUST NOT acknowledge Retry packets.  Retry packets include the packet
 number from the Initial packet it responds to.  Version Negotiation packets
