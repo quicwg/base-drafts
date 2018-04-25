@@ -4285,7 +4285,7 @@ Issue and pull request numbers are listed with a leading octothorp.
 
 ## Since draft-ietf-quic-transport-11
 
-- Enable server to prompt migration to a preferred address (#560,#1251).
+- Enable server to transition connections to a preferred address (#560,#1251).
 
 ## Since draft-ietf-quic-transport-10
 
