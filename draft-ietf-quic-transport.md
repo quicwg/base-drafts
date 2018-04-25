@@ -2066,14 +2066,21 @@ following layout:
 This design ensures that a stateless reset packet is - to the extent possible -
 indistinguishable from a regular packet with a short header.
 
+The message consists of a packet header, followed by random octets of arbitrary
+length, followed by a Stateless Reset Token.
+
+The server SHOULD send a packet with a short header and a packet number length
+of 1 octet. Using the hortest possible packet number encoding minimizes the
+perceived gap between the last packet that the server sent and this packet.  A
+server MAY indicate a different packet number length, but a longer packet number
+encoding might allow this message to be identified as a stateless reset more
+easily using heuristics.
+
 The random octets MUST be of a length equal to at least 18 octets plus the
 packet number length implied by the type field. A packet of this length
 simulates a packet with a short header, the maximum-length destination
 connection ID, a packet number of the appropriate length and (with the
 Stateless Reset Token) an authentication trailer, with no packet payload.
-
-Beyond this limit, the server pads the message with an arbitrary number of
-octets containing random values.
 
 In response to a packet with a short header, the server has no means of
 determining the source connection ID and is effectively using a random one
@@ -2091,13 +2098,6 @@ two problems:
   client to identify this as a potential stateless reset.  A server that
   occasionally uses different connection IDs might introduce some uncertainty
   about this.
-
-The server SHOULD send a packet with a short header and a packet number length
-of 1 octet. Using the hortest possible packet number encoding minimizes the
-perceived gap between the last packet that the server sent and this packet.  A
-server MAY indicate a different packet number length, but a longer packet number
-encoding might allow this message to be identified as a stateless reset more
-easily using heuristics.
 
 Finally, the last 16 octets of the packet are set to the value of the Stateless
 Reset Token.
