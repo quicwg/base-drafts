@@ -129,9 +129,8 @@ instruction space:
 
 This section describes the instructions which are possible on each stream type.
 
-In order to ensure table consistency and simplify update management, all table
-updates occur on the control stream rather than on request streams. Request
-streams contain only header blocks, which do not modify the state of the table.
+All table updates occur on the control stream.  Request streams only carry
+header blocks that do not modify the state of the table.
 
 ## Primitives
 
