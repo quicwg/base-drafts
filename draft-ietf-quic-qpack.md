@@ -102,30 +102,16 @@ the reference from being usable.
 
 The encoder can choose on a per-header-block basis whether to favor higher
 compression ratio (by permitting vulnerable references) or HoL resilience (by
-avoiding them). This is signaled by the BLOCKING flag in HEADERS and
-PUSH_PROMISE frames (see {{QUIC-HTTP}}).
+avoiding them).
 
-If a header block contains no vulnerable header fields, BLOCKING MUST be 0.
-This implies that the header fields are represented either as references
-to dynamic table entries which are known to have been received, or as
-Literal header fields (see Section 6.2 of {{RFC7541}}).
-
-If a header block contains any header field which references dynamic table
-state which the peer might not have received yet, the BLOCKING flag MUST be
-set.  If the peer does not yet have the appropriate state, such blocks
-might not be processed on arrival.
-
-The header block contains a prefix ({{absolute-index}}). This prefix contains
-table offset information that establishes total ordering among all headers,
-regardless of reordering in the transport (see {{overview-absolute}}).
-
-In blocking mode, the prefix additionally identifies the minimum state required
-to process any vulnerable references in the header block (see `Depends Index` in
-{{overview-absolute}}).  The decoder keeps track of which entries have been
-added to its dynamic table.  The stream for a header with BLOCKING flag set is
-considered blocked by the decoder and can not be processed until all entries in
-the range `[1, Depends Index]` have been added.  While blocked, header
-field data MUST remain in the blocked stream's flow control window.
+The header block contains a Base Index (see {{absolute-index}}) which is used to
+correctly index entries, regardless of reordering in the transport (see
+{{indexing}}).  The stream for a header is considered blocked by the decoder and
+cannot be processed until the greatest absolute index in the dynamic table is at
+least the value of the Base Index.  While blocked, header field data MUST remain
+in the blocked stream's flow control window.  When the Base Index is zero, the
+frame contains no references to the dynamic table and can always be processed
+immediately.
 
 # Wire Format
 
@@ -164,6 +150,69 @@ unmodified.
 A string literal without a prefix length noted is an 8-bit prefix string literal
 and follows the definitions in [RFC7541] without modification.
 
+## Indexing
+
+Entries in the QPACK static and dynamic tables are addressed separately.
+
+Entries in the static table have the same indices at all times.  The static
+table is defined in Appendix A of {{!RFC7541}}. Note that because HPACK did not
+use zero-based references, there is no value at index zero of the static table.
+
+Entries are inserted into the dynamic table over time.  Each entry possesses
+both an absolute index which is fixed for the lifetime of that entry and a
+relative index which changes over time based on the context of the reference.
+The first entry inserted has an absolute index of "1"; indices
+increase sequentially with each insertion.
+
+On the control stream, a relative index of "0" always refers to the most
+recently inserted value in the dynamic table.  Note that this means the
+entry referenced by a given relative index can change while interpreting
+a HEADERS frame as new entries are inserted.
+
+~~~~~ drawing
+    +---+---------------+-------+
+    | n |      ...      | d + 1 |  Absolute Index
+    + - +---------------+   -   +
+    | 0 |      ...      | n-d-1 |  Relative Index
+    +---+---------------+-------+
+      ^                     |
+      |                     V
+Insertion Point         Dropping Point
+
+n = count of entries inserted
+d = count of entries dropped
+~~~~~
+{: title="Example Dynamic Table Indexing - Control Stream"}
+
+Because frames from request streams can be delivered out of order with
+instructions on the control stream, relative indices are relative to the Base
+Index at the beginning of the header block (see {{absolute-index}}). The Base
+Index is the absolute index of the entry which has the relative index of zero
+when interpreting the frame.  The relative indices of entries do not change
+while interpreting headers on a request or push stream.
+
+~~~~~ drawing
+             Base Index
+                 |
+                 V
+    +---+-----+-----+-----+-------+
+    | n | n-1 | n-2 | ... |  d+1  |  Absolute Index
+    +---+-----+  -  +-----+   -   +
+              |  0  | ... | n-d-3 |  Relative Index
+              +-----+-----+-------+
+
+n = count of entries inserted
+d = count of entries dropped
+~~~~~
+{: title="Example Dynamic Table Indexing - Request Stream"}
+
+Entries with an absolute index greater than a frame's Base Index cannot be
+referenced by that frame.  If the decoder encounters a reference to an entry
+which has already been dropped from the table, this MUST be treated as a stream
+error of type `HTTP_QPACK_DECOMPRESSION_FAILED`.  If this reference occurs on
+the control stream, this MUST be treated as a connection error.
+
+
 ## HEADERS Frames on the Control Stream
 
 Table updates can add a table entry, possibly using existing entries to avoid
@@ -178,9 +227,8 @@ An addition to the header table where the header field name matches the header
 field name of an entry stored in the static table or the dynamic table starts
 with the '1' one-bit pattern.  The `S` bit indicates whether the reference is to
 the static (S=1) or dynamic (S=0) table. The header field name is represented
-using the index of that entry, which is represented as an integer with a 6-bit
-prefix (see Section 5.1 of [RFC7541]). Table indices are always non-zero; a zero
-index MUST be treated as a decoding error.
+using the relative index of that entry, which is represented as an integer with
+a 6-bit prefix (see Section 5.1 of [RFC7541]).
 
 The header name reference is followed by the header field value represented as a
 string literal (see Section 5.2 of [RFC7541]).
@@ -225,9 +273,8 @@ represented as an 8-bit prefix string literal.
 ### Duplicate {#indexed-duplicate}
 
 Duplication of an existing entry in the dynamic table starts with the '000'
-three-bit pattern.  The index of the existing entry is represented as an integer
-with a 5-bit prefix. Table indices are always non-zero; a table index of zero
-MUST be treated as a decoding error.
+three-bit pattern.  The relative index of the existing entry is represented as
+an integer with a 5-bit prefix.
 
 ~~~~~~~~~~ drawing
      0   1   2   3   4   5   6   7
@@ -299,86 +346,24 @@ HEADERS and PUSH_PROMISE frames on request and push streams reference the
 dynamic table in a particular state without modifying it, but emit the headers
 for an HTTP request or response.
 
-### Index Encoding {#absolute-index}
+### Base Index Encoding {#absolute-index}
 
-Header data is prefixed by an integer: `Base Index`.  `Base index` is the
-cumulative number of entries added to the dynamic table prior to encoding the
-current block, including any entries already evicted.  It is encoded as a single
-8-bit prefix integer:
+Header data is prefixed by an 8-bit prefix integer: `Base Index`.  `Base Index`
+is used to resolve references in the dynamic table as described in {{indexing}}.
 
 ~~~~~~~~~~  drawing
-    0 1 2 3 4 5 6 7
-   +-+-+-+-+-+-+-+-+
-   |Base Index (8+)|
-   +---------------+
+  0   1   2   3   4   5   6   7
++---+---+---+---+---+---+---+---+
+|        Base Index (8+)        |
++-------------------------------+
+|      Compressed Headers     ...
++-------------------------------+
 ~~~~~~~~~~
-{:#fig-base-index title="Absolute indexing (BLOCKING=0x0)"}
+{:#fig-base-index title="Frame Payload"}
 
-{{overview-absolute}} describes the role of `Base Index`.
+Base Index is also used to identify header dependencies (see
+{{overview-hol-avoidance}}).
 
-When the BLOCKING flag is 0x1, a the prefix additionally contains a second HPACK
-integer (8-bit prefix) 'Depends':
-
-~~~~~~~~~~  drawing
-    0 1 2 3 4 5 6 7
-   +-+-+-+-+-+-+-+-+
-   |Base Index (8+)|
-   +---------------+
-   |Depends    (8+)|
-   +---------------+
-~~~~~~~~~~
-{:#fig-prefix-long title="Absolute indexing (BLOCKING=0x1)"}
-
-Depends is used to identify header dependencies (see
-{{overview-hol-avoidance}}).  The encoder computes a value `Depends Index` which
-is the largest (absolute) index referenced by the following header block.  To
-help keep the prefix smaller, `Depends Index` is converted to a relative value:
-`Depends = Base Index - Depends Index`.
-
-### Hybrid absolute-relative indexing {#overview-absolute}
-
-HPACK indexed entries refer to an entry by its current position in the dynamic
-table.  As Figure 1 of {{!RFC7541}} illustrates, newer entries have smaller
-indices, and older entries are evicted first if the table is full.  Under this
-scheme, each insertion to the table causes the index of all existing entries to
-change (implicitly).  Implicit index updates are acceptable for HTTP/2 because
-TCP is totally ordered, but are problematic in the out-of-order context of
-QUIC.
-
-QPACK uses a hybrid absolute-relative indexing approach.
-
-When the encoder adds a new entry to its header table, it can compute
-an absolute index:
-
-```
-entry.absoluteIndex = baseIndex++;
-```
-
-Since literals with indexing are only sent on the control stream, the decoder
-can be guaranteed to compute the same absolute index values when it adds
-corresponding entries to its table, just as in HPACK and HTTP/2.
-
-When encoding indexed representations, the following holds for (relative) HPACK
-indices:
-
-`relative index = baseIndex - entry.absoluteIndex + staticTable.size`
-
-Header blocks on request and push streams do not modify the dynamic table state,
-so they never change the `baseIndex`.  However, since ordering between streams
-is not guaranteed, the value of `baseIndex` can not be synchronized implicitly.
-Instead then, QPACK sends encoder's `Base Index` explicitly as part of the
-prefix (see {{absolute-index}}), so that the decoder can compute the same
-absolute indices that the encoder used:
-
-`absoluteIndex = prefix.baseIndex + staticTable.size - relativeIndex;`
-
-In this way, even if request or push stream headers are decoded in a different
-order than encoded, the absolute indices will still identify the correct table
-entries.
-
-It is an error if the HPACK decoder encounters an indexed representation that
-refers to an entry missing from the table, and the connection MUST be closed
-with the `HTTP_HPACK_DECOMPRESSION_FAILED` error code.
 
 ### Instructions
 
@@ -398,11 +383,9 @@ decoded header list, as described in Section 3.2 of [RFC7541].
 
 An indexed header field starts with the '1' 1-bit pattern, followed by the `S`
 bit indicating whether the reference is into the static (S=1) or dynamic (S=0)
-table. Finally, the index of the matching header field is represented as an
-integer with a 6-bit prefix (see Section 5.1 of [RFC7541]).
+table. Finally, the relative index of the matching header field is represented
+as an integer with a 6-bit prefix (see Section 5.1 of [RFC7541]).
 
-The index value of 0 is not used.  It MUST be treated as a decoding error if
-found in an indexed header field representation.
 
 #### Literal Header Field With Name Reference
 
@@ -419,11 +402,10 @@ to forward this header field.  This bit is intended for protecting header field
 values that are not to be put at risk by compressing them (see Section 7.1 of
 [RFC7541] for more details).
 
-The header field name is represented using the index of that entry, which is
-represented as an integer with a 4-bit prefix (see Section 5.1 of [RFC7541]).
-The `S` bit indicates whether the reference is to the static (S=1) or dynamic
-(S=0) table.  Table indices are always non-zero; a zero index MUST be treated as
-a decoding error.
+The header field name is represented using the relative index of that entry,
+which is represented as an integer with a 4-bit prefix (see Section 5.1 of
+[RFC7541]). The `S` bit indicates whether the reference is to the static (S=1)
+or dynamic (S=0) table.
 
 ~~~~~~~~~~ drawing
      0   1   2   3   4   5   6   7
@@ -514,7 +496,7 @@ For header blocks encoded in non-blocking mode, the encoder needs to forego
 indexed representations that refer to table updates which have not yet been
 acknowledged with {{feedback}}.
 
-To track blocked streams, the necessary `Depends Index` values for each stream
+To track blocked streams, the necessary Base Index value for each stream
 can be used.  Whenever the decoder processes a table update, it can begin
 decoding any blocked streams that now have their dependencies satisfied.
 
@@ -525,8 +507,8 @@ Implementations can *speculatively* send header frames on the HTTP Control
 Streams which are not needed for any current HTTP request or response.  Such
 headers could be used strategically to improve performance.  For instance, the
 encoder might decide to *refresh* by sending Indexed-Duplicate representations
-for popular header fields ({{absolute-index}}), ensuring they have small indices
-and hence minimal size on the wire.
+for popular header fields ({{indexed-duplicate}}), ensuring they have small
+indices and hence minimal size on the wire.
 
 # Security Considerations
 
