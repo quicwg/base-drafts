@@ -99,7 +99,7 @@ In the example above, the header block on the second stream contained a
 reference to data which might not yet have been processed by the recipient. Such
 references are called "vulnerable," because the loss of a different packet can
 keep the reference from being usable.  If the reference cannot be immediately
-processed on receipt, the reference is considered "blocking."
+processed on receipt, the stream is considered "blocked."
 
 The decoder can signal that it is willing to process vulnerable references by
 setting SETTINGS_BLOCKING_HEADER_REFERENCES to a non-zero value.  In this case,
@@ -107,13 +107,13 @@ the encoder can choose on a per-header-block basis whether to favor higher
 compression ratio (by permitting vulnerable references) or HoL resilience (by
 avoiding them).
 
-An encoder MUST NOT have more header blocks which contain vulnerable references
-outstanding than the value of SETTINGS_BLOCKING_HEADER_REFERENCES at any time.
-Note that the decoder's count of references which are actually blocking will be
-less than or equal to the encoder's count of references which are vulnerable
-(potentially blocking).  If the decoder encounters more blocking references than
-it promised to support, it SHOULD treat this as a stream error of type
-HTTP_QPACK_DECOMPRESSION_FAILED.
+An encoder MUST NOT have header blocks which contain vulnerable references
+outstanding on more streams than the value of
+SETTINGS_BLOCKING_HEADER_REFERENCES at any time. Note that the decoder's count
+of streams which are actually blocked will be less than or equal to the
+encoder's count of references which are vulnerable (potentially blocking).  If
+the decoder encounters more blocked streams than it promised to support, it
+SHOULD treat this as a stream error of type HTTP_QPACK_DECOMPRESSION_FAILED.
 
 The header block contains a Base Index (see {{absolute-index}}) which is used to
 correctly index entries, regardless of reordering in the transport (see
