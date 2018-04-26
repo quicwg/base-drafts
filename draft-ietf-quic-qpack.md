@@ -241,8 +241,9 @@ to an existing entry in the static or the dynamic table or as a string literal.
 For entries which already exist in the dynamic table, the full entry can also be
 used by reference, creating a duplicate entry.
 
-Each set of encoder insructions is prefaced by its length, encoded as a variable
-length integer with an 8-bit prefix.
+Each set of encoder instructions is prefaced by its length, encoded as a
+variable length integer with an 8-bit prefix.  Instructions MUST NOT span more
+than one block.
 
 ~~~~~~~~~~ drawing
      0   1   2   3   4   5   6   7
@@ -252,7 +253,7 @@ length integer with an 8-bit prefix.
    |     Instruction Block (*)   ...
    +-------------------------------+
 ~~~~~~~~~~
-{: title="Insert Header Field -- Indexed Name"}
+{: title="Encoder instruction block"}
 
 ### Insert With Name Reference
 
@@ -360,10 +361,11 @@ server's header blocks and table updates.
 
 After processing a set of instructions on the encoder stream, the decoder will
 emit a Table State Synchronize instruction on the decoder stream.  The
-instruction specifies the total number of dynamic table inserts and duplications
-since the last Table State Synchronize.  The encoder uses this value to
-determine which table entries are vulnerable to head-of-line blocking.  A
-decoder MAY coalesce multiple synchronization updates into a single update.
+instruction begins with the '1' one-bit pattern. The instruction specifies the
+total number of dynamic table inserts and duplications since the last Table
+State Synchronize, encoded as a 7-bit prefix integer.  The encoder uses this
+value to determine which table entries are vulnerable to head-of-line blocking.
+A decoder MAY coalesce multiple synchronization updates into a single update.
 
 ~~~~~~~~~~ drawing
   0   1   2   3   4   5   6   7
@@ -376,8 +378,10 @@ decoder MAY coalesce multiple synchronization updates into a single update.
 ### Header Acknowledgement
 
 After processing a header block on a request or push stream, the decoder emits a
-Header Ack instruction on the decoder stream with the request stream's stream
-ID.  It is used by the peer's QPACK encoder to prevent eviction races.
+Header Acknowledgement instruction on the decoder stream.  The instruction
+begins with the '0' one-bit pattern and includes the request stream's stream ID,
+encoded as a 7-bit prefix integer.  It is used by the peer's QPACK encoder to
+know when it is safe to evict an entry.
 
 The same Stream ID can be identified multiple times, as multiple header blocks
 can be sent on a single stream in the case of intermediate responses, trailers,
@@ -388,7 +392,7 @@ blocks within a stream have been fully processed.
 ~~~~~~~~~~ drawing
   0   1   2   3   4   5   6   7
 +---+---+---+---+---+---+---+---+
-| 1 |      Stream ID (7+)       |
+| 0 |      Stream ID (7+)       |
 +---+---------------------------+
 ~~~~~~~~~~
 {:#fig-header-ack title="Header Acknowledgement"}
