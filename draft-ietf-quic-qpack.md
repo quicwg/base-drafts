@@ -98,7 +98,8 @@ reintroduced by HPACK when the loss includes a HEADERS frame.
 In the example above, the header block on the second stream contained a
 reference to data which might not yet have been processed by the recipient. Such
 references are called "vulnerable," because the loss of a different packet can
-keep the reference from being usable.
+keep the reference from being usable.  If the reference cannot be immediately
+processed on receipt, the reference is considered "blocking."
 
 The decoder can signal that it is willing to process vulnerable references by
 setting SETTINGS_BLOCKING_HEADER_REFERENCES to a non-zero value.  In this case,
