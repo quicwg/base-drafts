@@ -253,8 +253,8 @@ on-path devices is therefore negligible.
 
 # Acknowledgments
 
-This document is derived from {{?QUIC-SPIN=I-D.trammell-quic-spin}}, which was the work
-of the following authors in addition to the editor of this document:
+This document is derived from {{?QUIC-SPIN=I-D.trammell-quic-spin}}, which was
+the work of the following authors in addition to the editor of this document:
 
 - Piet De Vaere, ETH Zurich
 - Roni Even, Huawei
