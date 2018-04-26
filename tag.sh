@@ -21,6 +21,7 @@ enabled() {
 tag() {
     message="Tag for $2 created by $(git config --get user.name)"
     git -c user.email="$1" tag -am "$message" "$2"
+    git push origin "$2"
 }
 
 declare -A authors=( \
