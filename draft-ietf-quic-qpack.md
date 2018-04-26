@@ -53,7 +53,7 @@ code and issues list for this draft can be found at
 
 The QUIC transport protocol was designed from the outset to support HTTP
 semantics, and its design subsumes many of the features of HTTP/2.  QUIC's
-stream multiplexing comes into some conflict with  header compression.  A key
+stream multiplexing comes into some conflict with header compression.  A key
 goal of the design of QUIC is to improve stream multiplexing relative to HTTP/2
 by eliminating HoL (head of line) blocking, which can occur in HTTP/2.  HoL
 blocking can happen because all HTTP/2 streams are multiplexed onto a single TCP
@@ -104,14 +104,15 @@ The encoder can choose on a per-header-block basis whether to favor higher
 compression ratio (by permitting vulnerable references) or HoL resilience (by
 avoiding them).
 
-The header block contains a Base Index (see {{absolute-index}}) which is used to
-correctly index entries, regardless of reordering in the transport (see
-{{indexing}}).  The stream for a header is considered blocked by the decoder and
-cannot be processed until the greatest absolute index in the dynamic table is at
-least the value of the Base Index.  While blocked, header field data MUST remain
-in the blocked stream's flow control window.  When the Base Index is zero, the
-frame contains no references to the dynamic table and can always be processed
-immediately.
+The header block contains a Base Index (see {{absolute-index}}), which is used
+to correctly index entries regardless of reordering in the transport (see
+{{indexing}}), and a Largest Reference which identifies the table state
+necessary for decoding. The stream for a header is considered blocked by the
+decoder and cannot be processed until the greatest absolute index in the dynamic
+table is at least the value of the Largest Reference.  While blocked, header
+field data MUST remain in the blocked stream's flow control window.  When the
+Largest Reference is zero, the frame contains no references to the dynamic table
+and can always be processed immediately.
 
 # Wire Format
 
@@ -206,11 +207,30 @@ d = count of entries dropped
 ~~~~~
 {: title="Example Dynamic Table Indexing - Request Stream"}
 
-Entries with an absolute index greater than a frame's Base Index cannot be
-referenced by that frame.  If the decoder encounters a reference to an entry
-which has already been dropped from the table, this MUST be treated as a stream
-error of type `HTTP_QPACK_DECOMPRESSION_FAILED`.  If this reference occurs on
-the control stream, this MUST be treated as a connection error.
+Entries with an absolute index greater than a frame's Base Index can be
+referenced using specific Post-Base instructions.  The relative indices of
+Post-Base references count up from Base Index.
+
+~~~~~ drawing
+             Base Index
+                 |
+                 V
+    +---+-----+-----+-----+-----+
+    | n | n-1 | n-2 | ... | d+1 |  Absolute Index
+    +---+-----+-----+-----+-----+
+    | 1 |  0  |                    Post-Base Index
+    +---+-----+
+
+n = count of entries inserted
+d = count of entries dropped
+~~~~~
+{: title="Dynamic Table Indexing - Post-Base References"}
+
+If the decoder encounters a reference to an entry which has already been dropped
+from the table or which is greater than the declared Largest Reference, this
+MUST be treated as a stream error of type `HTTP_QPACK_DECOMPRESSION_FAILED`
+error code.  If this reference occurs on the control stream, this MUST be
+treated as a session error.
 
 
 ## HEADERS Frames on the Control Stream
@@ -346,23 +366,39 @@ HEADERS and PUSH_PROMISE frames on request and push streams reference the
 dynamic table in a particular state without modifying it, but emit the headers
 for an HTTP request or response.
 
-### Base Index Encoding {#absolute-index}
+### Header Data Prefix {#absolute-index}
 
-Header data is prefixed by an 8-bit prefix integer: `Base Index`.  `Base Index`
-is used to resolve references in the dynamic table as described in {{indexing}}.
+Header data is prefixed with two integers, `Largest Reference` and `Base Index`.
 
 ~~~~~~~~~~  drawing
   0   1   2   3   4   5   6   7
 +---+---+---+---+---+---+---+---+
-|        Base Index (8+)        |
-+-------------------------------+
+|     Largest Reference (8+)    |
++---+---------------------------+
+| S |   Delta Base Index (7+)   |
++---+---------------------------+
 |      Compressed Headers     ...
 +-------------------------------+
 ~~~~~~~~~~
 {:#fig-base-index title="Frame Payload"}
 
-Base Index is also used to identify header dependencies (see
-{{overview-hol-avoidance}}).
+`Largest Reference` identifies the largest absolute dynamic index referenced in
+the block.  Blocking decoders use the Largest Reference to determine when it is
+safe to process the rest of the block.
+
+`Base Index` is used to resolve references in the dynamic table as described in
+{{indexing}}.  To save space, Base Index is encoded relative to Largest
+Reference using a one-bit sign flag.
+
+    baseIndex = largestReference + deltaBaseIndex
+
+If the encoder inserted entries to the table while the encoding the block,
+Largest Reference will be greater than Base Index, so deltaBaseIndex will be
+negative and encoded with S=1.  If the block did not reference the most recent
+entry in the table and did not insert any new entries, Largest Reference will be
+less than Base Index, so deltaBaseIndex will be positive and encoded with S=0.
+When Largest Reference and Base Index are equal, deltaBaseIndex is 0 and encoded
+with S=0.
 
 
 ### Instructions
@@ -381,31 +417,46 @@ decoded header list, as described in Section 3.2 of [RFC7541].
 ~~~~~~~~~~
 {: title="Indexed Header Field"}
 
-An indexed header field starts with the '1' 1-bit pattern, followed by the `S`
-bit indicating whether the reference is into the static (S=1) or dynamic (S=0)
-table. Finally, the relative index of the matching header field is represented
-as an integer with a 6-bit prefix (see Section 5.1 of [RFC7541]).
+If the entry is in the static table, or in the dynamic table with an absolute
+index less than or equal to Base Index, this representation starts with the '1'
+1-bit pattern, followed by the `S` bit indicating whether the reference is into
+the static (S=1) or dynamic (S=0) table. Finally, the relative index of the
+matching header field is represented as an integer with a 6-bit prefix (see
+Section 5.1 of [RFC7541]).
 
+~~~~~~~~~~ drawing
+  0   1   2   3   4   5   6   7
++---+---+---+---+---+---+---+---+
+| 0 | 1 | 0 | 0 |  Index (4+)   |
++---+---+-----------------------+
+~~~~~~~~~~
+{: title="Indexed Header Field"}
+
+If the entry is in the dynamic table with an absolute index greater than Base
+Index, the representation starts with the '0100' 4-bit pattern, followed by the
+post-base index (see {{indexing}}) of the matching header field, represented as
+an integer with a 4-bit prefix (see Section 5.1 of [RFC7541]).
 
 #### Literal Header Field With Name Reference
 
-A header where the header field name matches the header field name of an entry
-stored in the static table or the dynamic table starts with the '00' two-bit
+A literal header field with a name reference represents a header where the
+header field name matches the header field name of an entry stored in the static
+table or the dynamic table.
+
+If the entry is in the static table, or in the dynamic table with an absolute
+index less than or equal to Base Index, this representation starts with the '00'
+two-bit pattern.  If the entry is in the dynamic table with an absolute index
+greater than Base Index, the representation starts with the '0101' four-bit
 pattern.
 
-The third bit, 'N', indicates whether an intermediary is permitted to add this
-header to the dynamic header table on subsequent hops. When the 'N' bit is set,
-the encoded header MUST always be encoded with a literal representation. In
+The following bit, 'N', indicates whether an intermediary is permitted to add
+this header to the dynamic header table on subsequent hops. When the 'N' bit is
+set, the encoded header MUST always be encoded with a literal representation. In
 particular, when a peer sends a header field that it received represented as a
 literal header field with the 'N' bit set, it MUST use a literal representation
 to forward this header field.  This bit is intended for protecting header field
 values that are not to be put at risk by compressing them (see Section 7.1 of
 [RFC7541] for more details).
-
-The header field name is represented using the relative index of that entry,
-which is represented as an integer with a 4-bit prefix (see Section 5.1 of
-[RFC7541]). The `S` bit indicates whether the reference is to the static (S=1)
-or dynamic (S=0) table.
 
 ~~~~~~~~~~ drawing
      0   1   2   3   4   5   6   7
@@ -419,13 +470,35 @@ or dynamic (S=0) table.
 ~~~~~~~~~~
 {: title="Literal Header Field With Name Reference"}
 
+For entries in the static table or in the dynamic table with an absolute index
+less than or equal to Base Index, the header field name is represented using the
+relative index of that entry, which is represented as an integer with a 4-bit
+prefix (see Section 5.1 of [RFC7541]). The `S` bit indicates whether the
+reference is to the static (S=1) or dynamic (S=0) table.
+
+~~~~~~~~~~ drawing
+     0   1   2   3   4   5   6   7
+   +---+---+---+---+---+---+---+---+
+   | 0 | 1 | 0 | 1 | N |NameIdx(3+)|
+   +---+---+-----------------------+
+   | H |     Value Length (7+)     |
+   +---+---------------------------+
+   | Value String (Length octets)  |
+   +-------------------------------+
+~~~~~~~~~~
+{: title="Literal Header Field With Post-Base Name Reference"}
+
+For entries in the dynamic table with an absolute index greater than Base Index,
+the header field name is represented using the post-base index of that entry
+(see {{indexing}}) encoded as an integer with a 3-bit prefix.
+
 #### Literal Header Field Without Name Reference
 
 An addition to the header table where both the header field name and the header
 field value are represented as string literals (see {{primitives}}) starts with
-the '01' two-bit pattern.
+the '011' three-bit pattern.
 
-The third bit, 'N', indicates whether an intermediary is permitted to add this
+The fourth bit, 'N', indicates whether an intermediary is permitted to add this
 header to the dynamic header table on subsequent hops. When the 'N' bit is set,
 the encoded header MUST always be encoded with a literal representation. In
 particular, when a peer sends a header field that it received represented as a
@@ -434,13 +507,13 @@ to forward this header field.  This bit is intended for protecting header field
 values that are not to be put at risk by compressing them (see Section 7.1 of
 [RFC7541] for more details).
 
-The name is represented as a 5-bit prefix string literal, while the value is
+The name is represented as a 4-bit prefix string literal, while the value is
 represented as an 8-bit prefix string literal.
 
 ~~~~~~~~~~ drawing
      0   1   2   3   4   5   6   7
    +---+---+---+---+---+---+---+---+
-   | 0 | 1 | N | H |Name Length(4+)|
+   | 0 | 1 | 1 | N | H |NameLen(3+)|
    +---+---+---+-------------------+
    |  Name String (Length octets)  |
    +---+---------------------------+
@@ -452,6 +525,16 @@ represented as an 8-bit prefix string literal.
 {: title="Literal Header Field Without Name Reference"}
 
 # Encoding Strategies
+
+## Single pass encoding
+
+An encoder making a single pass over a list of headers must choose Base Index
+before knowing Largest Reference.  When trying to reference a header inserted to
+the table after encoding has begun, the entry is encoded with different
+instructions that tell the decoder to use an absolute index greater than the
+Base Index.
+
+## Preventing Eviction Races {#evictions}
 
 Due to out-of-order arrival, QPACK's eviction algorithm requires changes
 (relative to HPACK) to avoid the possibility that an indexed representation is
@@ -509,6 +592,57 @@ headers could be used strategically to improve performance.  For instance, the
 encoder might decide to *refresh* by sending Indexed-Duplicate representations
 for popular header fields ({{indexed-duplicate}}), ensuring they have small
 indices and hence minimal size on the wire.
+
+## Sample One Pass Encoding Algorithm
+
+Pseudo-code for single pass encoding, excluding handling of duplicates,
+non-blocking mode, and reference tracking.
+
+~~~
+baseIndex = dynamicTable.baseIndex
+largestReference = 0
+for header in headers:
+  staticIdx = staticTable.getIndex(header)
+  if staticIdx:
+    encodeIndexReference(streamBuffer, staticIdx)
+    continue
+
+  dynamicIdx = dynamicTable.getIndex(header)
+  if !dynamicIdx:
+    # No matching entry.  Either insert+index or encode literal
+    nameIdx = getNameIndex(header)
+    if shouldIndex(header) and dynamicTable.canIndex(header):
+      encodeLiteralWithIncrementalIndex(controlBuffer, nameIdx,
+                                        header)
+      dynamicTable.add(header)
+      dynamicIdx = dynamicTable.baseIndex
+
+  if !dynamicIdx:
+    # Couldn't index it, literal
+    if nameIdx <= staticTable.size:
+      encodeLiteral(streamBuffer, nameIndex, header)
+    else:
+      # encode literal, possibly with nameIdx above baseIndex
+      encodeDynamicLiteral(streamBuffer, nameIndex, baseIndex,
+                           header)
+      largestReference = max(largestReference,
+                             dynamicTable.toAbsolute(nameIdx))
+  else:
+    # Dynamic index reference
+    assert(dynamicIdx)
+    largestReference = max(largestReference, dynamicIdx)
+    # Encode dynamicIdx, possibly with dynamicIdx above baseIndex
+    encodeDynamicIndexReference(streamBuffer, dynamicIdx,
+                                baseIndex)
+
+# encode the prefix
+encodeInteger(prefixBuffer, 0x00, largestReference, 8)
+delta = largestReference - baseIndex
+sign = delta > 0 ? 0x80 : 0
+encodeInteger(prefixBuffer, sign, delta, 7)
+
+return controlBuffer, prefixBuffer + streamBuffer
+~~~
 
 # Security Considerations
 
