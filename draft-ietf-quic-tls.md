@@ -944,8 +944,8 @@ encryption algorithm.
 For packets with a long header, the ciphertext starting immediately after the
 packet number is used.
 
-For packets with a short header, the packet number length is not known before
-decryption, so it is assumed to be the smaller of the maximum possible packet
+For packets with a short header, the packet number length is
+assumed to be the smaller of the maximum possible packet
 number encoding (4 octets), or the size of the protected packet minus the
 minimum expansion for the AEAD. Thus, the sampled ciphertext for a short header
 can be determined by:
