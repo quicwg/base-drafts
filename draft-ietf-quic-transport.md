@@ -386,7 +386,7 @@ See {{packet-coalesce}} for more details.
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+
-|0|K|1|1|0|R|T T|
+|0|K|1|1|0|R R R|
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                Destination Connection ID (0..144)           ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -439,12 +439,8 @@ Google QUIC Demultipexing Bit:
 
 Reserved:
 
-: The sixth bit (0x4) of octet 0 is reserved for experimentation.
-
-Short Packet Type:
-
-: The remaining 2 bits of octet 0 include one of 4 packet types.
-  {{short-packet-types}} lists the types that are defined for short packets.
+: The sixth, seventh, and eighth bits (0x7) of octet 0 are reserved for
+experimentation.
 
 Destination Connection ID:
 
@@ -453,10 +449,10 @@ Destination Connection ID:
 
 Packet Number:
 
-: The length of the packet number field depends on the packet type.  This field
-  can be 1, 2 or 4 octets long depending on the short packet type.  Packet
-  numbers are not encrypted as part of packet protection, but instead have
-  additional confidentiality protection.
+: The packet number field is either 1, 2, or 4 bytes long. The packet number
+has confidentiality protection separate from packet protection, as described in
+Section 5.6 of {{QUIC-TLS}}. The length of the packet number field is encoded
+in the plaintext packet number. See {{packet-numbers}} for details.
 
 Protected Payload:
 
@@ -465,13 +461,6 @@ Protected Payload:
 The packet type in a short header currently determines only the size of the
 packet number field.  Additional types can be used to signal the presence of
 other fields.
-
-| Type | Packet Number Size |
-|:-----|:-------------------|
-| 0x0  | 1 octet            |
-| 0x1  | 2 octets           |
-| 0x2  | 4 octets           |
-{: #short-packet-types title="Short Header Packet Types"}
 
 The header form and connection ID field of a short header packet are
 version-independent.  The remaining fields are specific to the selected QUIC
@@ -786,15 +775,30 @@ reaches 2^62 - 1, the sender MUST close the connection without sending a
 CONNECTION_CLOSE frame or any further packets; a server MAY send a Stateless
 Reset ({{stateless-reset}}) in response to further packets that it receives.
 
-For the packet header, the number of bits required to represent the packet
-number are reduced by including only the least significant bits of the packet
-number.
+In the QUIC long and short packet headers, the number of bits required to
+represent the packet number are reduced by including only the least
+significant bits of the packet number.
 
-The encoded packet number is protected as described in {{QUIC-TLS}}. Protection
-of the packet number is removed prior to recovering the full packet number. The
-full packet number is reconstructed at the receiver based on the largest packet
-number received on a successfully authenticated packet. Recovering the full
-packet number is necessary to successfully remove packet protection.
+In the long packet header, the least significant 32 bits are used. In the
+short packet header, the number of significant bits are encoded in the most
+significant two bits of the first octet of the encoded packet number:
+
+| First octet pattern | Encoded Length | Bits Present |
+|:--------------------|:---------------|:-------------|
+| 0b0xxxxxxx          | 1 octet        | 7            |
+| 0b10xxxxxx          | 2              | 14           |
+| 0b11xxxxxx          | 4              | 30           |
+
+Note that these encodings are similar to those in {{integer-encoding}}, but
+use different values.
+
+The encoded packet number is protected as described in Section 5.6 {{QUIC-TLS}}.
+Protection of the packet number is removed prior to recovering the full packet
+number.The full packet number is reconstructed at the receiver based on the
+value of the most significant two bits in the first octet (to determine the
+number of least significant bits present), and the largest packet number
+received on a successfully authenticated packet. Recovering the full packet
+number is necessary to successfully remove packet protection.
 
 Once packet number protection is removed, the packet number is decoded by
 finding the packet number value that is closest to the next expected packet.
