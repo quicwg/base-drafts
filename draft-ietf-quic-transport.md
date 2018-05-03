@@ -345,8 +345,9 @@ Payload Length:
 Packet Number:
 
 : The Packet Number is a 32-bit field that follows the two connection IDs.
-  {{packet-numbers}} describes the use of packet numbers.  Packet numbers are
-  protected separately to the packet payload.
+  Packet numbers are not encrypted as part of packet protection, but instead
+  have additional confidentiality protection. {{packet-numbers}} describes the
+  use of packet numbers.
 
 
 Payload:
@@ -454,7 +455,8 @@ Packet Number:
 
 : The length of the packet number field depends on the packet type.  This field
   can be 1, 2 or 4 octets long depending on the short packet type.  Packet
-  numbers are protected separate to the packet payload.
+  numbers are not encrypted as part of packet protection, but instead have
+  additional confidentiality protection.
 
 Protected Payload:
 
@@ -696,10 +698,10 @@ continue to use the same Destination Connection ID for 0-RTT packets, see
 
 The version field for protected packets is the current QUIC version.
 
-The packet number field contains a packet number, which is protected separately
-from the rest of the packet (see {{QUIC-TLS}} for details).  The underlying
-packet number increases with each packet sent, see {{packet-numbers}} for
-details.
+The packet number field contains a packet number, which has additional
+confidentiality protection that is applied after packet protection is applied
+(see {{QUIC-TLS}} for details).  The underlying packet number increases with
+each packet sent, see {{packet-numbers}} for details.
 
 The payload is protected using authenticated encryption.  {{QUIC-TLS}} describes
 packet protection in detail.  After decryption, the plaintext consists of a

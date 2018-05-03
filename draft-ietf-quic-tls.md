@@ -866,9 +866,9 @@ connection.  For example, if TLS is using the TLS_AES_128_GCM_SHA256, the
 AEAD_AES_128_GCM function is used.
 
 QUIC packets are protected prior to applying packet number encryption
-({{pn-encrypt}}).  Thus, the unprotected packet number is part of the AAD.  When
-removing packet protection, an endpoint first removes the protection from the
-packet number.
+({{pn-encrypt}}).  The unprotected packet number is part of the associated data
+(A).  When removing packet protection, an endpoint first removes the protection
+from the packet number.
 
 All QUIC packets other than Version Negotiation and Stateless Reset packets are
 protected with an AEAD algorithm {{!AEAD}}. Prior to establishing a shared
@@ -941,8 +941,8 @@ Packet number protection is applied after packet protection is applied (see
 {{aead}}).  The ciphertext of the packet is sampled and used as input to an
 encryption algorithm.
 
-For packets with a long header, the ciphertext starting
-immediately after the packet number is used (that is, octet 17 onwards).
+For packets with a long header, the ciphertext starting immediately after the
+packet number is used.
 
 For packets with a short header, the packet number length is not known before
 decryption, so it is assumed to be the smaller of the maximum possible packet
