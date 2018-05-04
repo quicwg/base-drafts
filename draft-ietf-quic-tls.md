@@ -962,10 +962,8 @@ expansion of the corresponding AEAD.
 
 Packet number protection is applied to the packet number encoded as described
 in Section 4.8 of {{QUIC-TRANSPORT}}. Since the length of the packet number is
-stored in the encoded packet number, it is necessary to decrypt the maximum
-length (4 octets) when removing packet number protection. The final 2 or 3
-octets of the plaintext packet number can then be discarded based on the
-packet number length encoded in the first octet, as appropriate.
+stored in the first octet of the encoded packet number, it may be necessary to
+progressively decrypt the packet number.
 
 Before a TLS ciphersuite can be used with QUIC, a packet protection algorithm
 MUST be specifed for the AEAD used with that ciphersuite.  This document defines

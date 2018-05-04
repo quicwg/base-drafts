@@ -779,26 +779,31 @@ In the QUIC long and short packet headers, the number of bits required to
 represent the packet number are reduced by including only the least
 significant bits of the packet number.
 
-In the long packet header, the least significant 32 bits are used. In the
-short packet header, the number of significant bits are encoded in the most
-significant two bits of the first octet of the encoded packet number:
+In the long packet header, the least significant 32 bits of the packet number
+are encoded into the Packet Number field.
+
+In the short packet header, a variable number of significant bits are encoded.
+One or two of the most significant bits of the first octet determine how many
+bits of the packet number are provided, as shown in {{pn-encodings}}.
 
 | First octet pattern | Encoded Length | Bits Present |
 |:--------------------|:---------------|:-------------|
 | 0b0xxxxxxx          | 1 octet        | 7            |
 | 0b10xxxxxx          | 2              | 14           |
 | 0b11xxxxxx          | 4              | 30           |
+{: #pn-encodings title="Short Header Packet Number Encodings"}
+
 
 Note that these encodings are similar to those in {{integer-encoding}}, but
 use different values.
 
-The encoded packet number is protected as described in Section 5.6 {{QUIC-TLS}}.
-Protection of the packet number is removed prior to recovering the full packet
-number.The full packet number is reconstructed at the receiver based on the
-value of the most significant two bits in the first octet (to determine the
-number of least significant bits present), and the largest packet number
-received on a successfully authenticated packet. Recovering the full packet
-number is necessary to successfully remove packet protection.
+The encoded packet number is protected as described in Section 5.6
+{{QUIC-TLS}}. Protection of the packet number is removed prior to recovering
+the full packet number. The full packet number is reconstructed at the
+receiver based on the number of significant bits present, the content of those
+bits, and the largest packet number received on a successfully authenticated
+packet. Recovering the full packet number is necessary to successfully remove
+packet protection.
 
 Once packet number protection is removed, the packet number is decoded by
 finding the packet number value that is closest to the next expected packet.
