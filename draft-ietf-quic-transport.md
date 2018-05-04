@@ -2074,7 +2074,7 @@ describes the format and semantics of the core QUIC frame types.
 
 ## Variable-Length Integer Encoding {#integer-encoding}
 
-QUIC frames use a common variable-length encoding for all non-negative integer
+QUIC frames commonly use a variable-length encoding for non-negative integer
 values.  This encoding ensures that smaller integer values need fewer octets to
 encode.
 
@@ -3088,11 +3088,11 @@ actually lost.
 
 
 The PADDING frame provides a useful option for PMTU probe packets that does not
-exist in other transports. PADDING frames generate acknowledgements, but their
-content need not be delivered reliably. PADDING frames may delay the delivery of
-application data, as they consume the congestion window. However, by definition
-their likely loss in a probe packet does not require delay-inducing
-retransmission of application data.
+exist in other transports. PADDING frames generate acknowledgements, but they
+need not be delivered reliably. As a result, the likely loss of PADDING frames
+in probe packets does not require delay-inducing retransmission. However,
+PADDING frames do consume congestion window, which may delay the transmission of
+subsequent application data.
 
 When implementing the algorithm in Section 7.2 of {{!PLPMTUD}}, the initial
 value of search_low SHOULD be consistent with the IPv6 minimum packet size.
