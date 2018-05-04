@@ -3087,12 +3087,11 @@ actually lost.
 ### Special Considerations for Packetization Layer PMTU Discovery
 
 
-The PADDING frame provides a useful option for PMTU probe packets that does not
-exist in other transports. PADDING frames generate acknowledgements, but they
-need not be delivered reliably. As a result, the likely loss of PADDING frames
-in probe packets does not require delay-inducing retransmission. However,
-PADDING frames do consume congestion window, which may delay the transmission of
-subsequent application data.
+The PADDING frame provides a useful option for PMTU probe packets. PADDING
+frames generate acknowledgements, but they need not be delivered reliably. As a
+result, the loss of PADDING frames in probe packets does not require
+delay-inducing retransmission. However, PADDING frames do consume congestion
+window, which may delay the transmission of subsequent application data.
 
 When implementing the algorithm in Section 7.2 of {{!PLPMTUD}}, the initial
 value of search_low SHOULD be consistent with the IPv6 minimum packet size.
