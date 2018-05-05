@@ -282,7 +282,7 @@ keys are established.
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                       Payload Length (i)                    ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                       Packet Number (32)                      |
+|                     Packet Number (8/16/32)                   |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                          Payload (*)                        ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -344,11 +344,10 @@ Payload Length:
 
 Packet Number:
 
-: The Packet Number is a 32-bit field that follows the two connection IDs.
-  Packet numbers are not encrypted as part of packet protection, but instead
-  have additional confidentiality protection. {{packet-numbers}} describes the
-  use of packet numbers.
-
+: The packet number field is 1, 2, or 4 octets long. The packet number has
+confidentiality protection separate from packet protection, as described in
+Section 5.6 of {{QUIC-TLS}}. The length of the packet number field is encoded
+in the plaintext packet number. See {{packet-numbers}} for details.
 
 Payload:
 
@@ -449,8 +448,8 @@ Destination Connection ID:
 
 Packet Number:
 
-: The packet number field is either 1, 2, or 4 bytes long. The packet number
-has confidentiality protection separate from packet protection, as described in
+: The packet number field is 1, 2, or 4 octets long. The packet number has
+confidentiality protection separate from packet protection, as described in
 Section 5.6 of {{QUIC-TLS}}. The length of the packet number field is encoded
 in the plaintext packet number. See {{packet-numbers}} for details.
 
@@ -776,15 +775,10 @@ CONNECTION_CLOSE frame or any further packets; a server MAY send a Stateless
 Reset ({{stateless-reset}}) in response to further packets that it receives.
 
 In the QUIC long and short packet headers, the number of bits required to
-represent the packet number are reduced by including only the least
-significant bits of the packet number.
-
-In the long packet header, the least significant 32 bits of the packet number
-are encoded into the Packet Number field.
-
-In the short packet header, a variable number of significant bits are encoded.
-One or two of the most significant bits of the first octet determine how many
-bits of the packet number are provided, as shown in {{pn-encodings}}.
+represent the packet number are reduced by including only a variable number of
+the least significant bits of the packet number.  One or two of the most
+significant bits of the first octet determine how many bits of the packet
+number are provided, as shown in {{pn-encodings}}.
 
 | First octet pattern | Encoded Length | Bits Present |
 |:--------------------|:---------------|:-------------|
@@ -792,7 +786,6 @@ bits of the packet number are provided, as shown in {{pn-encodings}}.
 | 0b10xxxxxx          | 2              | 14           |
 | 0b11xxxxxx          | 4              | 30           |
 {: #pn-encodings title="Short Header Packet Number Encodings"}
-
 
 Note that these encodings are similar to those in {{integer-encoding}}, but
 use different values.
