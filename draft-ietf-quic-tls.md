@@ -941,14 +941,10 @@ Packet number protection is applied after packet protection is applied (see
 {{aead}}).  The ciphertext of the packet is sampled and used as input to an
 encryption algorithm.
 
-For packets with a long header, the ciphertext starting immediately after the
-packet number is used.
-
-For packets with a short header, the packet number length is
-assumed to be the smaller of the maximum possible packet
-number encoding (4 octets), or the size of the protected packet minus the
-minimum expansion for the AEAD. Thus, the sampled ciphertext for a short header
-can be determined by:
+In sampling the packet ciphertext, the packet number length is assumed to be the
+smaller of the maximum possible packet number encoding (4 octets), or the size
+of the protected packet minus the minimum expansion for the AEAD.  For example,
+the sampled ciphertext for a packet with a short header can be determined by:
 
 ```
 sample_offset = min(1 + connection_id_length + 4,
