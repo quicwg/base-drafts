@@ -822,7 +822,7 @@ finding the packet number value that is closest to the next expected packet.
 The next expected packet is the highest received packet number plus one.  For
 example, if the highest successfully authenticated packet had a packet number of
 0xaa82f30e, then a packet containing a 14-bit value of 0x1f94 will be decoded as
-0xaa831f94.
+0xaa831f94; the same value encoded on 13 bits will be decoded as 0xaa82ff94.
 
 The sender MUST use a packet number size able to represent more than twice as
 large a range than the difference between the largest acknowledged packet and
@@ -838,8 +838,8 @@ including the new packet.
 
 For example, if an endpoint has received an acknowledgment for packet 0x6afa2f,
 sending a packet with a number of 0x6b2d79 requires a packet number encoding
-with 14 bits or more; whereas the 30-bit packet number encoding is needed to
-send a packet with a number of 0x6bc107.
+with 13 bits or more; whereas the 29- or 30-bit packet number encoding is needed
+to send a packet with a number of 0x6bc107.
 
 A Version Negotiation packet ({{packet-version}}) does not include a packet
 number.  The Retry packet ({{packet-retry}}) has special rules for populating
