@@ -806,8 +806,8 @@ result is that one fewer bit from the packet number can be included, as shown in
 | K11xxxxx            | 32 bits        | 29          |
 {: #short-pn-encodings title="Short Header Packet Number Encodings"}
 
-Note that these encodings are similar to those in {{integer-encoding}}, but
-use different values.
+Note that these encodings are superficially similar to those in
+{{integer-encoding}}, but use different prefixes.
 
 The encoded packet number and KEY_PHASE (if present) is protected as described
 in Section 5.6 {{QUIC-TLS}}. Protection of the packet number is removed prior to
