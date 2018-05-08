@@ -941,14 +941,10 @@ Packet number protection is applied after packet protection is applied (see
 {{aead}}).  The ciphertext of the packet is sampled and used as input to an
 encryption algorithm.
 
-For packets with a long header, the ciphertext starting immediately after the
-packet number is used.
-
-For packets with a short header, the packet number length is
-assumed to be the smaller of the maximum possible packet
-number encoding (4 octets), or the size of the protected packet minus the
-minimum expansion for the AEAD. Thus, the sampled ciphertext for a short header
-can be determined by:
+In sampling the packet ciphertext, the packet number length is assumed to be the
+smaller of the maximum possible packet number encoding (4 octets), or the size
+of the protected packet minus the minimum expansion for the AEAD.  For example,
+the sampled ciphertext for a packet with a short header can be determined by:
 
 ```
 sample_offset = min(1 + connection_id_length + 4,
@@ -959,6 +955,11 @@ sample = packet[sample_offset..sample_offset+sample_length]
 To ensure that this process does not sample the packet number, packet number
 protection algorithms MUST NOT sample more ciphertext than the minimum
 expansion of the corresponding AEAD.
+
+Packet number protection is applied to the packet number encoded as described
+in Section 4.8 of {{QUIC-TRANSPORT}}. Since the length of the packet number is
+stored in the first octet of the encoded packet number, it may be necessary to
+progressively decrypt the packet number.
 
 Before a TLS ciphersuite can be used with QUIC, a packet protection algorithm
 MUST be specifed for the AEAD used with that ciphersuite.  This document defines
