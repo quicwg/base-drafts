@@ -1329,7 +1329,7 @@ Error codes need to be defined for HTTP/2 and HTTP/QUIC separately.  See
 # Security Considerations
 
 The security considerations of HTTP over QUIC should be comparable to those of
-HTTP/2.
+HTTP/2 with TLS.
 
 The modified SETTINGS format contains nested length elements, which could pose
 a security risk to an uncautious implementer.  A SETTINGS frame parser MUST
