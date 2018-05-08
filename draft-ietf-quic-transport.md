@@ -785,7 +785,7 @@ number are provided, as shown in {{pn-encodings}}.
 | 0b0xxxxxxx          | 1 octet        | 7            |
 | 0b10xxxxxx          | 2              | 14           |
 | 0b11xxxxxx          | 4              | 30           |
-{: #pn-encodings title="Short Header Packet Number Encodings"}
+{: #pn-encodings title="Packet Number Encodings for Packet Headers"}
 
 Note that these encodings are similar to those in {{integer-encoding}}, but
 use different values.
