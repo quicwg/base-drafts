@@ -771,7 +771,7 @@ least one after sending a packet.
 A QUIC endpoint MUST NOT reuse a packet number within the same connection (that
 is, under the same cryptographic keys).  If the packet number for sending
 reaches 2^62 - 1, the sender MUST close the connection without sending a
-CONNECTION_CLOSE frame or any further packets; a server MAY send a Stateless
+CONNECTION_CLOSE frame or any further packets; an endpoint MAY send a Stateless
 Reset ({{stateless-reset}}) in response to further packets that it receives.
 
 In the QUIC long and short packet headers, the number of bits required to
@@ -2032,17 +2032,20 @@ signal closure.
 
 ### Stateless Reset {#stateless-reset}
 
-A stateless reset is provided as an option of last resort for a server that does
-not have access to the state of a connection.  A server crash or outage might
-result in clients continuing to send data to a server that is unable to properly
-continue the connection.  A server that wishes to communicate a fatal connection
-error MUST use a closing frame if it has sufficient state to do so.
+A stateless reset is provided as an option of last resort for an endpoint that
+does not have access to the state of a connection.  A crash or outage might
+result in peers continuing to send data to an endpoint that is unable to
+properly continue the connection.  An endpoint that wishes to communicate a
+fatal connection error MUST use a closing frame if it has sufficient state to do
+so.
 
-To support this process, the server sends a stateless_reset_token value during
-the handshake in the transport parameters.  This value is protected by
-encryption, so only client and server know this value.
+To support this process, a token is sent by endpoints.  The token is carried in
+the NEW_CONNECTION_ID frame sent by either peer, and servers can specify the
+stateless_reset_token transport parameter during the handshake (clients cannot
+because their transport parameters don't have confidentiality protection).  This
+value is protected by encryption, so only client and server know this value.
 
-A server that receives packets that it cannot process sends a packet in the
+An endpoint that receives packets that it cannot process sends a packet in the
 following layout:
 
 ~~~
