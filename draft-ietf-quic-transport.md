@@ -2051,7 +2051,7 @@ following layout:
 +-+-+-+-+-+-+-+-+
 |0|K| Type (6)  |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                        Random Octets (*)                    ...
+|                      Random Octets (160..)                  ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                                                               |
 +                                                               +
@@ -2069,26 +2069,26 @@ indistinguishable from a regular packet with a short header.
 The message consists of a packet header, followed by random octets of arbitrary
 length, followed by a Stateless Reset Token.
 
-The server SHOULD send a packet with a short header and a packet number length
-of 1 octet. Using the hortest possible packet number encoding minimizes the
-perceived gap between the last packet that the server sent and this packet.  A
-server MAY indicate a different packet number length, but a longer packet number
-encoding might allow this message to be identified as a stateless reset more
-easily using heuristics.
+The endpoint SHOULD send a packet with a short header.
 
-The random octets MUST be of a length equal to at least 18 octets plus the
-packet number length implied by the type field. A packet of this length
-simulates a packet with a short header, the maximum-length destination
-connection ID, a packet number of the appropriate length and (with the
-Stateless Reset Token) an authentication trailer, with no packet payload.
+Assuming a short header, the Random Octets field needs to include at least 20
+octets of random or unpredictable values.  This is intended to allow for a
+destination connection ID of the maximum length permitted, a packet number, and
+minimal payload.  The Stateless Reset Token corresponds to the minimum expansion
+of the packet protection AEAD.  More random octets might be necessary if the
+endpoint could have negotiated a packet protection scheme with a larger minimum
+AEAD expansion.
 
-In response to a packet with a short header, the server has no means of
-determining the source connection ID and is effectively using a random one
-instead. For a client that depends on the server including a connection ID,
-this will mean that this value differs from previous packets.  Ths results in
-two problems:
+An endpoint cannot determine the source connection ID from a packet with a short
+header, therefore it cannot set the destination connection ID in the stateless
+reset packet.  The destination connection ID will therefore differ from the
+value used in previous packets.  A random destination connection ID makes the
+connection ID appear to be the result of moving to new connection ID that was
+provided using the NEW_CONNECTION_ID frame ({{frame-new-connection-id}}).
 
-* The packet might not reach the client.  If the Destination Connection ID is
+Using a randomized connection ID results in two problems:
+
+* The packet might not reach the peer.  If the Destination Connection ID is
   critical for routing toward the client, then this packet could be incorrectly
   routed.  This causes the stateless reset to be ineffective in causing errors
   to be quickly detected and recovered.  In this case, clients will need to rely
