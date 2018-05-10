@@ -2082,6 +2082,11 @@ of the packet protection AEAD.  More random octets might be necessary if the
 endpoint could have negotiated a packet protection scheme with a larger minimum
 AEAD expansion.
 
+An endpoint SHOULD NOT send a stateless reset that is significantly larger than
+the packet it receives.  Endpoints MUST discard packets that are too small to be
+valid QUIC packets.  With the set of AEAD functions defined in {{QUIC-TLS}},
+packets less than 19 octets long are never valid.
+
 An endpoint cannot determine the Source Connection ID from a packet with a short
 header, therefore it cannot set the Destination Connection ID in the stateless
 reset packet.  The destination connection ID will therefore differ from the
