@@ -2160,8 +2160,8 @@ might recover the instance identifier from the connection ID.
 
 This design relies on the peer always sending a connection ID in its packets so
 that the endpoint can use the connection ID from a packet to reset the
-connection.  An endpoint that uses this design cannot allow its peers to use a
-zero-length connection ID.
+connection.  An endpoint that uses this design cannot allow its peers to send
+packets with a zero-length connection ID.
 
 Revealing the Stateless Reset Token allows any entity to terminate the
 connection, so a value can only be used once.  This method for choosing the
