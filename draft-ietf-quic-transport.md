@@ -1147,7 +1147,7 @@ language from Section 3 of {{!I-D.ietf-tls-tls13}}.
    } TransportParameters;
 
    struct {
-     enum { IPv4(4), IPv6(6), (15)} ipVersion;
+     enum { IPv4(4), IPv6(6), (15) } ipVersion;
      opaque ipAddress<4..2^8-1>;
      uint16 port;
      opaque connectionId<0..18>;
