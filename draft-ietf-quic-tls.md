@@ -975,6 +975,11 @@ in Section 4.8 of {{QUIC-TRANSPORT}}. Since the length of the packet number is
 stored in the first octet of the encoded packet number, it may be necessary to
 progressively decrypt the packet number.
 
+Packet number protection is applied to the packet number encoded as described
+in Section 4.8 of {{QUIC-TRANSPORT}}. Since the length of the packet number is
+stored in the first octet of the encoded packet number, it may be necessary to
+progressively decrypt the packet number.
+
 Before a TLS ciphersuite can be used with QUIC, a packet protection algorithm
 MUST be specifed for the AEAD used with that ciphersuite.  This document defines
 algorithms for AEAD_AES_128_GCM, AEAD_AES_128_CCM, AEAD_AES_256_GCM,

@@ -345,9 +345,9 @@ Payload Length:
 Packet Number:
 
 : The packet number field is 1, 2, or 4 octets long. The packet number has
-confidentiality protection separate from packet protection, as described in
-Section 5.6 of {{QUIC-TLS}}. The length of the packet number field is encoded
-in the plaintext packet number. See {{packet-numbers}} for details.
+  confidentiality protection separate from packet protection, as described
+  in Section 5.6 of {{QUIC-TLS}}. The length of the packet number field is
+  encoded in the plaintext packet number. See {{packet-numbers}} for details.
 
 Payload:
 
@@ -1140,6 +1140,7 @@ language from Section 3 of {{!I-D.ietf-tls-tls13}}.
       initial_max_data(1),
       initial_max_bidi_streams(2),
       idle_timeout(3),
+      preferred_address(4),
       max_packet_size(5),
       stateless_reset_token(6),
       ack_delay_exponent(7),
@@ -1163,6 +1164,14 @@ language from Section 3 of {{!I-D.ietf-tls-tls13}}.
       };
       TransportParameter parameters<22..2^16-1>;
    } TransportParameters;
+
+   struct {
+     enum { IPv4(4), IPv6(6), (15)} ipVersion;
+     opaque ipAddress<4..2^8-1>;
+     uint16 port;
+     opaque connectionId<0..18>;
+     opaque statelessResetToken[16];
+   } PreferredAddress;
 ~~~
 {: #figure-transport-parameters title="Definition of TransportParameters"}
 
@@ -1262,9 +1271,14 @@ stateless_reset_token (0x0006):
 : The Stateless Reset Token is used in verifying a stateless reset, see
   {{stateless-reset}}.  This parameter is a sequence of 16 octets.
 
-A client MUST NOT include a stateless reset token.  A server MUST treat receipt
-of a stateless_reset_token transport parameter as a connection error of type
-TRANSPORT_PARAMETER_ERROR.
+preferred_address (0x0004):
+
+: The server's Preferred Address is used to effect a change in server address at
+  the end of the handshake, as described in {{preferred-address}}.
+
+A client MUST NOT include a stateless reset token or a preferred address.  A
+server MUST treat receipt of either transport parameter as a connection error of
+type TRANSPORT_PARAMETER_ERROR.
 
 
 ### Values of Transport Parameters for 0-RTT {#zerortt-parameters}
@@ -1294,6 +1308,10 @@ Omitting or setting a zero value for certain transport parameters can result in
 0-RTT data being enabled, but not usable.  The following transport parameters
 SHOULD be set to non-zero values for 0-RTT: initial_max_bidi_streams,
 initial_max_uni_streams, initial_max_data, initial_max_stream_data.
+
+The value of the server's previous preferred_address MUST NOT be used when
+establishing a new connection; rather, the client should wait to observe the
+server's new preferred_address value in the handshake.
 
 A server MUST reject 0-RTT data or even abort a handshake if the implied values
 for transport parameters cannot be supported.
@@ -1382,7 +1400,7 @@ a different codepoint.
 
 A server can process an initial cryptographic handshake messages from a client
 without committing any state. This allows a server to perform address validation
-({{address-validation}}, or to defer connection establishment costs.
+({{address-validation}}), or to defer connection establishment costs.
 
 A server that generates a response to an initial packet without retaining
 connection state MUST use the Retry packet ({{packet-retry}}).  This packet
@@ -1485,9 +1503,10 @@ therefore unlikely to be successful.
 This token can be provided to the cryptographic handshake immediately after
 establishing a connection.  QUIC might also generate an updated token if
 significant time passes or the client address changes for any reason (see
-{{migration}}).  The cryptographic handshake is responsible for providing the
-client with the token.  In TLS the token is included in the ticket that is used
-for resumption and 0-RTT, which is carried in a NewSessionTicket message.
+{{migration}}).  The cryptographic handshake is responsible for
+providing the client with the token.  In TLS the token is included in the ticket
+that is used for resumption and 0-RTT, which is carried in a NewSessionTicket
+message.
 
 
 ### Address Validation Token Integrity {#token-integrity}
@@ -1520,12 +1539,12 @@ and a specific peer address, where an address is the two-tuple of IP address and
 port.  Path validation tests that packets can be both sent to and received from
 a peer.
 
-Path validation is used during connection migration (see {{migration}}) by the
-migrating endpoint to verify reachability of a peer from a new local address.
-Path validation is also used by the peer to verify that the migrating endpoint
-is able to receive packets sent to its new address.  That is, that the
-packets received from the migrating endpoint do not carry a spoofed source
-address.
+Path validation is used during connection migration (see {{migration}} and
+{{preferred-address}}) by the migrating endpoint to verify reachability of a
+peer from a new local address. Path validation is also used by the peer to
+verify that the migrating endpoint is able to receive packets sent to the its
+new address.  That is, that the packets received from the migrating endpoint do
+not carry a spoofed source address.
 
 Path validation can be used at any time by either endpoint.  For instance, an
 endpoint might check that a peer is still in possession of its address after a
@@ -1626,12 +1645,12 @@ new address.
 An endpoint MUST NOT initiate connection migration before the handshake is
 finished and the endpoint has 1-RTT keys.
 
-This document limits migration of connections to new client addresses.
-Clients are responsible for initiating all migrations.  Servers do not send
-non-probing packets (see {{probing}}) toward a client address until it sees a
-non-probing packet from that address.  If a client receives packets from an
-unknown server address, the client MAY discard these packets.  Migrating a
-connection to a new server address is left for future work.
+This document limits migration of connections to new client addresses, except as
+described in {{preferred-address}}. Clients are responsible for initiating all
+migrations.  Servers do not send non-probing packets (see {{probing}}) toward a
+client address until it sees a non-probing packet from that address.  If a
+client receives packets from an unknown server address, the client MAY discard
+these packets.
 
 
 ### Probing a New Path {#probing}
@@ -1833,6 +1852,78 @@ that increases the largest received packet number.  Failing to do this could
 allow for use of that connection ID to link activity on new paths.  There is no
 need to move to a new connection ID if the address of a peer changes without
 also changing the connection ID.
+
+
+## Server's Preferred Address {#preferred-address}
+
+QUIC allows servers to accept connections on one IP address and attempt to
+transfer these connections to a more preferred address shortly after the
+handshake.  This is particularly useful when clients initially connect to an
+address shared by multiple servers but would prefer to use a unicast address to
+ensure connection stability. This section describes the protocol for migrating a
+connection to a preferred server address.
+
+Migrating a connection to a new server address mid-connection is left for future
+work. If a client receives packets from a new server address not indicated by
+the preferred_address transport parameter, the client SHOULD discard these
+packets.
+
+### Communicating A Preferred Address
+
+A server conveys a preferred address by including the preferred_address
+transport parameter in the TLS handshake.
+
+Once the handshake is finished, the client SHOULD initiate path validation (see
+{{migrate-validate}}) of the server's preferred address using the connection ID
+provided in the preferred_address transport parameter.
+
+If path validation succeeds, the client SHOULD immediately begin sending all
+future packets to the new server address using the new connection ID and
+discontinue use of the old server address.  If path validation fails, the client
+MUST continue sending all future packets to the server's original IP address.
+
+
+### Responding to Connection Migration
+
+A server might receive a packet addressed to its preferred IP address at any
+time after the handshake is completed.  If this packet contains a PATH_CHALLENGE
+frame, the server sends a PATH_RESPONSE frame as per {{migrate-validate}}, but
+the server MUST continue sending all other packets from its original IP address.
+
+The server SHOULD also initiate path validation of the client using its
+preferred address and the address from which it received the client probe.  This
+helps to guard against spurious migration initiated by an attacker.
+
+Once the server has completed its path validation and has received a non-probing
+packet with a new largest packet number on its preferred address, the server
+begins sending to the client exclusively from its preferred IP address.  It
+SHOULD drop packets for this connection received on the old IP address, but MAY
+continue to process delayed packets.
+
+
+### Interaction of Client Migration and Preferred Address
+
+A client might need to perform a connection migration before it has migrated to
+the server's preferred address.  In this case, the client SHOULD perform path
+validation to both the original and preferred server address from the client's
+new address concurrently.
+
+If path validation of the server's preferred address succeeds, the client MUST
+abandon validation of the original address and migrate to using the server's
+preferred address.  If path validation of the server's preferred address fails,
+but validation of the server's original address succeeds, the client MAY migrate
+to using the original address from the client's new address.
+
+If the connection to the server's preferred address is not from the same client
+address, the server MUST protect against potential attacks as described in
+{{address-spoofing}} and {{on-path-spoofing}}.  In addition to intentional
+simultaneous migration, this might also occur because the client's access
+network used a different NAT binding for the server's preferred address.
+
+Servers SHOULD initiate path validation to the client's new address upon
+receiving a probe packet from a different address.  Servers MUST NOT send more
+than a minimum congestion window's worth of non-probing packets to the new
+address before path validation is complete.
 
 
 ## Connection Termination {#termination}
@@ -2095,7 +2186,7 @@ describes the format and semantics of the core QUIC frame types.
 
 ## Variable-Length Integer Encoding {#integer-encoding}
 
-QUIC frames use a common variable-length encoding for all non-negative integer
+QUIC frames commonly use a variable-length encoding for non-negative integer
 values.  This encoding ensures that smaller integer values need fewer octets to
 encode.
 
@@ -3108,12 +3199,11 @@ actually lost.
 ### Special Considerations for Packetization Layer PMTU Discovery
 
 
-The PADDING frame provides a useful option for PMTU probe packets that does not
-exist in other transports. PADDING frames generate acknowledgements, but their
-content need not be delivered reliably. PADDING frames may delay the delivery of
-application data, as they consume the congestion window. However, by definition
-their likely loss in a probe packet does not require delay-inducing
-retransmission of application data.
+The PADDING frame provides a useful option for PMTU probe packets. PADDING
+frames generate acknowledgements, but they need not be delivered reliably. As a
+result, the loss of PADDING frames in probe packets does not require
+delay-inducing retransmission. However, PADDING frames do consume congestion
+window, which may delay the transmission of subsequent application data.
 
 When implementing the algorithm in Section 7.2 of {{!PLPMTUD}}, the initial
 value of search_low SHOULD be consistent with the IPv6 minimum packet size.
@@ -4172,6 +4262,10 @@ thanks to all.
 > final version of this document.
 
 Issue and pull request numbers are listed with a leading octothorp.
+
+## Since draft-ietf-quic-transport-11
+
+- Enable server to transition connections to a preferred address (#560,#1251).
 
 ## Since draft-ietf-quic-transport-10
 
