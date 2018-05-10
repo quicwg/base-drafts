@@ -1381,7 +1381,7 @@ a different codepoint.
 
 A server can process an initial cryptographic handshake messages from a client
 without committing any state. This allows a server to perform address validation
-({{address-validation}}, or to defer connection establishment costs.
+({{address-validation}}), or to defer connection establishment costs.
 
 A server that generates a response to an initial packet without retaining
 connection state MUST use the Retry packet ({{packet-retry}}).  This packet
