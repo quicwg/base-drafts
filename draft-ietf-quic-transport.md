@@ -2155,7 +2155,8 @@ for that connection.
 
 An endpoint that loses state can use the same method to generate a valid
 Stateless Reset Secret.  The connection ID comes from the packet that the
-endpoint receives.
+endpoint receives.  An instance that receives a packet for another instance
+might recover the instance identifier from the connection ID.
 
 This design relies on the peer always sending a connection ID in its packets so
 that the endpoint can use the connection ID from a packet to reset the
@@ -2169,6 +2170,13 @@ static key cannot occur for another connection.  A connection ID from a
 connection that is reset by revealing the Stateless Reset Token cannot be reused
 for new connections at the same instance without first changing to use a
 different static key or instance identifier.
+
+Any set of instances that share a static key for the purposes of stateless reset
+MUST allocate connection IDs from the same space without reusing connection IDs
+as long as the key is valid.  If instances that share a stateless reset key
+allow connections with the same connection ID to be created, then the stateless
+reset token for one connection could be used to terminate any connection that
+has the same connection ID.
 
 Note that Stateless Reset messages do not have any cryptographic protection.
 
