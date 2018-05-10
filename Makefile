@@ -22,7 +22,7 @@ endif
 
 ifneq ($(PYTHON),)
 lint::
-	@$(PYTHON) ./.lint.py draft-*.md
+	@$(PYTHON) ./.lint.py $(addsuffix .md,$(drafts))
 endif
 
 show-next:
