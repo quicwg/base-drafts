@@ -335,7 +335,7 @@ represented as an 8-bit prefix string literal.
 {: title="Insert Header Field -- New Name"}
 
 
-### Duplicate {#indexed-duplicate}
+### Duplicate {#duplicate}
 
 Duplication of an existing entry in the dynamic table starts with the '000'
 three-bit pattern.  The relative index of the existing entry is represented as
@@ -615,7 +615,7 @@ desired.
 To ensure that the blocked eviction case is rare, references to the oldest
 entries in the dynamic table SHOULD be avoided.  When one of the oldest entries
 in the table is still actively used for references, the encoder SHOULD emit an
-Indexed-Duplicate representation instead (see {{indexed-duplicate}}).
+Duplicate representation instead (see {{duplicate}}).
 
 
 ### Blocked Decoding
@@ -634,9 +634,9 @@ decoding any blocked streams that now have their dependencies satisfied.
 Implementations can *speculatively* send header frames on the HTTP Control
 Streams which are not needed for any current HTTP request or response.  Such
 headers could be used strategically to improve performance.  For instance, the
-encoder might decide to *refresh* by sending Indexed-Duplicate representations
-for popular header fields ({{indexed-duplicate}}), ensuring they have small
-indices and hence minimal size on the wire.
+encoder might decide to *refresh* by sending Duplicate representations for
+popular header fields ({{duplicate}}), ensuring they have small indices and
+hence minimal size on the wire.
 
 ## Sample One Pass Encoding Algorithm
 
