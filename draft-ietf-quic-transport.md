@@ -2082,23 +2082,24 @@ of the packet protection AEAD.  More random octets might be necessary if the
 endpoint could have negotiated a packet protection scheme with a larger minimum
 AEAD expansion.
 
-An endpoint cannot determine the source connection ID from a packet with a short
-header, therefore it cannot set the destination connection ID in the stateless
+An endpoint cannot determine the Source Connection ID from a packet with a short
+header, therefore it cannot set the Destination Connection ID in the stateless
 reset packet.  The destination connection ID will therefore differ from the
-value used in previous packets.  A random destination connection ID makes the
+value used in previous packets.  A random Destination Connection ID makes the
 connection ID appear to be the result of moving to new connection ID that was
 provided using the NEW_CONNECTION_ID frame ({{frame-new-connection-id}}).
 
 Using a randomized connection ID results in two problems:
 
 * The packet might not reach the peer.  If the Destination Connection ID is
-  critical for routing toward the client, then this packet could be incorrectly
+  critical for routing toward the peer, then this packet could be incorrectly
   routed.  This causes the stateless reset to be ineffective in causing errors
-  to be quickly detected and recovered.  In this case, clients will need to rely
-  on other methods - such as timers - to detect that the connection has failed.
+  to be quickly detected and recovered.  In this case, endpoints will need to
+  rely on other methods - such as timers - to detect that the connection has
+  failed.
 
 * The randomly generated connection ID can be used by entities other than the
-  client to identify this as a potential stateless reset.  A server that
+  peer to identify this as a potential stateless reset.  An endpoint that
   occasionally uses different connection IDs might introduce some uncertainty
   about this.
 
@@ -2109,9 +2110,9 @@ A stateless reset is not appropriate for signaling error conditions.  An
 endpoint that wishes to communicate a fatal connection error MUST use a
 CONNECTION_CLOSE or APPLICATION_CLOSE frame if it has sufficient state to do so.
 
-This stateless reset design is specific to QUIC version 1.  A server that
+This stateless reset design is specific to QUIC version 1.  An endpoint that
 supports multiple versions of QUIC needs to generate a stateless reset that will
-be accepted by clients that support any version that the server might support
+be accepted by peers that support any version that the endpoint might support
 (or might have supported prior to losing state).  Designers of new versions of
 QUIC need to be aware of this and either reuse this design, or use a portion of
 the packet other than the last 16 octets for carrying data.
@@ -2119,49 +2120,50 @@ the packet other than the last 16 octets for carrying data.
 
 #### Detecting a Stateless Reset
 
-A client detects a potential stateless reset when a packet with a short header
-either cannot be decrypted or is marked as a duplicate packet.  The client then
-compares the last 16 octets of the packet with the Stateless Reset Token
-provided by the server in its transport parameters.  If these values are
-identical, the client MUST enter the draining period and not send any further
-packets on this connection.  If the comparison fails, the packet can be
-discarded.
+An endpoint detects a potential stateless reset when a packet with a short
+header either cannot be decrypted or is marked as a duplicate packet.  The
+endpoint then compares the last 16 octets of the packet with the Stateless Reset
+Token provided by its peer, either from the NEW_CONNECTION_ID frame or the
+server transport parameters.  If these values are identical, the endpoint MUST
+enter the draining period and not send any further packets on this connection.
+If the comparison fails, the packet can be discarded.
 
 
 #### Calculating a Stateless Reset Token
 
 The stateless reset token MUST be difficult to guess.  In order to create a
-Stateless Reset Token, a server could randomly generate {{!RFC4086}} a secret
+Stateless Reset Token, an endpoint could randomly generate {{!RFC4086}} a secret
 for every connection that it creates.  However, this presents a coordination
-problem when there are multiple servers in a cluster or a storage problem for a
-server that might lose state.  Stateless reset specifically exists to handle the
-case where state is lost, so this approach is suboptimal.
+problem when there are multiple instances in a cluster or a storage problem for
+a endpoint that might lose state.  Stateless reset specifically exists to handle
+the case where state is lost, so this approach is suboptimal.
 
 A single static key can be used across all connections to the same endpoint by
 generating the proof using a second iteration of a preimage-resistant function
-that takes three inputs: the static key, the server's connection ID (see
-{{connection-id}}), and an identifier for the server instance.  A server could
-use HMAC {{?RFC2104}} (for example, HMAC(static_key, server_id ||
+that takes three inputs: the static key, the connection ID chosen by the
+endpoint (see {{connection-id}}), and an instance identifier.  An endpoint could
+use HMAC {{?RFC2104}} (for example, HMAC(static_key, instance_id ||
 connection_id)) or HKDF {{?RFC5869}} (for example, using the static key as input
-keying material, with server and connection identifiers as salt).  The output of
-this function is truncated to 16 octets to produce the Stateless Reset Token for
-that connection.
+keying material, with instance and connection identifiers as salt).  The output
+of this function is truncated to 16 octets to produce the Stateless Reset Token
+for that connection.
 
-A server that loses state can use the same method to generate a valid Stateless
-Reset Secret.  The connection ID comes from the packet that the server receives.
+An endpoint that loses state can use the same method to generate a valid
+Stateless Reset Secret.  The connection ID comes from the packet that the
+endpoint receives.
 
-This design relies on the client always sending a connection ID in its packets
-so that the server can use the connection ID from a packet to reset the
-connection.  A server that uses this design cannot allow clients to use a
+This design relies on the peer always sending a connection ID in its packets so
+that the endpoint can use the connection ID from a packet to reset the
+connection.  An endpoint that uses this design cannot allow its peers to use a
 zero-length connection ID.
 
 Revealing the Stateless Reset Token allows any entity to terminate the
 connection, so a value can only be used once.  This method for choosing the
-Stateless Reset Token means that the combination of server instance, connection
-ID, and static key cannot occur for another connection.  A connection ID from a
-connection that is reset by revealing the Stateless Reset Token cannot be
-reused for new connections at the same server without first changing to use a
-different static key or server identifier.
+Stateless Reset Token means that the combination of instance, connection ID, and
+static key cannot occur for another connection.  A connection ID from a
+connection that is reset by revealing the Stateless Reset Token cannot be reused
+for new connections at the same instance without first changing to use a
+different static key or instance identifier.
 
 Note that Stateless Reset messages do not have any cryptographic protection.
 
