@@ -102,9 +102,9 @@ received.
 Each header block contains a Largest Reference (see {{absolute-index}}) which
 identifies the table state necessary for decoding. If the greatest absolute
 index in the dynamic table is less than the value of the Largest Reference, the
-stream is considered "blocked."  While blocked, header field data MUST remain in
-the blocked stream's flow control window.  When the Largest Reference is zero,
-the frame contains no references to the dynamic table and can always be
+stream is considered "blocked."  While blocked, header field data should remain
+in the blocked stream's flow control window.  When the Largest Reference is
+zero, the frame contains no references to the dynamic table and can always be
 processed immediately.
 
 A decoder can permit the possibility of blocked streams by setting
@@ -115,17 +115,16 @@ An encoder can decide whether to risk having a stream become blocked. If
 permitted by the value of SETTINGS_QPACK_BLOCKED_STREAMS, compression efficiency
 can be improved by referencing dynamic table entries that are still in transit,
 but if there is loss or reordering the stream can become blocked at the decoder.
-An encoder avoids the rist of blocking by only referencing dynamic table entries
+An encoder avoids the risk of blocking by only referencing dynamic table entries
 which have been acknowledged, but this means using literals. Since literals make
 the header block larger, this can result in the encoder becoming blocked on
 congestion or flow control limits.
 
 An encoder MUST limit the number of streams which could become blocked to the
-value of SETTINGS_QPACK_BLOCKED_STREAMS at all times. Note that the decoder's
-count of streams which are actually blocked will be at most the encoder's count
-of streams which could become blocked.  If the decoder encounters more blocked
-streams than it promised to support, it SHOULD treat this as a stream error of
-type HTTP_QPACK_DECOMPRESSION_FAILED.
+value of SETTINGS_QPACK_BLOCKED_STREAMS at all times. Note that the decoder
+might not actually become blocked on every stream which risks becoming blocked.
+If the decoder encounters more blocked streams than it promised to support, it
+SHOULD treat this as a stream error of type HTTP_QPACK_DECOMPRESSION_FAILED.
 
 # Wire Format
 
