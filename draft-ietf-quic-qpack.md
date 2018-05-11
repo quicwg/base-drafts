@@ -114,6 +114,13 @@ field data MUST remain in the blocked stream's flow control window.  When the
 Largest Reference is zero, the frame contains no references to the dynamic table
 and can always be processed immediately.
 
+# Conventions and Definitions
+
+The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD",
+"SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this
+document are to be interpreted as described in BCP 14 {{!RFC2119}} {{!RFC8174}}
+when, and only when, they appear in all capitals, as shown here.
+
 # Wire Format
 
 QPACK instructions occur in three locations, each of which uses a separate
