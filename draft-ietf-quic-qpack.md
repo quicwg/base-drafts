@@ -121,6 +121,45 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD",
 document are to be interpreted as described in BCP 14 {{!RFC2119}} {{!RFC8174}}
 when, and only when, they appear in all capitals, as shown here.
 
+Definitions of terms that are used in this document:
+
+Header:
+
+: A name-value pair sent as part of an HTTP message.
+
+Header set:
+
+: The full collection of headers associated with an HTTP message.
+
+Header block:
+
+: The compressed representation of a header set.
+
+Encoder:
+
+: An implementation which transforms a header set into a header block.
+
+Decoder:
+
+: An implementation which transforms a header block into a header set.
+
+QPACK is a name, not an acronym.
+
+## Notational Conventions
+
+Diagrams use the format described in Section 3.1 of {{?RFC2360}}, with the
+following additional conventions:
+
+x (A)
+: Indicates that x is A bits long
+
+x (A+)
+: Indicates that x uses the prefixed integer encoding defined in Section 5.1 of
+  [RFC7541], beginning with an A-bit prefix.
+
+x ...
+: Indicates that x is variable-length and extends to the end of the region.
+
 # Wire Format
 
 QPACK instructions occur in three locations, each of which uses a separate
