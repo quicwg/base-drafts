@@ -2957,9 +2957,8 @@ Stream Data:
 
 : The bytes from the designated stream to be delivered.
 
-A stream frame's Stream Data MUST NOT be empty, unless the offset is 0 or the
-FIN bit is set.  When the FIN flag is sent on an empty STREAM frame, the offset
-in the STREAM frame is the offset of the next byte that would be sent.
+When a Stream Data field has a length of 0, the offset in the STREAM frame is
+the offset of the next byte that would be sent.
 
 The first byte in the stream has an offset of 0.  The largest offset delivered
 on a stream - the sum of the re-constructed offset and data length - MUST be
