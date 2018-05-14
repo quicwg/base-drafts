@@ -181,7 +181,7 @@ as follows:
 This procedure will cause the spin bit to change value in each direction once
 per round trip. Observation points can estimate the network latency by
 observing these changes in the latency spin bit, as described in {{usage}}.
-See {{QUIC-SPIN}} for further illustration of this
+See {{?QUIC-SPIN=I-D.trammell-quic-spin}} for further illustration of this
 mechanism in action.
 
 ## Resetting Spin Value State
