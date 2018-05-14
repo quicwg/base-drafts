@@ -105,7 +105,9 @@ index in the dynamic table is less than the value of the Largest Reference, the
 stream is considered "blocked."  While blocked, header field data should remain
 in the blocked stream's flow control window.  When the Largest Reference is
 zero, the frame contains no references to the dynamic table and can always be
-processed immediately.
+processed immediately. A stream becomes unblocked when the greatest absolute
+index in the dynamic table becomes greater than or equal to the Largest
+Reference for all header blocks the decoder has started reading from the stream.
 
 A decoder can permit the possibility of blocked streams by setting
 SETTINGS_QPACK_BLOCKED_STREAMS to a non-zero value.  This setting specifies an
