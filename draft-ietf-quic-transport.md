@@ -3612,10 +3612,15 @@ When new data is to be sent on a stream, a sender MUST set the encapsulating
 STREAM frame's offset field to the stream offset of the first byte of this new
 data.  The first octet of data on a stream has an offset of 0.  An endpoint is
 expected to send every stream octet.  The largest offset delivered on a stream
-MUST be less than 2^62. A receiver MUST ensure that received stream data is
-delivered to the application as an ordered byte-stream.  Data received out of
-order MUST be buffered for later delivery, as long as it is not in violation of
-the receiver's flow control limits.
+MUST be less than 2^62.
+
+A receiver MUST ensure that received stream data is delivered to the application
+as an ordered byte-stream.  Data received out of order MUST be buffered for
+later delivery, as long as it is not in violation of the receiver's flow control
+limits.  An endpoint could receive the same octets multiple times; octets that
+have already been received can be discarded.  The value for a given octet MUST
+NOT change if it is sent multiple times; an endpoint MAY treat receipt of a
+changed octet as a connection error of type PROTOCOL_VIOLATION.
 
 An endpoint MUST NOT send data on any stream without ensuring that it is within
 the data limits set by its peer.  The cryptographic handshake stream, Stream 0,
