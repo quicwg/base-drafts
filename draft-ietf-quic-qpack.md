@@ -95,24 +95,38 @@ reintroduced by HPACK when the loss includes a HEADERS frame.
 
 ## Avoiding Head-of-Line Blocking in HTTP/QUIC {#overview-hol-avoidance}
 
-In the example above, the second stream contained a reference to data
-which might not yet have been processed by the recipient.  Such references
-are called "vulnerable," because the loss of a different packet can keep
-the reference from being usable.
+Because QUIC does not guarantee order between data on different streams, a
+header block might reference an entry in the dynamic table that has not yet been
+received.
 
-The encoder can choose on a per-header-block basis whether to favor higher
-compression ratio (by permitting vulnerable references) or HoL resilience (by
-avoiding them).
+Each header block contains a Largest Reference (see {{absolute-index}}) which
+identifies the table state necessary for decoding. If the greatest absolute
+index in the dynamic table is less than the value of the Largest Reference, the
+stream is considered "blocked."  While blocked, header field data should remain
+in the blocked stream's flow control window.  When the Largest Reference is
+zero, the frame contains no references to the dynamic table and can always be
+processed immediately. A stream becomes unblocked when the greatest absolute
+index in the dynamic table becomes greater than or equal to the Largest
+Reference for all header blocks the decoder has started reading from the stream.
 
-The header block contains a Base Index (see {{absolute-index}}), which is used
-to correctly index entries regardless of reordering in the transport (see
-{{indexing}}), and a Largest Reference which identifies the table state
-necessary for decoding. The stream for a header is considered blocked by the
-decoder and cannot be processed until the greatest absolute index in the dynamic
-table is at least the value of the Largest Reference.  While blocked, header
-field data MUST remain in the blocked stream's flow control window.  When the
-Largest Reference is zero, the frame contains no references to the dynamic table
-and can always be processed immediately.
+A decoder can permit the possibility of blocked streams by setting
+SETTINGS_QPACK_BLOCKED_STREAMS to a non-zero value.  This setting specifies an
+upper bound on the number of streams which can be blocked.
+
+An encoder can decide whether to risk having a stream become blocked. If
+permitted by the value of SETTINGS_QPACK_BLOCKED_STREAMS, compression efficiency
+can be improved by referencing dynamic table entries that are still in transit,
+but if there is loss or reordering the stream can become blocked at the decoder.
+An encoder avoids the risk of blocking by only referencing dynamic table entries
+which have been acknowledged, but this means using literals. Since literals make
+the header block larger, this can result in the encoder becoming blocked on
+congestion or flow control limits.
+
+An encoder MUST limit the number of streams which could become blocked to the
+value of SETTINGS_QPACK_BLOCKED_STREAMS at all times. Note that the decoder
+might not actually become blocked on every stream which risks becoming blocked.
+If the decoder encounters more blocked streams than it promised to support, it
+SHOULD treat this as a stream error of type HTTP_QPACK_DECOMPRESSION_FAILED.
 
 # Conventions and Definitions
 
@@ -591,10 +605,10 @@ have outstanding (unacknowledged) references.
 
 An encoder MUST ensure that a header block which references a dynamic table
 entry is not received by the decoder after the referenced entry has already been
-evicted, and MUST ensure that the decoder will not suffer head-of-line blocking
-if the decoder has not opted to receive blocking references. Even if the decoder
-is willing to process blocking references, the encoder might choose to avoid
-them in certain cases.
+evicted.  An encoder also respects the limit set by the decoder on the number of
+streams that are allowed to become blocked. Even if the decoder is willing to
+tolerate blocked streams, the encoder might choose to avoid them in certain
+cases.
 
 In order to enable this, the encoder will need to track outstanding
 (unacknowledged) header blocks and table updates using feedback received from
@@ -622,7 +636,9 @@ Duplicate representation instead (see {{duplicate}}).
 
 For header blocks encoded in non-blocking mode, the encoder needs to forego
 indexed representations that refer to table updates which have not yet been
-acknowledged with {{feedback}}.
+acknowledged with {{feedback}}.  Since all table updates are processed in
+sequence on the control stream, an index into the dynamic table is sufficient to
+track which entries have been acknowledged.
 
 To track blocked streams, the necessary Base Index value for each stream
 can be used.  Whenever the decoder processes a table update, it can begin
