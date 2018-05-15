@@ -704,12 +704,13 @@ structure:
 struct {
    uint16 length = Length;
    opaque label<6..255> = "QUIC " + Label;
+   uint8 hashLength = 0;
 } QhkdfExpandInfo;
 ~~~
 
 For example, assuming a hash function with a 32 octet output, derivation for a
 client packet protection key would use HKDF-Expand with an `info` parameter of
-0x00200851554943206b6579.
+0x00200851554943206b657900.
 
 
 ### Handshake Secrets {#handshake-secrets}
