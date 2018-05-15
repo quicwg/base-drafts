@@ -139,7 +139,7 @@ the short header for the spin bit.
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+
-|0|K|1|1|0|S|T T|
+|0|K|1|1|0|S|R R|
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                Destination Connection ID (0..144)           ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -153,6 +153,8 @@ the short header for the spin bit.
 
 S: The Spin bit is set 0 or 1 depending on the stored spin value that is
 updated on packet reception as explained in {{spinbit}}.
+
+R: Two additional bits are reserved for experimentation in the short header.
 
 ## Setting the Spin Bit on Outgoing Packets {#spinbit}
 
@@ -253,7 +255,7 @@ on-path devices is therefore negligible.
 
 # Acknowledgments
 
-This document is derived from {{?I-D.trammell-quic-spin}}, which was the work
+This document is derived from {{QUIC-SPIN}}, which was the work
 of the following authors in addition to the editor of this document:
 
 - Piet De Vaere, ETH Zurich
