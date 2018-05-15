@@ -1117,17 +1117,16 @@ Description:
 | 108   | access-control-allow-credentials | FALSE                                                                                                  |
 | 109   | expect-ct                        |                                                                                                        |
 | 110   | content-security-policy          | script-src 'none'; object-src 'none'; base-uri 'none'                                                  |
-| 111   | transfer-encoding                | chunked                                                                                                |
-| 112   | upgrade-insecure-requests        | 1                                                                                                      |
-| 113   | x-served-by                      |                                                                                                        |
-| 114   | x-requested-with                 | xmlhttprequest                                                                                         |
-| 115   | access-control-request-headers   | content-type                                                                                           |
-| 116   | access-control-request-headers   | x-requested-with                                                                                       |
-| 117   | access-control-request-method    | post                                                                                                   |
-| 118   | access-control-request-method    | get                                                                                                    |
-| 119   | purpose                          | prefetch                                                                                               |
-| 120   | x-csrf-token                     | null                                                                                                   |
-| 121   | x-csrf-token                     | undefined                                                                                              |
+| 111   | upgrade-insecure-requests        | 1                                                                                                      |
+| 112   | x-served-by                      |                                                                                                        |
+| 113   | x-requested-with                 | xmlhttprequest                                                                                         |
+| 114   | access-control-request-headers   | content-type                                                                                           |
+| 115   | access-control-request-headers   | x-requested-with                                                                                       |
+| 116   | access-control-request-method    | post                                                                                                   |
+| 117   | access-control-request-method    | get                                                                                                    |
+| 118   | purpose                          | prefetch                                                                                               |
+| 119   | x-csrf-token                     | null                                                                                                   |
+| 120   | x-csrf-token                     | undefined                                                                                              |
 
 # Change Log
 
