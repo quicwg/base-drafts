@@ -3616,9 +3616,9 @@ MUST be less than 2^62.
 
 QUIC makes no specific allowances for partial reliability or delivery of stream
 data out of order.  Endpoints are expected to deliver stream data to an
-application as an ordered byte-stream.  Delivering an order byte-stream requires
-that an endpoint buffer any data that is received out of order, up to the
-advertised flow control limit.
+application as an ordered byte-stream.  Delivering an ordered byte-stream
+requires that an endpoint buffer any data that is received out of order, up to
+the advertised flow control limit.
 
 An endpoint could receive the same octets multiple times; octets that have
 already been received can be discarded.  The value for a given octet MUST NOT
