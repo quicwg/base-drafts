@@ -179,11 +179,11 @@ x ...
 QPACK instructions occur in three locations, each of which uses a separate
 instruction space:
 
- - Table updates are carried by HEADERS frames on the control stream, as defined
-   by {{QUIC-HTTP}}.  Frames on this stream modify the dynamic table state
-   without generating output to any particular request.
- - Acknowledgement of header frame processing is carried by HEADER_ACK frames on
-   the control stream, running from decoder to encoder.
+ - Table updates are carried by a unidirectional stream from encoder to decoder.
+   Instructions on this stream modify the dynamic table state without generating
+   output to any particular request.
+ - Acknowledgements of table modifications and header processing are carried by
+   a unidirectional stream from decoder to encoder.
  - Finally, the contents of HEADERS and PUSH_PROMISE frames on request streams
    reference the QPACK table state.
 
@@ -292,13 +292,27 @@ error code.  If this reference occurs on the control stream, this MUST be
 treated as a session error.
 
 
-## HEADERS Frames on the Control Stream
+## QPACK Encoder Stream
 
 Table updates can add a table entry, possibly using existing entries to avoid
 transmitting redundant information.  The name can be transmitted as a reference
 to an existing entry in the static or the dynamic table or as a string literal.
 For entries which already exist in the dynamic table, the full entry can also be
 used by reference, creating a duplicate entry.
+
+Each set of encoder instructions is prefaced by its length, encoded as a
+variable length integer with an 8-bit prefix.  Instructions MUST NOT span more
+than one block.
+
+~~~~~~~~~~ drawing
+     0   1   2   3   4   5   6   7
+   +---+---+---+---+---+---+---+---+
+   |       Block Length (8+)       |
+   +-------------------------------+
+   |     Instruction Block (*)   ...
+   +-------------------------------+
+~~~~~~~~~~
+{: title="Encoder instruction block"}
 
 ### Insert With Name Reference
 
@@ -394,36 +408,59 @@ Reducing the maximum size of the dynamic table can cause entries to be evicted
 (see Section 4.3 of [RFC7541]).  This MUST NOT cause the eviction of entries
 with outstanding references (see {{reference-tracking}}).
 
-## HEADER_ACK Frames {#feedback}
+## QPACK Decoder Stream {#feedback}
 
-HEADER_ACK frames on the control stream carry information used to ensure
-consistency of the dynamic table. Information is sent from the QPACK decoder to
-the QPACK encoder; that is, the server informs the client about the processing
-of the client's header blocks and table updates, and the client informs the
-server about the processing of the server's header blocks and table updates.
+The decoder stream carries information used to ensure consistency of the dynamic
+table. Information is sent from the QPACK decoder to the QPACK encoder; that is,
+the server informs the client about the processing of the client's header blocks
+and table updates, and the client informs the server about the processing of the
+server's header blocks and table updates.
 
-Each frame represents a header block or table update which the QPACK decoder has
-fully processed.  It is used by the peer's QPACK encoder to determine whether
-subsequent indexed representations that might reference impacted entries are
-vulnerable to head-of-line blocking, and to prevent eviction races.
+### Table Size Synchronize
 
-The frame payload contains contains a variable-length integer (as defined in
-{{QUIC-TRANSPORT}}) which indicates the stream on which the header block was
-processed. The same Stream ID can be identified in multiple frames, as multiple
-header blocks can be sent on a single request or push stream.  (Requests can
-have trailers; responses can have intermediate status codes and PUSH_PROMISE
-frames.) As the control stream carries multiple table updates, the control
-stream can also be identified in multiple frames.
+After processing a set of instructions on the encoder stream, the decoder will
+emit a Table State Synchronize instruction on the decoder stream.  The
+instruction begins with the '1' one-bit pattern. The instruction specifies the
+total number of dynamic table inserts and duplications since the last Table
+State Synchronize, encoded as a 7-bit prefix integer.  The encoder uses this
+value to determine which table entries are vulnerable to head-of-line blocking.
+A decoder MAY coalesce multiple synchronization updates into a single update.
 
-Since header frames on each stream are received and processed in
-order, this gives the encoder precise feedback on which header blocks within a
-stream have been fully processed.
+~~~~~~~~~~ drawing
+  0   1   2   3   4   5   6   7
++---+---+---+---+---+---+---+---+
+| 1 |     Insert Count (7+)     |
++---+---------------------------+
+~~~~~~~~~~
+{:#fig-size-sync title="Table Size Synchronize"}
 
-## Request Streams
+### Header Acknowledgement
+
+After processing a header block on a request or push stream, the decoder emits a
+Header Acknowledgement instruction on the decoder stream.  The instruction
+begins with the '0' one-bit pattern and includes the request stream's stream ID,
+encoded as a 7-bit prefix integer.  It is used by the peer's QPACK encoder to
+know when it is safe to evict an entry.
+
+The same Stream ID can be identified multiple times, as multiple header blocks
+can be sent on a single stream in the case of intermediate responses, trailers,
+and pushed requests.  Since header frames on each stream are received and
+processed in order, this gives the encoder precise feedback on which header
+blocks within a stream have been fully processed.
+
+~~~~~~~~~~ drawing
+  0   1   2   3   4   5   6   7
++---+---+---+---+---+---+---+---+
+| 0 |      Stream ID (7+)       |
++---+---------------------------+
+~~~~~~~~~~
+{:#fig-header-ack title="Header Acknowledgement"}
+
+## Request and Push Streams
 
 HEADERS and PUSH_PROMISE frames on request and push streams reference the
-dynamic table in a particular state without modifying it, but emit the headers
-for an HTTP request or response.
+dynamic table in a particular state without modifying it.  Frames on these
+streams emit the headers for an HTTP request or response.
 
 ### Header Data Prefix {#absolute-index}
 
