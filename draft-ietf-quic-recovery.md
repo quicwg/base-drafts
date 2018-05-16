@@ -130,7 +130,7 @@ it uses separate packet number spaces for each encryption level.  Separating the
 spaces allows the recovery mechanisms to work without special cases to avoid
 spuriously retransmitting un-processable packets.  Multiple recovery contexts
 creates multiple tails, and tails tend to require costly timeouts to recover.
-The optimizations{{}} section below describes
+The optimizations({{optimizations}}) section below describes
 some optimization to allow recovering from these tails as quickly as a single
 packet number space without introducing the complexity of attempting to use
 assumptions about receiver behavior.  All packet number spaces are expected to
@@ -282,10 +282,10 @@ Timer-based loss detection implements a handshake retransmission timer that
 is optimized for QUIC as well as the spirit of TCP's Tail Loss Probe
 and Retransmission Timeout mechanisms.
 
-### Handshake Timeout
+### Crypto Handshake Timeout
 
-Handshake packets, which contain STREAM frames for stream 0, are critical to
-QUIC transport and crypto negotiation, so a separate alarm is used for them.
+Packets containing CRYPTO frames are critical to QUIC transport and
+crypto negotiation so a more aggressive timeout is used to retransmit them.
 
 The initial handshake timeout SHOULD be set to twice the initial RTT.
 
@@ -311,8 +311,14 @@ Handshake data may be cancelled by handshake state transitions. In particular,
 all non-protected data SHOULD no longer be transmitted once packet protection
 is available.
 
-(TODO: Work this section some more. Add text on client vs. server, and on
-stateless retry.)
+#### Retry
+
+A RETRY packet causes the content of the client's INITIAL packet to be
+immediately retransmitted along with the token present in the RETRY.
+
+The RETRY implicitly acknowledges the echoed packet number present in the
+RETRY packet, and this implicit acknowledgement may be used as an RTT
+measurement.
 
 ### Tail Loss Probe {#tlp}
 
@@ -414,7 +420,7 @@ A packet sent on an RTO alarm MUST NOT be blocked by the sender's congestion
 controller. A sender MUST however count these bytes as additional bytes in
 flight, since this packet adds network load without establishing packet loss.
 
-## Multiple Packet Number Space Optimizations
+## Multiple Packet Number Space Optimizations {#optimizations}
 
 There are cases where one may be able to gain recovery information from
 acknowledgements of packets in another packet number space, but they rely
@@ -491,6 +497,14 @@ As an optimization, a receiver MAY process multiple packets before
 sending any ACK frames in response.  In this case they can determine
 whether an immediate or delayed acknowledgement should be generated
 after processing incoming packets.
+
+### Crypto Handshake Data
+
+In order to quickly complete the handshake and avoid spurious
+retransmissions due to handshake alarm timeouts, packets containing
+CRYPTO frames should use a very short ack delay, such as 1ms.  ACK frames
+may be sent immediately when the crypto stack indicates all data for
+that encryption level has been received.
 
 ### ACK Ranges
 
