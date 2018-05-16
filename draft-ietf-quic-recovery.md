@@ -315,9 +315,10 @@ computed and the alarm SHOULD be set for twice the newly computed smoothed RTT.
 A RETRY packet causes the content of the client's INITIAL packet to be
 immediately retransmitted along with the token present in the RETRY.
 
-The RETRY implicitly acknowledges the echoed packet number present in the
-RETRY packet, and this implicit acknowledgement may be used as an RTT
-measurement.
+The RETRY echoes the packet number present in the INITIAL packet,
+and this may be used as an RTT measurement with an implied ack delay of 0.
+The RETRY indicates the INITIAL was not processed, so it MUST not be treated
+as an acknowledgement.
 
 ### Tail Loss Probe {#tlp}
 
