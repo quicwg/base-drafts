@@ -609,7 +609,7 @@ time_of_last_sent_retransmittable_packet:
 : The time the most recent retransmittable packet was sent.
 
 time_of_last_sent_handshake_packet:
-: The time the most recent packet containing handshake data was sent.
+: The time the most recent packet containing a CRYPTO frame was sent.
 
 largest_sent_packet:
 : The packet number of the most recently sent packet.
@@ -654,6 +654,8 @@ sent_packets:
   was sent, a boolean indicating whether the packet is ack only, and a bytes
   field indicating the packet's size.  sent_packets is ordered by packet
   number, and packets remain in sent_packets until acknowledged or lost.
+  A sent_packets datastructure is maintained per packet number space, and ack
+  processing only applies to a single space.
 
 ### Initialization
 
@@ -726,6 +728,13 @@ Pseudocode for OnAckReceived and UpdateRtt follow:
 
 ~~~
   OnAckReceived(ack):
+    // Empty ack optimization.
+    // TODO: This is incorrect for the INITIAL/HANDSHAKE
+
+    if (ack.IsEmpty() &&
+        time_of_last_sent_handshake_packet < 
+          time_of_last_sent_retransmittable_packet):
+      RetransmitAllHandshakeData();
     largest_acked_packet = ack.largest_acked
     // If the largest acked is newly acked, update the RTT.
     if (sent_packets[ack.largest_acked]):
