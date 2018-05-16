@@ -122,10 +122,8 @@ connections between the same client and server, the client can often
 send application data immediately, that is, using a zero round trip
 setup.
 
-This document describes how the standardized TLS 1.3 acts a security
-component of QUIC.  The same design could work for TLS 1.2, though few of the
-benefits QUIC provides would be realized due to the handshake latency in
-versions of TLS prior to 1.3.
+This document describes how the standardized TLS 1.3 acts as a security
+component of QUIC.
 
 
 # Notational Conventions
@@ -139,66 +137,6 @@ This document uses the terminology established in {{QUIC-TRANSPORT}}.
 
 For brevity, the acronym TLS is used to refer to TLS 1.3.
 
-TLS terminology is used when referring to parts of TLS. Though TLS assumes a
-continuous stream of octets, it divides that stream into *records*. Most
-relevant to QUIC are the records that contain TLS *handshake messages*, which
-are discrete messages that are used for key agreement, authentication and
-parameter negotiation. Ordinarily, TLS records can also contain *application
-data*, though in the QUIC usage there is no use of TLS application data.
-
-
-# Protocol Overview
-
-QUIC {{QUIC-TRANSPORT}} assumes responsibility for the confidentiality and
-integrity protection of packets.  For this it uses keys derived from a TLS 1.3
-connection {{!TLS13}}; QUIC also relies on TLS 1.3 for authentication and
-negotiation of parameters that are critical to security and performance.
-
-Rather than a strict layering, these two protocols are co-dependent: QUIC uses
-the TLS handshake; TLS uses the reliability and ordered delivery provided by
-QUIC streams.
-
-This document defines how QUIC interacts with TLS.  This includes a description
-of how TLS is used, how keying material is derived from TLS, and the application
-of that keying material to protect QUIC packets.  {{schematic}} shows the basic
-interactions between TLS and QUIC, with the QUIC packet protection being called
-out specially.
-
-~~~
-+------------+                        +------------+
-|            |------ Handshake ------>|            |
-|            |<-- Validate Address ---|            |
-|            |-- OK/Error/Validate -->|            |
-|            |<----- Handshake -------|            |
-|   QUIC     |------ Validate ------->|    TLS     |
-|            |                        |            |
-|            |<------ 0-RTT OK -------|            |
-|            |<------ 1-RTT OK -------|            |
-|            |<--- Handshake Done ----|            |
-+------------+                        +------------+
- |         ^                               ^ |
- | Protect | Protected                     | |
- v         | Packet                        | |
-+------------+                             / /
-|   QUIC     |                            / /
-|  Packet    |-------- Get Secret -------' /
-| Protection |<-------- Secret -----------'
-+------------+
-~~~
-{: #schematic title="QUIC and TLS Interactions"}
-
-The initial state of a QUIC connection has packets exchanged without any form of
-protection.  In this state, QUIC is limited to using stream 0 and associated
-packets.  Stream 0 is reserved for a TLS connection.  This is a complete TLS
-connection as it would appear when layered over TCP; the only difference is that
-QUIC provides the reliability and ordering that would otherwise be provided by
-TCP.
-
-At certain points during the TLS handshake, keying material is exported from the
-TLS connection for use by QUIC.  This keying material is used to derive packet
-protection keys.  Details on how and when keys are derived and used are included
-in {{packet-protection}}.
-
 
 ## TLS Overview
 
@@ -206,9 +144,24 @@ TLS provides two endpoints with a way to establish a means of communication over
 an untrusted medium (that is, the Internet) that ensures that messages they
 exchange cannot be observed, modified, or forged.
 
-TLS features can be separated into two basic functions: an authenticated key
-exchange and record protection.  QUIC primarily uses the authenticated key
-exchange provided by TLS but provides its own packet protection.
+Internally, TLS is a layered protocol, with the structure shown below:
+
+~~~~
++--------------+--------------+--------------+
+|  Handshake   |    Alerts    |  Application |
+|    Layer     |              |     Data     |
+|              |              |              |
++--------------+--------------+--------------+
+|                                            |
+|               Record Layer                 |
+|                                            |
++--------------------------------------------+
+~~~~
+
+Each upper layer (handshake, alerts, and application data) is carried as
+a series of typed TLS *records*. Records are individually cryptographically
+protected and then transmitted over a reliable transport (typically TCP)
+which provides sequencing and guaranteed delivery.
 
 The TLS authenticated key exchange occurs between two entities: client and
 server.  The client initiates the exchange and the server responds.  If the key
@@ -224,9 +177,6 @@ learn and authenticate an identity for the client.  TLS supports X.509
 
 The TLS key exchange is resistent to tampering by attackers and it produces
 shared secrets that cannot be controlled by either participating peer.
-
-
-## TLS Handshake
 
 TLS 1.3 provides two basic handshake modes of interest to QUIC:
 
@@ -276,6 +226,78 @@ document:
    number of public key operations.  This is the basis for 0-RTT data, even if
    the remainder of the connection is protected by a new Diffie-Hellman
    exchange.
+
+
+# Protocol Overview
+
+QUIC {{QUIC-TRANSPORT}} assumes responsibility for the confidentiality and
+integrity protection of packets.  For this it uses keys derived from a TLS 1.3
+handshake {{!TLS13}}, but instead of carrying TLS records over QUIC
+(as with TCP), TLS Handshake and Alert messages are carried directly
+over QUIC transport, which takes over the responsibilities of the TLS
+record layer, as shown below.
+
+~~~~
+
++--------------+--------------+ +-------------+
+|     TLS      |     TLS      | |    QUIC     |
+|  Handshake   |    Alerts    | | Applications|
+|              |              | | (h2q, etc.) |
++--------------+--------------+-+-------------+
+|                                             |
+|                QUIC Transport               |
+|   (streams, reliability, congestion, etc.)  |
+|                                             |
++---------------------------------------------+
+|                                             |
+|            QUIC Packet Protection           |
+|                                             |
++---------------------------------------------+
+~~~~
+
+
+QUIC also relies on TLS 1.3 for authentication and
+negotiation of parameters that are critical to security and performance.
+
+Rather than a strict layering, these two protocols are co-dependent: QUIC uses
+the TLS handshake; TLS uses the reliability and ordered delivery provided by
+QUIC streams.
+
+This document defines how QUIC interacts with TLS.  This includes a description
+of how TLS is used, how keying material is derived from TLS, and the application
+of that keying material to protect QUIC packets.  {{schematic}} shows the basic
+interactions between TLS and QUIC, with the QUIC packet protection being called
+out specially.
+
+~~~
++------------+                        +------------+
+|            |<- Handshake Messages ->|            |
+|            |<---- 0-RTT Keys -------|            |
+|            |<--- Handshake Keys-----|            |
+|   QUIC     |<---- 1-RTT Keys ------>|    TLS     |
+|            |<--- Handshake Done ----|            |
++------------+                        +------------+
+ |         ^
+ | Protect | Protected
+ v         | Packet
++------------+
+|   QUIC     |
+|  Packet    |
+| Protection |
++------------+
+~~~
+{: #schematic title="QUIC and TLS Interactions"}
+
+At a high level, there are two main interactions between the TLS and QUIC
+components:
+
+* The TLS component sends and receives messages via the QUIC component, with
+  QUIC providing a reliable stream abstraction to TLS.
+
+* The TLS component provides a series of updates to the QUIC
+  component, including (a) new packet protection keys to install (b)
+  state changes such as handshake completion, the server certificate,
+  etc.
 
 
 # TLS Usage
