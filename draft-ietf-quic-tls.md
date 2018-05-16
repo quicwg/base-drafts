@@ -212,15 +212,17 @@ A simplified TLS 1.3 handshake with 0-RTT application data is shown in
 ~~~
 {: #tls-full title="TLS Handshake with 0-RTT"}
 
-
-Data is encrypted in a variety of key phases
+Data is protected using a number of encryption levels:
 
 - Plaintext
 - Early Data (0-RTT) Keys
 - Handshake Keys
 - Application Data (1-RTT) Keys
 
-This 0-RTT handshake is only possible if the client and server have previously
+Application data may appear only in the early data and application
+data levels. Handshake and Alert messages may appear in any level.
+
+The 0-RTT handshake is only possible if the client and server have previously
 communicated.  In the 1-RTT handshake, the client is unable to send protected
 application data until it has received all of the handshake messages sent by the
 server.
@@ -261,11 +263,19 @@ Rather than a strict layering, these two protocols are co-dependent: QUIC uses
 the TLS handshake; TLS uses the reliability and ordered delivery provided by
 QUIC streams.
 
-This document defines how QUIC interacts with TLS.  This includes a description
-of how TLS is used, how keying material is derived from TLS, and the application
-of that keying material to protect QUIC packets.  {{schematic}} shows the basic
-interactions between TLS and QUIC, with the QUIC packet protection being called
-out specially.
+At a high level, there are two main interactions between the TLS and QUIC
+components:
+
+* The TLS component sends and receives messages via the QUIC component, with
+  QUIC providing a reliable stream abstraction to TLS.
+
+* The TLS component provides a series of updates to the QUIC
+  component, including (a) new packet protection keys to install (b)
+  state changes such as handshake completion, the server certificate,
+  etc.
+
+{{schematic}} shows these interactions in more detail, with the QUIC
+packet protection being called out specially.
 
 ~~~
 +------------+                        +------------+
@@ -286,18 +296,6 @@ out specially.
 ~~~
 {: #schematic title="QUIC and TLS Interactions"}
 
-At a high level, there are two main interactions between the TLS and QUIC
-components:
-
-* The TLS component sends and receives messages via the QUIC component, with
-  QUIC providing a reliable stream abstraction to TLS.
-
-* The TLS component provides a series of updates to the QUIC
-  component, including (a) new packet protection keys to install (b)
-  state changes such as handshake completion, the server certificate,
-  etc.
-
-
 
 # TLS Usage
 
@@ -308,7 +306,6 @@ been delivered to QUIC, it is QUIC's responsibility to deliver it
 reliably. Each chunk of data is associated with the then-current TLS
 sending keys, and if QUIC needs to retransmit that data, it MUST use
 the same keys even if TLS has already updated to newer keys.
-
 
 ## Handshake and Setup Sequence
 
@@ -450,45 +447,6 @@ Important:
   potential for head-of-line blocking that this implies by sending a copy of the
   STREAM frame that carries the Finished message in multiple packets.  This
   enables immediate server processing for those packets.
-
-
-### Source Address Validation
-
-During the processing of the TLS ClientHello, TLS requests that the transport
-make a decision about whether to request source address validation from the
-client.
-
-An initial TLS ClientHello that resumes a session includes an address validation
-token in the session ticket; this includes all attempts at 0-RTT.  If the client
-does not attempt session resumption, no token will be present.  While processing
-the initial ClientHello, TLS provides QUIC with any token that is present. In
-response, QUIC provides one of three responses:
-
-* proceed with the connection,
-
-* ask for client address validation, or
-
-* abort the connection.
-
-If QUIC requests source address validation, it also provides a new address
-validation token.  TLS includes that along with any information it requires in
-the cookie extension of a TLS HelloRetryRequest message.  In the other cases,
-the connection either proceeds or terminates with a handshake error.
-
-The client echoes the cookie extension in a second ClientHello.  A ClientHello
-that contains a valid cookie extension will always be in response to a
-HelloRetryRequest.  If address validation was requested by QUIC, then this will
-include an address validation token.  TLS makes a second address validation
-request of QUIC, including the value extracted from the cookie extension.  In
-response to this request, QUIC cannot ask for client address validation, it can
-only abort or permit the connection attempt to proceed.
-
-QUIC can provide a new address validation token for use in session resumption at
-any time after the handshake is complete.  Each time a new token is provided TLS
-generates a NewSessionTicket message, with the token included in the ticket.
-
-See {{client-address-validation}} for more details on client address validation.
-
 
 ### Key Ready Events
 
