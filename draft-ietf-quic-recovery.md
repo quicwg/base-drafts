@@ -477,7 +477,7 @@ Handshake data may be cancelled by handshake state transitions.
 
 In particular:
  * A peer processing data in a HANDSHAKE packet indicates
-   the INITIAL or SERVER_INITIAL packet has been delivered.
+   the INITIAL packet(s) have been delivered.
  * A peer processing 1RTT packets indicates all CRYPTO data in
    HANDSHAKE packets has been delivered.
 
