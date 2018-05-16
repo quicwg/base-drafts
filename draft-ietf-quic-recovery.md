@@ -113,7 +113,7 @@ important to the loss detection and congestion control machinery below.
 * Crypto handshake data is sent on stream 0, and uses the reliability
   machinery of QUIC underneath.
 
-* ACK frames contain acknowledgment information.  ACK frames contain withone or more
+* ACK frames contain acknowledgment information.  ACK frames contain one or more
   ranges of acknowledged packets.
 
 ## Relevant Differences Between QUIC and TCP
@@ -284,8 +284,10 @@ and Retransmission Timeout mechanisms.
 
 ### Crypto Handshake Timeout
 
-Packets containing CRYPTO frames are critical to QUIC transport and
-crypto negotiation so a more aggressive timeout is used to retransmit them.
+CRYPTO data is critical to QUIC transport and crypto negotiation, so a
+more aggressive timeout is used to retransmit it.  Below, the word handshake
+packet is used to refer to packets containing CRYPTO data, not only packets
+with the long header packet type HANDSHAKE.
 
 The initial handshake timeout SHOULD be set to twice the initial RTT.
 
@@ -296,20 +298,16 @@ connection's final smoothed RTT value as the resumed connection's initial RTT.
 If no previous RTT is available, or if the network changes, the initial RTT
 SHOULD be set to 100ms.
 
-When a handshake packet is sent, the sender SHOULD set an alarm for the
-handshake timeout period.
+When CRYPTO frames is sent, the sender SHOULD set an alarm for the handshake
+timeout period.
 
-When the alarm fires, the sender MUST retransmit all unacknowledged handshake
+When the alarm fires, the sender MUST retransmit all unacknowledged CRYPTO
 data, by calling RetransmitAllUnackedHandshakeData(). On each consecutive
 firing of the handshake alarm, the sender SHOULD double the handshake timeout
 and set an alarm for this period.
 
 When an acknowledgement is received for a handshake packet, the new RTT is
 computed and the alarm SHOULD be set for twice the newly computed smoothed RTT.
-
-Handshake data may be cancelled by handshake state transitions. In particular,
-all non-protected data SHOULD no longer be transmitted once packet protection
-is available.
 
 #### Retry
 
@@ -469,6 +467,16 @@ This optimization is particularly useful when:
  * The clients sends 1RTT data soon after the final TLS flight
    (containing the client finished) and can proactively retransmit the
    final client flight with one or more 1RTT packets.
+
+### Implicit Acknowledgements
+
+Handshake data may be cancelled by handshake state transitions.  
+
+In particular:
+ * A peer processing data in a HANDSHAKE packet indicates
+   the INITIAL or SERVER_INITIAL packet has been delivered.
+ * A peer processing 1RTT packets indicates all CRYPTO data in
+   HANDSHAKE packets has been delivered.
 
 ## Generating Acknowledgements
 
