@@ -297,15 +297,38 @@ packet protection being called out specially.
 {: #schematic title="QUIC and TLS Interactions"}
 
 
-# TLS Usage
+
+# Carrying TLS Messages
 
 QUIC carries TLS handshake data in CRYPTO frames, each of which
 consists of a contiguous block of handshake data (identified by an
-offset and length). As with TLS over TCP, once TLS handshake data has
+offset and length). Those frames are packaged into QUIC packets
+and encrypted under the current TLS encryption level.
+As with TLS over TCP, once TLS handshake data has
 been delivered to QUIC, it is QUIC's responsibility to deliver it
 reliably. Each chunk of data is associated with the then-current TLS
 sending keys, and if QUIC needs to retransmit that data, it MUST use
 the same keys even if TLS has already updated to newer keys.
+
+One important difference between TLS 1.3 records (used with TCP)
+and QUIC CRYPTO frames is that in QUIC multiple frames may appear
+in the same QUIC packet as long as they are associated with the
+same encryption level. For instance, an implementation might
+bundle a Handshake message and an ACK for some Handshake
+data into the same packet.
+
+In general, the rules for which data can appear in packets of which
+encryption level are the same in QUIC as in TLS over TCP:
+
+- Handshake messages MAY appear in packets of any encryption level.
+  [TODO: Alerts]
+- PADDING frames MAY appear in packets of any encryption level.
+- ACK frames MAY appear in packets of any encryption level, but
+  MUST only acknowledge packets which appeared in that encryption
+  level.
+- STREAM frames MAY appear in the 0-RTT and 1-RTT levels.
+- All other frame types MUST only appear at the 1-RTT levels.
+
 
 ## Handshake and Setup Sequence
 
