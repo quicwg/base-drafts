@@ -299,13 +299,14 @@ connection's final smoothed RTT value as the resumed connection's initial RTT.
 If no previous RTT is available, or if the network changes, the initial RTT
 SHOULD be set to 100ms.
 
-When CRYPTO frames is sent, the sender SHOULD set an alarm for the handshake
+When CRYPTO frames are sent, the sender SHOULD set an alarm for the handshake
 timeout period.
 
 When the alarm fires, the sender MUST retransmit all unacknowledged CRYPTO
-data, by calling RetransmitAllUnackedHandshakeData(). On each consecutive
-firing of the handshake alarm, the sender SHOULD double the handshake timeout
-and set an alarm for this period.
+data by calling RetransmitAllUnackedHandshakeData(). On each
+consecutive firing of the handshake alarm without receiving an
+acknowledgement for a new packet, the sender SHOULD double the handshake
+timeout and set an alarm for this period.
 
 When an acknowledgement is received for a handshake packet, the new RTT is
 computed and the alarm SHOULD be set for twice the newly computed smoothed RTT.
