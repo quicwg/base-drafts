@@ -89,13 +89,16 @@ when, and only when, they appear in all capitals, as shown here.
 
 # Design of the QUIC Transmission Machinery
 
-All transmissions in QUIC are sent with a packet-level header, which includes a
-packet sequence number (referred to below as a packet number).  These packet
-numbers never repeat in the lifetime of a connection, and are monotonically
-increasing, which prevents ambiguity.  This fundamental design decision
-obviates the need for disambiguating between transmissions and
-retransmissions and eliminates significant complexity from QUIC's
-interpretation of TCP loss detection mechanisms.
+All transmissions in QUIC are sent with a packet-level header, which indicates
+an encryption level and includes a packet sequence number
+(referred to below as a packet number).  These packet numbers never repeat
+within an encryption level for the lifetime of a connection.  Therefore,
+each encryption level has an associated packet number space.  Packet numbers
+are monotonically increasing within a space, preventing ambiguity.
+
+This fundamental design decision obviates the need for disambiguating
+between transmissions and retransmissions and eliminates significant
+complexity from QUIC's interpretation of TCP loss detection mechanisms.
 
 Every packet may contain several frames.  We outline the frames that are
 important to the loss detection and congestion control machinery below.
@@ -110,7 +113,7 @@ important to the loss detection and congestion control machinery below.
 * Crypto handshake data is sent on stream 0, and uses the reliability
   machinery of QUIC underneath.
 
-* ACK frames contain acknowledgment information.  ACK frames contain one or more
+* ACK frames contain acknowledgment information.  ACK frames contain withone or more
   ranges of acknowledged packets.
 
 ## Relevant Differences Between QUIC and TCP
@@ -119,6 +122,20 @@ Readers familiar with TCP's loss detection and congestion control will find
 algorithms here that parallel well-known TCP ones. Protocol differences between
 QUIC and TCP however contribute to algorithmic differences. We briefly describe
 these protocol differences below.
+
+### Separate Packet Number Spaces
+
+Because QUIC packets must be received and processed before being acknowledged,
+it uses separate packet number spaces for each encryption level.  Separating the
+spaces allows the recovery mechanisms to work without special cases to avoid
+spuriously retransmitting un-processable packets.  Multiple recovery contexts
+creates multiple tails, and tails tend to require costly timeouts to recover.
+The optimizations{{}} section below describes
+some optimization to allow recovering from these tails as quickly as a single
+packet number space without introducing the complexity of attempting to use
+assumptions about receiver behavior.  All packet number spaces are expected to
+traverse a single path, so QUIC uses unified congestion control and RTT
+measurement across the spaces.
 
 ### Monotonically Increasing Packet Numbers
 
@@ -130,15 +147,15 @@ number for transmissions, and any data that is to be delivered to the receiving
 application(s) is sent in one or more streams, with delivery order determined
 by stream offsets encoded within STREAM frames.
 
-QUIC's packet number is strictly increasing, and directly encodes transmission
-order.  A higher QUIC packet number signifies that the packet was sent later,
-and a lower QUIC packet number signifies that the packet was sent earlier.  When
-a packet containing frames is deemed lost, QUIC rebundles necessary frames in a
-new packet with a new packet number, removing ambiguity about which packet is
-acknowledged when an ACK is received.  Consequently, more accurate RTT
-measurements can be made, spurious retransmissions are trivially detected, and
-mechanisms such as Fast Retransmit can be applied universally, based only on
-packet number.
+QUIC's packet number is strictly increasing within a packet number space,
+and directly encodes transmission order.  A higher QUIC packet number signifies
+that the packet was sent later, and a lower QUIC packet number signifies that
+the packet was sent earlier.  When a packet containing frames is deemed lost,
+QUIC rebundles necessary frames in a new packet with a new packet number,
+removing ambiguity about which packet is acknowledged when an ACK is received.
+Consequently, more accurate RTT measurements can be made, spurious 
+retransmissions are trivially detected, and mechanisms such as Fast Retransmit
+can be applied universally, based only on packet number.
 
 This design point significantly simplifies loss detection mechanisms for QUIC.
 Most TCP mechanisms implicitly attempt to infer transmission ordering based on
@@ -258,7 +275,6 @@ This mechanism is based on Early Retransmit for TCP {{?RFC5827}}. However,
 prone to spurious retransmissions due to its reduced reordering resilence
 without the alarm. This observation led Linux TCP implementers to implement an
 alarm for TCP as well, and this document incorporates this advancement.
-
 
 ## Timer-based Detection
 
@@ -398,7 +414,61 @@ A packet sent on an RTO alarm MUST NOT be blocked by the sender's congestion
 controller. A sender MUST however count these bytes as additional bytes in
 flight, since this packet adds network load without establishing packet loss.
 
+## Multiple Packet Number Space Optimizations
+
+There are cases where one may be able to gain recovery information from
+acknowledgements of packets in another packet number space, but they rely
+on complex assumptions about the peer’s processing and acknowledgement
+algorithms.  Even those are unable to quickly recover from cases such as
+the client's INITIAL being lost, but 0RTT packets being received, but
+undecryptable. Instead, the suggestion is to recover from those packet number
+tails using empty acks or compound packets as described below.
+
+### Empty ACK frames
+
+Similar to DTLS 1.3 Section 7, the goal is to more quickly retransmit lost
+packets when the only other outstanding packets are undecryptable, such as
+0RTT packet(s) sent after a client INITIAL.  In that case, the peer can’t
+even decrypt the packet number of the 0RTT packets, but they do know a
+packet for a QUIC connection of a supported version was received.
+
+The receiver SHOULD send an empty ACK frame soon(ie: 1ms) after
+undecryptable packets are received, even if those received packets are
+not buffered for later decryption.  The small delay allows for cases when
+0RTT packets are reordered in front of the INITIAL, which is not uncommon
+on networks that prioritize small packets.  When an empty ACK frame is
+received, immediately retransmit the missing handshake packet(s) as
+though the handshake timer had fired and cancel re-arm the handshake
+timer after retransmitting the handshake data.  If the missing handshake 
+data was timer retransmitted after the packets that triggered the
+empty ack, then the empty ack should be ignored.
+
+And empty ACK frame does not acknowledge a new packet, and in cases
+when multiple packets are outstanding, the RTT signal is ambiguous,
+so it should not be used as an RTT signal.  It MAY change the connection’s
+default RTT if no RTT measurements have been taken.
+
+### Compound Packets
+
+Despite loss recovery being separate for different packet number spaces,
+the ability to send a compound packet enables faster recovery with small,
+and sometimes no overhead.  The acknowledgement of the bundled packet
+allows QUIC recovery to use early retransmit to determine if any prior
+packets in that space were lost without waiting for timeouts.
+
+This optimization is particularly useful when: 
+ * Retransmitting the client’s INITIAL, which must be padded to a full
+   sized packet, so typically has extra space to retransmit a portion
+   of any outstanding 0RTT data.
+ * The clients sends 1RTT data soon after the final TLS flight
+   (containing the client finished) and can proactively retransmit the
+   final client flight with one or more 1RTT packets.
+
 ## Generating Acknowledgements
+
+ACK frames only apply to one packet number space, and therefore it
+may be optimal to store multiple ACK frames at once until the
+handshake is complete.
 
 QUIC SHOULD delay sending acknowledgements in response to packets,
 but MUST NOT excessively delay acknowledgements of packets containing
