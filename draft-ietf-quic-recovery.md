@@ -911,18 +911,11 @@ Pseudocode for OnLossDetectionAlarm follows:
 
 ### Detecting Lost Packets
 
-Packets in QUIC are only considered lost once a larger packet number is
-acknowledged.  DetectLostPackets is called every time an ack is received.
-If the loss detection alarm fires and the loss_time is set, the previous
-largest acked packet is supplied.
-
-#### Handshake Packets
-
-The receiver MUST close the connection with an error of type OPTIMISTIC_ACK
-when receiving an unprotected packet that acks protected packets.
-The receiver MUST trust protected acks for unprotected packets, however.  Aside
-from this, loss detection for handshake packets when an ack is processed is
-identical to other packets.
+Packets in QUIC are only considered lost once a larger packet number in
+the same packet number space is acknowledged.  DetectLostPackets is called
+every time an ack is received and operates on the sent_packets for that
+packet number space.  If the loss detection alarm fires and the loss_time
+is set, the previous largest acked packet is supplied.
 
 #### Pseudocode
 
