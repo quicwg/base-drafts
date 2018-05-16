@@ -91,10 +91,11 @@ when, and only when, they appear in all capitals, as shown here.
 
 All transmissions in QUIC are sent with a packet-level header, which indicates
 an encryption level and includes a packet sequence number
-(referred to below as a packet number).  These packet numbers never repeat
-within an encryption level for the lifetime of a connection.  Therefore,
-each encryption level has an associated packet number space.  Packet numbers
-are monotonically increasing within a space, preventing ambiguity.
+(referred to below as a packet number).  The encryption level indicates the
+packet number space, as described in the {{TRANSPORT}} docuemnt.  Packet
+numbers never repeat within an packet number space for the lifetime of a
+connection.  Packet numbers are monotonically increasing within a space,
+preventing ambiguity.
 
 This fundamental design decision obviates the need for disambiguating
 between transmissions and retransmissions and eliminates significant
