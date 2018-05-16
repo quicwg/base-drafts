@@ -205,27 +205,25 @@ A simplified TLS 1.3 handshake with 0-RTT application data is shown in
    {Finished}                -------->
 
    [Application Data]        <------->      [Application Data]
+
+    () Indicates messages protected by early data (0-RTT) keys
+    {} Indicates messages protected using handshake keys
+    [] Indicates messages protected using application data (1-RTT) keys
 ~~~
 {: #tls-full title="TLS Handshake with 0-RTT"}
+
+
+Data is encrypted in a variety of key phases
+
+- Plaintext
+- Early Data (0-RTT) Keys
+- Handshake Keys
+- Application Data (1-RTT) Keys
 
 This 0-RTT handshake is only possible if the client and server have previously
 communicated.  In the 1-RTT handshake, the client is unable to send protected
 application data until it has received all of the handshake messages sent by the
 server.
-
-Two additional variations on this basic handshake exchange are relevant to this
-document:
-
- * The server can respond to a ClientHello with a HelloRetryRequest, which adds
-   an additional round trip prior to the basic exchange.  This is needed if the
-   server wishes to request a different key exchange key from the client.
-   HelloRetryRequest is also used to verify that the client is correctly able to
-   receive packets on the address it claims to have (see {{QUIC-TRANSPORT}}).
-
- * A pre-shared key mode can be used for subsequent handshakes to reduce the
-   number of public key operations.  This is the basis for 0-RTT data, even if
-   the remainder of the connection is protected by a new Diffie-Hellman
-   exchange.
 
 
 # Protocol Overview
@@ -300,25 +298,16 @@ components:
   etc.
 
 
+
 # TLS Usage
 
-QUIC reserves stream 0 for a TLS connection.  Stream 0 contains a complete TLS
-connection, which includes the TLS record layer.  Other than the definition of a
-QUIC-specific extension (see {{quic_parameters}}), TLS is unmodified for this
-use.  This means that TLS will apply confidentiality and integrity protection to
-its records.  In particular, TLS record protection is what provides
-confidentiality protection for the TLS handshake messages sent by the server.
-
-QUIC permits a client to send frames on streams starting from the first packet.
-The initial packet from a client contains a stream frame for stream 0 that
-contains the first TLS handshake messages from the client.  This allows the TLS
-handshake to start with the first packet that a client sends.
-
-QUIC packets are protected using a scheme that is specific to QUIC, see
-{{packet-protection}}.  Keys are exported from the TLS connection when they
-become available using a TLS exporter (see Section 7.5 of {{!TLS13}} and
-{{key-expansion}}).  After keys are exported from TLS, QUIC manages its own key
-schedule.
+QUIC carries TLS handshake data in CRYPTO frames, each of which
+consists of a contiguous block of handshake data (identified by an
+offset and length). As with TLS over TCP, once TLS handshake data has
+been delivered to QUIC, it is QUIC's responsibility to deliver it
+reliably. Each chunk of data is associated with the then-current TLS
+sending keys, and if QUIC needs to retransmit that data, it MUST use
+the same keys even if TLS has already updated to newer keys.
 
 
 ## Handshake and Setup Sequence
