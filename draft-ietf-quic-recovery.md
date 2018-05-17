@@ -426,9 +426,9 @@ There are cases where one may be able to gain recovery information from
 acknowledgements of packets in another packet number space, but they rely
 on complex assumptions about the peer’s processing and acknowledgement
 algorithms.  Even those are unable to quickly recover from cases such as
-the client's INITIAL being lost, but 0RTT packets being received, but
-undecryptable. Instead, the suggestion is to recover from those packet number
-tails using empty acks or compound packets as described below.
+losing the client's INITIAL, but receiving the 0RTT packets.  Below are
+thre different optimizations in increasing complexity that minimize
+handshake latency.
 
 ### Empty ACK frames
 
