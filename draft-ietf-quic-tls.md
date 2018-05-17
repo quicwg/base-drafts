@@ -208,7 +208,8 @@ A simplified TLS 1.3 handshake with 0-RTT application data is shown in
 
     () Indicates messages protected by early data (0-RTT) keys
     {} Indicates messages protected using handshake keys
-    [] Indicates messages protected using application data (1-RTT) keys
+    [] Indicates messages protected using application data
+       (1-RTT) keys
 ~~~
 {: #tls-full title="TLS Handshake with 0-RTT"}
 
