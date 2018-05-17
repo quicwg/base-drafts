@@ -133,10 +133,9 @@ spuriously retransmitting un-processable packets.  Multiple recovery contexts
 creates multiple tails, and tails tend to require costly timeouts to recover.
 The optimizations({{optimizations}}) section below describes
 some optimization to allow recovering from these tails as quickly as a single
-packet number space without introducing the complexity of attempting to use
-assumptions about receiver behavior.  All packet number spaces are expected to
-traverse a single path, so QUIC uses unified congestion control and RTT
-measurement across the spaces.
+packet number space without making assumptions about receiver behavior.
+All packet number spaces are expected to traverse a single path, so QUIC
+uses unified congestion control and RTT measurement across the spaces.
 
 ### Monotonically Increasing Packet Numbers
 
@@ -1183,6 +1182,10 @@ This document has no IANA actions.  Yet.
 
 > **RFC Editor's Note:**  Please remove this section prior to
 > publication of a final version of this document.
+
+## Since draft-ietf-quic-recovery-11
+
+- Text on multiple packet number spaces and relevant optimizations.
 
 ## Since draft-ietf-quic-recovery-10
 
