@@ -122,10 +122,8 @@ connections between the same client and server, the client can often
 send application data immediately, that is, using a zero round trip
 setup.
 
-This document describes how the standardized TLS 1.3 acts a security
-component of QUIC.  The same design could work for TLS 1.2, though few of the
-benefits QUIC provides would be realized due to the handshake latency in
-versions of TLS prior to 1.3.
+This document describes how the standardized TLS 1.3 acts as a security
+component of QUIC.
 
 
 # Notational Conventions
@@ -139,66 +137,6 @@ This document uses the terminology established in {{QUIC-TRANSPORT}}.
 
 For brevity, the acronym TLS is used to refer to TLS 1.3.
 
-TLS terminology is used when referring to parts of TLS. Though TLS assumes a
-continuous stream of octets, it divides that stream into *records*. Most
-relevant to QUIC are the records that contain TLS *handshake messages*, which
-are discrete messages that are used for key agreement, authentication and
-parameter negotiation. Ordinarily, TLS records can also contain *application
-data*, though in the QUIC usage there is no use of TLS application data.
-
-
-# Protocol Overview
-
-QUIC {{QUIC-TRANSPORT}} assumes responsibility for the confidentiality and
-integrity protection of packets.  For this it uses keys derived from a TLS 1.3
-connection {{!TLS13}}; QUIC also relies on TLS 1.3 for authentication and
-negotiation of parameters that are critical to security and performance.
-
-Rather than a strict layering, these two protocols are co-dependent: QUIC uses
-the TLS handshake; TLS uses the reliability and ordered delivery provided by
-QUIC streams.
-
-This document defines how QUIC interacts with TLS.  This includes a description
-of how TLS is used, how keying material is derived from TLS, and the application
-of that keying material to protect QUIC packets.  {{schematic}} shows the basic
-interactions between TLS and QUIC, with the QUIC packet protection being called
-out specially.
-
-~~~
-+------------+                        +------------+
-|            |------ Handshake ------>|            |
-|            |<-- Validate Address ---|            |
-|            |-- OK/Error/Validate -->|            |
-|            |<----- Handshake -------|            |
-|   QUIC     |------ Validate ------->|    TLS     |
-|            |                        |            |
-|            |<------ 0-RTT OK -------|            |
-|            |<------ 1-RTT OK -------|            |
-|            |<--- Handshake Done ----|            |
-+------------+                        +------------+
- |         ^                               ^ |
- | Protect | Protected                     | |
- v         | Packet                        | |
-+------------+                             / /
-|   QUIC     |                            / /
-|  Packet    |-------- Get Secret -------' /
-| Protection |<-------- Secret -----------'
-+------------+
-~~~
-{: #schematic title="QUIC and TLS Interactions"}
-
-The initial state of a QUIC connection has packets exchanged without any form of
-protection.  In this state, QUIC is limited to using stream 0 and associated
-packets.  Stream 0 is reserved for a TLS connection.  This is a complete TLS
-connection as it would appear when layered over TCP; the only difference is that
-QUIC provides the reliability and ordering that would otherwise be provided by
-TCP.
-
-At certain points during the TLS handshake, keying material is exported from the
-TLS connection for use by QUIC.  This keying material is used to derive packet
-protection keys.  Details on how and when keys are derived and used are included
-in {{packet-protection}}.
-
 
 ## TLS Overview
 
@@ -206,9 +144,24 @@ TLS provides two endpoints with a way to establish a means of communication over
 an untrusted medium (that is, the Internet) that ensures that messages they
 exchange cannot be observed, modified, or forged.
 
-TLS features can be separated into two basic functions: an authenticated key
-exchange and record protection.  QUIC primarily uses the authenticated key
-exchange provided by TLS but provides its own packet protection.
+Internally, TLS is a layered protocol, with the structure shown below:
+
+~~~~
++--------------+--------------+--------------+
+|  Handshake   |    Alerts    |  Application |
+|    Layer     |              |     Data     |
+|              |              |              |
++--------------+--------------+--------------+
+|                                            |
+|               Record Layer                 |
+|                                            |
++--------------------------------------------+
+~~~~
+
+Each upper layer (handshake, alerts, and application data) is carried as
+a series of typed TLS *records*. Records are individually cryptographically
+protected and then transmitted over a reliable transport (typically TCP)
+which provides sequencing and guaranteed delivery.
 
 The TLS authenticated key exchange occurs between two entities: client and
 server.  The client initiates the exchange and the server responds.  If the key
@@ -224,9 +177,6 @@ learn and authenticate an identity for the client.  TLS supports X.509
 
 The TLS key exchange is resistent to tampering by attackers and it produces
 shared secrets that cannot be controlled by either participating peer.
-
-
-## TLS Handshake
 
 TLS 1.3 provides two basic handshake modes of interest to QUIC:
 
@@ -255,48 +205,130 @@ A simplified TLS 1.3 handshake with 0-RTT application data is shown in
    {Finished}                -------->
 
    [Application Data]        <------->      [Application Data]
+
+    () Indicates messages protected by early data (0-RTT) keys
+    {} Indicates messages protected using handshake keys
+    [] Indicates messages protected using application data
+       (1-RTT) keys
 ~~~
 {: #tls-full title="TLS Handshake with 0-RTT"}
 
-This 0-RTT handshake is only possible if the client and server have previously
+Data is protected using a number of encryption levels:
+
+- Plaintext
+- Early Data (0-RTT) Keys
+- Handshake Keys
+- Application Data (1-RTT) Keys
+
+Application data may appear only in the early data and application
+data levels. Handshake and Alert messages may appear in any level.
+
+The 0-RTT handshake is only possible if the client and server have previously
 communicated.  In the 1-RTT handshake, the client is unable to send protected
 application data until it has received all of the handshake messages sent by the
 server.
 
-Two additional variations on this basic handshake exchange are relevant to this
-document:
 
- * The server can respond to a ClientHello with a HelloRetryRequest, which adds
-   an additional round trip prior to the basic exchange.  This is needed if the
-   server wishes to request a different key exchange key from the client.
-   HelloRetryRequest is also used to verify that the client is correctly able to
-   receive packets on the address it claims to have (see {{QUIC-TRANSPORT}}).
+# Protocol Overview
 
- * A pre-shared key mode can be used for subsequent handshakes to reduce the
-   number of public key operations.  This is the basis for 0-RTT data, even if
-   the remainder of the connection is protected by a new Diffie-Hellman
-   exchange.
+QUIC {{QUIC-TRANSPORT}} assumes responsibility for the confidentiality and
+integrity protection of packets.  For this it uses keys derived from a TLS 1.3
+handshake {{!TLS13}}, but instead of carrying TLS records over QUIC
+(as with TCP), TLS Handshake and Alert messages are carried directly
+over QUIC transport, which takes over the responsibilities of the TLS
+record layer, as shown below.
+
+~~~~
+
++--------------+--------------+ +-------------+
+|     TLS      |     TLS      | |    QUIC     |
+|  Handshake   |    Alerts    | | Applications|
+|              |              | | (h2q, etc.) |
++--------------+--------------+-+-------------+
+|                                             |
+|                QUIC Transport               |
+|   (streams, reliability, congestion, etc.)  |
+|                                             |
++---------------------------------------------+
+|                                             |
+|            QUIC Packet Protection           |
+|                                             |
++---------------------------------------------+
+~~~~
 
 
-# TLS Usage
+QUIC also relies on TLS 1.3 for authentication and
+negotiation of parameters that are critical to security and performance.
 
-QUIC reserves stream 0 for a TLS connection.  Stream 0 contains a complete TLS
-connection, which includes the TLS record layer.  Other than the definition of a
-QUIC-specific extension (see {{quic_parameters}}), TLS is unmodified for this
-use.  This means that TLS will apply confidentiality and integrity protection to
-its records.  In particular, TLS record protection is what provides
-confidentiality protection for the TLS handshake messages sent by the server.
+Rather than a strict layering, these two protocols are co-dependent: QUIC uses
+the TLS handshake; TLS uses the reliability and ordered delivery provided by
+QUIC streams.
 
-QUIC permits a client to send frames on streams starting from the first packet.
-The initial packet from a client contains a stream frame for stream 0 that
-contains the first TLS handshake messages from the client.  This allows the TLS
-handshake to start with the first packet that a client sends.
+At a high level, there are two main interactions between the TLS and QUIC
+components:
 
-QUIC packets are protected using a scheme that is specific to QUIC, see
-{{packet-protection}}.  Keys are exported from the TLS connection when they
-become available using a TLS exporter (see Section 7.5 of {{!TLS13}} and
-{{key-expansion}}).  After keys are exported from TLS, QUIC manages its own key
-schedule.
+* The TLS component sends and receives messages via the QUIC component, with
+  QUIC providing a reliable stream abstraction to TLS.
+
+* The TLS component provides a series of updates to the QUIC
+  component, including (a) new packet protection keys to install (b)
+  state changes such as handshake completion, the server certificate,
+  etc.
+
+{{schematic}} shows these interactions in more detail, with the QUIC
+packet protection being called out specially.
+
+~~~
++------------+                        +------------+
+|            |<- Handshake Messages ->|            |
+|            |<---- 0-RTT Keys -------|            |
+|            |<--- Handshake Keys-----|            |
+|   QUIC     |<---- 1-RTT Keys ------>|    TLS     |
+|            |<--- Handshake Done ----|            |
++------------+                        +------------+
+ |         ^
+ | Protect | Protected
+ v         | Packet
++------------+
+|   QUIC     |
+|  Packet    |
+| Protection |
++------------+
+~~~
+{: #schematic title="QUIC and TLS Interactions"}
+
+
+
+# Carrying TLS Messages
+
+QUIC carries TLS handshake data in CRYPTO frames, each of which
+consists of a contiguous block of handshake data (identified by an
+offset and length). Those frames are packaged into QUIC packets
+and encrypted under the current TLS encryption level.
+As with TLS over TCP, once TLS handshake data has
+been delivered to QUIC, it is QUIC's responsibility to deliver it
+reliably. Each chunk of data is associated with the then-current TLS
+sending keys, and if QUIC needs to retransmit that data, it MUST use
+the same keys even if TLS has already updated to newer keys.
+
+One important difference between TLS 1.3 records (used with TCP)
+and QUIC CRYPTO frames is that in QUIC multiple frames may appear
+in the same QUIC packet as long as they are associated with the
+same encryption level. For instance, an implementation might
+bundle a Handshake message and an ACK for some Handshake
+data into the same packet.
+
+In general, the rules for which data can appear in packets of which
+encryption level are the same in QUIC as in TLS over TCP:
+
+- Handshake messages MAY appear in packets of any encryption level.
+  [TODO: Alerts]
+- PADDING frames MAY appear in packets of any encryption level.
+- ACK frames MAY appear in packets of any encryption level, but
+  MUST only acknowledge packets which appeared in that encryption
+  level.
+- STREAM frames MAY appear in the 0-RTT and 1-RTT levels.
+- All other frame types MUST only appear at the 1-RTT levels.
 
 
 ## Handshake and Setup Sequence
@@ -439,45 +471,6 @@ Important:
   potential for head-of-line blocking that this implies by sending a copy of the
   STREAM frame that carries the Finished message in multiple packets.  This
   enables immediate server processing for those packets.
-
-
-### Source Address Validation
-
-During the processing of the TLS ClientHello, TLS requests that the transport
-make a decision about whether to request source address validation from the
-client.
-
-An initial TLS ClientHello that resumes a session includes an address validation
-token in the session ticket; this includes all attempts at 0-RTT.  If the client
-does not attempt session resumption, no token will be present.  While processing
-the initial ClientHello, TLS provides QUIC with any token that is present. In
-response, QUIC provides one of three responses:
-
-* proceed with the connection,
-
-* ask for client address validation, or
-
-* abort the connection.
-
-If QUIC requests source address validation, it also provides a new address
-validation token.  TLS includes that along with any information it requires in
-the cookie extension of a TLS HelloRetryRequest message.  In the other cases,
-the connection either proceeds or terminates with a handshake error.
-
-The client echoes the cookie extension in a second ClientHello.  A ClientHello
-that contains a valid cookie extension will always be in response to a
-HelloRetryRequest.  If address validation was requested by QUIC, then this will
-include an address validation token.  TLS makes a second address validation
-request of QUIC, including the value extracted from the cookie extension.  In
-response to this request, QUIC cannot ask for client address validation, it can
-only abort or permit the connection attempt to proceed.
-
-QUIC can provide a new address validation token for use in session resumption at
-any time after the handshake is complete.  Each time a new token is provided TLS
-generates a NewSessionTicket message, with the token included in the ticket.
-
-See {{client-address-validation}} for more details on client address validation.
-
 
 ### Key Ready Events
 
