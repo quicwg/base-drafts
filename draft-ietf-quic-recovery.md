@@ -464,8 +464,11 @@ packets in that space were lost without waiting for timeouts.
 
 This optimization is particularly useful when: 
  * Retransmitting the client’s INITIAL, which must be padded to a full
-   sized packet, so typically has extra space to retransmit a portion
-   of any outstanding 0RTT data.
+   sized packet, so the datagram typically has extra space to retransmit
+   some outstanding 0RTT data.
+ * The server sends 1RTT data soon after the final handshake flight
+   (containing ServerFinished) and can proactively retransmit an empty
+   CRYPTO frame bundled with one or more 1RTT packets.
  * The clients sends 1RTT data soon after the final TLS flight
    (containing the client finished) and can proactively retransmit the
    final client flight with one or more 1RTT packets.
@@ -511,10 +514,10 @@ after processing incoming packets.
 ### Crypto Handshake Data
 
 In order to quickly complete the handshake and avoid spurious
-retransmissions due to handshake alarm timeouts, packets containing
-CRYPTO frames should use a very short ack delay, such as 1ms.  ACK frames
-may be sent immediately when the crypto stack indicates all data for
-that encryption level has been received.
+retransmissions due to handshake alarm timeouts, acknowledging packets
+containing CRYPTO frames should use a very short ack delay, such as 1ms.
+ACK frames may be sent immediately when the crypto stack indicates all
+data for that encryption level has been received.
 
 ### ACK Ranges
 
