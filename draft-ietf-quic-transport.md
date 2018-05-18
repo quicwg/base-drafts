@@ -1395,6 +1395,25 @@ a single packet.
 
 In TLS, the Retry packet type is used to carry the HelloRetryRequest message.
 
+## ECN capability check {#ecn-capability-check}
+
+The capability check makes use of the ACK_ECN frame in section {{ecn-ack-frame}}. Each endpoint performs an ECN capability check in which the first packet, containing the 1st frame [is this a necessary condition, or can this be removed?], SHOULD set the ECN bits in the IP header to either ECT(0) or ECT(1). The specification of the ECT(0) and ECT(1) is as per the guidelines in [ECN experiments](https://www.rfc-editor.org/info/rfc8311). Upon reception of the packet by the opposite peer, an ACK_ECN frame is transmitted back. This ACK_ECN frame indicates how many packets that are marked ECT(0), ECT(1) or CE. 
+
+A retransmitted 1st frame SHOULD also set the ECT codepoint.
+ 
+[ED note. Not full agreement in the design team, an option is that the ECT code point is not set for the retransmitted 1st frame, ECT black holes are still a theoretical possibility even though recent studies have indicated that they are very rare, it is for instance more likely that the 1st packet is dropped due to a UDP black hole] 
+   
+The ACK_ECN frame will, when received, confirm that the path direction supports ECN if the counters show a correct amount of packets received for a valid and expected counter combination.
+ 
+It is expected that QUIC discards duplicate packets early, however if that is not the case **[ED note, have not seen any clear statement in the drafts]**, then it should be verified that the number of ECT marked packets are equal to or larger that the amount of ECT marked packets that have been transmitted. 
+
+ECT marked packets can become remarked as CE along the path between the peers, in such a case the number of CE plus ECT marked packets should match the number of packets that was transmitted with ECT marking.     
+
+[[ Note: the equality has to be evaluated in a way robust to network reordering of IP packets]]
+
+The ECN capability check is deemed successful if the verification above yields a positive result, and then ECN can be used for the given direction. This capability check will verify that one direction of the path between the peers is free from issues with ECN bleaching and that the application does not experience problems with access to the ECN field in the IP header.       
+
+
 
 ## Proof of Source Address Ownership {#address-validation}
 
@@ -1750,6 +1769,28 @@ MAY send a stateless reset in response to any further incoming packets.
 Note that receipt of packets with higher packet numbers from the legitimate peer
 address will trigger another connection migration.  This will cause the
 validation of the address of the spurious migration to be abandoned.
+
+### ECN capability check for Migrated Connection {"ecn-connection-migration}
+
+Connection migration requires that ECN capability is verified again. 
+
+The ECN capability as indicated in section {{ecn-capability-check}} should be repeated when a connection is migrated. This verifies that the endpoints are ECN-capable and that the ECN field is not bleached along the new path.
+There are two unique cases:
+1. ECN capability check successful at initial connection setup
+2. ECN capability check failed at initial connection setup
+
+Case 1 can have different outcomes, either that ECN capability will continue, or that ECN capability is turned off. Case 2 means that ECN capability can be enabled after a connection even though it was disabled at the initial connection setup. 
+The two cases are descibed more in detail below. 
+[ED note.. unsure is a new connection really instantiated at connection migration ?] Connection migration has impact on the number of reported CE marked packets. A new connection state with new congestion control state and ECN counters is instantiated at the sender and receiver. The ECN counters MUST start from zero again.
+
+#### Case 1, ECN capability check successful at initial connection setup
+
+IP packets continue to be transmitted with the applicable ECT code point. One possible issue is that ECN does not work along the new path, either because of ECN bleaching in the network or because of OS network stack issues. This error case will manifest itself in that the ECT and CE counters do not increase as much as they should. The sender detects this and consequently ECN capability is disabled. The trigger condition for a successful ECN capability check is the same as for the intial ECN capability check. 
+
+#### Case 2, ECN capability check failed at initial connection setup
+
+The applicable ECT codepoint is set in the IP packets along the new connection and the ECN capability check as outlined in section 7.x is initiated.
+
 
 
 ### Loss Detection and Congestion Control {#migration-cc}
@@ -2847,6 +2888,56 @@ in the packet containing a second TLS ClientHello.  The complete set of server
 handshake messages (TLS ServerHello through to Finished) might be acknowledged
 by a client in protected packets, because it is certain that the server is able
 to decipher the packet.
+
+
+## ACK_ECN Frame {#ecn-ack-frame}
+
+A QUIC connection MUST keep counters for each ECN codepoint, recording the number of packets that were received with the corresponding ECN codepoint in the IP header. If the header is not readable from the application, the codepoint 00 MUST be assumed. 
+
+The ACK_ECN frame is used by the reeiver to echo the value of these counters back to the sender of these packets. This allows the sender to utilize these counter values for congestion control. The ACK_ECN frame contains all the elements of the ACK frame with the addition of an ECN block appended at the end.
+
+~~~
+     0                   1                   2                   3
+     0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |                     Largest Acknowledged (i)                ...
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |                          ACK Delay (i)                      ...
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |                       ACK Block Count (i)                   ...
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |                          ACK Blocks (*)                     ...
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |                           ECN Block                         ...
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~
+{: #ACN_ECN_FRAME_FORMAT title="ACK_ECN Frame Format"}
+ 
+### ECN Block
+
+The ECN block is described below. The size (i) indicates variable-length encoding, explained in section 8.1 in [QUIC transport] (https://quicwg.github.io/base-drafts/draft-ietf-quic-transport.html). The encoding length for each counter (1, 2, 4 or 8 bytes) should be selected such that all the significant bits are represented.
+~~~
+      0                   1                   2                   3
+      0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |# ECT(0) marked packets (i)                                 ...
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |# ECT(1) marked packets (i)                                 ...
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |# ECN-CE marked packets (i)                                 ...
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~
+{: #ECN-BLOCK title="ECN Block"}
+
+
+### ECN counters
+
+The receiver side should implement three 64-bit counters that are copied to the ECN block when an ACK_ECN frame is generated. 
+* ECT_0 : Initial value = 0, incremented when a packet marked ECT(0) is received
+* ECT_1 : Initial value = 0, incremented when a packet marked ECT(1) is received 
+* CE    : Initial value = 0, incremented when a packet marked CE is received 
+
+Reception of duplicate packets SHOULD NOT increment the counters.
 
 
 ## PATH_CHALLENGE Frame {#frame-path-challenge}
