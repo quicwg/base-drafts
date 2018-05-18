@@ -642,6 +642,9 @@ Pseudocode for OnAckReceived and UpdateRtt follow:
 
     DetectLostPackets(ack.largest_acked_packet)
     SetLossDetectionAlarm()
+    // Detect if ACK_ECN frame indicates ECN marking
+    if (ack is of type ACK_ECN):
+       OnPacketsMarked(ack.ce_counter)
 
 
   UpdateRtt(latest_rtt, ack_delay):
@@ -1041,6 +1044,23 @@ acked_packet from sent_packets.
        congestion_window +=
          kDefaultMss * acked_packet.bytes / congestion_window
 ~~~
+
+### On Packets Marked
+
+      Invoked by an increment in the number of CE marked packets, as indicated by a newly received ACK_ECN frame. The variable ack_ce_counter is used to check if packets are recently CE marked
+~~~
+      OnPacketsMarked(ce_counter):
+        if (end_of_recovery < largest_acked_packet && ce_counter > ack_ce_counter):
+          // Start a new congestion epoch
+          end_of_recovery = largest_sent_packet
+          congestion_window *= kMarkReductionFactor
+          congestion_window = max(congestion_window, kMinimumWindow)
+          ssthresh = congestion_window
+
+        // update ack_ce_counter
+        ack_ce_counter = ce_counter
+~~~
+
 
 ### On Packets Lost
 
