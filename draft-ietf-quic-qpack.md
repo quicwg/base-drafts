@@ -416,7 +416,7 @@ the server informs the client about the processing of the client's header blocks
 and table updates, and the client informs the server about the processing of the
 server's header blocks and table updates.
 
-### Table Size Synchronize
+### Table State Synchronize
 
 After processing a set of instructions on the encoder stream, the decoder will
 emit a Table State Synchronize instruction on the decoder stream.  The
