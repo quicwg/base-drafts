@@ -110,8 +110,9 @@ index in the dynamic table becomes greater than or equal to the Largest
 Reference for all header blocks the decoder has started reading from the stream.
 
 A decoder can permit the possibility of blocked streams by setting
-SETTINGS_QPACK_BLOCKED_STREAMS to a non-zero value.  This setting specifies an
-upper bound on the number of streams which can be blocked.
+SETTINGS_QPACK_BLOCKED_STREAMS to a non-zero value (see {{configuration}}).
+This setting specifies an upper bound on the number of streams which can be
+blocked.
 
 An encoder can decide whether to risk having a stream become blocked. If
 permitted by the value of SETTINGS_QPACK_BLOCKED_STREAMS, compression efficiency
@@ -173,6 +174,18 @@ x (A+)
 
 x ...
 : Indicates that x is variable-length and extends to the end of the region.
+
+#  Configuration
+
+QPACK defines two settings which are included in the HTTP/QUIC SETTINGS frame.
+
+  SETTINGS_HEADER_TABLE_SIZE (0x1):
+  : An integer with a maximum value of 2^30 - 1.  The default value is 4,096
+    bytes.  See (TODO: reference PR#1357) for usage.
+
+  SETTINGS_QPACK_BLOCKED_STREAMS (0x7):
+  : An integer with a maximum value of 2^16 - 1.  The default value is 100.  See
+    {{overview-hol-avoidance}}.
 
 # Wire Format
 
@@ -401,7 +414,7 @@ maximum table size is represented as an integer with a 5-bit prefix (see Section
 The new maximum size MUST be lower than or equal to the limit determined by the
 protocol using QPACK.  A value that exceeds this limit MUST be treated as a
 decoding error.  In HTTP/QUIC, this limit is the value of the
-SETTINGS_HEADER_TABLE_SIZE parameter (see [QUIC-HTTP]) received from the
+SETTINGS_HEADER_TABLE_SIZE parameter (see {{configuration}}) received from the
 decoder.
 
 Reducing the maximum size of the dynamic table can cause entries to be evicted
@@ -748,7 +761,18 @@ TBD.
 
 # IANA Considerations
 
-None.
+This document creates two new settings in the "HTTP/QUIC Settings" registry
+established in {{!QUIC-HTTP}}.
+
+The entries in the following table are registered by this document.
+
+|------------------------------|--------|---------------------------|
+| Setting Name                 | Code   | Specification             |
+| ---------------------------- | :----: | ------------------------- |
+| HEADER_TABLE_SIZE            | 0x1    | {{configuration}}         |
+| QPACK_BLOCKED_STREAMS        | 0x7    | {{configuration}}         |
+| ---------------------------- | ------ | ------------------------- |
+
 
 --- back
 
