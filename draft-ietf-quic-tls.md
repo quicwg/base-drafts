@@ -829,13 +829,12 @@ N_MIN set to 12).
 The size of the packet protection key is determined by the packet protection
 algorithm, see {{pn-encrypt}}.
 
-For any secret S, the AEAD key uses a label of "key", the IV uses a label of
-"iv", packet number encryption uses a label of "pn":
+For any secret S, the AEAD key uses a label of "key", and the IV uses a label of
+"iv":
 
 ~~~
 key = QHKDF-Expand(S, "key", key_length)
 iv = QHKDF-Expand(S, "iv", iv_length)
-pn_key = QHKDF-Expand(S, "pn", pn_key_length)
 ~~~
 
 Separate keys are derived for packet protection by clients and servers.  Each
@@ -847,7 +846,6 @@ derived from 1-RTT secrets as follows:
 ~~~
 client_pp_key<i> = QHKDF-Expand(client_pp_secret<i>, "key", 16)
 client_pp_iv<i>  = QHKDF-Expand(client_pp_secret<i>, "iv", 12)
-client_pp_pn<i>  = QHKDF-Expand(client_pp_secret<i>, "pn", 12)
 ~~~
 
 The QUIC packet protection initially starts with keying material derived from
@@ -933,9 +931,25 @@ to QUIC.
 ## Packet Number Protection {#pn-encrypt}
 
 QUIC packets are protected using a key that is derived from the current set of
-secrets.  The key derived using the "pn" label is used to protect the packet
-number from casual observation.  The packet number protection algorithm depends
-on the negotiated AEAD.
+secrets.  A packet protection key is used to protect the packet number from
+casual observation.  The packet number protection key is derived from the first
+packet protection secret using the label "pn".  This key is produced using the
+same process as the AEAD key and IV, but the value is not updated with each key
+update ({{key-update}}).
+
+~~~
+pn_key = QHKDF-Expand(pp_secret<0>, "pn", pn_key_length)
+~~~
+
+That is, for the algorithms defined in this document, the packet protection key
+is determined to be:
+
+~~~
+client_pn_key  = QHKDF-Expand(client_pp_secret<0>, "pn", 16)
+server_pn_key  = QHKDF-Expand(server_pp_secret<0>, "pn", 16)
+~~~
+
+The packet number protection algorithm depends on the negotiated AEAD.
 
 Packet number protection is applied after packet protection is applied (see
 {{aead}}).  The ciphertext of the packet is sampled and used as input to an
@@ -952,9 +966,14 @@ sample_offset = min(1 + connection_id_length + 4,
 sample = packet[sample_offset..sample_offset+sample_length]
 ```
 
-To ensure that this process does not sample the packet number, packet number
-protection algorithms MUST NOT sample more ciphertext than the minimum
-expansion of the corresponding AEAD.
+To ensure that this process does not sample the packet number and key phase,
+packet number protection algorithms MUST NOT sample more ciphertext than the
+minimum expansion of the corresponding AEAD.
+
+Packet number protection is applied to the packet number encoded as described
+in Section 4.8 of {{QUIC-TRANSPORT}}. Since the length of the packet number is
+stored in the first octet of the encoded packet number, it may be necessary to
+progressively decrypt the packet number.
 
 Packet number protection is applied to the packet number encoded as described
 in Section 4.8 of {{QUIC-TRANSPORT}}. Since the length of the packet number is

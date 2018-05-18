@@ -385,11 +385,11 @@ See {{packet-coalesce}} for more details.
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+
-|0|K|1|1|0|R R R|
+|0|0|1|1|0|R R R|
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                Destination Connection ID (0..144)           ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                      Packet Number (8/16/32)                ...
+|K|                    Packet Number (7/15/31)                ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                     Protected Payload (*)                   ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -403,11 +403,10 @@ Header Form:
 
 : The most significant bit (0x80) of octet 0 is set to 0 for the short header.
 
-Key Phase Bit:
+Second Bit:
 
-: The second bit (0x40) of octet 0 indicates the key phase, which allows a
-  recipient of a packet to identify the packet protection keys that are used to
-  protect the packet.  See {{QUIC-TLS}} for details.
+: The second bit (0x40) is reserved.  Endpoints MUST set this value to zero and
+  ignore any non-zero value unless a use for this bit has been negotiated.
 
 \[\[Editor's Note: this section should be removed and the bit definitions
 changed before this draft goes to the IESG.]]
@@ -446,12 +445,19 @@ Destination Connection ID:
 : The Destination Connection ID is a connection ID that is chosen by the
   intended recipient of the packet.  See {{connection-id}} for more details.
 
+Key Phase Bit (K):
+
+: The most significant octet of the packet number includes the key phase, which
+  allows a recipient of a packet to identify the packet protection keys that are
+  used to protect the packet.  See {{QUIC-TLS}} for details.
+
 Packet Number:
 
-: The packet number field is 1, 2, or 4 octets long. The packet number has
-confidentiality protection separate from packet protection, as described in
-Section 5.6 of {{QUIC-TLS}}. The length of the packet number field is encoded
-in the plaintext packet number. See {{packet-numbers}} for details.
+: The packet number field is the remainder of a 1, 2, or 4 octet field. The
+  packet number has confidentiality protection separate from packet protection,
+  as described in Section 5.6 of {{QUIC-TLS}}. The length of the packet number
+  field is encoded in the plaintext packet number. See {{packet-numbers}} for
+  details.
 
 Protected Payload:
 
@@ -776,34 +782,47 @@ Reset ({{stateless-reset}}) in response to further packets that it receives.
 
 In the QUIC long and short packet headers, the number of bits required to
 represent the packet number are reduced by including only a variable number of
-the least significant bits of the packet number.  One or two of the most
-significant bits of the first octet determine how many bits of the packet
-number are provided, as shown in {{pn-encodings}}.
+the least significant bits of the packet number.  In the long header format, one
+or two of the most significant bits of the first octet determine how many bits
+of the packet number are provided, as shown in {{long-pn-encodings}}.
 
-| First octet pattern | Encoded Length | Bits Present |
-|:--------------------|:---------------|:-------------|
-| 0b0xxxxxxx          | 1 octet        | 7            |
-| 0b10xxxxxx          | 2              | 14           |
-| 0b11xxxxxx          | 4              | 30           |
-{: #pn-encodings title="Packet Number Encodings for Packet Headers"}
+| First Octet Pattern | Encoded Length | Bits For PN |
+|:--------------------|:---------------|:------------|
+| 0xxxxxxx            | 8 bits         | 7           |
+| 10xxxxxx            | 16 bits        | 14          |
+| 11xxxxxx            | 32 bits        | 30          |
+{: #long-pn-encodings title="Long Header Packet Number Encodings"}
 
-Note that these encodings are similar to those in {{integer-encoding}}, but
-use different values.
+The short header format, the first bit of the encoding is reserved for the
+KEY_PHASE bit (see Section 6 of {{QUIC-TLS}}).  The remainder of that octet uses
+the same prefix as that used for the long header packet number encoding.  The
+result is that one fewer bit from the packet number can be included, as shown in
+{{short-pn-encodings}}.
 
-The encoded packet number is protected as described in Section 5.6
-{{QUIC-TLS}}. Protection of the packet number is removed prior to recovering
-the full packet number. The full packet number is reconstructed at the
-receiver based on the number of significant bits present, the content of those
-bits, and the largest packet number received on a successfully authenticated
-packet. Recovering the full packet number is necessary to successfully remove
-packet protection.
+| First Octet Pattern | Encoded Length | Bits For PN |
+|:--------------------|:---------------|:------------|
+| K0xxxxxx            | 8 bits         | 6           |
+| K10xxxxx            | 16 bits        | 13          |
+| K11xxxxx            | 32 bits        | 29          |
+{: #short-pn-encodings title="Short Header Packet Number Encodings"}
+
+Note that these encodings are superficially similar to those in
+{{integer-encoding}}, but use different prefixes.
+
+The encoded packet number and KEY_PHASE (if present) is protected as described
+in Section 5.6 {{QUIC-TLS}}. Protection of the packet number is removed prior to
+recovering the full packet number. The full packet number is reconstructed at
+the receiver based on the number of significant bits present, the content of
+those bits, and the largest packet number received on a successfully
+authenticated packet. Recovering the full packet number is necessary to
+successfully remove packet protection.
 
 Once packet number protection is removed, the packet number is decoded by
 finding the packet number value that is closest to the next expected packet.
 The next expected packet is the highest received packet number plus one.  For
 example, if the highest successfully authenticated packet had a packet number of
 0xaa82f30e, then a packet containing a 14-bit value of 0x1f94 will be decoded as
-0xaa831f94.
+0xaa831f94; the same value encoded on 13 bits will be decoded as 0xaa82ff94.
 
 The sender MUST use a packet number size able to represent more than twice as
 large a range than the difference between the largest acknowledged packet and
@@ -819,8 +838,8 @@ including the new packet.
 
 For example, if an endpoint has received an acknowledgment for packet 0x6afa2f,
 sending a packet with a number of 0x6b2d79 requires a packet number encoding
-with 14 bits or more; whereas the 30-bit packet number encoding is needed to
-send a packet with a number of 0x6bc107.
+with 13 bits or more; whereas the 29- or 30-bit packet number encoding is needed
+to send a packet with a number of 0x6bc107.
 
 A Version Negotiation packet ({{packet-version}}) does not include a packet
 number.  The Retry packet ({{packet-retry}}) has special rules for populating
