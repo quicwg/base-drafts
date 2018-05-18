@@ -2171,13 +2171,6 @@ connection that is reset by revealing the Stateless Reset Token cannot be reused
 for new connections at the same instance without first changing to use a
 different static key or instance identifier.
 
-Any set of instances that share a static key for the purposes of stateless reset
-MUST allocate connection IDs from the same space without reusing connection IDs
-as long as the key is valid.  If instances that share a stateless reset key
-allow connections with the same connection ID to be created, then the stateless
-reset token for one connection could be used to terminate any connection that
-has the same connection ID.
-
 Note that Stateless Reset messages do not have any cryptographic protection.
 
 
