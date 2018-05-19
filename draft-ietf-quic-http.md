@@ -530,7 +530,7 @@ use server push until it receives a MAX_PUSH_ID frame.  Only servers can push;
 if a server receives a client-initiated push stream, this MUST be treated as a
 stream error of type HTTP_PUSH_LIMIT_EXCEEDED.
 
-A push stream is indicated by a stream type of `0x80`, followed by the Push ID
+A push stream is indicated by a stream type of `0x50`, followed by the Push ID
 of the promise that it fulfills, encoded as a variable-length integer.
 
 ~~~~~~~~~~ drawing
@@ -1625,6 +1625,8 @@ The entries in the following table are registered by this document.
 | HTTP_PUSH_LIMIT_EXCEEDED            | 0x000B     | Maximum Push ID exceeded                 | {{http-error-codes}}   |
 | HTTP_DUPLICATE_PUSH                 | 0x000C     | Push ID was fulfilled multiple times     | {{http-error-codes}}   |
 | HTTP_MALFORMED_FRAME                | 0x01XX     | Error in frame formatting or use         | {{http-error-codes}}   |
+| HTTP_UNKNOWN_STREAM_TYPE            | 0x0D       | Unknown unidirectional stream type       | {{http-error-codes}}   |
+| HTTP_TOO_CONTROLLING                | 0x0E       | Multiple control streams                 | {{http-error-codes}}   |
 | ----------------------------------- | ---------- | ---------------------------------------- | ---------------------- |
 <<<<<<< HEAD
 =======
@@ -1655,7 +1657,7 @@ The entries in the following table are registered by this document.
 | Stream Type      | Code   | Specification              |
 | ---------------- | :----: | -------------------------- |
 | Control Stream   | 0x43   | {{control-streams}}        |
-| Push Stream      | 0x80   | {{server-push}}            |
+| Push Stream      | 0x50   | {{server-push}}            |
 | ---------------- | ------ | -------------------------- |
 >>>>>>> 493a2bb... WIP: Unidirectional stream headers
 
