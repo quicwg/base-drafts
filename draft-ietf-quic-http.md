@@ -510,7 +510,8 @@ Each side MUST initiate a single control stream at the beginning of the
 connection and send its SETTINGS frame as the first frame on this stream.  Only
 one control stream is permitted; receipt of a second stream which claims to be a
 control stream MUST be treated as a connection error of type
-HTTP_TOO_CONTROLLING.
+HTTP_TOO_CONTROLLING.  If the control stream is closed at any point, this MUST
+be treated as a connection error of type HTTP_CLOSED_CRITICAL_STREAM.
 
 Since most connection-level concerns will be managed by QUIC, the primary use of
 the control streams will be for the SETTINGS frame when the connection opens and
@@ -1185,6 +1186,9 @@ HTTP_UNKNOWN_STREAM_TYPE (0x0D):
 HTTP_TOO_CONTROLLING (0x0E):
 : More than one control stream was opened by the peer.
 
+HTTP_CLOSED_CRITICAL_STREAM (0x0F):
+: A stream required by the connection was closed or reset.
+
 HTTP_GENERAL_PROTOCOL_ERROR (0x00FF):
 : Peer violated protocol requirements in a way which doesn't match a more
   specific error code, or endpoint declines to use the more specific error code.
@@ -1627,6 +1631,7 @@ The entries in the following table are registered by this document.
 | HTTP_MALFORMED_FRAME                | 0x01XX     | Error in frame formatting or use         | {{http-error-codes}}   |
 | HTTP_UNKNOWN_STREAM_TYPE            | 0x0D       | Unknown unidirectional stream type       | {{http-error-codes}}   |
 | HTTP_TOO_CONTROLLING                | 0x0E       | Multiple control streams                 | {{http-error-codes}}   |
+| HTTP_CLOSED_CRITICAL_STREAM         | 0x0F       | Critical stream was closed               | {{http-error-codes}}   |
 | ----------------------------------- | ---------- | ---------------------------------------- | ---------------------- |
 <<<<<<< HEAD
 =======
