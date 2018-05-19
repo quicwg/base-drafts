@@ -761,6 +761,8 @@ TBD.
 
 # IANA Considerations
 
+## Settings Registration
+
 This document creates two new settings in the "HTTP/QUIC Settings" registry
 established in {{!QUIC-HTTP}}.
 
