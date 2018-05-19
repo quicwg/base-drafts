@@ -943,6 +943,19 @@ The entries in the following table are registered by this document.
 | QPACK_BLOCKED_STREAMS        | 0x7    | {{configuration}}         |
 | ---------------------------- | ------ | ------------------------- |
 
+## Stream Type Registration
+
+This document creates two new settings in the "HTTP/QUIC Stream Type" registry
+established in {{!QUIC-HTTP}}.
+
+The entries in the following table are registered by this document.
+
+|------------------------------|--------|---------------------------|
+| Stream Type                  | Code   | Specification             |
+| ---------------------------- | :----: | ------------------------- |
+| QPACK Encoder Stream         | 0x48   | {{wire-format}}           |
+| QPACK Decoder Stream         | 0x68   | {{wire-format}}           |
+| ---------------------------- | ------ | ------------------------- |
 
 --- back
 
