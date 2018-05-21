@@ -464,37 +464,49 @@ streams emit the headers for an HTTP request or response.
 
 ### Header Data Prefix {#absolute-index}
 
-Header data is prefixed with two integers, `Largest Reference` and `Base Index`.
+Header data is prefixed with two integers, `Base Index` and `Largest Reference`.
 
 ~~~~~~~~~~  drawing
   0   1   2   3   4   5   6   7
 +---+---+---+---+---+---+---+---+
-|     Largest Reference (8+)    |
+|         Base Index (8+)       |
 +---+---------------------------+
-| S |   Delta Base Index (7+)   |
+| S |  Delta Largest Ref (7+)   |
 +---+---------------------------+
 |      Compressed Headers     ...
 +-------------------------------+
 ~~~~~~~~~~
 {:#fig-base-index title="Frame Payload"}
 
+`Base Index` is used to resolve references in the dynamic table as described in
+{{indexing}}.
+
 `Largest Reference` identifies the largest absolute dynamic index referenced in
 the block.  Blocking decoders use the Largest Reference to determine when it is
 safe to process the rest of the block.
 
-`Base Index` is used to resolve references in the dynamic table as described in
-{{indexing}}.  To save space, Base Index is encoded relative to Largest
-Reference using a one-bit sign flag.
+To save space, Largest Reference is encoded as a relative to the Base Index
+using a one-bit sign and the `Delta Largest Ref` value.  A sign bit set to 0
+indicates that the Largest Reference has a greater absolute index than the Base
+Index; the value of Delta Largest Ref is added to the Base Index to determine
+the absolute Largest Reference.  A sign bit of 1 indicates that the Largest
+Reference is smaller than the Base Index.
 
-    baseIndex = largestReference + deltaBaseIndex
+    largestReference = baseIndex + sign * deltaLargestRef
 
-If the encoder inserted entries to the table while the encoding the block,
-Largest Reference will be greater than Base Index, so deltaBaseIndex will be
-negative and encoded with S=1.  If the block did not reference the most recent
-entry in the table and did not insert any new entries, Largest Reference will be
-less than Base Index, so deltaBaseIndex will be positive and encoded with S=0.
-When Largest Reference and Base Index are equal, deltaBaseIndex is 0 and encoded
-with S=0.
+Thus, if the encoder inserted entries to the table while the encoding the header
+block, Largest Reference will be greater than Base Index.  If the header block
+did not reference the most recent entry in the table and did not insert any new
+entries, Largest Reference will be less than Base Index, so deltaLargestRef will
+be negative and the sign bit set to 1.
+
+When Base Index and Largest Reference are equal, the Largest Reference is
+encoded with a zero sign bit.  A sign bit set to 1 when the Largest Reference is
+0 MUST be treated as a decoder error.
+
+A header block that does not reference the dynamic table can use any value for
+Base Index and Largest Reference; sending zero values for both fields is the
+most efficient.
 
 
 ### Instructions
@@ -622,7 +634,7 @@ represented as an 8-bit prefix string literal.
 
 # Encoding Strategies
 
-## Single pass encoding
+## Single Pass Encoding
 
 An encoder making a single pass over a list of headers must choose Base Index
 before knowing Largest Reference.  When trying to reference a header inserted to
