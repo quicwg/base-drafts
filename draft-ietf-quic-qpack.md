@@ -71,7 +71,7 @@ balance between resilience against head-of-line blocking and optimal compression
 ratio.  The design goals are to closely approach the compression ratio of HPACK
 with substantially less head-of-line blocking under the same loss conditions.
 
-## Header Tables
+# Header Tables
 
 Like HPACK, QPACK uses two tables for associating header fields to indexes.  The
 static table (see {{table-static}}) is predefined and contains common header
@@ -79,17 +79,18 @@ fields (some of them with an empty value).  The dynamic table (see
 {{table-dynamic}}) built up over the course of the connection and can be used by
 the encoder to index header fields repeated in the encoded header lists.
 
-These two tables are indexed in a different manner than in HPACK; see
-{{indexing}} for more details.
+Unlike in HPACK, entries in the QPACK static and dynamic tables are addressed
+separately.  The following sections describe how entries in each table is
+addressed.
 
-### Static Table {#table-static}
+## Static Table {#table-static}
 
-The static table consists of a predefined static list of header fields.  Its
-entries are defined in Appendix A of {{!RFC7541}}. Note that because HPACK did
-not use zero-based references, there is no value at index zero of the static
-table.
+The static table consists of a predefined static list of header fields, each of
+which has a fixed index over time.  Its entries are defined in Appendix A of
+{{!RFC7541}}. Note that because HPACK did not use zero-based references, there
+is no value at index zero of the static table.
 
-### Dynamic Table {#table-dynamic}
+## Dynamic Table {#table-dynamic}
 
 The dynamic table consists of a list of header fields maintained in first-in,
 first-out order.  The dynamic table is initially empty.  Entries are added by
@@ -131,16 +132,16 @@ the dynamic table is less than or equal to the maximum size.
 This mechanism can be used to completely clear entries from the dynamic table by
 setting a maximum size of 0, which can subsequently be restored.
 
-### Indexing
+### Absolute and Relative Indexing {#indexing}
 
-Entries in the QPACK static and dynamic tables are addressed separately.
+Each entry possesses both an absolute index which is fixed for the lifetime of
+that entry and a relative index which changes over time based on the context of
+the reference. The first entry inserted has an absolute index of "1"; indices
+increase sequentially with each insertion.
 
-While entries in the static table have the same indices at all times, entries
-are inserted into the dynamic table over time.  Each entry possesses both an
-absolute index which is fixed for the lifetime of that entry and a relative
-index which changes over time based on the context of the reference. The first
-entry inserted has an absolute index of "1"; indices increase sequentially with
-each insertion.
+The relative index begins at zero and increases in the opposite direction from
+the absolute index.  Determining which entry has a relative index of "0" depends
+on the context of the reference.
 
 On the control stream, a relative index of "0" always refers to the most
 recently inserted value in the dynamic table.  Note that this means the
@@ -165,9 +166,9 @@ d = count of entries dropped
 Because frames from request streams can be delivered out of order with
 instructions on the control stream, relative indices are relative to the Base
 Index at the beginning of the header block (see {{absolute-index}}). The Base
-Index is the absolute index of the entry which has the relative index of zero
-when interpreting the frame.  The relative indices of entries do not change
-while interpreting headers on a request or push stream.
+Index is an absolute index. When interpreting the rest of the frame, the entry
+identified by Base Index has a relative index of zero.  The relative indices of
+entries do not change while interpreting headers on a request or push stream.
 
 ~~~~~ drawing
              Base Index
@@ -184,9 +185,14 @@ d = count of entries dropped
 ~~~~~
 {: title="Example Dynamic Table Indexing - Request Stream"}
 
-Entries with an absolute index greater than a frame's Base Index can be
-referenced using specific Post-Base instructions.  The relative indices of
-Post-Base references count up from Base Index.
+### Post-Base Indexing
+
+A header block on the request stream can reference entries added after the entry
+identified by the Base Index. This allows an encoder to process a header block
+in a single pass and include references to entries added while processing this
+(or other) header blocks. Newly added entries are referenced using Post-Base
+instructions. Indices for Post-Base instructions increase in the same direction
+as absolute indices, but the zero value is one higher than the Base Index.
 
 ~~~~~ drawing
              Base Index
