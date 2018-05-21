@@ -4253,7 +4253,12 @@ Issue and pull request numbers are listed with a leading octothorp.
 
 ## Since draft-ietf-quic-transport-11
 
-- Enable server to transition connections to a preferred address (#560,#1251).
+- Enable server to transition connections to a preferred address (#560,#1251)
+- Packet numbers are encrypted (#1174, #1043, #1048, #1034, #850, #990, #734,
+  #1079)
+- Packet numbers use a variable-length encoding (#989, #1334)
+- Servers can set a preferred address (#560, #1251)
+- STREAM frames can now be empty (#1350)
 
 ## Since draft-ietf-quic-transport-10
 

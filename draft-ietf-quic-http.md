@@ -1490,6 +1490,11 @@ his employment there.
 > **RFC Editor's Note:**  Please remove this section prior to publication of a
 > final version of this document.
 
+## Since draft-ietf-quic-http-11
+
+- Moved QPACK table updates and acknowledgments to dedicated streams (#1121,
+  #1122, #1238)
+
 ## Since draft-ietf-quic-http-10
 
 - Settings need to be remembered when attempting and accepting 0-RTT (#1157,
