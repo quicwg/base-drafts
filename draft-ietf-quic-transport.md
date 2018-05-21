@@ -1761,7 +1761,7 @@ Note that receipt of packets with higher packet numbers from the legitimate peer
 address will trigger another connection migration.  This will cause the
 validation of the address of the spurious migration to be abandoned.
 
-### ECN capability check for Migrated Connection {"ecn-connection-migration}
+### ECN capability check for Migrated Connection {#ecn-connection-migration}
 
 Connection migration requires that the paths ECN capability is verified again. The ECN capability as indicated in section {{ecn-capability-check}} should be repeated when a connection is migrated. This verifies that the endpoints are ECN-capable and that the ECN field is not bleached along the new path.
 
