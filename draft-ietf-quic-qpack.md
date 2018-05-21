@@ -520,18 +520,22 @@ the static (S=1) or dynamic (S=0) table. Finally, the relative index of the
 matching header field is represented as an integer with a 6-bit prefix (see
 Section 5.1 of [RFC7541]).
 
-~~~~~~~~~~ drawing
-  0   1   2   3   4   5   6   7
-+---+---+---+---+---+---+---+---+
-| 0 | 1 | 0 | 0 |  Index (4+)   |
-+---+---+-----------------------+
-~~~~~~~~~~
-{: title="Indexed Header Field"}
+
+#### Indexed Header Field With Post-Base Index
 
 If the entry is in the dynamic table with an absolute index greater than Base
 Index, the representation starts with the '0100' 4-bit pattern, followed by the
 post-base index (see {{indexing}}) of the matching header field, represented as
 an integer with a 4-bit prefix (see Section 5.1 of [RFC7541]).
+
+~~~~~~~~~~ drawing
+  0   1   2   3   4   5   6   7
++---+---+---+---+---+---+---+---+
+| 0 | 1 | 0 | 0 |  Index (4+)   |
++---+---+---+---+---------------+
+~~~~~~~~~~
+{: title="Indexed Header Field with Post-Base Index"}
+
 
 #### Literal Header Field With Name Reference
 
@@ -558,7 +562,7 @@ values that are not to be put at risk by compressing them (see Section 7.1 of
      0   1   2   3   4   5   6   7
    +---+---+---+---+---+---+---+---+
    | 0 | 0 | N | S |Name Index (4+)|
-   +---+---+-----------------------+
+   +---+---+---+---+---------------+
    | H |     Value Length (7+)     |
    +---+---------------------------+
    | Value String (Length octets)  |
@@ -572,11 +576,17 @@ relative index of that entry, which is represented as an integer with a 4-bit
 prefix (see Section 5.1 of [RFC7541]). The `S` bit indicates whether the
 reference is to the static (S=1) or dynamic (S=0) table.
 
+#### Literal Header Field With Post-Base Name Reference
+
+For entries in the dynamic table with an absolute index greater than Base Index,
+the header field name is represented using the post-base index of that entry
+(see {{indexing}}) encoded as an integer with a 3-bit prefix.
+
 ~~~~~~~~~~ drawing
      0   1   2   3   4   5   6   7
    +---+---+---+---+---+---+---+---+
    | 0 | 1 | 0 | 1 | N |NameIdx(3+)|
-   +---+---+-----------------------+
+   +---+---+---+---+---+-----------+
    | H |     Value Length (7+)     |
    +---+---------------------------+
    | Value String (Length octets)  |
@@ -584,9 +594,6 @@ reference is to the static (S=1) or dynamic (S=0) table.
 ~~~~~~~~~~
 {: title="Literal Header Field With Post-Base Name Reference"}
 
-For entries in the dynamic table with an absolute index greater than Base Index,
-the header field name is represented using the post-base index of that entry
-(see {{indexing}}) encoded as an integer with a 3-bit prefix.
 
 #### Literal Header Field Without Name Reference
 
@@ -610,7 +617,7 @@ represented as an 8-bit prefix string literal.
      0   1   2   3   4   5   6   7
    +---+---+---+---+---+---+---+---+
    | 0 | 1 | 1 | N | H |NameLen(3+)|
-   +---+---+---+-------------------+
+   +---+---+---+---+---+-----------+
    |  Name String (Length octets)  |
    +---+---------------------------+
    | H |     Value Length (7+)     |
@@ -619,6 +626,7 @@ represented as an 8-bit prefix string literal.
    +-------------------------------+
 ~~~~~~~~~~
 {: title="Literal Header Field Without Name Reference"}
+
 
 # Encoding Strategies
 
