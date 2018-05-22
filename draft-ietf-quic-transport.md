@@ -567,7 +567,7 @@ Connection ID in the Retry packet.  Changing Destination Connection ID also
 results in a change to the keys used to protect the Initial packet.
 
 The client populates the Source Connection ID field with a value of its choosing
-and sets the low bits of the ConnID Len field to match.
+and sets the SCIL field to match.
 
 The first Initial packet that is sent by a client contains a packet number of 0.
 All subsequent packets contain a packet number that is incremented by at least
