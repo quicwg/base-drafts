@@ -769,3 +769,19 @@ those authors is gratefully acknowledged, as well as ideas from:
 * Ian Swett
 
 * Dmitri Tikhonov
+
+
+# Change Log
+
+> **RFC Editor's Note:**  Please remove this section prior to publication of a
+> final version of this document.
+
+## Since draft-ietf-quic-qcram-00
+
+- Separate instruction sets for table updates and header blocks (#1235, #1142,
+  #1141)
+- Reworked indexing scheme (#1176, #1145, #1136, #1130, #1125, #1314)
+- Added mechanisms that support one-pass encoding (#1138, #1320)
+- Added a setting to control the number of blocked decoders (#238, #1140, #1143)
+- Moved table updates and acknowledgments to dedicated streams (#1121, #1122,
+  #1238)
