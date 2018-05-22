@@ -2822,7 +2822,7 @@ ACK Block (repeated):
 
 ACK Frames MAY be sent when all packets to be acknowledge had an IP header with
 the ECN field marked as Not-ECT. If any packets where marked as ECT or ECN-CE
-the ACK_ECN Frame {{frame-ack-ECN}} MUST be used instead. 
+the ACK_ECN Frame ({{frame-ack-ECN}}) MUST be used instead. 
 
 Implementations MUST NOT generate packets that only contain ACK frames in
 response to packets which only contain ACK frames. However, they MUST
@@ -2902,7 +2902,7 @@ the IP header ECN field was marked as ECT(0), ECT(1) or ECN-CE when received.
 The ACK_ECN frame is used by the reeiver to echo the value of these counters 
 back to the sender of these packets. This allows the sender to utilize these 
 counter values for congestion control. The ACK_ECN frame contains all the 
-elements of the ACK frame {{frame-ack}} with the addition of an ECN block 
+elements of the ACK frame ({{frame-ack}}) with the addition of an ECN block 
 appended at the end.
 
 ~~~
@@ -2945,7 +2945,8 @@ significant bits are represented.
 
 ### ECN counters
 
-The receiver side should implement three 64-bit counters that are copied to the ECN block when an ACK_ECN frame is generated. 
+The receiver side should implement three 64-bit counters that are copied to the ECN block when an ACK_ECN frame is generated.
+ 
 * ECT_0 : Initial value = 0, incremented when a packet marked ECT(0) is received
 * ECT_1 : Initial value = 0, incremented when a packet marked ECT(1) is received 
 * CE    : Initial value = 0, incremented when a packet marked CE is received 
