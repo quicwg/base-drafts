@@ -640,6 +640,11 @@ A Handshake packet uses long headers with a type value of 0x7D.  It is
 used to carry acknowledgments and cryptographic handshake messages from the
 server and client.
 
+A server sends its cryptographic handshake in one or more Handshake packets in
+response to an Initial packet if it does not send a Retry packet.  Once a client
+has received a Handshake packet from a server, it uses Handshake packets to send
+subsequent cryptographic handshake messages and acknowledgments to the server.
+
 The Destination Connection ID field in a Handshake packet contains a connection
 ID that is chosen by the recipient of the packet; the Source Connection ID
 includes the connection ID that the sender of the packet wishes to use (see
