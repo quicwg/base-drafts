@@ -1785,7 +1785,7 @@ IP packets continue to be transmitted with the applicable ECT code point. One po
 
 The applicable ECT codepoint is set in the IP packets sent on the new path during and after the path migration and the ECN capability check as defined in {{ecn-capability-check}} is performed. However, some special considerations are needed due to the in mid connection check. The packet number for the first packet sent after the connection migration occured and the latest received, if ever, ECT(0), ECT(1) and ECN-CE counters need to be stored for later comparision. If no ECN counters have been received, then they are assumed to be zero. The ECN related counters may be non-zero if the connection had a ECN capable path for a period that then was migrated or stopped working. 
 
-In the sub-sequent ACK or ACK_ECN received, the endpoint needs to track which packets that are acknolwedged. Only packets sent after connection migration are included in the number of ACKed packets and compared to the difference in the ECN counters received in the ACK compared to the locally stored state. 
+In the sub-sequent ACK or ACK_ECN received, the endpoint needs to track which packets that are acknowledged. Only packets sent after connection migration are included in the number of ACKed packets and compared to the difference in the ECN counters received in the ACK compared to the locally stored state. 
 
 Note: This comparision is based on the assumption that no ECT packets where sent for at least the maximum packet life time in the network prior to the connection migration. This to avoid the risk that packets sent over the old path could result in a change of the ECN counters. 
 
