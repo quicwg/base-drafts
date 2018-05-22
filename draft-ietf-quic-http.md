@@ -506,8 +506,8 @@ the peer's discretion.
 
 ###  Control Streams
 
-The control stream is indicated by a stream type of `0x43`.  Data on this stream
-consists of HTTP frames, as defined in {{frames}}.
+The control stream is indicated by a stream type of `0x43` (ASCII 'C').  Data on
+this stream consists of HTTP frames, as defined in {{frames}}.
 
 Each side MUST initiate a single control stream at the beginning of the
 connection and send its SETTINGS frame as the first frame on this stream.  Only
@@ -530,8 +530,9 @@ use server push until it receives a MAX_PUSH_ID frame.  Only servers can push;
 if a server receives a client-initiated push stream, this MUST be treated as a
 stream error of type HTTP_WRONG_STREAM_DIRECTION.
 
-A push stream is indicated by a stream type of `0x50`, followed by the Push ID
-of the promise that it fulfills, encoded as a variable-length integer.
+A push stream is indicated by a stream type of `0x50` (ASCII 'P'), followed by
+the Push ID of the promise that it fulfills, encoded as a variable-length
+integer.
 
 ~~~~~~~~~~ drawing
  0                   1                   2                   3

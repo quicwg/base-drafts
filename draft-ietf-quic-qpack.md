@@ -359,12 +359,13 @@ QPACK defines two settings which are included in the HTTP/QUIC SETTINGS frame.
 QPACK instructions occur in three locations, each of which uses a separate
 instruction space:
 
- - The encoder stream is a unidirectional stream of type `0x48` which carries
-   table updates from encoder to decoder. Instructions on this stream modify the
-   dynamic table state without generating output to any particular request.
- - The decoder stream is a unidirectional stream of type `0x68` which carries
-   acknowledgements of table modifications and header processing from decoder to
-   encoder.
+ - The encoder stream is a unidirectional stream of type `0x48` (ASCII 'H')
+   which carries table updates from encoder to decoder. Instructions on this
+   stream modify the dynamic table state without generating output to any
+   particular request.
+ - The decoder stream is a unidirectional stream of type `0x68` (ASCII 'h')
+   which carries acknowledgements of table modifications and header processing
+   from decoder to encoder.
  - Finally, the contents of HEADERS and PUSH_PROMISE frames on request streams
    and push streams reference the QPACK table state.
 
