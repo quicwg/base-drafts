@@ -776,7 +776,7 @@ those authors is gratefully acknowledged, as well as ideas from:
 > **RFC Editor's Note:**  Please remove this section prior to publication of a
 > final version of this document.
 
-## Since draft-ietf-quic-qpack-00
+## Since draft-ietf-quic-qcram-00
 
 - Separate instruction sets for table updates and header blocks (#1235, #1142,
   #1141)
