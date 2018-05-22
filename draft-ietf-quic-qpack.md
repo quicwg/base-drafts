@@ -359,13 +359,14 @@ QPACK defines two settings which are included in the HTTP/QUIC SETTINGS frame.
 QPACK instructions occur in three locations, each of which uses a separate
 instruction space:
 
- - Table updates are carried by a unidirectional stream of type `0x48` from
-   encoder to decoder. Instructions on this stream modify the dynamic table
-   state without generating output to any particular request.
- - Acknowledgements of table modifications and header processing are carried by
-   a unidirectional stream of type `0x68` from decoder to encoder.
+ - The encoder stream is a unidirectional stream of type `0x48` which carries
+   table updates from encoder to decoder. Instructions on this stream modify the
+   dynamic table state without generating output to any particular request.
+ - The decoder stream is a unidirectional stream of type `0x68` which carries
+   acknowledgements of table modifications and header processing from decoder to
+   encoder.
  - Finally, the contents of HEADERS and PUSH_PROMISE frames on request streams
-   reference the QPACK table state.
+   and push streams reference the QPACK table state.
 
 There MUST be exactly one of each unidirectional stream type in each direction.
 Receipt of a second instance of either stream type MUST be treated as a
@@ -375,8 +376,8 @@ HTTP_CLOSED_CRITICAL_STREAM.
 
 This section describes the instructions which are possible on each stream type.
 
-All table updates occur on the encoder stream.  Request streams only carry
-header blocks that do not modify the state of the table.
+All table updates occur on the encoder stream.  Request streams and push streams
+only carry header blocks that do not modify the state of the table.
 
 ## Primitives
 
