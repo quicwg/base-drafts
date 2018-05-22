@@ -106,8 +106,8 @@ is larger than the maximum size; an attempt to add an entry larger than the
 maximum size causes the table to be emptied of all existing entries and results
 in an empty table.
 
-A new entry can reference the name of an entry in the dynamic table that will be
-evicted when adding this new entry into the dynamic table.  Implementations are
+A new entry can reference an entry in the dynamic table that will be evicted
+when adding this new entry into the dynamic table.  Implementations are
 cautioned to avoid deleting the referenced name if the referenced entry is
 evicted from the dynamic table prior to inserting the new entry.
 
@@ -145,15 +145,15 @@ on the context of the reference.
 
 On the control stream, a relative index of "0" always refers to the most
 recently inserted value in the dynamic table.  Note that this means the
-entry referenced by a given relative index can change while interpreting
-a HEADERS frame as new entries are inserted.
+entry referenced by a given relative index will change while interpreting
+instructions on the encoder stream.
 
 ~~~~~ drawing
-    +---+---------------+-------+
-    | n |      ...      | d + 1 |  Absolute Index
-    + - +---------------+   -   +
-    | 0 |      ...      | n-d-1 |  Relative Index
-    +---+---------------+-------+
+    +---+---------------+-----------+
+    | n |      ...      |   d + 1   |  Absolute Index
+    + - +---------------+ - - - - - +
+    | 0 |      ...      | n - d - 1 |  Relative Index
+    +---+---------------+-----------+
       ^                     |
       |                     V
 Insertion Point         Dropping Point
