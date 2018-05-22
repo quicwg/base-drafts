@@ -950,12 +950,12 @@ established in {{!QUIC-HTTP}}.
 
 The entries in the following table are registered by this document.
 
-|------------------------------|--------|---------------------------|
-| Stream Type                  | Code   | Specification             |
-| ---------------------------- | :----: | ------------------------- |
-| QPACK Encoder Stream         | 0x48   | {{wire-format}}           |
-| QPACK Decoder Stream         | 0x68   | {{wire-format}}           |
-| ---------------------------- | ------ | ------------------------- |
+| ---------------------------- | ------ | ------------------------- | ------ |
+| Stream Type                  | Code   | Specification             | Sender |
+| ---------------------------- | :----: | ------------------------- | ------ |
+| QPACK Encoder Stream         | 0x48   | {{wire-format}}           | Both   |
+| QPACK Decoder Stream         | 0x68   | {{wire-format}}           | Both   |
+| ---------------------------- | ------ | ------------------------- | ------ |
 
 --- back
 
