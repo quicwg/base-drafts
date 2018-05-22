@@ -4158,6 +4158,7 @@ The initial contents of this registry are shown in {{iana-tp-table}}.
 | 0x0001 | initial_max_data           | {{transport-parameter-definitions}} |
 | 0x0002 | initial_max_bidi_streams   | {{transport-parameter-definitions}} |
 | 0x0003 | idle_timeout               | {{transport-parameter-definitions}} |
+| 0x0004 | preferred_address          | {{transport-parameter-definitions}} |
 | 0x0005 | max_packet_size            | {{transport-parameter-definitions}} |
 | 0x0006 | stateless_reset_token      | {{transport-parameter-definitions}} |
 | 0x0007 | ack_delay_exponent         | {{transport-parameter-definitions}} |
