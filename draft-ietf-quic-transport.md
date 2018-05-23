@@ -2072,15 +2072,14 @@ indistinguishable from a regular packet with a short header.
 The message consists of a header octet, followed by random octets of arbitrary
 length, followed by a Stateless Reset Token.
 
-The endpoint SHOULD send a packet with a short header.
-
-Assuming a short header, the Random Octets field needs to include at least 20
-octets of random or unpredictable values.  This is intended to allow for a
-destination connection ID of the maximum length permitted, a packet number, and
-minimal payload.  The Stateless Reset Token corresponds to the minimum expansion
-of the packet protection AEAD.  More random octets might be necessary if the
-endpoint could have negotiated a packet protection scheme with a larger minimum
-AEAD expansion.
+A stateless reset will be interpreted by a recipient as a packet with a short
+header.  For the packet to appear as valid, the Random Octets field needs to
+include at least 20 octets of random or unpredictable values.  This is intended
+to allow for a destination connection ID of the maximum length permitted, a
+packet number, and minimal payload.  The Stateless Reset Token corresponds to
+the minimum expansion of the packet protection AEAD.  More random octets might
+be necessary if the endpoint could have negotiated a packet protection scheme
+with a larger minimum AEAD expansion.
 
 An endpoint SHOULD NOT send a stateless reset that is significantly larger than
 the packet it receives.  Endpoints MUST discard packets that are too small to be
@@ -2091,8 +2090,8 @@ An endpoint cannot determine the Source Connection ID from a packet with a short
 header, therefore it cannot set the Destination Connection ID in the stateless
 reset packet.  The destination connection ID will therefore differ from the
 value used in previous packets.  A random Destination Connection ID makes the
-connection ID appear to be the result of moving to new connection ID that was
-provided using the NEW_CONNECTION_ID frame ({{frame-new-connection-id}}).
+connection ID appear to be the result of moving to a new connection ID that was
+provided using a NEW_CONNECTION_ID frame ({{frame-new-connection-id}}).
 
 Using a randomized connection ID results in two problems:
 
@@ -2128,10 +2127,10 @@ the packet other than the last 16 octets for carrying data.
 An endpoint detects a potential stateless reset when a packet with a short
 header either cannot be decrypted or is marked as a duplicate packet.  The
 endpoint then compares the last 16 octets of the packet with the Stateless Reset
-Token provided by its peer, either from the NEW_CONNECTION_ID frame or the
-server transport parameters.  If these values are identical, the endpoint MUST
-enter the draining period and not send any further packets on this connection.
-If the comparison fails, the packet can be discarded.
+Token provided by its peer, either in a NEW_CONNECTION_ID frame or the server's
+transport parameters.  If these values are identical, the endpoint MUST enter
+the draining period and not send any further packets on this connection.  If the
+comparison fails, the packet can be discarded.
 
 
 #### Calculating a Stateless Reset Token
@@ -2154,9 +2153,12 @@ of this function is truncated to 16 octets to produce the Stateless Reset Token
 for that connection.
 
 An endpoint that loses state can use the same method to generate a valid
-Stateless Reset Secret.  The connection ID comes from the packet that the
+Stateless Reset Token.  The connection ID comes from the packet that the
 endpoint receives.  An instance that receives a packet for another instance
-might recover the instance identifier from the connection ID.
+might be able to recover the instance identifier using the connection ID.
+Alternatively, the instance identifier might be omitted from the calculation of
+the Stateless Reset Token so that all instances are equally able to generate a
+stateless reset.
 
 This design relies on the peer always sending a connection ID in its packets so
 that the endpoint can use the connection ID from a packet to reset the
