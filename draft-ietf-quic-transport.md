@@ -1809,9 +1809,9 @@ in the order in which they are numbered.
 Upon changing networks an endpoint MUST use a previously unused connection ID
 provided by its peer.  This eliminates the use of the connection ID for linking
 activity from the same connection on different networks.  Protection of packet
-numbers ensures that packet numbers cannot be used to correlate activity.  Other
-properties of packets, such as timing and size, might be used to correlate
-activity, but these changes ensure that the packet header cannot be used.
+numbers ensures that packet numbers cannot be used to correlate activity.
+This does not prevent other properties of packets, such as timing and size, 
+from being used to correlate activity.
 
 Clients MAY change connection ID at any time based on implementation-specific
 concerns.  For example, after a period of network inactivity NAT rebinding might
