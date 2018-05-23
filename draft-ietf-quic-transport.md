@@ -673,11 +673,21 @@ CONNECTION_CLOSE frames if the handshake is unsuccessful.
 
 ## Protected Packets {#packet-protected}
 
-All QUIC packets are protected.  Packets that are protected with the static
-handshake keys or the 0-RTT keys are sent with long headers; all packets
+All QUIC packets use packet protection.  Packets that are protected with the
+static handshake keys or the 0-RTT keys are sent with long headers; all packets
 protected with 1-RTT keys are sent with short headers.  The different packet
 types explicitly indicate the encryption level and therefore the keys that are
 used to remove packet protection.
+
+Packets protected with handshake keys only use packet protection to ensure that
+the sender of the packet is on the network path.  This packet protection is not
+effective confidentiality protection; any entity that receives the Initial
+packet from a client can recover the keys necessary to remove packet protection
+or to generate packets that will be successfully authenticated.
+
+Packets protected with 0-RTT and 1-RTT keys are expected to have confidentiality
+and data origin authentication; the cryptographic handshake ensures that only
+the communicating endpoints receive the corresponding keys.
 
 Packets protected with 0-RTT keys use a type value of 0x7C.  The connection ID
 fields for a 0-RTT packet MUST match the values used in the Initial packet
