@@ -42,6 +42,7 @@ normative:
           ins: M. Bishop
           name: Mike Bishop
           org: Akamai Technologies
+          role: editor
 
 
 --- abstract
