@@ -4021,7 +4021,7 @@ transport to cancel a stream in response to receipt of a STOP_SENDING frame.
 
 As an encrypted and authenticated transport QUIC provides a range of protections
 against denial of service.  Once the cryptographic handshake is complete, QUIC
-endpoints discard packets that are not authenticated, greatly limiting the
+endpoints discard most packets that are not authenticated, greatly limiting the
 ability of an attacker to interfere with existing connections.
 
 Once a connection is established QUIC endpoints might accept some
@@ -4035,35 +4035,35 @@ attack from off the network path.  All QUIC packets contain proof that the
 recipient saw a preceding packet from its peer.
 
 The first mechanism used is the source and destination connection IDs, which are
-required to match those set by a peer.  Except for an Initial packet and
-stateless reset, an endpoint only accepts packets that include a destination
+required to match those set by a peer.  Except for an Initial and stateless
+reset packets, an endpoint only accepts packets that include a destination
 connection that matches a connection ID the endpoint previously chose.  This is
 the only protection offered for Version Negotiation packets.
 
 The destination connection ID in an Initial packet is selected by a client to be
 unpredictable, which serves an additional purpose.  The packets that carry the
-cryptographic handshake are protected with a key that is derived from the
+cryptographic handshake are protected with a key that is derived from this
 connection ID and salt specific to the QUIC version.  This allows endpoints to
 use the same process for authenticating packets that they receive as they use
 after the cryptographic handshake completes.  Packets that cannot be
 authenticated are discarded.  Protecting packets in this fashion provides a
-strong assurance that the sender of the packet saw previous packets and
-understood them.
+strong assurance that the sender of the packet saw the Initial packets and
+understood it.
 
 These protections are not intended to be effective against an attacker that is
-able to receive QUIC packets.  Such an attacker can potentially send packets
-that will be accepted by QUIC clients or servers.  This version of QUIC only
-attempts to detect this sort of attack.  Interference with the handshake is
-detected when the cryptographic handshake fails.  For the most part, this is a
-property that the cryptographic handshake protocol {{QUIC-TLS}} is required to
-provide, though additional validation is required for version negotiation (see
+able to receive QUIC packets prior to the connection being established.  Such an
+attacker can potentially send packets that will be accepted by QUIC clients or
+servers.  This version of QUIC attempts to detect this sort of attack, but it
+expects that endpoints will fail to establish a connection rather than
+recovering.  For the most part, the cryptographic handshake protocol
+{{QUIC-TLS}} is responsible for detecting tampering during the handshake, though
+additional validation is required for version negotiation (see
 {{version-validation}}).
 
 Endpoints are permitted to use other methods to detect and attempt to recover
-from interference with the handshake.  For instance, if invalid packets can be
-identified then they can be discarded.  This can be complex or difficult and so
-no specific method is mandated in this version of QUIC.
-
+from interference with the handshake.  Invalid packets may be identified and
+discarded using other methods, but no specific method is mandated in this
+document.
 
 
 ## Spoofed ACK Attack
