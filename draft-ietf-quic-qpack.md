@@ -30,6 +30,21 @@ author:
     role: editor
 
 
+normative:
+
+  QUIC-HTTP:
+    title: "Hypertext Transfer Protocol (HTTP) over QUIC"
+    date: {DATE}
+    seriesinfo:
+      Internet-Draft: draft-ietf-quic-http-latest
+    author:
+      -
+          ins: M. Bishop
+          name: Mike Bishop
+          org: Akamai Technologies
+          role: editor
+
+
 --- abstract
 
 This specification defines QPACK, a compression format for efficiently
@@ -66,7 +81,7 @@ on the same connection.  In the context of QUIC, this imposes a vulnerability to
 HoL blocking (see {{hol-example}}).
 
 QUIC is described in {{?QUIC-TRANSPORT=I-D.ietf-quic-transport}}.  The HTTP/QUIC
-mapping is described in {{!QUIC-HTTP=I-D.ietf-quic-http}}. For a full
+mapping is described in {{QUIC-HTTP}}. For a full
 description of HTTP/2, see {{?RFC7540}}. The description of HPACK is
 {{!RFC7541}}, with important terminology in Section 1.3.
 
