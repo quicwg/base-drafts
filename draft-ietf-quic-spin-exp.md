@@ -253,7 +253,18 @@ geolocation than is available in the most basic, freely-available IP address
 based location databases. The risk of exposure of per-flow network RTT to
 on-path devices is therefore negligible.
 
+
+# Change Log
+
+> **RFC Editor's Note:**  Please remove this section prior to
+> publication of a final version of this document.
+
+## Since draft-ietf-spin-exp-00
+
+Nothing yet.
+
 # Acknowledgments
+{:numbered="false"}
 
 This document is derived from {{QUIC-SPIN}}, which was the work
 of the following authors in addition to the editor of this document:
