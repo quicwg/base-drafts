@@ -15,8 +15,8 @@ author:
  -
     ins: C. Krasic
     name: Charles 'Buck' Krasic
-    org: Google, Inc
-    email: ckrasic@google.com
+    org: Netflix
+    email: ckrasic@netflix.com
  -
     ins: M. Bishop
     name: Mike Bishop
