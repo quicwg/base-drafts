@@ -1811,11 +1811,12 @@ support this, multiple NEW_CONNECTION_ID messages are needed.  Each
 NEW_CONNECTION_ID is marked with a sequence number.  Connection IDs MUST be used
 in the order in which they are numbered.
 
-An endpoint that to break linkability upon changing networks MUST use a
-previously unused connection ID provided by its peer.  Protection of packet
-numbers ensures that packet numbers cannot be used to correlate connections.
-Other properties of packets, such as timing and size, might be used to correlate
-activity, but no explicit correlation can be used to link activity across paths.
+Upon changing networks an endpoint MUST use a previously unused connection ID
+provided by its peer.  This eliminates the use of the connection ID for linking
+activity from the same connection on different networks.  Protection of packet
+numbers ensures that packet numbers cannot be used to correlate activity.
+This does not prevent other properties of packets, such as timing and size, 
+from being used to correlate activity.
 
 Clients MAY change connection ID at any time based on implementation-specific
 concerns.  For example, after a period of network inactivity NAT rebinding might
