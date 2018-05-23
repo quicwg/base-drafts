@@ -421,7 +421,7 @@ flight, since this packet adds network load without establishing packet loss.
 
 There are cases where one may be able to gain recovery information from
 acknowledgements of packets in another packet number space, but they rely
-on complex assumptions about the peer’s processing and acknowledgement
+on complex assumptions about the peer's processing and acknowledgement
 algorithms.  Even those are unable to quickly recover from cases such as
 losing the client's Initial, but receiving the 0-RTT packets.  Below are
 three different optimizations in increasing complexity that minimize
@@ -452,7 +452,7 @@ that triggered the empty ack, then the empty ack should be ignored.
 An EMPTY_ACK frame does not acknowledge a new packet, and in cases
 when multiple packets are outstanding, the RTT signal is ambiguous,
 so it should not be used like an RTT signal from a newly acknowledged
-packet.  It MAY change the connection’s default RTT if no RTT measurements
+packet.  It MAY change the connection's default RTT if no RTT measurements
 have been taken.
 
 ### Coalesced Packets
@@ -465,7 +465,7 @@ packets in that space were lost without waiting for timeouts.
 
 This optimization is particularly useful when:
 
- * Sending the client’s Initial, which must be padded to a full
+ * Sending the client's Initial, which must be padded to a full
    sized packet, so the datagram typically has extra space to retransmit
    some outstanding 0-RTT data.
  * The clients sends 1-RTT data soon after the final TLS flight
