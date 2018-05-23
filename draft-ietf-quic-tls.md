@@ -946,11 +946,11 @@ smaller of the maximum possible packet number encoding (4 octets), or the size
 of the protected packet minus the minimum expansion for the AEAD.  For example,
 the sampled ciphertext for a packet with a short header can be determined by:
 
-```
+~~~
 sample_offset = min(1 + connection_id_length + 4,
                     packet_length - aead_expansion)
 sample = packet[sample_offset..sample_offset+sample_length]
-```
+~~~
 
 To ensure that this process does not sample the packet number, packet number
 protection algorithms MUST NOT sample more ciphertext than the minimum
@@ -1637,9 +1637,9 @@ this document are assumed to be PRFs.
 The packet number protection algorithms defined in this document take the
 form:
 
-```
+~~~
 encrypted_pn = packet_number XOR PRF(pn_key, sample)
-```
+~~~
 
 This construction is secure against chosen plaintext attacks (IND-CPA)
 {{IMC}}.
