@@ -16,7 +16,7 @@ foundError = False
 for inputfile in args.files:
     insideFigure = False
     beforeAbstract = True
-    with open(inputfile, mode='t', newline=None, encoding='utf-8') as draft:
+    with open(inputfile, mode='rt', newline=None, encoding='utf-8') as draft:
         linecounter = 1
         lines = draft.readlines()
 
