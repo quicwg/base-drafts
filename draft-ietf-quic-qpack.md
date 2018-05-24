@@ -101,10 +101,9 @@ end of the dynamic table until the size of the dynamic table is less than or
 equal to (maximum size - new entry size) or until the table is empty.
 
 If the size of the new entry is less than or equal to the maximum size, that
-entry is added to the table.  It is not an error to attempt to add an entry that
-is larger than the maximum size; an attempt to add an entry larger than the
-maximum size causes the table to be emptied of all existing entries and results
-in an empty table.
+entry is added to the table.  It is an error to attempt to add an entry that
+is larger than the maximum size; this MUST be treated as a connection error
+of type `HTTP_QPACK_DECOMPRESSION_FAILED`.
 
 A new entry can reference an entry in the dynamic table that will be evicted
 when adding this new entry into the dynamic table.  Implementations are
