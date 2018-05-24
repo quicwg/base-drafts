@@ -4285,30 +4285,6 @@ the range from 0xFE00 to 0xFFFF.
 
 --- back
 
-# Contributors
-
-The original authors of this specification were Ryan Hamilton, Jana Iyengar, Ian
-Swett, and Alyssa Wilk.
-
-The original design and rationale behind this protocol draw significantly from
-work by Jim Roskind {{EARLY-DESIGN}}. In alphabetical order, the contributors to
-the pre-IETF QUIC project at Google are: Britt Cyr, Jeremy Dorfman, Ryan
-Hamilton, Jana Iyengar, Fedor Kouranov, Charles Krasic, Jo Kulik, Adam Langley,
-Jim Roskind, Robbie Shade, Satyam Shekhar, Cherie Shi, Ian Swett, Raman Tenneti,
-Victor Vasiliev, Antonio Vicente, Patrik Westin, Alyssa Wilk, Dale Worley, Fan
-Yang, Dan Zhang, Daniel Ziegler.
-
-# Acknowledgments
-
-Special thanks are due to the following for helping shape pre-IETF QUIC and its
-deployment: Chris Bentzel, Misha Efimov, Roberto Peon, Alistair Riddoch,
-Siddharth Vijayakrishnan, and Assar Westerlund.
-
-This document has benefited immensely from various private discussions and
-public ones on the quic@ietf.org and proto-quic@chromium.org mailing lists. Our
-thanks to all.
-
-
 # Change Log
 
 > **RFC Editor's Note:** Please remove this section prior to publication of a
@@ -4548,3 +4524,31 @@ Issue and pull request numbers are listed with a leading octothorp.
 - Updated authors/editors list
 - Added IANA Considerations section
 - Moved Contributors and Acknowledgments to appendices
+
+
+# Acknowledgments
+{:numbered="false"}
+
+Special thanks are due to the following for helping shape pre-IETF QUIC and its
+deployment: Chris Bentzel, Misha Efimov, Roberto Peon, Alistair Riddoch,
+Siddharth Vijayakrishnan, and Assar Westerlund.
+
+This document has benefited immensely from various private discussions and
+public ones on the quic@ietf.org and proto-quic@chromium.org mailing lists. Our
+thanks to all.
+
+
+# Contributors
+{:numbered="false"}
+
+The original authors of this specification were Ryan Hamilton, Jana Iyengar, Ian
+Swett, and Alyssa Wilk.
+
+The original design and rationale behind this protocol draw significantly from
+work by Jim Roskind {{EARLY-DESIGN}}. In alphabetical order, the contributors to
+the pre-IETF QUIC project at Google are: Britt Cyr, Jeremy Dorfman, Ryan
+Hamilton, Jana Iyengar, Fedor Kouranov, Charles Krasic, Jo Kulik, Adam Langley,
+Jim Roskind, Robbie Shade, Satyam Shekhar, Cherie Shi, Ian Swett, Raman Tenneti,
+Victor Vasiliev, Antonio Vicente, Patrik Westin, Alyssa Wilk, Dale Worley, Fan
+Yang, Dan Zhang, Daniel Ziegler.
+

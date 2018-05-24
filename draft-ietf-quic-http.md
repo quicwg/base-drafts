@@ -1478,13 +1478,6 @@ The entries in the following table are registered by this document.
 
 --- back
 
-# Contributors
-
-The original authors of this specification were Robbie Shade and Mike Warres.
-
-A substantial portion of Mike's contribution was supported by Microsoft during
-his employment there.
-
 # Change Log
 
 > **RFC Editor's Note:**  Please remove this section prior to publication of a
@@ -1578,3 +1571,12 @@ None.
 
 - Adopted as base for draft-ietf-quic-http
 - Updated authors/editors list
+
+# Acknowledgements
+{:numbered="false"}
+
+The original authors of this specification were Robbie Shade and Mike Warres.
+
+A substantial portion of Mike's contribution was supported by Microsoft during
+his employment there.
+

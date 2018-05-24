@@ -1725,17 +1725,6 @@ values in the following registries:
 
 --- back
 
-# Contributors
-
-Ryan Hamilton was originally an author of this specification.
-
-
-# Acknowledgments
-
-This document has benefited from input from Dragana Damjanovic, Christian
-Huitema, Jana Iyengar, Adam Langley, Roberto Peon, Eric Rescorla, Ian Swett, and
-many others.
-
 # Change Log
 
 > **RFC Editor's Note:** Please remove this section prior to publication of a
@@ -1805,3 +1794,16 @@ No significant changes.
 - Adopted as base for draft-ietf-quic-tls
 - Updated authors/editors list
 - Added status note
+
+
+# Acknowledgments
+{:numbered="false"}
+
+This document has benefited from input from Dragana Damjanovic, Christian
+Huitema, Jana Iyengar, Adam Langley, Roberto Peon, Eric Rescorla, Ian Swett, and
+many others.
+
+# Contributors
+{:numbered="false"}
+
+Ryan Hamilton was originally an author of this specification.
