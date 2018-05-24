@@ -1048,7 +1048,7 @@ acked_packet from sent_packets.
 ### On Packets Marked
 
       Invoked by an increment in the number of CE marked packets, as indicated by a newly received ACK_ECN frame. The variable ack_ce_counter is used to check if packets are recently CE marked.
-      
+
 ~~~
    OnPacketsMarked(ce_counter):
       if (end_of_recovery < largest_acked_packet && ce_counter > ack_ce_counter):
