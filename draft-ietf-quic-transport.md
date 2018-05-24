@@ -1047,20 +1047,21 @@ negotiation, which is the same no matter which reserved version was sent.
 A server MAY therefore send different reserved version numbers in the Version
 Negotiation Packet and in its transport parameters.
 
-A client MAY send a packet using a reserved version number.  This can be used to
-solicit a list of supported versions from a server.
+A client MAY send a packet using a reserved version number. This can be 
+used to solicit a list of supported versions from a server. 
 
 
 ## Cryptographic and Transport Handshake {#handshake}
 
-QUIC relies on a combined cryptographic and transport handshake to minimize
-connection establishment latency.  QUIC allocates stream 0 for the cryptographic
-handshake.  Version 0x00000001 of QUIC uses TLS 1.3 as described in
-{{QUIC-TLS}}; a different QUIC version number could indicate that a different
-cryptographic handshake protocol is in use.
+QUIC relies on a combined cryptographic and transport handshake to 
+minimize connection establishment latency. QUIC allocates stream 0 for 
+the cryptographic handshake. Version 0x00000001 of QUIC uses TLS 1.3 as 
+described in {{QUIC-TLS}}; a different QUIC version number could 
+indicate that a different cryptographic handshake protocol is in use. 
 
-QUIC provides this stream with reliable, ordered delivery of data.  In return,
-the cryptographic handshake provides QUIC with:
+
+QUIC provides this stream with reliable, ordered delivery of data. In 
+return, the cryptographic handshake provides QUIC with: 
 
 * authenticated key exchange, where
 
@@ -1070,33 +1071,35 @@ the cryptographic handshake provides QUIC with:
 
    * every connection produces distinct and unrelated keys,
 
-   * keying material is usable for packet protection for both 0-RTT and 1-RTT
-     packets, and
+   * keying material is usable for packet protection for both 0-RTT 
+     and 1-RTT packets, and
 
    * 1-RTT keys have forward secrecy
 
 * authenticated values for the transport parameters of the peer (see
   {{transport-parameters}})
 
-* authenticated confirmation of version negotiation (see {{version-validation}})
+* authenticated confirmation of version negotiation 
+  (see {{version-validation}})
 
 * authenticated negotiation of an application protocol (TLS uses ALPN
   {{?RFC7301}} for this purpose)
 
-* for the server, the ability to carry data that provides assurance that the
-  client can receive packets that are addressed with the transport address that
-  is claimed by the client (see {{address-validation}})
+* for the server, the ability to carry data that provides assurance that 
+  the client can receive packets that are addressed with the transport 
+  address that is claimed by the client (see {{address-validation}}) 
 
-The initial cryptographic handshake message MUST be sent in a single packet.
-Any second attempt that is triggered by address validation MUST also be sent
-within a single packet.  This avoids having to reassemble a message from
-multiple packets.  Reassembling messages requires that a server maintain state
-prior to establishing a connection, exposing the server to a denial of service
-risk.
+The initial cryptographic handshake message MUST be sent in a single 
+packet. Any second attempt that is triggered by address validation MUST 
+also be sent within a single packet. This avoids having to reassemble a 
+message from multiple packets. Reassembling messages requires that a 
+server maintain state prior to establishing a connection, exposing the 
+server to a denial of service risk. 
 
-The first client packet of the cryptographic handshake protocol MUST fit within
-a 1232 octet QUIC packet payload.  This includes overheads that reduce the space
-available to the cryptographic handshake protocol.
+
+The first client packet of the cryptographic handshake protocol MUST fit 
+within a 1232 octet QUIC packet payload. This includes overheads that 
+reduce the space available to the cryptographic handshake protocol. 
 
 Details of how TLS is integrated with QUIC is provided in more detail in
 {{QUIC-TLS}}.
@@ -1104,11 +1107,12 @@ Details of how TLS is integrated with QUIC is provided in more detail in
 
 ## Transport Parameters
 
-During connection establishment, both endpoints make authenticated declarations
-of their transport parameters.  These declarations are made unilaterally by each
-endpoint.  Endpoints are required to comply with the restrictions implied by
-these parameters; the description of each parameter includes rules for its
-handling.
+During connection establishment, both endpoints make authenticated 
+declarations of their transport parameters. These declarations are made 
+unilaterally by each endpoint. Endpoints are required to comply with the 
+restrictions implied by these parameters; the description of each 
+parameter includes rules for its handling. 
+
 
 The format of the transport parameters is the TransportParameters struct from
 {{figure-transport-parameters}}.  This is described using the presentation
@@ -1409,6 +1413,24 @@ The ACK_ECN frame will, when received, confirm that the path direction supports 
 If an ACK frame (not the ACK_ECN frame) is used to acknowledge reception of packets that was marked as ECT in the sender, or if the comparision of the counters with the total of acknolwedged packets indicates that not all packets arrive as ECT(0), ECT(1) or ECN-CE, then the path is determined as not ECN Capable.  If the endpoint determine the path as currently not ECN capable it SHALL stop marking the packets as ECT, and instead mark them as Not-ECT. If the connection is migrated then the ECN capability check is rerun as specified in {{ecn-connection-migration}}.
 
 It is expected that QUIC discards duplicate packets early, however if that is not the case **[ED note, have not seen any clear statement in the drafts]**, then it should be verified that the number of ECT marked packets are equal to or larger that the amount of ECT marked packets that have been transmitted.
+
+### Continous Verification of ECN {#ecn-continous-verification}
+
+If the ECN capabiity check was successful and the endpoint continus to
+send ECT marked packets then continous verification is applied. This is 
+detect any cases when ECN field is bleached, i.e. zeroed out by a network
+node, likely as the result of a routing changes since the ECN capability 
+check.
+
+For each ACK_ECN frame that is received the total number of ACKed 
+packets are updated by adding those outstanding packets that was 
+acknolwedged by this ACK_ECN frame. Then the total number of ACKed 
+packets are compared with the sum of the ECN counters. If ACKed packets 
+are larger than the sum some ECN failure has occured and ECN should be 
+disabled. ECN is also disabled in case an ACK frame is received 
+acknowleging any ECT sent packet. 
+
+
 
 ## Proof of Source Address Ownership {#address-validation}
 
