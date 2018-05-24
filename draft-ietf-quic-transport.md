@@ -4047,18 +4047,17 @@ connection ID and salt specific to the QUIC version.  This allows endpoints to
 use the same process for authenticating packets that they receive as they use
 after the cryptographic handshake completes.  Packets that cannot be
 authenticated are discarded.  Protecting packets in this fashion provides a
-strong assurance that the sender of the packet saw the Initial packets and
+strong assurance that the sender of the packet saw the Initial packet and
 understood it.
 
 These protections are not intended to be effective against an attacker that is
 able to receive QUIC packets prior to the connection being established.  Such an
-attacker can potentially send packets that will be accepted by QUIC clients or
-servers.  This version of QUIC attempts to detect this sort of attack, but it
-expects that endpoints will fail to establish a connection rather than
-recovering.  For the most part, the cryptographic handshake protocol
-{{QUIC-TLS}} is responsible for detecting tampering during the handshake, though
-additional validation is required for version negotiation (see
-{{version-validation}}).
+attacker can potentially send packets that will be accepted by QUIC endpoints.
+This version of QUIC attempts to detect this sort of attack, but it expects that
+endpoints will fail to establish a connection rather than recovering.  For the
+most part, the cryptographic handshake protocol {{QUIC-TLS}} is responsible for
+detecting tampering during the handshake, though additional validation is
+required for version negotiation (see {{version-validation}}).
 
 Endpoints are permitted to use other methods to detect and attempt to recover
 from interference with the handshake.  Invalid packets may be identified and
