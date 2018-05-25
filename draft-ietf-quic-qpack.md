@@ -67,46 +67,167 @@ code and issues list for this draft can be found at
 # Introduction
 
 The QUIC transport protocol was designed from the outset to support HTTP
-semantics, and its design subsumes many of the features of HTTP/2.  QUIC's
-stream multiplexing comes into some conflict with header compression.  A key
-goal of the design of QUIC is to improve stream multiplexing relative to HTTP/2
-by eliminating HoL (head of line) blocking, which can occur in HTTP/2.  HoL
-blocking can happen because all HTTP/2 streams are multiplexed onto a single TCP
-connection with its in-order semantics.  QUIC can maintain independence between
-streams because it implements core transport functionality in a fully
-stream-aware manner.  However, the HTTP/QUIC mapping is still subject to HoL
-blocking if HPACK is used directly.  HPACK exploits multiplexing for greater
-compression, shrinking the representation of headers that have appeared earlier
-on the same connection.  In the context of QUIC, this imposes a vulnerability to
-HoL blocking (see {{hol-example}}).
+semantics, and its design subsumes many of the features of HTTP/2.  HTTP/2 used
+HPACK ({{!RFC7541}}) for header compression, but QUIC's stream multiplexing
+comes into some conflict with HPACK.  A key goal of the design of QUIC is to
+improve stream multiplexing relative to HTTP/2 by reducing head-of-line
+blocking.  If HPACK were used for HTTP/QUIC, it would induce head-of-line
+blocking due to built-in assumptions of a total ordering across frames on all
+streams.
 
 QUIC is described in {{?QUIC-TRANSPORT=I-D.ietf-quic-transport}}.  The HTTP/QUIC
 mapping is described in {{QUIC-HTTP}}. For a full
 description of HTTP/2, see {{?RFC7540}}. The description of HPACK is
 {{!RFC7541}}, with important terminology in Section 1.3.
 
-QPACK modifies HPACK to allow correctness in the presence of out-of-order
-delivery, with flexibility for implementations to balance between resilience
-against HoL blocking and optimal compression ratio.  The design goals are to
-closely approach the compression ratio of HPACK with substantially less
-head-of-line blocking under the same loss conditions.
+QPACK reuses core concepts from HPACK, but is redesigned to allow correctness in
+the presence of out-of-order delivery, with flexibility for implementations to
+balance between resilience against head-of-line blocking and optimal compression
+ratio.  The design goals are to closely approach the compression ratio of HPACK
+with substantially less head-of-line blocking under the same loss conditions.
 
-QPACK is intended to be a relatively non-intrusive extension to HPACK; an
-implementation should be easily shared within stacks supporting both HTTP/2 over
-(TLS+)TCP and HTTP/QUIC.
+# Header Tables
 
-## Head-of-Line Blocking in HPACK {#hol-example}
+Like HPACK, QPACK uses two tables for associating header fields to indexes.  The
+static table (see {{table-static}}) is predefined and contains common header
+fields (some of them with an empty value).  The dynamic table (see
+{{table-dynamic}}) built up over the course of the connection and can be used by
+the encoder to index header fields repeated in the encoded header lists.
 
-HPACK enables several types of header representations, one of which also adds
-the header to a dynamic table of header values.  These values are then available
-for reuse in subsequent header blocks simply by referencing the entry number in
-the table.
+Unlike in HPACK, entries in the QPACK static and dynamic tables are addressed
+separately.  The following sections describe how entries in each table is
+addressed.
 
-If the packet containing a header is lost, that stream cannot complete header
-processing until the packet is retransmitted.  This is unavoidable. However,
-other streams which rely on the state created by that packet *also* cannot make
-progress. This is the problem which QUIC solves in general, but which is
-reintroduced by HPACK when the loss includes a HEADERS frame.
+## Static Table {#table-static}
+
+The static table consists of a predefined static list of header fields, each of
+which has a fixed index over time.  Its entries are defined in Appendix A of
+{{!RFC7541}}. Note that because HPACK did not use zero-based references, there
+is no value at index zero of the static table.
+
+## Dynamic Table {#table-dynamic}
+
+The dynamic table consists of a list of header fields maintained in first-in,
+first-out order.  The dynamic table is initially empty.  Entries are added by
+instructions on the Encoder Stream (see {{encoder-stream}}).
+
+Before a new entry is added to the dynamic table, entries are evicted from the
+end of the dynamic table until the size of the dynamic table is less than or
+equal to (maximum size - new entry size) or until the table is empty.
+
+If the size of the new entry is less than or equal to the maximum size, that
+entry is added to the table.  It is an error to attempt to add an entry that
+is larger than the maximum size; this MUST be treated as a connection error
+of type `HTTP_QPACK_DECOMPRESSION_FAILED`.
+
+A new entry can reference an entry in the dynamic table that will be evicted
+when adding this new entry into the dynamic table.  Implementations are
+cautioned to avoid deleting the referenced name if the referenced entry is
+evicted from the dynamic table prior to inserting the new entry.
+
+The dynamic table can contain duplicate entries (i.e., entries with the same
+name and same value).  Therefore, duplicate entries MUST NOT be treated as an
+error by a decoder.
+
+The encoder decides how to update the dynamic table and as such can control how
+much memory is used by the dynamic table.  To limit the memory requirements of
+the decoder, the dynamic table size is strictly bounded.
+
+The decoder determines the maximum size that the encoder is permitted to use for
+the dynamic table.  In HTTP/QUIC, this value is determined by the
+SETTINGS_HEADER_TABLE_SIZE setting (see Section 4.2.5.2 of {{!QUIC-HTTP}}).
+
+An encoder can choose to use less capacity than this maximum size (see
+{{size-update}}), but the chosen size MUST stay lower than or equal to the
+maximum set by the decoder.  Whenever the maximum size for the dynamic table is
+reduced, entries are evicted from the end of the dynamic table until the size of
+the dynamic table is less than or equal to the maximum size.
+
+This mechanism can be used to completely clear entries from the dynamic table by
+setting a maximum size of 0, which can subsequently be restored.
+
+### Absolute and Relative Indexing {#indexing}
+
+Each entry possesses both an absolute index which is fixed for the lifetime of
+that entry and a relative index which changes over time based on the context of
+the reference. The first entry inserted has an absolute index of "1"; indices
+increase sequentially with each insertion.
+
+The relative index begins at zero and increases in the opposite direction from
+the absolute index.  Determining which entry has a relative index of "0" depends
+on the context of the reference.
+
+On the control stream, a relative index of "0" always refers to the most
+recently inserted value in the dynamic table.  Note that this means the
+entry referenced by a given relative index will change while interpreting
+instructions on the encoder stream.
+
+~~~~~ drawing
+    +---+---------------+-----------+
+    | n |      ...      |   d + 1   |  Absolute Index
+    + - +---------------+ - - - - - +
+    | 0 |      ...      | n - d - 1 |  Relative Index
+    +---+---------------+-----------+
+      ^                     |
+      |                     V
+Insertion Point         Dropping Point
+
+n = count of entries inserted
+d = count of entries dropped
+~~~~~
+{: title="Example Dynamic Table Indexing - Control Stream"}
+
+Because frames from request streams can be delivered out of order with
+instructions on the control stream, relative indices are relative to the Base
+Index at the beginning of the header block (see {{absolute-index}}). The Base
+Index is an absolute index. When interpreting the rest of the frame, the entry
+identified by Base Index has a relative index of zero.  The relative indices of
+entries do not change while interpreting headers on a request or push stream.
+
+~~~~~ drawing
+             Base Index
+                 |
+                 V
+    +---+-----+-----+-----+-------+
+    | n | n-1 | n-2 | ... |  d+1  |  Absolute Index
+    +---+-----+  -  +-----+   -   +
+              |  0  | ... | n-d-3 |  Relative Index
+              +-----+-----+-------+
+
+n = count of entries inserted
+d = count of entries dropped
+~~~~~
+{: title="Example Dynamic Table Indexing - Request Stream"}
+
+### Post-Base Indexing
+
+A header block on the request stream can reference entries added after the entry
+identified by the Base Index. This allows an encoder to process a header block
+in a single pass and include references to entries added while processing this
+(or other) header blocks. Newly added entries are referenced using Post-Base
+instructions. Indices for Post-Base instructions increase in the same direction
+as absolute indices, but the zero value is one higher than the Base Index.
+
+~~~~~ drawing
+             Base Index
+                 |
+                 V
+    +---+-----+-----+-----+-----+
+    | n | n-1 | n-2 | ... | d+1 |  Absolute Index
+    +---+-----+-----+-----+-----+
+    | 1 |  0  |                    Post-Base Index
+    +---+-----+
+
+n = count of entries inserted
+d = count of entries dropped
+~~~~~
+{: title="Dynamic Table Indexing - Post-Base References"}
+
+If the decoder encounters a reference to an entry which has already been dropped
+from the table or which is greater than the declared Largest Reference, this
+MUST be treated as a stream error of type `HTTP_QPACK_DECOMPRESSION_FAILED`
+error code.  If this reference occurs on the control stream, this MUST be
+treated as a session error.
 
 ## Avoiding Head-of-Line Blocking in HTTP/QUIC {#overview-hol-avoidance}
 
@@ -238,89 +359,7 @@ unmodified.
 A string literal without a prefix length noted is an 8-bit prefix string literal
 and follows the definitions in [RFC7541] without modification.
 
-## Indexing
-
-Entries in the QPACK static and dynamic tables are addressed separately.
-
-Entries in the static table have the same indices at all times.  The static
-table is defined in Appendix A of {{!RFC7541}}. Note that because HPACK did not
-use zero-based references, there is no value at index zero of the static table.
-
-Entries are inserted into the dynamic table over time.  Each entry possesses
-both an absolute index which is fixed for the lifetime of that entry and a
-relative index which changes over time based on the context of the reference.
-The first entry inserted has an absolute index of "1"; indices
-increase sequentially with each insertion.
-
-On the control stream, a relative index of "0" always refers to the most
-recently inserted value in the dynamic table.  Note that this means the
-entry referenced by a given relative index can change while interpreting
-a HEADERS frame as new entries are inserted.
-
-~~~~~ drawing
-    +---+---------------+-------+
-    | n |      ...      | d + 1 |  Absolute Index
-    + - +---------------+   -   +
-    | 0 |      ...      | n-d-1 |  Relative Index
-    +---+---------------+-------+
-      ^                     |
-      |                     V
-Insertion Point         Dropping Point
-
-n = count of entries inserted
-d = count of entries dropped
-~~~~~
-{: title="Example Dynamic Table Indexing - Control Stream"}
-
-Because frames from request streams can be delivered out of order with
-instructions on the control stream, relative indices are relative to the Base
-Index at the beginning of the header block (see {{absolute-index}}). The Base
-Index is the absolute index of the entry which has the relative index of zero
-when interpreting the frame.  The relative indices of entries do not change
-while interpreting headers on a request or push stream.
-
-~~~~~ drawing
-             Base Index
-                 |
-                 V
-    +---+-----+-----+-----+-------+
-    | n | n-1 | n-2 | ... |  d+1  |  Absolute Index
-    +---+-----+  -  +-----+   -   +
-              |  0  | ... | n-d-3 |  Relative Index
-              +-----+-----+-------+
-
-n = count of entries inserted
-d = count of entries dropped
-~~~~~
-{: title="Example Dynamic Table Indexing - Request Stream"}
-
-Entries with an absolute index greater than a frame's Base Index can be
-referenced using specific Post-Base instructions.  The relative indices of
-Post-Base references count up from Base Index.
-
-~~~~~ drawing
-             Base Index
-                 |
-                 V
-    +---+-----+-----+-----+-----+
-    | n | n-1 | n-2 | ... | d+1 |  Absolute Index
-    +---+-----+-----+-----+-----+
-    | 1 |  0  |                    Post-Base Index
-    +---+-----+
-
-n = count of entries inserted
-d = count of entries dropped
-~~~~~
-{: title="Dynamic Table Indexing - Post-Base References"}
-
-If the decoder encounters a reference to an entry which has already been dropped
-from the table or which is greater than the declared Largest Reference, this
-MUST be treated as a stream error of type `HTTP_QPACK_DECOMPRESSION_FAILED`
-error code.  If this reference occurs on the control stream, this MUST be
-treated as a session error.
-
-
-## QPACK Encoder Stream
+## QPACK Encoder Stream {#encoder-stream}
 
 Table updates can add a table entry, possibly using existing entries to avoid
 transmitting redundant information.  The name can be transmitted as a reference
@@ -411,7 +450,7 @@ entries which are frequently referenced, both to avoid the need to resend the
 header and to avoid the entry in the table blocking the ability to insert new
 headers.
 
-### Dynamic Table Size Update
+### Dynamic Table Size Update {#size-update}
 
 An encoder informs the decoder of a change to the size of the dynamic table
 using an instruction which begins with the '001' three-bit pattern.  The new
