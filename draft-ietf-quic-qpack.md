@@ -15,8 +15,8 @@ author:
  -
     ins: C. Krasic
     name: Charles 'Buck' Krasic
-    org: Google, Inc
-    email: ckrasic@google.com
+    org: Netflix
+    email: ckrasic@netflix.com
  -
     ins: M. Bishop
     name: Mike Bishop
@@ -800,3 +800,8 @@ those authors is gratefully acknowledged, as well as ideas from:
 * Ian Swett
 
 * Dmitri Tikhonov
+
+Buck's contribution was supported by Google during his employment there.
+
+A substantial portion of Mike's contribution was supported by Microsoft during
+his employment there.
