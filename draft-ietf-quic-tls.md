@@ -958,7 +958,7 @@ QUIC packets might be included in the same UDP datagram and that each one is
 handled separately.
 
 ~~~
-sample_offset = min(2 + len(destination_connection_id) +
+sample_offset = min(6 + len(destination_connection_id) +
                       len(source_connection_id) +
                       len(payload_length) + 4,
                     packet_length - aead_expansion)
