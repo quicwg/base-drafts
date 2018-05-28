@@ -340,7 +340,8 @@ Source Connection ID:
 Payload Length:
 
 : The length of the Payload field in octets, encoded as a variable-length
-  integer ({{integer-encoding}}).
+  integer ({{integer-encoding}}). An encoded length of 0 indicates that the
+  payload consumes all the remaining octets in the UDP datagram.
 
 Packet Number:
 
