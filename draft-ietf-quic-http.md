@@ -498,11 +498,11 @@ Two stream types are defined in this document: control streams
 can be defined by extensions to HTTP/QUIC.
 
 If the stream header indicates a stream type which is not supported by the
-recipient, the stream SHOULD be treated as a stream error of type
+recipient, this SHOULD be treated as a stream error of type
 HTTP_UNKNOWN_STREAM_TYPE.  The semantics of the remainder of the stream are
 unknown. Implementations SHOULD NOT send stream types the peer is not already
-known to support, since a stream error MAY be promoted to a connection error at
-the peer's discretion.
+known to support, since a stream error can be promoted to a connection error at
+the peer's discretion (see {{errors}}).
 
 ###  Control Streams
 
@@ -585,9 +585,9 @@ trailers (if any) carried by HEADERS frames.
 
 # HTTP Framing Layer {#http-framing-layer}
 
-Frames are used on each stream.  This section describes HTTP framing in QUIC and
-highlights some differences from HTTP/2 framing.  For more detail on differences
-from HTTP/2, see {{h2-frames}}.
+Frames are used on the control stream, request streams, and push streams.  This
+section describes HTTP framing in QUIC and highlights some differences from
+HTTP/2 framing.  For more detail on differences from HTTP/2, see {{h2-frames}}.
 
 ## Frame Layout
 
