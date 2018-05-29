@@ -942,11 +942,11 @@ Packet number protection is applied after packet protection is applied (see
 encryption algorithm.
 
 In sampling the packet ciphertext, the packet number length is assumed to be
-either 4 octets (its maximum possible encoded length), unless there is
-insufficient space in the packet for sampling.  The sampled ciphertext starts
-after allowing for a 4 octet packet number unless this would cause the sample to
-extend past the end of the packet.  If the sample would extend past the end of
-the packet, the end of the packet is sampled.
+4 octets (its maximum possible encoded length), unless there is insufficient
+space in the packet for sampling.  The sampled ciphertext starts after allowing
+for a 4 octet packet number unless this would cause the sample to extend past
+the end of the packet.  If the sample would extend past the end of the packet,
+the end of the packet is sampled.
 
 For example, the sampled ciphertext for a packet with a short header can be
 determined by:
