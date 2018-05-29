@@ -457,10 +457,6 @@ Protected Payload:
 
 : Packets with a short header always include a 1-RTT protected payload.
 
-The packet type in a short header currently determines only the size of the
-packet number field.  Additional types can be used to signal the presence of
-other fields.
-
 The header form and connection ID field of a short header packet are
 version-independent.  The remaining fields are specific to the selected QUIC
 version.  See {{QUIC-INVARIANTS}} for details on how packets from different
@@ -4568,4 +4564,3 @@ Hamilton, Jana Iyengar, Fedor Kouranov, Charles Krasic, Jo Kulik, Adam Langley,
 Jim Roskind, Robbie Shade, Satyam Shekhar, Cherie Shi, Ian Swett, Raman Tenneti,
 Victor Vasiliev, Antonio Vicente, Patrik Westin, Alyssa Wilk, Dale Worley, Fan
 Yang, Dan Zhang, Daniel Ziegler.
-
