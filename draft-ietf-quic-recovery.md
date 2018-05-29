@@ -419,8 +419,8 @@ largest received packet number.
 
 Also, reception of an packet marked as ECN Congestion Experience (ECN-CE)
 SHOULD be acknowledged more quickly to quicker react to congesiton events.
-Additional ECN-CE marks received during the same recovery period does 
-not need to be immediately acknowledged. See {{congestion-ecn}}.   
+Additional ECN-CE marks received during the same recovery period does
+not need to be immediately acknowledged, see {{congestion-ecn}}.
 
 As an optimization, a receiver MAY process multiple packets before
 sending any ACK frames in response.  In this case they can determine
@@ -630,7 +630,7 @@ Pseudocode for OnPacketSent follows:
 
 ### On Ack Receipt
 
-When an ack (ACK or ACK_ECN frame) is received, it may acknowledge 0 
+When an ack (ACK or ACK_ECN frame) is received, it may acknowledge 0
 or more packets. Reception of ACK_ECN frame requires that the receiver
 check if ECN indicates a congestion event, see {{congestion-ecn}}.
 
@@ -892,28 +892,28 @@ in {{tlp}} and {{rto}}.
 
 ## Explicit Congestion Notification {#congestion-ecn}
 
-If ECN {!RFC3168} has been verified to work for the current path QUIC 
-will use the ECN Congestion Experienced (ECN-CE) IP packet marking as a 
-signal of congestion as a complement to paket loss. This document 
-specifies to use the classical ECN-CE response, i.e. the same response 
-as for packet loss. However, there exist potenatial for future 
-experimentation in using other response functions as discussed in 
+If ECN {!RFC3168} has been verified to work for the current path QUIC
+will use the ECN Congestion Experienced (ECN-CE) IP packet marking as a
+signal of congestion as a complement to paket loss. This document
+specifies to use the classical ECN-CE response, i.e. the same response
+as for packet loss. However, there exist potenatial for future
+experimentation in using other response functions as discussed in
 {!RFC8311}.
 
-The ACK_ECN frame defined in {{QUIC-TRANSPORT}} does not provide 
-information on which of the newely acknowledged packets that 
-was marked with ECN-CE. Therefore, it will be assumed that 
+The ACK_ECN frame defined in {{QUIC-TRANSPORT}} does not provide
+information on which of the newely acknowledged packets that
+was marked with ECN-CE. Therefore, it will be assumed that
 the congestion event starts at the highest acknowledged packet
-number.  
+number.
 
 ## Slow Start
 
-QUIC begins every connection in slow start and exits slow start upon 
-loss or reception of ECN-CE packet markings. QUIC re-enters slow start 
-anytime the congestion window is less than sshthresh, which typically 
-only occurs after an RTO. While in slow start, QUIC increases the 
-congestion window by the number of acknowledged bytes when each ack is 
-processed. 
+QUIC begins every connection in slow start and exits slow start upon
+loss or reception of ECN-CE packet markings. QUIC re-enters slow start
+anytime the congestion window is less than sshthresh, which typically
+only occurs after an RTO. While in slow start, QUIC increases the
+congestion window by the number of acknowledged bytes when each ack is
+processed.
 
 
 ## Congestion Avoidance
@@ -926,19 +926,19 @@ window and sets the slow start threshold to the new congestion window.
 
 ## Recovery Period
 
-Recovery is a period of time beginning with detection of a lost packet 
-or the reception of an ECN-CE mark. Because QUIC retransmits stream data 
-and control frames, not packets, it defines the end of recovery as a 
-packet sent after the start of recovery being acknowledged. This is 
-slightly different from TCP's definition of recovery ending when the 
+Recovery is a period of time beginning with detection of a lost packet
+or the reception of an ECN-CE mark. Because QUIC retransmits stream data
+and control frames, not packets, it defines the end of recovery as a
+packet sent after the start of recovery being acknowledged. This is
+slightly different from TCP's definition of recovery ending when the
 lost packet that started recovery is acknowledged.
 
-During recovery, the congestion window is not increased or decreased. As 
-such, multiple lost packets and/or ECN-CE marks only decrease the 
-congestion window once as long as they're lost before exiting recovery. 
-This causes QUIC to decrease the congestion window multiple times if 
-retransmisions are lost, but limits the reduction to once per round 
-trip. 
+During recovery, the congestion window is not increased or decreased. As
+such, multiple lost packets and/or ECN-CE marks only decrease the
+congestion window once as long as they're lost before exiting recovery.
+This causes QUIC to decrease the congestion window multiple times if
+retransmisions are lost, but limits the reduction to once per round
+trip.
 
 
 ## Tail Loss Probe
@@ -1008,10 +1008,10 @@ Variables required to implement the congestion control mechanisms
 are described in this section.
 
 ack_ce_cntr:
-: The ACK_ECN counter for ECN-CE marks previously processed. Used to 
+: The ACK_ECN counter for ECN-CE marks previously processed. Used to
   determine when one or more packet acknowledged by the ACK_ECN frame
-  was marked with ECN-CE. 
- 
+  was marked with ECN-CE.
+
 
 bytes_in_flight:
 : The sum of the size in bytes of all sent packets that contain at least
@@ -1081,21 +1081,21 @@ acked_packet from sent_packets.
 
 ### On Packets Marked
 
-Invoked by an increment in the number of CE marked packets, as 
+Invoked by an increment in the number of CE marked packets, as
 indicated by a newly received ACK_ECN frame when compared to
-ack_ce_cntr.   
+ack_ce_cntr.
 
 ~~~
    OnPacketsMarked(ce_counter):
-      if (ce_counter > ack_ce_cntr):
-		// update ack_ce_cntr
-        ack_ce_cntr = ce_counter
-		if (!InRecovery(largest_acked_packet)):
-		  // Start a new congestion epoch
-		  end_of_recovery = largest_sent_packet
-          congestion_window *= kMarkReductionFactor
-          congestion_window = max(congestion_window, kMinimumWindow)
-          ssthresh = congestion_window
+     if (ce_counter > ack_ce_cntr):
+       // update ack_ce_cntr
+       ack_ce_cntr = ce_counter
+     if (!InRecovery(largest_acked_packet)):
+       // Start a new congestion epoch
+       end_of_recovery = largest_sent_packet
+       congestion_window *= kMarkReductionFactor
+       congestion_window = max(congestion_window, kMinimumWindow)
+       ssthresh = congestion_window
 ~~~
 
 
