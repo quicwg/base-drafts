@@ -1063,13 +1063,17 @@ HTTP_VERSION_FALLBACK (0x09):
   retry over HTTP/2.
 
 HTTP_WRONG_STREAM (0x0A):
-: A frame was received on stream where it is not permitted.
+: A frame was received on a stream where it is not permitted.
 
 HTTP_PUSH_LIMIT_EXCEEDED (0x0B):
 : A Push ID greater than the current maximum Push ID was referenced.
 
 HTTP_DUPLICATE_PUSH (0x0C):
 : A Push ID was referenced in two different stream headers.
+
+HTTP_GENERAL_PROTOCOL_ERROR (0x00FF):
+: Peer violated protocol requirements in a way which doesn't match a more
+  specific error code, or endpoint declines to use the more specific error code.
 
 HTTP_MALFORMED_FRAME (0x01XX):
 : An error in a specific frame type.  The frame type is included as the last
