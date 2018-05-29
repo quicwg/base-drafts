@@ -629,9 +629,10 @@ the flow, but other transport state MUST be discarded.
 
 The payload of the Retry packet contains at least two frames. It MUST include a
 STREAM frame on stream 0 with offset 0 containing the server's cryptographic
-stateless retry material. It MUST also include an ACK or ACK_ECN frame to acknowledge the
-client's Initial packet. It MAY additionally include PADDING frames. The next
-STREAM frame sent by the server will also start at stream offset 0.
+stateless retry material. It MUST also include an ACK or ACK_ECN frame to
+acknowledge the client's Initial packet. It MAY additionally include PADDING
+frames. The next STREAM frame sent by the server will also start at stream
+offset 0.
 
 
 ### Handshake Packet {#packet-handshake}
@@ -888,7 +889,7 @@ explained in more detail as they are referenced later in the document.
 | 0x0e        | PATH_CHALLENGE    | {{frame-path-challenge}}    |
 | 0x0f        | PATH_RESPONSE     | {{frame-path-response}}     |
 | 0x10 - 0x17 | STREAM            | {{frame-stream}}            |
-| 0x18        | ACK_ECN           | {{frame-ack-ECN}}       |
+| 0x18        | ACK_ECN           | {{frame-ack-ecn}}           |
 {: #frame-types title="Frame Types"}
 
 # Life of a Connection
@@ -1047,21 +1048,21 @@ negotiation, which is the same no matter which reserved version was sent.
 A server MAY therefore send different reserved version numbers in the Version
 Negotiation Packet and in its transport parameters.
 
-A client MAY send a packet using a reserved version number. This can be 
-used to solicit a list of supported versions from a server. 
+A client MAY send a packet using a reserved version number. This can be
+used to solicit a list of supported versions from a server.
 
 
 ## Cryptographic and Transport Handshake {#handshake}
 
-QUIC relies on a combined cryptographic and transport handshake to 
-minimize connection establishment latency. QUIC allocates stream 0 for 
-the cryptographic handshake. Version 0x00000001 of QUIC uses TLS 1.3 as 
-described in {{QUIC-TLS}}; a different QUIC version number could 
-indicate that a different cryptographic handshake protocol is in use. 
+QUIC relies on a combined cryptographic and transport handshake to
+minimize connection establishment latency. QUIC allocates stream 0 for
+the cryptographic handshake. Version 0x00000001 of QUIC uses TLS 1.3 as
+described in {{QUIC-TLS}}; a different QUIC version number could
+indicate that a different cryptographic handshake protocol is in use.
 
 
-QUIC provides this stream with reliable, ordered delivery of data. In 
-return, the cryptographic handshake provides QUIC with: 
+QUIC provides this stream with reliable, ordered delivery of data. In
+return, the cryptographic handshake provides QUIC with:
 
 * authenticated key exchange, where
 
@@ -1071,7 +1072,7 @@ return, the cryptographic handshake provides QUIC with:
 
    * every connection produces distinct and unrelated keys,
 
-   * keying material is usable for packet protection for both 0-RTT 
+   * keying material is usable for packet protection for both 0-RTT
      and 1-RTT packets, and
 
    * 1-RTT keys have forward secrecy
@@ -1079,27 +1080,27 @@ return, the cryptographic handshake provides QUIC with:
 * authenticated values for the transport parameters of the peer (see
   {{transport-parameters}})
 
-* authenticated confirmation of version negotiation 
+* authenticated confirmation of version negotiation
   (see {{version-validation}})
 
 * authenticated negotiation of an application protocol (TLS uses ALPN
   {{?RFC7301}} for this purpose)
 
-* for the server, the ability to carry data that provides assurance that 
-  the client can receive packets that are addressed with the transport 
-  address that is claimed by the client (see {{address-validation}}) 
+* for the server, the ability to carry data that provides assurance that
+  the client can receive packets that are addressed with the transport
+  address that is claimed by the client (see {{address-validation}})
 
-The initial cryptographic handshake message MUST be sent in a single 
-packet. Any second attempt that is triggered by address validation MUST 
-also be sent within a single packet. This avoids having to reassemble a 
-message from multiple packets. Reassembling messages requires that a 
-server maintain state prior to establishing a connection, exposing the 
-server to a denial of service risk. 
+The initial cryptographic handshake message MUST be sent in a single
+packet. Any second attempt that is triggered by address validation MUST
+also be sent within a single packet. This avoids having to reassemble a
+message from multiple packets. Reassembling messages requires that a
+server maintain state prior to establishing a connection, exposing the
+server to a denial of service risk.
 
 
-The first client packet of the cryptographic handshake protocol MUST fit 
-within a 1232 octet QUIC packet payload. This includes overheads that 
-reduce the space available to the cryptographic handshake protocol. 
+The first client packet of the cryptographic handshake protocol MUST fit
+within a 1232 octet QUIC packet payload. This includes overheads that
+reduce the space available to the cryptographic handshake protocol.
 
 Details of how TLS is integrated with QUIC is provided in more detail in
 {{QUIC-TLS}}.
@@ -1107,11 +1108,11 @@ Details of how TLS is integrated with QUIC is provided in more detail in
 
 ## Transport Parameters
 
-During connection establishment, both endpoints make authenticated 
-declarations of their transport parameters. These declarations are made 
-unilaterally by each endpoint. Endpoints are required to comply with the 
-restrictions implied by these parameters; the description of each 
-parameter includes rules for its handling. 
+During connection establishment, both endpoints make authenticated
+declarations of their transport parameters. These declarations are made
+unilaterally by each endpoint. Endpoints are required to comply with the
+restrictions implied by these parameters; the description of each
+parameter includes rules for its handling.
 
 
 The format of the transport parameters is the TransportParameters struct from
@@ -1402,34 +1403,68 @@ In TLS, the Retry packet type is used to carry the HelloRetryRequest message.
 
 ## ECN capability check {#ecn-capability-check}
 
-Explicit Congestion Notification (ECN) {{!RFC3168}} is feature that allows for non-destructive congestion notification by a network node, i.e packets are marked instead of being discarded by routers and other devices along a network path. QUIC endpoints perform capability verification on connection establishment as well as connection migration. The feature can be used unidirectional or bidirectional depending or disabled temporarily depending on endpoint and path capabilities.
+Explicit Congestion Notification (ECN) {{!RFC3168}} is feature that allows for
+non-destructive congestion notification by a network node.  That is, packets are
+marked instead of being discarded by routers and other devices along a network
+path. QUIC endpoints perform capability verification on connection establishment
+as well as connection migration. The feature can be used unidirectional or
+bidirectional depending or disabled temporarily depending on endpoint and path
+capabilities.
 
-The capability check makes use of the ACK_ECN frame in section {{frame-ack-ECN}}. Each endpoint individually performs an ECN capability check for its send path. The check is performed by attempting to set the ECN bits in the IP header to either ECT(0) or ECT(1) for packets generated by the endpoint, clients starting with the Initial packet ({{packet-initial}}) and servers with the Handshake packet (server) ({{packet-handshake}}). Note, Retry Packets ({{packet-retry}}) can be marked as ECT, but as they are not acknowledged by the peer, they provide no capability verification.
+The capability check makes use of the ACK_ECN frame in {{frame-ack-ecn}}. Each
+endpoint individually performs an ECN capability check for its send path. The
+check is performed by attempting to set the ECN bits in the IP header to either
+ECT(0) or ECT(1) for packets generated by the endpoint, clients starting with
+the Initial packet ({{packet-initial}}) and servers with the Handshake packet
+(server) ({{packet-handshake}}). Note that Retry Packets ({{packet-retry}}) can
+be marked as ECT, but as they are not acknowledged by the peer, they provide no
+capability verification.
 
-The choice if ECT(0) and ECT(1) should be used is as per the guidelines in {{!RFC8311}}. ECT(0) is the default, if no ECN experiments are run. Upon reception of a packet with ECT(0), ECT(1) or ECN-CE marking by the peer endpoint, an ACK_ECN frame is transmitted back. This ACK_ECN frame indicates how many packets that are marked ECT(0), ECT(1) or ECN-CE. Thus the endpoint can determine if the endpoints and path is ECN capable.
+The choice if ECT(0) and ECT(1) should be used is as per the guidelines in
+{{!RFC8311}}. ECT(0) is the default, if no ECN experiments are run. Upon
+reception of a packet with ECT(0), ECT(1) or ECN-CE marking by the peer
+endpoint, an ACK_ECN frame is transmitted back. This ACK_ECN frame indicates how
+many packets that are marked ECT(0), ECT(1) or ECN-CE. Thus the endpoint can
+determine if the endpoints and path is ECN capable.
 
-The ACK_ECN frame will, when received, confirm that the path direction supports ECN if the counters show a correct amount of packets received for a valid and expected counter combination. ECT marked packets can become remarked as CE along the path between the peers. The ACK_ECN counters are added together and compared to total number of ACKed packets, if the sum of the counters are equal too or larger than the number of ACKed packets then the path is ECN capable. This capability check thus has verified that one direction of the path between the peers is free from issues with ECN bleaching and that the application does not experience problems with access to the ECN field in the IP header. In this case the marking of the generated packets with ECT continues.
+The ACK_ECN frame will, when received, confirm that the path direction supports
+ECN if the counters show a correct amount of packets received for a valid and
+expected counter combination. ECT marked packets can become remarked as CE along
+the path between the peers. The ACK_ECN counters are added together and compared
+to total number of ACKed packets, if the sum of the counters are equal too or
+larger than the number of ACKed packets then the path is ECN capable. This
+capability check thus has verified that one direction of the path between the
+peers is free from issues with ECN bleaching and that the application does not
+experience problems with access to the ECN field in the IP header. In this case
+the marking of the generated packets with ECT continues.
 
-If an ACK frame (not the ACK_ECN frame) is used to acknowledge reception of packets that was marked as ECT in the sender, or if the comparision of the counters with the total of acknolwedged packets indicates that not all packets arrive as ECT(0), ECT(1) or ECN-CE, then the path is determined as not ECN Capable.  If the endpoint determine the path as currently not ECN capable it SHALL stop marking the packets as ECT, and instead mark them as Not-ECT. If the connection is migrated then the ECN capability check is rerun as specified in {{ecn-connection-migration}}.
+If an ACK frame (not the ACK_ECN frame) is used to acknowledge reception of
+packets that was marked as ECT in the sender, or if the comparision of the
+counters with the total of acknolwedged packets indicates that not all packets
+arrive as ECT(0), ECT(1) or ECN-CE, then the path is determined as not ECN
+Capable.  If the endpoint determine the path as currently not ECN capable it
+SHALL stop marking the packets as ECT, and instead mark them as Not-ECT. If the
+connection is migrated then the ECN capability check is rerun as specified in
+{{ecn-connection-migration}}.
 
-It is expected that QUIC discards duplicate packets early, however if that is not the case **[ED note, have not seen any clear statement in the drafts]**, then it should be verified that the number of ECT marked packets are equal to or larger that the amount of ECT marked packets that have been transmitted.
+It is expected that QUIC discards duplicate packets early, however if that is
+not the case **\[ED note, have not seen any clear statement in the drafts]**,
+then it should be verified that the number of ECT marked packets are equal to or
+larger that the amount of ECT marked packets that have been transmitted.
 
 ### Continous Verification of ECN {#ecn-continous-verification}
 
-If the ECN capabiity check was successful and the endpoint continus to
-send ECT marked packets then continous verification is applied. This is 
-detect any cases when ECN field is bleached, i.e. zeroed out by a network
-node, likely as the result of a routing changes since the ECN capability 
-check.
+If the ECN capabiity check was successful and the endpoint continus to send ECT
+marked packets then continous verification is applied. This is detect any cases
+when ECN field is bleached, that is, zeroed out by a network node, likely as the
+result of a routing changes since the ECN capability check.
 
-For each ACK_ECN frame that is received the total number of ACKed 
-packets are updated by adding those outstanding packets that was 
-acknolwedged by this ACK_ECN frame. Then the total number of ACKed 
-packets are compared with the sum of the ECN counters. If ACKed packets 
-are larger than the sum some ECN failure has occured and ECN should be 
-disabled. ECN is also disabled in case an ACK frame is received 
-acknowleging any ECT sent packet. 
-
+For each ACK_ECN frame that is received, the total number of ACKed packets are
+updated by adding those outstanding packets that was acknowledged by this
+ACK_ECN frame. Then the total number of ACKed packets are compared with the sum
+of the ECN counters. If ACKed packets are larger than the sum some ECN failure
+has occured and ECN should be disabled. ECN is also disabled in case an ACK
+frame is received acknowleging any ECT sent packet.
 
 
 ## Proof of Source Address Ownership {#address-validation}
@@ -1790,24 +1825,69 @@ validation of the address of the spurious migration to be abandoned.
 
 ### ECN capability check for Migrated Connection {#ecn-connection-migration}
 
-Connection migration requires that the path's ECN capability is verified again. The ECN capability as indicated in section {{ecn-capability-check}} should be repeated when a connection is migrated. This verifies that the endpoints are ECN-capable and that the ECN field is not bleached along the new path.
+Connection migration requires that the path's ECN capability is verified
+again. The ECN capability as indicated in section {{ecn-capability-check}}
+should be repeated when a connection is migrated. This verifies that the
+endpoints are ECN-capable and that the ECN field is not bleached along the new
+path.
 
 There are two unique cases:
+
 1. ECN capability was verified
+
 2. ECN capability had previously failed
 
-Case 1 can have two outcomes, either that ECN capability will continue, or that ECN capability is turned off. Case 2 means that ECN capability can be enabled after a connection even though it was disabled at the initial connection setup. The two cases are described more in detail below.
+Case 1 can have two outcomes, either that ECN capability will continue, or that
+ECN capability is turned off. Case 2 means that ECN capability can be enabled
+after a connection even though it was disabled at the initial connection
+setup. The two cases are described more in detail below.
 
 
 #### Case 1, ECN capability was verified
 
-IP packets continue to be transmitted with the applicable ECT code point. One possible issue is that ECN does not work along the new path, either because of ECN bleaching in the network or because of OS network stack issues. This error case will manifest itself in that the ECT and CE counters do not increase as much as they should. The sender detects this and consequently ECT marking is stopped and Not-ECT is used instead. The endpoint performing the check must store from which packet number the connection migration happended. This to ensure that packets after the connection migration occured are included in the ACK_ECN frame, and thus the new path is also measured rather than only the old. The paths cabability can be verified when at least one packet sent after connection migration has been acked.
+IP packets continue to be transmitted with the applicable ECT code point. One
+possible issue is that ECN does not work along the new path, either because of
+ECN bleaching in the network or because of OS network stack issues. This error
+case will manifest itself in that the ECT and CE counters do not increase as
+much as they should. The sender detects this and consequently ECT marking is
+stopped and Not-ECT is used instead. The endpoint performing the check must
+store from which packet number the connection migration happened. This to
+ensure that packets after the connection migration occured are included in the
+ACK_ECN frame, and thus the new path is also measured rather than only the
+old. The paths cabability can be verified when at least one packet sent after
+connection migration has been acked.
 
 #### Case 2, ECN capability had previously failed
 
-The applicable ECT codepoint is set in the IP packets sent on the new path during and after the path migration, and then the ECN capability check as defined in {{ecn-capability-check}} is performed. However, some special considerations are needed due to the in mid connection check. The packet number for the first packet sent after the connection migration occured is stored. For the latest received ACK_ECN the ECT(0), ECT(1) and ECN-CE counters (ECN counters) need to be stored for later comparision. If no ACK_ECN has ever been received, then the all of the ECN counters are assumed to be zero. The ECN counters may be non-zero if the connection had a ECN capable path for a period that then was migrated or stopped working.
+The applicable ECT codepoint is set in the IP packets sent on the new path
+during and after the path migration, and then the ECN capability check as
+defined in {{ecn-capability-check}} is performed. However, some special
+considerations are needed due to the in mid connection check. The packet number
+for the first packet sent after the connection migration occured is stored. For
+the latest received ACK_ECN the ECT(0), ECT(1) and ECN-CE counters (ECN
+counters) need to be stored for later comparision. If no ACK_ECN has ever been
+received, then the all of the ECN counters are assumed to be zero. The ECN
+counters may be non-zero if the connection had a ECN capable path for a period
+that then was migrated or stopped working.
 
-If an ACK_ECN is received after a connection migration, but it contains acknowledgements for packets prior to the migration, then the stored ECN counters are updated with the values in the received ACK_ECN, also the value of the Largest Acknowledged, and a list of outstanding packet prior in sequence number to Largest Acknowledged are stored, but no further back then connection migration. If an ACK_ECN acknowleging only packets sent after connection migration is received, then then comparision is performed. First the number of ACKed packets are computed, by calculating how many packets with sequence number larger than Largest Acknowledged have been acknowledged, to that is added the number of packets of the outstanding that also have been acknolwedged. If the value of ACKed packets are non-zero, then the changes of the ECN counters between the stored and newely received are compared. If the sum of changes across the ECT(0), ECT(1) and ECN-CE are equal or larger than the number of ACKed packets, then ECN is confirmed to work. If an ACK frame is received, which acknowledge a non-zero number of packets that have a PN higher than the point of migration, it is concluded that ECN is not functional on the new path, and the ECT marking of any sent packets are stopped, and the packets will be marked as Non-ECT (00).
+If an ACK_ECN is received after a connection migration, but it contains
+acknowledgements for packets prior to the migration, then the stored ECN
+counters are updated with the values in the received ACK_ECN, also the value of
+the Largest Acknowledged, and a list of outstanding packet prior in sequence
+number to Largest Acknowledged are stored, but no further back then connection
+migration. If an ACK_ECN acknowleging only packets sent after connection
+migration is received, then then comparision is performed. First the number of
+ACKed packets are computed, by calculating how many packets with sequence number
+larger than Largest Acknowledged have been acknowledged, to that is added the
+number of packets of the outstanding that also have been acknolwedged. If the
+value of ACKed packets are non-zero, then the changes of the ECN counters
+between the stored and newely received are compared. If the sum of changes
+across the ECT(0), ECT(1) and ECN-CE are equal or larger than the number of
+ACKed packets, then ECN is confirmed to work. If an ACK frame is received, which
+acknowledge a non-zero number of packets that have a PN higher than the point of
+migration, it is concluded that ECN is not functional on the new path, and the
+ECT marking of any sent packets are stopped, and the packets will be marked as
+Non-ECT (00).
 
 
 ### Loss Detection and Congestion Control {#migration-cc}
@@ -2843,7 +2923,7 @@ ACK Block (repeated):
 
 ACK Frames MAY be sent when all packets to be acknowledge had an IP header with
 the ECN field marked as Not-ECT. If any packets where marked as ECT or ECN-CE
-the ACK_ECN Frame ({{frame-ack-ECN}}) MUST be used instead.
+the ACK_ECN Frame ({{frame-ack-ecn}}) MUST be used instead.
 
 Implementations MUST NOT generate packets that only contain ACK frames in
 response to packets which only contain ACK frames. However, they MUST
@@ -2911,14 +2991,14 @@ by a client in protected packets, because it is certain that the server is able
 to decipher the packet.
 
 
-## ACK_ECN Frame {#frame-ack-ECN}
+## ACK_ECN Frame {#frame-ack-ecn}
 
 A QUIC connection MUST keep counters for each ECN codepoint, recording the
 number of packets that were received with the corresponding ECN codepoint in
 the IP header. If the header is not readable from the application, the
 codepoint 00 (Not-ECT) MUST be assumed.
 
-ACK_ECN Frame MUST be used when when an endpoint is ackonwleging a packet where
+ACK_ECN Frame MUST be used when when an endpoint is acknowleging a packet where
 the IP header ECN field was marked as ECT(0), ECT(1) or ECN-CE when received.
 The ACK_ECN frame is used by the reeiver to echo the value of these counters
 back to the sender of these packets. This allows the sender to utilize these
@@ -2927,21 +3007,22 @@ elements of the ACK frame ({{frame-ack}}) with the addition of an ECN block
 appended at the end.
 
 ~~~
-     0                   1                   2                   3
-     0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-     |                     Largest Acknowledged (i)                ...
-     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-     |                          ACK Delay (i)                      ...
-     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-     |                       ACK Block Count (i)                   ...
-     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-     |                          ACK Blocks (*)                     ...
-     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-     |                           ECN Block                         ...
-     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                     Largest Acknowledged (i)                ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                          ACK Delay (i)                      ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                       ACK Block Count (i)                   ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                          ACK Blocks (*)                     ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                           ECN Block                         ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
 {: #ACN_ECN_FRAME_FORMAT title="ACK_ECN Frame Format"}
+
 
 ### ECN Block {#ECN-Block}
 
@@ -2951,26 +3032,34 @@ counter (1, 2, 4 or 8 bytes) should be selected such that all the
 significant bits are represented.
 
 ~~~
-      0                   1                   2                   3
-      0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-     |# ECT(0) marked packets (i)                                 ...
-     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-     |# ECT(1) marked packets (i)                                 ...
-     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-     |# ECN-CE marked packets (i)                                 ...
-     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|              Number of ECT(0) marked packets (i)            ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|              Number of ECT(1) marked packets (i)            ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|              Number of ECN-CE marked packets (i)            ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
 {: #ECN-BLOCK-FIG title="ECN Block"}
 
 
 ### ECN counters
 
-The receiver side should implement three 64-bit counters that are copied to the ECN block when an ACK_ECN frame is generated.
+The receiver side should implement three 64-bit counters that are copied to the
+ECN block when an ACK_ECN frame is generated:
 
-* ECT_0 : Initial value = 0, incremented when a packet marked ECT(0) is received
-* ECT_1 : Initial value = 0, incremented when a packet marked ECT(1) is received
-* CE    : Initial value = 0, incremented when a packet marked CE is received
+ECT_0:
+: Initial value = 0, incremented when a packet marked ECT(0) is received
+
+ECT_1:
+
+: Initial value = 0, incremented when a packet marked ECT(1) is received
+
+CE:
+
+: Initial value = 0, incremented when a packet marked CE is received
 
 Reception of duplicate packets SHOULD NOT increment the counters.
 
@@ -2991,7 +3080,6 @@ PATH_CHALLENGE frames contain an 8-byte payload.
 +                            Data (8)                           +
 |                                                               |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-
 ~~~
 
 Data:
