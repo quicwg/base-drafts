@@ -847,7 +847,7 @@ derived from 1-RTT secrets as follows:
 ~~~
 client_pp_key<i> = QHKDF-Expand(client_pp_secret<i>, "key", 16)
 client_pp_iv<i>  = QHKDF-Expand(client_pp_secret<i>, "iv", 12)
-client_pp_pn<i>  = QHKDF-Expand(client_pp_secret<i>, "pn", 12)
+client_pp_pn<i>  = QHKDF-Expand(client_pp_secret<i>, "pn", 16)
 ~~~
 
 The QUIC packet protection initially starts with keying material derived from
