@@ -219,9 +219,9 @@ While connection-level options pertaining to the core QUIC protocol are set in
 the initial crypto handshake, HTTP/QUIC-specific settings are conveyed in the
 SETTINGS frame. After the QUIC connection is established, a SETTINGS frame
 ({{frame-settings}}) MUST be sent by each endpoint as the initial frame of their
-respective HTTP control stream (Stream ID 2 or 3, see {{stream-mapping}}). The
-server MUST NOT send data on any other stream until the client's SETTINGS frame
-has been received.
+respective HTTP control stream (see {{control-streams}}). The server MUST NOT
+send data on any other stream until the client's SETTINGS frame has been
+received.
 
 ## Connection Reuse
 
@@ -1277,8 +1277,8 @@ Because the Flags field is not present in generic HTTP/QUIC frames, those frames
 which depend on the presence of flags need to allocate space for flags as part
 of their frame payload.
 
-Other than these issues, frame type HTTP/2 extensions are typically portable to
-QUIC simply by replacing Stream 0 in HTTP/2 with Stream 2 or 3 in HTTP/QUIC.
+Other than this issue, frame type HTTP/2 extensions are typically portable to
+QUIC simply by replacing Stream 0 in HTTP/2 with a control stream in HTTP/QUIC.
 HTTP/QUIC extensions will not assume ordering, but would not be harmed by
 ordering, and would be portable to HTTP/2 in the same manner.
 
@@ -1551,15 +1551,10 @@ Specification:
 
 The entries in the following table are registered by this document.
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> f61a811... Review feedback
 | ---------------------------- | ------ | ------------------------- |
 | Setting Name                 | Code   | Specification             |
 | ---------------------------- | :----: | ------------------------- |
 | Reserved                     | 0x2    | N/A                       |
-<<<<<<< HEAD
 | NUM_PLACEHOLDERS             | 0x3    | {{settings-parameters}}   |
 | Reserved                     | 0x4    | N/A                       |
 | Reserved                     | 0x5    | N/A                       |
@@ -1575,26 +1570,6 @@ Name:
 
 Specification:
 : {{settings-parameters}}
-=======
-|----------------------------|------|-------------------------|
-| Setting Name               | Code | Specification           |
-|----------------------------|:----:|-------------------------|
-| Reserved                   | 0x2  | N/A                     |
-| Reserved                   | 0x3  | N/A                     |
-| Reserved                   | 0x4  | N/A                     |
-| Reserved                   | 0x5  | N/A                     |
-| MAX_HEADER_LIST_SIZE       | 0x6  | {{settings-parameters}} |
-| QPACK_BLOCKED_STREAMS      | 0x7  | {{settings-parameters}} |
-|----------------------------|------|-------------------------|
->>>>>>> 493a2bb... WIP: Unidirectional stream headers
-=======
-| Reserved                     | 0x3    | N/A                       |
-| Reserved                     | 0x4    | N/A                       |
-| Reserved                     | 0x5    | N/A                       |
-| MAX_HEADER_LIST_SIZE         | 0x6    | {{settings-parameters}}   |
-| QPACK_BLOCKED_STREAMS        | 0x7    | {{settings-parameters}}   |
-| ---------------------------- | ------ | ------------------------- |
->>>>>>> f61a811... Review feedback
 
 ## Error Codes {#iana-error-codes}
 
@@ -1647,8 +1622,6 @@ The entries in the following table are registered by this document.
 | HTTP_WRONG_STREAM_DIRECTION         | 0x0010     | Unidirectional stream in wrong direction | {{http-error-codes}}   |
 | HTTP_MALFORMED_FRAME                | 0x01XX     | Error in frame formatting or use         | {{http-error-codes}}   |
 | ----------------------------------- | ---------- | ---------------------------------------- | ---------------------- |
-<<<<<<< HEAD
-=======
 
 ## Stream Types {#iana-stream-types}
 
@@ -1677,22 +1650,12 @@ Sender:
 
 The entries in the following table are registered by this document.
 
-<<<<<<< HEAD
-| ---------------- | ------ | -------------------------- |
-| Stream Type      | Code   | Specification              |
-| ---------------- | :----: | -------------------------- |
-| Control Stream   | 0x43   | {{control-streams}}        |
-| Push Stream      | 0x50   | {{server-push}}            |
-| ---------------- | ------ | -------------------------- |
->>>>>>> 493a2bb... WIP: Unidirectional stream headers
-=======
 | ---------------- | ------ | -------------------------- | ------ |
 | Stream Type      | Code   | Specification              | Sender |
 | ---------------- | :----: | -------------------------- | ------ |
 | Control Stream   | 0x43   | {{control-streams}}        | Both   |
 | Push Stream      | 0x50   | {{server-push}}            | Server |
 | ---------------- | ------ | -------------------------- | ------ |
->>>>>>> f61a811... Review feedback
 
 
 --- back
