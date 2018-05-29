@@ -941,15 +941,32 @@ Packet number protection is applied after packet protection is applied (see
 {{aead}}).  The ciphertext of the packet is sampled and used as input to an
 encryption algorithm.
 
-In sampling the packet ciphertext, the packet number length is assumed to be the
-smaller of the maximum possible packet number encoding (4 octets), or the size
-of the protected packet minus the minimum expansion for the AEAD.  For example,
-the sampled ciphertext for a packet with a short header can be determined by:
+In sampling the packet ciphertext, the packet number length is assumed to be
+4 octets (its maximum possible encoded length), unless there is insufficient
+space in the packet for sampling.  The sampled ciphertext starts after allowing
+for a 4 octet packet number unless this would cause the sample to extend past
+the end of the packet.  If the sample would extend past the end of the packet,
+the end of the packet is sampled.
+
+For example, the sampled ciphertext for a packet with a short header can be
+determined by:
 
 ~~~
-sample_offset = min(1 + connection_id_length + 4,
-                    packet_length - aead_expansion)
+sample_offset = 1 + len(connection_id) + 4
+
+if sample_offset + sample_length > packet_length then
+    sample_offset = packet_length - sample_length
 sample = packet[sample_offset..sample_offset+sample_length]
+~~~
+
+A packet with a long header is sampled in the same way, noting that multiple
+QUIC packets might be included in the same UDP datagram and that each one is
+handled separately.
+
+~~~
+sample_offset = 6 + len(destination_connection_id) +
+                    len(source_connection_id) +
+                    len(payload_length) + 4
 ~~~
 
 To ensure that this process does not sample the packet number, packet number

@@ -280,7 +280,7 @@ keys are established.
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                 Source Connection ID (0/32..144)            ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                       Payload Length (i)                    ...
+|                           Length (i)                        ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                     Packet Number (8/16/32)                   |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -337,10 +337,11 @@ Source Connection ID:
   either 0 octets in length or between 4 and 18 octets. {{connection-id}}
   describes the use of this field in more detail.
 
-Payload Length:
+Length:
 
-: The length of the Payload field in octets, encoded as a variable-length
-  integer ({{integer-encoding}}).
+: The length of the remainder of the packet (that is, the Packet Number and
+  Payload fields) in octets, encoded as a variable-length integer
+  ({{integer-encoding}}).
 
 Packet Number:
 
@@ -373,10 +374,13 @@ The interpretation of the fields and the payload are specific to a version and
 packet type.  Type-specific semantics for this version are described in the
 following sections.
 
-The end of the Payload field (which is also the end of the long header
-packet) is determined by the value of the Payload Length field.
-Senders can sometimes coalesce multiple packets into one UDP datagram.
-See {{packet-coalesce}} for more details.
+The end of the packet is determined by the Length field.  The Length field
+covers the both the Packet Number and Payload fields, both of which are
+confidentiality protected and initially of unknown length.  The size of the
+Payload field is learned once the packet number protection is removed.
+
+Senders can sometimes coalesce multiple packets into one UDP datagram.  See
+{{packet-coalesce}} for more details.
 
 
 ## Short Header
@@ -4568,4 +4572,3 @@ Hamilton, Jana Iyengar, Fedor Kouranov, Charles Krasic, Jo Kulik, Adam Langley,
 Jim Roskind, Robbie Shade, Satyam Shekhar, Cherie Shi, Ian Swett, Raman Tenneti,
 Victor Vasiliev, Antonio Vicente, Patrik Westin, Alyssa Wilk, Dale Worley, Fan
 Yang, Dan Zhang, Daniel Ziegler.
-
