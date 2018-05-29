@@ -948,7 +948,7 @@ The entries in the following table are registered by this document.
 ## Stream Type Registration
 
 This document creates two new settings in the "HTTP/QUIC Stream Type" registry
-established in {{!QUIC-HTTP}}.
+established in {{QUIC-HTTP}}.
 
 The entries in the following table are registered by this document.
 
