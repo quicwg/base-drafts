@@ -1455,9 +1455,9 @@ larger that the amount of ECT marked packets that have been transmitted.
 ### Continous Verification of ECN {#ecn-continous-verification}
 
 If the ECN capabiity check was successful and the endpoint continus to send ECT
-marked packets then continous verification is applied. This is to detect any cases
-when ECN field is bleached, that is, zeroed out by a network node, likely as the
-result of a routing changes since the ECN capability check.
+marked packets then continous verification is applied. This is to detect any
+cases when ECN field is bleached, that is, zeroed out by a network node, likely
+as the result of a routing changes since the ECN capability check.
 
 For each ACK_ECN frame that is received, the total number of ACKed packets are
 updated by adding those outstanding packets that was acknowledged by this
