@@ -610,6 +610,9 @@ The PRIORITY frame payload has the following fields:
     : Indicates that the stream dependency is exclusive (see {{!RFC7540}},
       Section 5.3).
 
+    Undefined bits in the Flags field MUST be zero when sent, and ignored upon
+    receipt.
+
   Prioritized Request ID:
   : A variable-length integer that identifies a request.  This contains
     the Stream ID of a request stream when the PUSH_PRIORITIZED flag is clear,
