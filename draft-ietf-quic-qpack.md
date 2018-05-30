@@ -558,7 +558,7 @@ the request stream's stream ID, encoded as a 6-bit prefix integer.
 ~~~~~~~~~~ drawing
   0   1   2   3   4   5   6   7
 +---+---+---+---+---+---+---+---+
-| 1 | 0 |     Stream ID (6+)    |
+| 1 | 1 |     Stream ID (6+)    |
 +---+---+-----------------------+
 ~~~~~~~~~~
 {:#fig-stream-reset title="Stream Reset Acknowledgement"}
