@@ -473,7 +473,10 @@ decoder.
 
 Reducing the maximum size of the dynamic table can cause entries to be evicted
 (see Section 4.3 of [RFC7541]).  This MUST NOT cause the eviction of entries
-with outstanding references (see {{reference-tracking}}).
+with outstanding references (see {{reference-tracking}}).  Changing the size of
+the dynamic table is not acknowledged as this instruction does not insert an
+entry.
+
 
 ## QPACK Decoder Stream {#feedback}
 
