@@ -542,18 +542,21 @@ caused by acknowledging a header block so that it can correctly generate the
 Table State Synchronize instruction.
 
 
-### Stream Reset Acknowledgement
+### Stream Cancellation
 
 A stream that is reset might have multiple outstanding header blocks.  A decoder
-that receives a stream reset before the end of a stream generates a Stream Reset
-Acknowledgment instruction on the decoder stream.  This signals to the encoder
-that any references to the dynamic table are no longer outstanding.
+that receives a stream reset before the end of a stream generates a Stream
+Cancellation instruction on the decoder stream.  Similarly, a decoder that
+abandons reading of a stream need to signal this using the Stream Cancellation
+instruction.  This signals to the encoder that all references to the dynamic
+table on that stream are no longer outstanding.
 
 An encoder cannot infer from this acknowledgement that any dynamic table entries
 referenced have been received.
 
 The instruction begins with the '11' two-bit pattern. The instruction includes
-the request stream's stream ID, encoded as a 6-bit prefix integer.
+the stream ID of the affected stream - a request or push stream - encoded as a
+6-bit prefix integer.
 
 ~~~~~~~~~~ drawing
   0   1   2   3   4   5   6   7
@@ -561,7 +564,7 @@ the request stream's stream ID, encoded as a 6-bit prefix integer.
 | 1 | 1 |     Stream ID (6+)    |
 +---+---+-----------------------+
 ~~~~~~~~~~
-{:#fig-stream-reset title="Stream Reset Acknowledgement"}
+{:#fig-stream-cancel title="Stream Cancellation"}
 
 
 ## Request and Push Streams
