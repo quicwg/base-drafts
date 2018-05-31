@@ -547,7 +547,7 @@ Table State Synchronize instruction.
 A stream that is reset might have multiple outstanding header blocks.  A decoder
 that receives a stream reset before the end of a stream generates a Stream
 Cancellation instruction on the decoder stream.  Similarly, a decoder that
-abandons reading of a stream need to signal this using the Stream Cancellation
+abandons reading of a stream needs to signal this using the Stream Cancellation
 instruction.  This signals to the encoder that all references to the dynamic
 table on that stream are no longer outstanding.
 
