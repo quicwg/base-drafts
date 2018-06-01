@@ -551,8 +551,8 @@ abandons reading of a stream needs to signal this using the Stream Cancellation
 instruction.  This signals to the encoder that all references to the dynamic
 table on that stream are no longer outstanding.
 
-An encoder cannot infer from this acknowledgement that any dynamic table entries
-referenced have been received.
+An encoder cannot infer from this acknowledgement that any updates to the
+dynamic table have been received.
 
 The instruction begins with the '11' two-bit pattern. The instruction includes
 the stream ID of the affected stream - a request or push stream - encoded as a
