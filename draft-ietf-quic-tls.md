@@ -826,8 +826,8 @@ in Section 5.3 of {{!TLS13}}, the IV length is the larger of 8 or N_MIN (see
 Section 4 of {{!AEAD=RFC5116}}; all ciphersuites defined in {{!TLS13}} have
 N_MIN set to 12).
 
-The size of the packet protection key is determined by the packet protection
-algorithm, see {{pn-encrypt}}.
+The size of the packet number protection key is determined by the packet number
+protection algorithm, see {{pn-encrypt}}.
 
 For any secret S, the AEAD key uses a label of "key", the IV uses a label of
 "iv", packet number encryption uses a label of "pn":
@@ -932,10 +932,10 @@ to QUIC.
 
 ## Packet Number Protection {#pn-encrypt}
 
-QUIC packets are protected using a key that is derived from the current set of
-secrets.  The key derived using the "pn" label is used to protect the packet
-number from casual observation.  The packet number protection algorithm depends
-on the negotiated AEAD.
+QUIC packet numbers are protected using a key that is derived from the current
+set of secrets.  The key derived using the "pn" label is used to protect the
+packet number from casual observation.  The packet number protection algorithm
+depends on the negotiated AEAD.
 
 Packet number protection is applied after packet protection is applied (see
 {{aead}}).  The ciphertext of the packet is sampled and used as input to an
