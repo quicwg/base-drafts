@@ -224,10 +224,10 @@ d = count of entries dropped
 {: title="Dynamic Table Indexing - Post-Base References"}
 
 If the decoder encounters a reference to an entry which has already been dropped
-from the table or which is greater than the declared Largest Reference, this
-MUST be treated as a stream error of type `HTTP_QPACK_DECOMPRESSION_FAILED`
-error code.  If this reference occurs on the control stream, this MUST be
-treated as a session error.
+from the table or which is greater than the declared Largest Reference (see
+{{absolute-index}}), this MUST be treated as a stream error of type
+`HTTP_QPACK_DECOMPRESSION_FAILED` error code.  If this reference occurs
+on the control stream, this MUST be treated as a session error.
 
 ## Avoiding Head-of-Line Blocking in HTTP/QUIC {#overview-hol-avoidance}
 
@@ -235,7 +235,7 @@ Because QUIC does not guarantee order between data on different streams, a
 header block might reference an entry in the dynamic table that has not yet been
 received.
 
-Each header block contains a Largest Reference (see {{absolute-index}}) which
+Each header block contains a Largest Reference which
 identifies the table state necessary for decoding. If the greatest absolute
 index in the dynamic table is less than the value of the Largest Reference, the
 stream is considered "blocked."  While blocked, header field data should remain
