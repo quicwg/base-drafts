@@ -554,10 +554,10 @@ safe to process the rest of the block.
 
 To save space, Base Index is encoded relative to Largest Reference using a
 one-bit sign and the `Delta Base Index` value.  A sign bit of 0 indicates that
-the Base Index has a greater absolute index than the Largest Reference; the
-value of Delta Base Index is added to the Largest Reference to determine the
-absolute value of the Base Index.  A sign bit of 1 indicates that the Base Index
-is smaller than the Base Index.  That is:
+the Base Index has an absolute index that is greater than or equal to the
+Largest Reference; the value of Delta Base Index is added to the Largest
+Reference to determine the absolute value of the Base Index.  A sign bit of 1
+indicates that the Base Index is less than the Largest Reference.  That is:
 
 ~~~
    if sign == 0:
