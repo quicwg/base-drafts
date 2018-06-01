@@ -489,16 +489,18 @@ After processing a set of instructions on the encoder stream, the decoder will
 emit a Table State Synchronize instruction on the decoder stream.  The
 instruction begins with the '1' one-bit pattern. The instruction specifies the
 total number of dynamic table inserts and duplications since the last Table
-State Synchronize, encoded as a 7-bit prefix integer.  The encoder uses this
-value to determine which table entries are vulnerable to head-of-line blocking.
+State Synchronize or Header Acknowledgement that increased the largest
+acknolwedged dynamic table entry.  This is encoded as a 7-bit prefix integer.
+The encoder uses this value to determine which table entries are vulnerable to
+head-of-line blocking.
 
 A decoder MAY coalesce multiple synchronization updates into a single update.  A
 decoder MAY rely on Header Acknowledgement instructions to indirectly
 acknowledge changes to the dynamic table.  Relying on Header Acknowledgment
-instructions exclusively leads to blocking if the encoder waits for an entry to
-be acknowledged before using it.  This happens if the encoder wants to avoid the
-risk of blocking at the decoder, or the decoder sets the
-SETTINGS_QPACK_BLOCKED_STREAMS lower than the number of active streams.
+instructions exclusively leads to poor compression efficiency if the encoder
+waits for an entry to be acknowledged before using it.  This happens if the
+encoder wants to avoid the risk of blocking at the decoder, or the encoder has
+already reached the decoder's limit for blocked streams.
 
 ~~~~~~~~~~ drawing
   0   1   2   3   4   5   6   7
