@@ -861,8 +861,8 @@ writing.
 ## QUIC AEAD Usage {#aead}
 
 The Authentication Encryption with Associated Data (AEAD) {{!AEAD}} function
-used for QUIC packet protection is AEAD that is negotiated for use with the TLS
-connection.  For example, if TLS is using the TLS_AES_128_GCM_SHA256, the
+used for QUIC packet protection is the AEAD that is negotiated for use with the
+TLS connection.  For example, if TLS is using the TLS_AES_128_GCM_SHA256, the
 AEAD_AES_128_GCM function is used.
 
 QUIC packets are protected prior to applying packet number encryption
@@ -1645,7 +1645,7 @@ packets as indicative of an attack.
 
 ## Packet Number Protection Analysis {#pn-encrypt-analysis}
 
-Packet number protection relies the packet protection AEAD being a
+Packet number protection relies on the packet protection AEAD being a
 pseudorandom function (PRF), which is not a property that AEAD algorithms
 guarantee. Therefore, no strong assurances about the general security of this
 mechanism can be shown in the general case. The AEAD algorithms described in
