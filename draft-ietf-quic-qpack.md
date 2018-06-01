@@ -537,6 +537,10 @@ any dynamic table entries that the header block referenced.  That is, this
 instruction is also processed as a Table Size Synchronize instruction with a
 value matching the Largest Reference of the corresponding header block.
 
+A decoder MUST track increases to the largest acknowledged dynamic table entry
+caused by acknowledging a header block so that it can correctly generate the
+Table State Synchronize instruction.
+
 
 ## Request and Push Streams
 
