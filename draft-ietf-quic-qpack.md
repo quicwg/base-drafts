@@ -553,18 +553,39 @@ the block.  Blocking decoders use the Largest Reference to determine when it is
 safe to process the rest of the block.
 
 `Base Index` is used to resolve references in the dynamic table as described in
-{{indexing}}.  To save space, Base Index is encoded relative to Largest
-Reference using a one-bit sign flag.
+{{indexing}}.
 
-    baseIndex = largestReference + deltaBaseIndex
+To save space, Base Index is encoded relative to Largest Reference using a
+one-bit sign and the `Delta Base Index` value.  A sign bit of 0 indicates that
+the Base Index has an absolute index that is greater than or equal to the
+Largest Reference; the value of Delta Base Index is added to the Largest
+Reference to determine the absolute value of the Base Index.  A sign bit of 1
+indicates that the Base Index is less than the Largest Reference.  That is:
 
-If the encoder inserted entries to the table while the encoding the block,
-Largest Reference will be greater than Base Index, so deltaBaseIndex will be
-negative and encoded with S=1.  If the block did not reference the most recent
-entry in the table and did not insert any new entries, Largest Reference will be
-less than Base Index, so deltaBaseIndex will be positive and encoded with S=0.
-When Largest Reference and Base Index are equal, deltaBaseIndex is 0 and encoded
-with S=0.
+~~~
+   if sign == 0:
+      baseIndex = largestReference + deltaBaseIndex
+   else:
+      baseIndex = largestReference - deltaBaseIndex
+~~~
+
+A single-pass encoder is expected to determine the absolute value of Base Index
+before encoding a header block.  If the encoder inserted entries in the dynamic
+table while encoding the header block, Largest Reference will be greater than
+Base Index, so the encoded difference is negative and the sign bit is set to 1.
+If the header block did not reference the most recent entry in the table and did
+not insert any new entries, Base Index will be greater than the Largest
+Reference, so the delta will be positive and the sign bit is set to 0.
+
+An encoder that produces table updates before encoding a header block might set
+Largest Reference and Base Index to the same value.  When Largest Reference and
+Base Index are equal, the Delta Base Index is encoded with a zero sign bit.  A
+sign bit set to 1 when the Delta Base Index is 0 MUST be treated as a decoder
+error.
+
+A header block that does not reference the dynamic table can use any value for
+Base Index; setting both Largest Reference and Base Index to zero is the most
+efficient encoding.
 
 
 ### Instructions
@@ -700,7 +721,7 @@ represented as an 8-bit prefix string literal.
 
 # Encoding Strategies
 
-## Single pass encoding
+## Single Pass Encoding
 
 An encoder making a single pass over a list of headers must choose Base Index
 before knowing Largest Reference.  When trying to reference a header inserted to
