@@ -1136,9 +1136,6 @@ This document has no IANA actions.  Yet.
 
 --- back
 
-# Acknowledgments
-
-
 # Change Log
 
 > **RFC Editor's Note:**  Please remove this section prior to
@@ -1211,3 +1208,7 @@ No significant changes.
 - Adopted as base for draft-ietf-quic-recovery
 - Updated authors/editors list
 - Added table of contents
+
+
+# Acknowledgments
+{:numbered="false"}

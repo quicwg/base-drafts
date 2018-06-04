@@ -826,8 +826,8 @@ in Section 5.3 of {{!TLS13}}, the IV length is the larger of 8 or N_MIN (see
 Section 4 of {{!AEAD=RFC5116}}; all ciphersuites defined in {{!TLS13}} have
 N_MIN set to 12).
 
-The size of the packet protection key is determined by the packet protection
-algorithm, see {{pn-encrypt}}.
+The size of the packet number protection key is determined by the packet number
+protection algorithm, see {{pn-encrypt}}.
 
 For any secret S, the AEAD key uses a label of "key", the IV uses a label of
 "iv", packet number encryption uses a label of "pn":
@@ -847,7 +847,7 @@ derived from 1-RTT secrets as follows:
 ~~~
 client_pp_key<i> = QHKDF-Expand(client_pp_secret<i>, "key", 16)
 client_pp_iv<i>  = QHKDF-Expand(client_pp_secret<i>, "iv", 12)
-client_pp_pn<i>  = QHKDF-Expand(client_pp_secret<i>, "pn", 12)
+client_pp_pn<i>  = QHKDF-Expand(client_pp_secret<i>, "pn", 16)
 ~~~
 
 The QUIC packet protection initially starts with keying material derived from
@@ -861,8 +861,8 @@ writing.
 ## QUIC AEAD Usage {#aead}
 
 The Authentication Encryption with Associated Data (AEAD) {{!AEAD}} function
-used for QUIC packet protection is AEAD that is negotiated for use with the TLS
-connection.  For example, if TLS is using the TLS_AES_128_GCM_SHA256, the
+used for QUIC packet protection is the AEAD that is negotiated for use with the
+TLS connection.  For example, if TLS is using the TLS_AES_128_GCM_SHA256, the
 AEAD_AES_128_GCM function is used.
 
 QUIC packets are protected prior to applying packet number encryption
@@ -932,25 +932,42 @@ to QUIC.
 
 ## Packet Number Protection {#pn-encrypt}
 
-QUIC packets are protected using a key that is derived from the current set of
-secrets.  The key derived using the "pn" label is used to protect the packet
-number from casual observation.  The packet number protection algorithm depends
-on the negotiated AEAD.
+QUIC packet numbers are protected using a key that is derived from the current
+set of secrets.  The key derived using the "pn" label is used to protect the
+packet number from casual observation.  The packet number protection algorithm
+depends on the negotiated AEAD.
 
 Packet number protection is applied after packet protection is applied (see
 {{aead}}).  The ciphertext of the packet is sampled and used as input to an
 encryption algorithm.
 
-In sampling the packet ciphertext, the packet number length is assumed to be the
-smaller of the maximum possible packet number encoding (4 octets), or the size
-of the protected packet minus the minimum expansion for the AEAD.  For example,
-the sampled ciphertext for a packet with a short header can be determined by:
+In sampling the packet ciphertext, the packet number length is assumed to be
+4 octets (its maximum possible encoded length), unless there is insufficient
+space in the packet for sampling.  The sampled ciphertext starts after allowing
+for a 4 octet packet number unless this would cause the sample to extend past
+the end of the packet.  If the sample would extend past the end of the packet,
+the end of the packet is sampled.
 
-```
-sample_offset = min(1 + connection_id_length + 4,
-                    packet_length - aead_expansion)
+For example, the sampled ciphertext for a packet with a short header can be
+determined by:
+
+~~~
+sample_offset = 1 + len(connection_id) + 4
+
+if sample_offset + sample_length > packet_length then
+    sample_offset = packet_length - sample_length
 sample = packet[sample_offset..sample_offset+sample_length]
-```
+~~~
+
+A packet with a long header is sampled in the same way, noting that multiple
+QUIC packets might be included in the same UDP datagram and that each one is
+handled separately.
+
+~~~
+sample_offset = 6 + len(destination_connection_id) +
+                    len(source_connection_id) +
+                    len(payload_length) + 4
+~~~
 
 To ensure that this process does not sample the packet number, packet number
 protection algorithms MUST NOT sample more ciphertext than the minimum
@@ -1628,7 +1645,7 @@ packets as indicative of an attack.
 
 ## Packet Number Protection Analysis {#pn-encrypt-analysis}
 
-Packet number protection relies the packet protection AEAD being a
+Packet number protection relies on the packet protection AEAD being a
 pseudorandom function (PRF), which is not a property that AEAD algorithms
 guarantee. Therefore, no strong assurances about the general security of this
 mechanism can be shown in the general case. The AEAD algorithms described in
@@ -1637,9 +1654,9 @@ this document are assumed to be PRFs.
 The packet number protection algorithms defined in this document take the
 form:
 
-```
+~~~
 encrypted_pn = packet_number XOR PRF(pn_key, sample)
-```
+~~~
 
 This construction is secure against chosen plaintext attacks (IND-CPA)
 {{IMC}}.
@@ -1725,17 +1742,6 @@ values in the following registries:
 
 --- back
 
-# Contributors
-
-Ryan Hamilton was originally an author of this specification.
-
-
-# Acknowledgments
-
-This document has benefited from input from Dragana Damjanovic, Christian
-Huitema, Jana Iyengar, Adam Langley, Roberto Peon, Eric Rescorla, Ian Swett, and
-many others.
-
 # Change Log
 
 > **RFC Editor's Note:** Please remove this section prior to publication of a
@@ -1805,3 +1811,16 @@ No significant changes.
 - Adopted as base for draft-ietf-quic-tls
 - Updated authors/editors list
 - Added status note
+
+
+# Acknowledgments
+{:numbered="false"}
+
+This document has benefited from input from Dragana Damjanovic, Christian
+Huitema, Jana Iyengar, Adam Langley, Roberto Peon, Eric Rescorla, Ian Swett, and
+many others.
+
+# Contributors
+{:numbered="false"}
+
+Ryan Hamilton was originally an author of this specification.

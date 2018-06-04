@@ -43,7 +43,10 @@ jobs:
       # Update editor's copy on gh-pages
       - run:
           name: "Update GitHub Pages"
-          command: "make gh-pages"
+          command: |
+            if [ "${CIRCLE_TAG#draft-}" == "${CIRCLE_TAG}" ]; then
+              make gh-pages
+            fi
 
       # For tagged builds, upload to the datatracker.
       - deploy:

@@ -280,7 +280,7 @@ keys are established.
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                 Source Connection ID (0/32..144)            ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                       Payload Length (i)                    ...
+|                           Length (i)                        ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                     Packet Number (8/16/32)                   |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -337,10 +337,11 @@ Source Connection ID:
   either 0 octets in length or between 4 and 18 octets. {{connection-id}}
   describes the use of this field in more detail.
 
-Payload Length:
+Length:
 
-: The length of the Payload field in octets, encoded as a variable-length
-  integer ({{integer-encoding}}).
+: The length of the remainder of the packet (that is, the Packet Number and
+  Payload fields) in octets, encoded as a variable-length integer
+  ({{integer-encoding}}).
 
 Packet Number:
 
@@ -373,10 +374,13 @@ The interpretation of the fields and the payload are specific to a version and
 packet type.  Type-specific semantics for this version are described in the
 following sections.
 
-The end of the Payload field (which is also the end of the long header
-packet) is determined by the value of the Payload Length field.
-Senders can sometimes coalesce multiple packets into one UDP datagram.
-See {{packet-coalesce}} for more details.
+The end of the packet is determined by the Length field.  The Length field
+covers the both the Packet Number and Payload fields, both of which are
+confidentiality protected and initially of unknown length.  The size of the
+Payload field is learned once the packet number protection is removed.
+
+Senders can sometimes coalesce multiple packets into one UDP datagram.  See
+{{packet-coalesce}} for more details.
 
 
 ## Short Header
@@ -456,10 +460,6 @@ in the plaintext packet number. See {{packet-numbers}} for details.
 Protected Payload:
 
 : Packets with a short header always include a 1-RTT protected payload.
-
-The packet type in a short header currently determines only the size of the
-packet number field.  Additional types can be used to signal the presence of
-other fields.
 
 The header form and connection ID field of a short header packet are
 version-independent.  The remaining fields are specific to the selected QUIC
@@ -567,7 +567,7 @@ Connection ID in the Retry packet.  Changing Destination Connection ID also
 results in a change to the keys used to protect the Initial packet.
 
 The client populates the Source Connection ID field with a value of its choosing
-and sets the low bits of the ConnID Len field to match.
+and sets the SCIL field to match.
 
 The first Initial packet that is sent by a client contains a packet number of 0.
 All subsequent packets contain a packet number that is incremented by at least
@@ -641,6 +641,11 @@ A Handshake packet uses long headers with a type value of 0x7D.  It is
 used to carry acknowledgments and cryptographic handshake messages from the
 server and client.
 
+A server sends its cryptographic handshake in one or more Handshake packets in
+response to an Initial packet if it does not send a Retry packet.  Once a client
+has received a Handshake packet from a server, it uses Handshake packets to send
+subsequent cryptographic handshake messages and acknowledgments to the server.
+
 The Destination Connection ID field in a Handshake packet contains a connection
 ID that is chosen by the recipient of the packet; the Source Connection ID
 includes the connection ID that the sender of the packet wishes to use (see
@@ -669,11 +674,21 @@ CONNECTION_CLOSE frames if the handshake is unsuccessful.
 
 ## Protected Packets {#packet-protected}
 
-All QUIC packets are protected.  Packets that are protected with the static
-handshake keys or the 0-RTT keys are sent with long headers; all packets
+All QUIC packets use packet protection.  Packets that are protected with the
+static handshake keys or the 0-RTT keys are sent with long headers; all packets
 protected with 1-RTT keys are sent with short headers.  The different packet
 types explicitly indicate the encryption level and therefore the keys that are
 used to remove packet protection.
+
+Packets protected with handshake keys only use packet protection to ensure that
+the sender of the packet is on the network path.  This packet protection is not
+effective confidentiality protection; any entity that receives the Initial
+packet from a client can recover the keys necessary to remove packet protection
+or to generate packets that will be successfully authenticated.
+
+Packets protected with 0-RTT and 1-RTT keys are expected to have confidentiality
+and data origin authentication; the cryptographic handshake ensures that only
+the communicating endpoints receive the corresponding keys.
 
 Packets protected with 0-RTT keys use a type value of 0x7C.  The connection ID
 fields for a 0-RTT packet MUST match the values used in the Initial packet
@@ -772,7 +787,7 @@ least one after sending a packet.
 A QUIC endpoint MUST NOT reuse a packet number within the same connection (that
 is, under the same cryptographic keys).  If the packet number for sending
 reaches 2^62 - 1, the sender MUST close the connection without sending a
-CONNECTION_CLOSE frame or any further packets; a server MAY send a Stateless
+CONNECTION_CLOSE frame or any further packets; an endpoint MAY send a Stateless
 Reset ({{stateless-reset}}) in response to further packets that it receives.
 
 In the QUIC long and short packet headers, the number of bits required to
@@ -1950,11 +1965,12 @@ support this, multiple NEW_CONNECTION_ID messages are needed.  Each
 NEW_CONNECTION_ID is marked with a sequence number.  Connection IDs MUST be used
 in the order in which they are numbered.
 
-An endpoint that to break linkability upon changing networks MUST use a
-previously unused connection ID provided by its peer.  Protection of packet
-numbers ensures that packet numbers cannot be used to correlate connections.
-Other properties of packets, such as timing and size, might be used to correlate
-activity, but no explicit correlation can be used to link activity across paths.
+Upon changing networks an endpoint MUST use a previously unused connection ID
+provided by its peer.  This eliminates the use of the connection ID for linking
+activity from the same connection on different networks.  Protection of packet
+numbers ensures that packet numbers cannot be used to correlate activity.  This
+does not prevent other properties of packets, such as timing and size, from
+being used to correlate activity.
 
 Clients MAY change connection ID at any time based on implementation-specific
 concerns.  For example, after a period of network inactivity NAT rebinding might
@@ -2176,30 +2192,29 @@ signal closure.
 
 ### Stateless Reset {#stateless-reset}
 
-A stateless reset is provided as an option of last resort for a server that does
-not have access to the state of a connection.  A server crash or outage might
-result in clients continuing to send data to a server that is unable to properly
-continue the connection.  A server that wishes to communicate a fatal connection
-error MUST use a closing frame if it has sufficient state to do so.
+A stateless reset is provided as an option of last resort for an endpoint that
+does not have access to the state of a connection.  A crash or outage might
+result in peers continuing to send data to an endpoint that is unable to
+properly continue the connection.  An endpoint that wishes to communicate a
+fatal connection error MUST use a closing frame if it has sufficient state to do
+so.
 
-To support this process, the server sends a stateless_reset_token value during
-the handshake in the transport parameters.  This value is protected by
-encryption, so only client and server know this value.
+To support this process, a token is sent by endpoints.  The token is carried in
+the NEW_CONNECTION_ID frame sent by either peer, and servers can specify the
+stateless_reset_token transport parameter during the handshake (clients cannot
+because their transport parameters don't have confidentiality protection).  This
+value is protected by encryption, so only client and server know this value.
 
-A server that receives packets that it cannot process sends a packet in the
+An endpoint that receives packets that it cannot process sends a packet in the
 following layout:
 
 ~~~
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+
-|0|K| Type (6)  |
+|0|K|1|1|0|0|0|0|
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                  Destination Connection ID (144)            ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                     Packet Number (8/16/32)                   |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                        Random Octets (*)                    ...
+|                      Random Octets (160..)                  ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                                                               |
 +                                                               +
@@ -2214,30 +2229,43 @@ following layout:
 This design ensures that a stateless reset packet is - to the extent possible -
 indistinguishable from a regular packet with a short header.
 
-A server generates a random 18-octet Destination Connection ID field.  For a
-client that depends on the server including a connection ID, this will mean that
-this value differs from previous packets.  Ths results in two problems:
+The message consists of a header octet, followed by random octets of arbitrary
+length, followed by a Stateless Reset Token.
 
-* The packet might not reach the client.  If the Destination Connection ID is
-  critical for routing toward the client, then this packet could be incorrectly
+A stateless reset will be interpreted by a recipient as a packet with a short
+header.  For the packet to appear as valid, the Random Octets field needs to
+include at least 20 octets of random or unpredictable values.  This is intended
+to allow for a destination connection ID of the maximum length permitted, a
+packet number, and minimal payload.  The Stateless Reset Token corresponds to
+the minimum expansion of the packet protection AEAD.  More random octets might
+be necessary if the endpoint could have negotiated a packet protection scheme
+with a larger minimum AEAD expansion.
+
+An endpoint SHOULD NOT send a stateless reset that is significantly larger than
+the packet it receives.  Endpoints MUST discard packets that are too small to be
+valid QUIC packets.  With the set of AEAD functions defined in {{QUIC-TLS}},
+packets less than 19 octets long are never valid.
+
+An endpoint cannot determine the Source Connection ID from a packet with a short
+header, therefore it cannot set the Destination Connection ID in the stateless
+reset packet.  The destination connection ID will therefore differ from the
+value used in previous packets.  A random Destination Connection ID makes the
+connection ID appear to be the result of moving to a new connection ID that was
+provided using a NEW_CONNECTION_ID frame ({{frame-new-connection-id}}).
+
+Using a randomized connection ID results in two problems:
+
+* The packet might not reach the peer.  If the Destination Connection ID is
+  critical for routing toward the peer, then this packet could be incorrectly
   routed.  This causes the stateless reset to be ineffective in causing errors
-  to be quickly detected and recovered.  In this case, clients will need to rely
-  on other methods - such as timers - to detect that the connection has failed.
+  to be quickly detected and recovered.  In this case, endpoints will need to
+  rely on other methods - such as timers - to detect that the connection has
+  failed.
 
 * The randomly generated connection ID can be used by entities other than the
-  client to identify this as a potential stateless reset.  A server that
+  peer to identify this as a potential stateless reset.  An endpoint that
   occasionally uses different connection IDs might introduce some uncertainty
   about this.
-
-The Packet Number field is set to a randomized value.  The server SHOULD send a
-packet with a short header and a packet number length of 1 octet. Using the
-shortest possible packet number encoding minimizes the perceived gap between the
-last packet that the server sent and this packet.  A server MAY indicate a
-different packet number length, but a longer packet number encoding might allow
-this message to be identified as a stateless reset more easily using heuristics.
-
-After the Packet Number, the server pads the message with an arbitrary
-number of octets containing random values.
 
 Finally, the last 16 octets of the packet are set to the value of the Stateless
 Reset Token.
@@ -2246,9 +2274,9 @@ A stateless reset is not appropriate for signaling error conditions.  An
 endpoint that wishes to communicate a fatal connection error MUST use a
 CONNECTION_CLOSE or APPLICATION_CLOSE frame if it has sufficient state to do so.
 
-This stateless reset design is specific to QUIC version 1.  A server that
+This stateless reset design is specific to QUIC version 1.  An endpoint that
 supports multiple versions of QUIC needs to generate a stateless reset that will
-be accepted by clients that support any version that the server might support
+be accepted by peers that support any version that the endpoint might support
 (or might have supported prior to losing state).  Designers of new versions of
 QUIC need to be aware of this and either reuse this design, or use a portion of
 the packet other than the last 16 octets for carrying data.
@@ -2256,49 +2284,54 @@ the packet other than the last 16 octets for carrying data.
 
 #### Detecting a Stateless Reset
 
-A client detects a potential stateless reset when a packet with a short header
-either cannot be decrypted or is marked as a duplicate packet.  The client then
-compares the last 16 octets of the packet with the Stateless Reset Token
-provided by the server in its transport parameters.  If these values are
-identical, the client MUST enter the draining period and not send any further
-packets on this connection.  If the comparison fails, the packet can be
-discarded.
+An endpoint detects a potential stateless reset when a packet with a short
+header either cannot be decrypted or is marked as a duplicate packet.  The
+endpoint then compares the last 16 octets of the packet with the Stateless Reset
+Token provided by its peer, either in a NEW_CONNECTION_ID frame or the server's
+transport parameters.  If these values are identical, the endpoint MUST enter
+the draining period and not send any further packets on this connection.  If the
+comparison fails, the packet can be discarded.
 
 
 #### Calculating a Stateless Reset Token
 
 The stateless reset token MUST be difficult to guess.  In order to create a
-Stateless Reset Token, a server could randomly generate {{!RFC4086}} a secret
+Stateless Reset Token, an endpoint could randomly generate {{!RFC4086}} a secret
 for every connection that it creates.  However, this presents a coordination
-problem when there are multiple servers in a cluster or a storage problem for a
-server that might lose state.  Stateless reset specifically exists to handle the
-case where state is lost, so this approach is suboptimal.
+problem when there are multiple instances in a cluster or a storage problem for
+a endpoint that might lose state.  Stateless reset specifically exists to handle
+the case where state is lost, so this approach is suboptimal.
 
 A single static key can be used across all connections to the same endpoint by
 generating the proof using a second iteration of a preimage-resistant function
-that takes three inputs: the static key, the server's connection ID (see
-{{connection-id}}), and an identifier for the server instance.  A server could
-use HMAC {{?RFC2104}} (for example, HMAC(static_key, server_id ||
+that takes three inputs: the static key, the connection ID chosen by the
+endpoint (see {{connection-id}}), and an instance identifier.  An endpoint could
+use HMAC {{?RFC2104}} (for example, HMAC(static_key, instance_id ||
 connection_id)) or HKDF {{?RFC5869}} (for example, using the static key as input
-keying material, with server and connection identifiers as salt).  The output of
-this function is truncated to 16 octets to produce the Stateless Reset Token for
-that connection.
+keying material, with instance and connection identifiers as salt).  The output
+of this function is truncated to 16 octets to produce the Stateless Reset Token
+for that connection.
 
-A server that loses state can use the same method to generate a valid Stateless
-Reset Secret.  The connection ID comes from the packet that the server receives.
+An endpoint that loses state can use the same method to generate a valid
+Stateless Reset Token.  The connection ID comes from the packet that the
+endpoint receives.  An instance that receives a packet for another instance
+might be able to recover the instance identifier using the connection ID.
+Alternatively, the instance identifier might be omitted from the calculation of
+the Stateless Reset Token so that all instances are equally able to generate a
+stateless reset.
 
-This design relies on the client always sending a connection ID in its packets
-so that the server can use the connection ID from a packet to reset the
-connection.  A server that uses this design cannot allow clients to use a
-zero-length connection ID.
+This design relies on the peer always sending a connection ID in its packets so
+that the endpoint can use the connection ID from a packet to reset the
+connection.  An endpoint that uses this design cannot allow its peers to send
+packets with a zero-length destination connection ID.
 
 Revealing the Stateless Reset Token allows any entity to terminate the
 connection, so a value can only be used once.  This method for choosing the
-Stateless Reset Token means that the combination of server instance, connection
-ID, and static key cannot occur for another connection.  A connection ID from a
-connection that is reset by revealing the Stateless Reset Token cannot be
-reused for new connections at the same server without first changing to use a
-different static key or server identifier.
+Stateless Reset Token means that the combination of instance, connection ID, and
+static key cannot occur for another connection.  A connection ID from a
+connection that is reset by revealing the Stateless Reset Token cannot be reused
+for new connections at the same instance without first changing to use a
+different static key or instance identifier.
 
 Note that Stateless Reset messages do not have any cryptographic protection.
 
@@ -3369,7 +3402,7 @@ QUIC packets on the affected path.  This could result in termination of the
 connection if an alternative path cannot be found.
 
 
-### Special Considerations for PMTU Discovery
+### IPv4 PMTU Discovery {#v4-pmtud}
 
 Traditional ICMP-based path MTU discovery in IPv4 {{!PMTUDv4}} is potentially
 vulnerable to off-path attacks that successfully guess the IP/port 4-tuple and
@@ -4244,6 +4277,54 @@ transport to cancel a stream in response to receipt of a STOP_SENDING frame.
 
 # Security Considerations
 
+## Handshake Denial of Service
+
+As an encrypted and authenticated transport QUIC provides a range of protections
+against denial of service.  Once the cryptographic handshake is complete, QUIC
+endpoints discard most packets that are not authenticated, greatly limiting the
+ability of an attacker to interfere with existing connections.
+
+Once a connection is established QUIC endpoints might accept some
+unauthenticated ICMP packets (see {{v4-pmtud}}), but the use of these packets is
+extremely limited.  The only other type of packet that an endpoint might accept
+is a stateless reset ({{stateless-reset}}) which relies on the token being kept
+secret until it is used.
+
+During the creation of a connection, QUIC only provides protection against
+attack from off the network path.  All QUIC packets contain proof that the
+recipient saw a preceding packet from its peer.
+
+The first mechanism used is the source and destination connection IDs, which are
+required to match those set by a peer.  Except for an Initial and stateless
+reset packets, an endpoint only accepts packets that include a destination
+connection that matches a connection ID the endpoint previously chose.  This is
+the only protection offered for Version Negotiation packets.
+
+The destination connection ID in an Initial packet is selected by a client to be
+unpredictable, which serves an additional purpose.  The packets that carry the
+cryptographic handshake are protected with a key that is derived from this
+connection ID and salt specific to the QUIC version.  This allows endpoints to
+use the same process for authenticating packets that they receive as they use
+after the cryptographic handshake completes.  Packets that cannot be
+authenticated are discarded.  Protecting packets in this fashion provides a
+strong assurance that the sender of the packet saw the Initial packet and
+understood it.
+
+These protections are not intended to be effective against an attacker that is
+able to receive QUIC packets prior to the connection being established.  Such an
+attacker can potentially send packets that will be accepted by QUIC endpoints.
+This version of QUIC attempts to detect this sort of attack, but it expects that
+endpoints will fail to establish a connection rather than recovering.  For the
+most part, the cryptographic handshake protocol {{QUIC-TLS}} is responsible for
+detecting tampering during the handshake, though additional validation is
+required for version negotiation (see {{version-validation}}).
+
+Endpoints are permitted to use other methods to detect and attempt to recover
+from interference with the handshake.  Invalid packets may be identified and
+discarded using other methods, but no specific method is mandated in this
+document.
+
+
 ## Spoofed ACK Attack
 
 An attacker might be able to receive an address validation token
@@ -4378,6 +4459,7 @@ The initial contents of this registry are shown in {{iana-tp-table}}.
 | 0x0001 | initial_max_data           | {{transport-parameter-definitions}} |
 | 0x0002 | initial_max_bidi_streams   | {{transport-parameter-definitions}} |
 | 0x0003 | idle_timeout               | {{transport-parameter-definitions}} |
+| 0x0004 | preferred_address          | {{transport-parameter-definitions}} |
 | 0x0005 | max_packet_size            | {{transport-parameter-definitions}} |
 | 0x0006 | stateless_reset_token      | {{transport-parameter-definitions}} |
 | 0x0007 | ack_delay_exponent         | {{transport-parameter-definitions}} |
@@ -4440,30 +4522,6 @@ the range from 0xFE00 to 0xFFFF.
 
 --- back
 
-# Contributors
-
-The original authors of this specification were Ryan Hamilton, Jana Iyengar, Ian
-Swett, and Alyssa Wilk.
-
-The original design and rationale behind this protocol draw significantly from
-work by Jim Roskind {{EARLY-DESIGN}}. In alphabetical order, the contributors to
-the pre-IETF QUIC project at Google are: Britt Cyr, Jeremy Dorfman, Ryan
-Hamilton, Jana Iyengar, Fedor Kouranov, Charles Krasic, Jo Kulik, Adam Langley,
-Jim Roskind, Robbie Shade, Satyam Shekhar, Cherie Shi, Ian Swett, Raman Tenneti,
-Victor Vasiliev, Antonio Vicente, Patrik Westin, Alyssa Wilk, Dale Worley, Fan
-Yang, Dan Zhang, Daniel Ziegler.
-
-# Acknowledgments
-
-Special thanks are due to the following for helping shape pre-IETF QUIC and its
-deployment: Chris Bentzel, Misha Efimov, Roberto Peon, Alistair Riddoch,
-Siddharth Vijayakrishnan, and Assar Westerlund.
-
-This document has benefited immensely from various private discussions and
-public ones on the quic@ietf.org and proto-quic@chromium.org mailing lists. Our
-thanks to all.
-
-
 # Change Log
 
 > **RFC Editor's Note:** Please remove this section prior to publication of a
@@ -4473,7 +4531,11 @@ Issue and pull request numbers are listed with a leading octothorp.
 
 ## Since draft-ietf-quic-transport-11
 
-- Enable server to transition connections to a preferred address (#560,#1251).
+- Enable server to transition connections to a preferred address (#560, #1251)
+- Packet numbers are encrypted (#1174, #1043, #1048, #1034, #850, #990, #734,
+  #1079)
+- Packet numbers use a variable-length encoding (#989, #1334)
+- STREAM frames can now be empty (#1350)
 
 ## Since draft-ietf-quic-transport-10
 
@@ -4699,3 +4761,30 @@ Issue and pull request numbers are listed with a leading octothorp.
 - Updated authors/editors list
 - Added IANA Considerations section
 - Moved Contributors and Acknowledgments to appendices
+
+
+# Acknowledgments
+{:numbered="false"}
+
+Special thanks are due to the following for helping shape pre-IETF QUIC and its
+deployment: Chris Bentzel, Misha Efimov, Roberto Peon, Alistair Riddoch,
+Siddharth Vijayakrishnan, and Assar Westerlund.
+
+This document has benefited immensely from various private discussions and
+public ones on the quic@ietf.org and proto-quic@chromium.org mailing lists. Our
+thanks to all.
+
+
+# Contributors
+{:numbered="false"}
+
+The original authors of this specification were Ryan Hamilton, Jana Iyengar, Ian
+Swett, and Alyssa Wilk.
+
+The original design and rationale behind this protocol draw significantly from
+work by Jim Roskind {{EARLY-DESIGN}}. In alphabetical order, the contributors to
+the pre-IETF QUIC project at Google are: Britt Cyr, Jeremy Dorfman, Ryan
+Hamilton, Jana Iyengar, Fedor Kouranov, Charles Krasic, Jo Kulik, Adam Langley,
+Jim Roskind, Robbie Shade, Satyam Shekhar, Cherie Shi, Ian Swett, Raman Tenneti,
+Victor Vasiliev, Antonio Vicente, Patrik Westin, Alyssa Wilk, Dale Worley, Fan
+Yang, Dan Zhang, Daniel Ziegler.
