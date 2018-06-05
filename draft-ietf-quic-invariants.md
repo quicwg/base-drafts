@@ -227,7 +227,7 @@ order.  Version 0 is reserved for version negotiation (see
 {{version-negotiation}}).  All other version numbers are potentially valid.
 
 The properties described in this document apply to all versions of QUIC. A
-protocol which does not conform to the properties described in this document is
+protocol that does not conform to the properties described in this document is
 not QUIC.  Future documents might describe additional properties which apply to
 a specific QUIC version, or to a range of QUIC versions.
 
