@@ -1817,9 +1817,7 @@ new connection IDs using the NEW_CONNECTION_ID frame.
 An endpoint might need to send packets on multiple networks without receiving
 any response from its peer.  To ensure that the endpoint is not linkable across
 each of these changes, a new connection ID is needed for each network.  To
-support this, multiple NEW_CONNECTION_ID messages are needed.  Each
-NEW_CONNECTION_ID is marked with a sequence number.  Connection IDs MUST be used
-in the order in which they are numbered.
+support this, multiple NEW_CONNECTION_ID messages are needed.
 
 Upon changing networks an endpoint MUST use a previously unused connection ID
 provided by its peer.  This eliminates the use of the connection ID for linking
@@ -2577,8 +2575,6 @@ The NEW_CONNECTION_ID is as follows:
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                          Sequence (i)                       ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |   Length (8)  |          Connection ID (32..144)            ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                                                               |
@@ -2592,14 +2588,6 @@ The NEW_CONNECTION_ID is as follows:
 ~~~
 
 The fields are:
-
-Sequence:
-
-: A variable-length integer.  This value starts at 0 and increases by 1 for each
-  connection ID that is provided by the server.  The connection ID that is
-  assigned during the handshake is assumed to have a sequence of -1.  That is,
-  the value selected during the handshake comes immediately before the first
-  value that a server can send.
 
 Length:
 
