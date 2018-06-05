@@ -317,7 +317,7 @@ response may contain zero or more header blocks containing the message headers
 of informational (1xx) HTTP responses (see {{!RFC7230}}, Section 3.2 and
 {{!RFC7231}}, Section 6.2).
 
-PUSH_PROMISE frames MAY be interleaved with the frames of a response message
+PUSH_PROMISE frames (see {{frame-push-promise}}) MAY be interleaved with the frames of a response message
 indicating a pushed resource related to the response. These PUSH_PROMISE frames
 are not part of the response, but carry the headers of a separate HTTP request
 message.  See {{server-push}} for more details.
