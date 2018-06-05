@@ -3650,9 +3650,9 @@ header, protected payload, and any authentication fields.
 All QUIC packets SHOULD be sized to fit within the estimated PMTU to avoid IP
 fragmentation or packet drops. To optimize bandwidth efficiency, endpoints
 SHOULD use Packetization Layer PMTU Discovery ({{!PLPMTUD=RFC4821}}).  Endpoints
-MAY use PMTU Discovery ({{!PMTUDv4=RFC1191}}, {{!PMTUDv6=RFC8201}}) for
-detecting the PMTU, setting the PMTU appropriately, and storing the result of
-previous PMTU determinations.
+MAY use classical PMTU Discovery ({{!PMTUDv4=RFC1191}}, {{!PMTUDv6=RFC8201}})
+for detecting the PMTU, setting the PMTU appropriately, and storing the result
+of previous PMTU determinations (see {{icmp-pmtu}}).
 
 In the absence of these mechanisms, QUIC endpoints SHOULD NOT send IP packets
 larger than 1280 octets. Assuming the minimum IP header size, this results in
@@ -3675,40 +3675,73 @@ QUIC packets on the affected path.  This could result in termination of the
 connection if an alternative path cannot be found.
 
 
-### IPv4 PMTU Discovery {#v4-pmtud}
+### Classical ICMP-based path MTU discovery {#icmp-pmtu}
 
-Traditional ICMP-based path MTU discovery in IPv4 {{!PMTUDv4}} is potentially
-vulnerable to off-path attacks that successfully guess the IP/port 4-tuple and
-reduce the MTU to a bandwidth-inefficient value. TCP connections mitigate this
-risk by using the (at minimum) 8 bytes of transport header echoed in the ICMP
-message to validate the TCP sequence number as valid for the current
-connection. However, as QUIC operates over UDP, in IPv4 the echoed information
-could consist only of the IP and UDP headers, which usually has insufficient
-entropy to mitigate off-path attacks.
+ICMP error messages used in classical Path MTU discovery may be classified into
+messages with an on-path proof and without an on-path proof.  ICMP messages with
+an on-path proof are the messages sent in accordance with {{!ICMPv6=RFC4443}},
+which requires ICMPv6 error messages to contain "as much of invoking packet as
+possible without the ICMPv6 packet exceeding the minimum IPv6 MTU", and
+{{!RFC1812}}, which states that ICMPv4 error messages "SHOULD contain as much of
+the original datagram as possible without the length of the ICMP datagram
+exceeding 576 bytes".  ICMP messages without an on-path prooff are sent in
+accordance with the minimum requirments of {{!ICMP=RFC0792}} and contain fewer
+octets past the IP header (typically only 8 octets).
 
-As a result, endpoints that implement PMTUD in IPv4 SHOULD take steps to
-mitigate this risk. For instance, an application could:
+The minimum required validation of ICMP messages with an on-path proof invoves
+verifying that the message was sent by this endpoint with at least 1-2^32
+probability and it is still outstanding (not acknowledged and not deemed lost).
+If a QUIC endpoint does not perform this minimum validation, it SHOULD treat the
+packet as an ICMP message without an on-path proof.
+
+As noted in {{?RFC5927}}, using ICMP messages without an on-path proof exposes
+the protocol implementation to off-path attacks and requires mitigations.
+
+Even ICMP messages without an on-path proof SHOULD undergo some validation, such
+as:
 
 * Set the IPv4 Don't Fragment (DF) bit on a small proportion of packets, so that
-most invalid ICMP messages arrive when there are no DF packets outstanding, and
-can therefore be identified as spurious.
+  most invalid ICMP messages arrive when there are no DF packets outstanding,
+  and can therefore be identified as spurious.
 
-* Store additional information from the IP or UDP headers from DF packets (for
-example, the IP ID or UDP checksum) to further authenticate incoming Datagram
-Too Big messages.
+* Store IP ID field of the sent datagrams to validate that ICMP message is
+  refering to an outstanding packet.
 
-* Any reduction in PMTU due to a report contained in an ICMP packet is
+Any ICMP messages that fail validation MUST be discarded.
+
+It is important that any problems are detected quickly during the connection
+handshake, because the client may be able to mitigate them by switching to
+alternative IP addresses or protocols.  Hence, an endpoint SHOULD reduce Path
+MTU in response to an ICMP Packet Too Big (PTB) message during a handshake,
+unless then would cause a reduction to a Path MTU value smaller than 1280
+octets.
+
+If during a handshake a client receives an ICMP TPB message that requests it to
+reduce Path MTU to a value smaller than 1280 octets, then:
+
+* If the client has another IP address for the server to try, the client should
+  restart the connection to another IP.
+
+* Otherwise, if the client can fail over to another protocol, and the ICMP
+  packet has on-path validation, the client should retry connecting with another
+  protocol.
+
+If an ICMP PTB message is received after handshake, and the claimed Path MTU is
+at least 1280 octets for messages with on-path validation or 1392 for messages
+without on-path validations, the Path MTU SHOULD be set accordingly.  Otherwise,
+Path MTU probing of {{!PLPMTUD}} SHOULD be attempted.
+
+Any reduction in Path MTU due to a report contained in an ICMP message is
 provisional until QUIC's loss detection algorithm determines that the packet is
 actually lost.
 
 
 ### Special Considerations for Packetization Layer PMTU Discovery
 
-
-The PADDING frame provides a useful option for PMTU probe packets. PADDING
+The PING frame provides a useful option for PMTU probe packets. PING
 frames generate acknowledgements, but they need not be delivered reliably. As a
-result, the loss of PADDING frames in probe packets does not require
-delay-inducing retransmission. However, PADDING frames do consume congestion
+result, the loss of PING frames in probe packets does not require
+delay-inducing retransmission. However, PING frames do consume congestion
 window, which may delay the transmission of subsequent application data.
 
 When implementing the algorithm in Section 7.2 of {{!PLPMTUD}}, the initial
@@ -3719,6 +3752,18 @@ therefore are not QUIC-compliant.
 Section 7.3 of {{!PLPMTUD}} discusses tradeoffs between small and large
 increases in the size of probe packets. As QUIC probe packets need not contain
 application data, aggressive increases in probe size carry fewer consequences.
+
+
+## Responding to ICMP "Unreachable" messages {#icmp-unreach}
+
+When a QUIC endpoint receives an ICMP "Unreachable" message during a handshake,
+the response SHOULD be identical to receiving an ICMP TPB message that announces
+a Path MTU smaller than 1280 octets (see {{icmp-pmtu}}).
+
+When an ICMP "Unreachable" message is received after the handshake, the QUIC
+endpoint should send a PATH_CHALLENGE frame ({{frame-path-challenge}}).  Sending
+PATH_CHALLENGE frames on the same path due to ICMP "Unreachable" messages should
+be rate limited.
 
 
 # Streams: QUIC's Data Structuring Abstraction {#streams}
@@ -4539,10 +4584,10 @@ endpoints discard most packets that are not authenticated, greatly limiting the
 ability of an attacker to interfere with existing connections.
 
 Once a connection is established QUIC endpoints might accept some
-unauthenticated ICMP packets (see {{v4-pmtud}}), but the use of these packets is
-extremely limited.  The only other type of packet that an endpoint might accept
-is a stateless reset ({{stateless-reset}}) which relies on the token being kept
-secret until it is used.
+unauthenticated ICMP messages (see {{icmp-pmtu}}), but the use of these messages
+is extremely limited.  The only other type of packet that an endpoint might
+accept is a stateless reset ({{stateless-reset}}) which relies on the token
+being kept secret until it is used.
 
 During the creation of a connection, QUIC only provides protection against
 attack from off the network path.  All QUIC packets contain proof that the
