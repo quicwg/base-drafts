@@ -700,7 +700,7 @@ request using the corresponding stream ID, a server push using a Push ID (see
 {{frame-push-promise}}), or a placeholder using a Placeholder ID (see
 {{placeholders}}).
 
-The values for the Prioritized Element Type and Dependency Element Type imply
+The values for the Prioritized Element Type and Element Dependency Type imply
 the interpretation of the associated Element ID fields.
 
 | Type Bits | Type Description | Element ID Contents |
