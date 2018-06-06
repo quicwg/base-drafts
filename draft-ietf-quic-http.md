@@ -651,9 +651,9 @@ the same as in HTTP/2.
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |PT |DT |Empty|E|
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                 Prioritized Request ID (i)                  ...
+|                 Prioritized Element ID (i)                  ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                  Stream Dependency ID (i)                   ...
+|                 Element Dependency ID (i)                   ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |   Weight (8)  |
 +-+-+-+-+-+-+-+-+
@@ -665,29 +665,8 @@ The PRIORITY frame payload has the following fields:
   Prioritized Type:
   : A two-bit field indicating the type of element being prioritized.
 
-    00:
-    : Request stream; Prioritized ID is a Stream ID
-
-    01:
-    : Push stream; Prioritized ID is a Push ID
-
-    10:
-    : Placeholder; Prioritized ID is a Placeholder ID
-
-  Depedency Type:
+  Dependency Type:
   : A two-bit field indicating the type of element being depended on.
-
-    00:
-    : Request stream; Dependency ID is a Stream ID
-
-    01:
-    : Push stream; Dependency ID is a Push ID
-
-    10:
-    : Placeholder; Dependency ID is a Placeholder ID
-
-    11:
-    : Root of the tree; Dependency ID is ignored
 
   Empty:
   : A three-bit field which MUST be zero when sent and MUST be ignored
@@ -697,15 +676,15 @@ The PRIORITY frame payload has the following fields:
   : A flag which indicates that the stream dependency is exclusive (see
     {{!RFC7540}}, Section 5.3).
 
-  Prioritized ID:
+  Prioritized Element ID:
   : A variable-length integer that identifies the element being prioritized.
     Depending on the value of Prioritized Type, this contains the Stream ID of a
     request stream, the Push ID of a promised resource, or a Placeholder ID of a
     placeholder.
 
-  Dependency ID:
+  Element Dependency ID:
   : A variable-length integer that identifies the element on which a dependency
-    is being expressed. Depending on the value of Prioritized Type, this
+    is being expressed. Depending on the value of Dependency Type, this
     contains the Stream ID of a request stream, the Push ID of a promised
     resource, or a Placeholder ID of a placeholder.  For details of
     dependencies, see {{priority}} and {{!RFC7540}}, Section 5.3.
@@ -721,11 +700,20 @@ request using the corresponding stream ID, a server push using a Push ID (see
 {{frame-push-promise}}), or a placeholder using a Placeholder ID (see
 {{placeholders}}).
 
-A PRIORITY frame MAY identify a Stream Dependency ID using a Stream ID of 0; as
-in {{!RFC7540}}, this makes the request dependent on the root of the dependency
-tree.  Stream ID 0 cannot be reprioritized. A Prioritized Request ID that
-identifies Stream 0 MUST be treated as a connection error of type
-HTTP_MALFORMED_FRAME.
+The values for the Prioritized Element Type and Dependency Element Type imply
+the interpretation of the associated Element ID fields.
+
+| Type Bits | Type Description | Element ID Contents |
+| --------- | ---------------- | ------------------- |
+| 00        | Request stream   | Stream ID           |
+| 01        | Push stream      | Push ID             |
+| 10        | Placeholder      | Placeholder ID      |
+| 11        | Root of the tree | Ignored             |
+
+The root of the tree MAY also be referenced using a Stream ID of 0, as in
+{{!RFC7540}}.  The root of the tree cannot be reprioritized. A PRIORITY frame
+that prioritizes the root of the tree MUST be treated as a connection error of
+type HTTP_MALFORMED_FRAME.
 
 When a PRIORITY frame claims to reference a request, the associated ID MUST
 identify a client-initiated bidirectional stream.  A server MUST treat receipt
@@ -1452,20 +1440,20 @@ Specification:
 The entries in the following table are registered by this document.
 
 |----------------|------|--------------------------|
-| Frame Type     | Code | Specification            |
-|----------------|:----:|--------------------------|
-| DATA           | 0x0  | {{frame-data}}           |
-| HEADERS        | 0x1  | {{frame-headers}}        |
-| PRIORITY       | 0x2  | {{frame-priority}}       |
-| CANCEL_PUSH    | 0x3  | {{frame-cancel-push}}    |
-| SETTINGS       | 0x4  | {{frame-settings}}       |
-| PUSH_PROMISE   | 0x5  | {{frame-push-promise}}   |
-| Reserved       | 0x6  | N/A                      |
-| GOAWAY         | 0x7  | {{frame-goaway}}         |
-| Reserved       | 0x8  | N/A                      |
-| Reserved       | 0x9  | N/A                      |
-| MAX_PUSH_ID    | 0xD  | {{frame-max-push-id}}    |
-|----------------|------|--------------------------|
+| Frame Type       | Code   | Specification              |
+| ---------------- | :----: | -------------------------- |
+| DATA             | 0x0    | {{frame-data}}             |
+| HEADERS          | 0x1    | {{frame-headers}}          |
+| PRIORITY         | 0x2    | {{frame-priority}}         |
+| CANCEL_PUSH      | 0x3    | {{frame-cancel-push}}      |
+| SETTINGS         | 0x4    | {{frame-settings}}         |
+| PUSH_PROMISE     | 0x5    | {{frame-push-promise}}     |
+| Reserved         | 0x6    | N/A                        |
+| GOAWAY           | 0x7    | {{frame-goaway}}           |
+| Reserved         | 0x8    | N/A                        |
+| Reserved         | 0x9    | N/A                        |
+| MAX_PUSH_ID      | 0xD    | {{frame-max-push-id}}      |
+| ---------------- | ------ | -------------------------- |
 
 ## Settings Parameters {#iana-settings}
 
@@ -1535,23 +1523,23 @@ Specification:
 The entries in the following table are registered by this document.
 
 |-----------------------------------|----------|----------------------------------------|----------------------|
-| Name                              | Code     | Description                            | Specification        |
-|-----------------------------------|----------|----------------------------------------|----------------------|
-|  STOPPING                         |  0x0000  |  Reserved by QUIC                      | {{QUIC-TRANSPORT}}   |
-|  HTTP_NO_ERROR                    |  0x0001  |  No error                              | {{http-error-codes}} |
-|  HTTP_PUSH_REFUSED                |  0x0002  |  Client refused pushed content         | {{http-error-codes}} |
-|  HTTP_INTERNAL_ERROR              |  0x0003  |  Internal error                        | {{http-error-codes}} |
-|  HTTP_PUSH_ALREADY_IN_CACHE       |  0x0004  |  Pushed content already cached         | {{http-error-codes}} |
-|  HTTP_REQUEST_CANCELLED           |  0x0005  |  Data no longer needed                 | {{http-error-codes}} |
-|  HTTP_HPACK_DECOMPRESSION_FAILED  |  0x0006  |  HPACK cannot continue                 | {{http-error-codes}} |
-|  HTTP_CONNECT_ERROR               |  0x0007  |  TCP reset or error on CONNECT request | {{http-error-codes}} |
-|  HTTP_EXCESSIVE_LOAD              |  0x0008  |  Peer generating excessive load        | {{http-error-codes}} |
-|  HTTP_VERSION_FALLBACK            |  0x0009  |  Retry over HTTP/2                     | {{http-error-codes}} |
-|  HTTP_WRONG_STREAM                |  0x000A  |  A frame was sent on the wrong stream  | {{http-error-codes}} |
-|  HTTP_PUSH_LIMIT_EXCEEDED         |  0x000B  |  Maximum Push ID exceeded              | {{http-error-codes}} |
-|  HTTP_DUPLICATE_PUSH              |  0x000C  |  Push ID was fulfilled multiple times  | {{http-error-codes}} |
-|  HTTP_MALFORMED_FRAME             |  0x01XX  |  Error in frame formatting or use      | {{http-error-codes}} |
-|-----------------------------------|----------|----------------------------------------|----------------------|
+| Name                                | Code       | Description                              | Specification          |
+| ----------------------------------- | ---------- | ---------------------------------------- | ---------------------- |
+| STOPPING                            | 0x0000     | Reserved by QUIC                         | {{QUIC-TRANSPORT}}     |
+| HTTP_NO_ERROR                       | 0x0001     | No error                                 | {{http-error-codes}}   |
+| HTTP_PUSH_REFUSED                   | 0x0002     | Client refused pushed content            | {{http-error-codes}}   |
+| HTTP_INTERNAL_ERROR                 | 0x0003     | Internal error                           | {{http-error-codes}}   |
+| HTTP_PUSH_ALREADY_IN_CACHE          | 0x0004     | Pushed content already cached            | {{http-error-codes}}   |
+| HTTP_REQUEST_CANCELLED              | 0x0005     | Data no longer needed                    | {{http-error-codes}}   |
+| HTTP_HPACK_DECOMPRESSION_FAILED     | 0x0006     | HPACK cannot continue                    | {{http-error-codes}}   |
+| HTTP_CONNECT_ERROR                  | 0x0007     | TCP reset or error on CONNECT request    | {{http-error-codes}}   |
+| HTTP_EXCESSIVE_LOAD                 | 0x0008     | Peer generating excessive load           | {{http-error-codes}}   |
+| HTTP_VERSION_FALLBACK               | 0x0009     | Retry over HTTP/2                        | {{http-error-codes}}   |
+| HTTP_WRONG_STREAM                   | 0x000A     | A frame was sent on the wrong stream     | {{http-error-codes}}   |
+| HTTP_PUSH_LIMIT_EXCEEDED            | 0x000B     | Maximum Push ID exceeded                 | {{http-error-codes}}   |
+| HTTP_DUPLICATE_PUSH                 | 0x000C     | Push ID was fulfilled multiple times     | {{http-error-codes}}   |
+| HTTP_MALFORMED_FRAME                | 0x01XX     | Error in frame formatting or use         | {{http-error-codes}}   |
+| ----------------------------------- | ---------- | ---------------------------------------- | ---------------------- |
 
 
 --- back
