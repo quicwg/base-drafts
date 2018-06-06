@@ -1529,6 +1529,7 @@ handshake packet is padded to at least 1200 octets.  This allows a server to
 send a similar amount of data without risking causing an amplification attack
 toward an unproven remote address.
 
+TODO(ekr): Receipt of Hanshake is now confirmation of the peer's address/etc
 A server eventually confirms that a client has received its messages when the
 cryptographic handshake successfully completes.  This might be insufficient,
 either because the server wishes to avoid the computational cost of completing
