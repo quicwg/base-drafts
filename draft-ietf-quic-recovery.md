@@ -132,7 +132,7 @@ Separating the spaces allows the recovery mechanisms to work without special
 cases to avoid spuriously retransmitting un-processable packets.
 Separate packet number spaces do not imply separate paths. Consequently,
 a sender need not split congestion control actions across packet number spaces.
-The optimizations described in {{optimizations}} help a sender co-ordinate
+The optimizations described in {{optimizations}} help a sender optimize
 loss detection across packet number spaces.
 
 ### Monotonically Increasing Packet Numbers
@@ -423,37 +423,8 @@ There are cases where one may be able to gain recovery information from
 acknowledgements of packets in another packet number space, but they rely
 on complex assumptions about the peer’s processing and acknowledgement
 algorithms.  Even those are unable to quickly recover from cases such as
-losing the client's Initial, but receiving the 0-RTT packets.  Below are
-three different optimizations in increasing complexity that minimize
-handshake latency.
-
-### EMPTY_ACK frames
-
-The EMPTY_ACK frame indicates a packet for the connection was received,
-but it could not be processed, because the decryption keys are not yet
-available. EMPTY_ACK enables faster recovery of lost Initial
-and Handshake packets when the only other outstanding packets are
-undecryptable.
-
-The receiver SHOULD send an EMPTY_ACK frame soon (e.g., 1ms) after
-undecryptable packets are received, even if those received packets are
-not buffered for later decryption.  The small delay allows for cases when
-0-RTT packets are reordered in front of the Initial, which is not uncommon
-on networks that prioritize small packets.  The receiver should limit the
-number of EMPTY_ACK frames sent to one per packet number space per RTT.
-If no RTT is known, only one per encryption level should be sent.
-
-When an EMPTY_ACK frame is received, a sender should immediately
-retransmit the missing handshake packet(s) as though the handshake timer
-fired and re-arm the handshake timer when the handshake packets are sent.
-If the missing handshake data was timer retransmitted after the packets
-that triggered the empty ack, then the empty ack should be ignored.
-
-An EMPTY_ACK frame does not acknowledge a new packet, and in cases
-when multiple packets are outstanding, the RTT signal is ambiguous,
-so it should not be used like an RTT signal from a newly acknowledged
-packet.  It MAY change the connection’s default RTT if no RTT measurements
-have been taken.
+losing the client's Initial, but receiving the 0-RTT packets.  Below is
+an optimization using coalesced packets and implicit acknowledgements.
 
 ### Coalesced Packets
 
@@ -472,20 +443,11 @@ This optimization is particularly useful when:
    (containing the client Finished) and can proactively retransmit the
    final client flight with one or more 1-RTT packets.
 
-### Implicit Acknowledgements
+### Implicit Acknowledgements of Initial
 
-Handshake data may be cancelled when packets at a higher encryption
-level are processed, as this demonstrates the peer has received the
-handshake data at the prior encryption level.
-
-In particular:
-
- * Processing data in a Handshake packet indicates the Initial
-   packet(s) have been delivered.
- * A Server processing 1-RTT packets indicates all CRYPTO_HS data in
-   Handshake packets has been delivered.
- * Processing 0-RTT packets does not indicate the peer has received
-   any handshake data.
+Initial data may be cancelled when packets at the Handshake level
+are received and processed, because that indicates all packets at
+Initial encryption have been received and processed by the peer.
 
 ## Generating Acknowledgements
 
@@ -730,18 +692,9 @@ Pseudocode for OnPacketSent follows:
 
 When an ack is received, it may acknowledge 0 or more packets.
 
-When an EMPTY_ACK frame is received, it does not acknowledge
-any packets, but it may cause handshake data to be retransmitted.
-
 Pseudocode for OnAckReceived and UpdateRtt follow:
 
 ~~~
-  OnEmptyAckReceived():
-    // TODO: This is incorrect for the Initial/Handshake
-    if (time_of_last_sent_handshake_packet <
-          time_of_last_sent_retransmittable_packet):
-      RetransmitAllHandshakeData();
-
   OnAckReceived(ack):
     largest_acked_packet = ack.largest_acked
     // If the largest acked is newly acked, update the RTT.
