@@ -336,10 +336,18 @@ encryption level are the same in QUIC as in TLS over TCP:
 
 Because packets may be reordered on the wire, QUIC uses the packet
 type to indicate which level a given packet was encrypted
-under [TODO: Table needed here?]. When multiple packets of
+under, as shown in {{packet-types-levels}}. When multiple packets of
 different encryption levels need to be sent, endpoints SHOULD use
-compound packets to send them in the same UDP datagram.
+coalesced packets to send them in the same UDP datagram.
 
+| Packet Type     | Encryption Level |
+|:----------------|:-----------------|
+| Initial         | Obfuscation      |
+| 0-RTT Protected | 0-RTT            |
+| Handshake       | Handshake        |
+| Retry           | N/A              |
+| Short Header    | 1-RTT            |
+{: #packet-types-levels title="Encryption Levels by Packet Type"}
 
 ## Handshake and Setup Sequence
 
@@ -347,6 +355,7 @@ The integration of QUIC with a TLS handshake is shown in more detail in
 {{quic-tls-handshake}}.
 
 ~~~
+[TODO(ekr@rtfm.com): replace this diagram per the meeting today.]
 Client                                                   Server
 
 <CRYPTO_HS[
@@ -423,7 +432,7 @@ transmitted to the peer in CRYPTO_HS frames. When TLS provides handshake
 octets to be sent, they are appended to the current flow and
 will eventually be transmitted under the then-current key.
 
-When an endpoint receives a packet containing a CRYPTO_HS frame from
+When an endpoint receives a QUIC packet containing a CRYPTO_HS frame from
 the network, it proceeds as follows:
 
 - If the packet was in the current receiving encryption level, sequence
