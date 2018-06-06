@@ -435,9 +435,9 @@ elements which can be prioritized are:
   ({{frame-push-promise}})
 - Placeholders, identified by a Placeholder ID
 
-A reference to zero indicates a dependency on the root of the tree.  A reference
-to an element which is no longer in the tree is treated as a reference to the
-root of the tree.
+An element can depend on another element or on the root of the tree.  A
+reference to an element which is no longer in the tree is treated as a reference
+to the root of the tree.
 
 Only a client can send PRIORITY frames.  A server MUST NOT send a PRIORITY
 frame.
@@ -710,10 +710,10 @@ the interpretation of the associated Element ID fields.
 | 10        | Placeholder      | Placeholder ID      |
 | 11        | Root of the tree | Ignored             |
 
-The root of the tree MAY also be referenced using a Stream ID of 0, as in
-{{!RFC7540}}.  The root of the tree cannot be reprioritized. A PRIORITY frame
-that prioritizes the root of the tree MUST be treated as a connection error of
-type HTTP_MALFORMED_FRAME.
+Note that the root of the tree cannot be referenced using a Stream ID of 0, as
+in {{!RFC7540}}; QUIC stream 0 carries a valid HTTP request.  The root of the
+tree cannot be reprioritized. A PRIORITY frame that prioritizes the root of the
+tree MUST be treated as a connection error of type HTTP_MALFORMED_FRAME.
 
 When a PRIORITY frame claims to reference a request, the associated ID MUST
 identify a client-initiated bidirectional stream.  A server MUST treat receipt
