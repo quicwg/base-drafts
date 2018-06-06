@@ -996,9 +996,8 @@ explained in more detail as they are referenced later in the document.
 | 0x0f        | PATH_RESPONSE     | {{frame-path-response}}     |
 | 0x10 - 0x17 | STREAM            | {{frame-stream}}            |
 | 0x18        | CRYPTO_HS         | {{frame-crypto}}            |
-| 0x19        | EMPTY_ACK         | {{frame-empty-ack}}         |
-| 0x20        | CRYPTO_CLOSE      | {{frame-crypto-close}}      |
-| 0x21        | NEW_TOKEN         | {{frame-new-token}}         |
+| 0x19        | CRYPTO_CLOSE      | {{frame-crypto-close}}      |
+| 0x20        | NEW_TOKEN         | {{frame-new-token}}         |
 {: #frame-types title="Frame Types"}
 
 All QUIC frames are idempotent.  That is, a valid frame does not cause
@@ -3152,17 +3151,6 @@ stream per encryption level. The stream does not have an explicit
 end, so CRYPTO_HS frames do not have a FIN bit.
 
 
-## EMPTY_ACK  Frame {#frame-empty-ack}
-
-The EMPTY_ACK frame (type=0x19) is used to transmit loss recovery information
-during the cryptographic handshake before keys are established.  The EMPTY_ACK
-frame is used to assist loss recovery, see {{QUIC-RECOVERY}} by indicating that
-the receiver received a packet it was not able to decrypt and hence cannot send
-a real ACK.
-
-An EMPTY_ACK frame has no content.  That is, an EMPTY_ACK frame consists of the
-single octet that identifies the frame as an EMPTY_ACK frame.
-
 ## CRYPTO_CLOSE Frame {#frame-crypto-close}
 
 The CRYPTO_CLOSE frame (type=0x20) is used to indicate connection failures
@@ -4465,7 +4453,7 @@ Issue and pull request numbers are listed with a leading octothorp.
 
 - Enable server to transition connections to a preferred address (#560,#1251).
 - No more stream 0.
-- EMPTY_ACK, CRYPTO_HS, and CRYPTO_CLOSE frames
+- CRYPTO_HS, and CRYPTO_CLOSE frames
 - Move stateless retry to the QUIC layer.
 - Added token fields to Initial packet header.
 - Added NEW_TOKEN frame.
