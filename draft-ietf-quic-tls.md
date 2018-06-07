@@ -1580,7 +1580,7 @@ protection for these values.
 
 ~~~
    enum {
-      quic_transport_parameters(26), (65535)
+      quic_transport_parameters(0xffa5), (65535)
    } ExtensionType;
 ~~~
 
@@ -1722,9 +1722,8 @@ values in the following registries:
 * TLS ExtensionsType Registry
   {{!TLS-REGISTRIES=I-D.ietf-tls-iana-registry-updates}} - IANA is to register
   the quic_transport_parameters extension found in {{quic_parameters}}.
-  Assigning 26 to the extension would be greatly appreciated.  The Recommended
-  column is to be marked Yes.  The TLS 1.3 Column is to include CH
-  and EE.
+  The Recommended column is to be marked Yes.  The TLS 1.3 Column is to include
+  CH and EE.
 
 * TLS Exporter Label Registry {{!TLS-REGISTRIES}} - IANA is requested to
   register "EXPORTER-QUIC 0rtt" from {{zero-rtt-secrets}}; "EXPORTER-QUIC client
