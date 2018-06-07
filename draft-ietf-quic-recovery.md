@@ -417,10 +417,12 @@ to accelerate loss recovery.  The receiver SHOULD send an immediate ACK
 when it receives a new packet which is not one greater than the
 largest received packet number.
 
-Also, reception of an packet marked as ECN Congestion Experience (ECN-CE)
-SHOULD be acknowledged immediately to quicker react to congesiton events.
-Additional ECN-CE marks received during the same recovery period are also
-immediately acknowledged to correctly account for ECN-CE marks in the recovery period.
+Also, reception of an packet marked as ECN Congestion Experience
+(ECN-CE) SHOULD be acknowledged immediately to quicker react to
+congesiton events. Additional ECN-CE marks received during the same
+recovery period are also immediately acknowledged to correctly account
+for ECN-CE marks in the recovery period.
+
 
 As an optimization, a receiver MAY process multiple packets before
 sending any ACK frames in response.  In this case they can determine
