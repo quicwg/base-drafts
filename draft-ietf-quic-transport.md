@@ -1221,7 +1221,10 @@ The CRYPTO_HS frame can be sent in different packet number spaces.
 CRYPTO_HS frames in each packet number space carry a separate sequence
 of handshake data starting from an offset of 0.
 
-Details of how TLS is integrated with QUIC are provided in {{QUIC-TLS}}.
+## Example Handshake Flows
+
+Details of how TLS is integrated with QUIC are provided in {{QUIC-TLS}},
+but we provide some examples here.
 
 {{tls-1rtt-handshake}} provides an overview of the 1-RTT handshake.
 Each line shows a QUIC packet with the packet type and packet
@@ -1229,14 +1232,13 @@ number shown first, followed by the contents. So, for instance
 the first packet is of type Initial, with packet number 0, and
 contains a CRYPTO_HS frame carrying the ClientHello.
 
-Note that multiple QUIC packets may be coalesced into a single
-UDP datagram (see {{packet-coalesce}}, and so this handshake
-may consist of anywhere from 4 to 9 UDP datagrams. Moreover,
-each UDP datagram may consist of multiple packets of different
-encryption levels. For instance, the server's first flight
-contains packets from the Initial encryption level
-(obfuscation), the Handshake level, and "0.5-RTT data"
-from the server at the 1-RTT encryption level.
+Note that multiple QUIC packets -- even of different encryption levels
+-- may be coalesced into a single UDP datagram (see
+{{packet-coalesce}}, and so this handshake may consist of anywhere
+from 4 to 9 UDP datagrams.  For instance, the server's first flight
+contains packets from the Initial encryption level (obfuscation), the
+Handshake level, and "0.5-RTT data" from the server at the 1-RTT
+encryption level.
 
 ~~~~
 Client                                                  Server
