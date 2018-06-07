@@ -1247,7 +1247,7 @@ Initial[0]: CRYPTO_HS[CH] ->
 
                               Initial[0]: CRYPTO_HS[SH] ACK[0]
                     Handshake[0]: CRYPTO_HS[EE, CERT, CV, FIN]
-                                 <- 1-RTT[0]: STREAM[0, "..."]
+                                 <- 1-RTT[0]: STREAM[1, "..."]
 
 Initial[1]: ACK[0]
 Handshake[0]: CRYPTO_HS[FIN], ACK[0]
@@ -1274,7 +1274,7 @@ Initial[0]: CRYPTO_HS[CH]
 
                               Initial[0]: CRYPTO_HS[SH] ACK[0]
                      Handshake[0] CRYPTO_HS[EE, CERT, CV, FIN]
-                          <- 1-RTT[0]: STREAM[0, "..."] ACK[0]
+                          <- 1-RTT[0]: STREAM[1, "..."] ACK[0]
 
 Initial[1]: ACK[0]
 0-RTT[1]: CRYPTO_HS[EOED]
