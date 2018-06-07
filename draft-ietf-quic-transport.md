@@ -1223,6 +1223,64 @@ of handshake data starting from an offset of 0.
 
 Details of how TLS is integrated with QUIC are provided in {{QUIC-TLS}}.
 
+{{tls-1rtt-handshake}} provides an overview of the 1-RTT handshake.
+Each line shows a QUIC packet with the packet type and packet
+number shown first, followed by the contents. So, for instance
+the first packet is of type Initial, with packet number 0, and
+contains a CRYPTO_HS frame carrying the ClientHello.
+
+Note that multiple QUIC packets may be coalesced into a single
+UDP datagram (see {{packet-coalesce}}, and so this handshake
+may consist of anywhere from 4 to 9 UDP datagrams. Moreover,
+each UDP datagram may consist of multiple packets of different
+encryption levels. For instance, the server's first flight
+contains packets from the Initial encryption level
+(obfuscation), the Handshake level, and "0.5-RTT data"
+from the server at the 1-RTT encryption level.
+
+~~~~
+Client                                                  Server
+
+Initial[0]: CRYPTO_HS[CH] ->
+
+                              Initial[0]: CRYPTO_HS[SH] ACK[0]
+                    Handshake[0]: CRYPTO_HS[EE, CERT, CV, FIN]
+                                 <- 1-RTT[0]: STREAM[0, "..."]
+
+Initial[1]: ACK[0]
+Handshake[0]: CRYPTO_HS[FIN], ACK[0]
+1-RTT[0]: STREAM[0, "..."], ACK[0] ->
+
+                           1-RTT[1]: STREAM[55, "..."], ACK[0]
+                                       <- Handshake[1]: ACK[0]
+~~~~
+{: #tls-1rtt-handshake title="Example 1-RTT Handshake"}
+
+
+{{tls-0rtt-handshake}} shows an example of a connection with a
+0-RTT handshake and a single packet of 0-RTT data. Note that
+as described in {{packet-numbers}}, the server ACKs the
+0-RTT data at the 1-RTT encryption level, and the client's
+sequence numbers at the 1-RTT encryption level continue
+to increment from it's 0-RTT packets.
+
+~~~~
+Client                                                  Server
+
+Initial[0]: CRYPTO_HS[CH]
+0-RTT[0]: STREAM[0, "..."] ->
+
+                              Initial[0]: CRYPTO_HS[SH] ACK[0]
+                     Handshake[0] CRYPTO_HS[EE, CERT, CV, FIN]
+                          <- 1-RTT[0]: STREAM[0, "..."] ACK[0]
+
+Initial[1]: ACK[0]
+0-RTT[1]: CRYPTO_HS[EOED]
+Handshake[0]: CRYPTO_HS[FIN], ACK[0]
+1-RTT[2]: STREAM[0, "..."], ACK[0] ->
+~~~~
+{: #tls-0rtt-handshake title="Example 1-RTT Handshake"}
+
 
 ## Transport Parameters
 
