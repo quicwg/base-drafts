@@ -418,9 +418,9 @@ when it receives a new packet which is not one greater than the
 largest received packet number.
 
 Also, reception of an packet marked as ECN Congestion Experience (ECN-CE)
-SHOULD be acknowledged more quickly to quicker react to congesiton events.
-Additional ECN-CE marks received during the same recovery period does
-not need to be immediately acknowledged, see {{congestion-ecn}}.
+SHOULD be acknowledged immediately to quicker react to congesiton events.
+Additional ECN-CE marks received during the same recovery period are also
+immediately acknowledged to correctly account for ECN-CE marks in the recovery period.
 
 As an optimization, a receiver MAY process multiple packets before
 sending any ACK frames in response.  In this case they can determine
@@ -894,14 +894,14 @@ in {{tlp}} and {{rto}}.
 
 If ECN {!RFC3168} has been verified to work for the current path QUIC
 will use the ECN Congestion Experienced (ECN-CE) IP packet marking as a
-signal of congestion as a complement to paket loss. This document
+signal of congestion as a complement to packet loss. This document
 specifies to use the classical ECN-CE response, i.e. the same response
-as for packet loss. However, there exist potenatial for future
+as for packet loss. However, there exist potential for future
 experimentation in using other response functions as discussed in
 {!RFC8311}.
 
 The ACK_ECN frame defined in {{QUIC-TRANSPORT}} does not provide
-information on which of the newely acknowledged packets that
+information on which of the newly acknowledged packets that
 was marked with ECN-CE. Therefore, it will be assumed that
 the congestion event starts at the highest acknowledged packet
 number.
