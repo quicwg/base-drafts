@@ -118,6 +118,28 @@ frames."  References without this preface refer to frames defined in {{frames}}.
 
 # Connection Setup and Management
 
+## Draft Version Identification
+
+> **RFC Editor's Note:**  Please remove this section prior to publication of a
+> final version of this document.
+
+HTTP/QUIC uses the token "hq" to identify itself in ALPN and Alt-Svc.  Only
+implementations of the final, published RFC can identify themselves as "hq".
+Until such an RFC exists, implementations MUST NOT identify themselves using
+this string.
+
+Implementations of draft versions of the protocol MUST add the string "-" and
+the corresponding draft number to the identifier. For example,
+draft-ietf-quic-http-01 is identified using the string "hq-01".
+
+Non-compatible experiments that are based on these draft versions MUST append
+the string "-" and an experiment name to the identifier. For example, an
+experimental implementation based on draft-ietf-quic-http-09 which reserves an
+extra stream for unsolicited transmission of 1980s pop music might identify
+itself as "hq-09-rickroll". Note that any label MUST conform to the "token"
+syntax defined in Section 3.2.6 of [RFC7230]. Experimenters are encouraged to
+coordinate their experiments on the quic@ietf.org mailing list.
+
 ## Discovering an HTTP/QUIC Endpoint
 
 An HTTP origin advertises the availability of an equivalent HTTP/QUIC endpoint
@@ -199,27 +221,6 @@ SETTINGS frame. After the QUIC connection is established, a SETTINGS frame
 respective HTTP control stream (Stream ID 2 or 3, see {{stream-mapping}}). The
 server MUST NOT send data on any other stream until the client's SETTINGS frame
 has been received.
-
-### Draft Version Identification
-
-> **RFC Editor's Note:**  Please remove this section prior to publication of a
-> final version of this document.
-
-Only implementations of the final, published RFC can identify themselves as
-"hq". Until such an RFC exists, implementations MUST NOT identify themselves
-using this string.
-
-Implementations of draft versions of the protocol MUST add the string "-" and
-the corresponding draft number to the identifier. For example,
-draft-ietf-quic-http-01 is identified using the string "hq-01".
-
-Non-compatible experiments that are based on these draft versions MUST append
-the string "-" and an experiment name to the identifier. For example, an
-experimental implementation based on draft-ietf-quic-http-09 which reserves an
-extra stream for unsolicited transmission of 1980s pop music might identify
-itself as "hq-09-rickroll". Note that any label MUST conform to the "token"
-syntax defined in Section 3.2.6 of [RFC7230]. Experimenters are encouraged to
-coordinate their experiments on the quic@ietf.org mailing list.
 
 ## Connection Reuse
 
