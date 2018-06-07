@@ -349,54 +349,8 @@ coalesced packets to send them in the same UDP datagram.
 | Short Header    | 1-RTT            |
 {: #packet-types-levels title="Encryption Levels by Packet Type"}
 
-## Handshake and Setup Sequence
-
-The integration of QUIC with a TLS handshake is shown in more detail in
-{{quic-tls-handshake}}.
-
-~~~
-[TODO(ekr@rtfm.com): replace this diagram per the meeting today.]
-Client                                                   Server
-
-<CRYPTO_HS[
-        ClientHello]>  --------->
-
-(STREAM[0-RTTData])    --------->
-
-                       <---------   <ACK,
-                                        CRYPTO_HS[ServerHello]>
-
-                       <---------  {CRYPTO_HS[
-                                           EncryptedExtensions,
-                                                   Certificate,
-                                             CertificateVerify,
-                                                     Finished]}
-
-                      <---------         {STREAM[0.5-RTT Data])
-{ACK,
- CRYPTO_HS[Finished]} --------->
-
-[Any frames]          <-------->                   [Any frames]
-
-~~~
-{: #quic-tls-handshake title="QUIC Handshake"}
-
-In {{quic-tls-handshake}}, symbols mean:
-
-* "<" and ">" enclose packets protected with Initial keys {{initial-secrets}}.
-
-* "(" and ")" enclose packets that are protected with 0-RTT handshake or
-  application keys.
-
-* "{" and "}" enclose packets that are protected by the Handshake keys.
-
-* "[" and "]" enclose packets that are protected by the Application keys.
-
-* CRYPTO_HS[...], STREAM[...] and ACK indicate QUIC frames.
-
-If 0-RTT is not attempted, then the client does not send packets protected by
-the 0-RTT key.
-
+{{QUIC-TRANSPORT}}; Section 6.3 shows how packets at the various encryption
+levels fit into the handshake process.
 
 ## Interface to TLS
 
