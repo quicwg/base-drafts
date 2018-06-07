@@ -193,12 +193,12 @@ token "hq" in the TLS handshake.  Support for other application-layer protocols
 MAY be offered in the same handshake.
 
 While connection-level options pertaining to the core QUIC protocol are set in
-the initial crypto handshake, HTTP-specific settings are conveyed
-in the SETTINGS frame. After the QUIC connection is established, a SETTINGS
-frame ({{frame-settings}}) MUST be sent by each endpoint as the initial frame
-of their respective HTTP control stream (Stream ID 2 or 3, see
-{{stream-mapping}}). The server MUST NOT send data on any other stream until
-the client's SETTINGS frame has been received.
+the initial crypto handshake, HTTP/QUIC-specific settings are conveyed in the
+SETTINGS frame. After the QUIC connection is established, a SETTINGS frame
+({{frame-settings}}) MUST be sent by each endpoint as the initial frame of their
+respective HTTP control stream (Stream ID 2 or 3, see {{stream-mapping}}). The
+server MUST NOT send data on any other stream until the client's SETTINGS frame
+has been received.
 
 ### Draft Version Identification
 
@@ -1009,8 +1009,8 @@ the entire connection when an error is encountered.  These are referred to as
 "stream errors" or "connection errors" and are described in more detail in
 {{QUIC-TRANSPORT}}.
 
-This section describes HTTP-specific error codes which can be used to express
-the cause of a connection or stream error.
+This section describes HTTP/QUIC-specific error codes which can be used to
+express the cause of a connection or stream error.
 
 ## HTTP/QUIC Error Codes {#http-error-codes}
 
