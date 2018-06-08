@@ -887,22 +887,22 @@ explained in more detail as they are referenced later in the document.
 | Type Value  | Frame Type Name   | Definition                  |
 |:------------|:------------------|:----------------------------|
 | 0x00        | PADDING           | {{frame-padding}}           |
-| 0x01        | RST_STREAM        | {{frame-rst-stream}}        |
-| 0x02        | CONNECTION_CLOSE  | {{frame-connection-close}}  |
-| 0x03        | APPLICATION_CLOSE | {{frame-application-close}} |
-| 0x04        | MAX_DATA          | {{frame-max-data}}          |
-| 0x05        | MAX_STREAM_DATA   | {{frame-max-stream-data}}   |
-| 0x06        | MAX_STREAM_ID     | {{frame-max-stream-id}}     |
-| 0x07        | PING              | {{frame-ping}}              |
-| 0x08        | BLOCKED           | {{frame-blocked}}           |
-| 0x09        | STREAM_BLOCKED    | {{frame-stream-blocked}}    |
-| 0x0a        | STREAM_ID_BLOCKED | {{frame-stream-id-blocked}} |
-| 0x0b        | NEW_CONNECTION_ID | {{frame-new-connection-id}} |
-| 0x0c        | STOP_SENDING      | {{frame-stop-sending}}      |
-| 0x0d        | ACK               | {{frame-ack}}               |
-| 0x0e        | PATH_CHALLENGE    | {{frame-path-challenge}}    |
-| 0x0f        | PATH_RESPONSE     | {{frame-path-response}}     |
-| 0x10 - 0x17 | STREAM            | {{frame-stream}}            |
+| 0x01        | CONNECTION_CLOSE  | {{frame-connection-close}}  |
+| 0x02        | APPLICATION_CLOSE | {{frame-application-close}} |
+| 0x03        | MAX_DATA          | {{frame-max-data}}          |
+| 0x04        | PING              | {{frame-ping}}              |
+| 0x05        | BLOCKED           | {{frame-blocked}}           |
+| 0x06        | NEW_CONNECTION_ID | {{frame-new-connection-id}} |
+| 0x07        | ACK               | {{frame-ack}}               |
+| 0x08        | PATH_CHALLENGE    | {{frame-path-challenge}}    |
+| 0x09        | PATH_RESPONSE     | {{frame-path-response}}     |
+| 0x0a - 0x0b | MAX_STREAM_ID     | {{frame-max-stream-id}}     |
+| 0x0c - 0x0d | STREAM_ID_BLOCKED | {{frame-stream-id-blocked}} |
+| 0x10 - 0x13 | STOP_SENDING      | {{frame-stop-sending}}      |
+| 0x14 - 0x17 | RST_STREAM        | {{frame-rst-stream}}        |
+| 0x18 - 0x1b | STREAM_BLOCKED    | {{frame-stream-blocked}}    |
+| 0x1c - 0x1f | MAX_STREAM_DATA   | {{frame-max-stream-data}}   |
+| 0x20 - 0x3f | STREAM            | {{frame-stream}}            |
 {: #frame-types title="Frame Types"}
 
 # Life of a Connection
@@ -2243,8 +2243,17 @@ octet that identifies the frame as a PADDING frame.
 
 ## RST_STREAM Frame {#frame-rst-stream}
 
-An endpoint may use a RST_STREAM frame (type=0x01) to abruptly terminate a
-stream.
+An endpoint may use a RST_STREAM frame to abruptly terminate a stream.  The
+RST_STREAM frame takes the form 0b000101XX (or the set of values from 0x14 to
+0x17).
+
+The least significant bit (0x1) of the frame type identifies the initiator of
+the stream.  Client-initiated streams have the least significant bit set to 0;
+server-initiated streams have the bit set to 1.
+
+The second least significant bit (0x2) of the frame type differentiates between
+unidirectional streams and bidirectional streams. Unidirectional streams have
+this bit set to 1 and bidirectional streams have this bit set to 0.
 
 After sending a RST_STREAM, an endpoint ceases transmission and retransmission
 of STREAM frames on the identified stream.  A receiver of RST_STREAM can discard
@@ -2287,7 +2296,7 @@ Final Offset:
 
 ## CONNECTION_CLOSE frame {#frame-connection-close}
 
-An endpoint sends a CONNECTION_CLOSE frame (type=0x02) to notify its peer that
+An endpoint sends a CONNECTION_CLOSE frame (type=0x01) to notify its peer that
 the connection is being closed.  CONNECTION_CLOSE is used to signal errors at
 the QUIC layer, or the absence of errors (with the NO_ERROR code).
 
@@ -2331,7 +2340,7 @@ Reason Phrase:
 
 ## APPLICATION_CLOSE frame {#frame-application-close}
 
-An APPLICATION_CLOSE frame (type=0x03) uses the same format as the
+An APPLICATION_CLOSE frame (type=0x02) uses the same format as the
 CONNECTION_CLOSE frame ({{frame-connection-close}}), except that it uses error
 codes from the application protocol error code space ({{app-error-codes}})
 instead of the transport error code space.
@@ -2342,7 +2351,7 @@ APPLICATION_CLOSE frame are identical to the CONNECTION_CLOSE frame.
 
 ## MAX_DATA Frame {#frame-max-data}
 
-The MAX_DATA frame (type=0x04) is used in flow control to inform the peer of
+The MAX_DATA frame (type=0x03) is used in flow control to inform the peer of
 the maximum amount of data that can be sent on the connection as a whole.
 
 The frame is as follows:
@@ -2373,8 +2382,17 @@ change in the initial limits (see {{zerortt-parameters}}).
 
 ## MAX_STREAM_DATA Frame {#frame-max-stream-data}
 
-The MAX_STREAM_DATA frame (type=0x05) is used in flow control to inform a peer
-of the maximum amount of data that can be sent on a stream.
+The MAX_STREAM_DATA frame is used in flow control to inform a peer of the
+maximum amount of data that can be sent on a stream.  The MAX_STREAM_DATA frame
+takes the form 0b000111XX (or the values 0x1c through 0x1f).
+
+The least significant bit (0x1) of the frame type identifies the initiator of
+the stream.  Client-initiated streams have the least significant bit set to 0;
+server-initiated streams have the bit set to 1.
+
+The second least significant bit (0x2) of the frame type differentiates between
+unidirectional streams and bidirectional streams. Unidirectional streams have
+this bit set to 1 and bidirectional streams have this bit set to 0.
 
 An endpoint that receives a MAX_STREAM_DATA frame for a receive-only stream
 MUST terminate the connection with error PROTOCOL_VIOLATION.
@@ -2424,8 +2442,12 @@ a change in the initial limits (see {{zerortt-parameters}}).
 
 ## MAX_STREAM_ID Frame {#frame-max-stream-id}
 
-The MAX_STREAM_ID frame (type=0x06) informs the peer of the maximum stream ID
-that they are permitted to open.
+The MAX_STREAM_ID frame informs the peer of the maximum stream ID that they are
+permitted to open.  The MAX_STREAM_ID frame takes the form 0b0000101X (or the
+values 0x0a and 0x0b).
+
+The limit applies to unidirectional steams if the least significant bit of the
+frame type is 1, and applies to bidirectional streams if it is 0.
 
 The frame is as follows:
 
@@ -2441,9 +2463,7 @@ The fields in the MAX_STREAM_ID frame are as follows:
 
 Maximum Stream ID:
 : ID of the maximum unidirectional or bidirectional peer-initiated stream ID for
-  the connection encoded as a variable-length integer. The limit applies to
-  unidirectional steams if the second least signification bit of the stream ID
-  is 1, and applies to bidirectional streams if it is 0.
+  the connection encoded as a variable-length integer.
 
 Loss or reordering can mean that a MAX_STREAM_ID frame can be received which
 states a lower stream limit than the client has previously received.
@@ -2459,7 +2479,7 @@ than it has sent, unless this is a result of a change in the initial limits (see
 
 ## PING Frame {#frame-ping}
 
-Endpoints can use PING frames (type=0x07) to verify that their peers are still
+Endpoints can use PING frames (type=0x04) to verify that their peers are still
 alive or to check reachability to the peer. The PING frame contains no
 additional fields.
 
@@ -2484,7 +2504,7 @@ prevent the majority of middleboxes from losing state for UDP flows.
 
 ## BLOCKED Frame {#frame-blocked}
 
-A sender SHOULD send a BLOCKED frame (type=0x08) when it wishes to send data,
+A sender SHOULD send a BLOCKED frame (type=0x05) when it wishes to send data,
 but is unable to due to connection-level flow control (see {{blocking}}).
 BLOCKED frames can be used as input to tuning of flow control algorithms (see
 {{fc-credit}}).
@@ -2509,9 +2529,18 @@ Offset:
 
 ## STREAM_BLOCKED Frame {#frame-stream-blocked}
 
-A sender SHOULD send a STREAM_BLOCKED frame (type=0x09) when it wishes to send
-data, but is unable to due to stream-level flow control.  This frame is
-analogous to BLOCKED ({{frame-blocked}}).
+A sender SHOULD send a STREAM_BLOCKED frame when it wishes to send data, but is
+unable to due to stream-level flow control.  This frame is analogous to BLOCKED
+({{frame-blocked}}).  The STREAM_BLOCKED frame takes the form 0b000101XX (or the
+values 0x18 through 0x1b).
+
+The least significant bit (0x1) of the frame type identifies the initiator of
+the stream.  Client-initiated streams have the least significant bit set to 0;
+server-initiated streams have the bit set to 1.
+
+The second least significant bit (0x2) of the frame type differentiates between
+unidirectional streams and bidirectional streams. Unidirectional streams have
+this bit set to 1 and bidirectional streams have this bit set to 0.
 
 An endpoint that receives a STREAM_BLOCKED frame for a send-only stream MUST
 terminate the connection with error PROTOCOL_VIOLATION.
@@ -2542,11 +2571,20 @@ Offset:
 
 ## STREAM_ID_BLOCKED Frame {#frame-stream-id-blocked}
 
-A sender MAY send a STREAM_ID_BLOCKED frame (type=0x0a) when it wishes to open a
-stream, but is unable to due to the maximum stream ID limit set by its peer (see
+A sender MAY send a STREAM_ID_BLOCKED frame when it wishes to open a stream, but
+is unable to due to the maximum stream ID limit set by its peer (see
 {{frame-max-stream-id}}).  This does not open the stream, but informs the peer
 that a new stream was needed, but the stream limit prevented the creation of the
-stream.
+stream.  The STREAM_ID_BLOCKED frame takes the form 0b000111XX (or the values
+0x1c through 0x1f).
+
+The least significant bit (0x1) of the frame type identifies the initiator of
+the stream.  Client-initiated streams have the least significant bit set to 0;
+server-initiated streams have the bit set to 1.
+
+The second least significant bit (0x2) of the frame type differentiates between
+unidirectional streams and bidirectional streams. Unidirectional streams have
+this bit set to 1 and bidirectional streams have this bit set to 0.
 
 The STREAM_ID_BLOCKED frame is as follows:
 
@@ -2567,7 +2605,7 @@ Stream ID:
 
 ## NEW_CONNECTION_ID Frame {#frame-new-connection-id}
 
-An endpoint sends a NEW_CONNECTION_ID frame (type=0x0b) to provide its peer with
+An endpoint sends a NEW_CONNECTION_ID frame (type=0x06) to provide its peer with
 alternative connection IDs that can be used to break linkability when migrating
 connections (see {{migration-linkability}}).
 
@@ -2626,9 +2664,18 @@ frame as a connection error of type PROTOCOL_VIOLATION.
 
 ## STOP_SENDING Frame {#frame-stop-sending}
 
-An endpoint may use a STOP_SENDING frame (type=0x0c) to communicate that
-incoming data is being discarded on receipt at application request.  This
-signals a peer to abruptly terminate transmission on a stream.
+An endpoint may use a STOP_SENDING frame to communicate that incoming data is
+being discarded on receipt at application request.  This signals a peer to
+abruptly terminate transmission on a stream.  The STOP_SENDING frame takes the
+form 0b000100XX (or the values 0x10 through 0x13).
+
+The least significant bit (0x1) of the frame type identifies the initiator of
+the stream.  Client-initiated streams have the least significant bit set to 0;
+server-initiated streams have the bit set to 1.
+
+The second least significant bit (0x2) of the frame type differentiates between
+unidirectional streams and bidirectional streams. Unidirectional streams have
+this bit set to 1 and bidirectional streams have this bit set to 0.
 
 Receipt of a STOP_SENDING frame is only valid for a send stream that exists and
 is not in the "Ready" state (see {{stream-send-states}}).  Receiving a
@@ -2663,7 +2710,7 @@ Application Error Code:
 
 ## ACK Frame {#frame-ack}
 
-Receivers send ACK frames (type=0x0d) to inform senders which packets they have
+Receivers send ACK frames (type=0x07) to inform senders which packets they have
 received and processed. The ACK frame contains any number of ACK blocks.
 ACK blocks are ranges of acknowledged packets.
 
@@ -2884,7 +2931,7 @@ to decipher the packet.
 
 ## PATH_CHALLENGE Frame {#frame-path-challenge}
 
-Endpoints can use PATH_CHALLENGE frames (type=0x0e) to check reachability to the
+Endpoints can use PATH_CHALLENGE frames (type=0x08) to check reachability to the
 peer and for path validation during connection establishment and connection
 migration.
 
@@ -2915,7 +2962,7 @@ The recipient of this frame MUST generate a PATH_RESPONSE frame
 
 ## PATH_RESPONSE Frame {#frame-path-response}
 
-The PATH_RESPONSE frame (type=0x0f) is sent in response to a PATH_CHALLENGE
+The PATH_RESPONSE frame (type=0x09) is sent in response to a PATH_CHALLENGE
 frame.  Its format is identical to the PATH_CHALLENGE frame
 ({{frame-path-challenge}}).
 
@@ -2927,22 +2974,31 @@ a connection error of type UNSOLICITED_PATH_RESPONSE.
 ## STREAM Frames {#frame-stream}
 
 STREAM frames implicitly create a stream and carry stream data.  The STREAM
-frame takes the form 0b00010XXX (or the set of values from 0x10 to 0x17).  The
-value of the three low-order bits of the frame type determine the fields that
-are present in the frame.
+frame takes the form 0b001XXXXX (or the set of values from 0x20 to 0x3f).
 
-* The OFF bit (0x04) in the frame type is set to indicate that there is an
+The least significant bit (0x1) of the frame type identifies the initiator of
+the stream.  Client-initiated streams have the least significant bit set to 0;
+server-initiated streams have the bit set to 1.
+
+The second least significant bit (0x2) of the frame type differentiates between
+unidirectional streams and bidirectional streams. Unidirectional streams have
+this bit set to 1 and bidirectional streams have this bit set to 0.
+
+The value of the next three low-order bits of the frame type determine the
+fields that are present in the frame:
+
+* The OFF bit (0x10) in the frame type is set to indicate that there is an
   Offset field present.  When set to 1, the Offset field is present; when set to
   0, the Offset field is absent and the Stream Data starts at an offset of 0
   (that is, the frame contains the first octets of the stream, or the end of a
   stream that includes no data).
 
-* The LEN bit (0x02) in the frame type is set to indicate that there is a Length
+* The LEN bit (0x08) in the frame type is set to indicate that there is a Length
   field present.  If this bit is set to 0, the Length field is absent and the
   Stream Data field extends to the end of the packet.  If this bit is set to 1,
   the Length field is present.
 
-* The FIN bit (0x01) of the frame type is set only on frames that contain the
+* The FIN bit (0x04) of the frame type is set only on frames that contain the
   final offset of the stream.  Setting this bit indicates that the frame
   marks the end of the stream.
 
@@ -3263,43 +3319,23 @@ for some applications.
 
 ## Stream Identifiers {#stream-id}
 
-Streams are identified by an unsigned 62-bit integer, referred to as the Stream
-ID.  The least significant two bits of the Stream ID are used to identify the
-type of stream (unidirectional or bidirectional) and the initiator of the
-stream.
-
-The least significant bit (0x1) of the Stream ID identifies the initiator of the
-stream.  Clients initiate even-numbered streams (those with the least
-significant bit set to 0); servers initiate odd-numbered streams (with the bit
-set to 1).  Separation of the stream identifiers ensures that client and server
+Streams of each type are identified by an unsigned 62-bit integer, referred to
+as the Stream ID.  The context of the Stream ID is used to identify the type of
+stream (unidirectional or bidirectional) and the initiator of the stream.  The
+combination of stream type and Stream ID can easily be stored in a 64-bit
+integer.  Separation of the stream identifiers ensures that client and server
 are able to open streams without the latency imposed by negotiating for an
 identifier.
 
-If an endpoint receives a frame for a stream that it expects to initiate (i.e.,
-odd-numbered for the client or even-numbered for the server), but which it has
-not yet opened, it MUST close the connection with error code STREAM_STATE_ERROR.
+If an endpoint receives a frame for a stream that it expects to initiate, but
+which it has not yet opened, it MUST close the connection with error code
+STREAM_STATE_ERROR.
 
-The second least significant bit (0x2) of the Stream ID differentiates between
-unidirectional streams and bidirectional streams. Unidirectional streams always
-have this bit set to 1 and bidirectional streams have this bit set to 0.
-
-The two type bits from a Stream ID therefore identify streams as summarized in
-{{stream-id-types}}.
-
-| Low Bits | Stream Type                      |
-|:---------|:---------------------------------|
-| 0x0      | Client-Initiated, Bidirectional  |
-| 0x1      | Server-Initiated, Bidirectional  |
-| 0x2      | Client-Initiated, Unidirectional |
-| 0x3      | Server-Initiated, Unidirectional |
-{: #stream-id-types title="Stream ID Types"}
-
-Stream ID 0 (0x0) is a client-initiated, bidirectional stream that is used for
-the cryptographic handshake.  Stream 0 MUST NOT be used for application data.
-
-A QUIC endpoint MUST NOT reuse a Stream ID.  Streams can be used in any order.
-Streams that are used out of order result in opening all lower-numbered streams
-of the same type in the same direction.
+The same Stream ID within each stream type is unrelated, unless a relationship
+is defined by an application-level protocol.  A QUIC endpoint MUST NOT reuse a
+Stream ID within a stream type.  Streams can be used in any order. Streams that
+are used out of order result in opening all lower-numbered streams of the same
+type in the same direction.
 
 Stream IDs are encoded as a variable-length integer (see {{integer-encoding}}).
 
@@ -3371,15 +3407,13 @@ data to a peer.
 ~~~
 {: #fig-stream-send-states title="States for Send Streams"}
 
-The sending part of stream that the endpoint initiates (types 0 and 2 for
-clients, 1 and 3 for servers) is opened by the application or application
-protocol.  The "Ready" state represents a newly created stream that is able to
-accept data from the application.  Stream data might be buffered in this state
-in preparation for sending.
+The sending part of stream that the endpoint initiates is opened by the
+application or application protocol.  The "Ready" state represents a newly
+created stream that is able to accept data from the application.  Stream data
+might be buffered in this state in preparation for sending.
 
-The sending part of a bidirectional stream initiated by a peer (type 0 for a
-server, type 1 for a client) enters the "Ready" state if the receiving part
-enters the "Recv" state.
+The sending part of a bidirectional stream initiated by a peer enters the
+"Ready" state if the receiving part enters the "Recv" state.
 
 Sending the first STREAM or STREAM_BLOCKED frame causes a send stream to enter
 the "Send" state.  An implementation might choose to defer allocating a Stream
@@ -3459,16 +3493,14 @@ application protocol some of which cannot be observed by the sender.
 ~~~
 {: #fig-stream-recv-states title="States for Receive Streams"}
 
-The receiving part of a stream initiated by a peer (types 1 and 3 for a client,
-or 0 and 2 for a server) are created when the first STREAM, STREAM_BLOCKED,
-RST_STREAM, or MAX_STREAM_DATA (bidirectional only, see below) is received for
-that stream.  The initial state for a receive stream is "Recv".  Receiving a
-RST_STREAM frame causes the receive stream to immediately transition to the
-"Reset Recvd".
+The receiving part of a stream initiated by a peer are created when the first
+STREAM, STREAM_BLOCKED, RST_STREAM, or MAX_STREAM_DATA (bidirectional only, see
+below) is received for that stream.  The initial state for a receive stream is
+"Recv".  Receiving a RST_STREAM frame causes the receive stream to immediately
+transition to the "Reset Recvd".
 
 The receive stream enters the "Recv" state when the sending part of a
-bidirectional stream initiated by the endpoint (type 0 for a client, type 1 for
-a server) enters the "Ready" state.
+bidirectional stream initiated by the endpoint enters the "Ready" state.
 
 A bidirectional stream also opens when a MAX_STREAM_DATA frame is received.
 Receiving a MAX_STREAM_DATA frame implies that the remote peer has opened the
@@ -3701,9 +3733,9 @@ the protocol functions efficiently.  That is, prioritizing frames other than
 STREAM frames ensures that loss recovery, congestion control, and flow control
 operate effectively.
 
-Stream 0 MUST be prioritized over other streams prior to the completion of the
-cryptographic handshake.  This includes the retransmission of the second flight
-of client handshake messages, that is, the TLS Finished and any client
+The crypto stream MUST be prioritized over other streams prior to the completion
+of the cryptographic handshake.  This includes the retransmission of the second
+flight of client handshake messages, that is, the TLS Finished and any client
 authentication messages.
 
 STREAM data in frames determined to be lost SHOULD be retransmitted before
@@ -3727,11 +3759,10 @@ senders from exceeding a receiver's buffer capacity for the connection, and (ii)
 Stream flow control, which prevents a single stream from consuming the entire
 receive buffer for a connection.
 
-A data receiver sends MAX_STREAM_DATA or MAX_DATA frames to the sender
-to advertise additional credit. MAX_STREAM_DATA frames send the the
-maximum absolute byte offset of a stream, while MAX_DATA sends the
-maximum sum of the absolute byte offsets of all streams other than
-stream 0.
+A data receiver sends MAX_STREAM_DATA or MAX_DATA frames to the sender to
+advertise additional credit. MAX_STREAM_DATA frames send the the maximum
+absolute byte offset of a stream, while MAX_DATA sends the maximum sum of the
+absolute byte offsets of all streams of all types.
 
 A receiver MAY advertise a larger offset at any point by sending MAX_DATA or
 MAX_STREAM_DATA frames.  A receiver MUST NOT renege on an advertisement; that
@@ -3757,11 +3788,11 @@ the sender receives an update before running out of flow control credit, even if
 one of the packets is lost.
 
 Connection flow control is a limit to the total bytes of stream data sent in
-STREAM frames on all streams except stream 0.  A receiver advertises credit for
-a connection by sending a MAX_DATA frame.  A receiver maintains a cumulative sum
-of bytes received on all contributing streams, which are used to check for flow
-control violations. A receiver might use a sum of bytes consumed on all
-contributing streams to determine the maximum data limit to be advertised.
+STREAM frames on all streams.  A receiver advertises credit for a connection by
+sending a MAX_DATA frame.  A receiver maintains a cumulative sum of bytes
+received on all streams, which are used to check for flow control violations. A
+receiver might use a sum of bytes consumed on all streams to determine the
+maximum data limit to be advertised.
 
 ## Edge Cases and Other Considerations
 
