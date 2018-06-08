@@ -397,9 +397,9 @@ the network, it proceeds as follows:
 
 - If the packet is from a previously installed encryption level, it
   MUST not contain data which extends past the end of previously
-  received data in that flow. [TODO(ekr): Double check that this
-  can't happen]. Implementations MUST treat any violations of this
-  requirement as a connection error of type PROTOCOL_VIOLATION.
+  received data in that flow. Implementations MUST treat any
+  violations of this requirement as a connection error of type
+  PROTOCOL_VIOLATION.
 
 Each time that TLS is provided with new data, new handshake octets are
 requested from TLS.  TLS might not provide any octets if the handshake
@@ -554,7 +554,6 @@ A server MUST NOT use post-handshake client authentication (see Section 4.6.2 of
 
 ## Enabling 0-RTT {#enable-0rtt}
 
-[TODO(ekr@rtfm.com): I'm not sure that this is correct any more.]
 In order to be usable for 0-RTT, TLS MUST provide a NewSessionTicket message
 that contains the "max_early_data" extension with the value 0xffffffff; the
 amount of data which the client can send in 0-RTT is controlled by the
@@ -1002,47 +1001,6 @@ completion of the handshake, they cannot be fully trusted until the handshake
 completes, and reliance on them should be minimized.
 However, any tampering with the parameters will be detected
 when the handshake completes.
-
-
-## QUIC Max Crypto Data Extension {#max_crypto_data}
-
-When QUIC provides TLS messages via the CRYPTO_HS frame, one TLS
-message may be fragmented across different packets. TLS
-implementations may choose to limit the data they buffer before the
-handshake is completed and close the connection on receiving too much
-data.
-
-To communicate the maximum amount of data that TLS will allow to be sent in
-CRYPTO_HS frames, TLS MAY use the `max_crypto_data` extension, defined as
-follows:
-
-~~~
-   enum {
-      max_crypto_data(27), (65535)
-   } ExtensionType;
-
-   struct {
-      uint32 max_crypto_data;
-   } MaxCryptoData;
-~~~
-
-max_crypto_data:
-
-: The maximum number of bytes that can be sent in CRYPTO_HS frames
-
-The `extension_data` field of the extension contains the MaxCryptoData
-structure.
-
-Implementations SHOULD send this extension.  Receivers do not need to
-process this extension.  If a receiver does process this extension and
-will not be able to fit its handshake into the limit, it SHOULD
-terminate the connection with a TODO error. If an implementation sends
-this extension and received more than max_crypto_data bytes from its
-peer, it SHOULD terminate the connection with a TODO error. The
-purpose of this extension is to provide a facility to debug issues
-during the handshake and also allow future extensibility of the
-protocol to larger message sizes.
-
 
 # Security Considerations
 

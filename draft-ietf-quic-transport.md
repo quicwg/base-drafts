@@ -1207,11 +1207,8 @@ as the record encryption layer for the cryptographic protocol.
 
 The initial CRYPTO_HS frame MUST be sent in a single packet.  Any
 second attempt that is triggered by address validation MUST also be
-sent within a single packet.  This avoids having to reassemble a
-message from multiple packets.  Reassembling messages requires that a
-server maintain state prior to establishing a connection, exposing the
-server to a denial of service risk.  \[\[TODO: Reword this with retry
-proposal.]]
+sent within a single packet. This avoids having to reassemble a
+message from multiple packets.
 
 The first client packet of the cryptographic handshake protocol MUST fit within
 a 1232 octet QUIC packet payload.  This includes overheads that reduce the space
@@ -1589,9 +1586,8 @@ handshake packet is padded to at least 1200 octets.  This allows a server to
 send a similar amount of data without risking causing an amplification attack
 toward an unproven remote address.
 
-TODO(ekr): Receipt of Hanshake is now confirmation of the peer's address/etc
 A server eventually confirms that a client has received its messages when the
-cryptographic handshake successfully completes.  This might be insufficient,
+first Handshake-level message is received. This might be insufficient,
 either because the server wishes to avoid the computational cost of completing
 the handshake, or it might be that the size of the packets that are sent during
 the handshake is too large.  This is especially important for 0-RTT, where the
