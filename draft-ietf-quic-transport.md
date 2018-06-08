@@ -4416,6 +4416,23 @@ limit mitigates the effect of the stream commitment attack.  However, setting
 the limit too low could affect performance when applications expect to open
 large number of streams.
 
+## Explicit Congestion Notification Attacks
+
+The ECN bits {{!RFC3168}} are an unauthenticated signal from the network. An
+on-path attacker may manipulate the value of the field. Thus, affecting the
+congestion avoidance behavior of the sender. By clearing any CE marks the
+connection can help drive a bottle neck queue into a loss regime. By setting
+the ECN field to CE marking it can drive down the senders congestion window
+thus resulting in reduced throughput. The later could equally be accomplished
+by dropping packets for the connection. Section 18 and 19 of {{!RFC3168}}
+discusses the effects of undesired manipulation of the ECN field in more
+details.
+
+If a receiver would not have packet duplication detection and not discard any
+duplicates an off-path attacker that can receive copies of the connection's
+packets can manipulate the senders congestion avoidance state. If packet
+duplicates are dropped, the off-path attacker will need to race the original
+packet to be successful in this attack.
 
 # IANA Considerations
 
