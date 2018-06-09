@@ -999,7 +999,7 @@ response to each packet that might initiate a new connection, see
 The size of the first packet sent by a client will determine whether a server
 sends a Version Negotiation packet. Clients that support multiple QUIC
 versions SHOULD pad their Initial packets to reflect the largest minimum
-Initial packet size of all their versions. This ensures that that the server
+Initial packet size of all their versions. This ensures that the server
 responds if there are any mutually supported versions.
 
 ### Sending Version Negotiation Packets {#send-vn}
