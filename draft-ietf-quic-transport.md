@@ -723,8 +723,10 @@ Senders SHOULD coalesce packets in order of increasing encryption levels
 include a length, so it will always be the last packet included in a UDP
 datagram.
 
-The sender MUST NOT coalesce QUIC packets belonging to different QUIC
-connections into a single UDP datagram.
+Senders MUST NOT coalesce QUIC packets with different Destination Connection
+IDs into a single UDP datagram. Receivers SHOULD ignore any subsequent packets
+with a different Destination Connection ID than the first packet in the
+datagram.
 
 Every QUIC packet that is coalesced into a single UDP datagram is separate and
 complete.  Though the values of some fields in the packet header might be
