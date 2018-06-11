@@ -315,15 +315,16 @@ Version:
 
 DCIL and SCIL:
 
-: Octet 1 contains the lengths of the two connection ID fields that follow it.
-  These lengths are encoded as two 4-bit unsigned integers. The Destination
-  Connection ID Length (DCIL) field occupies the 4 high bits of the octet and
-  the Source Connection ID Length (SCIL) field occupies the 4 low bits of the
-  octet.  An encoded length of 0 indicates that the connection ID is also 0
-  octets in length.  Non-zero encoded lengths are increased by 3 to get the full
-  length of the connection ID, producing a length between 4 and 18 octets
-  inclusive.  For example, an octet with the value 0x50 describes an 8-octet
-  Destination Connection ID and a zero-length Source Connection ID.
+: The octet following the version contains the lengths of the two connection ID
+  fields that follow it.  These lengths are encoded as two 4-bit unsigned
+  integers. The Destination Connection ID Length (DCIL) field occupies the 4
+  high bits of the octet and the Source Connection ID Length (SCIL) field
+  occupies the 4 low bits of the octet.  An encoded length of 0 indicates that
+  the connection ID is also 0 octets in length.  Non-zero encoded lengths are
+  increased by 3 to get the full length of the connection ID, producing a length
+  between 4 and 18 octets inclusive.  For example, an octet with the value 0x50
+  describes an 8-octet Destination Connection ID and a zero-length Source
+  Connection ID.
 
 Destination Connection ID:
 
@@ -443,7 +444,7 @@ Google QUIC Demultipexing Bit:
 Reserved:
 
 : The sixth, seventh, and eighth bits (0x7) of octet 0 are reserved for
-experimentation.
+  experimentation.
 
 Destination Connection ID:
 
@@ -453,9 +454,9 @@ Destination Connection ID:
 Packet Number:
 
 : The packet number field is 1, 2, or 4 octets long. The packet number has
-confidentiality protection separate from packet protection, as described in
-Section 5.6 of {{QUIC-TLS}}. The length of the packet number field is encoded
-in the plaintext packet number. See {{packet-numbers}} for details.
+  confidentiality protection separate from packet protection, as described in
+  Section 5.6 of {{QUIC-TLS}}. The length of the packet number field is encoded
+  in the plaintext packet number. See {{packet-numbers}} for details.
 
 Protected Payload:
 
