@@ -841,7 +841,7 @@ Settings which are integers use the QUIC variable-length integer encoding.
 
 #### Defined SETTINGS Parameters {#settings-parameters}
 
-The following setting is defined in HTTP/QUIC:
+The following settings are defined in HTTP/QUIC:
 
   SETTINGS_NUM_PLACEHOLDERS (0x3):
   : An integer with a maximum value of 2^16 - 1.  The value SHOULD be non-zero.
