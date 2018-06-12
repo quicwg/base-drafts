@@ -1445,7 +1445,7 @@ When ACK_ECN is received, the counter values can be used to confirm the expected
 number of marks were received. ECT marked packets can become remarked as CE
 along the path between the peers. The ACK_ECN counters are added together and
 compared to total number of ACKed packets, if the sum of the counters are equal
-too or larger than the number of ACKed packets then the path is ECN capable.
+or larger than the number of ACKed packets then the path is ECN capable.
 This capability check thus has verified that one direction of the path between
 the peers is free from issues with ECN bleaching and that the application does
 not experience problems with access to the ECN field in the IP header. In this
