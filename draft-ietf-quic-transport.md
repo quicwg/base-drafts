@@ -717,17 +717,29 @@ sequence of frames, as described in {{frames}}.
 A sender can coalesce multiple QUIC packets (typically a Cryptographic Handshake
 packet and a Protected packet) into one UDP datagram.  This can reduce the
 number of UDP datagrams needed to send application data during the handshake and
-immediately afterwards.  A packet with a short header does not include a length,
-so it has to be the last packet included in a UDP datagram.
+immediately afterwards.
 
-The sender MUST NOT coalesce QUIC packets belonging to different QUIC
-connections into a single UDP datagram.
+Senders SHOULD coalesce packets in order of increasing encryption levels
+(Initial, Handshake, 0-RTT, 1-RTT), as this makes it more likely the receiver
+will be able to process all the packets in a single pass.  A packet with a short
+header does not include a length, so it will always be the last packet included
+in a UDP datagram.
+
+Senders MUST NOT coalesce QUIC packets with different Destination Connection
+IDs into a single UDP datagram. Receivers SHOULD ignore any subsequent packets
+with a different Destination Connection ID than the first packet in the
+datagram.
 
 Every QUIC packet that is coalesced into a single UDP datagram is separate and
 complete.  Though the values of some fields in the packet header might be
 redundant, no fields are omitted.  The receiver of coalesced QUIC packets MUST
 individually process each QUIC packet and separately acknowledge them, as if
-they were received as the payload of different UDP datagrams.
+they were received as the payload of different UDP datagrams.  If one or more
+packets in a datagram cannot be processed yet (because the keys are not yet
+available) or processing fails (decryption failure, unknown type, etc.), the
+receiver MUST still attempt to process the remaining packets.  The skipped
+packets MAY either be discarded or buffered for later processing, just as if the
+packets were received out-of-order in separate datagrams.
 
 
 ## Connection ID {#connection-id}
