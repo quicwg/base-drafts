@@ -1063,21 +1063,21 @@ negotiation, which is the same no matter which reserved version was sent.
 A server MAY therefore send different reserved version numbers in the Version
 Negotiation Packet and in its transport parameters.
 
-A client MAY send a packet using a reserved version number. This can be
-used to solicit a list of supported versions from a server.
+A client MAY send a packet using a reserved version number. This can be used to
+solicit a list of supported versions from a server.
 
 
 ## Cryptographic and Transport Handshake {#handshake}
 
-QUIC relies on a combined cryptographic and transport handshake to
-minimize connection establishment latency. QUIC allocates stream 0 for
-the cryptographic handshake. Version 0x00000001 of QUIC uses TLS 1.3 as
-described in {{QUIC-TLS}}; a different QUIC version number could
-indicate that a different cryptographic handshake protocol is in use.
+QUIC relies on a combined cryptographic and transport handshake to minimize
+connection establishment latency.  QUIC allocates stream 0 for the cryptographic
+handshake.  Version 0x00000001 of QUIC uses TLS 1.3 as described in
+{{QUIC-TLS}}; a different QUIC version number could indicate that a different
+cryptographic handshake protocol is in use.
 
 
-QUIC provides this stream with reliable, ordered delivery of data. In
-return, the cryptographic handshake provides QUIC with:
+QUIC provides this stream with reliable, ordered delivery of data.  In return,
+the cryptographic handshake provides QUIC with:
 
 * authenticated key exchange, where
 
@@ -1087,8 +1087,8 @@ return, the cryptographic handshake provides QUIC with:
 
    * every connection produces distinct and unrelated keys,
 
-   * keying material is usable for packet protection for both 0-RTT
-     and 1-RTT packets, and
+   * keying material is usable for packet protection for both 0-RTT and 1-RTT
+     packets, and
 
    * 1-RTT keys have forward secrecy
 
@@ -1101,16 +1101,16 @@ return, the cryptographic handshake provides QUIC with:
 * authenticated negotiation of an application protocol (TLS uses ALPN
   {{?RFC7301}} for this purpose)
 
-* for the server, the ability to carry data that provides assurance that
-  the client can receive packets that are addressed with the transport
-  address that is claimed by the client (see {{address-validation}})
+* for the server, the ability to carry data that provides assurance that the
+  client can receive packets that are addressed with the transport address that
+  is claimed by the client (see {{address-validation}})
 
-The initial cryptographic handshake message MUST be sent in a single
-packet. Any second attempt that is triggered by address validation MUST
-also be sent within a single packet. This avoids having to reassemble a
-message from multiple packets. Reassembling messages requires that a
-server maintain state prior to establishing a connection, exposing the
-server to a denial of service risk.
+The initial cryptographic handshake message MUST be sent in a single packet.
+Any second attempt that is triggered by address validation MUST also be sent
+within a single packet.  This avoids having to reassemble a message from
+multiple packets.  Reassembling messages requires that a server maintain state
+prior to establishing a connection, exposing the server to a denial of service
+risk.
 
 
 The first client packet of the cryptographic handshake protocol MUST fit
