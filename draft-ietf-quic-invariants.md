@@ -89,10 +89,10 @@ new versions are developed and deployed.  All of these invariants are
 IP-version-independent.
 
 The primary goal of this document is to ensure that it is possible to deploy new
-versions of QUIC.  By documenting the things that can't change, this document
-aims to preserve the ability to change any other aspect of the protocol.  Thus,
-unless specifically described in this document, any aspect of the protocol can
-change between different versions.
+versions of QUIC.  By documenting the properties that can't change, this
+document aims to preserve the ability to change any other aspect of the
+protocol.  Thus, unless specifically described in this document, any aspect of
+the protocol can change between different versions.
 
 {{bad-assumptions}} is a non-exhaustive list of some incorrect assumptions that
 might be made based on knowledge of QUIC version 1; these do not apply to every
@@ -226,6 +226,10 @@ QUIC versions are identified with a 32-bit integer, encoded in network byte
 order.  Version 0 is reserved for version negotiation (see
 {{version-negotiation}}).  All other version numbers are potentially valid.
 
+The properties described in this document apply to all versions of QUIC. A
+protocol that does not conform to the properties described in this document is
+not QUIC.  Future documents might describe additional properties which apply to
+a specific QUIC version, or to a range of QUIC versions.
 
 # Version Negotiation {#version-negotiation}
 
