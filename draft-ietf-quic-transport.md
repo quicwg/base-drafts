@@ -733,11 +733,11 @@ complete.  Though the values of some fields in the packet header might be
 redundant, no fields are omitted.  The receiver of coalesced QUIC packets MUST
 individually process each QUIC packet and separately acknowledge them, as if
 they were received as the payload of different UDP datagrams.  If one or more
-packets in a datagram cannot be processed, either because the keys are not yet
-available or because decryption fails, the receiver MUST still attempt to
-process the remaining packets.  The skipped packets MAY either be discarded or
-buffered for later processing, just as if the packets were received out-of-order
-in separate datagrams.
+packets in a datagram cannot be processed yet (because the keys are not yet
+available) or processing fails (decryption failure, unknown type, etc.), the
+receiver MUST still attempt to process the remaining packets.  The skipped
+packets MAY either be discarded or buffered for later processing, just as if the
+packets were received out-of-order in separate datagrams.
 
 
 ## Connection ID {#connection-id}
