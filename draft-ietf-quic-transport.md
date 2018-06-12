@@ -1422,9 +1422,8 @@ Explicit Congestion Notification (ECN) {{!RFC3168}} is feature that allows for
 non-destructive congestion notification by a network node.  That is, packets are
 marked instead of being discarded by routers and other devices along a network
 path. QUIC endpoints perform capability verification on connection establishment
-as well as connection migration. The feature can be used unidirectional or
-bidirectional depending or disabled temporarily depending on endpoint and path
-capabilities.
+as well as connection migration. ECN can be used unidirectionally,
+bidirectionally, or disabled depending on endpoint and path capabilities.
 
 The capability check makes use of the ACK_ECN frame in {{frame-ack-ecn}}. Each
 endpoint individually performs an ECN capability check for its send path. The
@@ -1442,16 +1441,15 @@ endpoint, an ACK_ECN frame is transmitted back. This ACK_ECN frame indicates how
 many packets that are marked ECT(0), ECT(1) or ECN-CE. Thus the endpoint can
 determine if the endpoints and path is ECN capable.
 
-The ACK_ECN frame will, when received, confirm that the path direction supports
-ECN if the counters show a correct amount of packets received for a valid and
-expected counter combination. ECT marked packets can become remarked as CE along
-the path between the peers. The ACK_ECN counters are added together and compared
-to total number of ACKed packets, if the sum of the counters are equal too or
-larger than the number of ACKed packets then the path is ECN capable. This
-capability check thus has verified that one direction of the path between the
-peers is free from issues with ECN bleaching and that the application does not
-experience problems with access to the ECN field in the IP header. In this case
-the marking of the generated packets with ECT continues.
+When ACK_ECN is received, the counter values can be used to confirm the expected
+number of marks were received. ECT marked packets can become remarked as CE
+along the path between the peers. The ACK_ECN counters are added together and
+compared to total number of ACKed packets, if the sum of the counters are equal
+too or larger than the number of ACKed packets then the path is ECN capable.
+This capability check thus has verified that one direction of the path between
+the peers is free from issues with ECN bleaching and that the application does
+not experience problems with access to the ECN field in the IP header. In this
+case the marking of the generated packets with ECT continues.
 
 If an ACK frame (not the ACK_ECN frame) is used to acknowledge reception of
 packets that was marked as ECT in the sender, or if the comparision of the
@@ -1467,19 +1465,18 @@ not the case **\[ED note, have not seen any clear statement in the drafts]**,
 then it should be verified that the number of ECT marked packets are equal to or
 larger that the amount of ECT marked packets that have been transmitted.
 
-### Continous Verification of ECN {#ecn-continous-verification}
+### Continuous Verification of ECN {#ecn-continuous-verification}
 
-If the ECN capabiity check was successful and the endpoint continus to send ECT
-marked packets then continous verification is applied. This is to detect any
-cases when ECN field is bleached, that is, zeroed out by a network node, likely
-as the result of a routing changes since the ECN capability check.
+If the ECN capability check was successful and the endpoint continues to send
+ECT marked packets then continuous verification is applied. This is to detect
+any cases when ECN field is bleached, that is, zeroed out by a network node,
+likely as the result of a routing changes since the ECN capability check.
 
-For each ACK_ECN frame that is received, the total number of ACKed packets are
-updated by adding those outstanding packets that was acknowledged by this
-ACK_ECN frame. Then the total number of ACKed packets are compared with the sum
-of the ECN counters. If ACKed packets are larger than the sum, then some ECN
-failure has occured and ECN should be disabled. ECN is also disabled in case an
-ACK frame is received acknowleging any ECT sent packet.
+For each received ACK_ECN frame, the total number of newly acknowledged packets
+can be compared to the total increase in ECN counters. If the increase in ECN
+counters is less, then an ECN failure has occurred and ECN should be disabled.
+ECN is also disabled in case an ACK frame is received acknowledging any ECT sent
+packet.
 
 
 ## Proof of Source Address Ownership {#address-validation}
@@ -2960,10 +2957,6 @@ ACK Block (repeated):
 
 ### Sending ACK Frames
 
-ACK Frames MAY be sent when all packets to be acknowledge had an IP header with
-the ECN field marked as Not-ECT. If any packets where marked as ECT or ECN-CE
-the ACK_ECN Frame ({{frame-ack-ecn}}) MUST be used instead.
-
 Implementations MUST NOT generate packets that only contain ACK frames in
 response to packets which only contain ACK frames. However, they MUST
 acknowledge packets containing only ACK frames when sending ACK frames in
@@ -3037,13 +3030,17 @@ number of packets that were received with the corresponding ECN codepoint in
 the IP header. If the header is not readable from the application, the
 codepoint 00 (Not-ECT) MUST be assumed.
 
-ACK_ECN Frame MUST be used when when an endpoint is acknowleging a packet where
+ACK_ECN Frame MUST be used when when an endpoint is acknowledging a packet were
 the IP header ECN field was marked as ECT(0), ECT(1) or ECN-CE when received.
-The ACK_ECN frame is used by the reeiver to echo the value of these counters
+ACK Frames ({{frame-ack}}) MAY be sent when all packets to be acknowledged
+had an IP header with the ECN field marked as Not-ECT.
+
+The ACK_ECN frame is used by the receiver to echo the value of these counters
 back to the sender of these packets. This allows the sender to utilize these
 counter values for congestion control. The ACK_ECN frame contains all the
 elements of the ACK frame ({{frame-ack}}) with the addition of an ECN block
 appended at the end.
+
 
 ~~~
  0                   1                   2                   3
@@ -4418,8 +4415,7 @@ large number of streams.
 
 ## Explicit Congestion Notification Attacks
 
-The ECN bits {{!RFC3168}} are an unauthenticated signal from the network. An
-on-path attacker may manipulate the value of the field. Thus, affecting the
+An on-path attacker may manipulate the value of the field, affecting the
 congestion avoidance behavior of the sender. By clearing any CE marks the
 connection can help drive a bottle neck queue into a loss regime. By setting
 the ECN field to CE marking it can drive down the senders congestion window
@@ -4428,11 +4424,10 @@ by dropping packets for the connection. Section 18 and 19 of {{!RFC3168}}
 discusses the effects of undesired manipulation of the ECN field in more
 details.
 
-If a receiver would not have packet duplication detection and not discard any
-duplicates an off-path attacker that can receive copies of the connection's
-packets can manipulate the senders congestion avoidance state. If packet
-duplicates are dropped, the off-path attacker will need to race the original
-packet to be successful in this attack.
+If a receiver does not discard duplicate packets, an off-path attacker can
+retransmit packets with ECN bits set and manipulate the senders congestion
+avoidance state. If duplicate packets are dropped, the off-path attacker will
+need to race the original packet to be successful in this attack.
 
 # IANA Considerations
 

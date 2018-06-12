@@ -417,9 +417,9 @@ to accelerate loss recovery.  The receiver SHOULD send an immediate ACK
 when it receives a new packet which is not one greater than the
 largest received packet number.
 
-Also, reception of an packet marked as ECN Congestion Experience
+Similarly, reception of an packet marked as ECN Congestion Experience
 (ECN-CE) SHOULD be acknowledged immediately to quicker react to
-congesiton events. Additional ECN-CE marks received during the same
+congestion events. Additional ECN-CE marks received during the same
 recovery period are also immediately acknowledged to correctly account
 for ECN-CE marks in the recovery period.
 
@@ -904,9 +904,9 @@ experimentation in using other response functions as discussed in
 
 The ACK_ECN frame defined in {{QUIC-TRANSPORT}} does not provide
 information on which of the newly acknowledged packets that
-was marked with ECN-CE. Therefore, it will be assumed that
-the congestion event starts at the highest acknowledged packet
-number.
+was marked with ECN-CE. Because newly received marks cause an ACK_ECN be sent
+immediately, is is assumed the congestion event starts at the highest newly
+acknowledged packet number.
 
 ## Slow Start
 
@@ -1009,11 +1009,10 @@ kLossReductionFactor (default 0.5):
 Variables required to implement the congestion control mechanisms
 are described in this section.
 
-ack_ce_cntr:
+previous_ecn_ce_ctr:
 : The ACK_ECN counter for ECN-CE marks previously processed. Used to
   determine when one or more packet acknowledged by the ACK_ECN frame
   was marked with ECN-CE.
-
 
 bytes_in_flight:
 : The sum of the size in bytes of all sent packets that contain at least
@@ -1044,7 +1043,7 @@ variables as follows:
    bytes_in_flight = 0
    end_of_recovery = 0
    ssthresh = infinite
-   ack_ce_cntr = 0
+   previous_ecn_ce_ctr = 0
 ~~~
 
 ### On Packet Sent
@@ -1063,7 +1062,7 @@ Invoked from loss detection's OnPacketAcked and is supplied with
 acked_packet from sent_packets.
 
 ~~~
-   InRecovery(packet_number)
+   InRecovery(packet_number):
      return packet_number <= end_of_recovery
 
    OnPacketAckedCC(acked_packet):
@@ -1085,19 +1084,24 @@ acked_packet from sent_packets.
 
 Invoked by an increment in the number of CE marked packets, as
 indicated by a newly received ACK_ECN frame when compared to
-ack_ce_cntr.
+previous_ecn_ce_ctr.
 
 ~~~
-   OnPacketsMarked(ce_counter):
-     if (ce_counter > ack_ce_cntr):
-       // update ack_ce_cntr
-       ack_ce_cntr = ce_counter
-     if (!InRecovery(largest_acked_packet)):
+   CongestionEvent(packet_number):
+     // Start a new recovery epoch if the event packet is larger
+     // than the end of the previous recovery epoch.
+     if (!InRecovery(packet_number)):
        // Start a new congestion epoch
        end_of_recovery = largest_sent_packet
        congestion_window *= kMarkReductionFactor
        congestion_window = max(congestion_window, kMinimumWindow)
        ssthresh = congestion_window
+
+   OnPacketsMarked(ce_counter):
+     if (ce_counter > previous_ecn_ce_ctr):
+       // update previous_ecn_ce_ctr
+       previous_ecn_ce_ctr = ce_counter
+     CongestionEvent(largest_newly_acked.packet_number)
 ~~~
 
 
@@ -1114,11 +1118,7 @@ are detected lost.
      largest_lost_packet = lost_packets.last()
      // Start a new recovery epoch if the lost packet is larger
      // than the end of the previous recovery epoch.
-     if (!InRecovery(largest_lost_packet.packet_number)):
-       end_of_recovery = largest_sent_packet
-       congestion_window *= kLossReductionFactor
-       congestion_window = max(congestion_window, kMinimumWindow)
-       ssthresh = congestion_window
+     CongestionEvent(largest_lost_packet.packet_number)
 ~~~
 
 ### On Retransmission Timeout Verified
