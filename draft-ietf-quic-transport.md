@@ -719,9 +719,10 @@ number of UDP datagrams needed to send application data during the handshake and
 immediately afterwards.
 
 Senders SHOULD coalesce packets in order of increasing encryption levels
-(Initial, Handshake, 0-RTT, 1-RTT).  A packet with a short header does not
-include a length, so it will always be the last packet included in a UDP
-datagram.
+(Initial, Handshake, 0-RTT, 1-RTT), as this makes it more likely the receiver
+will be able to process all the packets in a single pass.  A packet with a short
+header does not include a length, so it will always be the last packet included
+in a UDP datagram.
 
 Senders MUST NOT coalesce QUIC packets with different Destination Connection
 IDs into a single UDP datagram. Receivers SHOULD ignore any subsequent packets
