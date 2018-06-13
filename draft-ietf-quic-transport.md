@@ -1460,9 +1460,9 @@ connection is migrated then the ECN capability check is rerun as specified in
 {{ecn-connection-migration}}.
 
 It is expected that QUIC discards duplicate packets early, however if that is
-not the case **\[ED note, have not seen any clear statement in the drafts]**,
-then it should be verified that the number of ECT marked packets are equal to or
-larger that the amount of ECT marked packets that have been transmitted.
+not the case, then it should be verified that the number of ECT marked packets
+are equal to or larger that the amount of ECT marked packets that have been
+transmitted.
 
 ### Continuous Verification of ECN {#ecn-continuous-verification}
 
@@ -1477,6 +1477,19 @@ counters is less, then an ECN failure has occurred and ECN should be disabled.
 ECN is also disabled in case an ACK frame is received acknowledging any ECT sent
 packet.
 
+If the acknowledgements from the receiver are lost such that one or more packet
+are received by the receiver, but never acknowledged to the sender an
+insensitiveness to bleaching will be created. In this situation the ECN counters
+reported will have increase, but the sender side total for acknowledged packets
+will not have increased. Thus, a number of bleached packets equal to the number
+of packets that failed to be acknowledged can be received before triggering the
+continuous verification. To address this issue the sender detect the case when
+the ECN counters grows more than number of acknowledged packets when a ACK_ECN
+frame is received. In such cases a new comparison point is created by storing
+the current number of totally acknowledged packets and latest ECN counters. Then
+comparison are done by subtracting these stored values from the respective
+counters prior to the comparison. Note that any out-of-order ACK_ECN frames
+can't be used for determining any loss of acknowledgements.
 
 ## Proof of Source Address Ownership {#address-validation}
 
