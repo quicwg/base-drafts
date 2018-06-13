@@ -1479,7 +1479,7 @@ packet.
 
 If the acknowledgements from the receiver are lost such that one or more packet
 are received by the receiver, but never acknowledged to the sender an
-insensitiveness to bleaching will be created. In this situation the ECN counters
+insensitivity to bleaching will be created. In this situation the ECN counters
 reported will have increase, but the sender side total for acknowledged packets
 will not have increased. Thus, a number of bleached packets equal to the number
 of packets that failed to be acknowledged can be received before triggering the
