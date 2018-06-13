@@ -328,9 +328,8 @@ The "chunked" transfer encoding defined in Section 4.1 of {{!RFC7230}} MUST NOT
 be used.
 
 Trailing header fields are carried in an additional header block following the
-body. Such a header block is a sequence of HEADERS frames with End Header Block
-set on the last frame. Senders MUST send only one header block in the trailers
-section; receivers MUST discard any subsequent header blocks.
+body. Senders MUST send only one header block in the trailers section;
+receivers MUST discard any subsequent header blocks.
 
 An HTTP request/response exchange fully consumes a QUIC stream. After sending a
 request, a client closes the stream for sending; after sending a response, the
