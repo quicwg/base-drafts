@@ -343,18 +343,26 @@ header blocks that do not modify the state of the table.
 
 ## Primitives
 
+### Prefixed Integers
+
 The prefixed integer from Section 5.1 of [RFC7541] is used heavily throughout
-this document.  The string literal, defined by Section 5.2 of [RFC7541], is used
-with the following modification.
+this document.  The format from [RFC7541] is used unmodified.
+
+### String Literals
+
+The string literal defined by Section 5.2 of [RFC7541] is also used throughout.
+This string format includes optional Huffman encoding.
 
 HPACK defines string literals to begin on a byte boundary.  They begin with a
 single flag (indicating whether the string is Huffman-coded), followed by the
 Length encoded as a 7-bit prefix integer, and finally Length octets of data.
+When Huffman encoding is enabled, the Huffman table from Appendix B of [RFC7541]
+is used without modification.
 
-QPACK permits strings to begin other than on a byte boundary.  An "N-bit prefix
-string literal" begins with the same Huffman flag, followed by the length
-encoded as an (N-1)-bit prefix integer.  The remainder of the string literal is
-unmodified.
+This document expands the definition of string literals and permits them to
+begin other than on a byte boundary.  An "N-bit prefix string literal" begins
+with the same Huffman flag, followed by the length encoded as an (N-1)-bit
+prefix integer.  The remainder of the string literal is unmodified.
 
 A string literal without a prefix length noted is an 8-bit prefix string literal
 and follows the definitions in [RFC7541] without modification.
