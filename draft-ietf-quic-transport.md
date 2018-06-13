@@ -906,10 +906,9 @@ explained in more detail as they are referenced later in the document.
 | 0x10 - 0x17 | STREAM            | {{frame-stream}}            |
 {: #frame-types title="Frame Types"}
 
-All QUIC frames are idempotent.  That is, the state of the connection is
-unchanged regardless of whether a frame is processed one time or multiple times,
-and a frame can be received and processed without error at any point between the
-time the frame was initially sent and the end of the connection.
+All QUIC frames are idempotent.  That is, a valid frame does not cause
+undesirable side effects or errors when received more than once.  Once sent, a
+valid frame remains valid until the end of the connection.
 
 # Life of a Connection
 
