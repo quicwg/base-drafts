@@ -1129,7 +1129,6 @@ unilaterally by each endpoint. Endpoints are required to comply with the
 restrictions implied by these parameters; the description of each
 parameter includes rules for its handling.
 
-
 The format of the transport parameters is the TransportParameters struct from
 {{figure-transport-parameters}}.  This is described using the presentation
 language from Section 3 of {{!I-D.ietf-tls-tls13}}.
@@ -1416,7 +1415,7 @@ a single packet.
 
 In TLS, the Retry packet type is used to carry the HelloRetryRequest message.
 
-## ECN capability check {#ecn-capability-check}
+## ECN Capability Check {#ecn-capability-check}
 
 Explicit Congestion Notification (ECN) {{!RFC3168}} is feature that allows for
 non-destructive congestion notification by a network node.  That is, packets are
@@ -1835,7 +1834,7 @@ Note that receipt of packets with higher packet numbers from the legitimate peer
 address will trigger another connection migration.  This will cause the
 validation of the address of the spurious migration to be abandoned.
 
-### ECN capability check for Migrated Connection {#ecn-connection-migration}
+### ECN Capability Check for Migrated Connection {#ecn-connection-migration}
 
 Connection migration requires that the path's ECN capability is verified
 again. The ECN capability as indicated in section {{ecn-capability-check}}
@@ -1855,7 +1854,7 @@ after a connection migration even though it was disabled earlier. The two cases
 are described more in detail below.
 
 
-#### Case 1, ECN capability was verified
+#### Case 1, ECN Capability Was Verified
 
 The ECN Capability check is performed by continuing to be transmit IP packets
 with the applicable ECT code point. One possible outcome is that ECN does not
@@ -1871,7 +1870,7 @@ verified when at least one packet sent after connection migration has been
 acknowledged.
 
 
-#### Case 2, ECN capability had previously failed
+#### Case 2, ECN Capability Had Previously Failed
 
 The ECN capability check is initiated by setting the applicable ECT code point
 in the IP packets sent on the new path during and after the path migration, and
@@ -3028,7 +3027,7 @@ the IP header. If the header is not readable from the application, the
 codepoint 00 (Not-ECT) MUST be assumed.
 
 ACK_ECN Frame MUST be used when when an endpoint is acknowledging a packet were
-the IP header ECN field was marked as ECT(0), ECT(1) or ECN-CE when received.
+the IP header ECN field was marked as ECT(0), ECT(1), or ECN-CE when received.
 ACK Frames ({{frame-ack}}) MAY be sent when all packets to be acknowledged
 had an IP header with the ECN field marked as Not-ECT.
 
@@ -3068,31 +3067,38 @@ significant bits are represented.
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|              Number of ECT(0) marked packets (i)            ...
+|                        ECT(0) Count (i)                     ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|              Number of ECT(1) marked packets (i)            ...
+|                        ECT(1) Count (i)                     ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|              Number of ECN-CE marked packets (i)            ...
+|                        ECN-CE Count (i)                     ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
 {: #ECN-BLOCK-FIG title="ECN Block"}
 
 
-### ECN counters
+### ECN Counters
 
-The receiver side should implement three 64-bit counters that are copied to the
-ECN block when an ACK_ECN frame is generated:
+The receiver side report three ECN counters in the ECN block part of the ACK_ECN
+frame. These counters counts the number of packets marked with this codepoint
+since the start of the QUIC connection.
 
-ECT_0:
-: Initial value = 0, incremented when a packet marked ECT(0) is received
+ECT(0) Count:
+: A variable-length integer representing the number of ECT(0) marked packets
+  received since the  start of the connection. Initial value = 0, incremented
+  when a packet marked  ECT(0) is received
 
-ECT_1:
+ECT(1) Count:
 
-: Initial value = 0, incremented when a packet marked ECT(1) is received
+: A variable-length integer representing the number of ECT(1) marked packets
+  received since the start of the connection. Initial value = 0, incremented
+  when a packet marked ECT(1) is received
 
-CE:
+ECN-CE Count:
 
-: Initial value = 0, incremented when a packet marked CE is received
+: A variable-length integer representing the number of ECN-CE marked packets
+  received since the start of the connection. Initial value = 0, incremented
+  when a packet marked CE is received
 
 Reception of duplicate packets SHOULD NOT increment the counters.
 
@@ -4413,13 +4419,12 @@ large number of streams.
 ## Explicit Congestion Notification Attacks
 
 An on-path attacker may manipulate the value of the field, affecting the
-congestion avoidance behavior of the sender. By clearing any CE marks the
-connection can help drive a bottle neck queue into a loss regime. By setting
-the ECN field to CE marking it can drive down the senders congestion window
-thus resulting in reduced throughput. The later could equally be accomplished
-by dropping packets for the connection. Section 18 and 19 of {{!RFC3168}}
-discusses the effects of undesired manipulation of the ECN field in more
-details.
+congestion avoidance behavior of the sender. Removing any ECN-CE marking causes
+senders to maintain or increase their sending rate beyond that the path can
+sustain, which will eventually result in loss. Adding an ECN-CE marking causes
+senders to reduce their sending rate. The later could equally be accomplished by
+dropping packets for the connection. Section 18 and 19 of {{!RFC3168}} discusses
+the effects of undesired manipulation of the ECN field in more details.
 
 If a receiver does not discard duplicate packets, an off-path attacker can
 retransmit packets with ECN bits set and manipulate the senders congestion
