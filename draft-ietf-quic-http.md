@@ -278,8 +278,6 @@ this MUST be treated as a connection error (see HTTP_MALFORMED_FRAME in
 {{http-error-codes}}).  Streams which terminate abruptly may be reset at any
 point in the frame.
 
-Streams SHOULD be used sequentially, with no gaps.
-
 HTTP does not need to do any separate multiplexing when using QUIC - data sent
 over a QUIC stream always maps to a particular HTTP transaction. Requests and
 responses are considered complete when the corresponding QUIC stream is closed
