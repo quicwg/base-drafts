@@ -1453,9 +1453,6 @@ registered:
 Name:
 : Reserved - GREASE
 
-Initial Value:
-: (undefined)
-
 Specification:
 : {{settings-parameters}}
 
