@@ -508,7 +508,7 @@ already reached the decoder's limit for blocked streams.
 | 1 |     Insert Count (7+)     |
 +---+---------------------------+
 ~~~~~~~~~~
-{:#fig-size-sync title="Table Size Synchronize"}
+{:#fig-size-sync title="Table State Synchronize"}
 
 ### Header Acknowledgement
 
@@ -534,7 +534,7 @@ blocks within a stream have been fully processed.
 
 An encoder MUST treat receipt of a Header Acknowledgment as also acknowledging
 any dynamic table entries that the header block referenced.  That is, this
-instruction is also processed as a Table Size Synchronize instruction with a
+instruction is also processed as a Table State Synchronize instruction with a
 value matching the Largest Reference of the corresponding header block.
 
 A decoder MUST track increases to the largest acknowledged dynamic table entry
