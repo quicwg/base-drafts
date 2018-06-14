@@ -498,19 +498,28 @@ server's header blocks and table updates.
 
 After processing a set of instructions on the encoder stream, the decoder will
 emit a Table State Synchronize instruction on the decoder stream.  The
-instruction begins with the '1' one-bit pattern. The instruction specifies the
+instruction begins with the '10' two-bit pattern. The instruction specifies the
 total number of dynamic table inserts and duplications since the last Table
-State Synchronize, encoded as a 7-bit prefix integer.  The encoder uses this
-value to determine which table entries are vulnerable to head-of-line blocking.
-A decoder MAY coalesce multiple synchronization updates into a single update.
+State Synchronize or Header Acknowledgement that increased the largest
+acknowledged dynamic table entry.  This is encoded as a 6-bit prefix integer.
+The encoder uses this value to determine which table entries are vulnerable to
+head-of-line blocking.
+
+A decoder MAY coalesce multiple synchronization updates into a single update.  A
+decoder MAY rely on Header Acknowledgement instructions to indirectly
+acknowledge changes to the dynamic table.  Relying on Header Acknowledgment
+instructions exclusively leads to poor compression efficiency if the encoder
+waits for an entry to be acknowledged before using it.  This happens if the
+encoder wants to avoid the risk of blocking at the decoder, or the encoder has
+already reached the decoder's limit for blocked streams.
 
 ~~~~~~~~~~ drawing
   0   1   2   3   4   5   6   7
 +---+---+---+---+---+---+---+---+
-| 1 |     Insert Count (7+)     |
-+---+---------------------------+
+| 1 | 0 |   Insert Count (6+)   |
++---+---+-----------------------+
 ~~~~~~~~~~
-{:#fig-size-sync title="Table Size Synchronize"}
+{:#fig-size-sync title="Table State Synchronize"}
 
 ### Header Acknowledgement
 
@@ -533,6 +542,41 @@ blocks within a stream have been fully processed.
 +---+---------------------------+
 ~~~~~~~~~~
 {:#fig-header-ack title="Header Acknowledgement"}
+
+An encoder MUST treat receipt of a Header Acknowledgment as also acknowledging
+any dynamic table entries that the header block referenced.  That is, this
+instruction is also processed as a Table State Synchronize instruction with a
+value matching the Largest Reference of the corresponding header block.
+
+A decoder MUST track increases to the largest acknowledged dynamic table entry
+caused by acknowledging a header block so that it can correctly generate the
+Table State Synchronize instruction.
+
+
+### Stream Cancellation
+
+A stream that is reset might have multiple outstanding header blocks.  A decoder
+that receives a stream reset before the end of a stream generates a Stream
+Cancellation instruction on the decoder stream.  Similarly, a decoder that
+abandons reading of a stream needs to signal this using the Stream Cancellation
+instruction.  This signals to the encoder that all references to the dynamic
+table on that stream are no longer outstanding.
+
+An encoder cannot infer from this instruction that any updates to the dynamic
+table have been received.
+
+The instruction begins with the '11' two-bit pattern. The instruction includes
+the stream ID of the affected stream - a request or push stream - encoded as a
+6-bit prefix integer.
+
+~~~~~~~~~~ drawing
+  0   1   2   3   4   5   6   7
++---+---+---+---+---+---+---+---+
+| 1 | 1 |     Stream ID (6+)    |
++---+---+-----------------------+
+~~~~~~~~~~
+{:#fig-stream-cancel title="Stream Cancellation"}
+
 
 ## Request and Push Streams
 
