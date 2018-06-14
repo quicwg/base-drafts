@@ -907,8 +907,8 @@ explained in more detail as they are referenced later in the document.
 {: #frame-types title="Frame Types"}
 
 All QUIC frames are idempotent.  That is, a valid frame does not cause
-undesirable side effects or errors when received more than once.  Once sent, a
-valid frame remains valid until the end of the connection.
+undesirable side effects or errors when received more than once.
+
 
 # Life of a Connection
 
