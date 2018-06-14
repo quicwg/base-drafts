@@ -526,6 +526,16 @@ A frame includes the following fields:
 
 ## Frame Definitions {#frames}
 
+Frame types of the format `0xb + (0x1f * N)` are reserved to exercise the
+requirement that unknown types be ignored. These frames have no semantic
+meaning, and SHOULD be sent when application-layer padding is desired.  They MAY
+also be sent on connections where no request data is currently being
+transferred. Endpoints MUST NOT consider these frames to have any meaning upon
+receipt.
+
+Both the payload and length of the frames SHOULD be selected randomly, subject
+to implementation-defined limits on the length.
+
 ### DATA {#frame-data}
 
 DATA frames (type=0x0) convey arbitrary, variable-length sequences of octets
@@ -775,6 +785,14 @@ The following setting is defined in HTTP/QUIC:
   SETTINGS_MAX_HEADER_LIST_SIZE (0x6):
   : An integer with a maximum value of 2^30 - 1.  The default value is
     unlimited.
+
+Settings values of the format `0x?a?a` are reserved to exercise the requirement
+that unknown parameters be ignored.  Such settings have no defined meaning.
+Endpoints SHOULD include at least one such setting in their SETTINGS frame.
+Endpoints MUST NOT consider such settings to have any meaning upon receipt.
+
+Because the setting has no defined meaning, the value of the setting SHOULD be
+selected randomly, subject to implementation-defined limits on the size.
 
 Additional settings MAY be defined by extensions to HTTP/QUIC.
 
@@ -1380,6 +1398,16 @@ The entries in the following table are registered by this document.
 | MAX_PUSH_ID    | 0xD  | {{frame-max-push-id}}    |
 |----------------|------|--------------------------|
 
+Additionally, each code of the format `0xb + (0x1f * N)` for values of N in the
+range (0..7) (that is, `0xb`, `0x2a`, etc., through `0xe4`), the following
+values should be registered:
+
+Frame Type:
+: Reserved - GREASE
+
+Specification:
+: {{frames}}
+
 ## Settings Parameters {#iana-settings}
 
 This document establishes a registry for HTTP/QUIC settings.  The "HTTP/QUIC
@@ -1417,6 +1445,19 @@ The entries in the following table are registered by this document.
 | Reserved                   | 0x5  | N/A                     |
 | MAX_HEADER_LIST_SIZE       | 0x6  | {{settings-parameters}} |
 |----------------------------|------|-------------------------|
+
+Additionally, each code of the format `0x?a?a` where each `?` is any octet (that
+is, `0x0a0a`, `0x0a1a`, etc. through `0xfafa`), the following values should be
+registered:
+
+Name:
+: Reserved - GREASE
+
+Initial Value:
+: (undefined)
+
+Specification:
+: {{settings-parameters}}
 
 ## Error Codes {#iana-error-codes}
 
