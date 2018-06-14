@@ -1540,8 +1540,8 @@ TLS requires, such as the resumption secret.  In this case, adding integrity
 protection can be delegated to the cryptographic handshake protocol, avoiding
 redundant protection.  If integrity protection is delegated to the cryptographic
 handshake, an integrity failure will result in immediate cryptographic handshake
-failure.  If integrity protection is performed by QUIC, QUIC MUST abort the
-connection if the integrity check fails with a PROTOCOL_VIOLATION error code.
+failure.  If integrity protection is performed by QUIC and the integrity check
+fails, QUIC MUST abort the connection with a PROTOCOL_VIOLATION error code.
 
 
 ## Path Validation {#migrate-validate}
