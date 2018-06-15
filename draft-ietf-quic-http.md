@@ -528,13 +528,13 @@ A frame includes the following fields:
 
 Frame types of the format `0xb + (0x1f * N)` are reserved to exercise the
 requirement that unknown types be ignored. These frames have no semantic
-meaning, and SHOULD be sent when application-layer padding is desired.  They MAY
+meaning, and can be sent when application-layer padding is desired.  They MAY
 also be sent on connections where no request data is currently being
 transferred. Endpoints MUST NOT consider these frames to have any meaning upon
 receipt.
 
-Both the payload and length of the frames SHOULD be selected randomly, subject
-to implementation-defined limits on the length.
+The payload and length of the frames are selected in any manner the
+implementation chooses.
 
 ### DATA {#frame-data}
 
@@ -791,8 +791,8 @@ that unknown parameters be ignored.  Such settings have no defined meaning.
 Endpoints SHOULD include at least one such setting in their SETTINGS frame.
 Endpoints MUST NOT consider such settings to have any meaning upon receipt.
 
-Because the setting has no defined meaning, the value of the setting SHOULD be
-selected randomly, subject to implementation-defined limits on the size.
+Because the setting has no defined meaning, the value of the setting can be any
+value the implementation selects.
 
 Additional settings MAY be defined by extensions to HTTP/QUIC.
 
@@ -1446,9 +1446,9 @@ The entries in the following table are registered by this document.
 | MAX_HEADER_LIST_SIZE       | 0x6  | {{settings-parameters}} |
 |----------------------------|------|-------------------------|
 
-Additionally, each code of the format `0x?a?a` where each `?` is any octet (that
-is, `0x0a0a`, `0x0a1a`, etc. through `0xfafa`), the following values should be
-registered:
+Additionally, each code of the format `0x?a?a` where each `?` is any four bits
+(that is, `0x0a0a`, `0x0a1a`, etc. through `0xfafa`), the following values
+should be registered:
 
 Name:
 : Reserved - GREASE
