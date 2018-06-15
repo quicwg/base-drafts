@@ -529,14 +529,14 @@ entries might cause a stream to become blocked, as described in
 ~~~~~~~~~~
 {:#fig-size-sync title="Table State Synchronize"}
 
-A decoder SHOULD emit a Table State Synchronize after receiving new dynamic
-table entries if the most recently inserted entry was not the Largest Reference
-of a blocked stream.  Decoders which support blocking MAY delay this instruction
-briefly to see if new header blocks arrive which reference the new entries, but
-this leads to reduced compression efficiency if the encoder waits for an entry
-to be acknowledged before using it.  This happens if the encoder wants to avoid
-the risk of blocking at the decoder, or the encoder has already reached the
-decoder's limit for blocked streams.
+A decoder chooses when to emit Table State Synchronize instructions. Emitting a
+Table State Synchronize after adding each new dynamic table entry will provide
+the most timely feedback to the encoder, but could be redundant with other
+decoder feedback. By delaying a Table State Synchronize, a decoder might be able
+to coalesce multiple Table State Synchronize instructions, or replace them
+entirely with Header Acknowledgements. However, delaying too long may lead to
+compression inefficiencies if the encoder waits for an entry to be acknowledged
+before using it.
 
 ### Header Acknowledgement
 
