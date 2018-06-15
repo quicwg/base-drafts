@@ -1101,10 +1101,8 @@ values in the following registries:
 
 * TLS ExtensionsType Registry
   {{!TLS-REGISTRIES=I-D.ietf-tls-iana-registry-updates}} - IANA is to register
-  the quic_transport_parameters extension found in {{quic_parameters}} as well
-  as the max_crypto_data extension found in {{max_crypto_data}}
-  Assigning 26 and 27 to the extensions respectively would be greatly
-  appreciated.  The Recommended column is to be marked Yes.  The TLS 1.3 Column
+  the quic_transport_parameters extension found in {{quic_parameters}}.
+  The Recommended column is to be marked Yes.  The TLS 1.3 Column
   is to include CH and EE.
 
 

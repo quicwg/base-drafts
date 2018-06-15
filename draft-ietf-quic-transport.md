@@ -649,7 +649,7 @@ and if the server has lost state, it might be unable to validate
 the token at all, leading to connection failure if the packet
 is discarded.
 
-#### Packet Numbers
+#### Starting Packet Numbers
 
 The first Initial packet contains a packet number of 0. Each packet sent after
 the Initial packet is associated with a packet number space and its packet
