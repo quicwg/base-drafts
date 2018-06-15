@@ -1261,7 +1261,7 @@ Handshake[0]: CRYPTO_HS[FIN], ACK[0]
 as described in {{packet-numbers}}, the server ACKs the
 0-RTT data at the 1-RTT encryption level, and the client's
 sequence numbers at the 1-RTT encryption level continue
-to increment from it's 0-RTT packets.
+to increment from its 0-RTT packets.
 
 ~~~~
 Client                                                  Server
@@ -1630,13 +1630,14 @@ validation - but a server SHOULD limit the data it sends toward an unvalidated
 address.  Successful completion of the cryptographic handshake implicitly
 provides proof that the client has received packets from the server.
 
-The client should allow for additional Retry packets being sent in response to
-Initial packets sent containing a token. There are several situations in which
-the server might not be able to use the previously generated token to validate
-the client's address and must send a new Retry. A reasonable limit to the number
-of tries the client allows for, before giving up, is 3. That is, the should
-echo the address validation token from a new Retry packet up to 3 times. After
-that, the client may give up on the connection attempt.
+The client should allow for additional Retry packets being sent in
+response to Initial packets sent containing a token. There are several
+situations in which the server might not be able to use the previously
+generated token to validate the client's address and must send a new
+Retry. A reasonable limit to the number of tries the client allows
+for, before giving up, is 3. That is, the client SHOULD echo the
+address validation token from a new Retry packet up to 3 times. After
+that, it MAY give up on the connection attempt.
 
 
 ### Address Validation for Future Connections
@@ -2988,11 +2989,10 @@ received packets in preference to packets received in the past.
 
 ### ACK Frames and Packet Protection
 
-ACK frames MUST only be carried in a packet that has the same packet number
-space as the packet being ACKed (see {{packet-protected}}).
-
-For instance, packets that are protected with 1-RTT keys MUST be acknowledged in
-packets that are also protected with 1-RTT keys.
+ACK frames MUST only be carried in a packet that has the same packet
+number space as the packet being ACKed (see {{packet-protected}}). For
+instance, packets that are protected with 1-RTT keys MUST be
+acknowledged in packets that are also protected with 1-RTT keys.
 
 Packets that a client sends with 0-RTT packet protection MUST be acknowledged by
 the server in packets protected by 1-RTT keys.  This can mean that the client is
@@ -3214,7 +3214,7 @@ The CRYPTO_CLOSE frame (type=0x20) is used to indicate connection failures
 caused by the crypto handshake. It uses the same format as the
 CONNECTION_CLOSE frame ({{frame-connection-close}}), except that the
 error codes are specific to the crypto protocol in use. For TLS 1.3,
-the error code is simply the TLS alert number.
+the error code is simply the one-byte TLS alert number.
 
 Other than the error code space, the format and semantics of the
 CRYPTO_CLOSE frame are identical to the CONNECTION_CLOSE frame.

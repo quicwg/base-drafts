@@ -235,7 +235,7 @@ QUIC {{QUIC-TRANSPORT}} assumes responsibility for the confidentiality and
 integrity protection of packets.  For this it uses keys derived from a TLS 1.3
 handshake {{!TLS13}}, but instead of carrying TLS records over QUIC
 (as with TCP), TLS Handshake and Alert messages are carried directly
-over QUIC transport, which takes over the responsibilities of the TLS
+over the QUIC transport, which takes over the responsibilities of the TLS
 record layer, as shown below.
 
 ~~~~
@@ -305,8 +305,8 @@ as QUIC STREAM frames which are then carried in QUIC packets.
 # Carrying TLS Messages {#carrying-tls}
 
 QUIC carries TLS handshake data in CRYPTO_HS frames, each of which
-consists of a contiguous block of handshake data (identified by an
-offset and length). Those frames are packaged into QUIC packets
+consists of a contiguous block of handshake data identified by an
+offset and length. Those frames are packaged into QUIC packets
 and encrypted under the current TLS encryption level.
 As with TLS over TCP, once TLS handshake data has
 been delivered to QUIC, it is QUIC's responsibility to deliver it
@@ -342,7 +342,7 @@ coalesced packets to send them in the same UDP datagram.
 
 | Packet Type     | Encryption Level |
 |:----------------|:-----------------|
-| Initial         | Obfuscation      |
+| Initial         | Initial secrets  |
 | 0-RTT Protected | 0-RTT            |
 | Handshake       | Handshake        |
 | Retry           | N/A              |
