@@ -1292,10 +1292,10 @@ preferred_address (0x0004):
 
 disable_migration (0x0009):
 
-: The server does not support migration of connections to a different IP
-  address. Clients MUST NOT send any packets, including probing packets, from an
-  IP address other than that used to perform the handshake.  This parameter
-  is a zero-length value.
+: The server does not support connection migration ({{migration}}). Clients MUST
+  NOT send any packets, including probing packets ({{probing}}), from a local
+  address other than that used to perform the handshake.  This parameter is a
+  zero-length value.
 
 A client MUST NOT include a stateless reset token or a preferred address.  A
 server MUST treat receipt of either transport parameter as a connection error of
