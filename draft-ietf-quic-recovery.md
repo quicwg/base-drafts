@@ -428,56 +428,6 @@ algorithms.  Even those are unable to quickly recover from cases such as
 losing the client's Initial, but receiving the 0-RTT packets.  Below is
 an optimization using coalesced packets and implicit acknowledgements.
 
-### Coalesced Packets
-
-Despite loss recovery being separate for different packet number spaces,
-the ability to send a coalesced packet enables faster recovery with small,
-and sometimes no overhead.  The acknowledgement of a coalesced packet
-allows QUIC recovery to use early retransmit to determine if any prior
-packets in that space were lost without waiting for timeouts.
-
-This optimization is particularly useful when:
-
- * Sending the client’s Initial, which must be padded to a full
-   sized packet, so the datagram typically has extra space to retransmit
-   some outstanding 0-RTT data.
- * The clients sends 1-RTT data soon after the final TLS flight
-   (containing the client Finished) and can proactively retransmit the
-   final client flight with one or more 1-RTT packets.
-
-### Implicit Acknowledgements of Initial
-
-Initial data may be cancelled when packets at the Handshake level
-are received and processed, because that indicates all packets at
-Initial encryption have been received and processed by the peer.
-
-## Generating Acknowledgements
-
-An ACK frame acknowledges packets from only one packet number space.
-Received packets from each packet number space should be stored
-separately while multiple spaces have outstanding data.
-
-QUIC SHOULD delay sending acknowledgements in response to packets,
-but MUST NOT excessively delay acknowledgements of packets containing
-non-ack frames.  Specifically, implementaions MUST attempt to
-enforce a maximum ack delay to avoid causing the peer spurious
-timeouts.  The default maximum ack delay in QUIC is 25ms.
-
-An acknowledgement MAY be sent for every second full-sized packet,
-as TCP does {{?RFC5681}}, or may be sent less frequently, as long as
-the delay does not exceed the maximum ack delay.  QUIC recovery algorithms
-do not assume the peer generates an acknowledgement immediately when
-receiving a second full-sized packet.
-
-Out-of-order packets SHOULD be acknowledged more quickly, in order
-to accelerate loss recovery.  The receiver SHOULD send an immediate ACK
-when it receives a new packet which is not one greater than the
-largest received packet number.
-
-As an optimization, a receiver MAY process multiple packets before
-sending any ACK frames in response.  In this case they can determine
-whether an immediate or delayed acknowledgement should be generated
-after processing incoming packets.
 
 ### Crypto Handshake Data
 
