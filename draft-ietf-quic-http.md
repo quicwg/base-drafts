@@ -526,6 +526,8 @@ A frame includes the following fields:
 
 ## Frame Definitions {#frames}
 
+### Reserved Frame Types {#frame-grease}
+
 Frame types of the format `0xb + (0x1f * N)` are reserved to exercise the
 requirement that unknown types be ignored. These frames have no semantic
 meaning, and can be sent when application-layer padding is desired.  They MAY
@@ -1406,7 +1408,7 @@ Frame Type:
 : Reserved - GREASE
 
 Specification:
-: {{frames}}
+: {{frame-grease}}
 
 ## Settings Parameters {#iana-settings}
 
