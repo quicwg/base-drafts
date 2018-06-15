@@ -1857,13 +1857,20 @@ congestion state (see {{migration-cc}}), so the port SHOULD only be changed
 infrequently.
 
 An endpoint that receives a successfully authenticated packet with a previously
-unused connection ID MUST use the next available connection ID for any packets
-it sends to that address.  To avoid changing connection IDs multiple times when
+unused connection ID MUST use a new connection ID for any future packets it
+sends to that address.  To avoid changing connection IDs multiple times when
 packets arrive out of order, endpoints MUST change only in response to a packet
 that increases the largest received packet number.  Failing to do this could
 allow for use of that connection ID to link activity on new paths.  There is no
 need to move to a new connection ID if the address of a peer changes without
-also changing the connection ID.
+also changing the connection ID.  If no new connection IDs are available, the
+endpoint MUST NOT send additional packets until a NEW_CONNECTION_ID frame is
+received.
+
+Implementations SHOULD ensure that peers have at least one unused connection ID
+available when changing the connection ID.  An implementation could do this by
+always supplying one or more new connection IDs in the packets sent under its
+own new connection ID.
 
 
 ## Server's Preferred Address {#preferred-address}
