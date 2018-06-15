@@ -1158,6 +1158,7 @@ language from Section 3 of {{!I-D.ietf-tls-tls13}}.
       stateless_reset_token(6),
       ack_delay_exponent(7),
       initial_max_uni_streams(8),
+      disable_migration(9),
       (65535)
    } TransportParameterId;
 
@@ -1288,6 +1289,13 @@ preferred_address (0x0004):
 
 : The server's Preferred Address is used to effect a change in server address at
   the end of the handshake, as described in {{preferred-address}}.
+
+disable_migration (0x0009):
+
+: The server does not support migration of connections to a different IP
+  address. Clients MUST NOT send any packets, including probing packets, from an
+  IP address other than that used to perform the handshake.  This parameter
+  is a zero-length value.
 
 A client MUST NOT include a stateless reset token or a preferred address.  A
 server MUST treat receipt of either transport parameter as a connection error of
@@ -1656,7 +1664,9 @@ network.  This section describes the process by which an endpoint migrates to a
 new address.
 
 An endpoint MUST NOT initiate connection migration before the handshake is
-finished and the endpoint has 1-RTT keys.
+finished and the endpoint has 1-RTT keys.  An endpoint also MUST NOT initiate
+connection migration if the peer sent the `disable_migration` transport
+parameter during the handshake.
 
 This document limits migration of connections to new client addresses, except as
 described in {{preferred-address}}. Clients are responsible for initiating all
