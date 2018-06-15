@@ -3935,7 +3935,7 @@ receive buffer for a connection.
 A data receiver sends MAX_STREAM_DATA or MAX_DATA frames to the sender
 to advertise additional credit. MAX_STREAM_DATA frames send the
 maximum absolute byte offset of a stream, while MAX_DATA sends the
-maximum sum of the absolute byte offsets of all streams.
+maximum of the sum of the absolute byte offsets of all streams.
 
 A receiver MAY advertise a larger offset at any point by sending MAX_DATA or
 MAX_STREAM_DATA frames.  A receiver MUST NOT renege on an advertisement; that

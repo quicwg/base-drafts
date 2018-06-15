@@ -90,7 +90,7 @@ when, and only when, they appear in all capitals, as shown here.
 # Design of the QUIC Transmission Machinery
 
 All transmissions in QUIC are sent with a packet-level header, which indicates
-an encryption level and includes a packet sequence number
+the encryption level and includes a packet sequence number
 (referred to below as a packet number).  The encryption level indicates the
 packet number space, as described in {{QUIC-TRANSPORT}}.  Packet
 numbers never repeat within a packet number space for the lifetime of a
