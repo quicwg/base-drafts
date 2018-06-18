@@ -1476,10 +1476,6 @@ SHALL stop marking the packets as ECT, and instead mark them as Not-ECT. If the
 connection is migrated then the ECN capability check is rerun as specified in
 {{ecn-connection-migration}}.
 
-It is expected that QUIC discards duplicate packets early, however if that is
-not the case, then it should be verified that the number of ECT marked packets
-are equal to or larger that the amount of ECT marked packets that have been
-transmitted.
 
 ### Continuous Verification of ECN {#ecn-continuous-verification}
 
@@ -3039,10 +3035,15 @@ to decipher the packet.
 
 ## ACK_ECN Frame {#frame-ack-ecn}
 
-A QUIC connection MUST keep counters for each ECN codepoint, recording the
-number of packets that were received with the corresponding ECN codepoint in
-the IP header. If the header is not readable from the application, the
-codepoint 00 (Not-ECT) MUST be assumed.
+A QUIC connection MUST keep counters for each ECN codepoint, recording
+the number of packets that were received with the corresponding ECN
+codepoint in the IP header. If the header is not readable from the
+application, the codepoint 00 (Not-ECT) MUST be assumed. If any packet
+are duplicated by the network then only the value of the ECN field of
+the packet copy first received SHALL be included in the counters, the ECN
+field value for a duplicate SHALL be ignored. This to prevent the
+on-side attack ({{security-ecn}}) and ensure that ACK_ECN frames becomes
+idempotent in the event of packet duplication.
 
 ACK_ECN Frame MUST be used when when an endpoint is acknowledging a packet were
 the IP header ECN field was marked as ECT(0), ECT(1), or ECN-CE when received.
@@ -4433,7 +4434,7 @@ limit mitigates the effect of the stream commitment attack.  However, setting
 the limit too low could affect performance when applications expect to open
 large number of streams.
 
-## Explicit Congestion Notification Attacks
+## Explicit Congestion Notification Attacks {#security-ecn}
 
 An on-path attacker may manipulate the value of the field, affecting the
 congestion avoidance behavior of the sender. Removing any ECN-CE marking causes
