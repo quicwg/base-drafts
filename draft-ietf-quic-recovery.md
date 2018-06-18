@@ -437,6 +437,30 @@ containing CRYPTO_HS frames should use a very short ack delay, such as 1ms.
 ACK frames may be sent immediately when the crypto stack indicates all
 data for that encryption level has been received.
 
+## Generating Acknowledgements
+
+QUIC SHOULD delay sending acknowledgements in response to packets,
+but MUST NOT excessively delay acknowledgements of packets containing
+non-ack frames.  Specifically, implementaions MUST attempt to
+enforce a maximum ack delay to avoid causing the peer spurious
+timeouts.  The default maximum ack delay in QUIC is 25ms.
+
+An acknowledgement MAY be sent for every second full-sized packet,
+as TCP does {{?RFC5681}}, or may be sent less frequently, as long as
+the delay does not exceed the maximum ack delay.  QUIC recovery algorithms
+do not assume the peer generates an acknowledgement immediately when
+receiving a second full-sized packet.
+
+Out-of-order packets SHOULD be acknowledged more quickly, in order
+to accelerate loss recovery.  The receiver SHOULD send an immediate ACK
+when it receives a new packet which is not one greater than the
+largest received packet number.
+
+As an optimization, a receiver MAY process multiple packets before
+sending any ACK frames in response.  In this case they can determine
+whether an immediate or delayed acknowledgement should be generated
+after processing incoming packets.
+
 ### ACK Ranges
 
 When an ACK frame is sent, one or more ranges of acknowledged packets are
