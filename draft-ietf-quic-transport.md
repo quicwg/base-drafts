@@ -315,15 +315,16 @@ Version:
 
 DCIL and SCIL:
 
-: Octet 1 contains the lengths of the two connection ID fields that follow it.
-  These lengths are encoded as two 4-bit unsigned integers. The Destination
-  Connection ID Length (DCIL) field occupies the 4 high bits of the octet and
-  the Source Connection ID Length (SCIL) field occupies the 4 low bits of the
-  octet.  An encoded length of 0 indicates that the connection ID is also 0
-  octets in length.  Non-zero encoded lengths are increased by 3 to get the full
-  length of the connection ID, producing a length between 4 and 18 octets
-  inclusive.  For example, an octet with the value 0x50 describes an 8-octet
-  Destination Connection ID and a zero-length Source Connection ID.
+: The octet following the version contains the lengths of the two connection ID
+  fields that follow it.  These lengths are encoded as two 4-bit unsigned
+  integers. The Destination Connection ID Length (DCIL) field occupies the 4
+  high bits of the octet and the Source Connection ID Length (SCIL) field
+  occupies the 4 low bits of the octet.  An encoded length of 0 indicates that
+  the connection ID is also 0 octets in length.  Non-zero encoded lengths are
+  increased by 3 to get the full length of the connection ID, producing a length
+  between 4 and 18 octets inclusive.  For example, an octet with the value 0x50
+  describes an 8-octet Destination Connection ID and a zero-length Source
+  Connection ID.
 
 Destination Connection ID:
 
@@ -443,7 +444,7 @@ Google QUIC Demultipexing Bit:
 Reserved:
 
 : The sixth, seventh, and eighth bits (0x7) of octet 0 are reserved for
-experimentation.
+  experimentation.
 
 Destination Connection ID:
 
@@ -453,9 +454,9 @@ Destination Connection ID:
 Packet Number:
 
 : The packet number field is 1, 2, or 4 octets long. The packet number has
-confidentiality protection separate from packet protection, as described in
-Section 5.6 of {{QUIC-TLS}}. The length of the packet number field is encoded
-in the plaintext packet number. See {{packet-numbers}} for details.
+  confidentiality protection separate from packet protection, as described in
+  Section 5.6 of {{QUIC-TLS}}. The length of the packet number field is encoded
+  in the plaintext packet number. See {{packet-numbers}} for details.
 
 Protected Payload:
 
@@ -717,17 +718,29 @@ sequence of frames, as described in {{frames}}.
 A sender can coalesce multiple QUIC packets (typically a Cryptographic Handshake
 packet and a Protected packet) into one UDP datagram.  This can reduce the
 number of UDP datagrams needed to send application data during the handshake and
-immediately afterwards.  A packet with a short header does not include a length,
-so it has to be the last packet included in a UDP datagram.
+immediately afterwards.
 
-The sender MUST NOT coalesce QUIC packets belonging to different QUIC
-connections into a single UDP datagram.
+Senders SHOULD coalesce packets in order of increasing encryption levels
+(Initial, Handshake, 0-RTT, 1-RTT), as this makes it more likely the receiver
+will be able to process all the packets in a single pass.  A packet with a short
+header does not include a length, so it will always be the last packet included
+in a UDP datagram.
+
+Senders MUST NOT coalesce QUIC packets with different Destination Connection
+IDs into a single UDP datagram. Receivers SHOULD ignore any subsequent packets
+with a different Destination Connection ID than the first packet in the
+datagram.
 
 Every QUIC packet that is coalesced into a single UDP datagram is separate and
 complete.  Though the values of some fields in the packet header might be
 redundant, no fields are omitted.  The receiver of coalesced QUIC packets MUST
 individually process each QUIC packet and separately acknowledge them, as if
-they were received as the payload of different UDP datagrams.
+they were received as the payload of different UDP datagrams.  If one or more
+packets in a datagram cannot be processed yet (because the keys are not yet
+available) or processing fails (decryption failure, unknown type, etc.), the
+receiver MUST still attempt to process the remaining packets.  The skipped
+packets MAY either be discarded or buffered for later processing, just as if the
+packets were received out-of-order in separate datagrams.
 
 
 ## Connection ID {#connection-id}
@@ -907,6 +920,10 @@ explained in more detail as they are referenced later in the document.
 | 0x18        | ACK_ECN           | {{frame-ack-ecn}}           |
 {: #frame-types title="Frame Types"}
 
+All QUIC frames are idempotent.  That is, a valid frame does not cause
+undesirable side effects or errors when received more than once.
+
+
 # Life of a Connection
 
 A QUIC connection is a single conversation between two QUIC endpoints.  QUIC's
@@ -1001,7 +1018,7 @@ response to each packet that might initiate a new connection, see
 The size of the first packet sent by a client will determine whether a server
 sends a Version Negotiation packet. Clients that support multiple QUIC
 versions SHOULD pad their Initial packets to reflect the largest minimum
-Initial packet size of all their versions. This ensures that that the server
+Initial packet size of all their versions. This ensures that the server
 responds if there are any mutually supported versions.
 
 ### Sending Version Negotiation Packets {#send-vn}
@@ -1603,8 +1620,8 @@ TLS requires, such as the resumption secret.  In this case, adding integrity
 protection can be delegated to the cryptographic handshake protocol, avoiding
 redundant protection.  If integrity protection is delegated to the cryptographic
 handshake, an integrity failure will result in immediate cryptographic handshake
-failure.  If integrity protection is performed by QUIC, QUIC MUST abort the
-connection if the integrity check fails with a PROTOCOL_VIOLATION error code.
+failure.  If integrity protection is performed by QUIC and the integrity check
+fails, QUIC MUST abort the connection with a PROTOCOL_VIOLATION error code.
 
 
 ## Path Validation {#migrate-validate}
@@ -1967,9 +1984,7 @@ new connection IDs using the NEW_CONNECTION_ID frame.
 An endpoint might need to send packets on multiple networks without receiving
 any response from its peer.  To ensure that the endpoint is not linkable across
 each of these changes, a new connection ID is needed for each network.  To
-support this, multiple NEW_CONNECTION_ID messages are needed.  Each
-NEW_CONNECTION_ID is marked with a sequence number.  Connection IDs MUST be used
-in the order in which they are numbered.
+support this, multiple NEW_CONNECTION_ID messages are needed.
 
 Upon changing networks an endpoint MUST use a previously unused connection ID
 provided by its peer.  This eliminates the use of the connection ID for linking
@@ -2727,8 +2742,6 @@ The NEW_CONNECTION_ID is as follows:
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                          Sequence (i)                       ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |   Length (8)  |          Connection ID (32..144)            ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                                                               |
@@ -2742,14 +2755,6 @@ The NEW_CONNECTION_ID is as follows:
 ~~~
 
 The fields are:
-
-Sequence:
-
-: A variable-length integer.  This value starts at 0 and increases by 1 for each
-  connection ID that is provided by the server.  The connection ID that is
-  assigned during the handshake is assumed to have a sequence of -1.  That is,
-  the value selected during the handshake comes immediately before the first
-  value that a server can send.
 
 Length:
 
@@ -3961,10 +3966,9 @@ Stream flow control, which prevents a single stream from consuming the entire
 receive buffer for a connection.
 
 A data receiver sends MAX_STREAM_DATA or MAX_DATA frames to the sender
-to advertise additional credit. MAX_STREAM_DATA frames send the the
-maximum absolute byte offset of a stream, while MAX_DATA sends the
-maximum sum of the absolute byte offsets of all streams other than
-stream 0.
+to advertise additional credit. MAX_STREAM_DATA frames send the maximum
+absolute byte offset of a stream, while MAX_DATA sends the maximum sum
+of the absolute byte offsets of all streams other than stream 0.
 
 A receiver MAY advertise a larger offset at any point by sending MAX_DATA or
 MAX_STREAM_DATA frames.  A receiver MUST NOT renege on an advertisement; that

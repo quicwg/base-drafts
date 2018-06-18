@@ -265,6 +265,34 @@ might not actually become blocked on every stream which risks becoming blocked.
 If the decoder encounters more blocked streams than it promised to support, it
 SHOULD treat this as a stream error of type HTTP_QPACK_DECOMPRESSION_FAILED.
 
+### State Synchronization
+
+The decoder stream signals key events at the decoder that permit the encoder to
+track the decoder's state.  These events are:
+
+- Successful processing of a header block
+- Abandonment of a stream which might have remaining header blocks
+- Receipt of new dynamic table entries
+
+Regardless of whether a header block contained blocking references, the
+knowledge that it was processed successfully permits the encoder to avoid
+evicting entries while references remain outstanding; see {{blocked-eviction}}.
+When a stream is reset or abandoned, the indication that these header blocks
+will never be processed serves a similar function; see {{stream-cancellation}}.
+
+For the encoder to identify which dynamic table entries can be safely used
+without a stream becoming blocked, the encoder tracks the absolute index of the
+decoder's Largest Known Received entry.
+
+When blocking references are permitted, the encoder uses acknowledgement of
+header blocks to identify the Largest Known Received index, as described in
+{{header-acknowledgement}}.
+
+To acknowledge dynamic table entries which are not referenced by header blocks,
+for example because the encoder or the decoder have chosen not to risk blocked
+streams, the decoder sends a Table State Synchronize instruction (see
+{{table-state-synchronize}}).
+
 # Conventions and Definitions
 
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD",
@@ -343,18 +371,26 @@ header blocks that do not modify the state of the table.
 
 ## Primitives
 
+### Prefixed Integers
+
 The prefixed integer from Section 5.1 of [RFC7541] is used heavily throughout
-this document.  The string literal, defined by Section 5.2 of [RFC7541], is used
-with the following modification.
+this document.  The format from [RFC7541] is used unmodified.
+
+### String Literals
+
+The string literal defined by Section 5.2 of [RFC7541] is also used throughout.
+This string format includes optional Huffman encoding.
 
 HPACK defines string literals to begin on a byte boundary.  They begin with a
 single flag (indicating whether the string is Huffman-coded), followed by the
 Length encoded as a 7-bit prefix integer, and finally Length octets of data.
+When Huffman encoding is enabled, the Huffman table from Appendix B of [RFC7541]
+is used without modification.
 
-QPACK permits strings to begin other than on a byte boundary.  An "N-bit prefix
-string literal" begins with the same Huffman flag, followed by the length
-encoded as an (N-1)-bit prefix integer.  The remainder of the string literal is
-unmodified.
+This document expands the definition of string literals and permits them to
+begin other than on a byte boundary.  An "N-bit prefix string literal" begins
+with the same Huffman flag, followed by the length encoded as an (N-1)-bit
+prefix integer.  The remainder of the string literal is unmodified.
 
 A string literal without a prefix length noted is an 8-bit prefix string literal
 and follows the definitions in [RFC7541] without modification.
@@ -488,21 +524,30 @@ server's header blocks and table updates.
 
 ### Table State Synchronize
 
-After processing a set of instructions on the encoder stream, the decoder will
-emit a Table State Synchronize instruction on the decoder stream.  The
-instruction begins with the '1' one-bit pattern. The instruction specifies the
-total number of dynamic table inserts and duplications since the last Table
-State Synchronize, encoded as a 7-bit prefix integer.  The encoder uses this
-value to determine which table entries are vulnerable to head-of-line blocking.
-A decoder MAY coalesce multiple synchronization updates into a single update.
+The Table State Synchronize instruction begins with the '10' two-bit pattern.
+The instruction specifies the total number of dynamic table inserts and
+duplications since the last Table State Synchronize or Header Acknowledgement
+that increased the Largest Known Received dynamic table entry.  This is encoded
+as a 6-bit prefix integer. The encoder uses this value to determine which table
+entries might cause a stream to become blocked, as described in
+{{state-synchronization}}.
 
 ~~~~~~~~~~ drawing
   0   1   2   3   4   5   6   7
 +---+---+---+---+---+---+---+---+
-| 1 |     Insert Count (7+)     |
-+---+---------------------------+
+| 1 | 0 |   Insert Count (6+)   |
++---+---+-----------------------+
 ~~~~~~~~~~
-{:#fig-size-sync title="Table Size Synchronize"}
+{:#fig-size-sync title="Table State Synchronize"}
+
+A decoder chooses when to emit Table State Synchronize instructions. Emitting a
+Table State Synchronize after adding each new dynamic table entry will provide
+the most timely feedback to the encoder, but could be redundant with other
+decoder feedback. By delaying a Table State Synchronize, a decoder might be able
+to coalesce multiple Table State Synchronize instructions, or replace them
+entirely with Header Acknowledgements. However, delaying too long may lead to
+compression inefficiencies if the encoder waits for an entry to be acknowledged
+before using it.
 
 ### Header Acknowledgement
 
@@ -525,6 +570,40 @@ blocks within a stream have been fully processed.
 +---+---------------------------+
 ~~~~~~~~~~
 {:#fig-header-ack title="Header Acknowledgement"}
+
+When blocking references are permitted, the encoder uses acknowledgement of
+header blocks to update the Largest Known Received index.  If a header block was
+potentially blocking, the acknowledgement implies that the decoder has received
+all dynamic table state necessary to process the header block.  If the Largest
+Reference of an acknowledged header block was greater than the encoder's current
+Largest Known Received index, the block's Largest Reference becomes the new
+Largest Known Received.
+
+
+### Stream Cancellation
+
+A stream that is reset might have multiple outstanding header blocks.  A decoder
+that receives a stream reset before the end of a stream generates a Stream
+Cancellation instruction on the decoder stream.  Similarly, a decoder that
+abandons reading of a stream needs to signal this using the Stream Cancellation
+instruction.  This signals to the encoder that all references to the dynamic
+table on that stream are no longer outstanding.
+
+An encoder cannot infer from this instruction that any updates to the dynamic
+table have been received.
+
+The instruction begins with the '11' two-bit pattern. The instruction includes
+the stream ID of the affected stream - a request or push stream - encoded as a
+6-bit prefix integer.
+
+~~~~~~~~~~ drawing
+  0   1   2   3   4   5   6   7
++---+---+---+---+---+---+---+---+
+| 1 | 1 |     Stream ID (6+)    |
++---+---+-----------------------+
+~~~~~~~~~~
+{:#fig-stream-cancel title="Stream Cancellation"}
+
 
 ## Request and Push Streams
 

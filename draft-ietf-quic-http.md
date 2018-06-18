@@ -118,6 +118,28 @@ frames."  References without this preface refer to frames defined in {{frames}}.
 
 # Connection Setup and Management
 
+## Draft Version Identification
+
+> **RFC Editor's Note:**  Please remove this section prior to publication of a
+> final version of this document.
+
+HTTP/QUIC uses the token "hq" to identify itself in ALPN and Alt-Svc.  Only
+implementations of the final, published RFC can identify themselves as "hq".
+Until such an RFC exists, implementations MUST NOT identify themselves using
+this string.
+
+Implementations of draft versions of the protocol MUST add the string "-" and
+the corresponding draft number to the identifier. For example,
+draft-ietf-quic-http-01 is identified using the string "hq-01".
+
+Non-compatible experiments that are based on these draft versions MUST append
+the string "-" and an experiment name to the identifier. For example, an
+experimental implementation based on draft-ietf-quic-http-09 which reserves an
+extra stream for unsolicited transmission of 1980s pop music might identify
+itself as "hq-09-rickroll". Note that any label MUST conform to the "token"
+syntax defined in Section 3.2.6 of [RFC7230]. Experimenters are encouraged to
+coordinate their experiments on the quic@ietf.org mailing list.
+
 ## Discovering an HTTP/QUIC Endpoint
 
 An HTTP origin advertises the availability of an equivalent HTTP/QUIC endpoint
@@ -200,27 +222,6 @@ respective HTTP control stream (Stream ID 2 or 3, see {{stream-mapping}}). The
 server MUST NOT send data on any other stream until the client's SETTINGS frame
 has been received.
 
-### Draft Version Identification
-
-> **RFC Editor's Note:**  Please remove this section prior to publication of a
-> final version of this document.
-
-Only implementations of the final, published RFC can identify themselves as
-"hq". Until such an RFC exists, implementations MUST NOT identify themselves
-using this string.
-
-Implementations of draft versions of the protocol MUST add the string "-" and
-the corresponding draft number to the identifier. For example,
-draft-ietf-quic-http-01 is identified using the string "hq-01".
-
-Non-compatible experiments that are based on these draft versions MUST append
-the string "-" and an experiment name to the identifier. For example, an
-experimental implementation based on draft-ietf-quic-http-09 which reserves an
-extra stream for unsolicited transmission of 1980s pop music might identify
-itself as "hq-09-rickroll". Note that any label MUST conform to the "token"
-syntax defined in Section 3.2.6 of [RFC7230]. Experimenters are encouraged to
-coordinate their experiments on the quic@ietf.org mailing list.
-
 ## Connection Reuse
 
 Once a connection exists to a server endpoint, this connection MAY be reused for
@@ -277,8 +278,6 @@ this MUST be treated as a connection error (see HTTP_MALFORMED_FRAME in
 {{http-error-codes}}).  Streams which terminate abruptly may be reset at any
 point in the frame.
 
-Streams SHOULD be used sequentially, with no gaps.
-
 HTTP does not need to do any separate multiplexing when using QUIC - data sent
 over a QUIC stream always maps to a particular HTTP transaction. Requests and
 responses are considered complete when the corresponding QUIC stream is closed
@@ -327,9 +326,8 @@ The "chunked" transfer encoding defined in Section 4.1 of {{!RFC7230}} MUST NOT
 be used.
 
 Trailing header fields are carried in an additional header block following the
-body. Such a header block is a sequence of HEADERS frames with End Header Block
-set on the last frame. Senders MUST send only one header block in the trailers
-section; receivers MUST discard any subsequent header blocks.
+body. Senders MUST send only one header block in the trailers section;
+receivers MUST discard any subsequent header blocks.
 
 An HTTP request/response exchange fully consumes a QUIC stream. After sending a
 request, a client closes the stream for sending; after sending a response, the
