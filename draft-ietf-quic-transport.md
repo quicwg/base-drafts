@@ -3684,63 +3684,66 @@ which requires ICMPv6 error messages to contain "as much of invoking packet as
 possible without the ICMPv6 packet exceeding the minimum IPv6 MTU", and
 {{!RFC1812}}, which states that ICMPv4 error messages "SHOULD contain as much of
 the original datagram as possible without the length of the ICMP datagram
-exceeding 576 bytes".  ICMP messages without an on-path prooff are sent in
+exceeding 576 bytes".  ICMPv4 messages without an on-path proof are sent in
 accordance with the minimum requirments of {{!ICMP=RFC0792}} and contain fewer
 octets past the IP header (typically only 8 octets).
 
 The minimum required validation of ICMP messages with an on-path proof invoves
-verifying that the message was sent by this endpoint with at least 1-2^32
-probability and it is still outstanding (not acknowledged and not deemed lost).
-If a QUIC endpoint does not perform this minimum validation, it SHOULD treat the
-packet as an ICMP message without an on-path proof.
+verifying that the message was sent by a network element that has observed a
+QUIC packet that is still outstanding (not acknowledged and not deemed lost).
+To perform the on-path validation, the sender would need to remember at least 8
+octets from the encrypted portion of outstanding QUIC packets.  Alternatively,
+the sender would need to remember a 64-bit hash of the first 64 octets of the
+outstanding QUIC packets.  If a QUIC endpoint does not perform this minimum
+validation, it SHOULD treat the packet as an ICMP message without an on-path
+proof.
 
 As noted in {{?RFC5927}}, using ICMP messages without an on-path proof exposes
 the protocol implementation to off-path attacks and requires mitigations.
 
-Even ICMP messages without an on-path proof SHOULD undergo some validation, such
-as:
+ICMP messages without an on-path proof SHOULD undergo as much validation as
+possible.  For example, such validation could include storing IP ID fields of
+sent datagrams to validate that received ICMP messages are refering to
+outstanding packets.
 
-* Set the IPv4 Don't Fragment (DF) bit on a small proportion of packets, so that
-  most invalid ICMP messages arrive when there are no DF packets outstanding,
-  and can therefore be identified as spurious.
+Any ICMP message that fails validation MUST be discarded.
 
-* Store IP ID field of the sent datagrams to validate that ICMP message is
-  refering to an outstanding packet.
+Any reduction in Path MTU due to an ICMP Packet Too Big (PTB) message is
+provisional until QUIC's loss detection algorithm determines that the packet is
+actually lost.  ICMP PTB messages are ICMPv4 type 3 code 4 ({{!ICMP}}) packets
+and ICMPv6 type 2 ({{!ICMPv6}}) packets.
 
-Any ICMP messages that fail validation MUST be discarded.
+#### ICMP PTB During Handshake  {#icmp-ptb-during-handshake}
 
 It is important that any problems are detected quickly during the connection
 handshake, because the client may be able to mitigate them by switching to
 alternative IP addresses or protocols.  Hence, an endpoint SHOULD reduce Path
-MTU in response to an ICMP Packet Too Big (PTB) message during a handshake,
-unless then would cause a reduction to a Path MTU value smaller than 1280
-octets.
+MTU in response to an ICMP PTB message during a handshake, unless then would
+cause a reduction to a Path MTU value smaller than 1280 octets.
 
-If during a handshake a client receives an ICMP TPB message that requests it to
-reduce Path MTU to a value smaller than 1280 octets, then:
+If a client receives an ICMP PTB message that requests it to reduce Path MTU to
+a value smaller than 1280 octets during a handshake, then:
 
-* If the client has another IP address for the server to try, the client should
+* If the client has another IP address for the server to try, the client SHOULD
   restart the connection to another IP.
 
 * Otherwise, if the client can fail over to another protocol, and the ICMP
-  packet has on-path validation, the client should retry connecting with another
+  packet has on-path validation, the client SHOULD retry connecting with another
   protocol.
+
+#### ICMP PTB After Handshake   {#icmp-ptb-after-handshake}
 
 If an ICMP PTB message is received after handshake, and the claimed Path MTU is
 at least 1280 octets for messages with on-path validation or 1392 for messages
 without on-path validations, the Path MTU SHOULD be set accordingly.  Otherwise,
 Path MTU probing of {{!PLPMTUD}} SHOULD be attempted.
 
-Any reduction in Path MTU due to a report contained in an ICMP message is
-provisional until QUIC's loss detection algorithm determines that the packet is
-actually lost.
-
 
 ### Special Considerations for Packetization Layer PMTU Discovery
 
 The PING frame provides a useful option for PMTU probe packets. PING
 frames generate acknowledgements, but they need not be delivered reliably. As a
-result, the loss of PING frames in probe packets does not require
+result, the loss of PING frames in probe packets does not require a
 delay-inducing retransmission. However, PING frames do consume congestion
 window, which may delay the transmission of subsequent application data.
 
@@ -3754,16 +3757,23 @@ increases in the size of probe packets. As QUIC probe packets need not contain
 application data, aggressive increases in probe size carry fewer consequences.
 
 
-## Responding to ICMP "Unreachable" messages {#icmp-unreach}
+## Responding to ICMP Unreachable Messages {#icmp-unreach}
 
-When a QUIC endpoint receives an ICMP "Unreachable" message during a handshake,
-the response SHOULD be identical to receiving an ICMP TPB message that announces
-a Path MTU smaller than 1280 octets (see {{icmp-pmtu}}).
+When a QUIC endpoint receives an ICMP Unreachable message (other than PTB
+message) during a handshake, the response SHOULD be identical to receiving an
+ICMP PTB message that announces a Path MTU smaller than 1280 octets during a
+handshake (see {{icmp-ptb-during-handshake}}).
 
-When an ICMP "Unreachable" message is received after the handshake, the QUIC
-endpoint should send a PATH_CHALLENGE frame ({{frame-path-challenge}}).  Sending
-PATH_CHALLENGE frames on the same path due to ICMP "Unreachable" messages should
-be rate limited.
+When an ICMP Unreachable message (other than PTB message) is received after the
+handshake, the server SHOULD ignore this messages, since this message could be
+due to a NAT losing its binding or due to an attack.
+
+The client, however, SHOULD attempt to verify this ICMP message by sending
+additional packets containing PING frames ({{frame-ping}}) as well as possibly
+other frames.  If the client receives no QUIC packets from the server for the
+duration of multiple round-trip times after receiving an ICMP Unreachable, the
+client SHOULD deem the connection dead and attempt to reconnect (preferably to a
+different server IP, if one is available).
 
 
 # Streams: QUIC's Data Structuring Abstraction {#streams}
