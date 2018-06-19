@@ -145,17 +145,15 @@ number for transmissions, and any data that is to be delivered to the receiving
 application(s) is sent in one or more streams, with delivery order determined
 by stream offsets encoded within STREAM frames.
 
-QUIC's packet number is strictly increasing within a packet number
-space, and directly encodes transmission order.  A higher QUIC packet
-number signifies that the packet was sent later, and a lower QUIC
-packet number signifies that the packet was sent earlier.  When a
-packet containing frames is deemed lost, QUIC rebundles the
-retransmittable data in a new packet with a new packet number,
-removing ambiguity about which packet is acknowledged when an ACK is
-received.  Consequently, more accurate RTT measurements can be made,
-spurious retransmissions are trivially detected, and mechanisms such
-as Fast Retransmit can be applied universally, based only on packet
-number.
+QUIC's packet number is strictly increasing, and directly encodes transmission
+order.  A higher QUIC packet number signifies that the packet was sent later,
+and a lower QUIC packet number signifies that the packet was sent earlier.  When
+a packet containing frames is deemed lost, QUIC rebundles necessary frames in a
+new packet with a new packet number, removing ambiguity about which packet is
+acknowledged when an ACK is received.  Consequently, more accurate RTT
+measurements can be made, spurious retransmissions are trivially detected, and
+mechanisms such as Fast Retransmit can be applied universally, based only on
+packet number.
 
 This design point significantly simplifies loss detection mechanisms for QUIC.
 Most TCP mechanisms implicitly attempt to infer transmission ordering based on
@@ -419,24 +417,6 @@ A packet sent on an RTO alarm MUST NOT be blocked by the sender's congestion
 controller. A sender MUST however count these bytes as additional bytes in
 flight, since this packet adds network load without establishing packet loss.
 
-## Multiple Packet Number Space Optimizations {#optimizations}
-
-There are cases where one may be able to gain recovery information from
-acknowledgements of packets in another packet number space, but they rely
-on complex assumptions about the peer’s processing and acknowledgement
-algorithms.  Even those are unable to quickly recover from cases such as
-losing the client's Initial, but receiving the 0-RTT packets.  Below is
-an optimization using coalesced packets and implicit acknowledgements.
-
-
-### Crypto Handshake Data
-
-In order to quickly complete the handshake and avoid spurious
-retransmissions due to handshake alarm timeouts, acknowledging packets
-containing CRYPTO_HS frames should use a very short ack delay, such as 1ms.
-ACK frames may be sent immediately when the crypto stack indicates all
-data for that encryption level has been received.
-
 ## Generating Acknowledgements
 
 QUIC SHOULD delay sending acknowledgements in response to packets,
@@ -460,6 +440,14 @@ As an optimization, a receiver MAY process multiple packets before
 sending any ACK frames in response.  In this case they can determine
 whether an immediate or delayed acknowledgement should be generated
 after processing incoming packets.
+
+### Crypto Handshake Data
+
+In order to quickly complete the handshake and avoid spurious
+retransmissions due to handshake alarm timeouts, handshake packets
+should use a very short ack delay, such as 1ms.  ACK frames may be
+sent immediately when the crypto stack indicates all data for that
+encryption level has been received.
 
 ### ACK Ranges
 
