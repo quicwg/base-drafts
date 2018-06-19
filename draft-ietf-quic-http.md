@@ -205,9 +205,10 @@ version in the list which it does support.
 ## Connection Establishment {#connection-establishment}
 
 HTTP/QUIC relies on QUIC as the underlying transport.  The QUIC version being
-used MUST use TLS version 1.3 or greater as its handshake protocol.  The Server
-Name Indication (SNI) extension {{!RFC6066}} MUST be included in the TLS
-handshake.
+used MUST use TLS version 1.3 or greater as its handshake protocol.  The TLS
+implementation MUST support the Server Name Indication (SNI) {{!RFC6066}}
+extension to TLS. HTTP/QUIC clients MUST indicate the target domain name during
+the TLS handshake.
 
 QUIC connections are established as described in {{QUIC-TRANSPORT}}. During
 connection establishment, HTTP/QUIC support is indicated by selecting the ALPN
