@@ -3035,15 +3035,16 @@ to decipher the packet.
 
 ## ACK_ECN Frame {#frame-ack-ecn}
 
-A QUIC connection MUST keep counters for each ECN codepoint, recording
-the number of packets that were received with the corresponding ECN
-codepoint in the IP header. If the header is not readable from the
-application, the codepoint 00 (Not-ECT) MUST be assumed. If any packet
-are duplicated by the network then only the value of the ECN field of
-the packet copy first received SHALL be included in the counters, the ECN
-field value for a duplicate SHALL be ignored. This to prevent the
-on-side attack ({{security-ecn}}) and ensure that ACK_ECN frames becomes
-idempotent in the event of packet duplication.
+A QUIC connection MUST keep counters for each ECN codepoint, recording the
+number of packets that were received with the corresponding ECN codepoint in the
+IP header. If the header is not readable from the application, the codepoint 00
+(Not-ECT) MUST be assumed. If any packet are duplicated by the network then only
+the value of the ECN field of the packet copy first received SHALL be included
+in the counters. This to prevent the on-side attack ({{security-ecn}}) and
+ensure that ACK_ECN frames becomes idempotent in the event of packet
+duplication. Note, a receiver is not required to maintain indefinite state for
+which packet numbers have been received far into the history. Packets discarded
+for this reason, their ECN values are also not counted.
 
 ACK_ECN Frame MUST be used when when an endpoint is acknowledging a packet were
 the IP header ECN field was marked as ECT(0), ECT(1), or ECN-CE when received.
