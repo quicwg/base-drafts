@@ -1080,11 +1080,11 @@ acked_packet from sent_packets.
          kDefaultMss * acked_packet.bytes / congestion_window
 ~~~
 
-### On Packets Marked
+### On Congestion Event Detected
 
-Invoked by an increment in the number of CE marked packets, as
-indicated by a newly received ACK_ECN frame when compared to
-previous_ecn_ce_ctr.
+Invoked functions detecting a congestion event, i.e. OnPacketsMarked and
+OnPacketLost. Performs a common congestion event response by reducing the
+congestion window and starting a recovery period unless already in recovery.
 
 ~~~
    CongestionEvent(packet_number):
@@ -1095,13 +1095,20 @@ previous_ecn_ce_ctr.
        end_of_recovery = largest_sent_packet
        congestion_window *= kMarkReductionFactor
        congestion_window = max(congestion_window, kMinimumWindow)
-       ssthresh = congestion_window
+~~~
 
+### On Packets Marked
+
+Invoked by an increment in the number of CE marked packets, as
+indicated by a newly received ACK_ECN frame when compared to
+previous_ecn_ce_ctr.
+
+~~~
    OnPacketsMarked(ce_counter):
      if (ce_counter > previous_ecn_ce_ctr):
        // update previous_ecn_ce_ctr
        previous_ecn_ce_ctr = ce_counter
-     CongestionEvent(largest_newly_acked.packet_number)
+       CongestionEvent(largest_newly_acked.packet_number)
 ~~~
 
 
