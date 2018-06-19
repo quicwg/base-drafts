@@ -132,8 +132,6 @@ Separating the spaces allows the recovery mechanisms to work without special
 cases to avoid spuriously retransmitting un-processable packets.
 Separate packet number spaces do not imply separate paths. Consequently,
 a sender need not split congestion control actions across packet number spaces.
-The optimizations described in {{optimizations}} help a sender optimize
-loss detection across packet number spaces.
 
 ### Monotonically Increasing Packet Numbers
 
@@ -310,10 +308,10 @@ computed and the alarm SHOULD be set for twice the newly computed smoothed RTT.
 
 #### Retry
 
-A RETRY packet causes the content of the client's Initial packet to be
-immediately retransmitted along with the token present in the RETRY.
+A Retry packet causes the content of the client's Initial packet to be
+immediately retransmitted along with the token present in the Retry.
 
-The RETRY indicates that the Initial was received but not processed.
+The Retry indicates that the Initial was received but not processed.
 It MUST NOT be treated as an acknowledgment for the Initial,
 but it MAY be used for an RTT measurement.
 
@@ -1108,11 +1106,12 @@ This document has no IANA actions.  Yet.
 
 ## Since draft-ietf-quic-recovery-12
 
-- Updated to match the design team proposal.
+- Updated to match the Stream0 design team proposal.
+- Text on multiple packet number spaces.
 
 ## Since draft-ietf-quic-recovery-11
 
-- Text on multiple packet number spaces and relevant optimizations.
+No significant changes.
 
 ## Since draft-ietf-quic-recovery-10
 
