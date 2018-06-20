@@ -126,12 +126,12 @@ these protocol differences below.
 
 ### Separate Packet Number Spaces
 
-QUIC uses separate packet number spaces for each encryption level, except that
+QUIC uses separate packet number spaces for each encryption level, except
 0-RTT and all generations of 1-RTT keys use the same packet number space.
-Separating the spaces allows the recovery mechanisms to work without special
-cases to avoid spuriously retransmitting un-processable packets.
-Separate packet number spaces do not imply separate paths. Consequently,
-a sender need not split congestion control actions across packet number spaces.
+Separate packet number spaces ensures that acknowledgement of packets sent
+with one level of encryption doesn't cause spurious retransmission of packets
+sent with a different encryption level.  Congestion control and RTT measurement
+are unified across packet number spaces.
 
 ### Monotonically Increasing Packet Numbers
 
@@ -294,14 +294,16 @@ connection's final smoothed RTT value as the resumed connection's initial RTT.
 If no previous RTT is available, or if the network changes, the initial RTT
 SHOULD be set to 100ms.
 
-When CRYPTO_HS frames are sent, the sender SHOULD set an alarm for the handshake
-timeout period.
+When CRYPTO_HS frames are sent, the sender SHOULD set an alarm for the
+handshake timeout period.  When the alarm fires, the sender MUST retransmit
+all unacknowledged CRYPTO_HS data by calling
+RetransmitAllUnackedHandshakeData(). On each consecutive firing of the
+handshake alarm without receiving an acknowledgement for a new packet,
+the sender SHOULD double the handshake timeout and set an alarm for this
+period.
 
-When the alarm fires, the sender MUST retransmit all unacknowledged CRYPTO_HS
-data by calling RetransmitAllUnackedHandshakeData(). On each
-consecutive firing of the handshake alarm without receiving an
-acknowledgement for a new packet, the sender SHOULD double the handshake
-timeout and set an alarm for this period.
+When CRYPTO_HS frames are outstanding, the TLP and RTO timers are not active
+unless the CRYPTO_HS frames were sent at 1RTT encryption.
 
 When an acknowledgement is received for a handshake packet, the new RTT is
 computed and the alarm SHOULD be set for twice the newly computed smoothed RTT.
@@ -443,7 +445,7 @@ after processing incoming packets.
 
 In order to quickly complete the handshake and avoid spurious
 retransmissions due to handshake alarm timeouts, handshake packets
-should use a very short ack delay, such as 1ms.  ACK frames may be
+SHOULD use a very short ack delay, such as 1ms.  ACK frames MAY be
 sent immediately when the crypto stack indicates all data for that
 encryption level has been received.
 
@@ -584,7 +586,7 @@ sent_packets:
   was sent, a boolean indicating whether the packet is ack only, and a bytes
   field indicating the packet's size.  sent_packets is ordered by packet
   number, and packets remain in sent_packets until acknowledged or lost.
-  A sent_packets data structure is maintained per packet number space, and ack
+  A sent_packets data structure is maintained per packet number space, and ACK
   processing only applies to a single space.
 
 ### Initialization
