@@ -2032,17 +2032,22 @@ congestion state (see {{migration-cc}}), so the port SHOULD only be changed
 infrequently.
 
 An endpoint that receives a successfully authenticated packet with a previously
-unused connection ID MUST advance to a connection ID with an equal or greater
-sequence number for any future packets it sends to that address.  Failing to do
-this could allow for use of that connection ID to link activity on new paths.
-There is no need to move to a new connection ID if the address of a peer changes
-without also changing the connection ID.  If no new connection IDs are
-available, the endpoint MUST NOT send additional packets until a
-NEW_CONNECTION_ID frame is received.  However, an implementation need not stop
-sending packets due to a gap in sequence numbers; it simply advances to the next
-currently-available connection ID it has received.  Connection IDs with earlier
-sequence numbers which arrive later MAY be retained for use on other local
-addresses or discarded.
+unused connection ID MUST advance to the connection ID whose sequence number is
+equal to the sequence number of the newly received connection ID for any future
+packets it sends to that address.  If that connection ID cannot be used (e.g.,
+it was used on a different path or has not been received), it MUST advance to a
+connection ID with a greater sequence number for any future packets it sends to
+that address.  Failing to do this could allow for use of that connection ID to
+link activity on new paths. There is no need to move to a new connection ID if
+the address of a peer changes without also changing the connection ID, or if the
+connection ID changes to the one with the sequence number equal to the
+endpoint's current connection ID.  If no new connection IDs are available, the
+endpoint MUST NOT send additional packets until a NEW_CONNECTION_ID frame is
+received.  However, an implementation need not stop sending packets due to a gap
+in sequence numbers; it simply advances to the next currently-available
+connection ID it has received.  Connection IDs with earlier sequence numbers
+which arrive later MAY be retained for use on other local addresses or
+discarded.
 
 Implementations SHOULD ensure that peers have at least one unused connection ID
 available when changing the connection ID.  An implementation could do this by
