@@ -2007,9 +2007,9 @@ each of these changes, a new connection ID is needed for each network.  To
 support this, multiple NEW_CONNECTION_ID messages are needed.  Each
 NEW_CONNECTION_ID is marked with a sequence number.  Connection IDs MUST be used
 on only one local address, and each local address MUST advance to a connection
-ID with a later sequence number each time the connection ID changes.  Once a
-connection ID has been used, connection IDs with an earlier sequence number MUST
-NOT be used for packets with a greater packet number from that local address.
+ID with a later sequence number each time the connection ID changes.  Once a new
+connection ID is used, earlier connection IDs MUST NOT be used for new packets
+sent from the same local address.
 
 Upon changing networks an endpoint MUST use a previously unused connection ID
 provided by its peer.  This eliminates the use of the connection ID for linking
