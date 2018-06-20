@@ -110,8 +110,9 @@ important to the loss detection and congestion control machinery below.
 * Crypto handshake data is sent on stream 0, and uses the reliability
   machinery of QUIC underneath.
 
-* ACK frames contain acknowledgment information.  ACK frames contain one or more
-  ranges of acknowledged packets.
+* ACK and ACK_ECN frames contain acknowledgment information. ACK_ECN frames
+  additionally contain information about ECN codepoints seen by the peer.  (The
+  rest of this document uses ACK frames to mean either ACK or ACK_ECN frames.)
 
 ## Relevant Differences Between QUIC and TCP
 
@@ -417,12 +418,9 @@ to accelerate loss recovery.  The receiver SHOULD send an immediate ACK
 when it receives a new packet which is not one greater than the
 largest received packet number.
 
-Similarly, reception of an packet marked as ECN Congestion Experience
-(ECN-CE) SHOULD be acknowledged immediately to quicker react to
-congestion events. Additional ECN-CE marks received during the same
-recovery period are also immediately acknowledged to correctly account
-for ECN-CE marks in the recovery period.
-
+Similarly, packets marked with the ECN Congestion Experienced (CE) codepoint in
+the IP header SHOULD be acknowledged immediately, to reduce the peer's response
+time to congestion events.
 
 As an optimization, a receiver MAY process multiple packets before
 sending any ACK frames in response.  In this case they can determine
@@ -630,11 +628,9 @@ Pseudocode for OnPacketSent follows:
      SetLossDetectionAlarm()
 ~~~
 
-### On Ack Receipt
+### On Receiving an Acknowledgment
 
-When an ack (ACK or ACK_ECN frame) is received, it may acknowledge 0
-or more packets. Reception of ACK_ECN frame requires that the receiver
-check if ECN indicates a congestion event, see {{congestion-ecn}}.
+When an ACK frame is received, it may acknowledge 0 or more packets.
 
 Pseudocode for OnAckReceived and UpdateRtt follow:
 
@@ -651,8 +647,8 @@ Pseudocode for OnAckReceived and UpdateRtt follow:
 
     DetectLostPackets(ack.largest_acked_packet)
     SetLossDetectionAlarm()
-    // Detect if ACK_ECN frame indicates ECN-CE marking
-    if (Frame type is of type ACK_ECN):
+    // Process ECN-CE counter if present.
+    if (ACK frame contains ECN information):
        OnPacketsMarked(ack.ce_counter)
 
 
@@ -894,28 +890,19 @@ in {{tlp}} and {{rto}}.
 
 ## Explicit Congestion Notification {#congestion-ecn}
 
-If ECN {!RFC3168} has been verified to work for the current path QUIC
-will use the ECN Congestion Experienced (ECN-CE) IP packet marking as a
-signal of congestion as a complement to packet loss. This document
-specifies to use the classical ECN-CE response, i.e. the same response
-as for packet loss. However, there exist potential for future
-experimentation in using other response functions as discussed in
-{!RFC8311}.
-
-The ACK_ECN frame defined in {{QUIC-TRANSPORT}} does not provide
-information on which of the newly acknowledged packets that
-was marked with ECN-CE. Because newly received marks cause an ACK_ECN be sent
-immediately, is is assumed the congestion event starts at the highest newly
-acknowledged packet number.
+If a path has been verified to support ECN, QUIC treats a Congestion Experienced
+codepoint in the IP header as a signal of congestion. This document specifies a
+QUIC sender's simple response to a peer receiving packets with a Congestion
+Experienced codepoint.  As discussed in {!RFC8311}, QUIC endpoints are permitted
+to experiment with other response functions.
 
 ## Slow Start
 
-QUIC begins every connection in slow start and exits slow start upon
-loss or reception of ECN-CE packet markings. QUIC re-enters slow start
-anytime the congestion window is less than sshthresh, which typically
-only occurs after an RTO. While in slow start, QUIC increases the
-congestion window by the number of acknowledged bytes when each ack is
-processed.
+QUIC begins every connection in slow start and exits slow start upon loss or an
+increase in the ECN-CE counter. QUIC re-enters slow start anytime the congestion
+window is less than sshthresh, which typically only occurs after an RTO. While
+in slow start, QUIC increases the congestion window by the number of
+acknowledged bytes when each ack is processed.
 
 
 ## Congestion Avoidance
@@ -928,19 +915,18 @@ window and sets the slow start threshold to the new congestion window.
 
 ## Recovery Period
 
-Recovery is a period of time beginning with detection of a lost packet
-or the reception of an ECN-CE mark. Because QUIC retransmits stream data
-and control frames, not packets, it defines the end of recovery as a
-packet sent after the start of recovery being acknowledged. This is
-slightly different from TCP's definition of recovery ending when the
-lost packet that started recovery is acknowledged.
+Recovery is a period of time beginning with detection of a lost packet or an
+increase in the ECN-CE counter. Because QUIC retransmits stream data and control
+frames, not packets, it defines the end of recovery as a packet sent after the
+start of recovery being acknowledged. This is slightly different from TCP's
+definition of recovery ending when the lost packet that started recovery is
+acknowledged.
 
-During recovery, the congestion window is not increased or decreased. As
-such, multiple lost packets and/or ECN-CE marks only decrease the
-congestion window once as long as they're lost before exiting recovery.
-This causes QUIC to decrease the congestion window multiple times if
-retransmisions are lost, but limits the reduction to once per round
-trip.
+During recovery, the congestion window is not increased or decreased. As such,
+multiple lost packets and/or increases in the ECN-CE counter only decrease the
+congestion window once as long as they're lost before exiting recovery.  This
+causes QUIC to decrease the congestion window multiple times if retransmisions
+are lost, but limits the reduction to once per round trip.
 
 
 ## Tail Loss Probe
@@ -981,6 +967,7 @@ their delivery to the peer.
 As an example of a well-known and publicly available implementation of a flow
 pacer, implementers are referred to the Fair Queue packet scheduler (fq qdisc)
 in Linux (3.11 onwards).
+
 
 ## Pseudocode
 
