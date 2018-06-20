@@ -2006,7 +2006,10 @@ any response from its peer.  To ensure that the endpoint is not linkable across
 each of these changes, a new connection ID is needed for each network.  To
 support this, multiple NEW_CONNECTION_ID messages are needed.  Each
 NEW_CONNECTION_ID is marked with a sequence number.  Connection IDs MUST be used
-in the order in which they are numbered.
+on only one local address, and each local address MUST advance to a connection
+ID with a later sequence number each time the connection ID changes.  Once a
+connection ID has been used, connection IDs with an earlier sequence number MUST
+NOT be used for packets with a greater packet number from that local address.
 
 Upon changing networks an endpoint MUST use a previously unused connection ID
 provided by its peer.  This eliminates the use of the connection ID for linking
@@ -2015,9 +2018,9 @@ numbers ensures that packet numbers cannot be used to correlate activity.  This
 does not prevent other properties of packets, such as timing and size, from
 being used to correlate activity.
 
-Clients MAY change connection ID at any time based on implementation-specific
-concerns.  For example, after a period of network inactivity NAT rebinding might
-occur when the client begins sending data again.
+Clients MAY move to a new connection ID at any time based on
+implementation-specific concerns.  For example, after a period of network
+inactivity NAT rebinding might occur when the client begins sending data again.
 
 A client might wish to reduce linkability by employing a new connection ID and
 source UDP port when sending traffic after a period of inactivity.  Changing the
@@ -2029,15 +2032,17 @@ congestion state (see {{migration-cc}}), so the port SHOULD only be changed
 infrequently.
 
 An endpoint that receives a successfully authenticated packet with a previously
-unused connection ID MUST use a new connection ID for any future packets it
-sends to that address.  To avoid changing connection IDs multiple times when
-packets arrive out of order, endpoints MUST change only in response to a packet
-that increases the largest received packet number.  Failing to do this could
-allow for use of that connection ID to link activity on new paths.  There is no
-need to move to a new connection ID if the address of a peer changes without
-also changing the connection ID.  If no new connection IDs are available, the
-endpoint MUST NOT send additional packets until a NEW_CONNECTION_ID frame is
-received.
+unused connection ID MUST advance to a connection ID with an equal or greater
+sequence number for any future packets it sends to that address.  Failing to do
+this could allow for use of that connection ID to link activity on new paths.
+There is no need to move to a new connection ID if the address of a peer changes
+without also changing the connection ID.  If no new connection IDs are
+available, the endpoint MUST NOT send additional packets until a
+NEW_CONNECTION_ID frame is received.  However, an implementation need not stop
+sending packets due to a gap in sequence numbers; it simply advances to the next
+currently-available connection ID it has received.  Connection IDs with earlier
+sequence numbers which arrive later MAY be retained for use on other local
+addresses or discarded.
 
 Implementations SHOULD ensure that peers have at least one unused connection ID
 available when changing the connection ID.  An implementation could do this by
