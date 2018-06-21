@@ -3399,6 +3399,77 @@ blocks all those streams from making progress.  An implementation is therefore
 advised to bundle as few streams as necessary in outgoing packets without losing
 transmission efficiency to underfilled packets.
 
+## RETIRE_CONNECTION_ID Frame {#frame-retire-cid}
+
+The RETIRE_CONNECTION_ID frame (type=0x18) informs the peer that older
+connection IDs are being discarded by the peer and will no longer be recognized.
+
+The frame is as follows:
+
+~~~
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                         Sequence (i)                        ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~
+
+The fields in the RETIRE_CONNECTION_ID frame are as follows:
+
+Sequence:
+: Sequence number of the oldest connection ID issued by the sender which the
+  sender will still recognize as associated with the current connection. The
+  sequence number is formatted as a variable-length integer.
+
+Upon receipt of a RETIRE_CONNECTION_ID frame, an endpoint MUST consider
+connection IDs older than the specified sequence number as unusable. If
+an older connection ID is currently being used on any local address,
+the endpoint MUST advance to a more recent connection ID.  If a more recent
+connection ID is not available, the connection MUST be closed.
+
+Endpoints sending a RETIRE_CONNECTION_ID frame SHOULD continue to accept
+packets with older connection IDs until the packet containing the frame
+is acknowledged.
+
+## REQUEST_CONNECTION_ID Frame {#frame-request-cid}
+
+The REQUEST_CONNECTION_ID frame (type=0x19) informs the peer that the sender
+has fewer available connection IDs than it wishes to maintain available.
+
+The frame is as follows:
+
+~~~
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                         Received (i)                        ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Requested (8) |
++-+-+-+-+-+-+-+-+
+~~~
+
+The fields in the REQUEST_CONNECTION_ID frame are as follows:
+
+Received:
+: The greatest connection ID sequence number received by the sender
+  from the receiver in a NEW_CONNECTION_ID frame, formatted as a
+  variable-length integer.
+
+Requested:
+: A one-byte integer specifying the number of additional connection
+  IDs the sender would like to be issued.
+
+Upon receipt of a REQUEST_CONNECTION_ID frame, an endpoint SHOULD
+ensure that it has issued at least the requested number of connection
+IDs beyond the specified sequence number.  An endpoint MAY impose
+implementation-specific limitations on the number of outstanding
+connection IDs, but packet loss and failed path migrations can result
+in some connection IDs being considered used by one peer and unused
+by another.
+
+The number of older connection IDs still outstanding MAY be constrained
+using the RETIRE_CONNECTION_ID frames.
+
 
 ## CRYPTO Frame {#frame-crypto}
 
