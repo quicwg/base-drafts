@@ -321,35 +321,39 @@ same encryption level. For instance, an implementation might
 bundle a Handshake message and an ACK for some Handshake
 data into the same packet.
 
-In general, the rules for which data can appear in packets of which
-encryption level are the same in QUIC as in TLS over TCP:
+Each encryption level has a specific list of frames which may appear
+in it. The rules here generalize those of TLS, in that frames
+associated with establishing the connection can usually appear at any
+encryption level, whereas those associated with transferring data can
+only appear in the 0-RTT and 1-RTT encryption levels
 
 - CRYPTO_HS frames MAY appear in packets of any encryption level.
 - CONNECTION_CLOSE and CRYPTO_CLOSE MAY appear in packets of any
   encryption level other than 0-RTT.
 - PADDING and PING frames MAY appear in packets of any encryption level.
 - ACK frames MAY appear in packets of any encryption level, but
-  MUST only acknowledge packets which appeared in that encryption
+  can only acknowledge packets which appeared in that encryption
   level.
 - STREAM frames MUST ONLY appear in the 0-RTT and 1-RTT levels.
 - All other frame types MUST only appear at the 1-RTT levels.
 
-Because packets may be reordered on the wire, QUIC uses the packet
+Because packets could be reordered on the wire, QUIC uses the packet
 type to indicate which level a given packet was encrypted
 under, as shown in {{packet-types-levels}}. When multiple packets of
 different encryption levels need to be sent, endpoints SHOULD use
 coalesced packets to send them in the same UDP datagram.
 
-| Packet Type     | Encryption Level |
-|:----------------|:-----------------|
-| Initial         | Initial secrets  |
-| 0-RTT Protected | 0-RTT            |
-| Handshake       | Handshake        |
-| Retry           | N/A              |
-| Short Header    | 1-RTT            |
+| Packet Type     | Encryption Level | PN Space  |
+|:----------------|:-----------------|:----------|
+| Initial         | Initial secrets  | Initial   |
+| 0-RTT Protected | 0-RTT            | 0/1-RTT   |
+| Handshake       | Handshake        | Handshake |
+| Retry           | N/A              | N/A       |
+| Short Header    | 1-RTT            | 0/1-RTT   |
+
 {: #packet-types-levels title="Encryption Levels by Packet Type"}
 
-{{QUIC-TRANSPORT}}; Section 6.3 shows how packets at the various encryption
+{{QUIC-TRANSPORT}}, Section 6.3 shows how packets at the various encryption
 levels fit into the handshake process.
 
 ## Interface to TLS
@@ -358,7 +362,7 @@ As shown in {{schematic}}, the interface from QUIC to TLS consists of three
 primary functions:
 
 - Sending and receiving handshake messages
-- Rekeying (both in and out)
+- Rekeying (both transmit and receive)
 - Handshake state updates
 
 Additional functions might be needed to configure TLS.
@@ -366,10 +370,10 @@ Additional functions might be needed to configure TLS.
 
 ### Sending and Receiving Handshake Messages
 
-In order to drive the handshake, TLS depends on being able to send and receive
-handshake messages. There are two basic functions on this
-interface: one where QUIC requests handshake messages and one where QUIC
-provides handshake packets.
+In order to drive the handshake, TLS depends on being able to send and
+receive handshake messages. There are two basic functions on this
+interface: one where QUIC requests handshake messages and one where
+QUIC provides handshake packets.
 
 Before starting the handshake QUIC provides TLS with the transport parameters
 (see {{quic_parameters}}) that it wishes to carry.
@@ -393,7 +397,7 @@ the network, it proceeds as follows:
   the data into the input flow as usual. As with STREAM frames,
   the offset is used to find the proper location in the data sequence.
   If the result of this process is that new data is available, then
-  it is delivered to TLS.
+  it is delivered to TLS in order.
 
 - If the packet is from a previously installed encryption level, it
   MUST not contain data which extends past the end of previously
@@ -567,11 +571,8 @@ as a connection error of type PROTOCOL_VIOLATION.
 
 ## Rejecting 0-RTT
 
-A server rejects 0-RTT by rejecting 0-RTT at the TLS layer.  This results in
-early exporter keys being unavailable, thereby preventing the use of 0-RTT for
-QUIC.
-
-A client that attempts 0-RTT MUST also consider 0-RTT to be rejected if it
+A server rejects 0-RTT by rejecting 0-RTT at the TLS layer.  This also prevents
+QUIC from sending 0-RTT data. A client that attempts 0-RTT MUST also consider 0-RTT to be rejected if it
 receives a Version Negotiation packet.
 
 When 0-RTT is rejected, all connection characteristics that the client assumed
@@ -583,11 +584,12 @@ the state of all streams, including application state bound to those streams.
 
 In TLS over TCP, the HelloRetryRequest feature ({{TLS13}; Section
 4.1.4) can be used to correct a client's incorrect KeyShare extension
-as well as for a stateless round trip check. From the perspective of
+as well as for a stateless round-trip check. From the perspective of
 QUIC, this just looks like additional messages carried in the Initial
 encryption level. Although it is in principle possible to use this
 feature for address verification in QUIC, QUIC implementations SHOULD
 instead use the Retry feature ({{QUIC-TRANSPORT}}; Section 4.4.2)).
+HelloRetryRequest is still used for incorrect key shares.
 
 
 ## TLS Errors
@@ -595,7 +597,7 @@ instead use the Retry feature ({{QUIC-TRANSPORT}}; Section 4.4.2)).
 If TLS experiences an error, it MUST generate an appropriate alert
 as defined in {{TLS13}}; Section 6) and then provide it to QUIC,
 which sends the alert in a CRYPTO_CLOSE frame. All such alerts are
-"fatal".
+"fatal" (see {{TLS13}}, Section 6.2.
 
 
 # QUIC Packet Protection {#packet-protection}
@@ -609,16 +611,16 @@ handshake, using the AEAD algorithm negotiated by TLS.
 QUIC derives packet encryption keys in the same way as TLS 1.3:
 Each encryption level/direction pair has a secret value, which
 is then used to derive the traffic keys using as described
-in {{TLS13}}; Section 7.3.
+in {{TLS13}}, Section 7.3.
 
 The keys for the Initial encryption level are computed based on
-the client's first Destination Connection Id, as described in
-{{initial-secrets}}.
+the client's initial Destination Connection ID, as described in
+{{initial-secrets}}. 
 
 The keys for the remaining encryption level are computed in the same
 fashion as the corresponding TLS keys (see {{TLS13}}; Section 7),
 except that the label for HKDF-Expand-Label uses the prefix "quic "
-rather than "tls 13". The purpose of this change is to provide key
+rather than "tls13". The purpose of this change is to provide key
 separation between TLS and QUIC, so that TLS stacks can avoid
 exposing TLS record protection keys.
 
@@ -626,7 +628,7 @@ exposing TLS record protection keys.
 
 Initial packets are protected with
 a secret derived from the Destination Connection ID field from the client's
-Initial packet.  Specifically:
+first Initial packet of the connection. Specifically:
 
 ~~~
 initial_salt = 0x9c108f98520a5c5c32968e950e8a2c5fe06d6c38
@@ -639,9 +641,13 @@ server_initial_secret =
    HKDF-Expand-Label(initial_secret, "server in", Hash.length)
 ~~~
 
+Note that if the server sends a Retry, the client's Initial will
+correspond to a new connection and thus use the server provided
+Destination Connection ID.
+
 The hash function for HKDF when deriving handshake secrets and keys is SHA-256
 {{!SHA=DOI.10.6028/NIST.FIPS.180-4}}.  The connection ID used with
-HKDF-Expand-Label is the connection ID chosen by the client.
+HKDF-Expand-Label is the initial Destination Connection ID.
 
 initial_salt is a 20 octet sequence shown in the figure in hexadecimal
 notation. Future versions of QUIC SHOULD generate a new salt value, thus
@@ -653,7 +659,7 @@ Note:
 
 : The Destination Connection ID is of arbitrary length, and it could be zero
   length if the server sends a Retry packet with a zero-length Source Connection
-  ID field.  In this case, the initial keys provide no assurance to the client
+  ID field.  In this case, the Initial keys provide no assurance to the client
   that the server received its packet; the client has to rely on the exchange
   that included the Retry packet for that property.
 
@@ -670,21 +676,23 @@ QUIC packets are protected prior to applying packet number encryption
 (A).  When removing packet protection, an endpoint first removes the protection
 from the packet number.
 
-All QUIC packets other than Version Negotiation and Stateless Reset packets are
-protected with an AEAD algorithm {{!AEAD}}. Prior to establishing a shared
-secret, packets are protected with AEAD_AES_128_GCM and a key derived from the
-client's connection ID (see {{initial-secrets}}).  This provides protection
-against off-path attackers and robustness against QUIC version unaware
-middleboxes, but not against on-path attackers.
+All QUIC packets other than Version Negotiation and Stateless Reset
+packets are protected with an AEAD algorithm {{!AEAD}}. Prior to
+establishing a shared secret, packets are protected with
+AEAD_AES_128_GCM and a key derived from the from the destination
+connection ID in the client's first Initial packet (see
+{{initial-secrets}}).  This provides protection against off-path
+attackers and robustness against QUIC version unaware middleboxes, but
+not against on-path attackers.
 
 All ciphersuites currently defined for TLS 1.3 - and therefore QUIC - have a
 16-byte authentication tag and produce an output 16 bytes larger than their
 input.
 
-The key and iv for the packet are computed as described in {{encryption-keys}}.
+The key and IV for the packet are computed as described in {{encryption-keys}}.
 The nonce, N, is formed by combining the packet protection IV with the
 packet number.  The 64 bits of the reconstructed QUIC packet number in
-network byte order is left-padded with zeros to the size of the IV.
+network byte order are left-padded with zeros to the size of the IV.
 The exclusive OR of the padded packet number and the IV forms the AEAD
 nonce.
 
@@ -818,15 +826,19 @@ the protocol.
 A client MUST only use 0-RTT keys to protect data that is idempotent.  A client
 MAY wish to apply additional restrictions on what data it sends prior to the
 completion of the TLS handshake.  A client otherwise treats 0-RTT keys as
-equivalent to 1-RTT keys, except that ACKs for that data MUST only be sent with
-1-RTT keys.
+equivalent to 1-RTT keys, except that it MUST NOT send ACKs with 0-RTT keys.
 
 A client that receives an indication that its 0-RTT data has been accepted by a
 server can send 0-RTT data until it receives all of the server's handshake
 messages.  A client SHOULD stop sending 0-RTT data if it receives an indication
 that 0-RTT data has been rejected.
 
-A server MUST NOT use 0-RTT keys to protect packets.
+A server MUST NOT use 0-RTT keys to protect packets; it uses 1-RTT
+keys to protect acknowledgements of 0-RTT packets.  Clients MUST NOT
+attempt to decrypt 0-RTT packets it receives and instead MUST discard
+them.
+
+Note:
 
 : 0-RTT data can be acknowledged by the server as it receives it, but any
   packets containing acknowledgments of 0-RTT data cannot have packet protection
@@ -853,19 +865,15 @@ A server could receive packets protected with 0-RTT keys prior to receiving a
 TLS ClientHello.  The server MAY retain these packets for later decryption in
 anticipation of receiving a ClientHello.
 
-Receiving and verifying the TLS Finished message is critical in
-ensuring the integrity of the TLS handshake.  A server MUST NOT use
-1-RTT protected packets from the client prior to verifying the client
-Finished message if its response depends on client authentication.
 
 
 # Key Update
 
 Once the 1-RTT keys are established and the short header is in use, it
-is possible to update the keys, for instance because of limits on AEAD
-encryption.  The KEY_PHASE bit in the short header is used to indicate
-whether key updates have occurred. The KEY_PHASE bit is initially set
-to 0 and then inverted with each key update {{key-update}}.
+is possible to update the keys. The KEY_PHASE bit in the short header
+is used to indicate whether key updates have occurred. The KEY_PHASE
+bit is initially set to 0 and then inverted with each key update
+{{key-update}}.
 
 The KEY_PHASE bit allows a recipient to detect a change in keying
 material without necessarily needing to receive the first packet that
@@ -939,8 +947,8 @@ is contained in Initial packets that is not otherwise authenticated.
 
 It is also possible for the attacker to tamper with data that
 is carried in Handshake packets, but because that tampering
-requires modifying TLS handshake messages, that tampering will be
-detected as soon as the TLS handshake completes.
+requires modifying TLS handshake messages, that tampering will
+cause the TLS handshake to fail.
 
 
 # QUIC-Specific Additions to the TLS Handshake
@@ -997,10 +1005,11 @@ The quic_transport_parameters extension is carried in the ClientHello and the
 EncryptedExtensions messages during the handshake.
 
 While the transport parameters are technically available prior to the
-completion of the handshake, they cannot be fully trusted until the handshake
-completes, and reliance on them should be minimized.
-However, any tampering with the parameters will be detected
-when the handshake completes.
+completion of the handshake, they cannot be fully trusted until the
+handshake completes, and reliance on them should be minimized.
+However, any tampering with the parameters will cause the handshake to
+fail.
+
 
 # Security Considerations
 
@@ -1018,11 +1027,11 @@ server can be used in packet reflection attacks to amplify the traffic generated
 by an attacker.
 
 QUIC includes three defenses against this attack. First, the packet
-containing a ClientHello be padded to a minimum size. Second, if
+containing a ClientHello MUST be padded to a minimum size. Second, if
 responding to an unverified source address, the server is forbidden to
-send more than three packets in its first flight ({{QUIC-TRANSPORT}};
-Section 4.4.3). Finally, because ACKs of Handshake packets
-are authenticated, a blind attacker cannot forge them
+send more than three UDP datagrams in its first flight ({{QUIC-TRANSPORT}};
+Section 4.4.3). Finally, because acknowledgements of Handshake packets
+are authenticated, a blind attacker cannot forge them.
 Put together, these defenses limit the level of amplification.
 
 

@@ -360,7 +360,7 @@ The following packet types are defined:
 | Type | Name                          | Section                     |
 |:-----|:------------------------------|:----------------------------|
 | 0x7F | Initial                       | {{packet-initial}}          |
-| 0x7E | Retry                         | {{packet-retry}}            |
+| 0x7E | Retry                         | {{packet-retry}}            |  
 | 0x7D | Handshake                     | {{packet-handshake}}        |
 | 0x7C | 0-RTT Protected               | {{packet-protected}}        |
 {: #long-packet-types title="Long Header Packet Types"}
@@ -800,7 +800,10 @@ sequence of frames, as described in {{frames}}.
 A sender can coalesce multiple QUIC packets (typically a Cryptographic Handshake
 packet and a Protected packet) into one UDP datagram.  This can reduce the
 number of UDP datagrams needed to send application data during the handshake and
-immediately afterwards.
+immediately afterwards. It is not necessary for senders to coalesce
+packets -- though failing to do so will require sending a significantly
+larger number of packets during the handshake -- but receivers MUST
+be able to process coalesced packets.
 
 Senders SHOULD coalesce packets in order of increasing encryption levels
 (Initial, Handshake, 0-RTT, 1-RTT), as this makes it more likely the receiver
@@ -812,6 +815,7 @@ Senders MUST NOT coalesce QUIC packets with different Destination Connection
 IDs into a single UDP datagram. Receivers SHOULD ignore any subsequent packets
 with a different Destination Connection ID than the first packet in the
 datagram.
+
 
 Every QUIC packet that is coalesced into a single UDP datagram is separate and
 complete.  Though the values of some fields in the packet header might be
