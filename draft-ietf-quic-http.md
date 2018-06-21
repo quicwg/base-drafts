@@ -208,7 +208,7 @@ HTTP/QUIC relies on QUIC as the underlying transport.  The QUIC version being
 used MUST use TLS version 1.3 or greater as its handshake protocol.  HTTP/QUIC
 clients MUST indicate the target domain name during the TLS handshake. This may
 be done using the Server Name Indication (SNI) {{!RFC6066}} extension to TLS or
-some other mechanism.
+using some other mechanism.
 
 QUIC connections are established as described in {{QUIC-TRANSPORT}}. During
 connection establishment, HTTP/QUIC support is indicated by selecting the ALPN
