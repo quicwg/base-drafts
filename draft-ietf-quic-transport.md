@@ -2999,9 +2999,9 @@ appended at the end.
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                       ACK Block Count (i)                   ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                          ACK Blocks (*)                     ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                           ECN Block                         ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                          ACK Blocks (*)                     ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
 {: #ACN_ECN_FRAME_FORMAT title="ACK_ECN Frame Format"}
@@ -3048,9 +3048,6 @@ ECN-CE Count:
 : A variable-length integer representing the number of ECN-CE marked packets
   received since the start of the connection. Initial value = 0, incremented
   when a packet marked CE is received
-
-Reception of duplicate packets SHOULD NOT increment the counters.
-
 
 ## PATH_CHALLENGE Frame {#frame-path-challenge}
 
