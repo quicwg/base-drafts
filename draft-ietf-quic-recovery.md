@@ -128,8 +128,8 @@ these protocol differences below.
 
 QUIC uses separate packet number spaces for each encryption level, except
 0-RTT and all generations of 1-RTT keys use the same packet number space.
-Separate packet number spaces ensures that acknowledgement of packets sent
-with one level of encryption doesn't cause spurious retransmission of packets
+Separate packet number spaces ensures acknowledgement of packets sent
+with one level of encryption will not cause spurious retransmission of packets
 sent with a different encryption level.  Congestion control and RTT measurement
 are unified across packet number spaces.
 
