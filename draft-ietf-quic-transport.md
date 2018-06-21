@@ -1014,28 +1014,30 @@ For all other frames, the Frame Type field simply identifies the frame.  These
 frames are explained in more detail as they are referenced later in the
 document.
 
-| Type Value  | Frame Type Name   | Definition                  |
-|:------------|:------------------|:----------------------------|
-| 0x00        | PADDING           | {{frame-padding}}           |
-| 0x01        | RST_STREAM        | {{frame-rst-stream}}        |
-| 0x02        | CONNECTION_CLOSE  | {{frame-connection-close}}  |
-| 0x03        | APPLICATION_CLOSE | {{frame-application-close}} |
-| 0x04        | MAX_DATA          | {{frame-max-data}}          |
-| 0x05        | MAX_STREAM_DATA   | {{frame-max-stream-data}}   |
-| 0x06        | MAX_STREAM_ID     | {{frame-max-stream-id}}     |
-| 0x07        | PING              | {{frame-ping}}              |
-| 0x08        | BLOCKED           | {{frame-blocked}}           |
-| 0x09        | STREAM_BLOCKED    | {{frame-stream-blocked}}    |
-| 0x0a        | STREAM_ID_BLOCKED | {{frame-stream-id-blocked}} |
-| 0x0b        | NEW_CONNECTION_ID | {{frame-new-connection-id}} |
-| 0x0c        | STOP_SENDING      | {{frame-stop-sending}}      |
-| 0x0d        | ACK               | {{frame-ack}}               |
-| 0x0e        | PATH_CHALLENGE    | {{frame-path-challenge}}    |
-| 0x0f        | PATH_RESPONSE     | {{frame-path-response}}     |
-| 0x10 - 0x17 | STREAM            | {{frame-stream}}            |
-| 0x18        | CRYPTO            | {{frame-crypto}}            |
-| 0x19        | NEW_TOKEN         | {{frame-new-token}}         |
-| 0x20        | ACK_ECN           | {{frame-ack-ecn}}           |
+| Type Value  | Frame Type Name       | Definition                  |
+| :---------- | :-------------------- | :-------------------------- |
+| 0x00        | PADDING               | {{frame-padding}}           |
+| 0x01        | RST_STREAM            | {{frame-rst-stream}}        |
+| 0x02        | CONNECTION_CLOSE      | {{frame-connection-close}}  |
+| 0x03        | APPLICATION_CLOSE     | {{frame-application-close}} |
+| 0x04        | MAX_DATA              | {{frame-max-data}}          |
+| 0x05        | MAX_STREAM_DATA       | {{frame-max-stream-data}}   |
+| 0x06        | MAX_STREAM_ID         | {{frame-max-stream-id}}     |
+| 0x07        | PING                  | {{frame-ping}}              |
+| 0x08        | BLOCKED               | {{frame-blocked}}           |
+| 0x09        | STREAM_BLOCKED        | {{frame-stream-blocked}}    |
+| 0x0a        | STREAM_ID_BLOCKED     | {{frame-stream-id-blocked}} |
+| 0x0b        | NEW_CONNECTION_ID     | {{frame-new-connection-id}} |
+| 0x0c        | STOP_SENDING          | {{frame-stop-sending}}      |
+| 0x0d        | ACK                   | {{frame-ack}}               |
+| 0x0e        | PATH_CHALLENGE        | {{frame-path-challenge}}    |
+| 0x0f        | PATH_RESPONSE         | {{frame-path-response}}     |
+| 0x10 - 0x17 | STREAM                | {{frame-stream}}            |
+| 0x18        | CRYPTO                | {{frame-crypto}}            |
+| 0x19        | NEW_TOKEN             | {{frame-new-token}}         |
+| 0x20        | ACK_ECN               | {{frame-ack-ecn}}           |
+| 0x21        | RETIRE_CONNECTION_ID  | {{frame-retire-cid}}        |
+| 0x22        | REQUEST_CONNECTION_ID | {{frame-request-cid}}       |
 {: #frame-types title="Frame Types"}
 
 All QUIC frames are idempotent.  That is, a valid frame does not cause
@@ -3401,7 +3403,7 @@ transmission efficiency to underfilled packets.
 
 ## RETIRE_CONNECTION_ID Frame {#frame-retire-cid}
 
-The RETIRE_CONNECTION_ID frame (type=0x18) informs the peer that older
+The RETIRE_CONNECTION_ID frame (type=0x21) informs the peer that older
 connection IDs are being discarded by the peer and will no longer be recognized.
 
 The frame is as follows:
@@ -3433,7 +3435,7 @@ is acknowledged.
 
 ## REQUEST_CONNECTION_ID Frame {#frame-request-cid}
 
-The REQUEST_CONNECTION_ID frame (type=0x19) informs the peer that the sender
+The REQUEST_CONNECTION_ID frame (type=0x22) informs the peer that the sender
 has fewer available connection IDs than it wishes to maintain available.
 
 The frame is as follows:
