@@ -913,9 +913,11 @@ for header in headers:
 
 # encode the prefix
 encodeInteger(prefixBuffer, 0x00, largestReference, 8)
-delta = largestReference - baseIndex
-sign = delta > 0 ? 0x80 : 0
-encodeInteger(prefixBuffer, sign, delta, 7)
+if baseIndex >= largestReference:
+  encodeInteger(prefixBuffer, 0, baseIndex - largestReference, 7)
+else:
+  encodeInteger(prefixBuffer, 0x80,
+                largestReference  - baseIndex, 7)
 
 return controlBuffer, prefixBuffer + streamBuffer
 ~~~
