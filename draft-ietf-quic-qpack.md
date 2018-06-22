@@ -524,7 +524,7 @@ server's header blocks and table updates.
 
 ### Table State Synchronize
 
-The Table State Synchronize instruction begins with the '10' two-bit pattern.
+The Table State Synchronize instruction begins with the '01' two-bit pattern.
 The instruction specifies the total number of dynamic table inserts and
 duplications since the last Table State Synchronize or Header Acknowledgement
 that increased the Largest Known Received dynamic table entry.  This is encoded
@@ -535,7 +535,7 @@ entries might cause a stream to become blocked, as described in
 ~~~~~~~~~~ drawing
   0   1   2   3   4   5   6   7
 +---+---+---+---+---+---+---+---+
-| 1 | 0 |   Insert Count (6+)   |
+| 0 | 1 |   Insert Count (6+)   |
 +---+---+-----------------------+
 ~~~~~~~~~~
 {:#fig-size-sync title="Table State Synchronize"}
@@ -553,7 +553,7 @@ before using it.
 
 After processing a header block on a request or push stream, the decoder emits a
 Header Acknowledgement instruction on the decoder stream.  The instruction
-begins with the '0' one-bit pattern and includes the request stream's stream ID,
+begins with the '1' one-bit pattern and includes the request stream's stream ID,
 encoded as a 7-bit prefix integer.  It is used by the peer's QPACK encoder to
 know when it is safe to evict an entry.
 
@@ -566,7 +566,7 @@ blocks within a stream have been fully processed.
 ~~~~~~~~~~ drawing
   0   1   2   3   4   5   6   7
 +---+---+---+---+---+---+---+---+
-| 0 |      Stream ID (7+)       |
+| 1 |      Stream ID (7+)       |
 +---+---------------------------+
 ~~~~~~~~~~
 {:#fig-header-ack title="Header Acknowledgement"}
@@ -592,14 +592,14 @@ table on that stream are no longer outstanding.
 An encoder cannot infer from this instruction that any updates to the dynamic
 table have been received.
 
-The instruction begins with the '11' two-bit pattern. The instruction includes
+The instruction begins with the '00' two-bit pattern. The instruction includes
 the stream ID of the affected stream - a request or push stream - encoded as a
 6-bit prefix integer.
 
 ~~~~~~~~~~ drawing
   0   1   2   3   4   5   6   7
 +---+---+---+---+---+---+---+---+
-| 1 | 1 |     Stream ID (6+)    |
+| 0 | 0 |     Stream ID (6+)    |
 +---+---+-----------------------+
 ~~~~~~~~~~
 {:#fig-stream-cancel title="Stream Cancellation"}
@@ -694,14 +694,14 @@ Section 5.1 of [RFC7541]).
 #### Indexed Header Field With Post-Base Index
 
 If the entry is in the dynamic table with an absolute index greater than Base
-Index, the representation starts with the '0100' 4-bit pattern, followed by the
+Index, the representation starts with the '0001' 4-bit pattern, followed by the
 post-base index (see {{indexing}}) of the matching header field, represented as
 an integer with a 4-bit prefix (see Section 5.1 of [RFC7541]).
 
 ~~~~~~~~~~ drawing
   0   1   2   3   4   5   6   7
 +---+---+---+---+---+---+---+---+
-| 0 | 1 | 0 | 0 |  Index (4+)   |
+| 0 | 0 | 0 | 1 |  Index (4+)   |
 +---+---+---+---+---------------+
 ~~~~~~~~~~
 {: title="Indexed Header Field with Post-Base Index"}
@@ -714,9 +714,9 @@ header field name matches the header field name of an entry stored in the static
 table or the dynamic table.
 
 If the entry is in the static table, or in the dynamic table with an absolute
-index less than or equal to Base Index, this representation starts with the '00'
+index less than or equal to Base Index, this representation starts with the '01'
 two-bit pattern.  If the entry is in the dynamic table with an absolute index
-greater than Base Index, the representation starts with the '0101' four-bit
+greater than Base Index, the representation starts with the '0000' four-bit
 pattern.
 
 The following bit, 'N', indicates whether an intermediary is permitted to add
@@ -731,7 +731,7 @@ values that are not to be put at risk by compressing them (see Section 7.1 of
 ~~~~~~~~~~ drawing
      0   1   2   3   4   5   6   7
    +---+---+---+---+---+---+---+---+
-   | 0 | 0 | N | S |Name Index (4+)|
+   | 0 | 1 | N | S |Name Index (4+)|
    +---+---+---+---+---------------+
    | H |     Value Length (7+)     |
    +---+---------------------------+
@@ -755,7 +755,7 @@ the header field name is represented using the post-base index of that entry
 ~~~~~~~~~~ drawing
      0   1   2   3   4   5   6   7
    +---+---+---+---+---+---+---+---+
-   | 0 | 1 | 0 | 1 | N |NameIdx(3+)|
+   | 0 | 0 | 0 | 0 | N |NameIdx(3+)|
    +---+---+---+---+---+-----------+
    | H |     Value Length (7+)     |
    +---+---------------------------+
@@ -769,7 +769,7 @@ the header field name is represented using the post-base index of that entry
 
 An addition to the header table where both the header field name and the header
 field value are represented as string literals (see {{primitives}}) starts with
-the '011' three-bit pattern.
+the '001' three-bit pattern.
 
 The fourth bit, 'N', indicates whether an intermediary is permitted to add this
 header to the dynamic header table on subsequent hops. When the 'N' bit is set,
@@ -786,7 +786,7 @@ represented as an 8-bit prefix string literal.
 ~~~~~~~~~~ drawing
      0   1   2   3   4   5   6   7
    +---+---+---+---+---+---+---+---+
-   | 0 | 1 | 1 | N | H |NameLen(3+)|
+   | 0 | 0 | 1 | N | H |NameLen(3+)|
    +---+---+---+---+---+-----------+
    |  Name String (Length octets)  |
    +---+---------------------------+
