@@ -573,7 +573,7 @@ Token Length:
 
 : A variable-length integer specifying the length of the Token field, in bytes.
   It may be zero if no token is present. Initial packets sent by the server
-  MUST in include a zero-length token.
+  MUST include a zero-length token.
 
 Token:
 
