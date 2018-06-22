@@ -1668,8 +1668,11 @@ finished and the endpoint has 1-RTT keys.  An endpoint also MUST NOT initiate
 connection migration if the peer sent the `disable_migration` transport
 parameter during the handshake.  An endpoint which has sent this transport
 parameter, but detects that a peer has nonetheless migrated to a different
-network MAY treat this as a connection error of type INVALID_MIGRATION.
-However, note that not all changes of peer address are intentional migrations.
+network MAY treat this as a connection error of type INVALID_MIGRATION. However,
+note that not all changes of peer address are intentional migrations. The peer
+could experience an unintended change of address due to NAT rebinding; endpoints
+SHOULD perform path validation ({{migrate-validate}}) if the rebinding does not
+cause the connection to fail.
 
 This document limits migration of connections to new client addresses, except as
 described in {{preferred-address}}. Clients are responsible for initiating all
