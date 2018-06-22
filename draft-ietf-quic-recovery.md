@@ -417,6 +417,13 @@ to accelerate loss recovery.  The receiver SHOULD send an immediate ACK
 when it receives a new packet which is not one greater than the
 largest received packet number.
 
+Similarly, reception of an packet marked as ECN Congestion Experience
+(ECN-CE) SHOULD be acknowledged immediately to quicker react to
+congestion events. Additional ECN-CE marks received during the same
+recovery period are also immediately acknowledged to correctly account
+for ECN-CE marks in the recovery period.
+
+
 As an optimization, a receiver MAY process multiple packets before
 sending any ACK frames in response.  In this case they can determine
 whether an immediate or delayed acknowledgement should be generated
@@ -625,7 +632,9 @@ Pseudocode for OnPacketSent follows:
 
 ### On Ack Receipt
 
-When an ack is received, it may acknowledge 0 or more packets.
+When an ack (ACK or ACK_ECN frame) is received, it may acknowledge 0
+or more packets. Reception of ACK_ECN frame requires that the receiver
+check if ECN indicates a congestion event, see {{congestion-ecn}}.
 
 Pseudocode for OnAckReceived and UpdateRtt follow:
 
@@ -642,6 +651,9 @@ Pseudocode for OnAckReceived and UpdateRtt follow:
 
     DetectLostPackets(ack.largest_acked_packet)
     SetLossDetectionAlarm()
+    // Detect if ACK_ECN frame indicates ECN-CE marking
+    if (Frame type is of type ACK_ECN):
+       OnPacketsMarked(ack.ce_counter)
 
 
   UpdateRtt(latest_rtt, ack_delay):
@@ -675,7 +687,7 @@ newly acked packet.
 
 If this is the first acknowledgement following RTO, check if the smallest newly
 acknowledged packet is one sent by the RTO, and if so, inform congestion control
-of a verified RTO, similar to F-RTO {{?RFC5682}}
+of a verified RTO, similar to F-RTO {{?RFC5682}}.
 
 Pseudocode for OnPacketAcked follows:
 
@@ -880,13 +892,31 @@ QUIC hosts MUST NOT send packets if they would increase bytes_in_flight
 the packet is a probe packet sent after the TLP or RTO alarm fires, as described
 in {{tlp}} and {{rto}}.
 
+## Explicit Congestion Notification {#congestion-ecn}
+
+If ECN {!RFC3168} has been verified to work for the current path QUIC
+will use the ECN Congestion Experienced (ECN-CE) IP packet marking as a
+signal of congestion as a complement to packet loss. This document
+specifies to use the classical ECN-CE response, i.e. the same response
+as for packet loss. However, there exist potential for future
+experimentation in using other response functions as discussed in
+{!RFC8311}.
+
+The ACK_ECN frame defined in {{QUIC-TRANSPORT}} does not provide
+information on which of the newly acknowledged packets that
+was marked with ECN-CE. Because newly received marks cause an ACK_ECN be sent
+immediately, is is assumed the congestion event starts at the highest newly
+acknowledged packet number.
+
 ## Slow Start
 
 QUIC begins every connection in slow start and exits slow start upon
-loss. QUIC re-enters slow start anytime the congestion window is less
-than sshthresh, which typically only occurs after an RTO.
-While in slow start, QUIC increases the congestion window by the
-number of acknowledged bytes when each ack is processed.
+loss or reception of ECN-CE packet markings. QUIC re-enters slow start
+anytime the congestion window is less than sshthresh, which typically
+only occurs after an RTO. While in slow start, QUIC increases the
+congestion window by the number of acknowledged bytes when each ack is
+processed.
+
 
 ## Congestion Avoidance
 
@@ -898,18 +928,20 @@ window and sets the slow start threshold to the new congestion window.
 
 ## Recovery Period
 
-Recovery is a period of time beginning with detection of a lost packet.
-Because QUIC retransmits stream data and control frames, not packets,
-it defines the end of recovery as a packet sent after the start of
-recovery being acknowledged.  This is slightly different from TCP's
-definition of recovery ending when the lost packet that started
-recovery is acknowledged.
+Recovery is a period of time beginning with detection of a lost packet
+or the reception of an ECN-CE mark. Because QUIC retransmits stream data
+and control frames, not packets, it defines the end of recovery as a
+packet sent after the start of recovery being acknowledged. This is
+slightly different from TCP's definition of recovery ending when the
+lost packet that started recovery is acknowledged.
 
-During recovery, the congestion window is not increased or decreased.
-As such, multiple lost packets only decrease the congestion window once as
-long as they're lost before exiting recovery. This causes QUIC to decrease
-the congestion window multiple times if retransmisions are lost, but limits
-the reduction to once per round trip.
+During recovery, the congestion window is not increased or decreased. As
+such, multiple lost packets and/or ECN-CE marks only decrease the
+congestion window once as long as they're lost before exiting recovery.
+This causes QUIC to decrease the congestion window multiple times if
+retransmisions are lost, but limits the reduction to once per round
+trip.
+
 
 ## Tail Loss Probe
 
@@ -977,6 +1009,11 @@ kLossReductionFactor (default 0.5):
 Variables required to implement the congestion control mechanisms
 are described in this section.
 
+previous_ecn_ce_ctr:
+: The ACK_ECN counter for ECN-CE marks previously processed. Used to
+  determine when one or more packet acknowledged by the ACK_ECN frame
+  was marked with ECN-CE.
+
 bytes_in_flight:
 : The sum of the size in bytes of all sent packets that contain at least
   one retransmittable frame, and have not been acked or declared
@@ -1006,6 +1043,7 @@ variables as follows:
    bytes_in_flight = 0
    end_of_recovery = 0
    ssthresh = infinite
+   previous_ecn_ce_ctr = 0
 ~~~
 
 ### On Packet Sent
@@ -1024,7 +1062,7 @@ Invoked from loss detection's OnPacketAcked and is supplied with
 acked_packet from sent_packets.
 
 ~~~
-   InRecovery(packet_number)
+   InRecovery(packet_number):
      return packet_number <= end_of_recovery
 
    OnPacketAckedCC(acked_packet):
@@ -1042,6 +1080,38 @@ acked_packet from sent_packets.
          kDefaultMss * acked_packet.bytes / congestion_window
 ~~~
 
+### On Congestion Event Detected
+
+Invoked functions detecting a congestion event, i.e. OnPacketsMarked and
+OnPacketLost. Performs a common congestion event response by reducing the
+congestion window and starting a recovery period unless already in recovery.
+
+~~~
+   CongestionEvent(packet_number):
+     // Start a new recovery epoch if the event packet is larger
+     // than the end of the previous recovery epoch.
+     if (!InRecovery(packet_number)):
+       // Start a new congestion epoch
+       end_of_recovery = largest_sent_packet
+       congestion_window *= kMarkReductionFactor
+       congestion_window = max(congestion_window, kMinimumWindow)
+~~~
+
+### On Packets Marked
+
+Invoked by an increment in the number of CE marked packets, as
+indicated by a newly received ACK_ECN frame when compared to
+previous_ecn_ce_ctr.
+
+~~~
+   OnPacketsMarked(ce_counter):
+     if (ce_counter > previous_ecn_ce_ctr):
+       // update previous_ecn_ce_ctr
+       previous_ecn_ce_ctr = ce_counter
+       CongestionEvent(largest_newly_acked.packet_number)
+~~~
+
+
 ### On Packets Lost
 
 Invoked by loss detection from DetectLostPackets when new packets
@@ -1055,11 +1125,7 @@ are detected lost.
      largest_lost_packet = lost_packets.last()
      // Start a new recovery epoch if the lost packet is larger
      // than the end of the previous recovery epoch.
-     if (!InRecovery(largest_lost_packet.packet_number)):
-       end_of_recovery = largest_sent_packet
-       congestion_window *= kLossReductionFactor
-       congestion_window = max(congestion_window, kMinimumWindow)
-       ssthresh = congestion_window
+     CongestionEvent(largest_lost_packet.packet_number)
 ~~~
 
 ### On Retransmission Timeout Verified
