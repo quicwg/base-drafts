@@ -360,7 +360,7 @@ The following packet types are defined:
 | Type | Name                          | Section                     |
 |:-----|:------------------------------|:----------------------------|
 | 0x7F | Initial                       | {{packet-initial}}          |
-| 0x7E | Retry                         | {{packet-retry}}            |  
+| 0x7E | Retry                         | {{packet-retry}}            |
 | 0x7D | Handshake                     | {{packet-handshake}}        |
 | 0x7C | 0-RTT Protected               | {{packet-protected}}        |
 {: #long-packet-types title="Long Header Packet Types"}
@@ -572,8 +572,8 @@ Header.
 Token Length:
 
 : A variable-length integer specifying the length of the Token field, in bytes.
-It may be zero if no token is present. Initial packets sent by the server
-MUST in include a zero-length token.
+  It may be zero if no token is present. Initial packets sent by the server
+  MUST in include a zero-length token.
 
 Token:
 
@@ -2849,7 +2849,7 @@ TCP SACKs ({{?RFC2018}}).
 It is expected that a sender will reuse the same packet number across different
 packet number spaces.  ACK frames only acknowledge the packet numbers that were
 transmitted by the sender in the same packet number space of the packet that the
-ACK was received in. 
+ACK was received in.
 
 A client MUST NOT acknowledge Retry packets.  Retry packets include the packet
 number from the Initial packet it responds to.  Version Negotiation packets
@@ -3040,7 +3040,7 @@ messages are delayed or lost.  Note that the same limitation applies to other
 data sent by the server protected by the 1-RTT keys.
 
 Endpoints SHOULD send acknowledgments for packets containing CRYPTO_HS
-frames with a reduced delay; see Section 3.5.1 of {{RECOVERY}}.
+frames with a reduced delay; see Section 3.5.1 of {{QUIC-RECOVERY}}.
 
 ## PATH_CHALLENGE Frame {#frame-path-challenge}
 

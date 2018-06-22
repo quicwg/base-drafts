@@ -350,7 +350,6 @@ coalesced packets to send them in the same UDP datagram.
 | Handshake       | Handshake        | Handshake |
 | Retry           | N/A              | N/A       |
 | Short Header    | 1-RTT            | 0/1-RTT   |
-
 {: #packet-types-levels title="Encryption Levels by Packet Type"}
 
 {{QUIC-TRANSPORT}}, Section 6.3 shows how packets at the various encryption
@@ -572,8 +571,8 @@ as a connection error of type PROTOCOL_VIOLATION.
 ## Rejecting 0-RTT
 
 A server rejects 0-RTT by rejecting 0-RTT at the TLS layer.  This also prevents
-QUIC from sending 0-RTT data. A client that attempts 0-RTT MUST also consider 0-RTT to be rejected if it
-receives a Version Negotiation packet.
+QUIC from sending 0-RTT data. A client that attempts 0-RTT MUST also consider
+0-RTT to be rejected if it receives a Version Negotiation packet.
 
 When 0-RTT is rejected, all connection characteristics that the client assumed
 might be incorrect.  This includes the choice of application protocol, transport
@@ -615,7 +614,7 @@ in {{TLS13}}, Section 7.3.
 
 The keys for the Initial encryption level are computed based on
 the client's initial Destination Connection ID, as described in
-{{initial-secrets}}. 
+{{initial-secrets}}.
 
 The keys for the remaining encryption level are computed in the same
 fashion as the corresponding TLS keys (see {{TLS13}}; Section 7),
