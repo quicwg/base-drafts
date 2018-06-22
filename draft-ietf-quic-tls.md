@@ -331,9 +331,9 @@ only appear in the 0-RTT and 1-RTT encryption levels
 - CONNECTION_CLOSE and CRYPTO_CLOSE MAY appear in packets of any
   encryption level other than 0-RTT.
 - PADDING and PING frames MAY appear in packets of any encryption level.
-- ACK frames MAY appear in packets of any encryption level, but
-  can only acknowledge packets which appeared in that encryption
-  level.
+- ACK frames MAY appear in packets of any encryption level other than
+  0-RTT, but can only acknowledge packets which appeared in that
+  encryption level.
 - STREAM frames MUST ONLY appear in the 0-RTT and 1-RTT levels.
 - All other frame types MUST only appear at the 1-RTT levels.
 
@@ -676,10 +676,10 @@ QUIC packets are protected prior to applying packet number encryption
 (A).  When removing packet protection, an endpoint first removes the protection
 from the packet number.
 
-All QUIC packets other than Version Negotiation and Stateless Reset
+All QUIC packets other than Version Negotiation and Retry
 packets are protected with an AEAD algorithm {{!AEAD}}. Prior to
 establishing a shared secret, packets are protected with
-AEAD_AES_128_GCM and a key derived from the from the destination
+AEAD_AES_128_GCM and a key derived from the destination
 connection ID in the client's first Initial packet (see
 {{initial-secrets}}).  This provides protection against off-path
 attackers and robustness against QUIC version unaware middleboxes, but

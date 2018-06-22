@@ -551,10 +551,10 @@ provides some level of protection against off-path attackers.
 ### Initial Packet {#packet-initial}
 
 The Initial packet uses long headers with a type value of 0x7F.  It
-carries the first CRYPTO_HS frames sent by the client as well as the
-cryptographic messages sent by the server to perform key exchange, and
-may carry ACKs in either direction. The Initial packet is protected by
-Initial keys as described in {{QUIC-TLS}}.
+carries the first CRYPTO_HS frames sent by the client and server to
+perform key exchange, and may carry ACKs in either direction. The
+Initial packet is protected by Initial keys as described in
+{{QUIC-TLS}}.
 
 The Initial packet has two additional header fields that follow the normal Long
 Header.
@@ -582,7 +582,7 @@ NEW_TOKEN frame.
 
 The client and server use the Initial packet type for any packet that
 contains an initial cryptographic handshake message. In addition to
-the first packet(s), This includes all cases where a new packet
+the first packet(s). This includes all cases where a new packet
 containing the initial cryptographic message needs to be created, such
 as the packets sent after receiving a Version Negotiation
 ({{packet-version}}) or Retry packet ({{packet-retry}}).
@@ -592,7 +592,7 @@ server may send multiple Initial packets.  The cryptographic key exchange could
 require multiple round trips or retransmissions of this data.
 
 The payload of an Initial packet includes a CRYPTO_HS frame (or
-frames), containing a cryptographic handshake message, ACK frames, or
+frames) containing a cryptographic handshake message, ACK frames, or
 both. The first CRYPTO_HS frame sent always begins at an offset of 0
 (see {{handshake}}). The client's complete first message MUST fit in a
 single packet (see {{handshake}}). Note that if the server sends a
@@ -608,7 +608,7 @@ Connection ID field with an unpredictable value.  This MUST be at
 least 8 octets in length. Until a packet is received from the server,
 the client MUST use the same value unless it abandons the connection
 attempt and starts a new one. The initial Destination Connection ID is
-used to determine packet protection keys.
+used to determine packet protection keys for Initial packets.
 
 The client populates the Source Connection ID field with a value of its choosing
 and sets the SCIL field to match.
@@ -807,8 +807,8 @@ A sender can coalesce multiple QUIC packets (typically a Cryptographic Handshake
 packet and a Protected packet) into one UDP datagram.  This can reduce the
 number of UDP datagrams needed to send application data during the handshake and
 immediately afterwards. It is not necessary for senders to coalesce
-packets -- though failing to do so will require sending a significantly
-larger number of packets during the handshake -- but receivers MUST
+packets, though failing to do so will require sending a significantly
+larger number of datagrams during the handshake. Receivers MUST
 be able to process coalesced packets.
 
 Senders SHOULD coalesce packets in order of increasing encryption levels
@@ -3207,7 +3207,7 @@ frame offers the cryptographic protocol an in-order stream of bytes.
 CRYPTO_HS frames are functionally identical to STREAM frames, except
 that they do not bear a stream identifier; they are not flow
 controlled; and they do not carry markers for optional offset,
-optional, length, and the end of the stream.
+optional length, and the end of the stream.
 
 A CRYPTO_HS frame is shown below.
 
