@@ -524,7 +524,7 @@ server's header blocks and table updates.
 
 ### Table State Synchronize
 
-The Table State Synchronize instruction begins with the '01' two-bit pattern.
+The Table State Synchronize instruction begins with the '00' two-bit pattern.
 The instruction specifies the total number of dynamic table inserts and
 duplications since the last Table State Synchronize or Header Acknowledgement
 that increased the Largest Known Received dynamic table entry.  This is encoded
@@ -535,7 +535,7 @@ entries might cause a stream to become blocked, as described in
 ~~~~~~~~~~ drawing
   0   1   2   3   4   5   6   7
 +---+---+---+---+---+---+---+---+
-| 0 | 1 |   Insert Count (6+)   |
+| 0 | 0 |   Insert Count (6+)   |
 +---+---+-----------------------+
 ~~~~~~~~~~
 {:#fig-size-sync title="Table State Synchronize"}
@@ -592,14 +592,14 @@ table on that stream are no longer outstanding.
 An encoder cannot infer from this instruction that any updates to the dynamic
 table have been received.
 
-The instruction begins with the '00' two-bit pattern. The instruction includes
+The instruction begins with the '01' two-bit pattern. The instruction includes
 the stream ID of the affected stream - a request or push stream - encoded as a
 6-bit prefix integer.
 
 ~~~~~~~~~~ drawing
   0   1   2   3   4   5   6   7
 +---+---+---+---+---+---+---+---+
-| 0 | 0 |     Stream ID (6+)    |
+| 0 | 1 |     Stream ID (6+)    |
 +---+---+-----------------------+
 ~~~~~~~~~~
 {:#fig-stream-cancel title="Stream Cancellation"}
