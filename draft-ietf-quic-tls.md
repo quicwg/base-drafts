@@ -399,13 +399,13 @@ the network, it proceeds as follows:
   the offset is used to find the proper location in the data sequence.
   If the result of this process is that new data is available, then
   it is delivered to TLS in order.
-  
+
 - If the packet is from a previously installed encryption level, it
   MUST not contain data which extends past the end of previously
   received data in that flow. Implementations MUST treat any
   violations of this requirement as a connection error of type
   PROTOCOL_VIOLATION.
-  
+
 - If the packet is from a new encryption level, it is saved for later
   processing by TLS.  Once TLS moves to receiving from this encryption
   level, saved data can be provided.  When providing data from any new
