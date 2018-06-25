@@ -445,8 +445,8 @@ provided with new handshake octets, or after TLS produces handshake octets.
 
 If 0-RTT is possible, it is ready after the client sends a TLS ClientHello
 message or the server receives that message.  After providing a QUIC client with
-the first handshake octets, the TLS stack might signal the change to the
-the 0-RTT keys. On the server, after receiving handshake octets that contain a
+the first handshake octets, the TLS stack might signal the change to
+0-RTT keys. On the server, after receiving handshake octets that contain a
 ClientHello message, a TLS server might signal that 0-RTT keys are available.
 
 Note that although TLS only uses one encryption level at a time, QUIC
