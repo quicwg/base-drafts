@@ -2965,10 +2965,10 @@ to decipher the packet.
 
 ## ACK_ECN Frame {#frame-ack-ecn}
 
-The ACK_ECN frame contains all the elements of the ACK frame ({{frame-ack}})
-with the addition of an ECN block.  This frame is used by an endpoint that
-supports ECN to acknowledge packets received with ECN codepoints of ECT(0),
-ECT(1), or CE in the packet's IP header.
+The ACK_ECN frame is used by an endpoint that supports ECN to acknowledge
+packets received with ECN codepoints of ECT(0), ECT(1), or CE in the packet's IP
+header.
+
 ~~~
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
@@ -2976,21 +2976,6 @@ ECT(1), or CE in the packet's IP header.
 |                     Largest Acknowledged (i)                ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                          ACK Delay (i)                      ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                           ECN Block                         ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                       ACK Block Count (i)                   ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                          ACK Blocks (*)                     ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-~~~
-{: #ACN_ECN_FRAME_FORMAT title="ACK_ECN Frame Format"}
-
-### ECN Block {#ECN-Block}
-
-~~~
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                        ECT(0) Count (i)                     ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -3003,11 +2988,12 @@ ECT(1), or CE in the packet's IP header.
 |                          ACK Blocks (*)                     ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
-{: #ECN-BLOCK-FIG title="ECN Block"}
+{: #ACN_ECN_FRAME_FORMAT title="ACK_ECN Frame Format"}
 
-A receiver reports three counts in an ACK_ECN frame corresponding to the total
-number of packets received with those codepoints -- ECT(0), ECT(1), and CE --
-since the beginning of the connection.
+An ACK_ECN frame contains all the elements of the ACK frame ({{frame-ack}}) with
+the addition of three counts corresponding to the total number of packets
+received with those codepoints -- ECT(0), ECT(1), and CE -- since the beginning
+of the connection.
 
 ## PATH_CHALLENGE Frame {#frame-path-challenge}
 
