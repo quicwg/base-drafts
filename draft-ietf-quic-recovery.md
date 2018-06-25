@@ -112,7 +112,7 @@ important to the loss detection and congestion control machinery below.
 
 * ACK and ACK_ECN frames contain acknowledgment information. ACK_ECN frames
   additionally contain information about ECN codepoints seen by the peer.  (The
-  rest of this document uses ACK frames to mean either ACK or ACK_ECN frames.)
+  rest of this document uses ACK frames to refer to both ACK and ACK_ECN frames.)
 
 ## Relevant Differences Between QUIC and TCP
 
@@ -647,9 +647,10 @@ Pseudocode for OnAckReceived and UpdateRtt follow:
 
     DetectLostPackets(ack.largest_acked_packet)
     SetLossDetectionAlarm()
-    // Process ECN-CE counter if present.
+
+    // Process ECN information if present.
     if (ACK frame contains ECN information):
-       OnPacketsMarked(ack.ce_counter)
+       ProcessECN(ack)
 
 
   UpdateRtt(latest_rtt, ack_delay):
@@ -891,18 +892,18 @@ in {{tlp}} and {{rto}}.
 ## Explicit Congestion Notification {#congestion-ecn}
 
 If a path has been verified to support ECN, QUIC treats a Congestion Experienced
-codepoint in the IP header as a signal of congestion. This document specifies a
-QUIC sender's simple response to a peer receiving packets with a Congestion
-Experienced codepoint.  As discussed in {!RFC8311}, QUIC endpoints are permitted
-to experiment with other response functions.
+codepoint in the IP header as a signal of congestion. This document specifies an
+endpoint's response when its peer receives packets with the Congestion
+Experienced codepoint.  As discussed in {!RFC8311}, endpoints are permitted to
+experiment with other response functions.
 
 ## Slow Start
 
-QUIC begins every connection in slow start and exits slow start upon loss or an
-increase in the ECN-CE counter. QUIC re-enters slow start anytime the congestion
-window is less than sshthresh, which typically only occurs after an RTO. While
-in slow start, QUIC increases the congestion window by the number of
-acknowledged bytes when each ack is processed.
+QUIC begins every connection in slow start and exits slow start upon loss or
+upon increase in the ECN-CE counter. QUIC re-enters slow start anytime the
+congestion window is less than sshthresh, which typically only occurs after an
+RTO. While in slow start, QUIC increases the congestion window by the number of
+bytes acknowledged when each ack is processed.
 
 
 ## Congestion Avoidance
@@ -919,14 +920,12 @@ Recovery is a period of time beginning with detection of a lost packet or an
 increase in the ECN-CE counter. Because QUIC retransmits stream data and control
 frames, not packets, it defines the end of recovery as a packet sent after the
 start of recovery being acknowledged. This is slightly different from TCP's
-definition of recovery ending when the lost packet that started recovery is
+definition of recovery, which ends when the lost packet that started recovery is
 acknowledged.
 
-During recovery, the congestion window is not increased or decreased. As such,
-multiple lost packets and/or increases in the ECN-CE counter only decrease the
-congestion window once as long as they're lost before exiting recovery.  This
-causes QUIC to decrease the congestion window multiple times if retransmisions
-are lost, but limits the reduction to once per round trip.
+The recovery period limits congestion window reduction to once per round trip.
+During recovery, the congestion window remains unchanged irrespective of new
+losses or increases in the ECN-CE counter.
 
 
 ## Tail Loss Probe
@@ -968,7 +967,6 @@ As an example of a well-known and publicly available implementation of a flow
 pacer, implementers are referred to the Fair Queue packet scheduler (fq qdisc)
 in Linux (3.11 onwards).
 
-
 ## Pseudocode
 
 ### Constants of interest
@@ -996,10 +994,11 @@ kLossReductionFactor (default 0.5):
 Variables required to implement the congestion control mechanisms
 are described in this section.
 
-previous_ecn_ce_ctr:
-: The ACK_ECN counter for ECN-CE marks previously processed. Used to
-  determine when one or more packet acknowledged by the ACK_ECN frame
-  was marked with ECN-CE.
+ecn_ce_counter:
+
+: The highest value reported for the ECN-CE counter by the peer in an ACK_ECN
+  frame. This variable is used to detect increases in the reported ECN-CE
+  counter.
 
 bytes_in_flight:
 : The sum of the size in bytes of all sent packets that contain at least
@@ -1030,7 +1029,7 @@ variables as follows:
    bytes_in_flight = 0
    end_of_recovery = 0
    ssthresh = infinite
-   previous_ecn_ce_ctr = 0
+   ecn_ce_counter = 0
 ~~~
 
 ### On Packet Sent
@@ -1067,35 +1066,33 @@ acked_packet from sent_packets.
          kDefaultMss * acked_packet.bytes / congestion_window
 ~~~
 
-### On Congestion Event Detected
+### On New Congestion Event
 
-Invoked functions detecting a congestion event, i.e. OnPacketsMarked and
-OnPacketLost. Performs a common congestion event response by reducing the
-congestion window and starting a recovery period unless already in recovery.
-
-~~~
-   CongestionEvent(packet_number):
-     // Start a new recovery epoch if the event packet is larger
-     // than the end of the previous recovery epoch.
-     if (!InRecovery(packet_number)):
-       // Start a new congestion epoch
-       end_of_recovery = largest_sent_packet
-       congestion_window *= kMarkReductionFactor
-       congestion_window = max(congestion_window, kMinimumWindow)
-~~~
-
-### On Packets Marked
-
-Invoked by an increment in the number of CE marked packets, as
-indicated by a newly received ACK_ECN frame when compared to
-previous_ecn_ce_ctr.
+Invoked from ProcessECN and OnPacketLost when a new congestion event is
+detected. Starts a new recovery period and reduces the congestion window.
 
 ~~~
-   OnPacketsMarked(ce_counter):
-     if (ce_counter > previous_ecn_ce_ctr):
-       // update previous_ecn_ce_ctr
-       previous_ecn_ce_ctr = ce_counter
-       CongestionEvent(largest_newly_acked.packet_number)
+   NewCongestionEvent():
+     // Start a new congestion epoch
+     end_of_recovery = largest_sent_packet
+     congestion_window *= kMarkReductionFactor
+     congestion_window = max(congestion_window, kMinimumWindow)
+~~~
+
+### Process ECN Information
+
+Invoked when an ACK_ECN frame is received from the peer.
+
+~~~
+   ProcessECN(ack):
+     // If the ECN-CE counter reported by the peer has increased,
+     // this could be a new congestion event.
+     if (ack.ce_counter > ecn_ce_counter):
+       ecn_ce_counter = ack.ce_counter
+       // Start a new recovery epoch if the largest acked packet
+       // is larger than the end of the previous recovery epoch.
+       if (!InRecovery(ack.largest_acked_packet)):
+         NewCongestionEvent()
 ~~~
 
 
@@ -1112,7 +1109,8 @@ are detected lost.
      largest_lost_packet = lost_packets.last()
      // Start a new recovery epoch if the lost packet is larger
      // than the end of the previous recovery epoch.
-     CongestionEvent(largest_lost_packet.packet_number)
+     if (!InRecovery(packet_number)):
+       NewCongestionEvent()
 ~~~
 
 ### On Retransmission Timeout Verified
