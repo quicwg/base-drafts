@@ -2971,7 +2971,7 @@ number of packets that were received with the corresponding ECN codepoint in the
 IP header. If the header is not readable from the application, the codepoint 00
 (Not-ECT) MUST be assumed. If any packet are duplicated by the network then only
 the value of the ECN field of the packet copy first received SHALL be included
-in the counters. This to prevent the on-side attack ({{security-ecn}}) and
+in the counters. This to prevent the on-the-side attack ({{security-ecn}}) and
 ensure that ACK_ECN frames becomes idempotent in the event of packet
 duplication. Note, a receiver is not required to maintain indefinite state for
 which packet numbers have been received far into the history. Packets discarded
@@ -2985,8 +2985,7 @@ had an IP header with the ECN field marked as Not-ECT.
 The ACK_ECN frame is used by the receiver to echo the value of these counters
 back to the sender of these packets. This allows the sender to utilize these
 counter values for congestion control. The ACK_ECN frame contains all the
-elements of the ACK frame ({{frame-ack}}) with the addition of an ECN block
-appended at the end.
+elements of the ACK frame ({{frame-ack}}) with the addition of the ECN counters.
 
 
 ~~~
@@ -2997,40 +2996,23 @@ appended at the end.
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                          ACK Delay (i)                      ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                       ACK Block Count (i)                   ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                           ECN Block                         ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                          ACK Blocks (*)                     ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-~~~
-{: #ACN_ECN_FRAME_FORMAT title="ACK_ECN Frame Format"}
-
-
-### ECN Block {#ECN-Block}
-
-The ECN block is described below. The size (i) indicates variable-length
-encoding, explained in {{integer-encoding}}.
-
-~~~
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                        ECT(0) Count (i)                     ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                        ECT(1) Count (i)                     ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                        ECN-CE Count (i)                     ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                       ACK Block Count (i)                   ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                          ACK Blocks (*)                     ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
-{: #ECN-BLOCK-FIG title="ECN Block"}
+{: #ACN_ECN_FRAME_FORMAT title="ACK_ECN Frame Format"}
 
-
-### ECN Counters
-
-The receiver side report three ECN counters in the ECN block part of the ACK_ECN
-frame. These counters counts the number of packets marked with this codepoint
-since the start of the QUIC connection.
+The receiver side report three ECN counters in the ACK_ECN frame. These counters
+counts the number of packets marked with this codepoint since the start of the
+QUIC connection. The size (i) indicates variable-length encoding, explained in
+{{integer-encoding}}.
 
 ECT(0) Count:
 : A variable-length integer representing the number of ECT(0) marked packets
