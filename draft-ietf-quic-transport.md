@@ -880,22 +880,25 @@ Protected payloads MUST contain at least one frame, and MAY contain multiple
 frames and multiple frame types.
 
 Frames MUST fit within a single QUIC packet and MUST NOT span a QUIC packet
-boundary. Each frame begins with a Frame Type byte, indicating its type,
-followed by additional type-dependent fields:
+boundary. Each frame begins with a Frame Type, indicating its type, followed by
+additional type-dependent fields:
 
 ~~~
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|   Type (8)    |           Type-Dependent Fields (*)         ...
+|                           Type (i)                          ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                   Type-Dependent Fields (*)                 ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
 {: #frame-layout title="Generic Frame Layout"}
 
-Frame types are listed in {{frame-types}}. Note that the Frame Type byte in
-STREAM frames is used to carry other frame-specific flags.  For all
-other frames, the Frame Type byte simply identifies the frame.  These frames are
-explained in more detail as they are referenced later in the document.
+The frame types defined in this specification are listed in {{frame-types}}.
+The Frame Type in STREAM frames is used to carry other frame-specific flags.
+For all other frames, the Frame Type field simply identifies the frame.  These
+frames are explained in more detail as they are referenced later in the
+document.
 
 | Type Value  | Frame Type Name   | Definition                  |
 |:------------|:------------------|:----------------------------|
@@ -920,6 +923,30 @@ explained in more detail as they are referenced later in the document.
 
 All QUIC frames are idempotent.  That is, a valid frame does not cause
 undesirable side effects or errors when received more than once.
+
+The Frame Type field uses a variable length integer encoding (see
+{{integer-encoding}}) with one exception.  To ensure simple and efficient
+implementations of frame parsing, a frame type MUST use the shortest possible
+encoding.  Though a two-, four- or eight-octet encoding of the frame types
+defined in this document is possible, the Frame Type field for these frames are
+encoded on a single octet.  For instance, though 0x4007 is a legitimate
+two-octet encoding for a variable-length integer with a value of 7, PING frames
+are always encoded as a single octet with the value 0x07.
+
+## Extension Frames
+
+QUIC frames do not use a self-describing encoding.  An endpoint therefore needs
+to understand the syntax of all frame before it can successfully process a
+packet.  This allows for efficient encoding of frames, but it means that an
+endpoint cannot send a frame of a type that is unknown to its peer.
+
+An extension to QUIC that wishes to use a new type of frame MUST first ensure
+that a peer is able to understand the frame.  An endpoint can use a transport
+parameter to signal its willingness to receive a new type of frame, or even
+multiple types of frame with the one transport parameter.
+
+An IANA registry is used to manage the assignment of frame types, see
+{{iana-frames}}.
 
 
 # Life of a Connection
@@ -4238,7 +4265,7 @@ Specification:
 
 
 The nominated expert(s) verify that a specification exists and is readily
-accessible.  The expert(s) are encouraged to be biased towards approving
+accessible.  Expert(s) are encouraged to be biased towards approving
 registrations unless they are abusive, frivolous, or actively harmful (not
 merely aesthetically displeasing, or architecturally dubious).
 
@@ -4256,6 +4283,48 @@ The initial contents of this registry are shown in {{iana-tp-table}}.
 | 0x0007 | ack_delay_exponent         | {{transport-parameter-definitions}} |
 | 0x0008 | initial_max_uni_streams    | {{transport-parameter-definitions}} |
 {: #iana-tp-table title="Initial QUIC Transport Parameters Entries"}
+
+
+## QUIC Frame Type Registry {#iana-frames}
+
+IANA \[SHALL add/has added] a registry for "QUIC Frame Types" under a
+"QUIC Protocol" heading.
+
+The "QUIC Frame Types" registry governs a 62-bit space.  This space is split
+into three spaces that are governed by different policies.  Values between 0x00
+and 0x3f (in hexadecimal) are assigned via the Standards Action or IESG Review
+policies {{!RFC8126}}.  Values from 0x40 to 0x3fff operate on the Specification
+Required policy {{!RFC8126}}.  All other values are assigned to Private Use
+{{!RFC8126}}.
+
+Registrations MUST include the following fields:
+
+Value:
+
+: The numeric value of the assignment (registrations will be between 0x00 and
+  0x3fff).  A range of values MAY be assigned.
+
+Frame Name:
+
+: A short mnemonic for the frame type.
+
+Specification:
+
+: A reference to a publicly available specification for the value.
+
+The nominated expert(s) verify that a specification exists and is readily
+accessible.  Specifications for new registrations need to describe the means by
+which an endpoint might determine that it can send the identified type of frame.
+An accompanying transport parameter registration (see
+{{iana-transport-parameters}}) is expected for most registrations.  The
+specification needs to describe the format and assigned semantics of any fields
+in the frame.
+
+Expert(s) are encouraged to be biased towards approving registrations unless
+they are abusive, frivolous, or actively harmful (not merely aesthetically
+displeasing, or architecturally dubious).
+
+The initial contents of this registry are tabulated in {{frame-types}}.
 
 
 ## QUIC Transport Error Codes Registry {#iana-error-codes}
