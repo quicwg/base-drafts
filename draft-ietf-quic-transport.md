@@ -2969,7 +2969,6 @@ The ACK_ECN frame contains all the elements of the ACK frame ({{frame-ack}})
 with the addition of an ECN block.  This frame is used by an endpoint that
 supports ECN to acknowledge packets received with ECN codepoints of ECT(0),
 ECT(1), or CE in the packet's IP header.
-
 ~~~
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
@@ -2999,13 +2998,16 @@ ECT(1), or CE in the packet's IP header.
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                        ECN-CE Count (i)                     ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                       ACK Block Count (i)                   ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                          ACK Blocks (*)                     ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
 {: #ECN-BLOCK-FIG title="ECN Block"}
 
 A receiver reports three counts in an ACK_ECN frame corresponding to the total
 number of packets received with those codepoints -- ECT(0), ECT(1), and CE --
 since the beginning of the connection.
-
 
 ## PATH_CHALLENGE Frame {#frame-path-challenge}
 
