@@ -310,9 +310,10 @@ offset and length. Those frames are packaged into QUIC packets
 and encrypted under the current TLS encryption level.
 As with TLS over TCP, once TLS handshake data has
 been delivered to QUIC, it is QUIC's responsibility to deliver it
-reliably. Each chunk of data is associated with the then-current TLS
-sending keys, and if QUIC needs to retransmit that data, it MUST use
-the same keys even if TLS has already updated to newer keys.
+reliably. Each chunk of data that is produced by TLS is associated
+with the set of keys that TLS is currently using.  If QUIC needs to
+retransmit that data, it MUST use the same keys even if TLS has already
+updated to newer keys.
 
 One important difference between TLS 1.3 records (used with TCP)
 and QUIC CRYPTO_HS frames is that in QUIC multiple frames may appear
@@ -382,27 +383,35 @@ TLS.  The client acquires handshake octets before sending its first packet.
 A QUIC server starts the process by providing TLS with the client's
 handshake octets.
 
-At any given time, an endpoint will have a current sending encryption
-level and receiving encryption level. Each encryption level is
+At any given time, the TLS stack at an endpoint will have a current sending
+encryption level and receiving encryption level. Each encryption level is
 associated with a different flow of bytes, which is reliably
 transmitted to the peer in CRYPTO_HS frames. When TLS provides handshake
-octets to be sent, they are appended to the current flow and
-will eventually be transmitted under the then-current key.
+octets to be sent, they are appended to the current flow and any packet
+that includes the CRYPTO_HS frame is protected using keys from the
+corresponding encryption level.
 
 When an endpoint receives a QUIC packet containing a CRYPTO_HS frame from
 the network, it proceeds as follows:
 
-- If the packet was in the current receiving encryption level, sequence
+- If the packet was in the TLS receiving encryption level, sequence
   the data into the input flow as usual. As with STREAM frames,
   the offset is used to find the proper location in the data sequence.
   If the result of this process is that new data is available, then
   it is delivered to TLS in order.
-
+  
 - If the packet is from a previously installed encryption level, it
   MUST not contain data which extends past the end of previously
   received data in that flow. Implementations MUST treat any
   violations of this requirement as a connection error of type
   PROTOCOL_VIOLATION.
+  
+- If the packet is from a new encryption level, it is saved for later
+  processing by TLS.  Once TLS moves to receiving from this encryption
+  level, saved data can be provided.  When providing data from any new
+  encryption level to TLS, if there is data from a previous encryption
+  level that TLS has not consumed, this MUST be treated as a connection
+  error of type PROTOCOL_VIOLATION.
 
 Each time that TLS is provided with new data, new handshake octets are
 requested from TLS.  TLS might not provide any octets if the handshake
