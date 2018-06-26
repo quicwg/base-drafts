@@ -406,19 +406,8 @@ to an existing entry in the static or the dynamic table or as a string literal.
 For entries which already exist in the dynamic table, the full entry can also be
 used by reference, creating a duplicate entry.
 
-Each set of encoder instructions is prefaced by its length, encoded as a
-variable length integer with an 8-bit prefix.  Instructions MUST NOT span more
-than one block.
-
-~~~~~~~~~~ drawing
-     0   1   2   3   4   5   6   7
-   +---+---+---+---+---+---+---+---+
-   |       Block Length (8+)       |
-   +-------------------------------+
-   |     Instruction Block (*)   ...
-   +-------------------------------+
-~~~~~~~~~~
-{: title="Encoder instruction block"}
+The contents of the encoder stream are an unframed sequence of the following
+instructions.
 
 ### Insert With Name Reference
 
@@ -524,6 +513,9 @@ table. Information is sent from the QPACK decoder to the QPACK encoder; that is,
 the server informs the client about the processing of the client's header blocks
 and table updates, and the client informs the server about the processing of the
 server's header blocks and table updates.
+
+The contents of the decoder stream are an unframed sequence of the following
+instructions.
 
 ### Table State Synchronize
 
