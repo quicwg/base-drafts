@@ -931,7 +931,9 @@ encoding.  Though a two-, four- or eight-octet encoding of the frame types
 defined in this document is possible, the Frame Type field for these frames are
 encoded on a single octet.  For instance, though 0x4007 is a legitimate
 two-octet encoding for a variable-length integer with a value of 7, PING frames
-are always encoded as a single octet with the value 0x07.
+are always encoded as a single octet with the value 0x07.  An endpoint MUST
+treat the receipt of a frame type that uses a longer encoding than necessary as
+a connection error of type PROTOCOL_VIOLATION.
 
 ## Extension Frames
 
