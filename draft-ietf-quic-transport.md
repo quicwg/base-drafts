@@ -1036,6 +1036,7 @@ document.
 | 0x10 - 0x17 | STREAM            | {{frame-stream}}            |
 | 0x18        | CRYPTO_HS         | {{frame-crypto}}            |
 | 0x19        | NEW_TOKEN         | {{frame-new-token}}         |
+| 0x20        | ACK_ECN           | {{frame-ack-ecn}}           |
 {: #frame-types title="Frame Types"}
 
 All QUIC frames are idempotent.  That is, a valid frame does not cause
@@ -1692,6 +1693,73 @@ causes a client to restart the connection attempt and includes the token in the
 new Initial packet ({{packet-initial}}) to prove source address ownership.
 
 
+## Using Explicit Congestion Notification {#using-ecn}
+
+QUIC endpoints use Explicit Congestion Notification (ECN) {{!RFC3168}} to detect
+and respond to network congestion.  ECN allows a network node to indicate
+congestion in the network by setting a codepoint in the IP header of a packet
+instead of dropping it.  Endpoints react to congestion by reducing their sending
+rate in response, as described in {{QUIC-RECOVERY}}.
+
+To use ECN, QUIC endpoints first determine whether a path and peer support ECN
+marking. Verifying the path occurs at the beginning of a connection and when the
+connection migrates to a new path ({{ecn-connection-migration}}).
+
+Each endpoint independently verifies and enables ECN for the path from it to the
+peer.
+
+To verify that both a path and the peer support ECN, an endpoint MUST set one of
+the ECN Capable Transport (ECT) codepoints -- ECT(0) or ECT(1) -- in the IP
+header {{!RFC8311}} of all outgoing packets.
+
+If an ECT codepoint set in the IP header is not corrupted by a network device,
+then a received packet contains either the codepoint sent by the peer or the
+Congestion Experienced (CE) codepoint set by a network device that is
+experiencing congestion.
+
+On receiving a packet with an ECT or CE codepoint, an endpoint that supports ECN
+increases the corresponding ECT(0), ECT(1), or CE count, and includes these
+counters in subsequent (see {{processing-and-ack}}) ACK_ECN frames (see
+{{frame-ack-ecn}}).
+
+A packet detected by a receiver as a duplicate does not affect the receiver's
+local ECN codepoint counts to mitigate security concerns ({{security-ecn}}).
+
+If an endpoint receives a packet without an ECT or CE codepoint, it responds per
+{{processing-and-ack}} with an ACK frame.
+
+If an endpoint does not support ECN or does not have access to received ECN
+codepoints, it acknowledges received packets per {{processing-and-ack}} with an
+ACK frame.
+
+If a packet sent with an ECT codepoint is newly acknowledged by the peer in an
+ACK frame, the endpoint stops setting ECT codepoints in subsequent packets, with
+the expectation that either the network or the peer no longer supports ECN.
+
+To protect the connection from arbitrary corruption of ECN codepoints by the
+network, an endpoint verifies the following when an ACK_ECN frame is received:
+
+* The total increase in ECT(0), ECT(1), and CE counters reported in the ACK_ECN
+  frame MUST be equal to the total number of packets newly acknowledged in this
+  ACK_ECN frame.
+
+* The increase in ECT(0) and ECT(1) counters MUST be no greater than the number
+  of packets newly acknowledged that were sent with the corresponding codepoint.
+
+Upon successful verification, an endpoint continues to set ECT codepoints in
+subsequent packets with the expectation that the path is ECN-capable.
+
+If verification fails, then the endpoint ceases setting ECT codepoints in
+subsequent packets with the expectation that either the network or the peer does
+not support ECN.
+
+If an endpoint sets ECT codepoints on outgoing packets and encounters a
+retransmission timeout due to the absence of acknowledgments from the peer (see
+{{QUIC-RECOVERY}}), the endpoint MAY cease setting ECT codepoints in subsequent
+packets. Doing so allows the connection to traverse network elements that drop
+packets carrying ECT or CE codepoints in the IP header.
+
+
 ## Proof of Source Address Ownership {#address-validation}
 
 Transport protocols commonly spend a round trip checking that a client owns the
@@ -1967,6 +2035,9 @@ When migrating, the new path might not support the endpoint's current sending
 rate. Therefore, the endpoint resets its congestion controller, as described in
 {{migration-cc}}.
 
+The new path might not have the same ECN capability. Therefore, the endpoint
+verifies ECN capability as described in {{using-ecn}}.
+
 Receiving acknowledgments for data sent on the new path serves as proof of the
 peer's reachability from the new address.  Note that since acknowledgments may
 be received on any path, return reachability on the new path is not
@@ -2048,7 +2119,6 @@ MAY send a stateless reset in response to any further incoming packets.
 Note that receipt of packets with higher packet numbers from the legitimate peer
 address will trigger another connection migration.  This will cause the
 validation of the address of the spurious migration to be abandoned.
-
 
 ### Loss Detection and Congestion Control {#migration-cc}
 
@@ -3135,6 +3205,49 @@ data sent by the server protected by the 1-RTT keys.
 Endpoints SHOULD send acknowledgments for packets containing CRYPTO_HS
 frames with a reduced delay; see Section 3.5.1 of {{QUIC-RECOVERY}}.
 
+## ACK_ECN Frame {#frame-ack-ecn}
+
+The ACK_ECN frame is used by an endpoint that supports ECN to acknowledge
+packets received with ECN codepoints of ECT(0), ECT(1), or CE in the packet's IP
+header.
+
+~~~
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                     Largest Acknowledged (i)                ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                          ACK Delay (i)                      ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                        ECT(0) Count (i)                     ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                        ECT(1) Count (i)                     ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                        ECN-CE Count (i)                     ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                       ACK Block Count (i)                   ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                          ACK Blocks (*)                     ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~
+{: #ACN_ECN_FRAME_FORMAT title="ACK_ECN Frame Format"}
+
+An ACK_ECN frame contains all the elements of the ACK frame ({{frame-ack}}) with
+the addition of three counts following the ACK Delay field.
+
+ECT(0) Count:
+: A variable-length integer representing the total number packets received with
+  the ECT(0) codepoint.
+
+ECT(1) Count:
+: A variable-length integer representing the total number packets received with
+  the ECT(1) codepoint.
+
+CE Count:
+: A variable-length integer representing the total number packets received with
+  the CE codepoint.
+
+
 ## PATH_CHALLENGE Frame {#frame-path-challenge}
 
 Endpoints can use PATH_CHALLENGE frames (type=0x0e) to check reachability to the
@@ -3151,7 +3264,6 @@ PATH_CHALLENGE frames contain an 8-byte payload.
 +                            Data (8)                           +
 |                                                               |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-
 ~~~
 
 Data:
@@ -3359,7 +3471,7 @@ conservatively, since any delay is likely to increase application-visible
 latency.
 
 
-## Packet Processing and Acknowledgment
+## Packet Processing and Acknowledgment {#processing-and-ack}
 
 A packet MUST NOT be acknowledged until packet protection has been successfully
 removed and all frames contained in the packet have been processed.  Any stream
@@ -4515,6 +4627,17 @@ limit mitigates the effect of the stream commitment attack.  However, setting
 the limit too low could affect performance when applications expect to open
 large number of streams.
 
+## Explicit Congestion Notification Attacks {#security-ecn}
+
+An on-path attacker could manipulate the value of ECN codepoints in the IP
+header to influence the sender's rate. {{!RFC3168}} discusses manipulations and
+their effects in more detail.
+
+An on-the-side attacker can duplicate and send packets with modified ECN
+codepoints to affect the sender's rate.  If duplicate packets are discarded by a
+receiver, an off-path attacker will need to race the duplicate packet against
+the original to be successful in this attack.  Therefore, QUIC receivers ignore
+ECN codepoints set in duplicate packets (see {{using-ecn}}).
 
 # IANA Considerations
 
