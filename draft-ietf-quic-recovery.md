@@ -464,26 +464,26 @@ ACK frame.
 
 ### Receiver Tracking of ACK Frames
 
-When a packet containing an ACK frame is sent, the largest acknowledged in
-that frame may be saved.  When a packet containing an ACK frame is
-acknowledged, the receiver can stop acknowledging packets less than or equal
-to the largest acknowledged in the sent ACK frame.
+When a packet containing an ACK frame is sent, the largest acknowledged in that
+frame may be saved.  When a packet containing an ACK frame is acknowledged, the
+receiver can stop acknowledging packets less than or equal to the largest
+acknowledged in the sent ACK frame.
 
-In cases without ACK frame loss, this algorithm allows for a minimum of
-1 RTT of reordering. In cases with ACK frame loss, this approach does not
-guarantee that every acknowledgement is seen by the sender before it is no
-longer included in the ACK frame. Packets could be received out of order
-and all subsequent ACK frames containing them could be lost. In this case,
-the loss recovery algorithm may cause spurious retransmits, but the sender
-will continue making forward progress.
+In cases without ACK frame loss, this algorithm allows for a minimum of 1 RTT of
+reordering. In cases with ACK frame loss, this approach does not guarantee that
+every acknowledgement is seen by the sender before it is no longer included in
+the ACK frame. Packets could be received out of order and all subsequent ACK
+frames containing them could be lost. In this case, the loss recovery algorithm
+may cause spurious retransmits, but the sender will continue making forward
+progress.
 
 ## Pseudocode
 
 ### Constants of interest
 
-Constants used in loss recovery are based on a combination of RFCs, papers,
-and common practice.  Some may need to be changed or negotiated in order to
-better suit a variety of environments.
+Constants used in loss recovery are based on a combination of RFCs, papers, and
+common practice.  Some may need to be changed or negotiated in order to better
+suit a variety of environments.
 
 kMaxTLPs (RECOMMENDED 2):
 : Maximum number of tail loss probes before an RTO fires.
@@ -579,13 +579,14 @@ loss_time:
 transmit or exceeding the reordering window in time.
 
 sent_packets:
+
 : An association of packet numbers to information about them, including a number
   field indicating the packet number, a time field indicating the time a packet
   was sent, a boolean indicating whether the packet is ack only, and a bytes
-  field indicating the packet's size.  sent_packets is ordered by packet
-  number, and packets remain in sent_packets until acknowledged or lost.
-  A sent_packets data structure is maintained per packet number space, and ACK
-  processing only applies to a single space.
+  field indicating the packet's size.  sent_packets is ordered by packet number,
+  and packets remain in sent_packets until acknowledged or lost.  A sent_packets
+  data structure is maintained per packet number space, and ACK processing only
+  applies to a single space.
 
 ### Initialization
 
