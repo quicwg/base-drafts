@@ -610,7 +610,7 @@ alert description into a QUIC error code.  The alert description is added to
 0x200 to produce a QUIC error code from the range reserved for CRYPTO_ERROR.
 The resulting value is sent in a QUIC CONNECTION_CLOSE frame.
 
-The alert level of all TLS alerts is "fatal", a TLS stack MUST NOT generate
+The alert level of all TLS alerts is "fatal"; a TLS stack MUST NOT generate
 alerts at the "warning" level.
 
 
