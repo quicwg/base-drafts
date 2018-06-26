@@ -2199,7 +2199,7 @@ before the packet is received.
 
 ### Immediate Close
 
-An endpoint sends a closing frame, (CONNECTION_CLOSE or APPLICATION_CLOSE) to
+An endpoint sends a closing frame (CONNECTION_CLOSE or APPLICATION_CLOSE) to
 terminate the connection immediately.  Any closing frame causes all streams to
 immediately become closed; open streams can be assumed to be implicitly reset.
 
