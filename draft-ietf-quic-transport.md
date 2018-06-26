@@ -329,14 +329,14 @@ DCIL and SCIL:
 Destination Connection ID:
 
 : The Destination Connection ID field follows the connection ID lengths and is
-  either 0 octets in length or between 4 and 18 octets. {{connection-id}}
-  describes the use of this field in more detail.
+  either 0 octets in length or between 4 and 18 octets.
+  {{connection-id-encoding}} describes the use of this field in more detail.
 
 Source Connection ID:
 
 : The Source Connection ID field follows the Destination Connection ID and is
-  either 0 octets in length or between 4 and 18 octets. {{connection-id}}
-  describes the use of this field in more detail.
+  either 0 octets in length or between 4 and 18 octets.
+  {{connection-id-encoding}} describes the use of this field in more detail.
 
 Length:
 
@@ -742,7 +742,7 @@ subsequent cryptographic handshake messages and acknowledgments to the server.
 The Destination Connection ID field in a Handshake packet contains a connection
 ID that is chosen by the recipient of the packet; the Source Connection ID
 includes the connection ID that the sender of the packet wishes to use (see
-{{connection-id}}).
+{{connection-id-encoding}}).
 
 The first Handshake packet sent by a server contains a packet number of 0.
 Handshake packets are their own packet number space.  Packet numbers are
@@ -787,7 +787,7 @@ The client can send 0-RTT packets after receiving an Initial
 packet does not complete the handshake.  Even if the client receives a
 different connection ID in the Handshake packet, it MUST continue to
 use the same Destination Connection ID for 0-RTT packets, see
-{{connection-id}}.
+{{connection-id-encoding}}.
 
 The version field for protected packets is the current QUIC version.
 
@@ -835,13 +835,13 @@ packets MAY either be discarded or buffered for later processing, just as if the
 packets were received out-of-order in separate datagrams.
 
 
-## Connection ID {#connection-id}
+## Connection ID Encoding
 
-A connection ID is used to ensure consistent routing of packets.  The long
-header contains two connection IDs: the Destination Connection ID is chosen by
-the recipient of the packet and is used to provide consistent routing; the
-Source Connection ID is used to set the Destination Connection ID used by the
-peer.
+A connection ID is used to ensure consistent routing of packets, as described in
+{{connection-id}}.  The long header contains two connection IDs: the Destination
+Connection ID is chosen by the recipient of the packet and is used to provide
+consistent routing; the Source Connection ID is used to set the Destination
+Connection ID used by the peer.
 
 During the handshake, packets with the long header are used to establish the
 connection ID that each endpoint uses.  Each endpoint uses the Source Connection
@@ -1050,17 +1050,69 @@ different IP or port at either endpoint, due to NAT rebinding or mobility, as
 described in {{migration}}.  Finally a connection may be terminated by either
 endpoint, as described in {{termination}}.
 
+## Connection ID
+
+Each connection is identified by a collection of identifiers assigned to it. A
+connection ID can be 0 octets in length (and thus unlikely to be unique), or
+between 4 and 18 octets (inclusive).  Connection IDs are selected independently
+in each direction.
+
+The primary function of a connection ID is to ensure that changes in addressing
+at lower protocol layers (UDP, IP, and below) don't cause packets for a QUIC
+connection to be delivered to the wrong endpoint.  Each endpoint selects
+connection IDs using an implementation-specific (and perhaps
+deployment-specific) method which will allow packets with that connection ID to
+be routed back to the endpoint and identified by the endpoint upon receipt.
+
+A zero-length connection ID MAY be used when the connection ID is not needed for
+routing and the address/port tuple of packets is sufficient to associate them to
+a connection. An endpoint whose peer has selected a zero-length connection ID
+MUST continue to use a zero-length connection ID for the lifetime of the
+connection and MUST NOT send packets from any other local address.
+
+When an endpoint has requested a non-zero-length connection ID, it will issue a
+series of connection IDs over the lifetime of a connection. The series of
+connection IDs issued by an endpoint is ordered, with the final connection ID
+selected during the handshake coming first.  Additional connection IDs are
+provided using the NEW_CONNECTION_ID frame ({{frame-new-connection-id}}), each
+with a specified sequence number.  The series of connection IDs issued SHOULD be
+contiguous, but might not appear to be upon receipt due to reordering or loss.
+
+Each connection ID MUST be used on only one local address. When packets are sent
+for the first time on a new local address, a new connection ID MUST be used with
+a higher sequence number than any connection ID previously used on any local
+address.  At any time, an endpoint MAY change to a new connection ID on a local
+address already in use.
+
+An endpoint MUST NOT send packets with a connection ID which has a lower
+sequence number than the highest sequence number of any connection ID ever sent
+or received on that local address.  This ensures that when an endpoint migrates
+to a new path or changes connection ID on an existing path, the packets will use
+a new connection ID in both directions.
+
+Implementations SHOULD ensure that peers have a connection ID with a matching
+sequence number available when changing to a new connection ID.  An
+implementation could do this by always supplying a corresponding connection ID
+to a peer for each connection ID received from that peer.k
+
+While endpoints select connection IDs as appropriate for their implementation,
+the connection ID MUST NOT include the unprotected sequence number.  Endpoints
+need to be able to recover the sequence number associated with each connection
+ID they generate without relying on information available to unaffiliate
+parties. A connection ID that encodes an unencrypted sequence number could be
+used to correlate connection IDs across network paths.
+
+
 ## Matching Packets to Connections {#packet-handling}
 
 Incoming packets are classified on receipt.  Packets can either be associated
 with an existing connection, or - for servers - potentially create a new
 connection.
 
-Hosts try to associate a packet with an existing connection. If the packet has
-a Destination Connection ID corresponding to an existing connection, QUIC
-processes that packet accordingly. Note that a NEW_CONNECTION_ID frame
-({{frame-new-connection-id}}) would associate more than one connection ID with a
-connection.
+Hosts try to associate a packet with an existing connection. If the packet has a
+Destination Connection ID corresponding to an existing connection, QUIC
+processes that packet accordingly. Note that more than one connection ID can be
+associated with a connection; see {{connection-id}}.
 
 If the Destination Connection ID is zero length and the packet matches the
 address/port tuple of a connection where the host did not require connection
@@ -1993,29 +2045,18 @@ restart the alarm for a longer period of time.
 Using a stable connection ID on multiple network paths allows a passive observer
 to correlate activity between those paths.  An endpoint that moves between
 networks might not wish to have their activity correlated by any entity other
-than their peer. The NEW_CONNECTION_ID message can be sent to provide an
-unlinkable connection ID for use in case a peer wishes to explicitly break
-linkability between two points of network attachment.
+than their peer, so different connection IDs are used when sending from
+different local addresses, as discussed in {{connection-id}}.
 
-An endpoint that does not require the use of a connection ID should not request
-that its peer use a connection ID.  Such an endpoint does not need to provide
-new connection IDs using the NEW_CONNECTION_ID frame.
+This eliminates the use of the connection ID for linking activity from
+the same connection on different networks.  Protection of packet numbers ensures
+that packet numbers cannot be used to correlate activity.  This does not prevent
+other properties of packets, such as timing and size, from being used to
+correlate activity.
 
-An endpoint might need to send packets on multiple networks without receiving
-any response from its peer.  To ensure that the endpoint is not linkable across
-each of these changes, a new connection ID is needed for each network.  To
-support this, multiple NEW_CONNECTION_ID messages are needed.
-
-Upon changing networks an endpoint MUST use a previously unused connection ID
-provided by its peer.  This eliminates the use of the connection ID for linking
-activity from the same connection on different networks.  Protection of packet
-numbers ensures that packet numbers cannot be used to correlate activity.  This
-does not prevent other properties of packets, such as timing and size, from
-being used to correlate activity.
-
-Clients MAY change connection ID at any time based on implementation-specific
-concerns.  For example, after a period of network inactivity NAT rebinding might
-occur when the client begins sending data again.
+Clients MAY move to a new connection ID at any time based on
+implementation-specific concerns.  For example, after a period of network
+inactivity NAT rebinding might occur when the client begins sending data again.
 
 A client might wish to reduce linkability by employing a new connection ID and
 source UDP port when sending traffic after a period of inactivity.  Changing the
@@ -2025,22 +2066,6 @@ migration are exercised even for clients that don't experience NAT rebindings or
 genuine migrations.  Changing port number can cause a peer to reset its
 congestion state (see {{migration-cc}}), so the port SHOULD only be changed
 infrequently.
-
-An endpoint that receives a successfully authenticated packet with a previously
-unused connection ID MUST use a new connection ID for any future packets it
-sends to that address.  To avoid changing connection IDs multiple times when
-packets arrive out of order, endpoints MUST change only in response to a packet
-that increases the largest received packet number.  Failing to do this could
-allow for use of that connection ID to link activity on new paths.  There is no
-need to move to a new connection ID if the address of a peer changes without
-also changing the connection ID.  If no new connection IDs are available, the
-endpoint MUST NOT send additional packets until a NEW_CONNECTION_ID frame is
-received.
-
-Implementations SHOULD ensure that peers have at least one unused connection ID
-available when changing the connection ID.  An implementation could do this by
-always supplying one or more new connection IDs in the packets sent under its
-own new connection ID.
 
 
 ## Server's Preferred Address {#preferred-address}
@@ -2769,6 +2794,8 @@ The NEW_CONNECTION_ID is as follows:
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                          Sequence (i)                       ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |   Length (8)  |          Connection ID (32..144)            ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                                                               |
@@ -2782,6 +2809,14 @@ The NEW_CONNECTION_ID is as follows:
 ~~~
 
 The fields are:
+
+Sequence:
+
+: A variable-length integer.  This value starts at 0 and increases by 1 for each
+  connection ID that is provided by the server.  The connection ID that is
+  assigned during the handshake is assumed to have a sequence of -1.  That is,
+  the value selected during the handshake comes immediately before the first
+  value that a server can send.
 
 Length:
 
