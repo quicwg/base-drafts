@@ -944,8 +944,8 @@ endpoint cannot send a frame of a type that is unknown to its peer.
 
 An extension to QUIC that wishes to use a new type of frame MUST first ensure
 that a peer is able to understand the frame.  An endpoint can use a transport
-parameter to signal its willingness to receive a new type of frame, or even
-multiple types of frame with the one transport parameter.
+parameter to signal its willingness to receive one or more extension frame types
+with the one transport parameter.
 
 An IANA registry is used to manage the assignment of frame types, see
 {{iana-frames}}.
