@@ -590,20 +590,20 @@ the state of all streams, including application state bound to those streams.
 
 ## HelloRetryRequest
 
-In TLS over TCP, the HelloRetryRequest feature ({{TLS13}; Section
+In TLS over TCP, the HelloRetryRequest feature ({{TLS13}, Section
 4.1.4) can be used to correct a client's incorrect KeyShare extension
 as well as for a stateless round-trip check. From the perspective of
 QUIC, this just looks like additional messages carried in the Initial
 encryption level. Although it is in principle possible to use this
 feature for address verification in QUIC, QUIC implementations SHOULD
-instead use the Retry feature ({{QUIC-TRANSPORT}}; Section 4.4.2)).
+instead use the Retry feature ({{QUIC-TRANSPORT}}, Section 4.4.2)).
 HelloRetryRequest is still used for incorrect key shares.
 
 
 ## TLS Errors
 
 If TLS experiences an error, it MUST generate an appropriate alert
-as defined in {{TLS13}}; Section 6) and then provide it to QUIC,
+as defined in {{TLS13}}, Section 6) and then provide it to QUIC,
 which sends the alert in a CRYPTO_CLOSE frame. All such alerts are
 "fatal" (see {{TLS13}}, Section 6.2.
 
@@ -626,7 +626,7 @@ the client's initial Destination Connection ID, as described in
 {{initial-secrets}}.
 
 The keys for the remaining encryption level are computed in the same
-fashion as the corresponding TLS keys (see {{TLS13}}; Section 7),
+fashion as the corresponding TLS keys (see {{TLS13}}, Section 7),
 except that the label for HKDF-Expand-Label uses the prefix "quic "
 rather than "tls13". The purpose of this change is to provide key
 separation between TLS and QUIC, so that TLS stacks can avoid
@@ -894,7 +894,7 @@ cannot be used until the endpoint has received and successfully decrypted a
 packet with a matching KEY_PHASE.
 
 A receiving endpoint detects an update when the KEY_PHASE bit doesn't match what
-it is expecting.  It creates a new secret (see {{TLS13}}; Section 7.2) and the
+it is expecting.  It creates a new secret (see {{TLS13}}, Section 7.2) and the
 corresponding read key and IV.  If the packet can be decrypted and authenticated
 using these values, then the keys it uses for packet protection are also
 updated.  The next packet sent by the endpoint will then use the new keys.
@@ -1037,7 +1037,7 @@ by an attacker.
 QUIC includes three defenses against this attack. First, the packet
 containing a ClientHello MUST be padded to a minimum size. Second, if
 responding to an unverified source address, the server is forbidden to
-send more than three UDP datagrams in its first flight ({{QUIC-TRANSPORT}};
+send more than three UDP datagrams in its first flight ({{QUIC-TRANSPORT}},
 Section 4.4.3). Finally, because acknowledgements of Handshake packets
 are authenticated, a blind attacker cannot forge them.
 Put together, these defenses limit the level of amplification.
