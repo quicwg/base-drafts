@@ -222,7 +222,7 @@ reordering of packets in the network.
 
 The RECOMMENDED initial value for kReorderingThreshold is 3.
 
-We derive this default from recommendations for TCP loss recovery {{?RFC5681}}
+We derive this recommendation from TCP loss recovery {{?RFC5681}}
 {{?RFC6675}}. It is possible for networks to exhibit higher degrees of
 reordering, causing a sender to detect spurious losses. Detecting spurious
 losses leads to unnecessary retransmissions and may result in degraded
@@ -423,7 +423,7 @@ QUIC SHOULD delay sending acknowledgements in response to packets,
 but MUST NOT excessively delay acknowledgements of packets containing
 non-ack frames.  Specifically, implementaions MUST attempt to
 enforce a maximum ack delay to avoid causing the peer spurious
-timeouts.  The default maximum ack delay in QUIC is 25ms.
+timeouts.  The RECOMMENDED maximum ack delay in QUIC is 25ms.
 
 An acknowledgement MAY be sent for every second full-sized packet,
 as TCP does {{?RFC5681}}, or may be sent less frequently, as long as
@@ -487,32 +487,32 @@ Constants used in loss recovery are based on a combination of RFCs, papers,
 and common practice.  Some may need to be changed or negotiated in order to
 better suit a variety of environments.
 
-kMaxTLPs (default 2):
+kMaxTLPs (RECOMMENDED 2):
 : Maximum number of tail loss probes before an RTO fires.
 
-kReorderingThreshold (default 3):
+kReorderingThreshold (RECOMMENDED 3):
 : Maximum reordering in packet number space before FACK style loss detection
   considers a packet lost.
 
-kTimeReorderingFraction (default 1/8):
+kTimeReorderingFraction (RECOMMENDED 1/8):
 : Maximum reordering in time space before time based loss detection considers
   a packet lost.  In fraction of an RTT.
 
-kUsingTimeLossDetection (default false):
+kUsingTimeLossDetection (RECOMMENDED false):
 : Whether time based loss detection is in use.  If false, uses FACK style
   loss detection.
 
-kMinTLPTimeout (default 10ms):
+kMinTLPTimeout (RECOMMENDED 10ms):
 : Minimum time in the future a tail loss probe alarm may be set for.
 
-kMinRTOTimeout (default 200ms):
+kMinRTOTimeout (RECOMMENDED 200ms):
 :  Minimum time in the future an RTO alarm may be set for.
 
-kDelayedAckTimeout (default 25ms):
+kDelayedAckTimeout (RECOMMENDED 25ms):
 : The length of the peer's delayed ack timer.
 
-kDefaultInitialRtt (default 100ms):
-: The default RTT used before an RTT sample is taken.
+kInitialRtt (RECOMMENDED 100ms):
+: The RTT used before an RTT sample is taken.
 
 ### Variables of interest
 
@@ -774,7 +774,7 @@ Pseudocode for SetLossDetectionAlarm follows:
     if (handshake packets are outstanding):
       // Handshake retransmission alarm.
       if (smoothed_rtt == 0):
-        alarm_duration = 2 * kDefaultInitialRtt
+        alarm_duration = 2 * kInitialRtt
       else:
         alarm_duration = 2 * smoothed_rtt
       alarm_duration = max(alarm_duration + max_ack_delay,
@@ -980,17 +980,17 @@ Constants used in congestion control are based on a combination of RFCs,
 papers, and common practice.  Some may need to be changed or negotiated
 in order to better suit a variety of environments.
 
-kDefaultMss (default 1460 bytes):
-: The default max packet size used for calculating default and minimum
+kInitialMss (RECOMMENDED 1460 bytes):
+: The max packet size is used for calculating initial and minimum
   congestion windows.
 
-kInitialWindow (default 10 * kDefaultMss):
-: Default limit on the amount of outstanding data in bytes.
+kInitialWindow (RECOMMENDED 10 * kInitialMss):
+: Limit on the initial amount of outstanding data in bytes.
 
-kMinimumWindow (default 2 * kDefaultMss):
-: Default minimum congestion window.
+kMinimumWindow (RECOMMENDED 2 * kInitialMss):
+: Minimum congestion window in bytes.
 
-kLossReductionFactor (default 0.5):
+kLossReductionFactor (RECOMMENDED 0.5):
 : Reduction in congestion window when a new loss event is detected.
 
 
@@ -1061,7 +1061,7 @@ acked_packet from sent_packets.
      else:
        // Congestion avoidance.
        congestion_window +=
-         kDefaultMss * acked_packet.bytes / congestion_window
+         kInitialMss * acked_packet.bytes / congestion_window
 ~~~
 
 ### On Packets Lost
