@@ -1703,7 +1703,7 @@ rate in response, as described in {{QUIC-RECOVERY}}.
 
 To use ECN, QUIC endpoints first determine whether a path and peer support ECN
 marking. Verifying the path occurs at the beginning of a connection and when the
-connection migrates to a new path ({{ecn-connection-migration}}).
+connection migrates to a new path (see {{migration}}).
 
 Each endpoint independently verifies and enables ECN for the path from it to the
 peer.
@@ -1869,6 +1869,7 @@ integrity protection against modification or falsification by clients.  Without
 integrity protection, malicious clients could generate or guess values for
 tokens that would be accepted by the server.  Only the server requires access to
 the integrity protection key for tokens.
+
 
 ## Path Validation {#migrate-validate}
 
@@ -3205,11 +3206,12 @@ data sent by the server protected by the 1-RTT keys.
 Endpoints SHOULD send acknowledgments for packets containing CRYPTO_HS
 frames with a reduced delay; see Section 3.5.1 of {{QUIC-RECOVERY}}.
 
+
 ## ACK_ECN Frame {#frame-ack-ecn}
 
-The ACK_ECN frame is used by an endpoint that supports ECN to acknowledge
-packets received with ECN codepoints of ECT(0), ECT(1), or CE in the packet's IP
-header.
+The ACK_ECN frame (type=0x20) is used by an endpoint that supports ECN to
+acknowledge packets received with ECN codepoints of ECT(0), ECT(1), or CE in the
+packet's IP header.
 
 ~~~
  0                   1                   2                   3
