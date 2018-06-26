@@ -551,7 +551,7 @@ provides some level of protection against off-path attackers.
 ### Initial Packet {#packet-initial}
 
 The Initial packet uses long headers with a type value of 0x7F.  It
-carries the first CRYPTO_HS frames sent by the client and server to
+carries the first CRYPTO frames sent by the client and server to
 perform key exchange, and may carry ACKs in either direction. The
 Initial packet is protected by Initial keys as described in
 {{QUIC-TLS}}.
@@ -591,13 +591,13 @@ A server sends its first Initial packet in response to a client Initial.  A
 server may send multiple Initial packets.  The cryptographic key exchange could
 require multiple round trips or retransmissions of this data.
 
-The payload of an Initial packet includes a CRYPTO_HS frame (or
+The payload of an Initial packet includes a CRYPTO frame (or
 frames) containing a cryptographic handshake message, ACK frames, or
-both. The first CRYPTO_HS frame sent always begins at an offset of 0
+both. The first CRYPTO frame sent always begins at an offset of 0
 (see {{handshake}}). The client's complete first message MUST fit in a
 single packet (see {{handshake}}). Note that if the server sends a
 HelloRetryRequest, the client will send a second Initial packet with a
-CRYPTO_HS frame with an offset starting at the end of the CRYPTO_HS
+CRYPTO frame with an offset starting at the end of the CRYPTO
 stream in the first Initial.
 
 #### Connection IDs
@@ -754,8 +754,8 @@ addresses can be verified through an address validation token
 (delivered via a Retry packet or a NEW_TOKEN frame) or by receiving
 any message from the client encrypted using the Handshake keys.
 
-The payload of this packet contains CRYPTO_HS frames and could contain PADDING,
-or ACK frames. Handshake packets MAY contain CONNECTION_CLOSE frames if the
+The payload of this packet contains CRYPTO frames and could contain PADDING, or
+ACK frames. Handshake packets MAY contain CONNECTION_CLOSE frames if the
 handshake is unsuccessful.
 
 
@@ -1034,7 +1034,7 @@ document.
 | 0x0e        | PATH_CHALLENGE    | {{frame-path-challenge}}    |
 | 0x0f        | PATH_RESPONSE     | {{frame-path-response}}     |
 | 0x10 - 0x17 | STREAM            | {{frame-stream}}            |
-| 0x18        | CRYPTO_HS         | {{frame-crypto}}            |
+| 0x18        | CRYPTO            | {{frame-crypto}}            |
 | 0x19        | NEW_TOKEN         | {{frame-new-token}}         |
 | 0x20        | ACK_ECN           | {{frame-ack-ecn}}           |
 {: #frame-types title="Frame Types"}
@@ -1284,7 +1284,7 @@ solicit a list of supported versions from a server.
 ## Cryptographic and Transport Handshake {#handshake}
 
 QUIC relies on a combined cryptographic and transport handshake to
-minimize connection establishment latency.  QUIC uses the CRYPTO_HS
+minimize connection establishment latency.  QUIC uses the CRYPTO
 frame {{frame-crypto}} to transmit the cryptographic handshake.  Version
 0x00000001 of QUIC uses TLS 1.3 as described in {{QUIC-TLS}}; a
 different QUIC version number could indicate that a different
@@ -1320,7 +1320,7 @@ handshake protocol:
   client can receive packets that are addressed with the transport address that
   is claimed by the client (see {{address-validation}})
 
-The initial CRYPTO_HS frame MUST be sent in a single packet.  Any
+The initial CRYPTO frame MUST be sent in a single packet.  Any
 second attempt that is triggered by address validation MUST also be
 sent within a single packet. This avoids having to reassemble a
 message from multiple packets.
@@ -1329,8 +1329,8 @@ The first client packet of the cryptographic handshake protocol MUST fit within
 a 1232 octet QUIC packet payload.  This includes overheads that reduce the space
 available to the cryptographic handshake protocol.
 
-The CRYPTO_HS frame can be sent in different packet number spaces.
-CRYPTO_HS frames in each packet number space carry a separate sequence
+The CRYPTO frame can be sent in different packet number spaces.
+CRYPTO frames in each packet number space carry a separate sequence
 of handshake data starting from an offset of 0.
 
 ## Example Handshake Flows
@@ -1342,7 +1342,7 @@ but some examples are provided here.
 Each line shows a QUIC packet with the packet type and packet
 number shown first, followed by the contents. So, for instance
 the first packet is of type Initial, with packet number 0, and
-contains a CRYPTO_HS frame carrying the ClientHello.
+contains a CRYPTO frame carrying the ClientHello.
 
 Note that multiple QUIC packets -- even of different encryption levels
 -- may be coalesced into a single UDP datagram (see
@@ -1355,14 +1355,14 @@ at the 1-RTT encryption level.
 ~~~~
 Client                                                  Server
 
-Initial[0]: CRYPTO_HS[CH] ->
+Initial[0]: CRYPTO[CH] ->
 
-                              Initial[0]: CRYPTO_HS[SH] ACK[0]
-                    Handshake[0]: CRYPTO_HS[EE, CERT, CV, FIN]
+                              Initial[0]: CRYPTO[SH] ACK[0]
+                    Handshake[0]: CRYPTO[EE, CERT, CV, FIN]
                                  <- 1-RTT[0]: STREAM[1, "..."]
 
 Initial[1]: ACK[0]
-Handshake[0]: CRYPTO_HS[FIN], ACK[0]
+Handshake[0]: CRYPTO[FIN], ACK[0]
 1-RTT[0]: STREAM[0, "..."], ACK[0] ->
 
                            1-RTT[1]: STREAM[55, "..."], ACK[0]
@@ -1381,16 +1381,16 @@ to increment from its 0-RTT packets.
 ~~~~
 Client                                                  Server
 
-Initial[0]: CRYPTO_HS[CH]
+Initial[0]: CRYPTO[CH]
 0-RTT[0]: STREAM[0, "..."] ->
 
-                              Initial[0]: CRYPTO_HS[SH] ACK[0]
-                     Handshake[0] CRYPTO_HS[EE, CERT, CV, FIN]
+                              Initial[0]: CRYPTO[SH] ACK[0]
+                     Handshake[0] CRYPTO[EE, CERT, CV, FIN]
                           <- 1-RTT[0]: STREAM[1, "..."] ACK[0]
 
 Initial[1]: ACK[0]
-0-RTT[1]: CRYPTO_HS[EOED]
-Handshake[0]: CRYPTO_HS[FIN], ACK[0]
+0-RTT[1]: CRYPTO[EOED]
+Handshake[0]: CRYPTO[FIN], ACK[0]
 1-RTT[2]: STREAM[0, "..."] ACK[0] ->
 
                          1-RTT[1]: STREAM[55, "..."], ACK[1,2]
@@ -3203,7 +3203,7 @@ unable to use these acknowledgments if the server cryptographic handshake
 messages are delayed or lost.  Note that the same limitation applies to other
 data sent by the server protected by the 1-RTT keys.
 
-Endpoints SHOULD send acknowledgments for packets containing CRYPTO_HS
+Endpoints SHOULD send acknowledgments for packets containing CRYPTO
 frames with a reduced delay; see Section 3.5.1 of {{QUIC-RECOVERY}}.
 
 
@@ -3406,17 +3406,17 @@ advised to bundle as few streams as necessary in outgoing packets without losing
 transmission efficiency to underfilled packets.
 
 
-## CRYPTO_HS Frame {#frame-crypto}
+## CRYPTO Frame {#frame-crypto}
 
-The CRYPTO_HS frame (type=0x18) is used to transmit cryptographic
-handshake messages. It can be sent in all packet types. The CRYPTO_HS
+The CRYPTO frame (type=0x18) is used to transmit cryptographic
+handshake messages. It can be sent in all packet types. The CRYPTO
 frame offers the cryptographic protocol an in-order stream of bytes.
-CRYPTO_HS frames are functionally identical to STREAM frames, except
+CRYPTO frames are functionally identical to STREAM frames, except
 that they do not bear a stream identifier; they are not flow
 controlled; and they do not carry markers for optional offset,
 optional length, and the end of the stream.
 
-A CRYPTO_HS frame is shown below.
+A CRYPTO frame is shown below.
 
 ~~~
  0                   1                   2                   3
@@ -3429,19 +3429,19 @@ A CRYPTO_HS frame is shown below.
 |                        Crypto Data (*)                      ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
-{: #crypto-format title="CRYPTO_HS Frame Format"}
+{: #crypto-format title="CRYPTO Frame Format"}
 
-The CRYPTO_HS frame contains the following fields:
+The CRYPTO frame contains the following fields:
 
 Offset:
 
 : A variable-length integer specifying the byte offset in the stream for the
-  data in this CRYPTO_HS frame.
+  data in this CRYPTO frame.
 
 Length:
 
 : A variable-length integer specifying the length of the Crypto Data field in
-  this CRYPTO_HS frame.
+  this CRYPTO frame.
 
 Crypto Data:
 
@@ -3449,13 +3449,13 @@ Crypto Data:
 
 There is a separate flow of cryptographic handshake data in each
 encryption level, each of which starts at an offset of 0. This implies
-that each encryption level is treated as a separate CRYPTO_HS stream
+that each encryption level is treated as a separate CRYPTO stream
 of data.
 
 Unlike STREAM frames, which include a Stream ID indicating to which
-stream the data belongs, the CRYPTO_HS frame carries data for a single
+stream the data belongs, the CRYPTO frame carries data for a single
 stream per encryption level. The stream does not have an explicit
-end, so CRYPTO_HS frames do not have a FIN bit.
+end, so CRYPTO frames do not have a FIN bit.
 
 
 # Packetization and Reliability {#packetization}
@@ -3506,7 +3506,7 @@ been lost.  In general, information is sent again when a packet containing that
 information is determined to be lost and sending ceases when a packet
 containing that information is acknowledged.
 
-* Data sent in CRYPTO_HS frames are retransmitted according to the
+* Data sent in CRYPTO frames are retransmitted according to the
   rules in {{QUIC-RECOVERY}}, until either all data has been
   acknowledged or the crypto state machine implictly knows that the
   peer received the data.
@@ -4145,7 +4145,7 @@ the protocol functions efficiently.  That is, prioritizing frames other than
 STREAM frames ensures that loss recovery, congestion control, and flow control
 operate effectively.
 
-CRYPTO_HS frames SHOULD be prioritized over other streams prior to the
+CRYPTO frames SHOULD be prioritized over other streams prior to the
 completion of the cryptographic handshake.  This includes the
 retransmission of the second flight of client handshake messages, that
 is, the TLS Finished and any client authentication messages.
@@ -4316,9 +4316,9 @@ errors is not mandatory, but only because requiring that an endpoint generate
 these errors also means that the endpoint needs to maintain the final offset
 state for closed streams, which could mean a significant state commitment.
 
-## Flow control of CRYPTO_HS data {#flow-control-crypto}
+## Flow control of CRYPTO data {#flow-control-crypto}
 
-Data sent in CRYPTO_HS frames is not flow controlled in the same way as STREAM
+Data sent in CRYPTO frames is not flow controlled in the same way as STREAM
 frames.  QUIC relies on the cryptographic protocol implementation to avoid
 excessive buffering of data, see {{QUIC-TLS}}.  The implementation SHOULD
 provide an interface to QUIC to tell it about its buffering limits so that there
@@ -4464,7 +4464,7 @@ INVALID_MIGRATION (0xC):
 : A peer has migrated to a different network when the endpoint had disabled
   migration.
 
-CRYPTO_ERROR (0x2XX):
+CRYPTO_ERROR (0x1XX):
 
 : The cryptographic handshake failed.  A range of 256 values is reserved for
   carrying error codes specific to the cryptographic handshake that is used.
@@ -4797,7 +4797,7 @@ Issue and pull request numbers are listed with a leading octothorp.
 ## Since draft-ietf-quic-transport-12
 
 - Enable server to transition connections to a preferred address (#560,#1251).
-- Moved the cryptographic handshake off stream 0 and into CRYPTO_HS frames.
+- Moved the cryptographic handshake off stream 0 and into CRYPTO frames.
 - Move stateless retry to the QUIC layer.
 - Added token fields to Initial packet header.
 - Added NEW_TOKEN frame.

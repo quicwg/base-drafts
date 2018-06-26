@@ -111,7 +111,7 @@ important to the loss detection and congestion control machinery below.
 * Retransmittable packets are those that contain at least one
   retransmittable frame.
 
-* Crypto handshake data is sent in CRYPTO_HS frames, and uses the reliability
+* Crypto handshake data is sent in CRYPTO frames, and uses the reliability
   machinery of QUIC underneath.
 
 * ACK and ACK_ECN frames contain acknowledgment information. ACK_ECN frames
@@ -282,9 +282,9 @@ and Retransmission Timeout mechanisms.
 
 ### Crypto Handshake Timeout
 
-Data in CRYPTO_HS frames is critical to QUIC transport and crypto negotiation,
+Data in CRYPTO frames is critical to QUIC transport and crypto negotiation,
 so a more aggressive timeout is used to retransmit it.  Below, the word
-handshake packet is used to refer to packets containing CRYPTO_HS frames,
+handshake packet is used to refer to packets containing CRYPTO frames,
 not packets with the specific long header packet type Handshake.
 
 The initial handshake timeout SHOULD be set to twice the initial RTT.
@@ -296,16 +296,16 @@ connection's final smoothed RTT value as the resumed connection's initial RTT.
 If no previous RTT is available, or if the network changes, the initial RTT
 SHOULD be set to 100ms.
 
-When CRYPTO_HS frames are sent, the sender SHOULD set an alarm for the
+When CRYPTO frames are sent, the sender SHOULD set an alarm for the
 handshake timeout period.  When the alarm fires, the sender MUST retransmit
-all unacknowledged CRYPTO_HS data by calling
+all unacknowledged CRYPTO data by calling
 RetransmitAllUnackedHandshakeData(). On each consecutive firing of the
 handshake alarm without receiving an acknowledgement for a new packet,
 the sender SHOULD double the handshake timeout and set an alarm for this
 period.
 
-When CRYPTO_HS frames are outstanding, the TLP and RTO timers are not active
-unless the CRYPTO_HS frames were sent at 1RTT encryption.
+When CRYPTO frames are outstanding, the TLP and RTO timers are not active
+unless the CRYPTO frames were sent at 1RTT encryption.
 
 When an acknowledgement is received for a handshake packet, the new RTT is
 computed and the alarm SHOULD be set for twice the newly computed smoothed RTT.
@@ -547,7 +547,7 @@ time_of_last_sent_retransmittable_packet:
 : The time the most recent retransmittable packet was sent.
 
 time_of_last_sent_handshake_packet:
-: The time the most recent packet containing a CRYPTO_HS frame was sent.
+: The time the most recent packet containing a CRYPTO frame was sent.
 
 largest_sent_packet:
 : The packet number of the most recently sent packet.

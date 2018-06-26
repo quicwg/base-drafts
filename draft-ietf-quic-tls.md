@@ -304,7 +304,7 @@ as QUIC STREAM frames which are then carried in QUIC packets.
 
 # Carrying TLS Messages {#carrying-tls}
 
-QUIC carries TLS handshake data in CRYPTO_HS frames, each of which
+QUIC carries TLS handshake data in CRYPTO frames, each of which
 consists of a contiguous block of handshake data identified by an
 offset and length. Those frames are packaged into QUIC packets
 and encrypted under the current TLS encryption level.
@@ -316,7 +316,7 @@ retransmit that data, it MUST use the same keys even if TLS has already
 updated to newer keys.
 
 One important difference between TLS 1.3 records (used with TCP)
-and QUIC CRYPTO_HS frames is that in QUIC multiple frames may appear
+and QUIC CRYPTO frames is that in QUIC multiple frames may appear
 in the same QUIC packet as long as they are associated with the
 same encryption level. For instance, an implementation might
 bundle a Handshake message and an ACK for some Handshake
@@ -328,9 +328,15 @@ associated with establishing the connection can usually appear at any
 encryption level, whereas those associated with transferring data can
 only appear in the 0-RTT and 1-RTT encryption levels
 
+<<<<<<< HEAD
 - CRYPTO_HS frames MAY appear in packets of any encryption level.
 - CONNECTION_CLOSE MAY appear in packets of any encryption level other than
   0-RTT.
+=======
+- CRYPTO frames MAY appear in packets of any encryption level.
+- CONNECTION_CLOSE and CRYPTO_CLOSE MAY appear in packets of any
+  encryption level other than 0-RTT.
+>>>>>>> Rename CRYPTO_HS to CRYPTO
 - PADDING and PING frames MAY appear in packets of any encryption level.
 - ACK frames MAY appear in packets of any encryption level other than
   0-RTT, but can only acknowledge packets which appeared in that
@@ -386,12 +392,12 @@ handshake octets.
 At any given time, the TLS stack at an endpoint will have a current sending
 encryption level and receiving encryption level. Each encryption level is
 associated with a different flow of bytes, which is reliably
-transmitted to the peer in CRYPTO_HS frames. When TLS provides handshake
+transmitted to the peer in CRYPTO frames. When TLS provides handshake
 octets to be sent, they are appended to the current flow and any packet
-that includes the CRYPTO_HS frame is protected using keys from the
+that includes the CRYPTO frame is protected using keys from the
 corresponding encryption level.
 
-When an endpoint receives a QUIC packet containing a CRYPTO_HS frame from
+When an endpoint receives a QUIC packet containing a CRYPTO frame from
 the network, it proceeds as follows:
 
 - If the packet was in the TLS receiving encryption level, sequence
@@ -428,7 +434,7 @@ data is that the server might wish to provide additional or updated session
 tickets to a client.
 
 When the handshake is complete, QUIC only needs to provide TLS with any data
-that arrives in CRYPTO_HS streams.  In the same way that is done during the
+that arrives in CRYPTO streams.  In the same way that is done during the
 handshake, new data is requested from TLS after providing received data.
 
 Important:
@@ -460,7 +466,7 @@ ClientHello message, a TLS server might signal that 0-RTT keys are available.
 
 Note that although TLS only uses one encryption level at a time, QUIC
 may use more than one level. For instance, after sending its Finished
-message (using a CRYPTO_HS frame in Handshake encryption) may send STREAM
+message (using a CRYPTO frame in Handshake encryption) may send STREAM
 data (in 1-RTT encryption). However, if the Finished is lost, the client
 would have to retransmit the Finished, in which case it would use
 Handshake encryption.
@@ -607,7 +613,7 @@ Section 6 of {{TLS13}}.
 
 A TLS alert is turned into a QUIC connection error by converting the one-octet
 alert description into a QUIC error code.  The alert description is added to
-0x200 to produce a QUIC error code from the range reserved for CRYPTO_ERROR.
+0x100 to produce a QUIC error code from the range reserved for CRYPTO_ERROR.
 The resulting value is sent in a QUIC CONNECTION_CLOSE frame.
 
 The alert level of all TLS alerts is "fatal"; a TLS stack MUST NOT generate
