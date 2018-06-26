@@ -487,31 +487,31 @@ Constants used in loss recovery are based on a combination of RFCs, papers,
 and common practice.  Some may need to be changed or negotiated in order to
 better suit a variety of environments.
 
-kMaxTLPs (recommended 2):
+kMaxTLPs (RECOMMENDED 2):
 : Maximum number of tail loss probes before an RTO fires.
 
-kReorderingThreshold (recommended 3):
+kReorderingThreshold (RECOMMENDED 3):
 : Maximum reordering in packet number space before FACK style loss detection
   considers a packet lost.
 
-kTimeReorderingFraction (recommended 1/8):
+kTimeReorderingFraction (RECOMMENDED 1/8):
 : Maximum reordering in time space before time based loss detection considers
   a packet lost.  In fraction of an RTT.
 
-kUsingTimeLossDetection (recommended false):
+kUsingTimeLossDetection (RECOMMENDED false):
 : Whether time based loss detection is in use.  If false, uses FACK style
   loss detection.
 
-kMinTLPTimeout (recommended 10ms):
+kMinTLPTimeout (RECOMMENDED 10ms):
 : Minimum time in the future a tail loss probe alarm may be set for.
 
-kMinRTOTimeout (recommended 200ms):
+kMinRTOTimeout (RECOMMENDED 200ms):
 :  Minimum time in the future an RTO alarm may be set for.
 
-kDelayedAckTimeout (recommended 25ms):
+kDelayedAckTimeout (RECOMMENDED 25ms):
 : The length of the peer's delayed ack timer.
 
-kInitialRtt (recommended 100ms):
+kInitialRtt (RECOMMENDED 100ms):
 : The RTT used before an RTT sample is taken.
 
 ### Variables of interest
@@ -980,17 +980,17 @@ Constants used in congestion control are based on a combination of RFCs,
 papers, and common practice.  Some may need to be changed or negotiated
 in order to better suit a variety of environments.
 
-kInitialMss (recommended 1460 bytes):
+kInitialMss (RECOMMENDED 1460 bytes):
 : The max packet size is used for calculating initial and minimum
   congestion windows.
 
-kInitialWindow (recommended 10 * kInitialMss):
+kInitialWindow (RECOMMENDED 10 * kInitialMss):
 : Limit on the initial amount of outstanding data in bytes.
 
-kMinimumWindow (recommended 2 * kInitialMss):
+kMinimumWindow (RECOMMENDED 2 * kInitialMss):
 : Minimum congestion window in bytes.
 
-kLossReductionFactor (recommended 0.5):
+kLossReductionFactor (RECOMMENDED 0.5):
 : Reduction in congestion window when a new loss event is detected.
 
 
