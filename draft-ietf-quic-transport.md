@@ -1093,7 +1093,7 @@ a new connection ID in both directions.
 Implementations SHOULD ensure that peers have a connection ID with a matching
 sequence number available when changing to a new connection ID.  An
 implementation could do this by always supplying a corresponding connection ID
-to a peer for each connection ID received from that peer.k
+to a peer for each connection ID received from that peer.
 
 While endpoints select connection IDs as appropriate for their implementation,
 the connection ID MUST NOT include the unprotected sequence number.  Endpoints
