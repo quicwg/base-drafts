@@ -329,8 +329,8 @@ encryption level, whereas those associated with transferring data can
 only appear in the 0-RTT and 1-RTT encryption levels
 
 - CRYPTO_HS frames MAY appear in packets of any encryption level.
-- CONNECTION_CLOSE and CRYPTO_CLOSE MAY appear in packets of any
-  encryption level other than 0-RTT.
+- CONNECTION_CLOSE MAY appear in packets of any encryption level other than
+  0-RTT.
 - PADDING and PING frames MAY appear in packets of any encryption level.
 - ACK frames MAY appear in packets of any encryption level other than
   0-RTT, but can only acknowledge packets which appeared in that
@@ -602,10 +602,16 @@ HelloRetryRequest is still used for incorrect key shares.
 
 ## TLS Errors
 
-If TLS experiences an error, it MUST generate an appropriate alert
-as defined in {{TLS13}}; Section 6) and then provide it to QUIC,
-which sends the alert in a CRYPTO_CLOSE frame. All such alerts are
-"fatal" (see {{TLS13}}, Section 6.2.
+If TLS experiences an error, it generates an appropriate alert as defined in
+Section 6 of {{TLS13}}.
+
+A TLS alert is turned into a QUIC connection error by converting the alert
+description into a QUIC error code.  The alert description is added to 0x200 to
+produce a QUIC error code from the range reserved for CRYPTO_ERROR.  The
+resulting value is sent in a QUIC CONNECTION_CLOSE frame.
+
+The alert level of all TLS alerts is "fatal", a TLS stack does not generate
+alerts at the "warning" level.
 
 
 # QUIC Packet Protection {#packet-protection}
