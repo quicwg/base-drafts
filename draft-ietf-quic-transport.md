@@ -938,7 +938,7 @@ a connection error of type PROTOCOL_VIOLATION.
 ## Extension Frames
 
 QUIC frames do not use a self-describing encoding.  An endpoint therefore needs
-to understand the syntax of all frame before it can successfully process a
+to understand the syntax of all frames before it can successfully process a
 packet.  This allows for efficient encoding of frames, but it means that an
 endpoint cannot send a frame of a type that is unknown to its peer.
 
@@ -2372,7 +2372,8 @@ Error Code:
 
 Frame Type:
 
-: The type of frame that triggered the error.
+: The type of frame that triggered the error.  A value of 0 (equivalent to the
+  mention of the PADDING frame) is used when the frame type is unknown.
 
 Reason Phrase Length:
 
@@ -2842,7 +2843,7 @@ ACK block that follows the gap using the following formula:
 
 If the calculated value for largest or smallest packet number for any ACK Block
 is negative, an endpoint MUST generate a connection error of type
-FRAME_FORMAT_ERROR indicating an error in an ACK frame.
+FRAME_ENCODING_ERROR indicating an error in an ACK frame.
 
 The fields in the ACK Block Section are:
 
@@ -4048,13 +4049,11 @@ FINAL_OFFSET_ERROR (0x6):
   that was already received.  Or an endpoint received a RST_STREAM frame
   containing a different final offset to the one already established.
 
-FRAME_FORMAT_ERROR (0x7):
+FRAME_ENCODING_ERROR (0x7):
 
 : An endpoint received a frame that was badly formatted.  For instance, an empty
   STREAM frame that omitted the FIN flag, or an ACK frame that has more
-  acknowledgment ranges than the remainder of the packet could carry.  This is a
-  generic error code; an endpoint SHOULD use the more specific frame format
-  error codes (0x1XX) if possible.
+  acknowledgment ranges than the remainder of the packet could carry.
 
 TRANSPORT_PARAMETER_ERROR (0x8):
 
@@ -4362,7 +4361,8 @@ Specification:
 
 : A reference to a publicly available specification for the value.
 
-The initial contents of this registry are shown in {{iana-error-table}}.
+The initial contents of this registry are shown in {{iana-error-table}}.  Values
+from 0xFF00 to 0xFFFF are reserved for Private Use {{!RFC8126}}.
 
 | Value | Error                     | Description                   | Specification   |
 |:------|:--------------------------|:------------------------------|:----------------|
@@ -4373,7 +4373,7 @@ The initial contents of this registry are shown in {{iana-error-table}}.
 | 0x4   | STREAM_ID_ERROR           | Invalid stream ID             | {{error-codes}} |
 | 0x5   | STREAM_STATE_ERROR        | Frame received in invalid stream state | {{error-codes}} |
 | 0x6   | FINAL_OFFSET_ERROR        | Change to final stream offset | {{error-codes}} |
-| 0x7   | FRAME_FORMAT_ERROR        | Generic frame format error    | {{error-codes}} |
+| 0x7   | FRAME_ENCODING_ERROR      | Frame encoding error          | {{error-codes}} |
 | 0x8   | TRANSPORT_PARAMETER_ERROR | Error in transport parameters | {{error-codes}} |
 | 0x9   | VERSION_NEGOTIATION_ERROR | Version negotiation failure   | {{error-codes}} |
 | 0xA   | PROTOCOL_VIOLATION        | Generic protocol violation    | {{error-codes}} |
