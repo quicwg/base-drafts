@@ -894,7 +894,7 @@ in {{tlp}} and {{rto}}.
 If a path has been verified to support ECN, QUIC treats a Congestion Experienced
 codepoint in the IP header as a signal of congestion. This document specifies an
 endpoint's response when its peer receives packets with the Congestion
-Experienced codepoint.  As discussed in {!RFC8311}, endpoints are permitted to
+Experienced codepoint.  As discussed in {{!RFC8311}}, endpoints are permitted to
 experiment with other response functions.
 
 ## Slow Start
@@ -1072,11 +1072,13 @@ Invoked from ProcessECN and OnPacketLost when a new congestion event is
 detected. Starts a new recovery period and reduces the congestion window.
 
 ~~~
-   NewCongestionEvent():
-     // Start a new congestion epoch
-     end_of_recovery = largest_sent_packet
-     congestion_window *= kMarkReductionFactor
-     congestion_window = max(congestion_window, kMinimumWindow)
+   CongestionEvent(packet_number):
+     // Start a new congestion event if packet_number
+     // is larger than the end of the previous recovery epoch.
+     if (!InRecovery(packet_number)):
+       end_of_recovery = largest_sent_packet
+       congestion_window *= kMarkReductionFactor
+       congestion_window = max(congestion_window, kMinimumWindow)
 ~~~
 
 ### Process ECN Information
@@ -1089,10 +1091,9 @@ Invoked when an ACK_ECN frame is received from the peer.
      // this could be a new congestion event.
      if (ack.ce_counter > ecn_ce_counter):
        ecn_ce_counter = ack.ce_counter
-       // Start a new recovery epoch if the largest acked packet
+       // Start a new congestion event if the largest acked packet
        // is larger than the end of the previous recovery epoch.
-       if (!InRecovery(ack.largest_acked_packet)):
-         NewCongestionEvent()
+       CongestionEvent(ack.largest_acked_packet)
 ~~~
 
 
@@ -1107,10 +1108,10 @@ are detected lost.
      for (lost_packet : lost_packets):
        bytes_in_flight -= lost_packet.bytes
      largest_lost_packet = lost_packets.last()
-     // Start a new recovery epoch if the lost packet is larger
-     // than the end of the previous recovery epoch.
-     if (!InRecovery(packet_number)):
-       NewCongestionEvent()
+
+     // Start a new congestion epoch if the largest lost packet
+     // is larger than the end of the previous recovery epoch.
+     CongestionEvent(largest_lost_packet.packet_number)
 ~~~
 
 ### On Retransmission Timeout Verified
