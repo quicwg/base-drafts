@@ -1086,12 +1086,21 @@ address already in use.
 
 An endpoint MUST NOT send packets with a connection ID which has a lower
 sequence number than the highest sequence number of any connection ID ever sent
-or received on that local address.
+or received on that local address.  This ensures that when an endpoint migrates
+to a new path or changes connection ID on an existing path, the packets will use
+a new connection ID in both directions.
 
 Implementations SHOULD ensure that peers have a connection ID with a matching
 sequence number available when changing to a new connection ID.  An
 implementation could do this by always supplying a corresponding connection ID
-to a peer for each connection ID received from that peer.
+to a peer for each connection ID received from that peer.k
+
+While endpoints select connection IDs as appropriate for their implementation,
+the connection ID MUST NOT include the unprotected sequence number.  Endpoints
+need to be able to recover the sequence number associated with each connection
+ID they generate without relying on information available to unaffiliate
+parties. A connection ID that encodes an unencrypted sequence number could be
+used to correlate connection IDs across network paths.
 
 
 ## Matching Packets to Connections {#packet-handling}
