@@ -1395,6 +1395,7 @@ language from Section 3 of {{!I-D.ietf-tls-tls13}}.
       stateless_reset_token(6),
       ack_delay_exponent(7),
       initial_max_uni_streams(8),
+      disable_migration(9),
       (65535)
    } TransportParameterId;
 
@@ -1511,6 +1512,13 @@ ack_delay_exponent (0x0007):
   default value of 3 is assumed (indicating a multiplier of 8).  The default
   value is also used for ACK frames that are sent in Initial and Handshake
   packets.  Values above 20 are invalid.
+
+disable_migration (0x0009):
+
+: The endpoint does not support connection migration ({{migration}}). Peers MUST
+  NOT send any packets, including probing packets ({{probing}}), from a local
+  address other than that used to perform the handshake.  This parameter is a
+  zero-length value.
 
 A server MAY include the following transport parameters:
 
@@ -1878,7 +1886,15 @@ network.  This section describes the process by which an endpoint migrates to a
 new address.
 
 An endpoint MUST NOT initiate connection migration before the handshake is
-finished and the endpoint has 1-RTT keys.
+finished and the endpoint has 1-RTT keys.  An endpoint also MUST NOT initiate
+connection migration if the peer sent the `disable_migration` transport
+parameter during the handshake.  An endpoint which has sent this transport
+parameter, but detects that a peer has nonetheless migrated to a different
+network MAY treat this as a connection error of type INVALID_MIGRATION. However,
+note that not all changes of peer address are intentional migrations. The peer
+could experience an unintended change of address due to NAT rebinding; endpoints
+SHOULD perform path validation ({{migrate-validate}}) if the rebinding does not
+cause the connection to fail.
 
 This document limits migration of connections to new client addresses, except as
 described in {{preferred-address}}. Clients are responsible for initiating all
@@ -4315,6 +4331,11 @@ UNSOLICITED_PATH_RESPONSE (0xB):
 : An endpoint received a PATH_RESPONSE frame that did not correspond to any
   PATH_CHALLENGE frame that it previously sent.
 
+INVALID_MIGRATION (0xC):
+
+: A peer has migrated to a different network when the endpoint had disabled
+  migration.
+
 FRAME_ERROR (0x1XX):
 
 : An endpoint detected an error in a specific frame type.  The frame type is
@@ -4581,6 +4602,7 @@ the range from 0xFE00 to 0xFFFF.
 | 0x9         | VERSION_NEGOTIATION_ERROR | Version negotiation failure   | {{error-codes}} |
 | 0xA         | PROTOCOL_VIOLATION        | Generic protocol violation    | {{error-codes}} |
 | 0xB         | UNSOLICITED_PATH_RESPONSE | Unsolicited PATH_RESPONSE frame | {{error-codes}} |
+| 0xC         | INVALID_MIGRATION         | Violated disabled migration   | {{error-codes}} |
 | 0x100-0x1FF | FRAME_ERROR               | Specific frame format error   | {{error-codes}} |
 {: #iana-error-table title="Initial QUIC Transport Error Codes Entries"}
 
