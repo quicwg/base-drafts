@@ -32,14 +32,6 @@ jobs:
           paths:
             - ~/.cache/xml2rfc
 
-      # Create and store artifacts
-      - run:
-          name: "Create Artifacts"
-          command: "make artifacts CI_ARTIFACTS=/tmp/artifacts"
-
-      - store_artifacts:
-          path: /tmp/artifacts
-
       # Update editor's copy on gh-pages
       - run:
           name: "Update GitHub Pages"
@@ -60,6 +52,15 @@ jobs:
       - run:
           name: "Save GitHub Issues"
           command: "make issues || make issues DISABLE_ISSUE_FETCH=true && make gh-issues"
+
+      # Create and store artifacts
+      - run:
+          name: "Create Artifacts"
+          command: "make artifacts CI_ARTIFACTS=/tmp/artifacts"
+
+      - store_artifacts:
+          path: /tmp/artifacts
+
 
 workflows:
   version: 2

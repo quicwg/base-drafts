@@ -329,14 +329,14 @@ DCIL and SCIL:
 Destination Connection ID:
 
 : The Destination Connection ID field follows the connection ID lengths and is
-  either 0 octets in length or between 4 and 18 octets. {{connection-id}}
-  describes the use of this field in more detail.
+  either 0 octets in length or between 4 and 18 octets.
+  {{connection-id-encoding}} describes the use of this field in more detail.
 
 Source Connection ID:
 
 : The Source Connection ID field follows the Destination Connection ID and is
-  either 0 octets in length or between 4 and 18 octets. {{connection-id}}
-  describes the use of this field in more detail.
+  either 0 octets in length or between 4 and 18 octets.
+  {{connection-id-encoding}} describes the use of this field in more detail.
 
 Length:
 
@@ -536,66 +536,170 @@ process.
 
 Once version negotiation is complete, the cryptographic handshake is used to
 agree on cryptographic keys.  The cryptographic handshake is carried in Initial
-({{packet-initial}}), Retry ({{packet-retry}}) and Handshake
-({{packet-handshake}}) packets.
+({{packet-initial}}) and Handshake ({{packet-handshake}}) packets.
 
 All these packets use the long header and contain the current QUIC version in
 the version field.
 
-In order to prevent tampering by version-unaware middleboxes, handshake packets
-are protected with a connection- and version-specific key, as described in
-{{QUIC-TLS}}. This protection does not provide confidentiality or integrity
-against on-path attackers, but provides some level of protection against
-off-path attackers.
+In order to prevent tampering by version-unaware middleboxes, Initial
+packets are protected with connection- and version-specific keys
+(Initial keys) as described in {{QUIC-TLS}}.  This protection does not
+provide confidentiality or integrity against on-path attackers, but
+provides some level of protection against off-path attackers.
 
 
 ### Initial Packet {#packet-initial}
 
-The Initial packet uses long headers with a type value of 0x7F.  It carries the
-first cryptographic handshake message sent by the client.
+The Initial packet uses long headers with a type value of 0x7F.  It
+carries the first CRYPTO_HS frames sent by the client and server to
+perform key exchange, and may carry ACKs in either direction. The
+Initial packet is protected by Initial keys as described in
+{{QUIC-TLS}}.
 
-If the client has not previously received a Retry packet from the server, it
-populates the Destination Connection ID field with a randomly selected value.
-This MUST be at least 8 octets in length.  Until a packet is received from the
-server, the client MUST use the same random value unless it also changes the
-Source Connection ID (which effectively starts a new connection attempt).  The
-randomized Destination Connection ID is used to determine packet protection
-keys.
+The Initial packet has two additional header fields that follow the normal Long
+Header.
 
-If the client received a Retry packet and is sending a second Initial packet,
-then it sets the Destination Connection ID to the value from the Source
-Connection ID in the Retry packet.  Changing Destination Connection ID also
-results in a change to the keys used to protect the Initial packet.
+~~~
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                      Token Length (i)  ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                            Token (*)                        ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~
+
+Token Length:
+
+: A variable-length integer specifying the length of the Token field, in bytes.
+  It may be zero if no token is present. Initial packets sent by the server
+  MUST include a zero-length token.
+
+Token:
+
+: An optional token blob previously received in either a Retry packet or
+  NEW_TOKEN frame.
+
+The client and server use the Initial packet type for any packet that
+contains an initial cryptographic handshake message. In addition to
+the first packet(s). This includes all cases where a new packet
+containing the initial cryptographic message needs to be created, such
+as the packets sent after receiving a Version Negotiation
+({{packet-version}}) or Retry packet ({{packet-retry}}).
+
+A server sends its first Initial packet in response to a client Initial.  A
+server may send multiple Initial packets.  The cryptographic key exchange could
+require multiple round trips or retransmissions of this data.
+
+The payload of an Initial packet includes a CRYPTO_HS frame (or
+frames) containing a cryptographic handshake message, ACK frames, or
+both. The first CRYPTO_HS frame sent always begins at an offset of 0
+(see {{handshake}}). The client's complete first message MUST fit in a
+single packet (see {{handshake}}). Note that if the server sends a
+HelloRetryRequest, the client will send a second Initial packet with a
+CRYPTO_HS frame with an offset starting at the end of the CRYPTO_HS
+stream in the first Initial.
+
+#### Connection IDs
+
+When an Initial packet is sent by a client which has not previously
+received a Retry packet from the server, it populates the Destination
+Connection ID field with an unpredictable value.  This MUST be at
+least 8 octets in length. Until a packet is received from the server,
+the client MUST use the same value unless it abandons the connection
+attempt and starts a new one. The initial Destination Connection ID is
+used to determine packet protection keys for Initial packets.
 
 The client populates the Source Connection ID field with a value of its choosing
 and sets the SCIL field to match.
 
-The first Initial packet that is sent by a client contains a packet number of 0.
-All subsequent packets contain a packet number that is incremented by at least
-one, see ({{packet-numbers}}).
+The Destination Connection ID field in the server's Initial packet
+contains a connection ID that is chosen by the recipient of the packet
+(i.e., the client); the Source Connection ID includes the connection
+ID that the sender of the packet wishes to use (see
+{{connection-id}}). The server MUST use consistent Source Connection
+IDs during the handshake.
 
-The payload of an Initial packet conveys a STREAM frame (or frames) for stream
-0 containing a cryptographic handshake message.  The stream in this packet
-always starts at an offset of 0 (see {{stateless-retry}}) and the complete
-cryptographic handshake message MUST fit in a single packet (see {{handshake}}).
+On first receiving an Initial or Retry packet from the server, the
+client uses the Source Connection ID supplied by the server as the
+Destination Connection ID for subsequent packets.  Once a client has
+received an Initial packet from the server, it MUST discard any packet
+it receives with a different Source Connection ID.
+
+#### Tokens
+
+If the client has a suitable token available from a previous connection,
+it SHOULD populate the Token field.
+
+If the client received a Retry packet from the server and sends an
+Initial packet in response, then it sets the Destination Connection ID to
+the value from the Source Connection ID in the Retry packet. Changing
+Destination Connection ID also results in a change to the keys used to
+protect the Initial packet. It also sets the Token field to the
+token provided in the Retry.
+
+When a server receives an Initial packet with an address validation
+token, it SHOULD attempt to validate it.  If the token is invalid then
+the server SHOULD proceed as if the client did not have a validated
+address, including potentially sending a Retry. If the validation
+succeeds, the server SHOULD then allow the handshake to proceed (see
+{{stateless-retry}}).
+
+Note:
+
+: The rationale for treating the client as unvalidated rather
+than discarding the packet is that the client might have received
+the token in a previous connection using the NEW_TOKEN frame,
+and if the server has lost state, it might be unable to validate
+the token at all, leading to connection failure if the packet
+is discarded.
+
+#### Starting Packet Numbers
+
+The first Initial packet contains a packet number of 0. Each packet sent after
+the Initial packet is associated with a packet number space and its packet
+number increases monotonically in that space (see {{packet-numbers}}).
+
+#### Minimum Packet Size
 
 The payload of a UDP datagram carrying the Initial packet MUST be expanded to at
 least 1200 octets (see {{packetization}}), by adding PADDING frames to the
 Initial packet and/or by combining the Initial packet with a 0-RTT packet
 (see {{packet-coalesce}}).
 
-The client uses the Initial packet type for any packet that contains an initial
-cryptographic handshake message.  This includes all cases where a new packet
-containing the initial cryptographic message needs to be created, this includes
-the packets sent after receiving a Version Negotiation ({{packet-version}}) or
-Retry packet ({{packet-retry}}).
-
 
 ### Retry Packet {#packet-retry}
 
-A Retry packet uses long headers with a type value of 0x7E.  It carries
-cryptographic handshake messages and acknowledgments.  It is used by a server
-that wishes to perform a stateless retry (see {{stateless-retry}}).
+A Retry packet uses long headers with a type value of 0x7E. It carries an
+address validation token created by the server. It is used by a server that
+wishes to perform a stateless retry (see {{stateless-retry}}).
+
+~~~
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|     ODCIL(8   |      Original Destination Connection ID (*)   |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                        Retry Token (*) ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~
+
+A Retry packet is not encrypted at all. Instead, the payload of a
+Retry packet contains two values in the clear.
+
+ODCIL:
+
+: The length of the Original Destination Connection ID.
+
+Original Destination Connection ID:
+
+: The Destination Connection ID from the Initial packet that this
+Retry is in response to. The length of this field is given in DCIL.
+
+Retry Token:
+
+: An opaque token that the server can use to validate the client's
+address.
 
 The server populates the Destination Connection ID with the connection ID that
 the client included in the Source Connection ID of the Initial packet.  This
@@ -611,28 +715,17 @@ it creates a "cheat" where the client assumes a value.  That's a problem, so I'm
 tempted to suggest that this include any value less than 2^30 so that normal
 processing works - and can be properly exercised.]]
 
-A Retry packet is never explicitly acknowledged in an ACK frame
-by a client.  Receiving another Initial packet implicitly acknowledges a Retry
-packet.
+A Retry packet is never explicitly acknowledged in an ACK frame by a client.
 
-After receiving a Retry packet, the client uses a new
-Initial packet containing the next cryptographic handshake message.  The client
-retains the state of its cryptographic handshake, but discards all transport
-state.  The Initial packet that is generated in response to a Retry packet
-includes STREAM frames on stream 0 that start again at an offset of 0.
+A server MUST only send a Retry in response to a client Initial packet.
 
-Continuing the cryptographic handshake is necessary to ensure that an attacker
-cannot force a downgrade of any cryptographic parameters.  In addition to
-continuing the cryptographic handshake, the client MUST remember the results of
-any version negotiation that occurred (see {{version-negotiation}}).  The client
-MAY also retain any observed RTT or congestion state that it has accumulated for
-the flow, but other transport state MUST be discarded.
+If the Original Destination Connection ID field does not match the
+Destination Connection ID from most recent the Initial packet it sent,
+clients MUST discard the packet. This prevents an off-path attacker
+from injecting a Retry packet with a bogus new Source Connection ID.
 
-The payload of the Retry packet contains at least two frames. It MUST include a
-STREAM frame on stream 0 with offset 0 containing the server's cryptographic
-stateless retry material. It MUST also include an ACK frame to acknowledge the
-client's Initial packet. It MAY additionally include PADDING frames. The next
-STREAM frame sent by the server will also start at stream offset 0.
+Otherwise, the client SHOULD respond with a new Initial
+packet with the Token field set to the token received in the Retry packet.
 
 
 ### Handshake Packet {#packet-handshake}
@@ -649,27 +742,21 @@ subsequent cryptographic handshake messages and acknowledgments to the server.
 The Destination Connection ID field in a Handshake packet contains a connection
 ID that is chosen by the recipient of the packet; the Source Connection ID
 includes the connection ID that the sender of the packet wishes to use (see
-{{connection-id}}).
+{{connection-id-encoding}}).
 
 The first Handshake packet sent by a server contains a packet number of 0.
-Packet numbers are incremented normally for other Handshake packets.
+Handshake packets are their own packet number space.  Packet numbers are
+incremented normally for other Handshake packets.
 
-Servers MUST NOT send more than three Handshake packets without receiving a
-packet from a verified source address.  Source addresses can be verified
-through an address validation token, receipt of the final cryptographic message
-from the client, or by receiving a valid PATH_RESPONSE frame from the client.
+Servers MUST NOT send more than three datagrams including Initial and Handshake
+packets without receiving a packet from a verified source address.  Source
+addresses can be verified through an address validation token
+(delivered via a Retry packet or a NEW_TOKEN frame) or by receiving
+any message from the client encrypted using the Handshake keys.
 
-If the server expects to generate more than three Handshake packets in response
-to an Initial packet, it SHOULD include a PATH_CHALLENGE frame in each Handshake
-packet that it sends.  After receiving at least one valid PATH_RESPONSE frame,
-the server can send its remaining Handshake packets. Servers can instead perform
-address validation using a Retry packet; this requires less state on the server,
-but could involve additional computational effort depending on implementation
-choices.
-
-The payload of this packet contains STREAM frames and could contain PADDING,
-ACK, PATH_CHALLENGE, or PATH_RESPONSE frames.  Handshake packets MAY contain
-CONNECTION_CLOSE frames if the handshake is unsuccessful.
+The payload of this packet contains CRYPTO_HS frames and could contain PADDING,
+or ACK frames. Handshake packets MAY contain CONNECTION_CLOSE frames if the
+handshake is unsuccessful.
 
 
 ## Protected Packets {#packet-protected}
@@ -678,7 +765,8 @@ All QUIC packets use packet protection.  Packets that are protected with the
 static handshake keys or the 0-RTT keys are sent with long headers; all packets
 protected with 1-RTT keys are sent with short headers.  The different packet
 types explicitly indicate the encryption level and therefore the keys that are
-used to remove packet protection.
+used to remove packet protection.  0-RTT and 1-RTT protected packets share a
+single packet number space.
 
 Packets protected with handshake keys only use packet protection to ensure that
 the sender of the packet is on the network path.  This packet protection is not
@@ -694,11 +782,12 @@ Packets protected with 0-RTT keys use a type value of 0x7C.  The connection ID
 fields for a 0-RTT packet MUST match the values used in the Initial packet
 ({{packet-initial}}).
 
-The client can send 0-RTT packets after receiving a Handshake packet
-({{packet-handshake}}), if that packet does not complete the handshake.  Even if
-the client receives a different connection ID in the Handshake packet, it MUST
-continue to use the same Destination Connection ID for 0-RTT packets, see
-{{connection-id}}.
+The client can send 0-RTT packets after receiving an Initial
+{{packet-initial}} or Handshake ({{packet-handshake}}) packet, if that
+packet does not complete the handshake.  Even if the client receives a
+different connection ID in the Handshake packet, it MUST continue to
+use the same Destination Connection ID for 0-RTT packets, see
+{{connection-id-encoding}}.
 
 The version field for protected packets is the current QUIC version.
 
@@ -717,7 +806,10 @@ sequence of frames, as described in {{frames}}.
 A sender can coalesce multiple QUIC packets (typically a Cryptographic Handshake
 packet and a Protected packet) into one UDP datagram.  This can reduce the
 number of UDP datagrams needed to send application data during the handshake and
-immediately afterwards.
+immediately afterwards. It is not necessary for senders to coalesce
+packets, though failing to do so will require sending a significantly
+larger number of datagrams during the handshake. Receivers MUST
+be able to process coalesced packets.
 
 Senders SHOULD coalesce packets in order of increasing encryption levels
 (Initial, Handshake, 0-RTT, 1-RTT), as this makes it more likely the receiver
@@ -729,6 +821,7 @@ Senders MUST NOT coalesce QUIC packets with different Destination Connection
 IDs into a single UDP datagram. Receivers SHOULD ignore any subsequent packets
 with a different Destination Connection ID than the first packet in the
 datagram.
+
 
 Every QUIC packet that is coalesced into a single UDP datagram is separate and
 complete.  Though the values of some fields in the packet header might be
@@ -742,13 +835,13 @@ packets MAY either be discarded or buffered for later processing, just as if the
 packets were received out-of-order in separate datagrams.
 
 
-## Connection ID {#connection-id}
+## Connection ID Encoding
 
-A connection ID is used to ensure consistent routing of packets.  The long
-header contains two connection IDs: the Destination Connection ID is chosen by
-the recipient of the packet and is used to provide consistent routing; the
-Source Connection ID is used to set the Destination Connection ID used by the
-peer.
+A connection ID is used to ensure consistent routing of packets, as described in
+{{connection-id}}.  The long header contains two connection IDs: the Destination
+Connection ID is chosen by the recipient of the packet and is used to provide
+consistent routing; the Source Connection ID is used to set the Destination
+Connection ID used by the peer.
 
 During the handshake, packets with the long header are used to establish the
 connection ID that each endpoint uses.  Each endpoint uses the Source Connection
@@ -761,7 +854,7 @@ During the handshake, an endpoint might receive multiple packets with the long
 header, and thus be given multiple opportunities to update the Destination
 Connection ID it sends.  A client MUST only change the value it sends in the
 Destination Connection ID in response to the first packet of each type it
-receives from the server (Retry or Handshake); a server MUST set its value based
+receives from the server (Retry or Initial); a server MUST set its value based
 on the Initial packet.  Any additional changes are not permitted; if subsequent
 packets of those types include a different Source Connection ID, they MUST be
 discarded.  This avoids problems that might arise from stateless processing of
@@ -792,15 +885,37 @@ response to connection migration ({{migration}}). NEW_CONNECTION_ID frames
 
 The packet number is an integer in the range 0 to 2^62-1. The value is used in
 determining the cryptographic nonce for packet encryption.  Each endpoint
-maintains a separate packet number for sending and receiving.  The packet number
-for sending MUST start at zero for the first packet sent and MUST increase by at
-least one after sending a packet.
+maintains a separate packet number for sending and receiving.
 
-A QUIC endpoint MUST NOT reuse a packet number within the same connection (that
-is, under the same cryptographic keys).  If the packet number for sending
-reaches 2^62 - 1, the sender MUST close the connection without sending a
-CONNECTION_CLOSE frame or any further packets; an endpoint MAY send a Stateless
-Reset ({{stateless-reset}}) in response to further packets that it receives.
+Packet numbers are divided into 3 spaces in QUIC:
+
+- Initial space: All Initial packets {{packet-initial}} are in this space.
+- Handshake space: All Handshake packets {{packet-handshake}} are in this space.
+- Application data space: All 0-RTT and 1-RTT encrypted packets
+  {{packet-protected}} are in this space.
+
+As described in {{QUIC-TLS}}, each packet type uses different encryption keys.
+
+Conceptually, a packet number space is the encryption context in which
+a packet can be processed and ACKed.  Initial packets can only be sent
+with Initial encryption keys and ACKed in packets which are also
+Initial packets.  Similarly, Handshake packets can only be sent and
+acknowledged in Handshake packets.
+
+This enforces cryptographic separation between the data sent in the
+different packet sequence number spaces.  Each packet number space
+starts at packet number 0.  Subsequent packets sent in the
+same packet number space MUST increase the packet number by at least one.
+
+0-RTT and 1-RTT data exist in the same packet number space to make loss recovery
+algorithms easier to implement between the two packet types.
+
+A QUIC endpoint MUST NOT reuse a packet number within the same packet number
+space in one connection (that is, under the same cryptographic keys).  If the
+packet number for sending reaches 2^62 - 1, the sender MUST close the connection
+without sending a CONNECTION_CLOSE frame or any further packets; an endpoint MAY
+send a Stateless Reset ({{stateless-reset}}) in response to further packets that
+it receives.
 
 In the QUIC long and short packet headers, the number of bits required to
 represent the packet number are reduced by including only a variable number of
@@ -919,6 +1034,8 @@ document.
 | 0x0e        | PATH_CHALLENGE    | {{frame-path-challenge}}    |
 | 0x0f        | PATH_RESPONSE     | {{frame-path-response}}     |
 | 0x10 - 0x17 | STREAM            | {{frame-stream}}            |
+| 0x18        | CRYPTO_HS         | {{frame-crypto}}            |
+| 0x19        | NEW_TOKEN         | {{frame-new-token}}         |
 {: #frame-types title="Frame Types"}
 
 All QUIC frames are idempotent.  That is, a valid frame does not cause
@@ -961,17 +1078,69 @@ different IP or port at either endpoint, due to NAT rebinding or mobility, as
 described in {{migration}}.  Finally a connection may be terminated by either
 endpoint, as described in {{termination}}.
 
+## Connection ID
+
+Each connection is identified by a collection of identifiers assigned to it. A
+connection ID can be 0 octets in length (and thus unlikely to be unique), or
+between 4 and 18 octets (inclusive).  Connection IDs are selected independently
+in each direction.
+
+The primary function of a connection ID is to ensure that changes in addressing
+at lower protocol layers (UDP, IP, and below) don't cause packets for a QUIC
+connection to be delivered to the wrong endpoint.  Each endpoint selects
+connection IDs using an implementation-specific (and perhaps
+deployment-specific) method which will allow packets with that connection ID to
+be routed back to the endpoint and identified by the endpoint upon receipt.
+
+A zero-length connection ID MAY be used when the connection ID is not needed for
+routing and the address/port tuple of packets is sufficient to associate them to
+a connection. An endpoint whose peer has selected a zero-length connection ID
+MUST continue to use a zero-length connection ID for the lifetime of the
+connection and MUST NOT send packets from any other local address.
+
+When an endpoint has requested a non-zero-length connection ID, it will issue a
+series of connection IDs over the lifetime of a connection. The series of
+connection IDs issued by an endpoint is ordered, with the final connection ID
+selected during the handshake coming first.  Additional connection IDs are
+provided using the NEW_CONNECTION_ID frame ({{frame-new-connection-id}}), each
+with a specified sequence number.  The series of connection IDs issued SHOULD be
+contiguous, but might not appear to be upon receipt due to reordering or loss.
+
+Each connection ID MUST be used on only one local address. When packets are sent
+for the first time on a new local address, a new connection ID MUST be used with
+a higher sequence number than any connection ID previously used on any local
+address.  At any time, an endpoint MAY change to a new connection ID on a local
+address already in use.
+
+An endpoint MUST NOT send packets with a connection ID which has a lower
+sequence number than the highest sequence number of any connection ID ever sent
+or received on that local address.  This ensures that when an endpoint migrates
+to a new path or changes connection ID on an existing path, the packets will use
+a new connection ID in both directions.
+
+Implementations SHOULD ensure that peers have a connection ID with a matching
+sequence number available when changing to a new connection ID.  An
+implementation could do this by always supplying a corresponding connection ID
+to a peer for each connection ID received from that peer.
+
+While endpoints select connection IDs as appropriate for their implementation,
+the connection ID MUST NOT include the unprotected sequence number.  Endpoints
+need to be able to recover the sequence number associated with each connection
+ID they generate without relying on information available to unaffiliate
+parties. A connection ID that encodes an unencrypted sequence number could be
+used to correlate connection IDs across network paths.
+
+
 ## Matching Packets to Connections {#packet-handling}
 
 Incoming packets are classified on receipt.  Packets can either be associated
 with an existing connection, or - for servers - potentially create a new
 connection.
 
-Hosts try to associate a packet with an existing connection. If the packet has
-a Destination Connection ID corresponding to an existing connection, QUIC
-processes that packet accordingly. Note that a NEW_CONNECTION_ID frame
-({{frame-new-connection-id}}) would associate more than one connection ID with a
-connection.
+Hosts try to associate a packet with an existing connection. If the packet has a
+Destination Connection ID corresponding to an existing connection, QUIC
+processes that packet accordingly. Note that more than one connection ID can be
+associated with a connection; see {{connection-id}}.
 
 If the Destination Connection ID is zero length and the packet matches the
 address/port tuple of a connection where the host did not require connection
@@ -1018,9 +1187,9 @@ Packets with a supported version, or no version field, are matched to
 a connection as described in {{packet-handling}}. If not matched, the
 server continues below.
 
-If the packet is an Initial packet fully conforming with the
-specification, the server proceeds with the handshake ({{handshake}}).
-This commits the server to the version that the client selected.
+If the packet is an Initial packet fully conforming with the specification, the
+server proceeds with the handshake ({{handshake}}). This commits the server to
+the version that the client selected.
 
 If a server isn't currently accepting any new connections, it SHOULD send a
 Handshake packet containing a CONNECTION_CLOSE frame with error code
@@ -1113,14 +1282,17 @@ solicit a list of supported versions from a server.
 
 ## Cryptographic and Transport Handshake {#handshake}
 
-QUIC relies on a combined cryptographic and transport handshake to minimize
-connection establishment latency.  QUIC allocates stream 0 for the cryptographic
-handshake.  Version 0x00000001 of QUIC uses TLS 1.3 as described in
-{{QUIC-TLS}}; a different QUIC version number could indicate that a different
+QUIC relies on a combined cryptographic and transport handshake to
+minimize connection establishment latency.  QUIC uses the CRYPTO_HS
+frame {{frame-crypto}} to transmit the cryptographic handshake.  Version
+0x00000001 of QUIC uses TLS 1.3 as described in {{QUIC-TLS}}; a
+different QUIC version number could indicate that a different
 cryptographic handshake protocol is in use.
 
-QUIC provides this stream with reliable, ordered delivery of data.  In return,
-the cryptographic handshake provides QUIC with:
+QUIC provides reliable, ordered delivery of the cryptographic
+handshake data. QUIC packet protection ensures confidentiality and
+integrity protection that meets the requirements of the cryptographic
+handshake protocol:
 
 * authenticated key exchange, where
 
@@ -1147,19 +1319,83 @@ the cryptographic handshake provides QUIC with:
   client can receive packets that are addressed with the transport address that
   is claimed by the client (see {{address-validation}})
 
-The initial cryptographic handshake message MUST be sent in a single packet.
-Any second attempt that is triggered by address validation MUST also be sent
-within a single packet.  This avoids having to reassemble a message from
-multiple packets.  Reassembling messages requires that a server maintain state
-prior to establishing a connection, exposing the server to a denial of service
-risk.
+The initial CRYPTO_HS frame MUST be sent in a single packet.  Any
+second attempt that is triggered by address validation MUST also be
+sent within a single packet. This avoids having to reassemble a
+message from multiple packets.
 
 The first client packet of the cryptographic handshake protocol MUST fit within
 a 1232 octet QUIC packet payload.  This includes overheads that reduce the space
 available to the cryptographic handshake protocol.
 
-Details of how TLS is integrated with QUIC is provided in more detail in
-{{QUIC-TLS}}.
+The CRYPTO_HS frame can be sent in different packet number spaces.
+CRYPTO_HS frames in each packet number space carry a separate sequence
+of handshake data starting from an offset of 0.
+
+## Example Handshake Flows
+
+Details of how TLS is integrated with QUIC are provided in {{QUIC-TLS}},
+but some examples are provided here.
+
+{{tls-1rtt-handshake}} provides an overview of the 1-RTT handshake.
+Each line shows a QUIC packet with the packet type and packet
+number shown first, followed by the contents. So, for instance
+the first packet is of type Initial, with packet number 0, and
+contains a CRYPTO_HS frame carrying the ClientHello.
+
+Note that multiple QUIC packets -- even of different encryption levels
+-- may be coalesced into a single UDP datagram (see
+{{packet-coalesce}}, and so this handshake may consist of as few as 4
+UDP datagrams, or any number more. For instance, the server's first
+flight contains packets from the Initial encryption level
+(obfuscation), the Handshake level, and "0.5-RTT data" from the server
+at the 1-RTT encryption level.
+
+~~~~
+Client                                                  Server
+
+Initial[0]: CRYPTO_HS[CH] ->
+
+                              Initial[0]: CRYPTO_HS[SH] ACK[0]
+                    Handshake[0]: CRYPTO_HS[EE, CERT, CV, FIN]
+                                 <- 1-RTT[0]: STREAM[1, "..."]
+
+Initial[1]: ACK[0]
+Handshake[0]: CRYPTO_HS[FIN], ACK[0]
+1-RTT[0]: STREAM[0, "..."], ACK[0] ->
+
+                           1-RTT[1]: STREAM[55, "..."], ACK[0]
+                                       <- Handshake[1]: ACK[0]
+~~~~
+{: #tls-1rtt-handshake title="Example 1-RTT Handshake"}
+
+
+{{tls-0rtt-handshake}} shows an example of a connection with a
+0-RTT handshake and a single packet of 0-RTT data. Note that
+as described in {{packet-numbers}}, the server ACKs the
+0-RTT data at the 1-RTT encryption level, and the client's
+sequence numbers at the 1-RTT encryption level continue
+to increment from its 0-RTT packets.
+
+~~~~
+Client                                                  Server
+
+Initial[0]: CRYPTO_HS[CH]
+0-RTT[0]: STREAM[0, "..."] ->
+
+                              Initial[0]: CRYPTO_HS[SH] ACK[0]
+                     Handshake[0] CRYPTO_HS[EE, CERT, CV, FIN]
+                          <- 1-RTT[0]: STREAM[1, "..."] ACK[0]
+
+Initial[1]: ACK[0]
+0-RTT[1]: CRYPTO_HS[EOED]
+Handshake[0]: CRYPTO_HS[FIN], ACK[0]
+1-RTT[2]: STREAM[0, "..."] ACK[0] ->
+
+                         1-RTT[1]: STREAM[55, "..."], ACK[1,2]
+                                       <- Handshake[1]: ACK[0]
+~~~~
+{: #tls-0rtt-handshake title="Example 1-RTT Handshake"}
 
 
 ## Transport Parameters
@@ -1187,6 +1423,7 @@ language from Section 3 of {{!I-D.ietf-tls-tls13}}.
       stateless_reset_token(6),
       ack_delay_exponent(7),
       initial_max_uni_streams(8),
+      disable_migration(9),
       (65535)
    } TransportParameterId;
 
@@ -1269,13 +1506,11 @@ initial_max_bidi_streams (0x0002):
   maximum number of application-owned bidirectional streams the peer may
   initiate, encoded as an unsigned 16-bit integer.  If this parameter is absent
   or zero, application-owned bidirectional streams cannot be created until a
-  MAX_STREAM_ID frame is sent.  Note that a value of 0 does not prevent the
-  cryptographic handshake stream (that is, stream 0) from being used. Setting
-  this parameter is equivalent to sending a MAX_STREAM_ID
-  ({{frame-max-stream-id}}) immediately after completing the handshake
-  containing the corresponding Stream ID. For example, a value of 0x05 would be
-  equivalent to receiving a MAX_STREAM_ID containing 20 when received by a
-  client or 17 when received by a server.
+  MAX_STREAM_ID frame is sent.  Setting this parameter is equivalent to sending
+  a MAX_STREAM_ID ({{frame-max-stream-id}}) immediately after completing the
+  handshake containing the corresponding Stream ID. For example, a value of 0x05
+  would be equivalent to receiving a MAX_STREAM_ID containing 16 when received
+  by a client or 17 when received by a server.
 
 initial_max_uni_streams (0x0008):
 
@@ -1303,8 +1538,15 @@ ack_delay_exponent (0x0007):
 : An 8-bit unsigned integer value indicating an exponent used to decode the ACK
   Delay field in the ACK frame, see {{frame-ack}}.  If this value is absent, a
   default value of 3 is assumed (indicating a multiplier of 8).  The default
-  value is also used for ACK frames that are sent in Initial, Handshake, and
-  Retry packets.  Values above 20 are invalid.
+  value is also used for ACK frames that are sent in Initial and Handshake
+  packets.  Values above 20 are invalid.
+
+disable_migration (0x0009):
+
+: The endpoint does not support connection migration ({{migration}}). Peers MUST
+  NOT send any packets, including probing packets ({{probing}}), from a local
+  address other than that used to perform the handshake.  This parameter is a
+  zero-length value.
 
 A server MAY include the following transport parameters:
 
@@ -1444,17 +1686,10 @@ A server can process an initial cryptographic handshake messages from a client
 without committing any state. This allows a server to perform address validation
 ({{address-validation}}), or to defer connection establishment costs.
 
-A server that generates a response to an initial packet without retaining
+A server that generates a response to an Initial packet without retaining
 connection state MUST use the Retry packet ({{packet-retry}}).  This packet
-causes a client to reset its transport state and to continue the connection
-attempt with new connection state while maintaining the state of the
-cryptographic handshake.
-
-A server MUST NOT send multiple Retry packets in response to a client handshake
-packet.  Thus, any cryptographic handshake message that is sent MUST fit within
-a single packet.
-
-In TLS, the Retry packet type is used to carry the HelloRetryRequest message.
+causes a client to restart the connection attempt and includes the token in the
+new Initial packet ({{packet-initial}}) to prove source address ownership.
 
 
 ## Proof of Source Address Ownership {#address-validation}
@@ -1477,7 +1712,7 @@ send a similar amount of data without risking causing an amplification attack
 toward an unproven remote address.
 
 A server eventually confirms that a client has received its messages when the
-cryptographic handshake successfully completes.  This might be insufficient,
+first Handshake-level message is received. This might be insufficient,
 either because the server wishes to avoid the computational cost of completing
 the handshake, or it might be that the size of the packets that are sent during
 the handshake is too large.  This is especially important for 0-RTT, where the
@@ -1487,9 +1722,8 @@ request - in response to the data carried in the early data from the client.
 To send additional data prior to completing the cryptographic handshake, the
 server then needs to validate that the client owns the address that it claims.
 
-Source address validation is therefore performed during the establishment of a
-connection.  TLS provides the tools that support the feature, but basic
-validation is performed by the core transport protocol.
+Source address validation is therefore performed by the core transport
+protocol during the establishment of a connection.
 
 A different type of source address validation is performed after a connection
 migration, see {{migrate-validate}}.
@@ -1497,58 +1731,62 @@ migration, see {{migrate-validate}}.
 
 ### Client Address Validation Procedure
 
-QUIC uses token-based address validation.  Any time the server wishes to
-validate a client address, it provides the client with a token.  As long as the
-token cannot be easily guessed (see {{token-integrity}}), if the client is able
-to return that token, it proves to the server that it received the token.
+QUIC uses token-based address validation.  Any time the server wishes
+to validate a client address, it provides the client with a token.  As
+long as the token's authenticity can be checked (see
+{{token-integrity}}) and the client is able to return that token, it
+proves to the server that it received the token.
 
-During the processing of the cryptographic handshake messages from a client, TLS
-will request that QUIC make a decision about whether to proceed based on the
-information it has.  TLS will provide QUIC with any token that was provided by
-the client.  For an initial packet, QUIC can decide to abort the connection,
-allow it to proceed, or request address validation.
+Upon receiving the client's Initial packet, the server can request
+address validation by sending a Retry packet containing a token. This
+token is repeated in the client's next Initial packet. Because the
+token is consumed by the server that generates it, there is no need
+for a single well-defined format.  A token could include information
+about the claimed client address (IP and port), a timestamp, and any
+other supplementary information the server will need to validate the
+token in the future.
 
-If QUIC decides to request address validation, it provides the cryptographic
-handshake with a token.  The contents of this token are consumed by the server
-that generates the token, so there is no need for a single well-defined format.
-A token could include information about the claimed client address (IP and
-port), a timestamp, and any other supplementary information the server will need
-to validate the token in the future.
-
-The cryptographic handshake is responsible for enacting validation by sending
-the address validation token to the client.  A legitimate client will include a
-copy of the token when it attempts to continue the handshake.  The cryptographic
-handshake extracts the token then asks QUIC a second time whether the token is
-acceptable.  In response, QUIC can either abort the connection or permit it to
-proceed.
+The Retry packet is sent to the client and a legitimate client will
+respond with an Initial packet containing the token from the Retry packet
+when it continues the handshake.  In response to receiving the token, a
+server can either abort the connection or permit it to proceed.
 
 A connection MAY be accepted without address validation - or with only limited
 validation - but a server SHOULD limit the data it sends toward an unvalidated
 address.  Successful completion of the cryptographic handshake implicitly
 provides proof that the client has received packets from the server.
 
+The client should allow for additional Retry packets being sent in
+response to Initial packets sent containing a token. There are several
+situations in which the server might not be able to use the previously
+generated token to validate the client's address and must send a new
+Retry. A reasonable limit to the number of tries the client allows
+for, before giving up, is 3. That is, the client MUST echo the
+address validation token from a new Retry packet up to 3 times. After
+that, it MAY give up on the connection attempt.
 
-### Address Validation on Session Resumption
+
+### Address Validation for Future Connections
 
 A server MAY provide clients with an address validation token during one
 connection that can be used on a subsequent connection.  Address validation is
 especially important with 0-RTT because a server potentially sends a significant
 amount of data to a client in response to 0-RTT data.
 
-A different type of token is needed when resuming.  Unlike the token that is
-created during a handshake, there might be some time between when the token is
-created and when the token is subsequently used.  Thus, a resumption token
-SHOULD include an expiration time.  It is also unlikely that the client port
-number is the same on two different connections; validating the port is
-therefore unlikely to be successful.
+The server uses the NEW_TOKEN frame {{frame-new-token}} to provide the
+client with an address validation token that can be used to validate
+future connections.  The client may then use this token to validate
+future connections by including it in the Initial packet's header.
+The client MUST NOT use the token provided in a Retry for future
+connections.
 
-This token can be provided to the cryptographic handshake immediately after
-establishing a connection.  QUIC might also generate an updated token if
-significant time passes or the client address changes for any reason (see
-{{migration}}).  The cryptographic handshake is responsible for
-providing the client with the token.  In TLS the token is included in the ticket
-that is used for resumption and 0-RTT, which is carried in a NewSessionTicket
-message.
+Unlike the token that is created for a Retry packet, there might be some time
+between when the token is created and when the token is subsequently used.
+Thus, a resumption token SHOULD include an expiration time.  The server MAY
+include either an explicit expiration time or an issued timestamp and
+dynamically calculate the expiration time.  It is also unlikely that the client
+port number is the same on two different connections; validating the port is
+therefore unlikely to be successful.
 
 
 ### Address Validation Token Integrity {#token-integrity}
@@ -1563,15 +1801,6 @@ integrity protection against modification or falsification by clients.  Without
 integrity protection, malicious clients could generate or guess values for
 tokens that would be accepted by the server.  Only the server requires access to
 the integrity protection key for tokens.
-
-In TLS the address validation token is often bundled with the information that
-TLS requires, such as the resumption secret.  In this case, adding integrity
-protection can be delegated to the cryptographic handshake protocol, avoiding
-redundant protection.  If integrity protection is delegated to the cryptographic
-handshake, an integrity failure will result in immediate cryptographic handshake
-failure.  If integrity protection is performed by QUIC and the integrity check
-fails, QUIC MUST abort the connection with a PROTOCOL_VIOLATION error code.
-
 
 ## Path Validation {#migrate-validate}
 
@@ -1685,7 +1914,15 @@ network.  This section describes the process by which an endpoint migrates to a
 new address.
 
 An endpoint MUST NOT initiate connection migration before the handshake is
-finished and the endpoint has 1-RTT keys.
+finished and the endpoint has 1-RTT keys.  An endpoint also MUST NOT initiate
+connection migration if the peer sent the `disable_migration` transport
+parameter during the handshake.  An endpoint which has sent this transport
+parameter, but detects that a peer has nonetheless migrated to a different
+network MAY treat this as a connection error of type INVALID_MIGRATION. However,
+note that not all changes of peer address are intentional migrations. The peer
+could experience an unintended change of address due to NAT rebinding; endpoints
+SHOULD perform path validation ({{migrate-validate}}) if the rebinding does not
+cause the connection to fail.
 
 This document limits migration of connections to new client addresses, except as
 described in {{preferred-address}}. Clients are responsible for initiating all
@@ -1852,29 +2089,18 @@ restart the alarm for a longer period of time.
 Using a stable connection ID on multiple network paths allows a passive observer
 to correlate activity between those paths.  An endpoint that moves between
 networks might not wish to have their activity correlated by any entity other
-than their peer. The NEW_CONNECTION_ID message can be sent to provide an
-unlinkable connection ID for use in case a peer wishes to explicitly break
-linkability between two points of network attachment.
+than their peer, so different connection IDs are used when sending from
+different local addresses, as discussed in {{connection-id}}.
 
-An endpoint that does not require the use of a connection ID should not request
-that its peer use a connection ID.  Such an endpoint does not need to provide
-new connection IDs using the NEW_CONNECTION_ID frame.
+This eliminates the use of the connection ID for linking activity from
+the same connection on different networks.  Protection of packet numbers ensures
+that packet numbers cannot be used to correlate activity.  This does not prevent
+other properties of packets, such as timing and size, from being used to
+correlate activity.
 
-An endpoint might need to send packets on multiple networks without receiving
-any response from its peer.  To ensure that the endpoint is not linkable across
-each of these changes, a new connection ID is needed for each network.  To
-support this, multiple NEW_CONNECTION_ID messages are needed.
-
-Upon changing networks an endpoint MUST use a previously unused connection ID
-provided by its peer.  This eliminates the use of the connection ID for linking
-activity from the same connection on different networks.  Protection of packet
-numbers ensures that packet numbers cannot be used to correlate activity.  This
-does not prevent other properties of packets, such as timing and size, from
-being used to correlate activity.
-
-Clients MAY change connection ID at any time based on implementation-specific
-concerns.  For example, after a period of network inactivity NAT rebinding might
-occur when the client begins sending data again.
+Clients MAY move to a new connection ID at any time based on
+implementation-specific concerns.  For example, after a period of network
+inactivity NAT rebinding might occur when the client begins sending data again.
 
 A client might wish to reduce linkability by employing a new connection ID and
 source UDP port when sending traffic after a period of inactivity.  Changing the
@@ -1884,22 +2110,6 @@ migration are exercised even for clients that don't experience NAT rebindings or
 genuine migrations.  Changing port number can cause a peer to reset its
 congestion state (see {{migration-cc}}), so the port SHOULD only be changed
 infrequently.
-
-An endpoint that receives a successfully authenticated packet with a previously
-unused connection ID MUST use a new connection ID for any future packets it
-sends to that address.  To avoid changing connection IDs multiple times when
-packets arrive out of order, endpoints MUST change only in response to a packet
-that increases the largest received packet number.  Failing to do this could
-allow for use of that connection ID to link activity on new paths.  There is no
-need to move to a new connection ID if the address of a peer changes without
-also changing the connection ID.  If no new connection IDs are available, the
-endpoint MUST NOT send additional packets until a NEW_CONNECTION_ID frame is
-received.
-
-Implementations SHOULD ensure that peers have at least one unused connection ID
-available when changing the connection ID.  An implementation could do this by
-always supplying one or more new connection IDs in the packets sent under its
-own new connection ID.
 
 
 ## Server's Preferred Address {#preferred-address}
@@ -2059,10 +2269,9 @@ before the packet is received.
 
 ### Immediate Close
 
-An endpoint sends a closing frame, either CONNECTION_CLOSE or APPLICATION_CLOSE,
-to terminate the connection immediately.  Either closing frame causes all
-streams to immediately become closed; open streams can be assumed to be
-implicitly reset.
+An endpoint sends a closing frame (CONNECTION_CLOSE or APPLICATION_CLOSE) to
+terminate the connection immediately.  Any closing frame causes all streams to
+immediately become closed; open streams can be assumed to be implicitly reset.
 
 After sending a closing frame, endpoints immediately enter the closing state.
 During the closing period, an endpoint that sends a closing frame SHOULD respond
@@ -2422,13 +2631,12 @@ Maximum Data:
 : A variable-length integer indicating the maximum amount of data that can be
   sent on the entire connection, in units of octets.
 
-All data sent in STREAM frames counts toward this limit, with the exception of
-data on stream 0.  The sum of the largest received offsets on all streams -
-including streams in terminal states, but excluding stream 0 - MUST NOT exceed
-the value advertised by a receiver.  An endpoint MUST terminate a connection
-with a QUIC_FLOW_CONTROL_RECEIVED_TOO_MUCH_DATA error if it receives more data
-than the maximum data value that it has sent, unless this is a result of a
-change in the initial limits (see {{zerortt-parameters}}).
+All data sent in STREAM frames counts toward this limit.  The sum of the largest
+received offsets on all streams - including streams in terminal states - MUST
+NOT exceed the value advertised by a receiver.  An endpoint MUST terminate a
+connection with a QUIC_FLOW_CONTROL_RECEIVED_TOO_MUCH_DATA error if it receives
+more data than the maximum data value that it has sent, unless this is a result
+of a change in the initial limits (see {{zerortt-parameters}}).
 
 
 ## MAX_STREAM_DATA Frame {#frame-max-stream-data}
@@ -2637,6 +2845,8 @@ The NEW_CONNECTION_ID is as follows:
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                          Sequence (i)                       ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |   Length (8)  |          Connection ID (32..144)            ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                                                               |
@@ -2650,6 +2860,14 @@ The NEW_CONNECTION_ID is as follows:
 ~~~
 
 The fields are:
+
+Sequence:
+
+: A variable-length integer.  This value starts at 0 and increases by 1 for each
+  connection ID that is provided by the server.  The connection ID that is
+  assigned during the handshake is assumed to have a sequence of -1.  That is,
+  the value selected during the handshake comes immediately before the first
+  value that a server can send.
 
 Length:
 
@@ -2720,6 +2938,11 @@ ACK blocks are ranges of acknowledged packets.
 QUIC acknowledgements are irrevocable.  Once acknowledged, a packet remains
 acknowledged, even if it does not appear in a future ACK frame.  This is unlike
 TCP SACKs ({{?RFC2018}}).
+
+It is expected that a sender will reuse the same packet number across different
+packet number spaces.  ACK frames only acknowledge the packet numbers that were
+transmitted by the sender in the same packet number space of the packet that the
+ACK was received in.
 
 A client MUST NOT acknowledge Retry packets.  Retry packets include the packet
 number from the Initial packet it responds to.  Version Negotiation packets
@@ -2884,6 +3107,10 @@ is only sending ACK frames will only receive acknowledgements for its packets
 if the sender includes them in packets with non-ACK frames.  A sender SHOULD
 bundle ACK frames with other frames when possible.
 
+Endpoints can only acknowledge packets sent in a particular packet
+number space by sending ACK frames in packets from the same packet
+number space.
+
 To limit receiver state or the size of ACK frames, a receiver MAY limit the
 number of ACK blocks it sends.  A receiver can do this even without receiving
 acknowledgment of its ACK frames, with the knowledge this could cause the sender
@@ -2894,15 +3121,10 @@ received packets in preference to packets received in the past.
 
 ### ACK Frames and Packet Protection
 
-ACK frames that acknowledge protected packets MUST be carried in a packet that
-has an equivalent or greater level of packet protection.
-
-Packets that are protected with 1-RTT keys MUST be acknowledged in packets that
-are also protected with 1-RTT keys.
-
-A packet that is not protected and claims to acknowledge a packet number that
-was sent with packet protection is not valid.  An unprotected packet that
-carries acknowledgments for protected packets MUST be discarded in its entirety.
+ACK frames MUST only be carried in a packet that has the same packet
+number space as the packet being ACKed (see {{packet-protected}}). For
+instance, packets that are protected with 1-RTT keys MUST be
+acknowledged in packets that are also protected with 1-RTT keys.
 
 Packets that a client sends with 0-RTT packet protection MUST be acknowledged by
 the server in packets protected by 1-RTT keys.  This can mean that the client is
@@ -2910,27 +3132,8 @@ unable to use these acknowledgments if the server cryptographic handshake
 messages are delayed or lost.  Note that the same limitation applies to other
 data sent by the server protected by the 1-RTT keys.
 
-Unprotected packets, such as those that carry the initial cryptographic
-handshake messages, MAY be acknowledged in unprotected packets.  Unprotected
-packets are vulnerable to falsification or modification.  Unprotected packets
-can be acknowledged along with protected packets in a protected packet.
-
-An endpoint SHOULD acknowledge packets containing cryptographic handshake
-messages in the next unprotected packet that it sends, unless it is able to
-acknowledge those packets in later packets protected by 1-RTT keys.  At the
-completion of the cryptographic handshake, both peers send unprotected packets
-containing cryptographic handshake messages followed by packets protected by
-1-RTT keys. An endpoint SHOULD acknowledge the unprotected packets that complete
-the cryptographic handshake in a protected packet, because its peer is
-guaranteed to have access to 1-RTT packet protection keys.
-
-For instance, a server acknowledges a TLS ClientHello in the packet that carries
-the TLS ServerHello; similarly, a client can acknowledge a TLS HelloRetryRequest
-in the packet containing a second TLS ClientHello.  The complete set of server
-handshake messages (TLS ServerHello through to Finished) might be acknowledged
-by a client in protected packets, because it is certain that the server is able
-to decipher the packet.
-
+Endpoints SHOULD send acknowledgments for packets containing CRYPTO_HS
+frames with a reduced delay; see Section 3.5.1 of {{QUIC-RECOVERY}}.
 
 ## PATH_CHALLENGE Frame {#frame-path-challenge}
 
@@ -2972,6 +3175,34 @@ frame.  Its format is identical to the PATH_CHALLENGE frame
 If the content of a PATH_RESPONSE frame does not match the content of a
 PATH_CHALLENGE frame previously sent by the endpoint, the endpoint MAY generate
 a connection error of type UNSOLICITED_PATH_RESPONSE.
+
+
+## NEW_TOKEN frame {#frame-new-token}
+
+A server sends a NEW_TOKEN frame (type=0x19) to provide the client a token to
+send in a the header of an Initial packet for a future connection.
+
+The NEW_TOKEN frame is as follows:
+
+~~~
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                     Token Length (i)  ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                            Token (*)                        ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~
+
+The fields of a NEW_TOKEN frame are as follows:
+
+Token Length:
+
+: A variable-length integer specifying the length of the token in bytes.
+
+Token:
+
+: An opaque blob that the client may use with a future Initial packet.
 
 
 ## STREAM Frames {#frame-stream}
@@ -3061,6 +3292,58 @@ advised to bundle as few streams as necessary in outgoing packets without losing
 transmission efficiency to underfilled packets.
 
 
+## CRYPTO_HS Frame {#frame-crypto}
+
+The CRYPTO_HS frame (type=0x18) is used to transmit cryptographic
+handshake messages. It can be sent in all packet types. The CRYPTO_HS
+frame offers the cryptographic protocol an in-order stream of bytes.
+CRYPTO_HS frames are functionally identical to STREAM frames, except
+that they do not bear a stream identifier; they are not flow
+controlled; and they do not carry markers for optional offset,
+optional length, and the end of the stream.
+
+A CRYPTO_HS frame is shown below.
+
+~~~
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                          Offset (i)                         ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                          Length (i)                         ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                        Crypto Data (*)                      ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~
+{: #crypto-format title="CRYPTO_HS Frame Format"}
+
+The CRYPTO_HS frame contains the following fields:
+
+Offset:
+
+: A variable-length integer specifying the byte offset in the stream for the
+  data in this CRYPTO_HS frame.
+
+Length:
+
+: A variable-length integer specifying the length of the Crypto Data field in
+  this CRYPTO_HS frame.
+
+Crypto Data:
+
+: The cryptographic message data.
+
+There is a separate flow of cryptographic handshake data in each
+encryption level, each of which starts at an offset of 0. This implies
+that each encryption level is treated as a separate CRYPTO_HS stream
+of data.
+
+Unlike STREAM frames, which include a Stream ID indicating to which
+stream the data belongs, the CRYPTO_HS frame carries data for a single
+stream per encryption level. The stream does not have an explicit
+end, so CRYPTO_HS frames do not have a FIN bit.
+
+
 # Packetization and Reliability {#packetization}
 
 A sender bundles one or more frames in a QUIC packet (see {{frames}}).
@@ -3108,6 +3391,11 @@ New frames and packets are used to carry information that is determined to have
 been lost.  In general, information is sent again when a packet containing that
 information is determined to be lost and sending ceases when a packet
 containing that information is acknowledged.
+
+* Data sent in CRYPTO_HS frames are retransmitted according to the
+  rules in {{QUIC-RECOVERY}}, until either all data has been
+  acknowledged or the crypto state machine implictly knows that the
+  peer received the data.
 
 * Application data sent in STREAM frames is retransmitted in new STREAM frames
   unless the endpoint has sent a RST_STREAM for that stream.  Once an endpoint
@@ -3344,8 +3632,7 @@ The two type bits from a Stream ID therefore identify streams as summarized in
 | 0x3      | Server-Initiated, Unidirectional |
 {: #stream-id-types title="Stream ID Types"}
 
-Stream ID 0 (0x0) is a client-initiated, bidirectional stream that is used for
-the cryptographic handshake.  Stream 0 MUST NOT be used for application data.
+The first bi-directional stream opened by the client is stream 0.
 
 A QUIC endpoint MUST NOT reuse a Stream ID.  Streams can be used in any order.
 Streams that are used out of order result in opening all lower-numbered streams
@@ -3709,14 +3996,7 @@ change if it is sent multiple times; an endpoint MAY treat receipt of a changed
 octet as a connection error of type PROTOCOL_VIOLATION.
 
 An endpoint MUST NOT send data on any stream without ensuring that it is within
-the data limits set by its peer.  The cryptographic handshake stream, Stream 0,
-is exempt from the connection-level data limits established by MAX_DATA. Data on
-stream 0 other than the initial cryptographic handshake message is still subject
-to stream-level data limits and MAX_STREAM_DATA. This message is exempt from
-flow control because it needs to be sent in a single packet regardless of the
-server's flow control state. This rule applies even for 0-RTT handshakes where
-the remembered value of MAX_STREAM_DATA would not permit sending a full initial
-cryptographic handshake message.
+the data limits set by its peer.
 
 Flow control is described in detail in {{flow-control}}, and congestion control
 is described in the companion document {{QUIC-RECOVERY}}.
@@ -3751,10 +4031,10 @@ the protocol functions efficiently.  That is, prioritizing frames other than
 STREAM frames ensures that loss recovery, congestion control, and flow control
 operate effectively.
 
-Stream 0 MUST be prioritized over other streams prior to the completion of the
-cryptographic handshake.  This includes the retransmission of the second flight
-of client handshake messages, that is, the TLS Finished and any client
-authentication messages.
+CRYPTO_HS frames SHOULD be prioritized over other streams prior to the
+completion of the cryptographic handshake.  This includes the
+retransmission of the second flight of client handshake messages, that
+is, the TLS Finished and any client authentication messages.
 
 STREAM data in frames determined to be lost SHOULD be retransmitted before
 sending new data, unless application priorities indicate otherwise.
@@ -3778,9 +4058,9 @@ Stream flow control, which prevents a single stream from consuming the entire
 receive buffer for a connection.
 
 A data receiver sends MAX_STREAM_DATA or MAX_DATA frames to the sender
-to advertise additional credit. MAX_STREAM_DATA frames send the maximum
-absolute byte offset of a stream, while MAX_DATA sends the maximum sum
-of the absolute byte offsets of all streams other than stream 0.
+to advertise additional credit. MAX_STREAM_DATA frames send the
+maximum absolute byte offset of a stream, while MAX_DATA sends the
+maximum of the sum of the absolute byte offsets of all streams.
 
 A receiver MAY advertise a larger offset at any point by sending MAX_DATA or
 MAX_STREAM_DATA frames.  A receiver MUST NOT renege on an advertisement; that
@@ -3806,11 +4086,11 @@ the sender receives an update before running out of flow control credit, even if
 one of the packets is lost.
 
 Connection flow control is a limit to the total bytes of stream data sent in
-STREAM frames on all streams except stream 0.  A receiver advertises credit for
-a connection by sending a MAX_DATA frame.  A receiver maintains a cumulative sum
-of bytes received on all contributing streams, which are used to check for flow
-control violations. A receiver might use a sum of bytes consumed on all
-contributing streams to determine the maximum data limit to be advertised.
+STREAM frames on all streams.  A receiver advertises credit for a connection by
+sending a MAX_DATA frame.  A receiver maintains a cumulative sum of bytes
+received on all contributing streams, which are used to check for flow control
+violations. A receiver might use a sum of bytes consumed on all contributing
+streams to determine the maximum data limit to be advertised.
 
 ## Edge Cases and Other Considerations
 
@@ -3863,22 +4143,6 @@ A receiver MAY use an autotuning mechanism to tune the frequency and amount that
 it increases data limits based on a round-trip time estimate and the rate at
 which the receiving application consumes data, similar to common TCP
 implementations.
-
-### Handshake Exemption
-
-During the initial handshake, an endpoint could need to send a larger message on
-stream 0 than would ordinarily be permitted by the peer's initial stream flow
-control window. Since MAX_STREAM_DATA frames are not permitted in these early
-packets, the peer cannot provide additional flow control window in order to
-complete the handshake.
-
-Endpoints MAY exceed the flow control limits on stream 0 prior to the completion
-of the cryptographic handshake.  (That is, in Initial, Retry, and Handshake
-packets.)  However, once the handshake is complete, endpoints MUST NOT send
-additional data beyond the peer's permitted offset.  If the amount of data sent
-during the handshake exceeds the peer's maximum offset, the endpoint cannot send
-additional data on stream 0 until the peer has sent a MAX_STREAM_DATA frame
-indicating a larger maximum offset.
 
 ## Stream Limit Increment
 
@@ -3938,6 +4202,14 @@ errors is not mandatory, but only because requiring that an endpoint generate
 these errors also means that the endpoint needs to maintain the final offset
 state for closed streams, which could mean a significant state commitment.
 
+## Flow control of CRYPTO_HS data {#flow-control-crypto}
+
+Data sent in CRYPTO_HS frames is not flow controlled in the same way as STREAM
+frames.  QUIC relies on the cryptographic protocol implementation to avoid
+excessive buffering of data, see {{QUIC-TLS}}.  The implementation SHOULD
+provide an interface to QUIC to tell it about its buffering limits so that there
+is not excessive buffering at multiple layers.
+
 
 # Error Handling
 
@@ -3964,11 +4236,11 @@ connection, MUST be signaled using a CONNECTION_CLOSE or APPLICATION_CLOSE frame
 ({{frame-connection-close}}, {{frame-application-close}}). An endpoint MAY close
 the connection in this manner even if the error only affects a single stream.
 
-Application protocols can signal application-specific protocol errors using the
-APPLICATION_CLOSE frame.  Errors that are specific to the transport, including
-all those described in this document, are carried in a CONNECTION_CLOSE frame.
-Other than the type of error code they carry, these frames are identical in
-format and semantics.
+Application protocols can signal application-specific protocol errors
+using the APPLICATION_CLOSE frame.  Errors that are specific to the
+transport, including all those described in this document, are carried
+in a CONNECTION_CLOSE frame.  Other than the type of error code they
+carry, these frames are identical in format and semantics.
 
 A CONNECTION_CLOSE or APPLICATION_CLOSE frame could be sent in a packet that is
 lost.  An endpoint SHOULD be prepared to retransmit a packet containing either
@@ -3992,10 +4264,6 @@ If an application-level error affects a single stream, but otherwise leaves the
 connection in a recoverable state, the endpoint can send a RST_STREAM frame
 ({{frame-rst-stream}}) with an appropriate error code to terminate just the
 affected stream.
-
-Stream 0 is critical to the functioning of the entire connection.  If stream 0
-is closed with either a RST_STREAM or STREAM frame bearing the FIN flag, an
-endpoint MUST generate a connection error of type PROTOCOL_VIOLATION.
 
 Other than STOPPING ({{solicited-state-transitions}}), RST_STREAM MUST be
 instigated by the application and MUST carry an application error code.
@@ -4077,9 +4345,19 @@ UNSOLICITED_PATH_RESPONSE (0xB):
 : An endpoint received a PATH_RESPONSE frame that did not correspond to any
   PATH_CHALLENGE frame that it previously sent.
 
-Codes for errors occuring when TLS is used for the crypto handshake are defined
-in Section 11 of {{QUIC-TLS}}. See {{iana-error-codes}} for details of
-registering new error codes.
+INVALID_MIGRATION (0xC):
+
+: A peer has migrated to a different network when the endpoint had disabled
+  migration.
+
+CRYPTO_ERROR (0x2XX):
+
+: The cryptographic handshake failed.  A range of 256 values is reserved for
+  carrying error codes specific to the cryptographic handshake that is used.
+  Codes for errors occuring when TLS is used for the crypto handshake are
+  defined in Section 11 of {{QUIC-TLS}}.
+
+See {{iana-error-codes}} for details of registering new error codes.
 
 
 ## Application Protocol Error Codes {#app-error-codes}
@@ -4378,6 +4656,7 @@ from 0xFF00 to 0xFFFF are reserved for Private Use {{!RFC8126}}.
 | 0x9   | VERSION_NEGOTIATION_ERROR | Version negotiation failure   | {{error-codes}} |
 | 0xA   | PROTOCOL_VIOLATION        | Generic protocol violation    | {{error-codes}} |
 | 0xB   | UNSOLICITED_PATH_RESPONSE | Unsolicited PATH_RESPONSE frame | {{error-codes}} |
+| 0xC   | INVALID_MIGRATION         | Violated disabled migration   | {{error-codes}} |
 {: #iana-error-table title="Initial QUIC Transport Error Codes Entries"}
 
 
@@ -4389,6 +4668,14 @@ from 0xFF00 to 0xFFFF are reserved for Private Use {{!RFC8126}}.
 > final version of this document.
 
 Issue and pull request numbers are listed with a leading octothorp.
+
+## Since draft-ietf-quic-transport-12
+
+- Enable server to transition connections to a preferred address (#560,#1251).
+- Moved the cryptographic handshake off stream 0 and into CRYPTO_HS frames.
+- Move stateless retry to the QUIC layer.
+- Added token fields to Initial packet header.
+- Added NEW_TOKEN frame.
 
 ## Since draft-ietf-quic-transport-11
 

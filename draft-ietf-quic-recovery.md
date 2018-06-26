@@ -89,12 +89,16 @@ when, and only when, they appear in all capitals, as shown here.
 
 # Design of the QUIC Transmission Machinery
 
-All transmissions in QUIC are sent with a packet-level header, which includes a
-packet sequence number (referred to below as a packet number).  These packet
-numbers never repeat in the lifetime of a connection, and are monotonically
-increasing, which prevents ambiguity.  This fundamental design decision
-obviates the need for disambiguating between transmissions and
-retransmissions and eliminates significant complexity from QUIC's
+All transmissions in QUIC are sent with a packet-level header, which indicates
+the encryption level and includes a packet sequence number
+(referred to below as a packet number).  The encryption level indicates the
+packet number space, as described in {{QUIC-TRANSPORT}}.  Packet
+numbers never repeat within a packet number space for the lifetime of a
+connection.  Packet numbers monotonically increase within a space,
+preventing ambiguity.
+
+This design obviates the need for disambiguating between transmissions
+and retransmissions and eliminates significant complexity from QUIC's
 interpretation of TCP loss detection mechanisms.
 
 Every packet may contain several frames.  We outline the frames that are
@@ -107,7 +111,7 @@ important to the loss detection and congestion control machinery below.
 * Retransmittable packets are those that contain at least one
   retransmittable frame.
 
-* Crypto handshake data is sent on stream 0, and uses the reliability
+* Crypto handshake data is sent in CRYPTO_HS frames, and uses the reliability
   machinery of QUIC underneath.
 
 * ACK frames contain acknowledgment information.  ACK frames contain one or more
@@ -119,6 +123,15 @@ Readers familiar with TCP's loss detection and congestion control will find
 algorithms here that parallel well-known TCP ones. Protocol differences between
 QUIC and TCP however contribute to algorithmic differences. We briefly describe
 these protocol differences below.
+
+### Separate Packet Number Spaces
+
+QUIC uses separate packet number spaces for each encryption level, except
+0-RTT and all generations of 1-RTT keys use the same packet number space.
+Separate packet number spaces ensures acknowledgement of packets sent
+with one level of encryption will not cause spurious retransmission of packets
+sent with a different encryption level.  Congestion control and RTT measurement
+are unified across packet number spaces.
 
 ### Monotonically Increasing Packet Numbers
 
@@ -209,7 +222,7 @@ reordering of packets in the network.
 
 The RECOMMENDED initial value for kReorderingThreshold is 3.
 
-We derive this default from recommendations for TCP loss recovery {{?RFC5681}}
+We derive this recommendation from TCP loss recovery {{?RFC5681}}
 {{?RFC6675}}. It is possible for networks to exhibit higher degrees of
 reordering, causing a sender to detect spurious losses. Detecting spurious
 losses leads to unnecessary retransmissions and may result in degraded
@@ -259,17 +272,18 @@ prone to spurious retransmissions due to its reduced reordering resilence
 without the alarm. This observation led Linux TCP implementers to implement an
 alarm for TCP as well, and this document incorporates this advancement.
 
-
 ## Timer-based Detection
 
 Timer-based loss detection implements a handshake retransmission timer that
 is optimized for QUIC as well as the spirit of TCP's Tail Loss Probe
 and Retransmission Timeout mechanisms.
 
-### Handshake Timeout
+### Crypto Handshake Timeout
 
-Handshake packets, which contain STREAM frames for stream 0, are critical to
-QUIC transport and crypto negotiation, so a separate alarm is used for them.
+Data in CRYPTO_HS frames is critical to QUIC transport and crypto negotiation,
+so a more aggressive timeout is used to retransmit it.  Below, the word
+handshake packet is used to refer to packets containing CRYPTO_HS frames,
+not packets with the specific long header packet type Handshake.
 
 The initial handshake timeout SHOULD be set to twice the initial RTT.
 
@@ -280,23 +294,28 @@ connection's final smoothed RTT value as the resumed connection's initial RTT.
 If no previous RTT is available, or if the network changes, the initial RTT
 SHOULD be set to 100ms.
 
-When a handshake packet is sent, the sender SHOULD set an alarm for the
-handshake timeout period.
+When CRYPTO_HS frames are sent, the sender SHOULD set an alarm for the
+handshake timeout period.  When the alarm fires, the sender MUST retransmit
+all unacknowledged CRYPTO_HS data by calling
+RetransmitAllUnackedHandshakeData(). On each consecutive firing of the
+handshake alarm without receiving an acknowledgement for a new packet,
+the sender SHOULD double the handshake timeout and set an alarm for this
+period.
 
-When the alarm fires, the sender MUST retransmit all unacknowledged handshake
-data, by calling RetransmitAllUnackedHandshakeData(). On each consecutive
-firing of the handshake alarm, the sender SHOULD double the handshake timeout
-and set an alarm for this period.
+When CRYPTO_HS frames are outstanding, the TLP and RTO timers are not active
+unless the CRYPTO_HS frames were sent at 1RTT encryption.
 
 When an acknowledgement is received for a handshake packet, the new RTT is
 computed and the alarm SHOULD be set for twice the newly computed smoothed RTT.
 
-Handshake data may be cancelled by handshake state transitions. In particular,
-all non-protected data SHOULD no longer be transmitted once packet protection
-is available.
+#### Retry
 
-(TODO: Work this section some more. Add text on client vs. server, and on
-stateless retry.)
+A Retry packet causes the content of the client's Initial packet to be
+immediately retransmitted along with the token present in the Retry.
+
+The Retry indicates that the Initial was received but not processed.
+It MUST NOT be treated as an acknowledgment for the Initial,
+but it MAY be used for an RTT measurement.
 
 ### Tail Loss Probe {#tlp}
 
@@ -404,7 +423,7 @@ QUIC SHOULD delay sending acknowledgements in response to packets,
 but MUST NOT excessively delay acknowledgements of packets containing
 non-ack frames.  Specifically, implementaions MUST attempt to
 enforce a maximum ack delay to avoid causing the peer spurious
-timeouts.  The default maximum ack delay in QUIC is 25ms.
+timeouts.  The RECOMMENDED maximum ack delay in QUIC is 25ms.
 
 An acknowledgement MAY be sent for every second full-sized packet,
 as TCP does {{?RFC5681}}, or may be sent less frequently, as long as
@@ -421,6 +440,14 @@ As an optimization, a receiver MAY process multiple packets before
 sending any ACK frames in response.  In this case they can determine
 whether an immediate or delayed acknowledgement should be generated
 after processing incoming packets.
+
+### Crypto Handshake Data
+
+In order to quickly complete the handshake and avoid spurious
+retransmissions due to handshake alarm timeouts, handshake packets
+SHOULD use a very short ack delay, such as 1ms.  ACK frames MAY be
+sent immediately when the crypto stack indicates all data for that
+encryption level has been received.
 
 ### ACK Ranges
 
@@ -460,32 +487,32 @@ Constants used in loss recovery are based on a combination of RFCs, papers,
 and common practice.  Some may need to be changed or negotiated in order to
 better suit a variety of environments.
 
-kMaxTLPs (default 2):
+kMaxTLPs (RECOMMENDED 2):
 : Maximum number of tail loss probes before an RTO fires.
 
-kReorderingThreshold (default 3):
+kReorderingThreshold (RECOMMENDED 3):
 : Maximum reordering in packet number space before FACK style loss detection
   considers a packet lost.
 
-kTimeReorderingFraction (default 1/8):
+kTimeReorderingFraction (RECOMMENDED 1/8):
 : Maximum reordering in time space before time based loss detection considers
   a packet lost.  In fraction of an RTT.
 
-kUsingTimeLossDetection (default false):
+kUsingTimeLossDetection (RECOMMENDED false):
 : Whether time based loss detection is in use.  If false, uses FACK style
   loss detection.
 
-kMinTLPTimeout (default 10ms):
+kMinTLPTimeout (RECOMMENDED 10ms):
 : Minimum time in the future a tail loss probe alarm may be set for.
 
-kMinRTOTimeout (default 200ms):
+kMinRTOTimeout (RECOMMENDED 200ms):
 :  Minimum time in the future an RTO alarm may be set for.
 
-kDelayedAckTimeout (default 25ms):
+kDelayedAckTimeout (RECOMMENDED 25ms):
 : The length of the peer's delayed ack timer.
 
-kDefaultInitialRtt (default 100ms):
-: The default RTT used before an RTT sample is taken.
+kInitialRtt (RECOMMENDED 100ms):
+: The RTT used before an RTT sample is taken.
 
 ### Variables of interest
 
@@ -514,7 +541,7 @@ time_of_last_sent_retransmittable_packet:
 : The time the most recent retransmittable packet was sent.
 
 time_of_last_sent_handshake_packet:
-: The time the most recent packet containing handshake data was sent.
+: The time the most recent packet containing a CRYPTO_HS frame was sent.
 
 largest_sent_packet:
 : The packet number of the most recently sent packet.
@@ -559,6 +586,8 @@ sent_packets:
   was sent, a boolean indicating whether the packet is ack only, and a bytes
   field indicating the packet's size.  sent_packets is ordered by packet
   number, and packets remain in sent_packets until acknowledged or lost.
+  A sent_packets data structure is maintained per packet number space, and ACK
+  processing only applies to a single space.
 
 ### Initialization
 
@@ -711,7 +740,7 @@ closed once a reject is sent, so no timer is set to retransmit the reject.
 
 Version negotiation packets are always stateless, and MUST be sent once per
 handshake packet that uses an unsupported QUIC version, and MAY be sent in
-response to 0RTT packets.
+response to 0-RTT packets.
 
 #### Tail Loss Probe and Retransmission Alarm
 
@@ -745,7 +774,7 @@ Pseudocode for SetLossDetectionAlarm follows:
     if (handshake packets are outstanding):
       // Handshake retransmission alarm.
       if (smoothed_rtt == 0):
-        alarm_duration = 2 * kDefaultInitialRtt
+        alarm_duration = 2 * kInitialRtt
       else:
         alarm_duration = 2 * smoothed_rtt
       alarm_duration = max(alarm_duration + max_ack_delay,
@@ -807,18 +836,11 @@ Pseudocode for OnLossDetectionAlarm follows:
 
 ### Detecting Lost Packets
 
-Packets in QUIC are only considered lost once a larger packet number is
-acknowledged.  DetectLostPackets is called every time an ack is received.
-If the loss detection alarm fires and the loss_time is set, the previous
-largest acked packet is supplied.
-
-#### Handshake Packets
-
-The receiver MUST close the connection with an error of type OPTIMISTIC_ACK
-when receiving an unprotected packet that acks protected packets.
-The receiver MUST trust protected acks for unprotected packets, however.  Aside
-from this, loss detection for handshake packets when an ack is processed is
-identical to other packets.
+Packets in QUIC are only considered lost once a larger packet number in
+the same packet number space is acknowledged.  DetectLostPackets is called
+every time an ack is received and operates on the sent_packets for that
+packet number space.  If the loss detection alarm fires and the loss_time
+is set, the previous largest acked packet is supplied.
 
 #### Pseudocode
 
@@ -958,17 +980,17 @@ Constants used in congestion control are based on a combination of RFCs,
 papers, and common practice.  Some may need to be changed or negotiated
 in order to better suit a variety of environments.
 
-kDefaultMss (default 1460 bytes):
-: The default max packet size used for calculating default and minimum
+kInitialMss (RECOMMENDED 1460 bytes):
+: The max packet size is used for calculating initial and minimum
   congestion windows.
 
-kInitialWindow (default 10 * kDefaultMss):
-: Default limit on the amount of outstanding data in bytes.
+kInitialWindow (RECOMMENDED 10 * kInitialMss):
+: Limit on the initial amount of outstanding data in bytes.
 
-kMinimumWindow (default 2 * kDefaultMss):
-: Default minimum congestion window.
+kMinimumWindow (RECOMMENDED 2 * kInitialMss):
+: Minimum congestion window in bytes.
 
-kLossReductionFactor (default 0.5):
+kLossReductionFactor (RECOMMENDED 0.5):
 : Reduction in congestion window when a new loss event is detected.
 
 
@@ -1039,7 +1061,7 @@ acked_packet from sent_packets.
      else:
        // Congestion avoidance.
        congestion_window +=
-         kDefaultMss * acked_packet.bytes / congestion_window
+         kInitialMss * acked_packet.bytes / congestion_window
 ~~~
 
 ### On Packets Lost
@@ -1083,6 +1105,15 @@ This document has no IANA actions.  Yet.
 
 > **RFC Editor's Note:**  Please remove this section prior to
 > publication of a final version of this document.
+
+## Since draft-ietf-quic-recovery-12
+
+- Updated to match the Stream0 design team proposal.
+- Text on multiple packet number spaces.
+
+## Since draft-ietf-quic-recovery-11
+
+No significant changes.
 
 ## Since draft-ietf-quic-recovery-10
 
