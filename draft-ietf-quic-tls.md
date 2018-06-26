@@ -605,12 +605,12 @@ HelloRetryRequest is still used for incorrect key shares.
 If TLS experiences an error, it generates an appropriate alert as defined in
 Section 6 of {{TLS13}}.
 
-A TLS alert is turned into a QUIC connection error by converting the alert
-description into a QUIC error code.  The alert description is added to 0x200 to
-produce a QUIC error code from the range reserved for CRYPTO_ERROR.  The
-resulting value is sent in a QUIC CONNECTION_CLOSE frame.
+A TLS alert is turned into a QUIC connection error by converting the one-octet
+alert description into a QUIC error code.  The alert description is added to
+0x200 to produce a QUIC error code from the range reserved for CRYPTO_ERROR.
+The resulting value is sent in a QUIC CONNECTION_CLOSE frame.
 
-The alert level of all TLS alerts is "fatal", a TLS stack does not generate
+The alert level of all TLS alerts is "fatal", a TLS stack MUST NOT generate
 alerts at the "warning" level.
 
 
