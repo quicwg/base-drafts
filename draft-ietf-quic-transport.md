@@ -578,7 +578,7 @@ Token Length:
 Token:
 
 : An optional token blob previously received in either a Retry packet or
-NEW_TOKEN frame.
+  NEW_TOKEN frame.
 
 The client and server use the Initial packet type for any packet that
 contains an initial cryptographic handshake message. In addition to
@@ -649,7 +649,7 @@ Note:
 
 : The rationale for treating the client as unvalidated rather
 than discarding the packet is that the client might have received
-the token in a previous connection using the NEW_TOKEN message,
+the token in a previous connection using the NEW_TOKEN frame,
 and if the server has lost state, it might be unable to validate
 the token at all, leading to connection failure if the packet
 is discarded.
@@ -1032,7 +1032,7 @@ explained in more detail as they are referenced later in the document.
 | 0x0f        | PATH_RESPONSE     | {{frame-path-response}}     |
 | 0x10 - 0x17 | STREAM            | {{frame-stream}}            |
 | 0x18        | CRYPTO_HS         | {{frame-crypto}}            |
-| 0x20        | NEW_TOKEN         | {{frame-new-token}}         |
+| 0x19        | NEW_TOKEN         | {{frame-new-token}}         |
 {: #frame-types title="Frame Types"}
 
 All QUIC frames are idempotent.  That is, a valid frame does not cause
@@ -3090,7 +3090,7 @@ a connection error of type UNSOLICITED_PATH_RESPONSE.
 
 ## NEW_TOKEN frame {#frame-new-token}
 
-A server sends a NEW_TOKEN frame (type=0x21) to provide the client a token to
+A server sends a NEW_TOKEN frame (type=0x19) to provide the client a token to
 send in a the header of an Initial packet for a future connection.
 
 The NEW_TOKEN frame is as follows:
@@ -4153,7 +4153,7 @@ transport, including all those described in this document, are carried
 in a CONNECTION_CLOSE frame.  Other than the type of error code they
 carry, these frames are identical in format and semantics.
 
-A CONNECTION_CLOSE, or APPLICATION_CLOSE frame could be sent in a packet that is
+A CONNECTION_CLOSE or APPLICATION_CLOSE frame could be sent in a packet that is
 lost.  An endpoint SHOULD be prepared to retransmit a packet containing either
 frame type if it receives more packets on a terminated connection.  Limiting the
 number of retransmissions and the time over which this final packet is sent
