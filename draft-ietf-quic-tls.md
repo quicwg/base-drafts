@@ -931,13 +931,18 @@ MUST immediately terminate the connection if it detects this condition.
 
 # Security of Initial Messages
 
-Because the Initial messages are not protected with a secret key, they are
-subject to potential tampering by an attacker. Some forms of tampering -- such
-as modifying the TLS messages themselves -- are detectable, but some -- such as
-modifying ACKs -- are not. To give a concrete example, an on-path attacker could
-modify the ACK to make it appear that a packet had not been received or to
-create a false impression of the state of the connection (e.g., by modifying the
-ACK Delay).  Implementations SHOULD use caution in relying on any data which is
+Initial packets are not protected with a secret key, so they are subject to
+potential tampering by an attacker.  QUIC provides protection against attackers
+that cannot read packets, but does not attempt to provide additional protection
+against attacks where the attacker can observe and inject packets.  Some forms
+of tampering -- such as modifying the TLS messages themselves -- are detectable,
+but some -- such as modifying ACKs -- are not.
+
+For example, an attacker could inject a packet containing an ACK frame that
+makes it appear that a packet had not been received or to create a false
+impression of the state of the connection (e.g., by modifying the ACK Delay).
+Note that such a packet could cause a legitimate packet to be dropped as a
+duplicate.  Implementations SHOULD use caution in relying on any data which is
 contained in Initial packets that is not otherwise authenticated.
 
 It is also possible for the attacker to tamper with data that is carried in
