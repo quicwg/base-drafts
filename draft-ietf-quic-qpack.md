@@ -952,6 +952,9 @@ The entries in the following table are registered by this document.
 - Header block acknowledgments also acknowledge the associated largest reference
   (#1370, #1400)
 - Added an acknowledgment for unread streams (#1371, #1400)
+- Removed framing from encoder stream (#1361,#1467)
+- Control streams use typed unidirectional streams rather than fixed stream IDs
+  (#910,#1359)
 
 ## Since draft-ietf-quic-qcram-00
 

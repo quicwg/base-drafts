@@ -1593,8 +1593,12 @@ The entries in the following table are registered by this document.
 - TLS SNI extension isn't mandatory if an alternative method is used (#1459,
   #1462, #1466)
 - Removed flags from HTTP/QUIC frames (#1388, #1398)
-- Reserved frame types for use in preserving extensibility (#1333, #1446)
+- Reserved frame types and settings for use in preserving extensibility (#1333,
+  #1446)
 - Added general error code (#1391, #1397)
+- Unidirectional streams carry a type byte and are extensible (#910,#1359)
+- Priority mechanism now uses explicit placeholders to enable persistent
+  structure in the tree (#441,#1421,#1422)
 
 ## Since draft-ietf-quic-http-11
 
