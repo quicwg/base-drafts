@@ -1588,6 +1588,14 @@ The entries in the following table are registered by this document.
 > **RFC Editor's Note:**  Please remove this section prior to publication of a
 > final version of this document.
 
+## Since draft-ietf-quic-http-12
+
+- TLS SNI extension isn't mandatory if an alternative method is used (#1459,
+  #1462, #1466)
+- Removed flags from HTTP/QUIC frames (#1388, #1398)
+- Reserved frame types for use in preserving extensibility (#1333, #1446)
+- Added general error code (#1391, #1397)
+
 ## Since draft-ietf-quic-http-11
 
 - Moved QPACK table updates and acknowledgments to dedicated streams (#1121,
@@ -1684,4 +1692,3 @@ The original authors of this specification were Robbie Shade and Mike Warres.
 
 A substantial portion of Mike's contribution was supported by Microsoft during
 his employment there.
-

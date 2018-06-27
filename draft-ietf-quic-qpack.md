@@ -945,6 +945,14 @@ The entries in the following table are registered by this document.
 > **RFC Editor's Note:**  Please remove this section prior to publication of a
 > final version of this document.
 
+## Since draft-ietf-quic-qpack-00
+
+- Renumbered instructions for consistency (#1471, #1472)
+- Decoder is allowed to validate largest reference (#1404, #1469)
+- Header block acknowledgments also acknowledge the associated largest reference
+  (#1370, #1400)
+- Added an acknowledgment for unread streams (#1371, #1400)
+
 ## Since draft-ietf-quic-qcram-00
 
 - Separate instruction sets for table updates and header blocks (#1235, #1142,

@@ -1123,8 +1123,14 @@ Issue and pull request numbers are listed with a leading octothorp.
 
 ## Since draft-ietf-quic-tls-12
 
-- Big restructure to align with the "QUIC record layer for TLS" proposal.
-- Remove source address validation from TLS in favor of Retry.
+- Changes to integration of the TLS handshake (#829, #1018, #1094, #1165, #1190,
+  #1233, #1242, #1252, #1450)
+  - The cryptographic handshake uses CRYPTO frames, not stream 0
+  - QUIC packet protection is used in place of TLS record protection
+  - Separate QUIC packet number spaces are used for the handshake
+  - Changed Retry to be independent of the cryptographic handshake
+  - Limit the use of HelloRetryRequest to address TLS needs (like key shares)
+- Changed codepoint of TLS extension (#1395, #1402)
 
 ## Since draft-ietf-quic-tls-11
 
