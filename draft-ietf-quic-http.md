@@ -254,13 +254,12 @@ application.
 When HTTP headers and data are sent over QUIC, the QUIC layer handles most of
 the stream management.
 
-QUIC reserves the first client-initiated bidirectional stream (Stream 0) for
-cryptographic operations. All remaining client-initiated bidirectional streams
-are used for HTTP requests and responses.  A bidirectional stream ensures that
-the response can be readily correlated with the request. This means that the
-client's first request occurs on QUIC stream 4, with subsequent requests on
-stream 8, 12, and so on. HTTP/QUIC does not use server-initiated bidirectional
-streams.
+All client-initiated bidirectional streams are used for HTTP requests and
+responses.  A bidirectional stream ensures that the response can be readily
+correlated with the request. This means that the client's first request occurs
+on QUIC stream 0, with subsequent requests on stream 4, 8, and so on. HTTP/QUIC
+does not use server-initiated bidirectional streams. The use of unidirectional
+streams is discussed in {{unidirectional-streams}}.
 
 These streams carry frames related to the request/response (see {{frames}}).
 When a stream terminates cleanly, if the last frame on the stream was truncated,
