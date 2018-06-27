@@ -649,7 +649,6 @@ Note:
   might be unable to validate the token at all, leading to connection failure if
   the packet is discarded.
 
->>>>>>> Reflow paragraphs
 
 #### Starting Packet Numbers
 
