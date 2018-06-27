@@ -582,13 +582,13 @@ the state of all streams, including application state bound to those streams.
 
 ## HelloRetryRequest
 
-In TLS over TCP, the HelloRetryRequest feature ({{TLS13}; Section 4.1.4) can be
-used to correct a client's incorrect KeyShare extension as well as for a
+In TLS over TCP, the HelloRetryRequest feature (see Section 4.1.4 of {{!TLS13}})
+can be used to correct a client's incorrect KeyShare extension as well as for a
 stateless round-trip check. From the perspective of QUIC, this just looks like
 additional messages carried in the Initial encryption level. Although it is in
 principle possible to use this feature for address verification in QUIC, QUIC
-implementations SHOULD instead use the Retry feature ({{QUIC-TRANSPORT}};
-Section 4.4.2)).  HelloRetryRequest is still used to request key shares.
+implementations SHOULD instead use the Retry feature (see Section 4.4.2 of
+{{QUIC-TRANSPORT}}).  HelloRetryRequest is still used to request key shares.
 
 
 ## TLS Errors
@@ -615,16 +615,15 @@ handshake, using the AEAD algorithm negotiated by TLS.
 
 QUIC derives packet encryption keys in the same way as TLS 1.3: Each encryption
 level/direction pair has a secret value, which is then used to derive the
-traffic keys using as described in {{TLS13}}, Section 7.3.
+traffic keys using as described in Section 7.3 of {{!TLS13}}
 
 The keys for the Initial encryption level are computed based on the client's
 initial Destination Connection ID, as described in {{initial-secrets}}.
 
 The keys for the remaining encryption level are computed in the same fashion as
-the corresponding TLS keys (see {{TLS13}}; Section 7), except that the label for
-HKDF-Expand-Label uses the prefix "quic " rather than "tls13". The purpose of
-this change is to provide key separation between TLS and QUIC, so that TLS
-stacks can avoid exposing TLS record protection keys.
+the corresponding TLS keys (see Section 7 of {{!TLS13}}), except that the label
+for HKDF-Expand-Label uses the prefix "quic " rather than "tls13 ". A different
+label provides key separation between TLS and QUIC.
 
 ### Initial Secrets {#initial-secrets}
 
@@ -1023,10 +1022,10 @@ by an attacker.
 QUIC includes three defenses against this attack. First, the packet containing a
 ClientHello MUST be padded to a minimum size. Second, if responding to an
 unverified source address, the server is forbidden to send more than three UDP
-datagrams in its first flight ({{QUIC-TRANSPORT}}; Section 4.4.3). Finally,
-because acknowledgements of Handshake packets are authenticated, a blind
-attacker cannot forge them.  Put together, these defenses limit the level of
-amplification.
+datagrams in its first flight (see Section 4.4.3 of
+{{QUIC-TRANSPORT}}). Finally, because acknowledgements of Handshake packets are
+authenticated, a blind attacker cannot forge them.  Put together, these defenses
+limit the level of amplification.
 
 
 ## Peer Denial of Service {#useless}
