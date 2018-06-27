@@ -512,8 +512,8 @@ Each side MUST initiate a single control stream at the beginning of the
 connection and send its SETTINGS frame as the first frame on this stream.  Only
 one control stream per peer is permitted; receipt of a second stream which
 claims to be a control stream MUST be treated as a connection error of type
-HTTP_TOO_CONTROLLING.  If the control stream is closed at any point, this MUST
-be treated as a connection error of type HTTP_CLOSED_CRITICAL_STREAM.
+HTTP_WRONG_STREAM_COUNT.  If the control stream is closed at any point, this
+MUST be treated as a connection error of type HTTP_CLOSED_CRITICAL_STREAM.
 
 A pair of unidirectional streams is used rather than a single bidirectional
 stream.  This allows either peer to send data as soon they are able.  Depending
@@ -1182,8 +1182,9 @@ HTTP_DUPLICATE_PUSH (0x0C):
 HTTP_UNKNOWN_STREAM_TYPE (0x0D):
 : A unidirectional stream header contained an unknown stream type.
 
-HTTP_TOO_CONTROLLING (0x0E):
-: More than one control stream was opened by the peer.
+HTTP_WRONG_STREAM_COUNT (0x0E):
+: A unidirectional stream type was used more times than is permitted by that
+  type.
 
 HTTP_CLOSED_CRITICAL_STREAM (0x0F):
 : A stream required by the connection was closed or reset.
@@ -1616,7 +1617,7 @@ The entries in the following table are registered by this document.
 | HTTP_PUSH_LIMIT_EXCEEDED            | 0x000B     | Maximum Push ID exceeded                 | {{http-error-codes}}   |
 | HTTP_DUPLICATE_PUSH                 | 0x000C     | Push ID was fulfilled multiple times     | {{http-error-codes}}   |
 | HTTP_UNKNOWN_STREAM_TYPE            | 0x000D     | Unknown unidirectional stream type       | {{http-error-codes}}   |
-| HTTP_TOO_CONTROLLING                | 0x000E     | Multiple control streams                 | {{http-error-codes}}   |
+| HTTP_WRONG_STREAM_COUNT             | 0x000E     | Too many unidirectional streams          | {{http-error-codes}}   |
 | HTTP_CLOSED_CRITICAL_STREAM         | 0x000F     | Critical stream was closed               | {{http-error-codes}}   |
 | HTTP_WRONG_STREAM_DIRECTION         | 0x0010     | Unidirectional stream in wrong direction | {{http-error-codes}}   |
 | HTTP_MALFORMED_FRAME                | 0x01XX     | Error in frame formatting or use         | {{http-error-codes}}   |

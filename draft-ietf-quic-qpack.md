@@ -371,7 +371,7 @@ instruction space:
 
 There MUST be exactly one of each unidirectional stream type in each direction.
 Receipt of a second instance of either stream type MUST be treated as a
-connection error of HTTP_TOO_CONTROLLING.  Closure of either unidirectional
+connection error of HTTP_WRONG_STREAM_COUNT.  Closure of either unidirectional
 stream MUST be treated as a connection error of type
 HTTP_CLOSED_CRITICAL_STREAM.
 
