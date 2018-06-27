@@ -280,8 +280,8 @@ Retransmission Timeout mechanisms.
 ### Crypto Handshake Timeout
 
 Data in CRYPTO frames is critical to QUIC transport and crypto negotiation, so a
-more aggressive timeout is used to retransmit it.  Below, the word handshake
-packet is used to refer to packets containing CRYPTO frames, not packets with
+more aggressive timeout is used to retransmit it.  Below, the term "handshake
+packet" is used to refer to packets containing CRYPTO frames, not packets with
 the specific long header packet type Handshake.
 
 The initial handshake timeout SHOULD be set to twice the initial RTT.
