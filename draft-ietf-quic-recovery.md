@@ -90,29 +90,28 @@ when, and only when, they appear in all capitals, as shown here.
 # Design of the QUIC Transmission Machinery
 
 All transmissions in QUIC are sent with a packet-level header, which indicates
-the encryption level and includes a packet sequence number
-(referred to below as a packet number).  The encryption level indicates the
-packet number space, as described in {{QUIC-TRANSPORT}}.  Packet
-numbers never repeat within a packet number space for the lifetime of a
-connection.  Packet numbers monotonically increase within a space,
-preventing ambiguity.
+the encryption level and includes a packet sequence number (referred to below as
+a packet number).  The encryption level indicates the packet number space, as
+described in {{QUIC-TRANSPORT}}.  Packet numbers never repeat within a packet
+number space for the lifetime of a connection.  Packet numbers monotonically
+increase within a space, preventing ambiguity.
 
-This design obviates the need for disambiguating between transmissions
-and retransmissions and eliminates significant complexity from QUIC's
-interpretation of TCP loss detection mechanisms.
+This design obviates the need for disambiguating between transmissions and
+retransmissions and eliminates significant complexity from QUIC's interpretation
+of TCP loss detection mechanisms.
 
 Every packet may contain several frames.  We outline the frames that are
 important to the loss detection and congestion control machinery below.
 
-* Retransmittable frames are those that count towards bytes in
-  flight and need acknowledgement.  The most common are STREAM frames,
-  which typically contain application data.
+* Retransmittable frames are those that count towards bytes in flight and need
+  acknowledgement.  The most common are STREAM frames, which typically contain
+  application data.
 
-* Retransmittable packets are those that contain at least one
-  retransmittable frame.
+* Retransmittable packets are those that contain at least one retransmittable
+  frame.
 
-* Crypto handshake data is sent in CRYPTO_HS frames, and uses the reliability
-  machinery of QUIC underneath.
+* Cryptographic handshake data is sent in CRYPTO frames, and uses the
+  reliability machinery of QUIC underneath.
 
 * ACK and ACK_ECN frames contain acknowledgment information. ACK_ECN frames
   additionally contain information about ECN codepoints seen by the peer.  (The
@@ -128,22 +127,22 @@ these protocol differences below.
 
 ### Separate Packet Number Spaces
 
-QUIC uses separate packet number spaces for each encryption level, except
-0-RTT and all generations of 1-RTT keys use the same packet number space.
-Separate packet number spaces ensures acknowledgement of packets sent
-with one level of encryption will not cause spurious retransmission of packets
-sent with a different encryption level.  Congestion control and RTT measurement
-are unified across packet number spaces.
+QUIC uses separate packet number spaces for each encryption level, except 0-RTT
+and all generations of 1-RTT keys use the same packet number space.  Separate
+packet number spaces ensures acknowledgement of packets sent with one level of
+encryption will not cause spurious retransmission of packets sent with a
+different encryption level.  Congestion control and RTT measurement are unified
+across packet number spaces.
 
 ### Monotonically Increasing Packet Numbers
 
 TCP conflates transmission sequence number at the sender with delivery sequence
 number at the receiver, which results in retransmissions of the same data
 carrying the same sequence number, and consequently to problems caused by
-"retransmission ambiguity".  QUIC separates the two: QUIC uses a packet
-number for transmissions, and any data that is to be delivered to the receiving
-application(s) is sent in one or more streams, with delivery order determined
-by stream offsets encoded within STREAM frames.
+"retransmission ambiguity".  QUIC separates the two: QUIC uses a packet number
+for transmissions, and any data that is to be delivered to the receiving
+application(s) is sent in one or more streams, with delivery order determined by
+stream offsets encoded within STREAM frames.
 
 QUIC's packet number is strictly increasing, and directly encodes transmission
 order.  A higher QUIC packet number signifies that the packet was sent later,
@@ -191,21 +190,20 @@ round-trip time (RTT) is critical to these algorithms and is described first.
 
 ## Computing the RTT estimate
 
-RTT is calculated when an ACK frame arrives by computing the difference
-between the current time and the time the largest newly acked packet was sent.
-If no packets are newly acknowledged, RTT cannot be calculated. When RTT is
-calculated, the ack delay field from the ACK frame SHOULD be subtracted from
-the RTT as long as the result is larger than the Min RTT.  If the result is
-smaller than the min_rtt, the RTT should be used, but the ack delay field
-should be ignored.
+RTT is calculated when an ACK frame arrives by computing the difference between
+the current time and the time the largest newly acked packet was sent.  If no
+packets are newly acknowledged, RTT cannot be calculated. When RTT is
+calculated, the ack delay field from the ACK frame SHOULD be subtracted from the
+RTT as long as the result is larger than the Min RTT.  If the result is smaller
+than the min_rtt, the RTT should be used, but the ack delay field should be
+ignored.
 
 Like TCP, QUIC calculates both smoothed RTT and RTT variance similar to those
 specified in {{?RFC6298}}.
 
-Min RTT is the minimum RTT measured over the connection, prior to adjusting
-by ack delay.  Ignoring ack delay for min RTT prevents intentional or
-unintentional underestimation of min RTT, which in turn prevents
-underestimating smoothed RTT.
+Min RTT is the minimum RTT measured over the connection, prior to adjusting by
+ack delay.  Ignoring ack delay for min RTT prevents intentional or unintentional
+underestimation of min RTT, which in turn prevents underestimating smoothed RTT.
 
 ## Ack-based Detection
 
@@ -239,15 +237,14 @@ and implementers are encouraged to explore this space.
 ### Early Retransmit
 
 Unacknowledged packets close to the tail may have fewer than
-kReorderingThreshold retransmittable packets sent after them.
-Loss of such packets cannot be detected via Fast Retransmit. To enable
-ack-based loss detection of such packets, receipt of an acknowledgment for the
-last outstanding retransmittable packet triggers the Early Retransmit
-process, as follows.
+kReorderingThreshold retransmittable packets sent after them.  Loss of such
+packets cannot be detected via Fast Retransmit. To enable ack-based loss
+detection of such packets, receipt of an acknowledgment for the last outstanding
+retransmittable packet triggers the Early Retransmit process, as follows.
 
-If there are unacknowledged retransmittable packets still pending, they
-should be marked as lost. To compensate for the reduced reordering resilience,
-the sender SHOULD set an alarm for a small period of time. If the unacknowledged
+If there are unacknowledged retransmittable packets still pending, they should
+be marked as lost. To compensate for the reduced reordering resilience, the
+sender SHOULD set an alarm for a small period of time. If the unacknowledged
 retransmittable packets are not acknowledged during this time, then these
 packets MUST be marked as lost.
 
@@ -257,11 +254,11 @@ than 1.25 * max(SRTT, latest_RTT) since when it was sent.
 Using max(SRTT, latest_RTT) protects from the two following cases:
 
 * the latest RTT sample is lower than the SRTT, perhaps due to reordering where
-packet whose ack triggered the Early Retransit process encountered a shorter
-path;
+  packet whose ack triggered the Early Retransit process encountered a shorter
+  path;
 
 * the latest RTT sample is higher than the SRTT, perhaps due to a sustained
-increase in the actual RTT, but the smoothed SRTT has not yet caught up.
+  increase in the actual RTT, but the smoothed SRTT has not yet caught up.
 
 The 1.25 multiplier increases reordering resilience. Implementers MAY experiment
 with using other multipliers, bearing in mind that a lower multiplier reduces
@@ -276,36 +273,35 @@ alarm for TCP as well, and this document incorporates this advancement.
 
 ## Timer-based Detection
 
-Timer-based loss detection implements a handshake retransmission timer that
-is optimized for QUIC as well as the spirit of TCP's Tail Loss Probe
-and Retransmission Timeout mechanisms.
+Timer-based loss detection implements a handshake retransmission timer that is
+optimized for QUIC as well as the spirit of TCP's Tail Loss Probe and
+Retransmission Timeout mechanisms.
 
 ### Crypto Handshake Timeout
 
-Data in CRYPTO_HS frames is critical to QUIC transport and crypto negotiation,
-so a more aggressive timeout is used to retransmit it.  Below, the word
-handshake packet is used to refer to packets containing CRYPTO_HS frames,
-not packets with the specific long header packet type Handshake.
+Data in CRYPTO frames is critical to QUIC transport and crypto negotiation, so a
+more aggressive timeout is used to retransmit it.  Below, the term "handshake
+packet" is used to refer to packets containing CRYPTO frames, not packets with
+the specific long header packet type Handshake.
 
 The initial handshake timeout SHOULD be set to twice the initial RTT.
 
-At the beginning, there are no prior RTT samples within a connection.
-Resumed connections over the same network SHOULD use the previous
-connection's final smoothed RTT value as the resumed connection's initial RTT.
+At the beginning, there are no prior RTT samples within a connection.  Resumed
+connections over the same network SHOULD use the previous connection's final
+smoothed RTT value as the resumed connection's initial RTT.
 
 If no previous RTT is available, or if the network changes, the initial RTT
 SHOULD be set to 100ms.
 
-When CRYPTO_HS frames are sent, the sender SHOULD set an alarm for the
-handshake timeout period.  When the alarm fires, the sender MUST retransmit
-all unacknowledged CRYPTO_HS data by calling
-RetransmitAllUnackedHandshakeData(). On each consecutive firing of the
-handshake alarm without receiving an acknowledgement for a new packet,
-the sender SHOULD double the handshake timeout and set an alarm for this
-period.
+When CRYPTO frames are sent, the sender SHOULD set an alarm for the handshake
+timeout period.  When the alarm fires, the sender MUST retransmit all
+unacknowledged CRYPTO data by calling RetransmitAllUnackedHandshakeData(). On
+each consecutive firing of the handshake alarm without receiving an
+acknowledgement for a new packet, the sender SHOULD double the handshake timeout
+and set an alarm for this period.
 
-When CRYPTO_HS frames are outstanding, the TLP and RTO timers are not active
-unless the CRYPTO_HS frames were sent at 1RTT encryption.
+When CRYPTO frames are outstanding, the TLP and RTO timers are not active unless
+the CRYPTO frames were sent at 1RTT encryption.
 
 When an acknowledgement is received for a handshake packet, the new RTT is
 computed and the alarm SHOULD be set for twice the newly computed smoothed RTT.
@@ -315,9 +311,9 @@ computed and the alarm SHOULD be set for twice the newly computed smoothed RTT.
 A Retry packet causes the content of the client's Initial packet to be
 immediately retransmitted along with the token present in the Retry.
 
-The Retry indicates that the Initial was received but not processed.
-It MUST NOT be treated as an acknowledgment for the Initial,
-but it MAY be used for an RTT measurement.
+The Retry indicates that the Initial was received but not processed.  It MUST
+NOT be treated as an acknowledgment for the Initial, but it MAY be used for an
+RTT measurement.
 
 ### Tail Loss Probe {#tlp}
 
@@ -327,9 +323,9 @@ algorithm proposed for TCP {{?TLP=I-D.dukkipati-tcpm-tcp-loss-probe}}.
 A packet sent at the tail is particularly vulnerable to slow loss detection,
 since acks of subsequent packets are needed to trigger ack-based detection. To
 ameliorate this weakness of tail packets, the sender schedules an alarm when the
-last retransmittable packet before quiescence is transmitted. When this
-alarm fires, a Tail Loss Probe (TLP) packet is sent to evoke an acknowledgement
-from the receiver.
+last retransmittable packet before quiescence is transmitted. When this alarm
+fires, a Tail Loss Probe (TLP) packet is sent to evoke an acknowledgement from
+the receiver.
 
 The alarm duration, or Probe Timeout (PTO), is set based on the following
 conditions:
@@ -344,13 +340,13 @@ MaxAckDelay excludes ack delays that aren't included in an RTT sample because
 they're too large and excludes those which reference an ack-only packet.
 
 QUIC diverges from TCP by calculating MaxAckDelay dynamically, instead of
-assuming a constant delayed ack timeout for all connections.  QUIC includes
-this in all probe timeouts, because it assume the ack delay may come into play,
+assuming a constant delayed ack timeout for all connections.  QUIC includes this
+in all probe timeouts, because it assume the ack delay may come into play,
 regardless of the number of packets outstanding.  TCP's TLP assumes if at least
 2 packets are outstanding, acks will not be delayed.
 
-A PTO value of at least 1.5*SRTT ensures that the ACK is overdue.  The 1.5
-is based on {{?TLP}}, but implementations MAY experiment with other constants.
+A PTO value of at least 1.5*SRTT ensures that the ACK is overdue.  The 1.5 is
+based on {{?TLP}}, but implementations MAY experiment with other constants.
 
 To reduce latency, it is RECOMMENDED that the sender set and allow the TLP alarm
 to fire twice before setting an RTO alarm. In other words, when the TLP alarm
@@ -365,9 +361,9 @@ used to send a probe into the network prior to establishing any packet loss,
 prior unacknowledged packets SHOULD NOT be marked as lost when a TLP alarm
 fires.
 
-A sender may not know that a packet being sent is a tail packet.
-Consequently, a sender may have to arm or adjust the TLP alarm on every sent
-retransmittable packet.
+A sender may not know that a packet being sent is a tail packet.  Consequently,
+a sender may have to arm or adjust the TLP alarm on every sent retransmittable
+packet.
 
 ### Retransmission Timeout {#rto}
 
@@ -421,77 +417,73 @@ flight, since this packet adds network load without establishing packet loss.
 
 ## Generating Acknowledgements
 
-QUIC SHOULD delay sending acknowledgements in response to packets,
-but MUST NOT excessively delay acknowledgements of packets containing
-non-ack frames.  Specifically, implementaions MUST attempt to
-enforce a maximum ack delay to avoid causing the peer spurious
-timeouts.  The RECOMMENDED maximum ack delay in QUIC is 25ms.
+QUIC SHOULD delay sending acknowledgements in response to packets, but MUST NOT
+excessively delay acknowledgements of packets containing frames other than ACK
+or ACN_ECN.  Specifically, implementaions MUST attempt to enforce a maximum ack
+delay to avoid causing the peer spurious timeouts.  The RECOMMENDED maximum ack
+delay in QUIC is 25ms.
 
-An acknowledgement MAY be sent for every second full-sized packet,
-as TCP does {{?RFC5681}}, or may be sent less frequently, as long as
-the delay does not exceed the maximum ack delay.  QUIC recovery algorithms
-do not assume the peer generates an acknowledgement immediately when
-receiving a second full-sized packet.
+An acknowledgement MAY be sent for every second full-sized packet, as TCP does
+{{?RFC5681}}, or may be sent less frequently, as long as the delay does not
+exceed the maximum ack delay.  QUIC recovery algorithms do not assume the peer
+generates an acknowledgement immediately when receiving a second full-sized
+packet.
 
-Out-of-order packets SHOULD be acknowledged more quickly, in order
-to accelerate loss recovery.  The receiver SHOULD send an immediate ACK
-when it receives a new packet which is not one greater than the
-largest received packet number.
+Out-of-order packets SHOULD be acknowledged more quickly, in order to accelerate
+loss recovery.  The receiver SHOULD send an immediate ACK when it receives a new
+packet which is not one greater than the largest received packet number.
 
 Similarly, packets marked with the ECN Congestion Experienced (CE) codepoint in
 the IP header SHOULD be acknowledged immediately, to reduce the peer's response
 time to congestion events.
 
-As an optimization, a receiver MAY process multiple packets before
-sending any ACK frames in response.  In this case they can determine
-whether an immediate or delayed acknowledgement should be generated
-after processing incoming packets.
+As an optimization, a receiver MAY process multiple packets before sending any
+ACK frames in response.  In this case they can determine whether an immediate or
+delayed acknowledgement should be generated after processing incoming packets.
 
 ### Crypto Handshake Data
 
-In order to quickly complete the handshake and avoid spurious
-retransmissions due to handshake alarm timeouts, handshake packets
-SHOULD use a very short ack delay, such as 1ms.  ACK frames MAY be
-sent immediately when the crypto stack indicates all data for that
-encryption level has been received.
+In order to quickly complete the handshake and avoid spurious retransmissions
+due to handshake alarm timeouts, handshake packets SHOULD use a very short ack
+delay, such as 1ms.  ACK frames MAY be sent immediately when the crypto stack
+indicates all data for that encryption level has been received.
 
 ### ACK Ranges
 
 When an ACK frame is sent, one or more ranges of acknowledged packets are
-included.  Including older packets reduces the chance of spurious
-retransmits caused by losing previously sent ACK frames, at the cost of
-larger ACK frames.
+included.  Including older packets reduces the chance of spurious retransmits
+caused by losing previously sent ACK frames, at the cost of larger ACK frames.
 
-ACK frames SHOULD always acknowledge the most recently received packets,
-and the more out-of-order the packets are, the more important it is to send
-an updated ACK frame quickly, to prevent the peer from declaring a packet
-as lost and spuriusly retransmitting the frames it contains.
+ACK frames SHOULD always acknowledge the most recently received packets, and the
+more out-of-order the packets are, the more important it is to send an updated
+ACK frame quickly, to prevent the peer from declaring a packet as lost and
+spuriusly retransmitting the frames it contains.
 
-Below is one recommended approach for determining what packets to include
-in an ACK frame.
+Below is one recommended approach for determining what packets to include in an
+ACK frame.
 
 ### Receiver Tracking of ACK Frames
 
-When a packet containing an ACK frame is sent, the largest acknowledged in
-that frame may be saved.  When a packet containing an ACK frame is
-acknowledged, the receiver can stop acknowledging packets less than or equal
-to the largest acknowledged in the sent ACK frame.
+When a packet containing an ACK frame is sent, the largest acknowledged in that
+frame may be saved.  When a packet containing an ACK frame is acknowledged, the
+receiver can stop acknowledging packets less than or equal to the largest
+acknowledged in the sent ACK frame.
 
-In cases without ACK frame loss, this algorithm allows for a minimum of
-1 RTT of reordering. In cases with ACK frame loss, this approach does not
-guarantee that every acknowledgement is seen by the sender before it is no
-longer included in the ACK frame. Packets could be received out of order
-and all subsequent ACK frames containing them could be lost. In this case,
-the loss recovery algorithm may cause spurious retransmits, but the sender
-will continue making forward progress.
+In cases without ACK frame loss, this algorithm allows for a minimum of 1 RTT of
+reordering. In cases with ACK frame loss, this approach does not guarantee that
+every acknowledgement is seen by the sender before it is no longer included in
+the ACK frame. Packets could be received out of order and all subsequent ACK
+frames containing them could be lost. In this case, the loss recovery algorithm
+may cause spurious retransmits, but the sender will continue making forward
+progress.
 
 ## Pseudocode
 
 ### Constants of interest
 
-Constants used in loss recovery are based on a combination of RFCs, papers,
-and common practice.  Some may need to be changed or negotiated in order to
-better suit a variety of environments.
+Constants used in loss recovery are based on a combination of RFCs, papers, and
+common practice.  Some may need to be changed or negotiated in order to better
+suit a variety of environments.
 
 kMaxTLPs (RECOMMENDED 2):
 : Maximum number of tail loss probes before an RTO fires.
@@ -547,7 +539,7 @@ time_of_last_sent_retransmittable_packet:
 : The time the most recent retransmittable packet was sent.
 
 time_of_last_sent_handshake_packet:
-: The time the most recent packet containing a CRYPTO_HS frame was sent.
+: The time the most recent packet containing a CRYPTO frame was sent.
 
 largest_sent_packet:
 : The packet number of the most recently sent packet.
@@ -587,13 +579,14 @@ loss_time:
 transmit or exceeding the reordering window in time.
 
 sent_packets:
+
 : An association of packet numbers to information about them, including a number
   field indicating the packet number, a time field indicating the time a packet
   was sent, a boolean indicating whether the packet is ack only, and a bytes
-  field indicating the packet's size.  sent_packets is ordered by packet
-  number, and packets remain in sent_packets until acknowledged or lost.
-  A sent_packets data structure is maintained per packet number space, and ACK
-  processing only applies to a single space.
+  field indicating the packet's size.  sent_packets is ordered by packet number,
+  and packets remain in sent_packets until acknowledged or lost.  A sent_packets
+  data structure is maintained per packet number space, and ACK processing only
+  applies to a single space.
 
 ### Initialization
 
