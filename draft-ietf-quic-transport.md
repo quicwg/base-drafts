@@ -633,7 +633,9 @@ If the client received a Retry packet from the server and sends an Initial
 packet in response, then it sets the Destination Connection ID to the value from
 the Source Connection ID in the Retry packet. Changing Destination Connection ID
 also results in a change to the keys used to protect the Initial packet. It also
-sets the Token field to the token provided in the Retry.
+sets the Token field to the token provided in the Retry. The client MUST NOT
+change the Source Connection ID because the server could include the connection
+ID as part of its token validation logic.
 
 When a server receives an Initial packet with an address validation token, it
 SHOULD attempt to validate it.  If the token is invalid then the server SHOULD
