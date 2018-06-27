@@ -4786,10 +4786,6 @@ Issue and pull request numbers are listed with a leading octothorp.
 
 ## Since draft-ietf-quic-transport-12
 
-- Enable server to transition connections to a preferred address (#560, #1251,
-  #1373)
-- Added ECN feedback mechanisms and handling; new ACK_ECN frame (#804, #805,
-  #1372)
 - Changes to integration of the TLS handshake (#829, #1018, #1094, #1165, #1190,
   #1233, #1242, #1252, #1450)
   - The cryptographic handshake uses CRYPTO frames, not stream 0
@@ -4798,6 +4794,10 @@ Issue and pull request numbers are listed with a leading octothorp.
   - Changed Retry to be independent of the cryptographic handshake
   - Added NEW_TOKEN frame and Token fields to Initial packet
   - Limit the use of HelloRetryRequest to address TLS needs (like key shares)
+- Enable server to transition connections to a preferred address (#560, #1251,
+  #1373)
+- Added ECN feedback mechanisms and handling; new ACK_ECN frame (#804, #805,
+  #1372)
 - Changed rules and recommendations for use of new connection IDs (#1258, #1264,
   #1276, #1280, #1419, #1452, #1453, #1465)
 - Added a transport parameter to disable intentional connection migration
