@@ -116,7 +116,8 @@ important to the loss detection and congestion control machinery below.
 
 * ACK and ACK_ECN frames contain acknowledgment information. ACK_ECN frames
   additionally contain information about ECN codepoints seen by the peer.  (The
-  rest of this document uses ACK frames to refer to both ACK and ACK_ECN frames.)
+  rest of this document uses ACK frames to refer to both ACK and ACK_ECN
+  frames.)
 
 ## Relevant Differences Between QUIC and TCP
 
@@ -1113,8 +1114,8 @@ Invoked when an ACK_ECN frame is received from the peer.
      // this could be a new congestion event.
      if (ack.ce_counter > ecn_ce_counter):
        ecn_ce_counter = ack.ce_counter
-       // Start a new congestion event if the largest acked packet
-       // is larger than the end of the previous recovery epoch.
+       // Start a new congestion event if the last acknowledged
+       // packet is past the end of the previous recovery epoch.
        CongestionEvent(ack.largest_acked_packet)
 ~~~
 
@@ -1131,8 +1132,8 @@ are detected lost.
        bytes_in_flight -= lost_packet.bytes
      largest_lost_packet = lost_packets.last()
 
-     // Start a new congestion epoch if the largest lost packet
-     // is larger than the end of the previous recovery epoch.
+     // Start a new congestion epoch if the last lost packet
+     // is past the end of the previous recovery epoch.
      CongestionEvent(largest_lost_packet.packet_number)
 ~~~
 
