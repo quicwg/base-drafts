@@ -219,9 +219,9 @@ While connection-level options pertaining to the core QUIC protocol are set in
 the initial crypto handshake, HTTP/QUIC-specific settings are conveyed in the
 SETTINGS frame. After the QUIC connection is established, a SETTINGS frame
 ({{frame-settings}}) MUST be sent by each endpoint as the initial frame of their
-respective HTTP control stream (Stream ID 2 or 3, see {{stream-mapping}}). The
-server MUST NOT send data on any other stream until the client's SETTINGS frame
-has been received.
+respective HTTP control stream (see {{control-streams}}). The server MUST NOT
+send data on any other stream until the client's SETTINGS frame has been
+received.
 
 ## Connection Reuse
 
@@ -251,27 +251,15 @@ the HTTP framing layer. A QUIC receiver buffers and orders received STREAM
 frames, exposing the data contained within as a reliable byte stream to the
 application.
 
-QUIC reserves the first client-initiated, bidirectional stream (Stream 0) for
-cryptographic operations. HTTP over QUIC reserves the first unidirectional
-stream sent by either peer (Streams 2 and 3) for sending and receiving HTTP
-control frames.  This pair of unidirectional streams is analogous to HTTP/2's
-Stream 0.  HTTP over QUIC also reserves the second and third unidirectional
-streams for each peer's QPACK encoder and decoder.  The client's QPACK encoder
-uses stream 6 and decoder uses stream 10.  The server's encoder and decoder use
-streams 7 and 11, respectively.  The data sent on these streams is critical to
-the HTTP connection. If any control stream is closed for any reason, this
-MUST be treated as a connection error of type QUIC_CLOSED_CRITICAL_STREAM.
-
 When HTTP headers and data are sent over QUIC, the QUIC layer handles most of
 the stream management.
 
-An HTTP request/response consumes a single client-initiated, bidirectional
-stream.  A bidirectional stream ensures that the response can be readily
+All client-initiated bidirectional streams are used for HTTP requests and
+responses.  A bidirectional stream ensures that the response can be readily
 correlated with the request. This means that the client's first request occurs
-on QUIC stream 4, with subsequent requests on stream 8, 12, and so on.
-
-Server push uses server-initiated, unidirectional streams.  Thus, the server's
-first push consumes stream 7 and subsequent pushes use stream 11, 15, and so on.
+on QUIC stream 0, with subsequent requests on stream 4, 8, and so on. HTTP/QUIC
+does not use server-initiated bidirectional streams. The use of unidirectional
+streams is discussed in {{unidirectional-streams}}.
 
 These streams carry frames related to the request/response (see {{frames}}).
 When a stream terminates cleanly, if the last frame on the stream was truncated,
@@ -284,21 +272,9 @@ over a QUIC stream always maps to a particular HTTP transaction. Requests and
 responses are considered complete when the corresponding QUIC stream is closed
 in the appropriate direction.
 
-
-##  Control Streams
-
-Since most connection-level concerns will be managed by QUIC, the primary use of
-Streams 2 and 3 will be for the SETTINGS frame when the connection opens and for
-PRIORITY frames subsequently.
-
-A pair of unidirectional streams is used rather than a single bidirectional
-stream.  This allows either peer to send data as soon they are able.  Depending
-on whether 0-RTT is enabled on the connection, either client or server might be
-able to send stream data first after the cryptographic handshake completes.
-
 ## HTTP Message Exchanges {#request-response}
 
-A client sends an HTTP request on a client-initiated, bidirectional QUIC
+A client sends an HTTP request on a client-initiated bidirectional QUIC
 stream. A server sends an HTTP response on the same stream as the request.
 
 An HTTP message (request or response) consists of:
@@ -415,6 +391,7 @@ after receiving a partial response, the response SHOULD NOT be used.
 Automatically retrying such requests is not possible, unless this is otherwise
 permitted (e.g., idempotent actions like GET, PUT, or DELETE).
 
+
 ## Request Prioritization {#priority}
 
 HTTP/QUIC uses a priority scheme similar to that described in {{!RFC7540}},
@@ -499,31 +476,76 @@ stream.
 Clients SHOULD assume the server is actively performing such pruning and SHOULD
 NOT declare a dependency on a stream it knows to have been closed.
 
-## Server Push
 
-HTTP/QUIC supports server push in a similar manner to {{!RFC7540}}, but uses
+## Unidirectional Streams
+
+Unidirectional streams, in either direction, are used for a range of purposes.
+The purpose is indicated by a stream type, which is sent as a single octet
+header at the start of the stream. The format and structure of data that follows
+this header is determined by the stream type.
+
+~~~~~~~~~~ drawing
+ 0 1 2 3 4 5 6 7
++-+-+-+-+-+-+-+-+
+|Stream Type (8)|
++-+-+-+-+-+-+-+-+
+~~~~~~~~~~
+{: #fig-stream-header title="Unidirectional Stream Header"}
+
+Two stream types are defined in this document: control streams
+({{control-streams}}) and push streams ({{server-push}}).  Other stream types
+can be defined by extensions to HTTP/QUIC.
+
+If the stream header indicates a stream type which is not supported by the
+recipient, this SHOULD be treated as a stream error of type
+HTTP_UNKNOWN_STREAM_TYPE.  The semantics of the remainder of the stream are
+unknown. Implementations SHOULD NOT send stream types the peer is not already
+known to support, since a stream error can be promoted to a connection error at
+the peer's discretion (see {{errors}}).
+
+###  Control Streams
+
+The control stream is indicated by a stream type of `0x43` (ASCII 'C').  Data on
+this stream consists of HTTP frames, as defined in {{frames}}.
+
+Each side MUST initiate a single control stream at the beginning of the
+connection and send its SETTINGS frame as the first frame on this stream.  Only
+one control stream per peer is permitted; receipt of a second stream which
+claims to be a control stream MUST be treated as a connection error of type
+HTTP_WRONG_STREAM_COUNT.  If the control stream is closed at any point, this
+MUST be treated as a connection error of type HTTP_CLOSED_CRITICAL_STREAM.
+
+A pair of unidirectional streams is used rather than a single bidirectional
+stream.  This allows either peer to send data as soon they are able.  Depending
+on whether 0-RTT is enabled on the connection, either client or server might be
+able to send stream data first after the cryptographic handshake completes.
+
+### Server Push
+
+HTTP/QUIC server push is similar to what is described in {{!RFC7540}}, but uses
 different mechanisms. During connection establishment, the client enables server
 push by sending a MAX_PUSH_ID frame (see {{frame-max-push-id}}). A server cannot
-use server push until it receives a MAX_PUSH_ID frame.
+use server push until it receives a MAX_PUSH_ID frame.  Only servers can push;
+if a server receives a client-initiated push stream, this MUST be treated as a
+stream error of type HTTP_WRONG_STREAM_DIRECTION.
 
-As with server push for HTTP/2, the server initiates a server push by sending a
-PUSH_PROMISE frame (see {{frame-push-promise}}) that includes request headers
-for the promised request.  Promised requests MUST conform to the requirements in
-Section 8.2 of {{!RFC7540}}.
+A push stream is indicated by a stream type of `0x50` (ASCII 'P'), followed by
+the Push ID of the promise that it fulfills, encoded as a variable-length
+integer.
 
-The PUSH_PROMISE frame is sent on the client-initiated, bidirectional stream
-that carried the request that generated the push.  This allows the server push
-to be associated with a request.  Ordering of a PUSH_PROMISE in relation to
-certain parts of the response is important (see Section 8.2.1 of {{!RFC7540}}).
+~~~~~~~~~~ drawing
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|Stream Type (8)|                  Push ID (i)                ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~~~~~~~~
+{: #fig-push-stream-header title="Push Stream Header"}
 
 Unlike HTTP/2, the PUSH_PROMISE does not reference a stream; it contains a Push
 ID. The Push ID uniquely identifies a server push. This allows a server to
-fulfill promises in the order that best suits its needs.
-
-When a server later fulfills a promise, the server push response is conveyed on
-a push stream.  A push stream is a server-initiated, unidirectional stream.  A
-push stream identifies the Push ID of the promise that it fulfills, encoded as a
-variable-length integer.
+fulfill promises in the order that best suits its needs.  When a server later
+fulfills a promise, the server push response is conveyed on a push stream.
 
 A server SHOULD use Push IDs sequentially, starting at 0.  A client uses the
 MAX_PUSH_ID frame ({{frame-max-push-id}}) to limit the number of pushes that a
@@ -531,20 +553,23 @@ server can promise.  A client MUST treat receipt of a push stream with a Push ID
 that is greater than the maximum Push ID as a connection error of type
 HTTP_PUSH_LIMIT_EXCEEDED.
 
+The remaining data on this stream consists of HTTP frames, as defined in
+{{frames}}, and carries the response side of an HTTP message exchange as
+described in {{request-response}}.  The request headers of the exchange are
+carried by a PUSH_PROMISE frame (see {{frame-push-promise}}) on the request
+stream which generated the push.  Promised requests MUST conform to the
+requirements in Section 8.2 of {{!RFC7540}}.
+
+The PUSH_PROMISE frame is sent on the client-initiated bidirectional stream
+that carried the request that generated the push.  This allows the server push
+to be associated with a request.  Ordering of a PUSH_PROMISE in relation to
+certain parts of the response is important (see Section 8.2.1 of {{!RFC7540}}).
+
 If a promised server push is not needed by the client, the client SHOULD send a
 CANCEL_PUSH frame; if the push stream is already open, a QUIC STOP_SENDING frame
 with an appropriate error code can be used instead (e.g., HTTP_PUSH_REFUSED,
 HTTP_PUSH_ALREADY_IN_CACHE; see {{errors}}).  This asks the server not to
 transfer the data and indicates that it will be discarded upon receipt.
-
-~~~~~~~~~~ drawing
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                         Push ID (i)                         ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-~~~~~~~~~~
-{: #fig-push-stream-header title="Push Stream Header"}
 
 Push streams always begin with a header containing the Push ID.  Each Push ID
 MUST only be used once in a push stream header.  If a push stream header
@@ -559,9 +584,9 @@ trailers (if any) carried by HEADERS frames.
 
 # HTTP Framing Layer {#http-framing-layer}
 
-Frames are used on each stream.  This section describes HTTP framing in QUIC and
-highlights some differences from HTTP/2 framing.  For more detail on differences
-from HTTP/2, see {{h2-frames}}.
+Frames are used on the control stream, request streams, and push streams.  This
+section describes HTTP framing in QUIC and highlights some differences from
+HTTP/2 framing.  For more detail on differences from HTTP/2, see {{h2-frames}}.
 
 ## Frame Layout
 
@@ -956,7 +981,7 @@ close a connection.
 ~~~~~~~~~~
 {: #fig-goaway title="GOAWAY frame payload"}
 
-The GOAWAY frame carries a QUIC Stream ID for a client-initiated, bidirectional
+The GOAWAY frame carries a QUIC Stream ID for a client-initiated bidirectional
 stream encoded as a variable-length integer.  A client MUST treat receipt of a
 GOAWAY frame containing a Stream ID of any other type as a connection error of
 type HTTP_MALFORMED_FRAME.
@@ -1154,6 +1179,20 @@ HTTP_PUSH_LIMIT_EXCEEDED (0x0B):
 HTTP_DUPLICATE_PUSH (0x0C):
 : A Push ID was referenced in two different stream headers.
 
+HTTP_UNKNOWN_STREAM_TYPE (0x0D):
+: A unidirectional stream header contained an unknown stream type.
+
+HTTP_WRONG_STREAM_COUNT (0x0E):
+: A unidirectional stream type was used more times than is permitted by that
+  type.
+
+HTTP_CLOSED_CRITICAL_STREAM (0x0F):
+: A stream required by the connection was closed or reset.
+
+HTTP_WRONG_STREAM_DIRECTION (0x0010):
+: A unidirectional stream type was used by a peer which is not permitted to do
+  so.
+
 HTTP_GENERAL_PROTOCOL_ERROR (0x00FF):
 : Peer violated protocol requirements in a way which doesn't match a more
   specific error code, or endpoint declines to use the more specific error code.
@@ -1238,8 +1277,8 @@ Because the Flags field is not present in generic HTTP/QUIC frames, those frames
 which depend on the presence of flags need to allocate space for flags as part
 of their frame payload.
 
-Other than these issues, frame type HTTP/2 extensions are typically portable to
-QUIC simply by replacing Stream 0 in HTTP/2 with Stream 2 or 3 in HTTP/QUIC.
+Other than this issue, frame type HTTP/2 extensions are typically portable to
+QUIC simply by replacing Stream 0 in HTTP/2 with a control stream in HTTP/QUIC.
 HTTP/QUIC extensions will not assume ordering, but would not be harmed by
 ordering, and would be portable to HTTP/2 in the same manner.
 
@@ -1435,8 +1474,8 @@ This document creates a new registration for version-negotiation hints in the
 This document establishes a registry for HTTP/QUIC frame type codes. The
 "HTTP/QUIC Frame Type" registry manages an 8-bit space.  The "HTTP/QUIC Frame
 Type" registry operates under either of the "IETF Review" or "IESG Approval"
-policies {{?RFC8126}} for values between 0x00 and 0xef, with values between 0xf0
-and 0xff being reserved for Experimental Use.
+policies {{?RFC8126}} for values from 0x00 up to and including 0xef, with values
+from 0xf0 up to and including 0xff being reserved for Experimental Use.
 
 While this registry is separate from the "HTTP/2 Frame Type" registry defined in
 {{RFC7540}}, it is preferable that the assignments parallel each other.  If an
@@ -1458,7 +1497,7 @@ Specification:
 
 The entries in the following table are registered by this document.
 
-|----------------|------|--------------------------|
+| ---------------- | ------ | -------------------------- |
 | Frame Type       | Code   | Specification              |
 | ---------------- | :----: | -------------------------- |
 | DATA             | 0x0    | {{frame-data}}             |
@@ -1561,7 +1600,7 @@ Specification:
 
 The entries in the following table are registered by this document.
 
-|-----------------------------------|----------|----------------------------------------|----------------------|
+| ----------------------------------- | ---------- | ---------------------------------------- | ---------------------- |
 | Name                                | Code       | Description                              | Specification          |
 | ----------------------------------- | ---------- | ---------------------------------------- | ---------------------- |
 | STOPPING                            | 0x0000     | Reserved by QUIC                         | {{QUIC-TRANSPORT}}     |
@@ -1577,8 +1616,46 @@ The entries in the following table are registered by this document.
 | HTTP_WRONG_STREAM                   | 0x000A     | A frame was sent on the wrong stream     | {{http-error-codes}}   |
 | HTTP_PUSH_LIMIT_EXCEEDED            | 0x000B     | Maximum Push ID exceeded                 | {{http-error-codes}}   |
 | HTTP_DUPLICATE_PUSH                 | 0x000C     | Push ID was fulfilled multiple times     | {{http-error-codes}}   |
+| HTTP_UNKNOWN_STREAM_TYPE            | 0x000D     | Unknown unidirectional stream type       | {{http-error-codes}}   |
+| HTTP_WRONG_STREAM_COUNT             | 0x000E     | Too many unidirectional streams          | {{http-error-codes}}   |
+| HTTP_CLOSED_CRITICAL_STREAM         | 0x000F     | Critical stream was closed               | {{http-error-codes}}   |
+| HTTP_WRONG_STREAM_DIRECTION         | 0x0010     | Unidirectional stream in wrong direction | {{http-error-codes}}   |
 | HTTP_MALFORMED_FRAME                | 0x01XX     | Error in frame formatting or use         | {{http-error-codes}}   |
 | ----------------------------------- | ---------- | ---------------------------------------- | ---------------------- |
+
+## Stream Types {#iana-stream-types}
+
+This document establishes a registry for HTTP/QUIC unidirectional stream types.
+The "HTTP/QUIC Stream Type" registry manages an 8-bit space.  The "HTTP/QUIC
+Stream Type" registry operates under either of the "IETF Review" or "IESG
+Approval" policies {{?RFC8126}} for values from 0x00 up to and including 0xef,
+with values from 0xf0 up to and including 0xff being reserved for Experimental
+Use.
+
+New entries in this registry require the following information:
+
+Stream Type:
+: A name or label for the stream type.
+
+Code:
+: The 8-bit code assigned to the stream type.
+
+Specification:
+: A reference to a specification that includes a description of the stream type,
+  including the layout semantics of its payload.
+
+Sender:
+: Which endpoint on a connection may initiate a stream of this type. Values are
+  "Client", "Server", or "Both".
+
+The entries in the following table are registered by this document.
+
+| ---------------- | ------ | -------------------------- | ------ |
+| Stream Type      | Code   | Specification              | Sender |
+| ---------------- | :----: | -------------------------- | ------ |
+| Control Stream   | 0x43   | {{control-streams}}        | Both   |
+| Push Stream      | 0x50   | {{server-push}}            | Server |
+| ---------------- | ------ | -------------------------- | ------ |
 
 
 --- back

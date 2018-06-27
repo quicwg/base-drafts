@@ -359,18 +359,26 @@ QPACK defines two settings which are included in the HTTP/QUIC SETTINGS frame.
 QPACK instructions occur in three locations, each of which uses a separate
 instruction space:
 
- - Table updates are carried by a unidirectional stream from encoder to decoder.
-   Instructions on this stream modify the dynamic table state without generating
-   output to any particular request.
- - Acknowledgements of table modifications and header processing are carried by
-   a unidirectional stream from decoder to encoder.
+ - The encoder stream is a unidirectional stream of type `0x48` (ASCII 'H')
+   which carries table updates from encoder to decoder. Instructions on this
+   stream modify the dynamic table state without generating output to any
+   particular request.
+ - The decoder stream is a unidirectional stream of type `0x68` (ASCII 'h')
+   which carries acknowledgements of table modifications and header processing
+   from decoder to encoder.
  - Finally, the contents of HEADERS and PUSH_PROMISE frames on request streams
-   reference the QPACK table state.
+   and push streams reference the QPACK table state.
+
+There MUST be exactly one of each unidirectional stream type in each direction.
+Receipt of a second instance of either stream type MUST be treated as a
+connection error of HTTP_WRONG_STREAM_COUNT.  Closure of either unidirectional
+stream MUST be treated as a connection error of type
+HTTP_CLOSED_CRITICAL_STREAM.
 
 This section describes the instructions which are possible on each stream type.
 
-All table updates occur on the control stream.  Request streams only carry
-header blocks that do not modify the state of the table.
+All table updates occur on the encoder stream.  Request streams and push streams
+only carry header blocks that do not modify the state of the table.
 
 ## Primitives
 
@@ -937,6 +945,19 @@ The entries in the following table are registered by this document.
 | QPACK_BLOCKED_STREAMS        | 0x7    | {{configuration}}         |
 | ---------------------------- | ------ | ------------------------- |
 
+## Stream Type Registration
+
+This document creates two new settings in the "HTTP/QUIC Stream Type" registry
+established in {{QUIC-HTTP}}.
+
+The entries in the following table are registered by this document.
+
+| ---------------------------- | ------ | ------------------------- | ------ |
+| Stream Type                  | Code   | Specification             | Sender |
+| ---------------------------- | :----: | ------------------------- | ------ |
+| QPACK Encoder Stream         | 0x48   | {{wire-format}}           | Both   |
+| QPACK Decoder Stream         | 0x68   | {{wire-format}}           | Both   |
+| ---------------------------- | ------ | ------------------------- | ------ |
 
 --- back
 
