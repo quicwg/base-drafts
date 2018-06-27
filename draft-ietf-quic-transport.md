@@ -943,8 +943,8 @@ Once packet number protection is removed, the packet number is decoded by
 finding the packet number value that is closest to the next expected packet.
 The next expected packet is the highest received packet number plus one.  For
 example, if the highest successfully authenticated packet had a packet number of
-0xaa82f30e, then a packet containing a 14-bit value of 0x1f94 will be decoded as
-0xaa831f94.
+0xaa82f30e, then a packet containing a 14-bit value of 0x9b3 will be decoded as
+0xaa8309b3.
 
 The sender MUST use a packet number size able to represent more than twice as
 large a range than the difference between the largest acknowledged packet and
