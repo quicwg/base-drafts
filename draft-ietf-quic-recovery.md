@@ -1154,8 +1154,11 @@ This document has no IANA actions.  Yet.
 
 ## Since draft-ietf-quic-recovery-12
 
-- Updated to match the Stream0 design team proposal.
-- Text on multiple packet number spaces.
+- Changes to manage separate packet number spaces and encryption levels (#1190,
+  #1242, #1413, #1450)
+- Added ECN feedback mechanisms and handling; new ACK_ECN frame (#804, #805,
+  #1372)
+
 
 ## Since draft-ietf-quic-recovery-11
 

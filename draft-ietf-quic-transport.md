@@ -4786,17 +4786,35 @@ Issue and pull request numbers are listed with a leading octothorp.
 
 ## Since draft-ietf-quic-transport-12
 
-- Enable server to transition connections to a preferred address (#560, #1251).
-- Moved the cryptographic handshake off stream 0 and into CRYPTO frames.
-- Move stateless retry to the QUIC layer.
-- Added token fields to Initial packet header.
-- Added NEW_TOKEN frame.
+- Changes to integration of the TLS handshake (#829, #1018, #1094, #1165, #1190,
+  #1233, #1242, #1252, #1450)
+  - The cryptographic handshake uses CRYPTO frames, not stream 0
+  - QUIC packet protection is used in place of TLS record protection
+  - Separate QUIC packet number spaces are used for the handshake
+  - Changed Retry to be independent of the cryptographic handshake
+  - Added NEW_TOKEN frame and Token fields to Initial packet
+  - Limit the use of HelloRetryRequest to address TLS needs (like key shares)
+- Enable server to transition connections to a preferred address (#560, #1251,
+  #1373)
+- Added ECN feedback mechanisms and handling; new ACK_ECN frame (#804, #805,
+  #1372)
+- Changed rules and recommendations for use of new connection IDs (#1258, #1264,
+  #1276, #1280, #1419, #1452, #1453, #1465)
+- Added a transport parameter to disable intentional connection migration
+  (#1271, #1447)
+- Packets from different connection ID can't be coalesced (#1287, #1423)
+- Fixed sampling method for packet number encryption; the length field in long
+  headers includes the packet number field in addition to the packet payload
+  (#1387, #1389)
+- Stateless Reset is now symmetric and subject to size constraints (#466, #1346)
+- Added frame type extension mechanism (#58, #1473)
+
 
 ## Since draft-ietf-quic-transport-11
 
 - Enable server to transition connections to a preferred address (#560, #1251)
 - Packet numbers are encrypted (#1174, #1043, #1048, #1034, #850, #990, #734,
-  #1079)
+  #1317, #1267, #1079)
 - Packet numbers use a variable-length encoding (#989, #1334)
 - STREAM frames can now be empty (#1350)
 
