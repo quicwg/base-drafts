@@ -946,6 +946,8 @@ The next expected packet is the highest received packet number plus one.  For
 example, if the highest successfully authenticated packet had a packet number of
 0xaa82f30e, then a packet containing a 14-bit value of 0x9b3 will be decoded as
 0xaa8309b3.
+Example pseudo-code for packet number decoding can be found in 
+{{sample-packet-number-decoding}}.
 
 The sender MUST use a packet number size able to represent more than twice as
 large a range than the difference between the largest acknowledged packet and
@@ -4777,6 +4779,36 @@ from 0xFF00 to 0xFFFF are reserved for Private Use {{!RFC8126}}.
 
 
 --- back
+
+# Sample code for packet number decoding {#sample-packet-number-decoding}
+
+The following pseudo-code shows how an implementation can decode packet
+numbers after packet protection has been removed.
+
+~~~
+rcv_nxt        = 0xaa82f30e + 1
+pktn           = 0x9b3
+pktn_nbits     = 14
+pktn_len       = 1 << pktn_nbits
+pktn_win       = pktn_len / 2          // 0x2000
+
+// The incoming packet number is between:
+//     [rcv_nxt - pktn_win ; rcv_nxt + pktn_win[
+//
+// However, we can't just perform the exclusive-or of rcv_nxt
+// (with the appropriate bits removed)  with pktn because that
+// would yield 0xaa82c9b3 which is lower than rcv_nxt - pktn_win.
+//
+// We need to find a packet number that fits the window,
+// so we add the window to the expected packet number and check
+// for overflow.
+rcv_nxt_masked  = (rcv_nxt + pktn_win) & ~(pktn_len - 1)
+decoded_pktn    = rcv_nxt_masked + pktn
+
+// Note that we also check for underflow.
+if decoded_pktn > rcv_nxt + pktn_win and decoded_pktn > pktn_len:
+       decoded_pktn = decoded_pktn - pktn_len
+~~~
 
 # Change Log
 
