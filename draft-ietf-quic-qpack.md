@@ -135,7 +135,7 @@ the decoder, the dynamic table size is strictly bounded.
 
 The decoder determines the maximum size that the encoder is permitted to use for
 the dynamic table.  In HTTP/QUIC, this value is determined by the
-SETTINGS_HEADER_TABLE_SIZE setting (see Section 4.2.5.2 of {{QUIC-HTTP}}).
+SETTINGS_HEADER_TABLE_SIZE setting (see Section 7.3 of {{QUIC-HTTP}}).
 
 An encoder can choose to use less capacity than this maximum size (see
 {{size-update}}), but the chosen size MUST stay lower than or equal to the
