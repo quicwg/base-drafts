@@ -946,7 +946,7 @@ The next expected packet is the highest received packet number plus one.  For
 example, if the highest successfully authenticated packet had a packet number of
 0xaa82f30e, then a packet containing a 14-bit value of 0x9b3 will be decoded as
 0xaa8309b3.
-Example pseudo-code for packet number decoding can be found in 
+Example pseudo-code for packet number decoding can be found in
 {{sample-packet-number-decoding}}.
 
 The sender MUST use a packet number size able to represent more than twice as
