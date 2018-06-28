@@ -3424,14 +3424,14 @@ Sequence:
   sequence number is formatted as a variable-length integer.
 
 Upon receipt of a RETIRE_CONNECTION_ID frame, an endpoint MUST consider
-connection IDs older than the specified sequence number as unusable. If
-an older connection ID is currently being used on any local address,
-the endpoint MUST advance to a more recent connection ID.  If a more recent
-connection ID is not available, the connection MUST be closed.
+connection IDs older than the specified sequence number as unusable and MUST NOT
+consider the associated stateless reset tokens to be valid. If an older
+connection ID is currently being used on any local address, the endpoint MUST
+advance to a more recent connection ID.  If a more recent connection ID is not
+available, no packets can be sent until a NEW_CONNECTION_ID frame is received.
 
-Endpoints sending a RETIRE_CONNECTION_ID frame SHOULD continue to accept
-packets with older connection IDs until the packet containing the frame
-is acknowledged.
+Endpoints sending a RETIRE_CONNECTION_ID frame MUST continue to accept packets
+with older connection IDs until the packet containing the frame is acknowledged.
 
 ## REQUEST_CONNECTION_ID Frame {#frame-request-cid}
 
