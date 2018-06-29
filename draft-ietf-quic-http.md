@@ -527,7 +527,7 @@ but uses different mechanisms.
 
 The PUSH_PROMISE frame ({{frame-push-promise}}) is sent on the client-initiated
 bidirectional stream that carried the request that generated the push. This
-allows the server push to be associated with a request. Ordering of a 
+allows the server push to be associated with a request. Ordering of a
 PUSH_PROMISE in relation to certain parts of the response is important (see
 Section 8.2.1 of {{!RFC7540}}).
 
@@ -546,8 +546,8 @@ exchange are carried by a PUSH_PROMISE frame (see {{frame-push-promise}})
 on the request stream which generated the push. Promised requests MUST
 conform to the requirements in Section 8.2 of {{!RFC7540}}.
 
-Only servers can push; if a server receives a client-initiated push stream, this
-MUST be treated as a stream error of type HTTP_WRONG_STREAM_DIRECTION.
+Only servers can push; if a server receives a client-initiated push stream,
+this MUST be treated as a stream error of type HTTP_WRONG_STREAM_DIRECTION.
 
 ~~~~~~~~~~ drawing
  0                   1                   2                   3
