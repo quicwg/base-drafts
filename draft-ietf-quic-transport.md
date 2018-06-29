@@ -4806,7 +4806,7 @@ DecodePacketNumber(largest_pn, truncated_pn, pn_nbits):
 		return candidate_pn + pn_len
 	// Note the extra check for underflow when candidate_pn
 	// is near zero.
-	if candidate_pn > expected_pn + pn_win and 
+	if candidate_pn > expected_pn + pn_win and
 	   candidate_pn > pn_len:
 		return candidate_pn - pn_len
 	return candidate_pn
