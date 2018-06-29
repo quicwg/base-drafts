@@ -4786,28 +4786,29 @@ The following pseudo-code shows how an implementation can decode packet
 numbers after packet protection has been removed.
 
 ~~~
-rcv_nxt        = 0xaa82f30e + 1
-pktn           = 0x9b3
-pktn_nbits     = 14
-pktn_len       = 1 << pktn_nbits
-pktn_win       = pktn_len / 2          // 0x2000
-
-// The incoming packet number is between:
-//     [rcv_nxt - pktn_win ; rcv_nxt + pktn_win[
-//
-// However, we can't just perform the exclusive-or of rcv_nxt
-// (with the appropriate bits removed)  with pktn because that
-// would yield 0xaa82c9b3 which is lower than rcv_nxt - pktn_win.
-//
-// We need to find a packet number that fits the window,
-// so we add the window to the expected packet number and check
-// for overflow.
-rcv_nxt_masked  = (rcv_nxt + pktn_win) & ~(pktn_len - 1)
-decoded_pktn    = rcv_nxt_masked + pktn
-
-// Note that we also check for underflow.
-if decoded_pktn > rcv_nxt + pktn_win and decoded_pktn > pktn_len:
-       decoded_pktn = decoded_pktn - pktn_len
+DecodePacketNumber(largest_pn, truncated_pn, pn_nbits):
+	expected_pn  = largest_pn + 1
+	pn_len       = 1 << pn_nbits
+	pn_win       = pn_len / 2
+	pn_mask      = pn_len - 1
+	// The incoming packet number should be greater than
+	// expected_pn - pn_win and less than or equal to
+	// expected_pn + pn_win
+	//
+	// This means we can't just strip the trailing bits from
+	// expected_pn and add the truncated_pn because that might
+	// yield a value outside the window.
+	//
+	// The following code calculates a candidate value and
+	// makes sure it's within the packet number window.
+	candidate_pn = (expected_pn & ~pn_mask) | truncated_pn
+	if candidate_pn <= expected_pn - pn_win:
+		return candidate_pn + pn_len
+	// Note the extra check for underflow when candidate_pn
+	// is near zero.
+	if candidate_pn > expected_pn + pn_win and candidate_pn > pn_len:
+		return candidate_pn - pn_len
+	return candidate_pn
 ~~~
 
 # Change Log
