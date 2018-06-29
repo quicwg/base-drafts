@@ -106,6 +106,8 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD",
 document are to be interpreted as described in BCP 14 {{!RFC2119}} {{!RFC8174}}
 when, and only when, they appear in all capitals, as shown here.
 
+This document uses terms and notational conventions from {{QUIC-TRANSPORT}}.
+
 
 # An Extremely Abstract Description of QUIC
 
