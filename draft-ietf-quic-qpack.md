@@ -44,6 +44,23 @@ normative:
           org: Akamai Technologies
           role: editor
 
+  QUIC-TRANSPORT:
+    title: "QUIC: A UDP-Based Multiplexed and Secure Transport"
+    date: {DATE}
+    seriesinfo:
+      Internet-Draft: draft-ietf-quic-transport-latest
+    author:
+      -
+        ins: J. Iyengar
+        name: Jana Iyengar
+        org: Fastly
+        role: editor
+      -
+        ins: M. Thomson
+        name: Martin Thomson
+        org: Mozilla
+        role: editor
+
 
 --- abstract
 
@@ -75,10 +92,9 @@ blocking.  If HPACK were used for HTTP/QUIC, it would induce head-of-line
 blocking due to built-in assumptions of a total ordering across frames on all
 streams.
 
-QUIC is described in {{?QUIC-TRANSPORT=I-D.ietf-quic-transport}}.  The HTTP/QUIC
-mapping is described in {{QUIC-HTTP}}. For a full
-description of HTTP/2, see {{?RFC7540}}. The description of HPACK is
-{{!RFC7541}}, with important terminology in Section 1.3.
+QUIC is described in {{QUIC-TRANSPORT}}.  The HTTP/QUIC mapping is described in
+{{QUIC-HTTP}}. For a full description of HTTP/2, see {{?RFC7540}}. The
+description of HPACK is {{!RFC7541}}.
 
 QPACK reuses core concepts from HPACK, but is redesigned to allow correctness in
 the presence of out-of-order delivery, with flexibility for implementations to
