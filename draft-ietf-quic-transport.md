@@ -946,6 +946,8 @@ The next expected packet is the highest received packet number plus one.  For
 example, if the highest successfully authenticated packet had a packet number of
 0xaa82f30e, then a packet containing a 14-bit value of 0x9b3 will be decoded as
 0xaa8309b3.
+Example pseudo-code for packet number decoding can be found in
+{{sample-packet-number-decoding}}.
 
 The sender MUST use a packet number size able to represent more than twice as
 large a range than the difference between the largest acknowledged packet and
@@ -4777,6 +4779,38 @@ from 0xFF00 to 0xFFFF are reserved for Private Use {{!RFC8126}}.
 
 
 --- back
+
+# Sample Packet Number Decoding Algorithm {#sample-packet-number-decoding}
+
+The following pseudo-code shows how an implementation can decode packet
+numbers after packet number protection has been removed.
+
+~~~
+DecodePacketNumber(largest_pn, truncated_pn, pn_nbits):
+	 expected_pn  = largest_pn + 1
+	 pn_win       = 1 << pn_nbits
+	 pn_hwin      = pn_win / 2
+	 pn_mask      = pn_win - 1
+	 // The incoming packet number should be greater than
+	 // expected_pn - pn_hwin and less than or equal to
+	 // expected_pn + pn_hwin
+	 //
+	 // This means we can't just strip the trailing bits from
+	 // expected_pn and add the truncated_pn because that might
+	 // yield a value outside the window.
+	 //
+	 // The following code calculates a candidate value and
+	 // makes sure it's within the packet number window.
+	 candidate_pn = (expected_pn & ~pn_mask) | truncated_pn
+	 if candidate_pn <= expected_pn - pn_hwin:
+	 	 return candidate_pn + pn_win
+	 // Note the extra check for underflow when candidate_pn
+	 // is near zero.
+	 if candidate_pn > expected_pn + pn_hwin and
+	    candidate_pn > pn_win:
+	  	return candidate_pn - pn_win
+	 return candidate_pn
+~~~
 
 # Change Log
 
