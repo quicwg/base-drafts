@@ -282,7 +282,7 @@ Version Negotiation packets do not use integrity or confidentiality protection.
 A specific QUIC version might authenticate the packet as part of its connection
 establishment process.
 
-The server MUST include the value from the Source Connection ID field of the
+An endpoint MUST include the value from the Source Connection ID field of the
 packet it receives in the Destination Connection ID field.  The value for Source
 Connection ID MUST be copied from the Destination Connection ID of the received
 packet, which is initially randomly selected by a client.  Echoing both
