@@ -535,7 +535,7 @@ The PUSH_PROMISE frame does not reference a stream; it contains a Push ID that
 uniquely identifies a server push. This allows a server to fulfill promises in
 the order that best suits its needs. The same Push ID can be used in multiple
 PUSH_PROMISE frames (see {{frame-push-promise}}). When a server later fulfills
-a promise, the server push response is conveyed on a push stream. 
+a promise, the server push response is conveyed on a push stream.
 
 A push stream is indicated by a stream type of `0x50` (ASCII 'P'), followed by
 the Push ID of the promise that it fulfills, encoded as a variable-length
