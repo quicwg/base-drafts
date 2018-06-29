@@ -534,9 +534,10 @@ process.
 
 ## Retry Packet {#packet-retry}
 
-A Retry packet uses long headers with a type value of 0x7E. It carries an
-address validation token created by the server. It is used by a server that
-wishes to perform a stateless retry (see {{stateless-retry}}).
+A Retry packet uses the invariant portion of the long packet header with a type
+value of 0x7E. It carries an address validation token created by the server. It
+is used by a server that wishes to perform a stateless retry (see
+{{stateless-retry}}).
 
 ~~~
  0                   1                   2                   3
@@ -559,11 +560,12 @@ wishes to perform a stateless retry (see {{stateless-retry}}).
 ~~~
 {: #retry-format title="Retry Packet"}
 
-A Retry packet (shown in {{retry-format}}) only uses part of the long packet
-header.  The contents of the Retry packet are not protected.  Like Version
-Negotiation, a Retry packet contains the long header including the connection
-IDs, but omits the Length, Packet Number, and Payload fields.  These are
-replaced with:
+A Retry packet (shown in {{retry-format}}) only the invariant portion of the
+long packet header {{QUIC-INVARIANTS}}; that is, the fields up to and including
+the Destination and Source Connection ID fields.  The contents of the Retry
+packet are not protected.  Like Version Negotiation, a Retry packet contains the
+long header including the connection IDs, but omits the Length, Packet Number,
+and Payload fields.  These are replaced with:
 
 ODCIL:
 
@@ -594,9 +596,9 @@ acknowledged by a client.
 A server MUST only send a Retry in response to a client Initial packet.
 
 If the Original Destination Connection ID field does not match the Destination
-Connection ID from most recent the Initial packet it sent, clients MUST discard
-the packet.  This prevents an off-path attacker from injecting a Retry packet
-with a bogus new Source Connection ID.
+Connection ID from the most recent the Initial packet it sent, clients MUST
+discard the packet.  This prevents an off-path attacker from injecting a Retry
+packet with a bogus new Source Connection ID.
 
 The client responds to a Retry packet with Initial packet that includes the
 provided Retry Token to continue connection establishment.
@@ -605,7 +607,9 @@ A server that might send another Retry packet in response to a subsequent
 Initial packet MUST set the Source Connection ID to new value of at least 8
 octets in length.  This allows clients to distinguish between Retry packets when
 the server sends multiple rounds of Retry packets.  A server that will not send
-additional Retry packets can set the Source Connection ID to any value.
+additional Retry packets can set the Source Connection ID to any value.  A
+client MUST ignore a Retry that contains an ODCIL field with a value less than
+8 or greater than 18.
 
 
 ## Cryptographic Handshake Packets {#handshake-packets}
@@ -725,6 +729,13 @@ Connection ID.
 If the client has an unused token that it received in a NEW_TOKEN frame on a
 previous connection to what it believes to be the same server, it includes that
 value in the Token field of its Initial packet.
+
+A client MUST NOT reuse a token if it believes that its point of network
+attachment has changed; that is, if there is a change in its local IP address or
+network interface.  Reusing a token on different network paths would allow
+activity to be linked between paths (see {{migration-linkability}}).  A client
+needs to start the connection process over if it migrates prior to completing
+the handshake.
 
 If the client received a Retry packet from the server and sends an Initial
 packet in response, then it sets the Destination Connection ID to the value from
