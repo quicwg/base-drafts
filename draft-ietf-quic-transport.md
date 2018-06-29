@@ -4068,7 +4068,7 @@ regardless of whether it is permitted to initiated new streams.
 Endpoints MUST NOT exceed the limit set by their peer.  An endpoint that
 receives a STREAM frame with an ID greater than the limit it has sent MUST treat
 this as a stream error of type STREAM_ID_ERROR ({{error-handling}}), unless this
-is a result of a change in the initial offsets (see {{zerortt-parameters}}).
+is a result of a change in the initial limits (see {{zerortt-parameters}}).
 
 A receiver MUST NOT renege on an advertisement; that is, once a receiver
 advertises a stream ID via a MAX_STREAM_ID frame, it MUST NOT subsequently
