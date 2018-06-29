@@ -566,9 +566,9 @@ use Push IDs sequentially, starting at 0. A client MUST treat receipt of a push
 stream with a Push ID that is greater than the maximum Push ID as a connection
 error of type HTTP_PUSH_LIMIT_EXCEEDED.
 
-Each Push ID MUST only be used once in a push stream header. If a push stream header
-includes a Push ID that was used in another push stream header, the client MUST
-treat this as a connection error of type HTTP_DUPLICATE_PUSH.
+Each Push ID MUST only be used once in a push stream header. If a push stream
+header includes a Push ID that was used in another push stream header, the client
+MUST treat this as a connection error of type HTTP_DUPLICATE_PUSH.
 
 If a promised server push is not needed by the client, the client SHOULD send a
 CANCEL_PUSH frame. If the push stream is already open, a QUIC STOP_SENDING frame
