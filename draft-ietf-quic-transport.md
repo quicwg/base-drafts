@@ -1988,10 +1988,10 @@ migrated to a different network MAY treat this as a connection error of type
 INVALID_MIGRATION.
 
 Not all changes of peer address are intentional migrations. The peer could
-experience NAT rebinding: a change of address due a middlebox, usually a NAT,
-allocating a new outgoing IP address and port for a flow.  Endpoints SHOULD
-perform path validation ({{migrate-validate}}) if a NAT rebinding does not cause
-the connection to fail.
+experience NAT rebinding: a change of address due to a middlebox, usually a NAT,
+allocating a new outgoing port or even a new outgoing IP address for a flow.
+Endpoints SHOULD perform path validation ({{migrate-validate}}) if a NAT
+rebinding does not cause the connection to fail.
 
 This document limits migration of connections to new client addresses, except as
 described in {{preferred-address}}. Clients are responsible for initiating all
