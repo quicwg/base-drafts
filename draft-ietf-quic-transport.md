@@ -1016,28 +1016,30 @@ For all other frames, the Frame Type field simply identifies the frame.  These
 frames are explained in more detail as they are referenced later in the
 document.
 
-| Type Value  | Frame Type Name   | Definition                  |
-|:------------|:------------------|:----------------------------|
-| 0x00        | PADDING           | {{frame-padding}}           |
-| 0x01        | RST_STREAM        | {{frame-rst-stream}}        |
-| 0x02        | CONNECTION_CLOSE  | {{frame-connection-close}}  |
-| 0x03        | APPLICATION_CLOSE | {{frame-application-close}} |
-| 0x04        | MAX_DATA          | {{frame-max-data}}          |
-| 0x05        | MAX_STREAM_DATA   | {{frame-max-stream-data}}   |
-| 0x06        | MAX_STREAM_ID     | {{frame-max-stream-id}}     |
-| 0x07        | PING              | {{frame-ping}}              |
-| 0x08        | BLOCKED           | {{frame-blocked}}           |
-| 0x09        | STREAM_BLOCKED    | {{frame-stream-blocked}}    |
-| 0x0a        | STREAM_ID_BLOCKED | {{frame-stream-id-blocked}} |
-| 0x0b        | NEW_CONNECTION_ID | {{frame-new-connection-id}} |
-| 0x0c        | STOP_SENDING      | {{frame-stop-sending}}      |
-| 0x0d        | ACK               | {{frame-ack}}               |
-| 0x0e        | PATH_CHALLENGE    | {{frame-path-challenge}}    |
-| 0x0f        | PATH_RESPONSE     | {{frame-path-response}}     |
-| 0x10 - 0x17 | STREAM            | {{frame-stream}}            |
-| 0x18        | CRYPTO            | {{frame-crypto}}            |
-| 0x19        | NEW_TOKEN         | {{frame-new-token}}         |
-| 0x20        | ACK_ECN           | {{frame-ack-ecn}}           |
+| Type Value  | Frame Type Name       | Definition                  |
+| :---------- | :-------------------- | :-------------------------- |
+| 0x00        | PADDING               | {{frame-padding}}           |
+| 0x01        | RST_STREAM            | {{frame-rst-stream}}        |
+| 0x02        | CONNECTION_CLOSE      | {{frame-connection-close}}  |
+| 0x03        | APPLICATION_CLOSE     | {{frame-application-close}} |
+| 0x04        | MAX_DATA              | {{frame-max-data}}          |
+| 0x05        | MAX_STREAM_DATA       | {{frame-max-stream-data}}   |
+| 0x06        | MAX_STREAM_ID         | {{frame-max-stream-id}}     |
+| 0x07        | PING                  | {{frame-ping}}              |
+| 0x08        | BLOCKED               | {{frame-blocked}}           |
+| 0x09        | STREAM_BLOCKED        | {{frame-stream-blocked}}    |
+| 0x0a        | STREAM_ID_BLOCKED     | {{frame-stream-id-blocked}} |
+| 0x0b        | NEW_CONNECTION_ID     | {{frame-new-connection-id}} |
+| 0x0c        | STOP_SENDING          | {{frame-stop-sending}}      |
+| 0x0d        | ACK                   | {{frame-ack}}               |
+| 0x0e        | PATH_CHALLENGE        | {{frame-path-challenge}}    |
+| 0x0f        | PATH_RESPONSE         | {{frame-path-response}}     |
+| 0x10 - 0x17 | STREAM                | {{frame-stream}}            |
+| 0x18        | CRYPTO                | {{frame-crypto}}            |
+| 0x19        | NEW_TOKEN             | {{frame-new-token}}         |
+| 0x20        | ACK_ECN               | {{frame-ack-ecn}}           |
+| 0x21        | RETIRE_CONNECTION_ID  | {{frame-retire-cid}}        |
+| 0x22        | REQUEST_CONNECTION_ID | {{frame-request-cid}}       |
 {: #frame-types title="Frame Types"}
 
 All QUIC frames are idempotent.  That is, a valid frame does not cause
@@ -3400,6 +3402,77 @@ multiple streams is bundled into a single QUIC packet, loss of that packet
 blocks all those streams from making progress.  An implementation is therefore
 advised to bundle as few streams as necessary in outgoing packets without losing
 transmission efficiency to underfilled packets.
+
+## RETIRE_CONNECTION_ID Frame {#frame-retire-cid}
+
+The RETIRE_CONNECTION_ID frame (type=0x21) informs the peer that older
+connection IDs are being discarded by the peer and will no longer be recognized.
+
+The frame is as follows:
+
+~~~
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                         Sequence (i)                        ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~
+
+The fields in the RETIRE_CONNECTION_ID frame are as follows:
+
+Sequence:
+: Sequence number of the oldest connection ID issued by the sender which the
+  sender will still recognize as associated with the current connection. The
+  sequence number is formatted as a variable-length integer.
+
+Upon receipt of a RETIRE_CONNECTION_ID frame, an endpoint MUST consider
+connection IDs older than the specified sequence number as unusable and MUST NOT
+consider the associated stateless reset tokens to be valid. If an older
+connection ID is currently being used on any local address, the endpoint MUST
+advance to a more recent connection ID.  If a more recent connection ID is not
+available, no packets can be sent until a NEW_CONNECTION_ID frame is received.
+
+Endpoints sending a RETIRE_CONNECTION_ID frame MUST continue to accept packets
+with older connection IDs until the packet containing the frame is acknowledged.
+
+## REQUEST_CONNECTION_ID Frame {#frame-request-cid}
+
+The REQUEST_CONNECTION_ID frame (type=0x22) informs the peer that the sender
+has fewer available connection IDs than it wishes to maintain available.
+
+The frame is as follows:
+
+~~~
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                         Received (i)                        ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Requested (8) |
++-+-+-+-+-+-+-+-+
+~~~
+
+The fields in the REQUEST_CONNECTION_ID frame are as follows:
+
+Received:
+: The greatest connection ID sequence number received by the sender
+  from the receiver in a NEW_CONNECTION_ID frame, formatted as a
+  variable-length integer.
+
+Requested:
+: A one-byte integer specifying the number of additional connection
+  IDs the sender would like to be issued.
+
+Upon receipt of a REQUEST_CONNECTION_ID frame, an endpoint SHOULD
+ensure that it has issued at least the requested number of connection
+IDs beyond the specified sequence number.  An endpoint MAY impose
+implementation-specific limitations on the number of outstanding
+connection IDs, but packet loss and failed path migrations can result
+in some connection IDs being considered used by one peer and unused
+by another.
+
+The number of older connection IDs still outstanding MAY be constrained
+using the RETIRE_CONNECTION_ID frames.
 
 
 ## CRYPTO Frame {#frame-crypto}
