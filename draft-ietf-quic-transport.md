@@ -4681,6 +4681,7 @@ The initial contents of this registry are shown in {{iana-tp-table}}.
 | 0x0006 | stateless_reset_token      | {{transport-parameter-definitions}} |
 | 0x0007 | ack_delay_exponent         | {{transport-parameter-definitions}} |
 | 0x0008 | initial_max_uni_streams    | {{transport-parameter-definitions}} |
+| 0x0009 | disable_migration          | {{transport-parameter-definitions}} |
 {: #iana-tp-table title="Initial QUIC Transport Parameters Entries"}
 
 
