@@ -2411,8 +2411,8 @@ following layout:
 This design ensures that a stateless reset packet is - to the extent possible -
 indistinguishable from a regular packet with a short header.
 
-The message consists of a header octet, followed by random octets of arbitrary
-length, followed by a Stateless Reset Token.
+The message consists of a header octet, followed by an arbitrary number of
+random octets, followed by a Stateless Reset Token.
 
 A stateless reset will be interpreted by a recipient as a packet with a short
 header.  For the packet to appear as valid, the Random Octets field needs to
