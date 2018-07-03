@@ -306,14 +306,14 @@ the CRYPTO frames were sent at 1RTT encryption.
 When an acknowledgement is received for a handshake packet, the new RTT is
 computed and the alarm SHOULD be set for twice the newly computed smoothed RTT.
 
-#### Retry
+#### Retry and Version Negotiation
 
-A Retry packet causes the content of the client's Initial packet to be
-immediately retransmitted along with the token present in the Retry.
+A Retry or Version Negotiation packet causes a client to send another Initial
+packet, effectively restarting the connection process.
 
-The Retry indicates that the Initial was received but not processed.  It MUST
-NOT be treated as an acknowledgment for the Initial, but it MAY be used for an
-RTT measurement.
+Either packet indicates that the Initial was received but not processed.  Either
+packet cannot be treated as an acknowledgment for the Initial, but they MAY be
+used to improve the RTT estimate.
 
 ### Tail Loss Probe {#tlp}
 
