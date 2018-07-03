@@ -727,17 +727,16 @@ Connection ID.
 
 ### Tokens
 
-If the client has an token received in a NEW_TOKEN frame on a previous
-connection to what it believes to be the same server, it can include that value
-in the Token field of its Initial packet.
+If the client has a token received in a NEW_TOKEN frame on a previous connection
+to what it believes to be the same server, it can include that value in the
+Token field of its Initial packet.
 
-A client SHOULD NOT reuse a token; reused tokens enable activity on connections
-to be correlated.  A client MUST NOT reuse a token if it believes that its point
-of network attachment has changed; that is, if there is a change in its local IP
-address or network interface.  Reusing a token on different network paths would
-allow activity to be linked between paths (see {{migration-linkability}}).  A
-client needs to start the connection process over if it migrates prior to
-completing the handshake.
+A client SHOULD NOT reuse a token.  Reusing a token on different network paths
+would allow activity to be linked between paths (see {{migration-linkability}}).
+A client MUST NOT reuse a token if it believes that its point of network
+attachment has changed; that is, if there is a change in its local IP address or
+network interface.  A client needs to start the connection process over if it
+migrates prior to completing the handshake.
 
 If the client received a Retry packet from the server and sends an Initial
 packet in response, then it sets the Destination Connection ID to the value from
