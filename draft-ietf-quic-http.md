@@ -320,7 +320,25 @@ a result of having their request terminated abruptly, though clients can always
 discard responses at their discretion for other reasons.  Servers MUST NOT
 abort a response in progress as a result of receiving a solicited RST_STREAM.
 
-### Header Compression
+### Header Formatting and Compression
+
+HTTP header fields carry information as a series of key-value pairs. For a
+listing of registered HTTP headers, see the "Message Header Field" registry
+maintained at <https://www.iana.org/assignments/message-headers>.
+
+Just as in previous versions of HTTP, header field names are strings of ASCII
+characters that are compared in a case-insensitive fashion.  As in HTTP/2,
+header field names MUST be converted to lowercase prior to their encoding.  A
+request or response containing uppercase header field names MUST be treated as
+malformed.
+
+As in HTTP/2, HTTP/QUIC uses special pseudo-header fields beginning with ':'
+character (ASCII 0x3a) to convey the target URI, the method of the request, and
+the status code for the response.  These pseudo-header fields are defined in
+Section 8.1.2.3 and 8.1.2.4 of {{!RFC7540}}. Pseudo-header fields are not HTTP
+header fields.  Endpoints MUST NOT generate pseudo-header fields other than
+those defined in {{!RFC7540}}.  The restrictions on the use of pseudo-header
+fields in Section 8.1.2.1 of {{!RFC7540}} also apply to HTTP/QUIC.
 
 HTTP/QUIC uses QPACK header compression as described in [QPACK], a variation of
 HPACK which allows the flexibility to avoid header-compression-induced
