@@ -785,7 +785,7 @@ are in a different packet number space to other packets (see
 
 ### 0-RTT Packet Numbers {#retry-0rtt-pn}
 
-Packet numbers for 0-RTT protected packets use the same space as 0-RTT protected
+Packet numbers for 0-RTT protected packets use the same space as 1-RTT protected
 packets.
 
 After a client receives a Retry or Version Negotiation packet, it MAY attempt to
