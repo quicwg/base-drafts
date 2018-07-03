@@ -791,8 +791,9 @@ packets.
 After a client receives a Retry or Version Negotiation packet, it MAY attempt to
 send data in 0-RTT packets after it sends a new Initial packet.  However, a
 client MUST NOT reset the packet number it uses for 0-RTT packets.  The keys
-used to protect 0-RTT keys are not guaranteed to change as a result of
-responding to a Retry or Version Negotiation packet.
+used to protect 0-RTT packets will not change as a result of responding to a
+Retry or Version Negotiation packet unless the client also regenerates the
+cryptographic handshake messages.
 
 Receiving a Retry or Version Negotiation packet, especially a Retry that changes
 the connection ID used for subsequent packets, indicates a strong possibility
