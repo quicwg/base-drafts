@@ -745,6 +745,9 @@ handled separately.
 sample_offset = 6 + len(destination_connection_id) +
                     len(source_connection_id) +
                     len(payload_length) + 4
+if packet_type == Initial:
+    sample_offset += len(token_length) +
+                     len(token)
 ~~~
 
 To ensure that this process does not sample the packet number, packet number
