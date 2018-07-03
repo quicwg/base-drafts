@@ -1978,15 +1978,20 @@ network.  This section describes the process by which an endpoint migrates to a
 new address.
 
 An endpoint MUST NOT initiate connection migration before the handshake is
-finished and the endpoint has 1-RTT keys.  An endpoint also MUST NOT initiate
-connection migration if the peer sent the `disable_migration` transport
-parameter during the handshake.  An endpoint which has sent this transport
-parameter, but detects that a peer has nonetheless migrated to a different
-network MAY treat this as a connection error of type INVALID_MIGRATION. However,
-note that not all changes of peer address are intentional migrations. The peer
-could experience an unintended change of address due to NAT rebinding; endpoints
-SHOULD perform path validation ({{migrate-validate}}) if the rebinding does not
-cause the connection to fail.
+finished and the endpoint has 1-RTT keys.  The design of QUIC relies on
+endpoints retaining a stable address for the duration of the handshake.
+
+An endpoint also MUST NOT initiate connection migration if the peer sent the
+`disable_migration` transport parameter during the handshake.  An endpoint which
+has sent this transport parameter, but detects that a peer has nonetheless
+migrated to a different network MAY treat this as a connection error of type
+INVALID_MIGRATION.
+
+Not all changes of peer address are intentional migrations. The peer could
+experience NAT rebinding: a change of address due to a middlebox, usually a NAT,
+allocating a new outgoing port or even a new outgoing IP address for a flow.
+Endpoints SHOULD perform path validation ({{migrate-validate}}) if a NAT
+rebinding does not cause the connection to fail.
 
 This document limits migration of connections to new client addresses, except as
 described in {{preferred-address}}. Clients are responsible for initiating all
