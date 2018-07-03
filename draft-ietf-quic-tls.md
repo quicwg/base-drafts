@@ -440,10 +440,10 @@ Important:
 
 ### Encryption Level Changes
 
-At each change of encryption level in either direction, TLS signals QUIC,
-providing the new level and the encryption keys.  These events are not
-asynchronous, they always occur immediately after TLS is provided with new
-handshake octets, or after TLS produces handshake octets.
+At each change of encryption level in either direction, TLS provides QUIC with
+the new level and the encryption keys.  These events are not asynchronous, they
+always occur immediately after TLS is provided with new handshake octets, or
+after TLS produces handshake octets.
 
 If 0-RTT is possible, it is ready after the client sends a TLS ClientHello
 message or the server receives that message.  After providing a QUIC client with
@@ -469,25 +469,27 @@ transmission.
 Client                                                    Server
 
 Get Handshake
-                      Initial ------------>
+                     Initial ------------->
 Rekey tx to 0-RTT Keys
-                      0-RTT -------------->
+                     0-RTT --------------->
                                               Handshake Received
                                                    Get Handshake
-                      <------------ Initial
+                     <------------- Initial
                                           Rekey rx to 0-RTT keys
                                               Handshake Received
                                       Rekey rx to Handshake keys
                                                    Get Handshake
                      <----------- Handshake
                                           Rekey tx to 1-RTT keys
+                     <--------------- 1-RTT
 Handshake Received
 Rekey rx to Handshake keys
 Handshake Received
 Get Handshake
 Handshake Complete
+                     Handshake ----------->
 Rekey tx to 1-RTT keys
-                      Handshake ---------->
+                     1-RTT --------------->
                                               Handshake Received
                                           Rekey rx to 1-RTT keys
                                                    Get Handshake
