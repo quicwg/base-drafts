@@ -534,10 +534,9 @@ process.
 
 ## Retry Packet {#packet-retry}
 
-A Retry packet uses the invariant portion of the long packet header with a type
-value of 0x7E. It carries an address validation token created by the server. It
-is used by a server that wishes to perform a stateless retry (see
-{{stateless-retry}}).
+A Retry packet uses a long packet header with a type value of 0x7E. It carries
+an address validation token created by the server. It is used by a server that
+wishes to perform a stateless retry (see {{stateless-retry}}).
 
 ~~~
  0                   1                   2                   3
@@ -596,9 +595,8 @@ acknowledged by a client.
 A server MUST only send a Retry in response to a client Initial packet.
 
 If the Original Destination Connection ID field does not match the Destination
-Connection ID from the most recent the Initial packet it sent, clients MUST
-discard the packet.  This prevents an off-path attacker from injecting a Retry
-packet with a bogus new Source Connection ID.
+Connection ID from the most recent Initial packet it sent, clients MUST discard
+the packet.  This prevents an off-path attacker from injecting a Retry packet.
 
 The client responds to a Retry packet with Initial packet that includes the
 provided Retry Token to continue connection establishment.
@@ -670,7 +668,7 @@ Token Length:
 
 : A variable-length integer specifying the length of the Token field, in bytes.
   This value is zero if no token is present.  Initial packets sent by the server
-  MUST include a zero-length token.
+  MUST specify a token of zero length.
 
 Token:
 
@@ -691,12 +689,15 @@ a cryptographic handshake message, ACK frames, or both. The first CRYPTO frame
 sent always begins at an offset of 0 (see {{handshake}}).
 
 The first packet sent by a client always includes a CRYPTO frame that contains
-the first cryptographic handshake message.  The first packet sent by a client
-MUST fit in a single UDP datagram (see {{handshake}}).
+the entirety of the first cryptographic handshake message.  This packet, and the
+cryptographic handshake message, MUST fit in a single UDP datagram (see
+{{handshake}}).
 
 Note that if the server sends a HelloRetryRequest, the client will send a second
-Initial packet with a CRYPTO frame with an offset starting at the end of the
-CRYPTO stream in the first Initial.
+Initial packet.  This Initial packet will continue the cryptographic handshake
+and will contain a CRYPTO frame with an offset matching the size of the CRYPTO
+frame sent in the first Initial packet.  Cryptographic handshake messages
+subsequent to the first do not need to fit within a single UDP datagram.
 
 
 ### Connection IDs
@@ -726,16 +727,17 @@ Connection ID.
 
 ### Tokens
 
-If the client has an unused token that it received in a NEW_TOKEN frame on a
-previous connection to what it believes to be the same server, it includes that
-value in the Token field of its Initial packet.
+If the client has an token received in a NEW_TOKEN frame on a previous
+connection to what it believes to be the same server, it can include that value
+in the Token field of its Initial packet.
 
-A client MUST NOT reuse a token if it believes that its point of network
-attachment has changed; that is, if there is a change in its local IP address or
-network interface.  Reusing a token on different network paths would allow
-activity to be linked between paths (see {{migration-linkability}}).  A client
-needs to start the connection process over if it migrates prior to completing
-the handshake.
+A client SHOULD NOT reuse a token; reused tokens enable activity on connections
+to be correlated.  A client MUST NOT reuse a token if it believes that its point
+of network attachment has changed; that is, if there is a change in its local IP
+address or network interface.  Reusing a token on different network paths would
+allow activity to be linked between paths (see {{migration-linkability}}).  A
+client needs to start the connection process over if it migrates prior to
+completing the handshake.
 
 If the client received a Retry packet from the server and sends an Initial
 packet in response, then it sets the Destination Connection ID to the value from
@@ -757,16 +759,16 @@ Note:
   the packet is that the client might have received the token in a previous
   connection using the NEW_TOKEN frame, and if the server has lost state, it
   might be unable to validate the token at all, leading to connection failure if
-  the packet is discarded.  A server might encode tokens that it provides with
-  NEW_TOKEN frames and Retry packets differently, and validate the latter more
-  strictly.
+  the packet is discarded.  A server MAY encode tokens provided with NEW_TOKEN
+  frames and Retry packets differently, and validate the latter more strictly.
 
 
 ### Starting Packet Numbers
 
 The first Initial packet sent by either endpoint contains a packet number of
-0. The packet number increases monotonically thereafter.  Initial packets are in
-a different packet number space to other packets (see {{packet-numbers}}).
+0. The packet number MUST increase monotonically thereafter.  Initial packets
+are in a different packet number space to other packets (see
+{{packet-numbers}}).
 
 
 ### Minimum Packet Size
