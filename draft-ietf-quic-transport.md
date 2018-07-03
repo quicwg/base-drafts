@@ -917,7 +917,7 @@ send a Stateless Reset ({{stateless-reset}}) in response to further packets that
 it receives.
 
 In the QUIC long and short packet headers, the number of bits required to
-represent the packet number are reduced by including only a variable number of
+represent the packet number is reduced by including only a variable number of
 the least significant bits of the packet number.  One or two of the most
 significant bits of the first octet determine how many bits of the packet
 number are provided, as shown in {{pn-encodings}}.
