@@ -3489,6 +3489,14 @@ even if there are packet gaps which precede the received packet.  The endpoint
 MUST acknowledge packets containing only ACK or PADDING frames in the next ACK
 frame that it sends.
 
+While PADDING frames do not elicit an ACK frame from a receiver, they are
+considered to be in flight for congestion control purposes
+{{QUIC-RECOVERY}}. Sending only PADDING frames might cause the sender to become
+limited by the congestion controller (as described in {{QUIC-RECOVERY}}) with no
+acknowledgments forthcoming from the receiver. Therefore, a sender should ensure
+that other frames are sent in addition to PADDING frames to elicit
+acknowledgments from the receiver.
+
 Strategies and implications of the frequency of generating acknowledgments are
 discussed in more detail in {{QUIC-RECOVERY}}.
 
