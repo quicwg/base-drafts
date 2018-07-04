@@ -734,7 +734,7 @@ Connection ID.
 
 ### Tokens
 
-If the client has an token received in a NEW_TOKEN frame on a previous
+If the client has a token received in a NEW_TOKEN frame on a previous
 connection to what it believes to be the same server, it can include that value
 in the Token field of its Initial packet.
 
