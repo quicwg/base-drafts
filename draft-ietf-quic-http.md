@@ -1021,12 +1021,11 @@ connection, the client cannot know if the server started to process that POST
 request if the server does not send a GOAWAY frame to indicate what streams it
 might have acted on.
 
-For unexpected closures caused by error conditions, a QUIC CONNECTION_CLOSE or
-APPLICATION_CLOSE frame MUST be used.  However, a GOAWAY MAY be sent first to
-provide additional detail to clients and to allow the client to retry requests.
-Including the GOAWAY frame in the same packet as the QUIC CONNECTION_CLOSE or
-APPLICATION_CLOSE frame improves the chances of the frame being received by
-clients.
+For unexpected closures caused by error conditions, a QUIC APPLICATION_CLOSE
+frame MUST be used.  However, a GOAWAY MAY be sent first to provide additional
+detail to clients and to allow the client to retry requests.  Including the
+GOAWAY frame in the same packet as the QUIC APPLICATION_CLOSE frame improves the
+chances of the frame being received by clients.
 
 If a connection terminates without a GOAWAY frame, the last Stream ID is
 effectively the highest possible Stream ID (as determined by QUIC's
@@ -1127,7 +1126,7 @@ express the cause of a connection or stream error.
 ## HTTP/QUIC Error Codes {#http-error-codes}
 
 The following error codes are defined for use in QUIC RST_STREAM, STOP_SENDING,
-and CONNECTION_CLOSE frames when using HTTP/QUIC.
+and APPLICATION_CLOSE frames when using HTTP/QUIC.
 
 STOPPING (0x00):
 : This value is reserved by the transport to be used in response to QUIC
