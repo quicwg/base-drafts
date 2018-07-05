@@ -444,10 +444,11 @@ Google QUIC Demultipexing Bit:
 Reserved:
 
 : The sixth, seventh, and eighth bits (0x7) of octet 0 are reserved for
-  experimentation.  Endpoints MUST ignore these bits unless they are
-  participating in an experiment that uses these bits.  An endpoint not
-  actively using these bits SHOULD set the value randomly to protect against
-  unwanted inference about particular values.
+  experimentation.  Endpoints MUST ignore these bits on packets they receive
+  unless they are participating in an experiment that uses these bits.  An
+  endpoint not actively using these bits SHOULD set the value randomly on
+  packets they send to protect against unwanted inference about particular
+  values.
 
 Destination Connection ID:
 
