@@ -492,16 +492,28 @@ this header is determined by the stream type.
 ~~~~~~~~~~
 {: #fig-stream-header title="Unidirectional Stream Header"}
 
-Two stream types are defined in this document: control streams
-({{control-streams}}) and push streams ({{server-push}}).  Other stream types
-can be defined by extensions to HTTP/QUIC.
+Some stream types are reserved ({{stream-grease}}).  Two stream types are
+defined in this document: control streams ({{control-streams}}) and push streams
+({{server-push}}).  Other stream types can be defined by extensions to
+HTTP/QUIC.
 
 If the stream header indicates a stream type which is not supported by the
-recipient, this SHOULD be treated as a stream error of type
-HTTP_UNKNOWN_STREAM_TYPE.  The semantics of the remainder of the stream are
+recipient, the remainder of the stream cannot be consumed as the semantics are
 unknown. Implementations SHOULD NOT send stream types the peer is not already
-known to support, since a stream error can be promoted to a connection error at
-the peer's discretion (see {{errors}}).
+known to support. Recipients of unknown stream types MAY trigger a QUIC
+STOP_SENDING frame with an error code of HTTP_UNKNOWN_STREAM_TYPE, but MUST NOT
+consider such streams to be an error of any kind.
+
+### Reserved Stream Types {#stream-grease}
+
+Stream types of the format `0x1f * N` are reserved to exercise the requirement
+that unknown types be ignored. These streams have no semantic meaning, and can
+be sent when application-layer padding is desired.  They MAY also be sent on
+connections where no request data is currently being transferred. Endpoints MUST
+NOT consider these streams to have any meaning upon receipt.
+
+The payload and length of the stream are selected in any manner the
+implementation chooses.
 
 ###  Control Streams
 
@@ -1651,6 +1663,18 @@ The entries in the following table are registered by this document.
 | Push Stream      | 0x50   | {{server-push}}            | Server |
 | ---------------- | ------ | -------------------------- | ------ |
 
+Additionally, each code of the format `0x1f * N` for values of N in the
+range (0..8) (that is, `0x00`, `0x1f`, etc., through `0xf8`), the following
+values should be registered:
+
+Stream Type:
+: Reserved - GREASE
+
+Specification:
+: {{stream-grease}}
+
+Sender:
+: Both
 
 --- back
 
