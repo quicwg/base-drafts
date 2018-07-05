@@ -327,7 +327,9 @@ listing of registered HTTP headers, see the "Message Header Field" registry
 maintained at <https://www.iana.org/assignments/message-headers>.
 
 Just as in previous versions of HTTP, header field names are strings of ASCII
-characters that are compared in a case-insensitive fashion.  As in HTTP/2,
+characters that are compared in a case-insensitive fashion.  Properties of HTTP
+header names and values are discussed in more detail in Section 3.2 of
+{{!RFC7230}}, though the wire rendering in HTTP/QUIC differs.  As in HTTP/2,
 header field names MUST be converted to lowercase prior to their encoding.  A
 request or response containing uppercase header field names MUST be treated as
 malformed.
