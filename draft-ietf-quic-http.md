@@ -1231,8 +1231,8 @@ This document doesn't mandate a specific method for negotiating the use of an
 extension but notes that a setting ({{settings-parameters}}) could be used for
 that purpose.  If both peers set a value that indicates willingness to use the
 extension, then the extension can be used.  If a setting is used for extension
-negotiation, the initial value MUST be defined in such a fashion that the
-extension is initially disabled.
+negotiation, the default value MUST be defined in such a fashion that the
+extension is disabled if the setting is omitted.
 
 
 # Considerations for Transitioning from HTTP/2
