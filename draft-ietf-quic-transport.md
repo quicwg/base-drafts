@@ -1041,7 +1041,7 @@ document.
 | 0x10 - 0x17 | STREAM            | {{frame-stream}}            |
 | 0x18        | CRYPTO            | {{frame-crypto}}            |
 | 0x19        | NEW_TOKEN         | {{frame-new-token}}         |
-| 0x20        | ACK_ECN           | {{frame-ack-ecn}}           |
+| 0x1a        | ACK_ECN           | {{frame-ack-ecn}}           |
 {: #frame-types title="Frame Types"}
 
 All QUIC frames are idempotent.  That is, a valid frame does not cause
@@ -3245,7 +3245,7 @@ a reduced delay; see Section 3.5.1 of {{QUIC-RECOVERY}}.
 
 ## ACK_ECN Frame {#frame-ack-ecn}
 
-The ACK_ECN frame (type=0x20) is used by an endpoint that supports ECN to
+The ACK_ECN frame (type=0x1a) is used by an endpoint that supports ECN to
 acknowledge packets received with ECN codepoints of ECT(0), ECT(1), or CE in the
 packet's IP header.
 
