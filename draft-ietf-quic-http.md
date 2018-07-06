@@ -1403,7 +1403,7 @@ CANCEL (0x8):
 : HTTP_REQUEST_CANCELLED in {{http-error-codes}}.
 
 COMPRESSION_ERROR (0x9):
-: HTTP_HPACK_DECOMPRESSION_FAILED in {{http-error-codes}}.
+: HTTP_QPACK_DECOMPRESSION_FAILED in {{http-error-codes}}.
 
 CONNECT_ERROR (0xa):
 : HTTP_CONNECT_ERROR in {{http-error-codes}}.
@@ -1603,7 +1603,7 @@ The entries in the following table are registered by this document.
 | HTTP_INTERNAL_ERROR                 | 0x0003     | Internal error                           | {{http-error-codes}}   |
 | HTTP_PUSH_ALREADY_IN_CACHE          | 0x0004     | Pushed content already cached            | {{http-error-codes}}   |
 | HTTP_REQUEST_CANCELLED              | 0x0005     | Data no longer needed                    | {{http-error-codes}}   |
-| HTTP_HPACK_DECOMPRESSION_FAILED     | 0x0006     | HPACK cannot continue                    | {{http-error-codes}}   |
+| HTTP_QPACK_DECOMPRESSION_FAILED     | 0x0006     | QPACK decoding error                     | {{http-error-codes}}   |
 | HTTP_CONNECT_ERROR                  | 0x0007     | TCP reset or error on CONNECT request    | {{http-error-codes}}   |
 | HTTP_EXCESSIVE_LOAD                 | 0x0008     | Peer generating excessive load           | {{http-error-codes}}   |
 | HTTP_VERSION_FALLBACK               | 0x0009     | Retry over HTTP/2                        | {{http-error-codes}}   |
