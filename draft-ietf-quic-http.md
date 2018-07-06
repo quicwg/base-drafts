@@ -1440,7 +1440,10 @@ Error codes need to be defined for HTTP/2 and HTTP/QUIC separately.  See
 # Security Considerations
 
 The security considerations of HTTP over QUIC should be comparable to those of
-HTTP/2 with TLS.
+HTTP/2 with TLS.  Note that where HTTP/2 employs PADDING frames to make a
+connection more resistant to traffic analysis, HTTP/QUIC can rely on QUIC's own
+PADDING frames or employ the reserved frame and stream types discussed in
+{{frame-grease}} and {{stream-grease}}.
 
 The modified SETTINGS format contains nested length elements, which could pose
 a security risk to an uncautious implementer.  A SETTINGS frame parser MUST
