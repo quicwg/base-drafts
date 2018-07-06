@@ -1007,7 +1007,7 @@ additional type-dependent fields:
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                           Type (i)                          ...
+|                       Frame Type (i)                        ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                   Type-Dependent Fields (*)                 ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -1057,6 +1057,7 @@ two-octet encoding for a variable-length integer with a value of 7, PING frames
 are always encoded as a single octet with the value 0x07.  An endpoint MUST
 treat the receipt of a frame type that uses a longer encoding than necessary as
 a connection error of type PROTOCOL_VIOLATION.
+
 
 ## Extension Frames
 
