@@ -2655,8 +2655,9 @@ Error Code:
 
 Frame Type:
 
-: The type of frame that triggered the error.  A value of 0 (equivalent to the
-  mention of the PADDING frame) is used when the frame type is unknown.
+: A variable-length integer encoding the type of frame that triggered the error.
+  A value of 0 (equivalent to the mention of the PADDING frame) is used when the
+  frame type is unknown.
 
 Reason Phrase Length:
 
@@ -3096,7 +3097,8 @@ ACK Delay:
 
 ACK Block Count:
 
-: The number of Additional ACK Block (and Gap) fields after the First ACK Block.
+: A variable-length integer specifying the number of Additional ACK Block (and
+  Gap) fields after the First ACK Block.
 
 ACK Blocks:
 
