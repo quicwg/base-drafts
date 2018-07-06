@@ -1527,8 +1527,8 @@ The entries in the following table are registered by this document.
 | ---------------- | ------ | -------------------------- |
 
 Additionally, each code of the format `0xb + (0x1f * N)` for values of N in the
-range (0..7) (that is, `0xb`, `0x2a`, etc., through `0xe4`), the following
-values should be registered:
+range (0..7) (that is, `0xb`, `0x2a`, `0x49`, `0x68`, `0x87`, `0xa6`, `0xc5`,
+and `0xe4`), the following values should be registered:
 
 Frame Type:
 : Reserved - GREASE
@@ -1670,9 +1670,9 @@ The entries in the following table are registered by this document.
 | Push Stream      | 0x50   | {{server-push}}            | Server |
 | ---------------- | ------ | -------------------------- | ------ |
 
-Additionally, each code of the format `0x1f * N` for values of N in the
-range (0..8) (that is, `0x00`, `0x1f`, etc., through `0xf8`), the following
-values should be registered:
+Additionally, for each code of the format `0x1f * N` for values of N in the
+range (0..8) (that is, `0x00`, `0x1f`, `0x3e`, `0x5d`, `0x7c`, `0x9b`, `0xba`,
+`0xd9`, `0xf8`), the following values should be registered:
 
 Stream Type:
 : Reserved - GREASE
