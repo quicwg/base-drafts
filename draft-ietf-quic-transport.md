@@ -1445,8 +1445,19 @@ language from Section 3 of {{!I-D.ietf-tls-tls13}}.
    } TransportParameters;
 
    struct {
+     uint8[4] addr;
+   } IPv4addr;
+
+   struct {
+     uint8[16] addr;
+   } IPv6addr;
+
+   struct {
      enum { IPv4(4), IPv6(6), (15) } ipVersion;
-     opaque ipAddress<4..2^8-1>;
+     select (PreferredAddress.ipVersion) {
+       case IPv4: IPv4addr;
+       case IPv6: IPv6addr;
+     };
      uint16 port;
      opaque connectionId<0..18>;
      opaque statelessResetToken[16];
