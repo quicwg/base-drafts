@@ -2651,9 +2651,7 @@ The fields of a CONNECTION_CLOSE frame are as follows:
 Error Code:
 
 : A 16-bit error code which indicates the reason for closing this connection.
-  CONNECTION_CLOSE uses codes from the space defined in {{error-codes}}
-  (APPLICATION_CLOSE uses codes from the application protocol error code space,
-  see {{app-error-codes}}).
+  CONNECTION_CLOSE uses codes from the space defined in {{error-codes}}.
 
 Frame Type:
 
@@ -2676,13 +2674,45 @@ Reason Phrase:
 
 ## APPLICATION_CLOSE frame {#frame-application-close}
 
-An APPLICATION_CLOSE frame (type=0x03) uses the same format as the
-CONNECTION_CLOSE frame ({{frame-connection-close}}), except that it uses error
-codes from the application protocol error code space ({{app-error-codes}})
-instead of the transport error code space.
+An APPLICATION_CLOSE frame (type=0x03) is used to signal an error with the
+protocol that uses QUIC.
 
-Other than the error code space, the format and semantics of the
-APPLICATION_CLOSE frame are identical to the CONNECTION_CLOSE frame.
+The APPLICATION_CLOSE frame is as follows:
+
+~~~
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|           Error Code (16)     |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                    Reason Phrase Length (i)                 ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                        Reason Phrase (*)                    ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~
+
+The fields of a APPLICATION_CLOSE frame are as follows:
+
+Error Code:
+
+: A 16-bit error code which indicates the reason for closing this connection.
+  APPLICATION_CLOSE uses codes from the application protocol error code space,
+  see {{app-error-codes}}.
+
+Reason Phrase Length:
+
+: This field is identical in format and semantics to the Reason Phrase Length
+  field from CONNECTION_CLOSE.
+
+Reason Phrase:
+
+: This field is identical in format and semantics to the Reason Phrase field
+  from CONNECTION_CLOSE.
+
+APPLICATION_CLOSE has similar format and semantics to the CONNECTION_CLOSE frame
+({{frame-connection-close}}).  Aside from the semantics of the Error Code field
+and the omission of the Frame Type field, both frames are used to close the
+connection.
 
 
 ## MAX_DATA Frame {#frame-max-data}
