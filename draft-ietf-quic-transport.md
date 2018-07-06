@@ -734,9 +734,9 @@ Connection ID.
 
 ### Tokens
 
-If the client has a token received in a NEW_TOKEN frame on a previous
-connection to what it believes to be the same server, it can include that value
-in the Token field of its Initial packet.
+If the client has a token received in a NEW_TOKEN frame on a previous connection
+to what it believes to be the same server, it can include that value in the
+Token field of its Initial packet.
 
 A token allows a server to correlate activity between connections.
 Specifically, the connection where the token was issued, and any connection
@@ -788,12 +788,16 @@ are in a different packet number space to other packets (see
 Packet numbers for 0-RTT protected packets use the same space as 1-RTT protected
 packets.
 
-After a client receives a Retry or Version Negotiation packet, it MAY attempt to
-send data in 0-RTT packets after it sends a new Initial packet.  However, a
-client MUST NOT reset the packet number it uses for 0-RTT packets.  The keys
+After a client receives a Retry or Version Negotiation packet, 0-RTT packets are
+likely to be lost or discarded by the server, especially if the server changes
+its connection ID with a Retry packet.  A client MAY attempt to send data in
+0-RTT packets after it sends a new Initial packet.
+
+A client MUST NOT reset the packet number it uses for 0-RTT packets.  The keys
 used to protect 0-RTT packets will not change as a result of responding to a
 Retry or Version Negotiation packet unless the client also regenerates the
-cryptographic handshake messages.
+cryptographic handshake message.  Sending packets with the same packet number in
+that case would compromise the packet protection for all 0-RTT packets.
 
 Receiving a Retry or Version Negotiation packet, especially a Retry that changes
 the connection ID used for subsequent packets, indicates a strong possibility
@@ -1349,7 +1353,7 @@ version.
 
 A client MAY attempt 0-RTT after receiving a Version Negotiation packet.  A
 client that sends additional 0-RTT packets MUST NOT reset the packet number to 0
-after a Retry packet, see {{retry-0rtt-pn}}.
+as a result, see {{retry-0rtt-pn}}.
 
 Version negotiation packets have no cryptographic protection. The result of the
 negotiation MUST be revalidated as part of the cryptographic handshake (see
