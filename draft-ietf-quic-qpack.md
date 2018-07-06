@@ -364,7 +364,7 @@ QPACK defines two settings which are included in the HTTP/QUIC SETTINGS frame.
 
   SETTINGS_HEADER_TABLE_SIZE (0x1):
   : An integer with a maximum value of 2^30 - 1.  The default value is 4,096
-    bytes.  See (TODO: reference PR#1357) for usage.
+    bytes.  See {{table-dynamic}} for usage.
 
   SETTINGS_QPACK_BLOCKED_STREAMS (0x7):
   : An integer with a maximum value of 2^16 - 1.  The default value is 100.  See
