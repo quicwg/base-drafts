@@ -512,16 +512,32 @@ this header is determined by the stream type.
 ~~~~~~~~~~
 {: #fig-stream-header title="Unidirectional Stream Header"}
 
-Two stream types are defined in this document: control streams
-({{control-streams}}) and push streams ({{server-push}}).  Other stream types
-can be defined by extensions to HTTP/QUIC.
+Some stream types are reserved ({{stream-grease}}).  Two stream types are
+defined in this document: control streams ({{control-streams}}) and push streams
+({{server-push}}).  Other stream types can be defined by extensions to
+HTTP/QUIC.
 
 If the stream header indicates a stream type which is not supported by the
-recipient, this SHOULD be treated as a stream error of type
-HTTP_UNKNOWN_STREAM_TYPE.  The semantics of the remainder of the stream are
-unknown. Implementations SHOULD NOT send stream types the peer is not already
-known to support, since a stream error can be promoted to a connection error at
-the peer's discretion (see {{errors}}).
+recipient, the remainder of the stream cannot be consumed as the semantics are
+unknown. Recipients of unknown stream types MAY trigger a QUIC STOP_SENDING
+frame with an error code of HTTP_UNKNOWN_STREAM_TYPE, but MUST NOT consider such
+streams to be an error of any kind.
+
+Implementations MAY send stream types before knowing whether the peer supports
+them.  However, stream types which could modify the state or semantics of
+existing protocol components, including QPACK or other extensions, MUST NOT be
+sent until the peer is known to support them.
+
+### Reserved Stream Types {#stream-grease}
+
+Stream types of the format `0x1f * N` are reserved to exercise the requirement
+that unknown types be ignored. These streams have no semantic meaning, and can
+be sent when application-layer padding is desired.  They MAY also be sent on
+connections where no request data is currently being transferred. Endpoints MUST
+NOT consider these streams to have any meaning upon receipt.
+
+The payload and length of the stream are selected in any manner the
+implementation chooses.
 
 ###  Control Streams
 
@@ -1444,7 +1460,10 @@ Error codes need to be defined for HTTP/2 and HTTP/QUIC separately.  See
 # Security Considerations
 
 The security considerations of HTTP over QUIC should be comparable to those of
-HTTP/2 with TLS.
+HTTP/2 with TLS.  Note that where HTTP/2 employs PADDING frames to make a
+connection more resistant to traffic analysis, HTTP/QUIC can rely on QUIC's own
+PADDING frames or employ the reserved frame and stream types discussed in
+{{frame-grease}} and {{stream-grease}}.
 
 The modified SETTINGS format contains nested length elements, which could pose
 a security risk to an uncautious implementer.  A SETTINGS frame parser MUST
@@ -1528,8 +1547,8 @@ The entries in the following table are registered by this document.
 | ---------------- | ------ | -------------------------- |
 
 Additionally, each code of the format `0xb + (0x1f * N)` for values of N in the
-range (0..7) (that is, `0xb`, `0x2a`, etc., through `0xe4`), the following
-values should be registered:
+range (0..7) (that is, `0xb`, `0x2a`, `0x49`, `0x68`, `0x87`, `0xa6`, `0xc5`,
+and `0xe4`), the following values should be registered:
 
 Frame Type:
 : Reserved - GREASE
@@ -1671,6 +1690,18 @@ The entries in the following table are registered by this document.
 | Push Stream      | 0x50   | {{server-push}}            | Server |
 | ---------------- | ------ | -------------------------- | ------ |
 
+Additionally, for each code of the format `0x1f * N` for values of N in the
+range (0..8) (that is, `0x00`, `0x1f`, `0x3e`, `0x5d`, `0x7c`, `0x9b`, `0xba`,
+`0xd9`, `0xf8`), the following values should be registered:
+
+Stream Type:
+: Reserved - GREASE
+
+Specification:
+: {{stream-grease}}
+
+Sender:
+: Both
 
 --- back
 
