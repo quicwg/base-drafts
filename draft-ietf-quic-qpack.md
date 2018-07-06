@@ -817,6 +817,15 @@ represented as an 8-bit prefix string literal.
 {: title="Literal Header Field Without Name Reference"}
 
 
+# Error Handling
+
+The following error code is defined for HTTP/QUIC to indicate all failures of
+QPACK which prevent the stream or connection from continuing:
+
+HTTP_QPACK_DECOMPRESSION_FAILED (0x06):
+: QPACK failed to decompress a frame and cannot continue.
+
+
 # Encoding Strategies
 
 ## Single Pass Encoding
@@ -974,6 +983,21 @@ The entries in the following table are registered by this document.
 | QPACK Encoder Stream         | 0x48   | {{wire-format}}           | Both   |
 | QPACK Decoder Stream         | 0x68   | {{wire-format}}           | Both   |
 | ---------------------------- | ------ | ------------------------- | ------ |
+
+## Error Code Registration
+
+This document establishes one new error code in the "HTTP/QUIC Error Code"
+registry established in {{QUIC-HTTP}}.
+
+Name:
+: HTTP_QPACK_DECOMPRESSION_FAILED
+
+Code:
+: 0x06
+
+Description:
+: QPACK failed to decompress a frame and cannot continue.
+
 
 --- back
 
