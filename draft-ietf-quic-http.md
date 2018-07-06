@@ -499,10 +499,14 @@ HTTP/QUIC.
 
 If the stream header indicates a stream type which is not supported by the
 recipient, the remainder of the stream cannot be consumed as the semantics are
-unknown. Implementations SHOULD NOT send stream types the peer is not already
-known to support. Recipients of unknown stream types MAY trigger a QUIC
-STOP_SENDING frame with an error code of HTTP_UNKNOWN_STREAM_TYPE, but MUST NOT
-consider such streams to be an error of any kind.
+unknown. Recipients of unknown stream types MAY trigger a QUIC STOP_SENDING
+frame with an error code of HTTP_UNKNOWN_STREAM_TYPE, but MUST NOT consider such
+streams to be an error of any kind.
+
+Implementations SHOULD NOT send stream types the peer is not already known to
+support.   Stream types which could modify the state or semantics of existing
+protocol components, including QPACK or other extensions, MUST NOT be sent until
+the peer is known to support them.
 
 ### Reserved Stream Types {#stream-grease}
 
