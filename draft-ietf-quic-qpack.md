@@ -84,7 +84,7 @@ code and issues list for this draft can be found at
 # Introduction
 
 The QUIC transport protocol was designed from the outset to support HTTP
-semantics, and its design subsumes many of the features of HTTP/2.  HTTP/2 used
+semantics, and its design subsumes many of the features of HTTP/2.  HTTP/2 uses
 HPACK ({{!RFC7541}}) for header compression, but QUIC's stream multiplexing
 comes into some conflict with HPACK.  A key goal of the design of QUIC is to
 improve stream multiplexing relative to HTTP/2 by reducing head-of-line
