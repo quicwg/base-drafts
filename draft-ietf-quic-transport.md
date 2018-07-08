@@ -670,7 +670,9 @@ Token Length:
 
 : A variable-length integer specifying the length of the Token field, in bytes.
   This value is zero if no token is present.  Initial packets sent by the server
-  MUST specify a token of zero length.
+  MUST set the Token Length field to zero; clients that receive an Initial
+  packet with a non-zero Token Length field MUST either discard the packet or
+  generate a connection error of type PROTOCOL_VIOLATION.
 
 Token:
 
