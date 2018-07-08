@@ -464,8 +464,8 @@ An addition to the header table where both the header field name and the header
 field value are represented as string literals (see {{primitives}}) starts with
 the '01' two-bit pattern.
 
-The name is represented as a 6-bit prefix string literal, while the value is
-represented as an 8-bit prefix string literal.
+The name is represented as a 5-bit prefix string literal, while the value is
+represented as an 7-bit prefix string literal.
 
 ~~~~~~~~~~ drawing
      0   1   2   3   4   5   6   7
