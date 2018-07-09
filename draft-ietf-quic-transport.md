@@ -744,7 +744,7 @@ where it is used.  Clients that want to break continuity of identity with a
 server MAY discard tokens provided using the NEW_TOKEN frame.  Tokens obtained
 in Retry packets MUST NOT be discarded.
 
-A client SHOULD NOT reuse a token.  Reusing a token on allows connections to be
+A client SHOULD NOT reuse a token.  Reusing a token allows connections to be
 linked by entities on the network path (see {{migration-linkability}}).  A
 client MUST NOT reuse a token if it believes that its point of network
 attachment has changed since the token was last used; that is, if there is a
