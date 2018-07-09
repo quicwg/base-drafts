@@ -600,16 +600,14 @@ If the Original Destination Connection ID field does not match the Destination
 Connection ID from the most recent Initial packet it sent, clients MUST discard
 the packet.  This prevents an off-path attacker from injecting a Retry packet.
 
-The client responds to a Retry packet with Initial packet that includes the
+The client responds to a Retry packet with an Initial packet that includes the
 provided Retry Token to continue connection establishment.
 
 A server that might send another Retry packet in response to a subsequent
 Initial packet MUST set the Source Connection ID to new value of at least 8
 octets in length.  This allows clients to distinguish between Retry packets when
 the server sends multiple rounds of Retry packets.  A server that will not send
-additional Retry packets can set the Source Connection ID to any value.  A
-client MUST ignore a Retry that contains an ODCIL field with a value less than
-8 or greater than 18.
+additional Retry packets can set the Source Connection ID to any value.
 
 
 ## Cryptographic Handshake Packets {#handshake-packets}
