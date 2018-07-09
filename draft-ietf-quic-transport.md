@@ -3293,7 +3293,7 @@ frame.  Its format is identical to the PATH_CHALLENGE frame
 
 If the content of a PATH_RESPONSE frame does not match the content of a
 PATH_CHALLENGE frame previously sent by the endpoint, the endpoint MAY generate
-a connection error of type UNSOLICITED_PATH_RESPONSE.
+a connection error of type PROTOCOL_VIOLATION.
 
 
 ## NEW_TOKEN frame {#frame-new-token}
@@ -4464,11 +4464,6 @@ PROTOCOL_VIOLATION (0xA):
 : An endpoint detected an error with protocol compliance that was not covered by
   more specific error codes.
 
-UNSOLICITED_PATH_RESPONSE (0xB):
-
-: An endpoint received a PATH_RESPONSE frame that did not correspond to any
-  PATH_CHALLENGE frame that it previously sent.
-
 INVALID_MIGRATION (0xC):
 
 : A peer has migrated to a different network when the endpoint had disabled
@@ -4791,7 +4786,6 @@ from 0xFF00 to 0xFFFF are reserved for Private Use {{!RFC8126}}.
 | 0x8   | TRANSPORT_PARAMETER_ERROR | Error in transport parameters | {{error-codes}} |
 | 0x9   | VERSION_NEGOTIATION_ERROR | Version negotiation failure   | {{error-codes}} |
 | 0xA   | PROTOCOL_VIOLATION        | Generic protocol violation    | {{error-codes}} |
-| 0xB   | UNSOLICITED_PATH_RESPONSE | Unsolicited PATH_RESPONSE frame | {{error-codes}} |
 | 0xC   | INVALID_MIGRATION         | Violated disabled migration   | {{error-codes}} |
 {: #iana-error-table title="Initial QUIC Transport Error Codes Entries"}
 
