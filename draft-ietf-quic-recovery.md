@@ -110,6 +110,13 @@ important to the loss detection and congestion control machinery below.
 * Retransmittable packets are those that contain at least one retransmittable
   frame.
 
+* PADDING frames do cause packets containing them to count towards bytes in
+  flight, but do not instigate acknowledgement.
+  
+* In flight packets are those that contain at least one retransmittable frame
+  or at least one PADDING frame.  All in flight packets count towards bytes
+  in flight.
+
 * Cryptographic handshake data is sent in CRYPTO frames, and uses the
   reliability machinery of QUIC underneath.
 
@@ -242,10 +249,10 @@ packets cannot be detected via Fast Retransmit. To enable ack-based loss
 detection of such packets, receipt of an acknowledgment for the last outstanding
 retransmittable packet triggers the Early Retransmit process, as follows.
 
-If there are unacknowledged retransmittable packets still pending, they should
+If there are unacknowledged in flight packets still pending, they should
 be marked as lost. To compensate for the reduced reordering resilience, the
 sender SHOULD set an alarm for a small period of time. If the unacknowledged
-retransmittable packets are not acknowledged during this time, then these
+in flight packets are not acknowledged during this time, then these
 packets MUST be marked as lost.
 
 An endpoint SHOULD set the alarm such that a packet is marked as lost no earlier
@@ -625,7 +632,7 @@ are as follows:
 
 * is_ack_only: A boolean that indicates whether a packet only contains an
   ACK frame.  If true, it is still expected an ack will be received for
-  this packet, but it is not retransmittable.
+  this packet, but it is not retransmittable or in flight.
 
 * is_handshake_packet: A boolean that indicates whether a packet contains
   handshake data.
@@ -966,7 +973,7 @@ slow start is re-entered.
 ## Pacing
 
 This document does not specify a pacer, but it is RECOMMENDED that a sender pace
-sending of all retransmittable packets based on input from the congestion
+sending of all in flight packets based on input from the congestion
 controller. For example, a pacer might distribute the congestion window over
 the SRTT when used with a window-based controller, and a pacer might use the
 rate estimate of a rate-based controller.
@@ -1018,7 +1025,7 @@ ecn_ce_counter:
 
 bytes_in_flight:
 : The sum of the size in bytes of all sent packets that contain at least
-  one retransmittable frame, and have not been acked or declared
+  one retransmittable or PADDING frame, and have not been acked or declared
   lost. The size does not include IP or UDP overhead.
   Packets only containing ACK frames do not count towards bytes_in_flight
   to ensure congestion control does not impede congestion feedback.
