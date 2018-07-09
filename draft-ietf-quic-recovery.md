@@ -1026,7 +1026,8 @@ ecn_ce_counter:
 bytes_in_flight:
 : The sum of the size in bytes of all sent packets that contain at least
   one retransmittable or PADDING frame, and have not been acked or declared
-  lost. The size does not include IP or UDP overhead.
+  lost. The size does not include IP or UDP overhead, but does include the
+  QUIC header and AEAD overhead.
   Packets only containing ACK frames do not count towards bytes_in_flight
   to ensure congestion control does not impede congestion feedback.
 
