@@ -572,13 +572,16 @@ as a connection error of type PROTOCOL_VIOLATION.
 ## Rejecting 0-RTT
 
 A server rejects 0-RTT by rejecting 0-RTT at the TLS layer.  This also prevents
-QUIC from sending 0-RTT data. A client that attempts 0-RTT MUST also consider
-0-RTT to be rejected if it receives a Version Negotiation packet.
+QUIC from sending 0-RTT data. A server will always reject 0-RTT if it sends a
+TLS HelloRetryRequest.
 
 When 0-RTT is rejected, all connection characteristics that the client assumed
 might be incorrect.  This includes the choice of application protocol, transport
 parameters, and any application configuration.  The client therefore MUST reset
 the state of all streams, including application state bound to those streams.
+
+A client MAY attempt to send 0-RTT again if it receives a Retry or Version
+Negotiation packet.  These packets do not signify rejection of 0-RTT.
 
 ## HelloRetryRequest
 
