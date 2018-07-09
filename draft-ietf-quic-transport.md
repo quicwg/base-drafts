@@ -733,12 +733,18 @@ If the client has a token received in a NEW_TOKEN frame on a previous connection
 to what it believes to be the same server, it can include that value in the
 Token field of its Initial packet.
 
-A client SHOULD NOT reuse a token.  Reusing a token on different network paths
-would allow activity to be linked between paths (see {{migration-linkability}}).
-A client MUST NOT reuse a token if it believes that its point of network
-attachment has changed; that is, if there is a change in its local IP address or
-network interface.  A client needs to start the connection process over if it
-migrates prior to completing the handshake.
+A token allows a server to correlate activity between connections.
+Specifically, the connection where the token was issued, and any connection
+where it is used.  Clients that want to break continuity of identity with a
+server MAY discard tokens provided using the NEW_TOKEN frame.  Tokens obtained
+in Retry packets MUST NOT be discarded.
+
+A client SHOULD NOT reuse a token.  Reusing a token on allows connections to be
+linked by entities on the network path (see {{migration-linkability}}).  A
+client MUST NOT reuse a token if it believes that its point of network
+attachment has changed since the token was last used; that is, if there is a
+change in its local IP address or network interface.  A client needs to start
+the connection process over if it migrates prior to completing the handshake.
 
 If the client received a Retry packet from the server and sends an Initial
 packet in response, then it sets the Destination Connection ID to the value from
