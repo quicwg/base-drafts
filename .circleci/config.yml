@@ -8,27 +8,31 @@ jobs:
     steps:
       - checkout
 
+      - run:
+          name: "Set Cache Key"
+          command: "date '+%Y%W' > ~/.ci-cache"
+
       # Prime caches for faster checkout
-      - restore_cache:
+      - restore_cache: &git-keys
           keys:
-            - git-reference
+            - git-reference-{{ checksum "~/.ci-cache" }}
       - run:
           name: "Update Cache"
           command: "git -C ~/git-reference fetch --all --prune"
       - save_cache:
-          key: git-reference
+          <<: *git-keys
           paths:
             - ~/git-reference
 
       # Build txt and html versions of drafts
-      - restore_cache:
+      - restore_cache: &refcache-keys
           keys:
-            - refcache
+            - refcache-{{ checksum "~/.ci-cache" }}
       - run:
           name: "Build Drafts"
           command: "make 'CLONE_ARGS=--reference ~/git-reference'"
       - save_cache:
-          key: refcache
+          <<: *refcache-keys
           paths:
             - ~/.cache/xml2rfc
 
