@@ -996,7 +996,7 @@ Code:
 : 0x06
 
 Description:
-: QPACK failed to decompress a frame and cannot continue.
+: QPACK failed to interpret an instruction and cannot continue.
 
 
 --- back
