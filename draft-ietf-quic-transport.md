@@ -1415,7 +1415,7 @@ language from Section 3 of {{!I-D.ietf-tls-tls13}}.
    uint32 QuicVersion;
 
    enum {
-      initial_max_stream_data(0),
+      initial_max_stream_data_bidi_local(0),
       initial_max_data(1),
       initial_max_bidi_streams(2),
       idle_timeout(3),
@@ -1425,6 +1425,8 @@ language from Section 3 of {{!I-D.ietf-tls-tls13}}.
       ack_delay_exponent(7),
       initial_max_uni_streams(8),
       disable_migration(9),
+      initial_max_stream_data_bidi_remote(10),
+      initial_max_stream_data_uni(11),
       (65535)
    } TransportParameterId;
 
@@ -1478,14 +1480,6 @@ type TRANSPORT_PARAMETER_ERROR.
 An endpoint MUST include the following parameters in its encoded
 TransportParameters:
 
-initial_max_stream_data (0x0000):
-
-: The initial stream maximum data parameter contains the initial value for the
-  maximum data that can be sent on any newly created stream.  This parameter is
-  encoded as an unsigned 32-bit integer in units of octets.  This is equivalent
-  to an implicit MAX_STREAM_DATA frame ({{frame-max-stream-data}}) being sent on
-  all streams immediately after opening.
-
 initial_max_data (0x0001):
 
 : The initial maximum data parameter contains the initial value for the maximum
@@ -1524,6 +1518,36 @@ initial_max_uni_streams (0x0008):
   containing the corresponding Stream ID. For example, a value of 0x05 would be
   equivalent to receiving a MAX_STREAM_ID containing 18 when received by a
   client or 19 when received by a server.
+
+initial_max_stream_data_bidi_local (0x0000):
+
+: The initial stream maximum data for bidirectional, local streams parameter
+  contains the initial value for the maximum data that can be sent on any newly
+  created bidirectional stream opened by the endpoint that sets the transport
+  parameter.  This parameter is encoded as an unsigned 32-bit integer in units
+  of octets.  This is equivalent to a MAX_STREAM_DATA frame
+  ({{frame-max-stream-data}}) being sent on those streams immediately after
+  opening.  In client transport parameters, this applies to streams with an
+  identifier ending in 0x0; in server transport parameters, this applies to
+  streams ending in 0x1.  This parameter defaults to 0 if absent.
+
+initial_max_stream_data_bidi_remote (0x000a):
+
+: The initial stream maximum data for bidirectional, remote streams parameter is
+  equivalent to the initial_max_stream_data_bidi_local parameter, but it applies
+  instead to bidirectional streams initiated by a remote peer.  In client
+  transport parameters, this applies to streams with an identifier ending in
+  0x1; in server transport parameters, this applies to streams ending in 0x0.
+  Thisparameter defaults to 0 if absent.
+
+initial_max_stream_data_uni (0x000b):
+
+: The initial stream maximum data for bidirectional, remote streams parameter is
+  equivalent to the initial_max_stream_data_bidi_local parameter, but it applies
+  instead to unidirectional streams initiated by a remote peer.  In client
+  transport parameters, this applies to streams with an identifier ending in
+  0x3; in server transport parameters, this applies to streams ending in 0x2.
+  This parameter defaults to 0 if absent.
 
 max_packet_size (0x0005):
 
