@@ -438,9 +438,10 @@ instructions.
 An addition to the header table where the header field name matches the header
 field name of an entry stored in the static table or the dynamic table starts
 with the '1' one-bit pattern.  The `S` bit indicates whether the reference is to
-the static (S=1) or dynamic (S=0) table. The header field name is represented
-using the relative index of that entry, which is represented as an integer with
-a 6-bit prefix (see Section 5.1 of [RFC7541]).
+the static (S=1) or dynamic (S=0) table. The 6-bit prefix integer (see Section 5.1
+of [RFC7541]) that follows is used to locate the table entry for the header name.
+When S=1, the number represents the static table index; when S=0, the number is
+the relative index of the entry in the dynamic table.
 
 The header name reference is followed by the header field value represented as a
 string literal (see Section 5.2 of [RFC7541]).
