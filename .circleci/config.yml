@@ -11,9 +11,9 @@ jobs:
       - run:
           name: "Setup Cache Keys"
           command: |
-              echo 'export THIS_WEEK='$(date '+%Y%W') >> $BASH_ENV
-              echo 'export LAST_WEEK='$(date '+%Y%W' -d '-1 week') >> $BASH_ENV
-              source $BASH_ENV"
+              echo 'export THIS_WEEK='"$(date '+%Y%W')" >> $BASH_ENV
+              echo 'export LAST_WEEK='"$(date '+%Y%W' -d '-1 week')" >> $BASH_ENV
+              source $BASH_ENV
 
       - run:
           name: "Check Cache Keys"
