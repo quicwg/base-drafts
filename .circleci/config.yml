@@ -8,42 +8,10 @@ jobs:
     steps:
       - checkout
 
-      - run:
-          name: "Setup Cache Keys"
-          command: |
-              echo 'export THIS_WEEK='"$(date '+%Y%W')" >> $BASH_ENV
-              echo 'export LAST_WEEK='"$(date '+%Y%W' -d '-1 week')" >> $BASH_ENV
-              source $BASH_ENV
-
-      - run:
-          name: "Check Cache Keys"
-          command: "echo THIS_WEEK=$THIS_WEEK; echo LAST_WEEK=$LAST_WEEK; echo $BASH_ENV"
-
-      # Prime caches for faster checkout
-      - restore_cache:
-          keys:
-            - git-reference-{{ .Environment.THIS_WEEK }}
-            - git-reference-{{ .Environment.LAST_WEEK }}
-      - run:
-          name: "Update Cache"
-          command: "git -C ~/git-reference fetch --all --prune"
-      - save_cache:
-          key: git-reference-{{ .Environment.THIS_WEEK }}
-          paths:
-            - ~/git-reference
-
       # Build txt and html versions of drafts
-      - restore_cache:
-          keys:
-            - refcache-{{ .Environment.LAST_WEEK }}
-            - refcache-{{ .Environment.THIS_WEEK }}
       - run:
           name: "Build Drafts"
           command: "make 'CLONE_ARGS=--reference ~/git-reference'"
-      - save_cache:
-          key: refcache-{{ .Environment.THIS_WEEK }}
-          paths:
-            - ~/.cache/xml2rfc
 
       # Update editor's copy on gh-pages
       - run:
