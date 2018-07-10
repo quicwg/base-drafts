@@ -1519,36 +1519,6 @@ initial_max_uni_streams (0x0008):
   equivalent to receiving a MAX_STREAM_ID containing 18 when received by a
   client or 19 when received by a server.
 
-initial_max_stream_data_bidi_local (0x0000):
-
-: The initial stream maximum data for bidirectional, local streams parameter
-  contains the initial value for the maximum data that can be sent on any newly
-  created bidirectional stream opened by the endpoint that sets the transport
-  parameter.  This parameter is encoded as an unsigned 32-bit integer in units
-  of octets.  This is equivalent to a MAX_STREAM_DATA frame
-  ({{frame-max-stream-data}}) being sent on those streams immediately after
-  opening.  In client transport parameters, this applies to streams with an
-  identifier ending in 0x0; in server transport parameters, this applies to
-  streams ending in 0x1.  This parameter defaults to 0 if absent.
-
-initial_max_stream_data_bidi_remote (0x000a):
-
-: The initial stream maximum data for bidirectional, remote streams parameter is
-  equivalent to the initial_max_stream_data_bidi_local parameter, but it applies
-  instead to bidirectional streams initiated by a remote peer.  In client
-  transport parameters, this applies to streams with an identifier ending in
-  0x1; in server transport parameters, this applies to streams ending in 0x0.
-  Thisparameter defaults to 0 if absent.
-
-initial_max_stream_data_uni (0x000b):
-
-: The initial stream maximum data for bidirectional, remote streams parameter is
-  equivalent to the initial_max_stream_data_bidi_local parameter, but it applies
-  instead to unidirectional streams initiated by a remote peer.  In client
-  transport parameters, this applies to streams with an identifier ending in
-  0x3; in server transport parameters, this applies to streams ending in 0x2.
-  This parameter defaults to 0 if absent.
-
 max_packet_size (0x0005):
 
 : The maximum packet size parameter places a limit on the size of packets that
@@ -1572,6 +1542,42 @@ disable_migration (0x0009):
   NOT send any packets, including probing packets ({{probing}}), from a local
   address other than that used to perform the handshake.  This parameter is a
   zero-length value.
+
+Either peer MAY advertise an initial value for the flow control on each type of
+stream on which they might receive data.  Each of the following transport
+parameters is encoded as an unsigned 32-bit integer in units of octets:
+
+initial_max_stream_data_bidi_local (0x0000):
+
+: The initial stream maximum data for bidirectional, locally-initiated streams
+  parameter contains the initial flow control limit for newly created
+  bidirectional streams opened by the endpoint that sets the transport
+  parameter.  In client transport parameters, this applies to streams with an
+  identifier ending in 0x0; in server transport parameters, this applies to
+  streams ending in 0x1.
+
+initial_max_stream_data_bidi_remote (0x000a):
+
+: The initial stream maximum data for bidirectional, peer-initiated streams
+  parameter contains the initial flow control limit for newly created
+  bidirectional streams opened by the endpoint that receives the transport
+  parameter.  In client transport parameters, this applies to streams with an
+  identifier ending in 0x1; in server transport parameters, this applies to
+  streams ending in 0x0.
+
+initial_max_stream_data_uni (0x000b):
+
+: The initial stream maximum data for unidirectional streams parameter contains
+  the initial flow control limit for newly created unidirectional streams opened
+  by the endpoint that receives the transport parameter.  In client transport
+  parameters, this applies to streams with an identifier ending in 0x3; in
+  server transport parameters, this applies to streams ending in 0x2.
+
+If present, transport parameters that set initial flow control limits are
+equivalent to sending a MAX_STREAM_DATA frame ({{frame-max-stream-data}}) on
+every stream of the corresponding type immediately after opening.  If the
+transport parameter is absent, streams of that type start with a flow control
+limit of 0.
 
 A server MAY include the following transport parameters:
 
