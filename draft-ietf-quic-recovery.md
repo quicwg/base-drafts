@@ -100,30 +100,23 @@ This design obviates the need for disambiguating between transmissions and
 retransmissions and eliminates significant complexity from QUIC's interpretation
 of TCP loss detection mechanisms.
 
-Every packet may contain several frames.  We outline the frames that are
-important to the loss detection and congestion control machinery below.
+QUIC packets can contain multiple frames of different types. The recovery
+mechanisms ensure that data and frames that need reliable delivery are
+acknowledged or declared lost and sent in new packets as necessary. The types
+of frames contained in a packet affect recovery and congestion control logic:
 
-* Retransmittable frames are those that count towards bytes in flight and need
-  acknowledgement.  The most common are STREAM frames, which typically contain
-  application data.
+* All packets are acknowledged, though packets that contain only ACK,
+  ACK_ECN, and PADDING frames are not acknowledged immediately.  Packets
+  containing at least one frame besides ACK, ACK_ECN, and PADDING are referred
+  to as retransmittable below.
 
-* Retransmittable packets are those that contain at least one retransmittable
-  frame.
+* Packets that contain CRYPTO frames are critical to the performance of the
+  QUIC handshake and use shorter timers for acknowledgement and retransmission.
 
-* PADDING frames do cause packets containing them to count towards bytes in
-  flight, but do not elicit acknowledgement.
-  
-* In-flight packets are those that contain at least one retransmittable frame
-  or at least one PADDING frame.  All in-flight packets count towards bytes
-  in flight.
-
-* Cryptographic handshake data is sent in CRYPTO frames, and uses the
-  reliability machinery of QUIC underneath.
-
-* ACK and ACK_ECN frames contain acknowledgment information. ACK_ECN frames
-  additionally contain information about ECN codepoints seen by the peer.  (The
-  rest of this document uses ACK frames to refer to both ACK and ACK_ECN
-  frames.)
+* Packets that contain only ACK and ACK_ECN frames do not count toward
+  congestion control limits and are not considered in-flight. Note that this
+  means PADDING frames cause packets to contribute toward bytes in flight
+  without directly causing an acknowledgment to be sent.
 
 ## Relevant Differences Between QUIC and TCP
 
