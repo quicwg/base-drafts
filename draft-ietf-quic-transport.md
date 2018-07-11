@@ -1775,9 +1775,9 @@ use the server to send more data toward the victim than it would be able to send
 on its own.
 
 Several methods are used in QUIC to mitigate this attack.  Firstly, the initial
-handshake packet is padded to at least 1200 octets.  This allows a server to
-send a similar amount of data without risking causing an amplification attack
-toward an unproven remote address.
+handshake packet is sent in a UDP datagram that contains at least 1200 octets of
+payload.  This allows a server to send a similar amount of data without risking
+causing an amplification attack toward an unproven remote address.
 
 A server eventually confirms that a client has received its messages when the
 first Handshake-level message is received. This might be insufficient,
@@ -3629,19 +3629,23 @@ The details of loss detection and congestion control are described in
 The QUIC packet size includes the QUIC header and integrity check, but not the
 UDP or IP header.
 
-Clients MUST pad any Initial packet it sends to have a QUIC packet size of at
-least 1200 octets. Sending an Initial packet of this size ensures that the
-network path supports a reasonably sized packet, and helps reduce the amplitude
-of amplification attacks caused by server responses toward an unverified client
-address.
+Clients MUST pad ensure that the first Initial packet it sends is sent in a UDP
+datagram that is at least 1200 octets. Padding the Initial packet is a good way
+to ensure this, though including a 0-RTT packet in the same datagram is also a
+good way to meet this requirement.  Sending a UDP datagram of this size ensures
+that the network path supports a reasonable Maximum Transmission Unit (MTU), and
+helps reduce the amplitude of amplification attacks caused by server responses
+toward an unverified client address.
 
-An Initial packet MAY exceed 1200 octets if the client knows that the Path
-Maximum Transmission Unit (PMTU) supports the size that it chooses.
+The datagram containing an Initial packet MAY exceed 1200 octets if the client
+knows that the Path Maximum Transmission Unit (PMTU) supports the size that it
+chooses.
 
 A server MAY send a CONNECTION_CLOSE frame with error code PROTOCOL_VIOLATION in
-response to an Initial packet smaller than 1200 octets. It MUST NOT send any
-other frame type in response, or otherwise behave as if any part of the
-offending packet was processed as valid.
+response to an Initial packet contained in a UDP datagram that is smaller than
+1200 octets. It MUST NOT send any other frame type in response, or otherwise
+behave as if any part of the offending packet was processed as valid.
+
 
 ## Path Maximum Transmission Unit
 
