@@ -111,7 +111,7 @@ important to the loss detection and congestion control machinery below.
   frame.
 
 * PADDING frames do cause packets containing them to count towards bytes in
-  flight, but do not instigate acknowledgement.
+  flight, but do not elicit acknowledgement.
   
 * In flight packets are those that contain at least one retransmittable frame
   or at least one PADDING frame.  All in flight packets count towards bytes
@@ -589,7 +589,8 @@ sent_packets:
 
 : An association of packet numbers to information about them, including a number
   field indicating the packet number, a time field indicating the time a packet
-  was sent, a boolean indicating whether the packet is ack only, and a bytes
+  was sent, a boolean indicating whether the packet is ack only, a boolen
+  indicating whether it counts towards bytes in flight, and a bytes
   field indicating the packet's size.  sent_packets is ordered by packet number,
   and packets remain in sent_packets until acknowledged or lost.  A sent_packets
   data structure is maintained per packet number space, and ACK processing only
@@ -630,9 +631,12 @@ are as follows:
 
 * packet_number: The packet number of the sent packet.
 
-* is_ack_only: A boolean that indicates whether a packet only contains an
-  ACK frame.  If true, it is still expected an ack will be received for
-  this packet, but it is not retransmittable or in flight.
+* ack_only: A boolean that indicates whether a packet only contains an
+  ACK, ACK_ECN or PADDING frame(s).  If true, it is still expected an ack will
+  be received for this packet, but it is not retransmittable.
+
+* in_flight: A boolean that indicates whether the packet counts towards
+  bytes in flight.
 
 * is_handshake_packet: A boolean that indicates whether a packet contains
   handshake data.
@@ -643,13 +647,13 @@ are as follows:
 Pseudocode for OnPacketSent follows:
 
 ~~~
- OnPacketSent(packet_number, is_ack_only, is_handshake_packet,
-                sent_bytes):
+ OnPacketSent(packet_number, ack_only, in_flight,
+              is_handshake_packet, sent_bytes):
    largest_sent_packet = packet_number
    sent_packets[packet_number].packet_number = packet_number
    sent_packets[packet_number].time = now
-   sent_packets[packet_number].ack_only = is_ack_only
-   if !is_ack_only:
+   sent_packets[packet_number].ack_only = ack_only
+   if !ack_only:
      if is_handshake_packet:
        time_of_last_sent_handshake_packet = now
      time_of_last_sent_retransmittable_packet = now
