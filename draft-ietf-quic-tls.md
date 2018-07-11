@@ -514,10 +514,11 @@ older than 1.3 is negotiated.
 
 ## ClientHello Size {#clienthello-size}
 
-QUIC requires that the first Initial packet from a client be sent in a single
-UDP datagram.  Though a packet larger than 1200 octets might be supported by the
-path, a client improves the likelihood that a packet is accepted if it ensures
-that the first ClientHello message it sends remains within this limit.
+QUIC requires that the first Initial packet from a client contain an entire
+crytographic handshake message, which for TLS is the ClientHello.  Though a
+packet larger than 1200 octets might be supported by the path, a client improves
+the likelihood that a packet is accepted if it ensures that the first
+ClientHello message is small enough to stay within this limit.
 
 QUIC packet and framing overheads add at least 36 octets of overheads to the
 ClientHello message.  That overhead increases if the client chooses a connection
