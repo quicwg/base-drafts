@@ -3791,9 +3791,9 @@ The two type bits from a Stream ID therefore identify streams as summarized in
 
 The first bi-directional stream opened by the client is stream 0.
 
-A QUIC endpoint MUST NOT reuse a Stream ID.  Streams can be used in any order.
-Streams that are used out of order result in opening all lower-numbered streams
-of the same type in the same direction.
+A QUIC endpoint MUST NOT reuse a Stream ID.  Streams of each type are created in
+numeric order.  Streams that are used out of order result in opening all
+lower-numbered streams of the same type in the same direction.
 
 Stream IDs are encoded as a variable-length integer (see {{integer-encoding}}).
 
@@ -3924,6 +3924,7 @@ application protocol some of which cannot be observed by the sender.
        | Recv STREAM / STREAM_BLOCKED / RST_STREAM
        | Create Bidirectional Stream (Sending)
        | Recv MAX_STREAM_DATA
+       | Create Higher-Numbered Stream
        v
    +-------+
    | Recv  | Recv RST_STREAM
@@ -3968,6 +3969,10 @@ A bidirectional stream also opens when a MAX_STREAM_DATA frame is received.
 Receiving a MAX_STREAM_DATA frame implies that the remote peer has opened the
 stream and is providing flow control credit.  A MAX_STREAM_DATA frame might
 arrive before a STREAM or STREAM_BLOCKED frame if packets are lost or reordered.
+
+In addition to the exchange of frames related to the stream, a stream is created
+before any higher-numbered stream of the same type can be created.  This ensures
+that the creation order for streams is consistent on both endpoints.
 
 In the "Recv" state, the endpoint receives STREAM and STREAM_BLOCKED frames.
 Incoming data is buffered and can be reassembled into the correct order for
