@@ -653,6 +653,7 @@ Pseudocode for OnPacketSent follows:
    sent_packets[packet_number].packet_number = packet_number
    sent_packets[packet_number].time = now
    sent_packets[packet_number].ack_only = ack_only
+   sent_packets[packet_number].in_flight = in_flight
    if !ack_only:
      if is_handshake_packet:
        time_of_last_sent_handshake_packet = now
