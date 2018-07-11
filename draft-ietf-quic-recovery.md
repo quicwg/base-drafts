@@ -113,8 +113,8 @@ important to the loss detection and congestion control machinery below.
 * PADDING frames do cause packets containing them to count towards bytes in
   flight, but do not elicit acknowledgement.
   
-* In flight packets are those that contain at least one retransmittable frame
-  or at least one PADDING frame.  All in flight packets count towards bytes
+* In-flight packets are those that contain at least one retransmittable frame
+  or at least one PADDING frame.  All in-flight packets count towards bytes
   in flight.
 
 * Cryptographic handshake data is sent in CRYPTO frames, and uses the
@@ -249,10 +249,10 @@ packets cannot be detected via Fast Retransmit. To enable ack-based loss
 detection of such packets, receipt of an acknowledgment for the last outstanding
 retransmittable packet triggers the Early Retransmit process, as follows.
 
-If there are unacknowledged in flight packets still pending, they should
+If there are unacknowledged in-flight packets still pending, they should
 be marked as lost. To compensate for the reduced reordering resilience, the
 sender SHOULD set an alarm for a small period of time. If the unacknowledged
-in flight packets are not acknowledged during this time, then these
+in-flight packets are not acknowledged during this time, then these
 packets MUST be marked as lost.
 
 An endpoint SHOULD set the alarm such that a packet is marked as lost no earlier
@@ -632,7 +632,7 @@ are as follows:
 * packet_number: The packet number of the sent packet.
 
 * ack_only: A boolean that indicates whether a packet only contains an
-  ACK, ACK_ECN or PADDING frame(s).  If true, it is still expected an ack will
+  ACK or PADDING frame(s).  If true, it is still expected an ack will
   be received for this packet, but it is not retransmittable.
 
 * in_flight: A boolean that indicates whether the packet counts towards
@@ -780,8 +780,8 @@ Pseudocode for SetLossDetectionAlarm follows:
 
 ~~~
  SetLossDetectionAlarm():
-    // Don't arm the alarm if there are no packets with
-    // retransmittable data in flight.
+    // Don't arm the alarm if there are no retransmittable packets
+    // in flight.
     if (bytes_in_flight == 0):
       loss_detection_alarm.cancel()
       return
@@ -978,7 +978,7 @@ slow start is re-entered.
 ## Pacing
 
 This document does not specify a pacer, but it is RECOMMENDED that a sender pace
-sending of all in flight packets based on input from the congestion
+sending of all in-flight packets based on input from the congestion
 controller. For example, a pacer might distribute the congestion window over
 the SRTT when used with a window-based controller, and a pacer might use the
 rate estimate of a rate-based controller.
