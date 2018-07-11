@@ -3637,14 +3637,15 @@ that the network path supports a reasonable Maximum Transmission Unit (MTU), and
 helps reduce the amplitude of amplification attacks caused by server responses
 toward an unverified client address.
 
-The datagram containing an Initial packet MAY exceed 1200 octets if the client
-knows that the Path Maximum Transmission Unit (PMTU) supports the size that it
-chooses.
+The datagram containing the first Initial packet from a client MAY exceed 1200
+octets if the client knows that the Path Maximum Transmission Unit (PMTU)
+supports the size that it chooses.
 
 A server MAY send a CONNECTION_CLOSE frame with error code PROTOCOL_VIOLATION in
-response to an Initial packet contained in a UDP datagram that is smaller than
-1200 octets. It MUST NOT send any other frame type in response, or otherwise
-behave as if any part of the offending packet was processed as valid.
+response to the first Initial packet it receives from a client if the UDP
+datagram is smaller than 1200 octets. It MUST NOT send any other frame type in
+response, or otherwise behave as if any part of the offending packet was
+processed as valid.
 
 
 ## Path Maximum Transmission Unit
