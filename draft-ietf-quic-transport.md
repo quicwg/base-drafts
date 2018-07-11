@@ -3971,8 +3971,10 @@ stream and is providing flow control credit.  A MAX_STREAM_DATA frame might
 arrive before a STREAM or STREAM_BLOCKED frame if packets are lost or reordered.
 
 In addition to the exchange of frames related to the stream, a stream is created
-before any higher-numbered stream of the same type can be created.  This ensures
-that the creation order for streams is consistent on both endpoints.
+before any higher-numbered stream of the same type can be created.  That is,
+receipt of a frame that would open a stream causes all lower-numbered streams of
+the same type to be opened first.  This ensures that the creation order for
+streams is consistent on both endpoints.
 
 In the "Recv" state, the endpoint receives STREAM and STREAM_BLOCKED frames.
 Incoming data is buffered and can be reassembled into the correct order for
