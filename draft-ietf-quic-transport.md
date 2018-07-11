@@ -569,8 +569,8 @@ Packet Number, and Payload fields.  These are replaced with:
 ODCIL:
 
 : The length of the Original Destination Connection ID field.  The length is
-  encoded in the least significant bit of the octet using the same encoding as
-  the DCIL and SCIL fields.  The most significant 4 bits of this octet are
+  encoded in the least significant 4 bits of the octet, using the same encoding
+  as the DCIL and SCIL fields.  The most significant 4 bits of this octet are
   reserved.  Unless a use for these bits has been negotiated, endpoints SHOULD
   send randomized values and MUST ignore any value that it receives.
 
