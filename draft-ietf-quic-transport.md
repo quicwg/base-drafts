@@ -3629,16 +3629,15 @@ The details of loss detection and congestion control are described in
 The QUIC packet size includes the QUIC header and integrity check, but not the
 UDP or IP header.
 
-Clients MUST pad ensure that the first Initial packet it sends is sent in a UDP
-datagram that is at least 1200 octets. Padding the Initial packet is a good way
-to ensure this, though including a 0-RTT packet in the same datagram is also a
-good way to meet this requirement.  Sending a UDP datagram of this size ensures
-that the network path supports a reasonable Maximum Transmission Unit (MTU), and
-helps reduce the amplitude of amplification attacks caused by server responses
-toward an unverified client address.
+Clients MUST ensure that the first Initial packet it sends is sent in a UDP
+datagram that is at least 1200 octets. Padding the Initial packet or including a
+0-RTT packet in the same datagram are ways to meet this requirement.  Sending a
+UDP datagram of this size ensures that the network path supports a reasonable
+Maximum Transmission Unit (MTU), and helps reduce the amplitude of amplification
+attacks caused by server responses toward an unverified client address.
 
 The datagram containing the first Initial packet from a client MAY exceed 1200
-octets if the client knows that the Path Maximum Transmission Unit (PMTU)
+octets if the client believes that the Path Maximum Transmission Unit (PMTU)
 supports the size that it chooses.
 
 A server MAY send a CONNECTION_CLOSE frame with error code PROTOCOL_VIOLATION in

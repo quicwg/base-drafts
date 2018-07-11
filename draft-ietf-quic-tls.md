@@ -520,10 +520,10 @@ packet larger than 1200 octets might be supported by the path, a client improves
 the likelihood that a packet is accepted if it ensures that the first
 ClientHello message is small enough to stay within this limit.
 
-QUIC packet and framing overheads add at least 36 octets of overheads to the
-ClientHello message.  That overhead increases if the client chooses a connection
-ID without zero length, nor does it include the token or a connection ID longer
-than 8 octets that might be required if a server sends a Retry packet.
+QUIC packet and framing add at least 36 octets of overhead to the ClientHello
+message.  That overhead increases if the client chooses a connection ID without
+zero length.  Overheads also do not include the token or a connection ID longer
+than 8 octets, both of which might be required if a server sends a Retry packet.
 
 A typical TLS ClientHello can easily fit into a 1200 octet packet.  However, in
 addition to the overheads added by QUIC, there are several variables that could
