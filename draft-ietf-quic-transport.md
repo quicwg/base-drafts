@@ -1415,7 +1415,7 @@ language from Section 3 of {{!I-D.ietf-tls-tls13}}.
    uint32 QuicVersion;
 
    enum {
-      initial_max_stream_data(0),
+      initial_max_stream_data_bidi_local(0),
       initial_max_data(1),
       initial_max_bidi_streams(2),
       idle_timeout(3),
@@ -1425,6 +1425,8 @@ language from Section 3 of {{!I-D.ietf-tls-tls13}}.
       ack_delay_exponent(7),
       initial_max_uni_streams(8),
       disable_migration(9),
+      initial_max_stream_data_bidi_remote(10),
+      initial_max_stream_data_uni(11),
       (65535)
    } TransportParameterId;
 
@@ -1477,14 +1479,6 @@ type TRANSPORT_PARAMETER_ERROR.
 
 An endpoint MUST include the following parameters in its encoded
 TransportParameters:
-
-initial_max_stream_data (0x0000):
-
-: The initial stream maximum data parameter contains the initial value for the
-  maximum data that can be sent on any newly created stream.  This parameter is
-  encoded as an unsigned 32-bit integer in units of octets.  This is equivalent
-  to an implicit MAX_STREAM_DATA frame ({{frame-max-stream-data}}) being sent on
-  all streams immediately after opening.
 
 initial_max_data (0x0001):
 
@@ -1549,6 +1543,42 @@ disable_migration (0x0009):
   address other than that used to perform the handshake.  This parameter is a
   zero-length value.
 
+Either peer MAY advertise an initial value for the flow control on each type of
+stream on which they might receive data.  Each of the following transport
+parameters is encoded as an unsigned 32-bit integer in units of octets:
+
+initial_max_stream_data_bidi_local (0x0000):
+
+: The initial stream maximum data for bidirectional, locally-initiated streams
+  parameter contains the initial flow control limit for newly created
+  bidirectional streams opened by the endpoint that sets the transport
+  parameter.  In client transport parameters, this applies to streams with an
+  identifier ending in 0x0; in server transport parameters, this applies to
+  streams ending in 0x1.
+
+initial_max_stream_data_bidi_remote (0x000a):
+
+: The initial stream maximum data for bidirectional, peer-initiated streams
+  parameter contains the initial flow control limit for newly created
+  bidirectional streams opened by the endpoint that receives the transport
+  parameter.  In client transport parameters, this applies to streams with an
+  identifier ending in 0x1; in server transport parameters, this applies to
+  streams ending in 0x0.
+
+initial_max_stream_data_uni (0x000b):
+
+: The initial stream maximum data for unidirectional streams parameter contains
+  the initial flow control limit for newly created unidirectional streams opened
+  by the endpoint that receives the transport parameter.  In client transport
+  parameters, this applies to streams with an identifier ending in 0x3; in
+  server transport parameters, this applies to streams ending in 0x2.
+
+If present, transport parameters that set initial flow control limits are
+equivalent to sending a MAX_STREAM_DATA frame ({{frame-max-stream-data}}) on
+every stream of the corresponding type immediately after opening.  If the
+transport parameter is absent, streams of that type start with a flow control
+limit of 0.
+
 A server MAY include the following transport parameters:
 
 stateless_reset_token (0x0006):
@@ -1584,15 +1614,18 @@ A server MAY accept 0-RTT and subsequently provide different values for
 transport parameters for use in the new connection.  If 0-RTT data is accepted
 by the server, the server MUST NOT reduce any limits or alter any values that
 might be violated by the client with its 0-RTT data.  In particular, a server
-that accepts 0-RTT data MUST NOT set values for initial_max_data or
-initial_max_stream_data that are smaller than the remembered value of those
+that accepts 0-RTT data MUST NOT set values for initial_max_data,
+initial_max_stream_data_bidi_local, initial_max_stream_data_bidi_remote, and
+initial_max_stream_data_uni that are smaller than the remembered value of those
 parameters.  Similarly, a server MUST NOT reduce the value of
 initial_max_bidi_streams or initial_max_uni_streams.
 
 Omitting or setting a zero value for certain transport parameters can result in
-0-RTT data being enabled, but not usable.  The following transport parameters
-SHOULD be set to non-zero values for 0-RTT: initial_max_bidi_streams,
-initial_max_uni_streams, initial_max_data, initial_max_stream_data.
+0-RTT data being enabled, but not usable.  The applicable subset of transport
+parameters that permit sending of application data SHOULD be set to non-zero
+values for 0-RTT.  This includes initial_max_data and either
+initial_max_bidi_streams and initial_max_stream_data_bidi_remote, or
+initial_max_uni_streams and initial_max_stream_data_uni.
 
 The value of the server's previous preferred_address MUST NOT be used when
 establishing a new connection; rather, the client should wait to observe the
@@ -4720,18 +4753,20 @@ merely aesthetically displeasing, or architecturally dubious).
 
 The initial contents of this registry are shown in {{iana-tp-table}}.
 
-| Value  | Parameter Name             | Specification                       |
-|:-------|:---------------------------|:------------------------------------|
-| 0x0000 | initial_max_stream_data    | {{transport-parameter-definitions}} |
-| 0x0001 | initial_max_data           | {{transport-parameter-definitions}} |
-| 0x0002 | initial_max_bidi_streams   | {{transport-parameter-definitions}} |
-| 0x0003 | idle_timeout               | {{transport-parameter-definitions}} |
-| 0x0004 | preferred_address          | {{transport-parameter-definitions}} |
-| 0x0005 | max_packet_size            | {{transport-parameter-definitions}} |
-| 0x0006 | stateless_reset_token      | {{transport-parameter-definitions}} |
-| 0x0007 | ack_delay_exponent         | {{transport-parameter-definitions}} |
-| 0x0008 | initial_max_uni_streams    | {{transport-parameter-definitions}} |
-| 0x0009 | disable_migration          | {{transport-parameter-definitions}} |
+| Value  | Parameter Name              | Specification                       |
+|:-------|:----------------------------|:------------------------------------|
+| 0x0000 | initial_max_stream_data_bidi_local | {{transport-parameter-definitions}} |
+| 0x0001 | initial_max_data            | {{transport-parameter-definitions}} |
+| 0x0002 | initial_max_bidi_streams    | {{transport-parameter-definitions}} |
+| 0x0003 | idle_timeout                | {{transport-parameter-definitions}} |
+| 0x0004 | preferred_address           | {{transport-parameter-definitions}} |
+| 0x0005 | max_packet_size             | {{transport-parameter-definitions}} |
+| 0x0006 | stateless_reset_token       | {{transport-parameter-definitions}} |
+| 0x0007 | ack_delay_exponent          | {{transport-parameter-definitions}} |
+| 0x0008 | initial_max_uni_streams     | {{transport-parameter-definitions}} |
+| 0x0009 | disable_migration           | {{transport-parameter-definitions}} |
+| 0x000a | initial_max_stream_data_bidi_remote | {{transport-parameter-definitions}} |
+| 0x000b | initial_max_stream_data_uni | {{transport-parameter-definitions}} |
 {: #iana-tp-table title="Initial QUIC Transport Parameters Entries"}
 
 
