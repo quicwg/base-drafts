@@ -1620,9 +1620,11 @@ parameters.  Similarly, a server MUST NOT reduce the value of
 initial_max_bidi_streams or initial_max_uni_streams.
 
 Omitting or setting a zero value for certain transport parameters can result in
-0-RTT data being enabled, but not usable.  The following transport parameters
-SHOULD be set to non-zero values for 0-RTT: initial_max_bidi_streams,
-initial_max_uni_streams, initial_max_data, initial_max_stream_data.
+0-RTT data being enabled, but not usable.  The applicable subset of transport
+parameters that permit sending of application data SHOULD be set to non-zero
+values for 0-RTT.  This includes initial_max_data and either
+initial_max_bidi_streams and initial_max_stream_data_bidi_remote, or
+initial_max_uni_streams and initial_max_stream_data_uni.
 
 The value of the server's previous preferred_address MUST NOT be used when
 establishing a new connection; rather, the client should wait to observe the
