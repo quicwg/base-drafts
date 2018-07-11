@@ -110,8 +110,9 @@ of frames contained in a packet affect recovery and congestion control logic:
   containing at least one frame besides ACK, ACK_ECN, and PADDING are referred
   to as retransmittable below.
 
-* Packets that contain CRYPTO frames are critical to the performance of the
-  QUIC handshake and use shorter timers for acknowledgement and retransmission.
+* Long header ackets that contain CRYPTO frames are critical to the performance
+  of the QUIC handshake and use shorter timers for acknowledgement and
+  retransmission.
 
 * Packets that contain only ACK and ACK_ECN frames do not count toward
   congestion control limits and are not considered in-flight. Note that this
