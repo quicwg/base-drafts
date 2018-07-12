@@ -140,9 +140,8 @@ TCP conflates transmission sequence number at the sender with delivery sequence
 number at the receiver, which results in retransmissions of the same data
 carrying the same sequence number, and consequently to problems caused by
 "retransmission ambiguity".  QUIC separates the two: QUIC uses a packet number
-for transmissions, and any data that is to be delivered to the receiving
-application(s) is sent in one or more streams, with delivery order determined by
-stream offsets encoded within STREAM frames.
+for transmissions, and any application data is sent in one or more streams,
+with delivery order determined by stream offsets encoded within STREAM frames.
 
 QUIC's packet number is strictly increasing, and directly encodes transmission
 order.  A higher QUIC packet number signifies that the packet was sent later,
@@ -216,9 +215,9 @@ implemented in QUIC.
 
 An unacknowledged packet is marked as lost when an acknowledgment is received
 for a packet that was sent a threshold number of packets (kReorderingThreshold)
-after the unacknowledged packet. Receipt of the ack indicates that a later
-packet was received, while kReorderingThreshold provides some tolerance for
-reordering of packets in the network.
+and/or a threshold amount of time after the unacknowledged packet. Receipt of the
+ack indicates that a later packet was received, the reordering threshold
+provides some tolerance for reordering of packets in the network.
 
 The RECOMMENDED initial value for kReorderingThreshold is 3.
 
@@ -227,12 +226,13 @@ We derive this recommendation from TCP loss recovery {{?RFC5681}}
 reordering, causing a sender to detect spurious losses. Detecting spurious
 losses leads to unnecessary retransmissions and may result in degraded
 performance due to the actions of the congestion controller upon detecting
-loss. Implementers MAY use algorithms developed for TCP, such as TCP-NCR
-{{?RFC4653}}, to improve QUIC's reordering resilience, though care should be
-taken to map TCP specifics to QUIC correctly. Similarly, using time-based loss
-detection to deal with reordering, such as in PR-TCP, should be more readily
-usable in QUIC. Making QUIC deal with such networks is important open research,
-and implementers are encouraged to explore this space.
+loss and spurious retransmissions. Implementers MAY use algorithms developed
+for TCP, such as TCP-NCR {{?RFC4653}}, to improve QUIC's reordering resilience,
+though care should be taken to map TCP specifics to QUIC correctly.
+
+QUIC implementations may use time-based loss detection to deal with reordering,
+such as in PR-TCP. Making QUIC deal with such networks is important open
+research, and implementers are encouraged to explore this space.
 
 ### Early Retransmit
 
@@ -249,7 +249,7 @@ retransmittable packets are not acknowledged during this time, then these
 packets MUST be marked as lost.
 
 An endpoint SHOULD set the alarm such that a packet is marked as lost no earlier
-than 1.25 * max(SRTT, latest_RTT) since when it was sent.
+than 1.125 * max(SRTT, latest_RTT) since when it was sent.
 
 Using max(SRTT, latest_RTT) protects from the two following cases:
 
@@ -260,7 +260,7 @@ Using max(SRTT, latest_RTT) protects from the two following cases:
 * the latest RTT sample is higher than the SRTT, perhaps due to a sustained
   increase in the actual RTT, but the smoothed SRTT has not yet caught up.
 
-The 1.25 multiplier increases reordering resilience. Implementers MAY experiment
+The 1.125 multiplier increases reordering resilience. Implementers MAY experiment
 with using other multipliers, bearing in mind that a lower multiplier reduces
 reordering resilience and increases spurious retransmissions, and a higher
 multipler increases loss recovery delay.
@@ -273,8 +273,9 @@ alarm for TCP as well, and this document incorporates this advancement.
 
 ## Timer-based Detection
 
-Timer-based loss detection implements a handshake retransmission timer that is
-optimized for QUIC as well as the spirit of TCP's Tail Loss Probe and
+Timer-based loss detection recovers from losses that cannot be handled by
+ack-based loss detection.  It uses a single timer which switches between
+a handshake retransmission timer, a Tail Loss Probe timer and
 Retransmission Timeout mechanisms.
 
 ### Crypto Handshake Timeout
@@ -628,7 +629,7 @@ are as follows:
   this packet, but it is not retransmittable.
 
 * is_handshake_packet: A boolean that indicates whether a packet contains
-  handshake data.
+  a CRYPTO frame in a long header packet.
 
 * sent_bytes: The number of bytes sent in the packet, not including UDP or IP
   overhead, but including QUIC framing overhead.
@@ -653,7 +654,7 @@ Pseudocode for OnPacketSent follows:
 
 ### On Receiving an Acknowledgment
 
-When an ACK frame is received, it may acknowledge 0 or more packets.
+When an ACK frame is received, it may acknowledge 0 or more new packets.
 
 Pseudocode for OnAckReceived and UpdateRtt follow:
 
