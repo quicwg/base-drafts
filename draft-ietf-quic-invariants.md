@@ -238,10 +238,7 @@ a specific QUIC version, or to a range of QUIC versions.
 A QUIC endpoint that receives a packet with a long header and a version it
 either does not understand or does not support might send a Version Negotiation
 packet in response.  Packets with a short header do not trigger version
-negotiation and are always associated with an existing connection.
-
-Consequently, until an endpoint has confirmed that its peer supports the QUIC
-version it has chosen, it can only send packets that use the long header.
+negotiation.
 
 A Version Negotiation packet sets the high bit of the first octet, and thus it
 conforms with the format of a packet with a long header as defined in
@@ -346,6 +343,8 @@ The following statements are NOT guaranteed to be true for every QUIC version:
 * QUIC long headers are only exchanged during connection establishment
 
 * Every flow on a given 5-tuple will include a connection establishment phase
+
+* The first packets exchanged on a flow use the long header
 
 * QUIC forbids acknowledgments of packets that only contain ACK frames,
   therefore the last packet before a long period of quiescence might be assumed
