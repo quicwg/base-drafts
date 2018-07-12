@@ -344,6 +344,8 @@ The following statements are NOT guaranteed to be true for every QUIC version:
 
 * Every flow on a given 5-tuple will include a connection establishment phase
 
+* The first packets exchanged on a flow use the long header
+
 * QUIC forbids acknowledgments of packets that only contain ACK frames,
   therefore the last packet before a long period of quiescence might be assumed
   to contain an acknowledgment
