@@ -219,20 +219,18 @@ and/or a threshold amount of time after the unacknowledged packet. Receipt of th
 ack indicates that a later packet was received, the reordering threshold
 provides some tolerance for reordering of packets in the network.
 
-The RECOMMENDED initial value for kReorderingThreshold is 3.
-
-We derive this recommendation from TCP loss recovery {{?RFC5681}}
-{{?RFC6675}}. It is possible for networks to exhibit higher degrees of
-reordering, causing a sender to detect spurious losses. Detecting spurious
-losses leads to unnecessary retransmissions and may result in degraded
+The RECOMMENDED initial value for kReorderingThreshold is 3, based on 
+TCP loss recovery {{?RFC5681}} {{?RFC6675}}. Some networks may exhibit higher
+degrees of reordering, causing a sender to detect spurious losses. Detecting
+spurious losses leads to unnecessary retransmissions and may result in degraded
 performance due to the actions of the congestion controller upon detecting
-loss and spurious retransmissions. Implementers MAY use algorithms developed
-for TCP, such as TCP-NCR {{?RFC4653}}, to improve QUIC's reordering resilience,
-though care should be taken to map TCP specifics to QUIC correctly.
+loss. Implementers MAY use algorithms developed for TCP, such as
+TCP-NCR {{?RFC4653}}, to improve QUIC's reordering resilience.
 
-QUIC implementations may use time-based loss detection to deal with reordering,
-such as in PR-TCP. Making QUIC deal with such networks is important open
-research, and implementers are encouraged to explore this space.
+QUIC implementations may use time-based loss detection to deal with reordering.
+time-based loss detection allows a certain amount of reordering above
+max(SRTT, latest_rtt).  The RECOMMENDED reordering tolerance is
+1/8 max(SRTT, latest_rtt).
 
 ### Early Retransmit
 
@@ -654,7 +652,7 @@ Pseudocode for OnPacketSent follows:
 
 ### On Receiving an Acknowledgment
 
-When an ACK frame is received, it may acknowledge 0 or more new packets.
+When an ACK frame is received, it may newly acknowledge any number of packets.
 
 Pseudocode for OnAckReceived and UpdateRtt follow:
 
