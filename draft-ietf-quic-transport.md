@@ -3970,7 +3970,7 @@ Receiving a MAX_STREAM_DATA frame implies that the remote peer has opened the
 stream and is providing flow control credit.  A MAX_STREAM_DATA frame might
 arrive before a STREAM or STREAM_BLOCKED frame if packets are lost or reordered.
 
-Before creating a stream, all lower-numbered stream of the same type MUST be
+Before creating a stream, all lower-numbered streams of the same type MUST be
 created.  That means that receipt of a frame that would open a stream causes all
 lower-numbered streams of the same type to be opened in numeric order.  This
 ensures that the creation order for streams is consistent on both endpoints.
