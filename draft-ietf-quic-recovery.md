@@ -108,7 +108,7 @@ of frames contained in a packet affect recovery and congestion control logic:
 * All packets are acknowledged, though packets that contain only ACK,
   ACK_ECN, and PADDING frames are not acknowledged immediately.  Packets
   containing at least one frame besides ACK, ACK_ECN, and PADDING are referred
-  to as retransmittable below.
+  to as "retransmittable" below.
 
 * Long header packets that contain CRYPTO frames are critical to the
   performance of the QUIC handshake and use shorter timers for acknowledgement
@@ -117,7 +117,8 @@ of frames contained in a packet affect recovery and congestion control logic:
 * Packets that contain only ACK and ACK_ECN frames do not count toward
   congestion control limits and are not considered in-flight. Note that this
   means PADDING frames cause packets to contribute toward bytes in flight
-  without directly causing an acknowledgment to be sent.
+  without directly causing an acknowledgment to be sent.  The rest of this
+  document uses "ACK frames" to refer to both ACK and ACK_ECN frames.
 
 ## Relevant Differences Between QUIC and TCP
 
@@ -583,7 +584,7 @@ sent_packets:
 
 : An association of packet numbers to information about them, including a number
   field indicating the packet number, a time field indicating the time a packet
-  was sent, a boolean indicating whether the packet is ack only, a boolen
+  was sent, a boolean indicating whether the packet is ack only, a boolean
   indicating whether it counts towards bytes in flight, and a bytes
   field indicating the packet's size.  sent_packets is ordered by packet number,
   and packets remain in sent_packets until acknowledged or lost.  A sent_packets
@@ -625,7 +626,7 @@ are as follows:
 
 * packet_number: The packet number of the sent packet.
 
-* ack_only: A boolean that indicates whether a packet only contains an
+* ack_only: A boolean that indicates whether a packet contains only
   ACK or PADDING frame(s).  If true, it is still expected an ack will
   be received for this packet, but it is not retransmittable.
 
