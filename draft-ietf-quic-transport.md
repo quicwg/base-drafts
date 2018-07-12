@@ -606,8 +606,11 @@ provided Retry Token to continue connection establishment.
 A server that might send another Retry packet in response to a subsequent
 Initial packet MUST set the Source Connection ID to new value of at least 8
 octets in length.  This allows clients to distinguish between Retry packets when
-the server sends multiple rounds of Retry packets.  A server that will not send
-additional Retry packets can set the Source Connection ID to any value.
+the server sends multiple rounds of Retry packets.  Consequently, a valid Retry
+packet will always have an Original Destinagion Connection ID that is at least 8
+octets long; clients MUST discard Retry packets that include a shorter value.  A
+server that will not send additional Retry packets can set the Source Connection
+ID to any value.
 
 
 ## Cryptographic Handshake Packets {#handshake-packets}
