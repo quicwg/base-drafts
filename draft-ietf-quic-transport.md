@@ -1743,9 +1743,9 @@ network, an endpoint verifies the following when an ACK_ECN frame is received:
   the number of newly acknowledged packets, and the received ACK's
   smallest acknowledged is larger than the previous largest acknowledged,
   then it's likely acknowledgements were missed, and the above comparison
-  MUST NOT be performed. Instead a new comparision point is stored by the
+  MUST NOT be performed. Instead a new comparison point is stored by the
   sender so that only changes after this point will be used in the future
-  comaparisions.
+  comparisons.
 
 
 Upon successful verification, an endpoint continues to set ECT codepoints in
