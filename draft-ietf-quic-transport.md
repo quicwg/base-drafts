@@ -1739,12 +1739,14 @@ network, an endpoint verifies the following when an ACK_ECN frame is received:
 * The increase in ECT(0) and ECT(1) counters MUST be no greater than the number
   of packets newly acknowledged that were sent with the corresponding codepoint.
 
-* If the increase in the ECT(0), ECT(1) and CE counters are greater than the
-  number of newly ACKed packets, and received ACK's smallest acknowledged is
-  larger than the previous largest acknowledged, then it's likely
-  acknowledgements were missed, and the above comparison MUST NOT be
-  performed. Instead a new comparision point is stored by the sender so that
-  only changes after this point will be used in the future comaparisions.
+* If the increase in the ECT(0), ECT(1) and CE counters are greater than
+  the number of newly acknowledged packets, and the received ACK's
+  smallest acknowledged is larger than the previous largest acknowledged,
+  then it's likely acknowledgements were missed, and the above comparison
+  MUST NOT be performed. Instead a new comparision point is stored by the
+  sender so that only changes after this point will be used in the future
+  comaparisions.
+
 
 Upon successful verification, an endpoint continues to set ECT codepoints in
 subsequent packets with the expectation that the path is ECN-capable.
