@@ -1747,7 +1747,6 @@ network, an endpoint verifies the following when an ACK_ECN frame is received:
   sender so that only changes after this point will be used in the future
   comparisons.
 
-
 Upon successful verification, an endpoint continues to set ECT codepoints in
 subsequent packets with the expectation that the path is ECN-capable.
 
