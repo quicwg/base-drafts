@@ -111,7 +111,7 @@ In-flight:
 Retransmittable:
 
 : Packets that contain frames besides ACK, ACK_ECN, or PADDING elicit
-  an ACK from the receiver and are called retransmittable. 
+  an ACK from the receiver and are called retransmittable.
 
 
 # Design of the QUIC Transmission Machinery
