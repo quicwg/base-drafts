@@ -604,7 +604,7 @@ The client responds to a Retry packet with an Initial packet that includes the
 provided Retry Token to continue connection establishment.
 
 A server that might send another Retry packet in response to a subsequent
-Initial packet MUST set the Source Connection ID to new value of at least 8
+Initial packet MUST set the Source Connection ID to a new value of at least 8
 octets in length.  This allows clients to distinguish between Retry packets when
 the server sends multiple rounds of Retry packets.  Consequently, a valid Retry
 packet will always have an Original Destinagion Connection ID that is at least 8
