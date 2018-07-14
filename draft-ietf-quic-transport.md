@@ -595,8 +595,9 @@ A Retry packet does not include a packet number and cannot be explictly
 acknowledged by a client.
 
 A server MUST NOT send a Retry in response to packets other than Initial
-or 0-RTT packets.  A server MAY discard 0-RTT packets and only send Retry in
-response to Initial packets.
+or 0-RTT packets.  A server MAY choose to only send Retry in response to Initial
+packets and discard or buffer 0-RTT packets corresponding to unvalidated client
+addresses.
 
 If the Original Destination Connection ID field does not match the Destination
 Connection ID from the most recent Initial packet it sent, clients MUST discard
