@@ -216,15 +216,15 @@ implemented in QUIC.
 An unacknowledged packet is marked as lost when an acknowledgment is received
 for a packet that was sent a threshold number of packets (kReorderingThreshold)
 and/or a threshold amount of time after the unacknowledged packet. Receipt of the
-ack indicates that a later packet was received, the reordering threshold
+ack indicates that a later packet was received, while the reordering threshold
 provides some tolerance for reordering of packets in the network.
 
 The RECOMMENDED initial value for kReorderingThreshold is 3, based on 
 TCP loss recovery {{?RFC5681}} {{?RFC6675}}. Some networks may exhibit higher
-degrees of reordering, causing a sender to detect spurious losses. Detecting
-spurious losses leads to unnecessary retransmissions and may result in degraded
-performance due to the actions of the congestion controller upon detecting
-loss. Implementers MAY use algorithms developed for TCP, such as
+degrees of reordering, causing a sender to detect spurious losses. Spuriously
+declaring packets lost leads to unnecessary retransmissions and may result in
+degraded performance due to the actions of the congestion controller upon
+detecting loss. Implementers MAY use algorithms developed for TCP, such as
 TCP-NCR {{?RFC4653}}, to improve QUIC's reordering resilience.
 
 QUIC implementations may use time-based loss detection to deal with reordering.
@@ -626,8 +626,10 @@ are as follows:
   ACK frame.  If true, it is still expected an ack will be received for
   this packet, but it is not retransmittable.
 
-* is_handshake_packet: A boolean that indicates whether a packet contains
-  a CRYPTO frame in a long header packet.
+* is_handshake_packet: A boolean that indicates whether the packet contains
+  cryptographic handshake messages critical to the completion of the QUIC
+  handshake. In this version of QUIC, this includes any packet with the long
+  header that includes a CRYPTO frame.
 
 * sent_bytes: The number of bytes sent in the packet, not including UDP or IP
   overhead, but including QUIC framing overhead.
