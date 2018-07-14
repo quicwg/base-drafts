@@ -1053,7 +1053,7 @@ variables as follows:
 
 ~~~
    congestion_window = kInitialWindow
-   minimum_window = 2 * max_datagram_size
+   minimum_window = 2 * kMaxDatagramSize
    bytes_in_flight = 0
    end_of_recovery = 0
    ssthresh = infinite
@@ -1091,7 +1091,7 @@ acked_packet from sent_packets.
      else:
        // Congestion avoidance.
        congestion_window +=
-         max_datagram_size * acked_packet.bytes / congestion_window
+         kMaxDatagramSize * acked_packet.bytes / congestion_window
 ~~~
 
 ### On New Congestion Event
