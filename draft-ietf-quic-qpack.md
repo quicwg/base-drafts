@@ -132,9 +132,9 @@ end of the dynamic table until the size of the dynamic table is less than or
 equal to (maximum size - new entry size) or until the table is empty.
 
 If the size of the new entry is less than or equal to the maximum size, that
-entry is added to the table.  It is an error to attempt to add an entry that
-is larger than the maximum size; this MUST be treated as a connection error
-of type `HTTP_QPACK_DECOMPRESSION_FAILED`.
+entry is added to the table.  It is an error to attempt to add an entry that is
+larger than the maximum size; this MUST be treated as a connection error of type
+`HTTP_QPACK_DECOMPRESSION_FAILED`.
 
 A new entry can reference an entry in the dynamic table that will be evicted
 when adding this new entry into the dynamic table.  Implementations are
@@ -174,9 +174,9 @@ the absolute index.  Determining which entry has a relative index of "0" depends
 on the context of the reference.
 
 On the control stream, a relative index of "0" always refers to the most
-recently inserted value in the dynamic table.  Note that this means the
-entry referenced by a given relative index will change while interpreting
-instructions on the encoder stream.
+recently inserted value in the dynamic table.  Note that this means the entry
+referenced by a given relative index will change while interpreting instructions
+on the encoder stream.
 
 ~~~~~ drawing
     +---+---------------+-----------+
@@ -242,8 +242,8 @@ d = count of entries dropped
 If the decoder encounters a reference to an entry which has already been dropped
 from the table or which is greater than the declared Largest Reference (see
 {{absolute-index}}), this MUST be treated as a stream error of type
-`HTTP_QPACK_DECOMPRESSION_FAILED` error code.  If this reference occurs
-on the control stream, this MUST be treated as a session error.
+`HTTP_QPACK_DECOMPRESSION_FAILED` error code.  If this reference occurs on the
+control stream, this MUST be treated as a session error.
 
 ## Avoiding Head-of-Line Blocking in HTTP/QUIC {#overview-hol-avoidance}
 
@@ -251,18 +251,18 @@ Because QUIC does not guarantee order between data on different streams, a
 header block might reference an entry in the dynamic table that has not yet been
 received.
 
-Each header block contains a Largest Reference which
-identifies the table state necessary for decoding. If the greatest absolute
-index in the dynamic table is less than the value of the Largest Reference, the
-stream is considered "blocked."  While blocked, header field data should remain
-in the blocked stream's flow control window.  When the Largest Reference is
-zero, the frame contains no references to the dynamic table and can always be
-processed immediately. A stream becomes unblocked when the greatest absolute
-index in the dynamic table becomes greater than or equal to the Largest
-Reference for all header blocks the decoder has started reading from the stream.
-If a decoder encounters a header block where the actual largest reference is
-not equal to the largest reference declared in the prefix, it MAY treat this as
-a stream error of type HTTP_QPACK_DECOMPRESSION_FAILED.
+Each header block contains a Largest Reference which identifies the table state
+necessary for decoding. If the greatest absolute index in the dynamic table is
+less than the value of the Largest Reference, the stream is considered
+"blocked."  While blocked, header field data should remain in the blocked
+stream's flow control window.  When the Largest Reference is zero, the frame
+contains no references to the dynamic table and can always be processed
+immediately. A stream becomes unblocked when the greatest absolute index in the
+dynamic table becomes greater than or equal to the Largest Reference for all
+header blocks the decoder has started reading from the stream.  If a decoder
+encounters a header block where the actual largest reference is not equal to the
+largest reference declared in the prefix, it MAY treat this as a stream error of
+type HTTP_QPACK_DECOMPRESSION_FAILED.
 
 A decoder can permit the possibility of blocked streams by setting
 SETTINGS_QPACK_BLOCKED_STREAMS to a non-zero value (see {{configuration}}).
@@ -379,9 +379,11 @@ instruction space:
    which carries table updates from encoder to decoder. Instructions on this
    stream modify the dynamic table state without generating output to any
    particular request.
+
  - The decoder stream is a unidirectional stream of type `0x68` (ASCII 'h')
    which carries acknowledgements of table modifications and header processing
    from decoder to encoder.
+
  - Finally, the contents of HEADERS and PUSH_PROMISE frames on request streams
    and push streams reference the QPACK table state.
 
@@ -438,10 +440,10 @@ instructions.
 An addition to the header table where the header field name matches the header
 field name of an entry stored in the static table or the dynamic table starts
 with the '1' one-bit pattern.  The `S` bit indicates whether the reference is to
-the static (S=1) or dynamic (S=0) table. The 6-bit prefix integer (see Section 5.1
-of [RFC7541]) that follows is used to locate the table entry for the header name.
-When S=1, the number represents the static table index; when S=0, the number is
-the relative index of the entry in the dynamic table.
+the static (S=1) or dynamic (S=0) table. The 6-bit prefix integer (see Section
+5.1 of [RFC7541]) that follows is used to locate the table entry for the header
+name.  When S=1, the number represents the static table index; when S=0, the
+number is the relative index of the entry in the dynamic table.
 
 The header name reference is followed by the header field value represented as a
 string literal (see Section 5.2 of [RFC7541]).
@@ -884,9 +886,9 @@ acknowledged with {{feedback}}.  Since all table updates are processed in
 sequence on the control stream, an index into the dynamic table is sufficient to
 track which entries have been acknowledged.
 
-To track blocked streams, the necessary Base Index value for each stream
-can be used.  Whenever the decoder processes a table update, it can begin
-decoding any blocked streams that now have their dependencies satisfied.
+To track blocked streams, the necessary Base Index value for each stream can be
+used.  Whenever the decoder processes a table update, it can begin decoding any
+blocked streams that now have their dependencies satisfied.
 
 
 ## Speculative table updates {#speculative-updates}
@@ -1004,7 +1006,7 @@ Description:
 
 # Change Log
 
-> **RFC Editor's Note:**  Please remove this section prior to publication of a
+> **RFC Editor's Note:** Please remove this section prior to publication of a
 > final version of this document.
 
 ## Since draft-ietf-quic-qpack-00
