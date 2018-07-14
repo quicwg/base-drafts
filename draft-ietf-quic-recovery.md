@@ -998,14 +998,17 @@ Constants used in congestion control are based on a combination of RFCs,
 papers, and common practice.  Some may need to be changed or negotiated
 in order to better suit a variety of environments.
 
-kInitialMss (RECOMMENDED 1460 bytes):
-: The max packet size is used for calculating initial and minimum
-  congestion windows.
+kMaxDatagramSize (RECOMMENDED 1200 bytes):
+: The sender's maximum payload size. Does not include UDP or IP
+  overhead. The max packet size is used for calculating initial and
+  minimum congestion windows.
 
-kInitialWindow (RECOMMENDED 10 * kInitialMss):
-: Limit on the initial amount of outstanding data in bytes.
+kInitialWindow (RECOMMENDED min(10 * kMaxDatagramSize,
+                                max(2* kMaxDatagramSize, 14600))):
+: Default limit on the initial amount of outstanding data in bytes.
+  Taken from {{?RFC6928}}.
 
-kMinimumWindow (RECOMMENDED 2 * kInitialMss):
+kMinimumWindow (RECOMMENDED 2 * kMaxDatagramSize):
 : Minimum congestion window in bytes.
 
 kLossReductionFactor (RECOMMENDED 0.5):
@@ -1086,8 +1089,8 @@ acked_packet from sent_packets.
        congestion_window += acked_packet.bytes
      else:
        // Congestion avoidance.
-       congestion_window +=
-         kInitialMss * acked_packet.bytes / congestion_window
+       congestion_window += kMaxDatagramSize * acked_packet.bytes
+           / congestion_window
 ~~~
 
 ### On New Congestion Event
