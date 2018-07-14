@@ -373,7 +373,7 @@ A Retransmission Timeout (RTO) timer is the final backstop for loss
 detection. The algorithm used in QUIC is based on the RTO algorithm for TCP
 {{?RFC5681}} and is additionally resilient to spurious RTO events {{?RFC5682}}.
 
-When the last TLP packet is sent, a timer is scheduled for the RTO period. When
+When the last TLP packet is sent, a timer is set for the RTO period. When
 this timer expires, the sender sends two packets, to evoke acknowledgements from
 the receiver, and restarts the RTO timer.
 
