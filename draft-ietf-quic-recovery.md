@@ -219,7 +219,7 @@ and/or a threshold amount of time after the unacknowledged packet. Receipt of th
 ack indicates that a later packet was received, while the reordering threshold
 provides some tolerance for reordering of packets in the network.
 
-The RECOMMENDED initial value for kReorderingThreshold is 3, based on 
+The RECOMMENDED initial value for kReorderingThreshold is 3, based on
 TCP loss recovery {{?RFC5681}} {{?RFC6675}}. Some networks may exhibit higher
 degrees of reordering, causing a sender to detect spurious losses. Spuriously
 declaring packets lost leads to unnecessary retransmissions and may result in
