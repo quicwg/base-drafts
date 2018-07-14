@@ -100,23 +100,25 @@ This design obviates the need for disambiguating between transmissions and
 retransmissions and eliminates significant complexity from QUIC's interpretation
 of TCP loss detection mechanisms.
 
-Every packet may contain several frames.  We outline the frames that are
-important to the loss detection and congestion control machinery below.
+QUIC packets can contain multiple frames of different types. The recovery
+mechanisms ensure that data and frames that need reliable delivery are
+acknowledged or declared lost and sent in new packets as necessary. The types
+of frames contained in a packet affect recovery and congestion control logic:
 
-* Retransmittable frames are those that count towards bytes in flight and need
-  acknowledgement.  The most common are STREAM frames, which typically contain
-  application data.
+* All packets are acknowledged, though packets that contain only ACK,
+  ACK_ECN, and PADDING frames are not acknowledged immediately.  Packets
+  containing at least one frame besides ACK, ACK_ECN, and PADDING are referred
+  to as "retransmittable" below.
 
-* Retransmittable packets are those that contain at least one retransmittable
-  frame.
+* Long header packets that contain CRYPTO frames are critical to the
+  performance of the QUIC handshake and use shorter timers for acknowledgement
+  and retransmission.
 
-* Cryptographic handshake data is sent in CRYPTO frames, and uses the
-  reliability machinery of QUIC underneath.
-
-* ACK and ACK_ECN frames contain acknowledgment information. ACK_ECN frames
-  additionally contain information about ECN codepoints seen by the peer.  (The
-  rest of this document uses ACK frames to refer to both ACK and ACK_ECN
-  frames.)
+* Packets that contain only ACK and ACK_ECN frames do not count toward
+  congestion control limits and are not considered in-flight. Note that this
+  means PADDING frames cause packets to contribute toward bytes in flight
+  without directly causing an acknowledgment to be sent.  The rest of this
+  document uses "ACK frames" to refer to both ACK and ACK_ECN frames.
 
 ## Relevant Differences Between QUIC and TCP
 
@@ -242,10 +244,10 @@ packets cannot be detected via Fast Retransmit. To enable ack-based loss
 detection of such packets, receipt of an acknowledgment for the last outstanding
 retransmittable packet triggers the Early Retransmit process, as follows.
 
-If there are unacknowledged retransmittable packets still pending, they should
+If there are unacknowledged in-flight packets still pending, they should
 be marked as lost. To compensate for the reduced reordering resilience, the
 sender SHOULD set an alarm for a small period of time. If the unacknowledged
-retransmittable packets are not acknowledged during this time, then these
+in-flight packets are not acknowledged during this time, then these
 packets MUST be marked as lost.
 
 An endpoint SHOULD set the alarm such that a packet is marked as lost no earlier
@@ -582,7 +584,8 @@ sent_packets:
 
 : An association of packet numbers to information about them, including a number
   field indicating the packet number, a time field indicating the time a packet
-  was sent, a boolean indicating whether the packet is ack only, and a bytes
+  was sent, a boolean indicating whether the packet is ack only, a boolean
+  indicating whether it counts towards bytes in flight, and a bytes
   field indicating the packet's size.  sent_packets is ordered by packet number,
   and packets remain in sent_packets until acknowledged or lost.  A sent_packets
   data structure is maintained per packet number space, and ACK processing only
@@ -623,9 +626,12 @@ are as follows:
 
 * packet_number: The packet number of the sent packet.
 
-* is_ack_only: A boolean that indicates whether a packet only contains an
-  ACK frame.  If true, it is still expected an ack will be received for
-  this packet, but it is not retransmittable.
+* ack_only: A boolean that indicates whether a packet contains only
+  ACK or PADDING frame(s).  If true, it is still expected an ack will
+  be received for this packet, but it is not retransmittable.
+
+* in_flight: A boolean that indicates whether the packet counts towards
+  bytes in flight.
 
 * is_handshake_packet: A boolean that indicates whether a packet contains
   handshake data.
@@ -636,13 +642,14 @@ are as follows:
 Pseudocode for OnPacketSent follows:
 
 ~~~
- OnPacketSent(packet_number, is_ack_only, is_handshake_packet,
-                sent_bytes):
+ OnPacketSent(packet_number, ack_only, in_flight,
+              is_handshake_packet, sent_bytes):
    largest_sent_packet = packet_number
    sent_packets[packet_number].packet_number = packet_number
    sent_packets[packet_number].time = now
-   sent_packets[packet_number].ack_only = is_ack_only
-   if !is_ack_only:
+   sent_packets[packet_number].ack_only = ack_only
+   sent_packets[packet_number].in_flight = in_flight
+   if !ack_only:
      if is_handshake_packet:
        time_of_last_sent_handshake_packet = now
      time_of_last_sent_retransmittable_packet = now
@@ -768,8 +775,8 @@ Pseudocode for SetLossDetectionAlarm follows:
 
 ~~~
  SetLossDetectionAlarm():
-    // Don't arm the alarm if there are no packets with
-    // retransmittable data in flight.
+    // Don't arm alarm if there are no retransmittable packets
+    // in flight.
     if (bytes_in_flight == 0):
       loss_detection_alarm.cancel()
       return
@@ -966,7 +973,7 @@ slow start is re-entered.
 ## Pacing
 
 This document does not specify a pacer, but it is RECOMMENDED that a sender pace
-sending of all retransmittable packets based on input from the congestion
+sending of all in-flight packets based on input from the congestion
 controller. For example, a pacer might distribute the congestion window over
 the SRTT when used with a window-based controller, and a pacer might use the
 rate estimate of a rate-based controller.
@@ -1018,8 +1025,9 @@ ecn_ce_counter:
 
 bytes_in_flight:
 : The sum of the size in bytes of all sent packets that contain at least
-  one retransmittable frame, and have not been acked or declared
-  lost. The size does not include IP or UDP overhead.
+  one retransmittable or PADDING frame, and have not been acked or declared
+  lost. The size does not include IP or UDP overhead, but does include the
+  QUIC header and AEAD overhead.
   Packets only containing ACK frames do not count towards bytes_in_flight
   to ensure congestion control does not impede congestion feedback.
 
