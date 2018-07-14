@@ -246,7 +246,7 @@ retransmittable packet triggers the Early Retransmit process, as follows.
 
 If there are unacknowledged in-flight packets still pending, they should
 be marked as lost. To compensate for the reduced reordering resilience, the
-sender SHOULD set an timer for a small period of time. If the unacknowledged
+sender SHOULD set a timer for a small period of time. If the unacknowledged
 in-flight packets are not acknowledged during this time, then these
 packets MUST be marked as lost.
 
@@ -295,7 +295,7 @@ smoothed RTT value as the resumed connection's initial RTT.
 If no previous RTT is available, or if the network changes, the initial RTT
 SHOULD be set to 100ms.
 
-When CRYPTO frames are sent, the sender SHOULD set an timer for the handshake
+When CRYPTO frames are sent, the sender SHOULD set a timer for the handshake
 timeout period.  Upon timeout, the sender MUST retransmit all unacknowledged
 CRYPTO data by calling RetransmitAllUnackedHandshakeData(). On each
 consecutive firing of the handshake timer without receiving an
