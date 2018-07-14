@@ -111,7 +111,7 @@ of frames contained in a packet affect recovery and congestion control logic:
   to as "retransmittable" below.
 
 * Long header packets that contain CRYPTO frames are critical to the
-  performance of the QUIC handshake and use shorter timeouts for
+  performance of the QUIC handshake and use shorter timers for
   acknowledgement and retransmission.
 
 * Packets that contain only ACK and ACK_ECN frames do not count toward
@@ -298,7 +298,7 @@ SHOULD be set to 100ms.
 When CRYPTO frames are sent, the sender SHOULD set a timer for the handshake
 timeout period.  Upon timeout, the sender MUST retransmit all unacknowledged
 CRYPTO data by calling RetransmitAllUnackedHandshakeData(). On each
-consecutive firing of the handshake timer without receiving an
+consecutive expiration of the handshake timer without receiving an
 acknowledgement for a new packet, the sender SHOULD double the handshake timeout
 and set a timer for this period.
 
@@ -352,8 +352,8 @@ based on {{?TLP}}, but implementations MAY experiment with other constants.
 
 To reduce latency, it is RECOMMENDED that the sender set and allow the TLP timer
 to fire twice before setting an RTO timer. In other words, when the TLP timer
-fires the first time, a TLP packet is sent, and it is RECOMMENDED that the TLP
-timer be scheduled for a second time. When the TLP timer fires the second time,
+expires the first time, a TLP packet is sent, and it is RECOMMENDED that the TLP
+timer be scheduled for a second time. When the TLP timer expires the second time,
 a second TLP packet is sent, and an RTO timer SHOULD be scheduled {{rto}}.
 
 A TLP packet SHOULD carry new data when possible. If new data is unavailable or
@@ -361,7 +361,7 @@ new data cannot be sent due to flow control, a TLP packet MAY retransmit
 unacknowledged data to potentially reduce recovery time. Since a TLP timer is
 used to send a probe into the network prior to establishing any packet loss,
 prior unacknowledged packets SHOULD NOT be marked as lost when a TLP timer
-fires.
+expires.
 
 A sender may not know that a packet being sent is a tail packet.  Consequently,
 a sender may have to arm or adjust the TLP timer on every sent retransmittable
@@ -374,7 +374,7 @@ detection. The algorithm used in QUIC is based on the RTO algorithm for TCP
 {{?RFC5681}} and is additionally resilient to spurious RTO events {{?RFC5682}}.
 
 When the last TLP packet is sent, a timer is scheduled for the RTO period. When
-this timer fires, the sender sends two packets, to evoke acknowledgements from
+this timer expires, the sender sends two packets, to evoke acknowledgements from
 the receiver, and restarts the RTO timer.
 
 Similar to TCP {{?RFC6298}}, the RTO period is set based on the following
@@ -383,10 +383,10 @@ conditions:
 * When the final TLP packet is sent, the RTO period is set to max(SRTT +
   4*RTTVAR + MaxAckDelay, kMinRTOTimeout)
 
-* When an RTO timer fires, the RTO period is doubled.
+* When an RTO timer expires, the RTO period is doubled.
 
 The sender typically has incurred a high latency penalty by the time an RTO
-timer fires, and this penalty increases exponentially in subsequent consecutive
+timer expires, and this penalty increases exponentially in subsequent consecutive
 RTO events. Sending a single packet on an RTO event therefore makes the
 connection very sensitive to single packet loss. Sending two packets instead of
 one significantly increases resilience to packet drop in both directions, thus
@@ -394,9 +394,9 @@ reducing the probability of consecutive RTO events.
 
 QUIC's RTO algorithm differs from TCP in that the firing of an RTO timer is not
 considered a strong enough signal of packet loss, so does not result in an
-immediate change to congestion window or recovery state. An RTO timer fires only
-when there's a prolonged period of network silence, which could be caused by a
-change in the underlying network RTT.
+immediate change to congestion window or recovery state. An RTO timer expires
+only when there's a prolonged period of network silence, which could be caused
+by a change in the underlying network RTT.
 
 QUIC also diverges from TCP by including MaxAckDelay in the RTO period.  QUIC is
 able to explicitly model delay at the receiver via the ack delay field in the
@@ -408,7 +408,7 @@ When an acknowledgment is received for a packet sent on an RTO event, any
 unacknowledged packets with lower packet numbers than those acknowledged MUST be
 marked as lost.
 
-A packet sent when an RTO timer fires MAY carry new data if available or
+A packet sent when an RTO timer expires MAY carry new data if available or
 unacknowledged data to potentially reduce recovery time. Since this packet is
 sent as a probe into the network prior to establishing any packet loss, prior
 unacknowledged packets SHOULD NOT be marked as lost.
@@ -488,7 +488,7 @@ common practice.  Some may need to be changed or negotiated in order to better
 suit a variety of environments.
 
 kMaxTLPs (RECOMMENDED 2):
-: Maximum number of tail loss probes before an RTO fires.
+: Maximum number of tail loss probes before an RTO expires.
 
 kReorderingThreshold (RECOMMENDED 3):
 : Maximum reordering in packet number space before FACK style loss detection
@@ -817,7 +817,7 @@ Pseudocode for SetLossDetectionTimer follows:
 ### On Timeout
 
 QUIC uses one loss recovery timer, which when set, can be in one of several
-modes.  When the timer fires, the mode determines the action to be performed.
+modes.  When the timer expires, the mode determines the action to be performed.
 
 Pseudocode for OnLossDetectionTimeout follows:
 
@@ -849,7 +849,7 @@ Pseudocode for OnLossDetectionTimeout follows:
 Packets in QUIC are only considered lost once a larger packet number in
 the same packet number space is acknowledged.  DetectLostPackets is called
 every time an ack is received and operates on the sent_packets for that
-packet number space.  If the loss detection timer fires and the loss_time
+packet number space.  If the loss detection timer expires and the loss_time
 is set, the previous largest acked packet is supplied.
 
 #### Pseudocode
@@ -909,8 +909,8 @@ counting {{?RFC3465}}.
 
 QUIC hosts MUST NOT send packets if they would increase bytes_in_flight
 (defined in {{vars-of-interest}}) beyond the available congestion window, unless
-the packet is a probe packet sent after the TLP or RTO timer fires, as described
-in {{tlp}} and {{rto}}.
+the packet is a probe packet sent after the TLP or RTO timer expires, as
+described in {{tlp}} and {{rto}}.
 
 ## Explicit Congestion Notification {#congestion-ecn}
 
