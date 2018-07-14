@@ -1002,7 +1002,7 @@ kInitialMss (RECOMMENDED 1460 bytes):
 : The max packet size is used for calculating initial and minimum
   congestion windows.
 
-kInitialWindow (default 14600 bytes):
+kInitialWindow (RECOMMENDED min (10*MSS, max (2*MSS, 14600))):
 : Default limit on the initial amount of outstanding data in bytes.
   Taken from {{?RFC6928}}.
 
