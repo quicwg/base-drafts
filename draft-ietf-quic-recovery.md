@@ -1018,12 +1018,12 @@ kLossReductionFactor (RECOMMENDED 0.5):
 Variables required to implement the congestion control mechanisms
 are described in this section.
 
-sender_mss:
+max_datagram_size:
 : The sender's maximum payload size.  Does not include UDP or IP
   overhead. Similar to SMSS defined for TCP in {{?RFC5681}}
 
 minimum_window :
-: Minimum congestion window.  Set to 2 * sender_mss.
+: Minimum congestion window.  Set to 2 * max_datagram_size.
 
 ecn_ce_counter:
 
@@ -1058,7 +1058,7 @@ variables as follows:
 
 ~~~
    congestion_window = kInitialWindow
-   minimum_window = 2 * sender_mss
+   minimum_window = 2 * max_datagram_size
    bytes_in_flight = 0
    end_of_recovery = 0
    ssthresh = infinite
@@ -1096,7 +1096,7 @@ acked_packet from sent_packets.
      else:
        // Congestion avoidance.
        congestion_window +=
-         sender_mss * acked_packet.bytes / congestion_window
+         max_datagram_size * acked_packet.bytes / congestion_window
 ~~~
 
 ### On New Congestion Event
