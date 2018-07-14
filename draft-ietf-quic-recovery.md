@@ -784,34 +784,33 @@ Pseudocode for SetLossDetectionTimer follows:
     if (handshake packets are outstanding):
       // Handshake retransmission timer.
       if (smoothed_rtt == 0):
-        timer_duration = 2 * kInitialRtt
+        timeout = 2 * kInitialRtt
       else:
-        timer_duration = 2 * smoothed_rtt
-      timer_duration = max(timer_duration + max_ack_delay,
-                           kMinTLPTimeout)
-      timer_duration = timer_duration * (2 ^ handshake_count)
+        timeout = 2 * smoothed_rtt
+      timeout = max(timeout + max_ack_delay, kMinTLPTimeout)
+      timeout = timeout * (2 ^ handshake_count)
       loss_detection_timer.set(
-        time_of_last_sent_handshake_packet + timer_duration)
+        time_of_last_sent_handshake_packet + timeout)
       return;
     else if (loss_time != 0):
       // Early retransmit timer or time loss detection.
-      timer_duration = loss_time -
+      timeout = loss_time -
         time_of_last_sent_retransmittable_packet
     else:
       // RTO or TLP timer
       // Calculate RTO duration
-      timer_duration =
+      timeout =
         smoothed_rtt + 4 * rttvar + max_ack_delay
-      timer_duration = max(timer_duration, kMinRTOTimeout)
-      timer_duration = timer_duration * (2 ^ rto_count)
+      timeout = max(timeout, kMinRTOTimeout)
+      timeout = timeout * (2 ^ rto_count)
       if (tlp_count < kMaxTLPs):
         // Tail Loss Probe
-        tlp_timer_duration = max(1.5 * smoothed_rtt
+        tlp_timeout = max(1.5 * smoothed_rtt
                            + max_ack_delay, kMinTLPTimeout)
-        timer_duration = min(tlp_timer_duration, timer_duration)
+        timeout = min(tlp_timeout, timeout)
 
     loss_detection_timer.set(
-      time_of_last_sent_retransmittable_packet + timer_duration)
+      time_of_last_sent_retransmittable_packet + timeout)
 ~~~
 
 ### On Timeout
