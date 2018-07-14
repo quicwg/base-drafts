@@ -596,8 +596,8 @@ min_rtt:
 
 max_ack_delay:
 : The maximum ack delay in an incoming ACK frame for this connection.
-  Excludes ack delays for ack only packets and those that create an
-  RTT sample less than min_rtt.
+  Excludes ack delays for non-retransmittable packets and those
+  that create an RTT sample less than min_rtt.
 
 reordering_threshold:
 : The largest packet number gap between the largest acked
@@ -615,7 +615,7 @@ sent_packets:
 
 : An association of packet numbers to information about them, including a number
   field indicating the packet number, a time field indicating the time a packet
-  was sent, a boolean indicating whether the packet is ack only, a boolean
+  was sent, a boolean indicating whether the packet is ack-only, a boolean
   indicating whether it counts towards bytes in flight, and a bytes
   field indicating the packet's size.  sent_packets is ordered by packet number,
   and packets remain in sent_packets until acknowledged or lost.  A sent_packets
@@ -723,7 +723,7 @@ Pseudocode for OnAckReceived and UpdateRtt follow:
     if (latest_rtt - min_rtt > ack_delay):
       latest_rtt -= ack_delay
       // Only save into max ack delay if it's used
-      // for rtt calculation and is not ack only.
+      // for rtt calculation and is not ack-only.
       if (!sent_packets[ack.largest_acked].ack_only)
         max_ack_delay = max(max_ack_delay, ack_delay)
     // Based on {{?RFC6298}}.
