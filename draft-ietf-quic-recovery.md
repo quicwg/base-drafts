@@ -228,10 +228,10 @@ degraded performance due to the actions of the congestion controller upon
 detecting loss. Implementers MAY use algorithms developed for TCP, such as
 TCP-NCR {{?RFC4653}}, to improve QUIC's reordering resilience.
 
-QUIC implementations may use time-based loss detection to deal with reordering.
-time-based loss detection allows a certain amount of reordering above
-max(SRTT, latest_rtt).  The RECOMMENDED reordering tolerance is
-1/8 max(SRTT, latest_rtt).
+QUIC implementations can use time-based loss detection to handle reordering
+based on time elapsed since the packet was sent, instead of a packet reordering
+threshold. The RECOMMENDED time threshold, expressed as a fraction of the
+round-trip time (kTimeReorderingFraction), is 1/8.
 
 ### Early Retransmit
 
