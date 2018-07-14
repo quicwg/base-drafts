@@ -1089,8 +1089,8 @@ acked_packet from sent_packets.
        congestion_window += acked_packet.bytes
      else:
        // Congestion avoidance.
-       congestion_window +=
-         kMaxDatagramSize * acked_packet.bytes / congestion_window
+       congestion_window += kMaxDatagramSize * acked_packet.bytes
+           / congestion_window
 ~~~
 
 ### On New Congestion Event
