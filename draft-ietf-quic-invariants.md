@@ -89,10 +89,10 @@ new versions are developed and deployed.  All of these invariants are
 IP-version-independent.
 
 The primary goal of this document is to ensure that it is possible to deploy new
-versions of QUIC.  By documenting the things that can't change, this document
-aims to preserve the ability to change any other aspect of the protocol.  Thus,
-unless specifically described in this document, any aspect of the protocol can
-change between different versions.
+versions of QUIC.  By documenting the properties that can't change, this
+document aims to preserve the ability to change any other aspect of the
+protocol.  Thus, unless specifically described in this document, any aspect of
+the protocol can change between different versions.
 
 {{bad-assumptions}} is a non-exhaustive list of some incorrect assumptions that
 might be made based on knowledge of QUIC version 1; these do not apply to every
@@ -105,6 +105,8 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD",
 "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this
 document are to be interpreted as described in BCP 14 {{!RFC2119}} {{!RFC8174}}
 when, and only when, they appear in all capitals, as shown here.
+
+This document uses terms and notational conventions from {{QUIC-TRANSPORT}}.
 
 
 # An Extremely Abstract Description of QUIC
@@ -226,16 +228,17 @@ QUIC versions are identified with a 32-bit integer, encoded in network byte
 order.  Version 0 is reserved for version negotiation (see
 {{version-negotiation}}).  All other version numbers are potentially valid.
 
+The properties described in this document apply to all versions of QUIC. A
+protocol that does not conform to the properties described in this document is
+not QUIC.  Future documents might describe additional properties which apply to
+a specific QUIC version, or to a range of QUIC versions.
 
 # Version Negotiation {#version-negotiation}
 
 A QUIC endpoint that receives a packet with a long header and a version it
 either does not understand or does not support might send a Version Negotiation
 packet in response.  Packets with a short header do not trigger version
-negotiation and are always associated with an existing connection.
-
-Consequently, until an endpoint has confirmed that its peer supports the QUIC
-version it has chosen, it can only send packets that use the long header.
+negotiation.
 
 A Version Negotiation packet sets the high bit of the first octet, and thus it
 conforms with the format of a packet with a long header as defined in
@@ -278,7 +281,7 @@ Version Negotiation packets do not use integrity or confidentiality protection.
 A specific QUIC version might authenticate the packet as part of its connection
 establishment process.
 
-The server MUST include the value from the Source Connection ID field of the
+An endpoint MUST include the value from the Source Connection ID field of the
 packet it receives in the Destination Connection ID field.  The value for Source
 Connection ID MUST be copied from the Destination Connection ID of the received
 packet, which is initially randomly selected by a client.  Echoing both
@@ -340,6 +343,8 @@ The following statements are NOT guaranteed to be true for every QUIC version:
 * QUIC long headers are only exchanged during connection establishment
 
 * Every flow on a given 5-tuple will include a connection establishment phase
+
+* The first packets exchanged on a flow use the long header
 
 * QUIC forbids acknowledgments of packets that only contain ACK frames,
   therefore the last packet before a long period of quiescence might be assumed
