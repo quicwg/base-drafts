@@ -1053,7 +1053,6 @@ variables as follows:
 
 ~~~
    congestion_window = kInitialWindow
-   minimum_window = 2 * kMaxDatagramSize
    bytes_in_flight = 0
    end_of_recovery = 0
    ssthresh = infinite
@@ -1106,7 +1105,7 @@ detected. Starts a new recovery period and reduces the congestion window.
      if (!InRecovery(packet_number)):
        end_of_recovery = largest_sent_packet
        congestion_window *= kMarkReductionFactor
-       congestion_window = max(congestion_window, minimum_window)
+       congestion_window = max(congestion_window, kMinimumWindow)
 ~~~
 
 ### Process ECN Information
@@ -1149,7 +1148,7 @@ retransmission timeout has been verified.
 
 ~~~
    OnRetransmissionTimeoutVerified()
-     congestion_window = minimum_window
+     congestion_window = kMinimumWindow
 ~~~
 
 # IANA Considerations
