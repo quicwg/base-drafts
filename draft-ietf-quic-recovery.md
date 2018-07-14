@@ -88,30 +88,30 @@ when, and only when, they appear in all capitals, as shown here.
 
 Definitions of terms that are used in this document:
 
-Sender:
+ACK frames:
 
-: The endpoint sending QUIC packets.
-
-Receiver:
-
-: The endpoint receiving QUIC packets and sending acknowledgements in
-  response.
+: ACK frames refer to both ACK and ACK_ECN frames in this
+  document.
 
 ACK-only:
 
-: Any packet containing only an ACK or ACK_ECN frame. The rest of this
-  document uses "ACK frames" to refer to both ACK and ACK_ECN frames.
+: Any packet containing only an ACK frame.
 
 In-flight:
 
-: Packets are considered in-flight because they have been sent
-  and neither acknowledged or considered lost, and they are not
+: Packets are considered in-flight when they have been sent
+  and neither acknowledged or declared lost, and they are not
   ACK-only.
 
-Retransmittable:
+Retransmittable Frames:
 
-: Packets that contain frames besides ACK, ACK_ECN, or PADDING elicit
-  an ACK from the receiver and are called retransmittable.
+: All frames besides ACK, ACK_ECN, or PADDING are considered
+  retransmittable.
+
+Retransmittable Packets:
+
+: Packets that contain retransmittable frames elicit an ACK from
+  the receiver and are called retransmittable packets.
 
 
 # Design of the QUIC Transmission Machinery
