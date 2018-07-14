@@ -79,12 +79,39 @@ recovery, and where applicable, attributes the TCP equivalent in RFCs,
 Internet-drafts, academic papers, and/or TCP implementations.
 
 
-## Notational Conventions
+# Conventions and Definitions
 
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD",
 "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this
 document are to be interpreted as described in BCP 14 {{!RFC2119}} {{!RFC8174}}
 when, and only when, they appear in all capitals, as shown here.
+
+Definitions of terms that are used in this document:
+
+Sender:
+
+: The endpoint sending QUIC packets.
+
+Receiver:
+
+: The endpoint receiving QUIC packets and sending acknowledgements in
+  response.
+
+ACK-only:
+
+: Any packet containing only an ACK or ACK_ECN frame. The rest of this
+  document uses "ACK frames" to refer to both ACK and ACK_ECN frames.
+
+In-flight:
+
+: Packets are considered in-flight because they have been sent
+  and neither acknowledged or considered lost, and they are not
+  ACK-only.
+
+Retransmittable:
+
+: Packets that contain frames besides ACK, ACK_ECN, or PADDING elicit
+  an ACK from the receiver and are called retransmittable. 
 
 
 # Design of the QUIC Transmission Machinery
@@ -106,9 +133,7 @@ acknowledged or declared lost and sent in new packets as necessary. The types
 of frames contained in a packet affect recovery and congestion control logic:
 
 * All packets are acknowledged, though packets that contain only ACK,
-  ACK_ECN, and PADDING frames are not acknowledged immediately.  Packets
-  containing at least one frame besides ACK, ACK_ECN, and PADDING are referred
-  to as "retransmittable" below.
+  ACK_ECN, and PADDING frames are not acknowledged immediately.
 
 * Long header packets that contain CRYPTO frames are critical to the
   performance of the QUIC handshake and use shorter timers for
@@ -117,8 +142,7 @@ of frames contained in a packet affect recovery and congestion control logic:
 * Packets that contain only ACK and ACK_ECN frames do not count toward
   congestion control limits and are not considered in-flight. Note that this
   means PADDING frames cause packets to contribute toward bytes in flight
-  without directly causing an acknowledgment to be sent.  The rest of this
-  document uses "ACK frames" to refer to both ACK and ACK_ECN frames.
+  without directly causing an acknowledgment to be sent.
 
 ## Relevant Differences Between QUIC and TCP
 
