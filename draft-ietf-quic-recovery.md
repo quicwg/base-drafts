@@ -1148,6 +1148,23 @@ retransmission timeout has been verified.
      congestion_window = kMinimumWindow
 ~~~
 
+# Security Considerations
+
+## Local Denial of Service
+
+QUIC requires congestion control, and recommends Reno.  Not using a
+congestion control algorithm or using an overly aggressive
+algorithm may cause flows sharing the same link to experience
+excess delay, packet loss, and timeouts.
+
+## Traffic Analysis
+
+ACK only packets are small and can be heuristically identified by
+packet size unless padded or bundled with other frames.
+Acknowledgement patterns and sizes may expose information
+about the link characteristics and/or application behavior.
+
+
 # IANA Considerations
 
 This document has no IANA actions.  Yet.
