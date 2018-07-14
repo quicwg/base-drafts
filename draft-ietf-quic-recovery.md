@@ -1152,7 +1152,7 @@ retransmission timeout has been verified.
 
 ## Local Denial of Service
 
-QUIC requires congestion control, and recommends Reno.  Not using a
+QUIC requires congestion control, and recommends Reno. Not using a
 congestion control algorithm or using an overly aggressive
 algorithm may cause flows sharing the same link to experience
 excess delay, packet loss, and timeouts.
