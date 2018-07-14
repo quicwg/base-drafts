@@ -1003,7 +1003,7 @@ kMaxDatagramSize (RECOMMENDED 1200 bytes):
   overhead. The max packet size is used for calculating initial and
   minimum congestion windows.   
 
-kInitialWindow (RECOMMENDED min(10 * kMaxDatagramSize, 
+kInitialWindow (RECOMMENDED min(10 * kMaxDatagramSize,
                                 max(2* kMaxDatagramSize, 14600))):
 : Default limit on the initial amount of outstanding data in bytes.
   Taken from {{?RFC6928}}.
