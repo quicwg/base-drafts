@@ -1794,9 +1794,10 @@ not support ECN.
 
 If an endpoint sets ECT codepoints on outgoing packets and encounters a
 retransmission timeout due to the absence of acknowledgments from the peer (see
-{{QUIC-RECOVERY}}), the endpoint MAY cease setting ECT codepoints in subsequent
-packets. Doing so allows the connection to traverse network elements that drop
-packets carrying ECT or CE codepoints in the IP header.
+{{QUIC-RECOVERY}}), or if an endpoint has reason to believe that a network
+element might be corrupting ECN codepoints, the endpoint MAY cease setting ECT
+codepoints in subsequent packets. Doing so allows the connection to traverse
+network elements that drop or corrupt ECN codepoints in the IP header.
 
 
 ## Proof of Source Address Ownership {#address-validation}
