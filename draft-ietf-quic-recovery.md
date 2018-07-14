@@ -1001,7 +1001,7 @@ in order to better suit a variety of environments.
 kMaxDatagramSize (RECOMMENDED 1200 bytes):
 : The sender's maximum payload size. Does not include UDP or IP
   overhead. The max packet size is used for calculating initial and
-  minimum congestion windows.   
+  minimum congestion windows.
 
 kInitialWindow (RECOMMENDED min(10 * kMaxDatagramSize,
                                 max(2* kMaxDatagramSize, 14600))):
