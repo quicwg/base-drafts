@@ -998,15 +998,17 @@ Constants used in congestion control are based on a combination of RFCs,
 papers, and common practice.  Some may need to be changed or negotiated
 in order to better suit a variety of environments.
 
-kInitialMss (RECOMMENDED 1460 bytes):
-: The max packet size is used for calculating initial and minimum
-  congestion windows.
+kMaxDatagramSize (RECOMMENDED 1200 bytes):
+: The sender's maximum payload size. Does not include UDP or IP
+  overhead. The max packet size is used for calculating initial and
+  minimum congestion windows.   
 
-kInitialWindow (RECOMMENDED min (10*MSS, max (2*MSS, 14600))):
+kInitialWindow (RECOMMENDED min(10 * kMaxDatagramSize, 
+                                max(2* kMaxDatagramSize, 14600))):
 : Default limit on the initial amount of outstanding data in bytes.
   Taken from {{?RFC6928}}.
 
-kMinimumWindow (RECOMMENDED 2 * kInitialMss):
+kMinimumWindow (RECOMMENDED 2 * kMaxDatagramSize):
 : Minimum congestion window in bytes.
 
 kLossReductionFactor (RECOMMENDED 0.5):
@@ -1017,13 +1019,6 @@ kLossReductionFactor (RECOMMENDED 0.5):
 
 Variables required to implement the congestion control mechanisms
 are described in this section.
-
-max_datagram_size:
-: The sender's maximum payload size.  Does not include UDP or IP
-  overhead. Similar to SMSS defined for TCP in {{?RFC5681}}
-
-minimum_window :
-: Minimum congestion window.  Set to 2 * max_datagram_size.
 
 ecn_ce_counter:
 
