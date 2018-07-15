@@ -111,8 +111,8 @@ of frames contained in a packet affect recovery and congestion control logic:
   to as "retransmittable" below.
 
 * Long header packets that contain CRYPTO frames are critical to the
-  performance of the QUIC handshake and use shorter timers for acknowledgement
-  and retransmission.
+  performance of the QUIC handshake and use shorter timers for
+  acknowledgement and retransmission.
 
 * Packets that contain only ACK and ACK_ECN frames do not count toward
   congestion control limits and are not considered in-flight. Note that this
@@ -246,11 +246,11 @@ retransmittable packet triggers the Early Retransmit process, as follows.
 
 If there are unacknowledged in-flight packets still pending, they should
 be marked as lost. To compensate for the reduced reordering resilience, the
-sender SHOULD set an alarm for a small period of time. If the unacknowledged
+sender SHOULD set a timer for a small period of time. If the unacknowledged
 in-flight packets are not acknowledged during this time, then these
 packets MUST be marked as lost.
 
-An endpoint SHOULD set the alarm such that a packet is marked as lost no earlier
+An endpoint SHOULD set the timer such that a packet is marked as lost no earlier
 than 1.25 * max(SRTT, latest_RTT) since when it was sent.
 
 Using max(SRTT, latest_RTT) protects from the two following cases:
@@ -268,10 +268,10 @@ reordering resilience and increases spurious retransmissions, and a higher
 multipler increases loss recovery delay.
 
 This mechanism is based on Early Retransmit for TCP {{?RFC5827}}. However,
-{{?RFC5827}} does not include the alarm described above. Early Retransmit is
+{{?RFC5827}} does not include the timer described above. Early Retransmit is
 prone to spurious retransmissions due to its reduced reordering resilence
-without the alarm. This observation led Linux TCP implementers to implement an
-alarm for TCP as well, and this document incorporates this advancement.
+without the timer. This observation led Linux TCP implementers to implement a
+timer for TCP as well, and this document incorporates this advancement.
 
 ## Timer-based Detection
 
@@ -295,18 +295,18 @@ smoothed RTT value as the resumed connection's initial RTT.
 If no previous RTT is available, or if the network changes, the initial RTT
 SHOULD be set to 100ms.
 
-When CRYPTO frames are sent, the sender SHOULD set an alarm for the handshake
-timeout period.  When the alarm fires, the sender MUST retransmit all
-unacknowledged CRYPTO data by calling RetransmitAllUnackedHandshakeData(). On
-each consecutive firing of the handshake alarm without receiving an
+When CRYPTO frames are sent, the sender SHOULD set a timer for the handshake
+timeout period.  Upon timeout, the sender MUST retransmit all unacknowledged
+CRYPTO data by calling RetransmitAllUnackedHandshakeData(). On each
+consecutive expiration of the handshake timer without receiving an
 acknowledgement for a new packet, the sender SHOULD double the handshake timeout
-and set an alarm for this period.
+and set a timer for this period.
 
 When CRYPTO frames are outstanding, the TLP and RTO timers are not active unless
 the CRYPTO frames were sent at 1RTT encryption.
 
 When an acknowledgement is received for a handshake packet, the new RTT is
-computed and the alarm SHOULD be set for twice the newly computed smoothed RTT.
+computed and the timer SHOULD be set for twice the newly computed smoothed RTT.
 
 #### Retry
 
@@ -324,17 +324,17 @@ algorithm proposed for TCP {{?TLP=I-D.dukkipati-tcpm-tcp-loss-probe}}.
 
 A packet sent at the tail is particularly vulnerable to slow loss detection,
 since acks of subsequent packets are needed to trigger ack-based detection. To
-ameliorate this weakness of tail packets, the sender schedules an alarm when the
-last retransmittable packet before quiescence is transmitted. When this alarm
-fires, a Tail Loss Probe (TLP) packet is sent to evoke an acknowledgement from
-the receiver.
+ameliorate this weakness of tail packets, the sender schedules a timer when the
+last retransmittable packet before quiescence is transmitted. Upon timeout,
+a Tail Loss Probe (TLP) packet is sent to evoke an acknowledgement from the
+receiver.
 
-The alarm duration, or Probe Timeout (PTO), is set based on the following
+The timer duration, or Probe Timeout (PTO), is set based on the following
 conditions:
 
 * PTO SHOULD be scheduled for max(1.5*SRTT+MaxAckDelay, kMinTLPTimeout)
 
-* If RTO ({{rto}}) is earlier, schedule a TLP alarm in its place. That is,
+* If RTO ({{rto}}) is earlier, schedule a TLP in its place. That is,
   PTO SHOULD be scheduled for min(RTO, PTO).
 
 MaxAckDelay is the maximum ack delay supplied in an incoming ACK frame.
@@ -350,32 +350,32 @@ regardless of the number of packets outstanding.  TCP's TLP assumes if at least
 A PTO value of at least 1.5*SRTT ensures that the ACK is overdue.  The 1.5 is
 based on {{?TLP}}, but implementations MAY experiment with other constants.
 
-To reduce latency, it is RECOMMENDED that the sender set and allow the TLP alarm
-to fire twice before setting an RTO alarm. In other words, when the TLP alarm
-fires the first time, a TLP packet is sent, and it is RECOMMENDED that the TLP
-alarm be scheduled for a second time. When the TLP alarm fires the second time,
-a second TLP packet is sent, and an RTO alarm SHOULD be scheduled {{rto}}.
+To reduce latency, it is RECOMMENDED that the sender set and allow the TLP timer
+to fire twice before setting an RTO timer. In other words, when the TLP timer
+expires the first time, a TLP packet is sent, and it is RECOMMENDED that the TLP
+timer be scheduled for a second time. When the TLP timer expires the second
+time, a second TLP packet is sent, and an RTO timer SHOULD be scheduled {{rto}}.
 
 A TLP packet SHOULD carry new data when possible. If new data is unavailable or
 new data cannot be sent due to flow control, a TLP packet MAY retransmit
-unacknowledged data to potentially reduce recovery time. Since a TLP alarm is
+unacknowledged data to potentially reduce recovery time. Since a TLP timer is
 used to send a probe into the network prior to establishing any packet loss,
-prior unacknowledged packets SHOULD NOT be marked as lost when a TLP alarm
-fires.
+prior unacknowledged packets SHOULD NOT be marked as lost when a TLP timer
+expires.
 
 A sender may not know that a packet being sent is a tail packet.  Consequently,
-a sender may have to arm or adjust the TLP alarm on every sent retransmittable
+a sender may have to arm or adjust the TLP timer on every sent retransmittable
 packet.
 
 ### Retransmission Timeout {#rto}
 
-A Retransmission Timeout (RTO) alarm is the final backstop for loss
+A Retransmission Timeout (RTO) timer is the final backstop for loss
 detection. The algorithm used in QUIC is based on the RTO algorithm for TCP
 {{?RFC5681}} and is additionally resilient to spurious RTO events {{?RFC5682}}.
 
-When the last TLP packet is sent, an alarm is scheduled for the RTO period. When
-this alarm fires, the sender sends two packets, to evoke acknowledgements from
-the receiver, and restarts the RTO alarm.
+When the last TLP packet is sent, a timer is set for the RTO period. When
+this timer expires, the sender sends two packets, to evoke acknowledgements from
+the receiver, and restarts the RTO timer.
 
 Similar to TCP {{?RFC6298}}, the RTO period is set based on the following
 conditions:
@@ -383,20 +383,20 @@ conditions:
 * When the final TLP packet is sent, the RTO period is set to max(SRTT +
   4*RTTVAR + MaxAckDelay, kMinRTOTimeout)
 
-* When an RTO alarm fires, the RTO period is doubled.
+* When an RTO timer expires, the RTO period is doubled.
 
 The sender typically has incurred a high latency penalty by the time an RTO
-alarm fires, and this penalty increases exponentially in subsequent consecutive
-RTO events. Sending a single packet on an RTO event therefore makes the
-connection very sensitive to single packet loss. Sending two packets instead of
-one significantly increases resilience to packet drop in both directions, thus
-reducing the probability of consecutive RTO events.
+timer expires, and this penalty increases exponentially in subsequent
+consecutive RTO events. Sending a single packet on an RTO event therefore makes
+the connection very sensitive to single packet loss. Sending two packets instead
+of one significantly increases resilience to packet drop in both directions,
+thus reducing the probability of consecutive RTO events.
 
-QUIC's RTO algorithm differs from TCP in that the firing of an RTO alarm is not
+QUIC's RTO algorithm differs from TCP in that the firing of an RTO timer is not
 considered a strong enough signal of packet loss, so does not result in an
-immediate change to congestion window or recovery state. An RTO alarm fires only
-when there's a prolonged period of network silence, which could be caused by a
-change in the underlying network RTT.
+immediate change to congestion window or recovery state. An RTO timer expires
+only when there's a prolonged period of network silence, which could be caused
+by a change in the underlying network RTT.
 
 QUIC also diverges from TCP by including MaxAckDelay in the RTO period.  QUIC is
 able to explicitly model delay at the receiver via the ack delay field in the
@@ -408,12 +408,12 @@ When an acknowledgment is received for a packet sent on an RTO event, any
 unacknowledged packets with lower packet numbers than those acknowledged MUST be
 marked as lost.
 
-A packet sent when an RTO alarm fires MAY carry new data if available or
+A packet sent when an RTO timer expires MAY carry new data if available or
 unacknowledged data to potentially reduce recovery time. Since this packet is
 sent as a probe into the network prior to establishing any packet loss, prior
 unacknowledged packets SHOULD NOT be marked as lost.
 
-A packet sent on an RTO alarm MUST NOT be blocked by the sender's congestion
+A packet sent on an RTO timer MUST NOT be blocked by the sender's congestion
 controller. A sender MUST however count these bytes as additional bytes in
 flight, since this packet adds network load without establishing packet loss.
 
@@ -446,7 +446,7 @@ delayed acknowledgement should be generated after processing incoming packets.
 ### Crypto Handshake Data
 
 In order to quickly complete the handshake and avoid spurious retransmissions
-due to handshake alarm timeouts, handshake packets SHOULD use a very short ack
+due to handshake timeouts, handshake packets SHOULD use a very short ack
 delay, such as 1ms.  ACK frames MAY be sent immediately when the crypto stack
 indicates all data for that encryption level has been received.
 
@@ -488,7 +488,7 @@ common practice.  Some may need to be changed or negotiated in order to better
 suit a variety of environments.
 
 kMaxTLPs (RECOMMENDED 2):
-: Maximum number of tail loss probes before an RTO fires.
+: Maximum number of tail loss probes before an RTO expires.
 
 kReorderingThreshold (RECOMMENDED 3):
 : Maximum reordering in packet number space before FACK style loss detection
@@ -503,10 +503,10 @@ kUsingTimeLossDetection (RECOMMENDED false):
   loss detection.
 
 kMinTLPTimeout (RECOMMENDED 10ms):
-: Minimum time in the future a tail loss probe alarm may be set for.
+: Minimum time in the future a tail loss probe timer may be set for.
 
 kMinRTOTimeout (RECOMMENDED 200ms):
-:  Minimum time in the future an RTO alarm may be set for.
+:  Minimum time in the future an RTO timer may be set for.
 
 kDelayedAckTimeout (RECOMMENDED 25ms):
 : The length of the peer's delayed ack timer.
@@ -519,8 +519,8 @@ kInitialRtt (RECOMMENDED 100ms):
 Variables required to implement the congestion control mechanisms
 are described in this section.
 
-loss_detection_alarm:
-: Multi-modal alarm used for loss detection.
+loss_detection_timer:
+: Multi-modal timer used for loss detection.
 
 handshake_count:
 : The number of times all unacknowledged handshake data has been
@@ -597,7 +597,7 @@ At the beginning of the connection, initialize the loss detection variables as
 follows:
 
 ~~~
-   loss_detection_alarm.reset()
+   loss_detection_timer.reset()
    handshake_count = 0
    tlp_count = 0
    rto_count = 0
@@ -655,7 +655,7 @@ Pseudocode for OnPacketSent follows:
      time_of_last_sent_retransmittable_packet = now
      OnPacketSentCC(sent_bytes)
      sent_packets[packet_number].bytes = sent_bytes
-     SetLossDetectionAlarm()
+     SetLossDetectionTimer()
 ~~~
 
 ### On Receiving an Acknowledgment
@@ -676,7 +676,7 @@ Pseudocode for OnAckReceived and UpdateRtt follow:
       OnPacketAcked(acked_packet.packet_number)
 
     DetectLostPackets(ack.largest_acked_packet)
-    SetLossDetectionAlarm()
+    SetLossDetectionTimer()
 
     // Process ECN information if present.
     if (ACK frame contains ECN information):
@@ -733,16 +733,16 @@ Pseudocode for OnPacketAcked follows:
      sent_packets.remove(acked_packet.packet_number)
 ~~~
 
-### Setting the Loss Detection Alarm
+### Setting the Loss Detection Timer
 
-QUIC loss detection uses a single alarm for all timer-based loss detection.  The
-duration of the alarm is based on the alarm's mode, which is set in the packet
-and timer events further below.  The function SetLossDetectionAlarm defined
-below shows how the single timer is set based on the alarm mode.
+QUIC loss detection uses a single timer for all timer-based loss detection.  The
+duration of the timer is based on the timer's mode, which is set in the packet
+and timer events further below.  The function SetLossDetectionTimer defined
+below shows how the single timer is set.
 
-#### Handshake Alarm
+#### Handshake Timer
 
-When a connection has unacknowledged handshake data, the handshake alarm is
+When a connection has unacknowledged handshake data, the handshake timer is
 set and when it expires, all unacknowledgedd handshake data is retransmitted.
 
 When stateless rejects are in use, the connection is considered immediately
@@ -752,18 +752,18 @@ Version negotiation packets are always stateless, and MUST be sent once per
 handshake packet that uses an unsupported QUIC version, and MAY be sent in
 response to 0-RTT packets.
 
-#### Tail Loss Probe and Retransmission Alarm
+#### Tail Loss Probe and Retransmission Timer
 
 Tail loss probes {{?TLP}} and retransmission timeouts {{?RFC6298}}
-are an alarm based mechanism to recover from cases when there are
+are a timer based mechanism to recover from cases when there are
 outstanding retransmittable packets, but an acknowledgement has
 not been received in a timely manner.
 
 The TLP and RTO timers are armed when there is not unacknowledged handshake
-data.  The TLP alarm is set until the max number of TLP packets have been
+data.  The TLP timer is set until the max number of TLP packets have been
 sent, and then the RTO timer is set.
 
-#### Early Retransmit Alarm
+#### Early Retransmit Timer
 
 Early retransmit {{?RFC5827}} is implemented with a 1/4 RTT timer. It is
 part of QUIC's time based loss detection, but is always enabled, even when
@@ -771,60 +771,59 @@ only packet reordering loss detection is enabled.
 
 #### Pseudocode
 
-Pseudocode for SetLossDetectionAlarm follows:
+Pseudocode for SetLossDetectionTimer follows:
 
 ~~~
- SetLossDetectionAlarm():
-    // Don't arm alarm if there are no retransmittable packets
+ SetLossDetectionTimer():
+    // Don't arm timer if there are no retransmittable packets
     // in flight.
     if (bytes_in_flight == 0):
-      loss_detection_alarm.cancel()
+      loss_detection_timer.cancel()
       return
 
     if (handshake packets are outstanding):
-      // Handshake retransmission alarm.
+      // Handshake retransmission timer.
       if (smoothed_rtt == 0):
-        alarm_duration = 2 * kInitialRtt
+        timeout = 2 * kInitialRtt
       else:
-        alarm_duration = 2 * smoothed_rtt
-      alarm_duration = max(alarm_duration + max_ack_delay,
-                           kMinTLPTimeout)
-      alarm_duration = alarm_duration * (2 ^ handshake_count)
-      loss_detection_alarm.set(
-        time_of_last_sent_handshake_packet + alarm_duration)
+        timeout = 2 * smoothed_rtt
+      timeout = max(timeout + max_ack_delay, kMinTLPTimeout)
+      timeout = timeout * (2 ^ handshake_count)
+      loss_detection_timer.set(
+        time_of_last_sent_handshake_packet + timeout)
       return;
     else if (loss_time != 0):
       // Early retransmit timer or time loss detection.
-      alarm_duration = loss_time -
+      timeout = loss_time -
         time_of_last_sent_retransmittable_packet
     else:
-      // RTO or TLP alarm
+      // RTO or TLP timer
       // Calculate RTO duration
-      alarm_duration =
+      timeout =
         smoothed_rtt + 4 * rttvar + max_ack_delay
-      alarm_duration = max(alarm_duration, kMinRTOTimeout)
-      alarm_duration = alarm_duration * (2 ^ rto_count)
+      timeout = max(timeout, kMinRTOTimeout)
+      timeout = timeout * (2 ^ rto_count)
       if (tlp_count < kMaxTLPs):
         // Tail Loss Probe
-        tlp_alarm_duration = max(1.5 * smoothed_rtt
+        tlp_timeout = max(1.5 * smoothed_rtt
                            + max_ack_delay, kMinTLPTimeout)
-        alarm_duration = min(tlp_alarm_duration, alarm_duration)
+        timeout = min(tlp_timeout, timeout)
 
-    loss_detection_alarm.set(
-      time_of_last_sent_retransmittable_packet + alarm_duration)
+    loss_detection_timer.set(
+      time_of_last_sent_retransmittable_packet + timeout)
 ~~~
 
-### On Alarm Firing
+### On Timeout
 
-QUIC uses one loss recovery alarm, which when set, can be in one of several
-modes.  When the alarm fires, the mode determines the action to be performed.
+QUIC uses one loss recovery timer, which when set, can be in one of several
+modes.  When the timer expires, the mode determines the action to be performed.
 
-Pseudocode for OnLossDetectionAlarm follows:
+Pseudocode for OnLossDetectionTimeout follows:
 
 ~~~
-   OnLossDetectionAlarm():
+   OnLossDetectionTimeout():
      if (handshake packets are outstanding):
-       // Handshake retransmission alarm.
+       // Handshake timeout.
        RetransmitAllUnackedHandshakeData()
        handshake_count++
      else if (loss_time != 0):
@@ -841,7 +840,7 @@ Pseudocode for OnLossDetectionAlarm follows:
        SendTwoPackets()
        rto_count++
 
-     SetLossDetectionAlarm()
+     SetLossDetectionTimer()
 ~~~
 
 ### Detecting Lost Packets
@@ -849,7 +848,7 @@ Pseudocode for OnLossDetectionAlarm follows:
 Packets in QUIC are only considered lost once a larger packet number in
 the same packet number space is acknowledged.  DetectLostPackets is called
 every time an ack is received and operates on the sent_packets for that
-packet number space.  If the loss detection alarm fires and the loss_time
+packet number space.  If the loss detection timer expires and the loss_time
 is set, the previous largest acked packet is supplied.
 
 #### Pseudocode
@@ -868,7 +867,7 @@ DetectLostPackets(largest_acked):
       (1 + time_reordering_fraction) *
           max(latest_rtt, smoothed_rtt)
   else if (largest_acked.packet_number == largest_sent_packet):
-    // Early retransmit alarm.
+    // Early retransmit timer.
     delay_until_lost = 5/4 * max(latest_rtt, smoothed_rtt)
   foreach (unacked < largest_acked.packet_number):
     time_since_sent = now() - unacked.time_sent
@@ -909,8 +908,8 @@ counting {{?RFC3465}}.
 
 QUIC hosts MUST NOT send packets if they would increase bytes_in_flight
 (defined in {{vars-of-interest}}) beyond the available congestion window, unless
-the packet is a probe packet sent after the TLP or RTO alarm fires, as described
-in {{tlp}} and {{rto}}.
+the packet is a probe packet sent after the TLP or RTO timer expires, as
+described in {{tlp}} and {{rto}}.
 
 ## Explicit Congestion Notification {#congestion-ecn}
 
@@ -961,7 +960,7 @@ Acknowledgement or loss of tail loss probes are treated like any other packet.
 
 ## Retransmission Timeout
 
-When retransmissions are sent due to a retransmission timeout alarm, no change
+When retransmissions are sent due to a retransmission timeout timer, no change
 is made to the congestion window until the next acknowledgement arrives.  The
 retransmission timeout is considered spurious when this acknowledgement
 acknowledges packets sent prior to the first retransmission timeout.  The
