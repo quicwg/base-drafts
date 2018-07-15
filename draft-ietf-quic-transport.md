@@ -287,14 +287,14 @@ keys are established.
 |                          Payload (*)                        ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~~~
-{: #fig-long-header title="Long Header Format"}
+{: #fig-long-header title="Long Header Packet Format"}
 
 Long headers are used for packets that are sent prior to the completion of
 version negotiation and establishment of 1-RTT keys. Once both conditions are
 met, a sender switches to sending packets using the short header
 ({{short-header}}).  The long form allows for special packets - such as the
 Version Negotiation packet - to be represented in this uniform fixed-length
-packet format. A long header contains the following fields:
+packet format. Packets that use the long header contain the following fields:
 
 Header Form:
 
@@ -399,10 +399,10 @@ Senders can sometimes coalesce multiple packets into one UDP datagram.  See
 |                     Protected Payload (*)                   ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~~~
-{: #fig-short-header title="Short Header Format"}
+{: #fig-short-header title="Short Header Packet Format"}
 
 The short header can be used after the version and 1-RTT keys are negotiated.
-This header form has the following fields:
+Packets that use the short header contain the following fields:
 
 Header Form:
 
