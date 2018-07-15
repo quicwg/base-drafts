@@ -229,8 +229,9 @@ detecting loss. Implementers MAY use algorithms developed for TCP, such as
 TCP-NCR {{?RFC4653}}, to improve QUIC's reordering resilience.
 
 QUIC implementations can use time-based loss detection to handle reordering
-based on time elapsed since the packet was sent, instead of a packet reordering
-threshold. The RECOMMENDED time threshold, expressed as a fraction of the
+based on time elapsed since the packet was sent.  This may be used either as
+a replacement for a packet reordering threshold or in addition to it.
+The RECOMMENDED time threshold, expressed as a fraction of the
 round-trip time (kTimeReorderingFraction), is 1/8.
 
 ### Early Retransmit
