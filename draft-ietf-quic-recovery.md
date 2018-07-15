@@ -142,9 +142,8 @@ TCP conflates transmission sequence number at the sender with delivery sequence
 number at the receiver, which results in retransmissions of the same data
 carrying the same sequence number, and consequently to problems caused by
 "retransmission ambiguity".  QUIC separates the two: QUIC uses a packet number
-for transmissions, and any data that is to be delivered to the receiving
-application(s) is sent in one or more streams, with delivery order determined by
-stream offsets encoded within STREAM frames.
+for transmissions, and any application data is sent in one or more streams,
+with delivery order determined by stream offsets encoded within STREAM frames.
 
 QUIC's packet number is strictly increasing, and directly encodes transmission
 order.  A higher QUIC packet number signifies that the packet was sent later,
@@ -218,23 +217,24 @@ implemented in QUIC.
 
 An unacknowledged packet is marked as lost when an acknowledgment is received
 for a packet that was sent a threshold number of packets (kReorderingThreshold)
-after the unacknowledged packet. Receipt of the ack indicates that a later
-packet was received, while kReorderingThreshold provides some tolerance for
-reordering of packets in the network.
+and/or a threshold amount of time after the unacknowledged packet. Receipt of
+the acknowledgement indicates that a later packet was received, while the
+reordering threshold provides some tolerance for reordering of packets in the
+network.
 
-The RECOMMENDED initial value for kReorderingThreshold is 3.
+The RECOMMENDED initial value for kReorderingThreshold is 3, based on
+TCP loss recovery {{?RFC5681}} {{?RFC6675}}. Some networks may exhibit higher
+degrees of reordering, causing a sender to detect spurious losses. Spuriously
+declaring packets lost leads to unnecessary retransmissions and may result in
+degraded performance due to the actions of the congestion controller upon
+detecting loss. Implementers MAY use algorithms developed for TCP, such as
+TCP-NCR {{?RFC4653}}, to improve QUIC's reordering resilience.
 
-We derive this recommendation from TCP loss recovery {{?RFC5681}}
-{{?RFC6675}}. It is possible for networks to exhibit higher degrees of
-reordering, causing a sender to detect spurious losses. Detecting spurious
-losses leads to unnecessary retransmissions and may result in degraded
-performance due to the actions of the congestion controller upon detecting
-loss. Implementers MAY use algorithms developed for TCP, such as TCP-NCR
-{{?RFC4653}}, to improve QUIC's reordering resilience, though care should be
-taken to map TCP specifics to QUIC correctly. Similarly, using time-based loss
-detection to deal with reordering, such as in PR-TCP, should be more readily
-usable in QUIC. Making QUIC deal with such networks is important open research,
-and implementers are encouraged to explore this space.
+QUIC implementations can use time-based loss detection to handle reordering
+based on time elapsed since the packet was sent.  This may be used either as
+a replacement for a packet reordering threshold or in addition to it.
+The RECOMMENDED time threshold, expressed as a fraction of the
+round-trip time (kTimeReorderingFraction), is 1/8.
 
 ### Early Retransmit
 
@@ -275,8 +275,9 @@ timer for TCP as well, and this document incorporates this advancement.
 
 ## Timer-based Detection
 
-Timer-based loss detection implements a handshake retransmission timer that is
-optimized for QUIC as well as the spirit of TCP's Tail Loss Probe and
+Timer-based loss detection recovers from losses that cannot be handled by
+ack-based loss detection.  It uses a single timer which switches between
+a handshake retransmission timer, a Tail Loss Probe timer and
 Retransmission Timeout mechanisms.
 
 ### Crypto Handshake Timeout
@@ -633,8 +634,10 @@ are as follows:
 * in_flight: A boolean that indicates whether the packet counts towards
   bytes in flight.
 
-* is_handshake_packet: A boolean that indicates whether a packet contains
-  handshake data.
+* is_handshake_packet: A boolean that indicates whether the packet contains
+  cryptographic handshake messages critical to the completion of the QUIC
+  handshake. In this version of QUIC, this includes any packet with the long
+  header that includes a CRYPTO frame.
 
 * sent_bytes: The number of bytes sent in the packet, not including UDP or IP
   overhead, but including QUIC framing overhead.
@@ -660,7 +663,7 @@ Pseudocode for OnPacketSent follows:
 
 ### On Receiving an Acknowledgment
 
-When an ACK frame is received, it may acknowledge 0 or more packets.
+When an ACK frame is received, it may newly acknowledge any number of packets.
 
 Pseudocode for OnAckReceived and UpdateRtt follow:
 
