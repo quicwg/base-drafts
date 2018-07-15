@@ -935,7 +935,7 @@ bytes acknowledged when each ack is processed.
 
 Slow start exits to congestion avoidance.  Congestion avoidance in NewReno
 uses an additive increase multiplicative decrease (AIMD) approach that
-increases the congestion window by one maximum packet size of bytes per
+increases the congestion window by one maximum packet size per
 congestion window acknowledged.  When a loss is detected, NewReno halves
 the congestion window and sets the slow start threshold to the new
 congestion window.
