@@ -353,8 +353,8 @@ based on {{?TLP}}, but implementations MAY experiment with other constants.
 To reduce latency, it is RECOMMENDED that the sender set and allow the TLP timer
 to fire twice before setting an RTO timer. In other words, when the TLP timer
 expires the first time, a TLP packet is sent, and it is RECOMMENDED that the TLP
-timer be scheduled for a second time. When the TLP timer expires the second time,
-a second TLP packet is sent, and an RTO timer SHOULD be scheduled {{rto}}.
+timer be scheduled for a second time. When the TLP timer expires the second
+time, a second TLP packet is sent, and an RTO timer SHOULD be scheduled {{rto}}.
 
 A TLP packet SHOULD carry new data when possible. If new data is unavailable or
 new data cannot be sent due to flow control, a TLP packet MAY retransmit
@@ -386,11 +386,11 @@ conditions:
 * When an RTO timer expires, the RTO period is doubled.
 
 The sender typically has incurred a high latency penalty by the time an RTO
-timer expires, and this penalty increases exponentially in subsequent consecutive
-RTO events. Sending a single packet on an RTO event therefore makes the
-connection very sensitive to single packet loss. Sending two packets instead of
-one significantly increases resilience to packet drop in both directions, thus
-reducing the probability of consecutive RTO events.
+timer expires, and this penalty increases exponentially in subsequent
+consecutive RTO events. Sending a single packet on an RTO event therefore makes
+the connection very sensitive to single packet loss. Sending two packets instead
+of one significantly increases resilience to packet drop in both directions,
+thus reducing the probability of consecutive RTO events.
 
 QUIC's RTO algorithm differs from TCP in that the firing of an RTO timer is not
 considered a strong enough signal of packet loss, so does not result in an
