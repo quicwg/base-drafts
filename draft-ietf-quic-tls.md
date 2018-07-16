@@ -761,7 +761,7 @@ Before a TLS ciphersuite can be used with QUIC, a packet protection algorithm
 MUST be specifed for the AEAD used with that ciphersuite.  This document defines
 algorithms for AEAD_AES_128_GCM, AEAD_AES_128_CCM, AEAD_AES_256_GCM,
 AEAD_AES_256_CCM (all AES AEADs are defined in {{!AEAD=RFC5116}}), and
-AEAD_CHACHA20_POLY1305 ({{!CHACHA=RFC7539}}).
+AEAD_CHACHA20_POLY1305 ({{!CHACHA=RFC8439}}).
 
 
 ### AES-Based Packet Number Protection
