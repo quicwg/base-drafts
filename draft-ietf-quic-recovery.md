@@ -351,7 +351,7 @@ conditions:
 * If RTO ({{rto}}) is earlier, schedule a TLP in its place. That is,
   PTO SHOULD be scheduled for min(RTO, PTO).
 
-QUIC includes MaxAckDelay in all probe timeouts, because it assume the ack
+QUIC includes MaxAckDelay in all probe timeouts, because it assumes the ack
 delay may come into play, regardless of the number of packets outstanding.
 TCP's TLP assumes if at least 2 packets are outstanding, acks will not be
 delayed.
