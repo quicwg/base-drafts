@@ -213,9 +213,11 @@ field in the ACK frame.  Therefore, QUIC diverges from TCP by calculating a
 MaxAckDelay dynamically, instead of assuming a constant delayed ack timeout
 for all connections.
 
-MaxAckDelay is the maximum ack delay supplied in an incoming ACK frame.
+MaxAckDelay is the maximum ack delay supplied in an all incoming ACK frames.
 MaxAckDelay excludes ack delays that aren't included in an RTT sample because
-they're too large and excludes those which reference an ack-only packet.
+they're too large or the largest acked has already been acknowledged.
+MaxAckDelay also excludes ack delays where the largest ack references an
+ACK-only packet.
 
 ## Ack-based Detection
 
