@@ -206,6 +206,17 @@ Min RTT is the minimum RTT measured over the connection, prior to adjusting by
 ack delay.  Ignoring ack delay for min RTT prevents intentional or unintentional
 underestimation of min RTT, which in turn prevents underestimating smoothed RTT.
 
+### Maximum Ack Delay
+
+QUIC is able to explicitly model delay at the receiver via the ack delay
+field in the ACK frame.  Therefore, QUIC diverges from TCP by calculating a
+MaxAckDelay dynamically, instead of assuming a constant delayed ack timeout
+for all connections.
+
+MaxAckDelay is the maximum ack delay supplied in an incoming ACK frame.
+MaxAckDelay excludes ack delays that aren't included in an RTT sample because
+they're too large and excludes those which reference an ack-only packet.
+
 ## Ack-based Detection
 
 Ack-based loss detection implements the spirit of TCP's Fast Retransmit
@@ -338,15 +349,10 @@ conditions:
 * If RTO ({{rto}}) is earlier, schedule a TLP in its place. That is,
   PTO SHOULD be scheduled for min(RTO, PTO).
 
-MaxAckDelay is the maximum ack delay supplied in an incoming ACK frame.
-MaxAckDelay excludes ack delays that aren't included in an RTT sample because
-they're too large and excludes those which reference an ack-only packet.
-
-QUIC diverges from TCP by calculating MaxAckDelay dynamically, instead of
-assuming a constant delayed ack timeout for all connections.  QUIC includes this
-in all probe timeouts, because it assume the ack delay may come into play,
-regardless of the number of packets outstanding.  TCP's TLP assumes if at least
-2 packets are outstanding, acks will not be delayed.
+QUIC includes MaxAckDelay in all probe timeouts, because it assume the ack
+delay may come into play, regardless of the number of packets outstanding.
+TCP's TLP assumes if at least 2 packets are outstanding, acks will not be
+delayed.
 
 A PTO value of at least 1.5*SRTT ensures that the ACK is overdue.  The 1.5 is
 based on {{?TLP}}, but implementations MAY experiment with other constants.
@@ -399,11 +405,9 @@ immediate change to congestion window or recovery state. An RTO timer expires
 only when there's a prolonged period of network silence, which could be caused
 by a change in the underlying network RTT.
 
-QUIC also diverges from TCP by including MaxAckDelay in the RTO period.  QUIC is
-able to explicitly model delay at the receiver via the ack delay field in the
-ACK frame.  Since QUIC corrects for this delay in its SRTT and RTTVAR
-computations, it is necessary to add this delay explicitly in the TLP and RTO
-computation.
+QUIC also diverges from TCP by including MaxAckDelay in the RTO period. Since
+QUIC corrects for this delay in its SRTT and RTTVAR computations, it is
+necessary to add this delay explicitly in the TLP and RTO computation.
 
 When an acknowledgment is received for a packet sent on an RTO event, any
 unacknowledged packets with lower packet numbers than those acknowledged MUST be
