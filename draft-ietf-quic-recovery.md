@@ -1154,6 +1154,23 @@ retransmission timeout has been verified.
      congestion_window = kMinimumWindow
 ~~~
 
+# Security Considerations
+
+## Congestion Signals
+
+Congestion control fundamentally involves the consumption of signals -- both
+loss and ECN codepoints -- from unauthenticated entities.  On-path attackers can
+spoof or alter these signals.  An attacker can cause endpoints to reduce their
+sending rate by dropping packets, or alter send rate by changing ECN codepoints.
+
+## Traffic Analysis
+
+Packets that carry only ACK frames can be heuristically identified by observing
+packet size.  Acknowledgement patterns may expose information about link
+characteristics or application behavior.  Endpoints can use PADDING frames or
+bundle acknowledgments with other frames to reduce leaked information.
+
+
 # IANA Considerations
 
 This document has no IANA actions.  Yet.
