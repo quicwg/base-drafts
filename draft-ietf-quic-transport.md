@@ -1755,7 +1755,8 @@ counters in subsequent (see {{processing-and-ack}}) ACK_ECN frames (see
 {{frame-ack-ecn}}).
 
 A packet detected by a receiver as a duplicate does not affect the receiver's
-local ECN codepoint counts to mitigate security concerns ({{security-ecn}}).
+local ECN codepoint counts; see ({{security-ecn}}) for relevant security
+concerns.
 
 If an endpoint receives a packet without an ECT or CE codepoint, it responds per
 {{processing-and-ack}} with an ACK frame.
@@ -1771,20 +1772,18 @@ the expectation that either the network or the peer no longer supports ECN.
 To protect the connection from arbitrary corruption of ECN codepoints by the
 network, an endpoint verifies the following when an ACK_ECN frame is received:
 
+* The increase in ECT(0) and ECT(1) counters MUST be at least the number of
+  packets newly acknowledged that were sent with the corresponding codepoint.
+
 * The total increase in ECT(0), ECT(1), and CE counters reported in the ACK_ECN
-  frame MUST be equal to the total number of packets newly acknowledged in this
+  frame MUST be at least the total number of packets newly acknowledged in this
   ACK_ECN frame.
 
-* The increase in ECT(0) and ECT(1) counters MUST be no greater than the number
-  of packets newly acknowledged that were sent with the corresponding codepoint.
-
-* If the increase in the ECT(0), ECT(1) and CE counters are greater than
-  the number of newly acknowledged packets, and the received ACK's
-  smallest acknowledged is larger than the previous largest acknowledged,
-  then it's likely acknowledgements were missed, and the above comparison
-  MUST NOT be performed. Instead a new comparison point is stored by the
-  sender so that only changes after this point will be used in the future
-  comparisons.
+An endpoint could miss acknowledgements for a packet when ACK frames are lost.
+It is therefore possible for the total increase in ECT(0), ECT(1), and CE
+counters to be greater than the number of packets acknowledged in an ACK frame.
+When this happens, the local reference counts MUST be increased to match the
+counters in the ACK frame.
 
 Upon successful verification, an endpoint continues to set ECT codepoints in
 subsequent packets with the expectation that the path is ECN-capable.
@@ -1795,9 +1794,10 @@ not support ECN.
 
 If an endpoint sets ECT codepoints on outgoing packets and encounters a
 retransmission timeout due to the absence of acknowledgments from the peer (see
-{{QUIC-RECOVERY}}), the endpoint MAY cease setting ECT codepoints in subsequent
-packets. Doing so allows the connection to traverse network elements that drop
-packets carrying ECT or CE codepoints in the IP header.
+{{QUIC-RECOVERY}}), or if an endpoint has reason to believe that a network
+element might be corrupting ECN codepoints, the endpoint MAY cease setting ECT
+codepoints in subsequent packets. Doing so allows the connection to traverse
+network elements that drop or corrupt ECN codepoints in the IP header.
 
 
 ## Proof of Source Address Ownership {#address-validation}
