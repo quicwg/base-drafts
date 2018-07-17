@@ -1772,12 +1772,12 @@ the expectation that either the network or the peer no longer supports ECN.
 To protect the connection from arbitrary corruption of ECN codepoints by the
 network, an endpoint verifies the following when an ACK_ECN frame is received:
 
-* The increase in ECT(0) and ECT(1) counters MUST be no lesser than the number
-  of packets newly acknowledged that were sent with the corresponding codepoint.
+* The increase in ECT(0) and ECT(1) counters MUST be at least the number of
+  packets newly acknowledged that were sent with the corresponding codepoint.
 
 * The total increase in ECT(0), ECT(1), and CE counters reported in the ACK_ECN
-  frame MUST be no lesser than the total number of packets newly acknowledged in
-  this ACK_ECN frame.
+  frame MUST be at least the total number of packets newly acknowledged in this
+  ACK_ECN frame.
 
 An endpoint could miss acknowledgements for a packet when ACK frames are lost.
 It is therefore possible for the total increase in ECT(0), ECT(1), and CE
