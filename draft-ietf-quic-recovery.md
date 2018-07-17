@@ -1150,19 +1150,19 @@ retransmission timeout has been verified.
 
 # Security Considerations
 
-## Local Denial of Service
+## Congestion Signals
 
-QUIC requires congestion control, and recommends Reno. Not using a
-congestion control algorithm or using an overly aggressive
-algorithm may cause flows sharing the same link to experience
-excess delay, packet loss, and timeouts.
+Congestion control fundamentally involves the consumption of signals -- both
+loss and ECN codepoints -- from unauthenticated entities.  On-path attackers can
+spoof or alter these signals.  An attacker can cause endpoints to reduce their
+sending rate by dropping packets, or alter send rate by changing ECN codepoints.
 
 ## Traffic Analysis
 
-ACK only packets are small and can be heuristically identified by
-packet size unless padded or bundled with other frames.
-Acknowledgement patterns and sizes may expose information
-about the link characteristics and/or application behavior.
+Packets that carry only ACK frames can be heuristically identified by observing
+packet size.  Acknowledgement patterns may expose information about link
+characteristics or application behavior.  Endpoints can use PADDING frames or
+bundle acknowledgments with other frames to reduce leaked information.
 
 
 # IANA Considerations
