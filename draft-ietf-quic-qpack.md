@@ -294,8 +294,8 @@ track the decoder's state.  These events are:
 - Receipt of new dynamic table entries
 
 Regardless of whether a header block contained blocking references, the
-knowledge that it was processed successfully permits the encoder to avoid
-evicting entries while references remain outstanding; see {{blocked-eviction}}.
+knowledge that it was processed successfully permits the encoder to evict
+entries to which no unacknowledged references remain; see {{blocked-eviction}}.
 When a stream is reset or abandoned, the indication that these header blocks
 will never be processed serves a similar function; see {{stream-cancellation}}.
 
