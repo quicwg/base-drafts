@@ -1147,7 +1147,7 @@ are detected lost.
 
 QUIC decreases the congestion window to the minimum value once the
 retransmission timeout has been verified and removes any packets
-sent before the newly acknowledged RTO packet. 
+sent before the newly acknowledged RTO packet.
 
 ~~~
    OnRetransmissionTimeoutVerified(packet_number)
