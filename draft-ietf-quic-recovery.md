@@ -728,8 +728,9 @@ Pseudocode for OnPacketAcked follows:
      // If a packet sent prior to RTO was acked, then the RTO
      // was spurious.  Otherwise, inform congestion control.
      if (rto_count > 0 &&
-         acked_packet.packet_number > largest_sent_before_rto)
-       OnRetransmissionTimeoutVerified()
+         acked_packet.packet_number > largest_sent_before_rto):
+       OnRetransmissionTimeoutVerified(
+           acket_packet.packet_number)
      handshake_count = 0
      tlp_count = 0
      rto_count = 0
@@ -1024,7 +1025,6 @@ Variables required to implement the congestion control mechanisms
 are described in this section.
 
 ecn_ce_counter:
-
 : The highest value reported for the ECN-CE counter by the peer in an ACK_ECN
   frame. This variable is used to detect increases in the reported ECN-CE
   counter.
@@ -1098,7 +1098,7 @@ acked_packet from sent_packets.
 
 ### On New Congestion Event
 
-Invoked from ProcessECN and OnPacketLost when a new congestion event is
+Invoked from ProcessECN and OnPacketsLost when a new congestion event is
 detected. Starts a new recovery period and reduces the congestion window.
 
 ~~~
@@ -1147,11 +1147,17 @@ are detected lost.
 ### On Retransmission Timeout Verified
 
 QUIC decreases the congestion window to the minimum value once the
-retransmission timeout has been verified.
+retransmission timeout has been verified and removes any packets
+sent before the newly acknowledged RTO packet.
 
 ~~~
-   OnRetransmissionTimeoutVerified()
+   OnRetransmissionTimeoutVerified(packet_number)
      congestion_window = kMinimumWindow
+     // Declare all packets prior to packet_number lost.
+     for (sent_packet: sent_packets):
+       if (sent_packet.packet_number < packet_number):
+         bytes_in_flight -= lost_packet.bytes
+         sent_packets.remove(sent_packet.packet_number)
 ~~~
 
 # Security Considerations
