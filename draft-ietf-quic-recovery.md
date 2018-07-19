@@ -262,10 +262,10 @@ Using max(SRTT, latest_RTT) protects from the two following cases:
 * the latest RTT sample is higher than the SRTT, perhaps due to a sustained
   increase in the actual RTT, but the smoothed SRTT has not yet caught up.
 
-The 1.125 multiplier increases reordering resilience. Implementers MAY experiment
-with using other multipliers, bearing in mind that a lower multiplier reduces
-reordering resilience and increases spurious retransmissions, and a higher
-multipler increases loss recovery delay.
+The 1.125 multiplier increases reordering resilience. Implementers MAY
+experiment with using other multipliers, bearing in mind that a lower multiplier
+reduces reordering resilience and increases spurious retransmissions, and a
+higher multipler increases loss recovery delay.
 
 This mechanism is based on Early Retransmit for TCP {{?RFC5827}}. However,
 {{?RFC5827}} does not include the timer described above. Early Retransmit is
