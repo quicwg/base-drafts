@@ -729,7 +729,7 @@ Pseudocode for OnPacketAcked follows:
      // was spurious.  Otherwise, inform congestion control.
      if (rto_count > 0 &&
          acked_packet.packet_number > largest_sent_before_rto)
-       OnRetransmissionTimeoutVerified()
+       OnRetransmissionTimeoutVerified(acket_packet.packet_number)
      handshake_count = 0
      tlp_count = 0
      rto_count = 0
