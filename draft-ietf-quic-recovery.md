@@ -91,10 +91,8 @@ when, and only when, they appear in all capitals, as shown here.
 
 All transmissions in QUIC are sent with a packet-level header, which indicates
 the encryption level and includes a packet sequence number (referred to below as
-a packet number).  The encryption level indicates the packet number space, as
-described in {{QUIC-TRANSPORT}}.  Packet numbers never repeat within a packet
-number space for the lifetime of a connection.  Packet numbers monotonically
-increase within a space, preventing ambiguity.
+a packet number).  Packet numbers never repeat for the lifetime of a connection.
+Packet numbers monotonically increase within a space, preventing ambiguity.
 
 This design obviates the need for disambiguating between transmissions and
 retransmissions and eliminates significant complexity from QUIC's interpretation
@@ -126,15 +124,6 @@ Readers familiar with TCP's loss detection and congestion control will find
 algorithms here that parallel well-known TCP ones. Protocol differences between
 QUIC and TCP however contribute to algorithmic differences. We briefly describe
 these protocol differences below.
-
-### Separate Packet Number Spaces
-
-QUIC uses separate packet number spaces for each encryption level, except 0-RTT
-and all generations of 1-RTT keys use the same packet number space.  Separate
-packet number spaces ensures acknowledgement of packets sent with one level of
-encryption will not cause spurious retransmission of packets sent with a
-different encryption level.  Congestion control and RTT measurement are unified
-across packet number spaces.
 
 ### Monotonically Increasing Packet Numbers
 
@@ -588,9 +577,7 @@ sent_packets:
   was sent, a boolean indicating whether the packet is ack only, a boolean
   indicating whether it counts towards bytes in flight, and a bytes
   field indicating the packet's size.  sent_packets is ordered by packet number,
-  and packets remain in sent_packets until acknowledged or lost.  A sent_packets
-  data structure is maintained per packet number space, and ACK processing only
-  applies to a single space.
+  and packets remain in sent_packets until acknowledged or lost.
 
 ### Initialization
 
@@ -849,11 +836,10 @@ Pseudocode for OnLossDetectionTimeout follows:
 
 ### Detecting Lost Packets
 
-Packets in QUIC are only considered lost once a larger packet number in
-the same packet number space is acknowledged.  DetectLostPackets is called
-every time an ack is received and operates on the sent_packets for that
-packet number space.  If the loss detection timer expires and the loss_time
-is set, the previous largest acked packet is supplied.
+Packets in QUIC are only considered lost once a larger packet number is
+acknowledged.  DetectLostPackets is called every time an ack is received.  If
+the loss detection timer expires and the loss_time is set, the previous largest
+acked packet is supplied.
 
 #### Pseudocode
 
@@ -1188,6 +1174,10 @@ This document has no IANA actions.  Yet.
 
 > **RFC Editor's Note:**  Please remove this section prior to
 > publication of a final version of this document.
+
+## Since draft-ietf-quic-recovery-13
+
+- Move back to a single packet number space (#1579)
 
 ## Since draft-ietf-quic-recovery-12
 

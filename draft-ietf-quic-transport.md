@@ -659,8 +659,8 @@ Note:
 #### Starting Packet Numbers
 
 The first Initial packet contains a packet number of 0. Each packet sent after
-the Initial packet is associated with a packet number space and its packet
-number increases monotonically in that space (see {{packet-numbers}}).
+the Initial packet has a packet number that increases monotonically (see
+{{packet-numbers}}).
 
 
 #### Minimum Packet Size
@@ -747,10 +747,6 @@ ID that is chosen by the recipient of the packet; the Source Connection ID
 includes the connection ID that the sender of the packet wishes to use (see
 {{connection-id-encoding}}).
 
-The first Handshake packet sent by a server contains a packet number of 0.
-Handshake packets are their own packet number space.  Packet numbers are
-incremented normally for other Handshake packets.
-
 Servers MUST NOT send more than three datagrams including Initial and Handshake
 packets without receiving a packet from a verified source address.  Source
 addresses can be verified through an address validation token
@@ -768,8 +764,7 @@ All QUIC packets use packet protection.  Packets that are protected with the
 static handshake keys or the 0-RTT keys are sent with long headers; all packets
 protected with 1-RTT keys are sent with short headers.  The different packet
 types explicitly indicate the encryption level and therefore the keys that are
-used to remove packet protection.  0-RTT and 1-RTT protected packets share a
-single packet number space.
+used to remove packet protection.
 
 Packets protected with handshake keys only use packet protection to ensure that
 the sender of the packet is on the network path.  This packet protection is not
@@ -889,32 +884,17 @@ The packet number is an integer in the range 0 to 2^62-1. The value is used in
 determining the cryptographic nonce for packet encryption.  Each endpoint
 maintains a separate packet number for sending and receiving.
 
-Packet numbers are divided into 3 spaces in QUIC:
-
-- Initial space: All Initial packets {{packet-initial}} are in this space.
-- Handshake space: All Handshake packets {{packet-handshake}} are in this space.
-- Application data space: All 0-RTT and 1-RTT encrypted packets
-  {{packet-protected}} are in this space.
-
 As described in {{QUIC-TLS}}, each packet type uses different encryption keys.
 
-Conceptually, a packet number space is the encryption context in which
-a packet can be processed and ACKed.  Initial packets can only be sent
-with Initial encryption keys and ACKed in packets which are also
-Initial packets.  Similarly, Handshake packets can only be sent and
-acknowledged in Handshake packets.
+Conceptually, a packet type is the encryption context in which a packet can be
+processed.  Initial packets can only be sent with Initial encryption keys.
+Similarly, Handshake packets can only be sent with Handshake encryption keys.
 
 This enforces cryptographic separation between the data sent in the
-different packet sequence number spaces.  Each packet number space
-starts at packet number 0.  Subsequent packets sent in the
-same packet number space MUST increase the packet number by at least one.
+different encryption levels.
 
-0-RTT and 1-RTT data exist in the same packet number space to make loss recovery
-algorithms easier to implement between the two packet types.
-
-A QUIC endpoint MUST NOT reuse a packet number within the same packet number
-space in one connection (that is, under the same cryptographic keys).  If the
-packet number for sending reaches 2^62 - 1, the sender MUST close the connection
+A QUIC endpoint MUST NOT reuse a packet number in one connection.  If the packet
+number for sending reaches 2^62 - 1, the sender MUST close the connection
 without sending a CONNECTION_CLOSE frame or any further packets; an endpoint MAY
 send a Stateless Reset ({{stateless-reset}}) in response to further packets that
 it receives.
@@ -1331,8 +1311,8 @@ The first client packet of the cryptographic handshake protocol MUST fit within
 a 1232 octet QUIC packet payload.  This includes overheads that reduce the space
 available to the cryptographic handshake protocol.
 
-The CRYPTO frame can be sent in different packet number spaces.  CRYPTO frames
-in each packet number space carry a separate sequence of handshake data starting
+The CRYPTO frame can be sent in different encryption levels.  CRYPTO frames
+in each encryption level carry a separate sequence of handshake data starting
 from an offset of 0.
 
 ## Example Handshake Flows
@@ -1357,16 +1337,14 @@ Client                                                  Server
 
 Initial[0]: CRYPTO[CH] ->
 
-                                 Initial[0]: CRYPTO[SH] ACK[0]
-                       Handshake[0]: CRYPTO[EE, CERT, CV, FIN]
-                                 <- 1-RTT[0]: STREAM[1, "..."]
+                                        Initial[0]: CRYPTO[SH]
+               Handshake[1]: ACK[0], CRYPTO[EE, CERT, CV, FIN]
+                                 <- 1-RTT[2]: STREAM[1, "..."]
 
-Initial[1]: ACK[0]
-Handshake[0]: CRYPTO[FIN], ACK[0]
-1-RTT[0]: STREAM[0, "..."], ACK[0] ->
+Handshake[1]: ACK[0-1], CRYPTO[FIN]
+1-RTT[2]: ACK[2], STREAM[0, "..."] ->
 
-                           1-RTT[1]: STREAM[55, "..."], ACK[0]
-                                       <- Handshake[1]: ACK[0]
+                      <- 1-RTT[3]: ACK[1-2], STREAM[55, "..."]
 ~~~~
 {: #tls-1rtt-handshake title="Example 1-RTT Handshake"}
 
@@ -1381,9 +1359,9 @@ sequence numbers at the 1-RTT encryption level continue to increment from its
 Client                                                  Server
 
 Initial[0]: CRYPTO[CH]
-0-RTT[0]: STREAM[0, "..."] ->
+0-RTT[1]: STREAM[0, "..."] ->
 
-                                 Initial[0]: CRYPTO[SH] ACK[0]
+                                        Initial[0]: CRYPTO[SH]
                         Handshake[0] CRYPTO[EE, CERT, CV, FIN]
                           <- 1-RTT[0]: STREAM[1, "..."] ACK[0]
 

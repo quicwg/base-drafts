@@ -342,13 +342,13 @@ indicate which level a given packet was encrypted under, as shown in
 need to be sent, endpoints SHOULD use coalesced packets to send them in the same
 UDP datagram.
 
-| Packet Type     | Encryption Level | PN Space  |
-|:----------------|:-----------------|:----------|
-| Initial         | Initial secrets  | Initial   |
-| 0-RTT Protected | 0-RTT            | 0/1-RTT   |
-| Handshake       | Handshake        | Handshake |
-| Retry           | N/A              | N/A       |
-| Short Header    | 1-RTT            | 0/1-RTT   |
+| Packet Type     | Encryption Level |
+|:----------------|:-----------------|
+| Initial         | Initial secrets  |
+| 0-RTT Protected | 0-RTT            |
+| Handshake       | Handshake        |
+| Retry           | N/A              |
+| Short Header    | 1-RTT            |
 {: #packet-types-levels title="Encryption Levels by Packet Type"}
 
 Section 6.3 of {{QUIC-TRANSPORT}} shows how packets at the various encryption
@@ -804,11 +804,11 @@ encrypted_pn = ChaCha20(pn_key, counter, nonce, packet_number)
 ## Receiving Protected Packets
 
 Once an endpoint successfully receives a packet with a given packet number, it
-MUST discard all packets in the same packet number space with higher packet
-numbers if they cannot be successfully unprotected with either the same key, or
-- if there is a key update - the next packet protection key (see
-{{key-update}}).  Similarly, a packet that appears to trigger a key update, but
-cannot be unprotected successfully MUST be discarded.
+MUST discard all packets with higher packet numbers if they cannot be
+successfully unprotected with either the same key, or - if there is a key update
+- the next packet protection key (see {{key-update}}).  Similarly, a packet that
+appears to trigger a key update, but cannot be unprotected successfully MUST be
+discarded.
 
 Failure to unprotect a packet does not necessarily indicate the existence of a
 protocol error in a peer or an attack.  The truncated packet number encoding
@@ -1121,6 +1121,10 @@ values in the following registries:
 > final version of this document.
 
 Issue and pull request numbers are listed with a leading octothorp.
+
+## Since draft-ietf-quic-tls-13
+
+- Move back to a single packet number space (#1579)
 
 ## Since draft-ietf-quic-tls-12
 
