@@ -3240,7 +3240,7 @@ ACK frames that acknowledge protected packets MUST be carried in a packet that
 has an equivalent or greater level of packet protection.  ACK frames MUST NOT be
 sent in Initial packets.  An Initial packet that carries acknowledgements must
 be discarded in its entirety.
-   
+
 Packets that are protected with 1-RTT keys MUST be acknowledged in packets that
 are also protected with 1-RTT keys.
 
