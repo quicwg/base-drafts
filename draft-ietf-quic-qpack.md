@@ -289,12 +289,12 @@ SHOULD treat this as a stream error of type HTTP_QPACK_DECOMPRESSION_FAILED.
 The decoder stream signals key events at the decoder that permit the encoder to
 track the decoder's state.  These events are:
 
-- Successful processing of a header block
+- Complete processing of a header block
 - Abandonment of a stream which might have remaining header blocks
 - Receipt of new dynamic table entries
 
 Regardless of whether a header block contained blocking references, the
-knowledge that it was processed successfully permits the encoder to avoid
+knowledge that it has been processed permits the encoder to avoid
 evicting entries while references remain outstanding; see {{blocked-eviction}}.
 When a stream is reset or abandoned, the indication that these header blocks
 will never be processed serves a similar function; see {{stream-cancellation}}.
