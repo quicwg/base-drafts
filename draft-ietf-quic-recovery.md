@@ -1107,7 +1107,7 @@ detected. Starts a new recovery period and reduces the congestion window.
      // is larger than the end of the previous recovery epoch.
      if (!InRecovery(packet_number)):
        end_of_recovery = largest_sent_packet
-       congestion_window *= kMarkReductionFactor
+       congestion_window *= kLossReductionFactor
        congestion_window = max(congestion_window, kMinimumWindow)
 ~~~
 
