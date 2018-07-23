@@ -4558,7 +4558,7 @@ CRYPTO_ERROR (0x1XX):
 : The cryptographic handshake failed.  A range of 256 values is reserved for
   carrying error codes specific to the cryptographic handshake that is used.
   Codes for errors occuring when TLS is used for the crypto handshake are
-  defined in Section 11 of {{QUIC-TLS}}.
+  described in Section 4.8 of {{QUIC-TLS}}.
 
 See {{iana-error-codes}} for details of registering new error codes.
 
