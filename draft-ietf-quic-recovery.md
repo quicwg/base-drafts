@@ -927,7 +927,7 @@ experiment with other response functions.
 
 QUIC begins every connection in slow start and exits slow start upon loss or
 upon increase in the ECN-CE counter. QUIC re-enters slow start anytime the
-congestion window is less than sshthresh, which typically only occurs after an
+congestion window is less than ssthresh, which typically only occurs after an
 RTO. While in slow start, QUIC increases the congestion window by the number of
 bytes acknowledged when each ack is processed.
 
