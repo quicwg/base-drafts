@@ -1109,6 +1109,7 @@ detected. Starts a new recovery period and reduces the congestion window.
        end_of_recovery = largest_sent_packet
        congestion_window *= kLossReductionFactor
        congestion_window = max(congestion_window, kMinimumWindow)
+       ssthresh = congestion_window
 ~~~
 
 ### Process ECN Information
@@ -1188,6 +1189,10 @@ This document has no IANA actions.  Yet.
 
 > **RFC Editor's Note:**  Please remove this section prior to
 > publication of a final version of this document.
+
+## Since draft-ietf-quic-recovery-13
+
+- Corrected the lack of ssthresh reduction in CongestionEvent pseudocode (#1598)
 
 ## Since draft-ietf-quic-recovery-12
 
