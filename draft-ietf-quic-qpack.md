@@ -125,7 +125,7 @@ is no value at index zero of the static table.
 
 The dynamic table consists of a list of header fields maintained in first-in,
 first-out order.  The dynamic table is initially empty.  Entries are added by
-instructions on the Encoder Stream (see {{encoder-stream}}).
+instructions on the encoder stream (see {{encoder-stream}}).
 
 Before a new entry is added to the dynamic table, entries are evicted from the
 end of the dynamic table until the size of the dynamic table is less than or
@@ -173,7 +173,7 @@ The relative index begins at zero and increases in the opposite direction from
 the absolute index.  Determining which entry has a relative index of "0" depends
 on the context of the reference.
 
-On the Encoder Stream, a relative index of "0" always refers to the most
+On the encoder stream, a relative index of "0" always refers to the most
 recently inserted value in the dynamic table.  Note that this means the entry
 referenced by a given relative index will change while interpreting instructions
 on the encoder stream.
@@ -194,7 +194,7 @@ d = count of entries dropped
 {: title="Example Dynamic Table Indexing - Control Stream"}
 
 Because frames from request streams can be delivered out of order with
-instructions on the Encoder Stream, relative indices are relative to the Base
+instructions on the encoder stream, relative indices are relative to the Base
 Index at the beginning of the header block (see {{absolute-index}}). The Base
 Index is an absolute index. When interpreting the rest of the frame, the entry
 identified by Base Index has a relative index of zero.  The relative indices of
@@ -243,7 +243,7 @@ If the decoder encounters a reference to an entry which has already been dropped
 from the table or which is greater than the declared Largest Reference (see
 {{absolute-index}}), this MUST be treated as a stream error of type
 `HTTP_QPACK_DECOMPRESSION_FAILED` error code.  If this reference occurs on the
-Encoder Stream, this MUST be treated as a session error.
+encoder stream, this MUST be treated as a session error.
 
 ## Avoiding Head-of-Line Blocking in HTTP/QUIC {#overview-hol-avoidance}
 
@@ -883,7 +883,7 @@ Duplicate representation instead (see {{duplicate}}).
 For header blocks encoded in non-blocking mode, the encoder needs to forego
 indexed representations that refer to table updates which have not yet been
 acknowledged with {{feedback}}.  Since all table updates are processed in
-sequence on the Encoder Stream, an index into the dynamic table is sufficient to
+sequence on the encoder stream, an index into the dynamic table is sufficient to
 track which entries have been acknowledged.
 
 To track blocked streams, the necessary Base Index value for each stream can be
