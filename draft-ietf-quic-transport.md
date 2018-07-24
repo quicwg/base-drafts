@@ -2193,11 +2193,11 @@ While multiple paths might be used during connection migration, a single
 congestion control context and a single loss recovery context (as described in
 {{QUIC-RECOVERY}}) may be adequate.  A sender can make exceptions for probe
 packets so that their loss detection is independent and does not unduly cause
-the congestion controller to reduce its sending rate.  An endpoint might arm a
-separate alarm when a PATH_CHALLENGE is sent, which is disarmed when the
-corresponding PATH_RESPONSE is received.  If the alarm fires before the
+the congestion controller to reduce its sending rate.  An endpoint might set a
+separate timer when a PATH_CHALLENGE is sent, which is cancelled when the
+corresponding PATH_RESPONSE is received.  If the timer fires before the
 PATH_RESPONSE is received, the endpoint might send a new PATH_CHALLENGE, and
-restart the alarm for a longer period of time.
+restart the timer for a longer period of time.
 
 
 ### Privacy Implications of Connection Migration {#migration-linkability}
@@ -4558,7 +4558,7 @@ CRYPTO_ERROR (0x1XX):
 : The cryptographic handshake failed.  A range of 256 values is reserved for
   carrying error codes specific to the cryptographic handshake that is used.
   Codes for errors occuring when TLS is used for the crypto handshake are
-  defined in Section 11 of {{QUIC-TLS}}.
+  described in Section 4.8 of {{QUIC-TLS}}.
 
 See {{iana-error-codes}} for details of registering new error codes.
 
