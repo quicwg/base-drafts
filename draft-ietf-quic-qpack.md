@@ -573,11 +573,11 @@ before using it.
 
 ### Header Acknowledgement
 
-After processing a header block on a request or push stream, the decoder emits a
-Header Acknowledgement instruction on the decoder stream.  The instruction
-begins with the '1' one-bit pattern and includes the request stream's stream ID,
-encoded as a 7-bit prefix integer.  It is used by the peer's QPACK encoder to
-know when it is safe to evict an entry.
+After processing a header block whose declared Largest Reference is not zero,
+the decoder emits a Header Acknowledgement instruction on the decoder stream.
+The instruction begins with the '1' one-bit pattern and includes the request
+stream's stream ID, encoded as a 7-bit prefix integer.  It is used by the
+peer's QPACK encoder to know when it is safe to evict an entry.
 
 The same Stream ID can be identified multiple times, as multiple header blocks
 can be sent on a single stream in the case of intermediate responses, trailers,
