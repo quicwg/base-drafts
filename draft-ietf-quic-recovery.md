@@ -251,7 +251,7 @@ in-flight packets are not acknowledged during this time, then these
 packets MUST be marked as lost.
 
 An endpoint SHOULD set the timer such that a packet is marked as lost no earlier
-than 1.25 * max(SRTT, latest_RTT) since when it was sent.
+than 1.125 * max(SRTT, latest_RTT) since when it was sent.
 
 Using max(SRTT, latest_RTT) protects from the two following cases:
 
@@ -262,10 +262,10 @@ Using max(SRTT, latest_RTT) protects from the two following cases:
 * the latest RTT sample is higher than the SRTT, perhaps due to a sustained
   increase in the actual RTT, but the smoothed SRTT has not yet caught up.
 
-The 1.25 multiplier increases reordering resilience. Implementers MAY experiment
-with using other multipliers, bearing in mind that a lower multiplier reduces
-reordering resilience and increases spurious retransmissions, and a higher
-multipler increases loss recovery delay.
+The 1.125 multiplier increases reordering resilience. Implementers MAY
+experiment with using other multipliers, bearing in mind that a lower multiplier
+reduces reordering resilience and increases spurious retransmissions, and a
+higher multipler increases loss recovery delay.
 
 This mechanism is based on Early Retransmit for TCP {{?RFC5827}}. However,
 {{?RFC5827}} does not include the timer described above. Early Retransmit is
@@ -872,7 +872,7 @@ DetectLostPackets(largest_acked):
           max(latest_rtt, smoothed_rtt)
   else if (largest_acked.packet_number == largest_sent_packet):
     // Early retransmit timer.
-    delay_until_lost = 5/4 * max(latest_rtt, smoothed_rtt)
+    delay_until_lost = 9/8 * max(latest_rtt, smoothed_rtt)
   foreach (unacked < largest_acked.packet_number):
     time_since_sent = now() - unacked.time_sent
     delta = largest_acked.packet_number - unacked.packet_number
