@@ -195,6 +195,19 @@ Min RTT is the minimum RTT measured over the connection, prior to adjusting by
 ack delay.  Ignoring ack delay for min RTT prevents intentional or unintentional
 underestimation of min RTT, which in turn prevents underestimating smoothed RTT.
 
+### Maximum Ack Delay
+
+QUIC is able to explicitly model delay at the receiver via the ack delay
+field in the ACK frame.  Therefore, QUIC diverges from TCP by calculating a
+MaxAckDelay dynamically, instead of assuming a constant delayed ack timeout
+for all connections.
+
+MaxAckDelay is the maximum ack delay supplied in an all incoming ACK frames.
+MaxAckDelay excludes ack delays that aren't included in an RTT sample because
+they're too large or the largest acked has already been acknowledged.
+MaxAckDelay also excludes ack delays where the largest ack references an
+ACK-only packet.
+
 ## Ack-based Detection
 
 Ack-based loss detection implements the spirit of TCP's Fast Retransmit
@@ -240,7 +253,7 @@ in-flight packets are not acknowledged during this time, then these
 packets MUST be marked as lost.
 
 An endpoint SHOULD set the timer such that a packet is marked as lost no earlier
-than 1.25 * max(SRTT, latest_RTT) since when it was sent.
+than 1.125 * max(SRTT, latest_RTT) since when it was sent.
 
 Using max(SRTT, latest_RTT) protects from the two following cases:
 
@@ -251,10 +264,10 @@ Using max(SRTT, latest_RTT) protects from the two following cases:
 * the latest RTT sample is higher than the SRTT, perhaps due to a sustained
   increase in the actual RTT, but the smoothed SRTT has not yet caught up.
 
-The 1.25 multiplier increases reordering resilience. Implementers MAY experiment
-with using other multipliers, bearing in mind that a lower multiplier reduces
-reordering resilience and increases spurious retransmissions, and a higher
-multipler increases loss recovery delay.
+The 1.125 multiplier increases reordering resilience. Implementers MAY
+experiment with using other multipliers, bearing in mind that a lower multiplier
+reduces reordering resilience and increases spurious retransmissions, and a
+higher multipler increases loss recovery delay.
 
 This mechanism is based on Early Retransmit for TCP {{?RFC5827}}. However,
 {{?RFC5827}} does not include the timer described above. Early Retransmit is
@@ -327,15 +340,10 @@ conditions:
 * If RTO ({{rto}}) is earlier, schedule a TLP in its place. That is,
   PTO SHOULD be scheduled for min(RTO, PTO).
 
-MaxAckDelay is the maximum ack delay supplied in an incoming ACK frame.
-MaxAckDelay excludes ack delays that aren't included in an RTT sample because
-they're too large and excludes those which reference an ack-only packet.
-
-QUIC diverges from TCP by calculating MaxAckDelay dynamically, instead of
-assuming a constant delayed ack timeout for all connections.  QUIC includes this
-in all probe timeouts, because it assume the ack delay may come into play,
-regardless of the number of packets outstanding.  TCP's TLP assumes if at least
-2 packets are outstanding, acks will not be delayed.
+QUIC includes MaxAckDelay in all probe timeouts, because it assumes the ack
+delay may come into play, regardless of the number of packets outstanding.
+TCP's TLP assumes if at least 2 packets are outstanding, acks will not be
+delayed.
 
 A PTO value of at least 1.5*SRTT ensures that the ACK is overdue.  The 1.5 is
 based on {{?TLP}}, but implementations MAY experiment with other constants.
@@ -388,11 +396,9 @@ immediate change to congestion window or recovery state. An RTO timer expires
 only when there's a prolonged period of network silence, which could be caused
 by a change in the underlying network RTT.
 
-QUIC also diverges from TCP by including MaxAckDelay in the RTO period.  QUIC is
-able to explicitly model delay at the receiver via the ack delay field in the
-ACK frame.  Since QUIC corrects for this delay in its SRTT and RTTVAR
-computations, it is necessary to add this delay explicitly in the TLP and RTO
-computation.
+QUIC also diverges from TCP by including MaxAckDelay in the RTO period. Since
+QUIC corrects for this delay in its SRTT and RTTVAR computations, it is
+necessary to add this delay explicitly in the TLP and RTO computation.
 
 When an acknowledgment is received for a packet sent on an RTO event, any
 unacknowledged packets with lower packet numbers than those acknowledged MUST be
@@ -858,7 +864,7 @@ DetectLostPackets(largest_acked):
           max(latest_rtt, smoothed_rtt)
   else if (largest_acked.packet_number == largest_sent_packet):
     // Early retransmit timer.
-    delay_until_lost = 5/4 * max(latest_rtt, smoothed_rtt)
+    delay_until_lost = 9/8 * max(latest_rtt, smoothed_rtt)
   foreach (unacked < largest_acked.packet_number):
     time_since_sent = now() - unacked.time_sent
     delta = largest_acked.packet_number - unacked.packet_number
@@ -913,7 +919,7 @@ experiment with other response functions.
 
 QUIC begins every connection in slow start and exits slow start upon loss or
 upon increase in the ECN-CE counter. QUIC re-enters slow start anytime the
-congestion window is less than sshthresh, which typically only occurs after an
+congestion window is less than ssthresh, which typically only occurs after an
 RTO. While in slow start, QUIC increases the congestion window by the number of
 bytes acknowledged when each ack is processed.
 
@@ -1093,8 +1099,9 @@ detected. Starts a new recovery period and reduces the congestion window.
      // is larger than the end of the previous recovery epoch.
      if (!InRecovery(packet_number)):
        end_of_recovery = largest_sent_packet
-       congestion_window *= kMarkReductionFactor
+       congestion_window *= kLossReductionFactor
        congestion_window = max(congestion_window, kMinimumWindow)
+       ssthresh = congestion_window
 ~~~
 
 ### Process ECN Information
@@ -1177,6 +1184,9 @@ This document has no IANA actions.  Yet.
 
 ## Since draft-ietf-quic-recovery-13
 
+- Corrected the lack of ssthresh reduction in CongestionEvent pseudocode (#1598)
+- Early retransmit threshold different from time-loss reordering threshold
+  (#945)
 - Move back to a single packet number space (#1579)
 
 ## Since draft-ietf-quic-recovery-12
