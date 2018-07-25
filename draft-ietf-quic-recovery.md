@@ -1193,6 +1193,8 @@ This document has no IANA actions.  Yet.
 ## Since draft-ietf-quic-recovery-13
 
 - Corrected the lack of ssthresh reduction in CongestionEvent pseudocode (#1598)
+- Early retransmit threshold different from time-loss reordering threshold
+  (#945)
 
 ## Since draft-ietf-quic-recovery-12
 
