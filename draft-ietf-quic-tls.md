@@ -637,9 +637,9 @@ initial_secret =
     HKDF-Extract(initial_salt, client_dst_connection_id)
 
 client_initial_secret =
-   HKDF-Expand-Label(initial_secret, "client in", Hash.length)
+   HKDF-Expand-Label(initial_secret, "client in", "", Hash.length)
 server_initial_secret =
-   HKDF-Expand-Label(initial_secret, "server in", Hash.length)
+   HKDF-Expand-Label(initial_secret, "server in", "", Hash.length)
 ~~~
 
 Note that if the server sends a Retry, the client's Initial will correspond to a
