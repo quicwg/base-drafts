@@ -1776,8 +1776,8 @@ on its own.
 
 Several methods are used in QUIC to mitigate this attack.  Firstly, the initial
 handshake packet is sent in a UDP datagram that contains at least 1200 octets of
-payload.  This allows a server to send a similar amount of data without risking
-causing an amplification attack toward an unproven remote address.
+UDP payload.  This allows a server to send a similar amount of data without
+risking causing an amplification attack toward an unproven remote address.
 
 A server eventually confirms that a client has received its messages when the
 first Handshake-level message is received. This might be insufficient,
