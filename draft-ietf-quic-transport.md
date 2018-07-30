@@ -4729,18 +4729,23 @@ ECN codepoints set in duplicate packets (see {{using-ecn}}).
 
 ## Stateless Reset Oracle {#reset-oracle}
 
+Stateless resets create a possible denial of service attack analogous to a TCP
+reset injection. This attack is possible if an attacker is able to cause a
+stateless reset token to be generated for a connection with a selected
+connection ID. An attacker that can cause this token to be generated can reset
+an active connection with the same connection ID.
+
 An attacker that can cause a server to emit a stateless reset token can force
 the closure of any connection that uses the same connection ID and method of
 producing the token.  This creates a possible denial of service attack on
 existing connections if the attacker is able to cause a stateless reset token to
-be generated for a connection with a selected connection ID.  That is, an attack
-is possible if an attacker can alter packet routing so that a packet is received
-by an instance that uses the same stateless reset key, but no connection state
-for the connection ID.
+be generated for a connection with a selected connection ID.
 
-To defend against this style of denial service, endpoints that operate in
-clusters and that share a static key for stateless reset (see {{reset-token}})
-MUST be arranged so that packets with a given connection ID always arrive at an
+If a packet can be routed to different instances that share a static key, for
+example by changing an IP address or port, then an attacker can cause the server
+to send a stateless reset.  To defend against this style of denial service,
+endpoints that share a static key for stateless reset (see {{reset-token}}) MUST
+be arranged so that packets with a given connection ID always arrive at an
 instance that has connection state, unless that connection is no longer active.
 
 In the case of a cluster that uses dynamic load balancing, it's possible that a
