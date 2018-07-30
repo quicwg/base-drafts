@@ -4730,32 +4730,27 @@ ECN codepoints set in duplicate packets (see {{using-ecn}}).
 ## Stateless Reset Oracle {#reset-oracle}
 
 An attacker that can cause a server to emit a stateless reset token can cause
-any connection that uses the same connection ID and method of producing the
-token to be destroyed.  This creates a possible denial of service attack on
+force the closure of any connection that uses the same connection ID and method
+of producing the token.  This creates a possible denial of service attack on
 existing connections if the attacker is able to cause a stateless reset token to
 be generated for a connection with a selected connection ID.  That is, an attack
 is possible if an attacker can alter packet routing so that a packet is received
 by an instance that uses the same stateless reset key, but no connection state
 for the connection ID.
 
-The only viable defense against this style of denial of service is to ensure
-that routing configuration for a cluster guarantees consistent routing of
-packets for a given connection ID.  That is, the routing needs to ensure that a
-stateless reset is not generated unless the associated connection (as identified
-by the connection ID) cannot proceed.
-
-For endpoints that operate in clusters, instances that share a static key for
-stateless reset (see {{reset-token}}) MUST be arranged so that packets with a
-given connection ID always arrive at an instance that has connection state,
-unless that connection is no longer active.
+To defend against this style of denial service, endpoints that operate in
+clusters and that share a static key for stateless reset (see {{reset-token}})
+MUST be arranged so that packets with a given connection ID always arrive at an
+instance that has connection state, unless that connection is no longer active.
 
 In the case of a cluster that uses dynamic load balancing, it's possible that a
 change in load balancer configuration could happen while an active instance
 retains connection state; even if an instance retains connection state, the
 change in routing and resulting stateless reset will result in the connection
-being terminated.  This is acceptable as long as the loss of connections during
-rebalancing is by design and not something that an external entity can
-influence.
+being terminated.  If there is no chance in the packet being routed to the
+correct instance, it is better to send a stateless reset than wait for
+connections to time out.  However, this is acceptable only if the routing cannot
+be influenced by an attacker.
 
 
 # IANA Considerations
