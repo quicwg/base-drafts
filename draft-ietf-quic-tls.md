@@ -441,7 +441,7 @@ Important:
 ### Encryption Level Changes
 
 At each change of encryption level in either direction, TLS provides QUIC with
-the new level and the encryption keys.  These events are not asynchronous, they
+the new level and the encryption keys.  These events are not asynchronous; they
 always occur immediately after TLS is provided with new handshake octets, or
 after TLS produces handshake octets.
 
