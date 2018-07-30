@@ -516,22 +516,31 @@ older than 1.3 is negotiated.
 
 ## ClientHello Size {#clienthello-size}
 
-QUIC requires that the initial handshake packet from a client fit within the
-payload of a single packet.  The size limits on QUIC packets mean that a record
-containing a ClientHello needs to fit within 1129 octets, though endpoints can
-reduce the size of their connection ID to increase by up to 22 octets.
+QUIC requires that the first Initial packet from a client contain an entire
+crytographic handshake message, which for TLS is the ClientHello.  Though a
+packet larger than 1200 octets might be supported by the path, a client improves
+the likelihood that a packet is accepted if it ensures that the first
+ClientHello message is small enough to stay within this limit.
 
-A TLS ClientHello can fit within this limit with ample space remaining.
-However, there are several variables that could cause this limit to be exceeded.
-Implementations are reminded that large session tickets or HelloRetryRequest
-cookies, multiple or large key shares, and long lists of supported ciphers,
-signature algorithms, versions, QUIC transport parameters, and other negotiable
-parameters and extensions could cause this message to grow.
+QUIC packet and framing add at least 36 octets of overhead to the ClientHello
+message.  That overhead increases if the client chooses a connection ID without
+zero length.  Overheads also do not include the token or a connection ID longer
+than 8 octets, both of which might be required if a server sends a Retry packet.
 
-For servers, the size of the session tickets and HelloRetryRequest cookie
-extension can have an effect on a client's ability to connect.  Choosing a small
-value increases the probability that these values can be successfully used by a
-client.
+A typical TLS ClientHello can easily fit into a 1200 octet packet.  However, in
+addition to the overheads added by QUIC, there are several variables that could
+cause this limit to be exceeded.  Large session tickets, multiple or large key
+shares, and long lists of supported ciphers, signature algorithms, versions,
+QUIC transport parameters, and other negotiable parameters and extensions could
+cause this message to grow.
+
+For servers, in addition to connection ID and tokens, the size of TLS session
+tickets can have an effect on a client's ability to connect.  Minimizing the
+size of these values increases the probability that they can be successfully
+used by a client.
+
+A client is not required to fit the ClientHello that it sends in response to a
+HelloRetryRequest message into a single UDP datagram.
 
 The TLS implementation does not need to ensure that the ClientHello is
 sufficiently large.  QUIC PADDING frames are added to increase the size of the
