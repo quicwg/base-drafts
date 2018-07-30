@@ -216,7 +216,7 @@ for all connections.
 MaxAckDelay is the maximum ack delay supplied in an all incoming ACK frames.
 MaxAckDelay excludes ack delays that aren't included in an RTT sample because
 they're too large or the largest acked has already been acknowledged.
-MaxAckDelay also excludes ack delays where the largest ack references an
+MaxAckDelay also excludes ack delays where the largest acked references an
 ACK-only packet.
 
 ## Ack-based Detection
@@ -473,7 +473,7 @@ ACK frame.
 
 ### Receiver Tracking of ACK Frames
 
-When a packet containing an ACK frame is sent, the largest acknowledged in that
+When a packet containing an ACK frame is sent, the largest acked in that
 frame may be saved.  When a packet containing an ACK frame is acknowledged, the
 receiver can stop acknowledging packets less than or equal to the largest
 acknowledged in the sent ACK frame.
