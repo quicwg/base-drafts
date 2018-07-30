@@ -4729,9 +4729,9 @@ ECN codepoints set in duplicate packets (see {{using-ecn}}).
 
 ## Stateless Reset Oracle {#reset-oracle}
 
-An attacker that can cause a server to emit a stateless reset token can cause
-force the closure of any connection that uses the same connection ID and method
-of producing the token.  This creates a possible denial of service attack on
+An attacker that can cause a server to emit a stateless reset token can force
+the closure of any connection that uses the same connection ID and method of
+producing the token.  This creates a possible denial of service attack on
 existing connections if the attacker is able to cause a stateless reset token to
 be generated for a connection with a selected connection ID.  That is, an attack
 is possible if an attacker can alter packet routing so that a packet is received
