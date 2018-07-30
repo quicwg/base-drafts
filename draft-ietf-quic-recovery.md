@@ -95,7 +95,7 @@ ACK frames:
 
 ACK-only:
 
-: Any packet containing only an ACK frame.
+: Any packet containing only an ACK or ACK_ECN frame.
 
 In-flight:
 
