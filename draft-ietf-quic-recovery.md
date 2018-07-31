@@ -215,9 +215,9 @@ for all connections.
 
 MaxAckDelay is the maximum ack delay supplied in an all incoming ACK frames.
 MaxAckDelay excludes ack delays that aren't included in an RTT sample because
-they're too large or the largest acked has already been acknowledged.
-MaxAckDelay also excludes ack delays where the largest acked references an
-ACK-only packet.
+they're too large or the largest acknowledged has already been acknowledged.
+MaxAckDelay also excludes ack delays where the largest acknowledged references
+an ACK-only packet.
 
 ## Ack-based Detection
 
@@ -473,7 +473,7 @@ ACK frame.
 
 ### Receiver Tracking of ACK Frames
 
-When a packet containing an ACK frame is sent, the largest acked in that
+When a packet containing an ACK frame is sent, the largest acknowledged in that
 frame may be saved.  When a packet containing an ACK frame is acknowledged, the
 receiver can stop acknowledging packets less than or equal to the largest
 acknowledged in the sent ACK frame.
@@ -576,7 +576,7 @@ max_ack_delay:
   RTT sample less than min_rtt.
 
 reordering_threshold:
-: The largest packet number gap between the largest acked
+: The largest packet number gap between the largest acknowledged
   retransmittable packet and an unacknowledged
   retransmittable packet before it is declared lost.
 
@@ -676,7 +676,8 @@ Pseudocode for OnAckReceived and UpdateRtt follow:
 ~~~
   OnAckReceived(ack):
     largest_acked_packet = ack.largest_acked
-    // If the largest acked is newly acked, update the RTT.
+    // If the largest acknowledged is newly acked,
+    // update the RTT.
     if (sent_packets[ack.largest_acked]):
       latest_rtt = now - sent_packets[ack.largest_acked].time
       UpdateRtt(latest_rtt, ack.ack_delay)
