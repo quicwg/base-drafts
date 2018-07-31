@@ -4735,12 +4735,6 @@ stateless reset token to be generated for a connection with a selected
 connection ID. An attacker that can cause this token to be generated can reset
 an active connection with the same connection ID.
 
-An attacker that can cause a server to emit a stateless reset token can force
-the closure of any connection that uses the same connection ID and method of
-producing the token.  This creates a possible denial of service attack on
-existing connections if the attacker is able to cause a stateless reset token to
-be generated for a connection with a selected connection ID.
-
 If a packet can be routed to different instances that share a static key, for
 example by changing an IP address or port, then an attacker can cause the server
 to send a stateless reset.  To defend against this style of denial service,
