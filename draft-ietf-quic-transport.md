@@ -607,6 +607,11 @@ the packet.  This prevents an off-path attacker from injecting a Retry packet.
 The client responds to a Retry packet with an Initial packet that includes the
 provided Retry Token to continue connection establishment.
 
+A client MAY attempt 0-RTT after receiving a Retry packet by sending 0-RTT
+packets to the connection ID provided by the server.  A client that sends
+additional 0-RTT packets MUST NOT reset the packet number to 0 after a Retry
+packet, see {{retry-0rtt-pn}}.
+
 A server that might send another Retry packet in response to a subsequent
 Initial packet MUST set the Source Connection ID to a new value of at least 8
 octets in length.  This allows clients to distinguish between Retry packets when
@@ -746,7 +751,7 @@ where it is used.  Clients that want to break continuity of identity with a
 server MAY discard tokens provided using the NEW_TOKEN frame.  Tokens obtained
 in Retry packets MUST NOT be discarded.
 
-A client SHOULD NOT reuse a token.  Reusing a token on allows connections to be
+A client SHOULD NOT reuse a token.  Reusing a token allows connections to be
 linked by entities on the network path (see {{migration-linkability}}).  A
 client MUST NOT reuse a token if it believes that its point of network
 attachment has changed since the token was last used; that is, if there is a
@@ -783,6 +788,32 @@ The first Initial packet sent by either endpoint contains a packet number of
 0. The packet number MUST increase monotonically thereafter.  Initial packets
 are in a different packet number space to other packets (see
 {{packet-numbers}}).
+
+
+### 0-RTT Packet Numbers {#retry-0rtt-pn}
+
+Packet numbers for 0-RTT protected packets use the same space as 1-RTT protected
+packets.
+
+After a client receives a Retry or Version Negotiation packet, 0-RTT packets are
+likely to have been lost or discarded by the server.  A client MAY attempt to
+resend data in 0-RTT packets after it sends a new Initial packet.
+
+A client MUST NOT reset the packet number it uses for 0-RTT packets.  The keys
+used to protect 0-RTT packets will not change as a result of responding to a
+Retry or Version Negotiation packet unless the client also regenerates the
+cryptographic handshake message.  Sending packets with the same packet number in
+that case would compromise the packet protection for all 0-RTT packets.
+
+Receiving a Retry or Version Negotiation packet, especially a Retry that changes
+the connection ID used for subsequent packets, indicates a strong possibility
+that 0-RTT packets could be lost.  A client only receives acknowledgments for
+its 0-RTT packets once the handshake is complete.  Consequently, a server might
+expect 0-RTT packets to start with a packet number of 0.  Therefore, in
+determining the length of the packet number encoding for 0-RTT packets, a client
+MUST assume that all packets up to the current packet number are in flight,
+starting from a packet number of 0.  Thus, 0-RTT packets could need to use a
+longer packet number encoding.
 
 
 ### Minimum Packet Size
@@ -1325,6 +1356,10 @@ Version Negotiation packet.
 
 A client MUST ignore a Version Negotiation packet that lists the client's chosen
 version.
+
+A client MAY attempt 0-RTT after receiving a Version Negotiation packet.  A
+client that sends additional 0-RTT packets MUST NOT reset the packet number to 0
+as a result, see {{retry-0rtt-pn}}.
 
 Version negotiation packets have no cryptographic protection. The result of the
 negotiation MUST be revalidated as part of the cryptographic handshake (see
