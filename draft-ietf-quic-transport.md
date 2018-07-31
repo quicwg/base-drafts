@@ -2532,7 +2532,7 @@ the draining period and not send any further packets on this connection.  If the
 comparison fails, the packet can be discarded.
 
 
-#### Calculating a Stateless Reset Token
+#### Calculating a Stateless Reset Token {#reset-token}
 
 The stateless reset token MUST be difficult to guess.  In order to create a
 Stateless Reset Token, an endpoint could randomly generate {{!RFC4086}} a secret
@@ -2543,21 +2543,16 @@ the case where state is lost, so this approach is suboptimal.
 
 A single static key can be used across all connections to the same endpoint by
 generating the proof using a second iteration of a preimage-resistant function
-that takes three inputs: the static key, the connection ID chosen by the
-endpoint (see {{connection-id}}), and an instance identifier.  An endpoint could
-use HMAC {{?RFC2104}} (for example, HMAC(static_key, instance_id ||
-connection_id)) or HKDF {{?RFC5869}} (for example, using the static key as input
-keying material, with instance and connection identifiers as salt).  The output
-of this function is truncated to 16 octets to produce the Stateless Reset Token
-for that connection.
+that takes a static key and the connection ID chosen by the endpoint (see
+{{connection-id}}) as input.  An endpoint could use HMAC {{?RFC2104}} (for
+example, HMAC(static_key, connection_id)) or HKDF {{?RFC5869}} (for example,
+using the static key as input keying material, with the connection ID as salt).
+The output of this function is truncated to 16 octets to produce the Stateless
+Reset Token for that connection.
 
 An endpoint that loses state can use the same method to generate a valid
 Stateless Reset Token.  The connection ID comes from the packet that the
-endpoint receives.  An instance that receives a packet for another instance
-might be able to recover the instance identifier using the connection ID.
-Alternatively, the instance identifier might be omitted from the calculation of
-the Stateless Reset Token so that all instances are equally able to generate a
-stateless reset.
+endpoint receives.
 
 This design relies on the peer always sending a connection ID in its packets so
 that the endpoint can use the connection ID from a packet to reset the
@@ -2566,11 +2561,13 @@ packets with a zero-length destination connection ID.
 
 Revealing the Stateless Reset Token allows any entity to terminate the
 connection, so a value can only be used once.  This method for choosing the
-Stateless Reset Token means that the combination of instance, connection ID, and
-static key cannot occur for another connection.  A connection ID from a
-connection that is reset by revealing the Stateless Reset Token cannot be reused
-for new connections at the same instance without first changing to use a
-different static key or instance identifier.
+Stateless Reset Token means that the combination of connection ID and static key
+cannot occur for another connection.  A denial of service attack is possible if
+the same connection ID is used by instances that share a static key, or if an
+attacker can cause a packet to be routed to an instance that has no state but
+the same static key (see {{reset-oracle}}).  A connection ID from a connection
+that is reset by revealing the Stateless Reset Token cannot be reused for new
+connections at nodes that share a static key.
 
 Note that Stateless Reset messages do not have any cryptographic protection.
 
@@ -4735,6 +4732,31 @@ codepoints to affect the sender's rate.  If duplicate packets are discarded by a
 receiver, an off-path attacker will need to race the duplicate packet against
 the original to be successful in this attack.  Therefore, QUIC receivers ignore
 ECN codepoints set in duplicate packets (see {{using-ecn}}).
+
+## Stateless Reset Oracle {#reset-oracle}
+
+Stateless resets create a possible denial of service attack analogous to a TCP
+reset injection. This attack is possible if an attacker is able to cause a
+stateless reset token to be generated for a connection with a selected
+connection ID. An attacker that can cause this token to be generated can reset
+an active connection with the same connection ID.
+
+If a packet can be routed to different instances that share a static key, for
+example by changing an IP address or port, then an attacker can cause the server
+to send a stateless reset.  To defend against this style of denial service,
+endpoints that share a static key for stateless reset (see {{reset-token}}) MUST
+be arranged so that packets with a given connection ID always arrive at an
+instance that has connection state, unless that connection is no longer active.
+
+In the case of a cluster that uses dynamic load balancing, it's possible that a
+change in load balancer configuration could happen while an active instance
+retains connection state; even if an instance retains connection state, the
+change in routing and resulting stateless reset will result in the connection
+being terminated.  If there is no chance in the packet being routed to the
+correct instance, it is better to send a stateless reset than wait for
+connections to time out.  However, this is acceptable only if the routing cannot
+be influenced by an attacker.
+
 
 # IANA Considerations
 
