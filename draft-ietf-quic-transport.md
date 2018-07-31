@@ -536,6 +536,87 @@ See {{version-negotiation}} for a description of the version negotiation
 process.
 
 
+## Retry Packet {#packet-retry}
+
+A Retry packet uses a long packet header with a type value of 0x7E. It carries
+an address validation token created by the server. It is used by a server that
+wishes to perform a stateless retry (see {{stateless-retry}}).
+
+~~~
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+
+|1|    0x7e     |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                         Version (32)                          |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|DCIL(4)|SCIL(4)|
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|               Destination Connection ID (0/32..144)         ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                 Source Connection ID (0/32..144)            ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|    ODCIL(8)   |      Original Destination Connection ID (*)   |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                        Retry Token (*)                      ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~
+{: #retry-format title="Retry Packet"}
+
+A Retry packet (shown in {{retry-format}}) only uses the invariant portion of
+the long packet header {{QUIC-INVARIANTS}}; that is, the fields up to and
+including the Destination and Source Connection ID fields.  The contents of the
+Retry packet are not protected.  Like Version Negotiation, a Retry packet
+contains the long header including the connection IDs, but omits the Length,
+Packet Number, and Payload fields.  These are replaced with:
+
+ODCIL:
+
+: The length of the Original Destination Connection ID field.  The length is
+  encoded in the least significant 4 bits of the octet, using the same encoding
+  as the DCIL and SCIL fields.  The most significant 4 bits of this octet are
+  reserved.  Unless a use for these bits has been negotiated, endpoints SHOULD
+  send randomized values and MUST ignore any value that it receives.
+
+Original Destination Connection ID:
+
+: The Original Destination Connection ID contains the value of the Destination
+  Connection ID from the Initial packet that this Retry is in response to. The
+  length of this field is given in ODCIL.
+
+Retry Token:
+
+: An opaque token that the server can use to validate the client's address.
+
+The server populates the Destination Connection ID with the connection ID that
+the client included in the Source Connection ID of the Initial packet.
+
+The server includes a connection ID of its choice in the Source Connection ID
+field.  The client MUST use this connection ID in the Destination Connection ID
+of subsequent packets that it sends.
+
+A Retry packet does not include a packet number and cannot be explictly
+acknowledged by a client.
+
+A server MUST only send a Retry in response to a client Initial packet.
+
+If the Original Destination Connection ID field does not match the Destination
+Connection ID from the most recent Initial packet it sent, clients MUST discard
+the packet.  This prevents an off-path attacker from injecting a Retry packet.
+
+The client responds to a Retry packet with an Initial packet that includes the
+provided Retry Token to continue connection establishment.
+
+A server that might send another Retry packet in response to a subsequent
+Initial packet MUST set the Source Connection ID to a new value of at least 8
+octets in length.  This allows clients to distinguish between Retry packets when
+the server sends multiple rounds of Retry packets.  Consequently, a valid Retry
+packet will always have an Original Destinagion Connection ID that is at least 8
+octets long; clients MUST discard Retry packets that include a shorter value.  A
+server that will not send additional Retry packets can set the Source Connection
+ID to any value.
+
+
 ## Cryptographic Handshake Packets {#handshake-packets}
 
 Once version negotiation is complete, the cryptographic handshake is used to
@@ -552,43 +633,61 @@ provide confidentiality or integrity against on-path attackers, but
 provides some level of protection against off-path attackers.
 
 
-### Initial Packet {#packet-initial}
+## Initial Packet {#packet-initial}
 
 The Initial packet uses long headers with a type value of 0x7F.  It carries the
 first CRYPTO frames sent by the client and server to perform key exchange, and
-may carry ACKs in either direction. The Initial packet is protected by Initial
+carries ACKs in either direction. The Initial packet is protected by Initial
 keys as described in {{QUIC-TLS}}.
 
-The Initial packet has two additional header fields that follow the normal Long
-Header.
+The Initial packet (shown in {{initial-format}}) has two additional header
+fields that are added to the Long Header before the Length field.
 
 ~~~
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+
+|1|    0x7f     |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                      Token Length (i)  ...
+|                         Version (32)                          |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|DCIL(4)|SCIL(4)|
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|               Destination Connection ID (0/32..144)         ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                 Source Connection ID (0/32..144)            ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                         Token Length (i)                    ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                            Token (*)                        ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                           Length (i)                        ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                     Packet Number (8/16/32)                   |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                          Payload (*)                        ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
+{: #initial-format title="Initial Packet"}
+
+These fields include the token that was previously provided in a Retry packet or
+NEW_TOKEN frame:
 
 Token Length:
 
 : A variable-length integer specifying the length of the Token field, in bytes.
-  It may be zero if no token is present. Initial packets sent by the server
-  MUST include a zero-length token.
+  This value is zero if no token is present.  Initial packets sent by the server
+  MUST set the Token Length field to zero; clients that receive an Initial
+  packet with a non-zero Token Length field MUST either discard the packet or
+  generate a connection error of type PROTOCOL_VIOLATION.
 
 Token:
 
-: An optional token blob previously received in either a Retry packet or
-  NEW_TOKEN frame.
+: The value of the token.
 
 The client and server use the Initial packet type for any packet that contains
-an initial cryptographic handshake message. In addition to the first
-packet(s). This includes all cases where a new packet containing the initial
-cryptographic message needs to be created, such as the packets sent after
-receiving a Version Negotiation ({{packet-version}}) or Retry packet
-({{packet-retry}}).
+an initial cryptographic handshake message. This includes all cases where a new
+packet containing the initial cryptographic message needs to be created, such as
+the packets sent after receiving a Version Negotiation ({{packet-version}}) or
+Retry packet ({{packet-retry}}).
 
 A server sends its first Initial packet in response to a client Initial.  A
 server may send multiple Initial packets.  The cryptographic key exchange could
@@ -596,14 +695,21 @@ require multiple round trips or retransmissions of this data.
 
 The payload of an Initial packet includes a CRYPTO frame (or frames) containing
 a cryptographic handshake message, ACK frames, or both. The first CRYPTO frame
-sent always begins at an offset of 0 (see {{handshake}}). The client's complete
-first message MUST fit in a single packet (see {{handshake}}). Note that if the
-server sends a HelloRetryRequest, the client will send a second Initial packet
-with a CRYPTO frame with an offset starting at the end of the CRYPTO stream in
-the first Initial.
+sent always begins at an offset of 0 (see {{handshake}}).
+
+The first packet sent by a client always includes a CRYPTO frame that contains
+the entirety of the first cryptographic handshake message.  This packet, and the
+cryptographic handshake message, MUST fit in a single UDP datagram (see
+{{handshake}}).
+
+Note that if the server sends a HelloRetryRequest, the client will send a second
+Initial packet.  This Initial packet will continue the cryptographic handshake
+and will contain a CRYPTO frame with an offset matching the size of the CRYPTO
+frame sent in the first Initial packet.  Cryptographic handshake messages
+subsequent to the first do not need to fit within a single UDP datagram.
 
 
-#### Connection IDs
+### Connection IDs
 
 When an Initial packet is sent by a client which has not previously received a
 Retry packet from the server, it populates the Destination Connection ID field
@@ -628,10 +734,24 @@ server, it MUST discard any packet it receives with a different Source
 Connection ID.
 
 
-#### Tokens
+### Tokens
 
-If the client has a suitable token available from a previous connection, it
-SHOULD populate the Token field.
+If the client has a token received in a NEW_TOKEN frame on a previous connection
+to what it believes to be the same server, it can include that value in the
+Token field of its Initial packet.
+
+A token allows a server to correlate activity between connections.
+Specifically, the connection where the token was issued, and any connection
+where it is used.  Clients that want to break continuity of identity with a
+server MAY discard tokens provided using the NEW_TOKEN frame.  Tokens obtained
+in Retry packets MUST NOT be discarded.
+
+A client SHOULD NOT reuse a token.  Reusing a token on allows connections to be
+linked by entities on the network path (see {{migration-linkability}}).  A
+client MUST NOT reuse a token if it believes that its point of network
+attachment has changed since the token was last used; that is, if there is a
+change in its local IP address or network interface.  A client needs to start
+the connection process over if it migrates prior to completing the handshake.
 
 If the client received a Retry packet from the server and sends an Initial
 packet in response, then it sets the Destination Connection ID to the value from
@@ -653,17 +773,19 @@ Note:
   the packet is that the client might have received the token in a previous
   connection using the NEW_TOKEN frame, and if the server has lost state, it
   might be unable to validate the token at all, leading to connection failure if
-  the packet is discarded.
+  the packet is discarded.  A server MAY encode tokens provided with NEW_TOKEN
+  frames and Retry packets differently, and validate the latter more strictly.
 
 
-#### Starting Packet Numbers
+### Starting Packet Numbers
 
-The first Initial packet contains a packet number of 0. Each packet sent after
-the Initial packet is associated with a packet number space and its packet
-number increases monotonically in that space (see {{packet-numbers}}).
+The first Initial packet sent by either endpoint contains a packet number of
+0. The packet number MUST increase monotonically thereafter.  Initial packets
+are in a different packet number space to other packets (see
+{{packet-numbers}}).
 
 
-#### Minimum Packet Size
+### Minimum Packet Size
 
 The payload of a UDP datagram carrying the Initial packet MUST be expanded to at
 least 1200 octets (see {{packetization}}), by adding PADDING frames to the
@@ -671,67 +793,7 @@ Initial packet and/or by combining the Initial packet with a 0-RTT packet (see
 {{packet-coalesce}}).
 
 
-### Retry Packet {#packet-retry}
-
-A Retry packet uses long headers with a type value of 0x7E. It carries an
-address validation token created by the server. It is used by a server that
-wishes to perform a stateless retry (see {{stateless-retry}}).
-
-~~~
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|     ODCIL(8   |      Original Destination Connection ID (*)   |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                        Retry Token (*) ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-~~~
-
-A Retry packet is not encrypted at all. Instead, the payload of a
-Retry packet contains two values in the clear.
-
-ODCIL:
-
-: The length of the Original Destination Connection ID.
-
-Original Destination Connection ID:
-
-: The Destination Connection ID from the Initial packet that this
-Retry is in response to. The length of this field is given in DCIL.
-
-Retry Token:
-
-: An opaque token that the server can use to validate the client's
-address.
-
-The server populates the Destination Connection ID with the connection ID that
-the client included in the Source Connection ID of the Initial packet.  This
-might be a zero-length value.
-
-The server includes a connection ID of its choice in the Source Connection ID
-field.  The client MUST use this connection ID in the Destination Connection ID
-of subsequent packets that it sends.
-
-The Packet Number field of a Retry packet MUST be set to 0.  This value is
-subsequently protected as normal. \[\[Editor's Note: This isn't ideal, because
-it creates a "cheat" where the client assumes a value.  That's a problem, so I'm
-tempted to suggest that this include any value less than 2^30 so that normal
-processing works - and can be properly exercised.]]
-
-A Retry packet is never explicitly acknowledged in an ACK frame by a client.
-
-A server MUST only send a Retry in response to a client Initial packet.
-
-If the Original Destination Connection ID field does not match the
-Destination Connection ID from most recent the Initial packet it sent,
-clients MUST discard the packet. This prevents an off-path attacker
-from injecting a Retry packet with a bogus new Source Connection ID.
-
-Otherwise, the client SHOULD respond with a new Initial
-packet with the Token field set to the token received in the Retry packet.
-
-
-### Handshake Packet {#packet-handshake}
+## Handshake Packet {#packet-handshake}
 
 A Handshake packet uses long headers with a type value of 0x7D.  It is
 used to carry acknowledgments and cryptographic handshake messages from the
