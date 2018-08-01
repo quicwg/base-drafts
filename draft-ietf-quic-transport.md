@@ -979,6 +979,7 @@ The connection ID can change over the lifetime of a connection, especially in
 response to connection migration ({{migration}}). NEW_CONNECTION_ID frames
 ({{frame-new-connection-id}}) are used to provide new connection ID values.
 
+
 ## Packet Numbers {#packet-numbers}
 
 The packet number is an integer in the range 0 to 2^62-1. The value is used in
@@ -1064,6 +1065,10 @@ For example, if an endpoint has received an acknowledgment for packet 0x6afa2f,
 sending a packet with a number of 0x6b2d79 requires a packet number encoding
 with 14 bits or more; whereas the 30-bit packet number encoding is needed to
 send a packet with a number of 0x6bc107.
+
+An endpoint MUST discard packets with duplicate packet numbers.  That is, a
+packet is discarded if the reconstructed packet number is equal to the
+reconstructed packet number of a previously received and processed packet.
 
 A Version Negotiation packet ({{packet-version}}) does not include a packet
 number.  The Retry packet ({{packet-retry}}) has special rules for populating
