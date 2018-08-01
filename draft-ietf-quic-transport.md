@@ -348,7 +348,7 @@ Packet Number:
 
 : The packet number field is 1, 2, or 4 octets long. The packet number has
   confidentiality protection separate from packet protection, as described
-  in Section 5.6 of {{QUIC-TLS}}. The length of the packet number field is
+  in Section 5.3 of {{QUIC-TLS}}. The length of the packet number field is
   encoded in the plaintext packet number. See {{packet-numbers}} for details.
 
 Payload:
@@ -459,7 +459,7 @@ Packet Number:
 
 : The packet number field is 1, 2, or 4 octets long. The packet number has
   confidentiality protection separate from packet protection, as described in
-  Section 5.6 of {{QUIC-TLS}}. The length of the packet number field is encoded
+  Section 5.3 of {{QUIC-TLS}}. The length of the packet number field is encoded
   in the plaintext packet number. See {{packet-numbers}} for details.
 
 Protected Payload:
@@ -970,7 +970,8 @@ connection ID to vary in length and still be used by the load balancer.
 The very first packet sent by a client includes a random value for Destination
 Connection ID.  The same value MUST be used for all 0-RTT packets sent on that
 connection ({{packet-protected}}).  This randomized value is used to determine
-the handshake packet protection keys (see Section 5.3.2 of {{QUIC-TLS}}).
+the packet protection keys for Initial packets (see Section 5.1.1 of
+{{QUIC-TLS}}).
 
 A Version Negotiation ({{packet-version}}) packet MUST use both connection IDs
 selected by the client, swapped to ensure correct routing toward the client.
@@ -1031,7 +1032,7 @@ number are provided, as shown in {{pn-encodings}}.
 Note that these encodings are similar to those in {{integer-encoding}}, but
 use different values.
 
-The encoded packet number is protected as described in Section 5.6
+The encoded packet number is protected as described in Section 5.3
 {{QUIC-TLS}}. Protection of the packet number is removed prior to recovering
 the full packet number. The full packet number is reconstructed at the
 receiver based on the number of significant bits present, the content of those
@@ -1508,7 +1509,7 @@ handling.
 
 The format of the transport parameters is the TransportParameters struct from
 {{figure-transport-parameters}}.  This is described using the presentation
-language from Section 3 of {{!I-D.ietf-tls-tls13}}.
+language from Section 3 of {{!TLS13=I-D.ietf-tls-tls13}}.
 
 ~~~
    uint32 QuicVersion;
@@ -3385,8 +3386,7 @@ messages are delayed or lost.  Note that the same limitation applies to other
 data sent by the server protected by the 1-RTT keys.
 
 Endpoints SHOULD send acknowledgments for packets containing CRYPTO frames with
-a reduced delay; see Section 3.5.1 of {{QUIC-RECOVERY}}.
-
+a reduced delay; see Section 4.3.1 of {{QUIC-RECOVERY}}.
 
 
 ## ACK_ECN Frame {#frame-ack-ecn}

@@ -351,7 +351,7 @@ UDP datagram.
 | Short Header    | 1-RTT            | 0/1-RTT   |
 {: #packet-types-levels title="Encryption Levels by Packet Type"}
 
-Section 6.3 of {{QUIC-TRANSPORT}} shows how packets at the various encryption
+Section 6.5 of {{QUIC-TRANSPORT}} shows how packets at the various encryption
 levels fit into the handshake process.
 
 ## Interface to TLS
@@ -601,14 +601,14 @@ can be used to correct a client's incorrect KeyShare extension as well as for a
 stateless round-trip check. From the perspective of QUIC, this just looks like
 additional messages carried in the Initial encryption level. Although it is in
 principle possible to use this feature for address verification in QUIC, QUIC
-implementations SHOULD instead use the Retry feature (see Section 4.4.2 of
+implementations SHOULD instead use the Retry feature (see Section 4.4 of
 {{QUIC-TRANSPORT}}).  HelloRetryRequest is still used to request key shares.
 
 
 ## TLS Errors
 
 If TLS experiences an error, it generates an appropriate alert as defined in
-Section 6 of {{TLS13}}.
+Section 6 of {{!TLS13}}.
 
 A TLS alert is turned into a QUIC connection error by converting the one-octet
 alert description into a QUIC error code.  The alert description is added to
@@ -634,10 +634,11 @@ traffic keys using as described in Section 7.3 of {{!TLS13}}
 The keys for the Initial encryption level are computed based on the client's
 initial Destination Connection ID, as described in {{initial-secrets}}.
 
-The keys for the remaining encryption level are computed in the same fashion as
-the corresponding TLS keys (see Section 7 of {{!TLS13}}), except that the label
-for HKDF-Expand-Label uses the prefix "quic " rather than "tls13 ". A different
+The keys for other encryption levels are computed in the same fashion as the
+corresponding TLS keys (see Section 7 of {{!TLS13}}), except that the label for
+HKDF-Expand-Label uses the prefix "quic " rather than "tls13 ". A different
 label provides key separation between TLS and QUIC.
+
 
 ### Initial Secrets {#initial-secrets}
 
@@ -772,7 +773,7 @@ protection algorithms MUST NOT sample more ciphertext than the minimum expansion
 of the corresponding AEAD.
 
 Packet number protection is applied to the packet number encoded as described in
-Section 4.8 of {{QUIC-TRANSPORT}}. Since the length of the packet number is
+Section 4.11 of {{QUIC-TRANSPORT}}. Since the length of the packet number is
 stored in the first octet of the encoded packet number, it may be necessary to
 progressively decrypt the packet number.
 
@@ -901,10 +902,11 @@ cannot be used until the endpoint has received and successfully decrypted a
 packet with a matching KEY_PHASE.
 
 A receiving endpoint detects an update when the KEY_PHASE bit doesn't match what
-it is expecting.  It creates a new secret (see Section 7.2 of {{TLS13}}) and the
-corresponding read key and IV.  If the packet can be decrypted and authenticated
-using these values, then the keys it uses for packet protection are also
-updated.  The next packet sent by the endpoint will then use the new keys.
+it is expecting.  It creates a new secret (see Section 7.2 of {{!TLS13}}) and
+the corresponding read key and IV.  If the packet can be decrypted and
+authenticated using these values, then the keys it uses for packet protection
+are also updated.  The next packet sent by the endpoint will then use the new
+keys.
 
 An endpoint doesn't need to send packets immediately when it detects that its
 peer has updated keys.  The next packet that it sends will simply use the new
@@ -1047,10 +1049,10 @@ by an attacker.
 QUIC includes three defenses against this attack. First, the packet containing a
 ClientHello MUST be padded to a minimum size. Second, if responding to an
 unverified source address, the server is forbidden to send more than three UDP
-datagrams in its first flight (see Section 4.4.3 of
-{{QUIC-TRANSPORT}}). Finally, because acknowledgements of Handshake packets are
-authenticated, a blind attacker cannot forge them.  Put together, these defenses
-limit the level of amplification.
+datagrams in its first flight (see Section 4.7 of {{QUIC-TRANSPORT}}). Finally,
+because acknowledgements of Handshake packets are authenticated, a blind
+attacker cannot forge them.  Put together, these defenses limit the level of
+amplification.
 
 
 ## Peer Denial of Service {#useless}
