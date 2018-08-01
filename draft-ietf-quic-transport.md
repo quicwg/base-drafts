@@ -2597,7 +2597,7 @@ Using a randomized connection ID results in two problems:
 
 * The packet might not reach the peer.  If the Destination Connection ID is
   critical for routing toward the peer, then this packet could be incorrectly
-  routed.  This might also triggering another Stateless Reset in response, see
+  routed.  This might also trigger another Stateless Reset in response, see
   {{reset-looping}}.  A Stateless Reset that is not correctly routed is
   ineffective in causing errors to be quickly detected and recovered.  In this
   case, endpoints will need to rely on other methods - such as timers - to
