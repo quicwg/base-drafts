@@ -4174,11 +4174,11 @@ receives a STREAM frame with an ID greater than the limit it has sent MUST treat
 this as a stream error of type STREAM_ID_ERROR ({{error-handling}}), unless this
 is a result of a change in the initial limits (see {{zerortt-parameters}}).
 
-A receiver MUST NOT renege on an advertisement; that is, once a receiver
-advertises a stream ID via a MAX_STREAM_ID frame, it MUST NOT subsequently
-advertise a smaller maximum ID.  A sender may receive MAX_STREAM_ID frames out
-of order; a sender MUST therefore ignore any MAX_STREAM_ID that does not
-increase the maximum.
+A receiver cannot renege on an advertisement; that is, once a receiver
+advertises a stream ID via a MAX_STREAM_ID frame, advertising a smaller maximum
+ID has no effect.  A sender MUST ignore any MAX_STREAM_ID frame that does not
+increase the maximum stream ID.
+
 
 ## Sending and Receiving Data
 
@@ -4274,11 +4274,10 @@ maximum absolute byte offset of a stream, while MAX_DATA sends the
 maximum of the sum of the absolute byte offsets of all streams.
 
 A receiver MAY advertise a larger offset at any point by sending MAX_DATA or
-MAX_STREAM_DATA frames.  A receiver MUST NOT renege on an advertisement; that
-is, once a receiver advertises an offset, it MUST NOT subsequently advertise a
-smaller offset.  A sender could receive MAX_DATA or MAX_STREAM_DATA frames out
-of order; a sender MUST therefore ignore any flow control offset that does not
-move the window forward.
+MAX_STREAM_DATA frames.  A receiver cannot renege on an advertisement; that is,
+once a receiver advertises an offset, advertising a smaller offset has no
+effect.  A sender MUST therefore ignore any MAX_DATA or MAX_STREAM_DATA frames
+that do not increase flow control limits.
 
 A receiver MUST close the connection with a FLOW_CONTROL_ERROR error
 ({{error-handling}}) if the peer violates the advertised connection or stream
