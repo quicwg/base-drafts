@@ -595,7 +595,7 @@ The server includes a connection ID of its choice in the Source Connection ID
 field.  The client MUST use this connection ID in the Destination Connection ID
 of subsequent packets that it sends.
 
-A Retry packet does not include a packet number and cannot be explictly
+A Retry packet does not include a packet number and cannot be explicitly
 acknowledged by a client.
 
 A server MUST NOT send a Retry in response to packets other than Initial
@@ -619,7 +619,7 @@ A server that might send another Retry packet in response to a subsequent
 Initial packet MUST set the Source Connection ID to a new value of at least 8
 octets in length.  This allows clients to distinguish between Retry packets when
 the server sends multiple rounds of Retry packets.  Consequently, a valid Retry
-packet will always have an Original Destinagion Connection ID that is at least 8
+packet will always have an Original Destination Connection ID that is at least 8
 octets long; clients MUST discard Retry packets that include a shorter value.  A
 server that will not send additional Retry packets can set the Source Connection
 ID to any value.
@@ -1232,7 +1232,7 @@ to a peer for each connection ID received from that peer.
 While endpoints select connection IDs as appropriate for their implementation,
 the connection ID MUST NOT include the unprotected sequence number.  Endpoints
 need to be able to recover the sequence number associated with each connection
-ID they generate without relying on information available to unaffiliate
+ID they generate without relying on information available to unaffiliated
 parties. A connection ID that encodes an unencrypted sequence number could be
 used to correlate connection IDs across network paths.
 
@@ -3479,7 +3479,7 @@ a connection error of type PROTOCOL_VIOLATION.
 ## NEW_TOKEN frame {#frame-new-token}
 
 A server sends a NEW_TOKEN frame (type=0x19) to provide the client a token to
-send in a the header of an Initial packet for a future connection.
+send in the header of an Initial packet for a future connection.
 
 The NEW_TOKEN frame is as follows:
 
@@ -3869,7 +3869,7 @@ value of search_low SHOULD be consistent with the IPv6 minimum packet size.
 Paths that do not support this size cannot deliver Initial packets, and
 therefore are not QUIC-compliant.
 
-Section 7.3 of {{!PLPMTUD}} discusses tradeoffs between small and large
+Section 7.3 of {{!PLPMTUD}} discusses trade-offs between small and large
 increases in the size of probe packets. As QUIC probe packets need not contain
 application data, aggressive increases in probe size carry fewer consequences.
 
@@ -4449,7 +4449,7 @@ frames contribute to connection overhead.  Therefore frequently sending frames
 with small changes is undesirable.  At the same time, infrequent updates require
 larger increments to limits if blocking is to be avoided.  Thus, larger updates
 require a receiver to commit to larger resource commitments.  Thus there is a
-tradeoff between resource commitment and overhead when determining how large a
+trade-off between resource commitment and overhead when determining how large a
 limit is advertised.
 
 A receiver MAY use an autotuning mechanism to tune the frequency and amount that
@@ -4482,7 +4482,7 @@ entire round trip.
 
 For smooth operation of the congestion controller, it is generally considered
 best to not let the sender go into quiescence if avoidable.  To avoid blocking a
-sender, and to reasonably account for the possibiity of loss, a receiver should
+sender, and to reasonably account for the possibility of loss, a receiver should
 send a MAX_DATA or MAX_STREAM_DATA frame at least two round trips before it
 expects the sender to get blocked.
 
@@ -4515,7 +4515,7 @@ errors is not mandatory, but only because requiring that an endpoint generate
 these errors also means that the endpoint needs to maintain the final offset
 state for closed streams, which could mean a significant state commitment.
 
-## Flow Control for Crytographic Handshake {#flow-control-crypto}
+## Flow Control for Cryptographic Handshake {#flow-control-crypto}
 
 Data sent in CRYPTO frames is not flow controlled in the same way as STREAM
 frames.  QUIC relies on the cryptographic protocol implementation to avoid
@@ -4662,7 +4662,7 @@ CRYPTO_ERROR (0x1XX):
 
 : The cryptographic handshake failed.  A range of 256 values is reserved for
   carrying error codes specific to the cryptographic handshake that is used.
-  Codes for errors occuring when TLS is used for the crypto handshake are
+  Codes for errors occurring when TLS is used for the crypto handshake are
   described in Section 4.8 of {{QUIC-TLS}}.
 
 See {{iana-error-codes}} for details of registering new error codes.
@@ -4818,7 +4818,7 @@ higher-numbered stream ID is received.  Thus, on a new connection, opening
 stream 2000001 opens 1 million streams, as required by the specification.
 
 The number of active streams is limited by the concurrent stream limit transport
-parameter, as explained in {{stream-concurrency}}.  If chosen judisciously, this
+parameter, as explained in {{stream-concurrency}}.  If chosen judiciously, this
 limit mitigates the effect of the stream commitment attack.  However, setting
 the limit too low could affect performance when applications expect to open
 large number of streams.
@@ -5143,7 +5143,7 @@ Issue and pull request numbers are listed with a leading octothorp.
 - Removed type for Version Negotiation and use Version 0 (#963, #968)
 - Streams are split into unidirectional and bidirectional (#643, #656, #720,
   #872, #175, #885)
-  * Stream limits now have separate uni- and bi-directinal transport parameters
+  * Stream limits now have separate uni- and bi-directional transport parameters
     (#909, #958)
   * Stream limit transport parameters are now optional and default to 0 (#970,
     #971)
