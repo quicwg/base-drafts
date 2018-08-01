@@ -100,7 +100,7 @@ ACK-only:
 In-flight:
 
 : Packets are considered in-flight when they have been sent
-  and neither acknowledged or declared lost, and they are not
+  and neither acknowledged nor declared lost, and they are not
   ACK-only.
 
 Retransmittable Frames:
