@@ -2684,13 +2684,10 @@ Stateless Reset:
 
 * An endpoint can remember the number of Stateless Reset packets that it has
   sent and stop generating new Stateless Reset packets once a limit is reached.
-  Using separate limits for different remote addresses or different Destination
-  Connection ID fields on inbound packets will ensure that Stateless Reset
-  packets can be used for some peers even when other peers have exhausted
-  limits.
-
-* An endpoint can set the TTL in the IP header to one fewer than the TTL in the
-  packet that it received.  Once the TTL reaches zero, any looping ends.
+  Using separate limits for different remote addresses - or different values for
+  the Destination Connection ID fields on the packet that triggers the reset -
+  will ensure that Stateless Reset packets can be used to close connections when
+  other peers or connections have exhausted limits.
 
 * An endpoint can ensure that every Stateless Reset that it sends is smaller
   than the packet triggered it.  In the event of a loop, this results in packets
