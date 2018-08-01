@@ -1186,10 +1186,10 @@ endpoint, as described in {{termination}}.
 
 ## Connection ID
 
-Each connection is identified by a collection of identifiers assigned to it. A
-connection ID can be 0 octets in length (and thus unlikely to be unique), or
-between 4 and 18 octets (inclusive).  Connection IDs are selected independently
-in each direction.
+Each connection possesses a set of identifiers, any of which could be used to
+distinguish it from other connections.  A connection ID can be either 0 octets
+in length, or between 4 and 18 octets (inclusive).  Connection IDs are selected
+independently in each direction.
 
 The primary function of a connection ID is to ensure that changes in addressing
 at lower protocol layers (UDP, IP, and below) don't cause packets for a QUIC
