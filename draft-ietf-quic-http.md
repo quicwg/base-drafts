@@ -577,7 +577,7 @@ A push stream is indicated by a stream type of `0x50` (ASCII 'P'), followed by
 the Push ID of the promise that it fulfills, encoded as a variable-length
 integer. The remaining data on this stream consists of HTTP/QUIC frames, as
 defined in {{frames}}, and carries the response side of an HTTP message
-exchange asdescribed in {{request-response}}. The request headers of the
+exchange as described in {{request-response}}. The request headers of the
 exchange are carried by a PUSH_PROMISE frame (see {{frame-push-promise}})
 on the request stream which generated the push. Promised requests MUST
 conform to the requirements in Section 8.2 of {{!RFC7540}}.
@@ -599,7 +599,7 @@ frame (see {{frame-max-push-id}}). A server cannot use server push
 until it receives a MAX_PUSH_ID frame. A client sends additional MAX_PUSH_ID
 frames to control the number of pushes that a server can promise. A server
 SHOULD use Push IDs sequentially, starting at 0. A client MUST treat receipt
-of a pushstream with a Push ID that is greater than the maximum Push ID as a
+of a push stream with a Push ID that is greater than the maximum Push ID as a
 connection error of type HTTP_PUSH_LIMIT_EXCEEDED.
 
 Each Push ID MUST only be used once in a push stream header. If a push stream
@@ -1501,7 +1501,7 @@ PADDING frames or employ the reserved frame and stream types discussed in
 {{frame-grease}} and {{stream-grease}}.
 
 The modified SETTINGS format contains nested length elements, which could pose
-a security risk to an uncautious implementer.  A SETTINGS frame parser MUST
+a security risk to an incautious implementer.  A SETTINGS frame parser MUST
 ensure that the length of the frame exactly matches the length of the settings
 it contains.
 
