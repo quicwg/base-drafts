@@ -163,10 +163,10 @@ The next octet contains the length in octets of the two Connection IDs (see
 {{connection-id}}) that follow.  Each length is encoded as a 4-bit unsigned
 integer.  The length of the Destination Connection ID (DCIL) occupies the high
 bits of the octet and the length of the Source Connection ID (SCIL) occupying
-the low bits of the octet.  An encoded length of 0 indicates that the connection
-ID is also 0 octets in length.  Non-zero encoded lengths are increased by 3 to
-get the full length of the connection ID; the final value is therefore either 0
-or between 4 and 18 octets in length (inclusive).  For example, an octet with
+the low bits of the octet.  An encoded length between 0 and 12 octes (inclusive)
+indicates that the connection ID is also 0 to 12 octets in length.  Any larger
+value is increased by 3 to get the full length of the connection ID, producing a
+length between 16 and 18 octets (inclusive).  For example, an octet with
 the value 0xe0 describes a 17 octet Destination Connection ID and a zero octet
 Source Connection ID.
 
