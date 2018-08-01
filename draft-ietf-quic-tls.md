@@ -351,7 +351,7 @@ UDP datagram.
 | Short Header    | 1-RTT            |
 {: #packet-types-levels title="Encryption Levels by Packet Type"}
 
-Section 6.3 of {{QUIC-TRANSPORT}} shows how packets at the various encryption
+Section 6.5 of {{QUIC-TRANSPORT}} shows how packets at the various encryption
 levels fit into the handshake process.
 
 ## Interface to TLS
@@ -434,16 +434,16 @@ Important:
 : The requirement for the server to wait for the client Finished message creates
   a dependency on that message being delivered.  A client can avoid the
   potential for head-of-line blocking that this implies by sending a copy of the
-  STREAM frame that carries the Finished message in multiple packets.  This
+  CRYPTO frame that carries the Finished message in multiple packets.  This
   enables immediate server processing for those packets.
 
 
 ### Encryption Level Changes
 
-At each change of encryption level in either direction, TLS signals QUIC,
-providing the new level and the encryption keys.  These events are not
-asynchronous, they always occur immediately after TLS is provided with new
-handshake octets, or after TLS produces handshake octets.
+At each change of encryption level in either direction, TLS provides QUIC with
+the new level and the encryption keys.  These events are not asynchronous; they
+always occur immediately after TLS is provided with new handshake octets, or
+after TLS produces handshake octets.
 
 If 0-RTT is possible, it is ready after the client sends a TLS ClientHello
 message or the server receives that message.  After providing a QUIC client with
@@ -469,25 +469,27 @@ transmission.
 Client                                                    Server
 
 Get Handshake
-                      Initial ------------>
+                     Initial ------------->
 Rekey tx to 0-RTT Keys
-                      0-RTT -------------->
+                     0-RTT --------------->
                                               Handshake Received
                                                    Get Handshake
-                      <------------ Initial
+                     <------------- Initial
                                           Rekey rx to 0-RTT keys
                                               Handshake Received
                                       Rekey rx to Handshake keys
                                                    Get Handshake
                      <----------- Handshake
                                           Rekey tx to 1-RTT keys
+                     <--------------- 1-RTT
 Handshake Received
 Rekey rx to Handshake keys
 Handshake Received
 Get Handshake
 Handshake Complete
+                     Handshake ----------->
 Rekey tx to 1-RTT keys
-                      Handshake ---------->
+                     1-RTT --------------->
                                               Handshake Received
                                           Rekey rx to 1-RTT keys
                                                    Get Handshake
@@ -514,22 +516,31 @@ older than 1.3 is negotiated.
 
 ## ClientHello Size {#clienthello-size}
 
-QUIC requires that the initial handshake packet from a client fit within the
-payload of a single packet.  The size limits on QUIC packets mean that a record
-containing a ClientHello needs to fit within 1129 octets, though endpoints can
-reduce the size of their connection ID to increase by up to 22 octets.
+QUIC requires that the first Initial packet from a client contain an entire
+crytographic handshake message, which for TLS is the ClientHello.  Though a
+packet larger than 1200 octets might be supported by the path, a client improves
+the likelihood that a packet is accepted if it ensures that the first
+ClientHello message is small enough to stay within this limit.
 
-A TLS ClientHello can fit within this limit with ample space remaining.
-However, there are several variables that could cause this limit to be exceeded.
-Implementations are reminded that large session tickets or HelloRetryRequest
-cookies, multiple or large key shares, and long lists of supported ciphers,
-signature algorithms, versions, QUIC transport parameters, and other negotiable
-parameters and extensions could cause this message to grow.
+QUIC packet and framing add at least 36 octets of overhead to the ClientHello
+message.  That overhead increases if the client chooses a connection ID without
+zero length.  Overheads also do not include the token or a connection ID longer
+than 8 octets, both of which might be required if a server sends a Retry packet.
 
-For servers, the size of the session tickets and HelloRetryRequest cookie
-extension can have an effect on a client's ability to connect.  Choosing a small
-value increases the probability that these values can be successfully used by a
-client.
+A typical TLS ClientHello can easily fit into a 1200 octet packet.  However, in
+addition to the overheads added by QUIC, there are several variables that could
+cause this limit to be exceeded.  Large session tickets, multiple or large key
+shares, and long lists of supported ciphers, signature algorithms, versions,
+QUIC transport parameters, and other negotiable parameters and extensions could
+cause this message to grow.
+
+For servers, in addition to connection ID and tokens, the size of TLS session
+tickets can have an effect on a client's ability to connect.  Minimizing the
+size of these values increases the probability that they can be successfully
+used by a client.
+
+A client is not required to fit the ClientHello that it sends in response to a
+HelloRetryRequest message into a single UDP datagram.
 
 The TLS implementation does not need to ensure that the ClientHello is
 sufficiently large.  QUIC PADDING frames are added to increase the size of the
@@ -572,13 +583,16 @@ as a connection error of type PROTOCOL_VIOLATION.
 ## Rejecting 0-RTT
 
 A server rejects 0-RTT by rejecting 0-RTT at the TLS layer.  This also prevents
-QUIC from sending 0-RTT data. A client that attempts 0-RTT MUST also consider
-0-RTT to be rejected if it receives a Version Negotiation packet.
+QUIC from sending 0-RTT data. A server will always reject 0-RTT if it sends a
+TLS HelloRetryRequest.
 
 When 0-RTT is rejected, all connection characteristics that the client assumed
 might be incorrect.  This includes the choice of application protocol, transport
 parameters, and any application configuration.  The client therefore MUST reset
 the state of all streams, including application state bound to those streams.
+
+A client MAY attempt to send 0-RTT again if it receives a Retry or Version
+Negotiation packet.  These packets do not signify rejection of 0-RTT.
 
 ## HelloRetryRequest
 
@@ -587,14 +601,14 @@ can be used to correct a client's incorrect KeyShare extension as well as for a
 stateless round-trip check. From the perspective of QUIC, this just looks like
 additional messages carried in the Initial encryption level. Although it is in
 principle possible to use this feature for address verification in QUIC, QUIC
-implementations SHOULD instead use the Retry feature (see Section 4.4.2 of
+implementations SHOULD instead use the Retry feature (see Section 4.4 of
 {{QUIC-TRANSPORT}}).  HelloRetryRequest is still used to request key shares.
 
 
 ## TLS Errors
 
 If TLS experiences an error, it generates an appropriate alert as defined in
-Section 6 of {{TLS13}}.
+Section 6 of {{!TLS13}}.
 
 A TLS alert is turned into a QUIC connection error by converting the one-octet
 alert description into a QUIC error code.  The alert description is added to
@@ -620,10 +634,11 @@ traffic keys using as described in Section 7.3 of {{!TLS13}}
 The keys for the Initial encryption level are computed based on the client's
 initial Destination Connection ID, as described in {{initial-secrets}}.
 
-The keys for the remaining encryption level are computed in the same fashion as
-the corresponding TLS keys (see Section 7 of {{!TLS13}}), except that the label
-for HKDF-Expand-Label uses the prefix "quic " rather than "tls13 ". A different
+The keys for other encryption levels are computed in the same fashion as the
+corresponding TLS keys (see Section 7 of {{!TLS13}}), except that the label for
+HKDF-Expand-Label uses the prefix "quic " rather than "tls13 ". A different
 label provides key separation between TLS and QUIC.
+
 
 ### Initial Secrets {#initial-secrets}
 
@@ -633,13 +648,15 @@ connection. Specifically:
 
 ~~~
 initial_salt = 0x9c108f98520a5c5c32968e950e8a2c5fe06d6c38
-initial_secret =
-    HKDF-Extract(initial_salt, client_dst_connection_id)
+initial_secret = HKDF-Extract(initial_salt,
+                              client_dst_connection_id)
 
-client_initial_secret =
-   HKDF-Expand-Label(initial_secret, "client in", Hash.length)
-server_initial_secret =
-   HKDF-Expand-Label(initial_secret, "server in", Hash.length)
+client_initial_secret = HKDF-Expand-Label(initial_secret,
+                                          "client in", "",
+                                          Hash.length)
+server_initial_secret = HKDF-Expand-Label(initial_secret,
+                                          "server in", "",
+                                          Hash.length)
 ~~~
 
 Note that if the server sends a Retry, the client's Initial will correspond to a
@@ -746,6 +763,9 @@ handled separately.
 sample_offset = 6 + len(destination_connection_id) +
                     len(source_connection_id) +
                     len(payload_length) + 4
+if packet_type == Initial:
+    sample_offset += len(token_length) +
+                     len(token)
 ~~~
 
 To ensure that this process does not sample the packet number, packet number
@@ -753,7 +773,7 @@ protection algorithms MUST NOT sample more ciphertext than the minimum expansion
 of the corresponding AEAD.
 
 Packet number protection is applied to the packet number encoded as described in
-Section 4.8 of {{QUIC-TRANSPORT}}. Since the length of the packet number is
+Section 4.11 of {{QUIC-TRANSPORT}}. Since the length of the packet number is
 stored in the first octet of the encoded packet number, it may be necessary to
 progressively decrypt the packet number.
 
@@ -882,10 +902,11 @@ cannot be used until the endpoint has received and successfully decrypted a
 packet with a matching KEY_PHASE.
 
 A receiving endpoint detects an update when the KEY_PHASE bit doesn't match what
-it is expecting.  It creates a new secret (see Section 7.2 of {{TLS13}}) and the
-corresponding read key and IV.  If the packet can be decrypted and authenticated
-using these values, then the keys it uses for packet protection are also
-updated.  The next packet sent by the endpoint will then use the new keys.
+it is expecting.  It creates a new secret (see Section 7.2 of {{!TLS13}}) and
+the corresponding read key and IV.  If the packet can be decrypted and
+authenticated using these values, then the keys it uses for packet protection
+are also updated.  The next packet sent by the endpoint will then use the new
+keys.
 
 An endpoint doesn't need to send packets immediately when it detects that its
 peer has updated keys.  The next packet that it sends will simply use the new
@@ -1028,10 +1049,10 @@ by an attacker.
 QUIC includes three defenses against this attack. First, the packet containing a
 ClientHello MUST be padded to a minimum size. Second, if responding to an
 unverified source address, the server is forbidden to send more than three UDP
-datagrams in its first flight (see Section 4.4.3 of
-{{QUIC-TRANSPORT}}). Finally, because acknowledgements of Handshake packets are
-authenticated, a blind attacker cannot forge them.  Put together, these defenses
-limit the level of amplification.
+datagrams in its first flight (see Section 4.7 of {{QUIC-TRANSPORT}}). Finally,
+because acknowledgements of Handshake packets are authenticated, a blind
+attacker cannot forge them.  Put together, these defenses limit the level of
+amplification.
 
 
 ## Peer Denial of Service {#useless}

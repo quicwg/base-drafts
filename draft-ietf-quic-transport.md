@@ -348,7 +348,7 @@ Packet Number:
 
 : The packet number field is 1, 2, or 4 octets long. The packet number has
   confidentiality protection separate from packet protection, as described
-  in Section 5.6 of {{QUIC-TLS}}. The length of the packet number field is
+  in Section 5.3 of {{QUIC-TLS}}. The length of the packet number field is
   encoded in the plaintext packet number. See {{packet-numbers}} for details.
 
 Payload:
@@ -459,7 +459,7 @@ Packet Number:
 
 : The packet number field is 1, 2, or 4 octets long. The packet number has
   confidentiality protection separate from packet protection, as described in
-  Section 5.6 of {{QUIC-TLS}}. The length of the packet number field is encoded
+  Section 5.3 of {{QUIC-TLS}}. The length of the packet number field is encoded
   in the plaintext packet number. See {{packet-numbers}} for details.
 
 Protected Payload:
@@ -536,6 +536,95 @@ See {{version-negotiation}} for a description of the version negotiation
 process.
 
 
+## Retry Packet {#packet-retry}
+
+A Retry packet uses a long packet header with a type value of 0x7E. It carries
+an address validation token created by the server. It is used by a server that
+wishes to perform a stateless retry (see {{stateless-retry}}).
+
+~~~
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+
+|1|    0x7e     |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                         Version (32)                          |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|DCIL(4)|SCIL(4)|
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|               Destination Connection ID (0/32..144)         ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                 Source Connection ID (0/32..144)            ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|    ODCIL(8)   |      Original Destination Connection ID (*)   |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                        Retry Token (*)                      ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~
+{: #retry-format title="Retry Packet"}
+
+A Retry packet (shown in {{retry-format}}) only uses the invariant portion of
+the long packet header {{QUIC-INVARIANTS}}; that is, the fields up to and
+including the Destination and Source Connection ID fields.  The contents of the
+Retry packet are not protected.  Like Version Negotiation, a Retry packet
+contains the long header including the connection IDs, but omits the Length,
+Packet Number, and Payload fields.  These are replaced with:
+
+ODCIL:
+
+: The length of the Original Destination Connection ID field.  The length is
+  encoded in the least significant 4 bits of the octet, using the same encoding
+  as the DCIL and SCIL fields.  The most significant 4 bits of this octet are
+  reserved.  Unless a use for these bits has been negotiated, endpoints SHOULD
+  send randomized values and MUST ignore any value that it receives.
+
+Original Destination Connection ID:
+
+: The Original Destination Connection ID contains the value of the Destination
+  Connection ID from the Initial packet that this Retry is in response to. The
+  length of this field is given in ODCIL.
+
+Retry Token:
+
+: An opaque token that the server can use to validate the client's address.
+
+The server populates the Destination Connection ID with the connection ID that
+the client included in the Source Connection ID of the Initial packet.
+
+The server includes a connection ID of its choice in the Source Connection ID
+field.  The client MUST use this connection ID in the Destination Connection ID
+of subsequent packets that it sends.
+
+A Retry packet does not include a packet number and cannot be explictly
+acknowledged by a client.
+
+A server MUST NOT send a Retry in response to packets other than Initial
+or 0-RTT packets.  A server MAY choose to only send Retry in response to Initial
+packets and discard or buffer 0-RTT packets corresponding to unvalidated client
+addresses.
+
+If the Original Destination Connection ID field does not match the Destination
+Connection ID from the most recent Initial packet it sent, clients MUST discard
+the packet.  This prevents an off-path attacker from injecting a Retry packet.
+
+The client responds to a Retry packet with an Initial packet that includes the
+provided Retry Token to continue connection establishment.
+
+A client MAY attempt 0-RTT after receiving a Retry packet by sending 0-RTT
+packets to the connection ID provided by the server.  A client that sends
+additional 0-RTT packets MUST NOT reset the packet number to 0 after a Retry
+packet, see {{retry-0rtt-pn}}.
+
+A server that might send another Retry packet in response to a subsequent
+Initial packet MUST set the Source Connection ID to a new value of at least 8
+octets in length.  This allows clients to distinguish between Retry packets when
+the server sends multiple rounds of Retry packets.  Consequently, a valid Retry
+packet will always have an Original Destinagion Connection ID that is at least 8
+octets long; clients MUST discard Retry packets that include a shorter value.  A
+server that will not send additional Retry packets can set the Source Connection
+ID to any value.
+
+
 ## Cryptographic Handshake Packets {#handshake-packets}
 
 Once version negotiation is complete, the cryptographic handshake is used to
@@ -552,43 +641,61 @@ provide confidentiality or integrity against on-path attackers, but
 provides some level of protection against off-path attackers.
 
 
-### Initial Packet {#packet-initial}
+## Initial Packet {#packet-initial}
 
 The Initial packet uses long headers with a type value of 0x7F.  It carries the
 first CRYPTO frames sent by the client and server to perform key exchange, and
-may carry ACKs in either direction. The Initial packet is protected by Initial
+carries ACKs in either direction. The Initial packet is protected by Initial
 keys as described in {{QUIC-TLS}}.
 
-The Initial packet has two additional header fields that follow the normal Long
-Header.
+The Initial packet (shown in {{initial-format}}) has two additional header
+fields that are added to the Long Header before the Length field.
 
 ~~~
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+
+|1|    0x7f     |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                      Token Length (i)  ...
+|                         Version (32)                          |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|DCIL(4)|SCIL(4)|
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|               Destination Connection ID (0/32..144)         ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                 Source Connection ID (0/32..144)            ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                         Token Length (i)                    ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                            Token (*)                        ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                           Length (i)                        ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                     Packet Number (8/16/32)                   |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                          Payload (*)                        ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
+{: #initial-format title="Initial Packet"}
+
+These fields include the token that was previously provided in a Retry packet or
+NEW_TOKEN frame:
 
 Token Length:
 
 : A variable-length integer specifying the length of the Token field, in bytes.
-  It may be zero if no token is present. Initial packets sent by the server
-  MUST include a zero-length token.
+  This value is zero if no token is present.  Initial packets sent by the server
+  MUST set the Token Length field to zero; clients that receive an Initial
+  packet with a non-zero Token Length field MUST either discard the packet or
+  generate a connection error of type PROTOCOL_VIOLATION.
 
 Token:
 
-: An optional token blob previously received in either a Retry packet or
-  NEW_TOKEN frame.
+: The value of the token.
 
 The client and server use the Initial packet type for any packet that contains
-an initial cryptographic handshake message. In addition to the first
-packet(s). This includes all cases where a new packet containing the initial
-cryptographic message needs to be created, such as the packets sent after
-receiving a Version Negotiation ({{packet-version}}) or Retry packet
-({{packet-retry}}).
+an initial cryptographic handshake message. This includes all cases where a new
+packet containing the initial cryptographic message needs to be created, such as
+the packets sent after receiving a Version Negotiation ({{packet-version}}) or
+Retry packet ({{packet-retry}}).
 
 A server sends its first Initial packet in response to a client Initial.  A
 server may send multiple Initial packets.  The cryptographic key exchange could
@@ -596,14 +703,21 @@ require multiple round trips or retransmissions of this data.
 
 The payload of an Initial packet includes a CRYPTO frame (or frames) containing
 a cryptographic handshake message, ACK frames, or both. The first CRYPTO frame
-sent always begins at an offset of 0 (see {{handshake}}). The client's complete
-first message MUST fit in a single packet (see {{handshake}}). Note that if the
-server sends a HelloRetryRequest, the client will send a second Initial packet
-with a CRYPTO frame with an offset starting at the end of the CRYPTO stream in
-the first Initial.
+sent always begins at an offset of 0 (see {{handshake}}).
+
+The first packet sent by a client always includes a CRYPTO frame that contains
+the entirety of the first cryptographic handshake message.  This packet, and the
+cryptographic handshake message, MUST fit in a single UDP datagram (see
+{{handshake}}).
+
+Note that if the server sends a HelloRetryRequest, the client will send a second
+Initial packet.  This Initial packet will continue the cryptographic handshake
+and will contain a CRYPTO frame with an offset matching the size of the CRYPTO
+frame sent in the first Initial packet.  Cryptographic handshake messages
+subsequent to the first do not need to fit within a single UDP datagram.
 
 
-#### Connection IDs
+### Connection IDs
 
 When an Initial packet is sent by a client which has not previously received a
 Retry packet from the server, it populates the Destination Connection ID field
@@ -628,10 +742,24 @@ server, it MUST discard any packet it receives with a different Source
 Connection ID.
 
 
-#### Tokens
+### Tokens
 
-If the client has a suitable token available from a previous connection, it
-SHOULD populate the Token field.
+If the client has a token received in a NEW_TOKEN frame on a previous connection
+to what it believes to be the same server, it can include that value in the
+Token field of its Initial packet.
+
+A token allows a server to correlate activity between connections.
+Specifically, the connection where the token was issued, and any connection
+where it is used.  Clients that want to break continuity of identity with a
+server MAY discard tokens provided using the NEW_TOKEN frame.  Tokens obtained
+in Retry packets MUST NOT be discarded.
+
+A client SHOULD NOT reuse a token.  Reusing a token allows connections to be
+linked by entities on the network path (see {{migration-linkability}}).  A
+client MUST NOT reuse a token if it believes that its point of network
+attachment has changed since the token was last used; that is, if there is a
+change in its local IP address or network interface.  A client needs to start
+the connection process over if it migrates prior to completing the handshake.
 
 If the client received a Retry packet from the server and sends an Initial
 packet in response, then it sets the Destination Connection ID to the value from
@@ -653,17 +781,44 @@ Note:
   the packet is that the client might have received the token in a previous
   connection using the NEW_TOKEN frame, and if the server has lost state, it
   might be unable to validate the token at all, leading to connection failure if
-  the packet is discarded.
+  the packet is discarded.  A server MAY encode tokens provided with NEW_TOKEN
+  frames and Retry packets differently, and validate the latter more strictly.
 
 
-#### Starting Packet Numbers
+### Starting Packet Numbers
 
 The first Initial packet contains a packet number of 0. Each packet sent after
 the Initial packet has a packet number that increases monotonically (see
 {{packet-numbers}}).
 
 
-#### Minimum Packet Size
+### 0-RTT Packet Numbers {#retry-0rtt-pn}
+
+Packet numbers for 0-RTT protected packets use the same space as 1-RTT protected
+packets.
+
+After a client receives a Retry or Version Negotiation packet, 0-RTT packets are
+likely to have been lost or discarded by the server.  A client MAY attempt to
+resend data in 0-RTT packets after it sends a new Initial packet.
+
+A client MUST NOT reset the packet number it uses for 0-RTT packets.  The keys
+used to protect 0-RTT packets will not change as a result of responding to a
+Retry or Version Negotiation packet unless the client also regenerates the
+cryptographic handshake message.  Sending packets with the same packet number in
+that case would compromise the packet protection for all 0-RTT packets.
+
+Receiving a Retry or Version Negotiation packet, especially a Retry that changes
+the connection ID used for subsequent packets, indicates a strong possibility
+that 0-RTT packets could be lost.  A client only receives acknowledgments for
+its 0-RTT packets once the handshake is complete.  Consequently, a server might
+expect 0-RTT packets to start with a packet number of 0.  Therefore, in
+determining the length of the packet number encoding for 0-RTT packets, a client
+MUST assume that all packets up to the current packet number are in flight,
+starting from a packet number of 0.  Thus, 0-RTT packets could need to use a
+longer packet number encoding.
+
+
+### Minimum Packet Size
 
 The payload of a UDP datagram carrying the Initial packet MUST be expanded to at
 least 1200 octets (see {{packetization}}), by adding PADDING frames to the
@@ -671,67 +826,7 @@ Initial packet and/or by combining the Initial packet with a 0-RTT packet (see
 {{packet-coalesce}}).
 
 
-### Retry Packet {#packet-retry}
-
-A Retry packet uses long headers with a type value of 0x7E. It carries an
-address validation token created by the server. It is used by a server that
-wishes to perform a stateless retry (see {{stateless-retry}}).
-
-~~~
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|     ODCIL(8   |      Original Destination Connection ID (*)   |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                        Retry Token (*) ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-~~~
-
-A Retry packet is not encrypted at all. Instead, the payload of a
-Retry packet contains two values in the clear.
-
-ODCIL:
-
-: The length of the Original Destination Connection ID.
-
-Original Destination Connection ID:
-
-: The Destination Connection ID from the Initial packet that this
-Retry is in response to. The length of this field is given in DCIL.
-
-Retry Token:
-
-: An opaque token that the server can use to validate the client's
-address.
-
-The server populates the Destination Connection ID with the connection ID that
-the client included in the Source Connection ID of the Initial packet.  This
-might be a zero-length value.
-
-The server includes a connection ID of its choice in the Source Connection ID
-field.  The client MUST use this connection ID in the Destination Connection ID
-of subsequent packets that it sends.
-
-The Packet Number field of a Retry packet MUST be set to 0.  This value is
-subsequently protected as normal. \[\[Editor's Note: This isn't ideal, because
-it creates a "cheat" where the client assumes a value.  That's a problem, so I'm
-tempted to suggest that this include any value less than 2^30 so that normal
-processing works - and can be properly exercised.]]
-
-A Retry packet is never explicitly acknowledged in an ACK frame by a client.
-
-A server MUST only send a Retry in response to a client Initial packet.
-
-If the Original Destination Connection ID field does not match the
-Destination Connection ID from most recent the Initial packet it sent,
-clients MUST discard the packet. This prevents an off-path attacker
-from injecting a Retry packet with a bogus new Source Connection ID.
-
-Otherwise, the client SHOULD respond with a new Initial
-packet with the Token field set to the token received in the Retry packet.
-
-
-### Handshake Packet {#packet-handshake}
+## Handshake Packet {#packet-handshake}
 
 A Handshake packet uses long headers with a type value of 0x7D.  It is
 used to carry acknowledgments and cryptographic handshake messages from the
@@ -869,7 +964,8 @@ connection ID to vary in length and still be used by the load balancer.
 The very first packet sent by a client includes a random value for Destination
 Connection ID.  The same value MUST be used for all 0-RTT packets sent on that
 connection ({{packet-protected}}).  This randomized value is used to determine
-the handshake packet protection keys (see Section 5.3.2 of {{QUIC-TLS}}).
+the packet protection keys for Initial packets (see Section 5.1.1 of
+{{QUIC-TLS}}).
 
 A Version Negotiation ({{packet-version}}) packet MUST use both connection IDs
 selected by the client, swapped to ensure correct routing toward the client.
@@ -915,7 +1011,7 @@ number are provided, as shown in {{pn-encodings}}.
 Note that these encodings are similar to those in {{integer-encoding}}, but
 use different values.
 
-The encoded packet number is protected as described in Section 5.6
+The encoded packet number is protected as described in Section 5.3
 {{QUIC-TLS}}. Protection of the packet number is removed prior to recovering
 the full packet number. The full packet number is reconstructed at the
 receiver based on the number of significant bits present, the content of those
@@ -1244,6 +1340,10 @@ Version Negotiation packet.
 A client MUST ignore a Version Negotiation packet that lists the client's chosen
 version.
 
+A client MAY attempt 0-RTT after receiving a Version Negotiation packet.  A
+client that sends additional 0-RTT packets MUST NOT reset the packet number to 0
+as a result, see {{retry-0rtt-pn}}.
+
 Version negotiation packets have no cryptographic protection. The result of the
 negotiation MUST be revalidated as part of the cryptographic handshake (see
 {{version-validation}}).
@@ -1384,7 +1484,7 @@ handling.
 
 The format of the transport parameters is the TransportParameters struct from
 {{figure-transport-parameters}}.  This is described using the presentation
-language from Section 3 of {{!I-D.ietf-tls-tls13}}.
+language from Section 3 of {{!TLS13=I-D.ietf-tls-tls13}}.
 
 ~~~
    uint32 QuicVersion;
@@ -1791,9 +1891,9 @@ use the server to send more data toward the victim than it would be able to send
 on its own.
 
 Several methods are used in QUIC to mitigate this attack.  Firstly, the initial
-handshake packet is padded to at least 1200 octets.  This allows a server to
-send a similar amount of data without risking causing an amplification attack
-toward an unproven remote address.
+handshake packet is sent in a UDP datagram that contains at least 1200 octets of
+UDP payload.  This allows a server to send a similar amount of data without
+risking causing an amplification attack toward an unproven remote address.
 
 A server eventually confirms that a client has received its messages when the
 first Handshake-level message is received. This might be insufficient,
@@ -2454,6 +2554,13 @@ the packet it receives.  Endpoints MUST discard packets that are too small to be
 valid QUIC packets.  With the set of AEAD functions defined in {{QUIC-TLS}},
 packets less than 19 octets long are never valid.
 
+An endpoint MAY send a stateless reset in response to a packet with a long
+header.  This would not be effective if the stateless reset token was not yet
+available to a peer.  In this QUIC version, packets with a long header are only
+used during connection establishment.   Because the stateless reset token is not
+available until connection establishment is complete or near completion,
+ignoring an unknown packet with a long header might be more effective.
+
 An endpoint cannot determine the Source Connection ID from a packet with a short
 header, therefore it cannot set the Destination Connection ID in the stateless
 reset packet.  The destination connection ID will therefore differ from the
@@ -2501,7 +2608,7 @@ the draining period and not send any further packets on this connection.  If the
 comparison fails, the packet can be discarded.
 
 
-#### Calculating a Stateless Reset Token
+#### Calculating a Stateless Reset Token {#reset-token}
 
 The stateless reset token MUST be difficult to guess.  In order to create a
 Stateless Reset Token, an endpoint could randomly generate {{!RFC4086}} a secret
@@ -2512,21 +2619,16 @@ the case where state is lost, so this approach is suboptimal.
 
 A single static key can be used across all connections to the same endpoint by
 generating the proof using a second iteration of a preimage-resistant function
-that takes three inputs: the static key, the connection ID chosen by the
-endpoint (see {{connection-id}}), and an instance identifier.  An endpoint could
-use HMAC {{?RFC2104}} (for example, HMAC(static_key, instance_id ||
-connection_id)) or HKDF {{?RFC5869}} (for example, using the static key as input
-keying material, with instance and connection identifiers as salt).  The output
-of this function is truncated to 16 octets to produce the Stateless Reset Token
-for that connection.
+that takes a static key and the connection ID chosen by the endpoint (see
+{{connection-id}}) as input.  An endpoint could use HMAC {{?RFC2104}} (for
+example, HMAC(static_key, connection_id)) or HKDF {{?RFC5869}} (for example,
+using the static key as input keying material, with the connection ID as salt).
+The output of this function is truncated to 16 octets to produce the Stateless
+Reset Token for that connection.
 
 An endpoint that loses state can use the same method to generate a valid
 Stateless Reset Token.  The connection ID comes from the packet that the
-endpoint receives.  An instance that receives a packet for another instance
-might be able to recover the instance identifier using the connection ID.
-Alternatively, the instance identifier might be omitted from the calculation of
-the Stateless Reset Token so that all instances are equally able to generate a
-stateless reset.
+endpoint receives.
 
 This design relies on the peer always sending a connection ID in its packets so
 that the endpoint can use the connection ID from a packet to reset the
@@ -2535,11 +2637,13 @@ packets with a zero-length destination connection ID.
 
 Revealing the Stateless Reset Token allows any entity to terminate the
 connection, so a value can only be used once.  This method for choosing the
-Stateless Reset Token means that the combination of instance, connection ID, and
-static key cannot occur for another connection.  A connection ID from a
-connection that is reset by revealing the Stateless Reset Token cannot be reused
-for new connections at the same instance without first changing to use a
-different static key or instance identifier.
+Stateless Reset Token means that the combination of connection ID and static key
+cannot occur for another connection.  A denial of service attack is possible if
+the same connection ID is used by instances that share a static key, or if an
+attacker can cause a packet to be routed to an instance that has no state but
+the same static key (see {{reset-oracle}}).  A connection ID from a connection
+that is reset by revealing the Stateless Reset Token cannot be reused for new
+connections at nodes that share a static key.
 
 Note that Stateless Reset messages do not have any cryptographic protection.
 
@@ -3254,8 +3358,7 @@ frames are delayed or lost.  Note that the same limitation applies to other data
 sent by the server protected by the 1-RTT keys.
 
 Endpoints SHOULD send acknowledgments for packets containing CRYPTO frames with
-a reduced delay; see Section 3.5.1 of {{QUIC-RECOVERY}}.
-
+a reduced delay; see Section 4.3.1 of {{QUIC-RECOVERY}}.
 
 ## ACK_ECN Frame {#frame-ack-ecn}
 
@@ -3338,7 +3441,7 @@ frame.  Its format is identical to the PATH_CHALLENGE frame
 
 If the content of a PATH_RESPONSE frame does not match the content of a
 PATH_CHALLENGE frame previously sent by the endpoint, the endpoint MAY generate
-a connection error of type UNSOLICITED_PATH_RESPONSE.
+a connection error of type PROTOCOL_VIOLATION.
 
 
 ## NEW_TOKEN frame {#frame-new-token}
@@ -3641,19 +3744,23 @@ The details of loss detection and congestion control are described in
 The QUIC packet size includes the QUIC header and integrity check, but not the
 UDP or IP header.
 
-Clients MUST pad any Initial packet it sends to have a QUIC packet size of at
-least 1200 octets. Sending an Initial packet of this size ensures that the
-network path supports a reasonably sized packet, and helps reduce the amplitude
-of amplification attacks caused by server responses toward an unverified client
-address.
+Clients MUST ensure that the first Initial packet it sends is sent in a UDP
+datagram that is at least 1200 octets. Padding the Initial packet or including a
+0-RTT packet in the same datagram are ways to meet this requirement.  Sending a
+UDP datagram of this size ensures that the network path supports a reasonable
+Maximum Transmission Unit (MTU), and helps reduce the amplitude of amplification
+attacks caused by server responses toward an unverified client address.
 
-An Initial packet MAY exceed 1200 octets if the client knows that the Path
-Maximum Transmission Unit (PMTU) supports the size that it chooses.
+The datagram containing the first Initial packet from a client MAY exceed 1200
+octets if the client believes that the Path Maximum Transmission Unit (PMTU)
+supports the size that it chooses.
 
 A server MAY send a CONNECTION_CLOSE frame with error code PROTOCOL_VIOLATION in
-response to an Initial packet smaller than 1200 octets. It MUST NOT send any
-other frame type in response, or otherwise behave as if any part of the
-offending packet was processed as valid.
+response to the first Initial packet it receives from a client if the UDP
+datagram is smaller than 1200 octets. It MUST NOT send any other frame type in
+response, or otherwise behave as if any part of the offending packet was
+processed as valid.
+
 
 ## Path Maximum Transmission Unit
 
@@ -4138,11 +4245,11 @@ receives a STREAM frame with an ID greater than the limit it has sent MUST treat
 this as a stream error of type STREAM_ID_ERROR ({{error-handling}}), unless this
 is a result of a change in the initial limits (see {{zerortt-parameters}}).
 
-A receiver MUST NOT renege on an advertisement; that is, once a receiver
-advertises a stream ID via a MAX_STREAM_ID frame, it MUST NOT subsequently
-advertise a smaller maximum ID.  A sender may receive MAX_STREAM_ID frames out
-of order; a sender MUST therefore ignore any MAX_STREAM_ID that does not
-increase the maximum.
+A receiver cannot renege on an advertisement; that is, once a receiver
+advertises a stream ID via a MAX_STREAM_ID frame, advertising a smaller maximum
+ID has no effect.  A sender MUST ignore any MAX_STREAM_ID frame that does not
+increase the maximum stream ID.
+
 
 ## Sending and Receiving Data
 
@@ -4238,11 +4345,10 @@ maximum absolute byte offset of a stream, while MAX_DATA sends the
 maximum of the sum of the absolute byte offsets of all streams.
 
 A receiver MAY advertise a larger offset at any point by sending MAX_DATA or
-MAX_STREAM_DATA frames.  A receiver MUST NOT renege on an advertisement; that
-is, once a receiver advertises an offset, it MUST NOT subsequently advertise a
-smaller offset.  A sender could receive MAX_DATA or MAX_STREAM_DATA frames out
-of order; a sender MUST therefore ignore any flow control offset that does not
-move the window forward.
+MAX_STREAM_DATA frames.  A receiver cannot renege on an advertisement; that is,
+once a receiver advertises an offset, advertising a smaller offset has no
+effect.  A sender MUST therefore ignore any MAX_DATA or MAX_STREAM_DATA frames
+that do not increase flow control limits.
 
 A receiver MUST close the connection with a FLOW_CONTROL_ERROR error
 ({{error-handling}}) if the peer violates the advertised connection or stream
@@ -4515,11 +4621,6 @@ PROTOCOL_VIOLATION (0xA):
 : An endpoint detected an error with protocol compliance that was not covered by
   more specific error codes.
 
-UNSOLICITED_PATH_RESPONSE (0xB):
-
-: An endpoint received a PATH_RESPONSE frame that did not correspond to any
-  PATH_CHALLENGE frame that it previously sent.
-
 INVALID_MIGRATION (0xC):
 
 : A peer has migrated to a different network when the endpoint had disabled
@@ -4675,6 +4776,31 @@ receiver, an off-path attacker will need to race the duplicate packet against
 the original to be successful in this attack.  Therefore, QUIC receivers ignore
 ECN codepoints set in duplicate packets (see {{using-ecn}}).
 
+## Stateless Reset Oracle {#reset-oracle}
+
+Stateless resets create a possible denial of service attack analogous to a TCP
+reset injection. This attack is possible if an attacker is able to cause a
+stateless reset token to be generated for a connection with a selected
+connection ID. An attacker that can cause this token to be generated can reset
+an active connection with the same connection ID.
+
+If a packet can be routed to different instances that share a static key, for
+example by changing an IP address or port, then an attacker can cause the server
+to send a stateless reset.  To defend against this style of denial service,
+endpoints that share a static key for stateless reset (see {{reset-token}}) MUST
+be arranged so that packets with a given connection ID always arrive at an
+instance that has connection state, unless that connection is no longer active.
+
+In the case of a cluster that uses dynamic load balancing, it's possible that a
+change in load balancer configuration could happen while an active instance
+retains connection state; even if an instance retains connection state, the
+change in routing and resulting stateless reset will result in the connection
+being terminated.  If there is no chance in the packet being routed to the
+correct instance, it is better to send a stateless reset than wait for
+connections to time out.  However, this is acceptable only if the routing cannot
+be influenced by an attacker.
+
+
 # IANA Considerations
 
 ## QUIC Transport Parameter Registry {#iana-transport-parameters}
@@ -4817,7 +4943,6 @@ from 0xFF00 to 0xFFFF are reserved for Private Use {{!RFC8126}}.
 | 0x8   | TRANSPORT_PARAMETER_ERROR | Error in transport parameters | {{error-codes}} |
 | 0x9   | VERSION_NEGOTIATION_ERROR | Version negotiation failure   | {{error-codes}} |
 | 0xA   | PROTOCOL_VIOLATION        | Generic protocol violation    | {{error-codes}} |
-| 0xB   | UNSOLICITED_PATH_RESPONSE | Unsolicited PATH_RESPONSE frame | {{error-codes}} |
 | 0xC   | INVALID_MIGRATION         | Violated disabled migration   | {{error-codes}} |
 {: #iana-error-table title="Initial QUIC Transport Error Codes Entries"}
 

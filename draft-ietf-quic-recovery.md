@@ -79,12 +79,39 @@ recovery, and where applicable, attributes the TCP equivalent in RFCs,
 Internet-drafts, academic papers, and/or TCP implementations.
 
 
-## Notational Conventions
+# Conventions and Definitions
 
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD",
 "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this
 document are to be interpreted as described in BCP 14 {{!RFC2119}} {{!RFC8174}}
 when, and only when, they appear in all capitals, as shown here.
+
+Definitions of terms that are used in this document:
+
+ACK frames:
+
+: ACK frames refer to both ACK and ACK_ECN frames in this
+  document.
+
+ACK-only:
+
+: Any packet containing only an ACK or ACK_ECN frame.
+
+In-flight:
+
+: Packets are considered in-flight when they have been sent
+  and neither acknowledged or declared lost, and they are not
+  ACK-only.
+
+Retransmittable Frames:
+
+: All frames besides ACK, ACK_ECN, or PADDING are considered
+  retransmittable.
+
+Retransmittable Packets:
+
+: Packets that contain retransmittable frames elicit an ACK from
+  the receiver and are called retransmittable packets.
 
 
 # Design of the QUIC Transmission Machinery
@@ -104,9 +131,7 @@ acknowledged or declared lost and sent in new packets as necessary. The types
 of frames contained in a packet affect recovery and congestion control logic:
 
 * All packets are acknowledged, though packets that contain only ACK,
-  ACK_ECN, and PADDING frames are not acknowledged immediately.  Packets
-  containing at least one frame besides ACK, ACK_ECN, and PADDING are referred
-  to as "retransmittable" below.
+  ACK_ECN, and PADDING frames are not acknowledged immediately.
 
 * Long header packets that contain CRYPTO frames are critical to the
   performance of the QUIC handshake and use shorter timers for
@@ -115,8 +140,7 @@ of frames contained in a packet affect recovery and congestion control logic:
 * Packets that contain only ACK and ACK_ECN frames do not count toward
   congestion control limits and are not considered in-flight. Note that this
   means PADDING frames cause packets to contribute toward bytes in flight
-  without directly causing an acknowledgment to be sent.  The rest of this
-  document uses "ACK frames" to refer to both ACK and ACK_ECN frames.
+  without directly causing an acknowledgment to be sent.
 
 ## Relevant Differences Between QUIC and TCP
 
@@ -204,9 +228,9 @@ for all connections.
 
 MaxAckDelay is the maximum ack delay supplied in an all incoming ACK frames.
 MaxAckDelay excludes ack delays that aren't included in an RTT sample because
-they're too large or the largest acked has already been acknowledged.
-MaxAckDelay also excludes ack delays where the largest ack references an
-ACK-only packet.
+they're too large or the largest acknowledged has already been acknowledged.
+MaxAckDelay also excludes ack delays where the largest acknowledged references
+an ACK-only packet.
 
 ## Ack-based Detection
 
@@ -311,14 +335,14 @@ the CRYPTO frames were sent at 1RTT encryption.
 When an acknowledgement is received for a handshake packet, the new RTT is
 computed and the timer SHOULD be set for twice the newly computed smoothed RTT.
 
-#### Retry
+#### Retry and Version Negotiation
 
-A Retry packet causes the content of the client's Initial packet to be
-immediately retransmitted along with the token present in the Retry.
+A Retry or Version Negotiation packet causes a client to send another Initial
+packet, effectively restarting the connection process.
 
-The Retry indicates that the Initial was received but not processed.  It MUST
-NOT be treated as an acknowledgment for the Initial, but it MAY be used for an
-RTT measurement.
+Either packet indicates that the Initial was received but not processed.
+Neither packet can be treated as an acknowledgment for the Initial, but they MAY
+be used to improve the RTT estimate.
 
 ### Tail Loss Probe {#tlp}
 
@@ -561,11 +585,11 @@ min_rtt:
 
 max_ack_delay:
 : The maximum ack delay in an incoming ACK frame for this connection.
-  Excludes ack delays for ack only packets and those that create an
-  RTT sample less than min_rtt.
+  Excludes ack delays for non-retransmittable packets and those
+  that create an RTT sample less than min_rtt.
 
 reordering_threshold:
-: The largest packet number gap between the largest acked
+: The largest packet number gap between the largest acknowledged
   retransmittable packet and an unacknowledged
   retransmittable packet before it is declared lost.
 
@@ -580,7 +604,7 @@ sent_packets:
 
 : An association of packet numbers to information about them, including a number
   field indicating the packet number, a time field indicating the time a packet
-  was sent, a boolean indicating whether the packet is ack only, a boolean
+  was sent, a boolean indicating whether the packet is ack-only, a boolean
   indicating whether it counts towards bytes in flight, and a bytes
   field indicating the packet's size.  sent_packets is ordered by packet number,
   and packets remain in sent_packets until acknowledged or lost.
@@ -663,7 +687,8 @@ Pseudocode for OnAckReceived and UpdateRtt follow:
 ~~~
   OnAckReceived(ack):
     largest_acked_packet = ack.largest_acked
-    // If the largest acked is newly acked, update the RTT.
+    // If the largest acknowledged is newly acked,
+    // update the RTT.
     if (sent_packets[ack.largest_acked]):
       latest_rtt = now - sent_packets[ack.largest_acked].time
       UpdateRtt(latest_rtt, ack.ack_delay)
@@ -686,7 +711,7 @@ Pseudocode for OnAckReceived and UpdateRtt follow:
     if (latest_rtt - min_rtt > ack_delay):
       latest_rtt -= ack_delay
       // Only save into max ack delay if it's used
-      // for rtt calculation and is not ack only.
+      // for rtt calculation and is not ack-only.
       if (!sent_packets[ack.largest_acked].ack_only)
         max_ack_delay = max(max_ack_delay, ack_delay)
     // Based on {{?RFC6298}}.
