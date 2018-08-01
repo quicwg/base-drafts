@@ -932,6 +932,9 @@ receiver MUST still attempt to process the remaining packets.  The skipped
 packets MAY either be discarded or buffered for later processing, just as if the
 packets were received out-of-order in separate datagrams.
 
+Retry ({{packet-retry}}) and Version Negotiation ({{packet-version}}) packets
+cannot be coalesced.
+
 
 ## Connection ID Encoding
 
