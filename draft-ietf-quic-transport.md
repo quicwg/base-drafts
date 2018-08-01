@@ -1068,7 +1068,9 @@ send a packet with a number of 0x6bc107.
 
 An endpoint MUST discard packets with duplicate packet numbers.  That is, a
 packet is discarded if the reconstructed packet number is equal to the
-reconstructed packet number of a previously received and processed packet.
+reconstructed packet number of a previously received and processed packet.  Note
+however that endpoints MUST attempt to remove packet protection before
+discarding packets (see Section 9.3 of {{QUIC-TLS}}).
 
 A Version Negotiation packet ({{packet-version}}) does not include a packet
 number.  The Retry packet ({{packet-retry}}) has special rules for populating
