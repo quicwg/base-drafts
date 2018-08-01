@@ -319,23 +319,23 @@ DCIL and SCIL:
   fields that follow it.  These lengths are encoded as two 4-bit unsigned
   integers. The Destination Connection ID Length (DCIL) field occupies the 4
   high bits of the octet and the Source Connection ID Length (SCIL) field
-  occupies the 4 low bits of the octet.  An encoded length of 0 indicates that
-  the connection ID is also 0 octets in length.  Non-zero encoded lengths are
-  increased by 3 to get the full length of the connection ID, producing a length
-  between 4 and 18 octets inclusive.  For example, an octet with the value 0x50
-  describes an 8-octet Destination Connection ID and a zero-length Source
-  Connection ID.
+  occupies the 4 low bits of the octet. An encoded length between 0 and 12
+  inclusive indicates that the connection ID is also 0 to 12 octets in length.
+  Any larger value is increased by 3 to get the full length of the connection
+  ID, producing a length between 16 and 18 octets (inclusive).  For example, an
+  octet with the value 0x50 describes a 5-octet Destination Connection ID and a
+  zero-length Source Connection ID.
 
 Destination Connection ID:
 
 : The Destination Connection ID field follows the connection ID lengths and is
-  either 0 octets in length or between 4 and 18 octets.
+  either between 0 and 12 octets or between 16 and 18 octets in length.
   {{connection-id-encoding}} describes the use of this field in more detail.
 
 Source Connection ID:
 
 : The Source Connection ID field follows the Destination Connection ID and is
-  either 0 octets in length or between 4 and 18 octets.
+  either between 0 and 12 octets or between 16 and 18 octets in length.
   {{connection-id-encoding}} describes the use of this field in more detail.
 
 Length:
@@ -1184,9 +1184,9 @@ endpoint, as described in {{termination}}.
 ## Connection ID
 
 Each connection is identified by a collection of identifiers assigned to it. A
-connection ID can be 0 octets in length (and thus unlikely to be unique), or
-between 4 and 18 octets (inclusive).  Connection IDs are selected independently
-in each direction.
+connection ID can be either between 0 and 12 octets (inclusive) or between 16
+and 18 octets (inclusive).  Connection IDs are selected independently in each
+direction.
 
 The primary function of a connection ID is to ensure that changes in addressing
 at lower protocol layers (UDP, IP, and below) don't cause packets for a QUIC
