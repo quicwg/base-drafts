@@ -1209,6 +1209,27 @@ characteristics or application behavior.  Endpoints can use PADDING frames or
 bundle acknowledgments with other frames to reduce leaked information.
 
 
+## Misreporting ECN Markings
+
+An endpoint can misreport ECN markings to alter the congestion response of a
+peer.  Suppressing reports of ECN-CE markings could cause a peer to increase
+their send rate.  This increase could result in congestion and loss.
+
+An endpoint MAY attempt to detect suppression of reports by marking occasional
+packets that they send with ECN-CE.  If a packet marked with ECN-CE is not
+reported as having been marked when the packet is acknowledged, the endpoint
+SHOULD then disable ECN for that path.
+
+Reporting additional ECN-CE markings will cause a peer to reduce their sending
+rate, which is similar in effect to advertising reduced connection flow control
+limits and so no advantage is gained by doing so.
+
+Endpoints choose the congestion controller that they use.  Though congestion
+controllers ideally use reports of ECN markings as input, the exact response for
+each controller could be different.  Failure to correctly respond to information
+about ECN markings is therefore difficult to detect.
+
+
 # IANA Considerations
 
 This document has no IANA actions.  Yet.
