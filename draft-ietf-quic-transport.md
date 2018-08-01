@@ -2557,6 +2557,7 @@ following layout:
 |                                                               |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
+{: #fig-stateless-reset title="Stateless Reset Packet"}
 
 This design ensures that a stateless reset packet is - to the extent possible -
 indistinguishable from a regular packet with a short header.
@@ -2596,10 +2597,11 @@ Using a randomized connection ID results in two problems:
 
 * The packet might not reach the peer.  If the Destination Connection ID is
   critical for routing toward the peer, then this packet could be incorrectly
-  routed.  This causes the stateless reset to be ineffective in causing errors
-  to be quickly detected and recovered.  In this case, endpoints will need to
-  rely on other methods - such as timers - to detect that the connection has
-  failed.
+  routed.  This might also triggering another Stateless Reset in response, see
+  {{reset-looping}}.  A Stateless Reset that is not correctly routed is
+  ineffective in causing errors to be quickly detected and recovered.  In this
+  case, endpoints will need to rely on other methods - such as timers - to
+  detect that the connection has failed.
 
 * The randomly generated connection ID can be used by entities other than the
   peer to identify this as a potential stateless reset.  An endpoint that
@@ -2669,7 +2671,36 @@ the same static key (see {{reset-oracle}}).  A connection ID from a connection
 that is reset by revealing the Stateless Reset Token cannot be reused for new
 connections at nodes that share a static key.
 
-Note that Stateless Reset messages do not have any cryptographic protection.
+Note that Stateless Reset packets do not have any cryptographic protection.
+
+
+#### Looping {#reset-looping}
+
+The design of a Stateless Reset is such that it is indistinguishable from a
+valid packet.  This means that a Stateless Reset might trigger the sending of a
+Stateless Reset in response, which could lead to infinite exchanges.  An
+endpoint MUST use any one of the following measures to limit the sending of
+Stateless Reset:
+
+* An endpoint can remember the number of Stateless Reset packets that it has
+  sent and stop generating new Stateless Reset packets once a limit is reached.
+  Using separate limits for different remote addresses will ensure that
+  Stateless Reset packets can be used for some peers even when other peers have
+  exhausted limits.
+
+* An endpoint can set the TTL in the IP header to one fewer than the TTL in the
+  packet that it received.  Once the TTL reaches zero, any looping ends.
+
+* An endpoint can ensure that every Stateless Reset that it sends is smaller
+  than the packet triggered it.  In the event of a loop, this results in packets
+  eventually being too small to trigger a response.
+
+Reducing the size of a Stateless Reset below the recommended minimum size of 37
+octets could mean that the packet could be reveal to an observer that it is a
+Stateless Reset.  Conversely, refusing to send a Stateless Reset in response to
+a small packet might result in Stateless Reset not being useful in detecting
+cases of broken connections where only very small packets are sent; such
+failures might only be detected by other means, such as timers.
 
 
 # Frame Types and Formats
