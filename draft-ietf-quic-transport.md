@@ -806,7 +806,8 @@ A client MUST NOT reset the packet number it uses for 0-RTT packets.  The keys
 used to protect 0-RTT packets will not change as a result of responding to a
 Retry or Version Negotiation packet unless the client also regenerates the
 cryptographic handshake message.  Sending packets with the same packet number in
-that case would compromise the packet protection for all 0-RTT packets.
+that case could compromise the packet protection for all 0-RTT packets because
+the combination of key and nonce could be used to protect different content.
 
 Receiving a Retry or Version Negotiation packet, especially a Retry that changes
 the connection ID used for subsequent packets, indicates a strong possibility
@@ -817,6 +818,12 @@ determining the length of the packet number encoding for 0-RTT packets, a client
 MUST assume that all packets up to the current packet number are in flight,
 starting from a packet number of 0.  Thus, 0-RTT packets could need to use a
 longer packet number encoding.
+
+A client MAY instead generate a fresh cryptographic handshake message and start
+packet numbers from 0.  This ensures that new 0-RTT packets will not use the
+same keys, avoiding any risk of key and nonce reuse; this also prevents 0-RTT
+packets from previous handshake attempts from being accepted as part of the
+connection.
 
 
 ### Minimum Packet Size
