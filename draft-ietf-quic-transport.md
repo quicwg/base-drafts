@@ -2007,6 +2007,13 @@ dynamically calculate the expiration time.  It is also unlikely that the client
 port number is the same on two different connections; validating the port is
 therefore unlikely to be successful.
 
+Even when a token is valid, a server SHOULD limit the amount of data that it
+sends toward a client in response to 0-RTT data.  Spoofing of source addresses
+and replays of 0-RTT handshake messages can cause tokens to appear to be valid
+when they are not.  No specific recommendation is made regarding the ratio of
+data sent to received, though it is unlikely to be necessary to send more than
+the initial congestion window.
+
 
 ### Address Validation Token Integrity {#token-integrity}
 
