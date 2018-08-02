@@ -2484,14 +2484,22 @@ source address.
 
 ### Idle Timeout
 
-A connection that remains idle for longer than the idle timeout (see
+A connection that remains idle for longer than the advertised idle timeout (see
 {{transport-parameter-definitions}}) is closed.  A connection enters the
 draining state when the idle timeout expires.
 
-The time at which an idle timeout takes effect won't be perfectly synchronized
-on both endpoints.  An endpoint that sends packets near the end of an idle
-period could have those packets discarded if its peer enters the draining state
-before the packet is received.
+Each endpoint advertises their own idle timeout to their peer. The idle timeout
+starts from the last packet received, or the first packet sent after the last
+received packet.  The latter condition ensures that initiating new activity
+postpones a timeout.
+
+The value for an idle timeout can be asymmetric.  The value advertised by an
+endpoint is only used to determine whether the connection is live at that
+endpoint.  An endpoint that sends packets near the end of the idle timeout
+period of a peer risks having those packets discarded if its peer enters the
+draining state before the packets arrive.  If a peer could timeout within an RTO
+(see Section 4.3.3 of {{QUIC-RECOVERY}}), it is advisable to test for liveness
+before sending any data that cannot be retried safely.
 
 
 ### Immediate Close
