@@ -1066,11 +1066,12 @@ sending a packet with a number of 0x6b2d79 requires a packet number encoding
 with 14 bits or more; whereas the 30-bit packet number encoding is needed to
 send a packet with a number of 0x6bc107.
 
-An endpoint MUST discard packets with duplicate packet numbers.  That is, a
-packet is discarded if the reconstructed packet number is equal to the
-reconstructed packet number of a previously received and processed packet.  Note
-however that endpoints MUST attempt to remove packet protection before
-discarding packets (see Section 9.3 of {{QUIC-TLS}}).
+An endpoint MUST discard packets with duplicate packet numbers.  After
+unprotecting a packet, the receiver MUST check that it has not already processed
+a packet with this PN and if so discard it. Duplicate suppression MUST happen
+after the packet has been unprotected for the reasons described in Section 9.3
+of {{QUIC-TLS}}. An efficient algorithm for duplicate suppression can be found
+in Section 3.4.3 of {{?RFC2406}}.
 
 A Version Negotiation packet ({{packet-version}}) does not include a packet
 number.  The Retry packet ({{packet-retry}}) has special rules for populating
