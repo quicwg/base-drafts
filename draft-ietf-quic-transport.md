@@ -2678,23 +2678,21 @@ Note that Stateless Reset packets do not have any cryptographic protection.
 
 The design of a Stateless Reset is such that it is indistinguishable from a
 valid packet.  This means that a Stateless Reset might trigger the sending of a
-Stateless Reset in response, which could lead to infinite exchanges.  An
-endpoint MUST use any one of the following measures to limit the sending of
-Stateless Reset:
+Stateless Reset in response, which could lead to infinite exchanges.
 
-* An endpoint can remember the number of Stateless Reset packets that it has
-  sent and stop generating new Stateless Reset packets once a limit is reached.
-  Using separate limits for different remote addresses - or different values for
-  the Destination Connection ID fields on the packet that triggers the reset -
-  will ensure that Stateless Reset packets can be used to close connections when
-  other peers or connections have exhausted limits.
+An endpoint MUST ensure that every Stateless Reset that it sends is smaller than
+the packet triggered it, unless it maintains state sufficient to prevent
+looping.  In the event of a loop, this results in packets eventually being too
+small to trigger a response.
 
-* An endpoint can ensure that every Stateless Reset that it sends is smaller
-  than the packet triggered it.  In the event of a loop, this results in packets
-  eventually being too small to trigger a response.
+An endpoint can remember the number of Stateless Reset packets that it has sent
+and stop generating new Stateless Reset packets once a limit is reached.  Using
+separate limits for different remote addresses will ensure that Stateless Reset
+packets can be used to close connections when other peers or connections have
+exhausted limits.
 
 Reducing the size of a Stateless Reset below the recommended minimum size of 37
-octets could mean that the packet could be reveal to an observer that it is a
+octets could mean that the packet could reveal to an observer that it is a
 Stateless Reset.  Conversely, refusing to send a Stateless Reset in response to
 a small packet might result in Stateless Reset not being useful in detecting
 cases of broken connections where only very small packets are sent; such
