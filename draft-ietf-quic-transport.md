@@ -2386,9 +2386,9 @@ The value for an idle timeout can be asymmetric.  The value advertised by a peer
 is only used to determine whether the connection is live at a peer.  An endpoint
 that sends packets near the end of the idle timeout period of a peer risks
 having those packets discarded if its peer enters the draining state before the
-packets arrive.  If a peer could be in within an RTO (see Section 4.3.3 of
-{{QUIC-RECOVERY}}) of an idle timeout, it is advisable to test for liveness
-before sending any data that cannot be retried safely.
+packets arrive.  If a peer could timeout within an RTO (see Section 4.3.3 of
+{{QUIC-RECOVERY}}), it is advisable to test for liveness before sending any data
+that cannot be retried safely.
 
 
 ### Immediate Close
