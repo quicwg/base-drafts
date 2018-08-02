@@ -936,15 +936,17 @@ both the median and mean min_rtt typically observed on the public internet.
 
 # Congestion Control
 
-QUIC's congestion control is based on TCP NewReno {{?RFC6582}} congestion
-control to determine the congestion window.  QUIC congestion control is
-specified in bytes due to finer control and the ease of appropriate byte
-counting {{?RFC3465}}.
+QUIC's congestion control is based on TCP NewReno {{?RFC6582}}.  NewReno is
+a congestion window based congestion control.  QUIC specifies the congestion
+window in bytes rather than packets due to finer control and the ease of
+appropriate byte counting {{?RFC3465}}.
 
 QUIC hosts MUST NOT send packets if they would increase bytes_in_flight
-(defined in {{vars-of-interest}}) beyond the available congestion window, unless
-the packet is a probe packet sent after the TLP or RTO timer expires, as
-described in {{tlp}} and {{rto}}.
+(defined in {{vars-of-interest}}) beyond the available congestion window,
+unless the packet is a probe packet sent after the TLP or RTO timer expires,
+as described in {{tlp}} and {{rto}}.
+
+Implementations MAY use other congestion control algorithms.
 
 ## Explicit Congestion Notification {#congestion-ecn}
 
