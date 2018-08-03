@@ -946,7 +946,9 @@ QUIC hosts MUST NOT send packets if they would increase bytes_in_flight
 unless the packet is a probe packet sent after the TLP or RTO timer expires,
 as described in {{tlp}} and {{rto}}.
 
-Implementations MAY use other congestion control algorithms.
+Implementations MAY use other congestion control algorithms. The signals QUIC
+provides for congestion control are generic and are designed to support
+different algorithms.
 
 ## Explicit Congestion Notification {#congestion-ecn}
 
