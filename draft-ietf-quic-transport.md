@@ -1590,20 +1590,21 @@ type TRANSPORT_PARAMETER_ERROR.
 An endpoint MUST include the following parameters in its encoded
 TransportParameters:
 
-initial_max_data (0x0001):
-
-: The initial maximum data parameter contains the initial value for the maximum
-  amount of data that can be sent on the connection.  This parameter is encoded
-  as an unsigned 32-bit integer in units of octets.  This is equivalent to
-  sending a MAX_DATA ({{frame-max-data}}) for the connection immediately after
-  completing the handshake.
-
 idle_timeout (0x0003):
 
 : The idle timeout is a value in seconds that is encoded as an unsigned 16-bit
   integer.  The maximum value is 600 seconds (10 minutes).
 
 An endpoint MAY use the following transport parameters:
+
+initial_max_data (0x0001):
+
+: The initial maximum data parameter contains the initial value for the maximum
+  amount of data that can be sent on the connection.  This parameter is encoded
+  as an unsigned 32-bit integer in units of octets.  This is equivalent to
+  sending a MAX_DATA ({{frame-max-data}}) for the connection immediately after
+  completing the handshake. If the transport parameter is absent, the connection
+  starts with a flow control limit of 0.
 
 initial_max_bidi_streams (0x0002):
 
@@ -1683,7 +1684,7 @@ initial_max_stream_data_uni (0x000b):
   parameters, this applies to streams with an identifier ending in 0x3; in
   server transport parameters, this applies to streams ending in 0x2.
 
-If present, transport parameters that set initial flow control limits are
+If present, transport parameters that set initial stream flow control limits are
 equivalent to sending a MAX_STREAM_DATA frame ({{frame-max-stream-data}}) on
 every stream of the corresponding type immediately after opening.  If the
 transport parameter is absent, streams of that type start with a flow control
