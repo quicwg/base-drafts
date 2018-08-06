@@ -1214,7 +1214,7 @@ bundle acknowledgments with other frames to reduce leaked information.
 
 ## Misreporting ECN Markings
 
-An receiver can misreport ECN markings to alter the congestion response of a
+A receiver can misreport ECN markings to alter the congestion response of a
 sender.  Suppressing reports of ECN-CE markings could cause a sender to
 increase their send rate.  This increase could result in congestion and loss.
 
