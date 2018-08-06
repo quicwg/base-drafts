@@ -1225,9 +1225,10 @@ rate, which is similar in effect to advertising reduced connection flow control
 limits and so no advantage is gained by doing so.
 
 Endpoints choose the congestion controller that they use.  Though congestion
-controllers ideally use reports of ECN markings as input, the exact response for
-each controller could be different.  Failure to correctly respond to information
-about ECN markings is therefore difficult to detect.
+controllers generally treat reports of ECN-CE markings as equivalent to loss
+[RFC8311], the exact response for each controller could be different.  Failure
+to correctly respond to information about ECN markings is therefore difficult to
+detect.
 
 
 # IANA Considerations
