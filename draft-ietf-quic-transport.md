@@ -1835,17 +1835,16 @@ instead of dropping it.  Endpoints react to congestion by reducing their sending
 rate in response, as described in {{QUIC-RECOVERY}}.
 
 To use ECN, QUIC endpoints first determine whether a path supports ECN
-marking and the peer is able to access the ECN codepoint in the IP header. 
+marking and the peer is able to access the ECN codepoint in the IP header.
 A network path regarded as not supporting ECN if ECN marked packets get dropped
-or ECN marking are rewritten on the path.
-An endpoint verifies the path, both during connection establishment 
-and when migrating to a new path (see {{migration}}).
+or ECN marking are rewritten on the path. An endpoint verifies the path, both
+during connection establishment and when migrating to a new path (see
+{{migration}}).
 
 Each endpoint independently verifies and enables use of ECN by setting the IP
 header ECN codepoint to ECN Capable Transport (ECT) for the path from it to the
-other peer. Even if ECN is not used on the path to the peer, the endpoint MUST
-provide ECN feedback information if the receive of a non-zero ECN IP codepoint
-is observed.
+other peer. Even if ECN is not used on the path to the peer,the endpoint MUST
+provide feedback about ECN markings received (if accessible).
 
 To verify both that a path supports ECN and the peer can provide ECN feedback,
 an endpoint MUST set the ECT(0) codepoint in the IP header of all outgoing packets
@@ -1857,8 +1856,8 @@ Congestion Experienced (CE) codepoint set by a network device that is
 experiencing congestion.
 
 On receiving a packet with an ECT or CE codepoint, an endpoint that can access the
-IP ECN codepoints increases the corresponding ECT(0), ECT(1), or CE count, and 
-includes these counters in subsequent (see {{processing-and-ack}}) ACK_ECN frames 
+IP ECN codepoints increases the corresponding ECT(0), ECT(1), or CE count, and
+includes these counters in subsequent (see {{processing-and-ack}}) ACK_ECN frames
 (see {{frame-ack-ecn}}).
 
 A packet detected by a receiver as a duplicate does not affect the receiver's
