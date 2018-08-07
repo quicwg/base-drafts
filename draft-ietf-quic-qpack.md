@@ -717,8 +717,8 @@ Section 5.1 of [RFC7541]).
 
 If the entry is in the dynamic table with an absolute index greater than Base
 Index, the representation starts with the '0001' 4-bit pattern, followed by the
-post-base index (see {{indexing}}) of the matching header field, represented as
-an integer with a 4-bit prefix (see Section 5.1 of [RFC7541]).
+post-base index (see {{post-base-indexing}}) of the matching header field,
+represented as an integer with a 4-bit prefix (see Section 5.1 of [RFC7541]).
 
 ~~~~~~~~~~ drawing
   0   1   2   3   4   5   6   7
@@ -772,7 +772,7 @@ reference is to the static (S=1) or dynamic (S=0) table.
 
 For entries in the dynamic table with an absolute index greater than Base Index,
 the header field name is represented using the post-base index of that entry
-(see {{indexing}}) encoded as an integer with a 3-bit prefix.
+(see {{post-base-indexing}}) encoded as an integer with a 3-bit prefix.
 
 ~~~~~~~~~~ drawing
      0   1   2   3   4   5   6   7
