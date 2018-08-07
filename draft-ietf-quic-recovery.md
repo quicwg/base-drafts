@@ -966,7 +966,6 @@ congestion window is less than ssthresh, which typically only occurs after an
 RTO. While in slow start, QUIC increases the congestion window by the number of
 bytes acknowledged when each ack is processed.
 
-
 ## Congestion Avoidance
 
 Slow start exits to congestion avoidance.  Congestion avoidance in NewReno
@@ -989,6 +988,13 @@ The recovery period limits congestion window reduction to once per round trip.
 During recovery, the congestion window remains unchanged irrespective of new
 losses or increases in the ECN-CE counter.
 
+## Application Limited Sending
+
+If the sender is sufficiently application limited that the congestion window is
+not fully utilized, the congestion window should not be increased in slow start
+or congestion avoidance.  Senders should consider themselves application limited
+if bytes in flight when receiving an ACK frame are more than a max datgram size
+less than the congestion window.
 
 ## Tail Loss Probe
 
@@ -1115,12 +1121,18 @@ acked_packet from sent_packets.
 ~~~
    InRecovery(packet_number):
      return packet_number <= end_of_recovery
+   
+   IsAppLimited():
+     bytes_in_flight >= congestion_window - kMaximumDatagramSize
 
    OnPacketAckedCC(acked_packet):
      // Remove from bytes_in_flight.
      bytes_in_flight -= acked_packet.bytes
      if (InRecovery(acked_packet.packet_number)):
        // Do not increase congestion window in recovery period.
+       return
+     if (IsAppLimited())
+       // Do not increase congestion_window if application limited.
        return
      if (congestion_window < ssthresh):
        // Slow start.
