@@ -44,6 +44,23 @@ normative:
         org: Mozilla
         role: editor
 
+  QUIC-RECOVERY:
+    title: "QUIC Loss Detection and Congestion Control"
+    date: {DATE}
+    seriesinfo:
+      Internet-Draft: draft-ietf-quic-recovery-latest
+    author:
+      -
+        ins: J. Iyengar
+        name: Jana Iyengar
+        org: Fastly
+        role: editor
+      -
+        ins: I. Swett
+        name: Ian Swett
+        org: Google
+        role: editor
+
 informative:
 
   AEBounds:
@@ -73,23 +90,6 @@ informative:
         ins: M. Bishop
         name: Mike Bishop
         org: Microsoft
-        role: editor
-
-  QUIC-RECOVERY:
-    title: "QUIC Loss Detection and Congestion Control"
-    date: {DATE}
-    seriesinfo:
-      Internet-Draft: draft-ietf-quic-recovery-latest
-    author:
-      -
-        ins: J. Iyengar
-        name: Jana Iyengar
-        org: Fastly
-        role: editor
-      -
-        ins: I. Swett
-        name: Ian Swett
-        org: Google
         role: editor
 
 
@@ -617,6 +617,55 @@ The resulting value is sent in a QUIC CONNECTION_CLOSE frame.
 
 The alert level of all TLS alerts is "fatal"; a TLS stack MUST NOT generate
 alerts at the "warning" level.
+
+
+## Discarding Unused Keys
+
+After QUIC moves to a new encryption level, packet protection keys for previous
+encryption levels can be discarded.  This occurs several times during the
+handshake, as well as when keys are updated (see {{key-update}}).
+
+QUIC endpoints MUST retain keys until they are no longer needed.  If packets
+from a lower encryption level contain CRYPTO frames, frames that retransmit that
+data MUST be sent at the same encryption level.  Similarly, an endpoint
+generates acknowledgements for packets at the same encryption level as the
+packet being acknowledged.  Thus, it is possible that keys for a lower
+encryption level are needed for a short time after keys for a newer encryption
+level are available.
+
+An endpoint can only discard keys for a given encryption level only after it has
+both received and acknowledged all CRYPTO frames for that encryption level and
+when it has had all CRYPTO frames for that encryption level acknowledged by its
+peer.  However, this does not guarantee that no further packets will need to be
+received or sent at that encryption level because a peer might not have received
+all the acknowledgements necessary to reach the same state.
+
+After all CRYPTO frames for a given encryption level have been either sent or
+received and the corresponding acknowledgments have been received or sent, an
+endpoint starts a timer.  To limit the effect of packet loss around a change in
+keys, endpoints MUST retain packet protection keys for that encryption level for
+at least three times the current Retramsmission Timeout (RTO) interval as
+defined in {{QUIC-RECOVERY}}.  Retaining keys for this interval allows packets
+containing CRYPTO or ACK frames at that encryption level to be sent if packets
+are determined to be lost or new packets require acknowledgment.  While this
+timer is running, an endpoint MUST use the most recent packet protection keys
+for all packets, except to protect packets containing CRYPTO and ACK frames for
+the older encryption level.  These packets MAY also include PADDING frames.
+
+Once this timer expires, an endpoint MUST NOT either accept or generate new
+packets using those packet protection keys.  An endpoint can discard packet
+protection keys for that encryption level.
+
+An endpoint can update keys multiple times (see {{key-update}}) while this timer
+runs.  In that case, packets protected with the newest packet protection keys
+and packets sent two updates prior will appear to use the same keys.  After the
+handshake is complete, endpoints only need to maintain the two latest sets of
+packet protection keys and MAY discard older keys.
+
+Updating keys frequently can cause packets to be effectively lost.  However, key
+updates can only be performed once per round trip time.  This means that packets
+that are delayed or reordered will be identified as lost before replacement of
+packet protection keys is a problem.
 
 
 # QUIC Packet Protection {#packet-protection}
