@@ -119,7 +119,7 @@ Retransmittable Packets:
 All transmissions in QUIC are sent with a packet-level header, which indicates
 the encryption level and includes a packet sequence number (referred to below as
 a packet number).  Packet numbers never repeat for the lifetime of a connection.
-Packet numbers monotonically increase within a space, preventing ambiguity.
+Packet numbers monotonically increase, preventing ambiguity.
 
 This design obviates the need for disambiguating between transmissions and
 retransmissions and eliminates significant complexity from QUIC's interpretation
