@@ -992,9 +992,7 @@ losses or increases in the ECN-CE counter.
 
 If the sender is sufficiently application limited that the congestion window is
 not fully utilized, the congestion window should not be increased in slow start
-or congestion avoidance.  Senders should consider themselves application limited
-if bytes in flight when receiving an ACK frame are more than a max datgram size
-less than the congestion window.
+or congestion avoidance.
 
 ## Tail Loss Probe
 
