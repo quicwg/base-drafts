@@ -127,6 +127,16 @@ The dynamic table consists of a list of header fields maintained in first-in,
 first-out order.  The dynamic table is initially empty.  Entries are added by
 instructions on the encoder stream (see {{encoder-stream}}).
 
+The maximum size of the dynamic table can be modified by the encoder, subject to
+a decoder-controlled limit (see {{configuration}} and {{size-update}}).  The
+initial maximum size is the applicable value of this limit when HTTP requests or
+responses are first permitted to be sent. For clients using 0-RTT data in
+HTTP/QUIC, this means that the table size is the remembered value of
+`SETTINGS_HEADER_TABLE_SIZE`, even if the server later specifies a larger
+maximum in its SETTINGS frame.  For HTTP/QUIC servers and HTTP/QUIC clients not
+using 0-RTT data, this means that the initial maximum table size is the value of
+`SETTINGS_HEADER_TABLE_SIZE` in the peer's SETTINGS frame.
+
 Before a new entry is added to the dynamic table, entries are evicted from the
 end of the dynamic table until the size of the dynamic table is less than or
 equal to (maximum size - new entry size) or until the table is empty.
