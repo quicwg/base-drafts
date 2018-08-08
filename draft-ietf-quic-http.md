@@ -306,9 +306,10 @@ Trailing header fields are carried in an additional header block following the
 body. Senders MUST send only one header block in the trailers section;
 receivers MUST discard any subsequent header blocks.
 
-An HTTP request/response exchange fully consumes a QUIC stream. After sending a
-request, a client closes the stream for sending; after sending a response, the
-server closes the stream for sending and the QUIC stream is fully closed.
+An HTTP request/response exchange fully consumes a bidirectional QUIC stream.
+After sending a request, a client closes the stream for sending; after sending a
+response, the server closes the stream for sending and the QUIC stream is fully
+closed.
 
 A server can send a complete response prior to the client sending an entire
 request if the response does not depend on any portion of the request that has
@@ -317,8 +318,13 @@ client abort transmission of a request without error by triggering a QUIC
 STOP_SENDING with error code HTTP_EARLY_RESPONSE, sending a complete response,
 and cleanly closing its streams. Clients MUST NOT discard complete responses as
 a result of having their request terminated abruptly, though clients can always
-discard responses at their discretion for other reasons.  Servers MUST NOT
-abort a response in progress as a result of receiving a solicited RST_STREAM.
+discard responses at their discretion for other reasons.
+
+Servers MUST NOT abort a response in progress as a result of receiving a
+solicited RST_STREAM (i.e. with error code STOPPING).  If the request stream
+terminates for any other reason without containing a fully-formed HTTP request,
+the server SHOULD abort its response with the error code
+HTTP_INCOMPLETE_REQUEST.
 
 ### Header Formatting and Compression
 
@@ -1185,6 +1191,9 @@ HTTP_PUSH_ALREADY_IN_CACHE (0x04):
 HTTP_REQUEST_CANCELLED (0x05):
 : The client no longer needs the requested data.
 
+HTTP_INCOMPLETE_REQUEST (0x06):
+: The client's stream terminated without containing a fully-formed request.
+
 HTTP_CONNECT_ERROR (0x07):
 : The connection established in response to a CONNECT request was reset or
   abnormally closed.
@@ -1220,7 +1229,10 @@ HTTP_WRONG_STREAM_DIRECTION (0x0010):
 : A unidirectional stream type was used by a peer which is not permitted to do
   so.
 
+HTTP_EARLY_RESPONSE (0x0011):
+: The remainder of the client's request is not needed to produce a response.
   For use in STOP_SENDING only.
+
 HTTP_GENERAL_PROTOCOL_ERROR (0x00FF):
 : Peer violated protocol requirements in a way which doesn't match a more
   specific error code, or endpoint declines to use the more specific error code.
@@ -1678,6 +1690,7 @@ The entries in the following table are registered by this document.
 | HTTP_INTERNAL_ERROR                 | 0x0003     | Internal error                           | {{http-error-codes}}   |
 | HTTP_PUSH_ALREADY_IN_CACHE          | 0x0004     | Pushed content already cached            | {{http-error-codes}}   |
 | HTTP_REQUEST_CANCELLED              | 0x0005     | Data no longer needed                    | {{http-error-codes}}   |
+| HTTP_INCOMPLETE_REQUEST             | 0x0006     | Stream terminated early                  | {{http-error-codes}}   |
 | HTTP_CONNECT_ERROR                  | 0x0007     | TCP reset or error on CONNECT request    | {{http-error-codes}}   |
 | HTTP_EXCESSIVE_LOAD                 | 0x0008     | Peer generating excessive load           | {{http-error-codes}}   |
 | HTTP_VERSION_FALLBACK               | 0x0009     | Retry over HTTP/2                        | {{http-error-codes}}   |
