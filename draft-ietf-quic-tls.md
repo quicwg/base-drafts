@@ -635,8 +635,8 @@ level are available.
 
 An endpoint cannot discard keys for a given encryption level unless it has both
 received and acknowledged all CRYPTO frames for that encryption level and when
-it all CRYPTO frames for that encryption level have been acknowledged by its
-peer.  However, this does not guarantee that no further packets will need to be
+all CRYPTO frames for that encryption level have been acknowledged by its peer.
+However, this does not guarantee that no further packets will need to be
 received or sent at that encryption level because a peer might not have received
 all the acknowledgements necessary to reach the same state.
 
