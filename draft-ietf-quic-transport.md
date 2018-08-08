@@ -2679,7 +2679,9 @@ endpoint receives.
 This design relies on the peer always sending a connection ID in its packets so
 that the endpoint can use the connection ID from a packet to reset the
 connection.  An endpoint that uses this design cannot allow its peers to send
-packets with a zero-length destination connection ID.
+packets with a zero-length destination connection ID and need to either use a
+the same connection ID length for all connections or ensure that the connection
+ID encodes its own length in a common fixed portion.
 
 Revealing the Stateless Reset Token allows any entity to terminate the
 connection, so a value can only be used once.  This method for choosing the
