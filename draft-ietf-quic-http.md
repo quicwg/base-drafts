@@ -934,10 +934,18 @@ When a 0-RTT QUIC connection is being used, the client's initial requests will
 be sent before the arrival of the server's SETTINGS frame.  Clients MUST store
 the settings the server provided in the session being resumed and MUST comply
 with stored settings until the server's current settings are received.
+Remembered settings apply to the new connection until the server's SETTINGS
+frame is received.
 
-Servers MAY continue processing data from clients which exceed its current
-configuration during the initial flight.  In this case, the client MUST apply
-the new settings immediately upon receipt.
+A server can remember the settings that it advertised, or store an
+integrity-protected copy of the values in the ticket and recover the information
+when accepting 0-RTT data. A server uses the HTTP/QUIC settings values in
+determining whether to accept 0-RTT data.
+
+A server MAY accept 0-RTT and subsequently provide different settings in its
+SETTINGS frame. If 0-RTT data is accepted by the server, its SETTINGS frame MUST
+NOT reduce any limits or alter any values that might be violated by the client
+with its 0-RTT data.
 
 When a 1-RTT QUIC connection is being used, the client MUST NOT send requests
 prior to receiving and processing the server's SETTINGS frame.
