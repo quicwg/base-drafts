@@ -394,10 +394,11 @@ detects an error with the stream or the QUIC connection.
 
 ### Request Cancellation
 
-Either client or server can cancel requests by closing the stream (QUIC
-RST_STREAM or STOP_SENDING frames, as appropriate) with an error type of
+Either client or server can cancel requests by aborting the stream (QUIC
+RST_STREAM or STOP_SENDING frames, as appropriate) with an error code of
 HTTP_REQUEST_CANCELLED ({{http-error-codes}}).  When the client cancels a
 request or response, it indicates that the response is no longer of interest.
+Clients SHOULD cancel requests by aborting both directions of a stream.
 
 When the server cancels either direction of the request stream using
 HTTP_REQUEST_CANCELLED, it indicates that no application processing was
