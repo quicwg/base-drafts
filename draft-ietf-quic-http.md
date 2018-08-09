@@ -320,11 +320,12 @@ and cleanly closing its streams. Clients MUST NOT discard complete responses as
 a result of having their request terminated abruptly, though clients can always
 discard responses at their discretion for other reasons.
 
-Servers MUST NOT abort a response in progress as a result of receiving a
-solicited RST_STREAM (i.e. with error code STOPPING).  If the request stream
-terminates for any other reason without containing a fully-formed HTTP request,
-the server SHOULD abort its response with the error code
-HTTP_INCOMPLETE_REQUEST.
+Changes to the state of a request stream, including receiving a RST_STREAM
+(regardless of error code), do not affect the state of the server's response.
+Servers MUST NOT abort a response in progress solely due to a state change on
+the request stream. However, if the request stream terminates without containing
+a fully-formed HTTP request, the server SHOULD abort its response with the error
+code HTTP_INCOMPLETE_REQUEST.
 
 ### Header Formatting and Compression
 
@@ -397,15 +398,15 @@ detects an error with the stream or the QUIC connection.
 Either client or server can cancel requests by aborting the stream (QUIC
 RST_STREAM or STOP_SENDING frames, as appropriate) with an error code of
 HTTP_REQUEST_CANCELLED ({{http-error-codes}}).  When the client cancels a
-request or response, it indicates that the response is no longer of interest.
-Clients SHOULD cancel requests by aborting both directions of a stream.
+response, it indicates that this response is no longer of interest. Clients
+SHOULD cancel requests by aborting both directions of a stream.
 
-When the server cancels either direction of the request stream using
-HTTP_REQUEST_CANCELLED, it indicates that no application processing was
-performed.  The client can treat requests cancelled by the server as though they
-had never been sent at all, thereby allowing them to be retried later on a new
-connection.  Servers MUST NOT use the HTTP_REQUEST_CANCELLED status for requests
-which were partially or fully processed.
+When the server cancels its response stream using HTTP_REQUEST_CANCELLED, it
+indicates that no application processing was performed.  The client can treat
+requests cancelled by the server as though they had never been sent at all,
+thereby allowing them to be retried later on a new connection.  Servers MUST NOT
+use the HTTP_REQUEST_CANCELLED status for requests which were partially or fully
+processed.
 
   Note:
   : In this context, "processed" means that some data from the stream was
