@@ -1837,13 +1837,13 @@ rate in response, as described in {{QUIC-RECOVERY}}.
 To use ECN, QUIC endpoints first determine whether a path supports ECN
 marking and the peer is able to access the ECN codepoint in the IP header.
 A network path regarded as not supporting ECN if ECN marked packets get dropped
-or ECN marking are rewritten on the path. An endpoint verifies the path, both
+or ECN markings are rewritten on the path. An endpoint verifies the path, both
 during connection establishment and when migrating to a new path (see
 {{migration}}).
 
 Each endpoint independently verifies and enables use of ECN by setting the IP
 header ECN codepoint to ECN Capable Transport (ECT) for the path from it to the
-other peer. Even if ECN is not used on the path to the peer,the endpoint MUST
+other peer. Even if ECN is not used on the path to the peer, the endpoint MUST
 provide feedback about ECN markings received (if accessible).
 
 To verify both that a path supports ECN and the peer can provide ECN feedback,
@@ -1867,9 +1867,8 @@ concerns.
 If an endpoint receives a packet without an ECT or CE codepoint, it responds per
 {{processing-and-ack}} with an ACK frame.
 
-If an endpoint does not have access to received ECN
-codepoints, it acknowledges received packets per {{processing-and-ack}} with an
-ACK frame.
+If an endpoint does not have access to received ECN codepoints, it acknowledges 
+received packets per {{processing-and-ack}} with an ACK frame.
 
 If a packet sent with an ECT codepoint is newly acknowledged by the peer in an
 ACK frame, the endpoint stops setting ECT codepoints in subsequent packets, with
