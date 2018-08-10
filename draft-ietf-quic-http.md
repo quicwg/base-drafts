@@ -322,10 +322,10 @@ discard responses at their discretion for other reasons.
 
 Changes to the state of a request stream, including receiving a RST_STREAM
 (regardless of error code), do not affect the state of the server's response.
-Servers MUST NOT abort a response in progress solely due to a state change on
-the request stream. However, if the request stream terminates without containing
-a fully-formed HTTP request, the server SHOULD abort its response with the error
-code HTTP_INCOMPLETE_REQUEST.
+Servers do not abort a response in progress solely due to a state change on the
+request stream. However, if the request stream terminates without containing a
+usable HTTP request, the server SHOULD abort its response with the error code
+HTTP_INCOMPLETE_REQUEST.
 
 ### Header Formatting and Compression
 
