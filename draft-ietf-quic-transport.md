@@ -991,6 +991,7 @@ The connection ID can change over the lifetime of a connection, especially in
 response to connection migration ({{migration}}). NEW_CONNECTION_ID frames
 ({{frame-new-connection-id}}) are used to provide new connection ID values.
 
+
 ## Packet Numbers {#packet-numbers}
 
 The packet number is an integer in the range 0 to 2^62-1. The value is used in
@@ -1076,6 +1077,13 @@ For example, if an endpoint has received an acknowledgment for packet 0x6afa2f,
 sending a packet with a number of 0x6b2d79 requires a packet number encoding
 with 14 bits or more; whereas the 30-bit packet number encoding is needed to
 send a packet with a number of 0x6bc107.
+
+A receiver MUST discard a newly unprotected packet unless it is certain that it
+has not processed another packet with the same packet number from the same
+packet number space. Duplicate suppression MUST happen after removing packet
+protection for the reasons described in Section 9.3 of {{QUIC-TLS}}. An
+efficient algorithm for duplicate suppression can be found in Section 3.4.3 of
+{{?RFC2406}}.
 
 A Version Negotiation packet ({{packet-version}}) does not include a packet
 number.  The Retry packet ({{packet-retry}}) has special rules for populating
