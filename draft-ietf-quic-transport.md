@@ -1867,7 +1867,7 @@ concerns.
 If an endpoint receives a packet without an ECT or CE codepoint, it responds per
 {{processing-and-ack}} with an ACK frame.
 
-If an endpoint does not have access to received ECN codepoints, it acknowledges 
+If an endpoint does not have access to received ECN codepoints, it acknowledges
 received packets per {{processing-and-ack}} with an ACK frame.
 
 If a packet sent with an ECT codepoint is newly acknowledged by the peer in an
