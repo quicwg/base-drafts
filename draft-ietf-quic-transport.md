@@ -131,17 +131,23 @@ QUIC implements techniques learned from experience with TCP, SCTP and other
 transport protocols.  QUIC uses UDP as substrate so as to not require changes to
 legacy client operating systems and middleboxes to be deployable.  QUIC
 authenticates all of its headers and encrypts most of the data it exchanges,
-including its signaling.  This allows the protocol to evolve without incurring a
-dependency on upgrades to middleboxes.  This document describes the core QUIC
+including its signaling.  This allows the protocol to evolve by minimizing
+dependencies on upgrades to middleboxes.  This document describes the core QUIC
 protocol, including the conceptual design, wire format, and mechanisms of the
 QUIC protocol for connection establishment, stream multiplexing, stream and
 connection-level flow control, connection migration, and data reliability.
 
-Accompanying documents describe QUIC's loss detection and congestion control
-{{QUIC-RECOVERY}}, and the use of TLS 1.3 for key negotiation {{QUIC-TLS}}.
+An accompanying document describes QUIC's loss detection and congestion control
+{{QUIC-RECOVERY}}. As these are sender-side only mechanisms they can be changed
+without negotiating a new QUIC version. This document specifies version 
+0x00000001 of QUIC which uses TLS1.3 for key negotiation as described in 
+{{QUIC-TLS}}. Key negotiation and encryption is described in a separate
+docuement to make changes to only this part easier in future versions.
 
-QUIC version 1 conforms to the protocol invariants in {{QUIC-INVARIANTS}}.
+All versions of QUIC MUST conform to the protocol invariants in 
+{{QUIC-INVARIANTS}}.
 
+QUIC is a name, not an acronym.
 
 # Conventions and Definitions
 
@@ -182,7 +188,15 @@ QUIC packet:
 
 : A well-formed UDP payload that can be parsed by a QUIC receiver.
 
-QUIC is a name, not an acronym.
+0-RTT:
+
+: QUIC packets containing application payload data that are encrypted with
+  a key derived from previous QUIC connection to the same endpoint.
+  
+1-RTT:
+
+: QUIC packets that are encrypted with keys derived from the QUIC
+  handshake. 
 
 
 ## Notational Conventions
@@ -293,8 +307,8 @@ Long headers are used for packets that are sent prior to the completion of
 version negotiation and establishment of 1-RTT keys. Once both conditions are
 met, a sender switches to sending packets using the short header
 ({{short-header}}).  The long form allows for special packets - such as the
-Version Negotiation packet - to be represented in this uniform fixed-length
-packet format. Packets that use the long header contain the following fields:
+Version Negotiation packet - to be represented in this uniform packet format.
+Packets that use the long header contain the following fields:
 
 Header Form:
 
@@ -380,7 +394,8 @@ covers the both the Packet Number and Payload fields, both of which are
 confidentiality protected and initially of unknown length.  The size of the
 Payload field is learned once the packet number protection is removed.
 
-Senders can sometimes coalesce multiple packets into one UDP datagram.  See
+The length field is used to enable senders to coalesce multiple long-header
+packets and potentially one short-header packet into one UDP datagram.  See
 {{packet-coalesce}} for more details.
 
 
@@ -466,16 +481,16 @@ Protected Payload:
 
 : Packets with a short header always include a 1-RTT protected payload.
 
-The header form and connection ID field of a short header packet are
-version-independent.  The remaining fields are specific to the selected QUIC
-version.  See {{QUIC-INVARIANTS}} for details on how packets from different
-versions of QUIC are interpreted.
+The header form and connection ID field, if present, of a short header packet
+areversion-independent.  The remaining fields are specific to the selected
+QUIC version.  See {{QUIC-INVARIANTS}} for details on how packets from
+different versions of QUIC are interpreted.
 
 
 ## Version Negotiation Packet {#packet-version}
 
 A Version Negotiation packet is inherently not version-specific, and does not
-use the long packet header (see {{long-header}}. Upon receipt by a client, it
+use the long packet header (see {{long-header}}). Upon receipt by a client, it
 will appear to be a packet using the long header, but will be identified as a
 Version Negotiation packet based on the Version field having a value of 0.
 
@@ -736,11 +751,11 @@ the Source Connection ID includes the connection ID that the sender of the
 packet wishes to use (see {{connection-id}}). The server MUST use consistent
 Source Connection IDs during the handshake.
 
-On first receiving an Initial or Retry packet from the server, the client uses
-the Source Connection ID supplied by the server as the Destination Connection ID
-for subsequent packets.  Once a client has received an Initial packet from the
-server, it MUST discard any packet it receives with a different Source
-Connection ID.
+On first receiving an Initial or Retry packet from the server, the client MUST
+use the Source Connection ID supplied by the server as the Destination
+Connection ID for subsequent packets.  Once a client has received an Initial
+packet from the server, it MUST discard any packet it receives with a different
+Source Connection ID.
 
 
 ### Tokens
@@ -842,18 +857,21 @@ used to carry acknowledgments and cryptographic handshake messages from the
 server and client.
 
 A server sends its cryptographic handshake in one or more Handshake packets in
-response to an Initial packet if it does not send a Retry packet.  Once a client
-has received a Handshake packet from a server, it uses Handshake packets to send
-subsequent cryptographic handshake messages and acknowledgments to the server.
+response to an Initial packet (in addition to the server Initial packet) if it
+does not send a Retry packet.  Once a client has received a Handshake packet
+from a server, it uses Handshake packets to send subsequent cryptographic
+handshake messages and acknowledgments to the server.
 
 The Destination Connection ID field in a Handshake packet contains a connection
-ID that is chosen by the recipient of the packet; the Source Connection ID
-includes the connection ID that the sender of the packet wishes to use (see
-{{connection-id-encoding}}).
+ID that is chosen by the other endpoint of this connection as indicated in
+Source Connection ID field of the previously received Initial packet from that
+endpoint; the Source Connection ID includes the connection ID that the
+sender of the packet wishes to use (see {{connection-id-encoding}}).
 
-The first Handshake packet sent by a server contains a packet number of 0.
-Handshake packets are their own packet number space.  Packet numbers are
-incremented normally for other Handshake packets.
+The first Handshake packet sent by a server contains a packet number of 0. 
+Handshake packets are their own packet number space. See section
+{{packet-numbers}} on packet number spaces. Packet numbers are incremented
+normally for other Handshake packets.
 
 Servers MUST NOT send more than three datagrams including Initial and Handshake
 packets without receiving a packet from a verified source address.  Source
@@ -873,7 +891,8 @@ static handshake keys or the 0-RTT keys are sent with long headers; all packets
 protected with 1-RTT keys are sent with short headers.  The different packet
 types explicitly indicate the encryption level and therefore the keys that are
 used to remove packet protection.  0-RTT and 1-RTT protected packets share a
-single packet number space.
+single packet number space. Initial and Handshake packets both have their own
+packet number space.
 
 Packets protected with handshake keys only use packet protection to ensure that
 the sender of the packet is on the network path.  This packet protection is not
@@ -889,23 +908,24 @@ Packets protected with 0-RTT keys use a type value of 0x7C.  The connection ID
 fields for a 0-RTT packet MUST match the values used in the Initial packet
 ({{packet-initial}}).
 
-The client can send 0-RTT packets after receiving an Initial
-{{packet-initial}} or Handshake ({{packet-handshake}}) packet, if that
+The client can send further 0-RTT packets after receiving an Initial
+({{packet-initial}}) or Handshake ({{packet-handshake}}) packet, if that
 packet does not complete the handshake.  Even if the client receives a
 different connection ID in the Handshake packet, it MUST continue to
 use the same Destination Connection ID for 0-RTT packets, see
 {{connection-id-encoding}}.
 
-The version field for protected packets is the current QUIC version.
+The version field for protected packets contains the current QUIC version.
 
 The packet number field contains a packet number, which has additional
 confidentiality protection that is applied after packet protection is applied
 (see {{QUIC-TLS}} for details).  The underlying packet number increases with
 each packet sent, see {{packet-numbers}} for details.
 
-The payload is protected using authenticated encryption.  {{QUIC-TLS}} describes
-packet protection in detail.  After decryption, the plaintext consists of a
-sequence of frames, as described in {{frames}}.
+The content of 0-RTT and 1-RTT packets is protected using authenticated
+encryption. {{QUIC-TLS}}vdescribes packet protection in detail.  After
+decryption, the plaintext consistsvof a sequence of frames, as described in
+{{frames}}.
 
 
 ## Coalescing Packets {#packet-coalesce}
@@ -914,14 +934,13 @@ A sender can coalesce multiple QUIC packets (typically a Cryptographic Handshake
 packet and a Protected packet) into one UDP datagram.  This can reduce the
 number of UDP datagrams needed to send application data during the handshake and
 immediately afterwards. It is not necessary for senders to coalesce
-packets, though failing to do so will require sending a significantly
-larger number of datagrams during the handshake. Receivers MUST
-be able to process coalesced packets.
+packets, though not doing it leads larger number of datagrams during the
+handshake. Receivers MUST be able to process coalesced packets.
 
 Senders SHOULD coalesce packets in order of increasing encryption levels
 (Initial, Handshake, 0-RTT, 1-RTT), as this makes it more likely the receiver
 will be able to process all the packets in a single pass.  A packet with a short
-header does not include a length, so it will always be the last packet included
+header does not include a length, so it can only be the last packet included
 in a UDP datagram.
 
 Senders MUST NOT coalesce QUIC packets with different Destination Connection
@@ -932,9 +951,8 @@ datagram.
 Every QUIC packet that is coalesced into a single UDP datagram is separate and
 complete.  Though the values of some fields in the packet header might be
 redundant, no fields are omitted.  The receiver of coalesced QUIC packets MUST
-individually process each QUIC packet and separately acknowledge them, as if
-they were received as the payload of different UDP datagrams.  If one or more
-packets in a datagram cannot be processed yet (because the keys are not yet
+individually process each QUIC packet and separately acknowledge them. If one or
+more packets in a datagram cannot be processed yet (because the keys are not yet
 available) or processing fails (decryption failure, unknown type, etc.), the
 receiver MUST still attempt to process the remaining packets.  The skipped
 packets MAY either be discarded or buffered for later processing, just as if the
@@ -996,7 +1014,7 @@ response to connection migration ({{migration}}). NEW_CONNECTION_ID frames
 
 The packet number is an integer in the range 0 to 2^62-1. The value is used in
 determining the cryptographic nonce for packet encryption.  Each endpoint
-maintains a separate packet number for sending and receiving.
+maintains separate packet number spaces for sending and receiving.
 
 Packet numbers are divided into 3 spaces in QUIC:
 
@@ -1114,7 +1132,8 @@ Stateless Reset do not contain frames.
 Protected payloads MUST contain at least one frame, and MAY contain multiple
 frames and multiple frame types.
 
-Frames MUST fit within a single QUIC packet and MUST NOT span a QUIC packet
+Frames MUST fit within a single QUIC packet, and therefore within a single
+UDP datagram, and MUST NOT span a QUIC packet
 boundary. Each frame begins with a Frame Type, indicating its type, followed by
 additional type-dependent fields:
 
@@ -1184,7 +1203,9 @@ endpoint cannot send a frame of a type that is unknown to its peer.
 An extension to QUIC that wishes to use a new type of frame MUST first ensure
 that a peer is able to understand the frame.  An endpoint can use a transport
 parameter to signal its willingness to receive one or more extension frame types
-with the one transport parameter.
+with the one transport parameter. Otherwise it is assumed that enpoints have
+knowledge about which (extension) frame types are supported by the otherwise, e.g.
+through out of band negotiation.
 
 An IANA registry is used to manage the assignment of frame types, see
 {{iana-frames}}.
@@ -1196,9 +1217,9 @@ A QUIC connection is a single conversation between two QUIC endpoints.  QUIC's
 connection establishment intertwines version negotiation with the cryptographic
 and transport handshakes to reduce connection establishment latency, as
 described in {{handshake}}.  Once established, a connection may migrate to a
-different IP or port at either endpoint, due to NAT rebinding or mobility, as
-described in {{migration}}.  Finally a connection may be terminated by either
-endpoint, as described in {{termination}}.
+different IP address and/or port number at either endpoint, due to NAT rebinding
+or mobility, as described in {{migration}}.  Finally a connection may be terminated
+by either endpoint, as described in {{termination}}.
 
 ## Connection ID
 
@@ -1207,18 +1228,21 @@ distinguish it from other connections.  A connection ID can be either 0 octets
 in length, or between 4 and 18 octets (inclusive).  Connection IDs are selected
 independently in each direction.
 
-The primary function of a connection ID is to ensure that changes in addressing
-at lower protocol layers (UDP, IP, and below) don't cause packets for a QUIC
-connection to be delivered to the wrong endpoint.  Each endpoint selects
-connection IDs using an implementation-specific (and perhaps
+The primary function of a connection ID is to ensure packets can still be
+assotiated with the right connection at the receiver if changes in sender
+addressing at lower protocol layers (UDP, IP, and below) occur. The Connection ID
+is visibe to the path to also enable the network to deliver packets for a QUIC
+connection to the right endpoint after an address change if load balancing is used.
+Each endpoint selects connection IDs using an implementation-specific (and perhaps
 deployment-specific) method which will allow packets with that connection ID to
 be routed back to the endpoint and identified by the endpoint upon receipt.
 
 A zero-length connection ID MAY be used when the connection ID is not needed for
-routing and the address/port tuple of packets is sufficient to associate them to
-a connection. An endpoint whose peer has selected a zero-length connection ID
-MUST continue to use a zero-length connection ID for the lifetime of the
-connection and MUST NOT send packets from any other local address.
+routing and the address/port tuple of packets is assumed to be sufficiently stable
+to associate them to a connection. An endpoint whose peer has selected a
+zero-length connection ID MUST continue to use a zero-length connection ID for the
+lifetime of the connection and cannot send packets from any other local address
+without breaking the connection.
 
 When an endpoint has requested a non-zero-length connection ID, it will issue a
 series of connection IDs over the lifetime of a connection. The series of
@@ -1259,8 +1283,8 @@ Incoming packets are classified on receipt.  Packets can either be associated
 with an existing connection, or - for servers - potentially create a new
 connection.
 
-Hosts try to associate a packet with an existing connection. If the packet has a
-Destination Connection ID corresponding to an existing connection, QUIC
+Endpoints try to associate a packet with an existing connection. If the packet
+has a Destination Connection ID corresponding to an existing connection, QUIC
 processes that packet accordingly. Note that more than one connection ID can be
 associated with a connection; see {{connection-id}}.
 
@@ -1276,7 +1300,7 @@ correspond to a single connection.
 Valid packets sent to clients always include a Destination Connection ID that
 matches the value the client selects.  Clients that choose to receive
 zero-length connection IDs can use the address/port tuple to identify a
-connection.  Packets that don't match an existing connection MAY be discarded.
+connection.  Packets that do not match an existing connection MAY be discarded.
 
 Due to packet reordering or loss, clients might receive packets for a connection
 that are encrypted with a key it has not yet computed. Clients MAY drop these
@@ -1303,24 +1327,23 @@ the packet.  Servers SHOULD NOT attempt to decode or decrypt a packet from an
 unknown version, but instead send a Version Negotiation packet, provided that
 the packet is sufficiently long.
 
-Servers MUST drop other packets that contain unsupported versions.
+Servers MUST drop packets without sending a Version Negotiation packet when the
+received packet contains unsupported versions and is too small
+to be an Initial packet for some version supported by the server.
+
+If the packet is an Initial packet fully conforming with this specification, the
+server proceeds with the handshake ({{handshake}}). This commits the server to
+the version that the client selected. If a server isn't currently accepting any
+new connections, it SHOULD send a Handshake packet containing a CONNECTION_CLOSE
+frame with error code SERVER_BUSY.
+
+If the packet is a 0-RTT packet with a supported version number, the server MAY
+buffer a limited number of these packets in anticipation of a late-arriving
+Initial Packet. Clients are forbidden from sending Handshake packets prior to
+receiving a server response, so servers SHOULD ignore any such packets.
 
 Packets with a supported version, or no version field, are matched to
-a connection as described in {{packet-handling}}. If not matched, the
-server continues below.
-
-If the packet is an Initial packet fully conforming with the specification, the
-server proceeds with the handshake ({{handshake}}). This commits the server to
-the version that the client selected.
-
-If a server isn't currently accepting any new connections, it SHOULD send a
-Handshake packet containing a CONNECTION_CLOSE frame with error code
-SERVER_BUSY.
-
-If the packet is a 0-RTT packet, the server MAY buffer a limited
-number of these packets in anticipation of a late-arriving Initial
-Packet. Clients are forbidden from sending Handshake packets prior to
-receiving a server response, so servers SHOULD ignore any such packets.
+a connection as described in {{packet-handling}}.
 
 Servers MUST drop incoming packets under all other circumstances. They
 SHOULD send a Stateless Reset ({{stateless-reset}}) if a connection ID
@@ -1329,8 +1352,9 @@ is present in the header.
 ## Version Negotiation
 
 Version negotiation ensures that client and server agree to a QUIC version
-that is mutually supported. A server sends a Version Negotiation packet in
-response to each packet that might initiate a new connection, see
+that is mutually supported independent of the implemented version. A server
+can send a Version Negotiation packet in response to each packet that might
+initiate a new connection and is sufficiently large, see also
 {{packet-handling}} for details.
 
 The size of the first packet sent by a client will determine whether a server
@@ -1363,12 +1387,8 @@ selects an acceptable protocol version from the list provided by the server.
 The client then attempts to create a connection using that version.  Though the
 contents of the Initial packet the client sends might not change in
 response to version negotiation, a client MUST increase the packet number it
-uses on every packet it sends.  Packets MUST continue to use long headers and
-MUST include the new negotiated protocol version.
-
-The client MUST use the long header format and include its selected version on
-all packets until it has 1-RTT keys and it has received a packet from the server
-which is not a Version Negotiation packet.
+uses on every packet it sends. The client MUST use the long header format and
+include its selected version on all packets until it has 1-RTT keys.
 
 A client MUST NOT change the version it uses unless it is in response to a
 Version Negotiation packet from the server.  Once a client receives a packet
@@ -1443,15 +1463,16 @@ that meets the requirements of the cryptographic handshake protocol:
   client can receive packets that are addressed with the transport address that
   is claimed by the client (see {{address-validation}})
 
-The initial CRYPTO frame MUST be sent in a single packet.  Any second attempt
-that is triggered by address validation MUST also be sent within a single
-packet. This avoids having to reassemble a message from multiple packets.
+The initial CRYPTO frame MUST be sent in a single QUIC packet and therefore
+also within a single UDP datagram.  Any second attempt that is triggered by
+address validation MUST also be sent within a single packet. This avoids having
+to reassemble a message from multiple packets.
 
-The first client packet of the cryptographic handshake protocol MUST fit within
+The first client message of the cryptographic handshake protocol MUST fit within
 a 1232 octet QUIC packet payload.  This includes overheads that reduce the space
 available to the cryptographic handshake protocol.
 
-The CRYPTO frame can be sent in different packet number spaces.  CRYPTO frames
+The CRYPTO frames can be sent in different packet number spaces.  CRYPTO frames
 in each packet number space carry a separate sequence of handshake data starting
 from an offset of 0.
 
@@ -1585,7 +1606,8 @@ included in the cryptographic handshake.  Once the handshake completes, the
 transport parameters declared by the peer are available.  Each endpoint
 validates the value provided by its peer.  In particular, version negotiation
 MUST be validated (see {{version-validation}}) before the connection
-establishment is considered properly complete.
+establishment is considered properly complete. Each transport parameter consists
+of an 2-byte parameter ID and an optional parameter value.
 
 Definitions for each of the defined transport parameters are included in
 {{transport-parameter-definitions}}.  Any given parameter MUST appear
@@ -1661,7 +1683,7 @@ disable_migration (0x0009):
 : The endpoint does not support connection migration ({{migration}}). Peers MUST
   NOT send any packets, including probing packets ({{probing}}), from a local
   address other than that used to perform the handshake.  This parameter is a
-  zero-length value.
+  zero-length value. Values other than 0 and 1 are invalid.
 
 Either peer MAY advertise an initial value for the flow control on each type of
 stream on which they might receive data.  Each of the following transport
