@@ -662,7 +662,7 @@ server_initial_secret = HKDF-Expand-Label(initial_secret,
 Note that if the server sends a Retry, the client's Initial will correspond to a
 new connection and thus use the server provided Destination Connection ID.
 
-The hash function for HKDF when deriving handshake secrets and keys is SHA-256
+The hash function for HKDF when deriving initial secrets and keys is SHA-256
 {{!SHA=DOI.10.6028/NIST.FIPS.180-4}}.  The connection ID used with
 HKDF-Expand-Label is the initial Destination Connection ID.
 
