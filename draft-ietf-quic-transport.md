@@ -1856,8 +1856,8 @@ Congestion Experienced (CE) codepoint set by a network device that is
 experiencing congestion.
 
 On receiving a packet with an ECT or CE codepoint, an endpoint that can acces
-the IP ECN codepoints increases the corresponding ECT(0), ECT(1), or CE count, 
-and includes these counters in subsequent (see {{processing-and-ack}}) ACK_ECN 
+the IP ECN codepoints increases the corresponding ECT(0), ECT(1), or CE count,
+and includes these counters in subsequent (see {{processing-and-ack}}) ACK_ECN
 frames (see {{frame-ack-ecn}}).
 
 A packet detected by a receiver as a duplicate does not affect the receiver's
