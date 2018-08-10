@@ -320,11 +320,11 @@ and cleanly closing its streams. Clients MUST NOT discard complete responses as
 a result of having their request terminated abruptly, though clients can always
 discard responses at their discretion for other reasons.
 
-Changes to the state of a request stream, including receiving a RST_STREAM
-(regardless of error code), do not affect the state of the server's response.
-Servers do not abort a response in progress solely due to a state change on the
-request stream. However, if the request stream terminates without containing a
-usable HTTP request, the server SHOULD abort its response with the error code
+Changes to the state of a request stream, including receiving a RST_STREAM with
+any error code, do not affect the state of the server's response. Servers do not
+abort a response in progress solely due to a state change on the request stream.
+However, if the request stream terminates without containing a usable HTTP
+request, the server SHOULD abort its response with the error code
 HTTP_INCOMPLETE_REQUEST.
 
 ### Header Formatting and Compression
