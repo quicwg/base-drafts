@@ -1249,8 +1249,12 @@ This document has no IANA actions.  Yet.
 ## Since draft-ietf-quic-recovery-13
 
 - Corrected the lack of ssthresh reduction in CongestionEvent pseudocode (#1598)
-- Early retransmit threshold different from time-loss reordering threshold
-  (#945)
+- Considerations for ECN spoofing (#1426, #1626)
+- Clarifications for PADDING and congestion control (#837, #838, #1517, #1531,
+  #1540)
+- Reduce early retransmission timer to RTT/8 (#945, #1581)
+- Packets are declared lost after an RTO is verified (#935, #1582)
+
 
 ## Since draft-ietf-quic-recovery-12
 
