@@ -1752,6 +1752,11 @@ Sender:
 > **RFC Editor's Note:**  Please remove this section prior to publication of a
 > final version of this document.
 
+## Since draft-ietf-quic-http-13
+
+- Reserved some frame types for grease (#1490, #1525)
+- Require settings to be remembered for 0-RTT, probit reductions (#1541, #1641)
+
 ## Since draft-ietf-quic-http-12
 
 - TLS SNI extension isn't mandatory if an alternative method is used (#1459,

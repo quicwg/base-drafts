@@ -1009,6 +1009,11 @@ Description:
 > **RFC Editor's Note:** Please remove this section prior to publication of a
 > final version of this document.
 
+## Since draft-ietf-quic-qpack-01
+
+- Only header blocks that reference the dynamic table are acknowledged (#1603,
+  #1605)
+
 ## Since draft-ietf-quic-qpack-00
 
 - Renumbered instructions for consistency (#1471, #1472)
