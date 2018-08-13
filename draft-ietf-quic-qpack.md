@@ -145,6 +145,8 @@ The dynamic table can contain duplicate entries (i.e., entries with the same
 name and same value).  Therefore, duplicate entries MUST NOT be treated as an
 error by a decoder.
 
+### Maximum Table Size
+
 The encoder decides how to update the dynamic table and as such can control how
 much memory is used by the dynamic table.  To limit the memory requirements of
 the decoder, the dynamic table size is strictly bounded.
@@ -162,12 +164,45 @@ the dynamic table is less than or equal to the maximum size.
 This mechanism can be used to completely clear entries from the dynamic table by
 setting a maximum size of 0, which can subsequently be restored.
 
-### Absolute and Relative Indexing {#indexing}
+### Calculating Table Size
+
+The size of the dynamic table is the sum of the size of its entries.
+
+The size of an entry is the sum of its name's length in octets (as defined
+in {{string-literals}}), its value's length in octets, and 32.
+
+The size of an entry is calculated using the length of its name and value
+without any Huffman encoding applied.
+
+### Absolute Indexing
 
 Each entry possesses both an absolute index which is fixed for the lifetime of
 that entry and a relative index which changes over time based on the context of
-the reference. The first entry inserted has an absolute index of "0"; indices
-increase sequentially with each insertion.
+the reference.
+
+The absolute index takes on the values in the range
+
+~~~
+   [ 0, MaxEntries * 2 - 1 ]
+~~~
+
+MaxEntries is the maximum number of entries that the dynamic table can have.
+The smallest entry has empty name and value strings and has the size of 32.
+The MaxEntries is calculated as
+
+~~~
+   MaxEntries = floor( MaxTableSize / 32 )
+~~~
+
+MaxTableSize is the maximum size of the dynamic table as specified by the
+decoder (see {{maximum-table-size}}).
+
+All arithmetic performed on the absolute index is modulo "MaxEntries * 2".
+The first entry inserted has an absolute index of "0".  Each subsequent
+insertion increments the absolute index by 1.  The next value after
+"MaxEntries * 2 - 1" is "0".
+
+### Relative Indexing
 
 The relative index begins at zero and increases in the opposite direction from
 the absolute index.  Determining which entry has a relative index of "0" depends
@@ -251,14 +286,33 @@ Because QUIC does not guarantee order between data on different streams, a
 header block might reference an entry in the dynamic table that has not yet been
 received.
 
-Each header block contains a Largest Reference which identifies the table state
-necessary for decoding. If the greatest absolute index in the dynamic table is
-less than the value of the Largest Reference, the stream is considered
-"blocked."  While blocked, header field data should remain in the blocked
-stream's flow control window.  When the Largest Reference is not specified, the
-frame contains no references to the dynamic table and can always be processed
-immediately. A stream becomes unblocked when the greatest absolute index in the
-dynamic table becomes greater than or equal to the Largest Reference for all
+Each header block contains a Largest Reference field which identifies the
+table state necessary for decoding.
+
+When the Largest Reference value is not specified, the frame contains no
+references to the dynamic table and can always be processed immediately.
+
+When it is specified, the Largest Reference value is compared with
+the absolute index value of the next entry to be inserted into the
+dynamic table.  That entry's absolute index value divides the absolute
+index range into two equal parts, each "MaxEntries" in size.  The next
+entry's absolute index value and "MaxEntries - 1" values that follow it
+constitute the Future; "MaxEntries" values preceding the next entry's
+absolute index value constitute the Past.
+
+The lower bound of the Past part of the range is guaranteed by the
+fact that the table cannot grow larger than "MaxEntries", as older
+entries will get evicted.  The higher bound of the Future is ensured
+by the insertion throttling (see {{insertion-throttling}}).
+
+If the Largest Reference is in the Past, the decoder is presumed to
+possess all dynamic entries necessary for decoding of the header block;
+an unresolved reference MUST be treated as a stream error.  Otherwise,
+the stream is considered "blocked."  While blocked, header field data
+should remain in the blocked stream's flow control window.
+
+A stream becomes unblocked when the Largest Reference value falls in
+the Past relative to the latest entry's absolute index for all
 header blocks the decoder has started reading from the stream.  If a decoder
 encounters a header block where the actual largest reference is not equal to the
 largest reference declared in the prefix, it MAY treat this as a stream error of
@@ -311,6 +365,11 @@ To acknowledge dynamic table entries which are not referenced by header blocks,
 for example because the encoder or the decoder have chosen not to risk blocked
 streams, the decoder sends a Table State Synchronize instruction (see
 {{table-state-synchronize}}).
+
+### Insertion Throttling
+
+The encoder MUST NOT create -- either via insertion or duplication -- more
+than "MaxEntries" unacknowledged dynamic table entries.
 
 # Conventions and Definitions
 
@@ -660,7 +719,7 @@ dynamic table, this field is set to zero: this indicates that the value
 is not specified.
 
 `Base Index` is used to resolve references in the dynamic table as described in
-{{indexing}}.
+{{relative-indexing}}.
 
 To save space, Base Index is encoded relative to Largest Reference using a
 one-bit sign and the `Delta Base Index` value.  A sign bit of 0 indicates that
