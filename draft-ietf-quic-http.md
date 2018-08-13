@@ -1754,8 +1754,11 @@ Sender:
 
 ## Since draft-ietf-quic-http-13
 
-- Reserved some frame types for grease (#1490, #1525)
-- Require settings to be remembered for 0-RTT, probit reductions (#1541, #1641)
+- Reserved some frame types for grease (#1333, #1446)
+- Unknown unidirectional stream types are tolerated, not errors; some reserved
+  for grease (#1490, #1525)
+- Require settings to be remembered for 0-RTT, prohibit reductions (#1541,
+  #1641)
 
 ## Since draft-ietf-quic-http-12
 
