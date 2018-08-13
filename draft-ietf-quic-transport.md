@@ -2499,9 +2499,11 @@ A connection that remains idle for longer than the advertised idle timeout (see
 draining state when the idle timeout expires.
 
 Each endpoint advertises their own idle timeout to their peer. The idle timeout
-starts from the last packet received, or the first packet sent after the last
-received packet.  The latter condition ensures that initiating new activity
-postpones a timeout.
+starts from the last packet received.  In order to ensure that initiating new
+activity postpones an idle timeout, an endpoint restarts this timer when sending
+a packet if there are no other packets outstanding.  This condition only applies
+to packets that contain other than ACK or PADDING frames; those packets could
+remain outstanding longer and prevent the timeout from being extended.
 
 The value for an idle timeout can be asymmetric.  The value advertised by an
 endpoint is only used to determine whether the connection is live at that
