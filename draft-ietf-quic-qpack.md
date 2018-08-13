@@ -130,12 +130,15 @@ instructions on the encoder stream (see {{encoder-stream}}).
 The maximum size of the dynamic table can be modified by the encoder, subject to
 a decoder-controlled limit (see {{configuration}} and {{size-update}}).  The
 initial maximum size is determined by the corresponding setting when HTTP
-requests or responses are first permitted to be sent. For clients using 0-RTT
-data in HTTP/QUIC, this means that the table size is the remembered value of the
-setting, even if the server later specifies a larger maximum in its SETTINGS
-frame.  For HTTP/QUIC servers and HTTP/QUIC clients when 0-RTT is not attempted
-or is rejected, this means that the initial maximum table size is the value of
-the setting in the peer's SETTINGS frame.
+requests or responses are first permitted to be sent.  For HTTP/QUIC
+servers and HTTP/QUIC clients when 0-RTT is not attempted or is rejected,
+this means that the initial maximum table size is the value of the setting
+in the peer's SETTINGS frame.  For clients using 0-RTT data in HTTP/QUIC,
+this means that the table size is the remembered value of the setting,
+even if the server later specifies a larger maximum in its SETTINGS frame.
+If the server does specify a larger maximum in response to a successful 0-RTT
+request, the client encoder MUST recalculate its "MaxEntries" (see
+{{absolute-indexing}}).
 
 Before a new entry is added to the dynamic table, entries are evicted from the
 end of the dynamic table until the size of the dynamic table is less than or
