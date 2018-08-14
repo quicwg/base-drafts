@@ -1759,6 +1759,7 @@ Sender:
   for grease (#1490, #1525)
 - Require settings to be remembered for 0-RTT, prohibit reductions (#1541,
   #1641)
+- Specify behavior for truncated requests (#1596,#1643)
 
 ## Since draft-ietf-quic-http-12
 
