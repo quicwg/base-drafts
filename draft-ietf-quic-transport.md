@@ -788,9 +788,8 @@ Note:
 
 ### Starting Packet Numbers
 
-The first Initial packet sent by either endpoint contains a packet number of
-0. The packet number MUST increase monotonically thereafter.  Initial packets
-are in a different packet number space to other packets (see
+The first Initial packet contains a packet number of 0. Each packet sent after
+the Initial packet has a packet number that increases monotonically (see
 {{packet-numbers}}).
 
 
@@ -851,10 +850,6 @@ ID that is chosen by the recipient of the packet; the Source Connection ID
 includes the connection ID that the sender of the packet wishes to use (see
 {{connection-id-encoding}}).
 
-The first Handshake packet sent by a server contains a packet number of 0.
-Handshake packets are their own packet number space.  Packet numbers are
-incremented normally for other Handshake packets.
-
 Servers MUST NOT send more than three datagrams including Initial and Handshake
 packets without receiving a packet from a verified source address.  Source
 addresses can be verified through an address validation token
@@ -872,8 +867,7 @@ All QUIC packets use packet protection.  Packets that are protected with the
 static handshake keys or the 0-RTT keys are sent with long headers; all packets
 protected with 1-RTT keys are sent with short headers.  The different packet
 types explicitly indicate the encryption level and therefore the keys that are
-used to remove packet protection.  0-RTT and 1-RTT protected packets share a
-single packet number space.
+used to remove packet protection.
 
 Packets protected with handshake keys only use packet protection to ensure that
 the sender of the packet is on the network path.  This packet protection is not
@@ -998,32 +992,17 @@ The packet number is an integer in the range 0 to 2^62-1. The value is used in
 determining the cryptographic nonce for packet encryption.  Each endpoint
 maintains a separate packet number for sending and receiving.
 
-Packet numbers are divided into 3 spaces in QUIC:
-
-- Initial space: All Initial packets {{packet-initial}} are in this space.
-- Handshake space: All Handshake packets {{packet-handshake}} are in this space.
-- Application data space: All 0-RTT and 1-RTT encrypted packets
-  {{packet-protected}} are in this space.
-
 As described in {{QUIC-TLS}}, each packet type uses different encryption keys.
 
-Conceptually, a packet number space is the encryption context in which
-a packet can be processed and ACKed.  Initial packets can only be sent
-with Initial encryption keys and ACKed in packets which are also
-Initial packets.  Similarly, Handshake packets can only be sent and
-acknowledged in Handshake packets.
+Conceptually, a packet type is the encryption context in which a packet can be
+processed.  Initial packets can only be sent with Initial encryption keys.
+Similarly, Handshake packets can only be sent with Handshake encryption keys.
 
 This enforces cryptographic separation between the data sent in the
-different packet sequence number spaces.  Each packet number space
-starts at packet number 0.  Subsequent packets sent in the
-same packet number space MUST increase the packet number by at least one.
+different encryption levels.
 
-0-RTT and 1-RTT data exist in the same packet number space to make loss recovery
-algorithms easier to implement between the two packet types.
-
-A QUIC endpoint MUST NOT reuse a packet number within the same packet number
-space in one connection (that is, under the same cryptographic keys).  If the
-packet number for sending reaches 2^62 - 1, the sender MUST close the connection
+A QUIC endpoint MUST NOT reuse a packet number in one connection.  If the packet
+number for sending reaches 2^62 - 1, the sender MUST close the connection
 without sending a CONNECTION_CLOSE frame or any further packets; an endpoint MAY
 send a Stateless Reset ({{stateless-reset}}) in response to further packets that
 it receives.
@@ -1451,8 +1430,8 @@ The first client packet of the cryptographic handshake protocol MUST fit within
 a 1232 octet QUIC packet payload.  This includes overheads that reduce the space
 available to the cryptographic handshake protocol.
 
-The CRYPTO frame can be sent in different packet number spaces.  CRYPTO frames
-in each packet number space carry a separate sequence of handshake data starting
+The CRYPTO frame can be sent in different encryption levels.  CRYPTO frames
+in each encryption level carry a separate sequence of handshake data starting
 from an offset of 0.
 
 ## Example Handshake Flows
@@ -1477,16 +1456,14 @@ Client                                                  Server
 
 Initial[0]: CRYPTO[CH] ->
 
-                                 Initial[0]: CRYPTO[SH] ACK[0]
-                       Handshake[0]: CRYPTO[EE, CERT, CV, FIN]
-                                 <- 1-RTT[0]: STREAM[1, "..."]
+                                        Initial[0]: CRYPTO[SH]
+               Handshake[1]: ACK[0], CRYPTO[EE, CERT, CV, FIN]
+                                 <- 1-RTT[2]: STREAM[1, "..."]
 
-Initial[1]: ACK[0]
-Handshake[0]: CRYPTO[FIN], ACK[0]
-1-RTT[0]: STREAM[0, "..."], ACK[0] ->
+Handshake[1]: CRYPTO[FIN]
+1-RTT[2]: ACK[0-2], STREAM[0, "..."] ->
 
-                           1-RTT[1]: STREAM[55, "..."], ACK[0]
-                                       <- Handshake[1]: ACK[0]
+                      <- 1-RTT[3]: ACK[1-2], STREAM[55, "..."]
 ~~~~
 {: #tls-1rtt-handshake title="Example 1-RTT Handshake"}
 
@@ -1501,19 +1478,17 @@ sequence numbers at the 1-RTT encryption level continue to increment from its
 Client                                                  Server
 
 Initial[0]: CRYPTO[CH]
-0-RTT[0]: STREAM[0, "..."] ->
+0-RTT[1]: STREAM[0, "..."] ->
 
-                                 Initial[0]: CRYPTO[SH] ACK[0]
-                        Handshake[0] CRYPTO[EE, CERT, CV, FIN]
-                          <- 1-RTT[0]: STREAM[1, "..."] ACK[0]
+                                        Initial[0]: CRYPTO[SH]
+              Handshake[1]: ACK[0-1] CRYPTO[EE, CERT, CV, FIN]
+                                 <- 1-RTT[2]: STREAM[1, "..."]
 
-Initial[1]: ACK[0]
-0-RTT[1]: CRYPTO[EOED]
-Handshake[0]: CRYPTO[FIN], ACK[0]
-1-RTT[2]: STREAM[0, "..."] ACK[0] ->
+0-RTT[2]: CRYPTO[EOED]
+Handshake[3]: CRYPTO[FIN]
+1-RTT[4]: ACK[0-2], STREAM[0, "..."] ->
 
-                         1-RTT[1]: STREAM[55, "..."], ACK[1,2]
-                                       <- Handshake[1]: ACK[0]
+                         1-RTT[3]: ACK[2-4], STREAM[55, "..."]
 ~~~~
 {: #tls-0rtt-handshake title="Example 1-RTT Handshake"}
 
@@ -3248,11 +3223,6 @@ QUIC acknowledgements are irrevocable.  Once acknowledged, a packet remains
 acknowledged, even if it does not appear in a future ACK frame.  This is unlike
 TCP SACKs ({{?RFC2018}}).
 
-It is expected that a sender will reuse the same packet number across different
-packet number spaces.  ACK frames only acknowledge the packet numbers that were
-transmitted by the sender in the same packet number space of the packet that the
-ACK was received in.
-
 A client MUST NOT acknowledge Retry packets.  Retry packets include the packet
 number from the Initial packet it responds to.  Version Negotiation packets
 cannot be acknowledged because they do not contain a packet number.  Rather than
@@ -3417,10 +3387,6 @@ is only sending ACK frames will only receive acknowledgements for its packets
 if the sender includes them in packets with non-ACK frames.  A sender SHOULD
 bundle ACK frames with other frames when possible.
 
-Endpoints can only acknowledge packets sent in a particular packet
-number space by sending ACK frames in packets from the same packet
-number space.
-
 To limit receiver state or the size of ACK frames, a receiver MAY limit the
 number of ACK blocks it sends.  A receiver can do this even without receiving
 acknowledgment of its ACK frames, with the knowledge this could cause the sender
@@ -3431,20 +3397,25 @@ received packets in preference to packets received in the past.
 
 ### ACK Frames and Packet Protection
 
-ACK frames MUST only be carried in a packet that has the same packet
-number space as the packet being ACKed (see {{packet-protected}}). For
-instance, packets that are protected with 1-RTT keys MUST be
-acknowledged in packets that are also protected with 1-RTT keys.
+ACK frames that acknowledge protected packets MUST be carried in a packet that
+has an equivalent or greater level of packet protection.  ACK frames MUST NOT be
+sent in Initial packets.  An Initial packet that carries acknowledgements must
+be discarded in its entirety.
 
-Packets that a client sends with 0-RTT packet protection MUST be acknowledged by
-the server in packets protected by 1-RTT keys.  This can mean that the client is
-unable to use these acknowledgments if the server cryptographic handshake
-messages are delayed or lost.  Note that the same limitation applies to other
-data sent by the server protected by the 1-RTT keys.
+Packets that are protected with 1-RTT keys MUST be acknowledged in packets that
+are also protected with 1-RTT keys.
+
+A packet that claims to acknowledge a packet number that was sent in a greater
+encryption level is not valid.  It MUST be discarded in its entirety.
+
+Packets that a client sends with 0-RTT packet protection MUST be acknowledged
+by the server in packets protected by Handshake or 1-RTT keys.  This can mean
+that the client is unable to use these acknowledgments if the server CRYPTO
+frames are delayed or lost.  Note that the same limitation applies to other data
+sent by the server protected by the 1-RTT keys.
 
 Endpoints SHOULD send acknowledgments for packets containing CRYPTO frames with
 a reduced delay; see Section 4.3.1 of {{QUIC-RECOVERY}}.
-
 
 ## ACK_ECN Frame {#frame-ack-ecn}
 
@@ -4786,33 +4757,6 @@ discarded using other methods, but no specific method is mandated in this
 document.
 
 
-## Spoofed ACK Attack
-
-An attacker might be able to receive an address validation token
-({{address-validation}}) from the server and then release the IP address it
-used to acquire that token.  The attacker may, in the future, spoof this same
-address (which now presumably addresses a different endpoint), and initiate a
-0-RTT connection with a server on the victim's behalf.  The attacker can then
-spoof ACK frames to the server which cause the server to send excessive amounts
-of data toward the new owner of the IP address.
-
-There are two possible mitigations to this attack.  The simplest one is that a
-server can unilaterally create a gap in packet-number space.  In the non-attack
-scenario, the client will send an ACK frame with the larger value for largest
-acknowledged.  In the attack scenario, the attacker could acknowledge a packet
-in the gap.  If the server sees an acknowledgment for a packet that was never
-sent, the connection can be aborted.
-
-The second mitigation is that the server can require that acknowledgments for
-sent packets match the encryption level of the sent packet.  This mitigation is
-useful if the connection has an ephemeral forward-secure key that is generated
-and used for every new connection.  If a packet sent is protected with a
-forward-secure key, then any acknowledgments that are received for them MUST
-also be forward-secure protected.  Since the attacker will not have the forward
-secure key, the attacker will not be able to generate forward-secure protected
-packets with ACK frames.
-
-
 ## Optimistic ACK Attack
 
 An endpoint that acknowledges packets it has not received might cause a
@@ -5100,6 +5044,10 @@ DecodePacketNumber(largest_pn, truncated_pn, pn_nbits):
 > final version of this document.
 
 Issue and pull request numbers are listed with a leading octothorp.
+
+## Since draft-ietf-quic-transport-13
+
+- Move back to a single packet number space (#1579)
 
 ## Since draft-ietf-quic-transport-12
 
