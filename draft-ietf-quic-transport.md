@@ -1528,7 +1528,7 @@ handling.
 
 The format of the transport parameters is the TransportParameters struct from
 {{figure-transport-parameters}}.  This is described using the presentation
-language from Section 3 of {{!TLS13=I-D.ietf-tls-tls13}}.
+language from Section 3 of {{!TLS13=RFC8446}}.
 
 ~~~
    uint32 QuicVersion;

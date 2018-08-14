@@ -113,12 +113,12 @@ code and issues list for this draft can be found at
 # Introduction
 
 This document describes how QUIC {{QUIC-TRANSPORT}} is secured using Transport
-Layer Security (TLS) version 1.3 {{!TLS13=I-D.ietf-tls-tls13}}.  TLS 1.3
-provides critical latency improvements for connection establishment over
-previous versions.  Absent packet loss, most new connections can be established
-and secured within a single round trip; on subsequent connections between the
-same client and server, the client can often send application data immediately,
-that is, using a zero round trip setup.
+Layer Security (TLS) version 1.3 {{!TLS13=RFC8446}}.  TLS 1.3 provides critical
+latency improvements for connection establishment over previous versions.
+Absent packet loss, most new connections can be established and secured within a
+single round trip; on subsequent connections between the same client and server,
+the client can often send application data immediately, that is, using a zero
+round trip setup.
 
 This document describes how the standardized TLS 1.3 acts as a security
 component of QUIC.
