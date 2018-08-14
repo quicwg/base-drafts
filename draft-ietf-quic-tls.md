@@ -440,10 +440,12 @@ Important:
 
 ### Encryption Level Changes
 
-At each change of encryption level in either direction, TLS provides QUIC with
-the new level and the encryption keys.  These events are not asynchronous; they
-always occur immediately after TLS is provided with new handshake octets, or
-after TLS produces handshake octets.
+As keys for new encryption levels become available, TLS provides QUIC with those
+keys.  Separately, as TLS starts using keys at a given encryption level, TLS
+indicates to QUIC that it is now reading or writing with keys at that encryption
+level.  These events are not asynchronous; they always occur immediately after
+TLS is provided with new handshake octets, or after TLS produces handshake
+octets.
 
 If 0-RTT is possible, it is ready after the client sends a TLS ClientHello
 message or the server receives that message.  After providing a QUIC client with
@@ -451,12 +453,21 @@ the first handshake octets, the TLS stack might signal the change to 0-RTT
 keys. On the server, after receiving handshake octets that contain a ClientHello
 message, a TLS server might signal that 0-RTT keys are available.
 
-Note that although TLS only uses one encryption level at a time, QUIC may use
-more than one level. For instance, after sending its Finished message (using a
-CRYPTO frame in Handshake encryption) may send STREAM data (in 1-RTT
-encryption). However, if the Finished is lost, the client would have to
-retransmit the Finished, in which case it would use Handshake encryption.
+Although TLS only uses one encryption level at a time, QUIC may use more than
+one level. For instance, after sending its Finished message (using a CRYPTO
+frame at the Handshake encryption level) an endpoint can send STREAM data (in
+1-RTT encryption). If the Finished message is lost, the endpoint uses the
+Handshake encryption level to retransmit the lost message.  Reordering or loss
+of packets can mean that QUIC will need to handle packets at multiple encryption
+levels.  During the handshake, this means potentially handling packets at higher
+and lower encryption levels than the current encryption level used by TLS.
 
+In particular, server implementations need to be able to read packets at the
+Handshake encryption level before the final TLS handshake message at the 0-RTT
+encryption level (EndOfEarlyData) is available.  Though the content of CRYPTO
+frames at the Handshake encryption level cannot be forwarded to TLS before
+EndOfEarlyData is processed, the client could send ACK frames that the server
+needs to process in order to detect lost Handshake packets.
 
 
 ### TLS Interface Summary
