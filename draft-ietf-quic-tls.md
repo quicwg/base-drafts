@@ -1143,6 +1143,10 @@ values in the following registries:
 
 Issue and pull request numbers are listed with a leading octothorp.
 
+## Since draft-ietf-quic-tls-13
+
+- Updated to TLS 1.3 final (#1660)
+
 ## Since draft-ietf-quic-tls-12
 
 - Changes to integration of the TLS handshake (#829, #1018, #1094, #1165, #1190,
