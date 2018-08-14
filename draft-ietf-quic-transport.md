@@ -3395,8 +3395,8 @@ a reduced delay; see Section 4.3.1 of {{QUIC-RECOVERY}}.
 
 ## ACK_ECN Frame {#frame-ack-ecn}
 
-The ACK_ECN frame (type=0x1a) is used by an endpoint that supports ECN to
-acknowledge packets received with ECN codepoints of ECT(0), ECT(1), or CE in the
+The ACK_ECN frame (type=0x1a) is used by an endpoint that provides ECN feedback
+for packets received with ECN codepoints of ECT(0), ECT(1), or CE in the
 packet's IP header.
 
 ~~~
