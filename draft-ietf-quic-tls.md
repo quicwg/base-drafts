@@ -44,6 +44,23 @@ normative:
         org: Mozilla
         role: editor
 
+  QUIC-RECOVERY:
+    title: "QUIC Loss Detection and Congestion Control"
+    date: {DATE}
+    seriesinfo:
+      Internet-Draft: draft-ietf-quic-recovery-latest
+    author:
+      -
+        ins: J. Iyengar
+        name: Jana Iyengar
+        org: Fastly
+        role: editor
+      -
+        ins: I. Swett
+        name: Ian Swett
+        org: Google
+        role: editor
+
 informative:
 
   AEBounds:
@@ -73,23 +90,6 @@ informative:
         ins: M. Bishop
         name: Mike Bishop
         org: Microsoft
-        role: editor
-
-  QUIC-RECOVERY:
-    title: "QUIC Loss Detection and Congestion Control"
-    date: {DATE}
-    seriesinfo:
-      Internet-Draft: draft-ietf-quic-recovery-latest
-    author:
-      -
-        ins: J. Iyengar
-        name: Jana Iyengar
-        org: Fastly
-        role: editor
-      -
-        ins: I. Swett
-        name: Ian Swett
-        org: Google
         role: editor
 
 
@@ -617,6 +617,59 @@ The resulting value is sent in a QUIC CONNECTION_CLOSE frame.
 
 The alert level of all TLS alerts is "fatal"; a TLS stack MUST NOT generate
 alerts at the "warning" level.
+
+
+## Discarding Unused Keys
+
+After QUIC moves to a new encryption level, packet protection keys for previous
+encryption levels can be discarded.  This occurs several times during the
+handshake, as well as when keys are updated (see {{key-update}}).
+
+Packet protection keys are not discarded immediately when new keys are availble.
+If packets from a lower encryption level contain CRYPTO frames, frames that
+retransmit that data MUST be sent at the same encryption level.  Similarly, an
+endpoint generates acknowledgements for packets at the same encryption level as
+the packet being acknowledged.  Thus, it is possible that keys for a lower
+encryption level are needed for a short time after keys for a newer encryption
+level are available.
+
+An endpoint cannot discard keys for a given encryption level unless it has both
+received and acknowledged all CRYPTO frames for that encryption level and when
+all CRYPTO frames for that encryption level have been acknowledged by its peer.
+However, this does not guarantee that no further packets will need to be
+received or sent at that encryption level because a peer might not have received
+all the acknowledgements necessary to reach the same state.
+
+After all CRYPTO frames for a given encryption level have been sent and all
+expected CRYPTO frames received, and all the corresponding acknowledgments have
+been received or sent, an endpoint starts a timer.  To limit the effect of
+packet loss around a change in keys, endpoints MUST retain packet protection
+keys for that encryption level for at least three times the current
+Retramsmission Timeout (RTO) interval as defined in {{QUIC-RECOVERY}}.
+Retaining keys for this interval allows packets containing CRYPTO or ACK frames
+at that encryption level to be sent if packets are determined to be lost or new
+packets require acknowledgment.
+
+Though an endpoint might retain older keys, new data MUST be sent at the highest
+currently-available encryption level.  Only ACK frames and retransmissions of
+data in CRYPTO frames are sent at a previous encryption level.  These packets
+MAY also include PADDING frames.
+
+Once this timer expires, an endpoint MUST NOT either accept or generate new
+packets using those packet protection keys.  An endpoint can discard packet
+protection keys for that encryption level.
+
+Key updates (see {{key-update}}) can be used to update 1-RTT keys before keys
+from other encryption levels are discarded.  In that case, packets protected
+with the newest packet protection keys and packets sent two updates prior will
+appear to use the same keys.  After the handshake is complete, endpoints only
+need to maintain the two latest sets of packet protection keys and MAY discard
+older keys.  Updating keys multiple times rapidly can cause packets to be
+effectively lost if packets are significantly delayed.  Because key updates can
+only be performed once per round trip time, only packets that are delayed by
+more than a round trip will be lost as a result of changing keys; such packets
+will be marked as lost before this, as they leave a gap in the sequence of
+packet numbers.
 
 
 # QUIC Packet Protection {#packet-protection}
