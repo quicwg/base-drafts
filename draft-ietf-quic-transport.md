@@ -1466,7 +1466,7 @@ by the contents. So, for instance the first packet is of type Initial, with
 packet number 0, and contains a CRYPTO frame carrying the ClientHello.
 
 Note that multiple QUIC packets -- even of different encryption levels -- may be
-coalesced into a single UDP datagram (see {{packet-coalesce}}, and so this
+coalesced into a single UDP datagram (see {{packet-coalesce}}), and so this
 handshake may consist of as few as 4 UDP datagrams, or any number more. For
 instance, the server's first flight contains packets from the Initial encryption
 level (obfuscation), the Handshake level, and "0.5-RTT data" from the server at
