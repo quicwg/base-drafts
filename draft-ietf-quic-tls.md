@@ -459,9 +459,8 @@ frame at the Handshake encryption level) an endpoint can send STREAM data (in
 1-RTT encryption). If the Finished message is lost, the endpoint uses the
 Handshake encryption level to retransmit the lost message.  Reordering or loss
 of packets can mean that QUIC will need to handle packets at multiple encryption
-levels.  During the handshake, this means potentially handling of packets at
-higher and lower encryption levels than the current encryption level used by
-TLS.
+levels.  During the handshake, this means potentially handling packets at higher
+and lower encryption levels than the current encryption level used by TLS.
 
 In particular, server implementations need to be able to read packets at the
 Handshake encryption level before the final TLS handshake message at the 0-RTT
