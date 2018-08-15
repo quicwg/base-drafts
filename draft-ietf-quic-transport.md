@@ -3411,7 +3411,7 @@ containing only an ACK frame per received packet that contains frames other than
 an ACK frame.  Packets containing non-ACK frames MUST be acknowledged
 immediately or when a delayed ack timer expires. The delayed ack timer should
 never delay an ACK for longer than an RTT, which ensures an ACK frame is sent
-at least once per RTT.
+at least once per RTT if new packets needing acknowledgement were received.
 
 To limit ACK blocks to those that have not yet been received by the sender, the
 receiver SHOULD track which ACK frames have been acknowledged by its peer.  Once
