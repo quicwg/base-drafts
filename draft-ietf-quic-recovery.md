@@ -518,32 +518,35 @@ Constants used in loss recovery are based on a combination of RFCs, papers, and
 common practice.  Some may need to be changed or negotiated in order to better
 suit a variety of environments.
 
-kMaxTLPs (RECOMMENDED 2):
+kMaxTLPs:
 : Maximum number of tail loss probes before an RTO expires.
+  RECOMMENDED value is 2.
 
-kReorderingThreshold (RECOMMENDED 3):
+kReorderingThreshold:
 : Maximum reordering in packet number space before FACK style loss detection
-  considers a packet lost.
+  considers a packet lost. The RECOMMENDED value is 3.
 
-kTimeReorderingFraction (RECOMMENDED 1/8):
+kTimeReorderingFraction:
 : Maximum reordering in time space before time based loss detection considers
-  a packet lost.  In fraction of an RTT.
+  a packet lost.  In fraction of an RTT. The RECOMMENDED value is 1/8.
 
-kUsingTimeLossDetection (RECOMMENDED false):
+kUsingTimeLossDetection:
 : Whether time based loss detection is in use.  If false, uses FACK style
-  loss detection.
+  loss detection. The RECOMMENDED value is false.
 
-kMinTLPTimeout (RECOMMENDED 10ms):
+kMinTLPTimeout:
 : Minimum time in the future a tail loss probe timer may be set for.
+  The RECOMMENDED value is 10ms.
 
-kMinRTOTimeout (RECOMMENDED 200ms):
-:  Minimum time in the future an RTO timer may be set for.
+kMinRTOTimeout:
+:  Minimum time in the future an RTO timer may be set for. The RECOMMENDED
+   value is 200ms.
 
-kDelayedAckTimeout (RECOMMENDED 25ms):
-: The length of the peer's delayed ack timer.
+kDelayedAckTimeout:
+: The length of the peer's delayed ack timer. The RECOMMENDED value is 25ms.
 
-kInitialRtt (RECOMMENDED 100ms):
-: The RTT used before an RTT sample is taken.
+kInitialRtt:
+: The RTT used before an RTT sample is taken. The RECOMMENDED value is 100ms.
 
 ### Variables of interest
 
@@ -1037,22 +1040,23 @@ Constants used in congestion control are based on a combination of RFCs,
 papers, and common practice.  Some may need to be changed or negotiated
 in order to better suit a variety of environments.
 
-kMaxDatagramSize (RECOMMENDED 1200 bytes):
+kMaxDatagramSize:
 : The sender's maximum payload size. Does not include UDP or IP
   overhead. The max packet size is used for calculating initial and
-  minimum congestion windows.
+  minimum congestion windows. The RECOMMENDED value is 1200 bytes.
 
-kInitialWindow (RECOMMENDED min(10 * kMaxDatagramSize,
-                                max(2* kMaxDatagramSize, 14600))):
+kInitialWindow:
 : Default limit on the initial amount of outstanding data in bytes.
-  Taken from {{?RFC6928}}.
+  Taken from {{?RFC6928}}.  The RECOMMENDED value is the minimum of
+  10 * kMaxDatagramSize and max(2* kMaxDatagramSize, 14600)).
 
-kMinimumWindow (RECOMMENDED 2 * kMaxDatagramSize):
-: Minimum congestion window in bytes.
+kMinimumWindow:
+: Minimum congestion window in bytes. The RECOMMENDED value is
+  2 * kMaxDatagramSize.
 
-kLossReductionFactor (RECOMMENDED 0.5):
+kLossReductionFactor:
 : Reduction in congestion window when a new loss event is detected.
-
+  The RECOMMENDED value is 0.5.
 
 ### Variables of interest {#vars-of-interest}
 
