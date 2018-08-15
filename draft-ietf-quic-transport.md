@@ -1599,7 +1599,12 @@ language from Section 3 of {{!TLS13=I-D.ietf-tls-tls13}}.
 
 The `extension_data` field of the quic_transport_parameters extension defined in
 {{QUIC-TLS}} contains a TransportParameters value.  TLS encoding rules are
-therefore used to encode the transport parameters.
+therefore used to encode the transport parameters. As show in
+{{figure-transport-parameters}} TransportParameters consists of either an
+indication of the initial version used by the client or the negotiated version
+and supported versions provided by the server followed by a list of other
+transport parameters that contain a parameter ID and optional value prefixed
+by the two bytes length.
 
 QUIC encodes transport parameters into a sequence of octets, which are then
 included in the cryptographic handshake.  Once the handshake completes, the
@@ -1612,8 +1617,8 @@ of an 2-byte parameter ID and an optional parameter value.
 Definitions for each of the defined transport parameters are included in
 {{transport-parameter-definitions}}.  Any given parameter MUST appear
 at most once in a given transport parameters extension.  An endpoint MUST
-treat receipt of duplicate transport parameters as a connection error of
-type TRANSPORT_PARAMETER_ERROR.
+treat receipt of duplicate transport parameters or an invalid parameter value
+as a connection error of type TRANSPORT_PARAMETER_ERROR.
 
 
 ### Transport Parameter Definitions
@@ -1741,11 +1746,11 @@ type TRANSPORT_PARAMETER_ERROR.
 ### Values of Transport Parameters for 0-RTT {#zerortt-parameters}
 
 A client that attempts to send 0-RTT data MUST remember the transport parameters
-used by the server.  The transport parameters that the server advertises during
-connection establishment apply to all connections that are resumed using the
-keying material established during that handshake.  Remembered transport
-parameters apply to the new connection until the handshake completes and new
-transport parameters from the server can be provided.
+provided by the server in the initial handshake.  The transport parameters that
+the server advertises during connection establishment apply to all connections
+that are resumed using the keying material established during that handshake.
+Remembered transport parameters apply to the new connection until the handshake
+completes and new transport parameters from the server can be provided.
 
 A server can remember the transport parameters that it advertised, or store an
 integrity-protected copy of the values in the ticket and recover the information
@@ -1779,10 +1784,13 @@ for transport parameters cannot be supported.
 
 ### New Transport Parameters
 
-New transport parameters can be used to negotiate new protocol behavior.  An
-endpoint MUST ignore transport parameters that it does not support.  Absence of
-a transport parameter therefore disables any optional protocol feature that is
-negotiated using the parameter.
+New transport parameters can be used by the client to negotiate new protocol
+behavior.  An endpoint MUST ignore transport parameters that it does not support.
+Absence of a transport parameter as provided by the server therefore disables
+any optional protocol feature that is negotiated using the parameter. A server
+cannot negotiation new features but can indicate the support of a new feature
+that is ready to be used by the client. Howeverm it cannot assume that the client
+understand the parameter and is ready to use that feature.
 
 New transport parameters can be registered according to the rules in
 {{iana-transport-parameters}}.
@@ -1790,16 +1798,14 @@ New transport parameters can be registered according to the rules in
 
 ### Version Negotiation Validation {#version-validation}
 
-Though the cryptographic handshake has integrity protection, two forms of QUIC
-version downgrade are possible.  In the first, an attacker replaces the QUIC
-version in the Initial packet.  In the second, a fake Version Negotiation packet
-is sent by an attacker.  To protect against these attacks, the transport
-parameters include three fields that encode version information.  These
-parameters are used to retroactively authenticate the choice of version (see
-{{version-negotiation}}).
-
-The cryptographic handshake provides integrity protection for the negotiated
-version as part of the transport parameters (see {{transport-parameters}}).  As
+Theoretically, two forms of QUIC version downgrade are possible.  In the first,
+an attacker replaces the QUIC version in the Initial packet.  In the second,
+a fake Version Negotiation packet is sent by an attacker.  To protect against
+these attacks, the cryptographic handshake provides integrity protection for
+the negotiated version as part of the transport parameters. As described in
+{{transport-parameters}} the transport parameters include three fields that
+encode version information.  These parameters are used to retroactively
+authenticate the choice of version (see {{version-negotiation}}). As
 a result, attacks on version negotiation by an attacker can be detected.
 
 The client includes the initial_version field in its transport parameters.  The
@@ -1827,10 +1833,11 @@ QUIC versions that the server supports.
 
 The negotiated_version field is the version that is in use.  This MUST be set by
 the server to the value that is on the Initial packet that it accepts (not an
-Initial packet that triggers a Retry or Version Negotiation packet).  A client
-that receives a negotiated_version that does not match the version of QUIC that
-is in use MUST terminate the connection with a VERSION_NEGOTIATION_ERROR error
-code.
+Initial packet that triggers a Retry or Version Negotiation packet).
+
+A client that receives a negotiated_version that does not match the version of
+QUIC that is in use MUST terminate the connection with a
+VERSION_NEGOTIATION_ERROR error code.
 
 The server includes a list of versions that it would send in any version
 negotiation packet ({{packet-version}}) in the supported_versions field.  The
@@ -2007,14 +2014,16 @@ validation - but a server SHOULD limit the data it sends toward an unvalidated
 address.  Successful completion of the cryptographic handshake implicitly
 provides proof that the client has received packets from the server.
 
-The client should allow for additional Retry packets being sent in
+The client SHOULD allow for additional Retry packets being sent in
 response to Initial packets sent containing a token. There are several
 situations in which the server might not be able to use the previously
 generated token to validate the client's address and must send a new
-Retry. A reasonable limit to the number of tries the client allows
-for, before giving up, is 3. That is, the client MUST echo the
-address validation token from a new Retry packet up to 3 times. After
-that, it MAY give up on the connection attempt.
+Retry. 
+
+A reasonable limit to the number of tries the client allows for, before giving
+up, is 3. That is, the client MUST echo the address validation token from a
+new Retry packet up to 3 times. After that, it MAY give up on the connection
+attempt.
 
 
 ### Address Validation for Future Connections
@@ -2037,7 +2046,9 @@ Thus, a resumption token SHOULD include an expiration time.  The server MAY
 include either an explicit expiration time or an issued timestamp and
 dynamically calculate the expiration time.  It is also unlikely that the client
 port number is the same on two different connections; validating the port is
-therefore unlikely to be successful.
+therefore unlikely to be successful. It may also be possible that the client's
+IP address has changed, there it is also not recommended to validate the IP
+address.
 
 
 ### Address Validation Token Integrity {#token-integrity}
@@ -2248,7 +2259,7 @@ against potential attacks as described in {{address-spoofing}} and
 {{on-path-spoofing}}.  An endpoint MAY skip validation of a peer address if that
 address has been seen recently.
 
-An endpoint only changes the address that it sends packets to in response to the
+An endpoint MUST only change the address that it sends packets to in response to the
 highest-numbered non-probing packet. This ensures that an endpoint does not send
 packets to an old peer address in the case that it receives reordered packets.
 
@@ -2312,20 +2323,20 @@ validation of the address of the spurious migration to be abandoned.
 ### Loss Detection and Congestion Control {#migration-cc}
 
 The capacity available on the new path might not be the same as the old path.
-Packets sent on the old path SHOULD NOT contribute to congestion control or RTT
-estimation for the new path.
-
-On confirming a peer's ownership of its new address, an endpoint SHOULD
+On confirming a peer's ownership of its new address, an endpoint MUST
 immediately reset the congestion controller and round-trip time estimator for
-the new path.
+the new path unless it is reasonably sure that the actually network path did not
+change. For instance, a change in the client's port number is likely indicative
+of a rebinding in a middlebox and not a complete change in path.  This
+determination likely depends on heuristics, which could be imperfect; if the new
+path capacity is significantly reduced, ultimately this relies on the congestion
+controller responding to congestion signals and reducing send rates
+appropriately.
 
-An endpoint MUST NOT return to the send rate used for the previous path unless
-it is reasonably sure that the previous send rate is valid for the new path.
-For instance, a change in the client's port number is likely indicative of a
-rebinding in a middlebox and not a complete change in path.  This determination
-likely depends on heuristics, which could be imperfect; if the new path capacity
-is significantly reduced, ultimately this relies on the congestion controller
-responding to congestion signals and reducing send rates appropriately.
+If the congestion controller has been reset this means that packets sent on the
+old path do not contribute to congestion controller or RTT estimation for the new
+path and an endpoint MUST NOT return to the send rate used for the previous path
+but start in slow start instead.
 
 There may be apparent reordering at the receiver when an endpoint sends data and
 probes from/to multiple addresses during the migration period, since the two
@@ -2457,14 +2468,15 @@ of three ways:
 ### Closing and Draining Connection States {#draining}
 
 The closing and draining connection states exist to ensure that connections
-close cleanly and that delayed or reordered packets are properly discarded.
-These states SHOULD persist for three times the current Retransmission Timeout
-(RTO) interval as defined in {{QUIC-RECOVERY}}.
+close cleanly and that delayed or reordered packets are properly discarded and
+do not interfere with future connections on the same 5-tuple. These states
+SHOULD persist for three times the current Retransmission Timeout (RTO)
+interval as defined in {{QUIC-RECOVERY}}.
 
 An endpoint enters a closing period after initiating an immediate close
-({{immediate-close}}).  While closing, an endpoint MUST NOT send packets unless
-they contain a CONNECTION_CLOSE or APPLICATION_CLOSE frame (see
-{{immediate-close}} for details).
+({{immediate-close}}).  In the closing period, an endpoint MUST NOT send
+packets unless they only contain a CONNECTION_CLOSE or APPLICATION_CLOSE frame
+(see {{immediate-close}} for details).
 
 In the closing state, only a packet containing a closing frame can be sent.  An
 endpoint retains only enough information to generate a packet containing a
@@ -2582,11 +2594,16 @@ properly continue the connection.  An endpoint that wishes to communicate a
 fatal connection error MUST use a closing frame if it has sufficient state to do
 so.
 
-To support this process, a token is sent by endpoints.  The token is carried in
-the NEW_CONNECTION_ID frame sent by either peer, and servers can specify the
-stateless_reset_token transport parameter during the handshake (clients cannot
-because their transport parameters don't have confidentiality protection).  This
-value is protected by encryption, so only client and server know this value.
+To support this process, a token is sent by the endpoints that can be recovered
+or regenerated by the endpoint based on the information available in each packet
+even if the connection state was lost. This provides a protect mechanism to
+identify Stateless Reset packets from an attacker.
+
+The token is carried in the NEW_CONNECTION_ID frame sent by either peer, and
+servers can specify the stateless_reset_token transport parameter during the
+handshake (clients cannot because their transport parameters don't have
+confidentiality protection).  This value is protected by encryption, so
+only client and server know this value.
 
 An endpoint that receives packets that it cannot process sends a packet in the
 following layout:
@@ -2795,7 +2812,7 @@ encoding.
 The PADDING frame (type=0x00) has no semantic value.  PADDING frames can be used
 to increase the size of a packet.  Padding can be used to increase an initial
 client packet to the minimum required size, or to provide protection against
-traffic analysis for protected packets.
+traffic analysis for protected packets. PADDING frames need to be acknowleged. 
 
 A PADDING frame has no content.  That is, a PADDING frame consists of the single
 octet that identifies the frame as a PADDING frame.
@@ -3437,7 +3454,10 @@ acknowledged again.
 Because ACK frames are not sent in response to ACK-only packets, a receiver that
 is only sending ACK frames will only receive acknowledgements for its packets
 if the sender includes them in packets with non-ACK frames.  A sender SHOULD
-bundle ACK frames with other frames when possible.
+bundle ACK frames with other frames when possible. A receiver that would only
+send ACK frames therefore can trigger an ACK from the sender by sending a
+frames that needs to be acknowledged. Knowing which ACKs have been received
+enables the enpoint to reduce the ACK frame to a minimum.
 
 Endpoints can only acknowledge packets sent in a particular packet
 number space by sending ACK frames in packets from the same packet
@@ -3515,7 +3535,7 @@ CE Count:
 
 Endpoints can use PATH_CHALLENGE frames (type=0x0e) to check reachability to the
 peer and for path validation during connection establishment and connection
-migration.
+migration, see sections {{migrate-validate}} and {{migration}}.
 
 PATH_CHALLENGE frames contain an 8-byte payload.
 
@@ -3722,10 +3742,10 @@ FIN bit.
 A sender bundles one or more frames in a QUIC packet (see {{frames}}).
 
 A sender SHOULD minimize per-packet bandwidth and computational costs by
-bundling as many frames as possible within a QUIC packet.  A sender MAY wait for
-a short period of time to bundle multiple frames before sending a packet that is
+bundling multiple frames within a QUIC packet.  A sender MAY wait for
+a short period of time for additional frames before sending a packet that is
 not maximally packed, to avoid sending out large numbers of small packets.  An
-implementation may use knowledge about application sending behavior or
+implementation MAY use knowledge about application sending behavior or
 heuristics to determine whether and for how long to wait.  This waiting period
 is an implementation decision, and an implementation should be careful to delay
 conservatively, since any delay is likely to increase application-visible
@@ -3735,11 +3755,11 @@ latency.
 ## Packet Processing and Acknowledgment {#processing-and-ack}
 
 A packet MUST NOT be acknowledged until packet protection has been successfully
-removed and all frames contained in the packet have been processed.  Any stream
-state transitions triggered by the frame MUST have occurred.  For STREAM frames,
-this means the data has been enqueued in preparation to be received by the
-application protocol, but it does not require that data is delivered and
-consumed.
+removed and all frames contained in the packet have been processed, including
+any stream state transitions triggered by the frame, as described in section 
+{{stream-states}}.  For STREAM frames, this means the data has been enqueued
+in preparation to be received by the application protocol, but it does not
+require that data is delivered and consumed.
 
 Once the packet has been fully processed, a receiver acknowledges receipt by
 sending one or more ACK frames containing the packet number of the received
@@ -3763,7 +3783,7 @@ discussed in more detail in {{QUIC-RECOVERY}}.
 
 ## Retransmission of Information
 
-QUIC packets that are determined to be lost are not retransmitted whole. The
+QUIC packets that are determined to be lost are not retransmitted. The
 same applies to the frames that are contained within lost packets. Instead, the
 information that might be carried in frames is sent again in new frames as
 needed.
@@ -3773,13 +3793,15 @@ been lost.  In general, information is sent again when a packet containing that
 information is determined to be lost and sending ceases when a packet
 containing that information is acknowledged.
 
-* Data sent in CRYPTO frames are retransmitted according to the rules in
-  {{QUIC-RECOVERY}}, until either all data has been acknowledged or the crypto
-  state machine implicitly knows that the peer received the data.
+* Data sent in CRYPTO frames is retransmitted if detected as lost, e.g.
+  according to the rules in section 4.3.1 of {{QUIC-RECOVERY}}, until either all
+  data has been acknowledged or the crypto state machine implicitly knows that the
+  peer received the data.
 
-* Application data sent in STREAM frames is retransmitted in new STREAM frames
-  unless the endpoint has sent a RST_STREAM for that stream.  Once an endpoint
-  sends a RST_STREAM frame, no further STREAM frames are needed.
+* Application data sent in STREAM frames is retransmitted if detected as lost,
+  e.g. according to the rules in {{QUIC-RECOVERY}}, in new STREAM frames unless
+  the endpoint has sent a RST_STREAM for that stream.  Once an endpoint sends a
+  RST_STREAM frame, no further STREAM frames are needed.
 
 * The most recent set of acknowledgments are sent in ACK frames.  An ACK frame
   SHOULD contain all unacknowledged acknowledgments, as described in
@@ -3830,7 +3852,8 @@ containing that information is acknowledged.
 * A liveness or path validation check using PATH_CHALLENGE frames is sent
   periodically until a matching PATH_RESPONSE frame is received or until there
   is no remaining need for liveness or path validation checking. PATH_CHALLENGE
-  frames include a different payload each time they are sent.
+  frames include a different payload each time they are sent and are therefore
+  not-retransmittable.
 
 * Responses to path validation using PATH_RESPONSE frames are sent just once.
   A new PATH_CHALLENGE frame will be sent if another PATH_RESPONSE frame is
@@ -3842,9 +3865,9 @@ containing that information is acknowledged.
 * PADDING frames contain no information, so lost PADDING frames do not require
   repair.
 
-Upon detecting losses, a sender MUST take appropriate congestion control action.
-The details of loss detection and congestion control are described in
-{{QUIC-RECOVERY}}.
+A sender MUST control its sending rate if congestion is detected in line with
+the requirements of {{?CCPrinciples=RFC2914}}. The details of loss detection
+and congestion control are described in {{QUIC-RECOVERY}}.
 
 
 ## Packet Size {#packet-size}
@@ -4059,36 +4082,38 @@ Note:
 data to a peer.
 
 ~~~
-       o
-       | Create Stream (Sending)
-       | Create Bidirectional Stream (Receiving)
-       v
-   +-------+
-   | Ready | Send RST_STREAM
-   |       |-----------------------.
-   +-------+                       |
-       |                           |
-       | Send STREAM /             |
-       |      STREAM_BLOCKED       |
-       v                           |
-   +-------+                       |
-   | Send  | Send RST_STREAM       |
-   |       |---------------------->|
-   +-------+                       |
-       |                           |
-       | Send STREAM + FIN         |
-       v                           v
-   +-------+                   +-------+
-   | Data  | Send RST_STREAM   | Reset |
-   | Sent  +------------------>| Sent  |
-   +-------+                   +-------+
-       |                           |
-       | Recv All ACKs             | Recv ACK
-       v                           v
-   +-------+                   +-------+
-   | Data  |                   | Reset |
-   | Recvd |                   | Recvd |
-   +-------+                   +-------+
+                            o
+                            | Create Stream (Sending)
+                            | Create Bidirectional Stream (Receiving)
+                            v
+                        +-------+
+                        | Ready | Send RST_STREAM
+                        |       |-----------------------.
+                        +-------+                       | 
+                            |                           |
+                            | Send STREAM /             |
+                            |      STREAM_BLOCKED       |
+                            v                           |
+                        +-------+                       |
+Send STREAM /         .-|       |                       |
+     STREAM_BLOCKED / | | Send  | Send RST_STREAM       |
+Recv MAX_STREAM_DATA  '>|       |---------------------->|
+                        +-------+                       |
+                            |                           |
+                            | Send STREAM + FIN /       |
+                            | Recv STOP_SENDING         |
+                            v                           v
+                      .-+-------+                   +-------+
+    Recv STOP_SEDNING | | Data  | Send RST_STREAM   | Reset |
+                      '>| Sent  +------------------>| Sent  |
+                        +-------+                   +-------+
+                            |                           |
+                            | Recv All ACKs             | Recv ACK
+                            v                           v
+                        +-------+                   +-------+
+                        | Data  |                   | Reset |
+                        | Recvd |                   | Recvd |
+                        +-------+                   +-------+
 ~~~
 {: #fig-stream-send-states title="States for Send Streams"}
 
@@ -4100,7 +4125,7 @@ in preparation for sending.
 
 The sending part of a bidirectional stream initiated by a peer (type 0 for a
 server, type 1 for a client) enters the "Ready" state if the receiving part
-enters the "Recv" state.
+enters the "Recv" state (see Figure {{fig-stream-recv-states}}).
 
 Sending the first STREAM or STREAM_BLOCKED frame causes a send stream to enter
 the "Send" state.  An implementation might choose to defer allocating a Stream
@@ -4147,37 +4172,38 @@ instead, receive streams track the delivery of data to the application or
 application protocol some of which cannot be observed by the sender.
 
 ~~~
-       o
-       | Recv STREAM / STREAM_BLOCKED / RST_STREAM
-       | Create Bidirectional Stream (Sending)
-       | Recv MAX_STREAM_DATA
-       | Create Higher-Numbered Stream
-       v
-   +-------+
-   | Recv  | Recv RST_STREAM
-   |       |-----------------------.
-   +-------+                       |
-       |                           |
-       | Recv STREAM + FIN         |
-       v                           |
-   +-------+                       |
-   | Size  | Recv RST_STREAM       |
-   | Known +---------------------->|
-   +-------+                       |
-       |                           |
-       | Recv All Data             |
-       v                           v
-   +-------+                   +-------+
-   | Data  | Recv RST_STREAM   | Reset |
-   | Recvd +<-- (optional) --->| Recvd |
-   +-------+                   +-------+
-       |                           |
-       | App Read All Data         | App Read RST
-       v                           v
-   +-------+                   +-------+
-   | Data  |                   | Reset |
-   | Read  |                   | Read  |
-   +-------+                   +-------+
+                       o
+                       | Recv STREAM / STREAM_BLOCKED / RST_STREAM
+                       | Create Bidirectional Stream (Sending)
+                       | Recv MAX_STREAM_DATA
+                       | Create Higher-Numbered Stream
+                       v     
+                   +-------+ Send STOP_SENDING
+                 .-|       |-------------------------------.
+Send             | | Recv  |                               |
+ MAX_STREAM_SIZE '>|       | Recv RST_STREAM               |
+                   +-------+-----------------------.       |
+                       |                           |       |
+                       | Recv STREAM + FIN         |       |
+                       v                           |       v
+                   +-------+                       |   +-------+
+                   | Size  |                       |   | Wait  |
+                   | Known + Recv RST_STREAM       |   | STOP  |
+                   +-------+---------------------->|   +-------+
+                       |                           |       | 
+                       | Recv All Data             |       | Recv 
+                       v                           v       |  RST_STREAM
+                   +-------+                   +-------    |
+                   | Data  | Recv RST_STREAM   | Reset |<--'
+                   | Recvd +<-- (optional) --->| Recvd |
+                   +-------+                   +-------+
+                       |                           |
+                       | App Read All Data         | App Read RST
+                       v                           v
+                   +-------+                   +-------+
+                   | Data  |                   | Reset |
+                   | Read  |                   | Read  |
+                   +-------+                   +-------+
 ~~~
 {: #fig-stream-recv-states title="States for Receive Streams"}
 
@@ -4422,9 +4448,9 @@ STREAM frames ensures that loss recovery, congestion control, and flow control
 operate effectively.
 
 CRYPTO frames SHOULD be prioritized over other streams prior to the completion
-of the cryptographic handshake.  This includes the retransmission of the second
-flight of client handshake messages, that is, the TLS Finished and any client
-authentication messages.
+of the cryptographic handshake.  In {{QUIC-TLS}} this includes the retransmission
+of the second flight of client handshake messages, that is the TLS Finished and
+any client authentication messages.
 
 STREAM data in frames determined to be lost SHOULD be retransmitted before
 sending new data, unless application priorities indicate otherwise.
@@ -4472,7 +4498,8 @@ with the Stream ID set appropriately. A receiver could use the current offset of
 data consumed to determine the flow control offset to be advertised.  A receiver
 MAY send MAX_STREAM_DATA frames in multiple packets in order to make sure that
 the sender receives an update before running out of flow control credit, even if
-one of the packets is lost.
+one of the packets is lost. As soons as the packet with the MAX_STREAM_DATA
+frame is acknowlegded, there is no need to send the same max stream limit agian.
 
 Connection flow control is a limit to the total bytes of stream data sent in
 STREAM frames on all streams.  A receiver advertises credit for a connection by
@@ -4508,7 +4535,7 @@ stream before the RST_STREAM frame, and the receiver MUST use the final offset
 to account for all bytes sent on the stream in its connection level flow
 controller.
 
-### Response to a RST_STREAM
+## Response to a RST_STREAM
 
 RST_STREAM terminates one direction of a stream abruptly.  Whether any action or
 response can or should be taken on the data already received is an
@@ -4517,7 +4544,7 @@ RST_STREAM an endpoint will choose to stop sending data in its own direction. If
 the sender of a RST_STREAM wishes to explicitly state that no future data will
 be processed, that endpoint MAY send a STOP_SENDING frame at the same time.
 
-### Data Limit Increments {#fc-credit}
+## Data Limit Increments {#fc-credit}
 
 This document leaves when and how many bytes to advertise in a MAX_DATA or
 MAX_STREAM_DATA to implementations, but offers a few considerations.  These
@@ -4546,7 +4573,7 @@ peer-initiated streams close.  A receiver MAY also advance the maximum stream ID
 based on current activity, system conditions, and other environmental factors.
 
 
-### Blocking on Flow Control {#blocking}
+## Blocking on Flow Control {#blocking}
 
 If a sender does not receive a MAX_DATA or MAX_STREAM_DATA frame when it has run
 out of flow control credit, the sender will be blocked and SHOULD send a BLOCKED
@@ -4558,7 +4585,7 @@ entire round trip.
 
 For smooth operation of the congestion controller, it is generally considered
 best to not let the sender go into quiescence if avoidable.  To avoid blocking a
-sender, and to reasonably account for the possibility of loss, a receiver should
+sender, and to reasonably account for the possibility of loss, a receiver SHOULD
 send a MAX_DATA or MAX_STREAM_DATA frame at least two round trips before it
 expects the sender to get blocked.
 
