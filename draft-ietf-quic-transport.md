@@ -144,7 +144,7 @@ without negotiating a new QUIC version. This document specifies version
 {{QUIC-TLS}}. Key negotiation and encryption is described in a separate
 docuement to make changes to only this part easier in future versions.
 
-All versions of QUIC MUST conform to the protocol invariants in 
+All versions of QUIC MUST conform to the protocol invariants in
 {{QUIC-INVARIANTS}}.
 
 QUIC is a name, not an acronym.
@@ -3756,7 +3756,7 @@ latency.
 
 A packet MUST NOT be acknowledged until packet protection has been successfully
 removed and all frames contained in the packet have been processed, including
-any stream state transitions triggered by the frame, as described in section 
+any stream state transitions triggered by the frame, as described in section
 {{stream-states}}.  For STREAM frames, this means the data has been enqueued
 in preparation to be received by the application protocol, but it does not
 require that data is delivered and consumed.
