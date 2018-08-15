@@ -520,7 +520,7 @@ suit a variety of environments.
 
 kMaxTLPs:
 : Maximum number of tail loss probes before an RTO expires.
-  RECOMMENDED value is 2.
+  The RECOMMENDED value is 2.
 
 kReorderingThreshold:
 : Maximum reordering in packet number space before FACK style loss detection
