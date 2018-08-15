@@ -4062,7 +4062,7 @@ data to a peer.
        v                           v
    +-------+                   +-------+
    | Data  | Send RST_STREAM   | Reset |
-   | Sent  +------------------>| Sent  |
+   | Sent  |------------------>| Sent  |
    +-------+                   +-------+
        |                           |
        | Recv All ACKs             | Recv ACK
@@ -4144,14 +4144,14 @@ application protocol some of which cannot be observed by the sender.
        v                           |
    +-------+                       |
    | Size  | Recv RST_STREAM       |
-   | Known +---------------------->|
+   | Known |---------------------->|
    +-------+                       |
        |                           |
        | Recv All Data             |
        v                           v
    +-------+                   +-------+
    | Data  | Recv RST_STREAM   | Reset |
-   | Recvd +<-- (optional) --->| Recvd |
+   | Recvd |<-- (optional) --->| Recvd |
    +-------+                   +-------+
        |                           |
        | App Read All Data         | App Read RST
