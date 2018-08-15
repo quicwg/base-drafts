@@ -1769,6 +1769,15 @@ Sender:
 > **RFC Editor's Note:**  Please remove this section prior to publication of a
 > final version of this document.
 
+## Since draft-ietf-quic-http-13
+
+- Reserved some frame types for grease (#1333, #1446)
+- Unknown unidirectional stream types are tolerated, not errors; some reserved
+  for grease (#1490, #1525)
+- Require settings to be remembered for 0-RTT, prohibit reductions (#1541,
+  #1641)
+- Specify behavior for truncated requests (#1596, #1643)
+
 ## Since draft-ietf-quic-http-12
 
 - TLS SNI extension isn't mandatory if an alternative method is used (#1459,

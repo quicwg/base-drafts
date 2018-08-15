@@ -5101,10 +5101,33 @@ DecodePacketNumber(largest_pn, truncated_pn, pn_nbits):
 
 Issue and pull request numbers are listed with a leading octothorp.
 
+## Since draft-ietf-quic-transport-13
+
+- Streams open when higher-numbered streams of the same type open (#1342, #1549)
+- Split initial stream flow control limit into 3 transport parameters (#1016,
+  #1542)
+- All flow control transport parameters are optional (#1610)
+- Removed UNSOLICITED_PATH_RESPONSE error code (#1265, #1539)
+- Permit stateless reset in response to any packet (#1348, #1553)
+- Recommended defense against stateless reset spoofing (#1386, #1554)
+- Prevent infinite stateless reset exchanges (#1443, #1627)
+- Forbid processing of the same packet number twice (#1405, #1624)
+- Added a packet number decoding example (#1493)
+- More precisely define idle timeout (#1429, #1614, #1652)
+- Corrected format of Retry packet and prevented looping (#1492, #1451, #1448,
+  #1498)
+- Permit 0-RTT after receiving Version Negotiation or Retry (#1507, #1514,
+  #1621)
+- Permit Retry in response to 0-RTT (#1547, #1552)
+- Looser verification of ECN counters to account for ACK loss (#1555, #1481,
+  #1565)
+- Remove frame type field from APPLICATION_CLOSE (#1508, #1528)
+
+
 ## Since draft-ietf-quic-transport-12
 
 - Changes to integration of the TLS handshake (#829, #1018, #1094, #1165, #1190,
-  #1233, #1242, #1252, #1450)
+  #1233, #1242, #1252, #1450, #1458)
   - The cryptographic handshake uses CRYPTO frames, not stream 0
   - QUIC packet protection is used in place of TLS record protection
   - Separate QUIC packet number spaces are used for the handshake
