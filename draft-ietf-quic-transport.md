@@ -139,8 +139,8 @@ connection-level flow control, connection migration, and data reliability.
 
 An accompanying document describes QUIC's loss detection and congestion control
 {{QUIC-RECOVERY}}. As these are sender-side only mechanisms they can be changed
-without negotiating a new QUIC version. This document specifies version 
-0x00000001 of QUIC which uses TLS1.3 for key negotiation as described in 
+without negotiating a new QUIC version. This document specifies version
+0x00000001 of QUIC which uses TLS1.3 for key negotiation as described in
 {{QUIC-TLS}}. Key negotiation and encryption is described in a separate
 docuement to make changes to only this part easier in future versions.
 
@@ -192,11 +192,11 @@ QUIC packet:
 
 : QUIC packets containing application payload data that are encrypted with
   a key derived from previous QUIC connection to the same endpoint.
-  
+
 1-RTT:
 
 : QUIC packets that are encrypted with keys derived from the QUIC
-  handshake. 
+  handshake.
 
 
 ## Notational Conventions
@@ -868,7 +868,7 @@ Source Connection ID field of the previously received Initial packet from that
 endpoint; the Source Connection ID includes the connection ID that the
 sender of the packet wishes to use (see {{connection-id-encoding}}).
 
-The first Handshake packet sent by a server contains a packet number of 0. 
+The first Handshake packet sent by a server contains a packet number of 0.
 Handshake packets are their own packet number space. See section
 {{packet-numbers}} on packet number spaces. Packet numbers are incremented
 normally for other Handshake packets.
@@ -2018,7 +2018,7 @@ The client SHOULD allow for additional Retry packets being sent in
 response to Initial packets sent containing a token. There are several
 situations in which the server might not be able to use the previously
 generated token to validate the client's address and must send a new
-Retry. 
+Retry.
 
 A reasonable limit to the number of tries the client allows for, before giving
 up, is 3. That is, the client MUST echo the address validation token from a
@@ -2812,7 +2812,7 @@ encoding.
 The PADDING frame (type=0x00) has no semantic value.  PADDING frames can be used
 to increase the size of a packet.  Padding can be used to increase an initial
 client packet to the minimum required size, or to provide protection against
-traffic analysis for protected packets. PADDING frames need to be acknowleged. 
+traffic analysis for protected packets. PADDING frames need to be acknowleged.
 
 A PADDING frame has no content.  That is, a PADDING frame consists of the single
 octet that identifies the frame as a PADDING frame.
@@ -4089,7 +4089,7 @@ data to a peer.
                         +-------+
                         | Ready | Send RST_STREAM
                         |       |-----------------------.
-                        +-------+                       | 
+                        +-------+                       |
                             |                           |
                             | Send STREAM /             |
                             |      STREAM_BLOCKED       |
@@ -4177,7 +4177,7 @@ application protocol some of which cannot be observed by the sender.
                        | Create Bidirectional Stream (Sending)
                        | Recv MAX_STREAM_DATA
                        | Create Higher-Numbered Stream
-                       v     
+                       v
                    +-------+ Send STOP_SENDING
                  .-|       |-------------------------------.
 Send             | | Recv  |                               |
@@ -4190,8 +4190,8 @@ Send             | | Recv  |                               |
                    | Size  |                       |   | Wait  |
                    | Known + Recv RST_STREAM       |   | STOP  |
                    +-------+---------------------->|   +-------+
-                       |                           |       | 
-                       | Recv All Data             |       | Recv 
+                       |                           |       |
+                       | Recv All Data             |       | Recv
                        v                           v       |  RST_STREAM
                    +-------+                   +-------    |
                    | Data  | Recv RST_STREAM   | Reset |<--'
