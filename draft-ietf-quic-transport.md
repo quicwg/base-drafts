@@ -138,16 +138,14 @@ QUIC protocol for connection establishment, stream multiplexing, stream and
 connection-level flow control, connection migration, and data reliability.
 
 An accompanying document describes QUIC's loss detection and congestion control
-{{QUIC-RECOVERY}}. As these are sender-side only mechanisms they can be changed
-without negotiating a new QUIC version. This document specifies version
-0x00000001 of QUIC which uses TLS1.3 for key negotiation as described in
-{{QUIC-TLS}}. Key negotiation and encryption is described in a separate
-docuement to make changes to only this part easier in future versions.
+{{QUIC-RECOVERY}}. Each implementation of QUIC will unilaterally select a loss
+detection and congestion control strategy. A recommended approach is described
+in {{QUIC-RECOVERY}}. This document specifies version 0x00000001 of QUIC which
+uses TLS 1.3 for key negotiation as described in {{QUIC-TLS}}. Key negotiation
+and encryption is described in a separate docuement to make changes to only
+this part easier in future versions.
 
-All versions of QUIC MUST conform to the protocol invariants in
-{{QUIC-INVARIANTS}}.
-
-QUIC is a name, not an acronym.
+All versions of QUIC conform to the protocol invariants in {{QUIC-INVARIANTS}}.
 
 # Conventions and Definitions
 
@@ -190,14 +188,15 @@ QUIC packet:
 
 0-RTT:
 
-: QUIC packets containing application payload data that are encrypted with
-  a key derived from previous QUIC connection to the same endpoint.
+: QUIC packets encrypted with a key derived from previous QUIC connection
+  to the same endpoint.
 
 1-RTT:
 
 : QUIC packets that are encrypted with keys derived from the QUIC
   handshake.
 
+QUIC is a name, not an acronym.
 
 ## Notational Conventions
 
@@ -394,8 +393,8 @@ covers the both the Packet Number and Payload fields, both of which are
 confidentiality protected and initially of unknown length.  The size of the
 Payload field is learned once the packet number protection is removed.
 
-The length field is used to enable senders to coalesce multiple long-header
-packets and potentially one short-header packet into one UDP datagram.  See
+The length field enables senders to coalesce multiple long-header packets
+and potentially one short-header packet into one UDP datagram.  See
 {{packet-coalesce}} for more details.
 
 
@@ -481,8 +480,8 @@ Protected Payload:
 
 : Packets with a short header always include a 1-RTT protected payload.
 
-The header form and connection ID field, if present, of a short header packet
-areversion-independent.  The remaining fields are specific to the selected
+The header form and connection ID field of a short header packet
+are version-independent.  The remaining fields are specific to the selected
 QUIC version.  See {{QUIC-INVARIANTS}} for details on how packets from
 different versions of QUIC are interpreted.
 
@@ -869,8 +868,8 @@ endpoint; the Source Connection ID includes the connection ID that the
 sender of the packet wishes to use (see {{connection-id-encoding}}).
 
 The first Handshake packet sent by a server contains a packet number of 0.
-Handshake packets are their own packet number space. See section
-{{packet-numbers}} on packet number spaces. Packet numbers are incremented
+Handshake packets are their own packet number space. (See {{packet-numbers}}
+for more information on packet number spaces.) Packet numbers are incremented
 normally for other Handshake packets.
 
 Servers MUST NOT send more than three datagrams including Initial and Handshake
@@ -891,8 +890,8 @@ static handshake keys or the 0-RTT keys are sent with long headers; all packets
 protected with 1-RTT keys are sent with short headers.  The different packet
 types explicitly indicate the encryption level and therefore the keys that are
 used to remove packet protection.  0-RTT and 1-RTT protected packets share a
-single packet number space. Initial and Handshake packets both have their own
-packet number space.
+single packet number space, while Initial and Handshake packets each have their
+own packet number space.
 
 Packets protected with handshake keys only use packet protection to ensure that
 the sender of the packet is on the network path.  This packet protection is not
@@ -908,7 +907,7 @@ Packets protected with 0-RTT keys use a type value of 0x7C.  The connection ID
 fields for a 0-RTT packet MUST match the values used in the Initial packet
 ({{packet-initial}}).
 
-The client can send further 0-RTT packets after receiving an Initial
+The client can send additional 0-RTT packets after receiving an Initial
 ({{packet-initial}}) or Handshake ({{packet-handshake}}) packet, if that
 packet does not complete the handshake.  Even if the client receives a
 different connection ID in the Handshake packet, it MUST continue to
@@ -923,8 +922,8 @@ confidentiality protection that is applied after packet protection is applied
 each packet sent, see {{packet-numbers}} for details.
 
 The content of 0-RTT and 1-RTT packets is protected using authenticated
-encryption. {{QUIC-TLS}}vdescribes packet protection in detail.  After
-decryption, the plaintext consistsvof a sequence of frames, as described in
+encryption. {{QUIC-TLS}} describes packet protection in detail.  After
+decryption, the plaintext consists of a sequence of frames, as described in
 {{frames}}.
 
 
@@ -934,7 +933,7 @@ A sender can coalesce multiple QUIC packets (typically a Cryptographic Handshake
 packet and a Protected packet) into one UDP datagram.  This can reduce the
 number of UDP datagrams needed to send application data during the handshake and
 immediately afterwards. It is not necessary for senders to coalesce
-packets, though not doing it leads larger number of datagrams during the
+packets, though not doing so leads to a larger number of datagrams during the
 handshake. Receivers MUST be able to process coalesced packets.
 
 Senders SHOULD coalesce packets in order of increasing encryption levels
@@ -1132,10 +1131,10 @@ Stateless Reset do not contain frames.
 Protected payloads MUST contain at least one frame, and MAY contain multiple
 frames and multiple frame types.
 
-Frames MUST fit within a single QUIC packet, and therefore within a single
-UDP datagram, and MUST NOT span a QUIC packet
-boundary. Each frame begins with a Frame Type, indicating its type, followed by
-additional type-dependent fields:
+QUIC packets cannot span multiple datagrams. Therefore frames must fit within
+a single QUIC packet and cannot span a QUIC packet boundary. Each frame begins
+with a Frame Type, indicating its type, followed by additional type-dependent
+fields:
 
 ~~~
  0                   1                   2                   3
@@ -1204,8 +1203,8 @@ An extension to QUIC that wishes to use a new type of frame MUST first ensure
 that a peer is able to understand the frame.  An endpoint can use a transport
 parameter to signal its willingness to receive one or more extension frame types
 with the one transport parameter. Otherwise it is assumed that enpoints have
-knowledge about which (extension) frame types are supported by the otherwise, e.g.
-through out of band negotiation.
+knowledge about which (extension) frame types are supported by the otherwise,
+e.g. through out of band negotiation.
 
 An IANA registry is used to manage the assignment of frame types, see
 {{iana-frames}}.
@@ -1218,8 +1217,8 @@ connection establishment intertwines version negotiation with the cryptographic
 and transport handshakes to reduce connection establishment latency, as
 described in {{handshake}}.  Once established, a connection may migrate to a
 different IP address and/or port number at either endpoint, due to NAT rebinding
-or mobility, as described in {{migration}}.  Finally a connection may be terminated
-by either endpoint, as described in {{termination}}.
+or mobility, as described in {{migration}}.  Finally a connection may be
+terminated by either endpoint, as described in {{termination}}.
 
 ## Connection ID
 
@@ -1229,20 +1228,20 @@ in length, or between 4 and 18 octets (inclusive).  Connection IDs are selected
 independently in each direction.
 
 The primary function of a connection ID is to ensure packets can still be
-assotiated with the right connection at the receiver if changes in sender
-addressing at lower protocol layers (UDP, IP, and below) occur. The Connection ID
-is visibe to the path to also enable the network to deliver packets for a QUIC
-connection to the right endpoint after an address change if load balancing is used.
-Each endpoint selects connection IDs using an implementation-specific (and perhaps
-deployment-specific) method which will allow packets with that connection ID to
-be routed back to the endpoint and identified by the endpoint upon receipt.
+associated with the correct connection at the receiver if changes in sender
+addressing at lower protocol layers (UDP, IP, and below) occur. The Connection
+ID is visibe to the path to enable load balancers to deliver packets for a
+QUIC connection to the correct endpoint despite address changes. Each endpoint
+selects connection IDs using an implementation-specific (and perhaps
+deployment-specific) method which will allow packets with that connection ID
+to be routed back to the endpoint and identified by the endpoint upon receipt.
 
 A zero-length connection ID MAY be used when the connection ID is not needed for
-routing and the address/port tuple of packets is assumed to be sufficiently stable
-to associate them to a connection. An endpoint whose peer has selected a
-zero-length connection ID MUST continue to use a zero-length connection ID for the
-lifetime of the connection and cannot send packets from any other local address
-without breaking the connection.
+routing and the address/port tuple of packets is assumed to be sufficiently
+stable to associate them to a connection. An endpoint whose peer has selected a
+zero-length connection ID MUST continue to use a zero-length connection ID for
+the lifetime of the connection and cannot send packets from any other local
+address without breaking the connection.
 
 When an endpoint has requested a non-zero-length connection ID, it will issue a
 series of connection IDs over the lifetime of a connection. The series of
@@ -1328,8 +1327,9 @@ unknown version, but instead send a Version Negotiation packet, provided that
 the packet is sufficiently long.
 
 Servers MUST drop packets without sending a Version Negotiation packet when the
-received packet contains unsupported versions and is too small
-to be an Initial packet for some version supported by the server.
+received packet indicates an unsupported versions and is too small
+to be the first packet that would create a new connection for some version
+supported by the server.
 
 If the packet is an Initial packet fully conforming with this specification, the
 server proceeds with the handshake ({{handshake}}). This commits the server to
@@ -1352,9 +1352,9 @@ is present in the header.
 ## Version Negotiation
 
 Version negotiation ensures that client and server agree to a QUIC version
-that is mutually supported independent of the implemented version. A server
+that is mutually supported, independent of the implemented version. A server
 can send a Version Negotiation packet in response to each packet that might
-initiate a new connection and is sufficiently large, see also
+initiate a new connection and is sufficiently large; see 
 {{packet-handling}} for details.
 
 The size of the first packet sent by a client will determine whether a server
@@ -1599,8 +1599,8 @@ language from Section 3 of {{!TLS13=I-D.ietf-tls-tls13}}.
 
 The `extension_data` field of the quic_transport_parameters extension defined in
 {{QUIC-TLS}} contains a TransportParameters value.  TLS encoding rules are
-therefore used to encode the transport parameters. As show in
-{{figure-transport-parameters}} TransportParameters consists of either an
+therefore used to encode the transport parameters. As shown in
+{{figure-transport-parameters}}, TransportParameters consists of either an
 indication of the initial version used by the client or the negotiated version
 and supported versions provided by the server followed by a list of other
 transport parameters that contain a parameter ID and optional value prefixed
@@ -1612,7 +1612,8 @@ transport parameters declared by the peer are available.  Each endpoint
 validates the value provided by its peer.  In particular, version negotiation
 MUST be validated (see {{version-validation}}) before the connection
 establishment is considered properly complete. Each transport parameter consists
-of an 2-byte parameter ID and an optional parameter value.
+of an 2-byte parameter ID and a parameter value, prefixed by a 2-byte length
+field for the value field which might be zero.
 
 Definitions for each of the defined transport parameters are included in
 {{transport-parameter-definitions}}.  Any given parameter MUST appear
@@ -1688,7 +1689,7 @@ disable_migration (0x0009):
 : The endpoint does not support connection migration ({{migration}}). Peers MUST
   NOT send any packets, including probing packets ({{probing}}), from a local
   address other than that used to perform the handshake.  This parameter is a
-  zero-length value. Values other than 0 and 1 are invalid.
+  zero-length value.
 
 Either peer MAY advertise an initial value for the flow control on each type of
 stream on which they might receive data.  Each of the following transport
@@ -1746,7 +1747,7 @@ type TRANSPORT_PARAMETER_ERROR.
 ### Values of Transport Parameters for 0-RTT {#zerortt-parameters}
 
 A client that attempts to send 0-RTT data MUST remember the transport parameters
-provided by the server in the initial handshake.  The transport parameters that
+provided by the server in the preivous handshake.  The transport parameters that
 the server advertises during connection establishment apply to all connections
 that are resumed using the keying material established during that handshake.
 Remembered transport parameters apply to the new connection until the handshake
@@ -1785,12 +1786,12 @@ for transport parameters cannot be supported.
 ### New Transport Parameters
 
 New transport parameters can be used by the client to negotiate new protocol
-behavior.  An endpoint MUST ignore transport parameters that it does not support.
-Absence of a transport parameter as provided by the server therefore disables
-any optional protocol feature that is negotiated using the parameter. A server
-cannot negotiation new features but can indicate the support of a new feature
-that is ready to be used by the client. Howeverm it cannot assume that the client
-understand the parameter and is ready to use that feature.
+behavior.  An endpoint MUST ignore transport parameters that it does not
+support. Absence of a transport parameter as provided by the server therefore
+disables any optional protocol feature that is negotiated using the parameter.
+A server cannot negotiate new features but can indicate the support of a new
+feature that is ready to be used by the client. However, it cannot assume that
+the client understand the parameter and is ready to use that feature.
 
 New transport parameters can be registered according to the rules in
 {{iana-transport-parameters}}.
@@ -1803,7 +1804,7 @@ an attacker replaces the QUIC version in the Initial packet.  In the second,
 a fake Version Negotiation packet is sent by an attacker.  To protect against
 these attacks, the cryptographic handshake provides integrity protection for
 the negotiated version as part of the transport parameters. As described in
-{{transport-parameters}} the transport parameters include three fields that
+{{transport-parameters}}, the transport parameters include three fields that
 encode version information.  These parameters are used to retroactively
 authenticate the choice of version (see {{version-negotiation}}). As
 a result, attacks on version negotiation by an attacker can be detected.
@@ -2046,9 +2047,7 @@ Thus, a resumption token SHOULD include an expiration time.  The server MAY
 include either an explicit expiration time or an issued timestamp and
 dynamically calculate the expiration time.  It is also unlikely that the client
 port number is the same on two different connections; validating the port is
-therefore unlikely to be successful. It may also be possible that the client's
-IP address has changed, there it is also not recommended to validate the IP
-address.
+therefore unlikely to be successful. 
 
 
 ### Address Validation Token Integrity {#token-integrity}
@@ -2259,9 +2258,10 @@ against potential attacks as described in {{address-spoofing}} and
 {{on-path-spoofing}}.  An endpoint MAY skip validation of a peer address if that
 address has been seen recently.
 
-An endpoint MUST only change the address that it sends packets to in response to the
-highest-numbered non-probing packet. This ensures that an endpoint does not send
-packets to an old peer address in the case that it receives reordered packets.
+An endpoint MUST only change the address that it sends packets to in response to
+the highest-numbered non-probing packet. This ensures that an endpoint does not
+send packets to an old peer address in the case that it receives reordered
+packets.
 
 After changing the address to which it sends non-probing packets, an endpoint
 could abandon any path validation for other addresses.
@@ -2333,10 +2333,10 @@ path capacity is significantly reduced, ultimately this relies on the congestion
 controller responding to congestion signals and reducing send rates
 appropriately.
 
-If the congestion controller has been reset this means that packets sent on the
-old path do not contribute to congestion controller or RTT estimation for the new
-path and an endpoint MUST NOT return to the send rate used for the previous path
-but start in slow start instead.
+If the congestion controller has been reset packets sent on the old path do not
+contribute to congestion controller or RTT estimation for the new path and an
+endpoint MUST NOT return to the send rate used for the previous path but start
+in slow start instead.
 
 There may be apparent reordering at the receiver when an endpoint sends data and
 probes from/to multiple addresses during the migration period, since the two
@@ -2474,7 +2474,7 @@ SHOULD persist for three times the current Retransmission Timeout (RTO)
 interval as defined in {{QUIC-RECOVERY}}.
 
 An endpoint enters a closing period after initiating an immediate close
-({{immediate-close}}).  In the closing period, an endpoint MUST NOT send
+({{immediate-close}}).  During the closing period, an endpoint MUST NOT send
 packets unless they only contain a CONNECTION_CLOSE or APPLICATION_CLOSE frame
 (see {{immediate-close}} for details).
 
@@ -2812,7 +2812,7 @@ encoding.
 The PADDING frame (type=0x00) has no semantic value.  PADDING frames can be used
 to increase the size of a packet.  Padding can be used to increase an initial
 client packet to the minimum required size, or to provide protection against
-traffic analysis for protected packets. PADDING frames need to be acknowleged.
+traffic analysis for protected packets.
 
 A PADDING frame has no content.  That is, a PADDING frame consists of the single
 octet that identifies the frame as a PADDING frame.
@@ -3455,9 +3455,10 @@ Because ACK frames are not sent in response to ACK-only packets, a receiver that
 is only sending ACK frames will only receive acknowledgements for its packets
 if the sender includes them in packets with non-ACK frames.  A sender SHOULD
 bundle ACK frames with other frames when possible. A receiver that would only
-send ACK frames therefore can trigger an ACK from the sender by sending a
-frames that needs to be acknowledged. Knowing which ACKs have been received
-enables the enpoint to reduce the ACK frame to a minimum.
+send ACK frames therefore can trigger an acknowledgement from the sender by
+sending a packets that contains another frame that would elicit an
+acknowledgement. Knowing which packets have been acknowledged enables the
+enpoint to reduce the ACK frame size to a minimum.
 
 Endpoints can only acknowledge packets sent in a particular packet
 number space by sending ACK frames in packets from the same packet
@@ -3745,7 +3746,7 @@ A sender SHOULD minimize per-packet bandwidth and computational costs by
 bundling multiple frames within a QUIC packet.  A sender MAY wait for
 a short period of time for additional frames before sending a packet that is
 not maximally packed, to avoid sending out large numbers of small packets.  An
-implementation MAY use knowledge about application sending behavior or
+implementation can use knowledge about application sending behavior or
 heuristics to determine whether and for how long to wait.  This waiting period
 is an implementation decision, and an implementation should be careful to delay
 conservatively, since any delay is likely to increase application-visible
@@ -3756,7 +3757,7 @@ latency.
 
 A packet MUST NOT be acknowledged until packet protection has been successfully
 removed and all frames contained in the packet have been processed, including
-any stream state transitions triggered by the frame, as described in section
+any stream state transitions triggered by the frame, as described in
 {{stream-states}}.  For STREAM frames, this means the data has been enqueued
 in preparation to be received by the application protocol, but it does not
 require that data is delivered and consumed.
@@ -3795,13 +3796,14 @@ containing that information is acknowledged.
 
 * Data sent in CRYPTO frames is retransmitted if detected as lost, e.g.
   according to the rules in section 4.3.1 of {{QUIC-RECOVERY}}, until either all
-  data has been acknowledged or the crypto state machine implicitly knows that the
-  peer received the data.
+  data has been acknowledged or the crypto state machine implicitly knows that
+  the peer received the data.
 
 * Application data sent in STREAM frames is retransmitted if detected as lost,
-  e.g. according to the rules in {{QUIC-RECOVERY}}, in new STREAM frames unless
-  the endpoint has sent a RST_STREAM for that stream.  Once an endpoint sends a
-  RST_STREAM frame, no further STREAM frames are needed.
+  e.g. according to the rules in {{QUIC-RECOVERY}}. New STREAM frames containing
+  the lost data are generated, unless the endpoint has sent a RST_STREAM for that
+  stream.  Once an endpoint sends a RST_STREAM frame, no further STREAM frames are
+  needed.
 
 * The most recent set of acknowledgments are sent in ACK frames.  An ACK frame
   SHOULD contain all unacknowledged acknowledgments, as described in
@@ -4104,7 +4106,7 @@ Recv MAX_STREAM_DATA  '>|       |---------------------->|
                             | Recv STOP_SENDING         |
                             v                           v
                       .-+-------+                   +-------+
-    Recv STOP_SEDNING | | Data  | Send RST_STREAM   | Reset |
+    Recv STOP_SENDING | | Data  | Send RST_STREAM   | Reset |
                       '>| Sent  +------------------>| Sent  |
                         +-------+                   +-------+
                             |                           |
@@ -4125,7 +4127,7 @@ in preparation for sending.
 
 The sending part of a bidirectional stream initiated by a peer (type 0 for a
 server, type 1 for a client) enters the "Ready" state if the receiving part
-enters the "Recv" state (see Figure {{fig-stream-recv-states}}).
+enters the "Recv" state (see {{fig-stream-recv-states}}).
 
 Sending the first STREAM or STREAM_BLOCKED frame causes a send stream to enter
 the "Send" state.  An implementation might choose to defer allocating a Stream
@@ -4448,9 +4450,9 @@ STREAM frames ensures that loss recovery, congestion control, and flow control
 operate effectively.
 
 CRYPTO frames SHOULD be prioritized over other streams prior to the completion
-of the cryptographic handshake.  In {{QUIC-TLS}} this includes the retransmission
-of the second flight of client handshake messages, that is the TLS Finished and
-any client authentication messages.
+of the cryptographic handshake.  In {{QUIC-TLS}} this includes the
+retransmission of the second flight of client handshake messages, that is, the
+TLS Finished and any client authentication messages.
 
 STREAM data in frames determined to be lost SHOULD be retransmitted before
 sending new data, unless application priorities indicate otherwise.
