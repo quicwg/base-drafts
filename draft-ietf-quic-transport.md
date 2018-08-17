@@ -3496,7 +3496,7 @@ CE Count:
 ## PATH_CHALLENGE Frame {#frame-path-challenge}
 
 Endpoints can use PATH_CHALLENGE frames (type=0x0e) to check reachability to the
-peer and for path validation during cconnection migration.
+peer and for path validation during connection migration.
 
 PATH_CHALLENGE frames contain an 8-byte payload.
 
