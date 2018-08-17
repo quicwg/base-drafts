@@ -2733,6 +2733,10 @@ a small packet might result in Stateless Reset not being useful in detecting
 cases of broken connections where only very small packets are sent; such
 failures might only be detected by other means, such as timers.
 
+An endpoint that wants to improve the chances that it triggers a Stateless Reset
+when its peer loses state can pad all packets it sends - aside from those
+containing only ACK and PADDING frames - to 38 octets.
+
 
 # Frame Types and Formats
 
