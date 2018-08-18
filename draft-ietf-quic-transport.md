@@ -1276,7 +1276,7 @@ correspond to a single connection.
 Valid packets sent to clients always include a Destination Connection ID that
 matches the value the client selects.  Clients that choose to receive
 zero-length connection IDs can use the address/port tuple to identify a
-connection.  Packets that don't match an existing connection MAY be discarded.
+connection.  Packets that don't match an existing connection are discarded.
 
 Due to packet reordering or loss, clients might receive packets for a connection
 that are encrypted with a key it has not yet computed. Clients MAY drop these
