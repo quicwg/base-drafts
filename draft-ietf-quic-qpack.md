@@ -166,7 +166,7 @@ setting a maximum size of 0, which can subsequently be restored.
 
 Each entry possesses both an absolute index which is fixed for the lifetime of
 that entry and a relative index which changes over time based on the context of
-the reference. The first entry inserted has an absolute index of "1"; indices
+the reference. The first entry inserted has an absolute index of "0"; indices
 increase sequentially with each insertion.
 
 The relative index begins at zero and increases in the opposite direction from
@@ -255,8 +255,8 @@ Each header block contains a Largest Reference which identifies the table state
 necessary for decoding. If the greatest absolute index in the dynamic table is
 less than the value of the Largest Reference, the stream is considered
 "blocked."  While blocked, header field data should remain in the blocked
-stream's flow control window.  When the Largest Reference is zero, the frame
-contains no references to the dynamic table and can always be processed
+stream's flow control window.  When the Largest Reference is not specified, the
+frame contains no references to the dynamic table and can always be processed
 immediately. A stream becomes unblocked when the greatest absolute index in the
 dynamic table becomes greater than or equal to the Largest Reference for all
 header blocks the decoder has started reading from the stream.  If a decoder
@@ -573,7 +573,7 @@ before using it.
 
 ### Header Acknowledgement
 
-After processing a header block whose declared Largest Reference is not zero,
+After processing a header block whose declared Largest Reference is specified,
 the decoder emits a Header Acknowledgement instruction on the decoder stream.
 The instruction begins with the '1' one-bit pattern and includes the request
 stream's stream ID, encoded as a 7-bit prefix integer.  It is used by the
@@ -652,6 +652,12 @@ Header data is prefixed with two integers, `Largest Reference` and `Base Index`.
 `Largest Reference` identifies the largest absolute dynamic index referenced in
 the block.  Blocking decoders use the Largest Reference to determine when it is
 safe to process the rest of the block.
+
+Because zero is a valid absolute dynamic index value, the index of the
+largest referenced entry is incremented by 1 before it is recorded in the
+`Largest Reference` field.  If the header block does not reference the
+dynamic table, this field is set to zero: this indicates that the value
+is not specified.
 
 `Base Index` is used to resolve references in the dynamic table as described in
 {{indexing}}.
