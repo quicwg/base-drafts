@@ -1214,7 +1214,7 @@ HTTP_EXCESSIVE_LOAD (0x08):
 
 HTTP_VERSION_FALLBACK (0x09):
 : The requested operation cannot be served over HTTP/QUIC.  The peer should
-  retry over HTTP/2.
+  retry over HTTP/1.1.
 
 HTTP_WRONG_STREAM (0x0A):
 : A frame was received on a stream where it is not permitted.
@@ -1703,7 +1703,7 @@ The entries in the following table are registered by this document.
 | HTTP_INCOMPLETE_REQUEST             | 0x0006     | Stream terminated early                  | {{http-error-codes}}   |
 | HTTP_CONNECT_ERROR                  | 0x0007     | TCP reset or error on CONNECT request    | {{http-error-codes}}   |
 | HTTP_EXCESSIVE_LOAD                 | 0x0008     | Peer generating excessive load           | {{http-error-codes}}   |
-| HTTP_VERSION_FALLBACK               | 0x0009     | Retry over HTTP/2                        | {{http-error-codes}}   |
+| HTTP_VERSION_FALLBACK               | 0x0009     | Retry over HTTP/1.1                      | {{http-error-codes}}   |
 | HTTP_WRONG_STREAM                   | 0x000A     | A frame was sent on the wrong stream     | {{http-error-codes}}   |
 | HTTP_PUSH_LIMIT_EXCEEDED            | 0x000B     | Maximum Push ID exceeded                 | {{http-error-codes}}   |
 | HTTP_DUPLICATE_PUSH                 | 0x000C     | Push ID was fulfilled multiple times     | {{http-error-codes}}   |
