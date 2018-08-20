@@ -1,6 +1,6 @@
 ---
 title: Hypertext Transfer Protocol (HTTP) over QUIC
-abbrev: HTTP over QUIC
+abbrev: HTTP/QUIC
 docname: draft-ietf-quic-http-latest
 date: {DATE}
 category: std
@@ -1462,8 +1462,8 @@ QUIC has the same concepts of "stream" and "connection" errors that HTTP/2
 provides. However, because the error code space is shared between multiple
 components, there is no direct portability of HTTP/2 error codes.
 
-The HTTP/2 error codes defined in Section 7 of {{!RFC7540}} map to the HTTP over
-QUIC error codes as follows:
+The HTTP/2 error codes defined in Section 7 of {{!RFC7540}} map to the HTTP/QUIC
+error codes as follows:
 
 NO_ERROR (0x0):
 : HTTP_NO_ERROR in {{http-error-codes}}.
@@ -1517,10 +1517,10 @@ Error codes need to be defined for HTTP/2 and HTTP/QUIC separately.  See
 
 # Security Considerations
 
-The security considerations of HTTP over QUIC should be comparable to those of
-HTTP/2 with TLS.  Note that where HTTP/2 employs PADDING frames to make a
-connection more resistant to traffic analysis, HTTP/QUIC can rely on QUIC's own
-PADDING frames or employ the reserved frame and stream types discussed in
+The security considerations of HTTP/QUIC should be comparable to those of HTTP/2
+with TLS.  Note that where HTTP/2 employs PADDING frames to make a connection
+more resistant to traffic analysis, HTTP/QUIC can rely on QUIC's own PADDING
+frames or employ the reserved frame and stream types discussed in
 {{frame-grease}} and {{stream-grease}}.
 
 The modified SETTINGS format contains nested length elements, which could pose
@@ -1540,7 +1540,7 @@ established in {{?RFC7301}}.
 The "hq" string identifies HTTP/QUIC:
 
   Protocol:
-  : HTTP over QUIC
+  : HTTP/QUIC
 
   Identification Sequence:
   : 0x68 0x71 ("hq")

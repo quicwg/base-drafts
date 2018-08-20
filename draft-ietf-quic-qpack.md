@@ -65,9 +65,8 @@ normative:
 --- abstract
 
 This specification defines QPACK, a compression format for efficiently
-representing HTTP header fields, to be used in HTTP over QUIC. This is a
-variation of HPACK header compression that seeks to reduce head-of-line
-blocking.
+representing HTTP header fields, to be used in HTTP/QUIC. This is a variation of
+HPACK header compression that seeks to reduce head-of-line blocking.
 
 --- note_Note_to_Readers
 
