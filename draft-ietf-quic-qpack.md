@@ -1004,129 +1004,117 @@ Description:
 
 # Static Table
 
-| Index | Name                             | Value                                                                                                  |
-| ----- | -------------------------------- | ------------------------------------------------------------------------------------------------------ |
-| 0     | :path                            | /                                                                                                      |
-| 1     | referer                          |                                                                                                        |
-| 2     | content-length                   | 0                                                                                                      |
-| 3     | date                             |                                                                                                        |
-| 4     | last-modified                    |                                                                                                        |
-| 5     | :authority                       |                                                                                                        |
-| 6     | expires                          |                                                                                                        |
-| 7     | cookie                           |                                                                                                        |
-| 8     | etag                             |                                                                                                        |
-| 9     | location                         |                                                                                                        |
-| 10    | if-modified-since                |                                                                                                        |
-| 11    | if-none-match                    |                                                                                                        |
-| 12    | if-range                         |                                                                                                        |
-| 13    | set-cookie                       |                                                                                                        |
-| 14    | age                              | 0                                                                                                      |
-| 15    | link                             |                                                                                                        |
-| 16    | content-disposition              | attachment; filename="f.txt"                                                                           |
-| 17    | range                            | bytes=0-                                                                                               |
-| 18    | authorization                    |                                                                                                        |
-| 19    | :scheme                          | https                                                                                                  |
-| 20    | :scheme                          | http                                                                                                   |
-| 21    | :status                          | 200                                                                                                    |
-| 22    | :status                          | 304                                                                                                    |
-| 23    | :path                            | /index.html                                                                                            |
-| 24    | :method                          | GET                                                                                                    |
-| 25    | :method                          | HEAD                                                                                                   |
-| 26    | :method                          | POST                                                                                                   |
-| 27    | :method                          | PUT                                                                                                    |
-| 28    | :method                          | DELETE                                                                                                 |
-| 29    | :method                          | CONNECT                                                                                                |
-| 30    | :method                          | OPTIONS                                                                                                |
-| 31    | content-type                     | application/x-www-form-urlencoded                                                                      |
-| 32    | content-type                     | image/jpeg                                                                                             |
-| 33    | content-type                     | text/plain;charset=utf-8                                                                               |
-| 34    | content-type                     | image/png                                                                                              |
-| 35    | content-type                     | text/plain                                                                                             |
-| 36    | content-type                     | application/json                                                                                       |
-| 37    | content-type                     | application/x-www-form-urlencoded; charset=utf-8                                                       |
-| 38    | content-type                     | image/gif                                                                                              |
-| 39    | content-type                     | text/html; charset=utf-8                                                                               |
-| 40    | content-type                     | application/javascript                                                                                 |
-| 41    | content-type                     | text/css                                                                                               |
-| 42    | content-type                     | text/javascript                                                                                        |
-| 43    | content-type                     | application/json; charset=utf-8                                                                        |
-| 44    | content-type                     | text/javascript; charset=utf-8                                                                         |
-| 45    | content-type                     | application/x-javascript                                                                               |
-| 46    | server                           |                                                                                                        |
-| 47    | user-agent                       |                                                                                                        |
-| 48    | accept                           | \*/\*                                                                                                  |
-| 49    | cache-control                    | max-age=0                                                                                              |
-| 50    | cache-control                    | no-cache                                                                                               |
-| 51    | cache-control                    | max-age=2592000                                                                                        |
-| 52    | cache-control                    | public, max-age=31536000                                                                               |
-| 53    | cache-control                    | no-cache, no-store, must-revalidate                                                                    |
-| 54    | cache-control                    | max-age=604800                                                                                         |
-| 55    | accept-encoding                  | gzip, deflate, br                                                                                      |
-| 56    | accept-encoding                  | gzip, deflate                                                                                          |
-| 57    | vary                             | accept-encoding                                                                                        |
-| 58    | vary                             | origin                                                                                                 |
-| 59    | vary                             | accept-encoding,user-agent                                                                             |
-| 60    | vary                             | accept                                                                                                 |
-| 61    | accept-language                  |                                                                                                        |
-| 62    | strict-transport-security        | max-age=31536000                                                                                       |
-| 63    | strict-transport-security        | max-age=10886400; includesubdomains; preload                                                           |
-| 64    | strict-transport-security        | max-age=31536000; includesubdomains                                                                    |
-| 65    | strict-transport-security        | max-age=31536000; includesubdomains; preload                                                           |
-| 66    | :status                          | 100                                                                                                    |
-| 67    | :status                          | 103                                                                                                    |
-| 68    | :status                          | 204                                                                                                    |
-| 69    | :status                          | 206                                                                                                    |
-| 70    | :status                          | 302                                                                                                    |
-| 71    | :status                          | 400                                                                                                    |
-| 72    | :status                          | 403                                                                                                    |
-| 73    | :status                          | 404                                                                                                    |
-| 74    | :status                          | 421                                                                                                    |
-| 75    | :status                          | 500                                                                                                    |
-| 76    | :status                          | 503                                                                                                    |
-| 77    | p3p                              |                                                                                                        |
-| 78    | content-encoding                 | gzip                                                                                                   |
-| 79    | content-encoding                 | br                                                                                                     |
-| 80    | accept-ranges                    | bytes                                                                                                  |
-| 81    | alt-svc                          | clear                                                                                                  |
-| 82    | x-xss-protection                 | 1; mode=block                                                                                          |
-| 83    | host                             |                                                                                                        |
-| 84    | pragma                           | no-cache                                                                                               |
-| 85    | pragma                           | public                                                                                                 |
-| 86    | x-powered-by                     |                                                                                                        |
-| 87    | via                              |                                                                                                        |
-| 88    | access-control-allow-origin      | \*                                                                                                     |
-| 89    | x-content-type-options           | nosniff                                                                                                |
-| 90    | access-control-allow-headers     | content-type                                                                                           |
-| 91    | access-control-allow-headers     | cache-control                                                                                          |
-| 92    | access-control-allow-headers     | x-requested-with                                                                                       |
-| 93    | access-control-allow-headers     | \*                                                                                                     |
-| 94    | access-control-allow-headers     | origin, x-requested-with, content-type, accept                                                         |
-| 95    | access-control-allow-headers     | dnt,x-customheader,keep-alive,user-agent,x-requested-with,if-modified-since,cache-control,content-type |
-| 96    | access-control-allow-headers     | dnt,x-mx-reqtoken,keep-alive,user-agent,x-requested-with,if-modified-since,cache-control,content-type  |
-| 97    | access-control-allow-methods     | options                                                                                                |
-| 98    | access-control-allow-methods     | get                                                                                                    |
-| 99    | access-control-allow-methods     | get, post, options                                                                                     |
-| 100   | access-control-allow-methods     | get, head, options                                                                                     |
-| 101   | access-control-allow-methods     | get, options                                                                                           |
-| 102   | origin                           |                                                                                                        |
-| 103   | x-frame-options                  | sameorigin                                                                                             |
-| 104   | x-frame-options                  | deny                                                                                                   |
-| 105   | timing-allow-origin              | \*                                                                                                     |
-| 106   | access-control-expose-headers    | content-length                                                                                         |
-| 107   | access-control-allow-credentials | TRUE                                                                                                   |
-| 108   | access-control-allow-credentials | FALSE                                                                                                  |
-| 109   | expect-ct                        |                                                                                                        |
-| 110   | content-security-policy          | script-src 'none'; object-src 'none'; base-uri 'none'                                                  |
-| 111   | upgrade-insecure-requests        | 1                                                                                                      |
-| 112   | x-served-by                      |                                                                                                        |
-| 113   | x-requested-with                 | xmlhttprequest                                                                                         |
-| 114   | access-control-request-headers   | content-type                                                                                           |
-| 115   | access-control-request-headers   | x-requested-with                                                                                       |
-| 116   | access-control-request-method    | post                                                                                                   |
-| 117   | access-control-request-method    | get                                                                                                    |
-| 118   | purpose                          | prefetch                                                                                               |
-| 119   | x-csrf-token                     | null                                                                                                   |
-| 120   | x-csrf-token                     | undefined                                                                                              |
+| Index | Name                             | Value                                                 |
+| ----- | -------------------------------- | ----------------------------------------------------- |
+| 0     | :authority                       |                                                       |
+| 1     | :path                            | /                                                     |
+| 2     | age                              | 0                                                     |
+| 3     | content-disposition              |                                                       |
+| 4     | content-length                   | 0                                                     |
+| 5     | cookie                           |                                                       |
+| 6     | date                             |                                                       |
+| 7     | etag                             |                                                       |
+| 8     | if-modified-since                |                                                       |
+| 9     | if-none-match                    |                                                       |
+| 10    | last-modified                    |                                                       |
+| 11    | link                             |                                                       |
+| 12    | location                         |                                                       |
+| 13    | referer                          |                                                       |
+| 14    | set-cookie                       |                                                       |
+| 15    | :method                          | CONNECT                                               |
+| 16    | :method                          | DELETE                                                |
+| 17    | :method                          | GET                                                   |
+| 18    | :method                          | HEAD                                                  |
+| 19    | :method                          | OPTIONS                                               |
+| 20    | :method                          | POST                                                  |
+| 21    | :method                          | PUT                                                   |
+| 22    | :scheme                          | http                                                  |
+| 23    | :scheme                          | https                                                 |
+| 24    | :status                          | 200                                                   |
+| 25    | :status                          | 304                                                   |
+| 26    | accept                           | */*                                                   |
+| 27    | accept                           | application/dns-message                               |
+| 28    | accept-encoding                  | gzip, deflate, br                                     |
+| 29    | accept-language                  |                                                       |
+| 30    | authorization                    |                                                       |
+| 31    | cache-control                    | max-age=0                                             |
+| 32    | cache-control                    | max-age=604800                                        |
+| 33    | cache-control                    | max-age=2592000                                       |
+| 34    | cache-control                    | no-cache                                              |
+| 35    | cache-control                    | no-cache, no-store, must-revalidate                   |
+| 36    | cache-control                    | public, max-age=31536000                              |
+| 37    | content-disposition              |                                                       |
+| 38    | content-type                     | application/dns-message                               |
+| 39    | content-type                     | application/javascript                                |
+| 40    | content-type                     | application/json                                      |
+| 41    | content-type                     | application/json; charset=utf-8                       |
+| 42    | content-type                     | application/x-www-form-urlencoded                     |
+| 43    | content-type                     | application/x-www-form-urlencoded; charset=utf-8      |
+| 44    | content-type                     | image/gif                                             |
+| 45    | content-type                     | image/jpeg                                            |
+| 46    | content-type                     | image/png                                             |
+| 47    | content-type                     | text/css                                              |
+| 48    | content-type                     | text/html; charset=utf-8                              |
+| 49    | content-type                     | text/javascript                                       |
+| 50    | content-type                     | text/javascript; charset=utf-8                        |
+| 51    | content-type                     | text/plain                                            |
+| 52    | content-type                     | text/plain;charset=utf-8                              |
+| 53    | range                            | bytes=0-                                              |
+| 54    | server                           |                                                       |
+| 55    | strict-transport-security        | max-age=10886400; includesubdomains; preload          |
+| 56    | strict-transport-security        | max-age=31536000                                      |
+| 57    | strict-transport-security        | max-age=31536000; includesubdomains                   |
+| 58    | strict-transport-security        | max-age=31536000; includesubdomains; preload          |
+| 59    | user-agent                       |                                                       |
+| 60    | vary                             | accept-encoding                                       |
+| 61    | vary                             | accept-encoding, user-agent                           |
+| 62    | vary                             | origin                                                |
+| 63    | :status                          | 100                                                   |
+| 64    | :status                          | 103                                                   |
+| 65    | :status                          | 204                                                   |
+| 66    | :status                          | 206                                                   |
+| 67    | :status                          | 302                                                   |
+| 68    | :status                          | 400                                                   |
+| 69    | :status                          | 403                                                   |
+| 70    | :status                          | 404                                                   |
+| 71    | :status                          | 421                                                   |
+| 72    | :status                          | 425                                                   |
+| 73    | :status                          | 500                                                   |
+| 74    | :status                          | 503                                                   |
+| 75    | accept-ranges                    | bytes                                                 |
+| 76    | access-control-allow-credentials | FALSE                                                 |
+| 77    | access-control-allow-credentials | TRUE                                                  |
+| 78    | access-control-allow-headers     | *                                                     |
+| 79    | access-control-allow-headers     | cache-control                                         |
+| 80    | access-control-allow-headers     | content-type                                          |
+| 81    | access-control-allow-headers     | x-requested-with                                      |
+| 82    | access-control-allow-methods     | get                                                   |
+| 83    | access-control-allow-methods     | get, post, options                                    |
+| 84    | access-control-allow-methods     | options                                               |
+| 85    | access-control-allow-origin      | *                                                     |
+| 86    | access-control-expose-headers    | content-length                                        |
+| 87    | access-control-request-headers   | content-type                                          |
+| 88    | access-control-request-headers   | x-requested-with                                      |
+| 89    | access-control-request-method    | get                                                   |
+| 90    | access-control-request-method    | post                                                  |
+| 91    | alt-svc                          | clear                                                 |
+| 92    | content-encoding                 | br                                                    |
+| 93    | content-encoding                 | gzip                                                  |
+| 94    | content-security-policy          | script-src 'none'; object-src 'none'; base-uri 'none' |
+| 95    | early-data                       | 1                                                     |
+| 96    | expect-ct                        |                                                       |
+| 97    | forwarded                        |                                                       |
+| 98    | if-range                         |                                                       |
+| 99    | origin                           |                                                       |
+| 100   | purpose                          | prefetch                                              |
+| 101   | timing-allow-origin              | *                                                     |
+| 102   | upgrade-insecure-requests        | 1                                                     |
+| 103   | x-content-type-options           | nosniff                                               |
+| 104   | x-forwarded-for                  |                                                       |
+| 105   | x-frame-options                  | deny                                                  |
+| 106   | x-frame-options                  | sameorigin                                            |
+| 107   | x-requested-with                 | xmlhttprequest                                        |
+| 108   | x-xss-protection                 | 1; mode=block                                         |
 
 # Change Log
 
