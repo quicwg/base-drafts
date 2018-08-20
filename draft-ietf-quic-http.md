@@ -143,8 +143,9 @@ coordinate their experiments on the quic@ietf.org mailing list.
 ## Discovering an HTTP/QUIC Endpoint
 
 An HTTP origin advertises the availability of an equivalent HTTP/QUIC endpoint
-via the Alt-Svc HTTP response header or the HTTP/2 ALTSVC frame ({{!RFC7838}}),
-using the ALPN token defined in {{connection-establishment}}.
+via the Alt-Svc HTTP response header or the HTTP/2 ALTSVC frame
+({{!ALTSVC=RFC7838}}), using the ALPN token defined in
+{{connection-establishment}}.
 
 For example, an origin could indicate in an HTTP/1.1 or HTTP/2 response that
 HTTP/QUIC was available on UDP port 50781 at the same hostname by including the
@@ -1522,6 +1523,9 @@ HTTP/2 with TLS.  Note that where HTTP/2 employs PADDING frames to make a
 connection more resistant to traffic analysis, HTTP/QUIC can rely on QUIC's own
 PADDING frames or employ the reserved frame and stream types discussed in
 {{frame-grease}} and {{stream-grease}}.
+
+When HTTP Alternative Services is used for discovery for HTTP/QUIC endpoints,
+the security considerations of {{!ALTSVC}} also apply.
 
 The modified SETTINGS format contains nested length elements, which could pose
 a security risk to an incautious implementer.  A SETTINGS frame parser MUST
