@@ -1043,7 +1043,7 @@ Description:
 | 34    | cache-control                    | no-cache                                              |
 | 35    | cache-control                    | no-cache, no-store, must-revalidate                   |
 | 36    | cache-control                    | public, max-age=31536000                              |
-| 37    | content-disposition              |                                                       |
+| 37    | content-encoding                 | br                                                    |
 | 38    | content-type                     | application/dns-message                               |
 | 39    | content-type                     | application/javascript                                |
 | 40    | content-type                     | application/json                                      |
@@ -1098,23 +1098,22 @@ Description:
 | 89    | access-control-request-method    | get                                                   |
 | 90    | access-control-request-method    | post                                                  |
 | 91    | alt-svc                          | clear                                                 |
-| 92    | content-encoding                 | br                                                    |
-| 93    | content-encoding                 | gzip                                                  |
-| 94    | content-security-policy          | script-src 'none'; object-src 'none'; base-uri 'none' |
-| 95    | early-data                       | 1                                                     |
-| 96    | expect-ct                        |                                                       |
-| 97    | forwarded                        |                                                       |
-| 98    | if-range                         |                                                       |
-| 99    | origin                           |                                                       |
-| 100   | purpose                          | prefetch                                              |
-| 101   | timing-allow-origin              | *                                                     |
-| 102   | upgrade-insecure-requests        | 1                                                     |
-| 103   | x-content-type-options           | nosniff                                               |
-| 104   | x-forwarded-for                  |                                                       |
-| 105   | x-frame-options                  | deny                                                  |
-| 106   | x-frame-options                  | sameorigin                                            |
-| 107   | x-requested-with                 | xmlhttprequest                                        |
-| 108   | x-xss-protection                 | 1; mode=block                                         |
+| 92    | content-encoding                 | gzip                                                  |
+| 93    | content-security-policy          | script-src 'none'; object-src 'none'; base-uri 'none' |
+| 94    | early-data                       | 1                                                     |
+| 95    | expect-ct                        |                                                       |
+| 96    | forwarded                        |                                                       |
+| 97    | if-range                         |                                                       |
+| 98    | origin                           |                                                       |
+| 99    | purpose                          | prefetch                                              |
+| 100   | timing-allow-origin              | *                                                     |
+| 101   | upgrade-insecure-requests        | 1                                                     |
+| 102   | x-content-type-options           | nosniff                                               |
+| 103   | x-forwarded-for                  |                                                       |
+| 104   | x-frame-options                  | deny                                                  |
+| 105   | x-frame-options                  | sameorigin                                            |
+| 106   | x-requested-with                 | xmlhttprequest                                        |
+| 107   | x-xss-protection                 | 1; mode=block                                         |
 
 # Change Log
 
