@@ -3833,7 +3833,7 @@ The details of loss detection and congestion control are described in
 The QUIC packet size includes the QUIC header and integrity check, but not the
 UDP or IP header.
 
-Clients MUST ensure that the first Initial packet they sends is sent in a UDP
+Clients MUST ensure that the first Initial packet they send is sent in a UDP
 datagram that is at least 1200 octets. Padding the Initial packet or including a
 0-RTT packet in the same datagram are ways to meet this requirement.  Sending a
 UDP datagram of this size ensures that the network path supports a reasonable
