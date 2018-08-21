@@ -3833,7 +3833,7 @@ The details of loss detection and congestion control are described in
 The QUIC packet size includes the QUIC header and integrity check, but not the
 UDP or IP header.
 
-Clients MUST ensure that the first Initial packet it sends is sent in a UDP
+Clients MUST ensure that the first Initial packet they sends is sent in a UDP
 datagram that is at least 1200 octets. Padding the Initial packet or including a
 0-RTT packet in the same datagram are ways to meet this requirement.  Sending a
 UDP datagram of this size ensures that the network path supports a reasonable
@@ -3874,7 +3874,7 @@ QUIC endpoints that implement any kind of PMTU discovery SHOULD maintain an
 estimate for each combination of local and remote IP addresses.  Each pairing of
 local and remote addresses could have a different maximum MTU in the path.
 
-QUIC depends on the network path supporting a MTU of at least 1280 octets. This
+QUIC depends on the network path supporting an MTU of at least 1280 octets. This
 is the IPv6 minimum MTU and therefore also supported by most modern IPv4
 networks.  An endpoint MUST NOT reduce its MTU below this number, even if it
 receives signals that indicate a smaller limit might exist.
