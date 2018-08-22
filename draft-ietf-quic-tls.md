@@ -173,7 +173,7 @@ authenticated an identity for the server and the server is optionally able to
 learn and authenticate an identity for the client.  TLS supports X.509
 {{?RFC5280}} certificate-based authentication for both server and client.
 
-The TLS key exchange is resistent to tampering by attackers and it produces
+The TLS key exchange is resistant to tampering by attackers and it produces
 shared secrets that cannot be controlled by either participating peer.
 
 TLS 1.3 provides two basic handshake modes of interest to QUIC:
@@ -528,7 +528,7 @@ older than 1.3 is negotiated.
 ## ClientHello Size {#clienthello-size}
 
 QUIC requires that the first Initial packet from a client contain an entire
-crytographic handshake message, which for TLS is the ClientHello.  Though a
+cryptographic handshake message, which for TLS is the ClientHello.  Though a
 packet larger than 1200 octets might be supported by the path, a client improves
 the likelihood that a packet is accepted if it ensures that the first
 ClientHello message is small enough to stay within this limit.
@@ -636,7 +636,7 @@ After QUIC moves to a new encryption level, packet protection keys for previous
 encryption levels can be discarded.  This occurs several times during the
 handshake, as well as when keys are updated (see {{key-update}}).
 
-Packet protection keys are not discarded immediately when new keys are availble.
+Packet protection keys are not discarded immediately when new keys are available.
 If packets from a lower encryption level contain CRYPTO frames, frames that
 retransmit that data MUST be sent at the same encryption level.  Similarly, an
 endpoint generates acknowledgements for packets at the same encryption level as
@@ -656,7 +656,7 @@ expected CRYPTO frames received, and all the corresponding acknowledgments have
 been received or sent, an endpoint starts a timer.  To limit the effect of
 packet loss around a change in keys, endpoints MUST retain packet protection
 keys for that encryption level for at least three times the current
-Retramsmission Timeout (RTO) interval as defined in {{QUIC-RECOVERY}}.
+Retransmission Timeout (RTO) interval as defined in {{QUIC-RECOVERY}}.
 Retaining keys for this interval allows packets containing CRYPTO or ACK frames
 at that encryption level to be sent if packets are determined to be lost or new
 packets require acknowledgment.
@@ -1121,7 +1121,7 @@ amplification.
 
 ## Peer Denial of Service {#useless}
 
-QUIC, TLS and HTTP/2 all contain a messages that have legitimate uses in some
+QUIC, TLS, and HTTP/2 all contain messages that have legitimate uses in some
 contexts, but that can be abused to cause a peer to expend processing resources
 without having any observable impact on the state of the connection.  If
 processing is disproportionately large in comparison to the observable effects
