@@ -900,7 +900,7 @@ not understand.
 SETTINGS frames always apply to a connection, never a single stream.  A SETTINGS
 frame MUST be sent as the first frame of either control stream (see
 {{stream-mapping}}) by each peer, and MUST NOT be sent subsequently or on any
-other stream. If an endpoint receives an SETTINGS frame on a different stream,
+other stream. If an endpoint receives a SETTINGS frame on a different stream,
 the endpoint MUST respond with a connection error of type HTTP_WRONG_STREAM.  If
 an endpoint receives a second SETTINGS frame, the endpoint MUST respond with a
 connection error of type HTTP_MALFORMED_FRAME.
