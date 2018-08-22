@@ -815,7 +815,7 @@ When a server receives this frame, it aborts sending the response for the
 identified server push.  If the server has not yet started to send the server
 push, it can use the receipt of a CANCEL_PUSH frame to avoid opening a
 stream.  If the push stream has been opened by the server, the server SHOULD
-sent a QUIC RST_STREAM frame on those streams and cease transmission of the
+send a QUIC RST_STREAM frame on those streams and cease transmission of the
 response.
 
 A server can send this frame to indicate that it won't be sending a response
