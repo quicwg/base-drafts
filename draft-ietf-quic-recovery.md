@@ -79,12 +79,39 @@ recovery, and where applicable, attributes the TCP equivalent in RFCs,
 Internet-drafts, academic papers, and/or TCP implementations.
 
 
-## Notational Conventions
+# Conventions and Definitions
 
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD",
 "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this
 document are to be interpreted as described in BCP 14 {{!RFC2119}} {{!RFC8174}}
 when, and only when, they appear in all capitals, as shown here.
+
+Definitions of terms that are used in this document:
+
+ACK frames:
+
+: ACK frames refer to both ACK and ACK_ECN frames in this
+  document.
+
+ACK-only:
+
+: Any packet containing only an ACK or ACK_ECN frame.
+
+In-flight:
+
+: Packets are considered in-flight when they have been sent
+  and neither acknowledged nor declared lost, and they are not
+  ACK-only.
+
+Retransmittable Frames:
+
+: All frames besides ACK, ACK_ECN, or PADDING are considered
+  retransmittable.
+
+Retransmittable Packets:
+
+: Packets that contain retransmittable frames elicit an ACK from
+  the receiver and are called retransmittable packets.
 
 
 # Design of the QUIC Transmission Machinery
@@ -106,9 +133,7 @@ acknowledged or declared lost and sent in new packets as necessary. The types
 of frames contained in a packet affect recovery and congestion control logic:
 
 * All packets are acknowledged, though packets that contain only ACK,
-  ACK_ECN, and PADDING frames are not acknowledged immediately.  Packets
-  containing at least one frame besides ACK, ACK_ECN, and PADDING are referred
-  to as "retransmittable" below.
+  ACK_ECN, and PADDING frames are not acknowledged immediately.
 
 * Long header packets that contain CRYPTO frames are critical to the
   performance of the QUIC handshake and use shorter timers for
@@ -117,8 +142,7 @@ of frames contained in a packet affect recovery and congestion control logic:
 * Packets that contain only ACK and ACK_ECN frames do not count toward
   congestion control limits and are not considered in-flight. Note that this
   means PADDING frames cause packets to contribute toward bytes in flight
-  without directly causing an acknowledgment to be sent.  The rest of this
-  document uses "ACK frames" to refer to both ACK and ACK_ECN frames.
+  without directly causing an acknowledgment to be sent.
 
 ## Relevant Differences Between QUIC and TCP
 
@@ -206,6 +230,19 @@ Min RTT is the minimum RTT measured over the connection, prior to adjusting by
 ack delay.  Ignoring ack delay for min RTT prevents intentional or unintentional
 underestimation of min RTT, which in turn prevents underestimating smoothed RTT.
 
+### Maximum Ack Delay
+
+QUIC is able to explicitly model delay at the receiver via the ack delay
+field in the ACK frame.  Therefore, QUIC diverges from TCP by calculating a
+MaxAckDelay dynamically, instead of assuming a constant delayed ack timeout
+for all connections.
+
+MaxAckDelay is the maximum ack delay supplied in an all incoming ACK frames.
+MaxAckDelay excludes ack delays that aren't included in an RTT sample because
+they're too large or the largest acknowledged has already been acknowledged.
+MaxAckDelay also excludes ack delays where the largest acknowledged references
+an ACK-only packet.
+
 ## Ack-based Detection
 
 Ack-based loss detection implements the spirit of TCP's Fast Retransmit
@@ -251,7 +288,7 @@ in-flight packets are not acknowledged during this time, then these
 packets MUST be marked as lost.
 
 An endpoint SHOULD set the timer such that a packet is marked as lost no earlier
-than 1.25 * max(SRTT, latest_RTT) since when it was sent.
+than 1.125 * max(SRTT, latest_RTT) since when it was sent.
 
 Using max(SRTT, latest_RTT) protects from the two following cases:
 
@@ -262,10 +299,10 @@ Using max(SRTT, latest_RTT) protects from the two following cases:
 * the latest RTT sample is higher than the SRTT, perhaps due to a sustained
   increase in the actual RTT, but the smoothed SRTT has not yet caught up.
 
-The 1.25 multiplier increases reordering resilience. Implementers MAY experiment
-with using other multipliers, bearing in mind that a lower multiplier reduces
-reordering resilience and increases spurious retransmissions, and a higher
-multipler increases loss recovery delay.
+The 1.125 multiplier increases reordering resilience. Implementers MAY
+experiment with using other multipliers, bearing in mind that a lower multiplier
+reduces reordering resilience and increases spurious retransmissions, and a
+higher multipler increases loss recovery delay.
 
 This mechanism is based on Early Retransmit for TCP {{?RFC5827}}. However,
 {{?RFC5827}} does not include the timer described above. Early Retransmit is
@@ -309,14 +346,14 @@ the CRYPTO frames were sent at 1RTT encryption.
 When an acknowledgement is received for a handshake packet, the new RTT is
 computed and the timer SHOULD be set for twice the newly computed smoothed RTT.
 
-#### Retry
+#### Retry and Version Negotiation
 
-A Retry packet causes the content of the client's Initial packet to be
-immediately retransmitted along with the token present in the Retry.
+A Retry or Version Negotiation packet causes a client to send another Initial
+packet, effectively restarting the connection process.
 
-The Retry indicates that the Initial was received but not processed.  It MUST
-NOT be treated as an acknowledgment for the Initial, but it MAY be used for an
-RTT measurement.
+Either packet indicates that the Initial was received but not processed.
+Neither packet can be treated as an acknowledgment for the Initial, but they MAY
+be used to improve the RTT estimate.
 
 ### Tail Loss Probe {#tlp}
 
@@ -338,15 +375,10 @@ conditions:
 * If RTO ({{rto}}) is earlier, schedule a TLP in its place. That is,
   PTO SHOULD be scheduled for min(RTO, PTO).
 
-MaxAckDelay is the maximum ack delay supplied in an incoming ACK frame.
-MaxAckDelay excludes ack delays that aren't included in an RTT sample because
-they're too large and excludes those which reference an ack-only packet.
-
-QUIC diverges from TCP by calculating MaxAckDelay dynamically, instead of
-assuming a constant delayed ack timeout for all connections.  QUIC includes this
-in all probe timeouts, because it assume the ack delay may come into play,
-regardless of the number of packets outstanding.  TCP's TLP assumes if at least
-2 packets are outstanding, acks will not be delayed.
+QUIC includes MaxAckDelay in all probe timeouts, because it assumes the ack
+delay may come into play, regardless of the number of packets outstanding.
+TCP's TLP assumes if at least 2 packets are outstanding, acks will not be
+delayed.
 
 A PTO value of at least 1.5*SRTT ensures that the ACK is overdue.  The 1.5 is
 based on {{?TLP}}, but implementations MAY experiment with other constants.
@@ -399,11 +431,9 @@ immediate change to congestion window or recovery state. An RTO timer expires
 only when there's a prolonged period of network silence, which could be caused
 by a change in the underlying network RTT.
 
-QUIC also diverges from TCP by including MaxAckDelay in the RTO period.  QUIC is
-able to explicitly model delay at the receiver via the ack delay field in the
-ACK frame.  Since QUIC corrects for this delay in its SRTT and RTTVAR
-computations, it is necessary to add this delay explicitly in the TLP and RTO
-computation.
+QUIC also diverges from TCP by including MaxAckDelay in the RTO period. Since
+QUIC corrects for this delay in its SRTT and RTTVAR computations, it is
+necessary to add this delay explicitly in the TLP and RTO computation.
 
 When an acknowledgment is received for a packet sent on an RTO event, any
 unacknowledged packets with lower packet numbers than those acknowledged MUST be
@@ -488,32 +518,35 @@ Constants used in loss recovery are based on a combination of RFCs, papers, and
 common practice.  Some may need to be changed or negotiated in order to better
 suit a variety of environments.
 
-kMaxTLPs (RECOMMENDED 2):
+kMaxTLPs:
 : Maximum number of tail loss probes before an RTO expires.
+  The RECOMMENDED value is 2.
 
-kReorderingThreshold (RECOMMENDED 3):
+kReorderingThreshold:
 : Maximum reordering in packet number space before FACK style loss detection
-  considers a packet lost.
+  considers a packet lost. The RECOMMENDED value is 3.
 
-kTimeReorderingFraction (RECOMMENDED 1/8):
+kTimeReorderingFraction:
 : Maximum reordering in time space before time based loss detection considers
-  a packet lost.  In fraction of an RTT.
+  a packet lost.  In fraction of an RTT. The RECOMMENDED value is 1/8.
 
-kUsingTimeLossDetection (RECOMMENDED false):
+kUsingTimeLossDetection:
 : Whether time based loss detection is in use.  If false, uses FACK style
-  loss detection.
+  loss detection. The RECOMMENDED value is false.
 
-kMinTLPTimeout (RECOMMENDED 10ms):
+kMinTLPTimeout:
 : Minimum time in the future a tail loss probe timer may be set for.
+  The RECOMMENDED value is 10ms.
 
-kMinRTOTimeout (RECOMMENDED 200ms):
-:  Minimum time in the future an RTO timer may be set for.
+kMinRTOTimeout:
+:  Minimum time in the future an RTO timer may be set for. The RECOMMENDED
+   value is 200ms.
 
-kDelayedAckTimeout (RECOMMENDED 25ms):
-: The length of the peer's delayed ack timer.
+kDelayedAckTimeout:
+: The length of the peer's delayed ack timer. The RECOMMENDED value is 25ms.
 
-kInitialRtt (RECOMMENDED 100ms):
-: The RTT used before an RTT sample is taken.
+kInitialRtt:
+: The RTT used before an RTT sample is taken. The RECOMMENDED value is 100ms.
 
 ### Variables of interest
 
@@ -566,11 +599,11 @@ min_rtt:
 
 max_ack_delay:
 : The maximum ack delay in an incoming ACK frame for this connection.
-  Excludes ack delays for ack only packets and those that create an
-  RTT sample less than min_rtt.
+  Excludes ack delays for non-retransmittable packets and those
+  that create an RTT sample less than min_rtt.
 
 reordering_threshold:
-: The largest packet number gap between the largest acked
+: The largest packet number gap between the largest acknowledged
   retransmittable packet and an unacknowledged
   retransmittable packet before it is declared lost.
 
@@ -585,7 +618,7 @@ sent_packets:
 
 : An association of packet numbers to information about them, including a number
   field indicating the packet number, a time field indicating the time a packet
-  was sent, a boolean indicating whether the packet is ack only, a boolean
+  was sent, a boolean indicating whether the packet is ack-only, a boolean
   indicating whether it counts towards bytes in flight, and a bytes
   field indicating the packet's size.  sent_packets is ordered by packet number,
   and packets remain in sent_packets until acknowledged or lost.  A sent_packets
@@ -670,7 +703,8 @@ Pseudocode for OnAckReceived and UpdateRtt follow:
 ~~~
   OnAckReceived(ack):
     largest_acked_packet = ack.largest_acked
-    // If the largest acked is newly acked, update the RTT.
+    // If the largest acknowledged is newly acked,
+    // update the RTT.
     if (sent_packets[ack.largest_acked]):
       latest_rtt = now - sent_packets[ack.largest_acked].time
       UpdateRtt(latest_rtt, ack.ack_delay)
@@ -693,7 +727,7 @@ Pseudocode for OnAckReceived and UpdateRtt follow:
     if (latest_rtt - min_rtt > ack_delay):
       latest_rtt -= ack_delay
       // Only save into max ack delay if it's used
-      // for rtt calculation and is not ack only.
+      // for rtt calculation and is not ack-only.
       if (!sent_packets[ack.largest_acked].ack_only)
         max_ack_delay = max(max_ack_delay, ack_delay)
     // Based on {{?RFC6298}}.
@@ -728,8 +762,9 @@ Pseudocode for OnPacketAcked follows:
      // If a packet sent prior to RTO was acked, then the RTO
      // was spurious.  Otherwise, inform congestion control.
      if (rto_count > 0 &&
-         acked_packet.packet_number > largest_sent_before_rto)
-       OnRetransmissionTimeoutVerified()
+         acked_packet.packet_number > largest_sent_before_rto):
+       OnRetransmissionTimeoutVerified(
+           acket_packet.packet_number)
      handshake_count = 0
      tlp_count = 0
      rto_count = 0
@@ -871,7 +906,7 @@ DetectLostPackets(largest_acked):
           max(latest_rtt, smoothed_rtt)
   else if (largest_acked.packet_number == largest_sent_packet):
     // Early retransmit timer.
-    delay_until_lost = 5/4 * max(latest_rtt, smoothed_rtt)
+    delay_until_lost = 9/8 * max(latest_rtt, smoothed_rtt)
   foreach (unacked < largest_acked.packet_number):
     time_since_sent = now() - unacked.time_sent
     delta = largest_acked.packet_number - unacked.packet_number
@@ -904,15 +939,19 @@ both the median and mean min_rtt typically observed on the public internet.
 
 # Congestion Control
 
-QUIC's congestion control is based on TCP NewReno {{?RFC6582}} congestion
-control to determine the congestion window.  QUIC congestion control is
-specified in bytes due to finer control and the ease of appropriate byte
-counting {{?RFC3465}}.
+QUIC's congestion control is based on TCP NewReno {{?RFC6582}}.  NewReno is
+a congestion window based congestion control.  QUIC specifies the congestion
+window in bytes rather than packets due to finer control and the ease of
+appropriate byte counting {{?RFC3465}}.
 
 QUIC hosts MUST NOT send packets if they would increase bytes_in_flight
-(defined in {{vars-of-interest}}) beyond the available congestion window, unless
-the packet is a probe packet sent after the TLP or RTO timer expires, as
-described in {{tlp}} and {{rto}}.
+(defined in {{vars-of-interest}}) beyond the available congestion window,
+unless the packet is a probe packet sent after the TLP or RTO timer expires,
+as described in {{tlp}} and {{rto}}.
+
+Implementations MAY use other congestion control algorithms, and endpoints MAY
+use different algorithms from one another. The signals QUIC provides for
+congestion control are generic and are designed to support different algorithms.
 
 ## Explicit Congestion Notification {#congestion-ecn}
 
@@ -926,7 +965,7 @@ experiment with other response functions.
 
 QUIC begins every connection in slow start and exits slow start upon loss or
 upon increase in the ECN-CE counter. QUIC re-enters slow start anytime the
-congestion window is less than sshthresh, which typically only occurs after an
+congestion window is less than ssthresh, which typically only occurs after an
 RTO. While in slow start, QUIC increases the congestion window by the number of
 bytes acknowledged when each ack is processed.
 
@@ -1001,22 +1040,23 @@ Constants used in congestion control are based on a combination of RFCs,
 papers, and common practice.  Some may need to be changed or negotiated
 in order to better suit a variety of environments.
 
-kMaxDatagramSize (RECOMMENDED 1200 bytes):
+kMaxDatagramSize:
 : The sender's maximum payload size. Does not include UDP or IP
   overhead. The max packet size is used for calculating initial and
-  minimum congestion windows.
+  minimum congestion windows. The RECOMMENDED value is 1200 bytes.
 
-kInitialWindow (RECOMMENDED min(10 * kMaxDatagramSize,
-                                max(2* kMaxDatagramSize, 14600))):
+kInitialWindow:
 : Default limit on the initial amount of outstanding data in bytes.
-  Taken from {{?RFC6928}}.
+  Taken from {{?RFC6928}}.  The RECOMMENDED value is the minimum of
+  10 * kMaxDatagramSize and max(2* kMaxDatagramSize, 14600)).
 
-kMinimumWindow (RECOMMENDED 2 * kMaxDatagramSize):
-: Minimum congestion window in bytes.
+kMinimumWindow:
+: Minimum congestion window in bytes. The RECOMMENDED value is
+  2 * kMaxDatagramSize.
 
-kLossReductionFactor (RECOMMENDED 0.5):
+kLossReductionFactor:
 : Reduction in congestion window when a new loss event is detected.
-
+  The RECOMMENDED value is 0.5.
 
 ### Variables of interest {#vars-of-interest}
 
@@ -1024,7 +1064,6 @@ Variables required to implement the congestion control mechanisms
 are described in this section.
 
 ecn_ce_counter:
-
 : The highest value reported for the ECN-CE counter by the peer in an ACK_ECN
   frame. This variable is used to detect increases in the reported ECN-CE
   counter.
@@ -1098,7 +1137,7 @@ acked_packet from sent_packets.
 
 ### On New Congestion Event
 
-Invoked from ProcessECN and OnPacketLost when a new congestion event is
+Invoked from ProcessECN and OnPacketsLost when a new congestion event is
 detected. Starts a new recovery period and reduces the congestion window.
 
 ~~~
@@ -1107,8 +1146,9 @@ detected. Starts a new recovery period and reduces the congestion window.
      // is larger than the end of the previous recovery epoch.
      if (!InRecovery(packet_number)):
        end_of_recovery = largest_sent_packet
-       congestion_window *= kMarkReductionFactor
+       congestion_window *= kLossReductionFactor
        congestion_window = max(congestion_window, kMinimumWindow)
+       ssthresh = congestion_window
 ~~~
 
 ### Process ECN Information
@@ -1147,11 +1187,17 @@ are detected lost.
 ### On Retransmission Timeout Verified
 
 QUIC decreases the congestion window to the minimum value once the
-retransmission timeout has been verified.
+retransmission timeout has been verified and removes any packets
+sent before the newly acknowledged RTO packet.
 
 ~~~
-   OnRetransmissionTimeoutVerified()
+   OnRetransmissionTimeoutVerified(packet_number)
      congestion_window = kMinimumWindow
+     // Declare all packets prior to packet_number lost.
+     for (sent_packet: sent_packets):
+       if (sent_packet.packet_number < packet_number):
+         bytes_in_flight -= lost_packet.bytes
+         sent_packets.remove(sent_packet.packet_number)
 ~~~
 
 # Security Considerations
@@ -1170,6 +1216,27 @@ packet size.  Acknowledgement patterns may expose information about link
 characteristics or application behavior.  Endpoints can use PADDING frames or
 bundle acknowledgments with other frames to reduce leaked information.
 
+## Misreporting ECN Markings
+
+A receiver can misreport ECN markings to alter the congestion response of a
+sender.  Suppressing reports of ECN-CE markings could cause a sender to
+increase their send rate.  This increase could result in congestion and loss.
+
+A sender MAY attempt to detect suppression of reports by marking occasional
+packets that they send with ECN-CE.  If a packet marked with ECN-CE is not
+reported as having been marked when the packet is acknowledged, the sender
+SHOULD then disable ECN for that path.
+
+Reporting additional ECN-CE markings will cause a sender to reduce their sending
+rate, which is similar in effect to advertising reduced connection flow control
+limits and so no advantage is gained by doing so.
+
+Endpoints choose the congestion controller that they use.  Though congestion
+controllers generally treat reports of ECN-CE markings as equivalent to loss
+[RFC8311], the exact response for each controller could be different.  Failure
+to correctly respond to information about ECN markings is therefore difficult to
+detect.
+
 
 # IANA Considerations
 
@@ -1182,6 +1249,16 @@ This document has no IANA actions.  Yet.
 
 > **RFC Editor's Note:**  Please remove this section prior to
 > publication of a final version of this document.
+
+## Since draft-ietf-quic-recovery-13
+
+- Corrected the lack of ssthresh reduction in CongestionEvent pseudocode (#1598)
+- Considerations for ECN spoofing (#1426, #1626)
+- Clarifications for PADDING and congestion control (#837, #838, #1517, #1531,
+  #1540)
+- Reduce early retransmission timer to RTT/8 (#945, #1581)
+- Packets are declared lost after an RTO is verified (#935, #1582)
+
 
 ## Since draft-ietf-quic-recovery-12
 

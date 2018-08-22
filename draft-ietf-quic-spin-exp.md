@@ -104,7 +104,7 @@ code and issues list for this draft can be found at
 # Introduction
 
 The QUIC transport protocol {{QUIC-TRANSPORT}} uses
-Transport Layer Security (TLS) {{?TLS=I-D.ietf-tls-tls13}} to encrypt most of
+Transport Layer Security (TLS) {{?TLS=RFC8446}} to encrypt most of
 its protocol internals. In contrast to TCP where the sequence and
 acknowledgement numbers and timestamps (if the respective option is in use)
 can be seen by on-path observers and used to estimate end-to-end latency,
@@ -285,5 +285,3 @@ grant agreement no. 688421 Measurement and Architecture for a Middleboxed
 Internet (MAMI), and by the Swiss State Secretariat for Education, Research,
 and Innovation under contract no. 15.0268. This support does not imply
 endorsement.
-
-

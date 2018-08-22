@@ -104,14 +104,14 @@ with substantially less head-of-line blocking under the same loss conditions.
 
 # Header Tables
 
-Like HPACK, QPACK uses two tables for associating header fields to indexes.  The
+Like HPACK, QPACK uses two tables for associating header fields to indices.  The
 static table (see {{table-static}}) is predefined and contains common header
 fields (some of them with an empty value).  The dynamic table (see
-{{table-dynamic}}) built up over the course of the connection and can be used by
-the encoder to index header fields repeated in the encoded header lists.
+{{table-dynamic}}) is built up over the course of the connection and can be used
+by the encoder to index header fields repeated in the encoded header lists.
 
 Unlike in HPACK, entries in the QPACK static and dynamic tables are addressed
-separately.  The following sections describe how entries in each table is
+separately.  The following sections describe how entries in each table are
 addressed.
 
 ## Static Table {#table-static}
@@ -125,7 +125,17 @@ is no value at index zero of the static table.
 
 The dynamic table consists of a list of header fields maintained in first-in,
 first-out order.  The dynamic table is initially empty.  Entries are added by
-instructions on the Encoder Stream (see {{encoder-stream}}).
+instructions on the encoder stream (see {{encoder-stream}}).
+
+The maximum size of the dynamic table can be modified by the encoder, subject to
+a decoder-controlled limit (see {{configuration}} and {{size-update}}).  The
+initial maximum size is determined by the corresponding setting when HTTP
+requests or responses are first permitted to be sent. For clients using 0-RTT
+data in HTTP/QUIC, the table size is the remembered value of the setting, even
+if the server later specifies a larger maximum in its SETTINGS frame.  For
+HTTP/QUIC servers and HTTP/QUIC clients when 0-RTT is not attempted or is
+rejected, the initial maximum table size is the value of the setting in the
+peer's SETTINGS frame.
 
 Before a new entry is added to the dynamic table, entries are evicted from the
 end of the dynamic table until the size of the dynamic table is less than or
@@ -173,7 +183,7 @@ The relative index begins at zero and increases in the opposite direction from
 the absolute index.  Determining which entry has a relative index of "0" depends
 on the context of the reference.
 
-On the control stream, a relative index of "0" always refers to the most
+On the encoder stream, a relative index of "0" always refers to the most
 recently inserted value in the dynamic table.  Note that this means the entry
 referenced by a given relative index will change while interpreting instructions
 on the encoder stream.
@@ -184,8 +194,8 @@ on the encoder stream.
     + - +---------------+ - - - - - +
     | 0 |      ...      | n - d - 1 |  Relative Index
     +---+---------------+-----------+
-      ^                     |
-      |                     V
+      ^                       |
+      |                       V
 Insertion Point         Dropping Point
 
 n = count of entries inserted
@@ -194,7 +204,7 @@ d = count of entries dropped
 {: title="Example Dynamic Table Indexing - Control Stream"}
 
 Because frames from request streams can be delivered out of order with
-instructions on the control stream, relative indices are relative to the Base
+instructions on the encoder stream, relative indices are relative to the Base
 Index at the beginning of the header block (see {{absolute-index}}). The Base
 Index is an absolute index. When interpreting the rest of the frame, the entry
 identified by Base Index has a relative index of zero.  The relative indices of
@@ -213,7 +223,7 @@ entries do not change while interpreting headers on a request or push stream.
 n = count of entries inserted
 d = count of entries dropped
 ~~~~~
-{: title="Example Dynamic Table Indexing - Request Stream"}
+{: title="Example Dynamic Table Indexing - Relative Index on Request Stream"}
 
 ### Post-Base Indexing
 
@@ -237,13 +247,13 @@ as absolute indices, but the zero value is one higher than the Base Index.
 n = count of entries inserted
 d = count of entries dropped
 ~~~~~
-{: title="Dynamic Table Indexing - Post-Base References"}
+{: title="Example Dynamic Table Indexing - Post-Base Index on Request Stream"}
 
 If the decoder encounters a reference to an entry which has already been dropped
 from the table or which is greater than the declared Largest Reference (see
 {{absolute-index}}), this MUST be treated as a stream error of type
 `HTTP_QPACK_DECOMPRESSION_FAILED` error code.  If this reference occurs on the
-control stream, this MUST be treated as a session error.
+encoder stream, this MUST be treated as a session error.
 
 ## Avoiding Head-of-Line Blocking in HTTP/QUIC {#overview-hol-avoidance}
 
@@ -261,7 +271,7 @@ immediately. A stream becomes unblocked when the greatest absolute index in the
 dynamic table becomes greater than or equal to the Largest Reference for all
 header blocks the decoder has started reading from the stream.  If a decoder
 encounters a header block where the actual largest reference is not equal to the
-largest reference declared in the prefix, it MAY treat this as a stream error of
+Largest Reference declared in the prefix, it MAY treat this as a stream error of
 type HTTP_QPACK_DECOMPRESSION_FAILED.
 
 A decoder can permit the possibility of blocked streams by setting
@@ -289,13 +299,13 @@ SHOULD treat this as a stream error of type HTTP_QPACK_DECOMPRESSION_FAILED.
 The decoder stream ({{qpack-decoder-stream}}) signals key events at the
 decoder that permit the encoder to track the decoder's state.  These events are:
 
-- Successful processing of a header block
+- Complete processing of a header block
 - Abandonment of a stream which might have remaining header blocks
 - Receipt of new dynamic table entries
 
 Regardless of whether a header block contained blocking references, the
-knowledge that it was processed successfully permits the encoder to avoid
-evicting entries while references remain outstanding; see {{blocked-eviction}}.
+knowledge that it has been processed permits the encoder to evict
+entries to which no unacknowledged references remain; see {{blocked-eviction}}.
 When a stream is reset or abandoned, the indication that these header blocks
 will never be processed serves a similar function; see {{stream-cancellation}}.
 
@@ -573,11 +583,11 @@ before using it.
 
 ### Header Acknowledgement
 
-After processing a header block on a request or push stream, the decoder emits a
-Header Acknowledgement instruction on the decoder stream.  The instruction
-begins with the '1' one-bit pattern and includes the request stream's stream ID,
-encoded as a 7-bit prefix integer.  It is used by the peer's QPACK encoder to
-know when it is safe to evict an entry.
+After processing a header block whose declared Largest Reference is not zero,
+the decoder emits a Header Acknowledgement instruction on the decoder stream.
+The instruction begins with the '1' one-bit pattern and includes the request
+stream's stream ID, encoded as a 7-bit prefix integer.  It is used by the
+peer's QPACK encoder to know when it is safe to evict an entry.
 
 The same Stream ID can be identified multiple times, as multiple header blocks
 can be sent on a single stream in the case of intermediate responses, trailers,
@@ -717,8 +727,8 @@ Section 5.1 of [RFC7541]).
 
 If the entry is in the dynamic table with an absolute index greater than Base
 Index, the representation starts with the '0001' 4-bit pattern, followed by the
-post-base index (see {{indexing}}) of the matching header field, represented as
-an integer with a 4-bit prefix (see Section 5.1 of [RFC7541]).
+post-base index (see {{post-base-indexing}}) of the matching header field,
+represented as an integer with a 4-bit prefix (see Section 5.1 of [RFC7541]).
 
 ~~~~~~~~~~ drawing
   0   1   2   3   4   5   6   7
@@ -772,7 +782,7 @@ reference is to the static (S=1) or dynamic (S=0) table.
 
 For entries in the dynamic table with an absolute index greater than Base Index,
 the header field name is represented using the post-base index of that entry
-(see {{indexing}}) encoded as an integer with a 3-bit prefix.
+(see {{post-base-indexing}}) encoded as an integer with a 3-bit prefix.
 
 ~~~~~~~~~~ drawing
      0   1   2   3   4   5   6   7
@@ -893,12 +903,12 @@ blocked streams that now have their dependencies satisfied.
 
 ## Speculative table updates {#speculative-updates}
 
-Implementations can *speculatively* send header frames on the HTTP Control
-Streams which are not needed for any current HTTP request or response.  Such
-headers could be used strategically to improve performance.  For instance, the
-encoder might decide to *refresh* by sending Duplicate representations for
-popular header fields ({{duplicate}}), ensuring they have small indices and
-hence minimal size on the wire.
+Implementations can *speculatively* send instructions on the encoder stream
+which are not needed for any current HTTP request or response.  Such headers
+could be used strategically to improve performance.  For instance, the encoder
+might decide to *refresh* by sending Duplicate representations for popular
+header fields ({{duplicate}}), ensuring they have small indices and hence
+minimal size on the wire.
 
 ## Sample One Pass Encoding Algorithm
 
@@ -1008,6 +1018,11 @@ Description:
 
 > **RFC Editor's Note:** Please remove this section prior to publication of a
 > final version of this document.
+
+## Since draft-ietf-quic-qpack-01
+
+- Only header blocks that reference the dynamic table are acknowledged (#1603,
+  #1605)
 
 ## Since draft-ietf-quic-qpack-00
 
