@@ -4214,7 +4214,7 @@ stream data to the application to be interrupted.
 It is possible that all stream data is received when a RST_STREAM is received
 (that is, from the "Data Recvd" state).  Similarly, it is possible for remaining
 stream data to arrive after receiving a RST_STREAM frame (the "Reset Recvd"
-state).  An implementation is able to manage this situation as they choose.
+state).  An implementation is able to manage this situation as it chooses.
 Sending RST_STREAM means that an endpoint cannot guarantee delivery of stream
 data; however there is no requirement that stream data not be delivered if a
 RST_STREAM is received.  An implementation MAY interrupt delivery of stream
@@ -4246,7 +4246,7 @@ STOP_SENDING frames ({{frame-stop-sending}}).
 
 The receiver only sends MAX_STREAM_DATA in the "Recv" state.  A receiver can
 send STOP_SENDING in any state where it has not received a RST_STREAM frame;
-that is states other than "Reset Recvd" or "Reset Read".  However there is
+that is states other than "Reset Recvd" or "Reset Read".  However, there is
 little value in sending a STOP_SENDING frame after all stream data has been
 received in the "Data Recvd" state.  A sender could receive these frames in any
 state as a result of delayed delivery of packets.
