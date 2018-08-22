@@ -296,8 +296,8 @@ SHOULD treat this as a stream error of type HTTP_QPACK_DECOMPRESSION_FAILED.
 
 ### State Synchronization
 
-The decoder stream signals key events at the decoder that permit the encoder to
-track the decoder's state.  These events are:
+The decoder stream ({{qpack-decoder-stream}}) signals key events at the
+decoder that permit the encoder to track the decoder's state.  These events are:
 
 - Complete processing of a header block
 - Abandonment of a stream which might have remaining header blocks
@@ -543,7 +543,7 @@ the dynamic table is not acknowledged as this instruction does not insert an
 entry.
 
 
-## QPACK Decoder Stream {#feedback}
+## QPACK Decoder Stream
 
 The decoder stream carries information used to ensure consistency of the dynamic
 table. Information is sent from the QPACK decoder to the QPACK encoder; that is,
@@ -892,9 +892,9 @@ Duplicate representation instead (see {{duplicate}}).
 
 For header blocks encoded in non-blocking mode, the encoder needs to forego
 indexed representations that refer to table updates which have not yet been
-acknowledged with {{feedback}}.  Since all table updates are processed in
-sequence on the encoder stream, an index into the dynamic table is sufficient to
-track which entries have been acknowledged.
+acknowledged (see {{qpack-decoder-stream}}).  Since all table updates are
+processed in sequence on the control stream, an index into the dynamic
+table is sufficient to track which entries have been acknowledged.
 
 To track blocked streams, the necessary Base Index value for each stream can be
 used.  Whenever the decoder processes a table update, it can begin decoding any
