@@ -330,7 +330,7 @@ encryption levels
 - PADDING and PING frames MAY appear in packets of any encryption level.
 
 - ACK frames MAY appear in packets of any encryption level other than 0-RTT, but
-  can only acknowledge packets which appeared in that encryption level.
+  can only acknowledge packets which appeared in that packet number space.
 
 - STREAM frames MUST ONLY appear in the 0-RTT and 1-RTT levels.
 
