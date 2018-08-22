@@ -104,14 +104,14 @@ with substantially less head-of-line blocking under the same loss conditions.
 
 # Header Tables
 
-Like HPACK, QPACK uses two tables for associating header fields to indexes.  The
+Like HPACK, QPACK uses two tables for associating header fields to indices.  The
 static table (see {{table-static}}) is predefined and contains common header
 fields (some of them with an empty value).  The dynamic table (see
-{{table-dynamic}}) built up over the course of the connection and can be used by
-the encoder to index header fields repeated in the encoded header lists.
+{{table-dynamic}}) is built up over the course of the connection and can be used
+by the encoder to index header fields repeated in the encoded header lists.
 
 Unlike in HPACK, entries in the QPACK static and dynamic tables are addressed
-separately.  The following sections describe how entries in each table is
+separately.  The following sections describe how entries in each table are
 addressed.
 
 ## Static Table {#table-static}
@@ -194,8 +194,8 @@ on the encoder stream.
     + - +---------------+ - - - - - +
     | 0 |      ...      | n - d - 1 |  Relative Index
     +---+---------------+-----------+
-      ^                     |
-      |                     V
+      ^                       |
+      |                       V
 Insertion Point         Dropping Point
 
 n = count of entries inserted
@@ -223,7 +223,7 @@ entries do not change while interpreting headers on a request or push stream.
 n = count of entries inserted
 d = count of entries dropped
 ~~~~~
-{: title="Example Dynamic Table Indexing - Request Stream"}
+{: title="Example Dynamic Table Indexing - Relative Index on Request Stream"}
 
 ### Post-Base Indexing
 
@@ -247,7 +247,7 @@ as absolute indices, but the zero value is one higher than the Base Index.
 n = count of entries inserted
 d = count of entries dropped
 ~~~~~
-{: title="Dynamic Table Indexing - Post-Base References"}
+{: title="Example Dynamic Table Indexing - Post-Base Index on Request Stream"}
 
 If the decoder encounters a reference to an entry which has already been dropped
 from the table or which is greater than the declared Largest Reference (see
@@ -271,7 +271,7 @@ immediately. A stream becomes unblocked when the greatest absolute index in the
 dynamic table becomes greater than or equal to the Largest Reference for all
 header blocks the decoder has started reading from the stream.  If a decoder
 encounters a header block where the actual largest reference is not equal to the
-largest reference declared in the prefix, it MAY treat this as a stream error of
+Largest Reference declared in the prefix, it MAY treat this as a stream error of
 type HTTP_QPACK_DECOMPRESSION_FAILED.
 
 A decoder can permit the possibility of blocked streams by setting
@@ -903,12 +903,12 @@ blocked streams that now have their dependencies satisfied.
 
 ## Speculative table updates {#speculative-updates}
 
-Implementations can *speculatively* send header frames on the HTTP Control
-Streams which are not needed for any current HTTP request or response.  Such
-headers could be used strategically to improve performance.  For instance, the
-encoder might decide to *refresh* by sending Duplicate representations for
-popular header fields ({{duplicate}}), ensuring they have small indices and
-hence minimal size on the wire.
+Implementations can *speculatively* send instructions on the encoder stream
+which are not needed for any current HTTP request or response.  Such headers
+could be used strategically to improve performance.  For instance, the encoder
+might decide to *refresh* by sending Duplicate representations for popular
+header fields ({{duplicate}}), ensuring they have small indices and hence
+minimal size on the wire.
 
 ## Sample One Pass Encoding Algorithm
 
