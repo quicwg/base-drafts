@@ -636,13 +636,13 @@ After QUIC moves to a new encryption level, packet protection keys for previous
 encryption levels can be discarded.  This occurs several times during the
 handshake, as well as when keys are updated (see {{key-update}}).
 
-Packet protection keys are not discarded immediately when new keys are available.
-If packets from a lower encryption level contain CRYPTO frames, frames that
-retransmit that data MUST be sent at the same encryption level.  Similarly, an
-endpoint generates acknowledgements for packets at the same encryption level as
-the packet being acknowledged.  Thus, it is possible that keys for a lower
-encryption level are needed for a short time after keys for a newer encryption
-level are available.
+Packet protection keys are not discarded immediately when new keys are
+available.  If packets from a lower encryption level contain CRYPTO frames,
+frames that retransmit that data MUST be sent at the same encryption level.
+Similarly, an endpoint generates acknowledgements for packets at the same
+encryption level as the packet being acknowledged.  Thus, it is possible that
+keys for a lower encryption level are needed for a short time after keys for a
+newer encryption level are available.
 
 An endpoint cannot discard keys for a given encryption level unless it has both
 received and acknowledged all CRYPTO frames for that encryption level and when
