@@ -2733,6 +2733,9 @@ a small packet might result in Stateless Reset not being useful in detecting
 cases of broken connections where only very small packets are sent; such
 failures might only be detected by other means, such as timers.
 
+An endpoint can increase the odds that a packet will trigger a Stateless Reset
+if it cannot be processed by padding it to at least 38 octets.
+
 
 # Frame Types and Formats
 
