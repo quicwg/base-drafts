@@ -490,7 +490,7 @@ caused by losing previously sent ACK frames, at the cost of larger ACK frames.
 ACK frames SHOULD always acknowledge the most recently received packets, and the
 more out-of-order the packets are, the more important it is to send an updated
 ACK frame quickly, to prevent the peer from declaring a packet as lost and
-spuriusly retransmitting the frames it contains.
+spuriously retransmitting the frames it contains.
 
 Below is one recommended approach for determining what packets to include in an
 ACK frame.
@@ -764,7 +764,7 @@ Pseudocode for OnPacketAcked follows:
      if (rto_count > 0 &&
          acked_packet.packet_number > largest_sent_before_rto):
        OnRetransmissionTimeoutVerified(
-           acket_packet.packet_number)
+           acked_packet.packet_number)
      handshake_count = 0
      tlp_count = 0
      rto_count = 0
