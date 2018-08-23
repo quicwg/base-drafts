@@ -384,8 +384,8 @@ state), the proxy will set the FIN bit on its connection to the TCP server. When
 the proxy receives a packet with the FIN bit set, it will terminate the send
 stream that it sends to client. TCP connections which remain half-closed in a
 single direction are not invalid, but are often handled poorly by servers, so
-clients SHOULD NOT send a STREAM frame with a FIN bit for connections on
-which they are still expecting data.
+clients SHOULD NOT close a stream for sending for streams on which they still
+expect to receive data from the target of the CONNECT.
 
 A TCP connection error is signaled with RST_STREAM. A proxy treats any error in
 the TCP connection, which includes receiving a TCP segment with the RST bit set,
