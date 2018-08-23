@@ -93,8 +93,9 @@ informative:
 --- abstract
 
 This document defines the core of the QUIC transport protocol.  This document
-describes connection establishment, packet format, multiplexing, and reliability.
-Accompanying documents describe the cryptographic handshake and loss detection.
+describes connection establishment, packet format, multiplexing, and
+reliability.  Accompanying documents describe the cryptographic handshake and
+loss detection.
 
 
 --- note_Note_to_Readers
