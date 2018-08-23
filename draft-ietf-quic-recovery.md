@@ -302,7 +302,7 @@ Using max(SRTT, latest_RTT) protects from the two following cases:
 The 1.125 multiplier increases reordering resilience. Implementers MAY
 experiment with using other multipliers, bearing in mind that a lower multiplier
 reduces reordering resilience and increases spurious retransmissions, and a
-higher multipler increases loss recovery delay.
+higher multiplier increases loss recovery delay.
 
 This mechanism is based on Early Retransmit for TCP {{?RFC5827}}. However,
 {{?RFC5827}} does not include the timer described above. Early Retransmit is
@@ -341,7 +341,7 @@ acknowledgement for a new packet, the sender SHOULD double the handshake timeout
 and set a timer for this period.
 
 When CRYPTO frames are outstanding, the TLP and RTO timers are not active unless
-the CRYPTO frames were sent at 1RTT encryption.
+the CRYPTO frames were sent at 1-RTT encryption.
 
 When an acknowledgement is received for a handshake packet, the new RTT is
 computed and the timer SHOULD be set for twice the newly computed smoothed RTT.
@@ -452,9 +452,9 @@ flight, since this packet adds network load without establishing packet loss.
 
 QUIC SHOULD delay sending acknowledgements in response to packets, but MUST NOT
 excessively delay acknowledgements of packets containing frames other than ACK
-or ACN_ECN.  Specifically, implementaions MUST attempt to enforce a maximum ack
-delay to avoid causing the peer spurious timeouts.  The RECOMMENDED maximum ack
-delay in QUIC is 25ms.
+or ACN_ECN.  Specifically, implementations MUST attempt to enforce a maximum
+ack delay to avoid causing the peer spurious timeouts.  The RECOMMENDED maximum
+ack delay in QUIC is 25ms.
 
 An acknowledgement MAY be sent for every second full-sized packet, as TCP does
 {{?RFC5681}}, or may be sent less frequently, as long as the delay does not
@@ -565,7 +565,7 @@ tlp_count:
   receiving an ack.
 
 rto_count:
-: The number of times an rto has been sent without receiving an ack.
+: The number of times an RTO has been sent without receiving an ack.
 
 largest_sent_before_rto:
 : The last packet number sent prior to the first retransmission
@@ -793,11 +793,11 @@ response to 0-RTT packets.
 #### Tail Loss Probe and Retransmission Timer
 
 Tail loss probes {{?TLP}} and retransmission timeouts {{?RFC6298}}
-are a timer based mechanism to recover from cases when there are
+are timer based mechanisms to recover from cases when there are
 outstanding retransmittable packets, but an acknowledgement has
 not been received in a timely manner.
 
-The TLP and RTO timers are armed when there is not unacknowledged handshake
+The TLP and RTO timers are armed when there is no unacknowledged handshake
 data.  The TLP timer is set until the max number of TLP packets have been
 sent, and then the RTO timer is set.
 
