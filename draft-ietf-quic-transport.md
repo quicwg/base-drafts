@@ -93,8 +93,9 @@ informative:
 --- abstract
 
 This document defines the core of the QUIC transport protocol.  This document
-describes connection establishment, packet format, multiplexing and reliability.
-Accompanying documents describe the cryptographic handshake and loss detection.
+describes connection establishment, packet format, multiplexing, and
+reliability.  Accompanying documents describe the cryptographic handshake and
+loss detection.
 
 
 --- note_Note_to_Readers
@@ -376,7 +377,7 @@ packet type.  Type-specific semantics for this version are described in the
 following sections.
 
 The end of the packet is determined by the Length field.  The Length field
-covers the both the Packet Number and Payload fields, both of which are
+covers both the Packet Number and Payload fields, both of which are
 confidentiality protected and initially of unknown length.  The size of the
 Payload field is learned once the packet number protection is removed.
 
@@ -1166,7 +1167,7 @@ The Frame Type field uses a variable length integer encoding (see
 {{integer-encoding}}) with one exception.  To ensure simple and efficient
 implementations of frame parsing, a frame type MUST use the shortest possible
 encoding.  Though a two-, four- or eight-octet encoding of the frame types
-defined in this document is possible, the Frame Type field for these frames are
+defined in this document is possible, the Frame Type field for these frames is
 encoded on a single octet.  For instance, though 0x4007 is a legitimate
 two-octet encoding for a variable-length integer with a value of 7, PING frames
 are always encoded as a single octet with the value 0x07.  An endpoint MUST
@@ -1197,7 +1198,7 @@ connection establishment intertwines version negotiation with the cryptographic
 and transport handshakes to reduce connection establishment latency, as
 described in {{handshake}}.  Once established, a connection may migrate to a
 different IP or port at either endpoint, due to NAT rebinding or mobility, as
-described in {{migration}}.  Finally a connection may be terminated by either
+described in {{migration}}.  Finally, a connection may be terminated by either
 endpoint, as described in {{termination}}.
 
 ## Connection ID
@@ -4814,9 +4815,9 @@ sent packets match the encryption level of the sent packet.  This mitigation is
 useful if the connection has an ephemeral forward-secure key that is generated
 and used for every new connection.  If a packet sent is protected with a
 forward-secure key, then any acknowledgments that are received for them MUST
-also be forward-secure protected.  Since the attacker will not have the forward
-secure key, the attacker will not be able to generate forward-secure protected
-packets with ACK frames.
+also be forward-secure protected.  Since the attacker will not have the
+forward-secure key, the attacker will not be able to generate forward-secure
+protected packets with ACK frames.
 
 
 ## Optimistic ACK Attack
