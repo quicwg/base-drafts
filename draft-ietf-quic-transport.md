@@ -432,7 +432,7 @@ Fourth Bit:
 \[\[Editor's Note: this section should be removed and the bit definitions
 changed before this draft goes to the IESG.]]
 
-Google QUIC Demultipexing Bit:
+Google QUIC Demultiplexing Bit:
 
 : The fifth bit (0x8) of octet 0 is set to 0. This allows implementations of
   Google QUIC to distinguish Google QUIC packets from short header packets sent
