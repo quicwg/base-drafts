@@ -181,7 +181,7 @@ Connection ID:
 
 QUIC packet:
 
-: A well-formed UDP payload that can be parsed by a QUIC receiver.
+: The smallest unit of data that can be exchanged by QUIC endpoints.
 
 QUIC is a name, not an acronym.
 
@@ -566,8 +566,8 @@ wishes to perform a stateless retry (see {{stateless-retry}}).
 
 A Retry packet (shown in {{retry-format}}) only uses the invariant portion of
 the long packet header {{QUIC-INVARIANTS}}; that is, the fields up to and
-including the Destination and Source Connection ID fields.  The contents of the
-Retry packet are not protected.  Like Version Negotiation, a Retry packet
+including the Destination and Source Connection ID fields.  The Payload of a
+Retry packet is not protected.  Like Version Negotiation, a Retry packet
 contains the long header including the connection IDs, but omits the Length,
 Packet Number, and Payload fields.  These are replaced with:
 
@@ -1045,10 +1045,10 @@ Note that these encodings are similar to those in {{integer-encoding}}, but
 use different values.
 
 The encoded packet number is protected as described in Section 5.3
-{{QUIC-TLS}}. Protection of the packet number is removed prior to recovering
-the full packet number. The full packet number is reconstructed at the
-receiver based on the number of significant bits present, the content of those
-bits, and the largest packet number received on a successfully authenticated
+{{QUIC-TLS}}. Protection of the packet number is removed prior to recovering the
+full packet number. The full packet number is reconstructed at the receiver
+based on the number of significant bits present, the value of those bits, and
+the largest packet number received on a successfully authenticated
 packet. Recovering the full packet number is necessary to successfully remove
 packet protection.
 
@@ -1109,7 +1109,7 @@ Stateless Reset do not contain frames.
 |                          Frame N (*)                        ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
-{: #packet-frames title="Contents of Protected Payload"}
+{: #packet-frames title="QUIC Payload"}
 
 Protected payloads MUST contain at least one frame, and MAY contain multiple
 frames and multiple frame types.
@@ -1298,7 +1298,7 @@ avoid storms of Version Negotiation packets.
 The first packet for an unsupported version can use different semantics and
 encodings for any version-specific field.  In particular, different packet
 protection keys might be used for different versions.  Servers that do not
-support a particular version are unlikely to be able to decrypt the content of
+support a particular version are unlikely to be able to decrypt the payload of
 the packet.  Servers SHOULD NOT attempt to decode or decrypt a packet from an
 unknown version, but instead send a Version Negotiation packet, provided that
 the packet is sufficiently long.
@@ -1361,10 +1361,10 @@ packet MUST be discarded.
 Once the Version Negotiation packet is determined to be valid, the client then
 selects an acceptable protocol version from the list provided by the server.
 The client then attempts to create a connection using that version.  Though the
-contents of the Initial packet the client sends might not change in
-response to version negotiation, a client MUST increase the packet number it
-uses on every packet it sends.  Packets MUST continue to use long headers and
-MUST include the new negotiated protocol version.
+content of the Initial packet the client sends might not change in response to
+version negotiation, a client MUST increase the packet number it uses on every
+packet it sends.  Packets MUST continue to use long headers and MUST include the
+new negotiated protocol version.
 
 The client MUST use the long header format and include its selected version on
 all packets until it has 1-RTT keys and it has received a packet from the server
@@ -1462,8 +1462,9 @@ some examples are provided here.
 
 {{tls-1rtt-handshake}} provides an overview of the 1-RTT handshake.  Each line
 shows a QUIC packet with the packet type and packet number shown first, followed
-by the contents. So, for instance the first packet is of type Initial, with
-packet number 0, and contains a CRYPTO frame carrying the ClientHello.
+by the frames that are typically contained in those packets. So, for instance
+the first packet is of type Initial, with packet number 0, and contains a CRYPTO
+frame carrying the ClientHello.
 
 Note that multiple QUIC packets -- even of different encryption levels -- may be
 coalesced into a single UDP datagram (see {{packet-coalesce}}), and so this
