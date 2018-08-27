@@ -1834,12 +1834,11 @@ congestion in the network by setting a codepoint in the IP header of a packet
 instead of dropping it.  Endpoints react to congestion by reducing their sending
 rate in response, as described in {{QUIC-RECOVERY}}.
 
-To use ECN, QUIC endpoints first determine whether a path supports ECN
-marking and the peer is able to access the ECN codepoint in the IP header.
-A network path regarded as not supporting ECN if ECN marked packets get dropped
-or ECN markings are rewritten on the path. An endpoint verifies the path, both
-during connection establishment and when migrating to a new path (see
-{{migration}}).
+To use ECN, QUIC endpoints first determine whether a path supports ECN marking
+and the peer is able to access the ECN codepoint in the IP header.  A network
+path does not support ECN if ECN marked packets get dropped or ECN markings are
+rewritten on the path. An endpoint verifies the path, both during connection
+establishment and when migrating to a new path (see {{migration}}).
 
 Each endpoint independently verifies and enables use of ECN by setting the IP
 header ECN codepoint to ECN Capable Transport (ECT) for the path from it to the
@@ -1855,7 +1854,7 @@ then a received packet contains either the codepoint sent by the peer or the
 Congestion Experienced (CE) codepoint set by a network device that is
 experiencing congestion.
 
-On receiving a packet with an ECT or CE codepoint, an endpoint that can acces
+On receiving a packet with an ECT or CE codepoint, an endpoint that can access
 the IP ECN codepoints increases the corresponding ECT(0), ECT(1), or CE count,
 and includes these counters in subsequent (see {{processing-and-ack}}) ACK_ECN
 frames (see {{frame-ack-ecn}}).
