@@ -3722,10 +3722,9 @@ latency.
 ## Packet Processing and Acknowledgment {#processing-and-ack}
 
 A packet MUST NOT be acknowledged until packet protection has been successfully
-removed and all frames contained in the packet have been processed.  Any stream
-state transitions triggered by the frame MUST have occurred.  For STREAM frames,
-this means the data has been enqueued in preparation to be received by the
-application protocol, but it does not require that data is delivered and
+removed and all frames contained in the packet have been processed.  For STREAM
+frames, this means the data has been enqueued in preparation to be received by
+the application protocol, but it does not require that data is delivered and
 consumed.
 
 Once the packet has been fully processed, a receiver acknowledges receipt by
