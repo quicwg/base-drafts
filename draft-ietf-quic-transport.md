@@ -1323,8 +1323,7 @@ from sending Handshake packets prior to receiving a server response, so servers
 SHOULD ignore any such packets.
 
 Servers MUST drop incoming packets under all other circumstances.  They SHOULD
-send a Stateless Reset ({{stateless-reset}}) if a connection ID is present in
-the header.
+send a Stateless Reset ({{stateless-reset}}) if they are able.
 
 ## Version Negotiation
 
@@ -1335,7 +1334,7 @@ response to each packet that might initiate a new connection, see
 
 The size of the first packet sent by a client will determine whether a server
 sends a Version Negotiation packet. Clients that support multiple QUIC versions
-SHOULD pad the first packet they send to the largest of the minimum packet size
+SHOULD pad the first packet they send to the largest of the minimum packet sizes
 across all versions they support. This ensures that the server responds if there
 is a mutually supported version.
 
