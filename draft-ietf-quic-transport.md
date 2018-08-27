@@ -1866,7 +1866,8 @@ provide feedback about ECN markings received (if accessible).
 
 To verify both that a path supports ECN and the peer can provide ECN feedback,
 an endpoint MUST set the ECT(0) codepoint in the IP header of all outgoing
-packets {{!RFC8311}}.
+packets {{!RFC8311}}.  Endpoints can use a different default marking, but this
+needs to be negotiated.
 
 If an ECT codepoint set in the IP header is not corrupted by a network device,
 then a received packet contains either the codepoint sent by the peer or the
@@ -1875,8 +1876,10 @@ experiencing congestion.
 
 On receiving a packet with an ECT or CE codepoint, an endpoint that can access
 the IP ECN codepoints records the markings for that packet.  This information is
-reported in ACK frames (see {{processing-and-ack}}).  Packets bearing ECT(1) are
-reported as though they were not marked.
+reported in ACK frames (see {{processing-and-ack}}).  Packets bearing an ECT
+marking other than the negotiated type are reported as though they were not
+marked.  That is, absent any different negotiation, ECT(1) marked packets are
+acknowledged as unmarked.
 
 A packet detected by a receiver as a duplicate does not affect the receiver's
 local ECN codepoint reporting; see ({{security-ecn}}) for relevant security
@@ -3254,13 +3257,13 @@ An ACK frame is shown below.
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                       ACK Block Count (i)                   ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                          ACK Block 1 (i)                   ...
+|                          ACK Block 1 (i)                    ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                          ACK Block 2 (i)                   ...
+|                          ACK Block 2 (i)                    ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                          ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                          ACK Block N (i)                   ...
+|                          ACK Block N (i)                    ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
 {: #ack-format title="ACK Frame Format"}
@@ -3293,7 +3296,7 @@ ACK Block Count:
 
 ACK Blocks:
 
-: An ACK block is encoded as a variable-length integer.  The encoding of the ACK
+: An ACK Block is encoded as a variable-length integer.  The encoding of the ACK
   Block is described more in {{ack-blocks}}.
 
 
@@ -3309,7 +3312,9 @@ The two least significant bits of the decoded value of the ACK Block describe
 the type.  That is, the type of an ACK block is found by:
 
 ```
-ack_type_i = decode_varint() & 3
+ack_block_i = decode_varint()
+ack_type_i = ack_block_i & 3
+ack_size_i = ack_block_i >> 2
 ```
 
 The four types of ACK Block are:
@@ -3327,23 +3332,25 @@ Unmarked (1):
 
 ECT Marked (2):
 
-: Packets that are ECT(0) marked are acknowledged using a type of 2.
+: Packets that are marked with the negotiated ECT marking are acknowledged using
+  a type of 2.
 
 ECN-CE Marked (3):
 
 : Packets that are ECN-CE marked are acknowledged using a type of 3.
 
-The range of acknowledged values in each ACK Block is inclusive of its largest
-value and is described in numerically decreasing order.  Each ACK Block includes
-at least one value; a encoded value of 0 indicates that the range contains one
-packet number.  Each range is described starts at one lower than the minimum
-value from the previous range.  The first ACK Block starts with the Largest
-Acknowledged packet number and describes a range up and including that packet
-number.  Thus, the ranges of packets covered by each ACK Block can found with:
+The range of acknowledged packet numbers in each ACK Block is inclusive of its
+largest packet number and is described in numerically decreasing order.  Each
+ACK Block includes at least one value; a encoded value of 0 indicates that the
+range contains one packet number.  Each range is described starts at one lower
+than the minimum value from the previous range.  The first ACK Block starts with
+the Largest Acknowledged packet number and describes a range up and including
+that packet number.  Thus, ranges of packet numbers covered by each ACK Block
+can found with:
 
 ```
-ack_range_i = [ low: largest_i - (decode_varint() >> 2),
-                high: largest_i ]
+ack_range_i = { low: largest_i - ack_size_i,
+                high: largest_i }
 ack_largest_i+1 = ack_range_i[low] - 1
 ```
 
