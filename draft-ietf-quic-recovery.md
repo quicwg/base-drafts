@@ -88,14 +88,9 @@ when, and only when, they appear in all capitals, as shown here.
 
 Definitions of terms that are used in this document:
 
-ACK frames:
-
-: ACK frames refer to both ACK and ACK_ECN frames in this
-  document.
-
 ACK-only:
 
-: Any packet containing only an ACK or ACK_ECN frame.
+: Any packet containing only an ACK frame.
 
 In-flight:
 
@@ -105,8 +100,7 @@ In-flight:
 
 Retransmittable Frames:
 
-: All frames besides ACK, ACK_ECN, or PADDING are considered
-  retransmittable.
+: All frames besides ACK or PADDING are considered retransmittable.
 
 Retransmittable Packets:
 
@@ -132,17 +126,17 @@ mechanisms ensure that data and frames that need reliable delivery are
 acknowledged or declared lost and sent in new packets as necessary. The types
 of frames contained in a packet affect recovery and congestion control logic:
 
-* All packets are acknowledged, though packets that contain only ACK,
-  ACK_ECN, and PADDING frames are not acknowledged immediately.
+* All packets are acknowledged, though packets that contain only ACK and PADDING
+  frames are not acknowledged immediately.
 
 * Long header packets that contain CRYPTO frames are critical to the
   performance of the QUIC handshake and use shorter timers for
   acknowledgement and retransmission.
 
-* Packets that contain only ACK and ACK_ECN frames do not count toward
-  congestion control limits and are not considered in-flight. Note that this
-  means PADDING frames cause packets to contribute toward bytes in flight
-  without directly causing an acknowledgment to be sent.
+* Packets that contain only ACK frames do not count toward congestion control
+  limits and are not considered in-flight. Note that this means PADDING frames
+  cause packets to contribute toward bytes in flight without directly causing an
+  acknowledgment to be sent.
 
 ## Relevant Differences Between QUIC and TCP
 
@@ -765,6 +759,7 @@ Pseudocode for OnPacketAcked follows:
          acked_packet.packet_number > largest_sent_before_rto):
        OnRetransmissionTimeoutVerified(
            acked_packet.packet_number)
+     ProcessECN(packet)
      handshake_count = 0
      tlp_count = 0
      rto_count = 0
@@ -1063,11 +1058,6 @@ kLossReductionFactor:
 Variables required to implement the congestion control mechanisms
 are described in this section.
 
-ecn_ce_counter:
-: The highest value reported for the ECN-CE counter by the peer in an ACK_ECN
-  frame. This variable is used to detect increases in the reported ECN-CE
-  counter.
-
 bytes_in_flight:
 : The sum of the size in bytes of all sent packets that contain at least
   one retransmittable or PADDING frame, and have not been acked or declared
@@ -1098,7 +1088,6 @@ variables as follows:
    bytes_in_flight = 0
    end_of_recovery = 0
    ssthresh = infinite
-   ecn_ce_counter = 0
 ~~~
 
 ### On Packet Sent
@@ -1153,16 +1142,13 @@ detected. Starts a new recovery period and reduces the congestion window.
 
 ### Process ECN Information
 
-Invoked when an ACK_ECN frame is received from the peer.
+Invoked when a packet is newly acknowledged.  This triggers a new congestion
+event if the peer indicates that the packet was ECN-CE marked.
 
 ~~~
-   ProcessECN(ack):
-     // If the ECN-CE counter reported by the peer has increased,
-     // this could be a new congestion event.
-     if (ack.ce_counter > ecn_ce_counter):
-       ecn_ce_counter = ack.ce_counter
-       // Start a new congestion event if the last acknowledged
-       // packet is past the end of the previous recovery epoch.
+   ProcessECN(packet):
+     // A ECN-CE marked packet indicates congestion.
+     if (packet.ce_marked):
        CongestionEvent(ack.largest_acked_packet)
 ~~~
 
@@ -1249,6 +1235,11 @@ This document has no IANA actions.  Yet.
 
 > **RFC Editor's Note:**  Please remove this section prior to
 > publication of a final version of this document.
+
+## Since draft-ietf-quic-recovery-14
+
+- Improve reporting for ECN-CE marked packets (#????)
+
 
 ## Since draft-ietf-quic-recovery-13
 
