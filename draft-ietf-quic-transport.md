@@ -3325,9 +3325,9 @@ Unmarked (1):
 : Unmarked packets are those packets that are acknowledged, but for which the
   ECN marking is either not present, ECT(1), or unknown.
 
-ECT(0) Marked (2):
+ECT Marked (2):
 
-: Packets that are ECT(0) marked are acknowledged using a type of 3.
+: Packets that are ECT(0) marked are acknowledged using a type of 2.
 
 ECN-CE Marked (3):
 
