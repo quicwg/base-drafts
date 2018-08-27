@@ -919,11 +919,10 @@ packets, though failing to do so will require sending a significantly
 larger number of datagrams during the handshake. Receivers MUST
 be able to process coalesced packets.
 
-Senders SHOULD coalesce packets in order of increasing encryption levels
-(Initial, Handshake, 0-RTT, 1-RTT), as this makes it more likely the receiver
-will be able to process all the packets in a single pass.  A packet with a short
-header does not include a length, so it will always be the last packet included
-in a UDP datagram.
+Coalescing packets in order of increasing encryption levels (Initial, 0-RTT,
+Handshake, 1-RTT) makes it more likely the receiver will be able to process all
+the packets in a single pass.  A packet with a short header does not include a
+length, so it will always be the last packet included in a UDP datagram.
 
 Senders MUST NOT coalesce QUIC packets with different Destination Connection
 IDs into a single UDP datagram. Receivers SHOULD ignore any subsequent packets
