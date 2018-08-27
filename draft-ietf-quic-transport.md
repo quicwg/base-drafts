@@ -786,6 +786,14 @@ Note:
   the packet is discarded.  A server MAY encode tokens provided with NEW_TOKEN
   frames and Retry packets differently, and validate the latter more strictly.
 
+In a stateless design, a server can use encrypted and authenticated tokens to
+pass information to clients that the server can later recover and use to
+validate a client address.  Tokens are not integrated into the crypto graphic
+handshake and so they cannot be authenticated.  For instance, a client might be
+able to reuse a token.  To avoid attacks that exploit this property, a server
+can limit its use of tokens to only the information needed validate client
+addresses.
+
 
 ### Starting Packet Numbers
 
