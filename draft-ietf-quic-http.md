@@ -143,7 +143,7 @@ coordinate their experiments on the quic@ietf.org mailing list.
 ## Discovering an HTTP/QUIC Endpoint
 
 An HTTP origin advertises the availability of an equivalent HTTP/QUIC endpoint
-via the Alt-Svc HTTP response header or the HTTP/2 ALTSVC frame
+via the Alt-Svc HTTP response header field or the HTTP/2 ALTSVC frame
 ({{!ALTSVC=RFC7838}}), using the ALPN token defined in
 {{connection-establishment}}.
 
