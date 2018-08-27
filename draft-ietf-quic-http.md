@@ -149,7 +149,7 @@ via the Alt-Svc HTTP response header field or the HTTP/2 ALTSVC frame
 
 For example, an origin could indicate in an HTTP/1.1 or HTTP/2 response that
 HTTP/QUIC was available on UDP port 50781 at the same hostname by including the
-following header in any response:
+following header field in any response:
 
 ~~~ example
 Alt-Svc: hq=":50781"
@@ -193,15 +193,15 @@ occurrence.
 For example, suppose a server supported both version 0x00000001 and the version
 rendered in ASCII as "Q034".  If it opted to include the reserved versions (from
 Section 4 of {{QUIC-TRANSPORT}}) 0x0 and 0x1abadaba, it could specify the
-following header:
+following header field:
 
 ~~~ example
 Alt-Svc: hq=":49288";quic="1,1abadaba,51303334,0"
 ~~~
 
-A client acting on this header would drop the reserved versions (because it does
-not support them), then attempt to connect to the alternative using the first
-version in the list which it does support.
+A client acting on this header field would drop the reserved versions (because
+it does not support them), then attempt to connect to the alternative using the
+first version in the list which it does support.
 
 ## Connection Establishment {#connection-establishment}
 
@@ -280,7 +280,7 @@ stream. A server sends an HTTP response on the same stream as the request.
 
 An HTTP message (request or response) consists of:
 
-1. one header block (see {{frame-headers}}) containing the message headers (see
+1. one header block (see {{frame-headers}}) containing the message header (see
    {{!RFC7230}}, Section 3.2),
 
 2. the payload body (see {{!RFC7230}}, Section 3.3), sent as a series of DATA
@@ -297,7 +297,7 @@ of informational (1xx) HTTP responses (see {{!RFC7230}}, Section 3.2 and
 PUSH_PROMISE frames (see {{frame-push-promise}}) MAY be interleaved with the
 frames of a response message indicating a pushed resource related to the
 response. These PUSH_PROMISE frames are not part of the response, but carry the
-headers of a separate HTTP request message.  See {{server-push}} for more
+headers of separate HTTP request messages.  See {{server-push}} for more
 details.
 
 The "chunked" transfer encoding defined in Section 4.1 of {{!RFC7230}} MUST NOT
@@ -331,12 +331,12 @@ HTTP_INCOMPLETE_REQUEST.
 ### Header Formatting and Compression
 
 HTTP header fields carry information as a series of key-value pairs. For a
-listing of registered HTTP headers, see the "Message Header Field" registry
-maintained at <https://www.iana.org/assignments/message-headers>.
+listing of registered HTTP header fields, see the "Message Header Field"
+registry maintained at <https://www.iana.org/assignments/message-headers>.
 
 Just as in previous versions of HTTP, header field names are strings of ASCII
 characters that are compared in a case-insensitive fashion.  Properties of HTTP
-header names and values are discussed in more detail in Section 3.2 of
+header field names and values are discussed in more detail in Section 3.2 of
 {{!RFC7230}}, though the wire rendering in HTTP/QUIC differs.  As in HTTP/2,
 header field names MUST be converted to lowercase prior to their encoding.  A
 request or response containing uppercase header field names MUST be treated as
@@ -586,8 +586,8 @@ A push stream is indicated by a stream type of `0x50` (ASCII 'P'), followed by
 the Push ID of the promise that it fulfills, encoded as a variable-length
 integer. The remaining data on this stream consists of HTTP/QUIC frames, as
 defined in {{frames}}, and carries the response side of an HTTP message
-exchange as described in {{request-response}}. The request headers of the
-exchange are carried by a PUSH_PROMISE frame (see {{frame-push-promise}})
+exchange as described in {{request-response}}. The request header of the
+exchange is carried by a PUSH_PROMISE frame (see {{frame-push-promise}})
 on the request stream which generated the push. Promised requests MUST
 conform to the requirements in Section 8.2 of {{!RFC7540}}.
 
@@ -647,7 +647,7 @@ A frame includes the following fields:
 
   Length:
   : A variable-length integer that describes the length of the Frame Payload.
-    This length does not include the frame header.
+    This length does not include the Type field.
 
   Type:
   : An 8-bit type for the frame.
@@ -865,7 +865,7 @@ are also acceptable and proceed with the value it has chosen. (This choice could
 be announced in a field of an extension frame, or in its own value in SETTINGS.)
 
 Different values for the same parameter can be advertised by each peer. For
-example, a client might be willing to consume very large response headers,
+example, a client might be willing to consume a very large response header,
 while servers are more cautious about request size.
 
 Parameters MUST NOT occur more than once.  A receiver MAY treat the presence of
@@ -983,7 +983,7 @@ Push ID:
   ({{frame-cancel-push}}), and PRIORITY frames ({{frame-priority}}).
 
 Header Block:
-: QPACK-compressed request headers for the promised response.  See [QPACK] for
+: QPACK-compressed request header for the promised response.  See [QPACK] for
   more details.
 
 A server MUST NOT use a Push ID that is larger than the client has provided in a
