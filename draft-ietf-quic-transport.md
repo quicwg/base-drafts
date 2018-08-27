@@ -1855,26 +1855,30 @@ congestion in the network by setting a codepoint in the IP header of a packet
 instead of dropping it.  Endpoints react to congestion by reducing their sending
 rate in response, as described in {{QUIC-RECOVERY}}.
 
-To use ECN, QUIC endpoints first determine whether a path and peer support ECN
-marking. Verifying the path occurs at the beginning of a connection and when the
-connection migrates to a new path (see {{migration}}).
+To use ECN, QUIC endpoints first determine whether a path supports ECN marking
+and the peer is able to access the ECN codepoint in the IP header.  A network
+path does not support ECN if ECN marked packets get dropped or ECN markings are
+rewritten on the path. An endpoint verifies the path, both during connection
+establishment and when migrating to a new path (see {{migration}}).
 
-Each endpoint independently verifies and enables ECN for the path from it to the
-peer.
+Each endpoint independently verifies and enables use of ECN by setting the IP
+header ECN codepoint to ECN Capable Transport (ECT) for the path from it to the
+other peer. Even if ECN is not used on the path to the peer, the endpoint MUST
+provide feedback about ECN markings received (if accessible).
 
-To verify that both a path and the peer support ECN, an endpoint MUST set one of
-the ECN Capable Transport (ECT) codepoints -- ECT(0) or ECT(1) -- in the IP
-header {{!RFC8311}} of all outgoing packets.
+To verify both that a path supports ECN and the peer can provide ECN feedback,
+an endpoint MUST set the ECT(0) codepoint in the IP header of all outgoing
+packets {{!RFC8311}}.
 
 If an ECT codepoint set in the IP header is not corrupted by a network device,
 then a received packet contains either the codepoint sent by the peer or the
 Congestion Experienced (CE) codepoint set by a network device that is
 experiencing congestion.
 
-On receiving a packet with an ECT or CE codepoint, an endpoint that supports ECN
-increases the corresponding ECT(0), ECT(1), or CE count, and includes these
-counters in subsequent (see {{processing-and-ack}}) ACK_ECN frames (see
-{{frame-ack-ecn}}).
+On receiving a packet with an ECT or CE codepoint, an endpoint that can access
+the IP ECN codepoints increases the corresponding ECT(0), ECT(1), or CE count,
+and includes these counters in subsequent (see {{processing-and-ack}}) ACK_ECN
+frames (see {{frame-ack-ecn}}).
 
 A packet detected by a receiver as a duplicate does not affect the receiver's
 local ECN codepoint counts; see ({{security-ecn}}) for relevant security
@@ -1883,9 +1887,8 @@ concerns.
 If an endpoint receives a packet without an ECT or CE codepoint, it responds per
 {{processing-and-ack}} with an ACK frame.
 
-If an endpoint does not support ECN or does not have access to received ECN
-codepoints, it acknowledges received packets per {{processing-and-ack}} with an
-ACK frame.
+If an endpoint does not have access to received ECN codepoints, it acknowledges
+received packets per {{processing-and-ack}} with an ACK frame.
 
 If a packet sent with an ECT codepoint is newly acknowledged by the peer in an
 ACK frame, the endpoint stops setting ECT codepoints in subsequent packets, with
@@ -3456,8 +3459,8 @@ a reduced delay; see Section 4.3.1 of {{QUIC-RECOVERY}}.
 
 ## ACK_ECN Frame {#frame-ack-ecn}
 
-The ACK_ECN frame (type=0x1a) is used by an endpoint that supports ECN to
-acknowledge packets received with ECN codepoints of ECT(0), ECT(1), or CE in the
+The ACK_ECN frame (type=0x1a) is used by an endpoint that provides ECN feedback
+for packets received with ECN codepoints of ECT(0), ECT(1), or CE in the
 packet's IP header.
 
 ~~~
