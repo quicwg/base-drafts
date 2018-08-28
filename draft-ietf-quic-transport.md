@@ -1008,9 +1008,10 @@ Packet numbers are divided into 3 spaces in QUIC:
 As described in {{QUIC-TLS}}, each packet type uses different protection keys.
 
 Conceptually, a packet number space is the context in which a packet can be
-processed and ACKed.  Initial packets can only be sent with Initial encryption
-keys and ACKed in packets which are also Initial packets.  Similarly, Handshake
-packets can only be sent and acknowledged in Handshake packets.
+processed and acknowledged.  Initial packets can only be sent with Initial
+packet protection keys and acknowledged in packets which are also Initial
+packets.  Similarly, Handshake packets are sent at the Handshake encryption
+level and can only be acknowledged in Handshake packets.
 
 This enforces cryptographic separation between the data sent in the different
 packet sequence number spaces.  Each packet number space starts at packet number
