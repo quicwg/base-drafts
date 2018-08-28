@@ -3347,8 +3347,9 @@ ACK Block includes at least one value; a encoded value of 0 indicates that the
 range contains one packet number.  Each range is described starts at one lower
 than the minimum value from the previous range.  The first ACK Block starts with
 the Largest Acknowledged packet number and describes a range up and including
-that packet number.  Thus, ranges of packet numbers covered by each ACK Block
-can found with:
+that packet number.
+
+Thus, ranges of packet numbers covered by each ACK Block can found with:
 
 ```
 ack_range_i = { low: largest_i - ack_size_i,
@@ -3358,8 +3359,8 @@ ack_largest_i+1 = ack_range_i[low] - 1
 
 For example, the hex sequence 0x00 indicates a gap of one packet, the sequence
 0x05 indicates two unmarked packets, the sequence 0x4037 indicates that there
-are 53 packets with ECN-CE markings, and the sequence 0x80b1d34a indicates that
-there are 5826980 packets that are ECT(1) marked.
+are 14 packets with ECN-CE markings, and the sequence 0x80b1d34a indicates that
+there are 2913491 packets that are ECT(1) marked.
 
 
 ### Sending ACK Frames
