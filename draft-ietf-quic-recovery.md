@@ -704,15 +704,10 @@ Pseudocode for OnAckReceived and UpdateRtt follow:
       UpdateRtt(latest_rtt, ack.ack_delay)
     // Find all newly acked packets.
     for acked_packet in DetermineNewlyAckedPackets():
-      OnPacketAcked(acked_packet.packet_number)
+      OnPacketAcked(acked_packet, largest_acked_packet)
 
     DetectLostPackets(ack.largest_acked_packet)
     SetLossDetectionTimer()
-
-    // Process ECN information if present.
-    if (ACK frame contains ECN information):
-       ProcessECN(ack)
-
 
   UpdateRtt(latest_rtt, ack_delay):
     // min_rtt ignores ack delay.
@@ -740,8 +735,9 @@ When a packet is acked for the first time, the following OnPacketAcked function
 is called.  Note that a single ACK frame may newly acknowledge several packets.
 OnPacketAcked must be called once for each of these newly acked packets.
 
-OnPacketAcked takes one parameter, acked_packet, which is the struct of the
-newly acked packet.
+OnPacketAcked takes the acknowledged packet, acked_packet, which is the struct
+of the newly acked packet.  It also takes the largest acknowledged packet, which
+is used to mark the start of a congestion event if the packet is ECN-CE marked.
 
 If this is the first acknowledgement following RTO, check if the smallest newly
 acknowledged packet is one sent by the RTO, and if so, inform congestion control
@@ -750,7 +746,7 @@ of a verified RTO, similar to F-RTO {{?RFC5682}}.
 Pseudocode for OnPacketAcked follows:
 
 ~~~
-   OnPacketAcked(acked_packet):
+   OnPacketAcked(acked_packet, largest_acked):
      if (!acked_packet.is_ack_only):
        OnPacketAckedCC(acked_packet)
      // If a packet sent prior to RTO was acked, then the RTO
@@ -759,7 +755,11 @@ Pseudocode for OnPacketAcked follows:
          acked_packet.packet_number > largest_sent_before_rto):
        OnRetransmissionTimeoutVerified(
            acked_packet.packet_number)
-     ProcessECN(packet)
+
+     // A ECN-CE marked packet indicates congestion.
+     if (acked_packet.ce_marked):
+       CongestionEvent(largest_acked)
+
      handshake_count = 0
      tlp_count = 0
      rto_count = 0
@@ -976,16 +976,16 @@ congestion window.
 
 ## Recovery Period
 
-Recovery is a period of time beginning with detection of a lost packet or an
-increase in the ECN-CE counter. Because QUIC retransmits stream data and control
-frames, not packets, it defines the end of recovery as a packet sent after the
-start of recovery being acknowledged. This is slightly different from TCP's
-definition of recovery, which ends when the lost packet that started recovery is
-acknowledged.
+Recovery is a period of time beginning with detection of a lost packet or
+receipt of an acknowledgment for an ECN-CE marked packet. Because QUIC
+retransmits stream data and control frames, not packets, it defines the end of
+recovery as a packet sent after the start of recovery being acknowledged. This
+is slightly different from TCP's definition of recovery, which ends when the
+lost packet that started recovery is acknowledged.
 
 The recovery period limits congestion window reduction to once per round trip.
 During recovery, the congestion window remains unchanged irrespective of new
-losses or increases in the ECN-CE counter.
+losses or acknowledgment of ECN-CE marked packets.
 
 
 ## Tail Loss Probe
@@ -1126,8 +1126,8 @@ acked_packet from sent_packets.
 
 ### On New Congestion Event
 
-Invoked from ProcessECN and OnPacketsLost when a new congestion event is
-detected. Starts a new recovery period and reduces the congestion window.
+Invoked when a new congestion event is detected. Starts a new recovery period
+and reduces the congestion window.
 
 ~~~
    CongestionEvent(packet_number):
@@ -1139,19 +1139,6 @@ detected. Starts a new recovery period and reduces the congestion window.
        congestion_window = max(congestion_window, kMinimumWindow)
        ssthresh = congestion_window
 ~~~
-
-### Process ECN Information
-
-Invoked when a packet is newly acknowledged.  This triggers a new congestion
-event if the peer indicates that the packet was ECN-CE marked.
-
-~~~
-   ProcessECN(packet):
-     // A ECN-CE marked packet indicates congestion.
-     if (packet.ce_marked):
-       CongestionEvent(ack.largest_acked_packet)
-~~~
-
 
 ### On Packets Lost
 
