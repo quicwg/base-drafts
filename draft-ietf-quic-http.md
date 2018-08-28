@@ -585,11 +585,11 @@ a promise, the server push response is conveyed on a push stream.
 A push stream is indicated by a stream type of `0x50` (ASCII 'P'), followed by
 the Push ID of the promise that it fulfills, encoded as a variable-length
 integer. The remaining data on this stream consists of HTTP/QUIC frames, as
-defined in {{frames}}, and carries the response side of an HTTP message
-exchange as described in {{request-response}}. The request header of the
-exchange is carried by a PUSH_PROMISE frame (see {{frame-push-promise}})
-on the request stream which generated the push. Promised requests MUST
-conform to the requirements in Section 8.2 of {{!RFC7540}}.
+defined in {{frames}}, and carries the response side of an HTTP message exchange
+as described in {{request-response}}. The header of the request message is
+carried by a PUSH_PROMISE frame (see {{frame-push-promise}}) on the request
+stream which generated the push. Promised requests MUST conform to the
+requirements in Section 8.2 of {{!RFC7540}}.
 
 Only servers can push; if a server receives a client-initiated push stream,
 this MUST be treated as a stream error of type HTTP_WRONG_STREAM_DIRECTION.
@@ -983,8 +983,8 @@ Push ID:
   ({{frame-cancel-push}}), and PRIORITY frames ({{frame-priority}}).
 
 Header Block:
-: QPACK-compressed request header for the promised response.  See [QPACK] for
-  more details.
+: QPACK-compressed request header fields for the promised response.  See [QPACK]
+  for more details.
 
 A server MUST NOT use a Push ID that is larger than the client has provided in a
 MAX_PUSH_ID frame ({{frame-max-push-id}}).  A client MUST treat receipt of a
