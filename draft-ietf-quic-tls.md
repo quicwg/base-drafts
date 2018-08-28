@@ -354,6 +354,7 @@ UDP datagram.
 Section 6.5 of {{QUIC-TRANSPORT}} shows how packets at the various encryption
 levels fit into the handshake process.
 
+
 ## Interface to TLS
 
 As shown in {{schematic}}, the interface from QUIC to TLS consists of three
@@ -591,6 +592,7 @@ Early data within the TLS connection MUST NOT be used.  As it is for other TLS
 application data, a server MUST treat receiving early data on the TLS connection
 as a connection error of type PROTOCOL_VIOLATION.
 
+
 ## Rejecting 0-RTT
 
 A server rejects 0-RTT by rejecting 0-RTT at the TLS layer.  This also prevents
@@ -604,6 +606,7 @@ the state of all streams, including application state bound to those streams.
 
 A client MAY attempt to send 0-RTT again if it receives a Retry or Version
 Negotiation packet.  These packets do not signify rejection of 0-RTT.
+
 
 ## HelloRetryRequest
 
@@ -704,7 +707,7 @@ HKDF-Expand-Label uses the prefix "quic " rather than "tls13 ". A different
 label provides key separation between TLS and QUIC.
 
 
-### Initial Secrets {#initial-secrets}
+## Initial Secrets {#initial-secrets}
 
 Initial packets are protected with a secret derived from the Destination
 Connection ID field from the client's first Initial packet of the
@@ -1207,9 +1210,11 @@ values in the following registries:
 
 Issue and pull request numbers are listed with a leading octothorp.
 
+
 ## Since draft-ietf-quic-tls-13
 
 - Updated to TLS 1.3 final (#1660)
+
 
 ## Since draft-ietf-quic-tls-12
 
@@ -1222,39 +1227,48 @@ Issue and pull request numbers are listed with a leading octothorp.
   - Limit the use of HelloRetryRequest to address TLS needs (like key shares)
 - Changed codepoint of TLS extension (#1395, #1402)
 
+
 ## Since draft-ietf-quic-tls-11
 
 - Encrypted packet numbers.
 
+
 ## Since draft-ietf-quic-tls-10
 
 - No significant changes.
+
 
 ## Since draft-ietf-quic-tls-09
 
 - Cleaned up key schedule and updated the salt used for handshake packet
   protection (#1077)
 
+
 ## Since draft-ietf-quic-tls-08
 
 - Specify value for max_early_data_size to enable 0-RTT (#942)
 - Update key derivation function (#1003, #1004)
 
+
 ## Since draft-ietf-quic-tls-07
 
 - Handshake errors can be reported with CONNECTION_CLOSE (#608, #891)
+
 
 ## Since draft-ietf-quic-tls-05
 
 No significant changes.
 
+
 ## Since draft-ietf-quic-tls-04
 
 - Update labels used in HKDF-Expand-Label to match TLS 1.3 (#642)
 
+
 ## Since draft-ietf-quic-tls-03
 
 No significant changes.
+
 
 ## Since draft-ietf-quic-tls-02
 
@@ -1296,6 +1310,7 @@ No significant changes.
 This document has benefited from input from Dragana Damjanovic, Christian
 Huitema, Jana Iyengar, Adam Langley, Roberto Peon, Eric Rescorla, Ian Swett, and
 many others.
+
 
 # Contributors
 {:numbered="false"}
