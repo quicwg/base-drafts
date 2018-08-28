@@ -243,6 +243,9 @@ can indicate that it is not authoritative for a request by sending a 421
 (Misdirected Request) status code in response to the request (see Section 9.1.2
 of {{!RFC7540}}).
 
+The considerations discussed in Section 9.1 of {{?RFC7540}} also apply to the
+management of HTTP/QUIC connections.
+
 # Stream Mapping and Usage {#stream-mapping}
 
 A QUIC stream provides reliable in-order delivery of bytes, but makes no
@@ -1042,73 +1045,7 @@ The GOAWAY frame applies to the connection, not a specific stream.  An endpoint
 MUST treat a GOAWAY frame on a stream other than the control stream as a
 connection error ({{errors}}) of type HTTP_WRONG_STREAM.
 
-New client requests might already have been sent before the client receives the
-server's GOAWAY frame.  The GOAWAY frame contains the Stream ID of the last
-client-initiated request that was or might be processed in this connection,
-which enables client and server to agree on which requests were accepted prior
-to the connection shutdown.  This identifier MAY be lower than the stream limit
-identified by a QUIC MAX_STREAM_ID frame, and MAY be zero if no requests were
-processed.  Servers SHOULD NOT increase the MAX_STREAM_ID limit after sending a
-GOAWAY frame.
-
-Once sent, the server MUST cancel requests sent on streams with an identifier
-higher than the included last Stream ID.  Clients MUST NOT send new requests on
-the connection after receiving GOAWAY, although requests might already be in
-transit. A new connection can be established for new requests.
-
-If the client has sent requests on streams with a higher Stream ID than
-indicated in the GOAWAY frame, those requests are considered cancelled
-({{request-cancellation}}).  Clients SHOULD reset any streams above this ID with
-the error code HTTP_REQUEST_CANCELLED.  Servers MAY also cancel requests on
-streams below the indicated ID if these requests were not processed.
-
-Requests on Stream IDs less than or equal to the Stream ID in the GOAWAY frame
-might have been processed; their status cannot be known until they are completed
-successfully, reset individually, or the connection terminates.
-
-Servers SHOULD send a GOAWAY frame when the closing of a connection is known
-in advance, even if the advance notice is small, so that the remote peer can
-know whether a stream has been partially processed or not.  For example, if an
-HTTP client sends a POST at the same time that a server closes a QUIC
-connection, the client cannot know if the server started to process that POST
-request if the server does not send a GOAWAY frame to indicate what streams it
-might have acted on.
-
-For unexpected closures caused by error conditions, a QUIC APPLICATION_CLOSE
-frame MUST be used.  However, a GOAWAY MAY be sent first to provide additional
-detail to clients and to allow the client to retry requests.  Including the
-GOAWAY frame in the same packet as the QUIC APPLICATION_CLOSE frame improves the
-chances of the frame being received by clients.
-
-If a connection terminates without a GOAWAY frame, the last Stream ID is
-effectively the highest possible Stream ID (as determined by QUIC's
-MAX_STREAM_ID).
-
-An endpoint MAY send multiple GOAWAY frames if circumstances change. For
-instance, an endpoint that sends GOAWAY without an error code during graceful
-shutdown could subsequently encounter an error condition.  The last stream
-identifier from the last GOAWAY frame received indicates which streams could
-have been acted upon.  A server MUST NOT increase the value they send in the
-last Stream ID, since clients might already have retried unprocessed requests on
-another connection.
-
-A client that is unable to retry requests loses all requests that are in flight
-when the server closes the connection.  A server that is attempting to
-gracefully shut down a connection SHOULD send an initial GOAWAY frame with the
-last Stream ID set to the current value of QUIC's MAX_STREAM_ID and SHOULD NOT
-increase the MAX_STREAM_ID thereafter.  This signals to the client that a
-shutdown is imminent and that initiating further requests is prohibited.  After
-allowing time for any in-flight requests (at least one round-trip time), the
-server MAY send another GOAWAY frame with an updated last Stream ID.  This
-ensures that a connection can be cleanly shut down without losing requests.
-
-Once all requests on streams at or below the identified stream number have been
-completed or cancelled, and all promised server push responses associated with
-those requests have been completed or cancelled, the connection can be closed
-using an Immediate Close (see {{QUIC-TRANSPORT}}).  An endpoint that completes a
-graceful shutdown SHOULD use the QUIC APPLICATION_CLOSE frame with the
-HTTP_NO_ERROR code.
-
+See {{connection-shutdown}} for more information on the use of the GOAWAY frame.
 
 ### MAX_PUSH_ID {#frame-max-push-id}
 
@@ -1150,21 +1087,65 @@ variable-length integer as a connection error of type
 HTTP_MALFORMED_FRAME.
 
 
-# Connection Management
+# Connection Closure
 
-QUIC connections are persistent.  All of the considerations in Section 9.1 of
-{{?RFC7540}} apply to the management of QUIC connections.
+Once established, an HTTP/QUIC connection can be used for many requests and
+responses over time until the connection is closed.  Connection closure can
+happen in any of several different ways.
 
-HTTP clients are expected to use QUIC PING frames to keep connections open.
-Servers SHOULD NOT use PING frames to keep a connection open.  A client SHOULD
-NOT use PING frames for this purpose unless there are responses outstanding for
-requests or server pushes.  If the client is not expecting a response from the
-server, allowing an idle connection to time out (based on the idle_timeout
-transport parameter) is preferred over expending effort maintaining a connection
-that might not be needed.  A gateway MAY use PING to maintain connections in
-anticipation of need rather than incur the latency cost of connection
-establishment to servers.
+## Idle Connections
 
+Each QUIC endpoint declares an idle timeout during the handshake.  If the
+connection remains idle (no packets received) for longer than this duration, the
+peer will assume that the connection has been closed.  HTTP/QUIC implementations
+will need to open a new connection for new requests if the existing connection
+has been idle for longer than the server's advertised idle timeout, and SHOULD
+do so if approaching the idle timeout.
+
+HTTP clients are expected to use QUIC PING frames to keep connections open while
+there are responses outstanding for requests or server pushes. If the client is
+not expecting a response from the server, allowing an idle connection to time
+out is preferred over expending effort maintaining a connection that might not
+be needed.  A gateway MAY use PING to maintain connections in anticipation of
+need rather than incur the latency cost of connection establishment to servers.
+Servers SHOULD NOT use PING frames to keep a connection open.
+
+## Connection Shutdown
+
+Even when a connection is not idle, either endpoint can decide to stop using the
+connection.  Clients do this by not sending additional requests on the
+connection; responses and pushed responses associated to previous requests will
+continue to completion.
+
+
+
+Once all accepted requests have been processed, the server MAY permit the
+connection to become idle, or MAY initiate an explicit closure of the
+connection.  An endpoint that completes a graceful shutdown SHOULD use the
+HTTP_NO_ERROR code when closing the connection.
+
+## Explicit Application Closure
+
+An HTTP/QUIC implementation can explicitly close the QUIC connection at any
+time. This results in sending a QUIC APPLICATION_CLOSE frame to the peer; the
+error code in this frame indicates to the peer why the connection is being
+closed.  See {{errors}} for error codes which can be used when closing a
+connection.
+
+Before closing the connection, a GOAWAY MAY be sent to allow the client to retry
+requests.  Including the GOAWAY frame in the same packet as the QUIC
+APPLICATION_CLOSE frame improves the chances of the frame being received by
+clients.
+
+## Transport Closure
+
+For various reasons, the QUIC transport could indicate to the application layer
+that the connection has terminated.  This might be due to an explicit closure
+by the peer, a transport-level error, or a change in network topology which
+interrupts connectivity.
+
+If a connection terminates without a GOAWAY frame, clients MUST assume
+that any request which was sent might have been processed.
 
 # Error Handling {#errors}
 
