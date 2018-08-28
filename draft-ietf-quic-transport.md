@@ -3302,14 +3302,16 @@ ACK Blocks:
 
 ### ACK Blocks {#ack-blocks}
 
-Each ACK Block in an ACK frame describes a contiguous range of packets, as well
-as the observed type of the packets in that range.  Each range of packets is
-attributed a type, which is encoded into the two least significant bits of the
-decoded variable-length integer value.  The size of the range is encoded into
-the remainder of the value.
+Each ACK Block in an ACK frame describes a contiguous range of packets.  Each
+ACK Block includes the size of the block and whether the range represents
+unacknowledged packets (a gap), or the type of ECN marking the recipient
+observed for packets that are acknowledged.
 
-The two least significant bits of the decoded value of the ACK Block describe
-the type.  That is, the type of an ACK block is found by:
+The acknowledgment type and size of the range are packed into a single
+variable-length integer.  The two least significant bits of the decoded value
+encode the acknowledgment type.  The size of the range is found by
+right-shifting the value by two bits.  That is, an ACK block is decoded by
+decoding the integer and splitting it into a type and size:
 
 ```
 ack_block_i = decode_varint()
