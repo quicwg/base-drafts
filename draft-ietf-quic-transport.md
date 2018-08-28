@@ -1289,11 +1289,11 @@ that packet.
 
 ### Server Packet Handling {#server-pkt-handling}
 
-If a server receives a packet that has an unsupported version and
-sufficient length to be an Initial packet for some version supported
-by the server, it SHOULD send a Version Negotiation packet as
-described in {{send-vn}}. Servers MAY rate control these packets to
-avoid storms of Version Negotiation packets.
+If a server receives a packet that has an unsupported version, but the packet is
+sufficiently large to initiate a new connection for any version supported by the
+server, it SHOULD send a Version Negotiation packet as described in
+{{send-vn}}. Servers MAY rate control these packets to avoid storms of Version
+Negotiation packets.
 
 The first packet for an unsupported version can use different semantics and
 encodings for any version-specific field.  In particular, different packet
@@ -1305,9 +1305,9 @@ the packet is sufficiently long.
 
 Servers MUST drop other packets that contain unsupported versions.
 
-Packets with a supported version, or no version field, are matched to
-a connection as described in {{packet-handling}}. If not matched, the
-server continues below.
+Packets with a supported version, or no version field, are matched to a
+connection as described in {{packet-handling}}. If not matched, the server
+continues below.
 
 If the packet is an Initial packet fully conforming with the specification, the
 server proceeds with the handshake ({{handshake}}). This commits the server to
@@ -1317,14 +1317,13 @@ If a server isn't currently accepting any new connections, it SHOULD send a
 Handshake packet containing a CONNECTION_CLOSE frame with error code
 SERVER_BUSY.
 
-If the packet is a 0-RTT packet, the server MAY buffer a limited
-number of these packets in anticipation of a late-arriving Initial
-Packet. Clients are forbidden from sending Handshake packets prior to
-receiving a server response, so servers SHOULD ignore any such packets.
+If the packet is a 0-RTT packet, the server MAY buffer a limited number of these
+packets in anticipation of a late-arriving Initial Packet. Clients are forbidden
+from sending Handshake packets prior to receiving a server response, so servers
+SHOULD ignore any such packets.
 
-Servers MUST drop incoming packets under all other circumstances. They
-SHOULD send a Stateless Reset ({{stateless-reset}}) if a connection ID
-is present in the header.
+Servers MUST drop incoming packets under all other circumstances.  They SHOULD
+send a Stateless Reset ({{stateless-reset}}) if they are able.
 
 ## Version Negotiation
 
@@ -1334,10 +1333,10 @@ response to each packet that might initiate a new connection, see
 {{packet-handling}} for details.
 
 The size of the first packet sent by a client will determine whether a server
-sends a Version Negotiation packet. Clients that support multiple QUIC
-versions SHOULD pad their Initial packets to reflect the largest minimum
-Initial packet size of all their versions. This ensures that the server
-responds if there are any mutually supported versions.
+sends a Version Negotiation packet. Clients that support multiple QUIC versions
+SHOULD pad the first packet they send to the largest of the minimum packet sizes
+across all versions they support. This ensures that the server responds if there
+is a mutually supported version.
 
 ### Sending Version Negotiation Packets {#send-vn}
 
@@ -1443,7 +1442,7 @@ that meets the requirements of the cryptographic handshake protocol:
   client can receive packets that are addressed with the transport address that
   is claimed by the client (see {{address-validation}})
 
-The initial CRYPTO frame MUST be sent in a single packet.  Any second attempt
+The first CRYPTO frame MUST be sent in a single packet.  Any second attempt
 that is triggered by address validation MUST also be sent within a single
 packet. This avoids having to reassemble a message from multiple packets.
 
