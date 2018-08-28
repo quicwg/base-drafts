@@ -686,25 +686,35 @@ will be marked as lost before this, as they leave a gap in the sequence of
 packet numbers.
 
 
-# QUIC Packet Protection {#packet-protection}
+# Packet Protection {#packet-protection}
 
-As with TLS over TCP, QUIC encrypts packets with keys derived from the TLS
+As with TLS over TCP, QUIC protects packets with keys derived from the TLS
 handshake, using the AEAD algorithm negotiated by TLS.
 
 
-## QUIC Packet Encryption Keys {#encryption-keys}
+## Packet Protection Keys {#protection-keys}
 
-QUIC derives packet encryption keys in the same way as TLS 1.3: Each encryption
-level/direction pair has a secret value, which is then used to derive the
-traffic keys using as described in Section 7.3 of {{!TLS13}}
+QUIC derives packet protection keys in the same way that TLS derives record
+protection keys.
 
-The keys for the Initial encryption level are computed based on the client's
-initial Destination Connection ID, as described in {{initial-secrets}}.
+Each encryption level has separate secret values for protection of packets sent
+in each direction.  These traffic secrets are derived by TLS (see Section 7.1 of
+{{!TLS13}}) and are used by QUIC for all encryption levels except the Initial
+encryption level.  The secrets for the Initial encryption level are computed
+based on the client's initial Destination Connection ID, as described in
+{{initial-secrets}}.
 
-The keys for other encryption levels are computed in the same fashion as the
-corresponding TLS keys (see Section 7 of {{!TLS13}}), except that the label for
+The keys used for packet protection are computed from the TLS secrets using the
+method described in Section 7.3 of {{!TLS13}}), except that the label for
 HKDF-Expand-Label uses the prefix "quic " rather than "tls13 ". A different
 label provides key separation between TLS and QUIC.
+
+For example, where TLS might use a label of 0x002009746c733133206b657900 to
+derive a key, QUIC uses 0x00200871756963206b657900.
+
+The HKDF-Expand-Label function with a "quic " label is also used to derive the
+initial secrets (see {{initial-secrets}}) and to derive a packet number
+protection key (the "pn" label, see {{pn-encrypt}}).
 
 
 ## Initial Secrets {#initial-secrets}
@@ -726,12 +736,13 @@ server_initial_secret = HKDF-Expand-Label(initial_secret,
                                           Hash.length)
 ~~~
 
-Note that if the server sends a Retry, the client's Initial will correspond to a
-new connection and thus use the server provided Destination Connection ID.
-
 The hash function for HKDF when deriving initial secrets and keys is SHA-256
-{{!SHA=DOI.10.6028/NIST.FIPS.180-4}}.  The connection ID used with
-HKDF-Expand-Label is the initial Destination Connection ID.
+{{!SHA=DOI.10.6028/NIST.FIPS.180-4}}.
+
+The connection ID used with HKDF-Expand-Label is the Destination Connection ID
+in the Initial packet sent by the client.  This will be a randomly-selected
+value unless the client creates the Initial packet after reciving a Retry
+packet, where the Destination Connection ID is selected by the server.
 
 The value of initial_salt is a 20 octet sequence shown in the figure in
 hexadecimal notation. Future versions of QUIC SHOULD generate a new salt value,
@@ -748,14 +759,14 @@ Note:
   that included the Retry packet for that property.
 
 
-## QUIC AEAD Usage {#aead}
+## AEAD Usage {#aead}
 
 The Authentication Encryption with Associated Data (AEAD) {{!AEAD}} function
 used for QUIC packet protection is the AEAD that is negotiated for use with the
 TLS connection.  For example, if TLS is using the TLS_AES_128_GCM_SHA256, the
 AEAD_AES_128_GCM function is used.
 
-QUIC packets are protected prior to applying packet number encryption
+QUIC packets are protected prior to applying packet number protection
 ({{pn-encrypt}}).  The unprotected packet number is part of the associated data
 (A).  When removing packet protection, an endpoint first removes the protection
 from the packet number.
@@ -771,16 +782,15 @@ All ciphersuites currently defined for TLS 1.3 - and therefore QUIC - have a
 16-byte authentication tag and produce an output 16 bytes larger than their
 input.
 
-The key and IV for the packet are computed as described in {{encryption-keys}}.
-The nonce, N, is formed by combining the packet protection IV with the
-packet number.  The 64 bits of the reconstructed QUIC packet number in
-network byte order are left-padded with zeros to the size of the IV.
-The exclusive OR of the padded packet number and the IV forms the AEAD
-nonce.
+The key and IV for the packet are computed as described in {{protection-keys}}.
+The nonce, N, is formed by combining the packet protection IV with the packet
+number.  The 64 bits of the reconstructed QUIC packet number in network byte
+order are left-padded with zeros to the size of the IV.  The exclusive OR of the
+padded packet number and the IV forms the AEAD nonce.
 
 The associated data, A, for the AEAD is the contents of the QUIC header,
-starting from the flags octet in either the short or long header, up to
-and including the unprotected packet number.
+starting from the flags octet in either the short or long header, up to and
+including the unprotected packet number.
 
 The input plaintext, P, for the AEAD is the content of the QUIC frame following
 the header, as described in {{QUIC-TRANSPORT}}.
