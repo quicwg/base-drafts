@@ -1003,7 +1003,7 @@ response to connection migration ({{migration}}). NEW_CONNECTION_ID frames
 ## Packet Numbers {#packet-numbers}
 
 The packet number is an integer in the range 0 to 2^62-1. The value is used in
-determining the cryptographic nonce for packet encryption.  Each endpoint
+determining the cryptographic nonce for packet protection.  Each endpoint
 maintains a separate packet number for sending and receiving.
 
 Packet numbers are divided into 3 spaces in QUIC:
@@ -1013,18 +1013,18 @@ Packet numbers are divided into 3 spaces in QUIC:
 - Application data space: All 0-RTT and 1-RTT encrypted packets
   {{packet-protected}} are in this space.
 
-As described in {{QUIC-TLS}}, each packet type uses different encryption keys.
+As described in {{QUIC-TLS}}, each packet type uses different protection keys.
 
-Conceptually, a packet number space is the encryption context in which
-a packet can be processed and ACKed.  Initial packets can only be sent
-with Initial encryption keys and ACKed in packets which are also
-Initial packets.  Similarly, Handshake packets can only be sent and
-acknowledged in Handshake packets.
+Conceptually, a packet number space is the context in which a packet can be
+processed and acknowledged.  Initial packets can only be sent with Initial
+packet protection keys and acknowledged in packets which are also Initial
+packets.  Similarly, Handshake packets are sent at the Handshake encryption
+level and can only be acknowledged in Handshake packets.
 
-This enforces cryptographic separation between the data sent in the
-different packet sequence number spaces.  Each packet number space
-starts at packet number 0.  Subsequent packets sent in the
-same packet number space MUST increase the packet number by at least one.
+This enforces cryptographic separation between the data sent in the different
+packet sequence number spaces.  Each packet number space starts at packet number
+0.  Subsequent packets sent in the same packet number space MUST increase the
+packet number by at least one.
 
 0-RTT and 1-RTT data exist in the same packet number space to make loss recovery
 algorithms easier to implement between the two packet types.
