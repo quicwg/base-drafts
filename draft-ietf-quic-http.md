@@ -1117,7 +1117,55 @@ connection.  Clients do this by not sending additional requests on the
 connection; responses and pushed responses associated to previous requests will
 continue to completion.
 
+Servers initiate the shutdown of a connection by sending a GOAWAY frame
+({{frame-goaway}}).  The GOAWAY frame contains the Stream ID of the last
+client-initiated request that was or might be processed in this connection,
+which enables client and server to agree on which requests were accepted prior
+to the connection shutdown.  This identifier MAY be lower than the stream limit
+identified by a QUIC MAX_STREAM_ID frame, and MAY be zero if no requests were
+processed.  Servers SHOULD NOT increase the QUIC MAX_STREAM_ID limit after
+sending a GOAWAY frame.
 
+Once sent, the server MUST cancel requests sent on streams with an identifier
+higher than the indicated last Stream ID.  Clients MUST NOT send new requests on
+the connection after receiving GOAWAY, although requests might already be in
+transit. A new connection can be established for new requests.
+
+If the client has sent requests on streams with a higher Stream ID than
+indicated in the GOAWAY frame, those requests are considered cancelled
+({{request-cancellation}}).  Clients SHOULD reset any streams above this ID with
+the error code HTTP_REQUEST_CANCELLED.  Servers MAY also cancel requests on
+streams below the indicated ID if these requests were not processed.
+
+Requests on Stream IDs less than or equal to the Stream ID in the GOAWAY frame
+might have been processed; their status cannot be known until they are completed
+successfully, reset individually, or the connection terminates.
+
+Servers SHOULD send a GOAWAY frame when the closing of a connection is known
+in advance, even if the advance notice is small, so that the remote peer can
+know whether a stream has been partially processed or not.  For example, if an
+HTTP client sends a POST at the same time that a server closes a QUIC
+connection, the client cannot know if the server started to process that POST
+request if the server does not send a GOAWAY frame to indicate what streams it
+might have acted on.
+
+An endpoint MAY send multiple GOAWAY frames if circumstances change. For
+instance, an endpoint that sends GOAWAY without an error code during graceful
+shutdown could subsequently encounter an error condition.  The last stream
+identifier from the last GOAWAY frame received indicates which streams could
+have been acted upon.  A server MUST NOT increase the value they send in the
+last Stream ID, since clients might already have retried unprocessed requests on
+another connection.
+
+A client that is unable to retry requests loses all requests that are in flight
+when the server closes the connection.  A server that is attempting to
+gracefully shut down a connection SHOULD send an initial GOAWAY frame with the
+last Stream ID set to the current value of QUIC's MAX_STREAM_ID and SHOULD NOT
+increase the MAX_STREAM_ID thereafter.  This signals to the client that a
+shutdown is imminent and that initiating further requests is prohibited.  After
+allowing time for any in-flight requests (at least one round-trip time), the
+server MAY send another GOAWAY frame with an updated last Stream ID.  This
+ensures that a connection can be cleanly shut down without losing requests.
 
 Once all accepted requests have been processed, the server MAY permit the
 connection to become idle, or MAY initiate an explicit closure of the
