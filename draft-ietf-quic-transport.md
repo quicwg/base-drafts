@@ -566,8 +566,8 @@ wishes to perform a stateless retry (see {{stateless-retry}}).
 
 A Retry packet (shown in {{retry-format}}) only uses the invariant portion of
 the long packet header {{QUIC-INVARIANTS}}; that is, the fields up to and
-including the Destination and Source Connection ID fields.  The Payload of a
-Retry packet is not protected.  Like Version Negotiation, a Retry packet
+including the Destination and Source Connection ID fields.  A Retry packet does
+not contain any protected fields.  Like Version Negotiation, a Retry packet
 contains the long header including the connection IDs, but omits the Length,
 Packet Number, and Payload fields.  These are replaced with:
 
@@ -1111,7 +1111,7 @@ Stateless Reset do not contain frames.
 ~~~
 {: #packet-frames title="QUIC Payload"}
 
-Protected payloads MUST contain at least one frame, and MAY contain multiple
+QUIC payloads MUST contain at least one frame, and MAY contain multiple
 frames and multiple frame types.
 
 Frames MUST fit within a single QUIC packet and MUST NOT span a QUIC packet
