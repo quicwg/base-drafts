@@ -3271,11 +3271,9 @@ packet number spaces.  ACK frames only acknowledge the packet numbers that were
 transmitted by the sender in the same packet number space of the packet that the
 ACK was received in.
 
-A client MUST NOT acknowledge Retry packets.  Retry packets include the packet
-number from the Initial packet it responds to.  Version Negotiation packets
-cannot be acknowledged because they do not contain a packet number.  Rather than
-relying on ACK frames, these packets are implicitly acknowledged by the next
-Initial packet sent by the client.
+Version Negotiation and Retry packets cannot be acknowledged because they do not
+contain a packet number.  Rather than relying on ACK frames, these packets are
+implicitly acknowledged by the next Initial packet sent by the client.
 
 An ACK frame is shown below.
 
