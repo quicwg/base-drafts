@@ -1671,7 +1671,7 @@ disable_migration (0x0009):
   NOT send any packets, including probing packets ({{probing}}), from a local
   address other than that used to perform the handshake.  This parameter is a
   zero-length value.
-  
+
 max_bytes_before_ack (0x000c):
 
 : An unsigned 32-bit integer that indicates the maximum number of bytes received
