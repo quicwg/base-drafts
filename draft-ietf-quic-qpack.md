@@ -906,36 +906,37 @@ the decoder.
 ### Blocked Eviction
 
 The encoder MUST NOT emit an instruction that evicts an entry while a reference
-to that entry remains unacknowledged. When the encoder encounters a blocked
-eviction in the course of encoding a header block, it SHOULD emit a literal
-representation for the new header, and MAY insert the header into the table
-later if desired.
+to that entry remains unacknowledged.  When the encoder encounters a blocked
+eviction, it emits a literal representation for the new header, and MAY insert
+the header into the table later if desired.
 
 To ensure that blocked evictions are rare, the encoder SHOULD avoid referencing
-any eviction-prone entries, which are dynamic table entries that might be
-evicted soon.  Rather than reference an eviction-prone entry, the encoder SHOULD
-emit a Duplicate representation (see {{duplicate}}), and reference the duplicate
-instead.
+older entries that will be evicted soon.  Rather than reference such an entry,
+the encoder SHOULD emit a Duplicate instruction (see {{duplicate}}), and
+reference the duplicate instead.
 
-To identify eviction-prone entries, the encoder can maintain a draining index,
-which is the smallest absolute index in the dynamic table that it will emit a
-reference for.  As new entries are inserted, the encoder increments the
-draining index such that the amount of free and draining space in the dyanmic
-table is larger than its target threshold.
+Determining which entries are too close to eviction to reference is an encoder
+preference.  One heuristic is to target a fixed amount of available space in the
+dynamic table: either unused space or space that can be reclaimed by evicting
+unreferenced entries.  To achieve this, the encoder can maintain a draining
+index, which is the smallest absolute index in the dynamic table that it will
+emit a reference for.  As new entries are inserted, the encoder increments the
+draining index such that the amount of unused space and space occupied by
+draining entries table is larger than its target threshold.  Draining entries
+will eventually become evictable as any references to them are acknowledged.
 
 ~~~~~~~~~~  drawing
-   +----------------+-----------------------+------------+
-   | Eviction-prone |     Referenceable     | Free Space |
-   |    Entries     |        Entries        |            |
-   +----------------+-----------------------+------------+
-   ^                ^                       ^
-   |                |                       |
- Drop Point    Draining Index           Base Index /
-                                      Insertion Point
+   +----------+---------------------------------+--------+
+   | Draining |          Referenceable          | Unused |
+   | Entries  |             Entries             | Space  |
+   +----------+---------------------------------+--------+
+   ^          ^                                 ^
+   |          |                                 |
+ Drop Point  Draining Index               Base Index /
+                                          Insertion Point
 ~~~~~~~~~~
 {:#fig-eviction-prone title="Encoder's View of Dynamic Table with
 draining index"}
-
 
 ### Blocked Decoding
 
