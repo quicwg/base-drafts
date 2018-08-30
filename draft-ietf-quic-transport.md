@@ -3434,8 +3434,11 @@ NOT delay an ACK for longer than an RTT, which ensures an ACK frame is sent
 at least once per RTT if new packets needing acknowledgement were received.
 
 If the max_bytes_before_ack transport parameter has been received, the
-receiver SHOULD send an ACK frame immediately once that many octets of packets
-containing frames besides ACK or PADDING have been received.
+receiver SHOULD send an ACK frame immediately when at least that many octets
+of packets containing frames besides ACK or PADDING have been received since
+sending the previous ACK frame. If a receiver sends ACK frames less frequently,
+it risks causing the sender to send more slowly, which may lower the delivery
+rate at the receiver.
 
 To limit ACK blocks to those that have not yet been received by the sender, the
 receiver SHOULD track which ACK frames have been acknowledged by its peer.  Once
