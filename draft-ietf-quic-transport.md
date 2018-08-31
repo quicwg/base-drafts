@@ -3416,14 +3416,15 @@ ACK Block (repeated):
 ### Sending ACK Frames
 
 Implementations MUST NOT generate packets that only contain ACK frames in
-response to packets which only contain ACK frames. However, they MUST
-acknowledge packets containing only ACK frames when sending ACK frames in
-response to other packets.  Implementations MUST NOT send more than one packet
-containing only an ACK frame per received packet that contains frames other than
-an ACK frame.  Packets containing non-ACK frames MUST be acknowledged
-immediately or when a delayed ack timer expires. The delayed ack timer MUST
-NOT delay an ACK for longer than an RTT, which ensures an ACK frame is sent
-at least once per RTT if new packets needing acknowledgement were received.
+response to packets which only contain ACK and PADDING frames. However, they
+MUST acknowledge packets containing only ACK and PADDING frames when sending
+ACK frames in response to other packets.  Implementations MUST NOT send more
+than one packet containing only an ACK frame per received packet that contains
+frames other than a ACK and PADDING frames.  Packets containing frames
+besides ACK and PADDDING MUST be acknowledged immediately or when a delayed
+ack timer expires. The delayed ack timer MUST NOT delay an ACK for longer
+than an RTT or the alarm granularity.  This ensures an ACK frame is sent at
+least once per RTT if new packets needing acknowledgement were received.
 
 To limit ACK blocks to those that have not yet been received by the sender, the
 receiver SHOULD track which ACK frames have been acknowledged by its peer.  Once
@@ -3435,9 +3436,8 @@ is only sending ACK frames will only receive acknowledgements for its packets
 if the sender includes them in packets with non-ACK frames.  A sender SHOULD
 bundle ACK frames with other frames when possible.
 
-Endpoints can only acknowledge packets sent in a particular packet
-number space by sending ACK frames in packets from the same packet
-number space.
+Endpoints can only acknowledge packets sent in a particular packet number
+space by sending ACK frames in packets from the same packet number space.
 
 To limit receiver state or the size of ACK frames, a receiver MAY limit the
 number of ACK blocks it sends.  A receiver can do this even without receiving
