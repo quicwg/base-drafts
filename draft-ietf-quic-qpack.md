@@ -120,6 +120,12 @@ which has a fixed index over time.  Its entries are defined in Appendix A of
 {{!RFC7541}}. Note that because HPACK did not use zero-based references, there
 is no value at index zero of the static table.
 
+A decoder that encounters an invalid static table index on a request stream or
+push stream MUST treat this as an error of type
+`HTTP_QPACK_DECOMPRESSION_FAILED`.  If this index is received on the encoder
+stream, this MUST be treated as a connection error of type
+`HTTP_QPACK_ENCODER_STREAM_ERROR`.
+
 ## Dynamic Table {#table-dynamic}
 
 The dynamic table consists of a list of header fields maintained in first-in,
@@ -143,7 +149,7 @@ equal to (maximum size - new entry size) or until the table is empty.
 If the size of the new entry is less than or equal to the maximum size, that
 entry is added to the table.  It is an error to attempt to add an entry that is
 larger than the maximum size; this MUST be treated as a connection error of type
-`HTTP_QPACK_DECOMPRESSION_FAILED`.
+`HTTP_QPACK_ENCODER_STREAM_ERROR`.
 
 A new entry can reference an entry in the dynamic table that will be evicted
 when adding this new entry into the dynamic table.  Implementations are
@@ -248,11 +254,14 @@ d = count of entries dropped
 ~~~~~
 {: title="Example Dynamic Table Indexing - Post-Base Index on Request Stream"}
 
-If the decoder encounters a reference to an entry which has already been dropped
-from the table or which is greater than the declared Largest Reference (see
-{{absolute-index}}), this MUST be treated as a stream error of type
-`HTTP_QPACK_DECOMPRESSION_FAILED` error code.  If this reference occurs on the
-encoder stream, this MUST be treated as a session error.
+If the decoder encounters a reference on a request or push stream to a dynamic
+table entry which has already been dropped or which has an absolute index
+greater than the declared Largest Reference (see {{absolute-index}}), this MUST
+be treated as an error of type `HTTP_QPACK_DECOMPRESSION_FAILED`.
+
+If the decoder encounters a reference on the encoder stream to a dynamic table
+entry which has already been dropped or which has not yet been inserted, this
+MUST be treated as a connection error of type `HTTP_QPACK_ENCODER_STREAM_ERROR`.
 
 ## Avoiding Head-of-Line Blocking in HTTP/QUIC {#overview-hol-avoidance}
 
@@ -270,8 +279,8 @@ immediately. A stream becomes unblocked when the greatest absolute index in the
 dynamic table becomes greater than or equal to the Largest Reference for all
 header blocks the decoder has started reading from the stream.  If a decoder
 encounters a header block where the actual largest reference is not equal to the
-Largest Reference declared in the prefix, it MAY treat this as a stream error of
-type HTTP_QPACK_DECOMPRESSION_FAILED.
+Largest Reference declared in the prefix, it MUST treat this as an error
+of type HTTP_QPACK_DECOMPRESSION_FAILED.
 
 A decoder can permit the possibility of blocked streams by setting
 SETTINGS_QPACK_BLOCKED_STREAMS to a non-zero value (see {{configuration}}).
@@ -291,7 +300,7 @@ An encoder MUST limit the number of streams which could become blocked to the
 value of SETTINGS_QPACK_BLOCKED_STREAMS at all times. Note that the decoder
 might not actually become blocked on every stream which risks becoming blocked.
 If the decoder encounters more blocked streams than it promised to support, it
-SHOULD treat this as a stream error of type HTTP_QPACK_DECOMPRESSION_FAILED.
+MUST treat this as an error of type HTTP_QPACK_DECOMPRESSION_FAILED.
 
 ### State Synchronization
 
@@ -531,9 +540,9 @@ maximum table size is represented as an integer with a 5-bit prefix (see Section
 
 The new maximum size MUST be lower than or equal to the limit determined by the
 protocol using QPACK.  A value that exceeds this limit MUST be treated as a
-decoding error.  In HTTP/QUIC, this limit is the value of the
-SETTINGS_HEADER_TABLE_SIZE parameter (see {{configuration}}) received from the
-decoder.
+connection error of type `HTTP_QPACK_ENCODER_STREAM_ERROR`.  In HTTP/QUIC, this
+limit is the value of the SETTINGS_HEADER_TABLE_SIZE parameter (see
+{{configuration}}) received from the decoder.
 
 Reducing the maximum size of the dynamic table can cause entries to be evicted
 (see Section 4.3 of [RFC7541]).  This MUST NOT cause the eviction of entries
@@ -571,6 +580,10 @@ entries might cause a stream to become blocked, as described in
 ~~~~~~~~~~
 {:#fig-size-sync title="Table State Synchronize"}
 
+An encoder that receives an Insert Count that is greater than the number of
+dynamic table entries beyond the current Largest Known Received entry MUST treat
+this as a connection error of type `HTTP_QPACK_DECODER_STREAM_ERROR`.
+
 A decoder chooses when to emit Table State Synchronize instructions. Emitting a
 Table State Synchronize after adding each new dynamic table entry will provide
 the most timely feedback to the encoder, but could be redundant with other
@@ -588,12 +601,6 @@ The instruction begins with the '1' one-bit pattern and includes the request
 stream's stream ID, encoded as a 7-bit prefix integer.  It is used by the
 peer's QPACK encoder to know when it is safe to evict an entry.
 
-The same Stream ID can be identified multiple times, as multiple header blocks
-can be sent on a single stream in the case of intermediate responses, trailers,
-and pushed requests.  Since header frames on each stream are received and
-processed in order, this gives the encoder precise feedback on which header
-blocks within a stream have been fully processed.
-
 ~~~~~~~~~~ drawing
   0   1   2   3   4   5   6   7
 +---+---+---+---+---+---+---+---+
@@ -601,6 +608,17 @@ blocks within a stream have been fully processed.
 +---+---------------------------+
 ~~~~~~~~~~
 {:#fig-header-ack title="Header Acknowledgement"}
+
+The same Stream ID can be identified multiple times, as multiple header blocks
+can be sent on a single stream in the case of intermediate responses, trailers,
+and pushed requests.  Since header frames on each stream are received and
+processed in order, this gives the encoder precise feedback on which header
+blocks within a stream have been fully processed.
+
+If an encoder receives a Header Acknowledgement instruction referring to a
+stream on which every header block with non-zero Largest Reference has already
+been acknowledged, that MUST be treated as a connection error of type
+`HTTP_QPACK_DECODER_STREAM_ERROR`.
 
 When blocking references are permitted, the encoder uses acknowledgement of
 header blocks to update the Largest Known Received index.  If a header block was
@@ -829,13 +847,21 @@ represented as an 8-bit prefix string literal.
 {: title="Literal Header Field Without Name Reference"}
 
 
-# Error Handling
+# Error Handling {#error-handling}
 
-The following error code is defined for HTTP/QUIC to indicate all failures of
+The following error codes are defined for HTTP/QUIC to indicate failures of
 QPACK which prevent the stream or connection from continuing:
 
-HTTP_QPACK_DECOMPRESSION_FAILED (0x06):
-: QPACK failed to decompress a frame and cannot continue.
+HTTP_QPACK_DECOMPRESSION_FAILED (TBD):
+: The decoder failed to interpret an instruction on a request or push stream and
+  is not able to continue decoding that header block.  This situation MAY be
+  treated as a stream error or as a connection error.
+HTTP_QPACK_ENCODER_STREAM_ERROR (TBD):
+: The decoder failed to interpret an instruction on the encoder stream.  This
+  situation MUST be treated as a connection error.
+HTTP_QPACK_DECODER_STREAM_ERROR (TBD):
+: The encoder failed to interpret an instruction on the decoder stream.  This
+  situation MUST be treated as a connection error.
 
 
 # Encoding Strategies
@@ -998,17 +1024,16 @@ The entries in the following table are registered by this document.
 
 ## Error Code Registration
 
-This document establishes one new error code in the "HTTP/QUIC Error Code"
-registry established in {{QUIC-HTTP}}.
+This document establishes the following new error codes in the "HTTP/QUIC Error
+Code" registry established in {{QUIC-HTTP}}.
 
-Name:
-: HTTP_QPACK_DECOMPRESSION_FAILED
-
-Code:
-: 0x06
-
-Description:
-: QPACK failed to interpret an instruction and cannot continue.
+| --------------------------------- | ----- | ---------------------------------------- | ---------------------- |
+| Name                              | Code  | Description                              | Specification          |
+| --------------------------------- | ----- | ---------------------------------------- | ---------------------- |
+| HTTP_QPACK_DECOMPRESSION_FAILED   | TBD   | Decompression of a header block failed   | {{error-handling}}     |
+| HTTP_QPACK_ENCODER_STREAM_ERROR   | TBD   | Error on the encoder stream              | {{error-handling}}     |
+| HTTP_QPACK_DECODER_STREAM_ERROR   | TBD   | Error on the decoder stream              | {{error-handling}}     |
+| --------------------------------- | ----- | ---------------------------------------- | ---------------------- |
 
 
 --- back
