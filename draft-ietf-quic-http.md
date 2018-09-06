@@ -295,9 +295,9 @@ of informational (1xx) HTTP responses (see {{!RFC7230}}, Section 3.2 and
 {{!RFC7231}}, Section 6.2).
 
 A server MAY interleave one or more PUSH_PROMISE frames (see
-{{frame-push-promise}}) with the frames of a response message indicating a
-pushed resource related to the response. These PUSH_PROMISE frames are not part
-of the response; see {{server-push}} for more details.
+{{frame-push-promise}}) with the frames of a response message. These
+PUSH_PROMISE frames are not part of the response; see {{server-push}} for more
+details.
 
 The "chunked" transfer encoding defined in Section 4.1 of {{!RFC7230}} MUST NOT
 be used.
