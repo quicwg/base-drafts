@@ -342,8 +342,8 @@ Header field:
 Header list:
 
 : The ordered collection of header fields associated with an HTTP message.  A
-  header list can contain multiple header fields with identical name, or
-  duplicate header fields.
+  header list can contain multiple header fields with the same name.  It can
+  also contain duplicate header fields.
 
 Header block:
 
