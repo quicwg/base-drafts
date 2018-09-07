@@ -121,7 +121,7 @@ which has a fixed index over time.  Its entries are defined in Appendix A of
 is no value at index zero of the static table.
 
 A decoder that encounters an invalid static table index on a request stream or
-push stream MUST treat this as an error of type
+push stream MUST treat this as a stream error of type
 `HTTP_QPACK_DECOMPRESSION_FAILED`.  If this index is received on the encoder
 stream, this MUST be treated as a connection error of type
 `HTTP_QPACK_ENCODER_STREAM_ERROR`.
@@ -256,12 +256,12 @@ d = count of entries dropped
 
 If the decoder encounters a reference on a request or push stream to a dynamic
 table entry which has already been dropped or which has an absolute index
-greater than the declared Largest Reference (see {{absolute-index}}), this MUST
-be treated as an error of type `HTTP_QPACK_DECOMPRESSION_FAILED`.
+greater than the declared Largest Reference (see {{absolute-index}}), it MUST
+treat this as a stream error of type `HTTP_QPACK_DECOMPRESSION_FAILED`.
 
 If the decoder encounters a reference on the encoder stream to a dynamic table
-entry which has already been dropped or which has not yet been inserted, this
-MUST be treated as a connection error of type `HTTP_QPACK_ENCODER_STREAM_ERROR`.
+entry which has already been dropped, it MUST treat this as a connection error
+of type `HTTP_QPACK_ENCODER_STREAM_ERROR`.
 
 ## Avoiding Head-of-Line Blocking in HTTP/QUIC {#overview-hol-avoidance}
 
@@ -279,8 +279,8 @@ immediately. A stream becomes unblocked when the greatest absolute index in the
 dynamic table becomes greater than or equal to the Largest Reference for all
 header blocks the decoder has started reading from the stream.  If a decoder
 encounters a header block where the actual largest reference is not equal to the
-Largest Reference declared in the prefix, it MUST treat this as an error
-of type HTTP_QPACK_DECOMPRESSION_FAILED.
+Largest Reference declared in the prefix, it MAY treat this as a stream error of
+type HTTP_QPACK_DECOMPRESSION_FAILED.
 
 A decoder can permit the possibility of blocked streams by setting
 SETTINGS_QPACK_BLOCKED_STREAMS to a non-zero value (see {{configuration}}).
@@ -300,7 +300,7 @@ An encoder MUST limit the number of streams which could become blocked to the
 value of SETTINGS_QPACK_BLOCKED_STREAMS at all times. Note that the decoder
 might not actually become blocked on every stream which risks becoming blocked.
 If the decoder encounters more blocked streams than it promised to support, it
-MUST treat this as an error of type HTTP_QPACK_DECOMPRESSION_FAILED.
+MUST treat this as a stream error of type HTTP_QPACK_DECOMPRESSION_FAILED.
 
 ### State Synchronization
 
@@ -616,7 +616,7 @@ processed in order, this gives the encoder precise feedback on which header
 blocks within a stream have been fully processed.
 
 If an encoder receives a Header Acknowledgement instruction referring to a
-stream on which every header block with non-zero Largest Reference has already
+stream on which every header block with a non-zero Largest Reference has already
 been acknowledged, that MUST be treated as a connection error of type
 `HTTP_QPACK_DECODER_STREAM_ERROR`.
 
@@ -854,14 +854,15 @@ QPACK which prevent the stream or connection from continuing:
 
 HTTP_QPACK_DECOMPRESSION_FAILED (TBD):
 : The decoder failed to interpret an instruction on a request or push stream and
-  is not able to continue decoding that header block.  This situation MAY be
-  treated as a stream error or as a connection error.
+  is not able to continue decoding that header block.
 HTTP_QPACK_ENCODER_STREAM_ERROR (TBD):
-: The decoder failed to interpret an instruction on the encoder stream.  This
-  situation MUST be treated as a connection error.
+: The decoder failed to interpret an instruction on the encoder stream.
 HTTP_QPACK_DECODER_STREAM_ERROR (TBD):
-: The encoder failed to interpret an instruction on the decoder stream.  This
-  situation MUST be treated as a connection error.
+: The encoder failed to interpret an instruction on the decoder stream.
+
+Upon encountering an error, an implementation MAY elect to treat it as a
+connection error even if this document prescribes that it MUST be treated as a
+stream error.
 
 
 # Encoding Strategies
