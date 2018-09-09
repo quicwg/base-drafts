@@ -2727,7 +2727,7 @@ valid packet.  This means that a Stateless Reset might trigger the sending of a
 Stateless Reset in response, which could lead to infinite exchanges.
 
 An endpoint MUST ensure that every Stateless Reset that it sends is smaller than
-the packet triggered it, unless it maintains state sufficient to prevent
+the packet which triggered it, unless it maintains state sufficient to prevent
 looping.  In the event of a loop, this results in packets eventually being too
 small to trigger a response.
 
