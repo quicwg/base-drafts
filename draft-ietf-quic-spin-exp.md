@@ -104,7 +104,7 @@ code and issues list for this draft can be found at
 # Introduction
 
 The QUIC transport protocol {{QUIC-TRANSPORT}} uses
-Transport Layer Security (TLS) {{?TLS=I-D.ietf-tls-tls13}} to encrypt most of
+Transport Layer Security (TLS) {{?TLS=RFC8446}} to encrypt most of
 its protocol internals. In contrast to TCP where the sequence and
 acknowledgement numbers and timestamps (if the respective option is in use)
 can be seen by on-path observers and used to estimate end-to-end latency,
@@ -131,7 +131,7 @@ version negotiation and connection establishment are completed.
 ## Proposed Short Header Format Including Spin Bit
 
 As of the current editor's version of {{QUIC-TRANSPORT}}, this proposal
-specifies using the fifth most significant bit (0x08) of the first octet in
+specifies using the sixth most significant bit (0x04) of the first octet in
 the short header for the spin bit.
 
 ~~~~~
@@ -139,7 +139,7 @@ the short header for the spin bit.
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+
-|0|K|1|1|0|S|T T|
+|0|K|1|1|0|S|R R|
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                Destination Connection ID (0..144)           ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -153,6 +153,8 @@ the short header for the spin bit.
 
 S: The Spin bit is set 0 or 1 depending on the stored spin value that is
 updated on packet reception as explained in {{spinbit}}.
+
+R: Two additional bits are reserved for experimentation in the short header.
 
 ## Setting the Spin Bit on Outgoing Packets {#spinbit}
 
@@ -251,9 +253,20 @@ geolocation than is available in the most basic, freely-available IP address
 based location databases. The risk of exposure of per-flow network RTT to
 on-path devices is therefore negligible.
 
-# Acknowledgments
 
-This document is derived from {{?I-D.trammell-quic-spin}}, which was the work
+# Change Log
+
+> **RFC Editor's Note:**  Please remove this section prior to
+> publication of a final version of this document.
+
+## Since draft-ietf-spin-exp-00
+
+Nothing yet.
+
+# Acknowledgments
+{:numbered="false"}
+
+This document is derived from {{QUIC-SPIN}}, which was the work
 of the following authors in addition to the editor of this document:
 
 - Piet De Vaere, ETH Zurich
@@ -272,5 +285,3 @@ grant agreement no. 688421 Measurement and Architecture for a Middleboxed
 Internet (MAMI), and by the Swiss State Secretariat for Education, Research,
 and Innovation under contract no. 15.0268. This support does not imply
 endorsement.
-
-
