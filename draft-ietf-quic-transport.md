@@ -3306,7 +3306,7 @@ ACK Delay:
 : A variable-length integer including the time in microseconds that the largest
   acknowledged packet, as indicated in the Largest Acknowledged field, was
   received by this peer to when this ACK was sent.  The value of the ACK Delay
-  field is scaled by multiplying the encoded value by the 2 to the power of the
+  field is scaled by multiplying the encoded value by 2 to the power of the
   value of the `ack_delay_exponent` transport parameter set by the sender of the
   ACK frame.  The `ack_delay_exponent` defaults to 3, or a multiplier of 8 (see
   {{transport-parameter-definitions}}).  Scaling in this fashion allows for a
