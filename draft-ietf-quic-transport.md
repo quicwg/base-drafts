@@ -4161,10 +4161,10 @@ application protocol some of which cannot be observed by the sender.
        |                           |
        | Recv All Data             |
        v                           v
-   +-------+                   +-------+
-   | Data  | Recv RST_STREAM   | Reset |
-   | Recvd |<-- (optional) --->| Recvd |
-   +-------+                   +-------+
+   +-------+  Recv RST_STREAM  +-------+
+   | Data  |--- (optional) --->| Reset |
+   | Recvd |  Recv All Data    | Recvd |
+   +-------+<-- (optional) ----+-------+
        |                           |
        | App Read All Data         | App Read RST
        v                           v
