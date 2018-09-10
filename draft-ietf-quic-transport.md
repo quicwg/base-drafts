@@ -2373,9 +2373,9 @@ packets through a newly used connection ID, it SHOULD select an
 available new connection ID provided by the peer and use it as
 destination address for its responses. The goal is
 to ensure absence of correlation between the pairs of client and server
-connection ID used on different paths. To fulfill this privacy requirement, 
+connection ID used on different paths. To fulfill this privacy requirement,
 Nodes that initiate a migration and use connection IDs with length greater than zero
-SHOULD provide their peers with new connection IDs before migration. 
+SHOULD provide their peers with new connection IDs before migration.
 
 ## Server's Preferred Address {#preferred-address}
 
