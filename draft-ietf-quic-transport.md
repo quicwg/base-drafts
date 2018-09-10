@@ -2076,7 +2076,8 @@ PATH_RESPONSE with its own PATH_CHALLENGE.
 
 When probing a new path, an endpoint may want to ensure that the response, if
 any, is sent to a specific connection ID. The endpoint achieves that by bundling
-NEW_CONNECTION_ID and PATH_CHALLENGE frames, in that order.
+NEW_CONNECTION_ID and PATH_CHALLENGE frames. This ensure that at least one new
+connection ID will be available at the peer for use in the probe response.
 
 ### Initiation
 
@@ -2191,9 +2192,9 @@ connection to end unless there are no valid alternative paths available.
 
 An endpoint uses a new connection ID for probes sent from a new local address,
 see {{migration-linkability}} for further discussion. An endpoint that uses
-a new local address should include a NEW_CONNECTION_ID frame in the probe,
-to ensure that the server will send the response from a not yet used
-connection ID.
+a new local address needs to ensure that at least one new connection ID is
+available at the peer. That can be achieved by including a NEW_CONNECTION_ID
+frame in the probe.
 
 Receiving a PATH_CHALLENGE frame from a peer indicates that the peer is probing
 for reachability on a path. An endpoint sends a PATH_RESPONSE in response as per
@@ -2366,7 +2367,7 @@ congestion state (see {{migration-cc}}), so the port SHOULD only be changed
 infrequently.
 
 Endpoints could also have their activity correlated if their peers keep using
-the same destination connection id after migration. Nodes that initiate a
+the same destination connection ID after migration. Nodes that initiate a
 migration need to provide their peers with new connection IDs. The goal is
 to ensure absence of correlation between the pairs of client and server
 connection ID used on different paths.
