@@ -101,6 +101,11 @@ balance between resilience against head-of-line blocking and optimal compression
 ratio.  The design goals are to closely approach the compression ratio of HPACK
 with substantially less head-of-line blocking under the same loss conditions.
 
+QPACK preserves the ordering of header fields within each header list.  An
+encoder MUST emit header field representations in the order they appear in the
+input header list.  A decoder MUST must emit header fields in the order their
+representations appear in the input header block.
+
 # Header Tables
 
 Like HPACK, QPACK uses two tables for associating header fields to indices.  The
@@ -330,25 +335,27 @@ when, and only when, they appear in all capitals, as shown here.
 
 Definitions of terms that are used in this document:
 
-Header:
+Header field:
 
 : A name-value pair sent as part of an HTTP message.
 
-Header set:
+Header list:
 
-: The full collection of headers associated with an HTTP message.
+: The ordered collection of header fields associated with an HTTP message.  A
+  header list can contain multiple header fields with the same name.  It can
+  also contain duplicate header fields.
 
 Header block:
 
-: The compressed representation of a header set.
+: The compressed representation of a header list.
 
 Encoder:
 
-: An implementation which transforms a header set into a header block.
+: An implementation which transforms a header list into a header block.
 
 Decoder:
 
-: An implementation which transforms a header block into a header set.
+: An implementation which transforms a header block into a header list.
 
 QPACK is a name, not an acronym.
 
