@@ -318,7 +318,7 @@ decoder that permit the encoder to track the decoder's state.  These events are:
 
 Regardless of whether a header block contained blocking references, the
 knowledge that it has been processed permits the encoder to evict
-entries to which no unacknowledged references remain; see {{blocked-eviction}}.
+entries to which no unacknowledged references remain; see {{blocked-insertion}}.
 When a stream is reset or abandoned, the indication that these header blocks
 will never be processed serves a similar function; see {{stream-cancellation}}.
 
@@ -903,27 +903,29 @@ In order to enable this, the encoder will need to track outstanding
 (unacknowledged) header blocks and table updates using feedback received from
 the decoder.
 
-### Blocked Eviction
+### Blocked Dynamic Table Insertions {#blocked-insertion}
 
-The encoder MUST NOT emit an instruction that evicts an entry while a reference
-to that entry remains unacknowledged.  When the encoder encounters a blocked
-eviction, it emits a literal representation for the new header, and MAY insert
-the header into the table later if desired.
+An encoder MUST NOT insert an entry into the dynamic table (or duplicate an
+existing entry) if doing so would evict an entry with unacknowledged references.
+For header blocks that might rely on the newly added entry, the encoder can use
+a literal representation and maybe insert the entry later.
 
-To ensure that blocked evictions are rare, the encoder SHOULD avoid referencing
-older entries that will be evicted soon.  Rather than reference such an entry,
-the encoder SHOULD emit a Duplicate instruction (see {{duplicate}}), and
-reference the duplicate instead.
+To ensure that the encoder is not prevented from adding new entries, the encoder
+can avoid referencing entries that will be evicted soonest.  Rather than
+reference such an entry, the encoder SHOULD emit a Duplicate instruction (see
+{{duplicate}}), and reference the duplicate instead.
 
 Determining which entries are too close to eviction to reference is an encoder
 preference.  One heuristic is to target a fixed amount of available space in the
 dynamic table: either unused space or space that can be reclaimed by evicting
 unreferenced entries.  To achieve this, the encoder can maintain a draining
 index, which is the smallest absolute index in the dynamic table that it will
-emit a reference for.  As new entries are inserted, the encoder increments the
-draining index such that the amount of unused space and space occupied by
-draining entries table is larger than its target threshold.  Draining entries
-will eventually become evictable as any references to them are acknowledged.
+emit a reference for.  As new entries are inserted, the encoder increases the
+draining index to maintain the section of the table that it will not
+reference.  Draining entries - entries with an absolute index lower than the
+draining index - will not accumulate new references.  The number of
+unacknowledged references to draining entries will eventually become zero,
+making the entry available for eviction.
 
 ~~~~~~~~~~  drawing
    +----------+---------------------------------+--------+
@@ -932,11 +934,10 @@ will eventually become evictable as any references to them are acknowledged.
    +----------+---------------------------------+--------+
    ^          ^                                 ^
    |          |                                 |
- Drop Point  Draining Index               Base Index /
-                                          Insertion Point
+ Dropping    Draining Index               Base Index /
+  Point                                   Insertion Point
 ~~~~~~~~~~
-{:#fig-eviction-prone title="Encoder's View of Dynamic Table with
-draining index"}
+{:#fig-draining-index title="Draining Dynamic Table Entries"}
 
 ### Blocked Decoding
 
