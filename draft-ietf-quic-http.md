@@ -1120,10 +1120,11 @@ previous requests will continue to completion.  Servers perform the same
 function by communicating with clients.
 
 Servers initiate the shutdown of a connection by sending a GOAWAY frame
-({{frame-goaway}}).  The GOAWAY frame contains the Stream ID of the last
-client-initiated request that was or might be processed in this connection,
-which enables client and server to agree on which requests were accepted prior
-to the connection shutdown.  This identifier MAY be lower than the stream limit
+({{frame-goaway}}).  The GOAWAY frame indicates that client-initiated requests
+on lower stream IDs were or might be processed in this connection, while
+requests on the indicated stream ID and greater were not accepted. This enables
+client and server to agree on which requests were accepted prior to the
+connection shutdown.  This identifier MAY be lower than the stream limit
 identified by a QUIC MAX_STREAM_ID frame, and MAY be zero if no requests were
 processed.  Servers SHOULD NOT increase the QUIC MAX_STREAM_ID limit after
 sending a GOAWAY frame.
@@ -1139,8 +1140,8 @@ indicated in the GOAWAY frame, those requests are considered cancelled
 the error code HTTP_REQUEST_CANCELLED.  Servers MAY also cancel requests on
 streams below the indicated ID if these requests were not processed.
 
-Requests on Stream IDs less than or equal to the Stream ID in the GOAWAY frame
-might have been processed; their status cannot be known until they are completed
+Requests on Stream IDs less than the Stream ID in the GOAWAY frame might have
+been processed; their status cannot be known until they are completed
 successfully, reset individually, or the connection terminates.
 
 Servers SHOULD send a GOAWAY frame when the closing of a connection is known
