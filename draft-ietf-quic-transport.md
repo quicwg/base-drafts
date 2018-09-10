@@ -3407,7 +3407,7 @@ Gap (repeated):
   packets preceding the packet number one lower than the smallest in the
   preceding ACK Block.
 
-ACK Block (repeated):
+Additional ACK Block (repeated):
 
 : A variable-length integer indicating the number of contiguous acknowledged
   packets preceding the largest packet number, as determined by the
