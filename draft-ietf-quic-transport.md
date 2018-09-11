@@ -3219,9 +3219,8 @@ zero-length Destination Connection ID MUST treat receipt of a NEW_CONNECTION_ID
 frame as a connection error of type PROTOCOL_VIOLATION.
 
 Transmission errors, timeouts and retransmissions might cause the same
-NEW_CONNECTION_ID frame to be received multiple times. Additional
-transmissions MUST be ignored and MUST NOT cause a connection
-error.
+NEW_CONNECTION_ID frame to be received multiple times. Receipt of the same
+frame multiple times MUST NOT be treated as a connection error.
 
 If an endpoint receives a NEW_CONNECTION_ID frame that repeats the same
 connection ID as a previous NEW_CONNECTION_ID frame but with a different
