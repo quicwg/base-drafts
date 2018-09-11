@@ -3224,7 +3224,7 @@ transmissions SHOULD be ignored and MUST NOT cause a connection
 error.
 
 If an endpoint receives a NEW_CONNECTION_ID frame that repeats the same
-connection ID as a previous NEW_CONNECTION_ID framebut with a different
+connection ID as a previous NEW_CONNECTION_ID frame but with a different
 Stateless Reset Token or a different Sequence, the endpoint MUST
 treat that receipt as a connection error of type PROTOCOL_VIOLATION.
 Similarly, if an endpoint receives a NEW_CONNECTION_ID frame that repeats
