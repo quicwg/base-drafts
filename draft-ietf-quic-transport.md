@@ -1278,6 +1278,9 @@ IDs, QUIC processes the packet as part of that connection. Endpoints MUST drop
 packets with zero-length Destination Connection ID fields if they do not
 correspond to a single connection.
 
+Endpoints SHOULD send a Stateless Reset ({{stateless-reset}}) for any packets
+that cannot be attributed to an existing connection.
+
 
 ### Client Packet Handling {#client-pkt-handling}
 
@@ -1330,8 +1333,7 @@ packets in anticipation of a late-arriving Initial Packet. Clients are forbidden
 from sending Handshake packets prior to receiving a server response, so servers
 SHOULD ignore any such packets.
 
-Servers MUST drop incoming packets under all other circumstances.  They SHOULD
-send a Stateless Reset ({{stateless-reset}}) if they are able.
+Servers MUST drop incoming packets under all other circumstances.
 
 ## Version Negotiation
 
