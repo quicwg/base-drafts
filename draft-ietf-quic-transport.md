@@ -2074,10 +2074,11 @@ path validation with other frames.  For instance, an endpoint may pad a packet
 carrying a PATH_CHALLENGE for PMTU discovery, or an endpoint may bundle a
 PATH_RESPONSE with its own PATH_CHALLENGE.
 
-When probing a new path, an endpoint may want to ensure that the response, if
-any, is sent to a specific connection ID. The endpoint achieves that by bundling
-NEW_CONNECTION_ID and PATH_CHALLENGE frames. This ensures that at least one new
-connection ID will be available at the peer for use in the probe response.
+When probing a new path, an endpoint might want to ensure that its peer has an
+unused connection ID available for responses. The endpoint can send
+NEW_CONNECTION_ID and PATH_CHALLENGE frames in the same packet. This ensures
+that an unused connection ID will be available to the peer when sending a
+response.
 
 ### Initiation
 
