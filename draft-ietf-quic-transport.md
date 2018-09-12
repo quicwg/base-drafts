@@ -2076,6 +2076,11 @@ path validation with other frames.  For instance, an endpoint may pad a packet
 carrying a PATH_CHALLENGE for PMTU discovery, or an endpoint may bundle a
 PATH_RESPONSE with its own PATH_CHALLENGE.
 
+When probing a new path, an endpoint might want to ensure that its peer has an
+unused connection ID available for responses. The endpoint can send
+NEW_CONNECTION_ID and PATH_CHALLENGE frames in the same packet. This ensures
+that an unused connection ID will be available to the peer when sending a
+response.
 
 ### Initiation
 
@@ -2189,7 +2194,10 @@ usable for this connection.  Failure to validate a path does not cause the
 connection to end unless there are no valid alternative paths available.
 
 An endpoint uses a new connection ID for probes sent from a new local address,
-see {{migration-linkability}} for further discussion.
+see {{migration-linkability}} for further discussion. An endpoint that uses
+a new local address needs to ensure that at least one new connection ID is
+available at the peer. That can be achieved by including a NEW_CONNECTION_ID
+frame in the probe.
 
 Receiving a PATH_CHALLENGE frame from a peer indicates that the peer is probing
 for reachability on a path. An endpoint sends a PATH_RESPONSE in response as per
@@ -2360,6 +2368,22 @@ migration are exercised even for clients that don't experience NAT rebindings or
 genuine migrations.  Changing port number can cause a peer to reset its
 congestion state (see {{migration-cc}}), so the port SHOULD only be changed
 infrequently.
+
+Endpoints that use connection IDs with length greater than zero could have
+their activity correlated if their peers keep using the same destination
+connection ID after migration. Endpoints that receive packets with a
+previously unused Destination Connection ID SHOULD change to sending packets
+with a connection ID that has not been used on any other network path.  The
+goal is to ensure absence of correlation between the pairs of client and server
+connection ID used on different paths. To fulfill this privacy requirement,
+endpoints that initiate migration and use connection IDs with length greater
+than zero SHOULD provide their peers with new connection IDs before migration.
+
+Caution:
+
+: If both endpoints change connection ID in response to seeing a change in
+  connection ID from their peer, then this can trigger an infinite sequence
+  of changes.
 
 
 ## Server's Preferred Address {#preferred-address}
