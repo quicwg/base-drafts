@@ -3220,6 +3220,18 @@ value of the connection ID changed.  An endpoint that is sending packets with a
 zero-length Destination Connection ID MUST treat receipt of a NEW_CONNECTION_ID
 frame as a connection error of type PROTOCOL_VIOLATION.
 
+Transmission errors, timeouts and retransmissions might cause the same
+NEW_CONNECTION_ID frame to be received multiple times. Receipt of the same
+frame multiple times MUST NOT be treated as a connection error.
+
+If an endpoint receives a NEW_CONNECTION_ID frame that repeats the same
+connection ID as a previous NEW_CONNECTION_ID frame but with a different
+Stateless Reset Token or a different Sequence, the endpoint MAY
+treat that receipt as a connection error of type PROTOCOL_VIOLATION.
+Similarly, if an endpoint receives a NEW_CONNECTION_ID frame that repeats
+the Source Connection ID used by the peer during the initial
+handshake, it MUST treat that receipt as a connection error of type
+PROTOCOL_VIOLATION.
 
 ## STOP_SENDING Frame {#frame-stop-sending}
 
