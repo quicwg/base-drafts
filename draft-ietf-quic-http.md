@@ -149,7 +149,7 @@ via the Alt-Svc HTTP response header field or the HTTP/2 ALTSVC frame
 
 For example, an origin could indicate in an HTTP/1.1 or HTTP/2 response that
 HTTP/QUIC was available on UDP port 50781 at the same hostname by including the
-following header in any response:
+following header field in any response:
 
 ~~~ example
 Alt-Svc: hq=":50781"
@@ -193,15 +193,15 @@ occurrence.
 For example, suppose a server supported both version 0x00000001 and the version
 rendered in ASCII as "Q034".  If it opted to include the reserved versions (from
 Section 4 of {{QUIC-TRANSPORT}}) 0x0 and 0x1abadaba, it could specify the
-following header:
+following header field:
 
 ~~~ example
 Alt-Svc: hq=":49288";quic="1,1abadaba,51303334,0"
 ~~~
 
-A client acting on this header would drop the reserved versions (because it does
-not support them), then attempt to connect to the alternative using the first
-version in the list which it does support.
+A client acting on this header field would drop the reserved versions (because
+it does not support them), then attempt to connect to the alternative using the
+first version in the list which it does support.
 
 ## Connection Establishment {#connection-establishment}
 
@@ -243,6 +243,9 @@ can indicate that it is not authoritative for a request by sending a 421
 (Misdirected Request) status code in response to the request (see Section 9.1.2
 of {{!RFC7540}}).
 
+The considerations discussed in Section 9.1 of {{?RFC7540}} also apply to the
+management of HTTP/QUIC connections.
+
 # Stream Mapping and Usage {#stream-mapping}
 
 A QUIC stream provides reliable in-order delivery of bytes, but makes no
@@ -280,7 +283,7 @@ stream. A server sends an HTTP response on the same stream as the request.
 
 An HTTP message (request or response) consists of:
 
-1. one header block (see {{frame-headers}}) containing the message headers (see
+1. one header block (see {{frame-headers}}) containing the message header (see
    {{!RFC7230}}, Section 3.2),
 
 2. the payload body (see {{!RFC7230}}, Section 3.3), sent as a series of DATA
@@ -294,10 +297,9 @@ response may contain zero or more header blocks containing the message headers
 of informational (1xx) HTTP responses (see {{!RFC7230}}, Section 3.2 and
 {{!RFC7231}}, Section 6.2).
 
-PUSH_PROMISE frames (see {{frame-push-promise}}) MAY be interleaved with the
-frames of a response message indicating a pushed resource related to the
-response. These PUSH_PROMISE frames are not part of the response, but carry the
-headers of a separate HTTP request message.  See {{server-push}} for more
+A server MAY interleave one or more PUSH_PROMISE frames (see
+{{frame-push-promise}}) with the frames of a response message. These
+PUSH_PROMISE frames are not part of the response; see {{server-push}} for more
 details.
 
 The "chunked" transfer encoding defined in Section 4.1 of {{!RFC7230}} MUST NOT
@@ -331,12 +333,12 @@ HTTP_INCOMPLETE_REQUEST.
 ### Header Formatting and Compression
 
 HTTP header fields carry information as a series of key-value pairs. For a
-listing of registered HTTP headers, see the "Message Header Field" registry
-maintained at <https://www.iana.org/assignments/message-headers>.
+listing of registered HTTP header fields, see the "Message Header Field"
+registry maintained at <https://www.iana.org/assignments/message-headers>.
 
 Just as in previous versions of HTTP, header field names are strings of ASCII
 characters that are compared in a case-insensitive fashion.  Properties of HTTP
-header names and values are discussed in more detail in Section 3.2 of
+header field names and values are discussed in more detail in Section 3.2 of
 {{!RFC7230}}, though the wire rendering in HTTP/QUIC differs.  As in HTTP/2,
 header field names MUST be converted to lowercase prior to their encoding.  A
 request or response containing uppercase header field names MUST be treated as
@@ -585,11 +587,11 @@ a promise, the server push response is conveyed on a push stream.
 A push stream is indicated by a stream type of `0x50` (ASCII 'P'), followed by
 the Push ID of the promise that it fulfills, encoded as a variable-length
 integer. The remaining data on this stream consists of HTTP/QUIC frames, as
-defined in {{frames}}, and carries the response side of an HTTP message
-exchange as described in {{request-response}}. The request headers of the
-exchange are carried by a PUSH_PROMISE frame (see {{frame-push-promise}})
-on the request stream which generated the push. Promised requests MUST
-conform to the requirements in Section 8.2 of {{!RFC7540}}.
+defined in {{frames}}, and carries the response side of an HTTP message exchange
+as described in {{request-response}}. The header of the request message is
+carried by a PUSH_PROMISE frame (see {{frame-push-promise}}) on the request
+stream which generated the push. Promised requests MUST conform to the
+requirements in Section 8.2 of {{!RFC7540}}.
 
 Only servers can push; if a server receives a client-initiated push stream,
 this MUST be treated as a stream error of type HTTP_WRONG_STREAM_DIRECTION.
@@ -647,7 +649,7 @@ A frame includes the following fields:
 
   Length:
   : A variable-length integer that describes the length of the Frame Payload.
-    This length does not include the frame header.
+    This length does not include the Type field.
 
   Type:
   : An 8-bit type for the frame.
@@ -865,7 +867,7 @@ are also acceptable and proceed with the value it has chosen. (This choice could
 be announced in a field of an extension frame, or in its own value in SETTINGS.)
 
 Different values for the same parameter can be advertised by each peer. For
-example, a client might be willing to consume very large response headers,
+example, a client might be willing to consume a very large response header,
 while servers are more cautious about request size.
 
 Parameters MUST NOT occur more than once.  A receiver MAY treat the presence of
@@ -983,8 +985,8 @@ Push ID:
   ({{frame-cancel-push}}), and PRIORITY frames ({{frame-priority}}).
 
 Header Block:
-: QPACK-compressed request headers for the promised response.  See [QPACK] for
-  more details.
+: QPACK-compressed request header fields for the promised response.  See [QPACK]
+  for more details.
 
 A server MUST NOT use a Push ID that is larger than the client has provided in a
 MAX_PUSH_ID frame ({{frame-max-push-id}}).  A client MUST treat receipt of a
@@ -1042,73 +1044,7 @@ The GOAWAY frame applies to the connection, not a specific stream.  An endpoint
 MUST treat a GOAWAY frame on a stream other than the control stream as a
 connection error ({{errors}}) of type HTTP_WRONG_STREAM.
 
-New client requests might already have been sent before the client receives the
-server's GOAWAY frame.  The GOAWAY frame contains the Stream ID of the last
-client-initiated request that was or might be processed in this connection,
-which enables client and server to agree on which requests were accepted prior
-to the connection shutdown.  This identifier MAY be lower than the stream limit
-identified by a QUIC MAX_STREAM_ID frame, and MAY be zero if no requests were
-processed.  Servers SHOULD NOT increase the MAX_STREAM_ID limit after sending a
-GOAWAY frame.
-
-Once sent, the server MUST cancel requests sent on streams with an identifier
-higher than the included last Stream ID.  Clients MUST NOT send new requests on
-the connection after receiving GOAWAY, although requests might already be in
-transit. A new connection can be established for new requests.
-
-If the client has sent requests on streams with a higher Stream ID than
-indicated in the GOAWAY frame, those requests are considered cancelled
-({{request-cancellation}}).  Clients SHOULD reset any streams above this ID with
-the error code HTTP_REQUEST_CANCELLED.  Servers MAY also cancel requests on
-streams below the indicated ID if these requests were not processed.
-
-Requests on Stream IDs less than or equal to the Stream ID in the GOAWAY frame
-might have been processed; their status cannot be known until they are completed
-successfully, reset individually, or the connection terminates.
-
-Servers SHOULD send a GOAWAY frame when the closing of a connection is known
-in advance, even if the advance notice is small, so that the remote peer can
-know whether a stream has been partially processed or not.  For example, if an
-HTTP client sends a POST at the same time that a server closes a QUIC
-connection, the client cannot know if the server started to process that POST
-request if the server does not send a GOAWAY frame to indicate what streams it
-might have acted on.
-
-For unexpected closures caused by error conditions, a QUIC APPLICATION_CLOSE
-frame MUST be used.  However, a GOAWAY MAY be sent first to provide additional
-detail to clients and to allow the client to retry requests.  Including the
-GOAWAY frame in the same packet as the QUIC APPLICATION_CLOSE frame improves the
-chances of the frame being received by clients.
-
-If a connection terminates without a GOAWAY frame, the last Stream ID is
-effectively the highest possible Stream ID (as determined by QUIC's
-MAX_STREAM_ID).
-
-An endpoint MAY send multiple GOAWAY frames if circumstances change. For
-instance, an endpoint that sends GOAWAY without an error code during graceful
-shutdown could subsequently encounter an error condition.  The last stream
-identifier from the last GOAWAY frame received indicates which streams could
-have been acted upon.  A server MUST NOT increase the value they send in the
-last Stream ID, since clients might already have retried unprocessed requests on
-another connection.
-
-A client that is unable to retry requests loses all requests that are in flight
-when the server closes the connection.  A server that is attempting to
-gracefully shut down a connection SHOULD send an initial GOAWAY frame with the
-last Stream ID set to the current value of QUIC's MAX_STREAM_ID and SHOULD NOT
-increase the MAX_STREAM_ID thereafter.  This signals to the client that a
-shutdown is imminent and that initiating further requests is prohibited.  After
-allowing time for any in-flight requests (at least one round-trip time), the
-server MAY send another GOAWAY frame with an updated last Stream ID.  This
-ensures that a connection can be cleanly shut down without losing requests.
-
-Once all requests on streams at or below the identified stream number have been
-completed or cancelled, and all promised server push responses associated with
-those requests have been completed or cancelled, the connection can be closed
-using an Immediate Close (see {{QUIC-TRANSPORT}}).  An endpoint that completes a
-graceful shutdown SHOULD use the QUIC APPLICATION_CLOSE frame with the
-HTTP_NO_ERROR code.
-
+See {{connection-shutdown}} for more information on the use of the GOAWAY frame.
 
 ### MAX_PUSH_ID {#frame-max-push-id}
 
@@ -1150,21 +1086,111 @@ variable-length integer as a connection error of type
 HTTP_MALFORMED_FRAME.
 
 
-# Connection Management
+# Connection Closure
 
-QUIC connections are persistent.  All of the considerations in Section 9.1 of
-{{?RFC7540}} apply to the management of QUIC connections.
+Once established, an HTTP/QUIC connection can be used for many requests and
+responses over time until the connection is closed.  Connection closure can
+happen in any of several different ways.
 
-HTTP clients are expected to use QUIC PING frames to keep connections open.
-Servers SHOULD NOT use PING frames to keep a connection open.  A client SHOULD
-NOT use PING frames for this purpose unless there are responses outstanding for
-requests or server pushes.  If the client is not expecting a response from the
-server, allowing an idle connection to time out (based on the idle_timeout
-transport parameter) is preferred over expending effort maintaining a connection
-that might not be needed.  A gateway MAY use PING to maintain connections in
-anticipation of need rather than incur the latency cost of connection
-establishment to servers.
+## Idle Connections
 
+Each QUIC endpoint declares an idle timeout during the handshake.  If the
+connection remains idle (no packets received) for longer than this duration, the
+peer will assume that the connection has been closed.  HTTP/QUIC implementations
+will need to open a new connection for new requests if the existing connection
+has been idle for longer than the server's advertised idle timeout, and SHOULD
+do so if approaching the idle timeout.
+
+HTTP clients are expected to use QUIC PING frames to keep connections open while
+there are responses outstanding for requests or server pushes. If the client is
+not expecting a response from the server, allowing an idle connection to time
+out is preferred over expending effort maintaining a connection that might not
+be needed.  A gateway MAY use PING to maintain connections in anticipation of
+need rather than incur the latency cost of connection establishment to servers.
+Servers SHOULD NOT use PING frames to keep a connection open.
+
+## Connection Shutdown
+
+Even when a connection is not idle, either endpoint can decide to stop using the
+connection and let the connection close gracefully.  Since clients drive request
+generation, clients perform a connection shutdown by not sending additional
+requests on the connection; responses and pushed responses associated to
+previous requests will continue to completion.  Servers perform the same
+function by communicating with clients.
+
+Servers initiate the shutdown of a connection by sending a GOAWAY frame
+({{frame-goaway}}).  The GOAWAY frame indicates that client-initiated requests
+on lower stream IDs were or might be processed in this connection, while
+requests on the indicated stream ID and greater were not accepted. This enables
+client and server to agree on which requests were accepted prior to the
+connection shutdown.  This identifier MAY be lower than the stream limit
+identified by a QUIC MAX_STREAM_ID frame, and MAY be zero if no requests were
+processed.  Servers SHOULD NOT increase the QUIC MAX_STREAM_ID limit after
+sending a GOAWAY frame.
+
+Once sent, the server MUST cancel requests sent on streams with an identifier
+higher than the indicated last Stream ID.  Clients MUST NOT send new requests on
+the connection after receiving GOAWAY, although requests might already be in
+transit. A new connection can be established for new requests.
+
+If the client has sent requests on streams with a higher Stream ID than
+indicated in the GOAWAY frame, those requests are considered cancelled
+({{request-cancellation}}).  Clients SHOULD reset any streams above this ID with
+the error code HTTP_REQUEST_CANCELLED.  Servers MAY also cancel requests on
+streams below the indicated ID if these requests were not processed.
+
+Requests on Stream IDs less than the Stream ID in the GOAWAY frame might have
+been processed; their status cannot be known until they are completed
+successfully, reset individually, or the connection terminates.
+
+Servers SHOULD send a GOAWAY frame when the closing of a connection is known
+in advance, even if the advance notice is small, so that the remote peer can
+know whether a stream has been partially processed or not.  For example, if an
+HTTP client sends a POST at the same time that a server closes a QUIC
+connection, the client cannot know if the server started to process that POST
+request if the server does not send a GOAWAY frame to indicate what streams it
+might have acted on.
+
+A client that is unable to retry requests loses all requests that are in flight
+when the server closes the connection.  A server MAY send multiple GOAWAY frames
+indicating different stream IDs, but MUST NOT increase the value they send in
+the last Stream ID, since clients might already have retried unprocessed
+requests on another connection.  A server that is attempting to gracefully shut
+down a connection SHOULD send an initial GOAWAY frame with the last Stream ID
+set to the current value of QUIC's MAX_STREAM_ID and SHOULD NOT increase the
+MAX_STREAM_ID thereafter.  This signals to the client that a shutdown is
+imminent and that initiating further requests is prohibited.  After allowing
+time for any in-flight requests (at least one round-trip time), the server MAY
+send another GOAWAY frame with an updated last Stream ID.  This ensures that a
+connection can be cleanly shut down without losing requests.
+
+Once all accepted requests have been processed, the server can permit the
+connection to become idle, or MAY initiate an immediate closure of the
+connection.  An endpoint that completes a graceful shutdown SHOULD use the
+HTTP_NO_ERROR code when closing the connection.
+
+## Immediate Application Closure
+
+An HTTP/QUIC implementation can immediately close the QUIC connection at any
+time. This results in sending a QUIC APPLICATION_CLOSE frame to the peer; the
+error code in this frame indicates to the peer why the connection is being
+closed.  See {{errors}} for error codes which can be used when closing a
+connection.
+
+Before closing the connection, a GOAWAY MAY be sent to allow the client to retry
+some requests.  Including the GOAWAY frame in the same packet as the QUIC
+APPLICATION_CLOSE frame improves the chances of the frame being received by
+clients.
+
+## Transport Closure
+
+For various reasons, the QUIC transport could indicate to the application layer
+that the connection has terminated.  This might be due to an explicit closure
+by the peer, a transport-level error, or a change in network topology which
+interrupts connectivity.
+
+If a connection terminates without a GOAWAY frame, clients MUST assume that any
+request which was sent, whether in whole or in part, might have been processed.
 
 # Error Handling {#errors}
 

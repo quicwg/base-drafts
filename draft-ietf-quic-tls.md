@@ -930,8 +930,8 @@ messages.  A client SHOULD stop sending 0-RTT data if it receives an indication
 that 0-RTT data has been rejected.
 
 A server MUST NOT use 0-RTT keys to protect packets; it uses 1-RTT keys to
-protect acknowledgements of 0-RTT packets.  Clients MUST NOT attempt to decrypt
-0-RTT packets it receives and instead MUST discard them.
+protect acknowledgements of 0-RTT packets.  A client MUST NOT attempt to
+decrypt 0-RTT packets it receives and instead MUST discard them.
 
 Note:
 

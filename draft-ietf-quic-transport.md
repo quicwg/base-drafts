@@ -1278,6 +1278,9 @@ IDs, QUIC processes the packet as part of that connection. Endpoints MUST drop
 packets with zero-length Destination Connection ID fields if they do not
 correspond to a single connection.
 
+Endpoints SHOULD send a Stateless Reset ({{stateless-reset}}) for any packets
+that cannot be attributed to an existing connection.
+
 
 ### Client Packet Handling {#client-pkt-handling}
 
@@ -1330,8 +1333,7 @@ packets in anticipation of a late-arriving Initial Packet. Clients are forbidden
 from sending Handshake packets prior to receiving a server response, so servers
 SHOULD ignore any such packets.
 
-Servers MUST drop incoming packets under all other circumstances.  They SHOULD
-send a Stateless Reset ({{stateless-reset}}) if they are able.
+Servers MUST drop incoming packets under all other circumstances.
 
 ## Version Negotiation
 
@@ -2074,6 +2076,11 @@ path validation with other frames.  For instance, an endpoint may pad a packet
 carrying a PATH_CHALLENGE for PMTU discovery, or an endpoint may bundle a
 PATH_RESPONSE with its own PATH_CHALLENGE.
 
+When probing a new path, an endpoint might want to ensure that its peer has an
+unused connection ID available for responses. The endpoint can send
+NEW_CONNECTION_ID and PATH_CHALLENGE frames in the same packet. This ensures
+that an unused connection ID will be available to the peer when sending a
+response.
 
 ### Initiation
 
@@ -2173,7 +2180,7 @@ rebinding does not cause the connection to fail.
 This document limits migration of connections to new client addresses, except as
 described in {{preferred-address}}. Clients are responsible for initiating all
 migrations.  Servers do not send non-probing packets (see {{probing}}) toward a
-client address until it sees a non-probing packet from that address.  If a
+client address until they see a non-probing packet from that address.  If a
 client receives packets from an unknown server address, the client MAY discard
 these packets.
 
@@ -2187,7 +2194,10 @@ usable for this connection.  Failure to validate a path does not cause the
 connection to end unless there are no valid alternative paths available.
 
 An endpoint uses a new connection ID for probes sent from a new local address,
-see {{migration-linkability}} for further discussion.
+see {{migration-linkability}} for further discussion. An endpoint that uses
+a new local address needs to ensure that at least one new connection ID is
+available at the peer. That can be achieved by including a NEW_CONNECTION_ID
+frame in the probe.
 
 Receiving a PATH_CHALLENGE frame from a peer indicates that the peer is probing
 for reachability on a path. An endpoint sends a PATH_RESPONSE in response as per
@@ -2358,6 +2368,22 @@ migration are exercised even for clients that don't experience NAT rebindings or
 genuine migrations.  Changing port number can cause a peer to reset its
 congestion state (see {{migration-cc}}), so the port SHOULD only be changed
 infrequently.
+
+Endpoints that use connection IDs with length greater than zero could have
+their activity correlated if their peers keep using the same destination
+connection ID after migration. Endpoints that receive packets with a
+previously unused Destination Connection ID SHOULD change to sending packets
+with a connection ID that has not been used on any other network path.  The
+goal is to ensure absence of correlation between the pairs of client and server
+connection ID used on different paths. To fulfill this privacy requirement,
+endpoints that initiate migration and use connection IDs with length greater
+than zero SHOULD provide their peers with new connection IDs before migration.
+
+Caution:
+
+: If both endpoints change connection ID in response to seeing a change in
+  connection ID from their peer, then this can trigger an infinite sequence
+  of changes.
 
 
 ## Server's Preferred Address {#preferred-address}
@@ -2727,7 +2753,7 @@ valid packet.  This means that a Stateless Reset might trigger the sending of a
 Stateless Reset in response, which could lead to infinite exchanges.
 
 An endpoint MUST ensure that every Stateless Reset that it sends is smaller than
-the packet triggered it, unless it maintains state sufficient to prevent
+the packet which triggered it, unless it maintains state sufficient to prevent
 looping.  In the event of a loop, this results in packets eventually being too
 small to trigger a response.
 
@@ -3218,6 +3244,18 @@ value of the connection ID changed.  An endpoint that is sending packets with a
 zero-length Destination Connection ID MUST treat receipt of a NEW_CONNECTION_ID
 frame as a connection error of type PROTOCOL_VIOLATION.
 
+Transmission errors, timeouts and retransmissions might cause the same
+NEW_CONNECTION_ID frame to be received multiple times. Receipt of the same
+frame multiple times MUST NOT be treated as a connection error.
+
+If an endpoint receives a NEW_CONNECTION_ID frame that repeats the same
+connection ID as a previous NEW_CONNECTION_ID frame but with a different
+Stateless Reset Token or a different Sequence, the endpoint MAY
+treat that receipt as a connection error of type PROTOCOL_VIOLATION.
+Similarly, if an endpoint receives a NEW_CONNECTION_ID frame that repeats
+the Source Connection ID used by the peer during the initial
+handshake, it MUST treat that receipt as a connection error of type
+PROTOCOL_VIOLATION.
 
 ## STOP_SENDING Frame {#frame-stop-sending}
 
@@ -3306,7 +3344,7 @@ ACK Delay:
 : A variable-length integer including the time in microseconds that the largest
   acknowledged packet, as indicated in the Largest Acknowledged field, was
   received by this peer to when this ACK was sent.  The value of the ACK Delay
-  field is scaled by multiplying the encoded value by the 2 to the power of the
+  field is scaled by multiplying the encoded value by 2 to the power of the
   value of the `ack_delay_exponent` transport parameter set by the sender of the
   ACK frame.  The `ack_delay_exponent` defaults to 3, or a multiplier of 8 (see
   {{transport-parameter-definitions}}).  Scaling in this fashion allows for a
@@ -3407,7 +3445,7 @@ Gap (repeated):
   packets preceding the packet number one lower than the smallest in the
   preceding ACK Block.
 
-ACK Block (repeated):
+Additional ACK Block (repeated):
 
 : A variable-length integer indicating the number of contiguous acknowledged
   packets preceding the largest packet number, as determined by the
@@ -3880,8 +3918,8 @@ previous PMTU determinations.
 In the absence of these mechanisms, QUIC endpoints SHOULD NOT send IP packets
 larger than 1280 octets. Assuming the minimum IP header size, this results in
 a QUIC packet size of 1232 octets for IPv6 and 1252 octets for IPv4. Some
-QUIC implementations MAY wish to be more conservative in computing allowed
-QUIC packet size given unknown tunneling overheads or IP header options.
+QUIC implementations MAY be more conservative in computing allowed QUIC packet
+size given unknown tunneling overheads or IP header options.
 
 QUIC endpoints that implement any kind of PMTU discovery SHOULD maintain an
 estimate for each combination of local and remote IP addresses.  Each pairing of
@@ -4161,10 +4199,10 @@ application protocol some of which cannot be observed by the sender.
        |                           |
        | Recv All Data             |
        v                           v
-   +-------+                   +-------+
-   | Data  | Recv RST_STREAM   | Reset |
-   | Recvd |<-- (optional) --->| Recvd |
-   +-------+                   +-------+
+   +-------+  Recv RST_STREAM  +-------+
+   | Data  |--- (optional) --->| Reset |
+   | Recvd |  Recv All Data    | Recvd |
+   +-------+<-- (optional) ----+-------+
        |                           |
        | App Read All Data         | App Read RST
        v                           v
