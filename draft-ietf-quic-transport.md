@@ -3459,7 +3459,7 @@ MUST acknowledge packets containing only ACK and PADDING frames when sending
 ACK frames in response to other packets.  Implementations MUST NOT send more
 than one packet containing only an ACK frame per received packet that contains
 frames other than a ACK and PADDING frames.  Packets containing frames
-besides ACK and PADDDING MUST be acknowledged immediately or when a delayed
+besides ACK and PADDING MUST be acknowledged immediately or when a delayed
 ack timer expires. The delayed ack timer MUST NOT delay an ACK for longer
 than an RTT or the alarm granularity.  This ensures an ACK frame is sent at
 least once per RTT if new packets needing acknowledgement were received.
