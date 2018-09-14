@@ -428,7 +428,8 @@ only carry header blocks that do not modify the state of the table.
 ### Prefixed Integers
 
 The prefixed integer from Section 5.1 of [RFC7541] is used heavily throughout
-this document.  The format from [RFC7541] is used unmodified.
+this document.  The format from [RFC7541] is used unmodified.  QPACK
+implementations MUST be able to decode integers up to 62 bits long.
 
 ### String Literals
 
