@@ -4990,7 +4990,7 @@ packet number gap count, gap size, reordering, and timing, and it can directly
 observe the resources spent in order to close the connection with a BAD_LINK
 error when conditions become unacceptable. A peer cannot easily discern between
 link quality problems and intentional abuse but in either case it must protect
-itself. An accceptable level of loss will depend on the deployment.
+itself. An acceptable level of loss will depend on the deployment.
 
 
 # IANA Considerations
