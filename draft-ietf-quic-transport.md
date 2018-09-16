@@ -1215,6 +1215,9 @@ distinguish it from other connections.  A connection ID can be either 0 octets
 in length, or between 4 and 18 octets (inclusive).  Connection IDs are selected
 independently in each direction.
 
+A connection ID SHOULD appear random to external observers in order to prevent
+correlation across paths and connections.
+
 The primary function of a connection ID is to ensure that changes in addressing
 at lower protocol layers (UDP, IP, and below) don't cause packets for a QUIC
 connection to be delivered to the wrong endpoint.  Each endpoint selects
@@ -2355,6 +2358,11 @@ the same connection on different networks.  Protection of packet numbers ensures
 that packet numbers cannot be used to correlate activity.  This does not prevent
 other properties of packets, such as timing and size, from being used to
 correlate activity.
+
+If a connection ID contains non-random data, such as routing information, the
+connection ID SHOULD be randomized.  This can for example be achieved by
+encrypting the connection ID with a key known only to the senders
+infrastructure.
 
 Clients MAY move to a new connection ID at any time based on
 implementation-specific concerns.  For example, after a period of network
