@@ -1096,9 +1096,10 @@ efficient algorithm for duplicate suppression can be found in Section 3.4.3 of
 Packet numbers SHOULD be incremented by one. Parallel processing and optimistic
 ACK attack mitigation {{optimistic-ack-attack}} can lead to gaps. The difference
 between the largets sent and the largest acknowledged packet number
-should be no more than twice the actual number of packets sent. A peer MAY close
-a connection with the error BAD_LINK when the observed loss rate based on packet
-numbers is considered too high.
+should be no more than twice the actual number of packets sent. The number of
+gaps should be kept to a minimum. A peer MAY close a connection with the error
+BAD_LINK when the observed gap count or loss rate based on packet numbers are
+considered too high.
 
 A Version Negotiation packet ({{packet-version}}) does not include a packet
 number.  The Retry packet ({{packet-retry}}) has special rules for populating
