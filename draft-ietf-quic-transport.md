@@ -4775,7 +4775,7 @@ INVALID_MIGRATION (0xC):
 
 BAD_LINK (0xD):
 
-: The link quality of the connection is considerd too low to proceed or the
+: The link quality of the connection is considered too low to proceed or the
   connection is suspected to be under attack.
 
 CRYPTO_ERROR (0x1XX):
