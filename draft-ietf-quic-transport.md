@@ -4985,10 +4985,10 @@ An endpoint, and to an extend also middleboxes, can force packet numbers to be
 spaced or reordered in a way that causes a targeted peer implementation to
 expend a large amount of resources in space or time. A peer can use carefully
 designed data structures to protect against this. A peer can also monitor the
-packet number gap size, reordering, and timing, and it can directly observe the
-resources spent in order to close the connection with a BAD_LINK error when
-conditions become unacceptable. A peer cannot easily discern between link
-quality problems and intentional abuse but in either case it must protect
+packet number gap count, gap size, reordering, and timing, and it can directly
+observe the resources spent in order to close the connection with a BAD_LINK
+error when conditions become unacceptable. A peer cannot easily discern between
+link quality problems and intentional abuse but in either case it must protect
 itself. An accceptable level of loss will depend on the deployment.
 
 
