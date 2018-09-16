@@ -1264,11 +1264,21 @@ previously unused connection ID, it can choose to supply its peer with a new
 connection ID using a NEW_CONNECTION_ID frame to reduce the possibility of its
 peer running out of available connection IDs.
 
-An endpoint that receives a packet with a different remote address than
-previously used SHOULD also switch to sending with a different connection ID.
-This can help to ensure that different connection IDs will be used in both
-directions when an endpoint migrates to a new path or changes connection ID on
-an existing path.
+Endpoints that use connection IDs with length greater than zero could have their
+activity correlated if their peers keep using the same destination connection ID
+after migration.  An endpoint that receives a packet with a different remote
+address or destination connection ID than previously used SHOULD also switch to
+sending with a connection ID that has not previously been used.  The goal is to
+ensure absence of correlation between the pairs of client and server connection
+ID used on different paths.  To fulfill this privacy requirement, endpoints that
+initiate migration and use connection IDs with length greater than zero SHOULD
+provide their peers with new connection IDs before migration.
+
+Caution:
+
+: If both endpoints change connection ID in response to seeing a change in
+  connection ID from their peer, then this can trigger an infinite sequence
+  of changes.
 
 
 ### Consuming Connection IDs
@@ -1279,12 +1289,10 @@ sending packets.  All connection IDs issued by the peer are considered valid for
 use by the endpoint when sending packets until the connection ID is retired by
 the endpoint.  Endpoints can choose to stop using a given connection ID to send
 packets at any time and signal this to the issuing endpoint via a
-CONNECTION_ID_FINISHED frame.  This frame indicates the connection ID that is no
-longer in use and serves as a request for the peer to issue additional
-connection IDs via a NEW_CONNECTION_ID frame.
+CONNECTION_ID_FINISHED frame.
 
 An endpoint that retires a connection ID should retain knowledge of that
-connection ID for a reasonable time after sending the CONNECTION_ID_FINISHED
+connection ID for a period of time after sending the CONNECTION_ID_FINISHED
 frame, or until that frame is acknowledged.  A recommended time is three times
 the current Retransmission Timeout (RTO) interval as defined in
 {{QUIC-RECOVERY}}.  This prevents potential retransmissions of a
@@ -1293,9 +1301,9 @@ for the same connection ID.
 
 Additionally, each connection ID MUST be used on packets sent from only one
 local address.  At any time, an endpoint MAY change to a new connection ID on a
-local address already in use.  An endpoint that migrates to a new local address
-SHOULD retire all connection IDs that were used on the previous address
-using the CONNECTION_ID_FINISHED frame.
+local address already in use.  An endpoint that migrates away from a local
+address SHOULD retire all connection IDs used on that address once it no longer
+plans to use that address.
 
 
 ## Matching Packets to Connections {#packet-handling}
@@ -2406,22 +2414,6 @@ genuine migrations.  Changing port number can cause a peer to reset its
 congestion state (see {{migration-cc}}), so the port SHOULD only be changed
 infrequently.
 
-Endpoints that use connection IDs with length greater than zero could have
-their activity correlated if their peers keep using the same destination
-connection ID after migration. Endpoints that receive packets with a
-previously unused Destination Connection ID SHOULD change to sending packets
-with a connection ID that has not been used on any other network path.  The
-goal is to ensure absence of correlation between the pairs of client and server
-connection ID used on different paths. To fulfill this privacy requirement,
-endpoints that initiate migration and use connection IDs with length greater
-than zero SHOULD provide their peers with new connection IDs before migration.
-
-Caution:
-
-: If both endpoints change connection ID in response to seeing a change in
-  connection ID from their peer, then this can trigger an infinite sequence
-  of changes.
-
 
 ## Server's Preferred Address {#preferred-address}
 
@@ -2698,7 +2690,7 @@ ignoring an unknown packet with a long header might be more effective.
 
 An endpoint cannot determine the Source Connection ID from a packet with a short
 header, therefore it cannot set the Destination Connection ID in the stateless
-reset packet.  The destination connection ID will therefore differ from the
+reset packet.  The Destination Connection ID will therefore differ from the
 value used in previous packets.  A random Destination Connection ID makes the
 connection ID appear to be the result of moving to a new connection ID that was
 provided using a NEW_CONNECTION_ID frame ({{frame-new-connection-id}}).
@@ -3290,13 +3282,15 @@ PROTOCOL_VIOLATION.
 ## CONNECTION_ID_FINISHED Frame {#frame-connection-id-finished}
 
 An endpoint sends a CONNECTION_ID_FINISHED frame (type=0x1b) to indicate that it
-will no longer use a connection ID that was issued by its peer.  This also
-serves as a request to the peer to send additional connection IDs for future use
-(see {{connection-id}}).  New connection IDs can be delivered via the
-NEW_CONNECTION_ID frame ({{frame-new-connection-id}}).
+will no longer use a connection ID that was issued by its peer.  Note that this
+may include the connection ID provided during the handshake.  Sending a
+CONNECTION_ID_FINISHED frame also serves as a request to the peer to send
+additional connection IDs for future use (see {{connection-id}}).  New
+connection IDs can be delivered via the NEW_CONNECTION_ID frame ({{frame-new-
+connection-id}}).
 
-Retiring a connection ID using the CONNECTION_ID_FINISHED frame invalidates any
-stateless reset tokens associated with that connection ID.
+Retiring a connection ID using the CONNECTION_ID_FINISHED frame invalidates the
+stateless reset token associated with that connection ID.
 
 The CONNECTION_ID_FINISHED frame is as follows:
 
@@ -3322,12 +3316,11 @@ Receipt of a CONNECTION_ID_FINISHED frame containing a connection ID that was
 not previously sent to the peer MAY be treated as a connection error of type
 PROTOCOL_VIOLATION.
 
-An endpoint MUST NOT send this frame if it is currently sending packets with a
-zero-length Destination Connection ID.  Changing the length of a connection ID
-to or from zero-length makes it difficult to identify when the value of the
-connection ID changed.  An endpoint that is receiving packets with a zero-length
-Destination Connection ID MUST treat receipt of a CONNECTION_ID_FINISHED frame
-as a connection error of type PROTOCOL_VIOLATION.
+An endpoint cannot send this frame if it was provided with a zero-length
+connection ID by its peer.  An endpoint that is
+receiving packets with a zero-length Destination Connection ID MUST treat
+receipt of a CONNECTION_ID_FINISHED frame as a connection error of type
+PROTOCOL_VIOLATION.
 
 
 ## STOP_SENDING Frame {#frame-stop-sending}
