@@ -1260,9 +1260,9 @@ available to reduce the possibility of peers exhausting their supply of
 available connection IDs.  An implementation could do this by always supplying a
 new connection ID for each connection ID retired with a CONNECTION_ID_FINISHED
 frame. When a receiver of a packet notices that its peer is now using a
-previously unused connection ID, it can choose to supply its peer with a new
-connection ID using a NEW_CONNECTION_ID frame to reduce the possibility of its
-peer running out of available connection IDs.
+previously unused connection ID, it can supply its peer with a new connection ID
+using a NEW_CONNECTION_ID frame to reduce the possibility of its peer running
+out of available connection IDs.
 
 Endpoints that use connection IDs with length greater than zero could have their
 activity correlated if their peers keep using the same destination connection ID
@@ -3317,10 +3317,9 @@ not previously sent to the peer MAY be treated as a connection error of type
 PROTOCOL_VIOLATION.
 
 An endpoint cannot send this frame if it was provided with a zero-length
-connection ID by its peer.  An endpoint that is
-receiving packets with a zero-length Destination Connection ID MUST treat
-receipt of a CONNECTION_ID_FINISHED frame as a connection error of type
-PROTOCOL_VIOLATION.
+connection ID by its peer.  An endpoint that provides a zero-length connection
+ID MUST treat receipt of a CONNECTION_ID_FINISHED frame as a connection error of
+type PROTOCOL_VIOLATION.
 
 
 ## STOP_SENDING Frame {#frame-stop-sending}
