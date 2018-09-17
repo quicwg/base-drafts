@@ -2157,7 +2157,7 @@ initiated while a path validation on the old path is in progress.
 ## Connection Migration {#migration}
 
 QUIC allows connections to survive changes to endpoint addresses (that is, IP
-address and/or port), such as those caused by a endpoint migrating to a new
+address and/or port), such as those caused by an endpoint migrating to a new
 network.  This section describes the process by which an endpoint migrates to a
 new address.
 
@@ -2211,7 +2211,7 @@ packet".
 
 ### Initiating Connection Migration {#initiating-migration}
 
-A endpoint can migrate a connection to a new local address by sending packets
+An endpoint can migrate a connection to a new local address by sending packets
 containing frames other than probing frames from that address.
 
 Each endpoint validates its peer's address during connection establishment.
@@ -2710,8 +2710,8 @@ The stateless reset token MUST be difficult to guess.  In order to create a
 Stateless Reset Token, an endpoint could randomly generate {{!RFC4086}} a secret
 for every connection that it creates.  However, this presents a coordination
 problem when there are multiple instances in a cluster or a storage problem for
-a endpoint that might lose state.  Stateless reset specifically exists to handle
-the case where state is lost, so this approach is suboptimal.
+an endpoint that might lose state.  Stateless reset specifically exists to
+handle the case where state is lost, so this approach is suboptimal.
 
 A single static key can be used across all connections to the same endpoint by
 generating the proof using a second iteration of a preimage-resistant function
@@ -2938,7 +2938,7 @@ The APPLICATION_CLOSE frame is as follows:
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
 
-The fields of a APPLICATION_CLOSE frame are as follows:
+The fields of an APPLICATION_CLOSE frame are as follows:
 
 Error Code:
 
@@ -3458,11 +3458,11 @@ response to packets which only contain ACK and PADDING frames. However, they
 MUST acknowledge packets containing only ACK and PADDING frames when sending
 ACK frames in response to other packets.  Implementations MUST NOT send more
 than one packet containing only an ACK frame per received packet that contains
-frames other than a ACK and PADDING frames.  Packets containing frames
-besides ACK and PADDING MUST be acknowledged immediately or when a delayed
-ack timer expires. The delayed ack timer MUST NOT delay an ACK for longer
-than an RTT or the alarm granularity.  This ensures an ACK frame is sent at
-least once per RTT if new packets needing acknowledgement were received.
+frames other than ACK and PADDING frames.  Packets containing frames besides
+ACK and PADDING MUST be acknowledged immediately or when a delayed ack timer
+expires. The delayed ack timer MUST NOT delay an ACK for longer than an RTT or
+the alarm granularity.  This ensures an ACK frame is sent at least once per RTT
+if new packets needing acknowledgement were received.
 
 To limit ACK blocks to those that have not yet been received by the sender, the
 receiver SHOULD track which ACK frames have been acknowledged by its peer.  Once
