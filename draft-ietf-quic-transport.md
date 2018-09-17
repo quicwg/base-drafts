@@ -1338,9 +1338,29 @@ Servers MUST drop incoming packets under all other circumstances.
 ## Version Negotiation
 
 Version negotiation ensures that client and server agree to a QUIC version
-that is mutually supported. A server sends a Version Negotiation packet in
-response to each packet that might initiate a new connection, see
-{{packet-handling}} for details.
+that is mutually supported. The client's Initial packet contains two version
+indications:
+
+* A packet version which indicates which version it has been encoded
+  with. This SHOULD be a version which the client expects most servers
+  to support (most likely the oldest common version).
+  
+* A list of versions which the client supports in the
+  "supported_versions" transport parameter).
+
+If the server understands the packet version -- even if it is not its
+most preferred version -- then it deprotects the packet and selects
+the most preferred version out of the client's supported versions
+list, and responds with that version. This allows a client and server
+pair which bothsupport both an old and new version to negotiate either
+version without incurring an extra round trip, thus making upgrading
+easier.  The server MUST ignore the packet version when making this
+decision (this is necessary to avoid downgrade attacks).
+
+If the server does not understand the packet version then it will not
+be able to deprotect the packet. In this case, it sends a Version
+Negotiation packet in response if the packet might initiate a new
+connection, see {{packet-handling}} for details.
 
 The size of the first packet sent by a client will determine whether a server
 sends a Version Negotiation packet. Clients that support multiple QUIC versions
@@ -1367,13 +1387,15 @@ Destination and Source Connection ID fields match the Source and Destination
 Connection ID fields in a packet that the client sent.  If this check fails, the
 packet MUST be discarded.
 
-Once the Version Negotiation packet is determined to be valid, the client then
-selects an acceptable protocol version from the list provided by the server.
-The client then attempts to create a connection using that version.  Though the
-content of the Initial packet the client sends might not change in response to
-version negotiation, a client MUST increase the packet number it uses on every
-packet it sends.  Packets MUST continue to use long headers and MUST include the
-new negotiated protocol version.
+Once the Version Negotiation packet is determined to be valid, the
+client then selects an acceptable protocol version from the list
+provided by the server. The client then attempts to create a
+connection using that version as its packet version but MUST NOT
+change the supported_versions field. Though the content of the
+Initial packet the client sends might not change in response to
+version negotiation, a client MUST increase the packet number it uses
+on every packet it sends.  Packets MUST continue to use long headers
+and MUST include the new negotiated protocol version.
 
 The client MUST use the long header format and include its selected version on
 all packets until it has 1-RTT keys and it has received a packet from the server
@@ -1567,10 +1589,6 @@ language from Section 3 of {{!TLS13=RFC8446}}.
    struct {
       select (Handshake.msg_type) {
          case client_hello:
-            QuicVersion initial_version;
-
-         case encrypted_extensions:
-            QuicVersion negotiated_version;
             QuicVersion supported_versions<4..2^8-4>;
       };
       TransportParameter parameters<22..2^16-1>;
@@ -1613,6 +1631,8 @@ idle_timeout (0x0003):
 
 : The idle timeout is a value in seconds that is encoded as an unsigned 16-bit
   integer.  The maximum value is 600 seconds (10 minutes).
+
+: A list of the QUIC versions that the client supports.
 
 An endpoint MAY use the following transport parameters:
 
@@ -1773,75 +1793,9 @@ a transport parameter therefore disables any optional protocol feature that is
 negotiated using the parameter.
 
 New transport parameters can be registered according to the rules in
-{{iana-transport-parameters}}.
-
-
-### Version Negotiation Validation {#version-validation}
-
-Though the cryptographic handshake has integrity protection, two forms of QUIC
-version downgrade are possible.  In the first, an attacker replaces the QUIC
-version in the Initial packet.  In the second, a fake Version Negotiation packet
-is sent by an attacker.  To protect against these attacks, the transport
-parameters include three fields that encode version information.  These
-parameters are used to retroactively authenticate the choice of version (see
-{{version-negotiation}}).
-
-The cryptographic handshake provides integrity protection for the negotiated
-version as part of the transport parameters (see {{transport-parameters}}).  As
-a result, attacks on version negotiation by an attacker can be detected.
-
-The client includes the initial_version field in its transport parameters.  The
-initial_version is the version that the client initially attempted to use.  If
-the server did not send a Version Negotiation packet {{packet-version}}, this
-will be identical to the negotiated_version field in the server transport
-parameters.
-
-A server that processes all packets in a stateful fashion can remember how
-version negotiation was performed and validate the initial_version value.
-
-A server that does not maintain state for every packet it receives (i.e., a
-stateless server) uses a different process. If the initial_version matches the
-version of QUIC that is in use, a stateless server can accept the value.
-
-If the initial_version is different from the version of QUIC that is in use, a
-stateless server MUST check that it would have sent a Version Negotiation packet
-if it had received a packet with the indicated initial_version.  If a server
-would have accepted the version included in the initial_version and the value
-differs from the QUIC version that is in use, the server MUST terminate the
-connection with a VERSION_NEGOTIATION_ERROR error.
-
-The server includes both the version of QUIC that is in use and a list of the
-QUIC versions that the server supports.
-
-The negotiated_version field is the version that is in use.  This MUST be set by
-the server to the value that is on the Initial packet that it accepts (not an
-Initial packet that triggers a Retry or Version Negotiation packet).  A client
-that receives a negotiated_version that does not match the version of QUIC that
-is in use MUST terminate the connection with a VERSION_NEGOTIATION_ERROR error
-code.
-
-The server includes a list of versions that it would send in any version
-negotiation packet ({{packet-version}}) in the supported_versions field.  The
-server populates this field even if it did not send a version negotiation
-packet.
-
-The client validates that the negotiated_version is included in the
-supported_versions list and - if version negotiation was performed - that it
-would have selected the negotiated version.  A client MUST terminate the
-connection with a VERSION_NEGOTIATION_ERROR error code if the current QUIC
-version is not listed in the supported_versions list.  A client MUST terminate
-with a VERSION_NEGOTIATION_ERROR error code if version negotiation occurred but
-it would have selected a different version based on the value of the
-supported_versions list.
-
-When an endpoint accepts multiple QUIC versions, it can potentially interpret
-transport parameters as they are defined by any of the QUIC versions it
-supports.  The version field in the QUIC packet header is authenticated using
-transport parameters.  The position and the format of the version fields in
-transport parameters MUST either be identical across different QUIC versions, or
-be unambiguously different to ensure no confusion about their interpretation.
-One way that a new format could be introduced is to define a TLS extension with
-a different codepoint.
+{{iana-transport-parameters}}. In order to ensure interoperability,
+transport parameters MUST have the same semantics across QUIC versions
+when sent by the client.
 
 
 ## Stateless Retries {#stateless-retry}
