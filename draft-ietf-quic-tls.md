@@ -967,12 +967,12 @@ anticipation of receiving a ClientHello.
 Once the 1-RTT keys are established and the short header is in use, it is
 possible to update the keys. The KEY_PHASE bit in the short header is used to
 indicate whether key updates have occurred. The KEY_PHASE bit is initially set
-to 0 and then inverted with each key update {{key-update}}.
+to 0 and then inverted with each key update.
 
 The KEY_PHASE bit allows a recipient to detect a change in keying material
 without necessarily needing to receive the first packet that triggered the
 change.  An endpoint that notices a changed KEY_PHASE bit can update keys and
-decrypt the packet that contains the changed bit, see {{key-update}}.
+decrypt the packet that contains the changed bit.
 
 An endpoint MUST NOT initiate more than one key update at a time.  A new key
 cannot be used until the endpoint has received and successfully decrypted a
