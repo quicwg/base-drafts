@@ -1340,7 +1340,10 @@ Servers MUST drop incoming packets under all other circumstances.
 Version negotiation ensures that client and server agree to a QUIC version
 that is mutually supported. A server sends a Version Negotiation packet in
 response to each packet that might initiate a new connection, see
-{{packet-handling}} for details.
+{{packet-handling}} for details. If a server has explicit knowledge of a previous
+or future QUIC version, the server MAY use this knowledge to avoid sending
+duplicate Version Negotiation packets to a client, for example by not sending
+negotiation packets in response to 0-RTT protected packets. 
 
 The size of the first packet sent by a client will determine whether a server
 sends a Version Negotiation packet. Clients that support multiple QUIC versions
