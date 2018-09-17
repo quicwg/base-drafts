@@ -4895,20 +4895,25 @@ restricting the length of time an endpoint is allowed to stay connected.
 
 ## Stream Fragmentation and Reassembly Attacks
 
-An adversarial endpoint might intentionally fragment the data on stream buffers
-in order to cause disproportionate memory commitment.  An adversarial endpoint
-could open a stream and send some STREAM frames containing arbitrary fragments
-of the stream content.
+An adversarial sender might intentionally send fragments of stream data in
+order to cause disproportionate receive buffer memory commitment and/or
+creation of a large and inefficient data structure.
 
-The attack is mitigated if flow control windows correspond to available
-memory.  However, some receivers will over-commit memory and advertise flow
-control offsets in the aggregate that exceed actual available memory.  The
-over-commitment strategy can lead to better performance when endpoints are well
-behaved, but renders endpoints vulnerable to the stream fragmentation attack.
+An adversarial receiver might intentionally not acknowledge packets
+containing stream data in order to force the sender to store the
+unacknowledged stream data for retransmission.
 
-QUIC deployments SHOULD provide mitigations against the stream fragmentation
-attack.  Mitigations could consist of avoiding over-committing memory, delaying
-reassembly of STREAM frames, implementing heuristics based on the age and
+The attack on receivers is mitigated if flow control windows correspond to
+available memory.  However, some receivers will over-commit memory and
+advertise flow control offsets in the aggregate that exceed actual available
+memory.  The over-commitment strategy can lead to better performance when
+endpoints are well behaved, but renders endpoints vulnerable to the stream
+fragmentation attack.
+
+QUIC deployments SHOULD provide mitigations against stream fragmentation
+attacks.  Mitigations could consist of avoiding over-committing memory,
+limiting the size of tracking data structures, delaying reassembly
+of STREAM frames, implementing heuristics based on the age and
 duration of reassembly holes, or some combination.
 
 
