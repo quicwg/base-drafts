@@ -149,7 +149,9 @@ peer's SETTINGS frame.
 
 Before a new entry is added to the dynamic table, entries are evicted from the
 end of the dynamic table until the size of the dynamic table is less than or
-equal to (maximum size - new entry size) or until the table is empty.
+equal to (maximum size - new entry size) or until the table is empty. The
+encoder MUST not evict a dynamic table entry unless it has first been
+acknowledged by the decoder.
 
 If the size of the new entry is less than or equal to the maximum size, that
 entry is added to the table.  It is an error to attempt to add an entry that is
@@ -164,6 +166,8 @@ evicted from the dynamic table prior to inserting the new entry.
 The dynamic table can contain duplicate entries (i.e., entries with the same
 name and same value).  Therefore, duplicate entries MUST NOT be treated as an
 error by a decoder.
+
+### Maximum Table Size
 
 The encoder decides how to update the dynamic table and as such can control how
 much memory is used by the dynamic table.  To limit the memory requirements of
@@ -182,12 +186,36 @@ the dynamic table is less than or equal to the maximum size.
 This mechanism can be used to completely clear entries from the dynamic table by
 setting a maximum size of 0, which can subsequently be restored.
 
-### Absolute and Relative Indexing {#indexing}
+### Calculating Table Size
+
+The size of the dynamic table is the sum of the size of its entries.
+
+The size of an entry is the sum of its name's length in octets (as defined in
+{{string-literals}}), its value's length in octets, and 32.
+
+The size of an entry is calculated using the length of its name and value
+without any Huffman encoding applied.
+
+`MaxEntries` is the maximum number of entries that the dynamic table can have.
+The smallest entry has empty name and value strings and has the size of 32.
+The MaxEntries is calculated as
+
+~~~
+   MaxEntries = floor( MaxTableSize / 32 )
+~~~
+
+MaxTableSize is the maximum size of the dynamic table as specified by the
+decoder (see {{maximum-table-size}}).
+
+
+### Absolute Indexing {#indexing}
 
 Each entry possesses both an absolute index which is fixed for the lifetime of
 that entry and a relative index which changes over time based on the context of
 the reference. The first entry inserted has an absolute index of "1"; indices
 increase sequentially with each insertion.
+
+### Relative Indexing
 
 The relative index begins at zero and increases in the opposite direction from
 the absolute index.  Determining which entry has a relative index of "0" depends
@@ -685,10 +713,34 @@ Header data is prefixed with two integers, `Largest Reference` and `Base Index`.
 
 `Largest Reference` identifies the largest absolute dynamic index referenced in
 the block.  Blocking decoders use the Largest Reference to determine when it is
-safe to process the rest of the block.
+safe to process the rest of the block.  If Largest Reference is greater than
+zero, the encoder transforms it as follows before encoding:
+
+~~~
+   LargestReference = LargestReference mod 2*MaxEntries + 1
+~~~
+
+The decoder reconstructs the Largest Reference using the following algorithm:
+
+~~~
+   if LargestReference > 0:
+      LargestReference -= 1
+      CurrentWrapped = TableLargestAbsoluteIndex mod 2*MaxEntries
+
+      if CurrentWrapped > LargestReference + MaxEntries:
+         # Largest Reference wrapped around 1 extra time
+         LargestReference += 2*MaxEntries
+
+      LargestReference +=
+         (TableLargestAbsoluteIndex - CurrentWrapped)
+~~~
+
+TableLargestAbsoluteIndex is the Absolute Index of the most recently inserted
+item in the decoder's dynamic table.  This encoding limits the length of the
+prefix on long-lived connections.
 
 `Base Index` is used to resolve references in the dynamic table as described in
-{{indexing}}.
+{{relative-indexing}}.
 
 To save space, Base Index is encoded relative to Largest Reference using a
 one-bit sign and the `Delta Base Index` value.  A sign bit of 0 indicates that
