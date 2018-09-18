@@ -1629,13 +1629,23 @@ initial_max_bidi_streams (0x0002):
   MAX_STREAM_ID containing 16 when received by a client or 17 when received by a
   server.
 
+initial_max_uni_streams (0x0008):
+
+: The initial maximum unidirectional streams parameter contains the initial
+  maximum number of unidirectional streams the peer may initiate, encoded as an
+  unsigned 16-bit integer.  If this parameter is absent or zero, unidirectional
+  streams cannot be created until a MAX_STREAM_ID frame is sent.  Setting this
+  parameter is equivalent to sending a MAX_STREAM_ID ({{frame-max-stream-id}})
+  immediately after completing the handshake containing the corresponding Stream
+  ID. For example, a value of 0x05 would be equivalent to receiving a
+  MAX_STREAM_ID containing 18 when received by a client or 19 when received by a
+  server.
+
 idle_timeout (0x0003):
 
 : The idle timeout is a value in seconds that is encoded as an unsigned 16-bit
-  integer.  There is no maximum value besides the maximum encodable value of
-  0xFFFF (about 18 hours).  If this parameter is absent or zero then the idle
-  timeout is disabled.  In this case, the transport never closes the connection
-  in response to being idle.
+  integer.  If this parameter is absent or zero then the idle timeout is
+  disabled.
 
 max_packet_size (0x0005):
 
@@ -1653,18 +1663,6 @@ ack_delay_exponent (0x0007):
   default value of 3 is assumed (indicating a multiplier of 8).  The default
   value is also used for ACK frames that are sent in Initial and Handshake
   packets.  Values above 20 are invalid.
-
-initial_max_uni_streams (0x0008):
-
-: The initial maximum unidirectional streams parameter contains the initial
-  maximum number of unidirectional streams the peer may initiate, encoded as an
-  unsigned 16-bit integer.  If this parameter is absent or zero, unidirectional
-  streams cannot be created until a MAX_STREAM_ID frame is sent.  Setting this
-  parameter is equivalent to sending a MAX_STREAM_ID ({{frame-max-stream-id}})
-  immediately after completing the handshake containing the corresponding Stream
-  ID. For example, a value of 0x05 would be equivalent to receiving a
-  MAX_STREAM_ID containing 18 when received by a client or 19 when received by a
-  server.
 
 disable_migration (0x0009):
 
