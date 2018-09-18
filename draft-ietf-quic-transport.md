@@ -1606,14 +1606,6 @@ type TRANSPORT_PARAMETER_ERROR.
 
 ### Transport Parameter Definitions
 
-An endpoint MUST include the following parameters in its encoded
-TransportParameters:
-
-idle_timeout (0x0003):
-
-: The idle timeout is a value in seconds that is encoded as an unsigned 16-bit
-  integer.  The maximum value is 600 seconds (10 minutes).
-
 An endpoint MAY use the following transport parameters:
 
 initial_max_data (0x0001):
@@ -1636,6 +1628,14 @@ initial_max_bidi_streams (0x0002):
   ID. For example, a value of 0x05 would be equivalent to receiving a
   MAX_STREAM_ID containing 16 when received by a client or 17 when received by a
   server.
+
+idle_timeout (0x0003):
+
+: The idle timeout is a value in seconds that is encoded as an unsigned 16-bit
+  integer.  There is no maximum value besides the maximum encodable value of
+  0xFFFF (about 18 hours).  If this parameter is abset or zero then the idle
+  timeout is disabled.  In this case, the transport never closes the connection
+  in response to being idle.
 
 initial_max_uni_streams (0x0008):
 
@@ -2531,9 +2531,9 @@ source address.
 
 ### Idle Timeout
 
-A connection that remains idle for longer than the advertised idle timeout (see
-{{transport-parameter-definitions}}) is closed.  A connection enters the
-draining state when the idle timeout expires.
+If the idle timeout is enabled, a connection that remains idle for longer than
+the advertised idle timeout (see {{transport-parameter-definitions}}) is closed.
+A connection enters the draining state when the idle timeout expires.
 
 Each endpoint advertises their own idle timeout to their peer. The idle timeout
 starts from the last packet received.  In order to ensure that initiating new
