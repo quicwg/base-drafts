@@ -1223,7 +1223,7 @@ deployment-specific) method which will allow packets with that connection ID to
 be routed back to the endpoint and identified by the endpoint upon receipt.
 
 In order to ensure privacy a connection ID SHOULD not be contain any information
-that makes it possible to correlate it to any other connectoin ID on the same
+that makes it possible to correlate it to any other connection ID on the same
 connection.
 
 A zero-length connection ID MAY be used when the connection ID is not needed for
