@@ -703,9 +703,9 @@ server may send multiple Initial packets.  The cryptographic key exchange could
 require multiple round trips or retransmissions of this data.
 
 The payload of an Initial packet includes a CRYPTO frame (or frames) containing
-a cryptographic handshake message, ACK frames, or both.  PADDING,
-CONNECTION_CLOSE, and APPLICATION_CLOSE frames are also permitted.  The first
-CRYPTO frame sent always begins at an offset of 0 (see {{handshake}}).
+a cryptographic handshake message, ACK frames, or both.  PADDING and
+CONNECTION_CLOSE frames are also permitted.  The first CRYPTO frame sent always
+begins at an offset of 0 (see {{handshake}}).
 
 The first packet sent by a client always includes a CRYPTO frame that contains
 the entirety of the first cryptographic handshake message.  This packet, and the
