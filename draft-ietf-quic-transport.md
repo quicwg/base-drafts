@@ -3805,7 +3805,7 @@ been lost.  In general, information is sent again when a packet containing that
 information is determined to be lost and sending ceases when a packet
 containing that information is acknowledged.
 
-* Data sent in CRYPTO frames are retransmitted according to the rules in
+* Data sent in CRYPTO frames is retransmitted according to the rules in
   {{QUIC-RECOVERY}}, until either all data has been acknowledged or the crypto
   state machine implicitly knows that the peer received the data.
 
