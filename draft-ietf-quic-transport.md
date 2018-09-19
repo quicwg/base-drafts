@@ -1222,9 +1222,9 @@ connection IDs using an implementation-specific (and perhaps
 deployment-specific) method which will allow packets with that connection ID to
 be routed back to the endpoint and identified by the endpoint upon receipt.
 
-A connection ID SHOULD appear random to external observers in order to prevent
-correlation across paths and connections.  The connection ID can contain a short
-static portion to provide decoding hints.
+In order to ensure privacy a connection ID SHOULD not be contain any information
+that makes it possible to correlate it to any other connectoin ID on the same
+connection.
 
 A zero-length connection ID MAY be used when the connection ID is not needed for
 routing and the address/port tuple of packets is sufficient to associate them to
@@ -2352,18 +2352,14 @@ Using a stable connection ID on multiple network paths allows a passive observer
 to correlate activity between those paths.  An endpoint that moves between
 networks might not wish to have their activity correlated by any entity other
 than their peer, so different connection IDs are used when sending from
-different local addresses, as discussed in {{connection-id}}.
+different local addresses, as discussed in {{connection-id}}.  For this to be
+effective connection IDs must be carefully designed to prevent such correlation.
 
 This eliminates the use of the connection ID for linking activity from
 the same connection on different networks.  Protection of packet numbers ensures
 that packet numbers cannot be used to correlate activity.  This does not prevent
 other properties of packets, such as timing and size, from being used to
 correlate activity.
-
-If a connection ID contains non-random data, such as routing information, the
-connection ID SHOULD be randomized.  This can for example be achieved by
-encrypting the connection ID with a key known only to the destinations
-infrastructure.
 
 Clients MAY move to a new connection ID at any time based on
 implementation-specific concerns.  For example, after a period of network
