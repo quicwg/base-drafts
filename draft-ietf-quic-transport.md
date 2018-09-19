@@ -4378,7 +4378,7 @@ The maximum stream ID is specific to each endpoint and applies only to the peer
 that receives the setting. That is, clients specify the maximum stream ID the
 server can initiate, and servers specify the maximum stream ID the client can
 initiate.  Each endpoint may respond on streams initiated by the other peer,
-regardless of whether it is permitted to initiated new streams.
+regardless of whether it is permitted to initiate new streams.
 
 Endpoints MUST NOT exceed the limit set by their peer.  An endpoint that
 receives a STREAM frame with an ID greater than the limit it has sent MUST treat
