@@ -1222,7 +1222,7 @@ connection IDs using an implementation-specific (and perhaps
 deployment-specific) method which will allow packets with that connection ID to
 be routed back to the endpoint and identified by the endpoint upon receipt.
 
-In order to ensure privacy a connection ID SHOULD not be contain any information
+In order to ensure privacy a connection ID SHOULD not contain any information
 that makes it possible to correlate it to any other connection ID on the same
 connection.
 
