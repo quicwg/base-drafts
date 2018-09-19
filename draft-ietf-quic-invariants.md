@@ -220,9 +220,6 @@ is intended for.
 The connection ID is chosen by each endpoint using version-specific methods.
 Packets for the same QUIC connection might use different connection ID values.
 
-The fields in the long header can only express a connection ID that is 0 octets
-in length, or between 4 and 18 octets (inclusive).
-
 
 ## Version
 
