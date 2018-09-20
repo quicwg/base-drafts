@@ -704,13 +704,15 @@ require multiple round trips or retransmissions of this data.
 
 The payload of an Initial packet includes a CRYPTO frame (or frames) containing
 a cryptographic handshake message, ACK frames, or both.  PADDING and
-CONNECTION_CLOSE frames are also permitted.  The first CRYPTO frame sent always
-begins at an offset of 0 (see {{handshake}}).
+CONNECTION_CLOSE frames are also permitted.  An endpoint that receives an
+Initial packet containing other frames can either discard the packet as spurious
+or treat it as a connection error.
 
 The first packet sent by a client always includes a CRYPTO frame that contains
 the entirety of the first cryptographic handshake message.  This packet, and the
 cryptographic handshake message, MUST fit in a single UDP datagram (see
-{{handshake}}).
+{{handshake}}).  The first CRYPTO frame sent always begins at an offset of 0
+(see {{handshake}}).
 
 Note that if the server sends a HelloRetryRequest, the client will send a second
 Initial packet.  This Initial packet will continue the cryptographic handshake
@@ -872,7 +874,8 @@ any message from the client encrypted using the Handshake keys.
 
 The payload of this packet contains CRYPTO frames and could contain PADDING, or
 ACK frames. Handshake packets MAY contain CONNECTION_CLOSE or APPLICATION_CLOSE
-frames.
+frames.  Endpoints MUST treat receipt of Handshake packets with other frames as
+a connection error.
 
 
 ## Protected Packets {#packet-protected}

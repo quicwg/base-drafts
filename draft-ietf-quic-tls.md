@@ -324,8 +324,8 @@ encryption levels
 
 - CRYPTO frames MAY appear in packets of any encryption level.
 
-- CONNECTION_CLOSE MAY appear in packets of any encryption level other than
-  0-RTT.
+- CONNECTION_CLOSE and APPLICATION_CLOSE MAY appear in packets of any encryption
+  level other than 0-RTT.
 
 - PADDING and PING frames MAY appear in packets of any encryption level.
 
