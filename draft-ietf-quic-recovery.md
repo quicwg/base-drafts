@@ -599,10 +599,9 @@ min_rtt:
 
 max_ack_delay:
 : The value from the `max_ack_delay` transport parameter, which
-  indicates the maximum amount of time the receiver intends
-  to delay acks.  The actual ack_delay in a received ACK
-  frame may be larger due to late timers, reordering, or
-  lost ACKs.
+  indicates the maximum amount of time in milliseconds the receiver
+  intends to delay acks.  The actual ack_delay in a received ACK
+  frame may be larger due to late timers, reordering, or lost ACKs.
 
 reordering_threshold:
 : The largest packet number gap between the largest acknowledged
