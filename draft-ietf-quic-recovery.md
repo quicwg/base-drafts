@@ -598,9 +598,11 @@ min_rtt:
 : The minimum RTT seen in the connection, ignoring ack delay.
 
 max_ack_delay:
-: The maximum ack delay in an incoming ACK frame for this connection.
-  Excludes ack delays for non-retransmittable packets and those
-  that create an RTT sample less than min_rtt.
+: The value from the `max_ack_delay` transport parameter, which
+  indicates the maximum amount of time the receiver intends
+  to delay acks.  The actual ack_delay in a received ACK
+  frame may be larger due to late timers, reordering, or
+  lost ACKs.
 
 reordering_threshold:
 : The largest packet number gap between the largest acknowledged
@@ -645,7 +647,6 @@ follows:
    smoothed_rtt = 0
    rttvar = 0
    min_rtt = infinite
-   max_ack_delay = 0
    largest_sent_before_rto = 0
    time_of_last_sent_retransmittable_packet = 0
    time_of_last_sent_handshake_packet = 0
@@ -726,10 +727,6 @@ Pseudocode for OnAckReceived and UpdateRtt follow:
     // Adjust for ack delay if it's plausible.
     if (latest_rtt - min_rtt > ack_delay):
       latest_rtt -= ack_delay
-      // Only save into max ack delay if it's used
-      // for rtt calculation and is not ack-only.
-      if (!sent_packets[ack.largest_acked].ack_only)
-        max_ack_delay = max(max_ack_delay, ack_delay)
     // Based on {{?RFC6298}}.
     if (smoothed_rtt == 0):
       smoothed_rtt = latest_rtt
