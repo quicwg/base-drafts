@@ -1678,8 +1678,8 @@ disable_migration (0x0009):
 max_ack_delay (0x000c):
 
 : An 8 bit unsigned integer value indicating the maximum amount of time in
-  milliseconds an ACK frame will be delayed by a receiver.  if this value is
-  absent, a default of 25 is assumed.
+  milliseconds an ACK frame will be delayed by a receiver.  If this value is
+  absent, a default of 25 milliseconds is assumed.
 
 Either peer MAY advertise an initial value for the flow control on each type of
 stream on which they might receive data.  Each of the following transport
@@ -3472,7 +3472,7 @@ expires. The delayed ack timer MUST NOT delay an ACK for longer than an RTT or
 the value of the `max_ack_delay` transport parameter the receiver specifies.
 This ensures an ACK frame is sent at least once per RTT if new packets
 needing acknowledgement were received and ensures the sender has a predictable
-limit on the ack delay.
+limit on the ack delay for timer based retransmissions.
 
 To limit ACK blocks to those that have not yet been received by the sender, the
 receiver SHOULD track which ACK frames have been acknowledged by its peer.  Once
