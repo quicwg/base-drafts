@@ -4463,7 +4463,7 @@ authentication messages.
 STREAM data in frames determined to be lost SHOULD be retransmitted before
 sending new data, unless application priorities indicate otherwise.
 Retransmitting lost stream data can fill in gaps, which allows the peer to
-consume already received data and free up flow control window.
+consume already received data and free up the flow control window.
 
 
 # Flow Control {#flow-control}
