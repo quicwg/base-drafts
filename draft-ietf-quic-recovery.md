@@ -100,7 +100,7 @@ In-flight:
 
 Retransmittable Frames:
 
-: All frames besides ACK, or PADDING are considered
+: All frames besides ACK or PADDING are considered
   retransmittable.
 
 Retransmittable Packets:
@@ -127,7 +127,7 @@ mechanisms ensure that data and frames that need reliable delivery are
 acknowledged or declared lost and sent in new packets as necessary. The types
 of frames contained in a packet affect recovery and congestion control logic:
 
-* All packets are acknowledged, though packets that contain only ACK,
+* All packets are acknowledged, though packets that contain only ACK
   and PADDING frames are not acknowledged immediately.
 
 * Long header packets that contain CRYPTO frames are critical to the
