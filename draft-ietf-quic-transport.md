@@ -3985,10 +3985,11 @@ application data, aggressive increases in probe size carry fewer consequences.
 Streams in QUIC provide a lightweight, ordered byte-stream abstraction.
 
 There are two basic types of stream in QUIC.  Unidirectional streams carry data
-in one direction only; bidirectional streams allow for data to be sent in both
-directions.  Different stream identifiers are used to distinguish between
-unidirectional and bidirectional streams, as well as to create a separation
-between streams that are initiated by the client and server (see {{stream-id}}).
+only in one direction: from the initiator of the stream to its peer;
+bidirectional streams allow for data to be sent in both directions.  Different
+stream identifiers are used to distinguish between unidirectional and
+bidirectional streams, as well as to create a separation between streams that
+are initiated by the client and server (see {{stream-id}}).
 
 Either type of stream can be created by either endpoint, can concurrently send
 data interleaved with other streams, and can be cancelled.
