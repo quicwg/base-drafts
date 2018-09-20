@@ -546,7 +546,7 @@ shares, and long lists of supported ciphers, signature algorithms, versions,
 QUIC transport parameters, and other negotiable parameters and extensions could
 cause this message to grow.
 
-For servers, in addition to connection ID and tokens, the size of TLS session
+For servers, in addition to connection IDs and tokens, the size of TLS session
 tickets can have an effect on a client's ability to connect.  Minimizing the
 size of these values increases the probability that they can be successfully
 used by a client.
