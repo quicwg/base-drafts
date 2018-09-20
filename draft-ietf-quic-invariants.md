@@ -189,7 +189,7 @@ version-specific semantics are marked with an X.
 +-+-+-+-+-+-+-+-+
 |0|X X X X X X X|
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                Destination Connection ID (0..144)           ...
+|                 Destination Connection ID (*)               ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X  ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -198,17 +198,16 @@ version-specific semantics are marked with an X.
 
 A QUIC packet with a short header has the high bit of the first octet set to 0.
 
-A QUIC packet with a short header includes an optional Destination Connection
-ID.  The short header does not include the Connection ID Lengths, Source
-Connection ID, or Version fields.
+A QUIC packet with a short header includes a Destination Connection ID.  The
+short header does not include the Connection ID Lengths, Source Connection ID,
+or Version fields.
 
 The remainder of the packet has version-specific semantics.
 
 
 ## Connection ID
 
-A connection ID is an opaque field.  A connection ID can be 0 octets in length,
-or between 4 and 18 octets (inclusive).
+A connection ID is an opaque field of arbitrary length.
 
 The primary function of a connection ID is to ensure that changes in addressing
 at lower protocol layers (UDP, IP, and below) don't cause packets for a QUIC
