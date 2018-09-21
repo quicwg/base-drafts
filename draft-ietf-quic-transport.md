@@ -593,8 +593,9 @@ The server populates the Destination Connection ID with the connection ID that
 the client included in the Source Connection ID of the Initial packet.
 
 The server includes a connection ID of its choice in the Source Connection ID
-field.  The client MUST use this connection ID in the Destination Connection ID
-of subsequent packets that it sends.
+field.  This value MUST not be equal to the Destination Connection ID field of
+the packet sent by the client.  The client MUST use this connection ID in the
+Destination Connection ID of subsequent packets that it sends.
 
 A server MAY send Retry packets in response to Initial and 0-RTT packets.  A
 server can either discard or buffer 0-RTT packets that it receives.  A server
