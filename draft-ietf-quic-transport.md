@@ -1327,8 +1327,8 @@ If the packet is an Initial packet fully conforming with the specification, the
 server proceeds with the handshake ({{handshake}}). This commits the server to
 the version that the client selected.
 
-If a server isn't currently accepting any new connections, it SHOULD send a
-Handshake packet containing a CONNECTION_CLOSE frame with error code
+If a server isn't currently accepting any new connections, it SHOULD send an
+Initial packet containing a CONNECTION_CLOSE frame with error code
 SERVER_BUSY.
 
 If the packet is a 0-RTT packet, the server MAY buffer a limited number of these
