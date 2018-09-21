@@ -3470,8 +3470,8 @@ frames other than ACK and PADDING frames.  Packets containing frames besides
 ACK and PADDING MUST be acknowledged immediately or when a delayed ack timer
 expires.
 
-The delayed ack timer MUST NOT delay an ACK for longer than an RTT or
-the value of the `max_ack_delay` transport parameter the receiver specifies.
+The receiver's delayed ack timer MUST NOT delay an ACK for longer than an RTT
+or the value indicated by the `max_ack_delay` transport parameter.
 This ensures an ACK frame is sent at least once per RTT if new packets
 needing acknowledgement were received and ensures the sender has a predictable
 limit on the ack delay for timer based retransmissions.  ACKs should be sent
