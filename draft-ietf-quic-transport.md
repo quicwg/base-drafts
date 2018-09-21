@@ -3468,11 +3468,14 @@ ACK frames in response to other packets.  Implementations MUST NOT send more
 than one packet containing only an ACK frame per received packet that contains
 frames other than ACK and PADDING frames.  Packets containing frames besides
 ACK and PADDING MUST be acknowledged immediately or when a delayed ack timer
-expires. The delayed ack timer MUST NOT delay an ACK for longer than an RTT or
+expires.
+
+The delayed ack timer MUST NOT delay an ACK for longer than an RTT or
 the value of the `max_ack_delay` transport parameter the receiver specifies.
 This ensures an ACK frame is sent at least once per RTT if new packets
 needing acknowledgement were received and ensures the sender has a predictable
-limit on the ack delay for timer based retransmissions.
+limit on the ack delay for timer based retransmissions.  ACKs should be sent
+immediately after 2 or more packets needing acknowledgement have been received.
 
 To limit ACK blocks to those that have not yet been received by the sender, the
 receiver SHOULD track which ACK frames have been acknowledged by its peer.  Once
