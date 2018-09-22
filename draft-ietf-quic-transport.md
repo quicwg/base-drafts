@@ -606,7 +606,7 @@ attempt.  After the client has received and processed an Initial or Retry packet
 from the server, it MUST discard any subsequent Retry packets that it receives.
 
 Clients MUST discard Retry packets that contain an Original Destination
-Connection ID field that does not match the Destination Connection ID its
+Connection ID field that does not match the Destination Connection ID from its
 Initial packet.  This prevents an off-path attacker from injecting a Retry
 packet.
 
