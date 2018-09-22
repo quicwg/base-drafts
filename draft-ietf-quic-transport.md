@@ -3710,6 +3710,10 @@ functionally identical to STREAM frames, except that they do not bear a stream
 identifier; they are not flow controlled; and they do not carry markers for
 optional offset, optional length, and the end of the stream.
 
+If a QUIC endpoint processses a CRYPTO frame for a cryptographic context, having
+already processed a CRYPTO frame in a more secure context, it MUST drop the data
+in the frame without delivering it to TLS for processing.
+
 A CRYPTO frame is shown below.
 
 ~~~
