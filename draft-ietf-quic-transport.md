@@ -593,37 +593,40 @@ The server populates the Destination Connection ID with the connection ID that
 the client included in the Source Connection ID of the Initial packet.
 
 The server includes a connection ID of its choice in the Source Connection ID
-field.  The client MUST use this connection ID in the Destination Connection ID
-of subsequent packets that it sends.
+field.  This value MUST not be equal to the Destination Connection ID field of
+the packet sent by the client.  The client MUST use this connection ID in the
+Destination Connection ID of subsequent packets that it sends.
 
-A Retry packet does not include a packet number and cannot be explicitly
-acknowledged by a client.
+A server MAY send Retry packets in response to Initial and 0-RTT packets.  A
+server can either discard or buffer 0-RTT packets that it receives.  A server
+can send multiple Retry packets as it receives Initial or 0-RTT packets.
 
-A server MUST NOT send a Retry in response to packets other than Initial
-or 0-RTT packets.  A server MAY choose to only send Retry in response to Initial
-packets and discard or buffer 0-RTT packets corresponding to unvalidated client
-addresses.
+A client MUST accept and process at most one Retry packet for each connection
+attempt.  After the client has received and processed an Initial or Retry packet
+from the server, it MUST discard any subsequent Retry packets that it receives.
 
-If the Original Destination Connection ID field does not match the Destination
-Connection ID from the most recent Initial packet it sent, clients MUST discard
-the packet.  This prevents an off-path attacker from injecting a Retry packet.
+Clients MUST discard Retry packets that contain an Original Destination
+Connection ID field that does not match the Destination Connection ID from its
+Initial packet.  This prevents an off-path attacker from injecting a Retry
+packet.
 
 The client responds to a Retry packet with an Initial packet that includes the
 provided Retry Token to continue connection establishment.
+
+A client sets the Destination Connection ID field of this Initial packet to the
+value from the Source Connection ID in the Retry packet. Changing Destination
+Connection ID also results in a change to the keys used to protect the Initial
+packet. It also sets the Token field to the token provided in the Retry. The
+client MUST NOT change the Source Connection ID because the server could include
+the connection ID as part of its token validation logic (see {{tokens}}).
 
 A client MAY attempt 0-RTT after receiving a Retry packet by sending 0-RTT
 packets to the connection ID provided by the server.  A client that sends
 additional 0-RTT packets MUST NOT reset the packet number to 0 after a Retry
 packet, see {{retry-0rtt-pn}}.
 
-A server that might send another Retry packet in response to a subsequent
-Initial packet MUST set the Source Connection ID to a new value of at least 8
-octets in length.  This allows clients to distinguish between Retry packets when
-the server sends multiple rounds of Retry packets.  Consequently, a valid Retry
-packet will always have an Original Destination Connection ID that is at least 8
-octets long; clients MUST discard Retry packets that include a shorter value.  A
-server that will not send additional Retry packets can set the Source Connection
-ID to any value.
+A Retry packet does not include a packet number and cannot be explicitly
+acknowledged by a client.
 
 
 ## Cryptographic Handshake Packets {#handshake-packets}
@@ -741,9 +744,10 @@ Source Connection IDs during the handshake.
 
 On first receiving an Initial or Retry packet from the server, the client uses
 the Source Connection ID supplied by the server as the Destination Connection ID
-for subsequent packets.  Once a client has received an Initial packet from the
-server, it MUST discard any packet it receives with a different Source
-Connection ID.
+for subsequent packets.  That means that a client might change the Destination
+Connection ID twice during connection establishment.  Once a client has received
+an Initial packet from the server, it MUST discard any packet it receives with a
+different Source Connection ID.
 
 
 ### Tokens
@@ -764,14 +768,6 @@ client MUST NOT reuse a token if it believes that its point of network
 attachment has changed since the token was last used; that is, if there is a
 change in its local IP address or network interface.  A client needs to start
 the connection process over if it migrates prior to completing the handshake.
-
-If the client received a Retry packet from the server and sends an Initial
-packet in response, then it sets the Destination Connection ID to the value from
-the Source Connection ID in the Retry packet. Changing Destination Connection ID
-also results in a change to the keys used to protect the Initial packet. It also
-sets the Token field to the token provided in the Retry. The client MUST NOT
-change the Source Connection ID because the server could include the connection
-ID as part of its token validation logic.
 
 When a server receives an Initial packet with an address validation token, it
 SHOULD attempt to validate it.  If the token is invalid then the server SHOULD
@@ -831,11 +827,11 @@ MUST assume that all packets up to the current packet number are in flight,
 starting from a packet number of 0.  Thus, 0-RTT packets could need to use a
 longer packet number encoding.
 
-A client MAY instead generate a fresh cryptographic handshake message and start
-packet numbers from 0.  This ensures that new 0-RTT packets will not use the
-same keys, avoiding any risk of key and nonce reuse; this also prevents 0-RTT
-packets from previous handshake attempts from being accepted as part of the
-connection.
+A client SHOULD instead generate a fresh cryptographic handshake message and
+start packet numbers from 0.  This ensures that new 0-RTT packets will not use
+the same keys, avoiding any risk of key and nonce reuse; this also prevents
+0-RTT packets from previous handshake attempts from being accepted as part of
+the connection.
 
 
 ### Minimum Packet Size
@@ -901,13 +897,6 @@ Packets protected with 0-RTT keys use a type value of 0x7C.  The connection ID
 fields for a 0-RTT packet MUST match the values used in the Initial packet
 ({{packet-initial}}).
 
-The client can send 0-RTT packets after receiving an Initial
-{{packet-initial}} or Handshake ({{packet-handshake}}) packet, if that
-packet does not complete the handshake.  Even if the client receives a
-different connection ID in the Handshake packet, it MUST continue to
-use the same Destination Connection ID for 0-RTT packets, see
-{{connection-id-encoding}}.
-
 The version field for protected packets is the current QUIC version.
 
 The packet number field contains a packet number, which has additional
@@ -970,15 +959,15 @@ ID field of packets being sent to them.  Upon receiving a packet, each endpoint
 sets the Destination Connection ID it sends to match the value of the Source
 Connection ID that they receive.
 
-During the handshake, an endpoint might receive multiple packets with the long
-header, and thus be given multiple opportunities to update the Destination
-Connection ID it sends.  A client MUST only change the value it sends in the
-Destination Connection ID in response to the first packet of each type it
-receives from the server (Retry or Initial); a server MUST set its value based
-on the Initial packet.  Any additional changes are not permitted; if subsequent
-packets of those types include a different Source Connection ID, they MUST be
-discarded.  This avoids problems that might arise from stateless processing of
-multiple Initial packets producing different connection IDs.
+During the handshake, a client can receive both a Retry and an Initial packet,
+and thus be given two opportunities to update the Destination Connection ID it
+sends.  A client MUST only change the value it sends in the Destination
+Connection ID in response to the first packet of each type it receives from the
+server (Retry or Initial); a server MUST set its value based on the Initial
+packet.  Any additional changes are not permitted; if subsequent packets of
+those types include a different Source Connection ID, they MUST be discarded.
+This avoids problems that might arise from stateless processing of multiple
+Initial packets producing different connection IDs.
 
 Short headers only include the Destination Connection ID and omit the explicit
 length.  The length of the Destination Connection ID field is expected to be
@@ -1214,8 +1203,7 @@ endpoint, as described in {{termination}}.
 ## Connection ID
 
 Each connection possesses a set of identifiers, any of which could be used to
-distinguish it from other connections.  A connection ID can be either 0 octets
-in length, or between 4 and 18 octets (inclusive).  Connection IDs are selected
+distinguish it from other connections.  Connection IDs are selected
 independently in each direction.
 
 The primary function of a connection ID is to ensure that changes in addressing
@@ -1226,10 +1214,10 @@ deployment-specific) method which will allow packets with that connection ID to
 be routed back to the endpoint and identified by the endpoint upon receipt.
 
 A zero-length connection ID MAY be used when the connection ID is not needed for
-routing and the address/port tuple of packets is sufficient to associate them to
-a connection. An endpoint whose peer has selected a zero-length connection ID
-MUST continue to use a zero-length connection ID for the lifetime of the
-connection and MUST NOT send packets from any other local address.
+routing and the address/port tuple of packets is sufficient to identify a
+connection. An endpoint whose peer has selected a zero-length connection ID MUST
+continue to use a zero-length connection ID for the lifetime of the connection
+and MUST NOT send packets from any other local address.
 
 When an endpoint has requested a non-zero-length connection ID, it will issue a
 series of connection IDs over the lifetime of a connection. The series of
@@ -1847,8 +1835,8 @@ a different codepoint.
 
 ## Stateless Retries {#stateless-retry}
 
-A server can process an initial cryptographic handshake messages from a client
-without committing any state. This allows a server to perform address validation
+A server can process an Initial packet from a client without committing any
+state. This allows a server to perform address validation
 ({{address-validation}}), or to defer connection establishment costs.
 
 A server that generates a response to an Initial packet without retaining
