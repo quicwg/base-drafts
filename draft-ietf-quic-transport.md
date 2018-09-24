@@ -128,15 +128,16 @@ general-purpose secure transport for multiple applications.
 
 * Connection migration and resilience to NAT rebinding
 
-QUIC implements techniques learned from experience with TCP, SCTP and other
-transport protocols.  QUIC uses UDP as substrate so as to not require changes to
-legacy client operating systems and middleboxes to be deployable.  QUIC
-authenticates all of its headers and encrypts most of the data it exchanges,
-including its signaling.  This allows the protocol to evolve without incurring a
-dependency on upgrades to middleboxes.  This document describes the core QUIC
-protocol, including the conceptual design, wire format, and mechanisms of the
-QUIC protocol for connection establishment, stream multiplexing, stream and
-connection-level flow control, connection migration, and data reliability.
+QUIC uses UDP as substrate so as to not require changes to legacy client
+operating systems and middleboxes to be deployable.  QUIC authenticates all of
+its headers and encrypts most of the data it exchanges, including its signaling.
+This allows the protocol to evolve without incurring a dependency on upgrades to
+middleboxes.
+
+This document describes the core QUIC protocol, including the conceptual design,
+wire format, and mechanisms of the QUIC protocol for connection establishment,
+stream multiplexing, stream and connection-level flow control, connection
+migration, and data reliability.
 
 Accompanying documents describe QUIC's loss detection and congestion control
 {{QUIC-RECOVERY}}, and the use of TLS 1.3 for key negotiation {{QUIC-TLS}}.
