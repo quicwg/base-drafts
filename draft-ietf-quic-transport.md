@@ -1222,9 +1222,8 @@ connection IDs using an implementation-specific (and perhaps
 deployment-specific) method which will allow packets with that connection ID to
 be routed back to the endpoint and identified by the endpoint upon receipt.
 
-In order to ensure privacy a connection ID SHOULD not contain any information
-that makes it possible to correlate it to any other connection ID on the same
-connection.
+Connection IDs MUST NOT contain any information that can be used to correlate
+them with other connection IDs for the same connection.
 
 A zero-length connection ID MAY be used when the connection ID is not needed for
 routing and the address/port tuple of packets is sufficient to associate them to
