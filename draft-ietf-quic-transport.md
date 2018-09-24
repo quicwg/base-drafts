@@ -128,8 +128,8 @@ general-purpose secure transport for multiple applications.
 
 * Connection migration and resilience to NAT rebinding
 
-QUIC uses UDP as substrate so as to not require changes to legacy client
-operating systems and middleboxes to be deployable.  QUIC authenticates all of
+QUIC uses UDP as a substrate to avoid changes to legacy client operating
+systems and middleboxes in order to be deployed.  QUIC authenticates all of
 its headers and encrypts most of the data it exchanges, including its signaling.
 This allows the protocol to evolve without incurring a dependency on upgrades to
 middleboxes.
