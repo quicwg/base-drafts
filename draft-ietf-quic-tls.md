@@ -188,7 +188,8 @@ TLS 1.3 provides two basic handshake modes of interest to QUIC:
    self-contained trigger for any non-idempotent action.
 
 A simplified TLS 1.3 handshake with 0-RTT application data is shown in
-{{tls-full}}, see {{!TLS13}} for more options and details.
+{{tls-full}}.  Note that this omits the EndOfEarlyData message, which is not
+used in QUIC (see {{remove-eoed}}).
 
 ~~~
     Client                                             Server
@@ -199,7 +200,6 @@ A simplified TLS 1.3 handshake with 0-RTT application data is shown in
                                          {EncryptedExtensions}
                                                     {Finished}
                              <--------      [Application Data]
-   (EndOfEarlyData)
    {Finished}                -------->
 
    [Application Data]        <------->      [Application Data]
@@ -465,10 +465,9 @@ and lower encryption levels than the current encryption level used by TLS.
 
 In particular, server implementations need to be able to read packets at the
 Handshake encryption level before the final TLS handshake message at the 0-RTT
-encryption level (EndOfEarlyData) is available.  Though the content of CRYPTO
-frames at the Handshake encryption level cannot be forwarded to TLS before
-EndOfEarlyData is processed, the client could send ACK frames that the server
-needs to process in order to detect lost Handshake packets.
+encryption level is available.  A client could interleave ACK frames that are
+protected with Handshake keys with 0-RTT data and the server needs to process
+those acknowledgments in order to detect lost Handshake packets.
 
 
 ### TLS Interface Summary
@@ -1106,6 +1105,16 @@ While the transport parameters are technically available prior to the completion
 of the handshake, they cannot be fully trusted until the handshake completes,
 and reliance on them should be minimized.  However, any tampering with the
 parameters will cause the handshake to fail.
+
+
+## Removing the EndOfEarlyData Message {#remove-eoed}
+
+Negotiating the quic_transport_parameters extension also modifies TLS to remove
+the EndOfEarlyData message.  QUIC does not rely on this message to mark the end
+of 0-RTT data or to signal the change to Handshake keys.
+
+Clients MUST NOT send the EndOfEarlyData message.  As a result, EndOfEarlyData
+does not appear in the TLS handshake.
 
 
 # Security Considerations
