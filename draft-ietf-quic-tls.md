@@ -741,7 +741,7 @@ The hash function for HKDF when deriving initial secrets and keys is SHA-256
 
 The connection ID used with HKDF-Expand-Label is the Destination Connection ID
 in the Initial packet sent by the client.  This will be a randomly-selected
-value unless the client creates the Initial packet after reciving a Retry
+value unless the client creates the Initial packet after receiving a Retry
 packet, where the Destination Connection ID is selected by the server.
 
 The value of initial_salt is a 20 octet sequence shown in the figure in
