@@ -1086,6 +1086,14 @@ protection for the reasons described in Section 9.3 of {{QUIC-TLS}}. An
 efficient algorithm for duplicate suppression can be found in Section 3.4.3 of
 {{?RFC2406}}.
 
+Packet numbers SHOULD be incremented by one. Parallel processing and optimistic
+ACK attack mitigation {{optimistic-ack-attack}} can lead to gaps. The difference
+between the largest sent and the largest acknowledged packet number
+SHOULD be no more than twice the actual number of packets sent.  The number of
+gaps and their sizes SHOULD be kept to a minimum.  A peer MAY close a connection
+with the error BAD_LINK when the observed gap count or loss rate based on packet
+numbers are considered too high.
+
 A Version Negotiation packet ({{packet-version}}) does not include a packet
 number.  The Retry packet ({{packet-retry}}) has special rules for populating
 the packet number field.
@@ -4762,6 +4770,11 @@ INVALID_MIGRATION (0xC):
 : A peer has migrated to a different network when the endpoint had disabled
   migration.
 
+BAD_LINK (0xD):
+
+: The link quality of the connection is considered too low to proceed or the
+  connection is suspected to be under attack.
+
 CRYPTO_ERROR (0x1XX):
 
 : The cryptographic handshake failed.  A range of 256 values is reserved for
@@ -4863,7 +4876,7 @@ forward-secure key, the attacker will not be able to generate forward-secure
 protected packets with ACK frames.
 
 
-## Optimistic ACK Attack
+## Optimistic ACK Attack {#optimistic-ack-attack}
 
 An endpoint that acknowledges packets it has not received might cause a
 congestion controller to permit sending at rates beyond what the network
@@ -4967,6 +4980,18 @@ being terminated.  If there is no chance in the packet being routed to the
 correct instance, it is better to send a stateless reset than wait for
 connections to time out.  However, this is acceptable only if the routing cannot
 be influenced by an attacker.
+
+## Packet Number Sequence Attack
+
+An endpoint, and to an extend also middleboxes, can force packet numbers to be
+spaced or reordered in a way that causes a targeted peer implementation to
+expend a large amount of resources in space or time. A peer can use carefully
+designed data structures to protect against this. A peer can also monitor the
+packet number gap count, gap size, reordering, and timing, and it can directly
+observe the resources spent in order to close the connection with a BAD_LINK
+error when conditions become unacceptable. A peer cannot easily discern between
+link quality problems and intentional abuse but in either case it must protect
+itself. An acceptable level of loss will depend on the deployment.
 
 
 # IANA Considerations
