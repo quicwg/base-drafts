@@ -982,7 +982,7 @@ connection ID to vary in length and still be used by the load balancer.
 The very first packet sent by a client includes a random value for Destination
 Connection ID.  The same value MUST be used for all 0-RTT packets sent on that
 connection ({{packet-protected}}).  This randomized value is used to determine
-the packet protection keys for Initial packets (see Section 5.1.1 of
+the packet protection keys for Initial packets (see Section 5.2 of
 {{QUIC-TLS}}).
 
 A Version Negotiation ({{packet-version}}) packet MUST use both connection IDs
@@ -3467,7 +3467,7 @@ expires.
 The receiver's delayed acknowledgment timer SHOULD NOT exceed the current RTT
 estimate or the value it indicates in the `max_ack_delay` transport parameter.
 This ensures an acknowledgment is sent at least once per RTT when packets
-needing acknowledgement are received.  The sender can use the receiver's 
+needing acknowledgement are received.  The sender can use the receiver's
 `max_ack_delay` value in determining timeouts for timer-based retransmission.
 
 An acknowledgment SHOULD be sent immediately after receiving 2 packets that
