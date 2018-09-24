@@ -1551,6 +1551,7 @@ language from Section 3 of {{!TLS13=RFC8446}}.
       disable_migration(9),
       initial_max_stream_data_bidi_remote(10),
       initial_max_stream_data_uni(11),
+      max_ack_delay(12),
       (65535)
    } TransportParameterId;
 
@@ -1665,6 +1666,12 @@ disable_migration (0x0009):
   NOT send any packets, including probing packets ({{probing}}), from a local
   address other than that used to perform the handshake.  This parameter is a
   zero-length value.
+
+max_ack_delay (0x000c):
+
+: An 8 bit unsigned integer value indicating the maximum amount of time in
+  milliseconds by which it will delay sending of acknowledgments.  If this
+  value is absent, a default of 25 milliseconds is assumed.
 
 Either peer MAY advertise an initial value for the flow control on each type of
 stream on which they might receive data.  Each of the following transport
@@ -3455,9 +3462,16 @@ ACK frames in response to other packets.  Implementations MUST NOT send more
 than one packet containing only an ACK frame per received packet that contains
 frames other than ACK and PADDING frames.  Packets containing frames besides
 ACK and PADDING MUST be acknowledged immediately or when a delayed ack timer
-expires. The delayed ack timer MUST NOT delay an ACK for longer than an RTT or
-the alarm granularity.  This ensures an ACK frame is sent at least once per RTT
-if new packets needing acknowledgement were received.
+expires.
+
+The receiver's delayed acknowledgment timer SHOULD NOT exceed the current RTT
+estimate or the value it indicates in the `max_ack_delay` transport parameter.
+This ensures an acknowledgment is sent at least once per RTT when packets
+needing acknowledgement are received.  The sender can use the receiver's 
+`max_ack_delay` value in determining timeouts for timer-based retransmission.
+
+An acknowledgment SHOULD be sent immediately after receiving 2 packets that
+require acknowledgement, unless multiple packets are received together.
 
 To limit ACK blocks to those that have not yet been received by the sender, the
 receiver SHOULD track which ACK frames have been acknowledged by its peer.  Once
