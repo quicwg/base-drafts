@@ -626,6 +626,18 @@ packets to the connection ID provided by the server.  A client that sends
 additional 0-RTT packets MUST NOT reset the packet number to 0 after a Retry
 packet, see {{retry-0rtt-pn}}.
 
+A server acknowledges the use of a Retry packet for a connection using the
+original_connection_id transport parameter (see
+{{transport-parameter-definitions}}).  If the server sends a Retry packet, it
+MUST include the value of the Original Destination Connection ID field of the
+Retry packet (that is, the Destination Connection ID field from the client's
+first Initial packet) in the transport parameter.
+
+If the client received and processed a Retry packet, it validates that the
+original_connection_id transport parameter is present and correct; otherwise, it
+validates that the transport parameter is absent.  A client MUST treat a failed
+validation as a connection error of type TRANSPORT_PARAMETER_ERROR.
+
 A Retry packet does not include a packet number and cannot be explicitly
 acknowledged by a client.
 
@@ -1552,6 +1564,7 @@ language from Section 3 of {{!TLS13=RFC8446}}.
       initial_max_stream_data_bidi_remote(10),
       initial_max_stream_data_uni(11),
       max_ack_delay(12),
+      original_connection_id(13),
       (65535)
    } TransportParameterId;
 
@@ -1708,6 +1721,14 @@ equivalent to sending a MAX_STREAM_DATA frame ({{frame-max-stream-data}}) on
 every stream of the corresponding type immediately after opening.  If the
 transport parameter is absent, streams of that type start with a flow control
 limit of 0.
+
+A server MUST include the original_connection_id transport parameter if it sent
+a Retry packet:
+
+original_connection_id (0x000d):
+
+: The value of the Destination Connection ID field from the first Initial packet
+  sent by the client.  This transport parameter is only sent by the server.
 
 A server MAY include the following transport parameters:
 
