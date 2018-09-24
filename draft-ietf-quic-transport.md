@@ -2353,7 +2353,8 @@ to correlate activity between those paths.  An endpoint that moves between
 networks might not wish to have their activity correlated by any entity other
 than their peer, so different connection IDs are used when sending from
 different local addresses, as discussed in {{connection-id}}.  For this to be
-effective connection IDs must be carefully designed to prevent such correlation.
+effective endpoints need to ensure that connections IDs they provide cannot be
+linked by any other entity.
 
 This eliminates the use of the connection ID for linking activity from
 the same connection on different networks.  Protection of packet numbers ensures
