@@ -1238,8 +1238,9 @@ The initial connection ID issued to the peer is sent by the endpoint as the
 Source Connection ID during the handshake, ensuring that the peer always begins
 the connection with at least one connection ID to use when sending.  An endpoint
 SHOULD supply its peer with additional connection IDs via NEW_CONNECTION_ID
-frames. While each endpoint can choose how many connection IDs to issue, a
-recommended number of outstanding connection IDs is eight.
+frames, up to the number of connection IDs specified in the `max_connection_ids`
+transport parameter.  While each endpoint can choose how many connection IDs to
+issue, a recommended number of outstanding connection IDs is eight.
 
 When an endpoint issues a connection ID, it MUST accept packets using this
 connection ID for the duration of the connection or until its peer invalidates
@@ -1592,6 +1593,7 @@ language from Section 3 of {{!TLS13=RFC8446}}.
       disable_migration(9),
       initial_max_stream_data_bidi_remote(10),
       initial_max_stream_data_uni(11),
+      max_connection_ids(12),
       (65535)
    } TransportParameterId;
 
@@ -1706,6 +1708,16 @@ disable_migration (0x0009):
   NOT send any packets, including probing packets ({{probing}}), from a local
   address other than that used to perform the handshake.  This parameter is a
   zero-length value.
+
+max_connection_ids (0x000c):
+
+: A 16-bit unsigned integer value indicating the maximum number of connection
+  IDs the endpoint would like its peer to issue, as described in
+  {{connection-id}}.  The receiver MUST NOT provide more than this many
+  connection IDs using NEW_CONNECTION_ID frames ({{frame-new-connection-id}}),
+  noting that the initial connection ID established during the handshake is
+  included in this count.  If a zero-length connection ID is used, this
+  parameter MUST be ignored.
 
 Either peer MAY advertise an initial value for the flow control on each type of
 stream on which they might receive data.  Each of the following transport
@@ -5080,6 +5092,7 @@ The initial contents of this registry are shown in {{iana-tp-table}}.
 | 0x0009 | disable_migration           | {{transport-parameter-definitions}} |
 | 0x000a | initial_max_stream_data_bidi_remote | {{transport-parameter-definitions}} |
 | 0x000b | initial_max_stream_data_uni | {{transport-parameter-definitions}} |
+| 0x000c | max_connection_ids          | {{transport-parameter-definitions}} |
 {: #iana-tp-table title="Initial QUIC Transport Parameters Entries"}
 
 
