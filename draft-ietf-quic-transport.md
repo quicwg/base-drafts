@@ -1214,6 +1214,9 @@ connection IDs using an implementation-specific (and perhaps
 deployment-specific) method which will allow packets with that connection ID to
 be routed back to the endpoint and identified by the endpoint upon receipt.
 
+Connection IDs MUST NOT contain any information that can be used to correlate
+them with other connection IDs for the same connection.
+
 A zero-length connection ID MAY be used when the connection ID is not needed for
 routing and the address/port tuple of packets is sufficient to identify a
 connection. An endpoint whose peer has selected a zero-length connection ID MUST
@@ -2338,7 +2341,9 @@ Using a stable connection ID on multiple network paths allows a passive observer
 to correlate activity between those paths.  An endpoint that moves between
 networks might not wish to have their activity correlated by any entity other
 than their peer, so different connection IDs are used when sending from
-different local addresses, as discussed in {{connection-id}}.
+different local addresses, as discussed in {{connection-id}}.  For this to be
+effective endpoints need to ensure that connections IDs they provide cannot be
+linked by any other entity.
 
 This eliminates the use of the connection ID for linking activity from
 the same connection on different networks.  Protection of packet numbers ensures
