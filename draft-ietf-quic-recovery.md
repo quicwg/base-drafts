@@ -88,14 +88,9 @@ when, and only when, they appear in all capitals, as shown here.
 
 Definitions of terms that are used in this document:
 
-ACK frames:
-
-: ACK frames refer to both ACK and ACK_ECN frames in this
-  document.
-
 ACK-only:
 
-: Any packet containing only an ACK or ACK_ECN frame.
+: Any packet containing only an ACK frame.
 
 In-flight:
 
@@ -105,7 +100,7 @@ In-flight:
 
 Retransmittable Frames:
 
-: All frames besides ACK, ACK_ECN, or PADDING are considered
+: All frames besides ACK or PADDING are considered
   retransmittable.
 
 Retransmittable Packets:
@@ -132,14 +127,14 @@ mechanisms ensure that data and frames that need reliable delivery are
 acknowledged or declared lost and sent in new packets as necessary. The types
 of frames contained in a packet affect recovery and congestion control logic:
 
-* All packets are acknowledged, though packets that contain only ACK,
-  ACK_ECN, and PADDING frames are not acknowledged immediately.
+* All packets are acknowledged, though packets that contain only ACK
+  and PADDING frames are not acknowledged immediately.
 
 * Long header packets that contain CRYPTO frames are critical to the
   performance of the QUIC handshake and use shorter timers for
   acknowledgement and retransmission.
 
-* Packets that contain only ACK and ACK_ECN frames do not count toward
+* Packets that contain only ACK frames do not count toward
   congestion control limits and are not considered in-flight. Note that this
   means PADDING frames cause packets to contribute toward bytes in flight
   without directly causing an acknowledgment to be sent.
@@ -598,9 +593,10 @@ min_rtt:
 : The minimum RTT seen in the connection, ignoring ack delay.
 
 max_ack_delay:
-: The maximum ack delay in an incoming ACK frame for this connection.
-  Excludes ack delays for non-retransmittable packets and those
-  that create an RTT sample less than min_rtt.
+: The maximum amount of time by which the receiver intends to delay
+  acknowledgments, in milliseconds.  The actual ack_delay in a
+  received ACK frame may be larger due to late timers, reordering,
+  or lost ACKs.
 
 reordering_threshold:
 : The largest packet number gap between the largest acknowledged
@@ -645,7 +641,6 @@ follows:
    smoothed_rtt = 0
    rttvar = 0
    min_rtt = infinite
-   max_ack_delay = 0
    largest_sent_before_rto = 0
    time_of_last_sent_retransmittable_packet = 0
    time_of_last_sent_handshake_packet = 0
@@ -726,10 +721,6 @@ Pseudocode for OnAckReceived and UpdateRtt follow:
     // Adjust for ack delay if it's plausible.
     if (latest_rtt - min_rtt > ack_delay):
       latest_rtt -= ack_delay
-      // Only save into max ack delay if it's used
-      // for rtt calculation and is not ack-only.
-      if (!sent_packets[ack.largest_acked].ack_only)
-        max_ack_delay = max(max_ack_delay, ack_delay)
     // Based on {{?RFC6298}}.
     if (smoothed_rtt == 0):
       smoothed_rtt = latest_rtt
@@ -1064,7 +1055,7 @@ Variables required to implement the congestion control mechanisms
 are described in this section.
 
 ecn_ce_counter:
-: The highest value reported for the ECN-CE counter by the peer in an ACK_ECN
+: The highest value reported for the ECN-CE counter by the peer in an ACK
   frame. This variable is used to detect increases in the reported ECN-CE
   counter.
 
@@ -1153,7 +1144,7 @@ detected. Starts a new recovery period and reduces the congestion window.
 
 ### Process ECN Information
 
-Invoked when an ACK_ECN frame is received from the peer.
+Invoked when an ACK frame with an ECN section is received from the peer.
 
 ~~~
    ProcessECN(ack):

@@ -593,37 +593,40 @@ The server populates the Destination Connection ID with the connection ID that
 the client included in the Source Connection ID of the Initial packet.
 
 The server includes a connection ID of its choice in the Source Connection ID
-field.  The client MUST use this connection ID in the Destination Connection ID
-of subsequent packets that it sends.
+field.  This value MUST not be equal to the Destination Connection ID field of
+the packet sent by the client.  The client MUST use this connection ID in the
+Destination Connection ID of subsequent packets that it sends.
 
-A Retry packet does not include a packet number and cannot be explicitly
-acknowledged by a client.
+A server MAY send Retry packets in response to Initial and 0-RTT packets.  A
+server can either discard or buffer 0-RTT packets that it receives.  A server
+can send multiple Retry packets as it receives Initial or 0-RTT packets.
 
-A server MUST NOT send a Retry in response to packets other than Initial
-or 0-RTT packets.  A server MAY choose to only send Retry in response to Initial
-packets and discard or buffer 0-RTT packets corresponding to unvalidated client
-addresses.
+A client MUST accept and process at most one Retry packet for each connection
+attempt.  After the client has received and processed an Initial or Retry packet
+from the server, it MUST discard any subsequent Retry packets that it receives.
 
-If the Original Destination Connection ID field does not match the Destination
-Connection ID from the most recent Initial packet it sent, clients MUST discard
-the packet.  This prevents an off-path attacker from injecting a Retry packet.
+Clients MUST discard Retry packets that contain an Original Destination
+Connection ID field that does not match the Destination Connection ID from its
+Initial packet.  This prevents an off-path attacker from injecting a Retry
+packet.
 
 The client responds to a Retry packet with an Initial packet that includes the
 provided Retry Token to continue connection establishment.
+
+A client sets the Destination Connection ID field of this Initial packet to the
+value from the Source Connection ID in the Retry packet. Changing Destination
+Connection ID also results in a change to the keys used to protect the Initial
+packet. It also sets the Token field to the token provided in the Retry. The
+client MUST NOT change the Source Connection ID because the server could include
+the connection ID as part of its token validation logic (see {{tokens}}).
 
 A client MAY attempt 0-RTT after receiving a Retry packet by sending 0-RTT
 packets to the connection ID provided by the server.  A client that sends
 additional 0-RTT packets MUST NOT reset the packet number to 0 after a Retry
 packet, see {{retry-0rtt-pn}}.
 
-A server that might send another Retry packet in response to a subsequent
-Initial packet MUST set the Source Connection ID to a new value of at least 8
-octets in length.  This allows clients to distinguish between Retry packets when
-the server sends multiple rounds of Retry packets.  Consequently, a valid Retry
-packet will always have an Original Destination Connection ID that is at least 8
-octets long; clients MUST discard Retry packets that include a shorter value.  A
-server that will not send additional Retry packets can set the Source Connection
-ID to any value.
+A Retry packet does not include a packet number and cannot be explicitly
+acknowledged by a client.
 
 
 ## Cryptographic Handshake Packets {#handshake-packets}
@@ -703,14 +706,16 @@ server may send multiple Initial packets.  The cryptographic key exchange could
 require multiple round trips or retransmissions of this data.
 
 The payload of an Initial packet includes a CRYPTO frame (or frames) containing
-a cryptographic handshake message, ACK frames, or both.  PADDING frames are also
-permitted.  The first CRYPTO frame sent always begins at an offset of 0 (see
-{{handshake}}).
+a cryptographic handshake message, ACK frames, or both.  PADDING and
+CONNECTION_CLOSE frames are also permitted.  An endpoint that receives an
+Initial packet containing other frames can either discard the packet as spurious
+or treat it as a connection error.
 
 The first packet sent by a client always includes a CRYPTO frame that contains
 the entirety of the first cryptographic handshake message.  This packet, and the
 cryptographic handshake message, MUST fit in a single UDP datagram (see
-{{handshake}}).
+{{handshake}}).  The first CRYPTO frame sent always begins at an offset of 0
+(see {{handshake}}).
 
 Note that if the server sends a HelloRetryRequest, the client will send a second
 Initial packet.  This Initial packet will continue the cryptographic handshake
@@ -739,9 +744,10 @@ Source Connection IDs during the handshake.
 
 On first receiving an Initial or Retry packet from the server, the client uses
 the Source Connection ID supplied by the server as the Destination Connection ID
-for subsequent packets.  Once a client has received an Initial packet from the
-server, it MUST discard any packet it receives with a different Source
-Connection ID.
+for subsequent packets.  That means that a client might change the Destination
+Connection ID twice during connection establishment.  Once a client has received
+an Initial packet from the server, it MUST discard any packet it receives with a
+different Source Connection ID.
 
 
 ### Tokens
@@ -762,14 +768,6 @@ client MUST NOT reuse a token if it believes that its point of network
 attachment has changed since the token was last used; that is, if there is a
 change in its local IP address or network interface.  A client needs to start
 the connection process over if it migrates prior to completing the handshake.
-
-If the client received a Retry packet from the server and sends an Initial
-packet in response, then it sets the Destination Connection ID to the value from
-the Source Connection ID in the Retry packet. Changing Destination Connection ID
-also results in a change to the keys used to protect the Initial packet. It also
-sets the Token field to the token provided in the Retry. The client MUST NOT
-change the Source Connection ID because the server could include the connection
-ID as part of its token validation logic.
 
 When a server receives an Initial packet with an address validation token, it
 SHOULD attempt to validate it.  If the token is invalid then the server SHOULD
@@ -829,11 +827,11 @@ MUST assume that all packets up to the current packet number are in flight,
 starting from a packet number of 0.  Thus, 0-RTT packets could need to use a
 longer packet number encoding.
 
-A client MAY instead generate a fresh cryptographic handshake message and start
-packet numbers from 0.  This ensures that new 0-RTT packets will not use the
-same keys, avoiding any risk of key and nonce reuse; this also prevents 0-RTT
-packets from previous handshake attempts from being accepted as part of the
-connection.
+A client SHOULD instead generate a fresh cryptographic handshake message and
+start packet numbers from 0.  This ensures that new 0-RTT packets will not use
+the same keys, avoiding any risk of key and nonce reuse; this also prevents
+0-RTT packets from previous handshake attempts from being accepted as part of
+the connection.
 
 
 ### Minimum Packet Size
@@ -871,8 +869,9 @@ addresses can be verified through an address validation token
 any message from the client encrypted using the Handshake keys.
 
 The payload of this packet contains CRYPTO frames and could contain PADDING, or
-ACK frames. Handshake packets MAY contain CONNECTION_CLOSE frames if the
-handshake is unsuccessful.
+ACK frames. Handshake packets MAY contain CONNECTION_CLOSE or APPLICATION_CLOSE
+frames.  Endpoints MUST treat receipt of Handshake packets with other frames as
+a connection error.
 
 
 ## Protected Packets {#packet-protected}
@@ -897,13 +896,6 @@ the communicating endpoints receive the corresponding keys.
 Packets protected with 0-RTT keys use a type value of 0x7C.  The connection ID
 fields for a 0-RTT packet MUST match the values used in the Initial packet
 ({{packet-initial}}).
-
-The client can send 0-RTT packets after receiving an Initial
-{{packet-initial}} or Handshake ({{packet-handshake}}) packet, if that
-packet does not complete the handshake.  Even if the client receives a
-different connection ID in the Handshake packet, it MUST continue to
-use the same Destination Connection ID for 0-RTT packets, see
-{{connection-id-encoding}}.
 
 The version field for protected packets is the current QUIC version.
 
@@ -967,15 +959,15 @@ ID field of packets being sent to them.  Upon receiving a packet, each endpoint
 sets the Destination Connection ID it sends to match the value of the Source
 Connection ID that they receive.
 
-During the handshake, an endpoint might receive multiple packets with the long
-header, and thus be given multiple opportunities to update the Destination
-Connection ID it sends.  A client MUST only change the value it sends in the
-Destination Connection ID in response to the first packet of each type it
-receives from the server (Retry or Initial); a server MUST set its value based
-on the Initial packet.  Any additional changes are not permitted; if subsequent
-packets of those types include a different Source Connection ID, they MUST be
-discarded.  This avoids problems that might arise from stateless processing of
-multiple Initial packets producing different connection IDs.
+During the handshake, a client can receive both a Retry and an Initial packet,
+and thus be given two opportunities to update the Destination Connection ID it
+sends.  A client MUST only change the value it sends in the Destination
+Connection ID in response to the first packet of each type it receives from the
+server (Retry or Initial); a server MUST set its value based on the Initial
+packet.  Any additional changes are not permitted; if subsequent packets of
+those types include a different Source Connection ID, they MUST be discarded.
+This avoids problems that might arise from stateless processing of multiple
+Initial packets producing different connection IDs.
 
 Short headers only include the Destination Connection ID and omit the explicit
 length.  The length of the Destination Connection ID field is expected to be
@@ -1212,8 +1204,7 @@ endpoint, as described in {{termination}}.
 ## Connection ID
 
 Each connection possesses a set of identifiers, any of which could be used to
-distinguish it from other connections.  A connection ID can be either 0 octets
-in length, or between 4 and 18 octets (inclusive).  Connection IDs are selected
+distinguish it from other connections.  Connection IDs are selected
 independently in each direction.
 
 The primary function of a connection ID is to ensure that changes in addressing
@@ -1224,10 +1215,10 @@ deployment-specific) method which will allow packets with that connection ID to
 be routed back to the endpoint and identified by the endpoint upon receipt.
 
 A zero-length connection ID MAY be used when the connection ID is not needed for
-routing and the address/port tuple of packets is sufficient to associate them to
-a connection.  An endpoint whose peer has selected a zero-length connection ID
-MUST continue to use a zero-length connection ID for the lifetime of the
-connection and MUST NOT send packets from any other local address.
+routing and the address/port tuple of packets is sufficient to identify a
+connection. An endpoint whose peer has selected a zero-length connection ID MUST
+continue to use a zero-length connection ID for the lifetime of the connection
+and MUST NOT send packets from any other local address.
 
 An endpoint whose peer has selected a non-zero-length connection ID will
 potentially send packets using different connection IDs over the lifetime of a
@@ -1369,8 +1360,8 @@ If the packet is an Initial packet fully conforming with the specification, the
 server proceeds with the handshake ({{handshake}}). This commits the server to
 the version that the client selected.
 
-If a server isn't currently accepting any new connections, it SHOULD send a
-Handshake packet containing a CONNECTION_CLOSE frame with error code
+If a server isn't currently accepting any new connections, it SHOULD send an
+Initial packet containing a CONNECTION_CLOSE frame with error code
 SERVER_BUSY.
 
 If the packet is a 0-RTT packet, the server MAY buffer a limited number of these
@@ -1570,7 +1561,7 @@ Handshake[0]: CRYPTO[FIN], ACK[0]
                          1-RTT[1]: STREAM[55, "..."], ACK[1,2]
                                        <- Handshake[1]: ACK[0]
 ~~~~
-{: #tls-0rtt-handshake title="Example 1-RTT Handshake"}
+{: #tls-0rtt-handshake title="Example 0-RTT Handshake"}
 
 
 ## Transport Parameters
@@ -1651,14 +1642,6 @@ type TRANSPORT_PARAMETER_ERROR.
 
 ### Transport Parameter Definitions
 
-An endpoint MUST include the following parameters in its encoded
-TransportParameters:
-
-idle_timeout (0x0003):
-
-: The idle timeout is a value in seconds that is encoded as an unsigned 16-bit
-  integer.  The maximum value is 600 seconds (10 minutes).
-
 An endpoint MAY use the following transport parameters:
 
 initial_max_data (0x0001):
@@ -1693,6 +1676,12 @@ initial_max_uni_streams (0x0008):
   ID. For example, a value of 0x05 would be equivalent to receiving a
   MAX_STREAM_ID containing 18 when received by a client or 19 when received by a
   server.
+
+idle_timeout (0x0003):
+
+: The idle timeout is a value in seconds that is encoded as an unsigned 16-bit
+  integer.  If this parameter is absent or zero then the idle timeout is
+  disabled.
 
 max_packet_size (0x0005):
 
@@ -1891,8 +1880,8 @@ a different codepoint.
 
 ## Stateless Retries {#stateless-retry}
 
-A server can process an initial cryptographic handshake messages from a client
-without committing any state. This allows a server to perform address validation
+A server can process an Initial packet from a client without committing any
+state. This allows a server to perform address validation
 ({{address-validation}}), or to defer connection establishment costs.
 
 A server that generates a response to an Initial packet without retaining
@@ -2202,7 +2191,7 @@ initiated while a path validation on the old path is in progress.
 ## Connection Migration {#migration}
 
 QUIC allows connections to survive changes to endpoint addresses (that is, IP
-address and/or port), such as those caused by a endpoint migrating to a new
+address and/or port), such as those caused by an endpoint migrating to a new
 network.  This section describes the process by which an endpoint migrates to a
 new address.
 
@@ -2256,7 +2245,7 @@ packet".
 
 ### Initiating Connection Migration {#initiating-migration}
 
-A endpoint can migrate a connection to a new local address by sending packets
+An endpoint can migrate a connection to a new local address by sending packets
 containing frames other than probing frames from that address.
 
 Each endpoint validates its peer's address during connection establishment.
@@ -2560,9 +2549,9 @@ source address.
 
 ### Idle Timeout
 
-A connection that remains idle for longer than the advertised idle timeout (see
-{{transport-parameter-definitions}}) is closed.  A connection enters the
-draining state when the idle timeout expires.
+If the idle timeout is enabled, a connection that remains idle for longer than
+the advertised idle timeout (see {{transport-parameter-definitions}}) is closed.
+A connection enters the draining state when the idle timeout expires.
 
 Each endpoint advertises their own idle timeout to their peer. The idle timeout
 starts from the last packet received.  In order to ensure that initiating new
@@ -2742,8 +2731,8 @@ The stateless reset token MUST be difficult to guess.  In order to create a
 Stateless Reset Token, an endpoint could randomly generate {{!RFC4086}} a secret
 for every connection that it creates.  However, this presents a coordination
 problem when there are multiple instances in a cluster or a storage problem for
-a endpoint that might lose state.  Stateless reset specifically exists to handle
-the case where state is lost, so this approach is suboptimal.
+an endpoint that might lose state.  Stateless reset specifically exists to
+handle the case where state is lost, so this approach is suboptimal.
 
 A single static key can be used across all connections to the same endpoint by
 generating the proof using a second iteration of a preimage-resistant function
@@ -2970,7 +2959,7 @@ The APPLICATION_CLOSE frame is as follows:
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
 
-The fields of a APPLICATION_CLOSE frame are as follows:
+The fields of an APPLICATION_CLOSE frame are as follows:
 
 Error Code:
 
@@ -3523,11 +3512,11 @@ response to packets which only contain ACK and PADDING frames. However, they
 MUST acknowledge packets containing only ACK and PADDING frames when sending
 ACK frames in response to other packets.  Implementations MUST NOT send more
 than one packet containing only an ACK frame per received packet that contains
-frames other than a ACK and PADDING frames.  Packets containing frames
-besides ACK and PADDDING MUST be acknowledged immediately or when a delayed
-ack timer expires. The delayed ack timer MUST NOT delay an ACK for longer
-than an RTT or the alarm granularity.  This ensures an ACK frame is sent at
-least once per RTT if new packets needing acknowledgement were received.
+frames other than ACK and PADDING frames.  Packets containing frames besides
+ACK and PADDING MUST be acknowledged immediately or when a delayed ack timer
+expires. The delayed ack timer MUST NOT delay an ACK for longer than an RTT or
+the alarm granularity.  This ensures an ACK frame is sent at least once per RTT
+if new packets needing acknowledgement were received.
 
 To limit ACK blocks to those that have not yet been received by the sender, the
 receiver SHOULD track which ACK frames have been acknowledged by its peer.  Once
@@ -3870,7 +3859,7 @@ been lost.  In general, information is sent again when a packet containing that
 information is determined to be lost and sending ceases when a packet
 containing that information is acknowledged.
 
-* Data sent in CRYPTO frames are retransmitted according to the rules in
+* Data sent in CRYPTO frames is retransmitted according to the rules in
   {{QUIC-RECOVERY}}, until either all data has been acknowledged or the crypto
   state machine implicitly knows that the peer received the data.
 
@@ -4054,10 +4043,11 @@ application data, aggressive increases in probe size carry fewer consequences.
 Streams in QUIC provide a lightweight, ordered byte-stream abstraction.
 
 There are two basic types of stream in QUIC.  Unidirectional streams carry data
-in one direction only; bidirectional streams allow for data to be sent in both
-directions.  Different stream identifiers are used to distinguish between
-unidirectional and bidirectional streams, as well as to create a separation
-between streams that are initiated by the client and server (see {{stream-id}}).
+in one direction: from the initiator of the stream to its peer;
+bidirectional streams allow for data to be sent in both directions.  Different
+stream identifiers are used to distinguish between unidirectional and
+bidirectional streams, as well as to create a separation between streams that
+are initiated by the client and server (see {{stream-id}}).
 
 Either type of stream can be created by either endpoint, can concurrently send
 data interleaved with other streams, and can be cancelled.
@@ -4445,7 +4435,7 @@ The maximum stream ID is specific to each endpoint and applies only to the peer
 that receives the setting. That is, clients specify the maximum stream ID the
 server can initiate, and servers specify the maximum stream ID the client can
 initiate.  Each endpoint may respond on streams initiated by the other peer,
-regardless of whether it is permitted to initiated new streams.
+regardless of whether it is permitted to initiate new streams.
 
 Endpoints MUST NOT exceed the limit set by their peer.  An endpoint that
 receives a STREAM frame with an ID greater than the limit it has sent MUST treat
@@ -4528,7 +4518,7 @@ authentication messages.
 STREAM data in frames determined to be lost SHOULD be retransmitted before
 sending new data, unless application priorities indicate otherwise.
 Retransmitting lost stream data can fill in gaps, which allows the peer to
-consume already received data and free up flow control window.
+consume already received data and free up the flow control window.
 
 
 # Flow Control {#flow-control}
@@ -4962,20 +4952,25 @@ restricting the length of time an endpoint is allowed to stay connected.
 
 ## Stream Fragmentation and Reassembly Attacks
 
-An adversarial endpoint might intentionally fragment the data on stream buffers
-in order to cause disproportionate memory commitment.  An adversarial endpoint
-could open a stream and send some STREAM frames containing arbitrary fragments
-of the stream content.
+An adversarial sender might intentionally send fragments of stream data in
+order to cause disproportionate receive buffer memory commitment and/or
+creation of a large and inefficient data structure.
 
-The attack is mitigated if flow control windows correspond to available
-memory.  However, some receivers will over-commit memory and advertise flow
-control offsets in the aggregate that exceed actual available memory.  The
-over-commitment strategy can lead to better performance when endpoints are well
-behaved, but renders endpoints vulnerable to the stream fragmentation attack.
+An adversarial receiver might intentionally not acknowledge packets
+containing stream data in order to force the sender to store the
+unacknowledged stream data for retransmission.
 
-QUIC deployments SHOULD provide mitigations against the stream fragmentation
-attack.  Mitigations could consist of avoiding over-committing memory, delaying
-reassembly of STREAM frames, implementing heuristics based on the age and
+The attack on receivers is mitigated if flow control windows correspond to
+available memory.  However, some receivers will over-commit memory and
+advertise flow control offsets in the aggregate that exceed actual available
+memory.  The over-commitment strategy can lead to better performance when
+endpoints are well behaved, but renders endpoints vulnerable to the stream
+fragmentation attack.
+
+QUIC deployments SHOULD provide mitigations against stream fragmentation
+attacks.  Mitigations could consist of avoiding over-committing memory,
+limiting the size of tracking data structures, delaying reassembly
+of STREAM frames, implementing heuristics based on the age and
 duration of reassembly holes, or some combination.
 
 

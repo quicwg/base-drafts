@@ -324,8 +324,8 @@ encryption levels
 
 - CRYPTO frames MAY appear in packets of any encryption level.
 
-- CONNECTION_CLOSE MAY appear in packets of any encryption level other than
-  0-RTT.
+- CONNECTION_CLOSE and APPLICATION_CLOSE MAY appear in packets of any encryption
+  level other than 0-RTT.
 
 - PADDING and PING frames MAY appear in packets of any encryption level.
 
@@ -546,7 +546,7 @@ shares, and long lists of supported ciphers, signature algorithms, versions,
 QUIC transport parameters, and other negotiable parameters and extensions could
 cause this message to grow.
 
-For servers, in addition to connection ID and tokens, the size of TLS session
+For servers, in addition to connection IDs and tokens, the size of TLS session
 tickets can have an effect on a client's ability to connect.  Minimizing the
 size of these values increases the probability that they can be successfully
 used by a client.
@@ -967,12 +967,12 @@ anticipation of receiving a ClientHello.
 Once the 1-RTT keys are established and the short header is in use, it is
 possible to update the keys. The KEY_PHASE bit in the short header is used to
 indicate whether key updates have occurred. The KEY_PHASE bit is initially set
-to 0 and then inverted with each key update {{key-update}}.
+to 0 and then inverted with each key update.
 
 The KEY_PHASE bit allows a recipient to detect a change in keying material
 without necessarily needing to receive the first packet that triggered the
 change.  An endpoint that notices a changed KEY_PHASE bit can update keys and
-decrypt the packet that contains the changed bit, see {{key-update}}.
+decrypt the packet that contains the changed bit.
 
 An endpoint MUST NOT initiate more than one key update at a time.  A new key
 cannot be used until the endpoint has received and successfully decrypted a
