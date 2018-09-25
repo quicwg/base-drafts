@@ -1242,46 +1242,37 @@ the connection ID via a RETIRE_CONNECTION_ID frame
 An endpoint SHOULD ensure that its peer has a sufficient number of available and
 unused connection IDs.  The endpoint can do this by always supplying a new
 connection ID when a connection ID is retired by its peer or when the endpoint
-receives a packet with a previously unused connection ID.
+receives a packet with a previously unused connection ID.  Endpoints that
+initiate migration and require non-zero-length connection IDs SHOULD provide
+their peers with new connection IDs before migration, or risk the peer closing
+the connection.
 
 
-### Consuming Connection IDs
+### Consuming and Retiring Connection IDs
 
-An endpoint that receives a packet with a different remote address or
-destination connection ID than previously used SHOULD also switch to sending
-with a connection ID that has not previously been used.  The goal is to ensure
-absence of correlation between the pairs of client and server connection ID used
-on different paths.  To fulfill this privacy requirement, endpoints that
-initiate migration and use connection IDs with length greater than zero SHOULD
-provide their peers with new connection IDs before migration.
+An endpoint can arbitrarily change the connection ID it uses for a peer to
+another available one at any time during the connection.  An endpoint consumes
+connection IDs in response to a migrating peer, see {{#migration-linkability}}
+for more.  
 
-Caution:
-
-: If both endpoints change connection ID in response to seeing a change in
-  connection ID from their peer, then this can trigger an infinite sequence
-  of changes.
-
-If an endpoint's peer has selected a non-zero-length connection ID, the endpoint
-maintains a set of connection IDs received from the peer that it can use when
-sending packets.  All connection IDs issued by the peer are considered valid for
-use by the endpoint when sending packets until the connection ID is retired by
-the endpoint.  Endpoints can choose to stop using a given connection ID to send
-packets at any time and signal this to the issuing endpoint via a
-RETIRE_CONNECTION_ID frame.
+An endpoint maintains a set of connection IDs received from its peer, any of
+which it can use when sending packets.  When the endpoint wishes to remove a
+connection ID from use, it sends a RETIRE_CONNECTION_ID frame to its peer,
+indicating that the peer might bring a new connection ID into circulation using
+the NEW_CONNECTION_ID frame.
 
 An endpoint that retires a connection ID should retain knowledge of that
-connection ID for a period of time after sending the RETIRE_CONNECTION_ID
-frame, or until that frame is acknowledged.  A recommended time is three times
-the current Retransmission Timeout (RTO) interval as defined in
-{{QUIC-RECOVERY}}.  This prevents potential retransmissions of a
-NEW_CONNECTION_ID frame from overlapping with the RETIRE_CONNECTION_ID frame
-for the same connection ID.
+connection ID for a period of time after sending the RETIRE_CONNECTION_ID frame,
+or until that frame is acknowledged.  A recommended time is three times the
+current retransmission timeout (RTO) interval as defined in {{QUIC-RECOVERY}}.
+This prevents confusion from receiving retransmissions of a NEW_CONNECTION_ID
+frame soon after sending a RETIRE_CONNECTION_ID frame for the same connection
+ID.
 
-Additionally, each connection ID MUST be used on packets sent from only one
-local address.  At any time, an endpoint MAY change to a new connection ID on a
-local address already in use.  An endpoint that migrates away from a local
-address SHOULD retire all connection IDs used on that address once it no longer
-plans to use that address.
+As discussed in {{migration-linkability}}, each connection ID MUST be used on
+packets sent from only one local address.  An endpoint that migrates away from a
+local address SHOULD retire all connection IDs used on that address once it no
+longer plans to use that address.
 
 
 ## Matching Packets to Connections {#packet-handling}
@@ -2390,6 +2381,21 @@ genuine migrations.  Changing port number can cause a peer to reset its
 congestion state (see {{migration-cc}}), so the port SHOULD only be changed
 infrequently.
 
+Endpoints that use connection IDs with length greater than zero could have their
+activity correlated if their peers keep using the same destination connection ID
+after migration. Endpoints that receive packets with a previously unused
+Destination Connection ID SHOULD change to sending packets with a connection ID
+that has not been used on any other network path.  The goal is to ensure absence
+of correlation between the pairs of client and server connection ID used on
+different paths. To fulfill this privacy requirement, endpoints that initiate
+migration and use connection IDs with length greater than zero SHOULD provide
+their peers with new connection IDs before migration.
+
+Caution: 
+
+: If both endpoints change connection ID in response to seeing a change in
+  connection ID from their peer, then this can trigger an infinite sequence of
+  changes.
 
 ## Server's Preferred Address {#preferred-address}
 
