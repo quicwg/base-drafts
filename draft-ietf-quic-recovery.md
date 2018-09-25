@@ -352,11 +352,11 @@ receiver.
 The timer duration, or Probe Timeout (PTO), is set based on the following
 conditions:
 
-* If less than 2400 bytes are in flight, PTO SHOULD be scheduled for
-  max(1.5*SRTT+MaxAckDelay, kMinTLPTimeout).
+* If less than 2*kMaxDatagramSize bytes are in flight, PTO SHOULD be
+  scheduled for max(1.5*SRTT+MaxAckDelay, kMinTLPTimeout).
 
-* If at least 2400 bytes are in flight, PTO SHOULD be scheduled for
-  max(2*SRTT, kMinTLPTimeout).
+* If at least 2*kMaxDatagramSize bytes are in flight, PTO SHOULD be
+  scheduled for max(2*SRTT, kMinTLPTimeout).
 
 * If RTO ({{rto}}) is earlier, schedule a TLP in its place. That is,
   PTO SHOULD be scheduled for min(RTO, PTO).
@@ -535,6 +535,11 @@ kDelayedAckTimeout:
 
 kInitialRtt:
 : The RTT used before an RTT sample is taken. The RECOMMENDED value is 100ms.
+
+kMaxDatagramSize:
+: The sender's maximum payload size. Does not include UDP or IP overhead.
+  The max packet size is used for calculating initial and minimum congestion
+  windows, as well as the TLP timeout. The RECOMMENDED value is 1200 bytes.
 
 ### Variables of interest
 
@@ -827,7 +832,7 @@ Pseudocode for SetLossDetectionTimer follows:
       timeout = timeout * (2 ^ rto_count)
       if (tlp_count < kMaxTLPs):
         // Tail Loss Probe
-        if (bytes_in_flight < 2400):
+        if (bytes_in_flight < 2 * kMaxDatagramSize):
           // Less than two full-sized packets in flight.
           tlp_timeout = max(1.5 * smoothed_rtt
                               + max_ack_delay, kMinTLPTimeout)
@@ -1027,11 +1032,6 @@ in Linux (3.11 onwards).
 Constants used in congestion control are based on a combination of RFCs,
 papers, and common practice.  Some may need to be changed or negotiated
 in order to better suit a variety of environments.
-
-kMaxDatagramSize:
-: The sender's maximum payload size. Does not include UDP or IP
-  overhead. The max packet size is used for calculating initial and
-  minimum congestion windows. The RECOMMENDED value is 1200 bytes.
 
 kInitialWindow:
 : Default limit on the initial amount of outstanding data in bytes.
