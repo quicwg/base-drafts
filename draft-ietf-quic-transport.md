@@ -1244,7 +1244,7 @@ recommended number of outstanding connection IDs is eight.
 When an endpoint issues a connection ID, it MUST accept packets using this
 connection ID for the duration of the connection or until its peer invalidates
 the connection ID via a RETIRE_CONNECTION_ID frame
-({{frame-connection-id-finished}}).
+({{frame-retire-connection-id}}).
 
 Implementations SHOULD ensure that peers have sufficient connection IDs
 available to reduce the possibility of peers exhausting their supply of
@@ -2626,7 +2626,7 @@ because their transport parameters don't have confidentiality protection).  This
 value is protected by encryption, so only client and server know this value.
 Tokens sent via NEW_CONNECTION_ID frames are invalidated when their associated
 connection ID is retired via a RETIRE_CONNECTION_ID frame
-({{frame-connection-id-finished}}).
+({{frame-retire-connection-id}}).
 
 An endpoint that receives packets that it cannot process sends a packet in the
 following layout:
@@ -3268,7 +3268,7 @@ the Source Connection ID used by the peer during the initial
 handshake, it MUST treat that receipt as a connection error of type
 PROTOCOL_VIOLATION.
 
-## RETIRE_CONNECTION_ID Frame {#frame-connection-id-finished}
+## RETIRE_CONNECTION_ID Frame {#frame-retire-connection-id}
 
 An endpoint sends a RETIRE_CONNECTION_ID frame (type=0x1b) to indicate that it
 will no longer use a connection ID that was issued by its peer.  Note that this
