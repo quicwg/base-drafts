@@ -1135,29 +1135,29 @@ For all other frames, the Frame Type field simply identifies the frame.  These
 frames are explained in more detail as they are referenced later in the
 document.
 
-| Type Value  | Frame Type Name        | Definition                       |
-|:------------|:-----------------------|:---------------------------------|
-| 0x00        | PADDING                | {{frame-padding}}                |
-| 0x01        | RST_STREAM             | {{frame-rst-stream}}             |
-| 0x02        | CONNECTION_CLOSE       | {{frame-connection-close}}       |
-| 0x03        | APPLICATION_CLOSE      | {{frame-application-close}}      |
-| 0x04        | MAX_DATA               | {{frame-max-data}}               |
-| 0x05        | MAX_STREAM_DATA        | {{frame-max-stream-data}}        |
-| 0x06        | MAX_STREAM_ID          | {{frame-max-stream-id}}          |
-| 0x07        | PING                   | {{frame-ping}}                   |
-| 0x08        | BLOCKED                | {{frame-blocked}}                |
-| 0x09        | STREAM_BLOCKED         | {{frame-stream-blocked}}         |
-| 0x0a        | STREAM_ID_BLOCKED      | {{frame-stream-id-blocked}}      |
-| 0x0b        | NEW_CONNECTION_ID      | {{frame-new-connection-id}}      |
-| 0x0c        | STOP_SENDING           | {{frame-stop-sending}}           |
-| 0x0d        | ACK                    | {{frame-ack}}                    |
-| 0x0e        | PATH_CHALLENGE         | {{frame-path-challenge}}         |
-| 0x0f        | PATH_RESPONSE          | {{frame-path-response}}          |
-| 0x10 - 0x17 | STREAM                 | {{frame-stream}}                 |
-| 0x18        | CRYPTO                 | {{frame-crypto}}                 |
-| 0x19        | NEW_TOKEN              | {{frame-new-token}}              |
-| 0x1a        | ACK_ECN                | {{frame-ack-ecn}}                |
-| 0x1b        | CONNECTION_ID_FINISHED | {{frame-connection-id-finished}} |
+| Type Value  | Frame Type Name      | Definition                     |
+|:------------|:---------------------|:-------------------------------|
+| 0x00        | PADDING              | {{frame-padding}}              |
+| 0x01        | RST_STREAM           | {{frame-rst-stream}}           |
+| 0x02        | CONNECTION_CLOSE     | {{frame-connection-close}}     |
+| 0x03        | APPLICATION_CLOSE    | {{frame-application-close}}    |
+| 0x04        | MAX_DATA             | {{frame-max-data}}             |
+| 0x05        | MAX_STREAM_DATA      | {{frame-max-stream-data}}      |
+| 0x06        | MAX_STREAM_ID        | {{frame-max-stream-id}}        |
+| 0x07        | PING                 | {{frame-ping}}                 |
+| 0x08        | BLOCKED              | {{frame-blocked}}              |
+| 0x09        | STREAM_BLOCKED       | {{frame-stream-blocked}}       |
+| 0x0a        | STREAM_ID_BLOCKED    | {{frame-stream-id-blocked}}    |
+| 0x0b        | NEW_CONNECTION_ID    | {{frame-new-connection-id}}    |
+| 0x0c        | STOP_SENDING         | {{frame-stop-sending}}         |
+| 0x0d        | ACK                  | {{frame-ack}}                  |
+| 0x0e        | PATH_CHALLENGE       | {{frame-path-challenge}}       |
+| 0x0f        | PATH_RESPONSE        | {{frame-path-response}}        |
+| 0x10 - 0x17 | STREAM               | {{frame-stream}}               |
+| 0x18        | CRYPTO               | {{frame-crypto}}               |
+| 0x19        | NEW_TOKEN            | {{frame-new-token}}            |
+| 0x1a        | ACK_ECN              | {{frame-ack-ecn}}              |
+| 0x1b        | RETIRE_CONNECTION_ID | {{frame-retire-connection-id}} |
 {: #frame-types title="Frame Types"}
 
 All QUIC frames are idempotent.  That is, a valid frame does not cause
@@ -1243,13 +1243,13 @@ recommended number of outstanding connection IDs is eight.
 
 When an endpoint issues a connection ID, it MUST accept packets using this
 connection ID for the duration of the connection or until its peer invalidates
-the connection ID via a CONNECTION_ID_FINISHED frame
+the connection ID via a RETIRE_CONNECTION_ID frame
 ({{frame-connection-id-finished}}).
 
 Implementations SHOULD ensure that peers have sufficient connection IDs
 available to reduce the possibility of peers exhausting their supply of
 available connection IDs.  An implementation could do this by always supplying a
-new connection ID for each connection ID retired with a CONNECTION_ID_FINISHED
+new connection ID for each connection ID retired with a RETIRE_CONNECTION_ID
 frame. When a receiver of a packet notices that its peer is now using a
 previously unused connection ID, it can supply its peer with a new connection ID
 using a NEW_CONNECTION_ID frame to reduce the possibility of its peer running
@@ -1280,14 +1280,14 @@ sending packets.  All connection IDs issued by the peer are considered valid for
 use by the endpoint when sending packets until the connection ID is retired by
 the endpoint.  Endpoints can choose to stop using a given connection ID to send
 packets at any time and signal this to the issuing endpoint via a
-CONNECTION_ID_FINISHED frame.
+RETIRE_CONNECTION_ID frame.
 
 An endpoint that retires a connection ID should retain knowledge of that
-connection ID for a period of time after sending the CONNECTION_ID_FINISHED
+connection ID for a period of time after sending the RETIRE_CONNECTION_ID
 frame, or until that frame is acknowledged.  A recommended time is three times
 the current Retransmission Timeout (RTO) interval as defined in
 {{QUIC-RECOVERY}}.  This prevents potential retransmissions of a
-NEW_CONNECTION_ID frame from overlapping with the CONNECTION_ID_FINISHED frame
+NEW_CONNECTION_ID frame from overlapping with the RETIRE_CONNECTION_ID frame
 for the same connection ID.
 
 Additionally, each connection ID MUST be used on packets sent from only one
@@ -2625,7 +2625,7 @@ stateless_reset_token transport parameter during the handshake (clients cannot
 because their transport parameters don't have confidentiality protection).  This
 value is protected by encryption, so only client and server know this value.
 Tokens sent via NEW_CONNECTION_ID frames are invalidated when their associated
-connection ID is retired via a CONNECTION_ID_FINISHED frame
+connection ID is retired via a RETIRE_CONNECTION_ID frame
 ({{frame-connection-id-finished}}).
 
 An endpoint that receives packets that it cannot process sends a packet in the
@@ -3268,20 +3268,20 @@ the Source Connection ID used by the peer during the initial
 handshake, it MUST treat that receipt as a connection error of type
 PROTOCOL_VIOLATION.
 
-## CONNECTION_ID_FINISHED Frame {#frame-connection-id-finished}
+## RETIRE_CONNECTION_ID Frame {#frame-connection-id-finished}
 
-An endpoint sends a CONNECTION_ID_FINISHED frame (type=0x1b) to indicate that it
+An endpoint sends a RETIRE_CONNECTION_ID frame (type=0x1b) to indicate that it
 will no longer use a connection ID that was issued by its peer.  Note that this
 may include the connection ID provided during the handshake.  Sending a
-CONNECTION_ID_FINISHED frame also serves as a request to the peer to send
+RETIRE_CONNECTION_ID frame also serves as a request to the peer to send
 additional connection IDs for future use (see {{connection-id}}).  New
 connection IDs can be delivered via the NEW_CONNECTION_ID frame ({{frame-new-
 connection-id}}).
 
-Retiring a connection ID using the CONNECTION_ID_FINISHED frame invalidates the
+Retiring a connection ID using the RETIRE_CONNECTION_ID frame invalidates the
 stateless reset token associated with that connection ID.
 
-The CONNECTION_ID_FINISHED frame is as follows:
+The RETIRE_CONNECTION_ID frame is as follows:
 
 ~~~
  0                   1                   2                   3
@@ -3301,13 +3301,13 @@ Connection ID:
 
 : A connection ID of the specified length.
 
-Receipt of a CONNECTION_ID_FINISHED frame containing a connection ID that was
+Receipt of a RETIRE_CONNECTION_ID frame containing a connection ID that was
 not previously sent to the peer MAY be treated as a connection error of type
 PROTOCOL_VIOLATION.
 
 An endpoint cannot send this frame if it was provided with a zero-length
 connection ID by its peer.  An endpoint that provides a zero-length connection
-ID MUST treat receipt of a CONNECTION_ID_FINISHED frame as a connection error of
+ID MUST treat receipt of a RETIRE_CONNECTION_ID frame as a connection error of
 type PROTOCOL_VIOLATION.
 
 
@@ -3924,7 +3924,7 @@ containing that information is acknowledged.
 
 * New connection IDs are sent in NEW_CONNECTION_ID frames and retransmitted if
   the packet containing them is lost.  Likewise, retired connection IDs are sent
-  in CONNECTION_ID_FINISHED frames and retransmitted if the packet containing
+  in RETIRE_CONNECTION_ID frames and retransmitted if the packet containing
   them is lost.
 
 * PADDING frames contain no information, so lost PADDING frames do not require
