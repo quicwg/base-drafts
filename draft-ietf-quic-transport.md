@@ -1252,8 +1252,8 @@ the connection.
 
 An endpoint can arbitrarily change the connection ID it uses for a peer to
 another available one at any time during the connection.  An endpoint consumes
-connection IDs in response to a migrating peer, see {{#migration-linkability}}
-for more.  
+connection IDs in response to a migrating peer, see {{migration-linkability}}
+for more.
 
 An endpoint maintains a set of connection IDs received from its peer, any of
 which it can use when sending packets.  When the endpoint wishes to remove a
@@ -2391,7 +2391,7 @@ different paths. To fulfill this privacy requirement, endpoints that initiate
 migration and use connection IDs with length greater than zero SHOULD provide
 their peers with new connection IDs before migration.
 
-Caution: 
+Caution:
 
 : If both endpoints change connection ID in response to seeing a change in
   connection ID from their peer, then this can trigger an infinite sequence of
