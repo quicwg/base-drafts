@@ -3264,15 +3264,14 @@ PROTOCOL_VIOLATION.
 ## RETIRE_CONNECTION_ID Frame {#frame-retire-connection-id}
 
 An endpoint sends a RETIRE_CONNECTION_ID frame (type=0x1b) to indicate that it
-will no longer use a connection ID that was issued by its peer.  Note that this
-may include the connection ID provided during the handshake.  Sending a
-RETIRE_CONNECTION_ID frame also serves as a request to the peer to send
-additional connection IDs for future use (see {{connection-id}}).  New
-connection IDs can be delivered via the NEW_CONNECTION_ID frame ({{frame-new-
-connection-id}}).
+will no longer use a connection ID that was issued by its peer. This may include
+the connection ID provided during the handshake.  Sending a RETIRE_CONNECTION_ID
+frame also serves as a request to the peer to send additional connection IDs for
+future use (see {{connection-id}}).  New connection IDs can be delivered to a
+peer using the NEW_CONNECTION_ID frame ({{frame-new- connection-id}}).
 
-Retiring a connection ID using the RETIRE_CONNECTION_ID frame invalidates the
-stateless reset token associated with that connection ID.
+Retiring a connection ID invalidates the stateless reset token associated with
+that connection ID.
 
 The RETIRE_CONNECTION_ID frame is as follows:
 
@@ -3294,8 +3293,8 @@ Connection ID:
 
 : A connection ID of the specified length.
 
-Receipt of a RETIRE_CONNECTION_ID frame containing a connection ID that was
-not previously sent to the peer MAY be treated as a connection error of type
+Receipt of a RETIRE_CONNECTION_ID frame containing a connection ID that was not
+previously sent to the peer MAY be treated as a connection error of type
 PROTOCOL_VIOLATION.
 
 An endpoint cannot send this frame if it was provided with a zero-length
