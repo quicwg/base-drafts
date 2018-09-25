@@ -655,13 +655,14 @@ all the acknowledgements necessary to reach the same state.
 
 After all CRYPTO frames for a given encryption level have been sent and all
 expected CRYPTO frames received, and all the corresponding acknowledgments have
-been received or sent, an endpoint starts a timer.  To limit the effect of
-packet loss around a change in keys, endpoints MUST retain packet protection
-keys for that encryption level for at least three times the current
-Retransmission Timeout (RTO) interval as defined in {{QUIC-RECOVERY}}.
-Retaining keys for this interval allows packets containing CRYPTO or ACK frames
-at that encryption level to be sent if packets are determined to be lost or new
-packets require acknowledgment.
+been received or sent, an endpoint starts a timer.  For 0-RTT keys, which do not
+carry CRYPTO frames, this timer starts when the first packets protected with
+1-RTT are sent or received.  To limit the effect of packet loss around a change
+in keys, endpoints MUST retain packet protection keys for that encryption level
+for at least three times the current Retransmission Timeout (RTO) interval as
+defined in {{QUIC-RECOVERY}}.  Retaining keys for this interval allows packets
+containing CRYPTO or ACK frames at that encryption level to be sent if packets
+are determined to be lost or new packets require acknowledgment.
 
 Though an endpoint might retain older keys, new data MUST be sent at the highest
 currently-available encryption level.  Only ACK frames and retransmissions of
