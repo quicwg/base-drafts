@@ -1115,12 +1115,15 @@ transport is not QUIC.
 
 ## Removing the EndOfEarlyData Message {#remove-eoed}
 
-Negotiating the quic_transport_parameters extension also modifies TLS to remove
-the EndOfEarlyData message.  QUIC does not rely on this message to mark the end
-of 0-RTT data or to signal the change to Handshake keys.
+The TLS EndOfEarlyData message is not used with QUIC.  QUIC does not rely on
+this message to mark the end of 0-RTT data or to signal the change to Handshake
+keys.
 
-Clients MUST NOT send the EndOfEarlyData message.  As a result, EndOfEarlyData
-does not appear in the TLS handshake.
+Clients MUST NOT send the EndOfEarlyData message.  A server MUST treat receipt
+of a CRYPTO frame in a 0-RTT packet as a connection error of type
+PROTOCOL_VIOLATION.
+
+As a result, EndOfEarlyData does not appear in the TLS handshake transcript.
 
 
 # Security Considerations
