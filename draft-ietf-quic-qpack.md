@@ -644,10 +644,9 @@ dynamic table references.  A decoder that receives a stream reset before the end
 of a stream generates a Stream Cancellation instruction on the decoder stream.
 Similarly, a decoder that abandons reading of a stream needs to signal this
 using the Stream Cancellation instruction.  This signals to the encoder that all
-references to the dynamic table on that stream are no longer outstanding.  The
-exception is that a decoder with a maximum dynamic table size equal to zero
-SHOULD NOT send Stream Cancellations, because the encoder cannot have any
-dynamic table references.
+references to the dynamic table on that stream are no longer outstanding.  A
+decoder with a maximum dynamic table size equal to zero MAY omit send Stream
+Cancellations, because the encoder cannot have any dynamic table references.
 
 An encoder cannot infer from this instruction that any updates to the dynamic
 table have been received.
