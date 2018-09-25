@@ -188,7 +188,8 @@ TLS 1.3 provides two basic handshake modes of interest to QUIC:
    self-contained trigger for any non-idempotent action.
 
 A simplified TLS 1.3 handshake with 0-RTT application data is shown in
-{{tls-full}}, see {{!TLS13}} for more options and details.
+{{tls-full}}.  Note that this omits the EndOfEarlyData message, which is not
+used in QUIC (see {{remove-eoed}}).
 
 ~~~
     Client                                             Server
@@ -199,7 +200,6 @@ A simplified TLS 1.3 handshake with 0-RTT application data is shown in
                                          {EncryptedExtensions}
                                                     {Finished}
                              <--------      [Application Data]
-   (EndOfEarlyData)
    {Finished}                -------->
 
    [Application Data]        <------->      [Application Data]
@@ -322,7 +322,7 @@ the connection can usually appear at any encryption level, whereas those
 associated with transferring data can only appear in the 0-RTT and 1-RTT
 encryption levels
 
-- CRYPTO frames MAY appear in packets of any encryption level.
+- CRYPTO frames MAY appear in packets of any encryption level except 0-RTT.
 
 - CONNECTION_CLOSE and APPLICATION_CLOSE MAY appear in packets of any encryption
   level other than 0-RTT.
@@ -464,11 +464,10 @@ levels.  During the handshake, this means potentially handling packets at higher
 and lower encryption levels than the current encryption level used by TLS.
 
 In particular, server implementations need to be able to read packets at the
-Handshake encryption level before the final TLS handshake message at the 0-RTT
-encryption level (EndOfEarlyData) is available.  Though the content of CRYPTO
-frames at the Handshake encryption level cannot be forwarded to TLS before
-EndOfEarlyData is processed, the client could send ACK frames that the server
-needs to process in order to detect lost Handshake packets.
+Handshake encryption level at the same time as the 0-RTT encryption level.  A
+client could interleave ACK frames that are protected with Handshake keys with
+0-RTT data and the server needs to process those acknowledgments in order to
+detect lost Handshake packets.
 
 
 ### TLS Interface Summary
@@ -656,13 +655,14 @@ all the acknowledgements necessary to reach the same state.
 
 After all CRYPTO frames for a given encryption level have been sent and all
 expected CRYPTO frames received, and all the corresponding acknowledgments have
-been received or sent, an endpoint starts a timer.  To limit the effect of
-packet loss around a change in keys, endpoints MUST retain packet protection
-keys for that encryption level for at least three times the current
-Retransmission Timeout (RTO) interval as defined in {{QUIC-RECOVERY}}.
-Retaining keys for this interval allows packets containing CRYPTO or ACK frames
-at that encryption level to be sent if packets are determined to be lost or new
-packets require acknowledgment.
+been received or sent, an endpoint starts a timer.  For 0-RTT keys, which do not
+carry CRYPTO frames, this timer starts when the first packets protected with
+1-RTT are sent or received.  To limit the effect of packet loss around a change
+in keys, endpoints MUST retain packet protection keys for that encryption level
+for at least three times the current Retransmission Timeout (RTO) interval as
+defined in {{QUIC-RECOVERY}}.  Retaining keys for this interval allows packets
+containing CRYPTO or ACK frames at that encryption level to be sent if packets
+are determined to be lost or new packets require acknowledgment.
 
 Though an endpoint might retain older keys, new data MUST be sent at the highest
 currently-available encryption level.  Only ACK frames and retransmissions of
@@ -1106,6 +1106,24 @@ While the transport parameters are technically available prior to the completion
 of the handshake, they cannot be fully trusted until the handshake completes,
 and reliance on them should be minimized.  However, any tampering with the
 parameters will cause the handshake to fail.
+
+Endpoints MUST NOT send this extension in a TLS connection that does not use
+QUIC (such as the use of TLS with TCP defined in {{!TLS13}}).  A fatal
+unsupported_extension alert MUST be sent if this extension is received when the
+transport is not QUIC.
+
+
+## Removing the EndOfEarlyData Message {#remove-eoed}
+
+The TLS EndOfEarlyData message is not used with QUIC.  QUIC does not rely on
+this message to mark the end of 0-RTT data or to signal the change to Handshake
+keys.
+
+Clients MUST NOT send the EndOfEarlyData message.  A server MUST treat receipt
+of a CRYPTO frame in a 0-RTT packet as a connection error of type
+PROTOCOL_VIOLATION.
+
+As a result, EndOfEarlyData does not appear in the TLS handshake transcript.
 
 
 # Security Considerations
