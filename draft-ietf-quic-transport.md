@@ -1220,48 +1220,38 @@ connection. An endpoint whose peer has selected a zero-length connection ID MUST
 continue to use a zero-length connection ID for the lifetime of the connection
 and MUST NOT send packets from any other local address.
 
-An endpoint whose peer has selected a non-zero-length connection ID will
-potentially send packets using different connection IDs over the lifetime of a
-connection. These connection IDs are supplied by the peer using the
-NEW_CONNECTION_ID frame ({{frame-new-connection-id}}).
+When an endpoint has requested a non-zero-length connection ID, it needs to
+ensure that the peer has a supply of connection IDs from which to choose for
+packets sent to the endpoint.  These connection IDs are supplied by the endpoint
+using the NEW_CONNECTION_ID frame ({{frame-new-connection-id}}).
 
 
 ### Issuing Connection IDs
 
-An endpoint issues connection IDs to its peer for the peer to use when sending
-packets. This allows the endpoint control over the strategy used to interpret
-connection IDs of packets that it receives.  These connection IDs are
-communicated to the peer using NEW_CONNECTION_ID frames
-({{frame-new-connection-id}}).
+The initial connection ID issued by an endpoint is the Source Connection ID
+during the handshake.  Subsequent connection IDs are communicated to the peer
+using NEW_CONNECTION_ID frames ({{frame-new-connection-id}}).  While each
+endpoint independently chooses how many connection IDs to issue, a recommended
+number of outstanding connection IDs is eight.
 
-The initial connection ID issued to the peer is sent by the endpoint as the
-Source Connection ID during the handshake, ensuring that the peer always begins
-the connection with at least one connection ID to use when sending.  An endpoint
-SHOULD supply its peer with additional connection IDs via NEW_CONNECTION_ID
-frames. While each endpoint can choose how many connection IDs to issue, a
-recommended number of outstanding connection IDs is eight.
-
-When an endpoint issues a connection ID, it MUST accept packets using this
+When an endpoint issues a connection ID, it MUST accept packets that carry this
 connection ID for the duration of the connection or until its peer invalidates
 the connection ID via a RETIRE_CONNECTION_ID frame
 ({{frame-retire-connection-id}}).
 
-Implementations SHOULD ensure that peers have sufficient connection IDs
-available to reduce the possibility of peers exhausting their supply of
-available connection IDs.  An implementation could do this by always supplying a
-new connection ID for each connection ID retired with a RETIRE_CONNECTION_ID
-frame. When a receiver of a packet notices that its peer is now using a
-previously unused connection ID, it can supply its peer with a new connection ID
-using a NEW_CONNECTION_ID frame to reduce the possibility of its peer running
-out of available connection IDs.
+An endpoint SHOULD ensure that its peer has a sufficient number of available and
+unused connection IDs.  The endpoint can do this by always supplying a new
+connection ID when a connection ID is retired by its peer or when the endpoint
+receives a packet with a previously unused connection ID.
 
-Endpoints that use connection IDs with length greater than zero could have their
-activity correlated if their peers keep using the same destination connection ID
-after migration.  An endpoint that receives a packet with a different remote
-address or destination connection ID than previously used SHOULD also switch to
-sending with a connection ID that has not previously been used.  The goal is to
-ensure absence of correlation between the pairs of client and server connection
-ID used on different paths.  To fulfill this privacy requirement, endpoints that
+
+### Consuming Connection IDs
+
+An endpoint that receives a packet with a different remote address or
+destination connection ID than previously used SHOULD also switch to sending
+with a connection ID that has not previously been used.  The goal is to ensure
+absence of correlation between the pairs of client and server connection ID used
+on different paths.  To fulfill this privacy requirement, endpoints that
 initiate migration and use connection IDs with length greater than zero SHOULD
 provide their peers with new connection IDs before migration.
 
@@ -1270,9 +1260,6 @@ Caution:
 : If both endpoints change connection ID in response to seeing a change in
   connection ID from their peer, then this can trigger an infinite sequence
   of changes.
-
-
-### Consuming Connection IDs
 
 If an endpoint's peer has selected a non-zero-length connection ID, the endpoint
 maintains a set of connection IDs received from the peer that it can use when
