@@ -225,19 +225,6 @@ Min RTT is the minimum RTT measured over the connection, prior to adjusting by
 ack delay.  Ignoring ack delay for min RTT prevents intentional or unintentional
 underestimation of min RTT, which in turn prevents underestimating smoothed RTT.
 
-### Maximum Ack Delay
-
-QUIC is able to explicitly model delay at the receiver via the ack delay
-field in the ACK frame.  Therefore, QUIC diverges from TCP by calculating a
-MaxAckDelay dynamically, instead of assuming a constant delayed ack timeout
-for all connections.
-
-MaxAckDelay is the maximum ack delay supplied in an all incoming ACK frames.
-MaxAckDelay excludes ack delays that aren't included in an RTT sample because
-they're too large or the largest acknowledged has already been acknowledged.
-MaxAckDelay also excludes ack delays where the largest acknowledged references
-an ACK-only packet.
-
 ## Ack-based Detection
 
 Ack-based loss detection implements the spirit of TCP's Fast Retransmit
@@ -365,7 +352,11 @@ receiver.
 The timer duration, or Probe Timeout (PTO), is set based on the following
 conditions:
 
-* PTO SHOULD be scheduled for max(1.5*SRTT+MaxAckDelay, kMinTLPTimeout)
+* If less than 2400 bytes are in flight, PTO SHOULD be scheduled for
+  max(1.5*SRTT+MaxAckDelay, kMinTLPTimeout).
+
+* If at least 2400 bytes are in flight, PTO SHOULD be scheduled for
+  max(2*SRTT, kMinTLPTimeout).
 
 * If RTO ({{rto}}) is earlier, schedule a TLP in its place. That is,
   PTO SHOULD be scheduled for min(RTO, PTO).
@@ -375,8 +366,9 @@ delay may come into play, regardless of the number of packets outstanding.
 TCP's TLP assumes if at least 2 packets are outstanding, acks will not be
 delayed.
 
-A PTO value of at least 1.5*SRTT ensures that the ACK is overdue.  The 1.5 is
-based on {{?TLP}}, but implementations MAY experiment with other constants.
+A PTO values of at least 1.5*SRTT and 2*SRTT ensures that the ACK is overdue.
+Both constants are based on {{?TLP}}, but implementations MAY experiment with
+other constants.
 
 To reduce latency, it is RECOMMENDED that the sender set and allow the TLP timer
 to fire twice before setting an RTO timer. In other words, when the TLP timer
@@ -446,14 +438,15 @@ flight, since this packet adds network load without establishing packet loss.
 ## Generating Acknowledgements
 
 QUIC SHOULD delay sending acknowledgements in response to packets, but MUST NOT
-excessively delay acknowledgements of packets containing frames other than ACK
-or ACN_ECN.  Specifically, implementations MUST attempt to enforce a maximum
-ack delay to avoid causing the peer spurious timeouts.  The RECOMMENDED maximum
-ack delay in QUIC is 25ms.
+excessively delay acknowledgements of packets containing frames other than ACK.
+Specifically, implementations MUST attempt to enforce a maximum
+ack delay to avoid causing the peer spurious timeouts.  The maximum ack delay
+is communicated in the `max_ack_delay` transport parameter and the default
+value is 25ms.
 
-An acknowledgement MAY be sent for every second full-sized packet, as TCP does
-{{?RFC5681}}, or may be sent less frequently, as long as the delay does not
-exceed the maximum ack delay.  QUIC recovery algorithms do not assume the peer
+An acknowledgement SHOULD be sent immediately upon receiving two or more
+retransmitable full-sized packets, as TCP does {{?RFC5681}}.  QUIC recovery
+algorithms, including tail loss probe{{tail-loss-probe}}, assume the peer
 generates an acknowledgement immediately when receiving a second full-sized
 packet.
 
@@ -834,8 +827,13 @@ Pseudocode for SetLossDetectionTimer follows:
       timeout = timeout * (2 ^ rto_count)
       if (tlp_count < kMaxTLPs):
         // Tail Loss Probe
-        tlp_timeout = max(1.5 * smoothed_rtt
-                           + max_ack_delay, kMinTLPTimeout)
+        if (bytes_in_flight < 2400):
+          // Less than one full-sized packet in flight.
+          tlp_timeout = max(1.5 * smoothed_rtt
+                              + max_ack_delay, kMinTLPTimeout)
+        else:
+          tlp_timeout = max(1.5 * smoothed_rtt,
+                              kMinTLPTimeout)
         timeout = min(tlp_timeout, timeout)
 
     loss_detection_timer.set(
