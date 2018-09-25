@@ -1136,28 +1136,29 @@ For all other frames, the Frame Type field simply identifies the frame.  These
 frames are explained in more detail as they are referenced later in the
 document.
 
-| Type Value  | Frame Type Name   | Definition                  |
-|:------------|:------------------|:----------------------------|
-| 0x00        | PADDING           | {{frame-padding}}           |
-| 0x01        | RST_STREAM        | {{frame-rst-stream}}        |
-| 0x02        | CONNECTION_CLOSE  | {{frame-connection-close}}  |
-| 0x03        | APPLICATION_CLOSE | {{frame-application-close}} |
-| 0x04        | MAX_DATA          | {{frame-max-data}}          |
-| 0x05        | MAX_STREAM_DATA   | {{frame-max-stream-data}}   |
-| 0x06        | MAX_STREAM_ID     | {{frame-max-stream-id}}     |
-| 0x07        | PING              | {{frame-ping}}              |
-| 0x08        | BLOCKED           | {{frame-blocked}}           |
-| 0x09        | STREAM_BLOCKED    | {{frame-stream-blocked}}    |
-| 0x0a        | STREAM_ID_BLOCKED | {{frame-stream-id-blocked}} |
-| 0x0b        | NEW_CONNECTION_ID | {{frame-new-connection-id}} |
-| 0x0c        | STOP_SENDING      | {{frame-stop-sending}}      |
-| 0x0d        | ACK               | {{frame-ack}}               |
-| 0x0e        | PATH_CHALLENGE    | {{frame-path-challenge}}    |
-| 0x0f        | PATH_RESPONSE     | {{frame-path-response}}     |
-| 0x10 - 0x17 | STREAM            | {{frame-stream}}            |
-| 0x18        | CRYPTO            | {{frame-crypto}}            |
-| 0x19        | NEW_TOKEN         | {{frame-new-token}}         |
-| 0x1a        | ACK_ECN           | {{frame-ack-ecn}}           |
+| Type Value  | Frame Type Name      | Definition                     |
+|:------------|:---------------------|:-------------------------------|
+| 0x00        | PADDING              | {{frame-padding}}              |
+| 0x01        | RST_STREAM           | {{frame-rst-stream}}           |
+| 0x02        | CONNECTION_CLOSE     | {{frame-connection-close}}     |
+| 0x03        | APPLICATION_CLOSE    | {{frame-application-close}}    |
+| 0x04        | MAX_DATA             | {{frame-max-data}}             |
+| 0x05        | MAX_STREAM_DATA      | {{frame-max-stream-data}}      |
+| 0x06        | MAX_STREAM_ID        | {{frame-max-stream-id}}        |
+| 0x07        | PING                 | {{frame-ping}}                 |
+| 0x08        | BLOCKED              | {{frame-blocked}}              |
+| 0x09        | STREAM_BLOCKED       | {{frame-stream-blocked}}       |
+| 0x0a        | STREAM_ID_BLOCKED    | {{frame-stream-id-blocked}}    |
+| 0x0b        | NEW_CONNECTION_ID    | {{frame-new-connection-id}}    |
+| 0x0c        | STOP_SENDING         | {{frame-stop-sending}}         |
+| 0x0d        | ACK                  | {{frame-ack}}                  |
+| 0x0e        | PATH_CHALLENGE       | {{frame-path-challenge}}       |
+| 0x0f        | PATH_RESPONSE        | {{frame-path-response}}        |
+| 0x10 - 0x17 | STREAM               | {{frame-stream}}               |
+| 0x18        | CRYPTO               | {{frame-crypto}}               |
+| 0x19        | NEW_TOKEN            | {{frame-new-token}}            |
+| 0x1a        | ACK_ECN              | {{frame-ack-ecn}}              |
+| 0x1b        | RETIRE_CONNECTION_ID | {{frame-retire-connection-id}} |
 {: #frame-types title="Frame Types"}
 
 All QUIC frames are idempotent.  That is, a valid frame does not cause
@@ -1223,37 +1224,57 @@ connection. An endpoint whose peer has selected a zero-length connection ID MUST
 continue to use a zero-length connection ID for the lifetime of the connection
 and MUST NOT send packets from any other local address.
 
-When an endpoint has requested a non-zero-length connection ID, it will issue a
-series of connection IDs over the lifetime of a connection. The series of
-connection IDs issued by an endpoint is ordered, with the final connection ID
-selected during the handshake coming first.  Additional connection IDs are
-provided using the NEW_CONNECTION_ID frame ({{frame-new-connection-id}}), each
-with a specified sequence number.  The series of connection IDs issued SHOULD be
-contiguous, but might not appear to be upon receipt due to reordering or loss.
+When an endpoint has requested a non-zero-length connection ID, it needs to
+ensure that the peer has a supply of connection IDs from which to choose for
+packets sent to the endpoint.  These connection IDs are supplied by the endpoint
+using the NEW_CONNECTION_ID frame ({{frame-new-connection-id}}).
 
-Each connection ID MUST be used on only one local address. When packets are sent
-for the first time on a new local address, a new connection ID MUST be used with
-a higher sequence number than any connection ID previously used on any local
-address.  At any time, an endpoint MAY change to a new connection ID on a local
-address already in use.
 
-An endpoint MUST NOT send packets with a connection ID which has a lower
-sequence number than the highest sequence number of any connection ID ever sent
-or received on that local address.  This ensures that when an endpoint migrates
-to a new path or changes connection ID on an existing path, the packets will use
-a new connection ID in both directions.
+### Issuing Connection IDs
 
-Implementations SHOULD ensure that peers have a connection ID with a matching
-sequence number available when changing to a new connection ID.  An
-implementation could do this by always supplying a corresponding connection ID
-to a peer for each connection ID received from that peer.
+The initial connection ID issued by an endpoint is the Source Connection ID
+during the handshake.  Subsequent connection IDs are communicated to the peer
+using NEW_CONNECTION_ID frames ({{frame-new-connection-id}}).
 
-While endpoints select connection IDs as appropriate for their implementation,
-the connection ID MUST NOT include the unprotected sequence number.  Endpoints
-need to be able to recover the sequence number associated with each connection
-ID they generate without relying on information available to unaffiliated
-parties. A connection ID that encodes an unencrypted sequence number could be
-used to correlate connection IDs across network paths.
+When an endpoint issues a connection ID, it MUST accept packets that carry this
+connection ID for the duration of the connection or until its peer invalidates
+the connection ID via a RETIRE_CONNECTION_ID frame
+({{frame-retire-connection-id}}).
+
+An endpoint SHOULD ensure that its peer has a sufficient number of available and
+unused connection IDs.  While each endpoint independently chooses how many
+connection IDs to issue, endpoints SHOULD provide and maintain at least eight
+connection IDs.  The endpoint can do this by always supplying a new connection
+ID when a connection ID is retired by its peer or when the endpoint receives a
+packet with a previously unused connection ID.  Endpoints that initiate
+migration and require non-zero-length connection IDs SHOULD provide their peers
+with new connection IDs before migration, or risk the peer closing the
+connection.
+
+
+### Consuming and Retiring Connection IDs
+
+An endpoint can change the connection ID it uses for a peer to another available
+one at any time during the connection.  An endpoint consumes connection IDs in
+response to a migrating peer, see {{migration-linkability}} for more.
+
+An endpoint maintains a set of connection IDs received from its peer, any of
+which it can use when sending packets.  When the endpoint wishes to remove a
+connection ID from use, it sends a RETIRE_CONNECTION_ID frame to its peer,
+indicating that the peer might bring a new connection ID into circulation using
+the NEW_CONNECTION_ID frame.
+
+An endpoint that retires a connection ID should retain knowledge of that
+connection ID for a period of time after sending the RETIRE_CONNECTION_ID frame,
+or until that frame is acknowledged.  A recommended time is three times the
+current retransmission timeout (RTO) interval as defined in {{QUIC-RECOVERY}}.
+This prevents a retransmission of a NEW_CONNECTION_ID frame from incorrectly
+renewing a previously retired connection ID.
+
+As discussed in {{migration-linkability}}, each connection ID MUST be used on
+packets sent from only one local address.  An endpoint that migrates away from a
+local address SHOULD retire all connection IDs used on that address once it no
+longer plans to use that address.
 
 
 ## Matching Packets to Connections {#packet-handling}
@@ -2371,22 +2392,21 @@ genuine migrations.  Changing port number can cause a peer to reset its
 congestion state (see {{migration-cc}}), so the port SHOULD only be changed
 infrequently.
 
-Endpoints that use connection IDs with length greater than zero could have
-their activity correlated if their peers keep using the same destination
-connection ID after migration. Endpoints that receive packets with a
-previously unused Destination Connection ID SHOULD change to sending packets
-with a connection ID that has not been used on any other network path.  The
-goal is to ensure absence of correlation between the pairs of client and server
-connection ID used on different paths. To fulfill this privacy requirement,
-endpoints that initiate migration and use connection IDs with length greater
-than zero SHOULD provide their peers with new connection IDs before migration.
+Endpoints that use connection IDs with length greater than zero could have their
+activity correlated if their peers keep using the same destination connection ID
+after migration. Endpoints that receive packets with a previously unused
+Destination Connection ID SHOULD change to sending packets with a connection ID
+that has not been used on any other network path.  The goal here is to ensure
+that packets sent on different paths cannot be correlated. To fulfill this
+privacy requirement, endpoints that initiate migration and use connection IDs
+with length greater than zero SHOULD provide their peers with new connection IDs
+before migration.
 
 Caution:
 
 : If both endpoints change connection ID in response to seeing a change in
-  connection ID from their peer, then this can trigger an infinite sequence
-  of changes.
-
+  connection ID from their peer, then this can trigger an infinite sequence of
+  changes.
 
 ## Server's Preferred Address {#preferred-address}
 
@@ -2608,6 +2628,9 @@ the NEW_CONNECTION_ID frame sent by either peer, and servers can specify the
 stateless_reset_token transport parameter during the handshake (clients cannot
 because their transport parameters don't have confidentiality protection).  This
 value is protected by encryption, so only client and server know this value.
+Tokens sent via NEW_CONNECTION_ID frames are invalidated when their associated
+connection ID is retired via a RETIRE_CONNECTION_ID frame
+({{frame-retire-connection-id}}).
 
 An endpoint that receives packets that it cannot process sends a packet in the
 following layout:
@@ -2660,7 +2683,7 @@ ignoring an unknown packet with a long header might be more effective.
 
 An endpoint cannot determine the Source Connection ID from a packet with a short
 header, therefore it cannot set the Destination Connection ID in the stateless
-reset packet.  The destination connection ID will therefore differ from the
+reset packet.  The Destination Connection ID will therefore differ from the
 value used in previous packets.  A random Destination Connection ID makes the
 connection ID appear to be the result of moving to a new connection ID that was
 provided using a NEW_CONNECTION_ID frame ({{frame-new-connection-id}}).
@@ -3194,13 +3217,11 @@ An endpoint sends a NEW_CONNECTION_ID frame (type=0x0b) to provide its peer with
 alternative connection IDs that can be used to break linkability when migrating
 connections (see {{migration-linkability}}).
 
-The NEW_CONNECTION_ID is as follows:
+The NEW_CONNECTION_ID frame is as follows:
 
 ~~~
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                          Sequence (i)                       ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |   Length (8)  |          Connection ID (32..144)            ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -3216,14 +3237,6 @@ The NEW_CONNECTION_ID is as follows:
 
 The fields are:
 
-Sequence:
-
-: A variable-length integer.  This value starts at 0 and increases by 1 for each
-  connection ID that is provided by the server.  The connection ID that is
-  assigned during the handshake is assumed to have a sequence of -1.  That is,
-  the value selected during the handshake comes immediately before the first
-  value that a server can send.
-
 Length:
 
 : An 8-bit unsigned integer containing the length of the connection ID.  Values
@@ -3236,7 +3249,7 @@ Connection ID:
 
 Stateless Reset Token:
 
-: A 128-bit value that will be used to for a stateless reset when the associated
+: A 128-bit value that will be used for a stateless reset when the associated
   connection ID is used (see {{stateless-reset}}).
 
 An endpoint MUST NOT send this frame if it currently requires that its peer send
@@ -3258,6 +3271,48 @@ Similarly, if an endpoint receives a NEW_CONNECTION_ID frame that repeats
 the Source Connection ID used by the peer during the initial
 handshake, it MUST treat that receipt as a connection error of type
 PROTOCOL_VIOLATION.
+
+## RETIRE_CONNECTION_ID Frame {#frame-retire-connection-id}
+
+An endpoint sends a RETIRE_CONNECTION_ID frame (type=0x1b) to indicate that it
+will no longer use a connection ID that was issued by its peer. This may include
+the connection ID provided during the handshake.  Sending a RETIRE_CONNECTION_ID
+frame also serves as a request to the peer to send additional connection IDs for
+future use (see {{connection-id}}).  New connection IDs can be delivered to a
+peer using the NEW_CONNECTION_ID frame ({{frame-new-connection-id}}).
+
+Retiring a connection ID invalidates the stateless reset token associated with
+that connection ID.
+
+The RETIRE_CONNECTION_ID frame is as follows:
+
+~~~
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|   Length (8)  |          Connection ID (32..144)            ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~
+
+The fields are:
+
+Length:
+
+: An 8-bit unsigned integer containing the length of the connection ID.
+
+Connection ID:
+
+: A connection ID of the specified length.
+
+Receipt of a RETIRE_CONNECTION_ID frame containing a connection ID that was not
+previously sent to the peer MAY be treated as a connection error of type
+PROTOCOL_VIOLATION.
+
+An endpoint cannot send this frame if it was provided with a zero-length
+connection ID by its peer.  An endpoint that provides a zero-length connection
+ID MUST treat receipt of a RETIRE_CONNECTION_ID frame as a connection error of
+type PROTOCOL_VIOLATION.
+
 
 ## STOP_SENDING Frame {#frame-stop-sending}
 
@@ -3878,7 +3933,9 @@ containing that information is acknowledged.
   needed.
 
 * New connection IDs are sent in NEW_CONNECTION_ID frames and retransmitted if
-  the packet containing them is lost.
+  the packet containing them is lost.  Likewise, retired connection IDs are sent
+  in RETIRE_CONNECTION_ID frames and retransmitted if the packet containing
+  them is lost.
 
 * PADDING frames contain no information, so lost PADDING frames do not require
   repair.
