@@ -464,10 +464,10 @@ levels.  During the handshake, this means potentially handling packets at higher
 and lower encryption levels than the current encryption level used by TLS.
 
 In particular, server implementations need to be able to read packets at the
-Handshake encryption level before the final TLS handshake message at the 0-RTT
-encryption level is available.  A client could interleave ACK frames that are
-protected with Handshake keys with 0-RTT data and the server needs to process
-those acknowledgments in order to detect lost Handshake packets.
+Handshake encryption level at the same time as the 0-RTT encryption level.  A
+client could interleave ACK frames that are protected with Handshake keys with
+0-RTT data and the server needs to process those acknowledgments in order to
+detect lost Handshake packets.
 
 
 ### TLS Interface Summary
