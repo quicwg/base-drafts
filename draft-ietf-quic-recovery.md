@@ -828,12 +828,11 @@ Pseudocode for SetLossDetectionTimer follows:
       if (tlp_count < kMaxTLPs):
         // Tail Loss Probe
         if (bytes_in_flight < 2400):
-          // Less than one full-sized packet in flight.
+          // Less than two full-sized packets in flight.
           tlp_timeout = max(1.5 * smoothed_rtt
                               + max_ack_delay, kMinTLPTimeout)
         else:
-          tlp_timeout = max(1.5 * smoothed_rtt,
-                              kMinTLPTimeout)
+          tlp_timeout = max(2 * smoothed_rtt, kMinTLPTimeout)
         timeout = min(tlp_timeout, timeout)
 
     loss_detection_timer.set(
