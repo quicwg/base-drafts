@@ -588,10 +588,9 @@ entries might cause a stream to become blocked, as described in
 ~~~~~~~~~~
 {:#fig-size-sync title="Table State Synchronize"}
 
-An encoder that receives an Insert Count equal to zero, or that is greater than
-the number of dynamic table entries beyond the current Largest Known Received
-entry MUST treat this as a connection error of type
-`HTTP_QPACK_DECODER_STREAM_ERROR`.
+An encoder that receives an Insert Count equal to zero or greater than the
+number of dynamic table entries beyond the current Largest Known Received entry
+MUST treat this as a connection error of type `HTTP_QPACK_DECODER_STREAM_ERROR`.
 
 A decoder chooses when to emit Table State Synchronize instructions. Emitting a
 Table State Synchronize after adding each new dynamic table entry will provide
