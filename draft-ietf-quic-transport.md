@@ -3266,7 +3266,7 @@ will no longer use a connection ID that was issued by its peer. This may include
 the connection ID provided during the handshake.  Sending a RETIRE_CONNECTION_ID
 frame also serves as a request to the peer to send additional connection IDs for
 future use (see {{connection-id}}).  New connection IDs can be delivered to a
-peer using the NEW_CONNECTION_ID frame ({{frame-new- connection-id}}).
+peer using the NEW_CONNECTION_ID frame ({{frame-new-connection-id}}).
 
 Retiring a connection ID invalidates the stateless reset token associated with
 that connection ID.
