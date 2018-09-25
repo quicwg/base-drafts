@@ -1107,6 +1107,11 @@ of the handshake, they cannot be fully trusted until the handshake completes,
 and reliance on them should be minimized.  However, any tampering with the
 parameters will cause the handshake to fail.
 
+Endpoints MUST NOT send this extension in a TLS connection that does not use
+QUIC (such as the use of TLS with TCP defined in {{!TLS13}}).  A fatal
+unsupported_extension alert MUST be sent if this extension is received when the
+transport is not QUIC.
+
 
 ## Removing the EndOfEarlyData Message {#remove-eoed}
 
