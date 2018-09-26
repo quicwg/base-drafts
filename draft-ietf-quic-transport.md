@@ -4218,14 +4218,14 @@ protocol.  The "Ready" state represents a newly created stream that is able to
 accept data from the application.  Stream data might be buffered in this state
 in preparation for sending.
 
-The sending part of a bidirectional stream initiated by a peer (type 0 for a
-server, type 1 for a client) enters the "Ready" state if the receiving part
-enters the "Recv" state.
-
 Sending the first STREAM or STREAM_BLOCKED frame causes a send stream to enter
 the "Send" state.  An implementation might choose to defer allocating a Stream
 ID to a send stream until it sends the first frame and enters this state, which
 can allow for better stream prioritization.
+
+The sending part of a bidirectional stream initiated by a peer (type 0 for a
+server, type 1 for a client) enters the "Send" state if the receiving part
+enters the "Recv" state.
 
 In the "Send" state, an endpoint transmits - and retransmits as necessary - data
 in STREAM frames.  The endpoint respects the flow control limits of its peer,
