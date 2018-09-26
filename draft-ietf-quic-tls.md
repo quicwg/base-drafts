@@ -161,6 +161,8 @@ series of typed TLS records. Records are individually cryptographically
 protected and then transmitted over a reliable transport (typically TCP) which
 provides sequencing and guaranteed delivery.
 
+Change Cipher Spec records cannot be sent in QUIC.
+
 The TLS authenticated key exchange occurs between two entities: client and
 server.  The client initiates the exchange and the server responds.  If the key
 exchange completes successfully, both client and server will agree on a secret.
@@ -259,8 +261,8 @@ QUIC also relies on TLS 1.3 for authentication and negotiation of parameters
 that are critical to security and performance.
 
 Rather than a strict layering, these two protocols are co-dependent: QUIC uses
-the TLS handshake; TLS uses the reliability and ordered delivery provided by
-QUIC streams.
+the TLS handshake; TLS uses the reliability, ordered delivery, and record
+layer provided by QUIC.
 
 At a high level, there are two main interactions between the TLS and QUIC
 components:
@@ -298,7 +300,6 @@ Unlike TLS over TCP, QUIC applications which want to send data do not send it
 through TLS "application_data" records. Rather, they send it as QUIC STREAM
 frames which are then carried in QUIC packets.
 
-
 # Carrying TLS Messages {#carrying-tls}
 
 QUIC carries TLS handshake data in CRYPTO frames, each of which consists of a
@@ -320,14 +321,17 @@ Each encryption level has a specific list of frames which may appear in it. The
 rules here generalize those of TLS, in that frames associated with establishing
 the connection can usually appear at any encryption level, whereas those
 associated with transferring data can only appear in the 0-RTT and 1-RTT
-encryption levels
+encryption levels:
 
 - CRYPTO frames MAY appear in packets of any encryption level except 0-RTT.
 
-- CONNECTION_CLOSE and APPLICATION_CLOSE MAY appear in packets of any encryption
-  level other than 0-RTT.
+- CONNECTION_CLOSE MAY appear in packets of any encryption level other than
+  0-RTT.
 
-- PADDING and PING frames MAY appear in packets of any encryption level.
+- APPLICATION_CLOSE MAY appear in packets of any encryption level other than
+  Initial and 0-RTT.
+
+- PADDING frames MAY appear in packets of any encryption level.
 
 - ACK frames MAY appear in packets of any encryption level other than 0-RTT, but
   can only acknowledge packets which appeared in that packet number space.
@@ -386,6 +390,11 @@ associated with a different flow of bytes, which is reliably transmitted to the
 peer in CRYPTO frames. When TLS provides handshake octets to be sent, they are
 appended to the current flow and any packet that includes the CRYPTO frame is
 protected using keys from the corresponding encryption level.
+
+QUIC takes the unprotected content of TLS handshake records as the content of
+CRYPTO frames. TLS record protection is not used by QUIC. QUIC assembles
+CRYPTO frames into QUIC packets, which are protected using QUIC packet
+protection.
 
 When an endpoint receives a QUIC packet containing a CRYPTO frame from the
 network, it proceeds as follows:
