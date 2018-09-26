@@ -4828,9 +4828,9 @@ FINAL_OFFSET_ERROR (0x6):
 
 FRAME_ENCODING_ERROR (0x7):
 
-: An endpoint received a frame that was badly formatted.  For instance, an empty
-  STREAM frame that omitted the FIN flag, or an ACK frame that has more
-  acknowledgment ranges than the remainder of the packet could carry.
+: An endpoint received a frame that was badly formatted.  For instance, an ACK
+  frame that has more acknowledgment ranges than the remainder of the packet
+  could carry.
 
 TRANSPORT_PARAMETER_ERROR (0x8):
 
