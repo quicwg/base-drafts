@@ -3457,7 +3457,7 @@ Block describes progressively lower-numbered packets.  As long as contiguous
 ranges of packets are small, the variable-length integer encoding ensures that
 each range can be expressed in a small number of octets.
 
-The ACK frame uses the least significant bit(type=0x1a) to indicate ECN feedback
+The ACK frame uses the least significant bit(type=0x1b) to indicate ECN feedback
 and report receipt of packets with ECN codepoints of ECT(0), ECT(1), or CE in the
 packet's IP header.
 
