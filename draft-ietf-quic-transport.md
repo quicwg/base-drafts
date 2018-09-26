@@ -3373,10 +3373,11 @@ Application Error Code:
 
 ## ACK Frame {#frame-ack}
 
-Receivers send ACK frames (types=0x1a - 0x1b) to inform senders which packets they
+Receivers send ACK frames (types=0x1a - 0x1b) to inform senders of packets they
 have received and processed. The ACK frame contains one or more ACK blocks. ACK
-blocks are ranges of acknowledged packets.  ACK frames also contain a sum of ECN
-marks received on the connection up until this point if the frame type is 0x1b.
+blocks are ranges of acknowledged packets. If the frame types is 0x1b, ACK
+frames also contain the sum of ECN marks received on the connection up until
+this point.
 
 QUIC acknowledgements are irrevocable.  Once acknowledged, a packet remains
 acknowledged, even if it does not appear in a future ACK frame.  This is unlike
@@ -3446,8 +3447,8 @@ ACK Blocks:
 
 The ACK Block Section consists of alternating Gap and ACK Block fields in
 descending packet number order.  A First Ack Block field is followed by a
-variable number of alternating Gap and Additional ACK Blocks.  The number of Gap
-and Additional ACK Block fields is determined by the ACK Block Count field.
+variable number of alternating Gap and Additional ACK Blocks.  The number of
+Gap and Additional ACK Block fields is determined by the ACK Block Count field.
 
 Gap and ACK Block fields use a relative integer encoding for efficiency.  Though
 each encoded value is positive, the values are subtracted, so that each ACK
@@ -3456,8 +3457,8 @@ ranges of packets are small, the variable-length integer encoding ensures that
 each range can be expressed in a small number of octets.
 
 The ACK frame uses the least significant bit(type=0x1b) to indicate ECN feedback
-and report receipt of packets with ECN codepoints of ECT(0), ECT(1), or CE in the
-packet's IP header.
+and report receipt of packets with ECN codepoints of ECT(0), ECT(1), or CE in
+the packet's IP header.
 
 ~~~
  0                   1                   2                   3
