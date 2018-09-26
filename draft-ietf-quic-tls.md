@@ -329,7 +329,7 @@ encryption levels.
 - CONNECTION_CLOSE MAY appear in packets of any encryption level other than
   0-RTT.
   
-- APPLICATION_CLOSE MAY appear in packets of any encyrpto level other than
+- APPLICATION_CLOSE MAY appear in packets of any encryption level other than
   Initial and 0-RTT.
 
 - PADDING frames MAY appear in packets of any encryption level.
