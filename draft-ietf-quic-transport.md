@@ -3373,8 +3373,8 @@ Application Error Code:
 
 ## ACK Frame {#frame-ack}
 
-Receivers send ACK frames (types=0x1a - 0x1b) to inform senders of packets they
-have received and processed. The ACK frame contains one or more ACK blocks. ACK
+Receivers send ACK frames (types 0x1a and 0x1b) to inform senders of packets they
+have received and processed. The ACK frame contains one or more ACK Blocks. ACK
 blocks are ranges of acknowledged packets. If the frame type is 0x1b, ACK
 frames also contain the sum of ECN marks received on the connection up until
 this point.
@@ -3456,9 +3456,9 @@ Block describes progressively lower-numbered packets.  As long as contiguous
 ranges of packets are small, the variable-length integer encoding ensures that
 each range can be expressed in a small number of octets.
 
-The ACK frame uses the least significant bit(type=0x1b) to indicate ECN feedback
-and report receipt of packets with ECN codepoints of ECT(0), ECT(1), or CE in
-the packet's IP header.
+The ACK frame uses the least significant bit(bit (that is, type 0x1b) to
+indicate ECN feedback and report receipt of packets with ECN codepoints of
+ECT(0), ECT(1), or CE in the packet's IP header.
 
 ~~~
  0                   1                   2                   3
@@ -3495,7 +3495,7 @@ the formula:
    smallest = largest - ack_block
 ~~~
 
-The range of packets that are acknowledged by the ACK block include the range
+The range of packets that are acknowledged by the ACK Block include the range
 from the smallest packet number to the largest, inclusive.
 
 The largest value for the First ACK Block is determined by the Largest
@@ -3507,7 +3507,7 @@ number of packets in the gap is one higher than the encoded value of the Gap
 Field.
 
 The value of the Gap field establishes the largest packet number value for the
-ACK block that follows the gap using the following formula:
+ACK Block that follows the gap using the following formula:
 
 ~~~
   largest = previous_smallest - gap - 2
@@ -3585,7 +3585,7 @@ needing acknowledgement are received.  The sender can use the receiver's
 An acknowledgment SHOULD be sent immediately after receiving 2 packets that
 require acknowledgement, unless multiple packets are received together.
 
-To limit ACK blocks to those that have not yet been received by the sender, the
+To limit ACK Blocks to those that have not yet been received by the sender, the
 receiver SHOULD track which ACK frames have been acknowledged by its peer.  Once
 an ACK frame has been acknowledged, the packets it acknowledges SHOULD NOT be
 acknowledged again.
@@ -3599,7 +3599,7 @@ Endpoints can only acknowledge packets sent in a particular packet number
 space by sending ACK frames in packets from the same packet number space.
 
 To limit receiver state or the size of ACK frames, a receiver MAY limit the
-number of ACK blocks it sends.  A receiver can do this even without receiving
+number of ACK Blocks it sends.  A receiver can do this even without receiving
 acknowledgment of its ACK frames, with the knowledge this could cause the sender
 to unnecessarily retransmit some data.  Standard QUIC {{QUIC-RECOVERY}}
 algorithms declare packets lost after sufficiently newer packets are
