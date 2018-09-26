@@ -626,7 +626,7 @@ to the same restrictions as the first Initial packet, with the exception of the
 value of the Destination Connection ID and Token fields, which are set as
 described here.  A client can either reuse the cryptographic handshake message
 or construct a new one at its discretion.  All subsequent Initial packets from
-the client MUST use the same connection ID and token values.
+the client MUST use the connection ID and token values from the Retry packet.
 
 A client MAY attempt 0-RTT after receiving a Retry packet by sending 0-RTT
 packets to the connection ID provided by the server.  A client that sends
