@@ -392,9 +392,9 @@ appended to the current flow and any packet that includes the CRYPTO frame is
 protected using keys from the corresponding encryption level.
 
 QUIC takes the unprotected content of TLS handshake records as the content of
-CRYPTO frames. Encapsulation of these messages in protected TLS records does not
-happen. QUIC assembles CRYPTO frames into QUIC packets, which are protected
-using QUIC packet protection.
+CRYPTO frames. TLS record protection is not used by QUIC. QUIC assembles
+CRYPTO frames into QUIC packets, which are protected using QUIC packet
+protection.
 
 When an endpoint receives a QUIC packet containing a CRYPTO frame from the
 network, it proceeds as follows:
