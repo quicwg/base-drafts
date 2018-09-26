@@ -1179,7 +1179,7 @@ The Frame Type field uses a variable length integer encoding (see
 {{integer-encoding}}) with one exception.  To ensure simple and efficient
 implementations of frame parsing, a frame type MUST use the shortest possible
 encoding.  Though a two-, four- or eight-octet encoding of the frame types
-defined in this document is possible, the Frame Type field for these frames isf
+defined in this document is possible, the Frame Type field for these frames is
 encoded on a single octet.  For instance, though 0x4007 is a legitimate
 two-octet encoding for a variable-length integer with a value of 7, PING frames
 are always encoded as a single octet with the value 0x07.  An endpoint MUST
