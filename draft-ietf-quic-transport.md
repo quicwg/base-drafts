@@ -4180,7 +4180,7 @@ data to a peer.
 
 ~~~
    o
-   | Create Bidirectional Stream (Receiving)
+   | Create Bidirectional Stream (Peer-initiated)
    |
    |       o
    |       | Create Stream (Sending)
