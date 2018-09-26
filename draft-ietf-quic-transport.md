@@ -3373,9 +3373,9 @@ Application Error Code:
 
 ## ACK Frame {#frame-ack}
 
-Receivers send ACK frames (types 0x1a and 0x1b) to inform senders of packets they
-have received and processed. The ACK frame contains one or more ACK Blocks. ACK
-blocks are ranges of acknowledged packets. If the frame type is 0x1b, ACK
+Receivers send ACK frames (types 0x1a and 0x1b) to inform senders of packets
+they have received and processed. The ACK frame contains one or more ACK Blocks.
+ACK Blocks are ranges of acknowledged packets. If the frame type is 0x1b, ACK
 frames also contain the sum of ECN marks received on the connection up until
 this point.
 
