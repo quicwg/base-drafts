@@ -1163,14 +1163,13 @@ document.
 | 0x0a        | STREAM_ID_BLOCKED    | {{frame-stream-id-blocked}}    |
 | 0x0b        | NEW_CONNECTION_ID    | {{frame-new-connection-id}}    |
 | 0x0c        | STOP_SENDING         | {{frame-stop-sending}}         |
-| 0x0d        | ACK                  | {{frame-ack}}                  |
+| 0x0d        | RETIRE_CONNECTION_ID | {{frame-retire-connection-id}} |
 | 0x0e        | PATH_CHALLENGE       | {{frame-path-challenge}}       |
 | 0x0f        | PATH_RESPONSE        | {{frame-path-response}}        |
 | 0x10 - 0x17 | STREAM               | {{frame-stream}}               |
 | 0x18        | CRYPTO               | {{frame-crypto}}               |
 | 0x19        | NEW_TOKEN            | {{frame-new-token}}            |
-| 0x1a        | ACK_ECN              | {{frame-ack-ecn}}              |
-| 0x1b        | RETIRE_CONNECTION_ID | {{frame-retire-connection-id}} |
+| 0x1a - 0x1b | ACK                  | {{frame-ack}}                  |
 {: #frame-types title="Frame Types"}
 
 All QUIC frames are idempotent.  That is, a valid frame does not cause
@@ -1180,7 +1179,7 @@ The Frame Type field uses a variable length integer encoding (see
 {{integer-encoding}}) with one exception.  To ensure simple and efficient
 implementations of frame parsing, a frame type MUST use the shortest possible
 encoding.  Though a two-, four- or eight-octet encoding of the frame types
-defined in this document is possible, the Frame Type field for these frames is
+defined in this document is possible, the Frame Type field for these frames isf
 encoded on a single octet.  For instance, though 0x4007 is a legitimate
 two-octet encoding for a variable-length integer with a value of 7, PING frames
 are always encoded as a single octet with the value 0x07.  An endpoint MUST
@@ -1928,8 +1927,8 @@ experiencing congestion.
 
 On receiving a packet with an ECT or CE codepoint, an endpoint that can access
 the IP ECN codepoints increases the corresponding ECT(0), ECT(1), or CE count,
-and includes these counters in subsequent (see {{processing-and-ack}}) ACK_ECN
-frames (see {{frame-ack-ecn}}).
+and includes these counters in subsequent (see {{processing-and-ack}}) ACK
+frames (see {{frame-ack}}).
 
 A packet detected by a receiver as a duplicate does not affect the receiver's
 local ECN codepoint counts; see ({{security-ecn}}) for relevant security
@@ -1946,14 +1945,14 @@ ACK frame, the endpoint stops setting ECT codepoints in subsequent packets, with
 the expectation that either the network or the peer no longer supports ECN.
 
 To protect the connection from arbitrary corruption of ECN codepoints by the
-network, an endpoint verifies the following when an ACK_ECN frame is received:
+network, an endpoint verifies the following when an ACK frame is received:
 
 * The increase in ECT(0) and ECT(1) counters MUST be at least the number of
   packets newly acknowledged that were sent with the corresponding codepoint.
 
-* The total increase in ECT(0), ECT(1), and CE counters reported in the ACK_ECN
+* The total increase in ECT(0), ECT(1), and CE counters reported in the ACK
   frame MUST be at least the total number of packets newly acknowledged in this
-  ACK_ECN frame.
+  ACK frame.
 
 An endpoint could miss acknowledgements for a packet when ACK frames are lost.
 It is therefore possible for the total increase in ECT(0), ECT(1), and CE
@@ -3374,9 +3373,10 @@ Application Error Code:
 
 ## ACK Frame {#frame-ack}
 
-Receivers send ACK frames (type=0x0d) to inform senders which packets they have
-received and processed. The ACK frame contains any number of ACK blocks.
-ACK blocks are ranges of acknowledged packets.
+Receivers send ACK frames (types=0x1a - 0x1b) to inform senders which packets they
+have received and processed. The ACK frame contains one or more ACK blocks. ACK
+blocks are ranges of acknowledged packets.  ACK frames also contain a sum of ECN
+marks received on the connection up until this point if the frame type is 0x1b.
 
 QUIC acknowledgements are irrevocable.  Once acknowledged, a packet remains
 acknowledged, even if it does not appear in a future ACK frame.  This is unlike
@@ -3404,6 +3404,10 @@ An ACK frame is shown below.
 |                       ACK Block Count (i)                   ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                          ACK Blocks (*)                     ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                    Additional ACK Block (i)                 ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                         [ECN Section]                       ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
 {: #ack-format title="ACK Frame Format"}
@@ -3453,6 +3457,10 @@ Block describes progressively lower-numbered packets.  As long as contiguous
 ranges of packets are small, the variable-length integer encoding ensures that
 each range can be expressed in a small number of octets.
 
+The ACK frame uses the least significant bit(type=0x1a) to indicate ECN feedback
+to indicate receipt of packets with ECN codepoints of ECT(0), ECT(1), or CE in the
+packet's IP header.
+
 ~~~
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
@@ -3470,8 +3478,6 @@ each range can be expressed in a small number of octets.
                                ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                             Gap (i)                         ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                    Additional ACK Block (i)                 ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
 {: #ack-block-format title="ACK Block Section"}
@@ -3529,6 +3535,35 @@ Additional ACK Block (repeated):
   packets preceding the largest packet number, as determined by the
   preceding Gap.
 
+### ECN section
+
+Only when 0x1b is the value of the ACK frame type byte should the ECN section
+be parsed.  The section consists of 3 ECN counters as shown below.
+
+~~~
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                        ECT(0) Count (i)                     ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                        ECT(1) Count (i)                     ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                        ECN-CE Count (i)                     ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~
+
+ECT(0) Count:
+: A variable-length integer representing the total number packets received with
+  the ECT(0) codepoint.
+
+ECT(1) Count:
+: A variable-length integer representing the total number packets received with
+  the ECT(1) codepoint.
+
+CE Count:
+: A variable-length integer representing the total number packets received with
+  the CE codepoint.
+
 ### Sending ACK Frames
 
 Implementations MUST NOT generate packets that only contain ACK frames in
@@ -3585,50 +3620,6 @@ data sent by the server protected by the 1-RTT keys.
 
 Endpoints SHOULD send acknowledgments for packets containing CRYPTO frames with
 a reduced delay; see Section 4.3.1 of {{QUIC-RECOVERY}}.
-
-
-## ACK_ECN Frame {#frame-ack-ecn}
-
-The ACK_ECN frame (type=0x1a) is used by an endpoint that provides ECN feedback
-for packets received with ECN codepoints of ECT(0), ECT(1), or CE in the
-packet's IP header.
-
-~~~
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                     Largest Acknowledged (i)                ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                          ACK Delay (i)                      ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                        ECT(0) Count (i)                     ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                        ECT(1) Count (i)                     ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                        ECN-CE Count (i)                     ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                       ACK Block Count (i)                   ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                          ACK Blocks (*)                     ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-~~~
-{: #ACN_ECN_FRAME_FORMAT title="ACK_ECN Frame Format"}
-
-An ACK_ECN frame contains all the elements of the ACK frame ({{frame-ack}}) with
-the addition of three counts following the ACK Delay field.
-
-ECT(0) Count:
-: A variable-length integer representing the total number packets received with
-  the ECT(0) codepoint.
-
-ECT(1) Count:
-: A variable-length integer representing the total number packets received with
-  the ECT(1) codepoint.
-
-CE Count:
-: A variable-length integer representing the total number packets received with
-  the CE codepoint.
-
 
 ## PATH_CHALLENGE Frame {#frame-path-challenge}
 
