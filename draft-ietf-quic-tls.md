@@ -161,8 +161,7 @@ series of typed TLS records. Records are individually cryptographically
 protected and then transmitted over a reliable transport (typically TCP) which
 provides sequencing and guaranteed delivery.
 
-Note that Change Cipher Spec records, optional in TLS over TCP, have no
-encoding for TLS over QUIC.
+Change Cipher Spec records cannot be sent in QUIC.
 
 The TLS authenticated key exchange occurs between two entities: client and
 server.  The client initiates the exchange and the server responds.  If the key
@@ -322,7 +321,7 @@ Each encryption level has a specific list of frames which may appear in it. The
 rules here generalize those of TLS, in that frames associated with establishing
 the connection can usually appear at any encryption level, whereas those
 associated with transferring data can only appear in the 0-RTT and 1-RTT
-encryption levels.
+encryption levels:
 
 - CRYPTO frames MAY appear in packets of any encryption level except 0-RTT.
 
@@ -392,9 +391,10 @@ peer in CRYPTO frames. When TLS provides handshake octets to be sent, they are
 appended to the current flow and any packet that includes the CRYPTO frame is
 protected using keys from the corresponding encryption level.
 
-Unlike its operations with TCP, the TLS bytestream is never separately
-encrypted and decrypted. This operation only occurs on the QUIC packet as a
-whole.
+QUIC takes the unprotected content of TLS handshake records as the content of
+CRYPTO frames. Encapsulation of these messages in protected TLS records does not
+happen. QUIC assembles CRYPTO frames into QUIC packets, which are protected
+using QUIC packet protection.
 
 When an endpoint receives a QUIC packet containing a CRYPTO frame from the
 network, it proceeds as follows:
