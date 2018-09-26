@@ -3537,8 +3537,8 @@ Additional ACK Block (repeated):
 
 ### ECN section
 
-Only when 0x1b is the value of the ACK frame type byte should the ECN section
-be parsed.  The section consists of 3 ECN counters as shown below.
+The ECN section should only be parsed when the ACK frame type byte is 0x1b.
+The ECN section consists of 3 ECN counters as shown below.
 
 ~~~
  0                   1                   2                   3
