@@ -1163,14 +1163,13 @@ document.
 | 0x0a        | STREAM_ID_BLOCKED    | {{frame-stream-id-blocked}}    |
 | 0x0b        | NEW_CONNECTION_ID    | {{frame-new-connection-id}}    |
 | 0x0c        | STOP_SENDING         | {{frame-stop-sending}}         |
-| 0x0d        | ACK                  | {{frame-ack}}                  |
+| 0x0d        | RETIRE_CONNECTION_ID | {{frame-retire-connection-id}} |
 | 0x0e        | PATH_CHALLENGE       | {{frame-path-challenge}}       |
 | 0x0f        | PATH_RESPONSE        | {{frame-path-response}}        |
 | 0x10 - 0x17 | STREAM               | {{frame-stream}}               |
 | 0x18        | CRYPTO               | {{frame-crypto}}               |
 | 0x19        | NEW_TOKEN            | {{frame-new-token}}            |
-| 0x1a        | ACK_ECN              | {{frame-ack-ecn}}              |
-| 0x1b        | RETIRE_CONNECTION_ID | {{frame-retire-connection-id}} |
+| 0x1a - 0x1b | ACK                  | {{frame-ack}}                  |
 {: #frame-types title="Frame Types"}
 
 All QUIC frames are idempotent.  That is, a valid frame does not cause
@@ -1928,8 +1927,8 @@ experiencing congestion.
 
 On receiving a packet with an ECT or CE codepoint, an endpoint that can access
 the IP ECN codepoints increases the corresponding ECT(0), ECT(1), or CE count,
-and includes these counters in subsequent (see {{processing-and-ack}}) ACK_ECN
-frames (see {{frame-ack-ecn}}).
+and includes these counters in subsequent (see {{processing-and-ack}}) ACK
+frames (see {{frame-ack}}).
 
 A packet detected by a receiver as a duplicate does not affect the receiver's
 local ECN codepoint counts; see ({{security-ecn}}) for relevant security
@@ -1946,14 +1945,14 @@ ACK frame, the endpoint stops setting ECT codepoints in subsequent packets, with
 the expectation that either the network or the peer no longer supports ECN.
 
 To protect the connection from arbitrary corruption of ECN codepoints by the
-network, an endpoint verifies the following when an ACK_ECN frame is received:
+network, an endpoint verifies the following when an ACK frame is received:
 
 * The increase in ECT(0) and ECT(1) counters MUST be at least the number of
   packets newly acknowledged that were sent with the corresponding codepoint.
 
-* The total increase in ECT(0), ECT(1), and CE counters reported in the ACK_ECN
+* The total increase in ECT(0), ECT(1), and CE counters reported in the ACK
   frame MUST be at least the total number of packets newly acknowledged in this
-  ACK_ECN frame.
+  ACK frame.
 
 An endpoint could miss acknowledgements for a packet when ACK frames are lost.
 It is therefore possible for the total increase in ECT(0), ECT(1), and CE
@@ -3374,9 +3373,11 @@ Application Error Code:
 
 ## ACK Frame {#frame-ack}
 
-Receivers send ACK frames (type=0x0d) to inform senders which packets they have
-received and processed. The ACK frame contains any number of ACK blocks.
-ACK blocks are ranges of acknowledged packets.
+Receivers send ACK frames (types 0x1a and 0x1b) to inform senders of packets
+they have received and processed. The ACK frame contains one or more ACK Blocks.
+ACK Blocks are ranges of acknowledged packets. If the frame type is 0x1b, ACK
+frames also contain the sum of ECN marks received on the connection up until
+this point.
 
 QUIC acknowledgements are irrevocable.  Once acknowledged, a packet remains
 acknowledged, even if it does not appear in a future ACK frame.  This is unlike
@@ -3404,6 +3405,8 @@ An ACK frame is shown below.
 |                       ACK Block Count (i)                   ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                          ACK Blocks (*)                     ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                         [ECN Section]                       ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
 {: #ack-format title="ACK Frame Format"}
@@ -3444,14 +3447,18 @@ ACK Blocks:
 
 The ACK Block Section consists of alternating Gap and ACK Block fields in
 descending packet number order.  A First Ack Block field is followed by a
-variable number of alternating Gap and Additional ACK Blocks.  The number of Gap
-and Additional ACK Block fields is determined by the ACK Block Count field.
+variable number of alternating Gap and Additional ACK Blocks.  The number of
+Gap and Additional ACK Block fields is determined by the ACK Block Count field.
 
 Gap and ACK Block fields use a relative integer encoding for efficiency.  Though
 each encoded value is positive, the values are subtracted, so that each ACK
 Block describes progressively lower-numbered packets.  As long as contiguous
 ranges of packets are small, the variable-length integer encoding ensures that
 each range can be expressed in a small number of octets.
+
+The ACK frame uses the least significant bit(bit (that is, type 0x1b) to
+indicate ECN feedback and report receipt of packets with ECN codepoints of
+ECT(0), ECT(1), or CE in the packet's IP header.
 
 ~~~
  0                   1                   2                   3
@@ -3488,7 +3495,7 @@ the formula:
    smallest = largest - ack_block
 ~~~
 
-The range of packets that are acknowledged by the ACK block include the range
+The range of packets that are acknowledged by the ACK Block include the range
 from the smallest packet number to the largest, inclusive.
 
 The largest value for the First ACK Block is determined by the Largest
@@ -3500,7 +3507,7 @@ number of packets in the gap is one higher than the encoded value of the Gap
 Field.
 
 The value of the Gap field establishes the largest packet number value for the
-ACK block that follows the gap using the following formula:
+ACK Block that follows the gap using the following formula:
 
 ~~~
   largest = previous_smallest - gap - 2
@@ -3529,6 +3536,35 @@ Additional ACK Block (repeated):
   packets preceding the largest packet number, as determined by the
   preceding Gap.
 
+### ECN section
+
+The ECN section should only be parsed when the ACK frame type byte is 0x1b.
+The ECN section consists of 3 ECN counters as shown below.
+
+~~~
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                        ECT(0) Count (i)                     ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                        ECT(1) Count (i)                     ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                        ECN-CE Count (i)                     ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~
+
+ECT(0) Count:
+: A variable-length integer representing the total number packets received with
+  the ECT(0) codepoint.
+
+ECT(1) Count:
+: A variable-length integer representing the total number packets received with
+  the ECT(1) codepoint.
+
+CE Count:
+: A variable-length integer representing the total number packets received with
+  the CE codepoint.
+
 ### Sending ACK Frames
 
 Implementations MUST NOT generate packets that only contain ACK frames in
@@ -3549,7 +3585,7 @@ needing acknowledgement are received.  The sender can use the receiver's
 An acknowledgment SHOULD be sent immediately after receiving 2 packets that
 require acknowledgement, unless multiple packets are received together.
 
-To limit ACK blocks to those that have not yet been received by the sender, the
+To limit ACK Blocks to those that have not yet been received by the sender, the
 receiver SHOULD track which ACK frames have been acknowledged by its peer.  Once
 an ACK frame has been acknowledged, the packets it acknowledges SHOULD NOT be
 acknowledged again.
@@ -3563,7 +3599,7 @@ Endpoints can only acknowledge packets sent in a particular packet number
 space by sending ACK frames in packets from the same packet number space.
 
 To limit receiver state or the size of ACK frames, a receiver MAY limit the
-number of ACK blocks it sends.  A receiver can do this even without receiving
+number of ACK Blocks it sends.  A receiver can do this even without receiving
 acknowledgment of its ACK frames, with the knowledge this could cause the sender
 to unnecessarily retransmit some data.  Standard QUIC {{QUIC-RECOVERY}}
 algorithms declare packets lost after sufficiently newer packets are
@@ -3585,50 +3621,6 @@ data sent by the server protected by the 1-RTT keys.
 
 Endpoints SHOULD send acknowledgments for packets containing CRYPTO frames with
 a reduced delay; see Section 4.3.1 of {{QUIC-RECOVERY}}.
-
-
-## ACK_ECN Frame {#frame-ack-ecn}
-
-The ACK_ECN frame (type=0x1a) is used by an endpoint that provides ECN feedback
-for packets received with ECN codepoints of ECT(0), ECT(1), or CE in the
-packet's IP header.
-
-~~~
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                     Largest Acknowledged (i)                ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                          ACK Delay (i)                      ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                        ECT(0) Count (i)                     ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                        ECT(1) Count (i)                     ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                        ECN-CE Count (i)                     ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                       ACK Block Count (i)                   ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                          ACK Blocks (*)                     ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-~~~
-{: #ACN_ECN_FRAME_FORMAT title="ACK_ECN Frame Format"}
-
-An ACK_ECN frame contains all the elements of the ACK frame ({{frame-ack}}) with
-the addition of three counts following the ACK Delay field.
-
-ECT(0) Count:
-: A variable-length integer representing the total number packets received with
-  the ECT(0) codepoint.
-
-ECT(1) Count:
-: A variable-length integer representing the total number packets received with
-  the ECT(1) codepoint.
-
-CE Count:
-: A variable-length integer representing the total number packets received with
-  the CE codepoint.
-
 
 ## PATH_CHALLENGE Frame {#frame-path-challenge}
 
