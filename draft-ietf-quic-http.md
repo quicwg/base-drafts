@@ -265,7 +265,9 @@ on QUIC stream 0, with subsequent requests on stream 4, 8, and so on. In order
 to permit these streams to open, an HTTP/QUIC client SHOULD send non-zero values
 for the QUIC transport parameters `initial_max_stream_data_bidi_local`. An
 HTTP/QUIC server SHOULD send non-zero values for the QUIC transport parameters
-`initial_max_stream_data_bidi_remote` and `initial_max_bidi_streams`.
+`initial_max_stream_data_bidi_remote` and `initial_max_bidi_streams`. It is
+recommended that `initial_max_bidi_streams` be no smaller than 100, so as to not
+unnecessarily limit parallelism.
 
 These streams carry frames related to the request/response (see {{frames}}).
 When a stream terminates cleanly, if the last frame on the stream was truncated,
@@ -275,8 +277,8 @@ point in the frame.
 
 HTTP/QUIC does not use server-initiated bidirectional streams. The use of
 unidirectional streams is discussed in {{unidirectional-streams}}.  Both clients
-and servers SHOULD send a non-zero value for the QUIC transport parameter
-`initial_max_uni_streams`.
+and servers SHOULD send a value of three or greater for the QUIC transport
+parameter `initial_max_uni_streams`.
 
 HTTP does not need to do any separate multiplexing when using QUIC - data sent
 over a QUIC stream always maps to a particular HTTP transaction. Requests and
