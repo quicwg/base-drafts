@@ -4182,6 +4182,9 @@ data to a peer.
        |                           |
        | Send STREAM /             |
        |      STREAM_BLOCKED       |
+       |                           |
+       | Create Bidirectional      |
+       |      Stream (Receiving)   |
        v                           |
    +-------+                       |
    | Send  | Send RST_STREAM       |
