@@ -1469,6 +1469,12 @@ SETTINGS_MAX_FRAME_SIZE:
 SETTINGS_MAX_HEADER_LIST_SIZE:
 : See {{settings-parameters}}.
 
+In HTTP/QUIC, setting values are variable-length integers (6, 14, 30, or 62 bits
+long) rather than fixed-length 32-bit fields.  This will often produce a shorter
+encoding, but will produce a longer encoding for settings which use the full
+32-bit space.  Settings ported from HTTP/2 might choose to redefine the format
+of their settings to avoid using the 62-bit encoding.
+
 Settings need to be defined separately for HTTP/2 and HTTP/QUIC.  The IDs of
 settings defined in {{!RFC7540}} have been reserved for simplicity.  See
 {{iana-settings}}.
