@@ -4179,38 +4179,36 @@ Note:
 data to a peer.
 
 ~~~
-   o
-   | Create Bidirectional Stream (Receiving)
-   |
-   |       o
-   |       | Create Stream (Sending)
-   |       v
-   |   +-------+
-   |   | Ready | Send RST_STREAM
-   |   |       |-----------------------.
-   |   +-------+                       |
-   |       |                           |
-   |       | Send STREAM /             |
-   |       |      STREAM_BLOCKED       |
-   |       v                           |
-   |   +-------+                       |
-   |   | Send  | Send RST_STREAM       |
-   `-->|       |---------------------->|
-       +-------+                       |
-           |                           |
-           | Send STREAM + FIN         |
-           v                           v
-       +-------+                   +-------+
-       | Data  | Send RST_STREAM   | Reset |
-       | Sent  |------------------>| Sent  |
-       +-------+                   +-------+
-           |                           |
-           | Recv All ACKs             | Recv ACK
-           v                           v
-       +-------+                   +-------+
-       | Data  |                   | Reset |
-       | Recvd |                   | Recvd |
-       +-------+                   +-------+
+       o
+       | Create Stream (Sending)
+       | Create Bidirectional Stream (Receiving)
+       v
+   +-------+
+   | Ready | Send RST_STREAM
+   |       |-----------------------.
+   +-------+                       |
+       |                           |
+       | Send STREAM /             |
+       |      STREAM_BLOCKED       |
+       v                           |
+   +-------+                       |
+   | Send  | Send RST_STREAM       |
+   |       |---------------------->|
+   +-------+                       |
+       |                           |
+       | Send STREAM + FIN         |
+       v                           v
+   +-------+                   +-------+
+   | Data  | Send RST_STREAM   | Reset |
+   | Sent  |------------------>| Sent  |
+   +-------+                   +-------+
+       |                           |
+       | Recv All ACKs             | Recv ACK
+       v                           v
+   +-------+                   +-------+
+   | Data  |                   | Reset |
+   | Recvd |                   | Recvd |
+   +-------+                   +-------+
 ~~~
 {: #fig-stream-send-states title="States for Send Streams"}
 
