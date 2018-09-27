@@ -150,7 +150,7 @@ peer's SETTINGS frame.
 Before a new entry is added to the dynamic table, entries are evicted from the
 end of the dynamic table until the size of the dynamic table is less than or
 equal to (maximum size - new entry size) or until the table is empty. The
-encoder MUST not evict a dynamic table entry unless it has first been
+encoder MUST NOT evict a dynamic table entry unless it has first been
 acknowledged by the decoder.
 
 If the size of the new entry is less than or equal to the maximum size, that
@@ -727,9 +727,12 @@ The decoder reconstructs the Largest Reference using the following algorithm:
       LargestReference -= 1
       CurrentWrapped = TableLargestAbsoluteIndex mod 2*MaxEntries
 
-      if CurrentWrapped > LargestReference + MaxEntries:
+      if CurrentWrapped >= LargestReference + MaxEntries:
          # Largest Reference wrapped around 1 extra time
          LargestReference += 2*MaxEntries
+      else if CurrentWrapped + MaxEntries <= LargestReference
+         # Decoder wrapped around 1 extra time
+         CurrentWrapped += 2*MaxEntries
 
       LargestReference +=
          (TableLargestAbsoluteIndex - CurrentWrapped)
