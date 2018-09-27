@@ -639,12 +639,14 @@ Largest Known Received.
 
 ### Stream Cancellation
 
-A stream that is reset might have multiple outstanding header blocks.  A decoder
-that receives a stream reset before the end of a stream generates a Stream
-Cancellation instruction on the decoder stream.  Similarly, a decoder that
-abandons reading of a stream needs to signal this using the Stream Cancellation
-instruction.  This signals to the encoder that all references to the dynamic
-table on that stream are no longer outstanding.
+A stream that is reset might have multiple outstanding header blocks with
+dynamic table references.  A decoder that receives a stream reset before the end
+of a stream generates a Stream Cancellation instruction on the decoder stream.
+Similarly, a decoder that abandons reading of a stream needs to signal this
+using the Stream Cancellation instruction.  This signals to the encoder that all
+references to the dynamic table on that stream are no longer outstanding.  A
+decoder with a maximum dynamic table size equal to zero MAY omit sending Stream
+Cancellations, because the encoder cannot have any dynamic table references.
 
 An encoder cannot infer from this instruction that any updates to the dynamic
 table have been received.
