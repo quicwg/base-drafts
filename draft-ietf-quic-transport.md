@@ -1199,6 +1199,11 @@ that a peer is able to understand the frame.  An endpoint can use a transport
 parameter to signal its willingness to receive one or more extension frame types
 with the one transport parameter.
 
+Extension frames MUST be congestion controlled and MUST cause an ACK frame to
+be sent.  The exception is extension frames that replace or supplement the ACK
+frame.  Extension frames are not included in flow control unless specified
+in the extension.
+
 An IANA registry is used to manage the assignment of frame types, see
 {{iana-frames}}.
 
