@@ -730,7 +730,7 @@ The decoder reconstructs the Largest Reference using the following algorithm:
       if CurrentWrapped >= LargestReference + MaxEntries:
          # Largest Reference wrapped around 1 extra time
          LargestReference += 2*MaxEntries
-      else if CurrentWrapped + MaxEntries <= LargestReference
+      else if CurrentWrapped + MaxEntries < LargestReference
          # Decoder wrapped around 1 extra time
          CurrentWrapped += 2*MaxEntries
 
