@@ -1035,13 +1035,13 @@ Description:
 | 26    | :status                          | 304                                                   |
 | 27    | :status                          | 404                                                   |
 | 28    | :status                          | 503                                                   |
-| 29    | accept                           | */*                                                   |
+| 29    | accept                           | \*/\*                                                 |
 | 30    | accept                           | application/dns-message                               |
 | 31    | accept-encoding                  | gzip, deflate, br                                     |
 | 32    | accept-ranges                    | bytes                                                 |
 | 33    | access-control-allow-headers     | cache-control                                         |
 | 34    | access-control-allow-headers     | content-type                                          |
-| 35    | access-control-allow-origin      | *                                                     |
+| 35    | access-control-allow-origin      | \*                                                    |
 | 36    | cache-control                    | max-age=0                                             |
 | 37    | cache-control                    | max-age=2592000                                       |
 | 38    | cache-control                    | max-age=604800                                        |
@@ -1081,7 +1081,7 @@ Description:
 | 72    | accept-language                  |                                                       |
 | 73    | access-control-allow-credentials | FALSE                                                 |
 | 74    | access-control-allow-credentials | TRUE                                                  |
-| 75    | access-control-allow-headers     | *                                                     |
+| 75    | access-control-allow-headers     | \*                                                    |
 | 76    | access-control-allow-headers     | x-requested-with                                      |
 | 77    | access-control-allow-methods     | get                                                   |
 | 78    | access-control-allow-methods     | get, post, options                                    |
@@ -1101,7 +1101,7 @@ Description:
 | 92    | origin                           |                                                       |
 | 93    | purpose                          | prefetch                                              |
 | 94    | server                           |                                                       |
-| 95    | timing-allow-origin              | *                                                     |
+| 95    | timing-allow-origin              | \*                                                    |
 | 96    | upgrade-insecure-requests        | 1                                                     |
 | 97    | user-agent                       |                                                       |
 | 98    | x-forwarded-for                  |                                                       |
