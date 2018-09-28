@@ -565,9 +565,11 @@ The control stream is indicated by a stream type of `0x43` (ASCII 'C').  Data on
 this stream consists of HTTP/QUIC frames, as defined in {{frames}}.
 
 Each side MUST initiate a single control stream at the beginning of the
-connection and send its SETTINGS frame as the first frame on this stream.  Only
-one control stream per peer is permitted; receipt of a second stream which
-claims to be a control stream MUST be treated as a connection error of type
+connection and send its SETTINGS frame as the first frame on this stream.  If
+the first frame of the control stream is any other frame type, this MUST be
+treated as a connection error of type HTTP_MISSING_SETTINGS. Only one control
+stream per peer is permitted; receipt of a second stream which claims to be a
+control stream MUST be treated as a connection error of type
 HTTP_WRONG_STREAM_COUNT.  If the control stream is closed at any point, this
 MUST be treated as a connection error of type HTTP_CLOSED_CRITICAL_STREAM.
 
@@ -1279,6 +1281,9 @@ HTTP_EARLY_RESPONSE (0x0011):
 : The remainder of the client's request is not needed to produce a response.
   For use in STOP_SENDING only.
 
+HTTP_MISSING_SETTINGS (0x0012):
+: No SETTINGS frame was received at the beginning of the control stream.
+
 HTTP_GENERAL_PROTOCOL_ERROR (0x00FF):
 : Peer violated protocol requirements in a way which doesn't match a more
   specific error code, or endpoint declines to use the more specific error code.
@@ -1751,6 +1756,7 @@ The entries in the following table are registered by this document.
 | HTTP_CLOSED_CRITICAL_STREAM         | 0x000F     | Critical stream was closed               | {{http-error-codes}}   |
 | HTTP_WRONG_STREAM_DIRECTION         | 0x0010     | Unidirectional stream in wrong direction | {{http-error-codes}}   |
 | HTTP_EARLY_RESPONSE                 | 0x0011     | Remainder of request not needed          | {{http-error-codes}}   |
+| HTTP_MISSING_SETTINGS               | 0x0012     | No SETTINGS frame received               | {{http-error-codes}}   |
 | HTTP_MALFORMED_FRAME                | 0x01XX     | Error in frame formatting or use         | {{http-error-codes}}   |
 | ----------------------------------- | ---------- | ---------------------------------------- | ---------------------- |
 
