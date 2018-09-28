@@ -1030,90 +1030,84 @@ Description:
 | 21    | :method                          | PUT                                                   |
 | 22    | :scheme                          | http                                                  |
 | 23    | :scheme                          | https                                                 |
-| 24    | :status                          | 200                                                   |
-| 25    | :status                          | 304                                                   |
-| 26    | accept                           | */*                                                   |
-| 27    | accept                           | application/dns-message                               |
-| 28    | accept-encoding                  | gzip, deflate, br                                     |
-| 29    | accept-language                  |                                                       |
-| 30    | authorization                    |                                                       |
-| 31    | cache-control                    | max-age=0                                             |
-| 32    | cache-control                    | max-age=604800                                        |
-| 33    | cache-control                    | max-age=2592000                                       |
-| 34    | cache-control                    | no-cache                                              |
-| 35    | cache-control                    | no-cache, no-store, must-revalidate                   |
-| 36    | cache-control                    | public, max-age=31536000                              |
-| 37    | content-encoding                 | br                                                    |
-| 38    | content-type                     | application/dns-message                               |
-| 39    | content-type                     | application/javascript                                |
-| 40    | content-type                     | application/json                                      |
-| 41    | content-type                     | application/json; charset=utf-8                       |
-| 42    | content-type                     | application/x-www-form-urlencoded                     |
-| 43    | content-type                     | application/x-www-form-urlencoded; charset=utf-8      |
-| 44    | content-type                     | image/gif                                             |
-| 45    | content-type                     | image/jpeg                                            |
-| 46    | content-type                     | image/png                                             |
-| 47    | content-type                     | text/css                                              |
-| 48    | content-type                     | text/html; charset=utf-8                              |
-| 49    | content-type                     | text/javascript                                       |
-| 50    | content-type                     | text/javascript; charset=utf-8                        |
-| 51    | content-type                     | text/plain                                            |
-| 52    | content-type                     | text/plain;charset=utf-8                              |
-| 53    | range                            | bytes=0-                                              |
-| 54    | server                           |                                                       |
-| 55    | strict-transport-security        | max-age=10886400; includesubdomains; preload          |
+| 24    | :status                          | 103                                                   |
+| 25    | :status                          | 200                                                   |
+| 26    | :status                          | 304                                                   |
+| 27    | :status                          | 404                                                   |
+| 28    | :status                          | 503                                                   |
+| 29    | accept                           | */*                                                   |
+| 30    | accept                           | application/dns-message                               |
+| 31    | accept-encoding                  | gzip, deflate, br                                     |
+| 32    | accept-ranges                    | bytes                                                 |
+| 33    | access-control-allow-headers     | cache-control                                         |
+| 34    | access-control-allow-headers     | content-type                                          |
+| 35    | access-control-allow-origin      | *                                                     |
+| 36    | cache-control                    | max-age=0                                             |
+| 37    | cache-control                    | max-age=2592000                                       |
+| 38    | cache-control                    | max-age=604800                                        |
+| 39    | cache-control                    | no-cache                                              |
+| 40    | cache-control                    | no-store                                              |
+| 41    | cache-control                    | public, max-age=31536000                              |
+| 42    | content-encoding                 | br                                                    |
+| 43    | content-encoding                 | gzip                                                  |
+| 44    | content-type                     | application/dns-message                               |
+| 45    | content-type                     | application/javascript                                |
+| 46    | content-type                     | application/json                                      |
+| 47    | content-type                     | application/x-www-form-urlencoded                     |
+| 48    | content-type                     | image/gif                                             |
+| 49    | content-type                     | image/jpeg                                            |
+| 50    | content-type                     | image/png                                             |
+| 51    | content-type                     | text/css                                              |
+| 52    | content-type                     | text/html; charset=utf-8                              |
+| 53    | content-type                     | text/plain                                            |
+| 54    | content-type                     | text/plain;charset=utf-8                              |
+| 55    | range                            | bytes=0-                                              |
 | 56    | strict-transport-security        | max-age=31536000                                      |
 | 57    | strict-transport-security        | max-age=31536000; includesubdomains                   |
 | 58    | strict-transport-security        | max-age=31536000; includesubdomains; preload          |
-| 59    | user-agent                       |                                                       |
-| 60    | vary                             | accept-encoding                                       |
-| 61    | vary                             | accept-encoding, user-agent                           |
-| 62    | vary                             | origin                                                |
+| 59    | vary                             | accept-encoding                                       |
+| 60    | vary                             | origin                                                |
+| 61    | x-content-type-options           | nosniff                                               |
+| 62    | x-xss-protection                 | 1; mode=block                                         |
 | 63    | :status                          | 100                                                   |
-| 64    | :status                          | 103                                                   |
-| 65    | :status                          | 204                                                   |
-| 66    | :status                          | 206                                                   |
-| 67    | :status                          | 302                                                   |
-| 68    | :status                          | 400                                                   |
-| 69    | :status                          | 403                                                   |
-| 70    | :status                          | 404                                                   |
-| 71    | :status                          | 421                                                   |
-| 72    | :status                          | 425                                                   |
-| 73    | :status                          | 500                                                   |
-| 74    | :status                          | 503                                                   |
-| 75    | accept-ranges                    | bytes                                                 |
-| 76    | access-control-allow-credentials | FALSE                                                 |
-| 77    | access-control-allow-credentials | TRUE                                                  |
-| 78    | access-control-allow-headers     | *                                                     |
-| 79    | access-control-allow-headers     | cache-control                                         |
-| 80    | access-control-allow-headers     | content-type                                          |
-| 81    | access-control-allow-headers     | x-requested-with                                      |
-| 82    | access-control-allow-methods     | get                                                   |
-| 83    | access-control-allow-methods     | get, post, options                                    |
-| 84    | access-control-allow-methods     | options                                               |
-| 85    | access-control-allow-origin      | *                                                     |
-| 86    | access-control-expose-headers    | content-length                                        |
-| 87    | access-control-request-headers   | content-type                                          |
-| 88    | access-control-request-headers   | x-requested-with                                      |
-| 89    | access-control-request-method    | get                                                   |
-| 90    | access-control-request-method    | post                                                  |
-| 91    | alt-svc                          | clear                                                 |
-| 92    | content-encoding                 | gzip                                                  |
-| 93    | content-security-policy          | script-src 'none'; object-src 'none'; base-uri 'none' |
-| 94    | early-data                       | 1                                                     |
-| 95    | expect-ct                        |                                                       |
-| 96    | forwarded                        |                                                       |
-| 97    | if-range                         |                                                       |
-| 98    | origin                           |                                                       |
-| 99    | purpose                          | prefetch                                              |
-| 100   | timing-allow-origin              | *                                                     |
-| 101   | upgrade-insecure-requests        | 1                                                     |
-| 102   | x-content-type-options           | nosniff                                               |
-| 103   | x-forwarded-for                  |                                                       |
-| 104   | x-frame-options                  | deny                                                  |
-| 105   | x-frame-options                  | sameorigin                                            |
-| 106   | x-requested-with                 | xmlhttprequest                                        |
-| 107   | x-xss-protection                 | 1; mode=block                                         |
+| 64    | :status                          | 204                                                   |
+| 65    | :status                          | 206                                                   |
+| 66    | :status                          | 302                                                   |
+| 67    | :status                          | 400                                                   |
+| 68    | :status                          | 403                                                   |
+| 69    | :status                          | 421                                                   |
+| 70    | :status                          | 425                                                   |
+| 71    | :status                          | 500                                                   |
+| 72    | accept-language                  |                                                       |
+| 73    | access-control-allow-credentials | FALSE                                                 |
+| 74    | access-control-allow-credentials | TRUE                                                  |
+| 75    | access-control-allow-headers     | *                                                     |
+| 76    | access-control-allow-headers     | x-requested-with                                      |
+| 77    | access-control-allow-methods     | get                                                   |
+| 78    | access-control-allow-methods     | get, post, options                                    |
+| 79    | access-control-allow-methods     | options                                               |
+| 80    | access-control-expose-headers    | content-length                                        |
+| 81    | access-control-request-headers   | content-type                                          |
+| 82    | access-control-request-headers   | x-requested-with                                      |
+| 83    | access-control-request-method    | get                                                   |
+| 84    | access-control-request-method    | post                                                  |
+| 85    | alt-svc                          | clear                                                 |
+| 86    | authorization                    |                                                       |
+| 87    | content-security-policy          | script-src 'none'; object-src 'none'; base-uri 'none' |
+| 88    | early-data                       | 1                                                     |
+| 89    | expect-ct                        |                                                       |
+| 90    | forwarded                        |                                                       |
+| 91    | if-range                         |                                                       |
+| 92    | origin                           |                                                       |
+| 93    | purpose                          | prefetch                                              |
+| 94    | server                           |                                                       |
+| 95    | timing-allow-origin              | *                                                     |
+| 96    | upgrade-insecure-requests        | 1                                                     |
+| 97    | user-agent                       |                                                       |
+| 98    | x-forwarded-for                  |                                                       |
+| 99    | x-frame-options                  | deny                                                  |
+| 100   | x-frame-options                  | sameorigin                                            |
+| 101   | x-requested-with                 | xmlhttprequest                                        |
 
 # Change Log
 
