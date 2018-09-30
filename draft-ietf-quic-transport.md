@@ -5111,8 +5111,9 @@ The initial contents of this registry are shown in {{iana-tp-table}}.
 | 0x0009 | disable_migration           | {{transport-parameter-definitions}} |
 | 0x000a | initial_max_stream_data_bidi_remote | {{transport-parameter-definitions}} |
 | 0x000b | initial_max_stream_data_uni | {{transport-parameter-definitions}} |
+| 0x000c | max_ack_delay               | {{transport-parameter-definitions}} |
+| 0x000d | original_connection_id      | {{transport-parameter-definitions}} |
 {: #iana-tp-table title="Initial QUIC Transport Parameters Entries"}
-
 
 ## QUIC Frame Type Registry {#iana-frames}
 
