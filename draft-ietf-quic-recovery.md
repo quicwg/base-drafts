@@ -816,7 +816,7 @@ Pseudocode for SetLossDetectionTimer follows:
         timeout = 2 * kInitialRtt
       else:
         timeout = 2 * smoothed_rtt
-      timeout = max(timeout + max_ack_delay, kMinTLPTimeout)
+      timeout = max(timeout, kMinTLPTimeout)
       timeout = timeout * (2 ^ handshake_count)
       loss_detection_timer.set(
         time_of_last_sent_handshake_packet + timeout)
