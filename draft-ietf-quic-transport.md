@@ -2606,6 +2606,16 @@ An endpoint sends a closing frame (CONNECTION_CLOSE or APPLICATION_CLOSE) to
 terminate the connection immediately.  Any closing frame causes all streams to
 immediately become closed; open streams can be assumed to be implicitly reset.
 
+If the endpoint has successfully decrypted a 1-RTT packet from its peer, it
+SHOULD send CONNECTION_CLOSE in a 1-RTT packet. If not, and it has received a
+Handshake packet from the peer, it SHOULD send CONNECTION_CLOSE in a Handshake
+packet.
+
+If the endpoint has received only Initial packets from the peer, it SHOULD
+send CONNECTION_CLOSE in an Initial packet. If it has Handshake keys available,
+it SHOULD also send the frame in a Handshake packet coalesced with the Initial
+packet.
+
 After sending a closing frame, endpoints immediately enter the closing state.
 During the closing period, an endpoint that sends a closing frame SHOULD respond
 to any packet that it receives with another packet containing a closing frame.
