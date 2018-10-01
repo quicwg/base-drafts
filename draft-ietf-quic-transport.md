@@ -720,9 +720,7 @@ require multiple round trips or retransmissions of this data.
 
 The payload of an Initial packet includes a CRYPTO frame (or frames) containing
 a cryptographic handshake message, ACK frames, or both.  PADDING and
-CONNECTION_CLOSE frames are also permitted.  An endpoint that receives an
-Initial packet containing other frames can either discard the packet as spurious
-or treat it as a connection error.
+CONNECTION_CLOSE frames are also permitted.
 
 The first packet sent by a client always includes a CRYPTO frame that contains
 the entirety of the first cryptographic handshake message.  This packet, and the
@@ -736,6 +734,18 @@ and will contain a CRYPTO frame with an offset matching the size of the CRYPTO
 frame sent in the first Initial packet.  Cryptographic handshake messages
 subsequent to the first do not need to fit within a single UDP datagram.
 
+### Handling of Fatal Initial Packets
+
+The contents of some Initial packets may, according to this specification, force
+connection termination. For example, they might contain forbidden frame types
+or a CONNECTION_CLOSE frame. As Initial packets are not protected, these might
+be injection attacks to tear the connection.
+
+Endpoints MAY treat the receipt of such packets as a connection error, drop them
+without further processing, or wait for a short interval to see if a valid
+packet arrives before executing error handling. If the endpoint has already
+received a Handshake packet from the peer, it SHOULD NOT treat these as a
+connection error.
 
 ### Connection IDs
 
