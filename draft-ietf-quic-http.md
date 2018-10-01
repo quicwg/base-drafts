@@ -886,27 +886,22 @@ the same parameter more than once as a connection error of type
 HTTP_MALFORMED_FRAME.
 
 The payload of a SETTINGS frame consists of zero or more parameters, each
-consisting of an unsigned 16-bit setting identifier and a length-prefixed binary
-value.
+consisting of an unsigned 16-bit setting identifier and a value which uses the
+QUIC variable-length integer encoding.
 
 ~~~~~~~~~~~~~~~  drawing
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|         Identifier (16)       |            Length (i)       ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                          Contents (?)                       ...
+|         Identifier (16)       |           Value (i)         ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~~~~~~~~~~~~~
 {: #fig-ext-settings title="SETTINGS value format"}
 
-A zero-length content indicates that the setting value is a Boolean and true.
-False is indicated by the absence of the setting.
-
-Non-zero-length values MUST be compared against the remaining length of the
-SETTINGS frame.  Any value which purports to cross the end of the frame MUST
-cause the SETTINGS frame to be considered malformed and trigger a connection
-error of type HTTP_MALFORMED_FRAME.
+Each value MUST be compared against the remaining length of the SETTINGS frame.
+Any value which purports to cross the end of the frame MUST cause the SETTINGS
+frame to be considered malformed and trigger a connection error of type
+HTTP_MALFORMED_FRAME.
 
 An implementation MUST ignore the contents for any SETTINGS identifier it does
 not understand.
@@ -923,10 +918,6 @@ The SETTINGS frame affects connection state. A badly formed or incomplete
 SETTINGS frame MUST be treated as a connection error ({{errors}}) of type
 HTTP_MALFORMED_FRAME.
 
-
-#### Integer encoding
-
-Settings which are integers use the QUIC variable-length integer encoding.
 
 #### Defined SETTINGS Parameters {#settings-parameters}
 
@@ -1491,6 +1482,12 @@ SETTINGS_MAX_FRAME_SIZE:
 
 SETTINGS_MAX_HEADER_LIST_SIZE:
 : See {{settings-parameters}}.
+
+In HTTP/QUIC, setting values are variable-length integers (6, 14, 30, or 62 bits
+long) rather than fixed-length 32-bit fields as in HTTP/2.  This will often
+produce a shorter encoding, but can produce a longer encoding for settings which
+use the full 32-bit space.  Settings ported from HTTP/2 might choose to redefine
+the format of their settings to avoid using the 62-bit encoding.
 
 Settings need to be defined separately for HTTP/2 and HTTP/QUIC.  The IDs of
 settings defined in {{!RFC7540}} have been reserved for simplicity.  See
