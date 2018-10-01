@@ -1082,32 +1082,29 @@ Description:
 | 73    | access-control-allow-credentials | FALSE                                                 |
 | 74    | access-control-allow-credentials | TRUE                                                  |
 | 75    | access-control-allow-headers     | \*                                                    |
-| 76    | access-control-allow-headers     | x-requested-with                                      |
-| 77    | access-control-allow-methods     | get                                                   |
-| 78    | access-control-allow-methods     | get, post, options                                    |
-| 79    | access-control-allow-methods     | options                                               |
-| 80    | access-control-expose-headers    | content-length                                        |
-| 81    | access-control-request-headers   | content-type                                          |
-| 82    | access-control-request-headers   | x-requested-with                                      |
-| 83    | access-control-request-method    | get                                                   |
-| 84    | access-control-request-method    | post                                                  |
-| 85    | alt-svc                          | clear                                                 |
-| 86    | authorization                    |                                                       |
-| 87    | content-security-policy          | script-src 'none'; object-src 'none'; base-uri 'none' |
-| 88    | early-data                       | 1                                                     |
-| 89    | expect-ct                        |                                                       |
-| 90    | forwarded                        |                                                       |
-| 91    | if-range                         |                                                       |
-| 92    | origin                           |                                                       |
-| 93    | purpose                          | prefetch                                              |
-| 94    | server                           |                                                       |
-| 95    | timing-allow-origin              | \*                                                    |
-| 96    | upgrade-insecure-requests        | 1                                                     |
-| 97    | user-agent                       |                                                       |
-| 98    | x-forwarded-for                  |                                                       |
-| 99    | x-frame-options                  | deny                                                  |
-| 100   | x-frame-options                  | sameorigin                                            |
-| 101   | x-requested-with                 | xmlhttprequest                                        |
+| 76    | access-control-allow-methods     | get                                                   |
+| 77    | access-control-allow-methods     | get, post, options                                    |
+| 78    | access-control-allow-methods     | options                                               |
+| 79    | access-control-expose-headers    | content-length                                        |
+| 80    | access-control-request-headers   | content-type                                          |
+| 81    | access-control-request-method    | get                                                   |
+| 82    | access-control-request-method    | post                                                  |
+| 83    | alt-svc                          | clear                                                 |
+| 84    | authorization                    |                                                       |
+| 85    | content-security-policy          | script-src 'none'; object-src 'none'; base-uri 'none' |
+| 86    | early-data                       | 1                                                     |
+| 87    | expect-ct                        |                                                       |
+| 88    | forwarded                        |                                                       |
+| 89    | if-range                         |                                                       |
+| 90    | origin                           |                                                       |
+| 91    | purpose                          | prefetch                                              |
+| 92    | server                           |                                                       |
+| 93    | timing-allow-origin              | \*                                                    |
+| 94    | upgrade-insecure-requests        | 1                                                     |
+| 95    | user-agent                       |                                                       |
+| 96    | x-forwarded-for                  |                                                       |
+| 97    | x-frame-options                  | deny                                                  |
+| 98    | x-frame-options                  | sameorigin                                            |
 
 # Change Log
 
