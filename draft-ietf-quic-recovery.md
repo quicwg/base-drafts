@@ -696,7 +696,7 @@ Pseudocode for OnAckReceived and UpdateRtt follow:
       smallest_newly_acked =
         min(smallest_newly_acked, acked_packet.packet_number)
       OnPacketAcked(acked_packet.packet_number)
-    
+
     if smallest_newly_acked != 2^62
       // If any packets sent prior to the RTO were acked, then
       // the RTO was spurious.  Otherwise, inform congestion control.
