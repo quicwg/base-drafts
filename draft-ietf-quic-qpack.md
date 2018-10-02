@@ -1072,6 +1072,18 @@ Code" registry established in {{QUIC-HTTP}}.
 > **RFC Editor's Note:** Please remove this section prior to publication of a
 > final version of this document.
 
+## Since draft-ietf-quic-qpack-02
+
+- Largest Reference encoded modulo MaxEntries (#1763)
+- New Static Table (#1355)
+- Table Size Update with Insert Count=0 is a connection error (#1762)
+- Stream Cancellations are optional when SETTINGS_HEADER_TABLE_SIZE=0 (#1761)
+- Implementations must handle 62 bit integers (#1760)
+- Different error types for each QPACK stream, other changes to error
+  handling (#1726)
+- Preserve header field order (#1725)
+- Initial table size is the maximum permitted when table is first usable (#1642)
+
 ## Since draft-ietf-quic-qpack-01
 
 - Only header blocks that reference the dynamic table are acknowledged (#1603,
