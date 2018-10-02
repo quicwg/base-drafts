@@ -690,9 +690,22 @@ Pseudocode for OnAckReceived and UpdateRtt follow:
     if (sent_packets[ack.largest_acked]):
       latest_rtt = now - sent_packets[ack.largest_acked].time
       UpdateRtt(latest_rtt, ack.ack_delay)
-    // Find all newly acked packets.
+    // Find all newly acked packets and track the smallest
+    smallest_newly_acked = 2^62
     for acked_packet in DetermineNewlyAckedPackets():
+      smallest_newly_acked =
+        min(smallest_newly_acked, acked_packet.packet_number)
       OnPacketAcked(acked_packet.packet_number)
+    
+    if smallest_newly_acked != 2^62
+      // If any packets sent prior to the RTO were acked, then
+      // the RTO was spurious.  Otherwise, inform congestion control.
+      if (rto_count > 0 &&
+            smallest_newly_acked > largest_sent_before_rto):
+        OnRetransmissionTimeoutVerified(smallest_newly_acked)
+      handshake_count = 0
+      tlp_count = 0
+      rto_count = 0
 
     DetectLostPackets(ack.largest_acked_packet)
     SetLossDetectionTimer()
@@ -737,15 +750,6 @@ Pseudocode for OnPacketAcked follows:
    OnPacketAcked(acked_packet):
      if (!acked_packet.is_ack_only):
        OnPacketAckedCC(acked_packet)
-     // If a packet sent prior to RTO was acked, then the RTO
-     // was spurious.  Otherwise, inform congestion control.
-     if (rto_count > 0 &&
-         acked_packet.packet_number > largest_sent_before_rto):
-       OnRetransmissionTimeoutVerified(
-           acked_packet.packet_number)
-     handshake_count = 0
-     tlp_count = 0
-     rto_count = 0
      sent_packets.remove(acked_packet.packet_number)
 ~~~
 
