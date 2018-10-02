@@ -1228,6 +1228,11 @@ This document has no IANA actions.  Yet.
 > **RFC Editor's Note:**  Please remove this section prior to
 > publication of a final version of this document.
 
+## Since draft-ietf-quic-recovery-14
+
+- Used max_ack_delay from transport params (#1796, #1782)
+- Merge ACK and ACK_ECN (#1783)
+
 ## Since draft-ietf-quic-recovery-13
 
 - Corrected the lack of ssthresh reduction in CongestionEvent pseudocode (#1598)
