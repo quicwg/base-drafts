@@ -531,7 +531,7 @@ kInitialRtt:
 : The RTT used before an RTT sample is taken. The RECOMMENDED value is 100ms.
 
 kInvalidPacketNumber:
-: An invalid packet number.  May be any packet number that is never sent.
+: An invalid packet number.  Any number larger than the largest packet number.
 
 ### Variables of interest
 
