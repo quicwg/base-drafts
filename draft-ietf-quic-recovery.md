@@ -701,8 +701,8 @@ Pseudocode for OnAckReceived and UpdateRtt follow:
       OnPacketAcked(acked_packet.packet_number)
 
     if smallest_newly_acked != kInvalidPacketNumber
-      // If any packets sent prior to the RTO were acked, then
-      // the RTO was spurious.  Otherwise, inform congestion control.
+      // If any packets sent prior to RTO were acked, then the
+      // RTO was spurious. Otherwise, inform congestion control.
       if (rto_count > 0 &&
             smallest_newly_acked > largest_sent_before_rto):
         OnRetransmissionTimeoutVerified(smallest_newly_acked)
