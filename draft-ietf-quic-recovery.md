@@ -419,7 +419,9 @@ necessary to add this delay explicitly in the TLP and RTO computation.
 
 When an acknowledgment is received for a packet sent on an RTO event, any
 unacknowledged packets with lower packet numbers than those acknowledged MUST be
-marked as lost.
+marked as lost.  If an acknowledgement for a packet sent on an RTO is received
+at the same time packets sent prior to the first RTO are acknowledged, the RTO
+is considered spurious and standard loss detection rules apply.
 
 A packet sent when an RTO timer expires MAY carry new data if available or
 unacknowledged data to potentially reduce recovery time. Since this packet is
