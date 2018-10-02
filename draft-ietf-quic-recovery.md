@@ -530,6 +530,9 @@ kDelayedAckTimeout:
 kInitialRtt:
 : The RTT used before an RTT sample is taken. The RECOMMENDED value is 100ms.
 
+kInvalidPacketNumber:
+: An invalid packet number.  May be any packet number that is never sent.
+
 ### Variables of interest
 
 Variables required to implement the congestion control mechanisms
@@ -691,13 +694,13 @@ Pseudocode for OnAckReceived and UpdateRtt follow:
       latest_rtt = now - sent_packets[ack.largest_acked].time
       UpdateRtt(latest_rtt, ack.ack_delay)
     // Find all newly acked packets and track the smallest
-    smallest_newly_acked = 2^62
+    smallest_newly_acked = kInvalidPacketNumber
     for acked_packet in DetermineNewlyAckedPackets():
       smallest_newly_acked =
         min(smallest_newly_acked, acked_packet.packet_number)
       OnPacketAcked(acked_packet.packet_number)
 
-    if smallest_newly_acked != 2^62
+    if smallest_newly_acked != kInvalidPacketNumber
       // If any packets sent prior to the RTO were acked, then
       // the RTO was spurious.  Otherwise, inform congestion control.
       if (rto_count > 0 &&
