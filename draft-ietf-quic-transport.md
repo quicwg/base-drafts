@@ -3248,7 +3248,9 @@ The NEW_CONNECTION_ID frame is as follows:
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|   Length (8)  |          Connection ID (32..144)            ...
+|   Length (8)  |            Sequence Number (i)              ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                    Connection ID (32..144)                  ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                                                               |
 +                                                               +
@@ -3268,6 +3270,11 @@ Length:
   less than 4 and greater than 18 are invalid and MUST be treated as a
   connection error of type PROTOCOL_VIOLATION.
 
+Sequence Number:
+
+: A monotonically increasing variable length integer that carries a sequence number
+  assigned to the connection ID by the sender.
+
 Connection ID:
 
 : A connection ID of the specified length.
@@ -3285,8 +3292,10 @@ zero-length Destination Connection ID MUST treat receipt of a NEW_CONNECTION_ID
 frame as a connection error of type PROTOCOL_VIOLATION.
 
 Transmission errors, timeouts and retransmissions might cause the same
-NEW_CONNECTION_ID frame to be received multiple times. Receipt of the same
-frame multiple times MUST NOT be treated as a connection error.
+NEW_CONNECTION_ID frame to be received multiple times.  Receipt of the same
+frame multiple times MUST NOT be treated as a connection error.  A receiver can
+use the sequence number supplied in the NEW_CONNECTION_ID frame to identify new
+connection IDs from old ones.
 
 If an endpoint receives a NEW_CONNECTION_ID frame that repeats the same
 connection ID as a previous NEW_CONNECTION_ID frame but with a different
@@ -3951,9 +3960,10 @@ containing that information is acknowledged.
   needed.
 
 * New connection IDs are sent in NEW_CONNECTION_ID frames and retransmitted if
-  the packet containing them is lost.  Likewise, retired connection IDs are sent
-  in RETIRE_CONNECTION_ID frames and retransmitted if the packet containing
-  them is lost.
+  the packet containing them is lost.  Retransmissions of this frame carry the
+  same sequence number value.  Likewise, retired connection IDs are sent in
+  RETIRE_CONNECTION_ID frames and retransmitted if the packet containing them is
+  lost.
 
 * PADDING frames contain no information, so lost PADDING frames do not require
   repair.
