@@ -439,10 +439,10 @@ ack delay to avoid causing the peer spurious timeouts.  The maximum ack delay
 is communicated in the `max_ack_delay` transport parameter and the default
 value is 25ms.
 
-An acknowledgement SHOULD be sent for every second full-sized packet, as TCP
-does {{?RFC5681}}, or may be sent less frequently, as long as the delay does
-not exceed the maximum ack delay. QUIC recovery algorithms do not assume the
-peer generates an acknowledgement immediately when receiving a second full-sized
+An acknowledgement SHOULD be sent for every second full-sized packet, as TCP does
+{{?RFC5681}}, or may be sent less frequently, as long as the delay does not
+exceed the maximum ack delay. QUIC recovery algorithms do not assume the peer
+generates an acknowledgement immediately when receiving a second full-sized
 packet.
 
 Out-of-order packets SHOULD be acknowledged more quickly, in order to accelerate
