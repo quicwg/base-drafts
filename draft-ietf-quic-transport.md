@@ -5250,8 +5250,9 @@ Issue and pull request numbers are listed with a leading octothorp.
 
 ## Since draft-ietf-quic-transport-14
 - Merge ACK and ACK_ECN (#1801)
-- Add 2 transport parameters: max_ack_delay(12) and original_connection_id(13)
-  (#981, #1710, #1486)
+- Explicitly communicate max_ack_delay (#981,#1781)
+- Validate original connection ID after Retry packets (#1710,#1486,#1793)
+- Idle timeout is optional and has no specified maximum (#1520,#1521)
 - Remove sequence field from NEW_CONNECTION_ID (#1742)
 - Add RETIRE_CONNECTION_ID type (#1742)
 
