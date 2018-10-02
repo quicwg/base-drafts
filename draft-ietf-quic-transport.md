@@ -884,7 +884,7 @@ the Handshake keys.  This limit exists to mitigate amplification attacks.
 In order to prevent this limit causing a handshake deadlock, the client SHOULD
 always send a packet upon a handshake timeout, as described in
 {{QUIC-RECOVERY}}.  If the client has no data to retransmit and does not have
-Handshake keys, it SHOULD send an Initial packet in UDP datagram of at least
+Handshake keys, it SHOULD send an Initial packet in a UDP datagram of at least
 1200 octets.  If the client has Handshake keys, it SHOULD send a Handshake
 packet.
 
