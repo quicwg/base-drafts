@@ -225,19 +225,6 @@ Min RTT is the minimum RTT measured over the connection, prior to adjusting by
 ack delay.  Ignoring ack delay for min RTT prevents intentional or unintentional
 underestimation of min RTT, which in turn prevents underestimating smoothed RTT.
 
-### Maximum Ack Delay
-
-QUIC is able to explicitly model delay at the receiver via the ack delay
-field in the ACK frame.  Therefore, QUIC diverges from TCP by calculating a
-MaxAckDelay dynamically, instead of assuming a constant delayed ack timeout
-for all connections.
-
-MaxAckDelay is the maximum ack delay supplied in an all incoming ACK frames.
-MaxAckDelay excludes ack delays that aren't included in an RTT sample because
-they're too large or the largest acknowledged has already been acknowledged.
-MaxAckDelay also excludes ack delays where the largest acknowledged references
-an ACK-only packet.
-
 ## Ack-based Detection
 
 Ack-based loss detection implements the spirit of TCP's Fast Retransmit
@@ -446,16 +433,16 @@ flight, since this packet adds network load without establishing packet loss.
 ## Generating Acknowledgements
 
 QUIC SHOULD delay sending acknowledgements in response to packets, but MUST NOT
-excessively delay acknowledgements of packets containing frames other than ACK
-or ACN_ECN.  Specifically, implementations MUST attempt to enforce a maximum
-ack delay to avoid causing the peer spurious timeouts.  The RECOMMENDED maximum
-ack delay in QUIC is 25ms.
+excessively delay acknowledgements of packets containing frames other than ACK.
+Specifically, implementations MUST attempt to enforce a maximum
+ack delay to avoid causing the peer spurious timeouts.  The maximum ack delay
+is communicated in the `max_ack_delay` transport parameter and the default
+value is 25ms.
 
-An acknowledgement MAY be sent for every second full-sized packet, as TCP does
-{{?RFC5681}}, or may be sent less frequently, as long as the delay does not
-exceed the maximum ack delay.  QUIC recovery algorithms do not assume the peer
-generates an acknowledgement immediately when receiving a second full-sized
-packet.
+An acknowledgement SHOULD be sent immediately upon receipt of a second
+packet but the delay SHOULD NOT exceed the maximum ack delay. QUIC recovery
+algorithms do not assume the peer generates an acknowledgement immediately when
+receiving a second full-packet.
 
 Out-of-order packets SHOULD be acknowledged more quickly, in order to accelerate
 loss recovery.  The receiver SHOULD send an immediate ACK when it receives a new
@@ -1032,9 +1019,9 @@ papers, and common practice.  Some may need to be changed or negotiated
 in order to better suit a variety of environments.
 
 kMaxDatagramSize:
-: The sender's maximum payload size. Does not include UDP or IP
-  overhead. The max packet size is used for calculating initial and
-  minimum congestion windows. The RECOMMENDED value is 1200 bytes.
+: The sender's maximum payload size. Does not include UDP or IP overhead.
+  The max packet size is used for calculating initial and minimum congestion
+  windows. The RECOMMENDED value is 1200 bytes.
 
 kInitialWindow:
 : Default limit on the initial amount of outstanding data in bytes.
