@@ -1809,6 +1809,15 @@ Sender:
 > **RFC Editor's Note:**  Please remove this section prior to publication of a
 > final version of this document.
 
+## Since draft-ietf-quic-http-14
+
+- Recommend sensible values for QUIC transport parameters (#1720,#1806)
+- Define error for missing SETTINGS frame (#1697,#1808)
+- Setting values are variable-length integers (#1556,#1807) and do not have
+  separate maximum values (#1820)
+- Expanded discussion of connection closure (#1599,#1717,#1712)
+- HTTP_VERSION_FALLBACK falls back to HTTP/1.1 (#1677,#1685)
+
 ## Since draft-ietf-quic-http-13
 
 - Reserved some frame types for grease (#1333, #1446)
