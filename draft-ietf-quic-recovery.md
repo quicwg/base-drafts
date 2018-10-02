@@ -440,9 +440,9 @@ is communicated in the `max_ack_delay` transport parameter and the default
 value is 25ms.
 
 An acknowledgement SHOULD be sent immediately upon receipt of a second
-full-sized packet, as TCP does {{?RFC5681}}, but the delay should not exceed
-the maximum ack delay. QUIC recovery algorithms do not assume the peer generates
-an acknowledgement immediately when receiving a second full-sized packet.
+packet but the delay SHOULD NOT exceed the maximum ack delay. QUIC recovery
+algorithms do not assume the peer generates an acknowledgement immediately when
+receiving a second full-packet.
 
 Out-of-order packets SHOULD be acknowledged more quickly, in order to accelerate
 loss recovery.  The receiver SHOULD send an immediate ACK when it receives a new
@@ -1021,7 +1021,7 @@ in order to better suit a variety of environments.
 kMaxDatagramSize:
 : The sender's maximum payload size. Does not include UDP or IP overhead.
   The max packet size is used for calculating initial and minimum congestion
-  windows, as well as the TLP timeout. The RECOMMENDED value is 1200 bytes.
+  windows. The RECOMMENDED value is 1200 bytes.
 
 kInitialWindow:
 : Default limit on the initial amount of outstanding data in bytes.
