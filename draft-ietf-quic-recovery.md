@@ -362,7 +362,7 @@ delay may come into play, regardless of the number of packets outstanding.
 TCP's TLP assumes if at least 2 packets are outstanding, acks will not be
 delayed.
 
-A PTO values of at least 1.5*SRTT and 2*SRTT ensures that the ACK is overdue.
+A PTO values of at least 1.5*SRTT ensures that the ACK is overdue.
 Both constants are based on {{?TLP}}, but implementations MAY experiment with
 other constants.
 
@@ -828,12 +828,8 @@ Pseudocode for SetLossDetectionTimer follows:
       timeout = timeout * (2 ^ rto_count)
       if (tlp_count < kMaxTLPs):
         // Tail Loss Probe
-        if (bytes_in_flight < 2 * kMaxDatagramSize):
-          // Less than two full-sized packets in flight.
-          tlp_timeout = max(1.5 * smoothed_rtt
-                              + max_ack_delay, kMinTLPTimeout)
-        else:
-          tlp_timeout = max(2 * smoothed_rtt, kMinTLPTimeout)
+        tlp_timeout = max(1.5 * smoothed_rtt
+                           + max_ack_delay, kMinTLPTimeout)
         timeout = min(tlp_timeout, timeout)
 
     loss_detection_timer.set(
