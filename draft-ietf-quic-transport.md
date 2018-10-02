@@ -884,9 +884,9 @@ the Handshake keys.  This limit exists to mitigate amplification attacks.
 In order to prevent this limit causing a handshake deadlock, the client SHOULD
 always send a packet upon a handshake timeout, as described in
 {{QUIC-RECOVERY}}.  If the client has no data to retransmit and does not have
-Handshake keys, it should send a packet as large as the Initial containing
-only PADDING.  If the client has Handshake keys, it SHOULD send a packet
-containing only PADDING.
+Handshake keys, it SHOULD send an Initial packet of at least 1200 octets
+containing only PADDING.  If the client has Handshake keys, it SHOULD send a
+Handshake packet containing only PADDING.
 
 The payload of this packet contains CRYPTO frames and could contain PADDING, or
 ACK frames. Handshake packets MAY contain CONNECTION_CLOSE or APPLICATION_CLOSE
