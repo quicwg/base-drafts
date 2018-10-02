@@ -621,12 +621,11 @@ packet. It also sets the Token field to the token provided in the Retry. The
 client MUST NOT change the Source Connection ID because the server could include
 the connection ID as part of its token validation logic (see {{tokens}}).
 
-The Initial packet sent by the client in response to a Retry packet is subject
-to the same restrictions as the first Initial packet, with the exception of the
-value of the Destination Connection ID and Token fields, which are set as
-described here.  A client can either reuse the cryptographic handshake message
-or construct a new one at its discretion.  All subsequent Initial packets from
+All subsequent Initial packets from the client MUST use the connection ID and
+token values from the Retry packet.  All subsequent Initial packets from
 the client MUST use the connection ID and token values from the Retry packet.
+A client can either reuse the cryptographic handshake message or construct a
+new one at its discretion.
 
 A client MAY attempt 0-RTT after receiving a Retry packet by sending 0-RTT
 packets to the connection ID provided by the server.  A client that sends
