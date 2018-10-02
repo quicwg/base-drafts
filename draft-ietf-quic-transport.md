@@ -875,11 +875,18 @@ The first Handshake packet sent by a server contains a packet number of 0.
 Handshake packets are their own packet number space.  Packet numbers are
 incremented normally for other Handshake packets.
 
-Servers MUST NOT send more than three datagrams including Initial and Handshake
-packets without receiving a packet from a verified source address.  Source
-addresses can be verified through an address validation token
-(delivered via a Retry packet or a NEW_TOKEN frame) or by receiving
-any message from the client encrypted using the Handshake keys.
+Servers MUST NOT send more than three times as many bytes as the number of bytes
+received prior to verifying the client's address.  Source addresses can be
+verified through an address validation token (delivered via a Retry packet or
+a NEW_TOKEN frame) or by processing any message from the client encrypted using
+the Handshake keys.  This limit exists to mitigate amplification attacks.
+
+In order to prevent this limit causing a handshake deadlock, the client SHOULD
+always send a packet upon a handshake timeout, as described in
+{{QUIC-RECOVERY}}.  If the client has no data to retransmit and does not have
+Handshake keys, it SHOULD send an Initial packet in a UDP datagram of at least
+1200 octets.  If the client has Handshake keys, it SHOULD send a Handshake
+packet.
 
 The payload of this packet contains CRYPTO frames and could contain PADDING, or
 ACK frames. Handshake packets MAY contain CONNECTION_CLOSE or APPLICATION_CLOSE
