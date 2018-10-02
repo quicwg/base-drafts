@@ -362,7 +362,7 @@ delay may come into play, regardless of the number of packets outstanding.
 TCP's TLP assumes if at least 2 packets are outstanding, acks will not be
 delayed.
 
-A PTO value of at least 1.5*SRTT ensures that the ACK is overdue. The 1.5 is
+A PTO value of at least 1.5*SRTT ensures that the ACK is overdue.  The 1.5 is
 based on {{?TLP}}, but implementations MAY experiment with other constants.
 
 To reduce latency, it is RECOMMENDED that the sender set and allow the TLP timer
