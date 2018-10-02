@@ -878,7 +878,7 @@ incremented normally for other Handshake packets.
 Servers MUST NOT send more than three times as many bytes as the number of bytes
 received prior to verifying the client's address.  Source addresses can be
 verified through an address validation token (delivered via a Retry packet or
-a NEW_TOKEN frame) or by receiving any message from the client encrypted using
+a NEW_TOKEN frame) or by processing any message from the client encrypted using
 the Handshake keys.  This limit exists to mitigate amplification attacks.
 
 In order to prevent this limit causing a handshake deadlock, the client SHOULD
