@@ -531,11 +531,6 @@ kDelayedAckTimeout:
 kInitialRtt:
 : The RTT used before an RTT sample is taken. The RECOMMENDED value is 100ms.
 
-kMaxDatagramSize:
-: The sender's maximum payload size. Does not include UDP or IP overhead.
-  The max packet size is used for calculating initial and minimum congestion
-  windows, as well as the TLP timeout. The RECOMMENDED value is 1200 bytes.
-
 ### Variables of interest
 
 Variables required to implement the congestion control mechanisms
@@ -1023,6 +1018,11 @@ in Linux (3.11 onwards).
 Constants used in congestion control are based on a combination of RFCs,
 papers, and common practice.  Some may need to be changed or negotiated
 in order to better suit a variety of environments.
+
+kMaxDatagramSize:
+: The sender's maximum payload size. Does not include UDP or IP overhead.
+  The max packet size is used for calculating initial and minimum congestion
+  windows, as well as the TLP timeout. The RECOMMENDED value is 1200 bytes.
 
 kInitialWindow:
 : Default limit on the initial amount of outstanding data in bytes.
