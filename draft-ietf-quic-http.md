@@ -924,12 +924,10 @@ HTTP_MALFORMED_FRAME.
 The following settings are defined in HTTP/QUIC:
 
   SETTINGS_NUM_PLACEHOLDERS (0x3):
-  : An integer with a maximum value of 2^16 - 1.  The value SHOULD be non-zero.
-    The default value is 16.
+  : This value SHOULD be non-zero.  The default value is 16.
 
   SETTINGS_MAX_HEADER_LIST_SIZE (0x6):
-  : An integer with a maximum value of 2^30 - 1.  The default value is
-    unlimited.
+  : The default value is unlimited.
 
 Settings values of the format `0x?a?a` are reserved to exercise the requirement
 that unknown parameters be ignored.  Such settings have no defined meaning.
