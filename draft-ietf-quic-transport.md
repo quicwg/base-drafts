@@ -622,8 +622,8 @@ client MUST NOT change the Source Connection ID because the server could include
 the connection ID as part of its token validation logic (see {{tokens}}).
 
 All subsequent Initial packets from the client MUST use the connection ID and
-token values from the Retry packet.  All subsequent Initial packets from
-the client MUST use the connection ID and token values from the Retry packet.
+token values from the Retry packet.  Aside from this, the Initial packet sent
+by the client is subject to the same restrictions as the first Initial packet.
 A client can either reuse the cryptographic handshake message or construct a
 new one at its discretion.
 
