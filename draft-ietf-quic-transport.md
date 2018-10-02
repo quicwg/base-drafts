@@ -5269,6 +5269,8 @@ Issue and pull request numbers are listed with a leading octothorp.
 - Idle timeout is optional and has no specified maximum (#1520,#1521)
 - Remove sequence field from NEW_CONNECTION_ID (#1742)
 - Add RETIRE_CONNECTION_ID type (#1742)
+- Include a Token in all Initial packets (#1794)
+- Prevent handshake deadlock (#1824)
 
 ## Since draft-ietf-quic-transport-13
 
