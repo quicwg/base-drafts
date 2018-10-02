@@ -352,11 +352,7 @@ receiver.
 The timer duration, or Probe Timeout (PTO), is set based on the following
 conditions:
 
-* If less than 2*kMaxDatagramSize bytes are in flight, PTO SHOULD be
-  scheduled for max(1.5*SRTT+MaxAckDelay, kMinTLPTimeout).
-
-* If at least 2*kMaxDatagramSize bytes are in flight, PTO SHOULD be
-  scheduled for max(2*SRTT, kMinTLPTimeout).
+* PTO SHOULD be scheduled for max(1.5*SRTT+MaxAckDelay, kMinTLPTimeout)
 
 * If RTO ({{rto}}) is earlier, schedule a TLP in its place. That is,
   PTO SHOULD be scheduled for min(RTO, PTO).
