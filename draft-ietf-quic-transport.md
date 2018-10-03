@@ -5274,6 +5274,10 @@ Issue and pull request numbers are listed with a leading octothorp.
 
 ## Since draft-ietf-quic-transport-14
 
+Substantial editorial reorganization; no technical changes.
+
+## Since draft-ietf-quic-transport-14
+
 - Merge ACK and ACK_ECN (#1778, #1801)
 - Explicitly communicate max_ack_delay (#981, #1781)
 - Validate original connection ID after Retry packets (#1710, #1486, #1793)

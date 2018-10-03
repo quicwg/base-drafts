@@ -1809,6 +1809,10 @@ Sender:
 > **RFC Editor's Note:**  Please remove this section prior to publication of a
 > final version of this document.
 
+## Since draft-ietf-quic-http-15
+
+Substantial editorial reorganization; no technical changes.
+
 ## Since draft-ietf-quic-http-14
 
 - Recommend sensible values for QUIC transport parameters (#1720,#1806)
