@@ -419,7 +419,9 @@ necessary to add this delay explicitly in the TLP and RTO computation.
 
 When an acknowledgment is received for a packet sent on an RTO event, any
 unacknowledged packets with lower packet numbers than those acknowledged MUST be
-marked as lost.
+marked as lost.  If an acknowledgement for a packet sent on an RTO is received
+at the same time packets sent prior to the first RTO are acknowledged, the RTO
+is considered spurious and standard loss detection rules apply.
 
 A packet sent when an RTO timer expires MAY carry new data if available or
 unacknowledged data to potentially reduce recovery time. Since this packet is
@@ -690,9 +692,24 @@ Pseudocode for OnAckReceived and UpdateRtt follow:
     if (sent_packets[ack.largest_acked]):
       latest_rtt = now - sent_packets[ack.largest_acked].time
       UpdateRtt(latest_rtt, ack.ack_delay)
-    // Find all newly acked packets.
-    for acked_packet in DetermineNewlyAckedPackets():
+
+    // Find all newly acked packets in this ACK frame
+    newly_acked_packets = DetermineNewlyAckedPackets(ack)
+    for acked_packet in newly_acked_packets:
       OnPacketAcked(acked_packet.packet_number)
+
+    if !newly_acked_packets.empty():
+      // Find the smallest newly acknowledged packet
+      smallest_newly_acked =
+        FindSmallestNewlyAcked(newly_acked_packets)
+      // If any packets sent prior to RTO were acked, then the
+      // RTO was spurious. Otherwise, inform congestion control.
+      if (rto_count > 0 &&
+            smallest_newly_acked > largest_sent_before_rto):
+        OnRetransmissionTimeoutVerified(smallest_newly_acked)
+      handshake_count = 0
+      tlp_count = 0
+      rto_count = 0
 
     DetectLostPackets(ack.largest_acked_packet)
     SetLossDetectionTimer()
@@ -737,15 +754,6 @@ Pseudocode for OnPacketAcked follows:
    OnPacketAcked(acked_packet):
      if (!acked_packet.is_ack_only):
        OnPacketAckedCC(acked_packet)
-     // If a packet sent prior to RTO was acked, then the RTO
-     // was spurious.  Otherwise, inform congestion control.
-     if (rto_count > 0 &&
-         acked_packet.packet_number > largest_sent_before_rto):
-       OnRetransmissionTimeoutVerified(
-           acked_packet.packet_number)
-     handshake_count = 0
-     tlp_count = 0
-     rto_count = 0
      sent_packets.remove(acked_packet.packet_number)
 ~~~
 
