@@ -5273,14 +5273,15 @@ DecodePacketNumber(largest_pn, truncated_pn, pn_nbits):
 Issue and pull request numbers are listed with a leading octothorp.
 
 ## Since draft-ietf-quic-transport-14
-- Merge ACK and ACK_ECN (#1801)
-- Explicitly communicate max_ack_delay (#981,#1781)
-- Validate original connection ID after Retry packets (#1710,#1486,#1793)
-- Idle timeout is optional and has no specified maximum (#1520,#1521)
-- Remove sequence field from NEW_CONNECTION_ID (#1742)
-- Add RETIRE_CONNECTION_ID type (#1742)
-- Include a Token in all Initial packets (#1794)
-- Prevent handshake deadlock (#1824)
+
+- Merge ACK and ACK_ECN (#1778, #1801)
+- Explicitly communicate max_ack_delay (#981, #1781)
+- Validate original connection ID after Retry packets (#1710, #1486, #1793)
+- Idle timeout is optional and has no specified maximum (#1520, #1521)
+- Update connection ID handling; add RETIRE_CONNECTION_ID type (#1464, #1468,
+  #1483, #1484, #1486, #1495, #1729, #1742, #1799, #1821)
+- Include a Token in all Initial packets (#1649, #1794)
+- Prevent handshake deadlock (#1764, #1824)
 
 ## Since draft-ietf-quic-transport-13
 
