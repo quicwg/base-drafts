@@ -698,7 +698,7 @@ Pseudocode for OnAckReceived and UpdateRtt follow:
     for acked_packet in newly_acked_packets:
       OnPacketAcked(acked_packet.packet_number)
 
-    if !newly_acket_packets.empty():
+    if !newly_acked_packets.empty():
       // Find the smallest newly acknowledged packet
       smallest_newly_acked =
         FindSmallestNewlyAcked(newly_acked_packets)
