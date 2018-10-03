@@ -695,14 +695,12 @@ Pseudocode for OnAckReceived and UpdateRtt follow:
 
     // Find all newly acked packets in this ACK frame
     newly_acked_packets = DetermineNewlyAckedPackets(ack)
-    // Find the smallest packet that is newly acked in this ACK frame.
-    smallest_newly_acked = FindSmallestNewlyAcked(newly_acked_packets)
     for acked_packet in newly_acked_packets:
-      smallest_newly_acked =
-        min(smallest_newly_acked, acked_packet.packet_number)
       OnPacketAcked(acked_packet.packet_number)
 
     if !newly_acket_packets.empty():
+      // Find the smallest packet that is newly acked in this ACK frame.
+      smallest_newly_acked = FindSmallestNewlyAcked(newly_acked_packets)
       // If any packets sent prior to RTO were acked, then the
       // RTO was spurious. Otherwise, inform congestion control.
       if (rto_count > 0 &&
