@@ -1222,8 +1222,8 @@ endpoint, as described in {{termination}}.
 
 Each connection possesses a set of identifiers, any of which could be used to
 distinguish it from other connections.  Connection IDs are selected
-independently in each direction.  Each Connection ID contains a sequence number
-to assist in deduplicating messages.
+independently in each direction.  Each Connection ID has an associated sequence
+number to assist in deduplicating messages.
 
 The primary function of a connection ID is to ensure that changes in addressing
 at lower protocol layers (UDP, IP, and below) don't cause packets for a QUIC
