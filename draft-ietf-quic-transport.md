@@ -718,7 +718,7 @@ A server sends its first Initial packet in response to a client Initial.  A
 server may send multiple Initial packets.  The cryptographic key exchange could
 require multiple round trips or retransmissions of this data.
 
-The payload of an Initial packet includes CRYPTO framed, ACK frames, or both.
+The payload of an Initial packet includes CRYPTO frames, ACK frames, or both.
 PADDING and CONNECTION_CLOSE frames are also permitted.
 
 The first packet sent by a client always includes a CRYPTO frame that contains
