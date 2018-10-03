@@ -1256,7 +1256,10 @@ during the handshake.  The sequence number of the initial connection ID is 0. If
 the preferred_address transport parameter is sent, the sequence number of the
 supplied connection ID is 1. Subsequent connection IDs are communicated to the
 peer using NEW_CONNECTION_ID frames ({{frame-new-connection-id}}), and the
-sequence number on each newly-issued connection ID MUST increase by 1.
+sequence number on each newly-issued connection ID MUST increase by 1. The
+connection ID randomly selected by the client in the Initial packet and any
+connection ID provided by a Reset packet are not assigned sequence numbers
+unless a server opts to retain them as its initial connection ID.
 
 When an endpoint issues a connection ID, it MUST accept packets that carry this
 connection ID for the duration of the connection or until its peer invalidates
