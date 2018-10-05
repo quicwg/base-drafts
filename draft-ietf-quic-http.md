@@ -1328,236 +1328,6 @@ HTTP_MALFORMED_FRAME (0x01XX):
   be indicated with the code (0x10D).
 
 
-# Considerations for Transitioning from HTTP/2
-
-HTTP/QUIC is strongly informed by HTTP/2, and bears many similarities.  This
-section describes the approach taken to design HTTP/QUIC, points out important
-differences from HTTP/2, and describes how to map HTTP/2 extensions into
-HTTP/QUIC.
-
-HTTP/QUIC begins from the premise that HTTP/2 code reuse is a useful feature,
-but not a hard requirement.  HTTP/QUIC departs from HTTP/2 primarily where
-necessary to accommodate the differences in behavior between QUIC and TCP (lack
-of ordering, support for streams).  We intend to avoid gratuitous changes which
-make it difficult or impossible to build extensions with the same semantics
-applicable to both protocols at once.
-
-These departures are noted in this section.
-
-## Streams {#h2-streams}
-
-HTTP/QUIC permits use of a larger number of streams (2^62-1) than HTTP/2.  The
-considerations about exhaustion of stream identifier space apply, though the
-space is significantly larger such that it is likely that other limits in QUIC
-are reached first, such as the limit on the connection flow control window.
-
-## HTTP Frame Types {#h2-frames}
-
-Many framing concepts from HTTP/2 can be elided away on QUIC, because the
-transport deals with them. Because frames are already on a stream, they can omit
-the stream number. Because frames do not block multiplexing (QUIC's multiplexing
-occurs below this layer), the support for variable-maximum-length packets can be
-removed. Because stream termination is handled by QUIC, an END_STREAM flag is
-not required.  This permits the removal of the Flags field from the generic
-frame layout.
-
-Frame payloads are largely drawn from {{!RFC7540}}. However, QUIC includes many
-features (e.g. flow control) which are also present in HTTP/2. In these cases,
-the HTTP mapping does not re-implement them. As a result, several HTTP/2 frame
-types are not required in HTTP/QUIC. Where an HTTP/2-defined frame is no longer
-used, the frame ID has been reserved in order to maximize portability between
-HTTP/2 and HTTP/QUIC implementations. However, even equivalent frames between
-the two mappings are not identical.
-
-Many of the differences arise from the fact that HTTP/2 provides an absolute
-ordering between frames across all streams, while QUIC provides this guarantee
-on each stream only.  As a result, if a frame type makes assumptions that frames
-from different streams will still be received in the order sent, HTTP/QUIC will
-break them.
-
-For example, implicit in the HTTP/2 prioritization scheme is the notion of
-in-order delivery of priority changes (i.e., dependency tree mutations): since
-operations on the dependency tree such as reparenting a subtree are not
-commutative, both sender and receiver must apply them in the same order to
-ensure that both sides have a consistent view of the stream dependency tree.
-HTTP/2 specifies priority assignments in PRIORITY frames and (optionally) in
-HEADERS frames. To achieve in-order delivery of priority changes in HTTP/QUIC,
-PRIORITY frames are sent on the control stream and the PRIORITY section is
-removed from the HEADERS frame.
-
-Likewise, HPACK was designed with the assumption of in-order delivery. A
-sequence of encoded header blocks must arrive (and be decoded) at an endpoint in
-the same order in which they were encoded. This ensures that the dynamic state
-at the two endpoints remains in sync.  As a result, HTTP/QUIC uses a modified
-version of HPACK, described in [QPACK].
-
-Frame type definitions in HTTP/QUIC often use the QUIC variable-length integer
-encoding.  In particular, Stream IDs use this encoding, which allow for a larger
-range of possible values than the encoding used in HTTP/2.  Some frames in
-HTTP/QUIC use an identifier rather than a Stream ID (e.g. Push IDs in PRIORITY
-frames). Redefinition of the encoding of extension frame types might be
-necessary if the encoding includes a Stream ID.
-
-Because the Flags field is not present in generic HTTP/QUIC frames, those frames
-which depend on the presence of flags need to allocate space for flags as part
-of their frame payload.
-
-Other than this issue, frame type HTTP/2 extensions are typically portable to
-QUIC simply by replacing Stream 0 in HTTP/2 with a control stream in HTTP/QUIC.
-HTTP/QUIC extensions will not assume ordering, but would not be harmed by
-ordering, and would be portable to HTTP/2 in the same manner.
-
-Below is a listing of how each HTTP/2 frame type is mapped:
-
-DATA (0x0):
-: Padding is not defined in HTTP/QUIC frames.  See {{frame-data}}.
-
-HEADERS (0x1):
-: As described above, the PRIORITY region of HEADERS is not supported. A
-  separate PRIORITY frame MUST be used. Padding is not defined in HTTP/QUIC
-  frames.  See {{frame-headers}}.
-
-PRIORITY (0x2):
-: As described above, the PRIORITY frame is sent on the control stream and can
-  reference either a Stream ID or a Push ID.  See {{frame-priority}}.
-
-RST_STREAM (0x3):
-: RST_STREAM frames do not exist, since QUIC provides stream lifecycle
-  management.  The same code point is used for the CANCEL_PUSH frame
-  ({{frame-cancel-push}}).
-
-SETTINGS (0x4):
-: SETTINGS frames are sent only at the beginning of the connection.  See
-  {{frame-settings}} and {{h2-settings}}.
-
-PUSH_PROMISE (0x5):
-: The PUSH_PROMISE does not reference a stream; instead the push stream
-  references the PUSH_PROMISE frame using a Push ID.  See
-  {{frame-push-promise}}.
-
-PING (0x6):
-: PING frames do not exist, since QUIC provides equivalent functionality.
-
-GOAWAY (0x7):
-: GOAWAY is sent only from server to client and does not contain an error code.
-  See {{frame-goaway}}.
-
-WINDOW_UPDATE (0x8):
-: WINDOW_UPDATE frames do not exist, since QUIC provides flow control.
-
-CONTINUATION (0x9):
-: CONTINUATION frames do not exist; instead, larger HEADERS/PUSH_PROMISE
-  frames than HTTP/2 are permitted, and HEADERS frames can be used in series.
-
-Frame types defined by extensions to HTTP/2 need to be separately registered for
-HTTP/QUIC if still applicable.  The IDs of frames defined in {{!RFC7540}} have
-been reserved for simplicity.  See {{iana-frames}}.
-
-## HTTP/2 SETTINGS Parameters {#h2-settings}
-
-An important difference from HTTP/2 is that settings are sent once, at the
-beginning of the connection, and thereafter cannot change.  This eliminates
-many corner cases around synchronization of changes.
-
-Some transport-level options that HTTP/2 specifies via the SETTINGS frame are
-superseded by QUIC transport parameters in HTTP/QUIC. The HTTP-level options
-that are retained in HTTP/QUIC have the same value as in HTTP/2.
-
-Below is a listing of how each HTTP/2 SETTINGS parameter is mapped:
-
-SETTINGS_HEADER_TABLE_SIZE:
-: See {{settings-parameters}}.
-
-SETTINGS_ENABLE_PUSH:
-: This is removed in favor of the MAX_PUSH_ID which provides a more granular
-  control over server push.
-
-SETTINGS_MAX_CONCURRENT_STREAMS:
-: QUIC controls the largest open Stream ID as part of its flow control logic.
-  Specifying SETTINGS_MAX_CONCURRENT_STREAMS in the SETTINGS frame is an error.
-
-SETTINGS_INITIAL_WINDOW_SIZE:
-: QUIC requires both stream and connection flow control window sizes to be
-  specified in the initial transport handshake.  Specifying
-  SETTINGS_INITIAL_WINDOW_SIZE in the SETTINGS frame is an error.
-
-SETTINGS_MAX_FRAME_SIZE:
-: This setting has no equivalent in HTTP/QUIC.  Specifying it in the SETTINGS
-  frame is an error.
-
-SETTINGS_MAX_HEADER_LIST_SIZE:
-: See {{settings-parameters}}.
-
-In HTTP/QUIC, setting values are variable-length integers (6, 14, 30, or 62 bits
-long) rather than fixed-length 32-bit fields as in HTTP/2.  This will often
-produce a shorter encoding, but can produce a longer encoding for settings which
-use the full 32-bit space.  Settings ported from HTTP/2 might choose to redefine
-the format of their settings to avoid using the 62-bit encoding.
-
-Settings need to be defined separately for HTTP/2 and HTTP/QUIC.  The IDs of
-settings defined in {{!RFC7540}} have been reserved for simplicity.  See
-{{iana-settings}}.
-
-
-## HTTP/2 Error Codes
-
-QUIC has the same concepts of "stream" and "connection" errors that HTTP/2
-provides. However, because the error code space is shared between multiple
-components, there is no direct portability of HTTP/2 error codes.
-
-The HTTP/2 error codes defined in Section 7 of {{!RFC7540}} map to the HTTP/QUIC
-error codes as follows:
-
-NO_ERROR (0x0):
-: HTTP_NO_ERROR in {{http-error-codes}}.
-
-PROTOCOL_ERROR (0x1):
-: No single mapping.  See new HTTP_MALFORMED_FRAME error codes defined in
-  {{http-error-codes}}.
-
-INTERNAL_ERROR (0x2):
-: HTTP_INTERNAL_ERROR in {{http-error-codes}}.
-
-FLOW_CONTROL_ERROR (0x3):
-: Not applicable, since QUIC handles flow control.  Would provoke a
-  QUIC_FLOW_CONTROL_RECEIVED_TOO_MUCH_DATA from the QUIC layer.
-
-SETTINGS_TIMEOUT (0x4):
-: Not applicable, since no acknowledgement of SETTINGS is defined.
-
-STREAM_CLOSED (0x5):
-: Not applicable, since QUIC handles stream management.  Would provoke a
-  QUIC_STREAM_DATA_AFTER_TERMINATION from the QUIC layer.
-
-FRAME_SIZE_ERROR (0x6):
-: No single mapping.  See new error codes defined in {{http-error-codes}}.
-
-REFUSED_STREAM (0x7):
-: Not applicable, since QUIC handles stream management.  Would provoke a
-  QUIC_TOO_MANY_OPEN_STREAMS from the QUIC layer.
-
-CANCEL (0x8):
-: HTTP_REQUEST_CANCELLED in {{http-error-codes}}.
-
-COMPRESSION_ERROR (0x9):
-: HTTP_QPACK_DECOMPRESSION_FAILED in [QPACK].
-
-CONNECT_ERROR (0xa):
-: HTTP_CONNECT_ERROR in {{http-error-codes}}.
-
-ENHANCE_YOUR_CALM (0xb):
-: HTTP_EXCESSIVE_LOAD in {{http-error-codes}}.
-
-INADEQUATE_SECURITY (0xc):
-: Not applicable, since QUIC is assumed to provide sufficient security on all
-  connections.
-
-HTTP_1_1_REQUIRED (0xd):
-: HTTP_VERSION_FALLBACK in {{http-error-codes}}.
-
-Error codes need to be defined for HTTP/2 and HTTP/QUIC separately.  See
-{{iana-error-codes}}.
-
 # Security Considerations
 
 The security considerations of HTTP/QUIC should be comparable to those of HTTP/2
@@ -1810,6 +1580,236 @@ Sender:
 : Both
 
 --- back
+
+# Considerations for Transitioning from HTTP/2
+
+HTTP/QUIC is strongly informed by HTTP/2, and bears many similarities.  This
+section describes the approach taken to design HTTP/QUIC, points out important
+differences from HTTP/2, and describes how to map HTTP/2 extensions into
+HTTP/QUIC.
+
+HTTP/QUIC begins from the premise that HTTP/2 code reuse is a useful feature,
+but not a hard requirement.  HTTP/QUIC departs from HTTP/2 primarily where
+necessary to accommodate the differences in behavior between QUIC and TCP (lack
+of ordering, support for streams).  We intend to avoid gratuitous changes which
+make it difficult or impossible to build extensions with the same semantics
+applicable to both protocols at once.
+
+These departures are noted in this section.
+
+## Streams {#h2-streams}
+
+HTTP/QUIC permits use of a larger number of streams (2^62-1) than HTTP/2.  The
+considerations about exhaustion of stream identifier space apply, though the
+space is significantly larger such that it is likely that other limits in QUIC
+are reached first, such as the limit on the connection flow control window.
+
+## HTTP Frame Types {#h2-frames}
+
+Many framing concepts from HTTP/2 can be elided away on QUIC, because the
+transport deals with them. Because frames are already on a stream, they can omit
+the stream number. Because frames do not block multiplexing (QUIC's multiplexing
+occurs below this layer), the support for variable-maximum-length packets can be
+removed. Because stream termination is handled by QUIC, an END_STREAM flag is
+not required.  This permits the removal of the Flags field from the generic
+frame layout.
+
+Frame payloads are largely drawn from {{!RFC7540}}. However, QUIC includes many
+features (e.g. flow control) which are also present in HTTP/2. In these cases,
+the HTTP mapping does not re-implement them. As a result, several HTTP/2 frame
+types are not required in HTTP/QUIC. Where an HTTP/2-defined frame is no longer
+used, the frame ID has been reserved in order to maximize portability between
+HTTP/2 and HTTP/QUIC implementations. However, even equivalent frames between
+the two mappings are not identical.
+
+Many of the differences arise from the fact that HTTP/2 provides an absolute
+ordering between frames across all streams, while QUIC provides this guarantee
+on each stream only.  As a result, if a frame type makes assumptions that frames
+from different streams will still be received in the order sent, HTTP/QUIC will
+break them.
+
+For example, implicit in the HTTP/2 prioritization scheme is the notion of
+in-order delivery of priority changes (i.e., dependency tree mutations): since
+operations on the dependency tree such as reparenting a subtree are not
+commutative, both sender and receiver must apply them in the same order to
+ensure that both sides have a consistent view of the stream dependency tree.
+HTTP/2 specifies priority assignments in PRIORITY frames and (optionally) in
+HEADERS frames. To achieve in-order delivery of priority changes in HTTP/QUIC,
+PRIORITY frames are sent on the control stream and the PRIORITY section is
+removed from the HEADERS frame.
+
+Likewise, HPACK was designed with the assumption of in-order delivery. A
+sequence of encoded header blocks must arrive (and be decoded) at an endpoint in
+the same order in which they were encoded. This ensures that the dynamic state
+at the two endpoints remains in sync.  As a result, HTTP/QUIC uses a modified
+version of HPACK, described in [QPACK].
+
+Frame type definitions in HTTP/QUIC often use the QUIC variable-length integer
+encoding.  In particular, Stream IDs use this encoding, which allow for a larger
+range of possible values than the encoding used in HTTP/2.  Some frames in
+HTTP/QUIC use an identifier rather than a Stream ID (e.g. Push IDs in PRIORITY
+frames). Redefinition of the encoding of extension frame types might be
+necessary if the encoding includes a Stream ID.
+
+Because the Flags field is not present in generic HTTP/QUIC frames, those frames
+which depend on the presence of flags need to allocate space for flags as part
+of their frame payload.
+
+Other than this issue, frame type HTTP/2 extensions are typically portable to
+QUIC simply by replacing Stream 0 in HTTP/2 with a control stream in HTTP/QUIC.
+HTTP/QUIC extensions will not assume ordering, but would not be harmed by
+ordering, and would be portable to HTTP/2 in the same manner.
+
+Below is a listing of how each HTTP/2 frame type is mapped:
+
+DATA (0x0):
+: Padding is not defined in HTTP/QUIC frames.  See {{frame-data}}.
+
+HEADERS (0x1):
+: As described above, the PRIORITY region of HEADERS is not supported. A
+  separate PRIORITY frame MUST be used. Padding is not defined in HTTP/QUIC
+  frames.  See {{frame-headers}}.
+
+PRIORITY (0x2):
+: As described above, the PRIORITY frame is sent on the control stream and can
+  reference either a Stream ID or a Push ID.  See {{frame-priority}}.
+
+RST_STREAM (0x3):
+: RST_STREAM frames do not exist, since QUIC provides stream lifecycle
+  management.  The same code point is used for the CANCEL_PUSH frame
+  ({{frame-cancel-push}}).
+
+SETTINGS (0x4):
+: SETTINGS frames are sent only at the beginning of the connection.  See
+  {{frame-settings}} and {{h2-settings}}.
+
+PUSH_PROMISE (0x5):
+: The PUSH_PROMISE does not reference a stream; instead the push stream
+  references the PUSH_PROMISE frame using a Push ID.  See
+  {{frame-push-promise}}.
+
+PING (0x6):
+: PING frames do not exist, since QUIC provides equivalent functionality.
+
+GOAWAY (0x7):
+: GOAWAY is sent only from server to client and does not contain an error code.
+  See {{frame-goaway}}.
+
+WINDOW_UPDATE (0x8):
+: WINDOW_UPDATE frames do not exist, since QUIC provides flow control.
+
+CONTINUATION (0x9):
+: CONTINUATION frames do not exist; instead, larger HEADERS/PUSH_PROMISE
+  frames than HTTP/2 are permitted, and HEADERS frames can be used in series.
+
+Frame types defined by extensions to HTTP/2 need to be separately registered for
+HTTP/QUIC if still applicable.  The IDs of frames defined in {{!RFC7540}} have
+been reserved for simplicity.  See {{iana-frames}}.
+
+## HTTP/2 SETTINGS Parameters {#h2-settings}
+
+An important difference from HTTP/2 is that settings are sent once, at the
+beginning of the connection, and thereafter cannot change.  This eliminates
+many corner cases around synchronization of changes.
+
+Some transport-level options that HTTP/2 specifies via the SETTINGS frame are
+superseded by QUIC transport parameters in HTTP/QUIC. The HTTP-level options
+that are retained in HTTP/QUIC have the same value as in HTTP/2.
+
+Below is a listing of how each HTTP/2 SETTINGS parameter is mapped:
+
+SETTINGS_HEADER_TABLE_SIZE:
+: See {{settings-parameters}}.
+
+SETTINGS_ENABLE_PUSH:
+: This is removed in favor of the MAX_PUSH_ID which provides a more granular
+  control over server push.
+
+SETTINGS_MAX_CONCURRENT_STREAMS:
+: QUIC controls the largest open Stream ID as part of its flow control logic.
+  Specifying SETTINGS_MAX_CONCURRENT_STREAMS in the SETTINGS frame is an error.
+
+SETTINGS_INITIAL_WINDOW_SIZE:
+: QUIC requires both stream and connection flow control window sizes to be
+  specified in the initial transport handshake.  Specifying
+  SETTINGS_INITIAL_WINDOW_SIZE in the SETTINGS frame is an error.
+
+SETTINGS_MAX_FRAME_SIZE:
+: This setting has no equivalent in HTTP/QUIC.  Specifying it in the SETTINGS
+  frame is an error.
+
+SETTINGS_MAX_HEADER_LIST_SIZE:
+: See {{settings-parameters}}.
+
+In HTTP/QUIC, setting values are variable-length integers (6, 14, 30, or 62 bits
+long) rather than fixed-length 32-bit fields as in HTTP/2.  This will often
+produce a shorter encoding, but can produce a longer encoding for settings which
+use the full 32-bit space.  Settings ported from HTTP/2 might choose to redefine
+the format of their settings to avoid using the 62-bit encoding.
+
+Settings need to be defined separately for HTTP/2 and HTTP/QUIC.  The IDs of
+settings defined in {{!RFC7540}} have been reserved for simplicity.  See
+{{iana-settings}}.
+
+
+## HTTP/2 Error Codes
+
+QUIC has the same concepts of "stream" and "connection" errors that HTTP/2
+provides. However, because the error code space is shared between multiple
+components, there is no direct portability of HTTP/2 error codes.
+
+The HTTP/2 error codes defined in Section 7 of {{!RFC7540}} map to the HTTP/QUIC
+error codes as follows:
+
+NO_ERROR (0x0):
+: HTTP_NO_ERROR in {{http-error-codes}}.
+
+PROTOCOL_ERROR (0x1):
+: No single mapping.  See new HTTP_MALFORMED_FRAME error codes defined in
+  {{http-error-codes}}.
+
+INTERNAL_ERROR (0x2):
+: HTTP_INTERNAL_ERROR in {{http-error-codes}}.
+
+FLOW_CONTROL_ERROR (0x3):
+: Not applicable, since QUIC handles flow control.  Would provoke a
+  QUIC_FLOW_CONTROL_RECEIVED_TOO_MUCH_DATA from the QUIC layer.
+
+SETTINGS_TIMEOUT (0x4):
+: Not applicable, since no acknowledgement of SETTINGS is defined.
+
+STREAM_CLOSED (0x5):
+: Not applicable, since QUIC handles stream management.  Would provoke a
+  QUIC_STREAM_DATA_AFTER_TERMINATION from the QUIC layer.
+
+FRAME_SIZE_ERROR (0x6):
+: No single mapping.  See new error codes defined in {{http-error-codes}}.
+
+REFUSED_STREAM (0x7):
+: Not applicable, since QUIC handles stream management.  Would provoke a
+  QUIC_TOO_MANY_OPEN_STREAMS from the QUIC layer.
+
+CANCEL (0x8):
+: HTTP_REQUEST_CANCELLED in {{http-error-codes}}.
+
+COMPRESSION_ERROR (0x9):
+: HTTP_QPACK_DECOMPRESSION_FAILED in [QPACK].
+
+CONNECT_ERROR (0xa):
+: HTTP_CONNECT_ERROR in {{http-error-codes}}.
+
+ENHANCE_YOUR_CALM (0xb):
+: HTTP_EXCESSIVE_LOAD in {{http-error-codes}}.
+
+INADEQUATE_SECURITY (0xc):
+: Not applicable, since QUIC is assumed to provide sufficient security on all
+  connections.
+
+HTTP_1_1_REQUIRED (0xd):
+: HTTP_VERSION_FALLBACK in {{http-error-codes}}.
+
+Error codes need to be defined for HTTP/2 and HTTP/QUIC separately.  See
+{{iana-error-codes}}.
 
 # Change Log
 
