@@ -1199,6 +1199,44 @@ interrupts connectivity.
 If a connection terminates without a GOAWAY frame, clients MUST assume that any
 request which was sent, whether in whole or in part, might have been processed.
 
+# Extensions to HTTP/QUIC
+
+HTTP/QUIC permits extension of the protocol.  Within the limitations described
+in this section, protocol extensions can be used to provide additional services
+or alter any aspect of the protocol.  Extensions are effective only within the
+scope of a single HTTP/QUIC connection.
+
+This applies to the protocol elements defined in this document.  This does not
+affect the existing options for extending HTTP, such as defining new methods,
+status codes, or header fields.
+
+Extensions are permitted to use new frame types ({{frames}}), new settings
+({{settings-parameters}}), new error codes ({{errors}}), or new unidirectional
+stream types ({{unidirectional-streams}}).  Registries are established for
+managing these extension points: frame types ({{iana-frames}}), settings
+({{iana-settings}}), error codes ({{iana-error-codes}}), and stream types
+({{iana-stream-types}}).
+
+Implementations MUST ignore unknown or unsupported values in all extensible
+protocol elements.  Implementations MUST discard frames and unidirectional
+streams that have unknown or unsupported types.  This means that any of these
+extension points can be safely used by extensions without prior arrangement or
+negotiation.
+
+Extensions that could change the semantics of existing protocol components MUST
+be negotiated before being used.  For example, an extension that changes the
+layout of the HEADERS frame cannot be used until the peer has given a positive
+signal that this is acceptable. In this case, it could also be necessary to
+coordinate when the revised layout comes into effect.
+
+This document doesn't mandate a specific method for negotiating the use of an
+extension but notes that a setting ({{settings-parameters}}) could be used for
+that purpose.  If both peers set a value that indicates willingness to use the
+extension, then the extension can be used.  If a setting is used for extension
+negotiation, the default value MUST be defined in such a fashion that the
+extension is disabled if the setting is omitted.
+
+
 # Error Handling {#errors}
 
 QUIC allows the application to abruptly terminate (reset) individual streams or
@@ -1288,44 +1326,6 @@ HTTP_MALFORMED_FRAME (0x01XX):
 : An error in a specific frame type.  The frame type is included as the last
   octet of the error code.  For example, an error in a MAX_PUSH_ID frame would
   be indicated with the code (0x10D).
-
-
-# Extensions to HTTP/QUIC
-
-HTTP/QUIC permits extension of the protocol.  Within the limitations described
-in this section, protocol extensions can be used to provide additional services
-or alter any aspect of the protocol.  Extensions are effective only within the
-scope of a single HTTP/QUIC connection.
-
-This applies to the protocol elements defined in this document.  This does not
-affect the existing options for extending HTTP, such as defining new methods,
-status codes, or header fields.
-
-Extensions are permitted to use new frame types ({{frames}}), new settings
-({{settings-parameters}}), new error codes ({{errors}}), or new unidirectional
-stream types ({{unidirectional-streams}}).  Registries are established for
-managing these extension points: frame types ({{iana-frames}}), settings
-({{iana-settings}}), error codes ({{iana-error-codes}}), and stream types
-({{iana-stream-types}}).
-
-Implementations MUST ignore unknown or unsupported values in all extensible
-protocol elements.  Implementations MUST discard frames and unidirectional
-streams that have unknown or unsupported types.  This means that any of these
-extension points can be safely used by extensions without prior arrangement or
-negotiation.
-
-Extensions that could change the semantics of existing protocol components MUST
-be negotiated before being used.  For example, an extension that changes the
-layout of the HEADERS frame cannot be used until the peer has given a positive
-signal that this is acceptable. In this case, it could also be necessary to
-coordinate when the revised layout comes into effect.
-
-This document doesn't mandate a specific method for negotiating the use of an
-extension but notes that a setting ({{settings-parameters}}) could be used for
-that purpose.  If both peers set a value that indicates willingness to use the
-extension, then the extension can be used.  If a setting is used for extension
-negotiation, the default value MUST be defined in such a fashion that the
-extension is disabled if the setting is omitted.
 
 
 # Considerations for Transitioning from HTTP/2
