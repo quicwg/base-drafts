@@ -651,7 +651,7 @@ are as follows:
 * in_flight: A boolean that indicates whether the packet counts towards
   bytes in flight.
 
-* is_handshake_packet: A boolean that indicates whether the packet contains
+* is_crypto_packet: A boolean that indicates whether the packet contains
   cryptographic handshake messages critical to the completion of the QUIC
   handshake. In this version of QUIC, this includes any packet with the long
   header that includes a CRYPTO frame.
@@ -663,14 +663,14 @@ Pseudocode for OnPacketSent follows:
 
 ~~~
  OnPacketSent(packet_number, ack_only, in_flight,
-              is_handshake_packet, sent_bytes):
+              is_crypto_packet, sent_bytes):
    largest_sent_packet = packet_number
    sent_packets[packet_number].packet_number = packet_number
    sent_packets[packet_number].time = now
    sent_packets[packet_number].ack_only = ack_only
    sent_packets[packet_number].in_flight = in_flight
    if !ack_only:
-     if is_handshake_packet:
+     if is_crypto_packet:
        time_of_last_sent_handshake_packet = now
      time_of_last_sent_retransmittable_packet = now
      OnPacketSentCC(sent_bytes)
