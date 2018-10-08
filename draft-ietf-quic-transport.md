@@ -960,12 +960,11 @@ Every QUIC packet that is coalesced into a single UDP datagram is separate and
 complete.  Though the values of some fields in the packet header might be
 redundant, no fields are omitted.  The receiver of coalesced QUIC packets MUST
 individually process each QUIC packet and separately acknowledge them, as if
-they were received as the payload of different UDP datagrams.  If one or more
-packets in a datagram cannot be processed yet (because the keys are not yet
-available) or processing fails (decryption failure, unknown type, etc.), the
-receiver MUST still attempt to process the remaining packets.  The skipped
-packets MAY either be discarded or buffered for later processing, just as if the
-packets were received out-of-order in separate datagrams.
+they were received as the payload of separate UDP datagrams.  For example, if
+one or more packets in a datagram cannot be decrypted (the keys are not yet
+available, decryption failure, unknown type), the receiver MAY either discard or
+buffer for packet for later processing and MUST attempt to process the remaining
+packets.
 
 Retry ({{packet-retry}}) and Version Negotiation ({{packet-version}}) packets
 cannot be coalesced.
