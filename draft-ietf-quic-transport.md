@@ -737,8 +737,8 @@ subsequent to the first do not need to fit within a single UDP datagram.
 
 The contents of some Initial packets may, according to this specification, force
 connection termination. For example, they might contain forbidden frame types
-or a CONNECTION_CLOSE frame. As Initial packets are not protected, these might
-be injection attacks to terminate the connection.
+or a CONNECTION_CLOSE frame. As Initial packets are not protected, these could
+indicate injection attacks to terminate the connection.
 
 Endpoints MAY treat the receipt of such packets as a connection error, drop them
 without further processing, or wait for a short interval to see if a valid
