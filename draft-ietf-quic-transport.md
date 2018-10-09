@@ -961,10 +961,9 @@ complete.  Though the values of some fields in the packet header might be
 redundant, no fields are omitted.  The receiver of coalesced QUIC packets MUST
 individually process each QUIC packet and separately acknowledge them, as if
 they were received as the payload of separate UDP datagrams.  For example, if
-one or more packets in a datagram cannot be decrypted (the keys are not yet
-available, decryption failure, unknown type), the receiver MAY either discard or
-buffer for packet for later processing and MUST attempt to process the remaining
-packets.
+decryption fails or the packet is of an unknown type, the receiver MAY either
+discard or buffer the packet for later processing and MUST attempt to process
+the remaining packets.
 
 Retry ({{packet-retry}}) and Version Negotiation ({{packet-version}}) packets
 cannot be coalesced.
