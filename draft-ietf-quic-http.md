@@ -317,7 +317,7 @@ this header is determined by the stream type.
 
 Some stream types are reserved ({{stream-grease}}).  Two stream types are
 defined in this document: control streams ({{control-streams}}) and push streams
-({{server-push}}).  Other stream types can be defined by extensions to
+({{push-streams}}).  Other stream types can be defined by extensions to
 HTTP/QUIC.
 
 Both clients and servers SHOULD send a value of three or greater for the QUIC
@@ -333,17 +333,6 @@ Implementations MAY send stream types before knowing whether the peer supports
 them.  However, stream types which could modify the state or semantics of
 existing protocol components, including QPACK or other extensions, MUST NOT be
 sent until the peer is known to support them.
-
-### Reserved Stream Types {#stream-grease}
-
-Stream types of the format `0x1f * N` are reserved to exercise the requirement
-that unknown types be ignored. These streams have no semantic meaning, and can
-be sent when application-layer padding is desired.  They MAY also be sent on
-connections where no request data is currently being transferred. Endpoints MUST
-NOT consider these streams to have any meaning upon receipt.
-
-The payload and length of the stream are selected in any manner the
-implementation chooses.
 
 ###  Control Streams
 
@@ -369,8 +358,8 @@ able to send stream data first after the cryptographic handshake completes.
 A push stream is indicated by a stream type of `0x50` (ASCII 'P'), followed by
 the Push ID of the promise that it fulfills, encoded as a variable-length
 integer. The remaining data on this stream consists of HTTP/QUIC frames, as
-defined in {{frames}}, and fulfills a promised server push, as described in
-{{server-push}}.
+defined in {{frames}}, and fulfills a promised server push.  Server push and
+Push IDs are described in {{server-push}}.
 
 Only servers can push; if a server receives a client-initiated push stream,
 this MUST be treated as a stream error of type HTTP_WRONG_STREAM_DIRECTION.
@@ -387,6 +376,17 @@ this MUST be treated as a stream error of type HTTP_WRONG_STREAM_DIRECTION.
 Each Push ID MUST only be used once in a push stream header. If a push stream
 header includes a Push ID that was used in another push stream header, the
 client MUST treat this as a connection error of type HTTP_DUPLICATE_PUSH.
+
+### Reserved Stream Types {#stream-grease}
+
+Stream types of the format `0x1f * N` are reserved to exercise the requirement
+that unknown types be ignored. These streams have no semantic meaning, and can
+be sent when application-layer padding is desired.  They MAY also be sent on
+connections where no request data is currently being transferred. Endpoints MUST
+NOT consider these streams to have any meaning upon receipt.
+
+The payload and length of the stream are selected in any manner the
+implementation chooses.
 
 
 # HTTP Framing Layer {#http-framing-layer}
