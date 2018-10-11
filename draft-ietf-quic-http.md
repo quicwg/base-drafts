@@ -203,17 +203,17 @@ parameter MUST NOT occur more than once; clients SHOULD process only the first
 occurrence.
 
 For example, suppose a server supported both version 0x00000001 and the version
-rendered in ASCII as "Q034".  If it opted to include the reserved versions (from
-Section 4 of {{QUIC-TRANSPORT}}) 0x0 and 0x1abadaba, it could specify the
+rendered in ASCII as "Q034".  If it also opted to include the reserved version
+(from Section 3 of {{QUIC-TRANSPORT}}) 0x1abadaba, it could specify the
 following header field:
 
 ~~~ example
-Alt-Svc: hq=":49288";quic="1,1abadaba,51303334,0"
+Alt-Svc: hq=":49288";quic="1,1abadaba,51303334"
 ~~~
 
-A client acting on this header field would drop the reserved versions (because
-it does not support them), then attempt to connect to the alternative using the
-first version in the list which it does support.
+A client acting on this header field would drop the reserved version (not
+supported), then attempt to connect to the alternative using the first version
+in the list which it does support, if any.
 
 ## Connection Establishment {#connection-establishment}
 
