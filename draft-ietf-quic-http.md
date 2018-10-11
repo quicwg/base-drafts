@@ -263,9 +263,13 @@ management of HTTP/QUIC connections.
 A QUIC stream provides reliable in-order delivery of bytes, but makes no
 guarantees about order of delivery with regard to bytes on other streams. On the
 wire, data is framed into QUIC STREAM frames, but this framing is invisible to
-the HTTP framing layer. A QUIC receiver buffers and orders received STREAM
-frames, exposing the data contained within as a reliable byte stream to the
-application.
+the HTTP framing layer. The transport layer buffers and orders received QUIC
+STREAM frames, exposing the data contained within as a reliable byte stream to
+the application.
+
+QUIC streams can be either unidirectional, carrying data only from initiator to
+receiver, or bidirectional.  Streams can be initiated by either the client or
+the server.  For more detail on QUIC streams, see {{QUIC-TRANSPORT}}, Section 9.
 
 When HTTP headers and data are sent over QUIC, the QUIC layer handles most of
 the stream management.  HTTP does not need to do any separate multiplexing when
@@ -291,7 +295,9 @@ the stream was truncated, this MUST be treated as a connection error (see
 HTTP_MALFORMED_FRAME in {{http-error-codes}}).  Streams which terminate abruptly
 may be reset at any point in the frame.
 
-HTTP/QUIC does not use server-initiated bidirectional streams.
+HTTP/QUIC does not use server-initiated bidirectional streams; clients MUST omit
+or specify a value of zero for the QUIC transport parameter
+`initial_max_bidi_streams`.
 
 
 ## Unidirectional Streams
