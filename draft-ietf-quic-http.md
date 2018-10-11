@@ -233,8 +233,8 @@ the initial crypto handshake, HTTP/QUIC-specific settings are conveyed in the
 SETTINGS frame. After the QUIC connection is established, a SETTINGS frame
 ({{frame-settings}}) MUST be sent by each endpoint as the initial frame of their
 respective HTTP control stream (see {{control-streams}}). The server MUST NOT
-send data on any other stream until the client's SETTINGS frame has been
-received.
+process any request streams or send responses until the client's SETTINGS frame
+has been received.
 
 ## Connection Reuse
 
