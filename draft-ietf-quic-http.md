@@ -554,23 +554,23 @@ greater than the server's limit MUST be treated as a HTTP_MALFORMED_FRAME error.
 
 ### CANCEL_PUSH {#frame-cancel-push}
 
-The CANCEL_PUSH frame (type=0x3) is used to request cancellation of server push
-prior to the push stream being created.  The CANCEL_PUSH frame identifies a
-server push request by Push ID (see {{frame-push-promise}}) using a
+The CANCEL_PUSH frame (type=0x3) is used to request cancellation of a server
+push prior to the push stream being created.  The CANCEL_PUSH frame identifies a
+server push by Push ID (see {{frame-push-promise}}), encoded as a
 variable-length integer.
 
 When a server receives this frame, it aborts sending the response for the
 identified server push.  If the server has not yet started to send the server
-push, it can use the receipt of a CANCEL_PUSH frame to avoid opening a
+push, it can use the receipt of a CANCEL_PUSH frame to avoid opening a push
 stream.  If the push stream has been opened by the server, the server SHOULD
-send a QUIC RST_STREAM frame on those streams and cease transmission of the
+send a QUIC RST_STREAM frame on that stream and cease transmission of the
 response.
 
-A server can send this frame to indicate that it won't be sending a response
-prior to creation of a push stream.  Once the push stream has been created,
-sending CANCEL_PUSH has no effect on the state of the push stream.  A QUIC
-RST_STREAM frame SHOULD be used instead to cancel transmission of the server
-push response.
+A server can send this frame to indicate that it will not be fulfilling a
+promise prior to creation of a push stream.  Once the push stream has been
+created, sending CANCEL_PUSH has no effect on the state of the push stream.  A
+QUIC RST_STREAM frame SHOULD be used instead to abort transmission of the
+server push response.
 
 A CANCEL_PUSH frame is sent on the control stream.  Sending a CANCEL_PUSH frame
 on a stream other than the control stream MUST be treated as a stream error of
