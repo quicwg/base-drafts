@@ -3254,8 +3254,8 @@ The STREAM_ID_BLOCKED frame contains a single field.
 
 Stream ID:
 
-: A variable-length integer indicating the highest stream ID that the sender
-  was permitted to open.
+: A variable-length integer indicating the stream ID of the stream that the
+  sender was not able to open due to the maximum stream ID limit.
 
 ## NEW_CONNECTION_ID Frame {#frame-new-connection-id}
 
