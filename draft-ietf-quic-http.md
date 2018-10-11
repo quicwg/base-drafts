@@ -469,24 +469,17 @@ HEADERS frames can only be sent on request / push streams.
 
 ### PRIORITY {#frame-priority}
 
-The PRIORITY (type=0x02) frame specifies the sender-advised priority of a stream
-and is substantially different in format from {{!RFC7540}}.  In order to ensure
-that prioritization is processed in a consistent order, PRIORITY frames MUST be
-sent on the control stream.  A PRIORITY frame sent on any other stream MUST be
-treated as a HTTP_WRONG_STREAM error.
-
-The format has been modified to accommodate not being sent on a request stream,
-to allow for identification of server pushes, and the larger stream ID space of
-QUIC.  The semantics of the Stream Dependency, Weight, and E flag are otherwise
-the same as in HTTP/2.
+The PRIORITY (type=0x02) frame specifies the sender-advised priority of a
+stream.  In order to ensure that prioritization is processed in a consistent
+order, PRIORITY frames MUST be sent on the control stream.  A PRIORITY frame
+sent on any other stream MUST be treated as a connection error of type
+HTTP_WRONG_STREAM.
 
 ~~~~~~~~~~  drawing
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|PT |DT |Empty|E|
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                 Prioritized Element ID (i)                  ...
+|PT |DT |Empty|E|          Prioritized Element ID (i)         ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                 Element Dependency ID (i)                   ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -519,9 +512,9 @@ The PRIORITY frame payload has the following fields:
 
   Element Dependency ID:
   : A variable-length integer that identifies the element on which a dependency
-    is being expressed. Depending on the value of Dependency Type, this
-    contains the Stream ID of a request stream, the Push ID of a promised
-    resource, or a Placeholder ID of a placeholder.  For details of
+    is being expressed. Depending on the value of Dependency Type, this contains
+    the Stream ID of a request stream, the Push ID of a promised resource, a
+    Placeholder ID of a placeholder, or is ignored.  For details of
     dependencies, see {{priority}} and {{!RFC7540}}, Section 5.3.
 
   Weight:
@@ -1690,7 +1683,7 @@ HEADERS (0x1):
 
 PRIORITY (0x2):
 : As described above, the PRIORITY frame is sent on the control stream and can
-  reference either a Stream ID or a Push ID.  See {{frame-priority}}.
+  reference a variety of identifiers.  See {{frame-priority}}.
 
 RST_STREAM (0x3):
 : RST_STREAM frames do not exist, since QUIC provides stream lifecycle
