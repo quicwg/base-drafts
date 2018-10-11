@@ -800,7 +800,7 @@ a MAX_PUSH_ID frame as a connection error of type HTTP_MALFORMED_FRAME.
 The maximum Push ID is unset when a connection is created, meaning that a server
 cannot push until it receives a MAX_PUSH_ID frame.  A client that wishes to
 manage the number of promised server pushes can increase the maximum Push ID by
-sending a MAX_PUSH_ID frame as the server fulfills or cancels server pushes.
+sending MAX_PUSH_ID frames as the server fulfills or cancels server pushes.
 
 ~~~~~~~~~~  drawing
  0                   1                   2                   3
