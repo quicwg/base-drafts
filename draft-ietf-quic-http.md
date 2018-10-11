@@ -600,9 +600,10 @@ HTTP_MALFORMED_FRAME.
 ### SETTINGS {#frame-settings}
 
 The SETTINGS frame (type=0x4) conveys configuration parameters that affect how
-endpoints communicate, such as preferences and constraints on peer behavior, and
-is different from {{!RFC7540}}. Individually, a SETTINGS parameter can also be
-referred to as a "setting".
+endpoints communicate, such as preferences and constraints on peer behavior.
+Individually, a SETTINGS parameter can also be referred to as a "setting"; the
+identifier and value of each setting parameter can be referred to as a "setting
+identifier" and a "setting value".
 
 SETTINGS parameters are not negotiated; they describe characteristics of the
 sending peer, which can be used by the receiving peer. However, a negotiation
@@ -630,19 +631,19 @@ QUIC variable-length integer encoding.
 |         Identifier (16)       |           Value (i)         ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~~~~~~~~~~~~~
-{: #fig-ext-settings title="SETTINGS value format"}
+{: #fig-ext-settings title="SETTINGS parameter format"}
 
 Each value MUST be compared against the remaining length of the SETTINGS frame.
-Any value which purports to cross the end of the frame MUST cause the SETTINGS
-frame to be considered malformed and trigger a connection error of type
-HTTP_MALFORMED_FRAME.
+A variable-length integer value which cannot fit within the remaining length of
+the SETTINGS frame MUST cause the SETTINGS frame to be considered malformed and
+trigger a connection error of type HTTP_MALFORMED_FRAME.
 
 An implementation MUST ignore the contents for any SETTINGS identifier it does
 not understand.
 
 SETTINGS frames always apply to a connection, never a single stream.  A SETTINGS
-frame MUST be sent as the first frame of either control stream (see
-{{stream-mapping}}) by each peer, and MUST NOT be sent subsequently or on any
+frame MUST be sent as the first frame of each control stream (see
+{{control-streams}}) by each peer, and MUST NOT be sent subsequently or on any
 other stream. If an endpoint receives a SETTINGS frame on a different stream,
 the endpoint MUST respond with a connection error of type HTTP_WRONG_STREAM.  If
 an endpoint receives a second SETTINGS frame, the endpoint MUST respond with a
@@ -663,17 +664,18 @@ The following settings are defined in HTTP/QUIC:
   SETTINGS_MAX_HEADER_LIST_SIZE (0x6):
   : The default value is unlimited.
 
-Settings values of the format `0x?a?a` are reserved to exercise the requirement
-that unknown parameters be ignored.  Such settings have no defined meaning.
-Endpoints SHOULD include at least one such setting in their SETTINGS frame.
-Endpoints MUST NOT consider such settings to have any meaning upon receipt.
+Setting identifiers of the format `0x?a?a` are reserved to exercise the
+requirement that unknown identifiers be ignored.  Such settings have no defined
+meaning. Endpoints SHOULD include at least one such setting in their SETTINGS
+frame. Endpoints MUST NOT consider such settings to have any meaning upon
+receipt.
 
 Because the setting has no defined meaning, the value of the setting can be any
 value the implementation selects.
 
 Additional settings MAY be defined by extensions to HTTP/QUIC.
 
-#### Initial SETTINGS Values
+#### Initialization
 
 When a 0-RTT QUIC connection is being used, the client's initial requests will
 be sent before the arrival of the server's SETTINGS frame.  Clients MUST store
