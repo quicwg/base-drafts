@@ -699,8 +699,8 @@ prior to receiving and processing the server's SETTINGS frame.
 
 ### PUSH_PROMISE {#frame-push-promise}
 
-The PUSH_PROMISE frame (type=0x05) is used to carry a request header set from
-server to client, as in HTTP/2.
+The PUSH_PROMISE frame (type=0x05) is used to carry a promised request header
+set from server to client, as in HTTP/2.
 
 ~~~~~~~~~~  drawing
  0                   1                   2                   3
@@ -716,8 +716,8 @@ server to client, as in HTTP/2.
 The payload consists of:
 
 Push ID:
-: A variable-length integer that identifies the server push request.  A push ID
-  is used in push stream header ({{server-push}}), CANCEL_PUSH frames
+: A variable-length integer that identifies the server push operation.  A push
+  ID is used in push stream headers ({{server-push}}), CANCEL_PUSH frames
   ({{frame-cancel-push}}), and PRIORITY frames ({{frame-priority}}).
 
 Header Block:
