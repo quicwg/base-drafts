@@ -392,8 +392,8 @@ implementation chooses.
 # HTTP Framing Layer {#http-framing-layer}
 
 Frames are used on the control stream, request streams, and push streams.  This
-section describes HTTP framing in QUIC and highlights some differences from
-HTTP/2 framing.  For more detail on differences from HTTP/2, see {{h2-frames}}.
+section describes HTTP framing in QUIC.  For a comparison with HTTP/2 frames,
+see {{h2-frames}}.
 
 ## Frame Layout
 
@@ -422,20 +422,12 @@ A frame includes the following fields:
   Frame Payload:
   : A payload, the semantics of which are determined by the Type field.
 
+Each frame's payload MUST contain exactly the identified fields.  A frame that
+contains additional octets after the identified fields or a frame that
+terminates before the end of the identified fields MUST be treated as a
+connection error of type HTTP_MALFORMED_FRAME.
 
 ## Frame Definitions {#frames}
-
-### Reserved Frame Types {#frame-grease}
-
-Frame types of the format `0xb + (0x1f * N)` are reserved to exercise the
-requirement that unknown types be ignored. These frames have no semantic
-meaning, and can be sent when application-layer padding is desired.  They MAY
-also be sent on connections where no request data is currently being
-transferred. Endpoints MUST NOT consider these frames to have any meaning upon
-receipt.
-
-The payload and length of the frames are selected in any manner the
-implementation chooses.
 
 ### DATA {#frame-data}
 
@@ -565,11 +557,6 @@ type HTTP_MALFORMED_FRAME.
 
 A PRIORITY frame that references a non-existent Push ID or a Placeholder ID
 greater than the server's limit MUST be treated as a HTTP_MALFORMED_FRAME error.
-
-A PRIORITY frame MUST contain only the identified fields.  A PRIORITY frame that
-contains more or fewer fields, or a PRIORITY frame that includes a truncated
-integer encoding MUST be treated as a connection error of type
-HTTP_MALFORMED_FRAME.
 
 
 ### CANCEL_PUSH {#frame-cancel-push}
@@ -838,6 +825,19 @@ MUST be treated as a connection error of type HTTP_MALFORMED_FRAME.
 A server MUST treat a MAX_PUSH_ID frame payload that does not contain a single
 variable-length integer as a connection error of type
 HTTP_MALFORMED_FRAME.
+
+### Reserved Frame Types {#frame-grease}
+
+Frame types of the format `0xb + (0x1f * N)` are reserved to exercise the
+requirement that unknown types be ignored ({{extensions}}). These frames have no
+semantic value, and can be sent when application-layer padding is desired. They
+MAY also be sent on connections where no request data is currently being
+transferred. Endpoints MUST NOT consider these frames to have any meaning upon
+receipt.
+
+The payload and length of the frames are selected in any manner the
+implementation chooses.
+
 
 # HTTP Request Lifecycle
 
@@ -1217,7 +1217,7 @@ interrupts connectivity.
 If a connection terminates without a GOAWAY frame, clients MUST assume that any
 request which was sent, whether in whole or in part, might have been processed.
 
-# Extensions to HTTP/QUIC
+# Extensions to HTTP/QUIC {#extensions}
 
 HTTP/QUIC permits extension of the protocol.  Within the limitations described
 in this section, protocol extensions can be used to provide additional services
