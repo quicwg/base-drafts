@@ -918,6 +918,14 @@ HTTP/QUIC uses QPACK header compression as described in [QPACK], a variation of
 HPACK which allows the flexibility to avoid header-compression-induced
 head-of-line blocking.  See that document for additional details.
 
+An HTTP/QUIC implementation MAY impose a limit on the maximum size of the header
+it will accept on an individual HTTP message.  This limit is conveyed as a
+number of octets in the `SETTINGS_MAX_HEADER_LIST_SIZE` parameter.  The size of
+an header block is calculated based on the uncompressed size of header fields,
+including the length of the name and value in octets plus an overhead of 32
+octets for each header field.  Encountering a message header larger than this
+value SHOULD be treated as a stream error of type `HTTP_EXCESSIVE_LOAD`.
+
 ### Request Cancellation
 
 Either client or server can cancel requests by aborting the stream (QUIC
