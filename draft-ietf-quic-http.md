@@ -1608,7 +1608,7 @@ section describes the approach taken to design HTTP/QUIC, points out important
 differences from HTTP/2, and describes how to map HTTP/2 extensions into
 HTTP/QUIC.
 
-HTTP/QUIC begins from the premise that HTTP/2 code reuse is a useful feature,
+HTTP/QUIC begins from the premise that similarity to HTTP/2 is preferable,
 but not a hard requirement.  HTTP/QUIC departs from HTTP/2 primarily where
 necessary to accommodate the differences in behavior between QUIC and TCP (lack
 of ordering, support for streams).  We intend to avoid gratuitous changes which
@@ -1720,7 +1720,7 @@ WINDOW_UPDATE (0x8):
 
 CONTINUATION (0x9):
 : CONTINUATION frames do not exist; instead, larger HEADERS/PUSH_PROMISE
-  frames than HTTP/2 are permitted, and HEADERS frames can be used in series.
+  frames than HTTP/2 are permitted.
 
 Frame types defined by extensions to HTTP/2 need to be separately registered for
 HTTP/QUIC if still applicable.  The IDs of frames defined in {{!RFC7540}} have
@@ -1739,7 +1739,7 @@ that are retained in HTTP/QUIC have the same value as in HTTP/2.
 Below is a listing of how each HTTP/2 SETTINGS parameter is mapped:
 
 SETTINGS_HEADER_TABLE_SIZE:
-: See {{settings-parameters}}.
+: See [QPACK].
 
 SETTINGS_ENABLE_PUSH:
 : This is removed in favor of the MAX_PUSH_ID which provides a more granular
@@ -1775,8 +1775,7 @@ settings defined in {{!RFC7540}} have been reserved for simplicity.  See
 ## HTTP/2 Error Codes
 
 QUIC has the same concepts of "stream" and "connection" errors that HTTP/2
-provides. However, because the error code space is shared between multiple
-components, there is no direct portability of HTTP/2 error codes.
+provides. However, there is no direct portability of HTTP/2 error codes.
 
 The HTTP/2 error codes defined in Section 7 of {{!RFC7540}} map to the HTTP/QUIC
 error codes as follows:
@@ -1803,17 +1802,17 @@ STREAM_CLOSED (0x5):
   QUIC_STREAM_DATA_AFTER_TERMINATION from the QUIC layer.
 
 FRAME_SIZE_ERROR (0x6):
-: No single mapping.  See new error codes defined in {{http-error-codes}}.
+: HTTP_MALFORMED_FRAME error codes defined in {{http-error-codes}}.
 
 REFUSED_STREAM (0x7):
 : Not applicable, since QUIC handles stream management.  Would provoke a
-  QUIC_TOO_MANY_OPEN_STREAMS from the QUIC layer.
+  STREAM_ID_ERROR from the QUIC layer.
 
 CANCEL (0x8):
 : HTTP_REQUEST_CANCELLED in {{http-error-codes}}.
 
 COMPRESSION_ERROR (0x9):
-: HTTP_QPACK_DECOMPRESSION_FAILED in [QPACK].
+: Multiple error codes are defined in [QPACK].
 
 CONNECT_ERROR (0xa):
 : HTTP_CONNECT_ERROR in {{http-error-codes}}.
