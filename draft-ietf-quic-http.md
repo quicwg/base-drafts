@@ -1017,9 +1017,6 @@ An element can depend on another element or on the root of the tree.  A
 reference to an element which is no longer in the tree is treated as a reference
 to the root of the tree.
 
-Only a client can send PRIORITY frames.  A server MUST NOT send a PRIORITY
-frame.
-
 ### Placeholders
 
 In HTTP/2, certain implementations used closed or unused streams as placeholders
@@ -1083,10 +1080,9 @@ NOT declare a dependency on a stream it knows to have been closed.
 HTTP/QUIC server push is similar to what is described in HTTP/2 {{!RFC7540}},
 but uses different mechanisms.
 
-Each promised response is assigned a unique Push ID that uniquely identifies a
-server push. This allows a server to fulfill promises in the order that best
-suits its needs. The same Push ID can be used in multiple PUSH_PROMISE frames
-(see {{frame-push-promise}}).
+Each server push is identified by a unique Push ID. The same Push ID can be used
+in one or more PUSH_PROMISE frames (see {{frame-push-promise}}), then included
+with the push stream which ultimately fulfills those promises.
 
 Server push is only enabled on a connection when a client sends a MAX_PUSH_ID
 frame (see {{frame-max-push-id}}). A server cannot use server push
@@ -1098,7 +1094,7 @@ connection error of type HTTP_PUSH_LIMIT_EXCEEDED.
 
 The header of the request message is carried by a PUSH_PROMISE frame (see
 {{frame-push-promise}}) on the request stream which generated the push. This
-allows the server push to be associated with a request. Ordering of a
+allows the server push to be associated with a client request. Ordering of a
 PUSH_PROMISE in relation to certain parts of the response is important (see
 Section 8.2.1 of {{!RFC7540}}).  Promised requests MUST conform to the
 requirements in Section 8.2 of {{!RFC7540}}.
