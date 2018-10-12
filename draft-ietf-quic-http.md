@@ -1260,7 +1260,8 @@ extension is disabled if the setting is omitted.
 QUIC allows the application to abruptly terminate (reset) individual streams or
 the entire connection when an error is encountered.  These are referred to as
 "stream errors" or "connection errors" and are described in more detail in
-{{QUIC-TRANSPORT}}.
+{{QUIC-TRANSPORT}}.  An endpoint MAY choose to treat a stream error as a
+connection error.
 
 This section describes HTTP/QUIC-specific error codes which can be used to
 express the cause of a connection or stream error.
