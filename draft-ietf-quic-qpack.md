@@ -726,7 +726,7 @@ The decoder reconstructs the Largest Reference using the following algorithm:
 ~~~
    if LargestReference > 0:
       LargestReference -= 1
-      CurrentWrapped = TableLargestAbsoluteIndex mod (2*MaxEntries)
+      CurrentWrapped = TotalNumberOfInserts mod (2*MaxEntries)
 
       if CurrentWrapped >= LargestReference + MaxEntries:
          # Largest Reference wrapped around 1 extra time
@@ -735,13 +735,12 @@ The decoder reconstructs the Largest Reference using the following algorithm:
          # Decoder wrapped around 1 extra time
          CurrentWrapped += 2*MaxEntries
 
-      LargestReference +=
-         (TableLargestAbsoluteIndex - CurrentWrapped)
+      LargestReference += (TotalNumberOfInserts - CurrentWrapped)
 ~~~
 
-TableLargestAbsoluteIndex is the Absolute Index of the most recently inserted
-item in the decoder's dynamic table.  This encoding limits the length of the
-prefix on long-lived connections.
+TotalNumberOfInserts is the total number of inserts into the decoder's
+dynamic table.  This encoding limits the length of the prefix on
+long-lived connections.
 
 `Base Index` is used to resolve references in the dynamic table as described in
 {{relative-indexing}}.
