@@ -716,7 +716,7 @@ set from server to client, as in HTTP/2.
 The payload consists of:
 
 Push ID:
-: A variable-length integer that identifies the server push operation.  A push
+: A variable-length integer that identifies the server push operation.  A Push
   ID is used in push stream headers ({{server-push}}), CANCEL_PUSH frames
   ({{frame-cancel-push}}), and PRIORITY frames ({{frame-priority}}).
 
