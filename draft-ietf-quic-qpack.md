@@ -718,7 +718,7 @@ safe to process the rest of the block.  If Largest Reference is greater than
 zero, the encoder transforms it as follows before encoding:
 
 ~~~
-   LargestReference = LargestReference mod 2*MaxEntries + 1
+   LargestReference = LargestReference mod (2*MaxEntries) + 1
 ~~~
 
 The decoder reconstructs the Largest Reference using the following algorithm:
@@ -726,7 +726,7 @@ The decoder reconstructs the Largest Reference using the following algorithm:
 ~~~
    if LargestReference > 0:
       LargestReference -= 1
-      CurrentWrapped = TableLargestAbsoluteIndex mod 2*MaxEntries
+      CurrentWrapped = TableLargestAbsoluteIndex mod (2*MaxEntries)
 
       if CurrentWrapped >= LargestReference + MaxEntries:
          # Largest Reference wrapped around 1 extra time
