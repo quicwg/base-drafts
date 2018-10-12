@@ -930,12 +930,12 @@ value SHOULD be treated as a stream error of type `HTTP_EXCESSIVE_LOAD`.
 ### Request Cancellation
 
 Either client or server can cancel requests by aborting the stream (QUIC
-RST_STREAM or STOP_SENDING frames, as appropriate) with an error code of
+RST_STREAM and/or STOP_SENDING frames, as appropriate) with an error code of
 HTTP_REQUEST_CANCELLED ({{http-error-codes}}).  When the client cancels a
-response, it indicates that this response is no longer of interest. Clients
-SHOULD cancel requests by aborting both directions of a stream.
+response, it indicates that this response is no longer of interest.
+Implementations SHOULD cancel requests by aborting both directions of a stream.
 
-When the server cancels its response stream using HTTP_REQUEST_CANCELLED, it
+When the server aborts its response stream using HTTP_REQUEST_CANCELLED, it
 indicates that no application processing was performed.  The client can treat
 requests cancelled by the server as though they had never been sent at all,
 thereby allowing them to be retried later on a new connection.  Servers MUST NOT
@@ -966,14 +966,14 @@ host for similar purposes.
 A CONNECT request in HTTP/QUIC functions in the same manner as in HTTP/2. The
 request MUST be formatted as described in {{!RFC7540}}, Section 8.3. A CONNECT
 request that does not conform to these restrictions is malformed. The request
-stream MUST NOT be half-closed at the end of the request.
+stream MUST NOT be closed at the end of the request.
 
 A proxy that supports CONNECT establishes a TCP connection ({{!RFC0793}}) to the
 server identified in the ":authority" pseudo-header field. Once this connection
 is successfully established, the proxy sends a HEADERS frame containing a 2xx
 series status code to the client, as defined in {{!RFC7231}}, Section 4.3.6.
 
-All DATA frames on the request stream correspond to data sent on the TCP
+All DATA frames on the stream correspond to data sent or received on the TCP
 connection. Any DATA frame sent by the client is transmitted by the proxy to the
 TCP server; data received from the TCP server is packaged into DATA frames by
 the proxy. Note that the size and number of TCP segments is not guaranteed to
