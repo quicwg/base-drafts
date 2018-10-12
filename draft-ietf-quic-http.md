@@ -513,7 +513,7 @@ The PRIORITY frame payload has the following fields:
   Element Dependency ID:
   : A variable-length integer that identifies the element on which a dependency
     is being expressed. Depending on the value of Dependency Type, this contains
-    the Stream ID of a request stream, the Push ID of a promised resource, a
+    the Stream ID of a request stream, the Push ID of a promised resource, the
     Placeholder ID of a placeholder, or is ignored.  For details of
     dependencies, see {{priority}} and {{!RFC7540}}, Section 5.3.
 
