@@ -1350,18 +1350,19 @@ HTTP_MALFORMED_FRAME (0x01XX):
 # Security Considerations
 
 The security considerations of HTTP/QUIC should be comparable to those of HTTP/2
-with TLS.  Note that where HTTP/2 employs PADDING frames to make a connection
-more resistant to traffic analysis, HTTP/QUIC can rely on QUIC's own PADDING
-frames or employ the reserved frame and stream types discussed in
-{{frame-grease}} and {{stream-grease}}.
+with TLS.  Note that where HTTP/2 employs PADDING frames and Padding fields in
+other frames to make a connection more resistant to traffic analysis, HTTP/QUIC
+can rely on QUIC PADDING frames or employ the reserved frame and stream types
+discussed in {{frame-grease}} and {{stream-grease}}.
 
 When HTTP Alternative Services is used for discovery for HTTP/QUIC endpoints,
 the security considerations of {{!ALTSVC}} also apply.
 
-The modified SETTINGS format contains nested length elements, which could pose
-a security risk to an incautious implementer.  A SETTINGS frame parser MUST
-ensure that the length of the frame exactly matches the length of the settings
-it contains.
+Several protocol elements contain nested length elements, typically in the form
+of frames with an explicit length containing variable-length integers.  This
+could pose a security risk to an incautious implementer.  An implementation MUST
+ensure that the length of a frame exactly matches the length of the fields it
+contains.
 
 
 # IANA Considerations
