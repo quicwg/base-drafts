@@ -92,8 +92,8 @@ HTTP/2.  HTTP/2 introduced a framing and multiplexing layer to improve latency
 without modifying the transport layer.  However, TCP's lack of visibility into
 parallel requests in both mappings limited the possible performance gains.
 
-The QUIC transport protocol has incorporates stream multiplexing and per-stream
-flow control, similar to that provided by the HTTP/2 framing layer. By providing
+The QUIC transport protocol incorporates stream multiplexing and per-stream flow
+control, similar to that provided by the HTTP/2 framing layer. By providing
 reliability at the stream level and congestion control across the entire
 connection, it has the capability to improve the performance of HTTP compared to
 a TCP mapping.  QUIC also incorporates TLS 1.3 at the transport layer, offering
