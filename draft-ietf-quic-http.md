@@ -843,19 +843,14 @@ stream. A server sends an HTTP response on the same stream as the request.
 
 An HTTP message (request or response) consists of:
 
-1. one header block (see {{frame-headers}}) containing the message header (see
-   {{!RFC7230}}, Section 3.2),
+1. the message header (see {{!RFC7230}}, Section 3.2), sent as a single HEADERS
+   frame (see {{frame-headers}}),
 
 2. the payload body (see {{!RFC7230}}, Section 3.3), sent as a series of DATA
    frames (see {{frame-data}}),
 
-3. optionally, one header block containing the trailer-part, if present (see
+3. optionally, one HEADERS frame containing the trailer-part, if present (see
    {{!RFC7230}}, Section 4.1.2).
-
-In addition, prior to sending the message header block indicated above, a
-response contains zero or more header blocks containing the message headers of
-informational (1xx) HTTP responses (see {{!RFC7230}}, Section 3.2 and
-{{!RFC7231}}, Section 6.2).
 
 A server MAY interleave one or more PUSH_PROMISE frames (see
 {{frame-push-promise}}) with the frames of a response message. These
@@ -869,20 +864,25 @@ Trailing header fields are carried in an additional header block following the
 body. Senders MUST send only one header block in the trailers section;
 receivers MUST discard any subsequent header blocks.
 
+A response MAY consist of multiple messages when and only when one or more
+informational responses (1xx, see {{!RFC7231}}, Section 6.2) precede a final
+response to the same request.  Non-final responses do not contain a payload body
+or trailers.
+
 An HTTP request/response exchange fully consumes a bidirectional QUIC stream.
 After sending a request, a client closes the stream for sending; after sending a
-response, the server closes the stream for sending and the QUIC stream is fully
-closed.  Requests and responses are considered complete when the corresponding
-QUIC stream is closed in the appropriate direction.
+final response, the server closes the stream for sending and the QUIC stream is
+fully closed.  Requests and responses are considered complete when the
+corresponding QUIC stream is closed in the appropriate direction.
 
 A server can send a complete response prior to the client sending an entire
 request if the response does not depend on any portion of the request that has
 not been sent and received. When this is true, a server MAY request that the
 client abort transmission of a request without error by triggering a QUIC
-STOP_SENDING with error code HTTP_EARLY_RESPONSE, sending a complete response,
-and cleanly closing its stream. Clients MUST NOT discard complete responses as
-a result of having their request terminated abruptly, though clients can always
-discard responses at their discretion for other reasons.
+STOP_SENDING frame with error code HTTP_EARLY_RESPONSE, sending a complete
+response, and cleanly closing its stream. Clients MUST NOT discard complete
+responses as a result of having their request terminated abruptly, though
+clients can always discard responses at their discretion for other reasons.
 
 Changes to the state of a request stream, including receiving a RST_STREAM with
 any error code, do not affect the state of the server's response. Servers do not
@@ -894,9 +894,10 @@ HTTP_INCOMPLETE_REQUEST.
 
 ### Header Formatting and Compression
 
-HTTP header fields carry information as a series of key-value pairs. For a
-listing of registered HTTP header fields, see the "Message Header Field"
-registry maintained at <https://www.iana.org/assignments/message-headers>.
+HTTP message headers carry information as a series of key-value pairs, called
+header fields. For a listing of registered HTTP header fields, see the "Message
+Header Field" registry maintained at
+<https://www.iana.org/assignments/message-headers>.
 
 Just as in previous versions of HTTP, header field names are strings of ASCII
 characters that are compared in a case-insensitive fashion.  Properties of HTTP
@@ -906,7 +907,7 @@ header field names MUST be converted to lowercase prior to their encoding.  A
 request or response containing uppercase header field names MUST be treated as
 malformed.
 
-As in HTTP/2, HTTP/QUIC uses special pseudo-header fields beginning with ':'
+As in HTTP/2, HTTP/QUIC uses special pseudo-header fields beginning with the ':'
 character (ASCII 0x3a) to convey the target URI, the method of the request, and
 the status code for the response.  These pseudo-header fields are defined in
 Section 8.1.2.3 and 8.1.2.4 of {{!RFC7540}}. Pseudo-header fields are not HTTP
@@ -921,7 +922,7 @@ head-of-line blocking.  See that document for additional details.
 An HTTP/QUIC implementation MAY impose a limit on the maximum size of the header
 it will accept on an individual HTTP message.  This limit is conveyed as a
 number of octets in the `SETTINGS_MAX_HEADER_LIST_SIZE` parameter.  The size of
-an header block is calculated based on the uncompressed size of header fields,
+a header list is calculated based on the uncompressed size of header fields,
 including the length of the name and value in octets plus an overhead of 32
 octets for each header field.  Encountering a message header larger than this
 value SHOULD be treated as a stream error of type `HTTP_EXCESSIVE_LOAD`.
