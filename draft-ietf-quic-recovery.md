@@ -1182,7 +1182,7 @@ sent before the newly acknowledged RTO packet.
      // Declare all packets prior to packet_number lost.
      for (sent_packet: sent_packets):
        if (sent_packet.packet_number < packet_number):
-         bytes_in_flight -= lost_packet.bytes
+         bytes_in_flight -= sent_packet.bytes
          sent_packets.remove(sent_packet.packet_number)
 ~~~
 
