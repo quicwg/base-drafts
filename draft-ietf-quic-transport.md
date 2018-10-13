@@ -2498,6 +2498,320 @@ if it cannot be processed by padding it to at least 38 octets.
 
 
 
+# Packets and Frames {#packets-frames}
+
+Any QUIC packet, with the exception of the Version Negotiation packet, has
+either a long or a short header, as indicated by the Header Form bit. Long
+headers are expected to be used early in the connection before the establishment
+of 1-RTT keys.  Packets that carry the long header are Initial
+{{packet-initial}}, Retry {{packet-retry}}, Handshake {{packet-handshake}}, and
+0-RTT Protected packets {{packet-protected}}. Packets that carry Short headers
+are minimal version-specific headers, which are used after version negotiation
+and 1-RTT keys are established, and are described in {{short-header}}.  Version
+Negotiation packets are described in {{packet-version}}.
+
+
+## Protected Packets {#packet-protected}
+
+All QUIC packets use packet protection.  Packets that are protected with the
+static handshake keys or the 0-RTT keys are sent with long headers; all packets
+protected with 1-RTT keys are sent with short headers.  The different packet
+types explicitly indicate the encryption level and therefore the keys that are
+used to remove packet protection.  0-RTT and 1-RTT protected packets share a
+single packet number space.
+
+Packets protected with handshake keys only use packet protection to ensure that
+the sender of the packet is on the network path.  This packet protection is not
+effective confidentiality protection; any entity that receives the Initial
+packet from a client can recover the keys necessary to remove packet protection
+or to generate packets that will be successfully authenticated.
+
+Packets protected with 0-RTT and 1-RTT keys are expected to have confidentiality
+and data origin authentication; the cryptographic handshake ensures that only
+the communicating endpoints receive the corresponding keys.
+
+Packets protected with 0-RTT keys use a type value of 0x7C.  The connection ID
+fields for a 0-RTT packet MUST match the values used in the Initial packet
+({{packet-initial}}).
+
+The version field for protected packets is the current QUIC version.
+
+The packet number field contains a packet number, which has additional
+confidentiality protection that is applied after packet protection is applied
+(see {{QUIC-TLS}} for details).  The underlying packet number increases with
+each packet sent, see {{packet-numbers}} for details.
+
+The payload is protected using authenticated encryption.  {{QUIC-TLS}} describes
+packet protection in detail.  After decryption, the plaintext consists of a
+sequence of frames, as described in {{frames}}.
+
+
+## Coalescing Packets {#packet-coalesce}
+
+A sender can coalesce multiple QUIC packets (typically a Cryptographic Handshake
+packet and a Protected packet) into one UDP datagram.  This can reduce the
+number of UDP datagrams needed to send application data during the handshake and
+immediately afterwards. It is not necessary for senders to coalesce
+packets, though failing to do so will require sending a significantly
+larger number of datagrams during the handshake. Receivers MUST
+be able to process coalesced packets.
+
+Coalescing packets in order of increasing encryption levels (Initial, 0-RTT,
+Handshake, 1-RTT) makes it more likely the receiver will be able to process all
+the packets in a single pass.  A packet with a short header does not include a
+length, so it will always be the last packet included in a UDP datagram.
+
+Senders MUST NOT coalesce QUIC packets with different Destination Connection
+IDs into a single UDP datagram. Receivers SHOULD ignore any subsequent packets
+with a different Destination Connection ID than the first packet in the
+datagram.
+
+Every QUIC packet that is coalesced into a single UDP datagram is separate and
+complete.  Though the values of some fields in the packet header might be
+redundant, no fields are omitted.  The receiver of coalesced QUIC packets MUST
+individually process each QUIC packet and separately acknowledge them, as if
+they were received as the payload of different UDP datagrams.  If one or more
+packets in a datagram cannot be processed yet (because the keys are not yet
+available) or processing fails (decryption failure, unknown type, etc.), the
+receiver MUST still attempt to process the remaining packets.  The skipped
+packets MAY either be discarded or buffered for later processing, just as if the
+packets were received out-of-order in separate datagrams.
+
+Retry ({{packet-retry}}) and Version Negotiation ({{packet-version}}) packets
+cannot be coalesced.
+
+
+## Connection ID Encoding
+
+A connection ID is used to ensure consistent routing of packets, as described in
+{{connection-id}}.  The long header contains two connection IDs: the Destination
+Connection ID is chosen by the recipient of the packet and is used to provide
+consistent routing; the Source Connection ID is used to set the Destination
+Connection ID used by the peer.
+
+During the handshake, packets with the long header are used to establish the
+connection ID that each endpoint uses.  Each endpoint uses the Source Connection
+ID field to specify the connection ID that is used in the Destination Connection
+ID field of packets being sent to them.  Upon receiving a packet, each endpoint
+sets the Destination Connection ID it sends to match the value of the Source
+Connection ID that they receive.
+
+During the handshake, a client can receive both a Retry and an Initial packet,
+and thus be given two opportunities to update the Destination Connection ID it
+sends.  A client MUST only change the value it sends in the Destination
+Connection ID in response to the first packet of each type it receives from the
+server (Retry or Initial); a server MUST set its value based on the Initial
+packet.  Any additional changes are not permitted; if subsequent packets of
+those types include a different Source Connection ID, they MUST be discarded.
+This avoids problems that might arise from stateless processing of multiple
+Initial packets producing different connection IDs.
+
+Short headers only include the Destination Connection ID and omit the explicit
+length.  The length of the Destination Connection ID field is expected to be
+known to endpoints.
+
+Endpoints using a connection-ID based load balancer could agree with the load
+balancer on a fixed or minimum length and on an encoding for connection IDs.
+This fixed portion could encode an explicit length, which allows the entire
+connection ID to vary in length and still be used by the load balancer.
+
+The very first packet sent by a client includes a random value for Destination
+Connection ID.  The same value MUST be used for all 0-RTT packets sent on that
+connection ({{packet-protected}}).  This randomized value is used to determine
+the packet protection keys for Initial packets (see Section 5.2 of
+{{QUIC-TLS}}).
+
+A Version Negotiation ({{packet-version}}) packet MUST use both connection IDs
+selected by the client, swapped to ensure correct routing toward the client.
+
+The connection ID can change over the lifetime of a connection, especially in
+response to connection migration ({{migration}}). NEW_CONNECTION_ID frames
+({{frame-new-connection-id}}) are used to provide new connection ID values.
+
+
+## Packet Numbers {#packet-numbers}
+
+The packet number is an integer in the range 0 to 2^62-1, present in all long
+and short header packets. This number is used in determining the cryptographic
+nonce for packet protection.  Each endpoint maintains a separate packet number
+for sending and receiving.
+
+A Version Negotiation packet ({{packet-version}}) does not include a packet
+number.  The Retry packet ({{packet-retry}}) has special rules for populating
+the packet number field.
+
+Packet numbers are divided into 3 spaces in QUIC:
+
+- Initial space: All Initial packets {{packet-initial}} are in this space.
+- Handshake space: All Handshake packets {{packet-handshake}} are in this space.
+- Application data space: All 0-RTT and 1-RTT encrypted packets
+  {{packet-protected}} are in this space.
+
+As described in {{QUIC-TLS}}, each packet type uses different protection keys.
+
+Conceptually, a packet number space is the context in which a packet can be
+processed and acknowledged.  Initial packets can only be sent with Initial
+packet protection keys and acknowledged in packets which are also Initial
+packets.  Similarly, Handshake packets are sent at the Handshake encryption
+level and can only be acknowledged in Handshake packets.
+
+This enforces cryptographic separation between the data sent in the different
+packet sequence number spaces.  Each packet number space starts at packet number
+0.  Subsequent packets sent in the same packet number space MUST increase the
+packet number by at least one.
+
+0-RTT and 1-RTT data exist in the same packet number space to make loss recovery
+algorithms easier to implement between the two packet types.
+
+A QUIC endpoint MUST NOT reuse a packet number within the same packet number
+space in one connection (that is, under the same cryptographic keys).  If the
+packet number for sending reaches 2^62 - 1, the sender MUST close the connection
+without sending a CONNECTION_CLOSE frame or any further packets; an endpoint MAY
+send a Stateless Reset ({{stateless-reset}}) in response to further packets that
+it receives.
+
+In the QUIC long and short packet headers, the number of bits required to
+represent the packet number is reduced by including only a variable number of
+the least significant bits of the packet number.  One or two of the most
+significant bits of the first octet determine how many bits of the packet
+number are provided, as shown in {{pn-encodings}}.
+
+| First octet pattern | Encoded Length | Bits Present |
+|:--------------------|:---------------|:-------------|
+| 0b0xxxxxxx          | 1 octet        | 7            |
+| 0b10xxxxxx          | 2              | 14           |
+| 0b11xxxxxx          | 4              | 30           |
+{: #pn-encodings title="Packet Number Encodings for Packet Headers"}
+
+Note that these encodings are similar to those in {{integer-encoding}}, but
+use different values.
+
+The encoded packet number is protected as described in Section 5.3
+{{QUIC-TLS}}. Protection of the packet number is removed prior to recovering the
+full packet number. The full packet number is reconstructed at the receiver
+based on the number of significant bits present, the value of those bits, and
+the largest packet number received on a successfully authenticated
+packet. Recovering the full packet number is necessary to successfully remove
+packet protection.
+
+Once packet number protection is removed, the packet number is decoded by
+finding the packet number value that is closest to the next expected packet.
+The next expected packet is the highest received packet number plus one.  For
+example, if the highest successfully authenticated packet had a packet number of
+0xaa82f30e, then a packet containing a 14-bit value of 0x9b3 will be decoded as
+0xaa8309b3.
+Example pseudo-code for packet number decoding can be found in
+{{sample-packet-number-decoding}}.
+
+The sender MUST use a packet number size able to represent more than twice as
+large a range than the difference between the largest acknowledged packet and
+packet number being sent.  A peer receiving the packet will then correctly
+decode the packet number, unless the packet is delayed in transit such that it
+arrives after many higher-numbered packets have been received.  An endpoint
+SHOULD use a large enough packet number encoding to allow the packet number to
+be recovered even if the packet arrives after packets that are sent afterwards.
+
+As a result, the size of the packet number encoding is at least one more than
+the base 2 logarithm of the number of contiguous unacknowledged packet numbers,
+including the new packet.
+
+For example, if an endpoint has received an acknowledgment for packet 0x6afa2f,
+sending a packet with a number of 0x6b2d79 requires a packet number encoding
+with 14 bits or more; whereas the 30-bit packet number encoding is needed to
+send a packet with a number of 0x6bc107.
+
+A receiver MUST discard a newly unprotected packet unless it is certain that it
+has not processed another packet with the same packet number from the same
+packet number space. Duplicate suppression MUST happen after removing packet
+protection for the reasons described in Section 9.3 of {{QUIC-TLS}}. An
+efficient algorithm for duplicate suppression can be found in Section 3.4.3 of
+{{?RFC2406}}.
+
+
+## Frames and Frame Types {#frames}
+
+The payload of all packets, after removing packet protection, consists of a
+sequence of frames, as shown in {{packet-frames}}.  Version Negotiation and
+Stateless Reset do not contain frames.
+
+~~~
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                          Frame 1 (*)                        ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                          Frame 2 (*)                        ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+                               ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                          Frame N (*)                        ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~
+{: #packet-frames title="QUIC Payload"}
+
+QUIC payloads MUST contain at least one frame, and MAY contain multiple
+frames and multiple frame types.
+
+Frames MUST fit within a single QUIC packet and MUST NOT span a QUIC packet
+boundary. Each frame begins with a Frame Type, indicating its type, followed by
+additional type-dependent fields:
+
+~~~
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                       Frame Type (i)                        ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                   Type-Dependent Fields (*)                 ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~
+{: #frame-layout title="Generic Frame Layout"}
+
+The frame types defined in this specification are listed in {{frame-types}}.
+The Frame Type in STREAM frames is used to carry other frame-specific flags.
+For all other frames, the Frame Type field simply identifies the frame.  These
+frames are explained in more detail in {{frame-formats}}.
+
+| Type Value  | Frame Type Name      | Definition                     |
+|:------------|:---------------------|:-------------------------------|
+| 0x00        | PADDING              | {{frame-padding}}              |
+| 0x01        | RST_STREAM           | {{frame-rst-stream}}           |
+| 0x02        | CONNECTION_CLOSE     | {{frame-connection-close}}     |
+| 0x03        | APPLICATION_CLOSE    | {{frame-application-close}}    |
+| 0x04        | MAX_DATA             | {{frame-max-data}}             |
+| 0x05        | MAX_STREAM_DATA      | {{frame-max-stream-data}}      |
+| 0x06        | MAX_STREAM_ID        | {{frame-max-stream-id}}        |
+| 0x07        | PING                 | {{frame-ping}}                 |
+| 0x08        | BLOCKED              | {{frame-blocked}}              |
+| 0x09        | STREAM_BLOCKED       | {{frame-stream-blocked}}       |
+| 0x0a        | STREAM_ID_BLOCKED    | {{frame-stream-id-blocked}}    |
+| 0x0b        | NEW_CONNECTION_ID    | {{frame-new-connection-id}}    |
+| 0x0c        | STOP_SENDING         | {{frame-stop-sending}}         |
+| 0x0d        | RETIRE_CONNECTION_ID | {{frame-retire-connection-id}} |
+| 0x0e        | PATH_CHALLENGE       | {{frame-path-challenge}}       |
+| 0x0f        | PATH_RESPONSE        | {{frame-path-response}}        |
+| 0x10 - 0x17 | STREAM               | {{frame-stream}}               |
+| 0x18        | CRYPTO               | {{frame-crypto}}               |
+| 0x19        | NEW_TOKEN            | {{frame-new-token}}            |
+| 0x1a - 0x1b | ACK                  | {{frame-ack}}                  |
+{: #frame-types title="Frame Types"}
+
+All QUIC frames are idempotent.  That is, a valid frame does not cause
+undesirable side effects or errors when received more than once.
+
+The Frame Type field uses a variable length integer encoding (see
+{{integer-encoding}}) with one exception.  To ensure simple and efficient
+implementations of frame parsing, a frame type MUST use the shortest possible
+encoding.  Though a two-, four- or eight-octet encoding of the frame types
+defined in this document is possible, the Frame Type field for these frames is
+encoded on a single octet.  For instance, though 0x4007 is a legitimate
+two-octet encoding for a variable-length integer with a value of 7, PING frames
+are always encoded as a single octet with the value 0x07.  An endpoint MUST
+treat the receipt of a frame type that uses a longer encoding than necessary as
+a connection error of type PROTOCOL_VIOLATION.
+
+
+
 # Packetization and Reliability {#packetization}
 
 A sender bundles one or more frames in a QUIC packet (see {{frames}}).
@@ -2777,21 +3091,12 @@ using for private experimentation on the GitHub wiki at
 
 
 
-# Packet Types and Formats
-
-We first describe QUIC's packet types and their formats, since some are
-referenced in subsequent mechanisms.
+# Packet Types and Formats {#packet-format}
 
 All numeric values are encoded in network byte order (that is, big-endian) and
 all field sizes are in bits.  When discussing individual bits of fields, the
 least significant bit is referred to as bit 0.  Hexadecimal notation is used for
 describing the value of fields.
-
-Any QUIC packet has either a long or a short header, as indicated by the Header
-Form bit. Long headers are expected to be used early in the connection before
-version negotiation and establishment of 1-RTT keys.  Short headers are minimal
-version-specific headers, which are used after version negotiation and 1-RTT
-keys are established.
 
 ## Long Header {#long-header}
 
@@ -2913,7 +3218,7 @@ Senders can sometimes coalesce multiple packets into one UDP datagram.  See
 {{packet-coalesce}} for more details.
 
 
-## Short Header
+## Short Header {#short-header}
 
 ~~~~~
  0                   1                   2                   3
@@ -3428,308 +3733,8 @@ frames.  Endpoints MUST treat receipt of Handshake packets with other frames as
 a connection error.
 
 
-## Protected Packets {#packet-protected}
 
-All QUIC packets use packet protection.  Packets that are protected with the
-static handshake keys or the 0-RTT keys are sent with long headers; all packets
-protected with 1-RTT keys are sent with short headers.  The different packet
-types explicitly indicate the encryption level and therefore the keys that are
-used to remove packet protection.  0-RTT and 1-RTT protected packets share a
-single packet number space.
-
-Packets protected with handshake keys only use packet protection to ensure that
-the sender of the packet is on the network path.  This packet protection is not
-effective confidentiality protection; any entity that receives the Initial
-packet from a client can recover the keys necessary to remove packet protection
-or to generate packets that will be successfully authenticated.
-
-Packets protected with 0-RTT and 1-RTT keys are expected to have confidentiality
-and data origin authentication; the cryptographic handshake ensures that only
-the communicating endpoints receive the corresponding keys.
-
-Packets protected with 0-RTT keys use a type value of 0x7C.  The connection ID
-fields for a 0-RTT packet MUST match the values used in the Initial packet
-({{packet-initial}}).
-
-The version field for protected packets is the current QUIC version.
-
-The packet number field contains a packet number, which has additional
-confidentiality protection that is applied after packet protection is applied
-(see {{QUIC-TLS}} for details).  The underlying packet number increases with
-each packet sent, see {{packet-numbers}} for details.
-
-The payload is protected using authenticated encryption.  {{QUIC-TLS}} describes
-packet protection in detail.  After decryption, the plaintext consists of a
-sequence of frames, as described in {{frames}}.
-
-
-## Coalescing Packets {#packet-coalesce}
-
-A sender can coalesce multiple QUIC packets (typically a Cryptographic Handshake
-packet and a Protected packet) into one UDP datagram.  This can reduce the
-number of UDP datagrams needed to send application data during the handshake and
-immediately afterwards. It is not necessary for senders to coalesce
-packets, though failing to do so will require sending a significantly
-larger number of datagrams during the handshake. Receivers MUST
-be able to process coalesced packets.
-
-Coalescing packets in order of increasing encryption levels (Initial, 0-RTT,
-Handshake, 1-RTT) makes it more likely the receiver will be able to process all
-the packets in a single pass.  A packet with a short header does not include a
-length, so it will always be the last packet included in a UDP datagram.
-
-Senders MUST NOT coalesce QUIC packets with different Destination Connection
-IDs into a single UDP datagram. Receivers SHOULD ignore any subsequent packets
-with a different Destination Connection ID than the first packet in the
-datagram.
-
-Every QUIC packet that is coalesced into a single UDP datagram is separate and
-complete.  Though the values of some fields in the packet header might be
-redundant, no fields are omitted.  The receiver of coalesced QUIC packets MUST
-individually process each QUIC packet and separately acknowledge them, as if
-they were received as the payload of different UDP datagrams.  If one or more
-packets in a datagram cannot be processed yet (because the keys are not yet
-available) or processing fails (decryption failure, unknown type, etc.), the
-receiver MUST still attempt to process the remaining packets.  The skipped
-packets MAY either be discarded or buffered for later processing, just as if the
-packets were received out-of-order in separate datagrams.
-
-Retry ({{packet-retry}}) and Version Negotiation ({{packet-version}}) packets
-cannot be coalesced.
-
-
-## Connection ID Encoding
-
-A connection ID is used to ensure consistent routing of packets, as described in
-{{connection-id}}.  The long header contains two connection IDs: the Destination
-Connection ID is chosen by the recipient of the packet and is used to provide
-consistent routing; the Source Connection ID is used to set the Destination
-Connection ID used by the peer.
-
-During the handshake, packets with the long header are used to establish the
-connection ID that each endpoint uses.  Each endpoint uses the Source Connection
-ID field to specify the connection ID that is used in the Destination Connection
-ID field of packets being sent to them.  Upon receiving a packet, each endpoint
-sets the Destination Connection ID it sends to match the value of the Source
-Connection ID that they receive.
-
-During the handshake, a client can receive both a Retry and an Initial packet,
-and thus be given two opportunities to update the Destination Connection ID it
-sends.  A client MUST only change the value it sends in the Destination
-Connection ID in response to the first packet of each type it receives from the
-server (Retry or Initial); a server MUST set its value based on the Initial
-packet.  Any additional changes are not permitted; if subsequent packets of
-those types include a different Source Connection ID, they MUST be discarded.
-This avoids problems that might arise from stateless processing of multiple
-Initial packets producing different connection IDs.
-
-Short headers only include the Destination Connection ID and omit the explicit
-length.  The length of the Destination Connection ID field is expected to be
-known to endpoints.
-
-Endpoints using a connection-ID based load balancer could agree with the load
-balancer on a fixed or minimum length and on an encoding for connection IDs.
-This fixed portion could encode an explicit length, which allows the entire
-connection ID to vary in length and still be used by the load balancer.
-
-The very first packet sent by a client includes a random value for Destination
-Connection ID.  The same value MUST be used for all 0-RTT packets sent on that
-connection ({{packet-protected}}).  This randomized value is used to determine
-the packet protection keys for Initial packets (see Section 5.2 of
-{{QUIC-TLS}}).
-
-A Version Negotiation ({{packet-version}}) packet MUST use both connection IDs
-selected by the client, swapped to ensure correct routing toward the client.
-
-The connection ID can change over the lifetime of a connection, especially in
-response to connection migration ({{migration}}). NEW_CONNECTION_ID frames
-({{frame-new-connection-id}}) are used to provide new connection ID values.
-
-
-## Packet Numbers {#packet-numbers}
-
-The packet number is an integer in the range 0 to 2^62-1. The value is used in
-determining the cryptographic nonce for packet protection.  Each endpoint
-maintains a separate packet number for sending and receiving.
-
-Packet numbers are divided into 3 spaces in QUIC:
-
-- Initial space: All Initial packets {{packet-initial}} are in this space.
-- Handshake space: All Handshake packets {{packet-handshake}} are in this space.
-- Application data space: All 0-RTT and 1-RTT encrypted packets
-  {{packet-protected}} are in this space.
-
-As described in {{QUIC-TLS}}, each packet type uses different protection keys.
-
-Conceptually, a packet number space is the context in which a packet can be
-processed and acknowledged.  Initial packets can only be sent with Initial
-packet protection keys and acknowledged in packets which are also Initial
-packets.  Similarly, Handshake packets are sent at the Handshake encryption
-level and can only be acknowledged in Handshake packets.
-
-This enforces cryptographic separation between the data sent in the different
-packet sequence number spaces.  Each packet number space starts at packet number
-0.  Subsequent packets sent in the same packet number space MUST increase the
-packet number by at least one.
-
-0-RTT and 1-RTT data exist in the same packet number space to make loss recovery
-algorithms easier to implement between the two packet types.
-
-A QUIC endpoint MUST NOT reuse a packet number within the same packet number
-space in one connection (that is, under the same cryptographic keys).  If the
-packet number for sending reaches 2^62 - 1, the sender MUST close the connection
-without sending a CONNECTION_CLOSE frame or any further packets; an endpoint MAY
-send a Stateless Reset ({{stateless-reset}}) in response to further packets that
-it receives.
-
-In the QUIC long and short packet headers, the number of bits required to
-represent the packet number is reduced by including only a variable number of
-the least significant bits of the packet number.  One or two of the most
-significant bits of the first octet determine how many bits of the packet
-number are provided, as shown in {{pn-encodings}}.
-
-| First octet pattern | Encoded Length | Bits Present |
-|:--------------------|:---------------|:-------------|
-| 0b0xxxxxxx          | 1 octet        | 7            |
-| 0b10xxxxxx          | 2              | 14           |
-| 0b11xxxxxx          | 4              | 30           |
-{: #pn-encodings title="Packet Number Encodings for Packet Headers"}
-
-Note that these encodings are similar to those in {{integer-encoding}}, but
-use different values.
-
-The encoded packet number is protected as described in Section 5.3
-{{QUIC-TLS}}. Protection of the packet number is removed prior to recovering the
-full packet number. The full packet number is reconstructed at the receiver
-based on the number of significant bits present, the value of those bits, and
-the largest packet number received on a successfully authenticated
-packet. Recovering the full packet number is necessary to successfully remove
-packet protection.
-
-Once packet number protection is removed, the packet number is decoded by
-finding the packet number value that is closest to the next expected packet.
-The next expected packet is the highest received packet number plus one.  For
-example, if the highest successfully authenticated packet had a packet number of
-0xaa82f30e, then a packet containing a 14-bit value of 0x9b3 will be decoded as
-0xaa8309b3.
-Example pseudo-code for packet number decoding can be found in
-{{sample-packet-number-decoding}}.
-
-The sender MUST use a packet number size able to represent more than twice as
-large a range than the difference between the largest acknowledged packet and
-packet number being sent.  A peer receiving the packet will then correctly
-decode the packet number, unless the packet is delayed in transit such that it
-arrives after many higher-numbered packets have been received.  An endpoint
-SHOULD use a large enough packet number encoding to allow the packet number to
-be recovered even if the packet arrives after packets that are sent afterwards.
-
-As a result, the size of the packet number encoding is at least one more than
-the base 2 logarithm of the number of contiguous unacknowledged packet numbers,
-including the new packet.
-
-For example, if an endpoint has received an acknowledgment for packet 0x6afa2f,
-sending a packet with a number of 0x6b2d79 requires a packet number encoding
-with 14 bits or more; whereas the 30-bit packet number encoding is needed to
-send a packet with a number of 0x6bc107.
-
-A receiver MUST discard a newly unprotected packet unless it is certain that it
-has not processed another packet with the same packet number from the same
-packet number space. Duplicate suppression MUST happen after removing packet
-protection for the reasons described in Section 9.3 of {{QUIC-TLS}}. An
-efficient algorithm for duplicate suppression can be found in Section 3.4.3 of
-{{?RFC2406}}.
-
-A Version Negotiation packet ({{packet-version}}) does not include a packet
-number.  The Retry packet ({{packet-retry}}) has special rules for populating
-the packet number field.
-
-
-# Frames and Frame Types {#frames}
-
-The payload of all packets, after removing packet protection, consists of a
-sequence of frames, as shown in {{packet-frames}}.  Version Negotiation and
-Stateless Reset do not contain frames.
-
-~~~
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                          Frame 1 (*)                        ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                          Frame 2 (*)                        ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-                               ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                          Frame N (*)                        ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-~~~
-{: #packet-frames title="QUIC Payload"}
-
-QUIC payloads MUST contain at least one frame, and MAY contain multiple
-frames and multiple frame types.
-
-Frames MUST fit within a single QUIC packet and MUST NOT span a QUIC packet
-boundary. Each frame begins with a Frame Type, indicating its type, followed by
-additional type-dependent fields:
-
-~~~
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                       Frame Type (i)                        ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                   Type-Dependent Fields (*)                 ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-~~~
-{: #frame-layout title="Generic Frame Layout"}
-
-The frame types defined in this specification are listed in {{frame-types}}.
-The Frame Type in STREAM frames is used to carry other frame-specific flags.
-For all other frames, the Frame Type field simply identifies the frame.  These
-frames are explained in more detail as they are referenced later in the
-document.
-
-| Type Value  | Frame Type Name      | Definition                     |
-|:------------|:---------------------|:-------------------------------|
-| 0x00        | PADDING              | {{frame-padding}}              |
-| 0x01        | RST_STREAM           | {{frame-rst-stream}}           |
-| 0x02        | CONNECTION_CLOSE     | {{frame-connection-close}}     |
-| 0x03        | APPLICATION_CLOSE    | {{frame-application-close}}    |
-| 0x04        | MAX_DATA             | {{frame-max-data}}             |
-| 0x05        | MAX_STREAM_DATA      | {{frame-max-stream-data}}      |
-| 0x06        | MAX_STREAM_ID        | {{frame-max-stream-id}}        |
-| 0x07        | PING                 | {{frame-ping}}                 |
-| 0x08        | BLOCKED              | {{frame-blocked}}              |
-| 0x09        | STREAM_BLOCKED       | {{frame-stream-blocked}}       |
-| 0x0a        | STREAM_ID_BLOCKED    | {{frame-stream-id-blocked}}    |
-| 0x0b        | NEW_CONNECTION_ID    | {{frame-new-connection-id}}    |
-| 0x0c        | STOP_SENDING         | {{frame-stop-sending}}         |
-| 0x0d        | RETIRE_CONNECTION_ID | {{frame-retire-connection-id}} |
-| 0x0e        | PATH_CHALLENGE       | {{frame-path-challenge}}       |
-| 0x0f        | PATH_RESPONSE        | {{frame-path-response}}        |
-| 0x10 - 0x17 | STREAM               | {{frame-stream}}               |
-| 0x18        | CRYPTO               | {{frame-crypto}}               |
-| 0x19        | NEW_TOKEN            | {{frame-new-token}}            |
-| 0x1a - 0x1b | ACK                  | {{frame-ack}}                  |
-{: #frame-types title="Frame Types"}
-
-All QUIC frames are idempotent.  That is, a valid frame does not cause
-undesirable side effects or errors when received more than once.
-
-The Frame Type field uses a variable length integer encoding (see
-{{integer-encoding}}) with one exception.  To ensure simple and efficient
-implementations of frame parsing, a frame type MUST use the shortest possible
-encoding.  Though a two-, four- or eight-octet encoding of the frame types
-defined in this document is possible, the Frame Type field for these frames is
-encoded on a single octet.  For instance, though 0x4007 is a legitimate
-two-octet encoding for a variable-length integer with a value of 7, PING frames
-are always encoded as a single octet with the value 0x07.  An endpoint MUST
-treat the receipt of a frame type that uses a longer encoding than necessary as
-a connection error of type PROTOCOL_VIOLATION.
-
-
-
-# Frame Types and Formats
+# Frame Types and Formats {#frame-formats}
 
 As described in {{frames}}, packets contain one or more frames. This section
 describes the format and semantics of the core QUIC frame types.
