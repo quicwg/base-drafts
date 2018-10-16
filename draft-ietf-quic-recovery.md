@@ -300,7 +300,7 @@ timer for TCP as well, and this document incorporates this advancement.
 
 Timer-based loss detection recovers from losses that cannot be handled by
 ack-based loss detection.  It uses a single timer which switches between
-a handshake retransmission timer, a Tail Loss Probe timer and
+a crypto handshake retransmission timer, a Tail Loss Probe timer and
 Retransmission Timeout mechanisms.
 
 ### Crypto Handshake Timeout
@@ -460,7 +460,7 @@ delayed acknowledgement should be generated after processing incoming packets.
 ### Crypto Handshake Data
 
 In order to quickly complete the handshake and avoid spurious retransmissions
-due to handshake timeouts, handshake packets SHOULD use a very short ack
+due to crypto handshake timeouts, crypto packets SHOULD use a very short ack
 delay, such as 1ms.  ACK frames MAY be sent immediately when the crypto stack
 indicates all data for that encryption level has been received.
 
@@ -765,8 +765,8 @@ below shows how the single timer is set.
 
 #### Crypto Handshake Timer
 
-When a connection has unacknowledged handshake data, the handshake timer is
-set and when it expires, all unacknowledged CRYPTO data is retransmitted.
+When a connection has unacknowledged handshake data, the crypto handshake timer
+is set and when it expires, all unacknowledged CRYPTO data is retransmitted.
 
 When stateless rejects are in use, the connection is considered immediately
 closed once a reject is sent, so no timer is set to retransmit the reject.
@@ -782,8 +782,8 @@ are timer based mechanisms to recover from cases when there are
 outstanding retransmittable packets, but an acknowledgement has
 not been received in a timely manner.
 
-The TLP and RTO timers are armed when there is no unacknowledged handshake
-data.  The TLP timer is set until the max number of TLP packets have been
+The TLP and RTO timers are armed when there are no unacknowledged crypto
+packets.  The TLP timer is set until the max number of TLP packets have been
 sent, and then the RTO timer is set.
 
 #### Early Retransmit Timer
