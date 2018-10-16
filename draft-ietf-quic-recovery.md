@@ -1,6 +1,6 @@
 ---
 title: QUIC Loss Detection and Congestion Control
-abbrev: QUIC Loss Detection
+abbrev: QUIC Loss Dfetection
 docname: draft-ietf-quic-recovery-latest
 date: {DATE}
 category: std
@@ -303,10 +303,11 @@ Retransmission Timeout mechanisms.
 
 Data in CRYPTO frames is critical to QUIC transport and crypto negotiation, so a
 more aggressive timeout is used to retransmit it.  Below, the term "crypto
-packet" is used to refer to packets containing CRYPTO frames that are part of
-the handshake.
+packet" is used to refer to packets containing CRYPTO data sent in Initial or
+Handshake packets.
 
-The initial crypto handshake timeout SHOULD be set to twice the initial RTT.
+The initial crypto retransmission timeout SHOULD be set to twice the initial
+RTT.
 
 At the beginning, there are no prior RTT samples within a connection.  Resumed
 connections over the same network SHOULD use the previous connection's final
