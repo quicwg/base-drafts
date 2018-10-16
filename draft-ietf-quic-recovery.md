@@ -1,6 +1,6 @@
 ---
 title: QUIC Loss Detection and Congestion Control
-abbrev: QUIC Loss Dfetection
+abbrev: QUIC Loss Detection
 docname: draft-ietf-quic-recovery-latest
 date: {DATE}
 category: std
