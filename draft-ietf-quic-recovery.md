@@ -311,12 +311,10 @@ RTT.
 
 At the beginning, there are no prior RTT samples within a connection.  Resumed
 connections over the same network SHOULD use the previous connection's final
-smoothed RTT value as the resumed connection's initial RTT.  When an
-acknowledgement is received, a new RTT is computed and the timer
+smoothed RTT value as the resumed connection's initial RTT.  If no previous RTT
+is available, or if the network changes, the initial RTT SHOULD be set to 100ms.
+When an acknowledgement is received, a new RTT is computed and the timer
 SHOULD be set for twice the newly computed smoothed RTT.
-
-If no previous RTT is available, or if the network changes, the initial RTT
-SHOULD be set to 100ms.
 
 When CRYPTO frames are sent in Initial or Handshake packets, the sender SHOULD
 set a timer for the crypto timeout period.  Upon timeout, the sender MUST
