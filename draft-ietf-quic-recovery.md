@@ -108,6 +108,10 @@ Retransmittable Packets:
 : Packets that contain retransmittable frames elicit an ACK from
   the receiver and are called retransmittable packets.
 
+Crypto Packets:
+
+: Packets containing CRYPTO data sent in Initial or Handshake
+  packets.
 
 # Design of the QUIC Transmission Machinery
 
@@ -302,9 +306,7 @@ Retransmission Timeout mechanisms.
 ### Crypto Handshake Timeout
 
 Data in CRYPTO frames is critical to QUIC transport and crypto negotiation, so a
-more aggressive timeout is used to retransmit it.  Below, the term "crypto
-packet" is used to refer to packets containing CRYPTO data sent in Initial or
-Handshake packets.
+more aggressive timeout is used to retransmit it.
 
 The initial crypto retransmission timeout SHOULD be set to twice the initial
 RTT.
@@ -316,16 +318,14 @@ is available, or if the network changes, the initial RTT SHOULD be set to 100ms.
 When an acknowledgement is received, a new RTT is computed and the timer
 SHOULD be set for twice the newly computed smoothed RTT.
 
-When CRYPTO frames are sent in Initial or Handshake packets, the sender SHOULD
-set a timer for the crypto timeout period.  Upon timeout, the sender MUST
-retransmit all unacknowledged CRYPTO data by calling
-RetransmitAllUnackedCryptoData(). On each consecutive expiration of the
-crypto timer without receiving an acknowledgement for a new packet, the
-sender SHOULD double the crypto handshake timeout and set a timer for this
-period.
+When crypto packets are sent, the sender SHOULD set a timer for the crypto
+timeout period.  Upon timeout, the sender MUST retransmit all unacknowledged
+CRYPTO data by calling RetransmitAllUnackedCryptoData(). On each consecutive
+expiration of the crypto timer without receiving an acknowledgement for a new
+packet, the sender SHOULD double the crypto handshake timeout and set a timer
+for this period.
 
-When CRYPTO frames are outstanding, the TLP and RTO timers are not active unless
-the CRYPTO frames were sent at 1-RTT encryption.
+When crypto packets are outstanding, the TLP and RTO timers are not active.
 
 #### Retry and Version Negotiation
 
@@ -558,7 +558,7 @@ time_of_last_sent_retransmittable_packet:
 : The time the most recent retransmittable packet was sent.
 
 time_of_last_sent_crypto_packet:
-: The time the most recent packet containing a CRYPTO frame was sent.
+: The time the most recent crypto packet was sent.
 
 largest_sent_packet:
 : The packet number of the most recently sent packet.
