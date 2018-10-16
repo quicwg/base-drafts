@@ -311,23 +311,23 @@ RTT.
 
 At the beginning, there are no prior RTT samples within a connection.  Resumed
 connections over the same network SHOULD use the previous connection's final
-smoothed RTT value as the resumed connection's initial RTT.
+smoothed RTT value as the resumed connection's initial RTT.  When an
+acknowledgement is received, a new RTT is computed and the timer
+SHOULD be set for twice the newly computed smoothed RTT.
 
 If no previous RTT is available, or if the network changes, the initial RTT
 SHOULD be set to 100ms.
 
-When CRYPTO frames are sent, the sender SHOULD set a timer for the crypto
-timeout period.  Upon timeout, the sender MUST retransmit all unacknowledged
-CRYPTO data by calling RetransmitAllUnackedCryptoData(). On each consecutive
-expiration of the crypto timer without receiving an acknowledgement for a new
-packet, the sender SHOULD double the crypto handshake timeout and set a timer
-for this period.
+When CRYPTO frames are sent in Initial or Handshake packets, the sender SHOULD
+set a timer for the crypto timeout period.  Upon timeout, the sender MUST
+retransmit all unacknowledged CRYPTO data by calling
+RetransmitAllUnackedCryptoData(). On each consecutive expiration of the
+crypto timer without receiving an acknowledgement for a new packet, the
+sender SHOULD double the crypto handshake timeout and set a timer for this
+period.
 
 When CRYPTO frames are outstanding, the TLP and RTO timers are not active unless
 the CRYPTO frames were sent at 1-RTT encryption.
-
-When an acknowledgement is received for a crypto packet, the new RTT is
-computed and the timer SHOULD be set for twice the newly computed smoothed RTT.
 
 #### Retry and Version Negotiation
 
