@@ -766,7 +766,7 @@ below shows how the single timer is set.
 
 #### Handshake Timer
 
-When a connection has unacknowledged handshake data, the handshake timer is
+When a connection has unacknowledged crypto packets, the handshake timer is
 set and when it expires, all unacknowledgedd handshake data is retransmitted.
 
 When stateless rejects are in use, the connection is considered immediately
