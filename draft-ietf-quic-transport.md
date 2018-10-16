@@ -134,19 +134,25 @@ encrypts most of the data it exchanges, including its signaling.  This allows
 the protocol to evolve without incurring a dependency on upgrades to
 middleboxes.
 
+## Document Structure
+
 This document describes the core QUIC protocol, and is structured as follows:
 
-* Streams, QUIC's service abstraction to applications, including stream
-  multiplexing, and stream and connection-level flow control ({{streams}},
-  {{stream-states}}, and {{flow-control}});
+* streams, QUIC's service abstraction to applications, including stream
+  multiplexing, and stream and connection-level flow control ({{streams}} -
+  {{flow-control}});
 
-* Connections, including connection establishment, migration, and shutdown;
+* connections, including version negotiation and establishment, usage,
+  migration, and shutdown ({{connections}} - {{termination}});
 
-* Packets and Frames, including QUIC's model and mechanics of reliability
-  (acknowledgements and retransmission) and packet sizing;
+* error handling ({{error-handling}});
 
-* Wire format, including versioning, packet formats, frame formats, and error
-  codes.
+* packets and frames, including QUIC's model and mechanics of reliability
+  (acknowledgements and retransmission) and packet sizing ({{packets-frames}} -
+  {{packet-size}});
+
+* wire format, including QUIC's version format, packet formats, frame formats,
+  and error codes ({{versions}} - {{error-codes}}).
 
 Accompanying documents describe QUIC's loss detection and congestion control
 {{QUIC-RECOVERY}}, and the use of TLS 1.3 for key negotiation {{QUIC-TLS}}.
@@ -871,7 +877,7 @@ provide an interface to QUIC to tell it about its buffering limits so that there
 is not excessive buffering at multiple layers.
 
 
-# Connections {#connection}
+# Connections {#connections}
 
 A QUIC connection is a single conversation between two QUIC endpoints.  QUIC's
 connection establishment intertwines version negotiation with the cryptographic
@@ -2498,6 +2504,69 @@ if it cannot be processed by padding it to at least 38 octets.
 
 
 
+# Error Handling {#error-handling}
+
+An endpoint that detects an error SHOULD signal the existence of that error to
+its peer.  Both transport-level and application-level errors can affect an
+entire connection (see {{connection-errors}}), while only application-level
+errors can be isolated to a single stream (see {{stream-errors}}).
+
+The most appropriate error code ({{error-codes}}) SHOULD be included in the
+frame that signals the error.  Where this specification identifies error
+conditions, it also identifies the error code that is used.
+
+A stateless reset ({{stateless-reset}}) is not suitable for any error that can
+be signaled with a CONNECTION_CLOSE, APPLICATION_CLOSE, or RST_STREAM frame.  A
+stateless reset MUST NOT be used by an endpoint that has the state necessary to
+send a frame on the connection.
+
+
+## Connection Errors
+
+Errors that result in the connection being unusable, such as an obvious
+violation of protocol semantics or corruption of state that affects an entire
+connection, MUST be signaled using a CONNECTION_CLOSE or APPLICATION_CLOSE frame
+({{frame-connection-close}}, {{frame-application-close}}). An endpoint MAY close
+the connection in this manner even if the error only affects a single stream.
+
+Application protocols can signal application-specific protocol errors using the
+APPLICATION_CLOSE frame.  Errors that are specific to the transport, including
+all those described in this document, are carried in a CONNECTION_CLOSE frame.
+Other than the type of error code they carry, these frames are identical in
+format and semantics.
+
+A CONNECTION_CLOSE or APPLICATION_CLOSE frame could be sent in a packet that is
+lost.  An endpoint SHOULD be prepared to retransmit a packet containing either
+frame type if it receives more packets on a terminated connection.  Limiting the
+number of retransmissions and the time over which this final packet is sent
+limits the effort expended on terminated connections.
+
+An endpoint that chooses not to retransmit packets containing CONNECTION_CLOSE
+or APPLICATION_CLOSE risks a peer missing the first such packet.  The only
+mechanism available to an endpoint that continues to receive data for a
+terminated connection is to use the stateless reset process
+({{stateless-reset}}).
+
+An endpoint that receives an invalid CONNECTION_CLOSE or APPLICATION_CLOSE frame
+MUST NOT signal the existence of the error to its peer.
+
+
+## Stream Errors
+
+If an application-level error affects a single stream, but otherwise leaves the
+connection in a recoverable state, the endpoint can send a RST_STREAM frame
+({{frame-rst-stream}}) with an appropriate error code to terminate just the
+affected stream.
+
+Other than STOPPING ({{solicited-state-transitions}}), RST_STREAM MUST be
+instigated by the application and MUST carry an application error code.
+Resetting a stream without knowledge of the application protocol could cause the
+protocol to enter an unrecoverable state.  Application protocols might require
+certain streams to be reliably delivered in order to guarantee consistent state
+between endpoints.
+
+
+
 # Packets and Frames {#packets-frames}
 
 Any QUIC packet, with the exception of the Version Negotiation packet, has
@@ -3091,7 +3160,7 @@ using for private experimentation on the GitHub wiki at
 
 
 
-# Packet Types and Formats {#packet-format}
+# Packet Types and Formats {#packet-formats}
 
 All numeric values are encoded in network byte order (that is, big-endian) and
 all field sizes are in bits.  When discussing individual bits of fields, the
@@ -4766,69 +4835,7 @@ An IANA registry is used to manage the assignment of frame types, see
 
 
 
-# Error Handling
-
-An endpoint that detects an error SHOULD signal the existence of that error to
-its peer.  Both transport-level and application-level errors can affect an
-entire connection (see {{connection-errors}}), while only application-level
-errors can be isolated to a single stream (see {{stream-errors}}).
-
-The most appropriate error code ({{error-codes}}) SHOULD be included in the
-frame that signals the error.  Where this specification identifies error
-conditions, it also identifies the error code that is used.
-
-A stateless reset ({{stateless-reset}}) is not suitable for any error that can
-be signaled with a CONNECTION_CLOSE, APPLICATION_CLOSE, or RST_STREAM frame.  A
-stateless reset MUST NOT be used by an endpoint that has the state necessary to
-send a frame on the connection.
-
-
-## Connection Errors
-
-Errors that result in the connection being unusable, such as an obvious
-violation of protocol semantics or corruption of state that affects an entire
-connection, MUST be signaled using a CONNECTION_CLOSE or APPLICATION_CLOSE frame
-({{frame-connection-close}}, {{frame-application-close}}). An endpoint MAY close
-the connection in this manner even if the error only affects a single stream.
-
-Application protocols can signal application-specific protocol errors using the
-APPLICATION_CLOSE frame.  Errors that are specific to the transport, including
-all those described in this document, are carried in a CONNECTION_CLOSE frame.
-Other than the type of error code they carry, these frames are identical in
-format and semantics.
-
-A CONNECTION_CLOSE or APPLICATION_CLOSE frame could be sent in a packet that is
-lost.  An endpoint SHOULD be prepared to retransmit a packet containing either
-frame type if it receives more packets on a terminated connection.  Limiting the
-number of retransmissions and the time over which this final packet is sent
-limits the effort expended on terminated connections.
-
-An endpoint that chooses not to retransmit packets containing CONNECTION_CLOSE
-or APPLICATION_CLOSE risks a peer missing the first such packet.  The only
-mechanism available to an endpoint that continues to receive data for a
-terminated connection is to use the stateless reset process
-({{stateless-reset}}).
-
-An endpoint that receives an invalid CONNECTION_CLOSE or APPLICATION_CLOSE frame
-MUST NOT signal the existence of the error to its peer.
-
-
-## Stream Errors
-
-If an application-level error affects a single stream, but otherwise leaves the
-connection in a recoverable state, the endpoint can send a RST_STREAM frame
-({{frame-rst-stream}}) with an appropriate error code to terminate just the
-affected stream.
-
-Other than STOPPING ({{solicited-state-transitions}}), RST_STREAM MUST be
-instigated by the application and MUST carry an application error code.
-Resetting a stream without knowledge of the application protocol could cause the
-protocol to enter an unrecoverable state.  Application protocols might require
-certain streams to be reliably delivered in order to guarantee consistent state
-between endpoints.
-
-
-## Transport Error Codes {#error-codes}
+# Transport Error Codes {#error-codes}
 
 QUIC error codes are 16-bit unsigned integers.
 
