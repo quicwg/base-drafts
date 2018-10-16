@@ -303,9 +303,10 @@ Retransmission Timeout mechanisms.
 
 Data in CRYPTO frames is critical to QUIC transport and crypto negotiation, so a
 more aggressive timeout is used to retransmit it.  Below, the term "crypto
-packet" is used to refer to packets containing CRYPTO frames.
+packet" is used to refer to packets containing CRYPTO frames before the
+handshake is complete.
 
-The initial crypto timeout SHOULD be set to twice the initial RTT.
+The initial crypto handshake timeout SHOULD be set to twice the initial RTT.
 
 At the beginning, there are no prior RTT samples within a connection.  Resumed
 connections over the same network SHOULD use the previous connection's final
@@ -318,8 +319,8 @@ When CRYPTO frames are sent, the sender SHOULD set a timer for the crypto
 timeout period.  Upon timeout, the sender MUST retransmit all unacknowledged
 CRYPTO data by calling RetransmitAllUnackedCryptoData(). On each consecutive
 expiration of the crypto timer without receiving an acknowledgement for a new
-packet, the sender SHOULD double the crypto timeout and set a timer for this
-period.
+packet, the sender SHOULD double the crypto handshake timeout and set a timer
+for this period.
 
 When CRYPTO frames are outstanding, the TLP and RTO timers are not active unless
 the CRYPTO frames were sent at 1-RTT encryption.
@@ -766,7 +767,7 @@ below shows how the single timer is set.
 #### Crypto Handshake Timer
 
 When a connection has unacknowledged handshake data, the handshake timer is
-set and when it expires, all unacknowledgedd CRYPTO data is retransmitted.
+set and when it expires, all unacknowledged CRYPTO data is retransmitted.
 
 When stateless rejects are in use, the connection is considered immediately
 closed once a reject is sent, so no timer is set to retransmit the reject.
@@ -814,8 +815,8 @@ Pseudocode for SetLossDetectionTimer follows:
       timeout = timeout * (2 ^ crypto_count)
       loss_detection_timer.set(
         time_of_last_sent_crypto_packet + timeout)
-      return;
-    else if (loss_time != 0):
+      return
+    if (loss_time != 0):
       // Early retransmit timer or time loss detection.
       timeout = loss_time -
         time_of_last_sent_retransmittable_packet
@@ -846,7 +847,7 @@ Pseudocode for OnLossDetectionTimeout follows:
 ~~~
    OnLossDetectionTimeout():
      if (crypto packets are outstanding):
-       // Crypto timeout.
+       // Crypto handshake timeout.
        RetransmitAllUnackedCryptoData()
        crypto_count++
      else if (loss_time != 0):
