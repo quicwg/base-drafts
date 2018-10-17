@@ -300,10 +300,10 @@ timer for TCP as well, and this document incorporates this advancement.
 
 Timer-based loss detection recovers from losses that cannot be handled by
 ack-based loss detection.  It uses a single timer which switches between
-a crypto handshake retransmission timer, a Tail Loss Probe timer and
-Retransmission Timeout mechanisms.
+a crypto retransmission timer, a Tail Loss Probe timer and Retransmission
+Timeout mechanisms.
 
-### Crypto Handshake Timeout
+### Crypto Retransmission Timeout
 
 Data in CRYPTO frames is critical to QUIC transport and crypto negotiation, so a
 more aggressive timeout is used to retransmit it.
@@ -322,15 +322,15 @@ When crypto packets are sent, the sender SHOULD set a timer for the crypto
 timeout period.  Upon timeout, the sender MUST retransmit all unacknowledged
 CRYPTO data if possible.
 
-Until the server has validated the client's address on the path, it must not send more than 3
-times the number of received bytes, as specified in the {{QUIC-TRANSPORT}}.
+Until the server has validated the client's address on the path, the number of
+bytes it can send is limited, as specified in the {{QUIC-TRANSPORT}}.
 If not all unacknowledged CRYPTO data can be sent, then all CRYPTO data in
 Initial encryption should be retransmitted.  If no bytes may be sent,
 then no alarm should be armed until bytes have been received by the peer.
 
 On each consecutive expiration of the crypto timer without receiving an
 acknowledgement for a new packet, the sender SHOULD double the crypto
-handshake timeout and set a timer for this period.
+retransmission timeout and set a timer for this period.
 
 When crypto packets are outstanding, the TLP and RTO timers are not active.
 
@@ -467,7 +467,7 @@ delayed acknowledgement should be generated after processing incoming packets.
 ### Crypto Handshake Data
 
 In order to quickly complete the handshake and avoid spurious retransmissions
-due to crypto handshake timeouts, crypto packets SHOULD use a very short ack
+due to crypto retransmission timeouts, crypto packets SHOULD use a very short ack
 delay, such as 1ms.  ACK frames MAY be sent immediately when the crypto stack
 indicates all data for that encryption level has been received.
 
@@ -546,8 +546,8 @@ are described in this section.
 loss_detection_timer:
 : Multi-modal timer used for loss detection.
 
-handshake_count:
-: The number of times all unacknowledged handshake data has been
+crypto_count:
+: The number of times all unacknowledged CRYPTO data has been
   retransmitted without receiving an ack.
 
 tlp_count:
@@ -623,7 +623,7 @@ follows:
 
 ~~~
    loss_detection_timer.reset()
-   handshake_count = 0
+   crypto_count = 0
    tlp_count = 0
    rto_count = 0
    if (kUsingTimeLossDetection)
@@ -713,7 +713,7 @@ Pseudocode for OnAckReceived and UpdateRtt follow:
       if (rto_count > 0 &&
             smallest_newly_acked > largest_sent_before_rto):
         OnRetransmissionTimeoutVerified(smallest_newly_acked)
-      handshake_count = 0
+      crypto_count = 0
       tlp_count = 0
       rto_count = 0
 
@@ -822,7 +822,7 @@ Pseudocode for OnLossDetectionTimeout follows:
 ~~~
    OnLossDetectionTimeout():
      if (crypto packets are outstanding):
-       // Crypto handshake timeout.
+       // Crypto retransmission timeout.
        RetransmitUnackedCryptoData()
        crypto_count++
      else if (loss_time != 0):
