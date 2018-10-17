@@ -323,9 +323,9 @@ timeout period.  Upon timeout, the sender MUST retransmit all unacknowledged
 CRYPTO data if possible.
 
 Until the server has validated the client's address on the path, the number of
-bytes it can send is limited, as specified in the {{QUIC-TRANSPORT}}.
-If not all unacknowledged CRYPTO data can be sent, then all CRYPTO data in
-Initial encryption should be retransmitted.  If no bytes may be sent,
+bytes it can send is limited, as specified in {{QUIC-TRANSPORT}}.
+If not all unacknowledged CRYPTO data can be sent, then all CRYPTO data sent
+in Initial packets should be retransmitted.  If no bytes may be sent,
 then no alarm should be armed until bytes have been received by the peer.
 
 On each consecutive expiration of the crypto timer without receiving an
