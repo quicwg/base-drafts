@@ -5276,7 +5276,7 @@ Issue and pull request numbers are listed with a leading octothorp.
 - Merge ACK and ACK_ECN (#1778, #1801)
 - Explicitly communicate max_ack_delay (#981, #1781)
 - Validate original connection ID after Retry packets (#1710, #1486, #1793)
-- Idle timeout is optional and has no specified maximum (#1520, #1521)
+- Idle timeout is optional and has no specified maximum (#1765)
 - Update connection ID handling; add RETIRE_CONNECTION_ID type (#1464, #1468,
   #1483, #1484, #1486, #1495, #1729, #1742, #1799, #1821)
 - Include a Token in all Initial packets (#1649, #1794)
