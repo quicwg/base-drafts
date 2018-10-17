@@ -322,7 +322,7 @@ When crypto packets are sent, the sender SHOULD set a timer for the crypto
 timeout period.  Upon timeout, the sender MUST retransmit all unacknowledged
 CRYPTO data if possible.
 
-Until the server has confirmed the path, it must not send more than 3
+Until the server has validated the client's address on the path, it must not send more than 3
 times the number of received bytes, as specified in the {{QUIC-TRANSPORT}}.
 If not all unacknowledged CRYPTO data can be sent, then all CRYPTO data in
 Initial encryption should be retransmitted.  If no bytes may be sent,
