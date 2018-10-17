@@ -320,10 +320,17 @@ SHOULD be set for twice the newly computed smoothed RTT.
 
 When crypto packets are sent, the sender SHOULD set a timer for the crypto
 timeout period.  Upon timeout, the sender MUST retransmit all unacknowledged
-CRYPTO data by calling RetransmitAllUnackedCryptoData(). On each consecutive
-expiration of the crypto timer without receiving an acknowledgement for a new
-packet, the sender SHOULD double the crypto handshake timeout and set a timer
-for this period.
+CRYPTO data if possible.
+
+If the server has not confirmed the path, it must not send more than 3
+times the number of received bytes, as specified in the {{QUIC-TRANSPORT}}.
+If not all unacknowledged CRYPTO data can be sent, then all CRYPTO data in
+Initial encryption should be retransmitted.  If no bytes may be sent,
+then no alarm should be armed until bytes have been received by the peer.
+
+On each consecutive expiration of the crypto timer without receiving an
+acknowledgement for a new packet, the sender SHOULD double the crypto
+handshake timeout and set a timer for this period.
 
 When crypto packets are outstanding, the TLP and RTO timers are not active.
 
@@ -763,37 +770,6 @@ duration of the timer is based on the timer's mode, which is set in the packet
 and timer events further below.  The function SetLossDetectionTimer defined
 below shows how the single timer is set.
 
-#### Crypto Handshake Timer
-
-When a connection has unacknowledged crypto packets, the crypto handshake timer
-is set and when it expires, all unacknowledged CRYPTO data is retransmitted.
-
-When stateless rejects are in use, the connection is considered immediately
-closed once a reject is sent, so no timer is set to retransmit the reject.
-
-Version negotiation packets are always stateless, and MUST be sent once per
-handshake packet that uses an unsupported QUIC version, and MAY be sent in
-response to 0-RTT packets.
-
-#### Tail Loss Probe and Retransmission Timer
-
-Tail loss probes {{?TLP}} and retransmission timeouts {{?RFC6298}}
-are timer based mechanisms to recover from cases when there are
-outstanding retransmittable packets, but an acknowledgement has
-not been received in a timely manner.
-
-The TLP and RTO timers are armed when there are no unacknowledged crypto
-packets.  The TLP timer is set until the max number of TLP packets have been
-sent, and then the RTO timer is set.
-
-#### Early Retransmit Timer
-
-Early retransmit {{?RFC5827}} is implemented with a 1/4 RTT timer. It is
-part of QUIC's time based loss detection, but is always enabled, even when
-only packet reordering loss detection is enabled.
-
-#### Pseudocode
-
 Pseudocode for SetLossDetectionTimer follows:
 
 ~~~
@@ -838,8 +814,8 @@ Pseudocode for SetLossDetectionTimer follows:
 
 ### On Timeout
 
-QUIC uses one loss recovery timer, which when set, can be in one of several
-modes.  When the timer expires, the mode determines the action to be performed.
+When the loss detection timer expires, the timer's mode determines the action
+to be performed.
 
 Pseudocode for OnLossDetectionTimeout follows:
 
@@ -847,7 +823,7 @@ Pseudocode for OnLossDetectionTimeout follows:
    OnLossDetectionTimeout():
      if (crypto packets are outstanding):
        // Crypto handshake timeout.
-       RetransmitAllUnackedCryptoData()
+       RetransmitUnackedCryptoData()
        crypto_count++
      else if (loss_time != 0):
        // Early retransmit or Time Loss Detection
