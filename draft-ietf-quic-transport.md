@@ -2603,7 +2603,7 @@ If the idle timeout is enabled, a connection that remains idle for longer than
 the advertised idle timeout (see {{transport-parameter-definitions}}) is closed.
 A connection enters the draining state when the idle timeout expires.
 
-Each endpoint advertises their own idle timeout to their peer. The idle timeout
+Each endpoint advertises its own idle timeout to its peer. The idle timeout
 starts from the last packet received.  In order to ensure that initiating new
 activity postpones an idle timeout, an endpoint restarts this timer when sending
 a packet.  An endpoint does not postpone the idle timeout if another packet has
