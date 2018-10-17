@@ -467,9 +467,9 @@ delayed acknowledgement should be generated after processing incoming packets.
 ### Crypto Handshake Data
 
 In order to quickly complete the handshake and avoid spurious retransmissions
-due to crypto retransmission timeouts, crypto packets SHOULD use a very short ack
-delay, such as 1ms.  ACK frames MAY be sent immediately when the crypto stack
-indicates all data for that encryption level has been received.
+due to crypto retransmission timeouts, crypto packets SHOULD use a very short
+ack delay, such as 1ms.  ACK frames MAY be sent immediately when the crypto
+stack indicates all data for that encryption level has been received.
 
 ### ACK Ranges
 
