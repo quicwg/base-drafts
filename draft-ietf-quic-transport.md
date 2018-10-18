@@ -1728,8 +1728,8 @@ disable_migration (0x0009):
 
 max_ack_delay (0x000c):
 
-: The maximum delay (in milliseconds) used to send acknowledgements, encoded as
-  an 8-bit unsigned integer.  If this value is absent, a default of 25
+: An 8-bit unsigned integer value to use as the maximum delay (in milliseconds)
+  when sending acknowledgements.  If this value is absent, a default of 25
   milliseconds is assumed.
 
 Either peer MAY advertise an initial value for the flow control on each type of
