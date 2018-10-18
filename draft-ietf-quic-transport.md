@@ -903,7 +903,7 @@ A QUIC connection is a single conversation between two QUIC endpoints.  QUIC's
 connection establishment combines version negotiation with the cryptographic
 and transport handshakes to reduce connection establishment latency, as
 described in {{handshake}}.  Once established, a connection may migrate to a
-different IP or port at either endpoint, due to NAT rebinding or mobility, as
+different IP or port at either endpoint as
 described in {{migration}}.  Finally, a connection may be terminated by either
 endpoint, as described in {{termination}}.
 
