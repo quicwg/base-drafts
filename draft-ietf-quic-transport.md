@@ -1012,7 +1012,8 @@ correspond to a single connection.
 Endpoints SHOULD send a Stateless Reset ({{stateless-reset}}) for any packets
 that cannot be attributed to an existing connection.
 
-<!-- TODO: We are missing a paragraph on failed packet protection removal
+Packets that are matched to an existing connection, but for which the endpoint
+cannot remove packet protection, are discarded.
 here. We probably want that.-->
 
 ### Client Packet Handling {#client-pkt-handling}
