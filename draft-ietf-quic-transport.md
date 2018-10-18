@@ -1014,7 +1014,6 @@ that cannot be attributed to an existing connection.
 
 Packets that are matched to an existing connection, but for which the endpoint
 cannot remove packet protection, are discarded.
-here. We probably want that.-->
 
 ### Client Packet Handling {#client-pkt-handling}
 
