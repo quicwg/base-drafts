@@ -3938,7 +3938,8 @@ initial_max_uni_streams (0x0008):
   MAX_STREAM_ID containing 18 when received by a client or 19 when received by a
   server.
 
-A server MUST include the following transport parameter if it sent a Retry packet:
+A server MUST include the following transport parameter if it sent a Retry
+packet:
 
 original_connection_id (0x000d):
 
