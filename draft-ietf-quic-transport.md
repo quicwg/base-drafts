@@ -735,6 +735,9 @@ to two levels of flow control in QUIC:
 * Connection flow control, which prevents senders from exceeding a receiver's
   buffer capacity for the connection, and
 
+A data receiver sets initial credits for all streams by sending transport
+parameters during the handshake ({{transport-parameters}}).
+
 A data receiver sends MAX_STREAM_DATA or MAX_DATA frames to the sender to
 advertise additional credit. MAX_STREAM_DATA frames send the maximum absolute
 byte offset of a stream, while MAX_DATA frames send the maximum of the sum of
