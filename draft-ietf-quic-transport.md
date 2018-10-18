@@ -1018,7 +1018,7 @@ cannot remove packet protection, are discarded.
 ### Client Packet Handling {#client-pkt-handling}
 
 Valid packets sent to clients always include a Destination Connection ID that
-matches the value the client selects.  Clients that choose to receive
+matches a value the client selects.  Clients that choose to receive
 zero-length connection IDs can use the address/port tuple to identify a
 connection.  Packets that don't match an existing connection are discarded.
 
