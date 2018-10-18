@@ -773,8 +773,8 @@ write but is blocked by flow control limits.  These frames are expected to be
 sent infrequently in common cases, but they are considered useful for debugging
 and monitoring purposes.
 
-A similar method is used to control the number of open streams
-see {{stream-limit-increment}} for details.
+A similar method is used to control the number of open streams (see
+{{stream-limit-increment}} for details).
 
 ## Handling of Stream Cancellation
 
