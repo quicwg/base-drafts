@@ -139,30 +139,30 @@ middleboxes.
 This document describes the core QUIC protocol, and is structured as follows:
 
 * Streams are the basic service abstraction that QUIC provides.
-** {{streams}} describes core concepts related to streams,
-** {{stream-states}} provides a reference model for stream states, and
-** {{flow-control}} outlines the operation of flow control.
+  - {{streams}} describes core concepts related to streams,
+  - {{stream-states}} provides a reference model for stream states, and
+  - {{flow-control}} outlines the operation of flow control.
 
 * Connections are the context in which QUIC endpoints communicate.
-** {{connections}} describes core concepts related to connections,
-** {{version-negotiation}} describes version negotiation,
-** {{handshake}} detail the process for establishing connections,
-** {{migration}} describes how endpoints migrate a connection to use a new
-   network paths, and
-** {{termination}} lists the options for terminating an open connection.
+  - {{connections}} describes core concepts related to connections,
+  - {{version-negotiation}} describes version negotiation,
+  - {{handshake}} details the process for establishing connections,
+  - {{migration}} describes how endpoints migrate a connection to use a new
+    network paths, and
+  - {{termination}} lists the options for terminating an open connection.
 
 * Packets and frames are the basic unit used by QUIC to communicate.
-** {{packets-frames}} describes concepts related to packets and frames,
-** {{packetization}} defines models for the transmission, retransmission, and
-   acknowledgement of information, and
-** {{packet-size}} contains a rules for managing the size of packets.
+  - {{packets-frames}} describes concepts related to packets and frames,
+  - {{packetization}} defines models for the transmission, retransmission, and
+    acknowledgement of information, and
+  - {{packet-size}} contains a rules for managing the size of packets.
 
 * Details of encoding of QUIC protocol elements is described in:
-** {{versions}} (Versions),
-** {{packet-formats}} (Packet Headers),
-** {{transport-parameter-encoding}} (Transport Parameters),
-** {{frame-formats}} (Frames), and
-** {{error-codes}} (Errors).
+  - {{versions}} (Versions),
+  - {{packet-formats}} (Packet Headers),
+  - {{transport-parameter-encoding}} (Transport Parameters),
+  - {{frame-formats}} (Frames), and
+  - {{error-codes}} (Errors).
 
 Accompanying documents describe QUIC's loss detection and congestion control
 {{QUIC-RECOVERY}}, and the use of TLS 1.3 for key negotiation {{QUIC-TLS}}.
