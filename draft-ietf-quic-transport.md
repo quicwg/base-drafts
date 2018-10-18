@@ -796,8 +796,8 @@ as well.  The receiver must learn the number of bytes that were sent on the
 stream to make the same adjustment in its connection flow controller.
 
 To ensure that endpoints maintain a consistent connection-level flow control
-state, the RST_STREAM frame ({{frame-rst-stream}}) includes the largest offset of
-data sent on the stream.  On receiving a RST_STREAM frame, a receiver
+state, the RST_STREAM frame ({{frame-rst-stream}}) includes the largest offset
+of data sent on the stream.  On receiving a RST_STREAM frame, a receiver
 definitively knows how many bytes were sent on that stream before the RST_STREAM
 frame, and the receiver MUST use the final offset to account for all bytes sent
 on the stream in its connection level flow controller.
