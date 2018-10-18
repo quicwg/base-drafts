@@ -1729,8 +1729,8 @@ disable_migration (0x0009):
 max_ack_delay (0x000c):
 
 : An 8 bit unsigned integer value indicating the maximum amount of time in
-  milliseconds by which it will delay sending of acknowledgments.  If this
-  value is absent, a default of 25 milliseconds is assumed.
+  milliseconds by which the endpoint will delay sending of acknowledgments.
+  If this value is absent, a default of 25 milliseconds is assumed.
 
 Either peer MAY advertise an initial value for the flow control on each type of
 stream on which they might receive data.  Each of the following transport
