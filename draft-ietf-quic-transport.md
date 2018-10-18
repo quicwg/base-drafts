@@ -192,7 +192,8 @@ Endpoint:
 
 Stream:
 
-: A logical, bi-directional channel of ordered bytes within a QUIC connection.
+: A logical unidirectional or bidirectional channel of ordered bytes within a
+  QUIC connection.
 
 Connection:
 
@@ -328,7 +329,7 @@ is a result of a change in the initial limits (see {{zerortt-parameters}}).
 
 A receiver cannot renege on an advertisement; that is, once a receiver
 advertises a stream ID via a MAX_STREAM_ID frame, advertising a smaller maximum
-ID has no effect.  A sender MUST ignore any MAX_STREAM_ID frame that does not
+ID has no effect.  A receiver MUST ignore any MAX_STREAM_ID frame that does not
 increase the maximum stream ID.
 
 
@@ -344,7 +345,7 @@ is transmitted, when data is retransmitted after packet loss, or when data is
 delivered to the application at the receiver.
 
 When new data is to be sent on a stream, a sender MUST set the encapsulating
-STREAM frame's offset field to the stream offset of the first byte of this new
+STREAM frame's offset field to the stream offset of the first octet of this new
 data.  The first octet of data on a stream has an offset of 0.  An endpoint is
 expected to send every stream octet.  The largest offset delivered on a stream
 MUST be less than 2^62.
