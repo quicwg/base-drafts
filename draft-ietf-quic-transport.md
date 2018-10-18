@@ -900,7 +900,7 @@ based on current activity, system conditions, and other environmental factors.
 # Connections {#connections}
 
 A QUIC connection is a single conversation between two QUIC endpoints.  QUIC's
-connection establishment intertwines version negotiation with the cryptographic
+connection establishment combines version negotiation with the cryptographic
 and transport handshakes to reduce connection establishment latency, as
 described in {{handshake}}.  Once established, a connection may migrate to a
 different IP or port at either endpoint, due to NAT rebinding or mobility, as
