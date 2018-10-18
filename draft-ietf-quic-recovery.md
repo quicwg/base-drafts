@@ -318,15 +318,23 @@ is available, or if the network changes, the initial RTT SHOULD be set to 100ms.
 When an acknowledgement is received, a new RTT is computed and the timer
 SHOULD be set for twice the newly computed smoothed RTT.
 
-When crypto packets are sent, the sender SHOULD set a timer for the crypto
+When crypto packets are sent, the sender MUST set a timer for the crypto
 timeout period.  Upon timeout, the sender MUST retransmit all unacknowledged
 CRYPTO data if possible.
 
 Until the server has validated the client's address on the path, the number of
 bytes it can send is limited, as specified in {{QUIC-TRANSPORT}}.
-If not all unacknowledged CRYPTO data can be sent, then all CRYPTO data sent
-in Initial packets should be retransmitted.  If no bytes may be sent,
-then no alarm should be armed until bytes have been received by the peer.
+If not all unacknowledged CRYPTO data can be sent, then all unacknowledged
+CRYPTO data sent in Initial packets should be retransmitted.  If no bytes
+may be sent, then no alarm should be armed until bytes have been received from
+the client.
+
+Because the server may be blocked until more packets are received, the
+client MUST arm the crypto retransmission alarm even if there is no
+unacknowledged CRYPTO data.  If the timer expires and the client has no
+CRYPTO data to retransmit and does not have Handshake keys, it SHOULD send
+an Initial packet in a UDP datagram of at least 1200 octets.
+If the client has Handshake keys, it SHOULD send a Handshake packet.
 
 On each consecutive expiration of the crypto timer without receiving an
 acknowledgement for a new packet, the sender SHOULD double the crypto
