@@ -138,21 +138,30 @@ middleboxes.
 
 This document describes the core QUIC protocol, and is structured as follows:
 
-* streams, QUIC's service abstraction to applications, including stream
-  multiplexing, and stream and connection-level flow control ({{streams}} -
-  {{flow-control}});
+* Streams are the basic service abstraction that QUIC provides.
+** {{streams}} describes core concepts related to streams,
+** {{stream-states}} provides a reference model for stream states, and
+** {{flow-control}} outlines the operation of flow control.
 
-* connections, including version negotiation and establishment, usage,
-  migration, and shutdown ({{connections}} - {{termination}});
+* Connections are the context in which QUIC endpoints communicate.
+** {{connections}} describes core concepts related to connections,
+** {{version-negotiation}} describes version negotiation,
+** {{handshake}} detail the process for establishing connections,
+** {{migration}} describes how endpoints migrate a connection to use a new network paths, and
+** {{termination}} lists the options for terminating an open connection.
 
-* error handling ({{error-handling}});
+* Packets and frames are the basic unit used by QUIC to communicate.
+** {{packets-frames}} describes concepts related to packets and frames,
+** {{packetization}} defines models for the transmission, retransmission, and
+   acknowledgement of information, and
+** {{packet-size}} contains a rules for managing the size of packets.
 
-* packets and frames, including QUIC's model and mechanics of reliability
-  (acknowledgements and retransmission) and packet sizing ({{packets-frames}} -
-  {{packet-size}});
-
-* wire format, including QUIC's version format, packet formats, frame formats,
-  and error codes ({{versions}} - {{error-codes}}).
+* Details of encoding of QUIC protocol elements is described in:
+** {{versions}} (Versions),
+** {{packet-formats}} (Packet Headers),
+** {{transport-parameter-encoding}} (Transport Parameters),
+** {{frame-formats}} (Frames), and
+** {{error-codes}} (Errors).
 
 Accompanying documents describe QUIC's loss detection and congestion control
 {{QUIC-RECOVERY}}, and the use of TLS 1.3 for key negotiation {{QUIC-TLS}}.
@@ -1490,7 +1499,7 @@ response to connection migration ({{migration}}). NEW_CONNECTION_ID frames
 ({{frame-new-connection-id}}) are used to provide new connection ID values.
 
 
-## Transport Parameters
+## Transport Parameters {#transport-parameters}
 
 During connection establishment, both endpoints make authenticated declarations
 of their transport parameters.  These declarations are made unilaterally by each
@@ -1498,77 +1507,22 @@ endpoint.  Endpoints are required to comply with the restrictions implied by
 these parameters; the description of each parameter includes rules for its
 handling.
 
-The format of the transport parameters is the TransportParameters struct from
-{{figure-transport-parameters}}.  This is described using the presentation
-language from Section 3 of {{!TLS13=RFC8446}}.
+The encoding of the transport parameters is detailed in
+{{transport-parameter-encoding}}.
 
-~~~
-   uint32 QuicVersion;
-
-   enum {
-      initial_max_stream_data_bidi_local(0),
-      initial_max_data(1),
-      initial_max_bidi_streams(2),
-      idle_timeout(3),
-      preferred_address(4),
-      max_packet_size(5),
-      stateless_reset_token(6),
-      ack_delay_exponent(7),
-      initial_max_uni_streams(8),
-      disable_migration(9),
-      initial_max_stream_data_bidi_remote(10),
-      initial_max_stream_data_uni(11),
-      max_ack_delay(12),
-      original_connection_id(13),
-      (65535)
-   } TransportParameterId;
-
-   struct {
-      TransportParameterId parameter;
-      opaque value<0..2^16-1>;
-   } TransportParameter;
-
-   struct {
-      select (Handshake.msg_type) {
-         case client_hello:
-            QuicVersion initial_version;
-
-         case encrypted_extensions:
-            QuicVersion negotiated_version;
-            QuicVersion supported_versions<4..2^8-4>;
-      };
-      TransportParameter parameters<0..2^16-1>;
-   } TransportParameters;
-
-   struct {
-     enum { IPv4(4), IPv6(6), (15) } ipVersion;
-     opaque ipAddress<4..2^8-1>;
-     uint16 port;
-     opaque connectionId<0..18>;
-     opaque statelessResetToken[16];
-   } PreferredAddress;
-~~~
-{: #figure-transport-parameters title="Definition of TransportParameters"}
-
-The `extension_data` field of the quic_transport_parameters extension defined in
-{{QUIC-TLS}} contains a TransportParameters value.  TLS encoding rules are
-therefore used to describe the encoding of transport parameters.
-
-QUIC encodes transport parameters into a sequence of octets, which are then
-included in the cryptographic handshake.  Once the handshake completes, the
-transport parameters declared by the peer are available.  Each endpoint
-validates the value provided by its peer.  In particular, version negotiation
-MUST be validated (see {{version-validation}}) before the connection
-establishment is considered properly complete.
+QUIC includes the encoded transport parameters in the cryptographic handshake.
+Once the handshake completes, the transport parameters declared by the peer are
+available.  Each endpoint validates the value provided by its peer.  In
+particular, version negotiation MUST be validated (see {{version-validation}})
+before the connection establishment is considered properly complete.
 
 Definitions for each of the defined transport parameters are included in
-{{transport-parameter-definitions}}.  Any given parameter MUST appear
-at most once in a given transport parameters extension.  An endpoint MUST
-treat receipt of duplicate transport parameters as a connection error of
-type TRANSPORT_PARAMETER_ERROR.
+{{transport-parameter-definitions}}.  Any given parameter MUST appear at most
+once in a given transport parameters extension.  An endpoint MUST treat receipt
+of duplicate transport parameters as a connection error of type
+TRANSPORT_PARAMETER_ERROR.
 
-
-### Transport Parameter Definitions
+### Transport Parameter Definitions {#transport-parameter-definitions}
 
 An endpoint MAY use the following transport parameters:
 
@@ -3290,14 +3244,7 @@ using for private experimentation on the GitHub wiki at
 
 
 
-# Packet Formats {#packet-formats}
-
-All numeric values are encoded in network byte order (that is, big-endian) and
-all field sizes are in bits.  Hexadecimal notation is used for describing the
-value of fields.
-
-
-## Variable-Length Integer Encoding {#integer-encoding}
+# Variable-Length Integer Encoding {#integer-encoding}
 
 QUIC packets and frames commonly use a variable-length encoding for non-negative
 integer values.  This encoding ensures that smaller integer values need fewer
@@ -3327,6 +3274,15 @@ the single octet 25 decodes to 37 (as does the two octet sequence 40 25).
 
 Error codes ({{error-codes}}) and versions {{versions}} are described using
 integers, but do not use this encoding.
+
+
+
+# Packet Formats {#packet-formats}
+
+All numeric values are encoded in network byte order (that is, big-endian) and
+all field sizes are in bits.  Hexadecimal notation is used for describing the
+value of fields.
+
 
 ## Packet Number Encoding and Decoding {#packet-encoding}
 
@@ -3924,6 +3880,68 @@ validation as a connection error of type TRANSPORT_PARAMETER_ERROR.
 
 A Retry packet does not include a packet number and cannot be explicitly
 acknowledged by a client.
+
+
+# Transport Parameter Encoding {#transport-parameter-encoding}
+
+The format of the transport parameters is the TransportParameters struct from
+{{figure-transport-parameters}}.  This is described using the presentation
+language from Section 3 of {{!TLS13=RFC8446}}.
+
+~~~
+   uint32 QuicVersion;
+
+   enum {
+      initial_max_stream_data_bidi_local(0),
+      initial_max_data(1),
+      initial_max_bidi_streams(2),
+      idle_timeout(3),
+      preferred_address(4),
+      max_packet_size(5),
+      stateless_reset_token(6),
+      ack_delay_exponent(7),
+      initial_max_uni_streams(8),
+      disable_migration(9),
+      initial_max_stream_data_bidi_remote(10),
+      initial_max_stream_data_uni(11),
+      max_ack_delay(12),
+      original_connection_id(13),
+      (65535)
+   } TransportParameterId;
+
+   struct {
+      TransportParameterId parameter;
+      opaque value<0..2^16-1>;
+   } TransportParameter;
+
+   struct {
+      select (Handshake.msg_type) {
+         case client_hello:
+            QuicVersion initial_version;
+
+         case encrypted_extensions:
+            QuicVersion negotiated_version;
+            QuicVersion supported_versions<4..2^8-4>;
+      };
+      TransportParameter parameters<0..2^16-1>;
+   } TransportParameters;
+
+   struct {
+     enum { IPv4(4), IPv6(6), (15) } ipVersion;
+     opaque ipAddress<4..2^8-1>;
+     uint16 port;
+     opaque connectionId<0..18>;
+     opaque statelessResetToken[16];
+   } PreferredAddress;
+~~~
+{: #figure-transport-parameters title="Definition of TransportParameters"}
+
+The `extension_data` field of the quic_transport_parameters extension defined in
+{{QUIC-TLS}} contains a TransportParameters value.  TLS encoding rules are
+therefore used to describe the encoding of transport parameters.
+
+QUIC encodes transport parameters into a sequence of octets, which are then
+included in the cryptographic handshake.
 
 
 
