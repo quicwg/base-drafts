@@ -1415,7 +1415,8 @@ Handshake[0]: CRYPTO[FIN], ACK[0]
 
 {{tls-0rtt-handshake}} shows an example of a connection with a 0-RTT handshake
 and a single packet of 0-RTT data. Note that as described in {{packet-numbers}},
-the server ACKs the 0-RTT data at the 1-RTT encryption level, and the client's
+the server acknowledges 0-RTT data at the 1-RTT encryption level, and the
+client sends 1-RTT packets in the same packet number space.
 sequence numbers at the 1-RTT encryption level continue to increment from its
 0-RTT packets.
 
