@@ -108,6 +108,10 @@ Retransmittable Packets:
 : Packets that contain retransmittable frames elicit an ACK from
   the receiver and are called retransmittable packets.
 
+Crypto Packets:
+
+: Packets containing CRYPTO data sent in Initial or Handshake
+  packets.
 
 # Design of the QUIC Transmission Machinery
 
@@ -296,37 +300,32 @@ timer for TCP as well, and this document incorporates this advancement.
 
 Timer-based loss detection recovers from losses that cannot be handled by
 ack-based loss detection.  It uses a single timer which switches between
-a handshake retransmission timer, a Tail Loss Probe timer and
+a crypto handshake retransmission timer, a Tail Loss Probe timer and
 Retransmission Timeout mechanisms.
 
 ### Crypto Handshake Timeout
 
 Data in CRYPTO frames is critical to QUIC transport and crypto negotiation, so a
-more aggressive timeout is used to retransmit it.  Below, the term "handshake
-packet" is used to refer to packets containing CRYPTO frames, not packets with
-the specific long header packet type Handshake.
+more aggressive timeout is used to retransmit it.
 
-The initial handshake timeout SHOULD be set to twice the initial RTT.
+The initial crypto retransmission timeout SHOULD be set to twice the initial
+RTT.
 
 At the beginning, there are no prior RTT samples within a connection.  Resumed
 connections over the same network SHOULD use the previous connection's final
-smoothed RTT value as the resumed connection's initial RTT.
+smoothed RTT value as the resumed connection's initial RTT.  If no previous RTT
+is available, or if the network changes, the initial RTT SHOULD be set to 100ms.
+When an acknowledgement is received, a new RTT is computed and the timer
+SHOULD be set for twice the newly computed smoothed RTT.
 
-If no previous RTT is available, or if the network changes, the initial RTT
-SHOULD be set to 100ms.
-
-When CRYPTO frames are sent, the sender SHOULD set a timer for the handshake
+When crypto packets are sent, the sender SHOULD set a timer for the crypto
 timeout period.  Upon timeout, the sender MUST retransmit all unacknowledged
-CRYPTO data by calling RetransmitAllUnackedHandshakeData(). On each
-consecutive expiration of the handshake timer without receiving an
-acknowledgement for a new packet, the sender SHOULD double the handshake timeout
-and set a timer for this period.
+CRYPTO data by calling RetransmitAllUnackedCryptoData(). On each consecutive
+expiration of the crypto timer without receiving an acknowledgement for a new
+packet, the sender SHOULD double the crypto handshake timeout and set a timer
+for this period.
 
-When CRYPTO frames are outstanding, the TLP and RTO timers are not active unless
-the CRYPTO frames were sent at 1-RTT encryption.
-
-When an acknowledgement is received for a handshake packet, the new RTT is
-computed and the timer SHOULD be set for twice the newly computed smoothed RTT.
+When crypto packets are outstanding, the TLP and RTO timers are not active.
 
 #### Retry and Version Negotiation
 
@@ -461,7 +460,7 @@ delayed acknowledgement should be generated after processing incoming packets.
 ### Crypto Handshake Data
 
 In order to quickly complete the handshake and avoid spurious retransmissions
-due to handshake timeouts, handshake packets SHOULD use a very short ack
+due to crypto handshake timeouts, crypto packets SHOULD use a very short ack
 delay, such as 1ms.  ACK frames MAY be sent immediately when the crypto stack
 indicates all data for that encryption level has been received.
 
@@ -558,8 +557,8 @@ largest_sent_before_rto:
 time_of_last_sent_retransmittable_packet:
 : The time the most recent retransmittable packet was sent.
 
-time_of_last_sent_handshake_packet:
-: The time the most recent packet containing a CRYPTO frame was sent.
+time_of_last_sent_crypto_packet:
+: The time the most recent crypto packet was sent.
 
 largest_sent_packet:
 : The packet number of the most recently sent packet.
@@ -632,7 +631,7 @@ follows:
    min_rtt = infinite
    largest_sent_before_rto = 0
    time_of_last_sent_retransmittable_packet = 0
-   time_of_last_sent_handshake_packet = 0
+   time_of_last_sent_crypto_packet = 0
    largest_sent_packet = 0
 ~~~
 
@@ -651,7 +650,7 @@ are as follows:
 * in_flight: A boolean that indicates whether the packet counts towards
   bytes in flight.
 
-* is_handshake_packet: A boolean that indicates whether the packet contains
+* is_crypto_packet: A boolean that indicates whether the packet contains
   cryptographic handshake messages critical to the completion of the QUIC
   handshake. In this version of QUIC, this includes any packet with the long
   header that includes a CRYPTO frame.
@@ -663,15 +662,15 @@ Pseudocode for OnPacketSent follows:
 
 ~~~
  OnPacketSent(packet_number, ack_only, in_flight,
-              is_handshake_packet, sent_bytes):
+              is_crypto_packet, sent_bytes):
    largest_sent_packet = packet_number
    sent_packets[packet_number].packet_number = packet_number
    sent_packets[packet_number].time = now
    sent_packets[packet_number].ack_only = ack_only
    sent_packets[packet_number].in_flight = in_flight
    if !ack_only:
-     if is_handshake_packet:
-       time_of_last_sent_handshake_packet = now
+     if is_crypto_packet:
+       time_of_last_sent_crypto_packet = now
      time_of_last_sent_retransmittable_packet = now
      OnPacketSentCC(sent_bytes)
      sent_packets[packet_number].bytes = sent_bytes
@@ -764,10 +763,10 @@ duration of the timer is based on the timer's mode, which is set in the packet
 and timer events further below.  The function SetLossDetectionTimer defined
 below shows how the single timer is set.
 
-#### Handshake Timer
+#### Crypto Handshake Timer
 
-When a connection has unacknowledged handshake data, the handshake timer is
-set and when it expires, all unacknowledgedd handshake data is retransmitted.
+When a connection has unacknowledged crypto packets, the crypto handshake timer
+is set and when it expires, all unacknowledged CRYPTO data is retransmitted.
 
 When stateless rejects are in use, the connection is considered immediately
 closed once a reject is sent, so no timer is set to retransmit the reject.
@@ -783,8 +782,8 @@ are timer based mechanisms to recover from cases when there are
 outstanding retransmittable packets, but an acknowledgement has
 not been received in a timely manner.
 
-The TLP and RTO timers are armed when there is no unacknowledged handshake
-data.  The TLP timer is set until the max number of TLP packets have been
+The TLP and RTO timers are armed when there are no unacknowledged crypto
+packets.  The TLP timer is set until the max number of TLP packets have been
 sent, and then the RTO timer is set.
 
 #### Early Retransmit Timer
@@ -805,18 +804,18 @@ Pseudocode for SetLossDetectionTimer follows:
       loss_detection_timer.cancel()
       return
 
-    if (handshake packets are outstanding):
-      // Handshake retransmission timer.
+    if (crypto packets are outstanding):
+      // Crypto retransmission timer.
       if (smoothed_rtt == 0):
         timeout = 2 * kInitialRtt
       else:
         timeout = 2 * smoothed_rtt
       timeout = max(timeout, kMinTLPTimeout)
-      timeout = timeout * (2 ^ handshake_count)
+      timeout = timeout * (2 ^ crypto_count)
       loss_detection_timer.set(
-        time_of_last_sent_handshake_packet + timeout)
-      return;
-    else if (loss_time != 0):
+        time_of_last_sent_crypto_packet + timeout)
+      return
+    if (loss_time != 0):
       // Early retransmit timer or time loss detection.
       timeout = loss_time -
         time_of_last_sent_retransmittable_packet
@@ -846,10 +845,10 @@ Pseudocode for OnLossDetectionTimeout follows:
 
 ~~~
    OnLossDetectionTimeout():
-     if (handshake packets are outstanding):
-       // Handshake timeout.
-       RetransmitAllUnackedHandshakeData()
-       handshake_count++
+     if (crypto packets are outstanding):
+       // Crypto handshake timeout.
+       RetransmitAllUnackedCryptoData()
+       crypto_count++
      else if (loss_time != 0):
        // Early retransmit or Time Loss Detection
        DetectLostPackets(largest_acked_packet)
@@ -1182,7 +1181,7 @@ sent before the newly acknowledged RTO packet.
      // Declare all packets prior to packet_number lost.
      for (sent_packet: sent_packets):
        if (sent_packet.packet_number < packet_number):
-         bytes_in_flight -= lost_packet.bytes
+         bytes_in_flight -= sent_packet.bytes
          sent_packets.remove(sent_packet.packet_number)
 ~~~
 

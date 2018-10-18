@@ -2246,7 +2246,7 @@ If the idle timeout is enabled, a connection that remains idle for longer than
 the advertised idle timeout (see {{transport-parameter-definitions}}) is closed.
 A connection enters the draining state when the idle timeout expires.
 
-Each endpoint advertises their own idle timeout to their peer. The idle timeout
+Each endpoint advertises its own idle timeout to its peer. The idle timeout
 starts from the last packet received.  In order to ensure that initiating new
 activity postpones an idle timeout, an endpoint restarts this timer when sending
 a packet.  An endpoint does not postpone the idle timeout if another packet has
@@ -3034,7 +3034,6 @@ If a QUIC endpoint determines that the PMTU between any pair of local and remote
 IP addresses has fallen below 1280 octets, it MUST immediately cease sending
 QUIC packets on the affected path.  This could result in termination of the
 connection if an alternative path cannot be found.
-
 
 ### IPv4 PMTU Discovery {#v4-pmtud}
 
@@ -5371,7 +5370,7 @@ Substantial editorial reorganization; no technical changes.
 - Merge ACK and ACK_ECN (#1778, #1801)
 - Explicitly communicate max_ack_delay (#981, #1781)
 - Validate original connection ID after Retry packets (#1710, #1486, #1793)
-- Idle timeout is optional and has no specified maximum (#1520, #1521)
+- Idle timeout is optional and has no specified maximum (#1765)
 - Update connection ID handling; add RETIRE_CONNECTION_ID type (#1464, #1468,
   #1483, #1484, #1486, #1495, #1729, #1742, #1799, #1821)
 - Include a Token in all Initial packets (#1649, #1794)
