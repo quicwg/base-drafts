@@ -1417,7 +1417,6 @@ Handshake[0]: CRYPTO[FIN], ACK[0]
 and a single packet of 0-RTT data. Note that as described in {{packet-numbers}},
 the server acknowledges 0-RTT data at the 1-RTT encryption level, and the
 client sends 1-RTT packets in the same packet number space.
-sequence numbers at the 1-RTT encryption level continue to increment from its
 0-RTT packets.
 
 ~~~~
