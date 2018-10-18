@@ -945,7 +945,9 @@ messages.  The initial connection ID issued by an endpoint is sent in the Source
 Connection ID field of the long packet header ({{long-header}}) during the
 handshake.  The sequence number of the initial connection ID is 0.  If the
 preferred_address transport parameter is sent, the sequence number of the
-supplied connection ID is 1. Subsequent connection IDs are communicated to the
+supplied connection ID is 1.
+
+Additional connection IDs are communicated to the
 peer using NEW_CONNECTION_ID frames ({{frame-new-connection-id}}), and the
 sequence number on each newly-issued connection ID MUST increase by 1. The
 connection ID randomly selected by the client in the Initial packet and any
