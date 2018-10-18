@@ -86,12 +86,24 @@ code and issues list for this draft can be found at
 
 # Introduction
 
-The QUIC transport protocol has several features that are desirable in a
-transport for HTTP, such as stream multiplexing, per-stream flow control, and
-low-latency connection establishment. This document describes a mapping of HTTP
-semantics over QUIC, drawing heavily on the existing TCP mapping, HTTP/2.
-Specifically, this document identifies HTTP/2 features that are subsumed by
-QUIC, and describes how the other features can be implemented atop QUIC.
+HTTP semantics are used for a broad range of services on the Internet. These
+semantics have commonly been used with two different TCP mappings, HTTP/1.1 and
+HTTP/2.  HTTP/2 introduced a framing and multiplexing layer to improve latency
+without modifying the transport layer.  However, TCP's lack of visibility into
+parallel requests in both mappings limited the possible performance gains.
+
+The QUIC transport protocol incorporates stream multiplexing and per-stream flow
+control, similar to that provided by the HTTP/2 framing layer. By providing
+reliability at the stream level and congestion control across the entire
+connection, it has the capability to improve the performance of HTTP compared to
+a TCP mapping.  QUIC also incorporates TLS 1.3 at the transport layer, offering
+comparable security to running TLS over TCP, but with improved connection setup
+latency.
+
+This document describes a mapping of HTTP semantics over the QUIC transport
+protocol, drawing heavily on design of HTTP/2. This document identifies HTTP/2
+features that are subsumed by QUIC, and describes how the other features can be
+implemented atop QUIC.
 
 QUIC is described in {{QUIC-TRANSPORT}}.  For a full description of HTTP/2, see
 {{!RFC7540}}.
@@ -191,17 +203,17 @@ parameter MUST NOT occur more than once; clients SHOULD process only the first
 occurrence.
 
 For example, suppose a server supported both version 0x00000001 and the version
-rendered in ASCII as "Q034".  If it opted to include the reserved versions (from
-Section 4 of {{QUIC-TRANSPORT}}) 0x0 and 0x1abadaba, it could specify the
+rendered in ASCII as "Q034".  If it also opted to include the reserved version
+(from Section 3 of {{QUIC-TRANSPORT}}) 0x1abadaba, it could specify the
 following header field:
 
 ~~~ example
-Alt-Svc: hq=":49288";quic="1,1abadaba,51303334,0"
+Alt-Svc: hq=":49288";quic="1,1abadaba,51303334"
 ~~~
 
-A client acting on this header field would drop the reserved versions (because
-it does not support them), then attempt to connect to the alternative using the
-first version in the list which it does support.
+A client acting on this header field would drop the reserved version (not
+supported), then attempt to connect to the alternative using the first version
+in the list which it does support, if any.
 
 ## Connection Establishment {#connection-establishment}
 
@@ -221,8 +233,8 @@ the initial crypto handshake, HTTP/QUIC-specific settings are conveyed in the
 SETTINGS frame. After the QUIC connection is established, a SETTINGS frame
 ({{frame-settings}}) MUST be sent by each endpoint as the initial frame of their
 respective HTTP control stream (see {{control-streams}}). The server MUST NOT
-send data on any other stream until the client's SETTINGS frame has been
-received.
+process any request streams or send responses until the client's SETTINGS frame
+has been received.
 
 ## Connection Reuse
 
@@ -251,12 +263,20 @@ management of HTTP/QUIC connections.
 A QUIC stream provides reliable in-order delivery of bytes, but makes no
 guarantees about order of delivery with regard to bytes on other streams. On the
 wire, data is framed into QUIC STREAM frames, but this framing is invisible to
-the HTTP framing layer. A QUIC receiver buffers and orders received STREAM
-frames, exposing the data contained within as a reliable byte stream to the
-application.
+the HTTP framing layer. The transport layer buffers and orders received QUIC
+STREAM frames, exposing the data contained within as a reliable byte stream to
+the application.
+
+QUIC streams can be either unidirectional, carrying data only from initiator to
+receiver, or bidirectional.  Streams can be initiated by either the client or
+the server.  For more detail on QUIC streams, see {{QUIC-TRANSPORT}}, Section 9.
 
 When HTTP headers and data are sent over QUIC, the QUIC layer handles most of
-the stream management.
+the stream management.  HTTP does not need to do any separate multiplexing when
+using QUIC - data sent over a QUIC stream always maps to a particular HTTP
+transaction or connection context.
+
+## Bidirectional Streams
 
 All client-initiated bidirectional streams are used for HTTP requests and
 responses.  A bidirectional stream ensures that the response can be readily
@@ -269,252 +289,15 @@ HTTP/QUIC server SHOULD send non-zero values for the QUIC transport parameters
 recommended that `initial_max_bidi_streams` be no smaller than 100, so as to not
 unnecessarily limit parallelism.
 
-These streams carry frames related to the request/response (see {{frames}}).
-When a stream terminates cleanly, if the last frame on the stream was truncated,
-this MUST be treated as a connection error (see HTTP_MALFORMED_FRAME in
-{{http-error-codes}}).  Streams which terminate abruptly may be reset at any
-point in the frame.
+These streams carry frames related to the request/response (see
+{{request-response}}). When a stream terminates cleanly, if the last frame on
+the stream was truncated, this MUST be treated as a connection error (see
+HTTP_MALFORMED_FRAME in {{http-error-codes}}).  Streams which terminate abruptly
+may be reset at any point in the frame.
 
-HTTP/QUIC does not use server-initiated bidirectional streams. The use of
-unidirectional streams is discussed in {{unidirectional-streams}}.  Both clients
-and servers SHOULD send a value of three or greater for the QUIC transport
-parameter `initial_max_uni_streams`.
-
-HTTP does not need to do any separate multiplexing when using QUIC - data sent
-over a QUIC stream always maps to a particular HTTP transaction. Requests and
-responses are considered complete when the corresponding QUIC stream is closed
-in the appropriate direction.
-
-## HTTP Message Exchanges {#request-response}
-
-A client sends an HTTP request on a client-initiated bidirectional QUIC
-stream. A server sends an HTTP response on the same stream as the request.
-
-An HTTP message (request or response) consists of:
-
-1. one header block (see {{frame-headers}}) containing the message header (see
-   {{!RFC7230}}, Section 3.2),
-
-2. the payload body (see {{!RFC7230}}, Section 3.3), sent as a series of DATA
-   frames (see {{frame-data}}),
-
-3. optionally, one header block containing the trailer-part, if present (see
-   {{!RFC7230}}, Section 4.1.2).
-
-In addition, prior to sending the message header block indicated above, a
-response may contain zero or more header blocks containing the message headers
-of informational (1xx) HTTP responses (see {{!RFC7230}}, Section 3.2 and
-{{!RFC7231}}, Section 6.2).
-
-A server MAY interleave one or more PUSH_PROMISE frames (see
-{{frame-push-promise}}) with the frames of a response message. These
-PUSH_PROMISE frames are not part of the response; see {{server-push}} for more
-details.
-
-The "chunked" transfer encoding defined in Section 4.1 of {{!RFC7230}} MUST NOT
-be used.
-
-Trailing header fields are carried in an additional header block following the
-body. Senders MUST send only one header block in the trailers section;
-receivers MUST discard any subsequent header blocks.
-
-An HTTP request/response exchange fully consumes a bidirectional QUIC stream.
-After sending a request, a client closes the stream for sending; after sending a
-response, the server closes the stream for sending and the QUIC stream is fully
-closed.
-
-A server can send a complete response prior to the client sending an entire
-request if the response does not depend on any portion of the request that has
-not been sent and received. When this is true, a server MAY request that the
-client abort transmission of a request without error by triggering a QUIC
-STOP_SENDING with error code HTTP_EARLY_RESPONSE, sending a complete response,
-and cleanly closing its streams. Clients MUST NOT discard complete responses as
-a result of having their request terminated abruptly, though clients can always
-discard responses at their discretion for other reasons.
-
-Changes to the state of a request stream, including receiving a RST_STREAM with
-any error code, do not affect the state of the server's response. Servers do not
-abort a response in progress solely due to a state change on the request stream.
-However, if the request stream terminates without containing a usable HTTP
-request, the server SHOULD abort its response with the error code
-HTTP_INCOMPLETE_REQUEST.
-
-### Header Formatting and Compression
-
-HTTP header fields carry information as a series of key-value pairs. For a
-listing of registered HTTP header fields, see the "Message Header Field"
-registry maintained at <https://www.iana.org/assignments/message-headers>.
-
-Just as in previous versions of HTTP, header field names are strings of ASCII
-characters that are compared in a case-insensitive fashion.  Properties of HTTP
-header field names and values are discussed in more detail in Section 3.2 of
-{{!RFC7230}}, though the wire rendering in HTTP/QUIC differs.  As in HTTP/2,
-header field names MUST be converted to lowercase prior to their encoding.  A
-request or response containing uppercase header field names MUST be treated as
-malformed.
-
-As in HTTP/2, HTTP/QUIC uses special pseudo-header fields beginning with ':'
-character (ASCII 0x3a) to convey the target URI, the method of the request, and
-the status code for the response.  These pseudo-header fields are defined in
-Section 8.1.2.3 and 8.1.2.4 of {{!RFC7540}}. Pseudo-header fields are not HTTP
-header fields.  Endpoints MUST NOT generate pseudo-header fields other than
-those defined in {{!RFC7540}}.  The restrictions on the use of pseudo-header
-fields in Section 8.1.2.1 of {{!RFC7540}} also apply to HTTP/QUIC.
-
-HTTP/QUIC uses QPACK header compression as described in [QPACK], a variation of
-HPACK which allows the flexibility to avoid header-compression-induced
-head-of-line blocking.  See that document for additional details.
-
-### The CONNECT Method
-
-The pseudo-method CONNECT ({{!RFC7231}}, Section 4.3.6) is primarily used with
-HTTP proxies to establish a TLS session with an origin server for the purposes
-of interacting with "https" resources. In HTTP/1.x, CONNECT is used to convert
-an entire HTTP connection into a tunnel to a remote host. In HTTP/2, the CONNECT
-method is used to establish a tunnel over a single HTTP/2 stream to a remote
-host for similar purposes.
-
-A CONNECT request in HTTP/QUIC functions in the same manner as in HTTP/2. The
-request MUST be formatted as described in {{!RFC7540}}, Section 8.3. A CONNECT
-request that does not conform to these restrictions is malformed. The request
-stream MUST NOT be half-closed at the end of the request.
-
-A proxy that supports CONNECT establishes a TCP connection ({{!RFC0793}}) to the
-server identified in the ":authority" pseudo-header field. Once this connection
-is successfully established, the proxy sends a HEADERS frame containing a 2xx
-series status code to the client, as defined in {{!RFC7231}}, Section 4.3.6.
-
-All DATA frames on the request stream correspond to data sent on the TCP
-connection. Any DATA frame sent by the client is transmitted by the proxy to the
-TCP server; data received from the TCP server is packaged into DATA frames by
-the proxy. Note that the size and number of TCP segments is not guaranteed to
-map predictably to the size and number of HTTP DATA or QUIC STREAM frames.
-
-The TCP connection can be closed by either peer. When the client ends the
-request stream (that is, the receive stream at the proxy enters the "Data Recvd"
-state), the proxy will set the FIN bit on its connection to the TCP server. When
-the proxy receives a packet with the FIN bit set, it will terminate the send
-stream that it sends to client. TCP connections which remain half-closed in a
-single direction are not invalid, but are often handled poorly by servers, so
-clients SHOULD NOT close a stream for sending while they still expect to receive
-data from the target of the CONNECT.
-
-A TCP connection error is signaled with RST_STREAM. A proxy treats any error in
-the TCP connection, which includes receiving a TCP segment with the RST bit set,
-as a stream error of type HTTP_CONNECT_ERROR ({{http-error-codes}}).
-Correspondingly, a proxy MUST send a TCP segment with the RST bit set if it
-detects an error with the stream or the QUIC connection.
-
-### Request Cancellation
-
-Either client or server can cancel requests by aborting the stream (QUIC
-RST_STREAM or STOP_SENDING frames, as appropriate) with an error code of
-HTTP_REQUEST_CANCELLED ({{http-error-codes}}).  When the client cancels a
-response, it indicates that this response is no longer of interest. Clients
-SHOULD cancel requests by aborting both directions of a stream.
-
-When the server cancels its response stream using HTTP_REQUEST_CANCELLED, it
-indicates that no application processing was performed.  The client can treat
-requests cancelled by the server as though they had never been sent at all,
-thereby allowing them to be retried later on a new connection.  Servers MUST NOT
-use the HTTP_REQUEST_CANCELLED status for requests which were partially or fully
-processed.
-
-  Note:
-  : In this context, "processed" means that some data from the stream was
-    passed to some higher layer of software that might have taken some action as
-    a result.
-
-If a stream is cancelled after receiving a complete response, the client MAY
-ignore the cancellation and use the response.  However, if a stream is cancelled
-after receiving a partial response, the response SHOULD NOT be used.
-Automatically retrying such requests is not possible, unless this is otherwise
-permitted (e.g., idempotent actions like GET, PUT, or DELETE).
-
-
-## Request Prioritization {#priority}
-
-HTTP/QUIC uses a priority scheme similar to that described in {{!RFC7540}},
-Section 5.3. In this priority scheme, a given stream can be designated as
-dependent upon another request, which expresses the preference that the latter
-stream (the "parent" request) be allocated resources before the former stream
-(the "dependent" request). Taken together, the dependencies across all requests
-in a connection form a dependency tree. The structure of the dependency tree
-changes as PRIORITY frames add, remove, or change the dependency links between
-requests.
-
-The PRIORITY frame {{frame-priority}} identifies a prioritized element. The
-elements which can be prioritized are:
-
-- Requests, identified by the ID of the request stream
-- Pushes, identified by the Push ID of the promised resource
-  ({{frame-push-promise}})
-- Placeholders, identified by a Placeholder ID
-
-An element can depend on another element or on the root of the tree.  A
-reference to an element which is no longer in the tree is treated as a reference
-to the root of the tree.
-
-Only a client can send PRIORITY frames.  A server MUST NOT send a PRIORITY
-frame.
-
-### Placeholders
-
-In HTTP/2, certain implementations used closed or unused streams as placeholders
-in describing the relative priority of requests.  However, this created
-confusion as servers could not reliably identify which elements of the priority
-tree could safely be discarded. Clients could potentially reference closed
-streams long after the server had discarded state, leading to disparate views of
-the prioritization the client had attempted to express.
-
-In HTTP/QUIC, a number of placeholders are explicitly permitted by the server
-using the `SETTINGS_NUM_PLACEHOLDERS` setting. Because the server commits to
-maintain these IDs in the tree, clients can use them with confidence that the
-server will not have discarded the state.
-
-Placeholders are identified by an ID between zero and one less than the number
-of placeholders the server has permitted.
-
-### Priority Tree Maintenance
-
-Servers can aggressively prune inactive regions from the priority tree, because
-placeholders will be used to "root" any persistent structure of the tree which
-the client cares about retaining.  For prioritization purposes, a node in the
-tree is considered "inactive" when the corresponding stream has been closed for
-at least two round-trip times (using any reasonable estimate available on the
-server).  This delay helps mitigate race conditions where the server has pruned
-a node the client believed was still active and used as a Stream Dependency.
-
-Specifically, the server MAY at any time:
-
-- Identify and discard branches of the tree containing only inactive nodes
-  (i.e. a node with only other inactive nodes as descendants, along with those
-  descendants)
-- Identify and condense interior regions of the tree containing only inactive
-  nodes, allocating weight appropriately
-
-~~~~~~~~~~  drawing
-    x                x                 x
-    |                |                 |
-    P                P                 P
-   / \               |                 |
-  I   I     ==>      I      ==>        A
-     / \             |                 |
-    A   I            A                 A
-    |                |
-    A                A
-~~~~~~~~~~
-{: #fig-pruning title="Example of Priority Tree Pruning"}
-
-In the example in {{fig-pruning}}, `P` represents a Placeholder, `A` represents
-an active node, and `I` represents an inactive node.  In the first step, the
-server discards two inactive branches (each a single node).  In the second step,
-the server condenses an interior inactive node.  Note that these transformations
-will result in no change in the resources allocated to a particular active
-stream.
-
-Clients SHOULD assume the server is actively performing such pruning and SHOULD
-NOT declare a dependency on a stream it knows to have been closed.
+HTTP/QUIC does not use server-initiated bidirectional streams; clients MUST omit
+or specify a value of zero for the QUIC transport parameter
+`initial_max_bidi_streams`.
 
 
 ## Unidirectional Streams
@@ -534,8 +317,11 @@ this header is determined by the stream type.
 
 Some stream types are reserved ({{stream-grease}}).  Two stream types are
 defined in this document: control streams ({{control-streams}}) and push streams
-({{server-push}}).  Other stream types can be defined by extensions to
+({{push-streams}}).  Other stream types can be defined by extensions to
 HTTP/QUIC.
+
+Both clients and servers SHOULD send a value of three or greater for the QUIC
+transport parameter `initial_max_uni_streams`.
 
 If the stream header indicates a stream type which is not supported by the
 recipient, the remainder of the stream cannot be consumed as the semantics are
@@ -547,17 +333,6 @@ Implementations MAY send stream types before knowing whether the peer supports
 them.  However, stream types which could modify the state or semantics of
 existing protocol components, including QPACK or other extensions, MUST NOT be
 sent until the peer is known to support them.
-
-### Reserved Stream Types {#stream-grease}
-
-Stream types of the format `0x1f * N` are reserved to exercise the requirement
-that unknown types be ignored. These streams have no semantic meaning, and can
-be sent when application-layer padding is desired.  They MAY also be sent on
-connections where no request data is currently being transferred. Endpoints MUST
-NOT consider these streams to have any meaning upon receipt.
-
-The payload and length of the stream are selected in any manner the
-implementation chooses.
 
 ###  Control Streams
 
@@ -578,31 +353,13 @@ stream.  This allows either peer to send data as soon they are able.  Depending
 on whether 0-RTT is enabled on the connection, either client or server might be
 able to send stream data first after the cryptographic handshake completes.
 
-### Server Push
-
-HTTP/QUIC server push is similar to what is described in HTTP/2 {{!RFC7540}},
-but uses different mechanisms.
-
-The PUSH_PROMISE frame ({{frame-push-promise}}) is sent on the client-initiated
-bidirectional stream that carried the request that generated the push. This
-allows the server push to be associated with a request. Ordering of a
-PUSH_PROMISE in relation to certain parts of the response is important (see
-Section 8.2.1 of {{!RFC7540}}).
-
-The PUSH_PROMISE frame does not reference a stream; it contains a Push ID that
-uniquely identifies a server push. This allows a server to fulfill promises in
-the order that best suits its needs. The same Push ID can be used in multiple
-PUSH_PROMISE frames (see {{frame-push-promise}}). When a server later fulfills
-a promise, the server push response is conveyed on a push stream.
+### Push Streams
 
 A push stream is indicated by a stream type of `0x50` (ASCII 'P'), followed by
 the Push ID of the promise that it fulfills, encoded as a variable-length
 integer. The remaining data on this stream consists of HTTP/QUIC frames, as
-defined in {{frames}}, and carries the response side of an HTTP message exchange
-as described in {{request-response}}. The header of the request message is
-carried by a PUSH_PROMISE frame (see {{frame-push-promise}}) on the request
-stream which generated the push. Promised requests MUST conform to the
-requirements in Section 8.2 of {{!RFC7540}}.
+defined in {{frames}}, and fulfills a promised server push.  Server push and
+Push IDs are described in {{server-push}}.
 
 Only servers can push; if a server receives a client-initiated push stream,
 this MUST be treated as a stream error of type HTTP_WRONG_STREAM_DIRECTION.
@@ -616,30 +373,27 @@ this MUST be treated as a stream error of type HTTP_WRONG_STREAM_DIRECTION.
 ~~~~~~~~~~
 {: #fig-push-stream-header title="Push Stream Header"}
 
-Server push is only enabled on a connection when a client sends a MAX_PUSH_ID
-frame (see {{frame-max-push-id}}). A server cannot use server push
-until it receives a MAX_PUSH_ID frame. A client sends additional MAX_PUSH_ID
-frames to control the number of pushes that a server can promise. A server
-SHOULD use Push IDs sequentially, starting at 0. A client MUST treat receipt
-of a push stream with a Push ID that is greater than the maximum Push ID as a
-connection error of type HTTP_PUSH_LIMIT_EXCEEDED.
-
 Each Push ID MUST only be used once in a push stream header. If a push stream
 header includes a Push ID that was used in another push stream header, the
 client MUST treat this as a connection error of type HTTP_DUPLICATE_PUSH.
 
-If a promised server push is not needed by the client, the client SHOULD send a
-CANCEL_PUSH frame. If the push stream is already open, a QUIC STOP_SENDING frame
-with an appropriate error code can be used instead (e.g., HTTP_PUSH_REFUSED,
-HTTP_PUSH_ALREADY_IN_CACHE; see {{errors}}). This asks the server not to
-transfer the data and indicates that it will be discarded upon receipt.
+### Reserved Stream Types {#stream-grease}
+
+Stream types of the format `0x1f * N` are reserved to exercise the requirement
+that unknown types be ignored. These streams have no semantic meaning, and can
+be sent when application-layer padding is desired.  They MAY also be sent on
+connections where no request data is currently being transferred. Endpoints MUST
+NOT consider these streams to have any meaning upon receipt.
+
+The payload and length of the stream are selected in any manner the
+implementation chooses.
 
 
 # HTTP Framing Layer {#http-framing-layer}
 
 Frames are used on the control stream, request streams, and push streams.  This
-section describes HTTP framing in QUIC and highlights some differences from
-HTTP/2 framing.  For more detail on differences from HTTP/2, see {{h2-frames}}.
+section describes HTTP framing in QUIC.  For a comparison with HTTP/2 frames,
+see {{h2-frames}}.
 
 ## Frame Layout
 
@@ -668,20 +422,12 @@ A frame includes the following fields:
   Frame Payload:
   : A payload, the semantics of which are determined by the Type field.
 
+Each frame's payload MUST contain exactly the identified fields.  A frame that
+contains additional octets after the identified fields or a frame that
+terminates before the end of the identified fields MUST be treated as a
+connection error of type HTTP_MALFORMED_FRAME.
 
 ## Frame Definitions {#frames}
-
-### Reserved Frame Types {#frame-grease}
-
-Frame types of the format `0xb + (0x1f * N)` are reserved to exercise the
-requirement that unknown types be ignored. These frames have no semantic
-meaning, and can be sent when application-layer padding is desired.  They MAY
-also be sent on connections where no request data is currently being
-transferred. Endpoints MUST NOT consider these frames to have any meaning upon
-receipt.
-
-The payload and length of the frames are selected in any manner the
-implementation chooses.
 
 ### DATA {#frame-data}
 
@@ -723,24 +469,17 @@ HEADERS frames can only be sent on request / push streams.
 
 ### PRIORITY {#frame-priority}
 
-The PRIORITY (type=0x02) frame specifies the sender-advised priority of a stream
-and is substantially different in format from {{!RFC7540}}.  In order to ensure
-that prioritization is processed in a consistent order, PRIORITY frames MUST be
-sent on the control stream.  A PRIORITY frame sent on any other stream MUST be
-treated as a HTTP_WRONG_STREAM error.
-
-The format has been modified to accommodate not being sent on a request stream,
-to allow for identification of server pushes, and the larger stream ID space of
-QUIC.  The semantics of the Stream Dependency, Weight, and E flag are otherwise
-the same as in HTTP/2.
+The PRIORITY (type=0x02) frame specifies the sender-advised priority of a
+stream.  In order to ensure that prioritization is processed in a consistent
+order, PRIORITY frames MUST be sent on the control stream.  A PRIORITY frame
+sent on any other stream MUST be treated as a connection error of type
+HTTP_WRONG_STREAM.
 
 ~~~~~~~~~~  drawing
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|PT |DT |Empty|E|
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                 Prioritized Element ID (i)                  ...
+|PT |DT |Empty|E|          Prioritized Element ID (i)         ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                 Element Dependency ID (i)                   ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -773,9 +512,9 @@ The PRIORITY frame payload has the following fields:
 
   Element Dependency ID:
   : A variable-length integer that identifies the element on which a dependency
-    is being expressed. Depending on the value of Dependency Type, this
-    contains the Stream ID of a request stream, the Push ID of a promised
-    resource, or a Placeholder ID of a placeholder.  For details of
+    is being expressed. Depending on the value of Dependency Type, this contains
+    the Stream ID of a request stream, the Push ID of a promised resource, the
+    Placeholder ID of a placeholder, or is ignored.  For details of
     dependencies, see {{priority}} and {{!RFC7540}}, Section 5.3.
 
   Weight:
@@ -812,31 +551,26 @@ type HTTP_MALFORMED_FRAME.
 A PRIORITY frame that references a non-existent Push ID or a Placeholder ID
 greater than the server's limit MUST be treated as a HTTP_MALFORMED_FRAME error.
 
-A PRIORITY frame MUST contain only the identified fields.  A PRIORITY frame that
-contains more or fewer fields, or a PRIORITY frame that includes a truncated
-integer encoding MUST be treated as a connection error of type
-HTTP_MALFORMED_FRAME.
-
 
 ### CANCEL_PUSH {#frame-cancel-push}
 
-The CANCEL_PUSH frame (type=0x3) is used to request cancellation of server push
-prior to the push stream being created.  The CANCEL_PUSH frame identifies a
-server push request by Push ID (see {{frame-push-promise}}) using a
+The CANCEL_PUSH frame (type=0x3) is used to request cancellation of a server
+push prior to the push stream being created.  The CANCEL_PUSH frame identifies a
+server push by Push ID (see {{frame-push-promise}}), encoded as a
 variable-length integer.
 
 When a server receives this frame, it aborts sending the response for the
 identified server push.  If the server has not yet started to send the server
-push, it can use the receipt of a CANCEL_PUSH frame to avoid opening a
+push, it can use the receipt of a CANCEL_PUSH frame to avoid opening a push
 stream.  If the push stream has been opened by the server, the server SHOULD
-send a QUIC RST_STREAM frame on those streams and cease transmission of the
+send a QUIC RST_STREAM frame on that stream and cease transmission of the
 response.
 
-A server can send this frame to indicate that it won't be sending a response
-prior to creation of a push stream.  Once the push stream has been created,
-sending CANCEL_PUSH has no effect on the state of the push stream.  A QUIC
-RST_STREAM frame SHOULD be used instead to cancel transmission of the server
-push response.
+A server can send this frame to indicate that it will not be fulfilling a
+promise prior to creation of a push stream.  Once the push stream has been
+created, sending CANCEL_PUSH has no effect on the state of the push stream.  A
+QUIC RST_STREAM frame SHOULD be used instead to abort transmission of the
+server push response.
 
 A CANCEL_PUSH frame is sent on the control stream.  Sending a CANCEL_PUSH frame
 on a stream other than the control stream MUST be treated as a stream error of
@@ -866,9 +600,10 @@ HTTP_MALFORMED_FRAME.
 ### SETTINGS {#frame-settings}
 
 The SETTINGS frame (type=0x4) conveys configuration parameters that affect how
-endpoints communicate, such as preferences and constraints on peer behavior, and
-is different from {{!RFC7540}}. Individually, a SETTINGS parameter can also be
-referred to as a "setting".
+endpoints communicate, such as preferences and constraints on peer behavior.
+Individually, a SETTINGS parameter can also be referred to as a "setting"; the
+identifier and value of each setting parameter can be referred to as a "setting
+identifier" and a "setting value".
 
 SETTINGS parameters are not negotiated; they describe characteristics of the
 sending peer, which can be used by the receiving peer. However, a negotiation
@@ -896,19 +631,19 @@ QUIC variable-length integer encoding.
 |         Identifier (16)       |           Value (i)         ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~~~~~~~~~~~~~
-{: #fig-ext-settings title="SETTINGS value format"}
+{: #fig-ext-settings title="SETTINGS parameter format"}
 
 Each value MUST be compared against the remaining length of the SETTINGS frame.
-Any value which purports to cross the end of the frame MUST cause the SETTINGS
-frame to be considered malformed and trigger a connection error of type
-HTTP_MALFORMED_FRAME.
+A variable-length integer value which cannot fit within the remaining length of
+the SETTINGS frame MUST cause the SETTINGS frame to be considered malformed and
+trigger a connection error of type HTTP_MALFORMED_FRAME.
 
 An implementation MUST ignore the contents for any SETTINGS identifier it does
 not understand.
 
 SETTINGS frames always apply to a connection, never a single stream.  A SETTINGS
-frame MUST be sent as the first frame of either control stream (see
-{{stream-mapping}}) by each peer, and MUST NOT be sent subsequently or on any
+frame MUST be sent as the first frame of each control stream (see
+{{control-streams}}) by each peer, and MUST NOT be sent subsequently or on any
 other stream. If an endpoint receives a SETTINGS frame on a different stream,
 the endpoint MUST respond with a connection error of type HTTP_WRONG_STREAM.  If
 an endpoint receives a second SETTINGS frame, the endpoint MUST respond with a
@@ -929,17 +664,18 @@ The following settings are defined in HTTP/QUIC:
   SETTINGS_MAX_HEADER_LIST_SIZE (0x6):
   : The default value is unlimited.
 
-Settings values of the format `0x?a?a` are reserved to exercise the requirement
-that unknown parameters be ignored.  Such settings have no defined meaning.
-Endpoints SHOULD include at least one such setting in their SETTINGS frame.
-Endpoints MUST NOT consider such settings to have any meaning upon receipt.
+Setting identifiers of the format `0x?a?a` are reserved to exercise the
+requirement that unknown identifiers be ignored.  Such settings have no defined
+meaning. Endpoints SHOULD include at least one such setting in their SETTINGS
+frame. Endpoints MUST NOT consider such settings to have any meaning upon
+receipt.
 
 Because the setting has no defined meaning, the value of the setting can be any
 value the implementation selects.
 
 Additional settings MAY be defined by extensions to HTTP/QUIC.
 
-#### Initial SETTINGS Values
+#### Initialization
 
 When a 0-RTT QUIC connection is being used, the client's initial requests will
 be sent before the arrival of the server's SETTINGS frame.  Clients MUST store
@@ -963,8 +699,8 @@ prior to receiving and processing the server's SETTINGS frame.
 
 ### PUSH_PROMISE {#frame-push-promise}
 
-The PUSH_PROMISE frame (type=0x05) is used to carry a request header set from
-server to client, as in HTTP/2.
+The PUSH_PROMISE frame (type=0x05) is used to carry a promised request header
+set from server to client, as in HTTP/2.
 
 ~~~~~~~~~~  drawing
  0                   1                   2                   3
@@ -980,8 +716,8 @@ server to client, as in HTTP/2.
 The payload consists of:
 
 Push ID:
-: A variable-length integer that identifies the server push request.  A push ID
-  is used in push stream header ({{server-push}}), CANCEL_PUSH frames
+: A variable-length integer that identifies the server push operation.  A Push
+  ID is used in push stream headers ({{server-push}}), CANCEL_PUSH frames
   ({{frame-cancel-push}}), and PRIORITY frames ({{frame-priority}}).
 
 Header Block:
@@ -1064,7 +800,7 @@ a MAX_PUSH_ID frame as a connection error of type HTTP_MALFORMED_FRAME.
 The maximum Push ID is unset when a connection is created, meaning that a server
 cannot push until it receives a MAX_PUSH_ID frame.  A client that wishes to
 manage the number of promised server pushes can increase the maximum Push ID by
-sending a MAX_PUSH_ID frame as the server fulfills or cancels server pushes.
+sending MAX_PUSH_ID frames as the server fulfills or cancels server pushes.
 
 ~~~~~~~~~~  drawing
  0                   1                   2                   3
@@ -1085,6 +821,295 @@ A server MUST treat a MAX_PUSH_ID frame payload that does not contain a single
 variable-length integer as a connection error of type
 HTTP_MALFORMED_FRAME.
 
+### Reserved Frame Types {#frame-grease}
+
+Frame types of the format `0xb + (0x1f * N)` are reserved to exercise the
+requirement that unknown types be ignored ({{extensions}}). These frames have no
+semantic value, and can be sent when application-layer padding is desired. They
+MAY also be sent on connections where no request data is currently being
+transferred. Endpoints MUST NOT consider these frames to have any meaning upon
+receipt.
+
+The payload and length of the frames are selected in any manner the
+implementation chooses.
+
+
+# HTTP Request Lifecycle
+
+## HTTP Message Exchanges {#request-response}
+
+A client sends an HTTP request on a client-initiated bidirectional QUIC
+stream. A server sends an HTTP response on the same stream as the request.
+
+An HTTP message (request or response) consists of:
+
+1. the message header (see {{!RFC7230}}, Section 3.2), sent as a single HEADERS
+   frame (see {{frame-headers}}),
+
+2. the payload body (see {{!RFC7230}}, Section 3.3), sent as a series of DATA
+   frames (see {{frame-data}}),
+
+3. optionally, one HEADERS frame containing the trailer-part, if present (see
+   {{!RFC7230}}, Section 4.1.2).
+
+A server MAY interleave one or more PUSH_PROMISE frames (see
+{{frame-push-promise}}) with the frames of a response message. These
+PUSH_PROMISE frames are not part of the response; see {{server-push}} for more
+details.
+
+The "chunked" transfer encoding defined in Section 4.1 of {{!RFC7230}} MUST NOT
+be used.
+
+Trailing header fields are carried in an additional header block following the
+body. Senders MUST send only one header block in the trailers section;
+receivers MUST discard any subsequent header blocks.
+
+A response MAY consist of multiple messages when and only when one or more
+informational responses (1xx, see {{!RFC7231}}, Section 6.2) precede a final
+response to the same request.  Non-final responses do not contain a payload body
+or trailers.
+
+An HTTP request/response exchange fully consumes a bidirectional QUIC stream.
+After sending a request, a client closes the stream for sending; after sending a
+final response, the server closes the stream for sending and the QUIC stream is
+fully closed.  Requests and responses are considered complete when the
+corresponding QUIC stream is closed in the appropriate direction.
+
+A server can send a complete response prior to the client sending an entire
+request if the response does not depend on any portion of the request that has
+not been sent and received. When this is true, a server MAY request that the
+client abort transmission of a request without error by triggering a QUIC
+STOP_SENDING frame with error code HTTP_EARLY_RESPONSE, sending a complete
+response, and cleanly closing its stream. Clients MUST NOT discard complete
+responses as a result of having their request terminated abruptly, though
+clients can always discard responses at their discretion for other reasons.
+
+Changes to the state of a request stream, including receiving a RST_STREAM with
+any error code, do not affect the state of the server's response. Servers do not
+abort a response in progress solely due to a state change on the request stream.
+However, if the request stream terminates without containing a usable HTTP
+request, the server SHOULD abort its response with the error code
+HTTP_INCOMPLETE_REQUEST.
+
+
+### Header Formatting and Compression
+
+HTTP message headers carry information as a series of key-value pairs, called
+header fields. For a listing of registered HTTP header fields, see the "Message
+Header Field" registry maintained at
+<https://www.iana.org/assignments/message-headers>.
+
+Just as in previous versions of HTTP, header field names are strings of ASCII
+characters that are compared in a case-insensitive fashion.  Properties of HTTP
+header field names and values are discussed in more detail in Section 3.2 of
+{{!RFC7230}}, though the wire rendering in HTTP/QUIC differs.  As in HTTP/2,
+header field names MUST be converted to lowercase prior to their encoding.  A
+request or response containing uppercase header field names MUST be treated as
+malformed.
+
+As in HTTP/2, HTTP/QUIC uses special pseudo-header fields beginning with the ':'
+character (ASCII 0x3a) to convey the target URI, the method of the request, and
+the status code for the response.  These pseudo-header fields are defined in
+Section 8.1.2.3 and 8.1.2.4 of {{!RFC7540}}. Pseudo-header fields are not HTTP
+header fields.  Endpoints MUST NOT generate pseudo-header fields other than
+those defined in {{!RFC7540}}.  The restrictions on the use of pseudo-header
+fields in Section 8.1.2.1 of {{!RFC7540}} also apply to HTTP/QUIC.
+
+HTTP/QUIC uses QPACK header compression as described in [QPACK], a variation of
+HPACK which allows the flexibility to avoid header-compression-induced
+head-of-line blocking.  See that document for additional details.
+
+An HTTP/QUIC implementation MAY impose a limit on the maximum size of the header
+it will accept on an individual HTTP message.  This limit is conveyed as a
+number of octets in the `SETTINGS_MAX_HEADER_LIST_SIZE` parameter.  The size of
+a header list is calculated based on the uncompressed size of header fields,
+including the length of the name and value in octets plus an overhead of 32
+octets for each header field.  Encountering a message header larger than this
+value SHOULD be treated as a stream error of type `HTTP_EXCESSIVE_LOAD`.
+
+### Request Cancellation
+
+Either client or server can cancel requests by aborting the stream (QUIC
+RST_STREAM and/or STOP_SENDING frames, as appropriate) with an error code of
+HTTP_REQUEST_CANCELLED ({{http-error-codes}}).  When the client cancels a
+response, it indicates that this response is no longer of interest.
+Implementations SHOULD cancel requests by aborting both directions of a stream.
+
+When the server aborts its response stream using HTTP_REQUEST_CANCELLED, it
+indicates that no application processing was performed.  The client can treat
+requests cancelled by the server as though they had never been sent at all,
+thereby allowing them to be retried later on a new connection.  Servers MUST NOT
+use the HTTP_REQUEST_CANCELLED status for requests which were partially or fully
+processed.
+
+  Note:
+  : In this context, "processed" means that some data from the stream was
+    passed to some higher layer of software that might have taken some action as
+    a result.
+
+If a stream is cancelled after receiving a complete response, the client MAY
+ignore the cancellation and use the response.  However, if a stream is cancelled
+after receiving a partial response, the response SHOULD NOT be used.
+Automatically retrying such requests is not possible, unless this is otherwise
+permitted (e.g., idempotent actions like GET, PUT, or DELETE).
+
+
+## The CONNECT Method
+
+The pseudo-method CONNECT ({{!RFC7231}}, Section 4.3.6) is primarily used with
+HTTP proxies to establish a TLS session with an origin server for the purposes
+of interacting with "https" resources. In HTTP/1.x, CONNECT is used to convert
+an entire HTTP connection into a tunnel to a remote host. In HTTP/2, the CONNECT
+method is used to establish a tunnel over a single HTTP/2 stream to a remote
+host for similar purposes.
+
+A CONNECT request in HTTP/QUIC functions in the same manner as in HTTP/2. The
+request MUST be formatted as described in {{!RFC7540}}, Section 8.3. A CONNECT
+request that does not conform to these restrictions is malformed. The request
+stream MUST NOT be closed at the end of the request.
+
+A proxy that supports CONNECT establishes a TCP connection ({{!RFC0793}}) to the
+server identified in the ":authority" pseudo-header field. Once this connection
+is successfully established, the proxy sends a HEADERS frame containing a 2xx
+series status code to the client, as defined in {{!RFC7231}}, Section 4.3.6.
+
+All DATA frames on the stream correspond to data sent or received on the TCP
+connection. Any DATA frame sent by the client is transmitted by the proxy to the
+TCP server; data received from the TCP server is packaged into DATA frames by
+the proxy. Note that the size and number of TCP segments is not guaranteed to
+map predictably to the size and number of HTTP DATA or QUIC STREAM frames.
+
+The TCP connection can be closed by either peer. When the client ends the
+request stream (that is, the receive stream at the proxy enters the "Data Recvd"
+state), the proxy will set the FIN bit on its connection to the TCP server. When
+the proxy receives a packet with the FIN bit set, it will terminate the send
+stream that it sends to the client. TCP connections which remain half-closed in
+a single direction are not invalid, but are often handled poorly by servers, so
+clients SHOULD NOT close a stream for sending while they still expect to receive
+data from the target of the CONNECT.
+
+A TCP connection error is signaled with RST_STREAM. A proxy treats any error in
+the TCP connection, which includes receiving a TCP segment with the RST bit set,
+as a stream error of type HTTP_CONNECT_ERROR ({{http-error-codes}}).
+Correspondingly, a proxy MUST send a TCP segment with the RST bit set if it
+detects an error with the stream or the QUIC connection.
+
+## Request Prioritization {#priority}
+
+HTTP/QUIC uses a priority scheme similar to that described in {{!RFC7540}},
+Section 5.3. In this priority scheme, a given stream can be designated as
+dependent upon another request, which expresses the preference that the latter
+stream (the "parent" request) be allocated resources before the former stream
+(the "dependent" request). Taken together, the dependencies across all requests
+in a connection form a dependency tree. The structure of the dependency tree
+changes as PRIORITY frames add, remove, or change the dependency links between
+requests.
+
+The PRIORITY frame {{frame-priority}} identifies a prioritized element. The
+elements which can be prioritized are:
+
+- Requests, identified by the ID of the request stream
+- Pushes, identified by the Push ID of the promised resource
+  ({{frame-push-promise}})
+- Placeholders, identified by a Placeholder ID
+
+An element can depend on another element or on the root of the tree.  A
+reference to an element which is no longer in the tree is treated as a reference
+to the root of the tree.
+
+### Placeholders
+
+In HTTP/2, certain implementations used closed or unused streams as placeholders
+in describing the relative priority of requests.  However, this created
+confusion as servers could not reliably identify which elements of the priority
+tree could safely be discarded. Clients could potentially reference closed
+streams long after the server had discarded state, leading to disparate views of
+the prioritization the client had attempted to express.
+
+In HTTP/QUIC, a number of placeholders are explicitly permitted by the server
+using the `SETTINGS_NUM_PLACEHOLDERS` setting. Because the server commits to
+maintain these IDs in the tree, clients can use them with confidence that the
+server will not have discarded the state.
+
+Placeholders are identified by an ID between zero and one less than the number
+of placeholders the server has permitted.
+
+### Priority Tree Maintenance
+
+Servers can aggressively prune inactive regions from the priority tree, because
+placeholders will be used to "root" any persistent structure of the tree which
+the client cares about retaining.  For prioritization purposes, a node in the
+tree is considered "inactive" when the corresponding stream has been closed for
+at least two round-trip times (using any reasonable estimate available on the
+server).  This delay helps mitigate race conditions where the server has pruned
+a node the client believed was still active and used as a Stream Dependency.
+
+Specifically, the server MAY at any time:
+
+- Identify and discard branches of the tree containing only inactive nodes
+  (i.e. a node with only other inactive nodes as descendants, along with those
+  descendants)
+- Identify and condense interior regions of the tree containing only inactive
+  nodes, allocating weight appropriately
+
+~~~~~~~~~~  drawing
+    x                x                 x
+    |                |                 |
+    P                P                 P
+   / \               |                 |
+  I   I     ==>      I      ==>        A
+     / \             |                 |
+    A   I            A                 A
+    |                |
+    A                A
+~~~~~~~~~~
+{: #fig-pruning title="Example of Priority Tree Pruning"}
+
+In the example in {{fig-pruning}}, `P` represents a Placeholder, `A` represents
+an active node, and `I` represents an inactive node.  In the first step, the
+server discards two inactive branches (each a single node).  In the second step,
+the server condenses an interior inactive node.  Note that these transformations
+will result in no change in the resources allocated to a particular active
+stream.
+
+Clients SHOULD assume the server is actively performing such pruning and SHOULD
+NOT declare a dependency on a stream it knows to have been closed.
+
+## Server Push
+
+HTTP/QUIC server push is similar to what is described in HTTP/2 {{!RFC7540}},
+but uses different mechanisms.
+
+Each server push is identified by a unique Push ID. The same Push ID can be used
+in one or more PUSH_PROMISE frames (see {{frame-push-promise}}), then included
+with the push stream which ultimately fulfills those promises.
+
+Server push is only enabled on a connection when a client sends a MAX_PUSH_ID
+frame (see {{frame-max-push-id}}). A server cannot use server push
+until it receives a MAX_PUSH_ID frame. A client sends additional MAX_PUSH_ID
+frames to control the number of pushes that a server can promise. A server
+SHOULD use Push IDs sequentially, starting at 0. A client MUST treat receipt
+of a push stream with a Push ID that is greater than the maximum Push ID as a
+connection error of type HTTP_PUSH_LIMIT_EXCEEDED.
+
+The header of the request message is carried by a PUSH_PROMISE frame (see
+{{frame-push-promise}}) on the request stream which generated the push. This
+allows the server push to be associated with a client request. Ordering of a
+PUSH_PROMISE in relation to certain parts of the response is important (see
+Section 8.2.1 of {{!RFC7540}}).  Promised requests MUST conform to the
+requirements in Section 8.2 of {{!RFC7540}}.
+
+When a server later fulfills a promise, the server push response is conveyed on
+a push stream (see {{push-streams}}). The push stream identifies the Push ID of
+the promise that it fulfills, then contains a response to the promised request
+using the same format described for responses in {{request-response}}.
+
+If a promised server push is not needed by the client, the client SHOULD send a
+CANCEL_PUSH frame. If the push stream is already open or opens after sending the
+CANCEL_PUSH frame, a QUIC STOP_SENDING frame with an appropriate error code can
+also be used (e.g., HTTP_PUSH_REFUSED, HTTP_PUSH_ALREADY_IN_CACHE; see
+{{errors}}). This asks the server not to transfer additional data and indicates
+that it will be discarded upon receipt.
 
 # Connection Closure
 
@@ -1192,12 +1217,51 @@ interrupts connectivity.
 If a connection terminates without a GOAWAY frame, clients MUST assume that any
 request which was sent, whether in whole or in part, might have been processed.
 
+# Extensions to HTTP/QUIC {#extensions}
+
+HTTP/QUIC permits extension of the protocol.  Within the limitations described
+in this section, protocol extensions can be used to provide additional services
+or alter any aspect of the protocol.  Extensions are effective only within the
+scope of a single HTTP/QUIC connection.
+
+This applies to the protocol elements defined in this document.  This does not
+affect the existing options for extending HTTP, such as defining new methods,
+status codes, or header fields.
+
+Extensions are permitted to use new frame types ({{frames}}), new settings
+({{settings-parameters}}), new error codes ({{errors}}), or new unidirectional
+stream types ({{unidirectional-streams}}).  Registries are established for
+managing these extension points: frame types ({{iana-frames}}), settings
+({{iana-settings}}), error codes ({{iana-error-codes}}), and stream types
+({{iana-stream-types}}).
+
+Implementations MUST ignore unknown or unsupported values in all extensible
+protocol elements.  Implementations MUST discard frames and unidirectional
+streams that have unknown or unsupported types.  This means that any of these
+extension points can be safely used by extensions without prior arrangement or
+negotiation.
+
+Extensions that could change the semantics of existing protocol components MUST
+be negotiated before being used.  For example, an extension that changes the
+layout of the HEADERS frame cannot be used until the peer has given a positive
+signal that this is acceptable. In this case, it could also be necessary to
+coordinate when the revised layout comes into effect.
+
+This document doesn't mandate a specific method for negotiating the use of an
+extension but notes that a setting ({{settings-parameters}}) could be used for
+that purpose.  If both peers set a value that indicates willingness to use the
+extension, then the extension can be used.  If a setting is used for extension
+negotiation, the default value MUST be defined in such a fashion that the
+extension is disabled if the setting is omitted.
+
+
 # Error Handling {#errors}
 
 QUIC allows the application to abruptly terminate (reset) individual streams or
 the entire connection when an error is encountered.  These are referred to as
 "stream errors" or "connection errors" and are described in more detail in
-{{QUIC-TRANSPORT}}.
+{{QUIC-TRANSPORT}}.  An endpoint MAY choose to treat a stream error as a
+connection error.
 
 This section describes HTTP/QUIC-specific error codes which can be used to
 express the cause of a connection or stream error.
@@ -1283,289 +1347,22 @@ HTTP_MALFORMED_FRAME (0x01XX):
   be indicated with the code (0x10D).
 
 
-# Extensions to HTTP/QUIC
-
-HTTP/QUIC permits extension of the protocol.  Within the limitations described
-in this section, protocol extensions can be used to provide additional services
-or alter any aspect of the protocol.  Extensions are effective only within the
-scope of a single HTTP/QUIC connection.
-
-This applies to the protocol elements defined in this document.  This does not
-affect the existing options for extending HTTP, such as defining new methods,
-status codes, or header fields.
-
-Extensions are permitted to use new frame types ({{frames}}), new settings
-({{settings-parameters}}), new error codes ({{errors}}), or new unidirectional
-stream types ({{unidirectional-streams}}).  Registries are established for
-managing these extension points: frame types ({{iana-frames}}), settings
-({{iana-settings}}), error codes ({{iana-error-codes}}), and stream types
-({{iana-stream-types}}).
-
-Implementations MUST ignore unknown or unsupported values in all extensible
-protocol elements.  Implementations MUST discard frames and unidirectional
-streams that have unknown or unsupported types.  This means that any of these
-extension points can be safely used by extensions without prior arrangement or
-negotiation.
-
-Extensions that could change the semantics of existing protocol components MUST
-be negotiated before being used.  For example, an extension that changes the
-layout of the HEADERS frame cannot be used until the peer has given a positive
-signal that this is acceptable. In this case, it could also be necessary to
-coordinate when the revised layout comes into effect.
-
-This document doesn't mandate a specific method for negotiating the use of an
-extension but notes that a setting ({{settings-parameters}}) could be used for
-that purpose.  If both peers set a value that indicates willingness to use the
-extension, then the extension can be used.  If a setting is used for extension
-negotiation, the default value MUST be defined in such a fashion that the
-extension is disabled if the setting is omitted.
-
-
-# Considerations for Transitioning from HTTP/2
-
-HTTP/QUIC is strongly informed by HTTP/2, and bears many similarities.  This
-section describes the approach taken to design HTTP/QUIC, points out important
-differences from HTTP/2, and describes how to map HTTP/2 extensions into
-HTTP/QUIC.
-
-HTTP/QUIC begins from the premise that HTTP/2 code reuse is a useful feature,
-but not a hard requirement.  HTTP/QUIC departs from HTTP/2 primarily where
-necessary to accommodate the differences in behavior between QUIC and TCP (lack
-of ordering, support for streams).  We intend to avoid gratuitous changes which
-make it difficult or impossible to build extensions with the same semantics
-applicable to both protocols at once.
-
-These departures are noted in this section.
-
-## Streams {#h2-streams}
-
-HTTP/QUIC permits use of a larger number of streams (2^62-1) than HTTP/2.  The
-considerations about exhaustion of stream identifier space apply, though the
-space is significantly larger such that it is likely that other limits in QUIC
-are reached first, such as the limit on the connection flow control window.
-
-## HTTP Frame Types {#h2-frames}
-
-Many framing concepts from HTTP/2 can be elided away on QUIC, because the
-transport deals with them. Because frames are already on a stream, they can omit
-the stream number. Because frames do not block multiplexing (QUIC's multiplexing
-occurs below this layer), the support for variable-maximum-length packets can be
-removed. Because stream termination is handled by QUIC, an END_STREAM flag is
-not required.  This permits the removal of the Flags field from the generic
-frame layout.
-
-Frame payloads are largely drawn from {{!RFC7540}}. However, QUIC includes many
-features (e.g. flow control) which are also present in HTTP/2. In these cases,
-the HTTP mapping does not re-implement them. As a result, several HTTP/2 frame
-types are not required in HTTP/QUIC. Where an HTTP/2-defined frame is no longer
-used, the frame ID has been reserved in order to maximize portability between
-HTTP/2 and HTTP/QUIC implementations. However, even equivalent frames between
-the two mappings are not identical.
-
-Many of the differences arise from the fact that HTTP/2 provides an absolute
-ordering between frames across all streams, while QUIC provides this guarantee
-on each stream only.  As a result, if a frame type makes assumptions that frames
-from different streams will still be received in the order sent, HTTP/QUIC will
-break them.
-
-For example, implicit in the HTTP/2 prioritization scheme is the notion of
-in-order delivery of priority changes (i.e., dependency tree mutations): since
-operations on the dependency tree such as reparenting a subtree are not
-commutative, both sender and receiver must apply them in the same order to
-ensure that both sides have a consistent view of the stream dependency tree.
-HTTP/2 specifies priority assignments in PRIORITY frames and (optionally) in
-HEADERS frames. To achieve in-order delivery of priority changes in HTTP/QUIC,
-PRIORITY frames are sent on the control stream and the PRIORITY section is
-removed from the HEADERS frame.
-
-Likewise, HPACK was designed with the assumption of in-order delivery. A
-sequence of encoded header blocks must arrive (and be decoded) at an endpoint in
-the same order in which they were encoded. This ensures that the dynamic state
-at the two endpoints remains in sync.  As a result, HTTP/QUIC uses a modified
-version of HPACK, described in [QPACK].
-
-Frame type definitions in HTTP/QUIC often use the QUIC variable-length integer
-encoding.  In particular, Stream IDs use this encoding, which allow for a larger
-range of possible values than the encoding used in HTTP/2.  Some frames in
-HTTP/QUIC use an identifier rather than a Stream ID (e.g. Push IDs in PRIORITY
-frames). Redefinition of the encoding of extension frame types might be
-necessary if the encoding includes a Stream ID.
-
-Because the Flags field is not present in generic HTTP/QUIC frames, those frames
-which depend on the presence of flags need to allocate space for flags as part
-of their frame payload.
-
-Other than this issue, frame type HTTP/2 extensions are typically portable to
-QUIC simply by replacing Stream 0 in HTTP/2 with a control stream in HTTP/QUIC.
-HTTP/QUIC extensions will not assume ordering, but would not be harmed by
-ordering, and would be portable to HTTP/2 in the same manner.
-
-Below is a listing of how each HTTP/2 frame type is mapped:
-
-DATA (0x0):
-: Padding is not defined in HTTP/QUIC frames.  See {{frame-data}}.
-
-HEADERS (0x1):
-: As described above, the PRIORITY region of HEADERS is not supported. A
-  separate PRIORITY frame MUST be used. Padding is not defined in HTTP/QUIC
-  frames.  See {{frame-headers}}.
-
-PRIORITY (0x2):
-: As described above, the PRIORITY frame is sent on the control stream and can
-  reference either a Stream ID or a Push ID.  See {{frame-priority}}.
-
-RST_STREAM (0x3):
-: RST_STREAM frames do not exist, since QUIC provides stream lifecycle
-  management.  The same code point is used for the CANCEL_PUSH frame
-  ({{frame-cancel-push}}).
-
-SETTINGS (0x4):
-: SETTINGS frames are sent only at the beginning of the connection.  See
-  {{frame-settings}} and {{h2-settings}}.
-
-PUSH_PROMISE (0x5):
-: The PUSH_PROMISE does not reference a stream; instead the push stream
-  references the PUSH_PROMISE frame using a Push ID.  See
-  {{frame-push-promise}}.
-
-PING (0x6):
-: PING frames do not exist, since QUIC provides equivalent functionality.
-
-GOAWAY (0x7):
-: GOAWAY is sent only from server to client and does not contain an error code.
-  See {{frame-goaway}}.
-
-WINDOW_UPDATE (0x8):
-: WINDOW_UPDATE frames do not exist, since QUIC provides flow control.
-
-CONTINUATION (0x9):
-: CONTINUATION frames do not exist; instead, larger HEADERS/PUSH_PROMISE
-  frames than HTTP/2 are permitted, and HEADERS frames can be used in series.
-
-Frame types defined by extensions to HTTP/2 need to be separately registered for
-HTTP/QUIC if still applicable.  The IDs of frames defined in {{!RFC7540}} have
-been reserved for simplicity.  See {{iana-frames}}.
-
-## HTTP/2 SETTINGS Parameters {#h2-settings}
-
-An important difference from HTTP/2 is that settings are sent once, at the
-beginning of the connection, and thereafter cannot change.  This eliminates
-many corner cases around synchronization of changes.
-
-Some transport-level options that HTTP/2 specifies via the SETTINGS frame are
-superseded by QUIC transport parameters in HTTP/QUIC. The HTTP-level options
-that are retained in HTTP/QUIC have the same value as in HTTP/2.
-
-Below is a listing of how each HTTP/2 SETTINGS parameter is mapped:
-
-SETTINGS_HEADER_TABLE_SIZE:
-: See {{settings-parameters}}.
-
-SETTINGS_ENABLE_PUSH:
-: This is removed in favor of the MAX_PUSH_ID which provides a more granular
-  control over server push.
-
-SETTINGS_MAX_CONCURRENT_STREAMS:
-: QUIC controls the largest open Stream ID as part of its flow control logic.
-  Specifying SETTINGS_MAX_CONCURRENT_STREAMS in the SETTINGS frame is an error.
-
-SETTINGS_INITIAL_WINDOW_SIZE:
-: QUIC requires both stream and connection flow control window sizes to be
-  specified in the initial transport handshake.  Specifying
-  SETTINGS_INITIAL_WINDOW_SIZE in the SETTINGS frame is an error.
-
-SETTINGS_MAX_FRAME_SIZE:
-: This setting has no equivalent in HTTP/QUIC.  Specifying it in the SETTINGS
-  frame is an error.
-
-SETTINGS_MAX_HEADER_LIST_SIZE:
-: See {{settings-parameters}}.
-
-In HTTP/QUIC, setting values are variable-length integers (6, 14, 30, or 62 bits
-long) rather than fixed-length 32-bit fields as in HTTP/2.  This will often
-produce a shorter encoding, but can produce a longer encoding for settings which
-use the full 32-bit space.  Settings ported from HTTP/2 might choose to redefine
-the format of their settings to avoid using the 62-bit encoding.
-
-Settings need to be defined separately for HTTP/2 and HTTP/QUIC.  The IDs of
-settings defined in {{!RFC7540}} have been reserved for simplicity.  See
-{{iana-settings}}.
-
-
-## HTTP/2 Error Codes
-
-QUIC has the same concepts of "stream" and "connection" errors that HTTP/2
-provides. However, because the error code space is shared between multiple
-components, there is no direct portability of HTTP/2 error codes.
-
-The HTTP/2 error codes defined in Section 7 of {{!RFC7540}} map to the HTTP/QUIC
-error codes as follows:
-
-NO_ERROR (0x0):
-: HTTP_NO_ERROR in {{http-error-codes}}.
-
-PROTOCOL_ERROR (0x1):
-: No single mapping.  See new HTTP_MALFORMED_FRAME error codes defined in
-  {{http-error-codes}}.
-
-INTERNAL_ERROR (0x2):
-: HTTP_INTERNAL_ERROR in {{http-error-codes}}.
-
-FLOW_CONTROL_ERROR (0x3):
-: Not applicable, since QUIC handles flow control.  Would provoke a
-  QUIC_FLOW_CONTROL_RECEIVED_TOO_MUCH_DATA from the QUIC layer.
-
-SETTINGS_TIMEOUT (0x4):
-: Not applicable, since no acknowledgement of SETTINGS is defined.
-
-STREAM_CLOSED (0x5):
-: Not applicable, since QUIC handles stream management.  Would provoke a
-  QUIC_STREAM_DATA_AFTER_TERMINATION from the QUIC layer.
-
-FRAME_SIZE_ERROR (0x6):
-: No single mapping.  See new error codes defined in {{http-error-codes}}.
-
-REFUSED_STREAM (0x7):
-: Not applicable, since QUIC handles stream management.  Would provoke a
-  QUIC_TOO_MANY_OPEN_STREAMS from the QUIC layer.
-
-CANCEL (0x8):
-: HTTP_REQUEST_CANCELLED in {{http-error-codes}}.
-
-COMPRESSION_ERROR (0x9):
-: HTTP_QPACK_DECOMPRESSION_FAILED in [QPACK].
-
-CONNECT_ERROR (0xa):
-: HTTP_CONNECT_ERROR in {{http-error-codes}}.
-
-ENHANCE_YOUR_CALM (0xb):
-: HTTP_EXCESSIVE_LOAD in {{http-error-codes}}.
-
-INADEQUATE_SECURITY (0xc):
-: Not applicable, since QUIC is assumed to provide sufficient security on all
-  connections.
-
-HTTP_1_1_REQUIRED (0xd):
-: HTTP_VERSION_FALLBACK in {{http-error-codes}}.
-
-Error codes need to be defined for HTTP/2 and HTTP/QUIC separately.  See
-{{iana-error-codes}}.
-
 # Security Considerations
 
 The security considerations of HTTP/QUIC should be comparable to those of HTTP/2
-with TLS.  Note that where HTTP/2 employs PADDING frames to make a connection
-more resistant to traffic analysis, HTTP/QUIC can rely on QUIC's own PADDING
-frames or employ the reserved frame and stream types discussed in
-{{frame-grease}} and {{stream-grease}}.
+with TLS.  Note that where HTTP/2 employs PADDING frames and Padding fields in
+other frames to make a connection more resistant to traffic analysis, HTTP/QUIC
+can rely on QUIC PADDING frames or employ the reserved frame and stream types
+discussed in {{frame-grease}} and {{stream-grease}}.
 
 When HTTP Alternative Services is used for discovery for HTTP/QUIC endpoints,
 the security considerations of {{!ALTSVC}} also apply.
 
-The modified SETTINGS format contains nested length elements, which could pose
-a security risk to an incautious implementer.  A SETTINGS frame parser MUST
-ensure that the length of the frame exactly matches the length of the settings
-it contains.
+Several protocol elements contain nested length elements, typically in the form
+of frames with an explicit length containing variable-length integers.  This
+could pose a security risk to an incautious implementer.  An implementation MUST
+ensure that the length of a frame exactly matches the length of the fields it
+contains.
 
 
 # IANA Considerations
@@ -1804,10 +1601,243 @@ Sender:
 
 --- back
 
+# Considerations for Transitioning from HTTP/2
+
+HTTP/QUIC is strongly informed by HTTP/2, and bears many similarities.  This
+section describes the approach taken to design HTTP/QUIC, points out important
+differences from HTTP/2, and describes how to map HTTP/2 extensions into
+HTTP/QUIC.
+
+HTTP/QUIC begins from the premise that similarity to HTTP/2 is preferable,
+but not a hard requirement.  HTTP/QUIC departs from HTTP/2 primarily where
+necessary to accommodate the differences in behavior between QUIC and TCP (lack
+of ordering, support for streams).  We intend to avoid gratuitous changes which
+make it difficult or impossible to build extensions with the same semantics
+applicable to both protocols at once.
+
+These departures are noted in this section.
+
+## Streams {#h2-streams}
+
+HTTP/QUIC permits use of a larger number of streams (2^62-1) than HTTP/2.  The
+considerations about exhaustion of stream identifier space apply, though the
+space is significantly larger such that it is likely that other limits in QUIC
+are reached first, such as the limit on the connection flow control window.
+
+## HTTP Frame Types {#h2-frames}
+
+Many framing concepts from HTTP/2 can be elided away on QUIC, because the
+transport deals with them. Because frames are already on a stream, they can omit
+the stream number. Because frames do not block multiplexing (QUIC's multiplexing
+occurs below this layer), the support for variable-maximum-length packets can be
+removed. Because stream termination is handled by QUIC, an END_STREAM flag is
+not required.  This permits the removal of the Flags field from the generic
+frame layout.
+
+Frame payloads are largely drawn from {{!RFC7540}}. However, QUIC includes many
+features (e.g. flow control) which are also present in HTTP/2. In these cases,
+the HTTP mapping does not re-implement them. As a result, several HTTP/2 frame
+types are not required in HTTP/QUIC. Where an HTTP/2-defined frame is no longer
+used, the frame ID has been reserved in order to maximize portability between
+HTTP/2 and HTTP/QUIC implementations. However, even equivalent frames between
+the two mappings are not identical.
+
+Many of the differences arise from the fact that HTTP/2 provides an absolute
+ordering between frames across all streams, while QUIC provides this guarantee
+on each stream only.  As a result, if a frame type makes assumptions that frames
+from different streams will still be received in the order sent, HTTP/QUIC will
+break them.
+
+For example, implicit in the HTTP/2 prioritization scheme is the notion of
+in-order delivery of priority changes (i.e., dependency tree mutations): since
+operations on the dependency tree such as reparenting a subtree are not
+commutative, both sender and receiver must apply them in the same order to
+ensure that both sides have a consistent view of the stream dependency tree.
+HTTP/2 specifies priority assignments in PRIORITY frames and (optionally) in
+HEADERS frames. To achieve in-order delivery of priority changes in HTTP/QUIC,
+PRIORITY frames are sent on the control stream and the PRIORITY section is
+removed from the HEADERS frame.
+
+Likewise, HPACK was designed with the assumption of in-order delivery. A
+sequence of encoded header blocks must arrive (and be decoded) at an endpoint in
+the same order in which they were encoded. This ensures that the dynamic state
+at the two endpoints remains in sync.  As a result, HTTP/QUIC uses a modified
+version of HPACK, described in [QPACK].
+
+Frame type definitions in HTTP/QUIC often use the QUIC variable-length integer
+encoding.  In particular, Stream IDs use this encoding, which allow for a larger
+range of possible values than the encoding used in HTTP/2.  Some frames in
+HTTP/QUIC use an identifier rather than a Stream ID (e.g. Push IDs in PRIORITY
+frames). Redefinition of the encoding of extension frame types might be
+necessary if the encoding includes a Stream ID.
+
+Because the Flags field is not present in generic HTTP/QUIC frames, those frames
+which depend on the presence of flags need to allocate space for flags as part
+of their frame payload.
+
+Other than this issue, frame type HTTP/2 extensions are typically portable to
+QUIC simply by replacing Stream 0 in HTTP/2 with a control stream in HTTP/QUIC.
+HTTP/QUIC extensions will not assume ordering, but would not be harmed by
+ordering, and would be portable to HTTP/2 in the same manner.
+
+Below is a listing of how each HTTP/2 frame type is mapped:
+
+DATA (0x0):
+: Padding is not defined in HTTP/QUIC frames.  See {{frame-data}}.
+
+HEADERS (0x1):
+: As described above, the PRIORITY region of HEADERS is not supported. A
+  separate PRIORITY frame MUST be used. Padding is not defined in HTTP/QUIC
+  frames.  See {{frame-headers}}.
+
+PRIORITY (0x2):
+: As described above, the PRIORITY frame is sent on the control stream and can
+  reference a variety of identifiers.  See {{frame-priority}}.
+
+RST_STREAM (0x3):
+: RST_STREAM frames do not exist, since QUIC provides stream lifecycle
+  management.  The same code point is used for the CANCEL_PUSH frame
+  ({{frame-cancel-push}}).
+
+SETTINGS (0x4):
+: SETTINGS frames are sent only at the beginning of the connection.  See
+  {{frame-settings}} and {{h2-settings}}.
+
+PUSH_PROMISE (0x5):
+: The PUSH_PROMISE does not reference a stream; instead the push stream
+  references the PUSH_PROMISE frame using a Push ID.  See
+  {{frame-push-promise}}.
+
+PING (0x6):
+: PING frames do not exist, since QUIC provides equivalent functionality.
+
+GOAWAY (0x7):
+: GOAWAY is sent only from server to client and does not contain an error code.
+  See {{frame-goaway}}.
+
+WINDOW_UPDATE (0x8):
+: WINDOW_UPDATE frames do not exist, since QUIC provides flow control.
+
+CONTINUATION (0x9):
+: CONTINUATION frames do not exist; instead, larger HEADERS/PUSH_PROMISE
+  frames than HTTP/2 are permitted.
+
+Frame types defined by extensions to HTTP/2 need to be separately registered for
+HTTP/QUIC if still applicable.  The IDs of frames defined in {{!RFC7540}} have
+been reserved for simplicity.  See {{iana-frames}}.
+
+## HTTP/2 SETTINGS Parameters {#h2-settings}
+
+An important difference from HTTP/2 is that settings are sent once, at the
+beginning of the connection, and thereafter cannot change.  This eliminates
+many corner cases around synchronization of changes.
+
+Some transport-level options that HTTP/2 specifies via the SETTINGS frame are
+superseded by QUIC transport parameters in HTTP/QUIC. The HTTP-level options
+that are retained in HTTP/QUIC have the same value as in HTTP/2.
+
+Below is a listing of how each HTTP/2 SETTINGS parameter is mapped:
+
+SETTINGS_HEADER_TABLE_SIZE:
+: See [QPACK].
+
+SETTINGS_ENABLE_PUSH:
+: This is removed in favor of the MAX_PUSH_ID which provides a more granular
+  control over server push.
+
+SETTINGS_MAX_CONCURRENT_STREAMS:
+: QUIC controls the largest open Stream ID as part of its flow control logic.
+  Specifying SETTINGS_MAX_CONCURRENT_STREAMS in the SETTINGS frame is an error.
+
+SETTINGS_INITIAL_WINDOW_SIZE:
+: QUIC requires both stream and connection flow control window sizes to be
+  specified in the initial transport handshake.  Specifying
+  SETTINGS_INITIAL_WINDOW_SIZE in the SETTINGS frame is an error.
+
+SETTINGS_MAX_FRAME_SIZE:
+: This setting has no equivalent in HTTP/QUIC.  Specifying it in the SETTINGS
+  frame is an error.
+
+SETTINGS_MAX_HEADER_LIST_SIZE:
+: See {{settings-parameters}}.
+
+In HTTP/QUIC, setting values are variable-length integers (6, 14, 30, or 62 bits
+long) rather than fixed-length 32-bit fields as in HTTP/2.  This will often
+produce a shorter encoding, but can produce a longer encoding for settings which
+use the full 32-bit space.  Settings ported from HTTP/2 might choose to redefine
+the format of their settings to avoid using the 62-bit encoding.
+
+Settings need to be defined separately for HTTP/2 and HTTP/QUIC.  The IDs of
+settings defined in {{!RFC7540}} have been reserved for simplicity.  See
+{{iana-settings}}.
+
+
+## HTTP/2 Error Codes
+
+QUIC has the same concepts of "stream" and "connection" errors that HTTP/2
+provides. However, there is no direct portability of HTTP/2 error codes.
+
+The HTTP/2 error codes defined in Section 7 of {{!RFC7540}} map to the HTTP/QUIC
+error codes as follows:
+
+NO_ERROR (0x0):
+: HTTP_NO_ERROR in {{http-error-codes}}.
+
+PROTOCOL_ERROR (0x1):
+: No single mapping.  See new HTTP_MALFORMED_FRAME error codes defined in
+  {{http-error-codes}}.
+
+INTERNAL_ERROR (0x2):
+: HTTP_INTERNAL_ERROR in {{http-error-codes}}.
+
+FLOW_CONTROL_ERROR (0x3):
+: Not applicable, since QUIC handles flow control.  Would provoke a
+  QUIC_FLOW_CONTROL_RECEIVED_TOO_MUCH_DATA from the QUIC layer.
+
+SETTINGS_TIMEOUT (0x4):
+: Not applicable, since no acknowledgement of SETTINGS is defined.
+
+STREAM_CLOSED (0x5):
+: Not applicable, since QUIC handles stream management.  Would provoke a
+  QUIC_STREAM_DATA_AFTER_TERMINATION from the QUIC layer.
+
+FRAME_SIZE_ERROR (0x6):
+: HTTP_MALFORMED_FRAME error codes defined in {{http-error-codes}}.
+
+REFUSED_STREAM (0x7):
+: Not applicable, since QUIC handles stream management.  Would provoke a
+  STREAM_ID_ERROR from the QUIC layer.
+
+CANCEL (0x8):
+: HTTP_REQUEST_CANCELLED in {{http-error-codes}}.
+
+COMPRESSION_ERROR (0x9):
+: Multiple error codes are defined in [QPACK].
+
+CONNECT_ERROR (0xa):
+: HTTP_CONNECT_ERROR in {{http-error-codes}}.
+
+ENHANCE_YOUR_CALM (0xb):
+: HTTP_EXCESSIVE_LOAD in {{http-error-codes}}.
+
+INADEQUATE_SECURITY (0xc):
+: Not applicable, since QUIC is assumed to provide sufficient security on all
+  connections.
+
+HTTP_1_1_REQUIRED (0xd):
+: HTTP_VERSION_FALLBACK in {{http-error-codes}}.
+
+Error codes need to be defined for HTTP/2 and HTTP/QUIC separately.  See
+{{iana-error-codes}}.
+
 # Change Log
 
 > **RFC Editor's Note:**  Please remove this section prior to publication of a
 > final version of this document.
+
+## Since draft-ietf-quic-http-15
+
+Substantial editorial reorganization; no technical changes.
 
 ## Since draft-ietf-quic-http-14
 

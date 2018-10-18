@@ -1229,6 +1229,10 @@ Code" registry established in {{QUIC-HTTP}}.
 > **RFC Editor's Note:** Please remove this section prior to publication of a
 > final version of this document.
 
+## Since draft-ietf-quic-qpack-03
+
+Substantial editorial reorganization; no technical changes.
+
 ## Since draft-ietf-quic-qpack-02
 
 - Largest Reference encoded modulo MaxEntries (#1763)
