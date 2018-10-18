@@ -948,7 +948,7 @@ preferred_address transport parameter is sent, the sequence number of the
 supplied connection ID is 1.
 
 Additional connection IDs are communicated to the
-peer using NEW_CONNECTION_ID frames ({{frame-new-connection-id}}), and the
+peer using NEW_CONNECTION_ID frames ({{frame-new-connection-id}}).  The
 sequence number on each newly-issued connection ID MUST increase by 1. The
 connection ID randomly selected by the client in the Initial packet and any
 connection ID provided by a Reset packet are not assigned sequence numbers
