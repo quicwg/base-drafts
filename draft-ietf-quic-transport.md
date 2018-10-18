@@ -5362,7 +5362,7 @@ DecodePacketNumber(largest_pn, truncated_pn, pn_nbits):
 
 Issue and pull request numbers are listed with a leading octothorp.
 
-## Since draft-ietf-quic-transport-14
+## Since draft-ietf-quic-transport-15
 
 Substantial editorial reorganization; no technical changes.
 
