@@ -1532,138 +1532,8 @@ once in a given transport parameters extension.  An endpoint MUST treat receipt
 of duplicate transport parameters as a connection error of type
 TRANSPORT_PARAMETER_ERROR.
 
-### Transport Parameter Definitions {#transport-parameter-definitions}
-
-An endpoint MAY use the following transport parameters:
-
-initial_max_data (0x0001):
-
-: The initial maximum data parameter contains the initial value for the maximum
-  amount of data that can be sent on the connection.  This parameter is encoded
-  as an unsigned 32-bit integer in units of octets.  This is equivalent to
-  sending a MAX_DATA ({{frame-max-data}}) for the connection immediately after
-  completing the handshake. If the transport parameter is absent, the connection
-  starts with a flow control limit of 0.
-
-initial_max_bidi_streams (0x0002):
-
-: The initial maximum bidirectional streams parameter contains the initial
-  maximum number of bidirectional streams the peer may initiate, encoded as an
-  unsigned 16-bit integer.  If this parameter is absent or zero, bidirectional
-  streams cannot be created until a MAX_STREAM_ID frame is sent.  Setting this
-  parameter is equivalent to sending a MAX_STREAM_ID ({{frame-max-stream-id}})
-  immediately after completing the handshake containing the corresponding Stream
-  ID. For example, a value of 0x05 would be equivalent to receiving a
-  MAX_STREAM_ID containing 16 when received by a client or 17 when received by a
-  server.
-
-initial_max_uni_streams (0x0008):
-
-: The initial maximum unidirectional streams parameter contains the initial
-  maximum number of unidirectional streams the peer may initiate, encoded as an
-  unsigned 16-bit integer.  If this parameter is absent or zero, unidirectional
-  streams cannot be created until a MAX_STREAM_ID frame is sent.  Setting this
-  parameter is equivalent to sending a MAX_STREAM_ID ({{frame-max-stream-id}})
-  immediately after completing the handshake containing the corresponding Stream
-  ID. For example, a value of 0x05 would be equivalent to receiving a
-  MAX_STREAM_ID containing 18 when received by a client or 19 when received by a
-  server.
-
-idle_timeout (0x0003):
-
-: The idle timeout is a value in seconds that is encoded as an unsigned 16-bit
-  integer.  If this parameter is absent or zero then the idle timeout is
-  disabled.
-
-max_packet_size (0x0005):
-
-: The maximum packet size parameter places a limit on the size of packets that
-  the endpoint is willing to receive, encoded as an unsigned 16-bit integer.
-  This indicates that packets larger than this limit will be dropped.  The
-  default for this parameter is the maximum permitted UDP payload of 65527.
-  Values below 1200 are invalid.  This limit only applies to protected packets
-  ({{packet-protected}}).
-
-ack_delay_exponent (0x0007):
-
-: An 8-bit unsigned integer value indicating an exponent used to decode the ACK
-  Delay field in the ACK frame, see {{frame-ack}}.  If this value is absent, a
-  default value of 3 is assumed (indicating a multiplier of 8).  The default
-  value is also used for ACK frames that are sent in Initial and Handshake
-  packets.  Values above 20 are invalid.
-
-disable_migration (0x0009):
-
-: The endpoint does not support connection migration ({{migration}}). Peers MUST
-  NOT send any packets, including probing packets ({{probing}}), from a local
-  address other than that used to perform the handshake.  This parameter is a
-  zero-length value.
-
-max_ack_delay (0x000c):
-
-: An 8 bit unsigned integer value indicating the maximum amount of time in
-  milliseconds by which it will delay sending of acknowledgments.  If this
-  value is absent, a default of 25 milliseconds is assumed.
-
-Either peer MAY advertise an initial value for the flow control on each type of
-stream on which they might receive data.  Each of the following transport
-parameters is encoded as an unsigned 32-bit integer in units of octets:
-
-initial_max_stream_data_bidi_local (0x0000):
-
-: The initial stream maximum data for bidirectional, locally-initiated streams
-  parameter contains the initial flow control limit for newly created
-  bidirectional streams opened by the endpoint that sets the transport
-  parameter.  In client transport parameters, this applies to streams with an
-  identifier ending in 0x0; in server transport parameters, this applies to
-  streams ending in 0x1.
-
-initial_max_stream_data_bidi_remote (0x000a):
-
-: The initial stream maximum data for bidirectional, peer-initiated streams
-  parameter contains the initial flow control limit for newly created
-  bidirectional streams opened by the endpoint that receives the transport
-  parameter.  In client transport parameters, this applies to streams with an
-  identifier ending in 0x1; in server transport parameters, this applies to
-  streams ending in 0x0.
-
-initial_max_stream_data_uni (0x000b):
-
-: The initial stream maximum data for unidirectional streams parameter contains
-  the initial flow control limit for newly created unidirectional streams opened
-  by the endpoint that receives the transport parameter.  In client transport
-  parameters, this applies to streams with an identifier ending in 0x3; in
-  server transport parameters, this applies to streams ending in 0x2.
-
-If present, transport parameters that set initial stream flow control limits are
-equivalent to sending a MAX_STREAM_DATA frame ({{frame-max-stream-data}}) on
-every stream of the corresponding type immediately after opening.  If the
-transport parameter is absent, streams of that type start with a flow control
-limit of 0.
-
-A server MUST include the original_connection_id transport parameter if it sent
-a Retry packet:
-
-original_connection_id (0x000d):
-
-: The value of the Destination Connection ID field from the first Initial packet
-  sent by the client.  This transport parameter is only sent by the server.
-
-A server MAY include the following transport parameters:
-
-stateless_reset_token (0x0006):
-
-: The Stateless Reset Token is used in verifying a stateless reset, see
-  {{stateless-reset}}.  This parameter is a sequence of 16 octets.
-
-preferred_address (0x0004):
-
-: The server's Preferred Address is used to effect a change in server address at
-  the end of the handshake, as described in {{preferred-address}}.
-
-A client MUST NOT include an original connection ID, a stateless reset token, or
-a preferred address.  A server MUST treat receipt of any of these transport
-parameters as a connection error of type TRANSPORT_PARAMETER_ERROR.
+A server MUST include the original_connection_id transport parameter
+({{transport-parameter-definitions}}) if it sent a Retry packet.
 
 
 ### Values of Transport Parameters for 0-RTT {#zerortt-parameters}
@@ -1687,8 +1557,8 @@ might be violated by the client with its 0-RTT data.  In particular, a server
 that accepts 0-RTT data MUST NOT set values for initial_max_data,
 initial_max_stream_data_bidi_local, initial_max_stream_data_bidi_remote,
 initial_max_stream_data_uni, initial_max_bidi_streams, or
-initial_max_uni_streams that are smaller than the remembered value of those
-parameters.
+initial_max_uni_streams ({{transport-parameter-definitions}}) that are smaller
+than the remembered value of those parameters.
 
 Omitting or setting a zero value for certain transport parameters can result in
 0-RTT data being enabled, but not usable.  The applicable subset of transport
@@ -1727,8 +1597,9 @@ parameters are used to retroactively authenticate the choice of version (see
 {{version-negotiation}}).
 
 The cryptographic handshake provides integrity protection for the negotiated
-version as part of the transport parameters (see {{transport-parameters}}).  As
-a result, attacks on version negotiation by an attacker can be detected.
+version as part of the transport parameters (see
+{{transport-parameter-definitions}}).  As a result, attacks on version
+negotiation by an attacker can be detected.
 
 The client includes the initial_version field in its transport parameters.  The
 initial_version is the version that the client initially attempted to use.  If
@@ -1751,7 +1622,8 @@ differs from the QUIC version that is in use, the server MUST terminate the
 connection with a VERSION_NEGOTIATION_ERROR error.
 
 The server includes both the version of QUIC that is in use and a list of the
-QUIC versions that the server supports.
+QUIC versions that the server supports (see
+{{transport-parameter-definitions}}).
 
 The negotiated_version field is the version that is in use.  This MUST be set by
 the server to the value that is on the Initial packet that it accepts (not an
@@ -3296,8 +3168,6 @@ value of fields.
 
 ## Packet Number Encoding and Decoding {#packet-encoding}
 
-<!-- TODO: Maybe split this into encoding and recovery sections? -->
-
 Packet numbers in long and short packet headers are encoded as follows.  The
 number of bits required to represent the packet number is first reduced by
 including only a variable number of the least significant bits of the packet
@@ -3710,6 +3580,8 @@ subsequent to the first do not need to fit within a single UDP datagram.
 
 ### Starting Packet Numbers
 
+<!-- TODO: delete this section after confirming that it is redundant -->
+
 The first Initial packet sent by either endpoint contains a packet number of
 0. The packet number MUST increase monotonically thereafter.  Initial packets
 are in a different packet number space to other packets (see
@@ -3952,6 +3824,142 @@ therefore used to describe the encoding of transport parameters.
 
 QUIC encodes transport parameters into a sequence of octets, which are then
 included in the cryptographic handshake.
+
+
+### Transport Parameter Definitions {#transport-parameter-definitions}
+
+<!-- TODO: reorganize this section -->
+
+An endpoint MAY use the following transport parameters:
+
+idle_timeout (0x0003):
+
+: The idle timeout is a value in seconds that is encoded as an unsigned 16-bit
+  integer.  If this parameter is absent or zero then the idle timeout is
+  disabled.
+
+max_packet_size (0x0005):
+
+: The maximum packet size parameter places a limit on the size of packets that
+  the endpoint is willing to receive, encoded as an unsigned 16-bit integer.
+  This indicates that packets larger than this limit will be dropped.  The
+  default for this parameter is the maximum permitted UDP payload of 65527.
+  Values below 1200 are invalid.  This limit only applies to protected packets
+  ({{packet-protected}}).
+
+ack_delay_exponent (0x0007):
+
+: An 8-bit unsigned integer value indicating an exponent used to decode the ACK
+  Delay field in the ACK frame, see {{frame-ack}}.  If this value is absent, a
+  default value of 3 is assumed (indicating a multiplier of 8).  The default
+  value is also used for ACK frames that are sent in Initial and Handshake
+  packets.  Values above 20 are invalid.
+
+disable_migration (0x0009):
+
+: The endpoint does not support connection migration ({{migration}}). Peers MUST
+  NOT send any packets, including probing packets ({{probing}}), from a local
+  address other than that used to perform the handshake.  This parameter is a
+  zero-length value.
+
+max_ack_delay (0x000c):
+
+: An 8 bit unsigned integer value indicating the maximum amount of time in
+  milliseconds by which it will delay sending of acknowledgments.  If this
+  value is absent, a default of 25 milliseconds is assumed.
+
+Either peer MAY advertise an initial value for flow control of each type of
+stream on which they might receive data.  Each of the following transport
+parameters is encoded as an unsigned 32-bit integer in units of octets:
+
+initial_max_stream_data_bidi_local (0x0000):
+
+: The initial stream maximum data for bidirectional, locally-initiated streams
+  parameter contains the initial flow control limit for newly created
+  bidirectional streams opened by the endpoint that sets the transport
+  parameter.  In client transport parameters, this applies to streams with an
+  identifier ending in 0x0; in server transport parameters, this applies to
+  streams ending in 0x1.
+
+initial_max_stream_data_bidi_remote (0x000a):
+
+: The initial stream maximum data for bidirectional, peer-initiated streams
+  parameter contains the initial flow control limit for newly created
+  bidirectional streams opened by the endpoint that receives the transport
+  parameter.  In client transport parameters, this applies to streams with an
+  identifier ending in 0x1; in server transport parameters, this applies to
+  streams ending in 0x0.
+
+initial_max_stream_data_uni (0x000b):
+
+: The initial stream maximum data for unidirectional streams parameter contains
+  the initial flow control limit for newly created unidirectional streams opened
+  by the endpoint that receives the transport parameter.  In client transport
+  parameters, this applies to streams with an identifier ending in 0x3; in
+  server transport parameters, this applies to streams ending in 0x2.
+
+If present, transport parameters that set initial flow control limits
+(initial_max_stream_data_bidi_local, initial_max_stream_data_bidi_remote, and
+initial_max_stream_data_uni) are equivalent to sending a MAX_STREAM_DATA frame
+({{frame-max-stream-data}}) on every stream of the corresponding type
+immediately after opening.  If the transport parameter is absent, streams of
+that type start with a flow control limit of 0.
+
+initial_max_data (0x0001):
+
+: The initial maximum data parameter contains the initial value for the maximum
+  amount of data that can be sent on the connection.  This parameter is encoded
+  as an unsigned 32-bit integer in units of octets.  This is equivalent to
+  sending a MAX_DATA ({{frame-max-data}}) for the connection immediately after
+  completing the handshake. If the transport parameter is absent, the connection
+  starts with a flow control limit of 0.
+
+initial_max_bidi_streams (0x0002):
+
+: The initial maximum bidirectional streams parameter contains the initial
+  maximum number of bidirectional streams the peer may initiate, encoded as an
+  unsigned 16-bit integer.  If this parameter is absent or zero, bidirectional
+  streams cannot be created until a MAX_STREAM_ID frame is sent.  Setting this
+  parameter is equivalent to sending a MAX_STREAM_ID ({{frame-max-stream-id}})
+  immediately after completing the handshake containing the corresponding Stream
+  ID. For example, a value of 0x05 would be equivalent to receiving a
+  MAX_STREAM_ID containing 16 when received by a client or 17 when received by a
+  server.
+
+initial_max_uni_streams (0x0008):
+
+: The initial maximum unidirectional streams parameter contains the initial
+  maximum number of unidirectional streams the peer may initiate, encoded as an
+  unsigned 16-bit integer.  If this parameter is absent or zero, unidirectional
+  streams cannot be created until a MAX_STREAM_ID frame is sent.  Setting this
+  parameter is equivalent to sending a MAX_STREAM_ID ({{frame-max-stream-id}})
+  immediately after completing the handshake containing the corresponding Stream
+  ID. For example, a value of 0x05 would be equivalent to receiving a
+  MAX_STREAM_ID containing 18 when received by a client or 19 when received by a
+  server.
+
+A server MUST include the following transport parameter if it sent a Retry packet:
+
+original_connection_id (0x000d):
+
+: The value of the Destination Connection ID field from the first Initial packet
+  sent by the client.  This transport parameter is only sent by the server.
+
+A server MAY include the following transport parameters:
+
+stateless_reset_token (0x0006):
+
+: The Stateless Reset Token is used in verifying a stateless reset, see
+  {{stateless-reset}}.  This parameter is a sequence of 16 octets.
+
+preferred_address (0x0004):
+
+: The server's Preferred Address is used to effect a change in server address at
+  the end of the handshake, as described in {{preferred-address}}.
+
+A client MUST NOT include an original connection ID, a stateless reset token, or
+a preferred address.  A server MUST treat receipt of any of these transport
+parameters as a connection error of type TRANSPORT_PARAMETER_ERROR.
 
 
 
