@@ -147,7 +147,8 @@ This document describes the core QUIC protocol, and is structured as follows:
 ** {{connections}} describes core concepts related to connections,
 ** {{version-negotiation}} describes version negotiation,
 ** {{handshake}} detail the process for establishing connections,
-** {{migration}} describes how endpoints migrate a connection to use a new network paths, and
+** {{migration}} describes how endpoints migrate a connection to use a new
+   network paths, and
 ** {{termination}} lists the options for terminating an open connection.
 
 * Packets and frames are the basic unit used by QUIC to communicate.
