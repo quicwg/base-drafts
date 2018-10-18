@@ -909,7 +909,10 @@ endpoint, as described in {{termination}}.
 
 ## Connection ID {#connection-id}
 
-Each connection possesses a set of identifiers, any of which could be used to
+Each connection possesses a set of connection identifiers, or connection IDs,
+each of which can be identify the connection.  Connection IDs are independently
+selected by endpoints; each endpoint selects the connection IDs that its peer
+uses.
 distinguish it from other connections.  Connection IDs are selected
 independently in each direction.
 
