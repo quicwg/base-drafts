@@ -890,6 +890,8 @@ but offers a few considerations.  MAX_STREAM_ID frames constitute minimal
 overhead, while withholding MAX_STREAM_ID frames can prevent the peer from using
 the available parallelism.
 
+The STREAM_ID_BLOCKED frame ({{frame-stream-id-blocked}}) can be
+used to signal a shortage of available streams.
 Implementations will likely want to increase the maximum stream ID as
 peer-initiated streams close.  A receiver MAY also advance the maximum stream ID
 based on current activity, system conditions, and other environmental factors.
