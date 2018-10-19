@@ -1494,19 +1494,6 @@ One way that a new format could be introduced is to define a TLS extension with
 a different codepoint.
 
 
-## Stateless Retries {#stateless-retry}
-<!-- TODO: Move this section elsewhere. -->
-
-A server can process an Initial packet from a client without committing any
-state. This allows a server to perform address validation
-({{address-validation}}), or to defer connection establishment costs.
-
-A server that generates a response to an Initial packet without retaining
-connection state MUST use the Retry packet ({{packet-retry}}).  This packet
-causes a client to restart the connection attempt and includes the token in the
-new Initial packet ({{packet-initial}}) to prove source address ownership.
-
-
 # Proof of Source Address Ownership {#address-validation}
 
 Address validation is used by QUIC to avoid being used for a traffic
@@ -1649,7 +1636,7 @@ When a server receives an Initial packet with an address validation token, it
 SHOULD attempt to validate it.  If the token is invalid then the server SHOULD
 proceed as if the client did not have a validated address, including potentially
 sending a Retry. If the validation succeeds, the server SHOULD then allow the
-handshake to proceed (see {{stateless-retry}}).
+handshake to proceed.
 
 Note:
 
@@ -3663,7 +3650,7 @@ a connection error.
 
 A Retry packet uses a long packet header with a type value of 0x7E. It carries
 an address validation token created by the server. It is used by a server that
-wishes to perform a stateless retry (see {{stateless-retry}}).
+wishes to perform a stateless retry (see {{validate-new}}).
 
 ~~~
  0                   1                   2                   3
