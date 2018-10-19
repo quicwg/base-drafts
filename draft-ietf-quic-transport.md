@@ -1517,10 +1517,12 @@ use the server to send more data toward the victim than it would be able to send
 on its own.
 
 The primary defense against amplification attack is verifying that an endpoint
-is able to receive packets at the transport address that it claims.
+is able to receive packets at the transport address that it claims.  Address
+validation is performed both during connection establishment (see
+{{validate-new}}) and during connection migration (see {{migrate-validate}}).
 
 
-## Address Validation During Connection Establishment
+## Address Validation During Connection Establishment {#validate-new}
 
 During the initial handshake, QUIC requires that clients send UDP datagrams with
 at least 1200 octets of payload until the server has completed address
@@ -1552,9 +1554,6 @@ always send a packet upon a handshake timeout, as described in
 Handshake keys, it SHOULD send an Initial packet in a UDP datagram of at least
 1200 octets.  If the client has Handshake keys, it SHOULD send a Handshake
 packet.
-
-A different type of source address validation is performed after a connection
-migration, see {{migrate-validate}}.
 
 
 ### Client Address Validation
