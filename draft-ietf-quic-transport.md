@@ -4281,8 +4281,8 @@ The BLOCKED frame contains a single field.
 
 Offset:
 
-: A variable-length integer indicating the connection-level offset at which
-  the blocking occurred.
+: A variable-length integer indicating the connection flow control limit at the
+  time the frame is sent.
 
 
 ## STREAM_BLOCKED Frame {#frame-stream-blocked}
@@ -4314,8 +4314,8 @@ Stream ID:
 
 Offset:
 
-: A variable-length integer indicating the offset of the stream at which the
-  blocking occurred.
+: A variable-length integer indicating the stream flow control limit at the time
+  the frame is sent.
 
 
 ## STREAM_ID_BLOCKED Frame {#frame-stream-id-blocked}
@@ -4340,8 +4340,9 @@ The STREAM_ID_BLOCKED frame contains a single field.
 
 Stream ID:
 
-: A variable-length integer indicating the highest stream ID that the sender
-  was permitted to open.
+: A variable-length integer indicating the stream ID limit at the time the
+  sender was unable to open new streams.
+
 
 ## NEW_CONNECTION_ID Frame {#frame-new-connection-id}
 
