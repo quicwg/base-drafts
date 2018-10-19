@@ -2313,6 +2313,12 @@ the application requests that the connection be closed.  The application
 protocol can use an APPLICATION_CLOSE message with an appropriate error code to
 signal closure.
 
+If the endpoint believes that a connection has been successfully established, it
+MUST send any closing frames in a 1-RTT packet.  Prior to connection
+establishment, endpoints SHOULD send closing frames in a Handshake packet.  An
+endpoint MAY send closing frames in an Initial packet.  Closing frames might be
+replicated into packets at different encryption levels, which can then be
+coalesced (see {{packet-coalesce}} to facilitate retransmission.
 
 ### Stateless Reset {#stateless-reset}
 
