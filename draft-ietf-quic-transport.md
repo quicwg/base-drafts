@@ -809,8 +809,8 @@ bidirectional stream, an endpoint will choose to stop sending data to the peer
 on that stream. If so, it SHOULD send a FIN or RST_STREAM for that stream to
 close the peer's receive stream state. Alternatively an endpoint can choose to
 continue sending data in its own direction. If the sender of a RST_STREAM wishes
-to explicitly state that no future data will be processed, that endpoint MAY send
-a STOP_SENDING frame at the same time.
+to explicitly state that no future data will be processed, that endpoint MAY
+send a STOP_SENDING frame at the same time.
 
 ## Data Limit Increments {#fc-credit}
 
