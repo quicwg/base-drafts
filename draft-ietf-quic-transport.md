@@ -1194,13 +1194,14 @@ server then needs to validate that the client owns the address that it claims.
 QUIC therefore performs source address validation during connection
 establishment.
 
-Servers MUST NOT send more than three times as many bytes as the number of bytes
-received prior to verifying the client's address.  Source addresses can be
+Prior to verifying the client's address, servers MUST NOT send more than three
+times as many bytes as the number of bytes received. Source addresses can be
 verified through an address validation token (delivered via a Retry packet or
-a NEW_TOKEN frame) or by processing any message from the client encrypted using
-the Handshake keys.  This limit exists to mitigate amplification attacks.
+a NEW_TOKEN frame), by processing any message from the client encrypted using
+the Handshake keys, or by processing a TLS client hello with a valid
+pre-shared key.  This limit exists to mitigate amplification attacks.
 
-In order to prevent this limit causing a handshake deadlock, the client SHOULD
+In order to prevent this limit causing a handshake deadlock, the client MUST
 always send a packet upon a handshake timeout, as described in
 {{QUIC-RECOVERY}}.  If the client has no data to retransmit and does not have
 Handshake keys, it SHOULD send an Initial packet in a UDP datagram of at least
