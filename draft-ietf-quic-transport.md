@@ -1669,7 +1669,6 @@ causes a client to restart the connection attempt and includes the token in the
 new Initial packet ({{packet-initial}}) to prove source address ownership.
 
 
-
 # Path Validation {#migrate-validate}
 
 Path validation is used by an endpoint to verify reachability of a peer over a
@@ -2183,7 +2182,7 @@ of three ways:
 * stateless reset ({{stateless-reset}})
 
 
-### Closing and Draining Connection States {#draining}
+## Closing and Draining Connection States {#draining}
 
 The closing and draining connection states exist to ensure that connections
 close cleanly and that delayed or reordered packets are properly discarded.
@@ -2240,7 +2239,7 @@ in the closing state MAY instead choose to discard packets received from a new
 source address.
 
 
-### Idle Timeout
+## Idle Timeout
 
 If the idle timeout is enabled, a connection that remains idle for longer than
 the advertised idle timeout (see {{transport-parameter-definitions}}) is closed.
@@ -2264,7 +2263,7 @@ draining state before the packets arrive.  If a peer could timeout within an RTO
 before sending any data that cannot be retried safely.
 
 
-### Immediate Close
+## Immediate Close
 
 An endpoint sends a closing frame (CONNECTION_CLOSE or APPLICATION_CLOSE) to
 terminate the connection immediately.  Any closing frame causes all streams to
@@ -2303,7 +2302,7 @@ protocol can use an APPLICATION_CLOSE message with an appropriate error code to
 signal closure.
 
 
-### Stateless Reset {#stateless-reset}
+## Stateless Reset {#stateless-reset}
 
 A stateless reset is provided as an option of last resort for an endpoint that
 does not have access to the state of a connection.  A crash or outage might
@@ -2407,7 +2406,7 @@ QUIC need to be aware of this and either reuse this design, or use a portion of
 the packet other than the last 16 octets for carrying data.
 
 
-#### Detecting a Stateless Reset
+### Detecting a Stateless Reset
 
 An endpoint detects a potential stateless reset when a packet with a short
 header either cannot be decrypted or is marked as a duplicate packet.  The
@@ -2418,7 +2417,7 @@ the draining period and not send any further packets on this connection.  If the
 comparison fails, the packet can be discarded.
 
 
-#### Calculating a Stateless Reset Token {#reset-token}
+### Calculating a Stateless Reset Token {#reset-token}
 
 The stateless reset token MUST be difficult to guess.  In order to create a
 Stateless Reset Token, an endpoint could randomly generate {{!RFC4086}} a secret
@@ -2460,7 +2459,7 @@ connections at nodes that share a static key.
 Note that Stateless Reset packets do not have any cryptographic protection.
 
 
-#### Looping {#reset-looping}
+### Looping {#reset-looping}
 
 The design of a Stateless Reset is such that it is indistinguishable from a
 valid packet.  This means that a Stateless Reset might trigger the sending of a
@@ -2486,7 +2485,6 @@ failures might only be detected by other means, such as timers.
 
 An endpoint can increase the odds that a packet will trigger a Stateless Reset
 if it cannot be processed by padding it to at least 38 octets.
-
 
 
 # Error Handling {#error-handling}
@@ -3825,7 +3823,7 @@ QUIC encodes transport parameters into a sequence of octets, which are then
 included in the cryptographic handshake.
 
 
-### Transport Parameter Definitions {#transport-parameter-definitions}
+## Transport Parameter Definitions {#transport-parameter-definitions}
 
 <!-- TODO: reorganize this section -->
 
