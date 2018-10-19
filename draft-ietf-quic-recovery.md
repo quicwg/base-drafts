@@ -326,7 +326,7 @@ Until the server has validated the client's address on the path, the number of
 bytes it can send is limited, as specified in {{QUIC-TRANSPORT}}.
 If not all unacknowledged CRYPTO data can be sent, then all unacknowledged
 CRYPTO data sent in Initial packets should be retransmitted.  If no bytes
-may be sent, then no alarm should be armed until bytes have been received from
+can be sent, then no alarm should be armed until bytes have been received from
 the client.
 
 Because the server may be blocked until more packets are received, the
