@@ -1161,170 +1161,6 @@ A client MAY send a packet using a reserved version number.  This can be used to
 solicit a list of supported versions from a server.
 
 
-
-# Proof of Source Address Ownership {#address-validation}
-
-<!-- TODO: Check flow to this section and see if this needs to be connected to
-the handshake example below. -->
-
-Address validation is used by QUIC to avoid being used for a traffic
-amplification attack.  In such an attack, a packet is sent to a server with
-spoofed source address information that identifies a victim.  If a server
-generates more or larger packets in response to that packet, the attacker can
-use the server to send more data toward the victim than it would be able to send
-on its own.
-
-The primary defense against amplification attack is verifying that a client is
-able to receive packets at the transport address that it claims. QUIC also
-requires that clients send UDP datagrams with at least 1200 octets of payload
-until the server has completed address validation. A server can thereby send
-more data to an unproven address without increasing the amplification advantage
-gained by an attacker.
-
-A server eventually confirms that a client has received its messages when the
-first Handshake-level message is received. This might be insufficient, either
-because the server wishes to avoid the computational cost of completing the
-handshake, or it might be that the size of the packets that are sent during the
-handshake is too large.  This is especially important for 0-RTT, where the
-server might wish to provide application data traffic - such as a response to a
-request - in response to the data carried in the early data from the client.
-
-To send additional data prior to completing the cryptographic handshake, the
-server then needs to validate that the client owns the address that it claims.
-QUIC therefore performs source address validation during connection
-establishment.
-
-Servers MUST NOT send more than three times as many bytes as the number of bytes
-received prior to verifying the client's address.  Source addresses can be
-verified through an address validation token (delivered via a Retry packet or
-a NEW_TOKEN frame) or by processing any message from the client encrypted using
-the Handshake keys.  This limit exists to mitigate amplification attacks.
-
-In order to prevent this limit causing a handshake deadlock, the client SHOULD
-always send a packet upon a handshake timeout, as described in
-{{QUIC-RECOVERY}}.  If the client has no data to retransmit and does not have
-Handshake keys, it SHOULD send an Initial packet in a UDP datagram of at least
-1200 octets.  If the client has Handshake keys, it SHOULD send a Handshake
-packet.
-
-A different type of source address validation is performed after a connection
-migration, see {{migrate-validate}}.
-
-
-### Client Address Validation Procedure
-
-QUIC uses token-based address validation.  Any time the server wishes to
-validate a client address, it provides the client with a token.  As long as it
-is not possible for an attacker to generate a valid token for its address (see
-{{token-integrity}}) and the client is able to return that token, it proves to
-the server that it received the token.
-
-Upon receiving the client's Initial packet, the server can request address
-validation by sending a Retry packet containing a token. This token is repeated
-in the client's next Initial packet.
-
-There is no need for a single well-defined format for the token because the
-server that generates the token also consumes it.  A token could include
-information about the claimed client address (IP and port), a timestamp, and any
-other supplementary information the server will need to validate the token in
-the future.  The only requirement is that a valid token be difficult to guess
-for an attacker.
-
-The Retry packet is sent to the client and a legitimate client will respond with
-an Initial packet containing the token from the Retry packet when it continues
-the handshake.  In response to receiving the token, a server can either abort
-the connection or permit it to proceed.
-
-A connection MAY be accepted without address validation - or with only limited
-validation - but a server SHOULD limit the data it sends toward an unvalidated
-address.  Successful completion of the cryptographic handshake implicitly
-provides proof that the client has received packets from the server.
-
-
-### Address Validation for Future Connections
-
-A server MAY provide clients with an address validation token during one
-connection that can be used on a subsequent connection.  Address validation is
-especially important with 0-RTT because a server potentially sends a significant
-amount of data to a client in response to 0-RTT data.
-
-The server uses the NEW_TOKEN frame {{frame-new-token}} to provide the
-client with an address validation token that can be used to validate
-future connections.  The client may then use this token to validate
-future connections by including it in the Initial packet's header.
-The client MUST NOT use the token provided in a Retry for future
-connections.
-
-Unlike the token that is created for a Retry packet, there might be some time
-between when the token is created and when the token is subsequently used.
-Thus, a resumption token SHOULD include an expiration time.  The server MAY
-include either an explicit expiration time or an issued timestamp and
-dynamically calculate the expiration time.  It is also unlikely that the client
-port number is the same on two different connections; validating the port is
-therefore unlikely to be successful.
-
-A resumption token SHOULD be easily distinguishable from tokens that are sent in
-Retry packets as they are carried in the same field.
-
-
-### Tokens
-<!-- TODO: Merge with section above. -->
-
-If the client has a token received in a NEW_TOKEN frame on a previous connection
-to what it believes to be the same server, it can include that value in the
-Token field of its Initial packet.
-
-A token allows a server to correlate activity between connections.
-Specifically, the connection where the token was issued, and any connection
-where it is used.  Clients that want to break continuity of identity with a
-server MAY discard tokens provided using the NEW_TOKEN frame.  Tokens obtained
-in Retry packets MUST NOT be discarded.
-
-A client SHOULD NOT reuse a token.  Reusing a token allows connections to be
-linked by entities on the network path (see {{migration-linkability}}).  A
-client MUST NOT reuse a token if it believes that its point of network
-attachment has changed since the token was last used; that is, if there is a
-change in its local IP address or network interface.  A client needs to start
-the connection process over if it migrates prior to completing the handshake.
-
-When a server receives an Initial packet with an address validation token, it
-SHOULD attempt to validate it.  If the token is invalid then the server SHOULD
-proceed as if the client did not have a validated address, including potentially
-sending a Retry. If the validation succeeds, the server SHOULD then allow the
-handshake to proceed (see {{stateless-retry}}).
-
-Note:
-
-: The rationale for treating the client as unvalidated rather than discarding
-  the packet is that the client might have received the token in a previous
-  connection using the NEW_TOKEN frame, and if the server has lost state, it
-  might be unable to validate the token at all, leading to connection failure if
-  the packet is discarded.  A server MAY encode tokens provided with NEW_TOKEN
-  frames and Retry packets differently, and validate the latter more strictly.
-
-In a stateless design, a server can use encrypted and authenticated tokens to
-pass information to clients that the server can later recover and use to
-validate a client address.  Tokens are not integrated into the cryptographic
-handshake and so they are not authenticated.  For instance, a client might be
-able to reuse a token.  To avoid attacks that exploit this property, a server
-can limit its use of tokens to only the information needed validate client
-addresses.
-
-### Address Validation Token Integrity {#token-integrity}
-
-An address validation token MUST be difficult to guess.  Including a large
-enough random value in the token would be sufficient, but this depends on the
-server remembering the value it sends to clients.
-
-A token-based scheme allows the server to offload any state associated with
-validation to the client.  For this design to work, the token MUST be covered by
-integrity protection against modification or falsification by clients.  Without
-integrity protection, malicious clients could generate or guess values for
-tokens that would be accepted by the server.  Only the server requires access to
-the integrity protection key for tokens.
-
-
-
 # Cryptographic and Transport Handshake {#handshake}
 
 QUIC relies on a combined cryptographic and transport handshake to minimize
@@ -1365,7 +1201,9 @@ packets.
 
 The first client packet of the cryptographic handshake protocol MUST fit within
 a 1232 octet QUIC packet payload.  This includes overheads that reduce the space
-available to the cryptographic handshake protocol.
+available to the cryptographic handshake protocol.  This forms part of the
+defense against amplification attack that are expanded in more detail in
+{{address-validation}}.
 
 The CRYPTO frame can be sent in different packet number spaces.  The sequence
 numbers used by CRYPTO frames to ensure ordered delivery of cryptographic
@@ -1669,21 +1507,194 @@ causes a client to restart the connection attempt and includes the token in the
 new Initial packet ({{packet-initial}}) to prove source address ownership.
 
 
+# Proof of Source Address Ownership {#address-validation}
 
-# Path Validation {#migrate-validate}
+Address validation is used by QUIC to avoid being used for a traffic
+amplification attack.  In such an attack, a packet is sent to a server with
+spoofed source address information that identifies a victim.  If a server
+generates more or larger packets in response to that packet, the attacker can
+use the server to send more data toward the victim than it would be able to send
+on its own.
 
-Path validation is used by an endpoint to verify reachability of a peer over a
-specific path.  That is, it tests reachability between a specific local address
-and a specific peer address, where an address is the two-tuple of IP address and
-port.  Path validation tests that packets can be both sent to and received from
-a peer.
+The primary defense against amplification attack is verifying that an endpoint
+is able to receive packets at the transport address that it claims.
+
+
+## Address Validation During Connection Establishment
+
+During the initial handshake, QUIC requires that clients send UDP datagrams with
+at least 1200 octets of payload until the server has completed address
+validation. A server can thereby send more data to an unproven address without
+increasing the amplification advantage gained by an attacker.
+
+A server eventually confirms that a client has received its messages when the
+first Handshake-level message is received. This might be insufficient, either
+because the server wishes to avoid the computational cost of completing the
+handshake, or it might be that the size of the packets that are sent during the
+handshake is too large.  This is especially important for 0-RTT, where the
+server might wish to provide application data traffic - such as a response to a
+request - in response to the data carried in the early data from the client.
+
+To send additional data prior to completing the cryptographic handshake, the
+server then needs to validate that the client owns the address that it claims.
+QUIC therefore performs source address validation during connection
+establishment.
+
+Servers MUST NOT send more than three times as many bytes as the number of bytes
+received prior to verifying the client's address.  Source addresses can be
+verified through an address validation token (delivered via a Retry packet or
+a NEW_TOKEN frame) or by processing any message from the client encrypted using
+the Handshake keys.  This limit exists to mitigate amplification attacks.
+
+In order to prevent this limit causing a handshake deadlock, the client SHOULD
+always send a packet upon a handshake timeout, as described in
+{{QUIC-RECOVERY}}.  If the client has no data to retransmit and does not have
+Handshake keys, it SHOULD send an Initial packet in a UDP datagram of at least
+1200 octets.  If the client has Handshake keys, it SHOULD send a Handshake
+packet.
+
+A different type of source address validation is performed after a connection
+migration, see {{migrate-validate}}.
+
+
+### Client Address Validation
+
+QUIC uses token-based address validation during connection establishment.  Any
+time the server wishes to validate a client address, it provides the client with
+a token.  As long as it is not possible for an attacker to generate a valid
+token for its address (see {{token-integrity}}) and the client is able to return
+that token, it proves to the server that it received the token.
+
+Upon receiving the client's Initial packet, the server can request address
+validation by sending a Retry packet containing a token. This token is repeated
+in the client's next Initial packet.
+
+There is no need for a single well-defined format for the token because the
+server that generates the token also consumes it.  A token could include
+information about the claimed client address (IP and port), a timestamp, and any
+other supplementary information the server will need to validate the token in
+the future.  The only requirement is that a valid token be difficult to guess
+for an attacker.
+
+The Retry packet is sent to the client and a legitimate client will respond with
+an Initial packet containing the token from the Retry packet when it continues
+the handshake.  In response to receiving the token, a server can either abort
+the connection or permit it to proceed.
+
+A flow showing the use of a Retry packet is shown in {{fig-retry}}.
+
+~~~~
+Client                                                  Server
+
+Initial[0]: CRYPTO[CH] ->
+
+                                                <- Retry+Token
+
+Initial+Token[0]: CRYPTO[CH] ->
+
+                                 Initial[0]: CRYPTO[SH] ACK[0]
+                       Handshake[0]: CRYPTO[EE, CERT, CV, FIN]
+                                 <- 1-RTT[0]: STREAM[1, "..."]
+~~~~
+{: #fig-retry title="Example Handshake Showing Retry"}
+
+A connection MAY be accepted without address validation - or with only limited
+validation - but a server SHOULD limit the data it sends toward an unvalidated
+address.  Successful completion of the cryptographic handshake implicitly
+provides proof that the client has received packets from the server.
+
+
+### Address Validation for Future Connections {#validation-future}
+
+A server MAY provide clients with an address validation token during one
+connection that can be used on a subsequent connection.  Address validation is
+especially important with 0-RTT because a server potentially sends a significant
+amount of data to a client in response to 0-RTT data.
+
+The server uses the NEW_TOKEN frame {{frame-new-token}} to provide the
+client with an address validation token that can be used to validate
+future connections.  The client may then use this token to validate
+future connections by including it in the Initial packet's header.
+The client MUST NOT use the token provided in a Retry for future
+connections.
+
+Unlike the token that is created for a Retry packet, there might be some time
+between when the token is created and when the token is subsequently used.
+Thus, a resumption token SHOULD include an expiration time.  The server MAY
+include either an explicit expiration time or an issued timestamp and
+dynamically calculate the expiration time.  It is also unlikely that the client
+port number is the same on two different connections; validating the port is
+therefore unlikely to be successful.
+
+A resumption token SHOULD be easily distinguishable from tokens that are sent in
+Retry packets as they are carried in the same field.
+
+If the client has a token received in a NEW_TOKEN frame on a previous connection
+to what it believes to be the same server, it can include that value in the
+Token field of its Initial packet.
+
+A token allows a server to correlate activity between connections.
+Specifically, the connection where the token was issued, and any connection
+where it is used.  Clients that want to break continuity of identity with a
+server MAY discard tokens provided using the NEW_TOKEN frame.  Tokens obtained
+in Retry packets MUST NOT be discarded.
+
+A client SHOULD NOT reuse a token.  Reusing a token allows connections to be
+linked by entities on the network path (see {{migration-linkability}}).  A
+client MUST NOT reuse a token if it believes that its point of network
+attachment has changed since the token was last used; that is, if there is a
+change in its local IP address or network interface.  A client needs to start
+the connection process over if it migrates prior to completing the handshake.
+
+When a server receives an Initial packet with an address validation token, it
+SHOULD attempt to validate it.  If the token is invalid then the server SHOULD
+proceed as if the client did not have a validated address, including potentially
+sending a Retry. If the validation succeeds, the server SHOULD then allow the
+handshake to proceed (see {{stateless-retry}}).
+
+Note:
+
+: The rationale for treating the client as unvalidated rather than discarding
+  the packet is that the client might have received the token in a previous
+  connection using the NEW_TOKEN frame, and if the server has lost state, it
+  might be unable to validate the token at all, leading to connection failure if
+  the packet is discarded.  A server MAY encode tokens provided with NEW_TOKEN
+  frames and Retry packets differently, and validate the latter more strictly.
+
+In a stateless design, a server can use encrypted and authenticated tokens to
+pass information to clients that the server can later recover and use to
+validate a client address.  Tokens are not integrated into the cryptographic
+handshake and so they are not authenticated.  For instance, a client might be
+able to reuse a token.  To avoid attacks that exploit this property, a server
+can limit its use of tokens to only the information needed validate client
+addresses.
+
+
+### Address Validation Token Integrity {#token-integrity}
+
+An address validation token MUST be difficult to guess.  Including a large
+enough random value in the token would be sufficient, but this depends on the
+server remembering the value it sends to clients.
+
+A token-based scheme allows the server to offload any state associated with
+validation to the client.  For this design to work, the token MUST be covered by
+integrity protection against modification or falsification by clients.  Without
+integrity protection, malicious clients could generate or guess values for
+tokens that would be accepted by the server.  Only the server requires access to
+the integrity protection key for tokens.
+
+
+## Path Validation {#migrate-validate}
 
 Path validation is used during connection migration (see {{migration}} and
 {{preferred-address}}) by the migrating endpoint to verify reachability of a
-peer from a new local address. Path validation is also used by the peer to
-verify that the migrating endpoint is able to receive packets sent to the its
-new address.  That is, that the packets received from the migrating endpoint do
-not carry a spoofed source address.
+peer from a new local address.  In path validation, endpoints test reachability
+between a specific local address and a specific peer address, where an address
+is the two-tuple of IP address and port.
+
+Path validation tests that packets can be both sent to and received from a peer
+on the path.  Importantly, it validates that the packets received from the
+migrating endpoint do not carry a spoofed source address.
 
 Path validation can be used at any time by either endpoint.  For instance, an
 endpoint might check that a peer is still in possession of its address after a
@@ -3733,7 +3744,8 @@ value from the Source Connection ID in the Retry packet. Changing Destination
 Connection ID also results in a change to the keys used to protect the Initial
 packet. It also sets the Token field to the token provided in the Retry. The
 client MUST NOT change the Source Connection ID because the server could include
-the connection ID as part of its token validation logic (see {{tokens}}).
+the connection ID as part of its token validation logic (see
+{{validation-future}}).
 
 All subsequent Initial packets from the client MUST use the connection ID and
 token values from the Retry packet.  Aside from this, the Initial packet sent
