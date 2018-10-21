@@ -1106,9 +1106,9 @@ packet that is sent in response could be lost, the client will send new packets
 until it successfully receives a response or it abandons the connection attempt.
 
 A server MAY limit the number of Version Negotiation packets it sends.  For
-instance, a server might choose not to send Version Negotiation packets in
-response to 0-RTT packets with the expectation that it will eventually receive
-an Initial packet.
+instance, a server that is able to recognize packets as 0-RTT might choose not
+to send Version Negotiation packets in response to 0-RTT packets with the
+expectation that it will eventually receive an Initial packet.
 
 
 ## Handling Version Negotiation Packets {#handle-vn}
