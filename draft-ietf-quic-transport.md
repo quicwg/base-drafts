@@ -927,16 +927,16 @@ this means the same connection ID MUST NOT be issued more than once on the same
 connection.
 
 Packets with long headers include at least two connection IDs, which are used to
-establish the connection IDs that are used for the connection when established,
+determine the connection IDs that are used for the connection when established,
 see {{negotiating-connection-ids}} for details.
 
 Packets with short headers ({{short-header}}) only include the Destination
 Connection ID and omit the explicit length.  The length of the Destination
-Connection ID field is expected to be known to endpoints.  Endpoints using a
-connection-ID based load balancer could agree with the load balancer on a fixed
-or minimum length and on an encoding for connection IDs.  This fixed portion
-could encode an explicit length, which allows the entire connection ID to vary
-in length and still be used by the load balancer.
+Connection ID field is expected to be known to endpoints.  Endpoints that use a
+load balancer that routes based on connection ID could agree with the load
+balancer on a fixed or minimum length and on an encoding for connection IDs.
+This fixed portion could encode an explicit length, which allows the entire
+connection ID to vary in length and still be used by the load balancer.
 
 A Version Negotiation ({{packet-version}}) packet echoes the connection IDs
 selected by the client, both to ensure correct routing toward the client and to
