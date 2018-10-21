@@ -803,14 +803,14 @@ frame, and the receiver MUST use the final offset to account for all bytes sent
 on the stream in its connection level flow controller.
 
 RST_STREAM terminates one direction of a stream abruptly.  Whether any action or
-response can or should be taken on the data already received is an application-
-specific issue.
+response can or should be taken on the data already received is application
+specific.
 
 For a bidirectional stream, RST_STREAM has no effect on data flow in the
-opposite direction. Both endpoints MUST maintain state for that direction until
-that direction enters a terminal state, or either side sends CONNECTION_CLOSE or
-APP_CLOSE. The RST_STREAM sender MAY also send a STOP_SENDING frame to encourage
-prompt termination.
+opposite direction. The RST_STREAM sender can send a STOP_SENDING frame to
+encourage prompt termination. Both endpoints MUST maintain state for the stream
+in the unterminated direction until that direction enters a terminal state, or
+either side sends CONNECTION_CLOSE or APPLICATION_CLOSE. 
 
 ## Data Limit Increments {#fc-credit}
 
