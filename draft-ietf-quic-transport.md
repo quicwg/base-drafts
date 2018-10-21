@@ -810,7 +810,7 @@ For a bidirectional stream, RST_STREAM has no effect on data flow in the
 opposite direction. The RST_STREAM sender can send a STOP_SENDING frame to
 encourage prompt termination. Both endpoints MUST maintain state for the stream
 in the unterminated direction until that direction enters a terminal state, or
-either side sends CONNECTION_CLOSE or APPLICATION_CLOSE. 
+either side sends CONNECTION_CLOSE or APPLICATION_CLOSE.
 
 ## Data Limit Increments {#fc-credit}
 
