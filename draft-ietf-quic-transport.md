@@ -147,6 +147,8 @@ This document describes the core QUIC protocol, and is structured as follows:
   - {{connections}} describes core concepts related to connections,
   - {{version-negotiation}} describes version negotiation,
   - {{handshake}} details the process for establishing connections,
+  - {{address-validation}} specifies critical denial of service mitigation
+    mechanisms,
   - {{migration}} describes how endpoints migrate a connection to use a new
     network paths, and
   - {{termination}} lists the options for terminating an open connection.
@@ -1494,7 +1496,7 @@ One way that a new format could be introduced is to define a TLS extension with
 a different codepoint.
 
 
-# Proof of Source Address Ownership {#address-validation}
+# Address Validation
 
 Address validation is used by QUIC to avoid being used for a traffic
 amplification attack.  In such an attack, a packet is sent to a server with
@@ -1543,7 +1545,7 @@ Handshake keys, it SHOULD send an Initial packet in a UDP datagram of at least
 packet.
 
 
-### Client Address Validation
+### Token-Based Address Validation
 
 QUIC uses token-based address validation during connection establishment.  Any
 time the server wishes to validate a client address, it provides the client with
@@ -1552,20 +1554,15 @@ token for its address (see {{token-integrity}}) and the client is able to return
 that token, it proves to the server that it received the token.
 
 Upon receiving the client's Initial packet, the server can request address
-validation by sending a Retry packet containing a token. This token is repeated
-in the client's next Initial packet.
+validation by sending a Retry packet ({{packet-retry}}) containing a token. This
+token is repeated by the client in an Initial packet after it receives the Retry
+packet.  In response to receiving a token in an Initial packet, a server can
+either abort the connection or permit it to proceed.
 
-There is no need for a single well-defined format for the token because the
-server that generates the token also consumes it.  A token could include
-information about the claimed client address (IP and port), a timestamp, and any
-other supplementary information the server will need to validate the token in
-the future.  The only requirement is that a valid token be difficult to guess
-for an attacker.
-
-The Retry packet is sent to the client and a legitimate client will respond with
-an Initial packet containing the token from the Retry packet when it continues
-the handshake.  In response to receiving the token, a server can either abort
-the connection or permit it to proceed.
+A server can also use the Retry packet to defer the state and processing costs
+of connection establishment.  By giving the client a different connection ID to
+use, the connection might be routed to a different server instance, which have
+additional capacity for new connections.
 
 A flow showing the use of a Retry packet is shown in {{fig-retry}}.
 
@@ -1597,12 +1594,11 @@ connection that can be used on a subsequent connection.  Address validation is
 especially important with 0-RTT because a server potentially sends a significant
 amount of data to a client in response to 0-RTT data.
 
-The server uses the NEW_TOKEN frame {{frame-new-token}} to provide the
-client with an address validation token that can be used to validate
-future connections.  The client may then use this token to validate
-future connections by including it in the Initial packet's header.
-The client MUST NOT use the token provided in a Retry for future
-connections.
+The server uses the NEW_TOKEN frame {{frame-new-token}} to provide the client
+with an address validation token that can be used to validate future
+connections.  The client may then use this token to validate future connections
+by including it in the Initial packet's header.  The client MUST NOT use the
+token provided in a Retry for future connections.
 
 Unlike the token that is created for a Retry packet, there might be some time
 between when the token is created and when the token is subsequently used.
@@ -1657,6 +1653,12 @@ addresses.
 
 
 ### Address Validation Token Integrity {#token-integrity}
+
+There is no need for a single well-defined format for the token because the
+server that generates the token also consumes it.  A token could include
+information about the claimed client address (IP and port), a timestamp, and any
+other supplementary information the server will need to validate the token in
+the future.
 
 An address validation token MUST be difficult to guess.  Including a large
 enough random value in the token would be sufficient, but this depends on the
