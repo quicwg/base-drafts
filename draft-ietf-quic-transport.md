@@ -804,13 +804,13 @@ on the stream in its connection level flow controller.
 
 RST_STREAM terminates one direction of a stream abruptly.  Whether any action or
 response can or should be taken on the data already received is an application-
-specific issue. It will often be the case that upon receipt of a RST_STREAM on a
-bidirectional stream, an endpoint will choose to stop sending data to the peer
-on that stream. If so, it SHOULD send a FIN or RST_STREAM for that stream to
-close the peer's receive stream state. Alternatively an endpoint can choose to
-continue sending data in its own direction. If the sender of a RST_STREAM wishes
-to explicitly state that no future data will be processed, that endpoint MAY
-send a STOP_SENDING frame at the same time.
+specific issue.
+
+For a bidirectional stream, RST_STREAM has no effect on data flow in the
+opposite direction. Both endpoints MUST maintain state for that direction until
+that direction enters a terminal state, or either side sends CONNECTION_CLOSE or
+APP_CLOSE. The RST_STREAM sender MAY also send a STOP_SENDING frame to encourage
+prompt termination.
 
 ## Data Limit Increments {#fc-credit}
 
