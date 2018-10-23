@@ -147,6 +147,8 @@ This document describes the core QUIC protocol, and is structured as follows:
   - {{connections}} describes core concepts related to connections,
   - {{version-negotiation}} describes version negotiation,
   - {{handshake}} details the process for establishing connections,
+  - {{address-validation}} specifies critical denial of service mitigation
+    mechanisms,
   - {{migration}} describes how endpoints migrate a connection to use a new
     network paths, and
   - {{termination}} lists the options for terminating an open connection.
@@ -831,9 +833,10 @@ implementations.
 If a sender runs out of flow control credit, it will be unable to send new
 data. That is, the sender is blocked. A blocked sender SHOULD send a
 STREAM_BLOCKED or BLOCKED frame.  A receiver uses these frames for debugging
-purposes.  A receiver SHOULD NOT wait for a STREAM_BLOCKED or BLOCKED frame
+purposes.  A receiver MUST NOT wait for a STREAM_BLOCKED or BLOCKED frame
 before sending MAX_STREAM_DATA or MAX_DATA, since doing so will mean that a
-sender will be blocked for an entire round trip.
+sender will be blocked for an entire round trip and the peer may never
+send a STREAM_BLOCKED or BLOCKED frame.
 
 It is generally considered best to not let the sender go into quiescence if
 avoidable.  To avoid blocking a sender, and to reasonably account for the
@@ -893,10 +896,8 @@ overhead, while withholding MAX_STREAM_ID frames can prevent the peer from using
 the available parallelism.
 
 The STREAM_ID_BLOCKED frame ({{frame-stream-id-blocked}}) can be
-used to signal a shortage of available streams.
-Implementations will likely want to increase the maximum stream ID as
-peer-initiated streams close.  A receiver MAY also advance the maximum stream ID
-based on current activity, system conditions, and other environmental factors.
+used to signal a shortage of available streams. Implementations will likely
+want to increase the maximum stream ID as peer-initiated streams close.
 
 
 # Connections {#connections}
@@ -908,6 +909,7 @@ described in {{handshake}}.  Once established, a connection may migrate to a
 different IP or port at either endpoint as
 described in {{migration}}.  Finally, a connection may be terminated by either
 endpoint, as described in {{termination}}.
+
 
 ## Connection ID {#connection-id}
 
@@ -928,6 +930,23 @@ them with other connection IDs for the same connection.  As a trivial example,
 this means the same connection ID MUST NOT be issued more than once on the same
 connection.
 
+Packets with long headers include Source Connection ID and Destination
+Connection ID fields.  These fields are used to set the connection IDs for new
+connections, see {{negotiating-connection-ids}} for details.
+
+Packets with short headers ({{short-header}}) only include the Destination
+Connection ID and omit the explicit length.  The length of the Destination
+Connection ID field is expected to be known to endpoints.  Endpoints using a
+load balancer that routes based on connection ID could agree with the load
+balancer on a fixed length for connection IDs, or agree on an encoding scheme.
+A fixed portion could encode an explicit length, which allows the entire
+connection ID to vary in length and still be used by the load balancer.
+
+A Version Negotiation ({{packet-version}}) packet echoes the connection IDs
+selected by the client, both to ensure correct routing toward the client and to
+allow the client to validate that the packet is in response to an Initial
+packet.
+
 A zero-length connection ID MAY be used when the connection ID is not needed for
 routing and the address/port tuple of packets is sufficient to identify a
 connection. An endpoint whose peer has selected a zero-length connection ID MUST
@@ -940,7 +959,7 @@ packets sent to the endpoint.  These connection IDs are supplied by the endpoint
 using the NEW_CONNECTION_ID frame ({{frame-new-connection-id}}).
 
 
-### Issuing Connection IDs
+### Issuing Connection IDs {#issue-cid}
 
 Each Connection ID has an associated sequence number to assist in deduplicating
 messages.  The initial connection ID issued by an endpoint is sent in the Source
@@ -1079,7 +1098,18 @@ TBD.
 <!-- Goes into how the next few sections are connected. Specifically, one goal
 is to combine the address validation section that shows up below with path
 validation that shows up later, and explain why these two mechanisms are
-required here. -->
+required here.
+
+suggested structure:
+
+ - establishment
+   - VN
+   - Retry
+   - Crypto
+ - use (include migration)
+ - shutdown
+
+-->
 
 
 # Version Negotiation {#version-negotiation}
@@ -1088,6 +1118,24 @@ Version negotiation ensures that client and server agree to a QUIC version
 that is mutually supported. A server sends a Version Negotiation packet in
 response to each packet that might initiate a new connection, see
 {{packet-handling}} for details.
+
+The first few messages of an exchange between a client attempting to create a
+new connection with server is shown in {{fig-vn}}.  After version negotiation
+completes, connection establishment can proceed, for example as shown in
+{{example-handshake-flows}}.
+
+~~~~
+Client                                                  Server
+
+Packet (v=X) ->
+
+                        <- Version Negotiation (supported=Y,Z)
+
+Packet (v=Y) ->
+
+                                            <- Packet(s) (v=Y)
+~~~~
+{: #fig-vn title="Example Version Negotiation Exchange"}
 
 The size of the first packet sent by a client will determine whether a server
 sends a Version Negotiation packet. Clients that support multiple QUIC versions
@@ -1106,6 +1154,11 @@ This system allows a server to process packets with unsupported versions without
 retaining state.  Though either the Initial packet or the Version Negotiation
 packet that is sent in response could be lost, the client will send new packets
 until it successfully receives a response or it abandons the connection attempt.
+
+A server MAY limit the number of Version Negotiation packets it sends.  For
+instance, a server that is able to recognize packets as 0-RTT might choose not
+to send Version Negotiation packets in response to 0-RTT packets with the
+expectation that it will eventually receive an Initial packet.
 
 
 ## Handling Version Negotiation Packets {#handle-vn}
@@ -1163,170 +1216,6 @@ A client MAY send a packet using a reserved version number.  This can be used to
 solicit a list of supported versions from a server.
 
 
-
-# Proof of Source Address Ownership {#address-validation}
-
-<!-- TODO: Check flow to this section and see if this needs to be connected to
-the handshake example below. -->
-
-Address validation is used by QUIC to avoid being used for a traffic
-amplification attack.  In such an attack, a packet is sent to a server with
-spoofed source address information that identifies a victim.  If a server
-generates more or larger packets in response to that packet, the attacker can
-use the server to send more data toward the victim than it would be able to send
-on its own.
-
-The primary defense against amplification attack is verifying that a client is
-able to receive packets at the transport address that it claims. QUIC also
-requires that clients send UDP datagrams with at least 1200 octets of payload
-until the server has completed address validation. A server can thereby send
-more data to an unproven address without increasing the amplification advantage
-gained by an attacker.
-
-A server eventually confirms that a client has received its messages when the
-first Handshake-level message is received. This might be insufficient, either
-because the server wishes to avoid the computational cost of completing the
-handshake, or it might be that the size of the packets that are sent during the
-handshake is too large.  This is especially important for 0-RTT, where the
-server might wish to provide application data traffic - such as a response to a
-request - in response to the data carried in the early data from the client.
-
-To send additional data prior to completing the cryptographic handshake, the
-server then needs to validate that the client owns the address that it claims.
-QUIC therefore performs source address validation during connection
-establishment.
-
-Servers MUST NOT send more than three times as many bytes as the number of bytes
-received prior to verifying the client's address.  Source addresses can be
-verified through an address validation token (delivered via a Retry packet or
-a NEW_TOKEN frame) or by processing any message from the client encrypted using
-the Handshake keys.  This limit exists to mitigate amplification attacks.
-
-In order to prevent this limit causing a handshake deadlock, the client SHOULD
-always send a packet upon a handshake timeout, as described in
-{{QUIC-RECOVERY}}.  If the client has no data to retransmit and does not have
-Handshake keys, it SHOULD send an Initial packet in a UDP datagram of at least
-1200 octets.  If the client has Handshake keys, it SHOULD send a Handshake
-packet.
-
-A different type of source address validation is performed after a connection
-migration, see {{migrate-validate}}.
-
-
-### Client Address Validation Procedure
-
-QUIC uses token-based address validation.  Any time the server wishes to
-validate a client address, it provides the client with a token.  As long as it
-is not possible for an attacker to generate a valid token for its address (see
-{{token-integrity}}) and the client is able to return that token, it proves to
-the server that it received the token.
-
-Upon receiving the client's Initial packet, the server can request address
-validation by sending a Retry packet containing a token. This token is repeated
-in the client's next Initial packet.
-
-There is no need for a single well-defined format for the token because the
-server that generates the token also consumes it.  A token could include
-information about the claimed client address (IP and port), a timestamp, and any
-other supplementary information the server will need to validate the token in
-the future.  The only requirement is that a valid token be difficult to guess
-for an attacker.
-
-The Retry packet is sent to the client and a legitimate client will respond with
-an Initial packet containing the token from the Retry packet when it continues
-the handshake.  In response to receiving the token, a server can either abort
-the connection or permit it to proceed.
-
-A connection MAY be accepted without address validation - or with only limited
-validation - but a server SHOULD limit the data it sends toward an unvalidated
-address.  Successful completion of the cryptographic handshake implicitly
-provides proof that the client has received packets from the server.
-
-
-### Address Validation for Future Connections
-
-A server MAY provide clients with an address validation token during one
-connection that can be used on a subsequent connection.  Address validation is
-especially important with 0-RTT because a server potentially sends a significant
-amount of data to a client in response to 0-RTT data.
-
-The server uses the NEW_TOKEN frame {{frame-new-token}} to provide the
-client with an address validation token that can be used to validate
-future connections.  The client may then use this token to validate
-future connections by including it in the Initial packet's header.
-The client MUST NOT use the token provided in a Retry for future
-connections.
-
-Unlike the token that is created for a Retry packet, there might be some time
-between when the token is created and when the token is subsequently used.
-Thus, a resumption token SHOULD include an expiration time.  The server MAY
-include either an explicit expiration time or an issued timestamp and
-dynamically calculate the expiration time.  It is also unlikely that the client
-port number is the same on two different connections; validating the port is
-therefore unlikely to be successful.
-
-A resumption token SHOULD be easily distinguishable from tokens that are sent in
-Retry packets as they are carried in the same field.
-
-
-### Tokens
-<!-- TODO: Merge with section above. -->
-
-If the client has a token received in a NEW_TOKEN frame on a previous connection
-to what it believes to be the same server, it can include that value in the
-Token field of its Initial packet.
-
-A token allows a server to correlate activity between connections.
-Specifically, the connection where the token was issued, and any connection
-where it is used.  Clients that want to break continuity of identity with a
-server MAY discard tokens provided using the NEW_TOKEN frame.  Tokens obtained
-in Retry packets MUST NOT be discarded.
-
-A client SHOULD NOT reuse a token.  Reusing a token allows connections to be
-linked by entities on the network path (see {{migration-linkability}}).  A
-client MUST NOT reuse a token if it believes that its point of network
-attachment has changed since the token was last used; that is, if there is a
-change in its local IP address or network interface.  A client needs to start
-the connection process over if it migrates prior to completing the handshake.
-
-When a server receives an Initial packet with an address validation token, it
-SHOULD attempt to validate it.  If the token is invalid then the server SHOULD
-proceed as if the client did not have a validated address, including potentially
-sending a Retry. If the validation succeeds, the server SHOULD then allow the
-handshake to proceed (see {{stateless-retry}}).
-
-Note:
-
-: The rationale for treating the client as unvalidated rather than discarding
-  the packet is that the client might have received the token in a previous
-  connection using the NEW_TOKEN frame, and if the server has lost state, it
-  might be unable to validate the token at all, leading to connection failure if
-  the packet is discarded.  A server MAY encode tokens provided with NEW_TOKEN
-  frames and Retry packets differently, and validate the latter more strictly.
-
-In a stateless design, a server can use encrypted and authenticated tokens to
-pass information to clients that the server can later recover and use to
-validate a client address.  Tokens are not integrated into the cryptographic
-handshake and so they are not authenticated.  For instance, a client might be
-able to reuse a token.  To avoid attacks that exploit this property, a server
-can limit its use of tokens to only the information needed validate client
-addresses.
-
-### Address Validation Token Integrity {#token-integrity}
-
-An address validation token MUST be difficult to guess.  Including a large
-enough random value in the token would be sufficient, but this depends on the
-server remembering the value it sends to clients.
-
-A token-based scheme allows the server to offload any state associated with
-validation to the client.  For this design to work, the token MUST be covered by
-integrity protection against modification or falsification by clients.  Without
-integrity protection, malicious clients could generate or guess values for
-tokens that would be accepted by the server.  Only the server requires access to
-the integrity protection key for tokens.
-
-
-
 # Cryptographic and Transport Handshake {#handshake}
 
 QUIC relies on a combined cryptographic and transport handshake to minimize
@@ -1361,9 +1250,9 @@ that meets the requirements of the cryptographic handshake protocol:
   {{?RFC7301}} for this purpose)
 
 The first CRYPTO frame from a client MUST be sent in a single packet.  Any
-second attempt that is triggered by address validation MUST also be sent within
-a single packet. This avoids having to reassemble a message from multiple
-packets.
+second attempt that is triggered by address validation (see {{validate-new}})
+MUST also be sent within a single packet. This avoids having to reassemble a
+message from multiple packets.
 
 The first client packet of the cryptographic handshake protocol MUST fit within
 a 1232 octet QUIC packet payload.  This includes overheads that reduce the space
@@ -1377,11 +1266,13 @@ handshake data start from zero in each packet number space.
 ## Example Handshake Flows
 
 Details of how TLS is integrated with QUIC are provided in {{QUIC-TLS}}, but
-some examples are provided here.
+some examples are provided here.  An extension of this exchange to support
+client address validation is shown in {{validate-retry}}.
 
-Once version negotiation is complete, the cryptographic handshake is used to
-agree on cryptographic keys.  The cryptographic handshake is carried in Initial
-({{packet-initial}}) and Handshake ({{packet-handshake}}) packets.
+Once any version negotiation and address validation exchanges are complete, the
+cryptographic handshake is used to agree on cryptographic keys.  The
+cryptographic handshake is carried in Initial ({{packet-initial}}) and Handshake
+({{packet-handshake}}) packets.
 
 {{tls-1rtt-handshake}} provides an overview of the 1-RTT handshake.  Each line
 shows a QUIC packet with the packet type and packet number shown first, followed
@@ -1414,7 +1305,6 @@ Handshake[0]: CRYPTO[FIN], ACK[0]
 ~~~~
 {: #tls-1rtt-handshake title="Example 1-RTT Handshake"}
 
-
 {{tls-0rtt-handshake}} shows an example of a connection with a 0-RTT handshake
 and a single packet of 0-RTT data. Note that as described in {{packet-numbers}},
 the server acknowledges 0-RTT data at the 1-RTT encryption level, and the
@@ -1441,8 +1331,6 @@ Handshake[0]: CRYPTO[FIN], ACK[0]
 
 
 ## Negotiating Connection IDs {#negotiating-connection-ids}
-
-<!-- TODO: Check if this section belongs here or in Connection IDs above. -->
 
 A connection ID is used to ensure consistent routing of packets, as described in
 {{connection-id}}.  The long header contains two connection IDs: the Destination
@@ -1488,27 +1376,8 @@ include a different Source Connection ID, they MUST be discarded.  This avoids
 problems that might arise from stateless processing of multiple Initial packets
 producing different connection IDs.
 
-Packets with short headers ({{short-header}}) only include the Destination
-Connection ID and omit the explicit length.  The length of the Destination
-Connection ID field is expected to be known to endpoints.
-
-Endpoints using a connection-ID based load balancer could agree with the load
-balancer on a fixed or minimum length and on an encoding for connection IDs.
-This fixed portion could encode an explicit length, which allows the entire
-connection ID to vary in length and still be used by the load balancer.
-
-The very first packet sent by a client includes a random value for Destination
-Connection ID.  The same value MUST be used for all 0-RTT packets sent on that
-connection ({{packet-protected}}).  This randomized value is used to determine
-the packet protection keys for Initial packets (see Section 5.2 of
-{{QUIC-TLS}}).
-
-A Version Negotiation ({{packet-version}}) packet MUST use both connection IDs
-selected by the client, swapped to ensure correct routing toward the client.
-
 The connection ID can change over the lifetime of a connection, especially in
-response to connection migration ({{migration}}). NEW_CONNECTION_ID frames
-({{frame-new-connection-id}}) are used to provide new connection ID values.
+response to connection migration ({{migration}}), see {{issue-cid}} for details.
 
 
 ## Transport Parameters {#transport-parameters}
@@ -1658,34 +1527,184 @@ One way that a new format could be introduced is to define a TLS extension with
 a different codepoint.
 
 
-## Stateless Retries {#stateless-retry}
-<!-- TODO: Move this section elsewhere. -->
+# Address Validation
 
-A server can process an Initial packet from a client without committing any
-state. This allows a server to perform address validation
-({{address-validation}}), or to defer connection establishment costs.
+Address validation is used by QUIC to avoid being used for a traffic
+amplification attack.  In such an attack, a packet is sent to a server with
+spoofed source address information that identifies a victim.  If a server
+generates more or larger packets in response to that packet, the attacker can
+use the server to send more data toward the victim than it would be able to send
+on its own.
 
-A server that generates a response to an Initial packet without retaining
-connection state MUST use the Retry packet ({{packet-retry}}).  This packet
-causes a client to restart the connection attempt and includes the token in the
-new Initial packet ({{packet-initial}}) to prove source address ownership.
+The primary defense against amplification attack is verifying that an endpoint
+is able to receive packets at the transport address that it claims.  Address
+validation is performed both during connection establishment (see
+{{validate-new}}) and during connection migration (see {{migrate-validate}}).
 
 
+## Address Validation During Connection Establishment {#validate-new}
 
-# Path Validation {#migrate-validate}
+Connection establishment implicitly provides address validation for both
+endpoints.  In particular, receipt of a packet protected with Handshake keys
+confirms that the client received the Initial packet from the server.  Once the
+server has successfully processed a Handshake packet from the client, it can
+consider the client address to have been validated.
 
-Path validation is used by an endpoint to verify reachability of a peer over a
-specific path.  That is, it tests reachability between a specific local address
-and a specific peer address, where an address is the two-tuple of IP address and
-port.  Path validation tests that packets can be both sent to and received from
-a peer.
+Prior to validating the client address, servers MUST NOT send more than three
+times as many bytes as the number of bytes they have received.  This limits the
+magnitude of any amplification attack that can be mounted using spoofed source
+addresses.
+
+To ensure that the server is not overly constrained by this restriction, clients
+MUST send UDP datagrams with at least 1200 octets of payload until the server
+has completed address validation, see {{packet-size}}.
+
+In order to prevent a handshake deadlock as a result of the server being unable
+to send, clients SHOULD send a packet upon a handshake timeout, as described in
+{{QUIC-RECOVERY}}.  If the client has no data to retransmit and does not have
+Handshake keys, it SHOULD send an Initial packet in a UDP datagram of at least
+1200 octets.  If the client has Handshake keys, it SHOULD send a Handshake
+packet.
+
+A server might wish to validate the client address before starting the
+cryptographic handshake.  Client addresses can be verified using an address
+validation token.  This token is delivered during connection establishment with
+a Retry packet (see {{validate-retry}}) or in a previous connection using the
+NEW_TOKEN frame (see {{validate-future}}).
+
+
+### Address Validation using Retry Packets {#validate-retry}
+
+QUIC uses token-based address validation during connection establishment.  Any
+time the server wishes to validate a client address, it provides the client with
+a token.  As long as it is not possible for an attacker to generate a valid
+token for its own address (see {{token-integrity}}) and the client is able to
+return that token, it proves to the server that it received the token.
+
+Upon receiving the client's Initial packet, the server can request address
+validation by sending a Retry packet ({{packet-retry}}) containing a token. This
+token is repeated by the client in an Initial packet after it receives the Retry
+packet.  In response to receiving a token in an Initial packet, a server can
+either abort the connection or permit it to proceed.
+
+A server can also use a Retry packet to defer the state and processing costs
+of connection establishment.  By giving the client a different connection ID to
+use, a server can cause the connection to be routed to a server instance with
+more resources available for new connections.
+
+A flow showing the use of a Retry packet is shown in {{fig-retry}}.
+
+~~~~
+Client                                                  Server
+
+Initial[0]: CRYPTO[CH] ->
+
+                                                <- Retry+Token
+
+Initial+Token[0]: CRYPTO[CH] ->
+
+                                 Initial[0]: CRYPTO[SH] ACK[0]
+                       Handshake[0]: CRYPTO[EE, CERT, CV, FIN]
+                                 <- 1-RTT[0]: STREAM[1, "..."]
+~~~~
+{: #fig-retry title="Example Handshake with Retry"}
+
+
+### Address Validation for Future Connections {#validate-future}
+
+A server MAY provide clients with an address validation token during one
+connection that can be used on a subsequent connection.  Address validation is
+especially important with 0-RTT because a server potentially sends a significant
+amount of data to a client in response to 0-RTT data.
+
+The server uses the NEW_TOKEN frame {{frame-new-token}} to provide the client
+with an address validation token that can be used to validate future
+connections.  The client may then use this token to validate future connections
+by including it in the Initial packet's header.  The client MUST NOT use the
+token provided in a Retry for future connections.
+
+Unlike the token that is created for a Retry packet, there might be some time
+between when the token is created and when the token is subsequently used.
+Thus, a resumption token SHOULD include an expiration time.  The server MAY
+include either an explicit expiration time or an issued timestamp and
+dynamically calculate the expiration time.  It is also unlikely that the client
+port number is the same on two different connections; validating the port is
+therefore unlikely to be successful.
+
+A resumption token SHOULD be constructed to be easily distinguishable from
+tokens that are sent in Retry packets as they are carried in the same field.
+
+If the client has a token received in a NEW_TOKEN frame on a previous connection
+to what it believes to be the same server, it can include that value in the
+Token field of its Initial packet.
+
+A token allows a server to correlate activity between the connection where the
+token was issued and any connection where it is used.  Clients that want to
+break continuity of identity with a server MAY discard tokens provided using the
+NEW_TOKEN frame.  Tokens obtained in Retry packets MUST NOT be discarded.
+
+A client SHOULD NOT reuse a token.  Reusing a token allows connections to be
+linked by entities on the network path (see {{migration-linkability}}).  A
+client MUST NOT reuse a token if it believes that its point of network
+attachment has changed since the token was last used; that is, if there is a
+change in its local IP address or network interface.  A client needs to start
+the connection process over if it migrates prior to completing the handshake.
+
+When a server receives an Initial packet with an address validation token, it
+SHOULD attempt to validate it.  If the token is invalid then the server SHOULD
+proceed as if the client did not have a validated address, including potentially
+sending a Retry. If the validation succeeds, the server SHOULD then allow the
+handshake to proceed.
+
+Note:
+
+: The rationale for treating the client as unvalidated rather than discarding
+  the packet is that the client might have received the token in a previous
+  connection using the NEW_TOKEN frame, and if the server has lost state, it
+  might be unable to validate the token at all, leading to connection failure if
+  the packet is discarded.  A server MAY encode tokens provided with NEW_TOKEN
+  frames and Retry packets differently, and validate the latter more strictly.
+
+In a stateless design, a server can use encrypted and authenticated tokens to
+pass information to clients that the server can later recover and use to
+validate a client address.  Tokens are not integrated into the cryptographic
+handshake and so they are not authenticated.  For instance, a client might be
+able to reuse a token.  To avoid attacks that exploit this property, a server
+can limit its use of tokens to only the information needed validate client
+addresses.
+
+
+### Address Validation Token Integrity {#token-integrity}
+
+An address validation token MUST be difficult to guess.  Including a large
+enough random value in the token would be sufficient, but this depends on the
+server remembering the value it sends to clients.
+
+A token-based scheme allows the server to offload any state associated with
+validation to the client.  For this design to work, the token MUST be covered by
+integrity protection against modification or falsification by clients.  Without
+integrity protection, malicious clients could generate or guess values for
+tokens that would be accepted by the server.  Only the server requires access to
+the integrity protection key for tokens.
+
+There is no need for a single well-defined format for the token because the
+server that generates the token also consumes it.  A token could include
+information about the claimed client address (IP and port), a timestamp, and any
+other supplementary information the server will need to validate the token in
+the future.
+
+
+## Path Validation {#migrate-validate}
 
 Path validation is used during connection migration (see {{migration}} and
 {{preferred-address}}) by the migrating endpoint to verify reachability of a
-peer from a new local address. Path validation is also used by the peer to
-verify that the migrating endpoint is able to receive packets sent to the its
-new address.  That is, that the packets received from the migrating endpoint do
-not carry a spoofed source address.
+peer from a new local address.  In path validation, endpoints test reachability
+between a specific local address and a specific peer address, where an address
+is the two-tuple of IP address and port.
+
+Path validation tests that packets can be both sent to and received from a peer
+on the path.  Importantly, it validates that the packets received from the
+migrating endpoint do not carry a spoofed source address.
 
 Path validation can be used at any time by either endpoint.  For instance, an
 endpoint might check that a peer is still in possession of its address after a
@@ -1856,7 +1875,7 @@ rate. Therefore, the endpoint resets its congestion controller, as described in
 {{migration-cc}}.
 
 The new path might not have the same ECN capability. Therefore, the endpoint
-verifies ECN capability as described in {{using-ecn}}.
+verifies ECN capability as described in {{ecn}}.
 
 Receiving acknowledgments for data sent on the new path serves as proof of the
 peer's reachability from the new address.  Note that since acknowledgments may
@@ -2093,87 +2112,6 @@ than a minimum congestion window's worth of non-probing packets to the new
 address before path validation is complete.
 
 
-# Using Explicit Congestion Notification {#using-ecn}
-
-<!-- TODO: Should this be moved to the ack section? Find a good home for this
-section. -->
-
-QUIC endpoints use Explicit Congestion Notification (ECN) {{!RFC3168}} to detect
-and respond to network congestion.  ECN allows a network node to indicate
-congestion in the network by setting a codepoint in the IP header of a packet
-instead of dropping it.  Endpoints react to congestion by reducing their sending
-rate in response, as described in {{QUIC-RECOVERY}}.
-
-To use ECN, QUIC endpoints first determine whether a path supports ECN marking
-and the peer is able to access the ECN codepoint in the IP header.  A network
-path does not support ECN if ECN marked packets get dropped or ECN markings are
-rewritten on the path. An endpoint verifies the path, both during connection
-establishment and when migrating to a new path (see {{migration}}).
-
-Each endpoint independently verifies and enables use of ECN by setting the IP
-header ECN codepoint to ECN Capable Transport (ECT) for the path from it to the
-other peer. Even if ECN is not used on the path to the peer, the endpoint MUST
-provide feedback about ECN markings received (if accessible).
-
-To verify both that a path supports ECN and the peer can provide ECN feedback,
-an endpoint MUST set the ECT(0) codepoint in the IP header of all outgoing
-packets {{!RFC8311}}.
-
-If an ECT codepoint set in the IP header is not corrupted by a network device,
-then a received packet contains either the codepoint sent by the peer or the
-Congestion Experienced (CE) codepoint set by a network device that is
-experiencing congestion.
-
-On receiving a packet with an ECT or CE codepoint, an endpoint that can access
-the IP ECN codepoints increases the corresponding ECT(0), ECT(1), or CE count,
-and includes these counters in subsequent (see {{processing-and-ack}}) ACK
-frames (see {{frame-ack}}).
-
-A packet detected by a receiver as a duplicate does not affect the receiver's
-local ECN codepoint counts; see ({{security-ecn}}) for relevant security
-concerns.
-
-If an endpoint receives a packet without an ECT or CE codepoint, it responds per
-{{processing-and-ack}} with an ACK frame.
-
-If an endpoint does not have access to received ECN codepoints, it acknowledges
-received packets per {{processing-and-ack}} with an ACK frame.
-
-If a packet sent with an ECT codepoint is newly acknowledged by the peer in an
-ACK frame, the endpoint stops setting ECT codepoints in subsequent packets, with
-the expectation that either the network or the peer no longer supports ECN.
-
-To protect the connection from arbitrary corruption of ECN codepoints by the
-network, an endpoint verifies the following when an ACK frame is received:
-
-* The increase in ECT(0) and ECT(1) counters MUST be at least the number of
-  packets newly acknowledged that were sent with the corresponding codepoint.
-
-* The total increase in ECT(0), ECT(1), and CE counters reported in the ACK
-  frame MUST be at least the total number of packets newly acknowledged in this
-  ACK frame.
-
-An endpoint could miss acknowledgements for a packet when ACK frames are lost.
-It is therefore possible for the total increase in ECT(0), ECT(1), and CE
-counters to be greater than the number of packets acknowledged in an ACK frame.
-When this happens, the local reference counts MUST be increased to match the
-counters in the ACK frame.
-
-Upon successful verification, an endpoint continues to set ECT codepoints in
-subsequent packets with the expectation that the path is ECN-capable.
-
-If verification fails, then the endpoint ceases setting ECT codepoints in
-subsequent packets with the expectation that either the network or the peer does
-not support ECN.
-
-If an endpoint sets ECT codepoints on outgoing packets and encounters a
-retransmission timeout due to the absence of acknowledgments from the peer (see
-{{QUIC-RECOVERY}}), or if an endpoint has reason to believe that a network
-element might be corrupting ECN codepoints, the endpoint MAY cease setting ECT
-codepoints in subsequent packets. Doing so allows the connection to traverse
-network elements that drop or corrupt ECN codepoints in the IP header.
-
-
 # Connection Termination {#termination}
 
 Connections should remain open until they become idle for a pre-negotiated
@@ -2185,7 +2123,7 @@ of three ways:
 * stateless reset ({{stateless-reset}})
 
 
-### Closing and Draining Connection States {#draining}
+## Closing and Draining Connection States {#draining}
 
 The closing and draining connection states exist to ensure that connections
 close cleanly and that delayed or reordered packets are properly discarded.
@@ -2242,7 +2180,7 @@ in the closing state MAY instead choose to discard packets received from a new
 source address.
 
 
-### Idle Timeout
+## Idle Timeout
 
 If the idle timeout is enabled, a connection that remains idle for longer than
 the advertised idle timeout (see {{transport-parameter-definitions}}) is closed.
@@ -2266,7 +2204,7 @@ draining state before the packets arrive.  If a peer could timeout within an RTO
 before sending any data that cannot be retried safely.
 
 
-### Immediate Close
+## Immediate Close
 
 An endpoint sends a closing frame (CONNECTION_CLOSE or APPLICATION_CLOSE) to
 terminate the connection immediately.  Any closing frame causes all streams to
@@ -2312,7 +2250,7 @@ into packets at different encryption levels, which can then be coalesced (see
 {{packet-coalesce}} to facilitate retransmission.
 
 
-### Stateless Reset {#stateless-reset}
+## Stateless Reset {#stateless-reset}
 
 A stateless reset is provided as an option of last resort for an endpoint that
 does not have access to the state of a connection.  A crash or outage might
@@ -2416,7 +2354,7 @@ QUIC need to be aware of this and either reuse this design, or use a portion of
 the packet other than the last 16 octets for carrying data.
 
 
-#### Detecting a Stateless Reset
+### Detecting a Stateless Reset
 
 An endpoint detects a potential stateless reset when a packet with a short
 header either cannot be decrypted or is marked as a duplicate packet.  The
@@ -2427,7 +2365,7 @@ the draining period and not send any further packets on this connection.  If the
 comparison fails, the packet can be discarded.
 
 
-#### Calculating a Stateless Reset Token {#reset-token}
+### Calculating a Stateless Reset Token {#reset-token}
 
 The stateless reset token MUST be difficult to guess.  In order to create a
 Stateless Reset Token, an endpoint could randomly generate {{!RFC4086}} a secret
@@ -2469,7 +2407,7 @@ connections at nodes that share a static key.
 Note that Stateless Reset packets do not have any cryptographic protection.
 
 
-#### Looping {#reset-looping}
+### Looping {#reset-looping}
 
 The design of a Stateless Reset is such that it is indistinguishable from a
 valid packet.  This means that a Stateless Reset might trigger the sending of a
@@ -2495,7 +2433,6 @@ failures might only be detected by other means, such as timers.
 
 An endpoint can increase the odds that a packet will trigger a Stateless Reset
 if it cannot be processed by padding it to at least 38 octets.
-
 
 
 # Error Handling {#error-handling}
@@ -2976,6 +2913,90 @@ The details of loss detection and congestion control are described in
 {{QUIC-RECOVERY}}.
 
 
+## Explicit Congestion Notification {#ecn}
+
+QUIC endpoints use Explicit Congestion Notification (ECN) {{!RFC3168}} to detect
+and respond to network congestion.  ECN allows a network node to indicate
+congestion in the network by setting a codepoint in the IP header of a packet
+instead of dropping it.  Endpoints react to congestion by reducing their sending
+rate in response, as described in {{QUIC-RECOVERY}}.
+
+To use ECN, QUIC endpoints first determine whether a path supports ECN marking
+and the peer is able to access the ECN codepoint in the IP header.  A network
+path does not support ECN if ECN marked packets get dropped or ECN markings are
+rewritten on the path. An endpoint verifies the path, both during connection
+establishment and when migrating to a new path (see {{migration}}).
+
+
+### ECN Counters
+
+On receiving a packet with an ECT or CE codepoint, an endpoint that can access
+the IP ECN codepoints increases the corresponding ECT(0), ECT(1), or CE count,
+and includes these counters in subsequent (see {{processing-and-ack}}) ACK
+frames (see {{frame-ack}}).
+
+A packet detected by a receiver as a duplicate does not affect the receiver's
+local ECN codepoint counts; see ({{security-ecn}}) for relevant security
+concerns.
+
+If an endpoint receives a packet without an ECT or CE codepoint, it responds per
+{{processing-and-ack}} with an ACK frame.  If an endpoint does not have access
+to received ECN codepoints, it acknowledges received packets per
+{{processing-and-ack}} with an ACK frame.
+
+
+### ECN Verification
+
+Each endpoint independently verifies and enables use of ECN by setting the IP
+header ECN codepoint to ECN Capable Transport (ECT) for the path from it to the
+other peer. Even if ECN is not used on the path to the peer, the endpoint MUST
+provide feedback about ECN markings received (if accessible).
+
+To verify both that a path supports ECN and the peer can provide ECN feedback,
+an endpoint MUST set the ECT(0) codepoint in the IP header of all outgoing
+packets {{!RFC8311}}.
+
+If an ECT codepoint set in the IP header is not corrupted by a network device,
+then a received packet contains either the codepoint sent by the peer or the
+Congestion Experienced (CE) codepoint set by a network device that is
+experiencing congestion.
+
+If a packet sent with an ECT codepoint is newly acknowledged by the peer in an
+ACK frame without ECN feedback, the endpoint stops setting ECT codepoints in
+subsequent packets, with the expectation that either the network or the peer no
+longer supports ECN.
+
+To protect the connection from arbitrary corruption of ECN codepoints by the
+network, an endpoint verifies the following when an ACK frame is received:
+
+* The increase in ECT(0) and ECT(1) counters MUST be at least the number of
+  packets newly acknowledged that were sent with the corresponding codepoint.
+
+* The total increase in ECT(0), ECT(1), and CE counters reported in the ACK
+  frame MUST be at least the total number of packets newly acknowledged in this
+  ACK frame.
+
+An endpoint could miss acknowledgements for a packet when ACK frames are lost.
+It is therefore possible for the total increase in ECT(0), ECT(1), and CE
+counters to be greater than the number of packets acknowledged in an ACK frame.
+When this happens, the local reference counts MUST be increased to match the
+counters in the ACK frame.
+
+Upon successful verification, an endpoint continues to set ECT codepoints in
+subsequent packets with the expectation that the path is ECN-capable.
+
+If verification fails, then the endpoint ceases setting ECT codepoints in
+subsequent packets with the expectation that either the network or the peer does
+not support ECN.
+
+If an endpoint sets ECT codepoints on outgoing packets and encounters a
+retransmission timeout due to the absence of acknowledgments from the peer (see
+{{QUIC-RECOVERY}}), or if an endpoint has reason to believe that a network
+element might be corrupting ECN codepoints, the endpoint MAY cease setting ECT
+codepoints in subsequent packets. Doing so allows the connection to traverse
+network elements that drop or corrupt ECN codepoints in the IP header.
+
+
 # Packet Size {#packet-size}
 
 The QUIC packet size includes the QUIC header and integrity check, but not the
@@ -2986,7 +3007,8 @@ datagram that is at least 1200 octets. Padding the Initial packet or including a
 0-RTT packet in the same datagram are ways to meet this requirement.  Sending a
 UDP datagram of this size ensures that the network path supports a reasonable
 Maximum Transmission Unit (MTU), and helps reduce the amplitude of amplification
-attacks caused by server responses toward an unverified client address.
+attacks caused by server responses toward an unverified client address, see
+{{address-validation}}.
 
 The payload of a UDP datagram carrying the Initial packet MUST be expanded to at
 least 1200 octets, by adding PADDING frames to the Initial packet and/or by
@@ -3657,7 +3679,7 @@ a connection error.
 
 A Retry packet uses a long packet header with a type value of 0x7E. It carries
 an address validation token created by the server. It is used by a server that
-wishes to perform a stateless retry (see {{stateless-retry}}).
+wishes to perform a stateless retry (see {{validate-new}}).
 
 ~~~
  0                   1                   2                   3
@@ -3737,7 +3759,8 @@ value from the Source Connection ID in the Retry packet. Changing Destination
 Connection ID also results in a change to the keys used to protect the Initial
 packet. It also sets the Token field to the token provided in the Retry. The
 client MUST NOT change the Source Connection ID because the server could include
-the connection ID as part of its token validation logic (see {{tokens}}).
+the connection ID as part of its token validation logic (see
+{{validate-future}}).
 
 All subsequent Initial packets from the client MUST use the connection ID and
 token values from the Retry packet.  Aside from this, the Initial packet sent
@@ -3829,7 +3852,7 @@ QUIC encodes transport parameters into a sequence of octets, which are then
 included in the cryptographic handshake.
 
 
-### Transport Parameter Definitions {#transport-parameter-definitions}
+## Transport Parameter Definitions {#transport-parameter-definitions}
 
 <!-- TODO: reorganize this section -->
 
@@ -4324,11 +4347,11 @@ Offset:
 
 ## STREAM_ID_BLOCKED Frame {#frame-stream-id-blocked}
 
-A sender MAY send a STREAM_ID_BLOCKED frame (type=0x0a) when it wishes to open a
-stream, but is unable to due to the maximum stream ID limit set by its peer (see
-{{frame-max-stream-id}}).  This does not open the stream, but informs the peer
-that a new stream was needed, but the stream limit prevented the creation of the
-stream.
+A sender SHOULD send a STREAM_ID_BLOCKED frame (type=0x0a) when it wishes to
+open a stream, but is unable to due to the maximum stream ID limit set by its
+peer (see {{frame-max-stream-id}}).  This does not open the stream, but informs
+the peer that a new stream was needed, but the stream limit prevented the
+creation of the stream.
 
 The STREAM_ID_BLOCKED frame is as follows:
 
@@ -4384,7 +4407,7 @@ Length:
 Sequence Number:
 
 : The sequence number assigned to the connection ID by the sender.  See
-  {{issuing-connection-ids}}.
+  {{issue-cid}}.
 
 Connection ID:
 
@@ -5150,7 +5173,7 @@ An on-the-side attacker can duplicate and send packets with modified ECN
 codepoints to affect the sender's rate.  If duplicate packets are discarded by a
 receiver, an off-path attacker will need to race the duplicate packet against
 the original to be successful in this attack.  Therefore, QUIC receivers ignore
-ECN codepoints set in duplicate packets (see {{using-ecn}}).
+ECN codepoints set in duplicate packets (see {{ecn}}).
 
 ## Stateless Reset Oracle {#reset-oracle}
 
