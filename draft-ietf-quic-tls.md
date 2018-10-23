@@ -1005,7 +1005,7 @@ next packet sent by the endpoint will then use the new keys.
 An endpoint does not always need to send packets when it detects that its peer
 has updated keys.  The next packet that it sends will simply use the new keys.
 If an endpoint detects a second update before it has sent any packets with
-updated keys it indicates that its peer has updated keys twice without awaiting
+updated keys, it indicates that its peer has updated keys twice without awaiting
 a reciprocal update.  An endpoint MUST treat consecutive key updates as a fatal
 error and abort the connection.
 
