@@ -1638,7 +1638,8 @@ If the client has a token received in a NEW_TOKEN frame on a previous connection
 to what it believes to be the same server, it can include that value in the
 Token field of its Initial packet.
 
-A token allows a server to correlate activity between connections.
+A token allows a server to correlate activity between the connection where the
+token was issued and any connection where it is used.
 Specifically, the connection where the token was issued, and any connection
 where it is used.  Clients that want to break continuity of identity with a
 server MAY discard tokens provided using the NEW_TOKEN frame.  Tokens obtained
