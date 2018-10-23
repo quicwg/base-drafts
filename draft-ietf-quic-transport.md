@@ -1553,15 +1553,10 @@ Handshake keys, it SHOULD send an Initial packet in a UDP datagram of at least
 packet.
 
 A server might wish to validate the client address before starting the
-handshake.  To send additional data prior to completing the cryptographic
-handshake, the server then needs to validate that the client owns the address
-that it claims.  QUIC therefore provides mechanisms for source address
-validation during connection establishment.
-
-Source addresses can be verified through an address validation token.  This
-token is delivered during connection establishment with a Retry packet (see
-{{validate-retry}}) or in a previous connection using the NEW_TOKEN frame (see
-{{validate-future}}).
+cryptographic handshake.  Source addresses can be verified using an address
+validation token.  This token is delivered during connection establishment with
+a Retry packet (see {{validate-retry}}) or in a previous connection using the
+NEW_TOKEN frame (see {{validate-future}}).
 
 
 ### Address Validation using Retry Packets {#validate-retry}
