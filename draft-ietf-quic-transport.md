@@ -1584,7 +1584,7 @@ token is repeated by the client in an Initial packet after it receives the Retry
 packet.  In response to receiving a token in an Initial packet, a server can
 either abort the connection or permit it to proceed.
 
-A server can also use the Retry packet to defer the state and processing costs
+A server can also use a Retry packet to defer the state and processing costs
 of connection establishment.  By giving the client a different connection ID to
 use, the connection might be routed to a different server instance, which have
 additional capacity for new connections.
