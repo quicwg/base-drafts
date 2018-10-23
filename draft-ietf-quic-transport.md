@@ -908,6 +908,7 @@ different IP or port at either endpoint as
 described in {{migration}}.  Finally, a connection may be terminated by either
 endpoint, as described in {{termination}}.
 
+
 ## Connection ID {#connection-id}
 
 Each connection possesses a set of connection identifiers, or connection IDs,
@@ -927,6 +928,23 @@ them with other connection IDs for the same connection.  As a trivial example,
 this means the same connection ID MUST NOT be issued more than once on the same
 connection.
 
+Packets with long headers include Source Connection ID and Destination
+Connection ID fields.  These fields are used to set the connection IDs for new
+connections, see {{negotiating-connection-ids}} for details.
+
+Packets with short headers ({{short-header}}) only include the Destination
+Connection ID and omit the explicit length.  The length of the Destination
+Connection ID field is expected to be known to endpoints.  Endpoints using a
+load balancer that routes based on connection ID could agree with the load
+balancer on a fixed length for connection IDs, or agree on an encoding scheme.
+A fixed portion could encode an explicit length, which allows the entire
+connection ID to vary in length and still be used by the load balancer.
+
+A Version Negotiation ({{packet-version}}) packet echoes the connection IDs
+selected by the client, both to ensure correct routing toward the client and to
+allow the client to validate that the packet is in response to an Initial
+packet.
+
 A zero-length connection ID MAY be used when the connection ID is not needed for
 routing and the address/port tuple of packets is sufficient to identify a
 connection. An endpoint whose peer has selected a zero-length connection ID MUST
@@ -939,7 +957,7 @@ packets sent to the endpoint.  These connection IDs are supplied by the endpoint
 using the NEW_CONNECTION_ID frame ({{frame-new-connection-id}}).
 
 
-### Issuing Connection IDs
+### Issuing Connection IDs {#issue-cid}
 
 Each Connection ID has an associated sequence number to assist in deduplicating
 messages.  The initial connection ID issued by an endpoint is sent in the Source
@@ -1446,8 +1464,6 @@ Handshake[0]: CRYPTO[FIN], ACK[0]
 
 ## Negotiating Connection IDs {#negotiating-connection-ids}
 
-<!-- TODO: Check if this section belongs here or in Connection IDs above. -->
-
 A connection ID is used to ensure consistent routing of packets, as described in
 {{connection-id}}.  The long header contains two connection IDs: the Destination
 Connection ID is chosen by the recipient of the packet and is used to provide
@@ -1492,27 +1508,8 @@ include a different Source Connection ID, they MUST be discarded.  This avoids
 problems that might arise from stateless processing of multiple Initial packets
 producing different connection IDs.
 
-Packets with short headers ({{short-header}}) only include the Destination
-Connection ID and omit the explicit length.  The length of the Destination
-Connection ID field is expected to be known to endpoints.
-
-Endpoints using a connection-ID based load balancer could agree with the load
-balancer on a fixed or minimum length and on an encoding for connection IDs.
-This fixed portion could encode an explicit length, which allows the entire
-connection ID to vary in length and still be used by the load balancer.
-
-The very first packet sent by a client includes a random value for Destination
-Connection ID.  The same value MUST be used for all 0-RTT packets sent on that
-connection ({{packet-protected}}).  This randomized value is used to determine
-the packet protection keys for Initial packets (see Section 5.2 of
-{{QUIC-TLS}}).
-
-A Version Negotiation ({{packet-version}}) packet MUST use both connection IDs
-selected by the client, swapped to ensure correct routing toward the client.
-
 The connection ID can change over the lifetime of a connection, especially in
-response to connection migration ({{migration}}). NEW_CONNECTION_ID frames
-({{frame-new-connection-id}}) are used to provide new connection ID values.
+response to connection migration ({{migration}}), see {{issue-cid}} for details.
 
 
 ## Transport Parameters {#transport-parameters}
@@ -4391,7 +4388,7 @@ Length:
 Sequence Number:
 
 : The sequence number assigned to the connection ID by the sender.  See
-  {{issuing-connection-ids}}.
+  {{issue-cid}}.
 
 Connection ID:
 
