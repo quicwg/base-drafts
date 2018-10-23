@@ -1079,7 +1079,18 @@ TBD.
 <!-- Goes into how the next few sections are connected. Specifically, one goal
 is to combine the address validation section that shows up below with path
 validation that shows up later, and explain why these two mechanisms are
-required here. -->
+required here.
+
+suggested structure:
+
+ - establishment
+   - VN
+   - Retry
+   - Crypto
+ - use (include migration)
+ - shutdown
+
+-->
 
 
 # Version Negotiation {#version-negotiation}
