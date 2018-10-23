@@ -1564,7 +1564,7 @@ Handshake keys, it SHOULD send an Initial packet in a UDP datagram of at least
 packet.
 
 
-### Token-Based Address Validation {#validate-retry}
+### Address Validation using Retry Packets {#validate-retry}
 
 QUIC uses token-based address validation during connection establishment.  Any
 time the server wishes to validate a client address, it provides the client with
@@ -1602,7 +1602,7 @@ Initial+Token[0]: CRYPTO[CH] ->
 {: #fig-retry title="Example Handshake with Retry"}
 
 
-### Address Validation for Future Connections {#validation-future}
+### Address Validation for Future Connections {#validate-future}
 
 A server MAY provide clients with an address validation token during one
 connection that can be used on a subsequent connection.  Address validation is
@@ -3749,7 +3749,7 @@ Connection ID also results in a change to the keys used to protect the Initial
 packet. It also sets the Token field to the token provided in the Retry. The
 client MUST NOT change the Source Connection ID because the server could include
 the connection ID as part of its token validation logic (see
-{{validation-future}}).
+{{validate-future}}).
 
 All subsequent Initial packets from the client MUST use the connection ID and
 token values from the Retry packet.  Aside from this, the Initial packet sent
