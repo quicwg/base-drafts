@@ -300,10 +300,10 @@ timer for TCP as well, and this document incorporates this advancement.
 
 Timer-based loss detection recovers from losses that cannot be handled by
 ack-based loss detection.  It uses a single timer which switches between
-a crypto handshake retransmission timer, a Tail Loss Probe timer and
-Retransmission Timeout mechanisms.
+a crypto retransmission timer, a Tail Loss Probe timer and Retransmission
+Timeout mechanisms.
 
-### Crypto Handshake Timeout
+### Crypto Retransmission Timeout
 
 Data in CRYPTO frames is critical to QUIC transport and crypto negotiation, so a
 more aggressive timeout is used to retransmit it.
@@ -318,12 +318,27 @@ is available, or if the network changes, the initial RTT SHOULD be set to 100ms.
 When an acknowledgement is received, a new RTT is computed and the timer
 SHOULD be set for twice the newly computed smoothed RTT.
 
-When crypto packets are sent, the sender SHOULD set a timer for the crypto
+When crypto packets are sent, the sender MUST set a timer for the crypto
 timeout period.  Upon timeout, the sender MUST retransmit all unacknowledged
-CRYPTO data by calling RetransmitAllUnackedCryptoData(). On each consecutive
-expiration of the crypto timer without receiving an acknowledgement for a new
-packet, the sender SHOULD double the crypto handshake timeout and set a timer
-for this period.
+CRYPTO data if possible.
+
+Until the server has validated the client's address on the path, the number of
+bytes it can send is limited, as specified in {{QUIC-TRANSPORT}}.
+If not all unacknowledged CRYPTO data can be sent, then all unacknowledged
+CRYPTO data sent in Initial packets should be retransmitted.  If no bytes
+can be sent, then no alarm should be armed until bytes have been received from
+the client.
+
+Because the server could be blocked until more packets are received, the
+client MUST start the crypto retransmission timer even if there is no
+unacknowledged CRYPTO data.  If the timer expires and the client has no
+CRYPTO data to retransmit and does not have Handshake keys, it SHOULD send
+an Initial packet in a UDP datagram of at least 1200 octets.
+If the client has Handshake keys, it SHOULD send a Handshake packet.
+
+On each consecutive expiration of the crypto timer without receiving an
+acknowledgement for a new packet, the sender SHOULD double the crypto
+retransmission timeout and set a timer for this period.
 
 When crypto packets are outstanding, the TLP and RTO timers are not active.
 
@@ -460,9 +475,9 @@ delayed acknowledgement should be generated after processing incoming packets.
 ### Crypto Handshake Data
 
 In order to quickly complete the handshake and avoid spurious retransmissions
-due to crypto handshake timeouts, crypto packets SHOULD use a very short ack
-delay, such as 1ms.  ACK frames MAY be sent immediately when the crypto stack
-indicates all data for that encryption level has been received.
+due to crypto retransmission timeouts, crypto packets SHOULD use a very short
+ack delay, such as 1ms.  ACK frames MAY be sent immediately when the crypto
+stack indicates all data for that encryption level has been received.
 
 ### ACK Ranges
 
@@ -539,8 +554,8 @@ are described in this section.
 loss_detection_timer:
 : Multi-modal timer used for loss detection.
 
-handshake_count:
-: The number of times all unacknowledged handshake data has been
+crypto_count:
+: The number of times all unacknowledged CRYPTO data has been
   retransmitted without receiving an ack.
 
 tlp_count:
@@ -616,7 +631,7 @@ follows:
 
 ~~~
    loss_detection_timer.reset()
-   handshake_count = 0
+   crypto_count = 0
    tlp_count = 0
    rto_count = 0
    if (kUsingTimeLossDetection)
@@ -706,7 +721,7 @@ Pseudocode for OnAckReceived and UpdateRtt follow:
       if (rto_count > 0 &&
             smallest_newly_acked > largest_sent_before_rto):
         OnRetransmissionTimeoutVerified(smallest_newly_acked)
-      handshake_count = 0
+      crypto_count = 0
       tlp_count = 0
       rto_count = 0
 
@@ -763,37 +778,6 @@ duration of the timer is based on the timer's mode, which is set in the packet
 and timer events further below.  The function SetLossDetectionTimer defined
 below shows how the single timer is set.
 
-#### Crypto Handshake Timer
-
-When a connection has unacknowledged crypto packets, the crypto handshake timer
-is set and when it expires, all unacknowledged CRYPTO data is retransmitted.
-
-When stateless rejects are in use, the connection is considered immediately
-closed once a reject is sent, so no timer is set to retransmit the reject.
-
-Version negotiation packets are always stateless, and MUST be sent once per
-handshake packet that uses an unsupported QUIC version, and MAY be sent in
-response to 0-RTT packets.
-
-#### Tail Loss Probe and Retransmission Timer
-
-Tail loss probes {{?TLP}} and retransmission timeouts {{?RFC6298}}
-are timer based mechanisms to recover from cases when there are
-outstanding retransmittable packets, but an acknowledgement has
-not been received in a timely manner.
-
-The TLP and RTO timers are armed when there are no unacknowledged crypto
-packets.  The TLP timer is set until the max number of TLP packets have been
-sent, and then the RTO timer is set.
-
-#### Early Retransmit Timer
-
-Early retransmit {{?RFC5827}} is implemented with a 1/4 RTT timer. It is
-part of QUIC's time based loss detection, but is always enabled, even when
-only packet reordering loss detection is enabled.
-
-#### Pseudocode
-
 Pseudocode for SetLossDetectionTimer follows:
 
 ~~~
@@ -838,16 +822,16 @@ Pseudocode for SetLossDetectionTimer follows:
 
 ### On Timeout
 
-QUIC uses one loss recovery timer, which when set, can be in one of several
-modes.  When the timer expires, the mode determines the action to be performed.
+When the loss detection timer expires, the timer's mode determines the action
+to be performed.
 
 Pseudocode for OnLossDetectionTimeout follows:
 
 ~~~
    OnLossDetectionTimeout():
      if (crypto packets are outstanding):
-       // Crypto handshake timeout.
-       RetransmitAllUnackedCryptoData()
+       // Crypto retransmission timeout.
+       RetransmitUnackedCryptoData()
        crypto_count++
      else if (loss_time != 0):
        // Early retransmit or Time Loss Detection
