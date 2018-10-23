@@ -1633,7 +1633,6 @@ therefore unlikely to be successful.
 
 A resumption token SHOULD be constructed to be easily distinguishable from tokens
 that are sent in Retry packets as they are carried in the same field.
-Retry packets as they are carried in the same field.
 
 If the client has a token received in a NEW_TOKEN frame on a previous connection
 to what it believes to be the same server, it can include that value in the
