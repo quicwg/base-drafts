@@ -1631,7 +1631,8 @@ dynamically calculate the expiration time.  It is also unlikely that the client
 port number is the same on two different connections; validating the port is
 therefore unlikely to be successful.
 
-A resumption token SHOULD be easily distinguishable from tokens that are sent in
+A resumption token SHOULD be constructed to be easily distinguishable from tokens
+that are sent in Retry packets as they are carried in the same field.
 Retry packets as they are carried in the same field.
 
 If the client has a token received in a NEW_TOKEN frame on a previous connection
