@@ -1002,7 +1002,7 @@ If the packet can be decrypted and authenticated using the updated key and IV,
 then the keys the endpoint uses for packet protection are also updated.  The
 next packet sent by the endpoint will then use the new keys.
 
-An endpoint doesn't always need to send packets when it detects that its peer
+An endpoint does not always need to send packets when it detects that its peer
 has updated keys.  The next packet that it sends will simply use the new keys.
 If an endpoint detects a second update before it has sent any packets with
 updated keys it indicates that its peer has updated keys twice without awaiting
