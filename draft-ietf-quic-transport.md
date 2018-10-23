@@ -1588,7 +1588,6 @@ A server can also use a Retry packet to defer the state and processing costs
 of connection establishment.  By giving the client a different connection ID to
 use, a server can cause the connection to be routed to a server instance with
 more resources available for new connections.
-additional capacity for new connections.
 
 A flow showing the use of a Retry packet is shown in {{fig-retry}}.
 
