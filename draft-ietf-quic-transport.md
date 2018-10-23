@@ -4325,11 +4325,11 @@ Offset:
 
 ## STREAM_ID_BLOCKED Frame {#frame-stream-id-blocked}
 
-A sender SHOULD send a STREAM_ID_BLOCKED frame (type=0x0a) when it wishes to open
-a stream, but is unable to due to the maximum stream ID limit set by its peer
-(see {{frame-max-stream-id}}).  This does not open the stream, but informs the
-peer that a new stream was needed, but the stream limit prevented the creation of
-the stream.
+A sender SHOULD send a STREAM_ID_BLOCKED frame (type=0x0a) when it wishes to
+open a stream, but is unable to due to the maximum stream ID limit set by its
+peer (see {{frame-max-stream-id}}).  This does not open the stream, but informs
+the peer that a new stream was needed, but the stream limit prevented the
+creation of the stream.
 
 The STREAM_ID_BLOCKED frame is as follows:
 
