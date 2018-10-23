@@ -2210,15 +2210,6 @@ An endpoint sends a closing frame (CONNECTION_CLOSE or APPLICATION_CLOSE) to
 terminate the connection immediately.  Any closing frame causes all streams to
 immediately become closed; open streams can be assumed to be implicitly reset.
 
-If the endpoint has received an ACK for a 1-RTT packet, it SHOULD send
-CONNECTION_CLOSE in a 1-RTT packet. If not, and it has received a Handshake
-packet from the peer, it SHOULD send CONNECTION_CLOSE in a Handshake packet.
-
-If the endpoint has received only Initial packets from the peer, it SHOULD
-send CONNECTION_CLOSE in an Initial packet. If it has Handshake keys available,
-it SHOULD also send the frame in a Handshake packet coalesced with the Initial
-packet.
-
 After sending a closing frame, endpoints immediately enter the closing state.
 During the closing period, an endpoint that sends a closing frame SHOULD respond
 to any packet that it receives with another packet containing a closing frame.
@@ -2250,6 +2241,14 @@ are needed to cause both endpoints to agree to close the connection, after which
 the application requests that the connection be closed.  The application
 protocol can use an APPLICATION_CLOSE message with an appropriate error code to
 signal closure.
+
+If the connection has been successfully established, endpoints MUST send any
+closing frames in a 1-RTT packet.  Prior to connection establishment a peer
+might not have 1-RTT keys, so endpoints SHOULD send closing frames in a
+Handshake packet.  If the endpoint does not have Handshake keys, or it is not
+certain that the peer has Handshake keys, it MAY send closing frames in an
+Initial packet.  If multiple packets are sent, they can be coalesced (see
+{{packet-coalesce}}) to facilitate retransmission.
 
 
 ## Stateless Reset {#stateless-reset}
