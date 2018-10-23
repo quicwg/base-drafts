@@ -989,17 +989,20 @@ packet with a matching KEY_PHASE.
 
 A receiving endpoint detects an update when the KEY_PHASE bit doesn't match what
 it is expecting.  It creates a new secret (see Section 7.2 of {{!TLS13}}) and
-the corresponding read key and IV.  If the packet can be decrypted and
-authenticated using these values, then the keys it uses for packet protection
-are also updated.  The next packet sent by the endpoint will then use the new
-keys.
+the corresponding read key and IV.  This uses the same variation on HKDF as
+defined in {{protection-keys}}; that is, the prefix "quic " is used in place of
+"tls13 ".
 
-An endpoint doesn't need to send packets immediately when it detects that its
-peer has updated keys.  The next packet that it sends will simply use the new
-keys.  If an endpoint detects a second update before it has sent any packets
-with updated keys it indicates that its peer has updated keys twice without
-awaiting a reciprocal update.  An endpoint MUST treat consecutive key updates as
-a fatal error and abort the connection.
+If the packet can be decrypted and authenticated using the updated key and IV,
+then the keys it uses for packet protection are also updated.  The next packet
+sent by the endpoint will then use the new keys.
+
+An endpoint doesn't always need to send packets when it detects that its peer
+has updated keys.  The next packet that it sends will simply use the new keys.
+If an endpoint detects a second update before it has sent any packets with
+updated keys it indicates that its peer has updated keys twice without awaiting
+a reciprocal update.  An endpoint MUST treat consecutive key updates as a fatal
+error and abort the connection.
 
 An endpoint SHOULD retain old keys for a short period to allow it to decrypt
 packets with smaller packet numbers than the packet that triggered the key
