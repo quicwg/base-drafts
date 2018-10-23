@@ -1530,34 +1530,31 @@ validation is performed both during connection establishment (see
 
 ## Address Validation During Connection Establishment {#validate-new}
 
-During the initial handshake, QUIC requires that clients send UDP datagrams with
-at least 1200 octets of payload until the server has completed address
-validation. A server can thereby send more data to an unproven address without
-increasing the amplification advantage gained by an attacker.
+Successful receipt of the first packet protected with Handshake keys confirms
+that a client received the Initial packet from the server.
 
-A server eventually confirms that a client has received its messages when the
-first Handshake-level message is received. This might be insufficient, either
-because the server wishes to avoid the computational cost of completing the
-handshake, or because the server wish to send significant quantities of data.
-This is especially important for 0-RTT, where the server might wish to provide
-application data traffic - such as a response to a request - in response to the
-data carried in the early data from the client.
+However, a server might wish to validate the client address before starting the
+handshake.  To send additional data prior to completing the cryptographic
+handshake, the server then needs to validate that the client owns the address
+that it claims.  QUIC therefore provides mechanisms for source address
+validation during connection establishment.
 
-To send additional data prior to completing the cryptographic handshake, the
-server then needs to validate that the client owns the address that it claims.
-QUIC therefore provides mechanisms for source address validation during
-connection establishment.
+Source addresses can be verified through an address validation token.  This
+token is delivered during connection establishment with a Retry packet (see
+{{validate-retry}}) or in a previous connection using the NEW_TOKEN frame (see
+{{validate-future}}).
 
-Source addresses can be verified through an address validation token (delivered
-via a Retry packet or a NEW_TOKEN frame) or by processing any message from the
-client encrypted using the Handshake keys.
+Prior to validating the client address, servers MUST NOT send more than three
+times as many bytes as the number of bytes they have received.  This limits the
+magnitude of any amplification attack that can be mounted using spoofed source
+addresses.
 
-Servers MUST NOT send more than three times as many bytes as the number of bytes
-received prior to verifying the that the client can receive data from the
-server.  This limit exists to mitigate amplification attacks.
+To ensure that the server is not overly constrained by this restriction, clients
+MUST send UDP datagrams with at least 1200 octets of payload until the server
+has completed address validation, see {{packet-size}}.
 
-In order to prevent this limit causing a handshake deadlock, the client SHOULD
-always send a packet upon a handshake timeout, as described in
+In order to prevent a handshake deadlock as a result of the server being unable
+to send, clients SHOULD send a packet upon a handshake timeout, as described in
 {{QUIC-RECOVERY}}.  If the client has no data to retransmit and does not have
 Handshake keys, it SHOULD send an Initial packet in a UDP datagram of at least
 1200 octets.  If the client has Handshake keys, it SHOULD send a Handshake
