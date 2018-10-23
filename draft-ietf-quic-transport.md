@@ -1575,7 +1575,7 @@ NEW_TOKEN frame (see {{validate-future}}).
 QUIC uses token-based address validation during connection establishment.  Any
 time the server wishes to validate a client address, it provides the client with
 a token.  As long as it is not possible for an attacker to generate a valid
-token for its address (see {{token-integrity}}) and the client is able to return
+token for its own address (see {{token-integrity}}) and the client is able to return
 that token, it proves to the server that it received the token.
 
 Upon receiving the client's Initial packet, the server can request address
