@@ -2245,10 +2245,10 @@ signal closure.
 If the connection has been successfully established, endpoints MUST send any
 closing frames in a 1-RTT packet.  Prior to connection establishment a peer
 might not have 1-RTT keys, so endpoints SHOULD send closing frames in a
-Handshake packet.  If they are not certain that the peer has Handshake keys, an
-endpoint MAY send closing frames in an Initial packet.  If multiple packets are
-sent, they can be coalesced (see {{packet-coalesce}}) to facilitate
-retransmission.
+Handshake packet.  If the endpoint does not have Handshake keys, or it is not
+certain that the peer has Handshake keys, it MAY send closing frames in an
+Initial packet.  If multiple packets are sent, they can be coalesced (see
+{{packet-coalesce}}) to facilitate retransmission.
 
 
 ## Stateless Reset {#stateless-reset}
