@@ -992,7 +992,7 @@ An endpoint MUST NOT initiate more than one key update at a time.  A new key
 cannot be used until the endpoint has received and successfully decrypted a
 packet with a matching KEY_PHASE.
 
-A receiving endpoint detects an update when the KEY_PHASE bit doesn't match what
+A receiving endpoint detects an update when the KEY_PHASE bit does not match what
 it is expecting.  It creates a new secret (see Section 7.2 of {{!TLS13}}) and
 the corresponding read key and IV.  This uses the same variation on HKDF as
 defined in {{protection-keys}}; that is, the prefix "quic " is used in place of
