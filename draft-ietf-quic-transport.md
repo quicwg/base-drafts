@@ -1669,12 +1669,6 @@ addresses.
 
 ### Address Validation Token Integrity {#token-integrity}
 
-There is no need for a single well-defined format for the token because the
-server that generates the token also consumes it.  A token could include
-information about the claimed client address (IP and port), a timestamp, and any
-other supplementary information the server will need to validate the token in
-the future.
-
 An address validation token MUST be difficult to guess.  Including a large
 enough random value in the token would be sufficient, but this depends on the
 server remembering the value it sends to clients.
@@ -1685,6 +1679,12 @@ integrity protection against modification or falsification by clients.  Without
 integrity protection, malicious clients could generate or guess values for
 tokens that would be accepted by the server.  Only the server requires access to
 the integrity protection key for tokens.
+
+There is no need for a single well-defined format for the token because the
+server that generates the token also consumes it.  A token could include
+information about the claimed client address (IP and port), a timestamp, and any
+other supplementary information the server will need to validate the token in
+the future.
 
 
 ## Path Validation {#migrate-validate}
