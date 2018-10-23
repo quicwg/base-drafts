@@ -983,6 +983,11 @@ without necessarily needing to receive the first packet that triggered the
 change.  An endpoint that notices a changed KEY_PHASE bit can update keys and
 decrypt the packet that contains the changed bit.
 
+This mechanism replaces the TLS KeyUpdate message.  Endpoints MUST NOT send a
+TLS KeyUpdate message.  Endpoints MUST treat the receipt of a TLS KeyUpdate
+message as a connection error of type 0x10a, equivalent to a fatal TLS alert of
+unexpected_message (see {{tls-errors}}).
+
 An endpoint MUST NOT initiate more than one key update at a time.  A new key
 cannot be used until the endpoint has received and successfully decrypted a
 packet with a matching KEY_PHASE.
