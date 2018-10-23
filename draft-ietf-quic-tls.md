@@ -994,8 +994,8 @@ defined in {{protection-keys}}; that is, the prefix "quic " is used in place of
 "tls13 ".
 
 If the packet can be decrypted and authenticated using the updated key and IV,
-then the keys it uses for packet protection are also updated.  The next packet
-sent by the endpoint will then use the new keys.
+then the keys the endpoint uses for packet protection are also updated.  The
+next packet sent by the endpoint will then use the new keys.
 
 An endpoint doesn't always need to send packets when it detects that its peer
 has updated keys.  The next packet that it sends will simply use the new keys.
