@@ -1631,18 +1631,17 @@ dynamically calculate the expiration time.  It is also unlikely that the client
 port number is the same on two different connections; validating the port is
 therefore unlikely to be successful.
 
-A resumption token SHOULD be constructed to be easily distinguishable from tokens
-that are sent in Retry packets as they are carried in the same field.
+A resumption token SHOULD be constructed to be easily distinguishable from
+tokens that are sent in Retry packets as they are carried in the same field.
 
 If the client has a token received in a NEW_TOKEN frame on a previous connection
 to what it believes to be the same server, it can include that value in the
 Token field of its Initial packet.
 
 A token allows a server to correlate activity between the connection where the
-token was issued and any connection where it is used.
-Clients that want to break continuity of identity with a
-server MAY discard tokens provided using the NEW_TOKEN frame.  Tokens obtained
-in Retry packets MUST NOT be discarded.
+token was issued and any connection where it is used.  Clients that want to
+break continuity of identity with a server MAY discard tokens provided using the
+NEW_TOKEN frame.  Tokens obtained in Retry packets MUST NOT be discarded.
 
 A client SHOULD NOT reuse a token.  Reusing a token allows connections to be
 linked by entities on the network path (see {{migration-linkability}}).  A
