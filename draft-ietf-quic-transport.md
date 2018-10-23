@@ -1089,6 +1089,24 @@ that is mutually supported. A server sends a Version Negotiation packet in
 response to each packet that might initiate a new connection, see
 {{packet-handling}} for details.
 
+The first few messages of an exchange between a client attempting to create a
+new connection with server is shown in {{fig-vn}}.  After version negotiation
+completes, connection establishment can proceed, for example as shown in
+{{example-handshake-flows}}.
+
+~~~~
+Client                                                  Server
+
+Packet (v=X) ->
+
+                        <- Version Negotiation (supported=Y,Z)
+
+Packet (v=Y) ->
+
+                                            <- Packet(s) (v=Y)
+~~~~
+{: #fig-vn title="Example Version Negotiation Exchange"}
+
 The size of the first packet sent by a client will determine whether a server
 sends a Version Negotiation packet. Clients that support multiple QUIC versions
 SHOULD pad the first packet they send to the largest of the minimum packet sizes
@@ -1197,15 +1215,13 @@ that meets the requirements of the cryptographic handshake protocol:
   {{?RFC7301}} for this purpose)
 
 The first CRYPTO frame from a client MUST be sent in a single packet.  Any
-second attempt that is triggered by address validation MUST also be sent within
-a single packet. This avoids having to reassemble a message from multiple
-packets.
+second attempt that is triggered by address validation (see {{validate-new}})
+MUST also be sent within a single packet. This avoids having to reassemble a
+message from multiple packets.
 
 The first client packet of the cryptographic handshake protocol MUST fit within
 a 1232 octet QUIC packet payload.  This includes overheads that reduce the space
-available to the cryptographic handshake protocol.  This forms part of the
-defense against amplification attack that are expanded in more detail in
-{{address-validation}}.
+available to the cryptographic handshake protocol.
 
 The CRYPTO frame can be sent in different packet number spaces.  The sequence
 numbers used by CRYPTO frames to ensure ordered delivery of cryptographic
@@ -1215,11 +1231,13 @@ handshake data start from zero in each packet number space.
 ## Example Handshake Flows
 
 Details of how TLS is integrated with QUIC are provided in {{QUIC-TLS}}, but
-some examples are provided here.
+some examples are provided here.  An extension of this exchange to support
+client address validation is shown in {{validate-retry}}.
 
-Once version negotiation is complete, the cryptographic handshake is used to
-agree on cryptographic keys.  The cryptographic handshake is carried in Initial
-({{packet-initial}}) and Handshake ({{packet-handshake}}) packets.
+Once any version negotiation and address validation exchanges are complete, the
+cryptographic handshake is used to agree on cryptographic keys.  The
+cryptographic handshake is carried in Initial ({{packet-initial}}) and Handshake
+({{packet-handshake}}) packets.
 
 {{tls-1rtt-handshake}} provides an overview of the 1-RTT handshake.  Each line
 shows a QUIC packet with the packet type and packet number shown first, followed
@@ -1251,7 +1269,6 @@ Handshake[0]: CRYPTO[FIN], ACK[0]
                                        <- Handshake[1]: ACK[0]
 ~~~~
 {: #tls-1rtt-handshake title="Example 1-RTT Handshake"}
-
 
 {{tls-0rtt-handshake}} shows an example of a connection with a 0-RTT handshake
 and a single packet of 0-RTT data. Note that as described in {{packet-numbers}},
@@ -1521,21 +1538,23 @@ increasing the amplification advantage gained by an attacker.
 A server eventually confirms that a client has received its messages when the
 first Handshake-level message is received. This might be insufficient, either
 because the server wishes to avoid the computational cost of completing the
-handshake, or it might be that the size of the packets that are sent during the
-handshake is too large.  This is especially important for 0-RTT, where the
-server might wish to provide application data traffic - such as a response to a
-request - in response to the data carried in the early data from the client.
+handshake, or because the server wish to send significant quantities of data.
+This is especially important for 0-RTT, where the server might wish to provide
+application data traffic - such as a response to a request - in response to the
+data carried in the early data from the client.
 
 To send additional data prior to completing the cryptographic handshake, the
 server then needs to validate that the client owns the address that it claims.
-QUIC therefore performs source address validation during connection
-establishment.
+QUIC therefore provides mechanisms for source address validation during
+connection establishment.
+
+Source addresses can be verified through an address validation token (delivered
+via a Retry packet or a NEW_TOKEN frame) or by processing any message from the
+client encrypted using the Handshake keys.
 
 Servers MUST NOT send more than three times as many bytes as the number of bytes
-received prior to verifying the client's address.  Source addresses can be
-verified through an address validation token (delivered via a Retry packet or
-a NEW_TOKEN frame) or by processing any message from the client encrypted using
-the Handshake keys.  This limit exists to mitigate amplification attacks.
+received prior to verifying the that the client can receive data from the
+server.  This limit exists to mitigate amplification attacks.
 
 In order to prevent this limit causing a handshake deadlock, the client SHOULD
 always send a packet upon a handshake timeout, as described in
@@ -1545,7 +1564,7 @@ Handshake keys, it SHOULD send an Initial packet in a UDP datagram of at least
 packet.
 
 
-### Token-Based Address Validation
+### Token-Based Address Validation {#validate-retry}
 
 QUIC uses token-based address validation during connection establishment.  Any
 time the server wishes to validate a client address, it provides the client with
@@ -1558,6 +1577,7 @@ validation by sending a Retry packet ({{packet-retry}}) containing a token. This
 token is repeated by the client in an Initial packet after it receives the Retry
 packet.  In response to receiving a token in an Initial packet, a server can
 either abort the connection or permit it to proceed.
+
 
 A server can also use the Retry packet to defer the state and processing costs
 of connection establishment.  By giving the client a different connection ID to
@@ -1579,12 +1599,7 @@ Initial+Token[0]: CRYPTO[CH] ->
                        Handshake[0]: CRYPTO[EE, CERT, CV, FIN]
                                  <- 1-RTT[0]: STREAM[1, "..."]
 ~~~~
-{: #fig-retry title="Example Handshake Showing Retry"}
-
-A connection MAY be accepted without address validation - or with only limited
-validation - but a server SHOULD limit the data it sends toward an unvalidated
-address.  Successful completion of the cryptographic handshake implicitly
-provides proof that the client has received packets from the server.
+{: #fig-retry title="Example Handshake with Retry"}
 
 
 ### Address Validation for Future Connections {#validation-future}
@@ -2981,7 +2996,8 @@ datagram that is at least 1200 octets. Padding the Initial packet or including a
 0-RTT packet in the same datagram are ways to meet this requirement.  Sending a
 UDP datagram of this size ensures that the network path supports a reasonable
 Maximum Transmission Unit (MTU), and helps reduce the amplitude of amplification
-attacks caused by server responses toward an unverified client address.
+attacks caused by server responses toward an unverified client address, see
+{{address-validation}}.
 
 The payload of a UDP datagram carrying the Initial packet MUST be expanded to at
 least 1200 octets, by adding PADDING frames to the Initial packet and/or by
