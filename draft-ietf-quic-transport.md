@@ -1530,19 +1530,11 @@ validation is performed both during connection establishment (see
 
 ## Address Validation During Connection Establishment {#validate-new}
 
-Successful receipt of the first packet protected with Handshake keys confirms
-that a client received the Initial packet from the server.
-
-However, a server might wish to validate the client address before starting the
-handshake.  To send additional data prior to completing the cryptographic
-handshake, the server then needs to validate that the client owns the address
-that it claims.  QUIC therefore provides mechanisms for source address
-validation during connection establishment.
-
-Source addresses can be verified through an address validation token.  This
-token is delivered during connection establishment with a Retry packet (see
-{{validate-retry}}) or in a previous connection using the NEW_TOKEN frame (see
-{{validate-future}}).
+Connection establishment implicitly provides address validation for both
+endpoints.  In particular, receipt of a packet protected with Handshake keys
+confirms that the client received the Initial packet from the server.  Once the
+server has successfully processed a Handshake packet from the client, it can
+consider the client address to have been validated.
 
 Prior to validating the client address, servers MUST NOT send more than three
 times as many bytes as the number of bytes they have received.  This limits the
@@ -1559,6 +1551,17 @@ to send, clients SHOULD send a packet upon a handshake timeout, as described in
 Handshake keys, it SHOULD send an Initial packet in a UDP datagram of at least
 1200 octets.  If the client has Handshake keys, it SHOULD send a Handshake
 packet.
+
+A server might wish to validate the client address before starting the
+handshake.  To send additional data prior to completing the cryptographic
+handshake, the server then needs to validate that the client owns the address
+that it claims.  QUIC therefore provides mechanisms for source address
+validation during connection establishment.
+
+Source addresses can be verified through an address validation token.  This
+token is delivered during connection establishment with a Retry packet (see
+{{validate-retry}}) or in a previous connection using the NEW_TOKEN frame (see
+{{validate-future}}).
 
 
 ### Address Validation using Retry Packets {#validate-retry}
