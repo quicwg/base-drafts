@@ -2949,7 +2949,6 @@ If a packet sent with an ECT codepoint is newly acknowledged by the peer in an
 ACK frame without ECN feedback, the endpoint stops setting ECT codepoints in
 subsequent packets, with the expectation that either the network or the peer no
 longer supports ECN.
-the expectation that either the network or the peer no longer supports ECN.
 
 To protect the connection from arbitrary corruption of ECN codepoints by the
 network, an endpoint verifies the following when an ACK frame is received:
