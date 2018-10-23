@@ -2306,9 +2306,9 @@ signal closure.
 
 If the connection has been successfully established, endpoints MUST send any
 closing frames in a 1-RTT packet.  Prior to connection establishment, endpoints
-SHOULD send closing frames in a Handshake packet.  An endpoint MAY send closing
-frames in an Initial packet.  Closing frames might be replicated into packets at
-different encryption levels, which can then be coalesced (see
+SHOULD send closing frames in a Handshake packet if possible.  An endpoint MAY
+send closing frames in an Initial packet.  Closing frames might be replicated
+into packets at different encryption levels, which can then be coalesced (see
 {{packet-coalesce}} to facilitate retransmission.
 
 
