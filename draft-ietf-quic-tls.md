@@ -994,7 +994,7 @@ packet with a matching KEY_PHASE.
 
 A receiving endpoint detects an update when the KEY_PHASE bit does not match what
 it is expecting.  It creates a new secret (see Section 7.2 of {{!TLS13}}) and
-the corresponding read key and IV.  This uses the same variation on HKDF as
+the corresponding read key and IV using the same variation on HKDF as
 defined in {{protection-keys}}; that is, the prefix "quic " is used in place of
 "tls13 ".
 
