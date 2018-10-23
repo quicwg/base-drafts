@@ -907,6 +907,7 @@ different IP or port at either endpoint as
 described in {{migration}}.  Finally, a connection may be terminated by either
 endpoint, as described in {{termination}}.
 
+
 ## Connection ID {#connection-id}
 
 Each connection possesses a set of connection identifiers, or connection IDs,
@@ -926,16 +927,16 @@ them with other connection IDs for the same connection.  As a trivial example,
 this means the same connection ID MUST NOT be issued more than once on the same
 connection.
 
-Packets with long headers include at least two connection IDs, which are used to
-determine the connection IDs that are used for the connection when established,
-see {{negotiating-connection-ids}} for details.
+Packets with long headers include Source Connection ID and Destination
+Connection ID fields.  These fields are used to set the connection IDs for new
+connections, see {{negotiating-connection-ids}} for details.
 
 Packets with short headers ({{short-header}}) only include the Destination
 Connection ID and omit the explicit length.  The length of the Destination
-Connection ID field is expected to be known to endpoints.  Endpoints that use a
+Connection ID field is expected to be known to endpoints.  Endpoints using a
 load balancer that routes based on connection ID could agree with the load
-balancer on a fixed or minimum length and on an encoding for connection IDs.
-This fixed portion could encode an explicit length, which allows the entire
+balancer on a fixed length for connection IDs, or agree on an encoding scheme.
+A fixed portion could encode an explicit length, which allows the entire
 connection ID to vary in length and still be used by the load balancer.
 
 A Version Negotiation ({{packet-version}}) packet echoes the connection IDs
