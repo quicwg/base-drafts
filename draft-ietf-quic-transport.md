@@ -1640,7 +1640,6 @@ Token field of its Initial packet.
 
 A token allows a server to correlate activity between the connection where the
 token was issued and any connection where it is used.
-Specifically, the connection where the token was issued, and any connection
 where it is used.  Clients that want to break continuity of identity with a
 server MAY discard tokens provided using the NEW_TOKEN frame.  Tokens obtained
 in Retry packets MUST NOT be discarded.
