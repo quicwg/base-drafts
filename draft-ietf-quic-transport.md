@@ -831,9 +831,10 @@ implementations.
 If a sender runs out of flow control credit, it will be unable to send new
 data. That is, the sender is blocked. A blocked sender SHOULD send a
 STREAM_BLOCKED or BLOCKED frame.  A receiver uses these frames for debugging
-purposes.  A receiver SHOULD NOT wait for a STREAM_BLOCKED or BLOCKED frame
+purposes.  A receiver MUST NOT wait for a STREAM_BLOCKED or BLOCKED frame
 before sending MAX_STREAM_DATA or MAX_DATA, since doing so will mean that a
-sender will be blocked for an entire round trip.
+sender will be blocked for an entire round trip and the peer may never
+send a STREAM_BLOCKED or BLOCKED frame.
 
 It is generally considered best to not let the sender go into quiescence if
 avoidable.  To avoid blocking a sender, and to reasonably account for the
@@ -893,10 +894,8 @@ overhead, while withholding MAX_STREAM_ID frames can prevent the peer from using
 the available parallelism.
 
 The STREAM_ID_BLOCKED frame ({{frame-stream-id-blocked}}) can be
-used to signal a shortage of available streams.
-Implementations will likely want to increase the maximum stream ID as
-peer-initiated streams close.  A receiver MAY also advance the maximum stream ID
-based on current activity, system conditions, and other environmental factors.
+used to signal a shortage of available streams. Implementations will likely
+want to increase the maximum stream ID as peer-initiated streams close.
 
 
 # Connections {#connections}
@@ -4324,11 +4323,11 @@ Offset:
 
 ## STREAM_ID_BLOCKED Frame {#frame-stream-id-blocked}
 
-A sender MAY send a STREAM_ID_BLOCKED frame (type=0x0a) when it wishes to open a
-stream, but is unable to due to the maximum stream ID limit set by its peer (see
-{{frame-max-stream-id}}).  This does not open the stream, but informs the peer
-that a new stream was needed, but the stream limit prevented the creation of the
-stream.
+A sender SHOULD send a STREAM_ID_BLOCKED frame (type=0x0a) when it wishes to
+open a stream, but is unable to due to the maximum stream ID limit set by its
+peer (see {{frame-max-stream-id}}).  This does not open the stream, but informs
+the peer that a new stream was needed, but the stream limit prevented the
+creation of the stream.
 
 The STREAM_ID_BLOCKED frame is as follows:
 
