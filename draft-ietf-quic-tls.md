@@ -325,11 +325,8 @@ encryption levels:
 
 - CRYPTO frames MAY appear in packets of any encryption level except 0-RTT.
 
-- CONNECTION_CLOSE type 0x02 MAY appear in packets of any encryption level other
-  than 0-RTT.
-
-- CONNECTION_CLOSE type 0x03 MAY appear in packets of any encryption level other
-  than Initial and 0-RTT.
+- CONNECTION_CLOSE MAY appear in packets of any encryption level other than
+  0-RTT.
 
 - PADDING frames MAY appear in packets of any encryption level.
 
