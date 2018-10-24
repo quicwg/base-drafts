@@ -1250,9 +1250,9 @@ that meets the requirements of the cryptographic handshake protocol:
   {{?RFC7301}} for this purpose)
 
 The first CRYPTO frame from a client MUST be sent in a single packet.  Any
-second attempt that is triggered by address validation (see {{validate-new}})
-MUST also be sent within a single packet. This avoids having to reassemble a
-message from multiple packets.
+second attempt that is triggered by address validation (see
+{{validate-handshake}}) MUST also be sent within a single packet. This avoids
+having to reassemble a message from multiple packets.
 
 The first client packet of the cryptographic handshake protocol MUST fit within
 a 1232 octet QUIC packet payload.  This includes overheads that reduce the space
@@ -1539,10 +1539,11 @@ on its own.
 The primary defense against amplification attack is verifying that an endpoint
 is able to receive packets at the transport address that it claims.  Address
 validation is performed both during connection establishment (see
-{{validate-new}}) and during connection migration (see {{migrate-validate}}).
+{{validate-handshake}}) and during connection migration (see
+{{migrate-validate}}).
 
 
-## Address Validation During Connection Establishment {#validate-new}
+## Address Validation During Connection Establishment {#validate-handshake}
 
 Connection establishment implicitly provides address validation for both
 endpoints.  In particular, receipt of a packet protected with Handshake keys
@@ -3680,7 +3681,7 @@ a connection error.
 
 A Retry packet uses a long packet header with a type value of 0x7E. It carries
 an address validation token created by the server. It is used by a server that
-wishes to perform a stateless retry (see {{validate-new}}).
+wishes to perform a stateless retry (see {{validate-handshake}}).
 
 ~~~
  0                   1                   2                   3
