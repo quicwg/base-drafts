@@ -4057,7 +4057,9 @@ An endpoint sends a CONNECTION_CLOSE frame (type=0x02 or 0x03) to notify its
 peer that the connection is being closed.  The CONNECTION_CLOSE with a frame
 type of 0x02 is used to signal errors at the QUIC layer, or the absence of
 errors (with the NO_ERROR code).  The CONNECTION_CLOSE frame with a type of 0x03
-is used to signal an error with the protocol that uses QUIC.
+is used to signal an error with the protocol that uses QUIC.  Protocols that use
+QUIC only use the CONNECTION_CLOSE frame of type 0x03; the frame with type 0x02
+is only used internally by QUIC.
 
 If there are open streams that haven't been explicitly closed, they are
 implicitly closed when the connection is closed.

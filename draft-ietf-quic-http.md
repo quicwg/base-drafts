@@ -1269,8 +1269,7 @@ express the cause of a connection or stream error.
 ## HTTP/QUIC Error Codes {#http-error-codes}
 
 The following error codes are defined for use in QUIC RST_STREAM frames,
-STOP_SENDING frames, and CONNECTION_CLOSE frames with a type of 0x03 when using
-HTTP/QUIC.
+STOP_SENDING frames, and CONNECTION_CLOSE frames when using HTTP/QUIC.
 
 STOPPING (0x00):
 : This value is reserved by the transport to be used in response to QUIC
