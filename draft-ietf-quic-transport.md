@@ -1194,9 +1194,46 @@ A client MAY attempt 0-RTT after receiving a Version Negotiation packet.  A
 client that sends additional 0-RTT packets MUST NOT reset the packet number to 0
 as a result, see {{retry-0rtt-pn}}.
 
-Version negotiation packets have no cryptographic protection. The result of the
-negotiation MUST be revalidated as part of the cryptographic handshake (see
-{{version-validation}}).
+The format of the packet that a client sends might be different in the new
+version.  In this case, the client generates a new packet that conforms to the
+selected version.  Though different versions might convey information about
+versions differently, a client MUST NOT change either the list of versions it
+claims to support.  Similarly, a client MUST NOT change what it reports as the
+version it first attempted to use.
+
+Version negotiation packets have no cryptographic protection.  Keeping
+version-related information consistent between versions is critical for
+validation of the choice of version (see {{version-validation}}).
+
+
+## Compatible Version Upgrade {#version-upgrade}
+
+The first packet sent by a client uses a QUIC version selected by the client.
+In this version of QUIC, this packet also includes transport parameters.  Those
+transport parameters include a list of QUIC versions the client supports.
+
+A server that understands the version selected by the client can extract the
+list of QUIC versions and select an alternative version from the list of
+supported versions.  A server MAY choose a compatible version from that list and
+continue the handshake with that version.  The server sends its first packet as
+though it was continuing with the version it selects.
+
+A QUIC version is compatible with this version if the cryptographic handshake
+message sent in the first packet can be used in both versions.  A compatible
+version is also able to identifying and acknowledge the first packet sent by the
+client in some fashion.  Other QUIC versions might have different constraints in
+determining what is compatible.  In order to facilitate this process, new QUIC
+versions could define a process for transforming the first packet from other
+compatible versions into the equivalent packet in the new version.
+
+Upgrading in this manner allows a server to upgrade without incurring the round
+trip imposed by sending a Version Negotiation packet.  It also allows clients to
+send their first packet using a widely deployed version, without the risk of
+having to use that version with servers that supports a more-preferred version.
+
+A server MUST NOT send a Version Negotiation packet if it prefers a version that
+is not compatible with the version the client initially chose; a server has to
+allow the client to choose between versions that are not compatible.
 
 
 ## Using Reserved Versions
@@ -1249,14 +1286,20 @@ that meets the requirements of the cryptographic handshake protocol:
 * authenticated negotiation of an application protocol (TLS uses ALPN
   {{?RFC7301}} for this purpose)
 
-The first CRYPTO frame from a client MUST be sent in a single packet.  Any
-second attempt that is triggered by address validation (see
-{{validate-handshake}}) MUST also be sent within a single packet. This avoids
-having to reassemble a message from multiple packets.
+The first cryptographic handshake message from a client is subject to several
+requirements:
 
-The first client packet of the cryptographic handshake protocol MUST fit within
-a 1232 octet QUIC packet payload.  This includes overheads that reduce the space
-available to the cryptographic handshake protocol.
+1. The first message MUST be sent in a single packet.  Any second attempt that
+   is triggered by address validation (see {{validate-handshake}}) MUST also be
+   sent within a single packet.  This avoids having to reassemble a message from
+   multiple packets at a server.
+
+2. The first message MUST include the transport parameters chosen by the client.
+   This enables upgrade to a compatible version (see {{version-upgrade}}).
+
+3. The first message MUST fit within a 1232 octet QUIC packet payload.  This
+   includes overheads that reduce the space available to the cryptographic
+   handshake protocol.  See {{packet-size}} for more details.
 
 The CRYPTO frame can be sent in different packet number spaces.  The sequence
 numbers used by CRYPTO frames to ensure ordered delivery of cryptographic
@@ -1383,25 +1426,32 @@ response to connection migration ({{migration}}), see {{issue-cid}} for details.
 ## Transport Parameters {#transport-parameters}
 
 During connection establishment, both endpoints make authenticated declarations
-of their transport parameters.  These declarations are made unilaterally by each
-endpoint.  Endpoints are required to comply with the restrictions implied by
-these parameters; the description of each parameter includes rules for its
-handling.
+of their transport parameters, which are a set of key-value pairs.  These
+declarations are made unilaterally by each endpoint.  Endpoints are required to
+comply with the restrictions implied by these parameters; the definition of each
+transport parameter includes rules for its handling.
 
 The encoding of the transport parameters is detailed in
-{{transport-parameter-encoding}}.
+{{transport-parameter-encoding}}.  Transport parameters are key-value pairs.
+Definitions and rules for encoding for each of the defined transport parameters
+are included in {{transport-parameter-definitions}}.
 
 QUIC includes the encoded transport parameters in the cryptographic handshake.
 Once the handshake completes, the transport parameters declared by the peer are
-available.  Each endpoint validates the value provided by its peer.  In
-particular, version negotiation MUST be validated (see {{version-validation}})
-before the connection establishment is considered properly complete.
+available.  Each endpoint validates the value provided by its peer.  Successful
+validation of transport parameters MUST be completed before a connection is
+considered successfully established.
 
-Definitions for each of the defined transport parameters are included in
-{{transport-parameter-definitions}}.  Any given parameter MUST appear at most
-once in a given transport parameters extension.  An endpoint MUST treat receipt
-of duplicate transport parameters as a connection error of type
-TRANSPORT_PARAMETER_ERROR.
+A client also includes a list of supported versions along with its transport
+parameters.  Transport parameters are carried in the first packet the client
+sends.  Sending the list of supported versions enables upgrade between
+compatible versions, as described in {{version-upgrade}}. These parameters also
+enable validation of version negotiation by the server (see
+{{version-validation}}).
+
+A transport parameter MUST appear at most once in a given transport parameters
+extension.  An endpoint MUST treat receipt of duplicate transport parameters as
+a connection error of type TRANSPORT_PARAMETER_ERROR.
 
 A server MUST include the original_connection_id transport parameter
 ({{transport-parameter-definitions}}) if it sent a Retry packet.
@@ -1462,69 +1512,32 @@ New transport parameters can be registered according to the rules in
 Though the cryptographic handshake has integrity protection, two forms of QUIC
 version downgrade are possible.  In the first, an attacker replaces the QUIC
 version in the Initial packet.  In the second, a fake Version Negotiation packet
-is sent by an attacker.  To protect against these attacks, the transport
-parameters include three fields that encode version information.  These
-parameters are used to retroactively authenticate the choice of version (see
-{{version-negotiation}}).
+is sent by an attacker.
 
-The cryptographic handshake provides integrity protection for the negotiated
-version as part of the transport parameters (see
-{{transport-parameter-definitions}}).  As a result, attacks on version
-negotiation by an attacker can be detected.
+To protect against these attacks, the transport parameters includes the complete
+list of versions that a client is willing to use, with the version they used for
+sending the first packet in the first entry.  Including this information in the
+cryptographic handshake provides it with integrity protection, and allows the
+server to detect version downgrade attacks.
 
-The client includes the initial_version field in its transport parameters.  The
-initial_version is the version that the client initially attempted to use.  If
-the server did not send a Version Negotiation packet {{packet-version}}, this
-will be identical to the negotiated_version field in the server transport
-parameters.
+The client MUST include the first QUIC version it attempts to use as the first
+entry of the supported_versions list in the transport parameters.  A server MUST
+close the connection attempt with a VERSION_NEGOTIATION_ERROR if it supports the
+first entry in the list it receives is supported and does not match the version
+of the QUIC packet.  The server MAY choose to upgrade to a compatible version,
+as defined in {{version-upgrade}}.
 
-A server that processes all packets in a stateful fashion can remember how
-version negotiation was performed and validate the initial_version value.
+Different QUIC versions might define transport parameters, or their equivalent,
+using a different format.  However, the version field in the QUIC packet header
+is authenticated using transport parameters.  The position and the format of the
+version fields in transport parameters therefore MUST either be identical across
+different QUIC versions, or be unambiguously different to ensure no confusion
+about their interpretation.  One way that a new format could be introduced is to
+define a TLS extension with a different codepoint.
 
-A server that does not maintain state for every packet it receives (i.e., a
-stateless server) uses a different process. If the initial_version matches the
-version of QUIC that is in use, a stateless server can accept the value.
-
-If the initial_version is different from the version of QUIC that is in use, a
-stateless server MUST check that it would have sent a Version Negotiation packet
-if it had received a packet with the indicated initial_version.  If a server
-would have accepted the version included in the initial_version and the value
-differs from the QUIC version that is in use, the server MUST terminate the
-connection with a VERSION_NEGOTIATION_ERROR error.
-
-The server includes both the version of QUIC that is in use and a list of the
-QUIC versions that the server supports (see
-{{transport-parameter-definitions}}).
-
-The negotiated_version field is the version that is in use.  This MUST be set by
-the server to the value that is on the Initial packet that it accepts (not an
-Initial packet that triggers a Retry or Version Negotiation packet).  A client
-that receives a negotiated_version that does not match the version of QUIC that
-is in use MUST terminate the connection with a VERSION_NEGOTIATION_ERROR error
-code.
-
-The server includes a list of versions that it would send in any version
-negotiation packet ({{packet-version}}) in the supported_versions field.  The
-server populates this field even if it did not send a version negotiation
-packet.
-
-The client validates that the negotiated_version is included in the
-supported_versions list and - if version negotiation was performed - that it
-would have selected the negotiated version.  A client MUST terminate the
-connection with a VERSION_NEGOTIATION_ERROR error code if the current QUIC
-version is not listed in the supported_versions list.  A client MUST terminate
-with a VERSION_NEGOTIATION_ERROR error code if version negotiation occurred but
-it would have selected a different version based on the value of the
-supported_versions list.
-
-When an endpoint accepts multiple QUIC versions, it can potentially interpret
-transport parameters as they are defined by any of the QUIC versions it
-supports.  The version field in the QUIC packet header is authenticated using
-transport parameters.  The position and the format of the version fields in
-transport parameters MUST either be identical across different QUIC versions, or
-be unambiguously different to ensure no confusion about their interpretation.
-One way that a new format could be introduced is to define a TLS extension with
-a different codepoint.
+Transport parmeters for QUIC versions that are compatible with this QUIC version
+MUST provide transport parameters definitions that retain both a list of
+versions the client supports, as well as the one that it first attempts to use.
 
 
 # Address Validation
@@ -3827,10 +3840,6 @@ language from Section 3 of {{!TLS13=RFC8446}}.
    struct {
       select (Handshake.msg_type) {
          case client_hello:
-            QuicVersion initial_version;
-
-         case encrypted_extensions:
-            QuicVersion negotiated_version;
             QuicVersion supported_versions<4..2^8-4>;
       };
       TransportParameter parameters<0..2^16-1>;
@@ -3847,8 +3856,11 @@ language from Section 3 of {{!TLS13=RFC8446}}.
 {: #figure-transport-parameters title="Definition of TransportParameters"}
 
 The `extension_data` field of the quic_transport_parameters extension defined in
-{{QUIC-TLS}} contains a TransportParameters value.  TLS encoding rules are
-therefore used to describe the encoding of transport parameters.
+{{QUIC-TLS}} contains a TransportParameters value.
+
+A client includes a list of its supported versions in its transport parameters.
+This supports validation of the negotiated versions as defined in
+{{version-validation}}.
 
 QUIC encodes transport parameters into a sequence of octets, which are then
 included in the cryptographic handshake.
