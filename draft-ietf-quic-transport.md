@@ -1220,7 +1220,7 @@ though it was continuing with the version it selects.
 
 A QUIC version is compatible with this version if the cryptographic handshake
 message sent in the first packet can be used in both versions.  A compatible
-version is also able to identifying and acknowledge the first packet sent by the
+version is also able to identify and acknowledge the first packet sent by the
 client in some fashion.  Other QUIC versions might have different constraints in
 determining what is compatible.  In order to facilitate this process, new QUIC
 versions could define a process for transforming the first packet from other
@@ -1286,20 +1286,16 @@ that meets the requirements of the cryptographic handshake protocol:
 * authenticated negotiation of an application protocol (TLS uses ALPN
   {{?RFC7301}} for this purpose)
 
-The first cryptographic handshake message from a client is subject to several
-requirements:
+The first cryptographic handshake message from a client MUST be sent in a single
+packet.  Consequently, the first cryptographic handshake message is limited in
+size; see Section 4.3 of {{QUIC-TLS}} for details.  Any second attempt that is
+triggered by address validation (see {{validate-handshake}}) MUST also be sent
+within a single packet.  This avoids having to reassemble a message from
+multiple packets at a server.
 
-1. The first message MUST be sent in a single packet.  Any second attempt that
-   is triggered by address validation (see {{validate-handshake}}) MUST also be
-   sent within a single packet.  This avoids having to reassemble a message from
-   multiple packets at a server.
-
-2. The first message MUST include the transport parameters chosen by the client.
-   This enables upgrade to a compatible version (see {{version-upgrade}}).
-
-3. The first message MUST fit within a 1232 octet QUIC packet payload.  This
-   includes overheads that reduce the space available to the cryptographic
-   handshake protocol.  See {{packet-size}} for more details.
+The first cryptographic handshake message from a client MUST also include the
+transport parameters chosen by the client.  This enables upgrade to a compatible
+version (see {{version-upgrade}}).
 
 The CRYPTO frame can be sent in different packet number spaces.  The sequence
 numbers used by CRYPTO frames to ensure ordered delivery of cryptographic
