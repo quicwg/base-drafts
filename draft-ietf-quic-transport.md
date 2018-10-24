@@ -1440,7 +1440,7 @@ considered successfully established.
 
 A client also includes a list of supported versions along with its transport
 parameters.  Transport parameters are carried in the first packet the client
-sends.  Sending the list of supported versions enables upgrade between
+sends.  Sending the list of supported versions enables upgrades between
 compatible versions, as described in {{version-upgrade}}. These parameters also
 enable validation of version negotiation by the server (see
 {{version-validation}}).
@@ -1511,7 +1511,7 @@ version in the Initial packet.  In the second, a fake Version Negotiation packet
 is sent by an attacker.
 
 To protect against these attacks, the transport parameters includes the complete
-list of versions that a client is willing to use, with the version they used for
+list of versions that a client is willing to use, with the version it used for
 sending the first packet in the first entry.  Including this information in the
 cryptographic handshake provides it with integrity protection, and allows the
 server to detect version downgrade attacks.
@@ -1519,7 +1519,7 @@ server to detect version downgrade attacks.
 The client MUST include the first QUIC version it attempts to use as the first
 entry of the supported_versions list in the transport parameters.  A server MUST
 close the connection attempt with a VERSION_NEGOTIATION_ERROR if it supports the
-first entry in the list it receives is supported and does not match the version
+first entry in the list it receives and that version does not match the version
 of the QUIC packet.  The server MAY choose to upgrade to a compatible version,
 as defined in {{version-upgrade}}.
 
@@ -1531,8 +1531,8 @@ different QUIC versions, or be unambiguously different to ensure no confusion
 about their interpretation.  One way that a new format could be introduced is to
 define a TLS extension with a different codepoint.
 
-Transport parmeters for QUIC versions that are compatible with this QUIC version
-MUST provide transport parameters definitions that retain both a list of
+Transport parameters for QUIC versions that are compatible with this QUIC
+version MUST provide transport parameters definitions that retain both a list of
 versions the client supports, as well as the one that it first attempts to use.
 
 
