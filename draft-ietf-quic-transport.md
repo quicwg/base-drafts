@@ -4500,7 +4500,7 @@ type PROTOCOL_VIOLATION.
 
 ## RETIRE_CONNECTION_ID Frame {#frame-retire-connection-id}
 
-An endpoint sends a RETIRE_CONNECTION_ID frame (type=0x1b) to indicate that it
+An endpoint sends a RETIRE_CONNECTION_ID frame (type=0x0d) to indicate that it
 will no longer use a connection ID that was issued by its peer. This may include
 the connection ID provided during the handshake.  Sending a RETIRE_CONNECTION_ID
 frame also serves as a request to the peer to send additional connection IDs for
