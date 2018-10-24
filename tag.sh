@@ -28,6 +28,11 @@ declare -A authors=( \
     [spin-exp]=ietf@trammell.ch \
 )
 
+if ! make; then
+    echo "FAILED TO BUILD STOP" 1>&2
+    exit 1
+fi
+
 all=($(make show-next))
 tags=()
 thisuser=$(git config --get user.name)
