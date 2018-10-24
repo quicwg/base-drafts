@@ -1189,17 +1189,18 @@ handshake is too large.  This is especially important for 0-RTT, where the
 server might wish to provide application data traffic - such as a response to a
 request - in response to the data carried in the early data from the client.
 
+A server can also verify the client address if the client's first Initial
+Packet contains a valid address validation token, previously delivered to the
+client in a RETRY packet or NEW_TOKEN frame.
+
 To send additional data prior to completing the cryptographic handshake, the
 server then needs to validate that the client owns the address that it claims.
 QUIC therefore performs source address validation during connection
 establishment.
 
 Prior to verifying the client's address, servers MUST NOT send more than three
-times as many bytes as the number of bytes received. Source addresses can be
-verified through an address validation token (delivered via a Retry packet or
-a NEW_TOKEN frame), by processing any message from the client encrypted using
-the Handshake keys, or by processing a TLS ClientHello with a valid
-pre-shared key.  This limit exists to mitigate amplification attacks.
+times as many bytes as the number of bytes received. This limit exists to
+mitigate amplification attacks.
 
 In order to prevent this limit causing a handshake deadlock, the client MUST
 always send a packet upon a handshake timeout, as described in
