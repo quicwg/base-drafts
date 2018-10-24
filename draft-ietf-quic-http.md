@@ -124,7 +124,7 @@ This document uses the variable-length integer encoding from
 
 Protocol elements called "frames" exist in both this document and
 {{QUIC-TRANSPORT}}. Where frames from {{QUIC-TRANSPORT}} are referenced, the
-frame name will be prefaced with "QUIC."  For example, "QUIC APPLICATION_CLOSE
+frame name will be prefaced with "QUIC."  For example, "QUIC CONNECTION_CLOSE
 frames."  References without this preface refer to frames defined in {{frames}}.
 
 
@@ -1197,14 +1197,14 @@ HTTP_NO_ERROR code when closing the connection.
 ## Immediate Application Closure
 
 An HTTP/QUIC implementation can immediately close the QUIC connection at any
-time. This results in sending a QUIC APPLICATION_CLOSE frame to the peer; the
+time. This results in sending a QUIC CONNECTION_CLOSE frame to the peer; the
 error code in this frame indicates to the peer why the connection is being
 closed.  See {{errors}} for error codes which can be used when closing a
 connection.
 
 Before closing the connection, a GOAWAY MAY be sent to allow the client to retry
 some requests.  Including the GOAWAY frame in the same packet as the QUIC
-APPLICATION_CLOSE frame improves the chances of the frame being received by
+CONNECTION_CLOSE frame improves the chances of the frame being received by
 clients.
 
 ## Transport Closure
@@ -1268,8 +1268,9 @@ express the cause of a connection or stream error.
 
 ## HTTP/QUIC Error Codes {#http-error-codes}
 
-The following error codes are defined for use in QUIC RST_STREAM, STOP_SENDING,
-and APPLICATION_CLOSE frames when using HTTP/QUIC.
+The following error codes are defined for use in QUIC RST_STREAM frames,
+STOP_SENDING frames, and CONNECTION_CLOSE frames with a type of 0x03 when using
+HTTP/QUIC.
 
 STOPPING (0x00):
 : This value is reserved by the transport to be used in response to QUIC
