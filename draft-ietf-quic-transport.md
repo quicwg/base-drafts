@@ -4246,9 +4246,9 @@ The fields in the MAX_STREAMS frame are as follows:
 Maximum Streams:
 : A count of the number of streams that can be opened.
 
-Loss or reordering can mean that a MAX_STREAMS frame can be received which
-states a lower stream limit than the client has previously received.
-MAX_STREAMS frames which do not increase the stream limit MUST be ignored.
+Loss or reordering can cause a MAX_STREAMS frame to be received which states a
+lower stream limit than an endpoint has previously received.  MAX_STREAMS frames
+which do not increase the stream limit MUST be ignored.
 
 A peer MUST NOT open more streams than the limit it received permits.  For
 instance, a server that receives a unidirectional stream limit of 3 is permitted
