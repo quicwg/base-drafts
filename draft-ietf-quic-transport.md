@@ -4247,11 +4247,11 @@ Loss or reordering can mean that a MAX_STREAMS frame can be received which
 states a lower stream limit than the client has previously received.
 MAX_STREAMS frames which do not increase the stream limit MUST be ignored.
 
-A peer MUST NOT initiate a stream with a higher stream ID than the largest limit
-it has received permits.  For instance, a server that receives a unidirectional
-stream limit of 3 is permitted to open stream 3, 7, and 11, but not stream 15.
-An endpoint MUST terminate a connection with a STREAM_LIMIT_ERROR error if a
-peer opens more streams than was permitted.
+A peer MUST NOT open more streams than the limit it received permits.  For
+instance, a server that receives a unidirectional stream limit of 3 is permitted
+to open stream 3, 7, and 11, but not stream 15.  An endpoint MUST terminate a
+connection with a STREAM_LIMIT_ERROR error if a peer opens more streams than was
+permitted.
 
 
 ## PING Frame {#frame-ping}
