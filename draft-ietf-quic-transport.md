@@ -2228,6 +2228,12 @@ Note:
   control, which are not expected to be relevant for a closed connection.
   Retransmitting the final packet requires less state.
 
+New packets from unverified addresses could be used to create an amplification
+attack (see {{address-validation}}).  To avoid this, endpoints MUST either limit
+transmission of closing frames to validated addresses - which implies retaining
+knowledge of validated addresses - or to drop packets without response if the
+response would be more than three times larger than the received packet.
+
 After receiving a closing frame, endpoints enter the draining state.  An
 endpoint that receives a closing frame MAY send a single packet containing a
 closing frame before entering the draining state, using a CONNECTION_CLOSE frame
