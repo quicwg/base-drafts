@@ -336,7 +336,7 @@ sent until the peer is known to support them.
 
 ###  Control Streams
 
-The control stream is indicated by a stream type of `0x43` (ASCII 'C').  Data on
+A control stream is indicated by a stream type of `0x43` (ASCII 'C').  Data on
 this stream consists of HTTP/QUIC frames, as defined in {{frames}}.
 
 Each side MUST initiate a single control stream at the beginning of the
