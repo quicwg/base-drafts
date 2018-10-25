@@ -204,7 +204,7 @@ occurrence.
 
 For example, suppose a server supported both version 0x00000001 and the version
 rendered in ASCII as "Q034".  If it also opted to include the reserved version
-(from Section 3 of {{QUIC-TRANSPORT}}) 0x1abadaba, it could specify the
+(from Section 15 of {{QUIC-TRANSPORT}}) 0x1abadaba, it could specify the
 following header field:
 
 ~~~ example
@@ -269,7 +269,8 @@ the application.
 
 QUIC streams can be either unidirectional, carrying data only from initiator to
 receiver, or bidirectional.  Streams can be initiated by either the client or
-the server.  For more detail on QUIC streams, see {{QUIC-TRANSPORT}}, Section 9.
+the server.  For more detail on QUIC streams, see Section 2 of
+{{QUIC-TRANSPORT}}.
 
 When HTTP headers and data are sent over QUIC, the QUIC layer handles most of
 the stream management.  HTTP does not need to do any separate multiplexing when
