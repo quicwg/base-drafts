@@ -197,7 +197,7 @@ Endpoint:
 
 Stream:
 
-: A logical unidirectional or bidirectional channel of ordered bytes within a
+: A logical unidirectional or bidirectional channel of ordered octets within a
   QUIC connection.
 
 Connection:
@@ -755,11 +755,11 @@ MAY send MAX_STREAM_DATA frames in multiple packets in order to make sure that
 the sender receives an update before running out of flow control credit, even if
 one of the packets is lost.
 
-Connection flow control is a limit to the total bytes of stream data sent in
+Connection flow control is a limit to the total octets of stream data sent in
 STREAM frames on all streams.  A receiver advertises credit for a connection by
-sending a MAX_DATA frame.  A receiver maintains a cumulative sum of bytes
+sending a MAX_DATA frame.  A receiver maintains a cumulative sum of octets
 received on all contributing streams, which are used to check for flow control
-violations. A receiver might use a sum of bytes consumed on all streams to
+violations. A receiver might use a sum of octets consumed on all streams to
 determine the maximum data limit to be advertised.
 
 A receiver MAY advertise a larger offset at any point by sending MAX_STREAM_DATA
@@ -793,18 +793,18 @@ waiting for a MAX_STREAM_DATA or MAX_DATA frame which will never come.
 On receipt of a RST_STREAM frame, an endpoint will tear down state for the
 matching stream and ignore further data arriving on that stream.  This could
 result in the endpoints getting out of sync, since the RST_STREAM frame may have
-arrived out of order and there may be further bytes in flight.  The data sender
+arrived out of order and there could be more data in flight.  The data sender
 would have counted the data against its connection level flow control budget,
-but a receiver that has not received these bytes would not know to include them
-as well.  The receiver must learn the number of bytes that were sent on the
+but a receiver that has not received these octets would not know to include them
+as well.  The receiver must learn the number of octets that were sent on the
 stream to make the same adjustment in its connection flow controller.
 
 To ensure that endpoints maintain a consistent connection-level flow control
 state, the RST_STREAM frame ({{frame-rst-stream}}) includes the largest offset
 of data sent on the stream.  On receiving a RST_STREAM frame, a receiver
-definitively knows how many bytes were sent on that stream before the RST_STREAM
-frame, and the receiver MUST use the final offset to account for all bytes sent
-on the stream in its connection level flow controller.
+definitively knows how many octets were sent on that stream before the
+RST_STREAM frame, and the receiver MUST use the final offset to account for all
+octets sent on the stream in its connection level flow controller.
 
 RST_STREAM terminates one direction of a stream abruptly.  Whether any action or
 response can or should be taken on the data already received is application
@@ -818,7 +818,7 @@ either side sends CONNECTION_CLOSE or APPLICATION_CLOSE.
 
 ## Data Limit Increments {#fc-credit}
 
-This document leaves when and how many bytes to advertise in a MAX_DATA or
+This document leaves when and how many octets to advertise in a MAX_DATA or
 MAX_STREAM_DATA to implementations, but offers a few considerations.  These
 frames contribute to connection overhead.  Therefore frequently sending frames
 with small changes is undesirable.  At the same time, larger increments to
@@ -1558,9 +1558,10 @@ server has successfully processed a Handshake packet from the client, it can
 consider the client address to have been validated.
 
 Prior to validating the client address, servers MUST NOT send more than three
-times as many bytes as the number of bytes they have received.  This limits the
-magnitude of any amplification attack that can be mounted using spoofed source
-addresses.
+times as many octets as the number of octets they have received.  This limits
+the magnitude of any amplification attack that can be mounted using spoofed
+source addresses.  In determining this limit, servers only count the size of
+successfully processed packets.
 
 To ensure that the server is not overly constrained by this restriction, clients
 MUST send UDP datagrams with at least 1200 octets of payload until the server
@@ -3032,7 +3033,7 @@ datagram is smaller than 1200 octets. It MUST NOT send any other frame type in
 response, or otherwise behave as if any part of the offending packet was
 processed as valid.
 
-The server MUST also limit the number of bytes it sends before validating the
+The server MUST also limit the number of octets it sends before validating the
 address of the client, see {{address-validation}}.
 
 
@@ -3074,7 +3075,7 @@ connection if an alternative path cannot be found.
 Traditional ICMP-based path MTU discovery in IPv4 {{!PMTUDv4}} is potentially
 vulnerable to off-path attacks that successfully guess the IP/port 4-tuple and
 reduce the MTU to a bandwidth-inefficient value. TCP connections mitigate this
-risk by using the (at minimum) 8 bytes of transport header echoed in the ICMP
+risk by using the (at minimum) 8 octets of transport header echoed in the ICMP
 message to validate the TCP sequence number as valid for the current
 connection. However, as QUIC operates over UDP, in IPv4 the echoed information
 could consist only of the IP and UDP headers, which usually has insufficient
@@ -3573,7 +3574,7 @@ NEW_TOKEN frame:
 
 Token Length:
 
-: A variable-length integer specifying the length of the Token field, in bytes.
+: A variable-length integer specifying the length of the Token field, in octets.
   This value is zero if no token is present.  Initial packets sent by the server
   MUST set the Token Length field to zero; clients that receive an Initial
   packet with a non-zero Token Length field MUST either discard the packet or
@@ -4099,10 +4100,10 @@ Frame Type:
 
 Reason Phrase Length:
 
-: A variable-length integer specifying the length of the reason phrase in bytes.
-  Note that a CONNECTION_CLOSE frame cannot be split between packets, so in
-  practice any limits on packet size will also limit the space available for a
-  reason phrase.
+: A variable-length integer specifying the length of the reason phrase in
+  octets.  Note that a CONNECTION_CLOSE frame cannot be split between packets,
+  so in practice any limits on packet size will also limit the space available
+  for a reason phrase.
 
 Reason Phrase:
 
@@ -4776,7 +4777,7 @@ The fields of a NEW_TOKEN frame are as follows:
 
 Token Length:
 
-: A variable-length integer specifying the length of the token in bytes.
+: A variable-length integer specifying the length of the token in octets.
 
 Token:
 
@@ -4847,7 +4848,7 @@ Length:
 
 Stream Data:
 
-: The bytes from the designated stream to be delivered.
+: The octets from the designated stream to be delivered.
 
 When a Stream Data field has a length of 0, the offset in the STREAM frame is
 the offset of the next byte that would be sent.
@@ -4861,7 +4862,7 @@ less than 2^62.
 
 The CRYPTO frame (type=0x18) is used to transmit cryptographic handshake
 messages. It can be sent in all packet types. The CRYPTO frame offers the
-cryptographic protocol an in-order stream of bytes.  CRYPTO frames are
+cryptographic protocol an in-order stream of octets.  CRYPTO frames are
 functionally identical to STREAM frames, except that they do not bear a stream
 identifier; they are not flow controlled; and they do not carry markers for
 optional offset, optional length, and the end of the stream.
