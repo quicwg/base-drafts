@@ -894,6 +894,8 @@ bidirectional and unidirectional streams.
 
 As with stream and connection flow control, this document leaves when and how
 many streams to make available to a peer via MAX_STREAMS to implementations.
+Implementations might choose to increase limits as streams close to keep the
+number of streams available to peers roughly consistent.
 
 The STREAMS_BLOCKED frame ({{frame-streams-blocked}}) signals that a new stream
 could not be created. Implementations can use this as a signal to the peer to
