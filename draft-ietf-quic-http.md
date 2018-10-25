@@ -391,7 +391,7 @@ implementation chooses.
 
 # HTTP Framing Layer {#http-framing-layer}
 
-Frames are used on the control stream, request streams, and push streams.  This
+Frames are used on control streams, request streams, and push streams.  This
 section describes HTTP framing in QUIC.  For a comparison with HTTP/2 frames,
 see {{h2-frames}}.
 
