@@ -1316,9 +1316,8 @@ The first cryptographic handshake message from a client MUST also include the
 transport parameters chosen by the client.  This enables upgrade to a compatible
 version (see {{version-upgrade}}).
 
-An endpoint can combine verification of support for Explicit Congestion
-Notification (ECN) with the first packets it sends, as described in
-{{ecn-verification}}.
+An endpoint can verify support for Explicit Congestion Notification (ECN) in the
+first packets it sends, as described in {{ecn-verification}}.
 
 The CRYPTO frame can be sent in different packet number spaces.  The sequence
 numbers used by CRYPTO frames to ensure ordered delivery of cryptographic
