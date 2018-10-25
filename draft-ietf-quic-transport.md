@@ -1215,7 +1215,7 @@ validation of the choice of version (see {{version-validation}}).
 
 The first packet sent by a client uses a QUIC version selected by the client.
 In this version of QUIC, this packet also includes transport parameters.  Those
-transport parameters includes the version the client first attempts to use, plus
+transport parameters include the version the client first attempts to use, plus
 a list of QUIC versions the client supports in the order that the client prefers
 them.
 
