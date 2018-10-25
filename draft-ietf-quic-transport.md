@@ -2230,7 +2230,7 @@ Note:
 
 New packets from unverified addresses could be used to create an amplification
 attack (see {{address-validation}}).  To avoid this, endpoints MUST either limit
-transmission of closing frames to validated addresses or to drop packets without
+transmission of closing frames to validated addresses or drop packets without
 response if the response would be more than three times larger than the received
 packet.
 
