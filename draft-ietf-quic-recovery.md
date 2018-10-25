@@ -322,12 +322,11 @@ When crypto packets are sent, the sender MUST set a timer for the crypto
 timeout period.  Upon timeout, the sender MUST retransmit all unacknowledged
 CRYPTO data if possible.
 
-Until the server has validated the client's address on the path, the number of
-bytes it can send is limited, as specified in {{QUIC-TRANSPORT}}.
-If not all unacknowledged CRYPTO data can be sent, then all unacknowledged
-CRYPTO data sent in Initial packets should be retransmitted.  If no bytes
-can be sent, then no alarm should be armed until bytes have been received from
-the client.
+Until the server has validated the client's address on the path, the amount of
+data it can send is limited, as specified in {{QUIC-TRANSPORT}}.  If not all
+unacknowledged CRYPTO data can be sent, then all unacknowledged CRYPTO data sent
+in Initial packets should be retransmitted.  If no data can be sent, then no
+alarm should be armed until data has been received from the client.
 
 Because the server could be blocked until more packets are received, the
 client MUST start the crypto retransmission timer even if there is no
@@ -443,8 +442,8 @@ sent as a probe into the network prior to establishing any packet loss, prior
 unacknowledged packets SHOULD NOT be marked as lost.
 
 A packet sent on an RTO timer MUST NOT be blocked by the sender's congestion
-controller. A sender MUST however count these bytes as additional bytes in
-flight, since this packet adds network load without establishing packet loss.
+controller. A sender MUST however count these octets as being in flight, since
+this packet adds network load without establishing packet loss.
 
 ## Generating Acknowledgements
 
@@ -618,8 +617,8 @@ sent_packets:
 : An association of packet numbers to information about them, including a number
   field indicating the packet number, a time field indicating the time a packet
   was sent, a boolean indicating whether the packet is ack-only, a boolean
-  indicating whether it counts towards bytes in flight, and a bytes
-  field indicating the packet's size.  sent_packets is ordered by packet number,
+  indicating whether it counts towards bytes in flight, and a size field
+  that indicates the packet's size.  sent_packets is ordered by packet number,
   and packets remain in sent_packets until acknowledged or lost.  A sent_packets
   data structure is maintained per packet number space, and ACK processing only
   applies to a single space.
@@ -670,7 +669,7 @@ are as follows:
   handshake. In this version of QUIC, this includes any packet with the long
   header that includes a CRYPTO frame.
 
-* sent_bytes: The number of bytes sent in the packet, not including UDP or IP
+* sent_bytes: The number of octets sent in the packet, not including UDP or IP
   overhead, but including QUIC framing overhead.
 
 Pseudocode for OnPacketSent follows:
@@ -688,7 +687,7 @@ Pseudocode for OnPacketSent follows:
        time_of_last_sent_crypto_packet = now
      time_of_last_sent_retransmittable_packet = now
      OnPacketSentCC(sent_bytes)
-     sent_packets[packet_number].bytes = sent_bytes
+     sent_packets[packet_number].size = sent_bytes
      SetLossDetectionTimer()
 ~~~
 
@@ -910,7 +909,7 @@ both the median and mean min_rtt typically observed on the public internet.
 
 QUIC's congestion control is based on TCP NewReno {{?RFC6582}}.  NewReno is
 a congestion window based congestion control.  QUIC specifies the congestion
-window in bytes rather than packets due to finer control and the ease of
+window in octets rather than packets due to finer control and the ease of
 appropriate byte counting {{?RFC3465}}.
 
 QUIC hosts MUST NOT send packets if they would increase bytes_in_flight
@@ -936,7 +935,7 @@ QUIC begins every connection in slow start and exits slow start upon loss or
 upon increase in the ECN-CE counter. QUIC re-enters slow start anytime the
 congestion window is less than ssthresh, which typically only occurs after an
 RTO. While in slow start, QUIC increases the congestion window by the number of
-bytes acknowledged when each ack is processed.
+octets acknowledged when each acknowledgment is processed.
 
 
 ## Congestion Avoidance
@@ -965,8 +964,8 @@ losses or increases in the ECN-CE counter.
 ## Tail Loss Probe
 
 A TLP packet MUST NOT be blocked by the sender's congestion controller. The
-sender MUST however count these bytes as additional bytes-in-flight, since a TLP
-adds network load without establishing packet loss.
+sender MUST however count TLP packets against bytes-in-flight, since a TLP adds
+network load without establishing packet loss.
 
 Acknowledgement or loss of tail loss probes are treated like any other packet.
 
@@ -1012,15 +1011,15 @@ in order to better suit a variety of environments.
 kMaxDatagramSize:
 : The sender's maximum payload size. Does not include UDP or IP overhead.
   The max packet size is used for calculating initial and minimum congestion
-  windows. The RECOMMENDED value is 1200 bytes.
+  windows. The RECOMMENDED value is 1200 octets.
 
 kInitialWindow:
-: Default limit on the initial amount of outstanding data in bytes.
+: Default limit on the initial amount of outstanding data in octets.
   Taken from {{?RFC6928}}.  The RECOMMENDED value is the minimum of
   10 * kMaxDatagramSize and max(2* kMaxDatagramSize, 14600)).
 
 kMinimumWindow:
-: Minimum congestion window in bytes. The RECOMMENDED value is
+: Minimum congestion window in octets. The RECOMMENDED value is
   2 * kMaxDatagramSize.
 
 kLossReductionFactor:
@@ -1038,7 +1037,7 @@ ecn_ce_counter:
   counter.
 
 bytes_in_flight:
-: The sum of the size in bytes of all sent packets that contain at least
+: The sum of the size in octets of all sent packets that contain at least
   one retransmittable or PADDING frame, and have not been acked or declared
   lost. The size does not include IP or UDP overhead, but does include the
   QUIC header and AEAD overhead.
@@ -1053,9 +1052,9 @@ end_of_recovery:
   packet is acknowledged, QUIC exits recovery.
 
 ssthresh:
-: Slow start threshold in bytes.  When the congestion window is below
+: Slow start threshold in octets.  When the congestion window is below
   ssthresh, the mode is slow start and the window grows by the number of
-  bytes acknowledged.
+  octets acknowledged.
 
 ### Initialization
 
@@ -1091,16 +1090,16 @@ acked_packet from sent_packets.
 
    OnPacketAckedCC(acked_packet):
      // Remove from bytes_in_flight.
-     bytes_in_flight -= acked_packet.bytes
+     bytes_in_flight -= acked_packet.size
      if (InRecovery(acked_packet.packet_number)):
        // Do not increase congestion window in recovery period.
        return
      if (congestion_window < ssthresh):
        // Slow start.
-       congestion_window += acked_packet.bytes
+       congestion_window += acked_packet.size
      else:
        // Congestion avoidance.
-       congestion_window += kMaxDatagramSize * acked_packet.bytes
+       congestion_window += kMaxDatagramSize * acked_packet.size
            / congestion_window
 ~~~
 
@@ -1145,7 +1144,7 @@ are detected lost.
    OnPacketsLost(lost_packets):
      // Remove lost packets from bytes_in_flight.
      for (lost_packet : lost_packets):
-       bytes_in_flight -= lost_packet.bytes
+       bytes_in_flight -= lost_packet.size
      largest_lost_packet = lost_packets.last()
 
      // Start a new congestion epoch if the last lost packet
@@ -1165,7 +1164,7 @@ sent before the newly acknowledged RTO packet.
      // Declare all packets prior to packet_number lost.
      for (sent_packet: sent_packets):
        if (sent_packet.packet_number < packet_number):
-         bytes_in_flight -= sent_packet.bytes
+         bytes_in_flight -= sent_packet.size
          sent_packets.remove(sent_packet.packet_number)
 ~~~
 
