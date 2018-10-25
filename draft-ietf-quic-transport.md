@@ -2941,10 +2941,20 @@ A packet detected by a receiver as a duplicate does not affect the receiver's
 local ECN codepoint counts; see ({{security-ecn}}) for relevant security
 concerns.
 
-If an endpoint receives a packet without an ECT or CE codepoint, it responds per
-{{processing-and-ack}} with an ACK frame.  If an endpoint does not have access
-to received ECN codepoints, it acknowledges received packets per
-{{processing-and-ack}} with an ACK frame.
+If an endpoint receives a QUIC packet without an ECT or CE codepoint, it
+responds per {{processing-and-ack}} with an ACK frame without increasing any ECN
+counters.  Similarly, if an endpoint does not have access to received ECN
+codepoints, it does not increase ECN counters.
+
+Coalesced packets (see {{packet-coalesce}}) mean that several packets can share
+the same IP header.  ECN counters count each QUIC packet, not the enclosing IP
+packet or UDP datagram.
+
+Each packet number space maintains separate acknowledgement state and separate
+ECN counters.  For example, if one each of an Initial, 0-RTT, Handshake, and
+1-RTT QUIC packet are coalesced, the corresponding counters for the Initial and
+Handshake packet number space will be incremented by one and the counters for
+the 1-RTT packet number space will be increased by two.
 
 
 ### ECN Verification
@@ -2971,12 +2981,12 @@ longer supports ECN.
 To protect the connection from arbitrary corruption of ECN codepoints by the
 network, an endpoint verifies the following when an ACK frame is received:
 
-* The increase in ECT(0) and ECT(1) counters MUST be at least the number of
+* The increase in ECT(0) and ECT(1) counters MUST be at least the number of QUIC
   packets newly acknowledged that were sent with the corresponding codepoint.
 
 * The total increase in ECT(0), ECT(1), and CE counters reported in the ACK
-  frame MUST be at least the total number of packets newly acknowledged in this
-  ACK frame.
+  frame MUST be at least the total number of QUIC packets newly acknowledged in
+  this ACK frame.
 
 An endpoint could miss acknowledgements for a packet when ACK frames are lost.
 It is therefore possible for the total increase in ECT(0), ECT(1), and CE
@@ -2991,7 +3001,7 @@ If verification fails, then the endpoint ceases setting ECT codepoints in
 subsequent packets with the expectation that either the network or the peer does
 not support ECN.
 
-If an endpoint sets ECT codepoints on outgoing packets and encounters a
+If an endpoint sets ECT codepoints on outgoing IP packets and encounters a
 retransmission timeout due to the absence of acknowledgments from the peer (see
 {{QUIC-RECOVERY}}), or if an endpoint has reason to believe that a network
 element might be corrupting ECN codepoints, the endpoint MAY cease setting ECT
@@ -4679,6 +4689,7 @@ Additional ACK Block (repeated):
   packets preceding the largest packet number, as determined by the
   preceding Gap.
 
+
 ### ECN section
 
 The ECN section should only be parsed when the ACK frame type byte is 0x1b.
@@ -4707,6 +4718,8 @@ ECT(1) Count:
 CE Count:
 : A variable-length integer representing the total number packets received with
   the CE codepoint.
+
+ECN counters are maintained separately for each packet number space.
 
 
 ## PATH_CHALLENGE Frame {#frame-path-challenge}
