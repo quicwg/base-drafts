@@ -380,9 +380,9 @@ QUIC requests handshake messages and one where QUIC provides handshake packets.
 Before starting the handshake QUIC provides TLS with the transport parameters
 (see {{quic_parameters}}) that it wishes to carry.
 
-A QUIC client starts TLS by requesting TLS handshake bytes from TLS.  The
-client acquires handshake bytes before sending its first packet.  A QUIC server
-starts the process by providing TLS with the client's handshake bytes.
+A QUIC client starts TLS by requesting TLS handshake bytes from TLS.  The client
+acquires handshake bytes before sending its first packet.  A QUIC server starts
+the process by providing TLS with the client's handshake bytes.
 
 At any given time, the TLS stack at an endpoint will have a current sending
 encryption level and receiving encryption level. Each encryption level is
@@ -454,8 +454,7 @@ As keys for new encryption levels become available, TLS provides QUIC with those
 keys.  Separately, as TLS starts using keys at a given encryption level, TLS
 indicates to QUIC that it is now reading or writing with keys at that encryption
 level.  These events are not asynchronous; they always occur immediately after
-TLS is provided with new handshake bytes, or after TLS produces handshake
-bytes.
+TLS is provided with new handshake bytes, or after TLS produces handshake bytes.
 
 If 0-RTT is possible, it is ready after the client sends a TLS ClientHello
 message or the server receives that message.  After providing a QUIC client with
@@ -874,12 +873,11 @@ AEAD_CHACHA20_POLY1305 ({{!CHACHA=RFC8439}}).
 
 This section defines the packet protection algorithm for AEAD_AES_128_GCM,
 AEAD_AES_128_CCM, AEAD_AES_256_GCM, and AEAD_AES_256_CCM. AEAD_AES_128_GCM and
-AEAD_AES_128_CCM use 128-bit AES {{!AES=DOI.10.6028/NIST.FIPS.197}} in
-counter (CTR) mode. AEAD_AES_256_GCM, and AEAD_AES_256_CCM use
-256-bit AES in CTR mode.
+AEAD_AES_128_CCM use 128-bit AES {{!AES=DOI.10.6028/NIST.FIPS.197}} in counter
+(CTR) mode. AEAD_AES_256_GCM, and AEAD_AES_256_CCM use 256-bit AES in CTR mode.
 
-This algorithm samples 16 bytes from the packet ciphertext. This value is
-used as the counter input to AES-CTR.
+This algorithm samples 16 bytes from the packet ciphertext. This value is used
+as the counter input to AES-CTR.
 
 ~~~
 encrypted_pn = AES-CTR(pn_key, sample, packet_number)
@@ -888,9 +886,9 @@ encrypted_pn = AES-CTR(pn_key, sample, packet_number)
 
 ### ChaCha20-Based Packet Number Protection
 
-When AEAD_CHACHA20_POLY1305 is in use, packet number protection uses the
-raw ChaCha20 function as defined in Section 2.4 of {{!CHACHA}}.  This uses a
-256-bit key and 16 bytes sampled from the packet protection output.
+When AEAD_CHACHA20_POLY1305 is in use, packet number protection uses the raw
+ChaCha20 function as defined in Section 2.4 of {{!CHACHA}}.  This uses a 256-bit
+key and 16 bytes sampled from the packet protection output.
 
 The first 4 bytes of the sampled ciphertext are interpreted as a 32-bit number
 in little-endian order and are used as the block count.  The remaining 12 bytes

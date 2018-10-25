@@ -165,6 +165,7 @@ The dynamic table can contain duplicate entries (i.e., entries with the same
 name and same value).  Therefore, duplicate entries MUST NOT be treated as an
 error by a decoder.
 
+
 ### Maximum Table Size
 
 The encoder decides how to update the dynamic table and as such can control how
@@ -183,6 +184,7 @@ the dynamic table is less than or equal to the maximum size.
 
 This mechanism can be used to completely clear entries from the dynamic table by
 setting a maximum size of 0, which can subsequently be restored.
+
 
 ### Calculating Table Size
 

@@ -138,10 +138,10 @@ of frames contained in a packet affect recovery and congestion control logic:
   performance of the QUIC handshake and use shorter timers for
   acknowledgement and retransmission.
 
-* Packets that contain only ACK frames do not count toward
-  congestion control limits and are not considered in-flight. Note that this
-  means PADDING frames cause packets to contribute toward bytes in flight
-  without directly causing an acknowledgment to be sent.
+* Packets that contain only ACK frames do not count toward congestion control
+  limits and are not considered in-flight. Note that this means PADDING frames
+  cause packets to contribute toward bytes in flight without directly causing an
+  acknowledgment to be sent.
 
 ## Relevant Differences Between QUIC and TCP
 
@@ -328,12 +328,12 @@ unacknowledged CRYPTO data can be sent, then all unacknowledged CRYPTO data sent
 in Initial packets should be retransmitted.  If no data can be sent, then no
 alarm should be armed until data has been received from the client.
 
-Because the server could be blocked until more packets are received, the
-client MUST start the crypto retransmission timer even if there is no
-unacknowledged CRYPTO data.  If the timer expires and the client has no
-CRYPTO data to retransmit and does not have Handshake keys, it SHOULD send
-an Initial packet in a UDP datagram of at least 1200 bytes.
-If the client has Handshake keys, it SHOULD send a Handshake packet.
+Because the server could be blocked until more packets are received, the client
+MUST start the crypto retransmission timer even if there is no unacknowledged
+CRYPTO data.  If the timer expires and the client has no CRYPTO data to
+retransmit and does not have Handshake keys, it SHOULD send an Initial packet in
+a UDP datagram of at least 1200 bytes.  If the client has Handshake keys, it
+SHOULD send a Handshake packet.
 
 On each consecutive expiration of the crypto timer without receiving an
 acknowledgement for a new packet, the sender SHOULD double the crypto
@@ -617,9 +617,9 @@ sent_packets:
 : An association of packet numbers to information about them, including a number
   field indicating the packet number, a time field indicating the time a packet
   was sent, a boolean indicating whether the packet is ack-only, a boolean
-  indicating whether it counts towards bytes in flight, and a size field
-  that indicates the packet's size.  sent_packets is ordered by packet number,
-  and packets remain in sent_packets until acknowledged or lost.  A sent_packets
+  indicating whether it counts towards bytes in flight, and a size field that
+  indicates the packet's size.  sent_packets is ordered by packet number, and
+  packets remain in sent_packets until acknowledged or lost.  A sent_packets
   data structure is maintained per packet number space, and ACK processing only
   applies to a single space.
 
@@ -661,8 +661,8 @@ are as follows:
   ACK or PADDING frame(s).  If true, it is still expected an ack will
   be received for this packet, but it is not retransmittable.
 
-* in_flight: A boolean that indicates whether the packet counts towards
-  bytes in flight.
+* in_flight: A boolean that indicates whether the packet counts towards bytes in
+  flight.
 
 * is_crypto_packet: A boolean that indicates whether the packet contains
   cryptographic handshake messages critical to the completion of the QUIC
@@ -907,15 +907,15 @@ both the median and mean min_rtt typically observed on the public internet.
 
 # Congestion Control
 
-QUIC's congestion control is based on TCP NewReno {{?RFC6582}}.  NewReno is
-a congestion window based congestion control.  QUIC specifies the congestion
+QUIC's congestion control is based on TCP NewReno {{?RFC6582}}.  NewReno is a
+congestion window based congestion control.  QUIC specifies the congestion
 window in bytes rather than packets due to finer control and the ease of
 appropriate byte counting {{?RFC3465}}.
 
-QUIC hosts MUST NOT send packets if they would increase bytes_in_flight
-(defined in {{vars-of-interest}}) beyond the available congestion window,
-unless the packet is a probe packet sent after the TLP or RTO timer expires,
-as described in {{tlp}} and {{rto}}.
+QUIC hosts MUST NOT send packets if they would increase bytes_in_flight (defined
+in {{vars-of-interest}}) beyond the available congestion window, unless the
+packet is a probe packet sent after the TLP or RTO timer expires, as described
+in {{tlp}} and {{rto}}.
 
 Implementations MAY use other congestion control algorithms, and endpoints MAY
 use different algorithms from one another. The signals QUIC provides for
@@ -1009,14 +1009,14 @@ papers, and common practice.  Some may need to be changed or negotiated
 in order to better suit a variety of environments.
 
 kMaxDatagramSize:
-: The sender's maximum payload size. Does not include UDP or IP overhead.
-  The max packet size is used for calculating initial and minimum congestion
+: The sender's maximum payload size. Does not include UDP or IP overhead.  The
+  max packet size is used for calculating initial and minimum congestion
   windows. The RECOMMENDED value is 1200 bytes.
 
 kInitialWindow:
-: Default limit on the initial amount of outstanding data in bytes.
-  Taken from {{?RFC6928}}.  The RECOMMENDED value is the minimum of
-  10 * kMaxDatagramSize and max(2* kMaxDatagramSize, 14600)).
+: Default limit on the initial amount of outstanding data in bytes.  Taken from
+  {{?RFC6928}}.  The RECOMMENDED value is the minimum of 10 * kMaxDatagramSize
+  and max(2* kMaxDatagramSize, 14600)).
 
 kMinimumWindow:
 : Minimum congestion window in bytes. The RECOMMENDED value is
@@ -1037,12 +1037,12 @@ ecn_ce_counter:
   counter.
 
 bytes_in_flight:
-: The sum of the size in bytes of all sent packets that contain at least
-  one retransmittable or PADDING frame, and have not been acked or declared
-  lost. The size does not include IP or UDP overhead, but does include the
-  QUIC header and AEAD overhead.
-  Packets only containing ACK frames do not count towards bytes_in_flight
-  to ensure congestion control does not impede congestion feedback.
+: The sum of the size in bytes of all sent packets that contain at least one
+  retransmittable or PADDING frame, and have not been acked or declared
+  lost. The size does not include IP or UDP overhead, but does include the QUIC
+  header and AEAD overhead.  Packets only containing ACK frames do not count
+  towards bytes_in_flight to ensure congestion control does not impede
+  congestion feedback.
 
 congestion_window:
 : Maximum number of bytes-in-flight that may be sent.
@@ -1052,9 +1052,9 @@ end_of_recovery:
   packet is acknowledged, QUIC exits recovery.
 
 ssthresh:
-: Slow start threshold in bytes.  When the congestion window is below
-  ssthresh, the mode is slow start and the window grows by the number of
-  bytes acknowledged.
+: Slow start threshold in bytes.  When the congestion window is below ssthresh,
+  the mode is slow start and the window grows by the number of bytes
+  acknowledged.
 
 ### Initialization
 
