@@ -1258,9 +1258,8 @@ The first client packet of the cryptographic handshake protocol MUST fit within
 a 1232 octet QUIC packet payload.  This includes overheads that reduce the space
 available to the cryptographic handshake protocol.
 
-An endpoint can combine verification of support for Explicit Congestion
-Notification (ECN) with the first packets it sends, as described in
-{{ecn-verification}}.
+An endpoint can verify support for Explicit Congestion Notification (ECN) in the
+first packets it sends, as described in {{ecn-verification}}.
 
 The CRYPTO frame can be sent in different packet number spaces.  The sequence
 numbers used by CRYPTO frames to ensure ordered delivery of cryptographic
