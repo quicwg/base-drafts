@@ -1221,7 +1221,7 @@ them.
 
 A server that understands the version selected by the client can extract the
 list of QUIC versions and select an alternative version from the list of
-supported versions.  A server MAY choose version from that list that is
+supported versions.  A server MAY choose a version from that list that is
 compatible with the version selected by the client and continue the handshake
 with that version.  The server sends its first packet as though it was
 continuing with the version it selects.
