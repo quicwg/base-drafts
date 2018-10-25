@@ -1030,8 +1030,9 @@ IDs, QUIC processes the packet as part of that connection. Endpoints MUST drop
 packets with zero-length Destination Connection ID fields if they do not
 correspond to a single connection.
 
-Endpoints SHOULD send a Stateless Reset ({{stateless-reset}}) for any packets
-that cannot be attributed to an existing connection.
+Endpoints can send a Stateless Reset ({{stateless-reset}}) for any packets that
+cannot be attributed to an existing connection. A stateless reset allows a peer
+to more quickly identify when a connection becomes unusable.
 
 Packets that are matched to an existing connection, but for which the endpoint
 cannot remove packet protection, are discarded.
