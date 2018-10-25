@@ -1556,9 +1556,10 @@ times as many bytes as the number of bytes they have received.  This limits the
 magnitude of any amplification attack that can be mounted using spoofed source
 addresses.
 
-To ensure that the server is not overly constrained by this restriction, clients
-MUST send UDP datagrams with at least 1200 octets of payload until the server
-has completed address validation, see {{packet-size}}.
+If sending a UDP datagram consisting entirely of an Initial Packet, clients
+MUST pad that packet to at least 1200 bytes unless the client has received a
+Handshake Packet ack from the server. This ensures that the server is not
+overly constrained by the amplification restriction.
 
 In order to prevent a handshake deadlock as a result of the server being unable
 to send, clients SHOULD send a packet upon a handshake timeout, as described in
