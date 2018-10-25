@@ -380,14 +380,14 @@ QUIC requests handshake messages and one where QUIC provides handshake packets.
 Before starting the handshake QUIC provides TLS with the transport parameters
 (see {{quic_parameters}}) that it wishes to carry.
 
-A QUIC client starts TLS by requesting TLS handshake octets from TLS.  The
-client acquires handshake octets before sending its first packet.  A QUIC server
-starts the process by providing TLS with the client's handshake octets.
+A QUIC client starts TLS by requesting TLS handshake bytes from TLS.  The
+client acquires handshake bytes before sending its first packet.  A QUIC server
+starts the process by providing TLS with the client's handshake bytes.
 
 At any given time, the TLS stack at an endpoint will have a current sending
 encryption level and receiving encryption level. Each encryption level is
 associated with a different flow of bytes, which is reliably transmitted to the
-peer in CRYPTO frames. When TLS provides handshake octets to be sent, they are
+peer in CRYPTO frames. When TLS provides handshake bytes to be sent, they are
 appended to the current flow and any packet that includes the CRYPTO frame is
 protected using keys from the corresponding encryption level.
 
@@ -415,12 +415,12 @@ network, it proceeds as follows:
   there is data from a previous encryption level that TLS has not consumed, this
   MUST be treated as a connection error of type PROTOCOL_VIOLATION.
 
-Each time that TLS is provided with new data, new handshake octets are requested
-from TLS.  TLS might not provide any octets if the handshake messages it has
+Each time that TLS is provided with new data, new handshake bytes are requested
+from TLS.  TLS might not provide any bytes if the handshake messages it has
 received are incomplete or it has no data to send.
 
 Once the TLS handshake is complete, this is indicated to QUIC along with any
-final handshake octets that TLS needs to send.  TLS also provides QUIC with the
+final handshake bytes that TLS needs to send.  TLS also provides QUIC with the
 transport parameters that the peer advertised during the handshake.
 
 Once the handshake is complete, TLS becomes passive.  TLS can still receive data
@@ -454,13 +454,13 @@ As keys for new encryption levels become available, TLS provides QUIC with those
 keys.  Separately, as TLS starts using keys at a given encryption level, TLS
 indicates to QUIC that it is now reading or writing with keys at that encryption
 level.  These events are not asynchronous; they always occur immediately after
-TLS is provided with new handshake octets, or after TLS produces handshake
-octets.
+TLS is provided with new handshake bytes, or after TLS produces handshake
+bytes.
 
 If 0-RTT is possible, it is ready after the client sends a TLS ClientHello
 message or the server receives that message.  After providing a QUIC client with
-the first handshake octets, the TLS stack might signal the change to 0-RTT
-keys. On the server, after receiving handshake octets that contain a ClientHello
+the first handshake bytes, the TLS stack might signal the change to 0-RTT
+keys. On the server, after receiving handshake bytes that contain a ClientHello
 message, a TLS server might signal that 0-RTT keys are available.
 
 Although TLS only uses one encryption level at a time, QUIC may use more than
@@ -538,16 +538,16 @@ older than 1.3 is negotiated.
 
 QUIC requires that the first Initial packet from a client contain an entire
 cryptographic handshake message, which for TLS is the ClientHello.  Though a
-packet larger than 1200 octets might be supported by the path, a client improves
+packet larger than 1200 bytes might be supported by the path, a client improves
 the likelihood that a packet is accepted if it ensures that the first
 ClientHello message is small enough to stay within this limit.
 
-QUIC packet and framing add at least 36 octets of overhead to the ClientHello
+QUIC packet and framing add at least 36 bytes of overhead to the ClientHello
 message.  That overhead increases if the client chooses a connection ID without
 zero length.  Overheads also do not include the token or a connection ID longer
-than 8 octets, both of which might be required if a server sends a Retry packet.
+than 8 bytes, both of which might be required if a server sends a Retry packet.
 
-A typical TLS ClientHello can easily fit into a 1200 octet packet.  However, in
+A typical TLS ClientHello can easily fit into a 1200 byte packet.  However, in
 addition to the overheads added by QUIC, there are several variables that could
 cause this limit to be exceeded.  Large session tickets, multiple or large key
 shares, and long lists of supported ciphers, signature algorithms, versions,
@@ -632,7 +632,7 @@ implementations SHOULD instead use the Retry feature (see Section 4.4 of
 If TLS experiences an error, it generates an appropriate alert as defined in
 Section 6 of {{!TLS13}}.
 
-A TLS alert is turned into a QUIC connection error by converting the one-octet
+A TLS alert is turned into a QUIC connection error by converting the one-byte
 alert description into a QUIC error code.  The alert description is added to
 0x100 to produce a QUIC error code from the range reserved for CRYPTO_ERROR.
 The resulting value is sent in a QUIC CONNECTION_CLOSE frame.
@@ -753,7 +753,7 @@ in the Initial packet sent by the client.  This will be a randomly-selected
 value unless the client creates the Initial packet after receiving a Retry
 packet, where the Destination Connection ID is selected by the server.
 
-The value of initial_salt is a 20 octet sequence shown in the figure in
+The value of initial_salt is a 20 byte sequence shown in the figure in
 hexadecimal notation. Future versions of QUIC SHOULD generate a new salt value,
 thus ensuring that the keys are different for each version of QUIC. This
 prevents a middlebox that only recognizes one version of QUIC from seeing or
@@ -798,7 +798,7 @@ order are left-padded with zeros to the size of the IV.  The exclusive OR of the
 padded packet number and the IV forms the AEAD nonce.
 
 The associated data, A, for the AEAD is the contents of the QUIC header,
-starting from the flags octet in either the short or long header, up to and
+starting from the flags byte in either the short or long header, up to and
 including the unprotected packet number.
 
 The input plaintext, P, for the AEAD is the content of the QUIC frame following
@@ -824,9 +824,9 @@ Packet number protection is applied after packet protection is applied (see
 encryption algorithm.
 
 In sampling the packet ciphertext, the packet number length is assumed to be 4
-octets (its maximum possible encoded length), unless there is insufficient space
+bytes (its maximum possible encoded length), unless there is insufficient space
 in the packet for sampling.  The sampled ciphertext starts after allowing for a
-4 octet packet number unless this would cause the sample to extend past the end
+4 byte packet number unless this would cause the sample to extend past the end
 of the packet.  If the sample would extend past the end of the packet, the end
 of the packet is sampled.
 
@@ -860,7 +860,7 @@ of the corresponding AEAD.
 
 Packet number protection is applied to the packet number encoded as described in
 Section 4.11 of {{QUIC-TRANSPORT}}. Since the length of the packet number is
-stored in the first octet of the encoded packet number, it may be necessary to
+stored in the first byte of the encoded packet number, it may be necessary to
 progressively decrypt the packet number.
 
 Before a TLS ciphersuite can be used with QUIC, a packet protection algorithm
@@ -878,7 +878,7 @@ AEAD_AES_128_CCM use 128-bit AES {{!AES=DOI.10.6028/NIST.FIPS.197}} in
 counter (CTR) mode. AEAD_AES_256_GCM, and AEAD_AES_256_CCM use
 256-bit AES in CTR mode.
 
-This algorithm samples 16 octets from the packet ciphertext. This value is
+This algorithm samples 16 bytes from the packet ciphertext. This value is
 used as the counter input to AES-CTR.
 
 ~~~
@@ -890,10 +890,10 @@ encrypted_pn = AES-CTR(pn_key, sample, packet_number)
 
 When AEAD_CHACHA20_POLY1305 is in use, packet number protection uses the
 raw ChaCha20 function as defined in Section 2.4 of {{!CHACHA}}.  This uses a
-256-bit key and 16 octets sampled from the packet protection output.
+256-bit key and 16 bytes sampled from the packet protection output.
 
-The first 4 octets of the sampled ciphertext are interpreted as a 32-bit number
-in little-endian order and are used as the block count.  The remaining 12 octets
+The first 4 bytes of the sampled ciphertext are interpreted as a 32-bit number
+in little-endian order and are used as the block count.  The remaining 12 bytes
 are interpreted as three concatenated 32-bit numbers in little-endian order and
 used as the nonce.
 

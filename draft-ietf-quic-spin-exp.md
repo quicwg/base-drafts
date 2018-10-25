@@ -131,7 +131,7 @@ version negotiation and connection establishment are completed.
 ## Proposed Short Header Format Including Spin Bit
 
 As of the current editor's version of {{QUIC-TRANSPORT}}, this proposal
-specifies using the sixth most significant bit (0x04) of the first octet in
+specifies using the sixth most significant bit (0x04) of the first byte in
 the short header for the spin bit.
 
 ~~~~~
