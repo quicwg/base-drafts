@@ -320,10 +320,10 @@ endpoint limits the number of concurrently active incoming streams by limiting
 the number of streams (see {{stream-limit-increment}}).
 
 The stream limit is specific to each endpoint and applies only to the peer that
-receives the setting. That is, clients limit the number of streams the server
-can initiate, and servers limit the number of streams the client can initiate.
-Each endpoint may respond on streams initiated by the other peer, regardless of
-whether it is permitted to initiate new streams.
+receives the setting. That is, the client limits the number of streams the
+server can initiate, and the server limits the number of streams the client can
+initiate.  Each endpoint may respond on streams initiated by the other peer,
+regardless of whether it is permitted to initiate new streams.
 
 Endpoints MUST NOT exceed the limit set by their peer.  An endpoint that
 receives a STREAM frame with an ID greater than the limit it has sent MUST treat
