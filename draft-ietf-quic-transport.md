@@ -2880,11 +2880,10 @@ containing that information is acknowledged.
   endpoint SHOULD stop sending MAX_STREAM_DATA frames when the receive stream
   enters a "Size Known" state.
 
-* The limit on streams for a stream of a given type is sent in MAX_STREAMS
-  frames.  Like MAX_DATA, an updated value is sent when a packet containing the
-  most recent MAX_STREAMS for a stream type frame is declared lost or when the
-  limit is updated, with care taken to prevent the frame from being sent too
-  often.
+* The limit on streams of a given type is sent in MAX_STREAMS frames.  Like
+  MAX_DATA, an updated value is sent when a packet containing the most recent
+  MAX_STREAMS for a stream type frame is declared lost or when the limit is
+  updated, with care taken to prevent the frame from being sent too often.
 
 * Blocked signals are carried in BLOCKED, STREAM_BLOCKED, and STREAMS_BLOCKED
   frames. BLOCKED streams have connection scope, STREAM_BLOCKED frames have
