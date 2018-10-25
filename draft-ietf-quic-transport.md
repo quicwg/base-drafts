@@ -1523,7 +1523,7 @@ version in the Initial packet.  In the second, a fake Version Negotiation packet
 is sent by an attacker.
 
 To protect against these attacks, the transport parameters includes both the
-original version the client uses with its first packet, a complete list of
+original version the client uses with its first packet and a complete list of
 versions that a client is willing to use in preference order.  Including this
 information in the cryptographic handshake provides it with integrity
 protection, and allows the server to detect version downgrade attacks.
