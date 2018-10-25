@@ -269,7 +269,7 @@ the application.
 
 QUIC streams can be either unidirectional, carrying data only from initiator to
 receiver, or bidirectional.  Streams can be initiated by either the client or
-the server.  For more detail on QUIC streams, see {{QUIC-TRANSPORT}}, Section 9.
+the server.  For more detail on QUIC streams, see {{QUIC-TRANSPORT}}, Section 2.
 
 When HTTP headers and data are sent over QUIC, the QUIC layer handles most of
 the stream management.  HTTP does not need to do any separate multiplexing when
