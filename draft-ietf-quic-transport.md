@@ -3944,19 +3944,19 @@ initial_max_streams_bidi (0x0002):
 
 : The initial maximum bidirectional streams parameter contains the initial
   maximum number of bidirectional streams the peer may initiate, encoded as an
-  unsigned 16-bit integer.  If this parameter is absent or zero, bidirectional
-  streams cannot be created until a MAX_STREAMS frame is sent.  Setting this
+  unsigned 16-bit integer.  If this parameter is absent or zero, the peer cannot
+  open bidirectional streams until a MAX_STREAMS frame is sent.  Setting this
   parameter is equivalent to sending a MAX_STREAMS ({{frame-max-streams}}) of
-  the corresponding type immediately after completing the handshake.
+  the corresponding type with the same value.
 
 initial_max_streams_uni (0x0008):
 
 : The initial maximum unidirectional streams parameter contains the initial
   maximum number of unidirectional streams the peer may initiate, encoded as an
-  unsigned 16-bit integer.  If this parameter is absent or zero, unidirectional
-  streams cannot be created until a MAX_STREAMS frame is sent.  Setting this
+  unsigned 16-bit integer.  If this parameter is absent or zero, the peer cannot
+  open unidirectional streams until a MAX_STREAMS frame is sent.  Setting this
   parameter is equivalent to sending a MAX_STREAMS ({{frame-max-streams}}) of
-  the corresponding type immediately after completing the handshake.
+  the corresponding type with the same value.
 
 A server MUST include the following transport parameter if it sent a Retry
 packet:
@@ -4224,7 +4224,7 @@ a change in the initial limits (see {{zerortt-parameters}}).
 ## MAX_STREAMS Frame {#frame-max-streams}
 
 The MAX_STREAMS frame (type=0x1c and 0x1d) informs the peer of the number of
-streams they are permitted to open.  A MAX_STREAMS frame with a type of 0x1c
+streams it is permitted to open.  A MAX_STREAMS frame with a type of 0x1c
 applies to bidirectional streams; a MAX_STREAMS frame with a type of 0x1d
 applies to unidirectional streams.
 
@@ -4249,9 +4249,9 @@ MAX_STREAMS frames which do not increase the stream limit MUST be ignored.
 
 A peer MUST NOT initiate a stream with a higher stream ID than the largest limit
 it has received permits.  For instance, a server that receives a unidirectional
-stream limit of 4 is permitted to open stream 15, but not stream 19.  An
-endpoint MUST terminate a connection with a STREAM_LIMIT_ERROR error if a peer
-opens more streams than was permitted.
+stream limit of 3 is permitted to open stream 3, 7, and 11, but not stream 15.
+An endpoint MUST terminate a connection with a STREAM_LIMIT_ERROR error if a
+peer opens more streams than was permitted.
 
 
 ## PING Frame {#frame-ping}
@@ -4341,9 +4341,9 @@ Data Limit:
 
 A sender SHOULD send a STREAMS_BLOCKED frame (type=0x1e or 0x1f) when it wishes
 to open a stream, but is unable to due to the maximum stream ID limit set by its
-peer (see {{frame-max-streams}}).  A STREAMS_BLOCKED frame of type 0x1e
-indicates a problem with the limit on bidirectional streams; a STREAMS_BLOCKED
-frame of type 0x1f indicates a problem with the limit on unidirectional streams.
+peer (see {{frame-max-streams}}).  A STREAMS_BLOCKED frame of type 0x1e is used
+to indicate reaching the bidirectional stream limit; a STREAMS_BLOCKED frame of
+type 0x1f indicates reaching the unidirectional stream limit.
 
 A STREAMS_BLOCKED frame does not open the stream, but informs the peer that a
 new stream was needed and the stream limit prevented the creation of the stream.
