@@ -195,7 +195,7 @@ Endpoint:
 
 Stream:
 
-: A logical unidirectional or bidirectional channel of ordered octets within a
+: A logical unidirectional or bidirectional channel of ordered bytes within a
   QUIC connection.
 
 Connection:
@@ -256,10 +256,10 @@ impose minimal overheads. For instance, a single STREAM frame ({{frame-stream}})
 can open, carry data for, and close a stream. Streams can also be long-lived and
 can last the entire duration of a connection.
 
-Stream offsets allow for the octets on a stream to be placed in order.  An
+Stream offsets allow for the bytes on a stream to be placed in order.  An
 endpoint MUST be capable of delivering data received on a stream in order.
 Implementations MAY choose to offer the ability to deliver data out of order.
-There is no means of ensuring ordering between octets on different streams.
+There is no means of ensuring ordering between bytes on different streams.
 
 Streams are individually flow controlled, allowing an endpoint to limit memory
 commitment and to apply back pressure.  The creation of streams is also flow
@@ -348,9 +348,9 @@ is transmitted, when data is retransmitted after packet loss, or when data is
 delivered to the application at the receiver.
 
 When new data is to be sent on a stream, a sender MUST set the encapsulating
-STREAM frame's offset field to the stream offset of the first octet of this new
-data.  The first octet of data on a stream has an offset of 0.  An endpoint is
-expected to send every stream octet.  The largest offset delivered on a stream
+STREAM frame's offset field to the stream offset of the first byte of this new
+data.  The first byte of data on a stream has an offset of 0.  An endpoint is
+expected to send every stream byte.  The largest offset delivered on a stream
 MUST be less than 2^62.
 
 QUIC makes no specific allowances for partial reliability or delivery of stream
@@ -359,10 +359,10 @@ application as an ordered byte-stream.  Delivering an ordered byte-stream
 requires that an endpoint buffer any data that is received out of order, up to
 the advertised flow control limit.
 
-An endpoint could receive the same octets multiple times; octets that have
-already been received can be discarded.  The value for a given octet MUST NOT
+An endpoint could receive the same bytes multiple times; bytes that have
+already been received can be discarded.  The value for a given byte MUST NOT
 change if it is sent multiple times; an endpoint MAY treat receipt of a changed
-octet as a connection error of type PROTOCOL_VIOLATION.
+byte as a connection error of type PROTOCOL_VIOLATION.
 
 An endpoint MUST NOT send data on any stream without ensuring that it is within
 the data limits set by its peer.  Flow control is described in detail in
@@ -728,7 +728,7 @@ It is necessary to limit the amount of data that a sender may have outstanding
 at any time, so as to prevent a fast sender from overwhelming a slow receiver,
 or to prevent a malicious sender from consuming significant resources at a
 receiver.  To this end, QUIC employs a credit-based flow-control scheme similar
-to that in HTTP/2 {{?HTTP2}}.  A receiver advertises the number of octets it is
+to that in HTTP/2 {{?HTTP2}}.  A receiver advertises the number of bytes it is
 prepared to receive on a given stream and for the entire connection.  This leads
 to two levels of flow control in QUIC:
 
@@ -753,11 +753,11 @@ MAY send MAX_STREAM_DATA frames in multiple packets in order to make sure that
 the sender receives an update before running out of flow control credit, even if
 one of the packets is lost.
 
-Connection flow control is a limit to the total octets of stream data sent in
+Connection flow control is a limit to the total bytes of stream data sent in
 STREAM frames on all streams.  A receiver advertises credit for a connection by
-sending a MAX_DATA frame.  A receiver maintains a cumulative sum of octets
+sending a MAX_DATA frame.  A receiver maintains a cumulative sum of bytes
 received on all contributing streams, which are used to check for flow control
-violations. A receiver might use a sum of octets consumed on all streams to
+violations. A receiver might use a sum of bytes consumed on all streams to
 determine the maximum data limit to be advertised.
 
 A receiver MAY advertise a larger offset at any point by sending MAX_STREAM_DATA
@@ -793,16 +793,16 @@ matching stream and ignore further data arriving on that stream.  This could
 result in the endpoints getting out of sync, since the RST_STREAM frame may have
 arrived out of order and there could be more data in flight.  The data sender
 would have counted the data against its connection level flow control budget,
-but a receiver that has not received these octets would not know to include them
-as well.  The receiver must learn the number of octets that were sent on the
+but a receiver that has not received these bytes would not know to include them
+as well.  The receiver must learn the number of bytes that were sent on the
 stream to make the same adjustment in its connection flow controller.
 
 To ensure that endpoints maintain a consistent connection-level flow control
 state, the RST_STREAM frame ({{frame-rst-stream}}) includes the largest offset
 of data sent on the stream.  On receiving a RST_STREAM frame, a receiver
-definitively knows how many octets were sent on that stream before the
+definitively knows how many bytes were sent on that stream before the
 RST_STREAM frame, and the receiver MUST use the final offset to account for all
-octets sent on the stream in its connection level flow controller.
+bytes sent on the stream in its connection level flow controller.
 
 RST_STREAM terminates one direction of a stream abruptly.  Whether any action or
 response can or should be taken on the data already received is application
@@ -816,7 +816,7 @@ either side sends CONNECTION_CLOSE or APPLICATION_CLOSE.
 
 ## Data Limit Increments {#fc-credit}
 
-This document leaves when and how many octets to advertise in a MAX_DATA or
+This document leaves when and how many bytes to advertise in a MAX_DATA or
 MAX_STREAM_DATA to implementations, but offers a few considerations.  These
 frames contribute to connection overhead.  Therefore frequently sending frames
 with small changes is undesirable.  At the same time, larger increments to
@@ -852,7 +852,7 @@ after the data limit is increased.
 
 ## Stream Final Offset {#final-offset}
 
-The final offset is the count of the number of octets that are transmitted on a
+The final offset is the count of the number of bytes that are transmitted on a
 stream.  For a stream that is reset, the final offset is carried explicitly in
 a RST_STREAM frame.  Otherwise, the final offset is the offset of the end of the
 data carried in a STREAM frame marked with a FIN flag, or 0 in the case of
@@ -1255,7 +1255,7 @@ second attempt that is triggered by address validation (see
 having to reassemble a message from multiple packets.
 
 The first client packet of the cryptographic handshake protocol MUST fit within
-a 1232 octet QUIC packet payload.  This includes overheads that reduce the space
+a 1232 byte QUIC packet payload.  This includes overheads that reduce the space
 available to the cryptographic handshake protocol.
 
 The CRYPTO frame can be sent in different packet number spaces.  The sequence
@@ -1347,7 +1347,7 @@ value of the Source Connection ID that they receive.
 
 When an Initial packet is sent by a client which has not previously received a
 Retry packet from the server, it populates the Destination Connection ID field
-with an unpredictable value.  This MUST be at least 8 octets in length. Until a
+with an unpredictable value.  This MUST be at least 8 bytes in length. Until a
 packet is received from the server, the client MUST use the same value unless it
 abandons the connection attempt and starts a new one. The initial Destination
 Connection ID is used to determine packet protection keys for Initial packets.
@@ -1552,20 +1552,20 @@ server has successfully processed a Handshake packet from the client, it can
 consider the client address to have been validated.
 
 Prior to validating the client address, servers MUST NOT send more than three
-times as many octets as the number of octets they have received.  This limits
+times as many bytes as the number of bytes they have received.  This limits
 the magnitude of any amplification attack that can be mounted using spoofed
 source addresses.  In determining this limit, servers only count the size of
 successfully processed packets.
 
 To ensure that the server is not overly constrained by this restriction, clients
-MUST send UDP datagrams with at least 1200 octets of payload until the server
+MUST send UDP datagrams with at least 1200 bytes of payload until the server
 has completed address validation, see {{packet-size}}.
 
 In order to prevent a handshake deadlock as a result of the server being unable
 to send, clients SHOULD send a packet upon a handshake timeout, as described in
 {{QUIC-RECOVERY}}.  If the client has no data to retransmit and does not have
 Handshake keys, it SHOULD send an Initial packet in a UDP datagram of at least
-1200 octets.  If the client has Handshake keys, it SHOULD send a Handshake
+1200 bytes.  If the client has Handshake keys, it SHOULD send a Handshake
 packet.
 
 A server might wish to validate the client address before starting the
@@ -2296,22 +2296,22 @@ following layout:
 This design ensures that a stateless reset packet is - to the extent possible -
 indistinguishable from a regular packet with a short header.
 
-The message consists of a header octet, followed by an arbitrary number of
-random octets, followed by a Stateless Reset Token.
+The message consists of a header byte, followed by an arbitrary number of
+random bytes, followed by a Stateless Reset Token.
 
 A stateless reset will be interpreted by a recipient as a packet with a short
 header.  For the packet to appear as valid, the Random Octets field needs to
-include at least 20 octets of random or unpredictable values.  This is intended
+include at least 20 bytes of random or unpredictable values.  This is intended
 to allow for a destination connection ID of the maximum length permitted, a
 packet number, and minimal payload.  The Stateless Reset Token corresponds to
-the minimum expansion of the packet protection AEAD.  More random octets might
+the minimum expansion of the packet protection AEAD.  More random bytes might
 be necessary if the endpoint could have negotiated a packet protection scheme
 with a larger minimum AEAD expansion.
 
 An endpoint SHOULD NOT send a stateless reset that is significantly larger than
 the packet it receives.  Endpoints MUST discard packets that are too small to be
 valid QUIC packets.  With the set of AEAD functions defined in {{QUIC-TLS}},
-packets less than 19 octets long are never valid.
+packets less than 19 bytes long are never valid.
 
 An endpoint MAY send a stateless reset in response to a packet with a long
 header.  This would not be effective if the stateless reset token was not yet
@@ -2342,7 +2342,7 @@ Using a randomized connection ID results in two problems:
   occasionally uses different connection IDs might introduce some uncertainty
   about this.
 
-Finally, the last 16 octets of the packet are set to the value of the Stateless
+Finally, the last 16 bytes of the packet are set to the value of the Stateless
 Reset Token.
 
 A stateless reset is not appropriate for signaling error conditions.  An
@@ -2354,14 +2354,14 @@ supports multiple versions of QUIC needs to generate a stateless reset that will
 be accepted by peers that support any version that the endpoint might support
 (or might have supported prior to losing state).  Designers of new versions of
 QUIC need to be aware of this and either reuse this design, or use a portion of
-the packet other than the last 16 octets for carrying data.
+the packet other than the last 16 bytes for carrying data.
 
 
 ### Detecting a Stateless Reset
 
 An endpoint detects a potential stateless reset when a packet with a short
 header either cannot be decrypted or is marked as a duplicate packet.  The
-endpoint then compares the last 16 octets of the packet with the Stateless Reset
+endpoint then compares the last 16 bytes of the packet with the Stateless Reset
 Token provided by its peer, either in a NEW_CONNECTION_ID frame or the server's
 transport parameters.  If these values are identical, the endpoint MUST enter
 the draining period and not send any further packets on this connection.  If the
@@ -2383,7 +2383,7 @@ that takes a static key and the connection ID chosen by the endpoint (see
 {{connection-id}}) as input.  An endpoint could use HMAC {{?RFC2104}} (for
 example, HMAC(static_key, connection_id)) or HKDF {{?RFC5869}} (for example,
 using the static key as input keying material, with the connection ID as salt).
-The output of this function is truncated to 16 octets to produce the Stateless
+The output of this function is truncated to 16 bytes to produce the Stateless
 Reset Token for that connection.
 
 An endpoint that loses state can use the same method to generate a valid
@@ -2428,14 +2428,14 @@ packets can be used to close connections when other peers or connections have
 exhausted limits.
 
 Reducing the size of a Stateless Reset below the recommended minimum size of 37
-octets could mean that the packet could reveal to an observer that it is a
+bytes could mean that the packet could reveal to an observer that it is a
 Stateless Reset.  Conversely, refusing to send a Stateless Reset in response to
 a small packet might result in Stateless Reset not being useful in detecting
 cases of broken connections where only very small packets are sent; such
 failures might only be detected by other means, such as timers.
 
 An endpoint can increase the odds that a packet will trigger a Stateless Reset
-if it cannot be processed by padding it to at least 38 octets.
+if it cannot be processed by padding it to at least 38 bytes.
 
 
 # Error Handling {#error-handling}
@@ -2709,11 +2709,11 @@ undesirable side effects or errors when received more than once.
 The Frame Type field uses a variable length integer encoding (see
 {{integer-encoding}}) with one exception.  To ensure simple and efficient
 implementations of frame parsing, a frame type MUST use the shortest possible
-encoding.  Though a two-, four- or eight-octet encoding of the frame types
+encoding.  Though a two-, four- or eight-byte encoding of the frame types
 defined in this document is possible, the Frame Type field for these frames is
-encoded on a single octet.  For instance, though 0x4007 is a legitimate
-two-octet encoding for a variable-length integer with a value of 7, PING frames
-are always encoded as a single octet with the value 0x07.  An endpoint MUST
+encoded on a single byte.  For instance, though 0x4007 is a legitimate
+two-byte encoding for a variable-length integer with a value of 7, PING frames
+are always encoded as a single byte with the value 0x07.  An endpoint MUST
 treat the receipt of a frame type that uses a longer encoding than necessary as
 a connection error of type PROTOCOL_VIOLATION.
 
@@ -3006,7 +3006,7 @@ The QUIC packet size includes the QUIC header and integrity check, but not the
 UDP or IP header.
 
 Clients MUST ensure that the first Initial packet they send is sent in a UDP
-datagram that is at least 1200 octets. Padding the Initial packet or including a
+datagram that is at least 1200 bytes. Padding the Initial packet or including a
 0-RTT packet in the same datagram are ways to meet this requirement.  Sending a
 UDP datagram of this size ensures that the network path supports a reasonable
 Maximum Transmission Unit (MTU), and helps reduce the amplitude of amplification
@@ -3014,20 +3014,20 @@ attacks caused by server responses toward an unverified client address, see
 {{address-validation}}.
 
 The payload of a UDP datagram carrying the Initial packet MUST be expanded to at
-least 1200 octets, by adding PADDING frames to the Initial packet and/or by
+least 1200 bytes, by adding PADDING frames to the Initial packet and/or by
 combining the Initial packet with a 0-RTT packet (see {{packet-coalesce}}).
 
 The datagram containing the first Initial packet from a client MAY exceed 1200
-octets if the client believes that the Path Maximum Transmission Unit (PMTU)
+bytes if the client believes that the Path Maximum Transmission Unit (PMTU)
 supports the size that it chooses.
 
 A server MAY send a CONNECTION_CLOSE frame with error code PROTOCOL_VIOLATION in
 response to the first Initial packet it receives from a client if the UDP
-datagram is smaller than 1200 octets. It MUST NOT send any other frame type in
+datagram is smaller than 1200 bytes. It MUST NOT send any other frame type in
 response, or otherwise behave as if any part of the offending packet was
 processed as valid.
 
-The server MUST also limit the number of octets it sends before validating the
+The server MUST also limit the number of bytes it sends before validating the
 address of the client, see {{address-validation}}.
 
 
@@ -3045,8 +3045,8 @@ detecting the PMTU, setting the PMTU appropriately, and storing the result of
 previous PMTU determinations.
 
 In the absence of these mechanisms, QUIC endpoints SHOULD NOT send IP packets
-larger than 1280 octets. Assuming the minimum IP header size, this results in
-a QUIC packet size of 1232 octets for IPv6 and 1252 octets for IPv4. Some
+larger than 1280 bytes. Assuming the minimum IP header size, this results in
+a QUIC packet size of 1232 bytes for IPv6 and 1252 bytes for IPv4. Some
 QUIC implementations MAY be more conservative in computing allowed QUIC packet
 size given unknown tunneling overheads or IP header options.
 
@@ -3054,13 +3054,13 @@ QUIC endpoints that implement any kind of PMTU discovery SHOULD maintain an
 estimate for each combination of local and remote IP addresses.  Each pairing of
 local and remote addresses could have a different maximum MTU in the path.
 
-QUIC depends on the network path supporting an MTU of at least 1280 octets. This
+QUIC depends on the network path supporting an MTU of at least 1280 bytes. This
 is the IPv6 minimum MTU and therefore also supported by most modern IPv4
 networks.  An endpoint MUST NOT reduce its MTU below this number, even if it
 receives signals that indicate a smaller limit might exist.
 
 If a QUIC endpoint determines that the PMTU between any pair of local and remote
-IP addresses has fallen below 1280 octets, it MUST immediately cease sending
+IP addresses has fallen below 1280 bytes, it MUST immediately cease sending
 QUIC packets on the affected path.  This could result in termination of the
 connection if an alternative path cannot be found.
 
@@ -3069,7 +3069,7 @@ connection if an alternative path cannot be found.
 Traditional ICMP-based path MTU discovery in IPv4 {{!PMTUDv4}} is potentially
 vulnerable to off-path attacks that successfully guess the IP/port 4-tuple and
 reduce the MTU to a bandwidth-inefficient value. TCP connections mitigate this
-risk by using the (at minimum) 8 octets of transport header echoed in the ICMP
+risk by using the (at minimum) 8 bytes of transport header echoed in the ICMP
 message to validate the TCP sequence number as valid for the current
 connection. However, as QUIC operates over UDP, in IPv4 the echoed information
 could consist only of the IP and UDP headers, which usually has insufficient
@@ -3130,7 +3130,7 @@ reserved for use in future IETF consensus documents.
 
 Versions that follow the pattern 0x?a?a?a?a are reserved for use in forcing
 version negotiation to be exercised.  That is, any version number where the low
-four bits of all octets is 1010 (in binary).  A client or server MAY advertise
+four bits of all bytes is 1010 (in binary).  A client or server MAY advertise
 support for any of these reserved versions.
 
 Reserved version numbers will probably never represent a real protocol; a client
@@ -3158,14 +3158,14 @@ using for private experimentation on the GitHub wiki at
 
 QUIC packets and frames commonly use a variable-length encoding for non-negative
 integer values.  This encoding ensures that smaller integer values need fewer
-octets to encode.
+bytes to encode.
 
 The QUIC variable-length integer encoding reserves the two most significant bits
-of the first octet to encode the base 2 logarithm of the integer encoding length
-in octets.  The integer value is encoded on the remaining bits, in network byte
+of the first byte to encode the base 2 logarithm of the integer encoding length
+in bytes.  The integer value is encoded on the remaining bits, in network byte
 order.
 
-This means that integers are encoded on 1, 2, 4, or 8 octets and can encode 6,
+This means that integers are encoded on 1, 2, 4, or 8 bytes and can encode 6,
 14, 30, or 62 bit values respectively.  {{integer-summary}} summarizes the
 encoding properties.
 
@@ -3177,10 +3177,10 @@ encoding properties.
 | 11   | 8      | 62          | 0-4611686018427387903 |
 {: #integer-summary title="Summary of Integer Encodings"}
 
-For example, the eight octet sequence c2 19 7c 5e ff 14 e8 8c (in hexadecimal)
-decodes to the decimal value 151288809941952652; the four octet sequence 9d 7f
-3e 7d decodes to 494878333; the two octet sequence 7b bd decodes to 15293; and
-the single octet 25 decodes to 37 (as does the two octet sequence 40 25).
+For example, the eight byte sequence c2 19 7c 5e ff 14 e8 8c (in hexadecimal)
+decodes to the decimal value 151288809941952652; the four byte sequence 9d 7f
+3e 7d decodes to 494878333; the two byte sequence 7b bd decodes to 15293; and
+the single byte 25 decodes to 37 (as does the two byte sequence 40 25).
 
 Error codes ({{error-codes}}) and versions {{versions}} are described using
 integers, but do not use this encoding.
@@ -3199,13 +3199,13 @@ value of fields.
 Packet numbers in long and short packet headers are encoded as follows.  The
 number of bits required to represent the packet number is first reduced by
 including only a variable number of the least significant bits of the packet
-number.  One or two of the most significant bits of the first octet are then
+number.  One or two of the most significant bits of the first byte are then
 used to represent how many bits of the packet number are provided, as shown in
 {{pn-encodings}}.
 
-| First octet pattern | Encoded Length | Bits Present |
+| First byte pattern | Encoded Length | Bits Present |
 |:--------------------|:---------------|:-------------|
-| 0b0xxxxxxx          | 1 octet        | 7            |
+| 0b0xxxxxxx          | 1 byte        | 7            |
 | 0b10xxxxxx          | 2              | 14           |
 | 0b11xxxxxx          | 4              | 30           |
 {: #pn-encodings title="Packet Number Encodings for Packet Headers"}
@@ -3282,12 +3282,12 @@ packet format. Packets that use the long header contain the following fields:
 
 Header Form:
 
-: The most significant bit (0x80) of octet 0 (the first octet) is set to 1 for
+: The most significant bit (0x80) of byte 0 (the first byte) is set to 1 for
   long headers.
 
 Long Packet Type:
 
-: The remaining seven bits of octet 0 contain the packet type.  This field can
+: The remaining seven bits of byte 0 contain the packet type.  This field can
   indicate one of 128 packet types.  The types specified for this version are
   listed in {{long-packet-types}}.
 
@@ -3299,38 +3299,38 @@ Version:
 
 DCIL and SCIL:
 
-: The octet following the version contains the lengths of the two connection ID
+: The byte following the version contains the lengths of the two connection ID
   fields that follow it.  These lengths are encoded as two 4-bit unsigned
   integers. The Destination Connection ID Length (DCIL) field occupies the 4
-  high bits of the octet and the Source Connection ID Length (SCIL) field
-  occupies the 4 low bits of the octet.  An encoded length of 0 indicates that
-  the connection ID is also 0 octets in length.  Non-zero encoded lengths are
+  high bits of the byte and the Source Connection ID Length (SCIL) field
+  occupies the 4 low bits of the byte.  An encoded length of 0 indicates that
+  the connection ID is also 0 bytes in length.  Non-zero encoded lengths are
   increased by 3 to get the full length of the connection ID, producing a length
-  between 4 and 18 octets inclusive.  For example, an octet with the value 0x50
-  describes an 8-octet Destination Connection ID and a zero-length Source
+  between 4 and 18 bytes inclusive.  For example, an byte with the value 0x50
+  describes an 8-byte Destination Connection ID and a zero-length Source
   Connection ID.
 
 Destination Connection ID:
 
 : The Destination Connection ID field follows the connection ID lengths and is
-  either 0 octets in length or between 4 and 18 octets.
+  either 0 bytes in length or between 4 and 18 bytes.
   {{negotiating-connection-ids}} describes the use of this field in more detail.
 
 Source Connection ID:
 
 : The Source Connection ID field follows the Destination Connection ID and is
-  either 0 octets in length or between 4 and 18 octets.
+  either 0 bytes in length or between 4 and 18 bytes.
   {{negotiating-connection-ids}} describes the use of this field in more detail.
 
 Length:
 
 : The length of the remainder of the packet (that is, the Packet Number and
-  Payload fields) in octets, encoded as a variable-length integer
+  Payload fields) in bytes, encoded as a variable-length integer
   ({{integer-encoding}}).
 
 Packet Number:
 
-: The packet number field is 1, 2, or 4 octets long. The packet number has
+: The packet number field is 1, 2, or 4 bytes long. The packet number has
   confidentiality protection separate from packet protection, as described in
   Section 5.3 of {{QUIC-TLS}}. The length of the packet number field is encoded
   in the plaintext packet number. See {{packet-encoding}} for details.
@@ -3354,7 +3354,7 @@ format. The same applies when implementing this. -->
 | 0x7C | 0-RTT Protected               | {{packet-protected}}        |
 {: #long-packet-types title="Long Header Packet Types"}
 
-The header form, type, connection ID lengths octet, destination and source
+The header form, type, connection ID lengths byte, destination and source
 connection IDs, and version fields of a long header packet are
 version-independent. The packet number and values for packet types defined in
 {{long-packet-types}} are version-specific.  See {{QUIC-INVARIANTS}} for details
@@ -3393,11 +3393,11 @@ Packets that use the short header contain the following fields:
 
 Header Form:
 
-: The most significant bit (0x80) of octet 0 is set to 0 for the short header.
+: The most significant bit (0x80) of byte 0 is set to 0 for the short header.
 
 Key Phase Bit:
 
-: The second bit (0x40) of octet 0 indicates the key phase, which allows a
+: The second bit (0x40) of byte 0 indicates the key phase, which allows a
   recipient of a packet to identify the packet protection keys that are used to
   protect the packet.  See {{QUIC-TLS}} for details.
 
@@ -3406,21 +3406,21 @@ changed before this draft goes to the IESG.]]
 
 Third Bit:
 
-: The third bit (0x20) of octet 0 is set to 1.
+: The third bit (0x20) of byte 0 is set to 1.
 
 \[\[Editor's Note: this section should be removed and the bit definitions
 changed before this draft goes to the IESG.]]
 
 Fourth Bit:
 
-: The fourth bit (0x10) of octet 0 is set to 1.
+: The fourth bit (0x10) of byte 0 is set to 1.
 
 \[\[Editor's Note: this section should be removed and the bit definitions
 changed before this draft goes to the IESG.]]
 
 Google QUIC Demultiplexing Bit:
 
-: The fifth bit (0x8) of octet 0 is set to 0. This allows implementations of
+: The fifth bit (0x8) of byte 0 is set to 0. This allows implementations of
   Google QUIC to distinguish Google QUIC packets from short header packets sent
   by a client because Google QUIC servers expect the connection ID to always be
   present.
@@ -3430,7 +3430,7 @@ Google QUIC Demultiplexing Bit:
 
 Reserved:
 
-: The sixth, seventh, and eighth bits (0x7) of octet 0 are reserved for
+: The sixth, seventh, and eighth bits (0x7) of byte 0 are reserved for
   experimentation.  Endpoints MUST ignore these bits on packets they receive
   unless they are participating in an experiment that uses these bits.  An
   endpoint not actively using these bits SHOULD set the value randomly on
@@ -3444,7 +3444,7 @@ Destination Connection ID:
 
 Packet Number:
 
-: The packet number field is 1, 2, or 4 octets long. The packet number has
+: The packet number field is 1, 2, or 4 bytes long. The packet number has
   confidentiality protection separate from packet protection, as described in
   Section 5.3 of {{QUIC-TLS}}. The length of the packet number field is encoded
   in the plaintext packet number. See {{packet-encoding}} for details.
@@ -3568,7 +3568,7 @@ NEW_TOKEN frame:
 
 Token Length:
 
-: A variable-length integer specifying the length of the Token field, in octets.
+: A variable-length integer specifying the length of the Token field, in bytes.
   This value is zero if no token is present.  Initial packets sent by the server
   MUST set the Token Length field to zero; clients that receive an Initial
   packet with a non-zero Token Length field MUST either discard the packet or
@@ -3715,8 +3715,8 @@ Packet Number, and Payload fields.  These are replaced with:
 ODCIL:
 
 : The length of the Original Destination Connection ID field.  The length is
-  encoded in the least significant 4 bits of the octet, using the same encoding
-  as the DCIL and SCIL fields.  The most significant 4 bits of this octet are
+  encoded in the least significant 4 bits of the byte, using the same encoding
+  as the DCIL and SCIL fields.  The most significant 4 bits of this byte are
   reserved.  Unless a use for these bits has been negotiated, endpoints SHOULD
   send randomized values and MUST ignore any value that it receives.
 
@@ -3851,7 +3851,7 @@ The `extension_data` field of the quic_transport_parameters extension defined in
 {{QUIC-TLS}} contains a TransportParameters value.  TLS encoding rules are
 therefore used to describe the encoding of transport parameters.
 
-QUIC encodes transport parameters into a sequence of octets, which are then
+QUIC encodes transport parameters into a sequence of bytes, which are then
 included in the cryptographic handshake.
 
 
@@ -3899,7 +3899,7 @@ max_ack_delay (0x000c):
 
 Either peer MAY advertise an initial value for flow control of each type of
 stream on which they might receive data.  Each of the following transport
-parameters is encoded as an unsigned 32-bit integer in units of octets:
+parameters is encoded as an unsigned 32-bit integer in units of bytes:
 
 initial_max_stream_data_bidi_local (0x0000):
 
@@ -3938,7 +3938,7 @@ initial_max_data (0x0001):
 
 : The initial maximum data parameter contains the initial value for the maximum
   amount of data that can be sent on the connection.  This parameter is encoded
-  as an unsigned 32-bit integer in units of octets.  This is equivalent to
+  as an unsigned 32-bit integer in units of bytes.  This is equivalent to
   sending a MAX_DATA ({{frame-max-data}}) for the connection immediately after
   completing the handshake. If the transport parameter is absent, the connection
   starts with a flow control limit of 0.
@@ -3980,7 +3980,7 @@ A server MAY include the following transport parameters:
 stateless_reset_token (0x0006):
 
 : The Stateless Reset Token is used in verifying a stateless reset, see
-  {{stateless-reset}}.  This parameter is a sequence of 16 octets.
+  {{stateless-reset}}.  This parameter is a sequence of 16 bytes.
 
 preferred_address (0x0004):
 
@@ -4007,7 +4007,7 @@ client packet to the minimum required size, or to provide protection against
 traffic analysis for protected packets.
 
 A PADDING frame has no content.  That is, a PADDING frame consists of the single
-octet that identifies the frame as a PADDING frame.
+byte that identifies the frame as a PADDING frame.
 
 
 ## RST_STREAM Frame {#frame-rst-stream}
@@ -4095,7 +4095,7 @@ Frame Type:
 Reason Phrase Length:
 
 : A variable-length integer specifying the length of the reason phrase in
-  octets.  Note that a CONNECTION_CLOSE frame cannot be split between packets,
+  bytes.  Note that a CONNECTION_CLOSE frame cannot be split between packets,
   so in practice any limits on packet size will also limit the space available
   for a reason phrase.
 
@@ -4169,7 +4169,7 @@ The fields in the MAX_DATA frame are as follows:
 Maximum Data:
 
 : A variable-length integer indicating the maximum amount of data that can be
-  sent on the entire connection, in units of octets.
+  sent on the entire connection, in units of bytes.
 
 All data sent in STREAM frames counts toward this limit.  The sum of the largest
 received offsets on all streams - including streams in terminal states - MUST
@@ -4215,7 +4215,7 @@ Stream ID:
 Maximum Stream Data:
 
 : A variable-length integer indicating the maximum amount of data that can be
-  sent on the identified stream, in units of octets.
+  sent on the identified stream, in units of bytes.
 
 When counting data toward this limit, an endpoint accounts for the largest
 received offset of data that is sent or received on the stream.  Loss or
@@ -4598,7 +4598,7 @@ Gap and ACK Block fields use a relative integer encoding for efficiency.  Though
 each encoded value is positive, the values are subtracted, so that each ACK
 Block describes progressively lower-numbered packets.  As long as contiguous
 ranges of packets are small, the variable-length integer encoding ensures that
-each range can be expressed in a small number of octets.
+each range can be expressed in a small number of bytes.
 
 The ACK frame uses the least significant bit(bit (that is, type 0x1b) to
 indicate ECN feedback and report receipt of packets with ECN codepoints of
@@ -4731,7 +4731,7 @@ Data:
 
 : This 8-byte field contains arbitrary data.
 
-A PATH_CHALLENGE frame containing 8 octets that are hard to guess is sufficient
+A PATH_CHALLENGE frame containing 8 bytes that are hard to guess is sufficient
 to ensure that it is easier to receive the packet than it is to guess the value
 correctly.
 
@@ -4771,7 +4771,7 @@ The fields of a NEW_TOKEN frame are as follows:
 
 Token Length:
 
-: A variable-length integer specifying the length of the token in octets.
+: A variable-length integer specifying the length of the token in bytes.
 
 Token:
 
@@ -4788,7 +4788,7 @@ are present in the frame.
 * The OFF bit (0x04) in the frame type is set to indicate that there is an
   Offset field present.  When set to 1, the Offset field is present; when set to
   0, the Offset field is absent and the Stream Data starts at an offset of 0
-  (that is, the frame contains the first octets of the stream, or the end of a
+  (that is, the frame contains the first bytes of the stream, or the end of a
   stream that includes no data).
 
 * The LEN bit (0x02) in the frame type is set to indicate that there is a Length
@@ -4838,11 +4838,11 @@ Length:
 : A variable-length integer specifying the length of the Stream Data field in
   this STREAM frame.  This field is present when the LEN bit is set to 1.  When
   the LEN bit is set to 0, the Stream Data field consumes all the remaining
-  octets in the packet.
+  bytes in the packet.
 
 Stream Data:
 
-: The octets from the designated stream to be delivered.
+: The bytes from the designated stream to be delivered.
 
 When a Stream Data field has a length of 0, the offset in the STREAM frame is
 the offset of the next byte that would be sent.
@@ -4856,7 +4856,7 @@ less than 2^62.
 
 The CRYPTO frame (type=0x18) is used to transmit cryptographic handshake
 messages. It can be sent in all packet types. The CRYPTO frame offers the
-cryptographic protocol an in-order stream of octets.  CRYPTO frames are
+cryptographic protocol an in-order stream of bytes.  CRYPTO frames are
 functionally identical to STREAM frames, except that they do not bear a stream
 identifier; they are not flow controlled; and they do not carry markers for
 optional offset, optional length, and the end of the stream.
