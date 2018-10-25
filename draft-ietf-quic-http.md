@@ -303,9 +303,9 @@ or specify a value of zero for the QUIC transport parameter
 ## Unidirectional Streams
 
 Unidirectional streams, in either direction, are used for a range of purposes.
-The purpose is indicated by a stream type, which is sent as a single byte
-header at the start of the stream. The format and structure of data that follows
-this header is determined by the stream type.
+The purpose is indicated by a stream type, which is sent as a single byte header
+at the start of the stream. The format and structure of data that follows this
+header is determined by the stream type.
 
 ~~~~~~~~~~ drawing
  0 1 2 3 4 5 6 7
@@ -423,9 +423,9 @@ A frame includes the following fields:
   : A payload, the semantics of which are determined by the Type field.
 
 Each frame's payload MUST contain exactly the identified fields.  A frame that
-contains additional bytes after the identified fields or a frame that
-terminates before the end of the identified fields MUST be treated as a
-connection error of type HTTP_MALFORMED_FRAME.
+contains additional bytes after the identified fields or a frame that terminates
+before the end of the identified fields MUST be treated as a connection error of
+type HTTP_MALFORMED_FRAME.
 
 ## Frame Definitions {#frames}
 
@@ -921,11 +921,11 @@ head-of-line blocking.  See that document for additional details.
 
 An HTTP/QUIC implementation MAY impose a limit on the maximum size of the header
 it will accept on an individual HTTP message.  This limit is conveyed as a
-number of bytes in the `SETTINGS_MAX_HEADER_LIST_SIZE` parameter.  The size of
-a header list is calculated based on the uncompressed size of header fields,
-including the length of the name and value in bytes plus an overhead of 32
-bytes for each header field.  Encountering a message header larger than this
-value SHOULD be treated as a stream error of type `HTTP_EXCESSIVE_LOAD`.
+number of bytes in the `SETTINGS_MAX_HEADER_LIST_SIZE` parameter.  The size of a
+header list is calculated based on the uncompressed size of header fields,
+including the length of the name and value in bytes plus an overhead of 32 bytes
+for each header field.  Encountering a message header larger than this value
+SHOULD be treated as a stream error of type `HTTP_EXCESSIVE_LOAD`.
 
 ### Request Cancellation
 
@@ -1343,8 +1343,8 @@ HTTP_GENERAL_PROTOCOL_ERROR (0x00FF):
 
 HTTP_MALFORMED_FRAME (0x01XX):
 : An error in a specific frame type.  The frame type is included as the last
-  byte of the error code.  For example, an error in a MAX_PUSH_ID frame would
-  be indicated with the code (0x10D).
+  byte of the error code.  For example, an error in a MAX_PUSH_ID frame would be
+  indicated with the code (0x10D).
 
 
 # Security Considerations

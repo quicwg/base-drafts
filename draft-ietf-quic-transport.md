@@ -361,10 +361,10 @@ application as an ordered byte-stream.  Delivering an ordered byte-stream
 requires that an endpoint buffer any data that is received out of order, up to
 the advertised flow control limit.
 
-An endpoint could receive the same bytes multiple times; bytes that have
-already been received can be discarded.  The value for a given byte MUST NOT
-change if it is sent multiple times; an endpoint MAY treat receipt of a changed
-byte as a connection error of type PROTOCOL_VIOLATION.
+An endpoint could receive the same bytes multiple times; bytes that have already
+been received can be discarded.  The value for a given byte MUST NOT change if
+it is sent multiple times; an endpoint MAY treat receipt of a changed byte as a
+connection error of type PROTOCOL_VIOLATION.
 
 An endpoint MUST NOT send data on any stream without ensuring that it is within
 the data limits set by its peer.  Flow control is described in detail in
@@ -802,9 +802,9 @@ stream to make the same adjustment in its connection flow controller.
 To ensure that endpoints maintain a consistent connection-level flow control
 state, the RST_STREAM frame ({{frame-rst-stream}}) includes the largest offset
 of data sent on the stream.  On receiving a RST_STREAM frame, a receiver
-definitively knows how many bytes were sent on that stream before the
-RST_STREAM frame, and the receiver MUST use the final offset to account for all
-bytes sent on the stream in its connection level flow controller.
+definitively knows how many bytes were sent on that stream before the RST_STREAM
+frame, and the receiver MUST use the final offset to account for all bytes sent
+on the stream in its connection level flow controller.
 
 RST_STREAM terminates one direction of a stream abruptly.  Whether any action or
 response can or should be taken on the data already received is application
@@ -835,10 +835,10 @@ implementations.
 If a sender runs out of flow control credit, it will be unable to send new
 data. That is, the sender is blocked. A blocked sender SHOULD send a
 STREAM_BLOCKED or BLOCKED frame.  A receiver uses these frames for debugging
-purposes.  A receiver MUST NOT wait for a STREAM_BLOCKED or BLOCKED frame
-before sending MAX_STREAM_DATA or MAX_DATA, since doing so will mean that a
-sender will be blocked for an entire round trip and the peer may never
-send a STREAM_BLOCKED or BLOCKED frame.
+purposes.  A receiver MUST NOT wait for a STREAM_BLOCKED or BLOCKED frame before
+sending MAX_STREAM_DATA or MAX_DATA, since doing so will mean that a sender will
+be blocked for an entire round trip and the peer may never send a STREAM_BLOCKED
+or BLOCKED frame.
 
 It is generally considered best to not let the sender go into quiescence if
 avoidable.  To avoid blocking a sender, and to reasonably account for the
@@ -855,8 +855,8 @@ after the data limit is increased.
 ## Stream Final Offset {#final-offset}
 
 The final offset is the count of the number of bytes that are transmitted on a
-stream.  For a stream that is reset, the final offset is carried explicitly in
-a RST_STREAM frame.  Otherwise, the final offset is the offset of the end of the
+stream.  For a stream that is reset, the final offset is carried explicitly in a
+RST_STREAM frame.  Otherwise, the final offset is the offset of the end of the
 data carried in a STREAM frame marked with a FIN flag, or 0 in the case of
 incoming unidirectional streams.
 
@@ -1592,14 +1592,14 @@ server has successfully processed a Handshake packet from the client, it can
 consider the client address to have been validated.
 
 Prior to validating the client address, servers MUST NOT send more than three
-times as many bytes as the number of bytes they have received.  This limits
-the magnitude of any amplification attack that can be mounted using spoofed
-source addresses.  In determining this limit, servers only count the size of
+times as many bytes as the number of bytes they have received.  This limits the
+magnitude of any amplification attack that can be mounted using spoofed source
+addresses.  In determining this limit, servers only count the size of
 successfully processed packets.
 
 To ensure that the server is not overly constrained by this restriction, clients
-MUST send UDP datagrams with at least 1200 bytes of payload until the server
-has completed address validation, see {{packet-size}}.
+MUST send UDP datagrams with at least 1200 bytes of payload until the server has
+completed address validation, see {{packet-size}}.
 
 In order to prevent a handshake deadlock as a result of the server being unable
 to send, clients SHOULD send a packet upon a handshake timeout, as described in
@@ -2336,17 +2336,17 @@ following layout:
 This design ensures that a stateless reset packet is - to the extent possible -
 indistinguishable from a regular packet with a short header.
 
-The message consists of a header byte, followed by an arbitrary number of
-random bytes, followed by a Stateless Reset Token.
+The message consists of a header byte, followed by an arbitrary number of random
+bytes, followed by a Stateless Reset Token.
 
 A stateless reset will be interpreted by a recipient as a packet with a short
 header.  For the packet to appear as valid, the Random Octets field needs to
 include at least 20 bytes of random or unpredictable values.  This is intended
 to allow for a destination connection ID of the maximum length permitted, a
 packet number, and minimal payload.  The Stateless Reset Token corresponds to
-the minimum expansion of the packet protection AEAD.  More random bytes might
-be necessary if the endpoint could have negotiated a packet protection scheme
-with a larger minimum AEAD expansion.
+the minimum expansion of the packet protection AEAD.  More random bytes might be
+necessary if the endpoint could have negotiated a packet protection scheme with
+a larger minimum AEAD expansion.
 
 An endpoint SHOULD NOT send a stateless reset that is significantly larger than
 the packet it receives.  Endpoints MUST discard packets that are too small to be
@@ -2751,11 +2751,11 @@ The Frame Type field uses a variable length integer encoding (see
 implementations of frame parsing, a frame type MUST use the shortest possible
 encoding.  Though a two-, four- or eight-byte encoding of the frame types
 defined in this document is possible, the Frame Type field for these frames is
-encoded on a single byte.  For instance, though 0x4007 is a legitimate
-two-byte encoding for a variable-length integer with a value of 7, PING frames
-are always encoded as a single byte with the value 0x07.  An endpoint MUST
-treat the receipt of a frame type that uses a longer encoding than necessary as
-a connection error of type PROTOCOL_VIOLATION.
+encoded on a single byte.  For instance, though 0x4007 is a legitimate two-byte
+encoding for a variable-length integer with a value of 7, PING frames are always
+encoded as a single byte with the value 0x07.  An endpoint MUST treat the
+receipt of a frame type that uses a longer encoding than necessary as a
+connection error of type PROTOCOL_VIOLATION.
 
 
 
@@ -3085,10 +3085,10 @@ detecting the PMTU, setting the PMTU appropriately, and storing the result of
 previous PMTU determinations.
 
 In the absence of these mechanisms, QUIC endpoints SHOULD NOT send IP packets
-larger than 1280 bytes. Assuming the minimum IP header size, this results in
-a QUIC packet size of 1232 bytes for IPv6 and 1252 bytes for IPv4. Some
-QUIC implementations MAY be more conservative in computing allowed QUIC packet
-size given unknown tunneling overheads or IP header options.
+larger than 1280 bytes. Assuming the minimum IP header size, this results in a
+QUIC packet size of 1232 bytes for IPv6 and 1252 bytes for IPv4. Some QUIC
+implementations MAY be more conservative in computing allowed QUIC packet size
+given unknown tunneling overheads or IP header options.
 
 QUIC endpoints that implement any kind of PMTU discovery SHOULD maintain an
 estimate for each combination of local and remote IP addresses.  Each pairing of
@@ -3100,8 +3100,8 @@ networks.  An endpoint MUST NOT reduce its MTU below this number, even if it
 receives signals that indicate a smaller limit might exist.
 
 If a QUIC endpoint determines that the PMTU between any pair of local and remote
-IP addresses has fallen below 1280 bytes, it MUST immediately cease sending
-QUIC packets on the affected path.  This could result in termination of the
+IP addresses has fallen below 1280 bytes, it MUST immediately cease sending QUIC
+packets on the affected path.  This could result in termination of the
 connection if an alternative path cannot be found.
 
 ### IPv4 PMTU Discovery {#v4-pmtud}
@@ -3119,16 +3119,16 @@ As a result, endpoints that implement PMTUD in IPv4 SHOULD take steps to
 mitigate this risk. For instance, an application could:
 
 * Set the IPv4 Don't Fragment (DF) bit on a small proportion of packets, so that
-most invalid ICMP messages arrive when there are no DF packets outstanding, and
-can therefore be identified as spurious.
+  most invalid ICMP messages arrive when there are no DF packets outstanding,
+  and can therefore be identified as spurious.
 
 * Store additional information from the IP or UDP headers from DF packets (for
-example, the IP ID or UDP checksum) to further authenticate incoming Datagram
-Too Big messages.
+  example, the IP ID or UDP checksum) to further authenticate incoming Datagram
+  Too Big messages.
 
 * Any reduction in PMTU due to a report contained in an ICMP packet is
-provisional until QUIC's loss detection algorithm determines that the packet is
-actually lost.
+  provisional until QUIC's loss detection algorithm determines that the packet
+  is actually lost.
 
 
 ## Special Considerations for Packetization Layer PMTU Discovery
@@ -3218,9 +3218,9 @@ encoding properties.
 {: #integer-summary title="Summary of Integer Encodings"}
 
 For example, the eight byte sequence c2 19 7c 5e ff 14 e8 8c (in hexadecimal)
-decodes to the decimal value 151288809941952652; the four byte sequence 9d 7f
-3e 7d decodes to 494878333; the two byte sequence 7b bd decodes to 15293; and
-the single byte 25 decodes to 37 (as does the two byte sequence 40 25).
+decodes to the decimal value 151288809941952652; the four byte sequence 9d 7f 3e
+7d decodes to 494878333; the two byte sequence 7b bd decodes to 15293; and the
+single byte 25 decodes to 37 (as does the two byte sequence 40 25).
 
 Error codes ({{error-codes}}) and versions {{versions}} are described using
 integers, but do not use this encoding.
@@ -3239,15 +3239,15 @@ value of fields.
 Packet numbers in long and short packet headers are encoded as follows.  The
 number of bits required to represent the packet number is first reduced by
 including only a variable number of the least significant bits of the packet
-number.  One or two of the most significant bits of the first byte are then
-used to represent how many bits of the packet number are provided, as shown in
+number.  One or two of the most significant bits of the first byte are then used
+to represent how many bits of the packet number are provided, as shown in
 {{pn-encodings}}.
 
 | First byte pattern | Encoded Length | Bits Present |
-|:--------------------|:---------------|:-------------|
-| 0b0xxxxxxx          | 1 byte        | 7            |
-| 0b10xxxxxx          | 2              | 14           |
-| 0b11xxxxxx          | 4              | 30           |
+|:-------------------|:---------------|:-------------|
+| 0b0xxxxxxx         | 1 byte         | 7            |
+| 0b10xxxxxx         | 2              | 14           |
+| 0b11xxxxxx         | 4              | 30           |
 {: #pn-encodings title="Packet Number Encodings for Packet Headers"}
 
 Note that these encodings are similar to those in {{integer-encoding}}, but
@@ -3463,8 +3463,7 @@ Google QUIC Demultiplexing Bit:
 : The fifth bit (0x8) of byte 0 is set to 0. This allows implementations of
   Google QUIC to distinguish Google QUIC packets from short header packets sent
   by a client because Google QUIC servers expect the connection ID to always be
-  present.
-  The special interpretation of this bit SHOULD be removed from this
+  present.  The special interpretation of this bit SHOULD be removed from this
   specification when Google QUIC has finished transitioning to the new header
   format.
 
@@ -4160,10 +4159,10 @@ Frame Type:
 
 Reason Phrase Length:
 
-: A variable-length integer specifying the length of the reason phrase in
-  bytes.  Note that a CONNECTION_CLOSE frame cannot be split between packets,
-  so in practice any limits on packet size will also limit the space available
-  for a reason phrase.
+: A variable-length integer specifying the length of the reason phrase in bytes.
+  Note that a CONNECTION_CLOSE frame cannot be split between packets, so in
+  practice any limits on packet size will also limit the space available for a
+  reason phrase.
 
 Reason Phrase:
 
@@ -4748,8 +4747,8 @@ Additional ACK Block (repeated):
 
 ### ECN section
 
-The ECN section should only be parsed when the ACK frame type byte is 0x1b.
-The ECN section consists of 3 ECN counters as shown below.
+The ECN section should only be parsed when the ACK frame type is 0x1b.  The ECN
+section consists of 3 ECN counters as shown below.
 
 ~~~
  0                   1                   2                   3
