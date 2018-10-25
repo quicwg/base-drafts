@@ -1176,7 +1176,7 @@ manner inconsistent from the preference order included with the client transport
 parameters (see {{version-validation}}).
 
 The client then attempts to create a connection using the version it selects.
-Though the content of the Initial packet the client sends might not change in
+If the content of the Initial packet the client sends does not change in
 response to version negotiation, a client MUST increase the packet number it
 uses on every packet it sends.  Packets MUST continue to use long headers
 ({{long-header}}) and MUST include the new negotiated protocol version.
@@ -1541,16 +1541,21 @@ from the client contains a version that is less preferred by the client than any
 version it supports, unless that version also matches the original_version
 field.
 
-<!-- Editor's note: should I include this algorithm?
+The following algorithm demonstrates how a server might validate the versions in
+the client transport parameters:
+
+~~~
 if original_version == current_version:
-  return OK # No version negotiation, great.
+    return GOOD        # No version negotiation.
+
 for v in supported_versions:
-  if v == current_version:
-    return OK # Version negotiation, but all good.
-  if server_supports(v):
-    return BAD # Downgrade attack attempt thwarted!
-return BAD # Client claims it doesn't support this version!
--->
+    if v == current_version:
+        return GOOD    # Client picked its most preferred.
+    if server_supports(v):
+        return BAD     # Downgrade attack!
+
+return BAD             # Client doesn't support this version!
+~~~
 
 After validating the version parameters from the client, a server MAY choose to
 upgrade to a compatible version, as defined in {{version-upgrade}}, even if that
