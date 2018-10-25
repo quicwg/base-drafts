@@ -778,6 +778,7 @@ and monitoring purposes.
 A similar method is used to control the number of open streams (see
 {{stream-limit-increment}} for details).
 
+
 ## Handling of Stream Cancellation
 
 There are some edge cases which must be considered when dealing with stream and
@@ -813,6 +814,7 @@ opposite direction. The RST_STREAM sender can send a STOP_SENDING frame to
 encourage prompt termination. Both endpoints MUST maintain state for the stream
 in the unterminated direction until that direction enters a terminal state, or
 either side sends CONNECTION_CLOSE or APPLICATION_CLOSE.
+
 
 ## Data Limit Increments {#fc-credit}
 
