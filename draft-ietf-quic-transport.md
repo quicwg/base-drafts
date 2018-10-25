@@ -1175,6 +1175,9 @@ server.  The server will abort the connection attempt if the client chooses in a
 manner inconsistent from the preference order included with the client transport
 parameters (see {{version-validation}}).
 
+If the client does not support any of the versions the server offers, it aborts
+the connection attempt.
+
 The client then attempts to create a connection using the version it selects.
 If the content of the Initial packet the client sends does not change in
 response to version negotiation, a client MUST increase the packet number it
