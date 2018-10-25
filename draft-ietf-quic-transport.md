@@ -4346,8 +4346,7 @@ indicates a problem with the limit on bidirectional streams; a STREAMS_BLOCKED
 frame of type 0x1f indicates a problem with the limit on unidirectional streams.
 
 A STREAMS_BLOCKED frame does not open the stream, but informs the peer that a
-new stream was needed, but the stream limit prevented the creation of the
-stream.
+new stream was needed and the stream limit prevented the creation of the stream.
 
 The STREAMS_BLOCKED frame is as follows:
 
