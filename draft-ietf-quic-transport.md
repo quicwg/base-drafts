@@ -1202,8 +1202,11 @@ acted on a Version Negotiation packet.
 A client MAY attempt 0-RTT after receiving a Version Negotiation packet.
 
 Though different versions might convey information about versions differently, a
-client MUST NOT change the set of versions it claims to support.  Only the
-determination about server support can change between connections attempts.
+client MUST NOT change the set of versions it claims to support.  In this
+version of QUIC, the set of versions that a client claims to support is the
+union of the values in the `supported_versions` and `unsupported_versions`
+fields.  Only the determination about server support can change between
+connections attempts.
 
 Version negotiation packets have no cryptographic protection.  Keeping
 version-related information consistent between versions is critical for
