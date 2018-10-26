@@ -138,22 +138,23 @@ middleboxes.
 
 This document describes the core QUIC protocol, and is structured as follows:
 
-* Streams are the basic service abstraction that QUIC provides.
+* Streams are the basic service abstraction that QUIC provides:
   - {{streams}} describes core concepts related to streams,
   - {{stream-states}} provides a reference model for stream states, and
   - {{flow-control}} outlines the operation of flow control.
 
-* Connections are the context in which QUIC endpoints communicate.
+* Connections are the context in which QUIC endpoints communicate:
   - {{connections}} describes core concepts related to connections,
   - {{version-negotiation}} describes version negotiation,
   - {{handshake}} details the process for establishing connections,
   - {{address-validation}} specifies critical denial of service mitigation
     mechanisms,
   - {{migration}} describes how endpoints migrate a connection to use a new
-    network paths, and
-  - {{termination}} lists the options for terminating an open connection.
+    network paths,
+  - {{termination}} lists the options for terminating an open connection, and
+  - {{error-handling}} provides general guidance for error handling.
 
-* Packets and frames are the basic unit used by QUIC to communicate.
+* Packets and frames are the basic unit used by QUIC to communicate:
   - {{packets-frames}} describes concepts related to packets and frames,
   - {{packetization}} defines models for the transmission, retransmission, and
     acknowledgement of information, and
@@ -161,6 +162,7 @@ This document describes the core QUIC protocol, and is structured as follows:
 
 * Details of encoding of QUIC protocol elements is described in:
   - {{versions}} (Versions),
+  - {{integer-encoding}} (Integer Encoding),
   - {{packet-formats}} (Packet Headers),
   - {{transport-parameter-encoding}} (Transport Parameters),
   - {{frame-formats}} (Frames), and
