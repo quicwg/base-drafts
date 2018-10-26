@@ -2772,13 +2772,13 @@ there are packet gaps which precede the received packet.  The endpoint MUST
 however acknowledge packets containing only ACK or PADDING frames when sending
 ACK frames in response to other packets.
 
-While PADDING frames do not elicit an ACK frame from a receiver, they are
-considered to be in flight for congestion control purposes
-{{QUIC-RECOVERY}}. Sending only PADDING frames might cause the sender to become
-limited by the congestion controller (as described in {{QUIC-RECOVERY}}) with no
-acknowledgments forthcoming from the receiver. Therefore, a sender should ensure
-that other frames are sent in addition to PADDING frames to elicit
-acknowledgments from the receiver.
+While PADDING frames are only eventually acknowledged, they are still considered
+to be in flight for congestion control purposes {{QUIC-RECOVERY}}. Sending only
+PADDING frames might cause the sender to become limited by the congestion
+controller (as described in {{QUIC-RECOVERY}}) with no acknowledgments
+forthcoming from the receiver. Therefore, a sender should ensure that other
+frames are sent in addition to PADDING frames to elicit acknowledgments from the
+receiver.
 
 An endpoint MUST NOT send more than one packet containing only an ACK frame per
 received packet that contains frames other than ACK and PADDING frames.
