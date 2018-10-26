@@ -1271,11 +1271,7 @@ express the cause of a connection or stream error.
 The following error codes are defined for use in QUIC RST_STREAM, STOP_SENDING,
 and APPLICATION_CLOSE frames when using HTTP/QUIC.
 
-HTTP_STOPPING (0x00):
-: This value can be used in QUIC RST_STREAM frames in response to QUIC
-  STOP_SENDING frames.
-
-HTTP_NO_ERROR (0x01):
+HTTP_NO_ERROR (0x00):
 : No error.  This is used when the connection or stream needs to be closed, but
   there is no error to signal.
 
@@ -1530,7 +1526,6 @@ The entries in the following table are registered by this document.
 | ----------------------------------- | ---------- | ---------------------------------------- | ---------------------- |
 | Name                                | Code       | Description                              | Specification          |
 | ----------------------------------- | ---------- | ---------------------------------------- | ---------------------- |
-| HTTP_STOPPING                       | 0x0000     | Solicited stream reset                   | {{http-error-codes}}   |
 | HTTP_NO_ERROR                       | 0x0001     | No error                                 | {{http-error-codes}}   |
 | HTTP_PUSH_REFUSED                   | 0x0002     | Client refused pushed content            | {{http-error-codes}}   |
 | HTTP_INTERNAL_ERROR                 | 0x0003     | Internal error                           | {{http-error-codes}}   |
