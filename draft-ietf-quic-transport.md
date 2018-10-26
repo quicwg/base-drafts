@@ -1201,12 +1201,9 @@ acted on a Version Negotiation packet.
 
 A client MAY attempt 0-RTT after receiving a Version Negotiation packet.
 
-The format of the packet that a client sends might be different in the new
-version.  In this case, the client generates a new packet that conforms to the
-selected version.  Though different versions might convey information about
-versions differently, a client MUST NOT change the set of versions it claims to
-support.  Only the determination about server support can change between
-connections attempts.
+Though different versions might convey information about versions differently, a
+client MUST NOT change the set of versions it claims to support.  Only the
+determination about server support can change between connections attempts.
 
 Version negotiation packets have no cryptographic protection.  Keeping
 version-related information consistent between versions is critical for
