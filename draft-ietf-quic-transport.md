@@ -1221,24 +1221,25 @@ transport parameters include the version the client first attempts to use, plus
 a list of QUIC versions the client supports.
 
 A server that understands the version selected by the client can extract the
-list of QUIC versions and select an alternative version from the list of
-versions provided by the client.  A server MAY choose a version from that list
-if that version is compatible with the version selected by the client.  A server
-MAY choose a version that the client believes to be unsupported.  The server
-sends its first packet as though it was continuing with the selected version.
+list of QUIC versions in the `supported_versions` field included in the client
+transport parameters.  A server MAY choose a version from that list if that
+version is compatible with the version selected by the client.  The server sends
+its first packet as though it was continuing with the selected version.
 
 A QUIC version is compatible with another version if the cryptographic handshake
-message sent in the first packet can be used in both versions.  A compatible
+message carried in the first packet can be used in both versions.  A compatible
 version is also able to identify and acknowledge the first packet sent by the
-client in some fashion.  Other QUIC versions might have different constraints in
-determining what is compatible.  In order to facilitate this process, new QUIC
-versions could define a process for transforming the first packet from other
-compatible versions into the equivalent packet in the new version.
+client in some fashion.
+
+Other QUIC versions might have different constraints in determining what is
+compatible.  In order to facilitate this process, new QUIC versions could define
+a process for transforming the first packet from other compatible versions into
+the equivalent packet in the new version.
 
 Upgrading in this manner allows a server to upgrade without incurring the round
 trip imposed by sending a Version Negotiation packet.  It also allows clients to
 send their first packet using a widely deployed version, without the risk of
-having to use that version with servers that supports a more-preferred version.
+having to use that version with a server that supports a more-preferred version.
 
 A server MUST NOT send a Version Negotiation packet if it prefers a version that
 is not compatible with the version the client initially chose; a server has to
