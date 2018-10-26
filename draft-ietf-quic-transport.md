@@ -706,9 +706,14 @@ frames count toward flow control.
 
 A STOP_SENDING frame requests that the receiving endpoint send a RST_STREAM
 frame.  An endpoint that receives a STOP_SENDING frame MUST send a RST_STREAM
-frame for that stream, and can use an error code of STOPPING.  If the
-STOP_SENDING frame is received on a send stream that is already in the "Data
-Sent" state, a RST_STREAM frame MAY still be sent in order to cancel
+frame for that stream.  An endpoint can use any application error code, though
+they SHOULD send the error code with a value of 0.  The endpoint that sends a
+STOP_SENDING frame SHOULD ignore the error code carried in the RST_STREAM frame.
+An application protocol can reserve an error code for this purpose, but
+endpoints cannot depend on that code being used.
+
+If the STOP_SENDING frame is received on a send stream that is already in the
+"Data Sent" state, a RST_STREAM frame MAY still be sent in order to cancel
 retransmission of previously-sent STREAM frames.
 
 STOP_SENDING SHOULD only be sent for a receive stream that has not been
@@ -2491,13 +2496,11 @@ connection in a recoverable state, the endpoint can send a RST_STREAM frame
 ({{frame-rst-stream}}) with an appropriate error code to terminate just the
 affected stream.
 
-Other than STOPPING ({{solicited-state-transitions}}), RST_STREAM MUST be
-instigated by the application and MUST carry an application error code.
-Resetting a stream without knowledge of the application protocol could cause the
-protocol to enter an unrecoverable state.  Application protocols might require
-certain streams to be reliably delivered in order to guarantee consistent state
-between endpoints.
-
+RST_STREAM MUST be instigated by the application.  RST_STREAM carries an
+application error code.  Resetting a stream without knowledge of the application
+protocol could cause the protocol to enter an unrecoverable state.  Application
+protocols might require certain streams to be reliably delivered in order to
+guarantee consistent state between endpoints.
 
 
 # Packets and Frames {#packets-frames}
@@ -5014,9 +5017,9 @@ Application protocol error codes are used for the RST_STREAM
 frames.
 
 There is no restriction on the use of the 16-bit error code space for
-application protocols.  However, QUIC reserves the error code with a value of 0
-to mean STOPPING.  The application error code of STOPPING (0) is used by the
-transport to cancel a stream in response to receipt of a STOP_SENDING frame.
+application protocols.  Endpoints are encouraged to send a RST_STREAM with an
+error code of 0 in response to receiving a STOP_SENDING frame, so reserving 0
+for that use, or to indicate "no error", is advised.
 
 
 # Security Considerations
