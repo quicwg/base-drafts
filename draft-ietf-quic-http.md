@@ -1337,6 +1337,9 @@ HTTP_EARLY_RESPONSE (0x0011):
 HTTP_MISSING_SETTINGS (0x0012):
 : No SETTINGS frame was received at the beginning of the control stream.
 
+HTTP_UNEXPECTED_GOAWAY (0x0013):
+: A GOAWAY frame was received from the client.
+
 HTTP_GENERAL_PROTOCOL_ERROR (0x00FF):
 : Peer violated protocol requirements in a way which doesn't match a more
   specific error code, or endpoint declines to use the more specific error code.
@@ -1549,6 +1552,7 @@ The entries in the following table are registered by this document.
 | HTTP_WRONG_STREAM_DIRECTION         | 0x0010     | Unidirectional stream in wrong direction | {{http-error-codes}}   |
 | HTTP_EARLY_RESPONSE                 | 0x0011     | Remainder of request not needed          | {{http-error-codes}}   |
 | HTTP_MISSING_SETTINGS               | 0x0012     | No SETTINGS frame received               | {{http-error-codes}}   |
+| HTTP_UNEXPECTED_GOAWAY              | 0x0013     | GOAWAY frame received from client        | {{http-error-codes}}   |
 | HTTP_MALFORMED_FRAME                | 0x01XX     | Error in frame formatting or use         | {{http-error-codes}}   |
 | ----------------------------------- | ---------- | ---------------------------------------- | ---------------------- |
 
