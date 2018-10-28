@@ -442,7 +442,7 @@ sent as a probe into the network prior to establishing any packet loss, prior
 unacknowledged packets SHOULD NOT be marked as lost.
 
 A packet sent on an RTO timer MUST NOT be blocked by the sender's congestion
-controller. A sender MUST however count these bytes as being in flight, since
+controller. A sender MUST however count these packets as being in flight, since
 this packet adds network load without establishing packet loss.
 
 ## Generating Acknowledgements
