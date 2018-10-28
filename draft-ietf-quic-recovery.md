@@ -964,7 +964,7 @@ losses or increases in the ECN-CE counter.
 ## Tail Loss Probe
 
 A TLP packet MUST NOT be blocked by the sender's congestion controller. The
-sender MUST however count TLP packets against bytes-in-flight, since a TLP adds
+sender MUST however count TLP packets against bytes in flight, since a TLP adds
 network load without establishing packet loss.
 
 Acknowledgement or loss of tail loss probes are treated like any other packet.
