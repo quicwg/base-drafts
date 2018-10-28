@@ -618,7 +618,7 @@ sent_packets:
   field indicating the packet number, a time field indicating the time a packet
   was sent, a boolean indicating whether the packet is ack-only, a boolean
   indicating whether it counts towards bytes in flight, and a size field that
-  indicates the packet's size.  sent_packets is ordered by packet number, and
+  indicates the packet's size in bytes.  sent_packets is ordered by packet number, and
   packets remain in sent_packets until acknowledged or lost.  A sent_packets
   data structure is maintained per packet number space, and ACK processing only
   applies to a single space.
