@@ -317,13 +317,13 @@ lower-numbered streams of the same type in the same direction.
 
 QUIC allows for an arbitrary number of streams to operate concurrently.  An
 endpoint limits the number of concurrently active incoming streams by limiting
-the number of streams (see {{stream-limit-increment}}).
+the number of streams of each type (see {{stream-limit-increment}}).
 
 The stream limit is specific to each endpoint and applies only to the peer that
-receives the setting. That is, the client limits the number of streams the
-server can initiate, and the server limits the number of streams the client can
-initiate.  Each endpoint may respond on streams initiated by the other peer,
-regardless of whether it is permitted to initiate new streams.
+receives the setting.  That is, the client limits the number of streams of each
+type the server can initiate, and the server limits the number of streams the
+client can initiate.  Each endpoint can respond on streams initiated by the
+other peer, regardless of whether it is permitted to initiate new streams.
 
 Endpoints MUST NOT exceed the limit set by their peer.  An endpoint that
 receives a STREAM frame with an ID greater than the limit it has sent MUST treat
