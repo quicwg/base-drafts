@@ -1168,7 +1168,7 @@ Destination and Source Connection ID fields match the Source and Destination
 Connection ID fields in a packet that the client sent.  If this check fails, the
 packet MUST be discarded.
 
-A client MUST ignore a Version Negotiation packet that lists the client's chosen
+A client MUST discard a Version Negotiation packet that lists the client's chosen
 version.
 
 Once the Version Negotiation packet is determined to be valid, the client then
