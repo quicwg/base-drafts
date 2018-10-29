@@ -355,7 +355,7 @@ UDP datagram.
 | Short Header    | 1-RTT            | 0/1-RTT   |
 {: #packet-types-levels title="Encryption Levels by Packet Type"}
 
-Section 6.5 of {{QUIC-TRANSPORT}} shows how packets at the various encryption
+Section 17 of {{QUIC-TRANSPORT}} shows how packets at the various encryption
 levels fit into the handshake process.
 
 
@@ -622,7 +622,7 @@ can be used to correct a client's incorrect KeyShare extension as well as for a
 stateless round-trip check. From the perspective of QUIC, this just looks like
 additional messages carried in the Initial encryption level. Although it is in
 principle possible to use this feature for address verification in QUIC, QUIC
-implementations SHOULD instead use the Retry feature (see Section 4.4 of
+implementations SHOULD instead use the Retry feature (see Section 8.1 of
 {{QUIC-TRANSPORT}}).  HelloRetryRequest is still used to request key shares.
 
 
@@ -858,7 +858,7 @@ protection algorithms MUST NOT sample more ciphertext than the minimum expansion
 of the corresponding AEAD.
 
 Packet number protection is applied to the packet number encoded as described in
-Section 4.11 of {{QUIC-TRANSPORT}}. Since the length of the packet number is
+Section 17.1 of {{QUIC-TRANSPORT}}. Since the length of the packet number is
 stored in the first byte of the encoded packet number, it may be necessary to
 progressively decrypt the packet number.
 
@@ -1159,7 +1159,7 @@ by an attacker.
 QUIC includes three defenses against this attack. First, the packet containing a
 ClientHello MUST be padded to a minimum size. Second, if responding to an
 unverified source address, the server is forbidden to send more than three UDP
-datagrams in its first flight (see Section 4.7 of {{QUIC-TRANSPORT}}). Finally,
+datagrams in its first flight (see Section 8.1 of {{QUIC-TRANSPORT}}). Finally,
 because acknowledgements of Handshake packets are authenticated, a blind
 attacker cannot forge them.  Put together, these defenses limit the level of
 amplification.
