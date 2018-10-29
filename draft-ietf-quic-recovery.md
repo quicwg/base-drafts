@@ -1162,6 +1162,7 @@ sent before the newly acknowledged RTO packet.
    OnRetransmissionTimeoutVerified(packet_number)
      congestion_window = kMinimumWindow
      // Declare all packets prior to packet_number lost.
+     for (sent_packet: sent_packets):
        if (sent_packet.packet_number < packet_number):
          bytes_in_flight -= sent_packet.size
          sent_packets.remove(sent_packet.packet_number)
