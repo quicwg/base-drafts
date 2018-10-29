@@ -1064,7 +1064,7 @@ variables as follows:
 ~~~
    congestion_window = kInitialWindow
    bytes_in_flight = 0
-   start_time_of_recovery = 0
+   recovery_start_time = 0
    ssthresh = infinite
    ecn_ce_counter = 0
 ~~~
@@ -1109,11 +1109,11 @@ Invoked from ProcessECN and OnPacketsLost when a new congestion event is
 detected. Starts a new recovery period and reduces the congestion window.
 
 ~~~
-   CongestionEvent(packet_number):
+   CongestionEvent(time):
      // Start a new congestion event if packet_number
      // is larger than the end of the previous recovery epoch.
-     if (!InRecovery(packet_number)):
-       end_of_recovery = largest_sent_packet
+     if (!InRecovery(time)):
+       recovery_start_time = time
        congestion_window *= kLossReductionFactor
        congestion_window = max(congestion_window, kMinimumWindow)
        ssthresh = congestion_window
@@ -1131,7 +1131,7 @@ Invoked when an ACK frame with an ECN section is received from the peer.
        ecn_ce_counter = ack.ce_counter
        // Start a new congestion event if the last acknowledged
        // packet is past the end of the previous recovery epoch.
-       CongestionEvent(ack.largest_acked_packet)
+       CongestionEvent(Now())
 ~~~
 
 
@@ -1149,7 +1149,7 @@ are detected lost.
 
      // Start a new congestion epoch if the last lost packet
      // is past the end of the previous recovery epoch.
-     CongestionEvent(largest_lost_packet.packet_number)
+     CongestionEvent(largest_lost_packet.time)
 ~~~
 
 ### On Retransmission Timeout Verified
