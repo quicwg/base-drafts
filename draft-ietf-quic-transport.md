@@ -884,6 +884,54 @@ provide an interface to QUIC to tell it about its buffering limits so that there
 is not excessive buffering at multiple layers.
 
 
+## Flow Control Deadlocks {#flow-control-deadlocks}
+
+Flow control provides a means of managing access to the limited buffers
+endpoints have for incoming data.  This mechanism limits the amount of data that
+can be in buffers in endpoints or in transit on the network.  However, there are
+several ways in which limits can produce conditions that can cause a connection
+to either perform suboptimally or deadlock.
+
+Implementations need to be aware of the possibility of deadlocking and that some
+conditions that lead to deadlocking cannot be completely avoided in a protocol
+design.
+
+Large messages can produce deadlocking if the recipient does not process the
+message incrementally.  If the message is larger than flow control credit
+available and the recipient does not release additional flow control credit, a
+deadlock can occur.  This is possible even where stream flow control limits are
+not reached because connection flow control limits can be consumed by other
+streams.
+
+A common implementation technique has flow control credit extended as data is
+read from receive buffers.  In that setting, a length-prefixed message format
+makes it easier for a recipient to leave data unread and thereby withhold flow
+control credit.  If flow control limits prevent the remainder of a message from
+being sent, a deadlock will result.  However, a length prefix might enable the
+detection of this sort of deadlocks.  Where protocols have messages that might
+be processed as a single unit, reserving flow control credit for the entire
+message atomically ensures that this style of deadlock is less likely.
+
+Even a message as small as two bytes could produce a deadlock.  Though the
+chances of deadlock are reduced for smaller messages, the only way to prevent
+deadlock is to read every byte as it becomes available.  However, incremental
+processing of messages can greatly increase complexity of implementations.
+Also, releasing flow control credit might mean that an endpoint might need other
+means of holding a peer accountable for the state commitment for partially
+processed messages.
+
+Deadlocking can also occur if data on different streams is interdependent.  In
+this case, data on one stream arrives before the data on a second stream on
+which it depends.  A deadlock can occur if first stream cannot be read and that
+prevents flow control limits for the second stream being increased.  To reduce
+the likelihood of deadlock for interdependent data, implementations can ensure
+that data is not sent until the data it depends on has consumed both stream- and
+connection- level flow control credit.
+
+Some deadlocking scenarios might be resolved by cancelling affected streams with
+STOP_SENDING or RST_STREAM, if the protocol permits that.
+
+
 ## Stream Limit Increment {#stream-limit-increment}
 
 An endpoint limits the number of concurrently active incoming streams by
