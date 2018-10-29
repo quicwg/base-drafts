@@ -1319,6 +1319,9 @@ version (see {{version-upgrade}}).
 An endpoint can verify support for Explicit Congestion Notification (ECN) in the
 first packets it sends, as described in {{ecn-verification}}.
 
+An endpoint can verify support for Explicit Congestion Notification (ECN) in the
+first packets it sends, as described in {{ecn-verification}}.
+
 The CRYPTO frame can be sent in different packet number spaces.  The sequence
 numbers used by CRYPTO frames to ensure ordered delivery of cryptographic
 handshake data start from zero in each packet number space.
@@ -2269,6 +2272,12 @@ Note:
   control, which are not expected to be relevant for a closed connection.
   Retransmitting the final packet requires less state.
 
+New packets from unverified addresses could be used to create an amplification
+attack (see {{address-validation}}).  To avoid this, endpoints MUST either limit
+transmission of closing frames to validated addresses or drop packets without
+response if the response would be more than three times larger than the received
+packet.
+
 After receiving a closing frame, endpoints enter the draining state.  An
 endpoint that receives a closing frame MAY send a single packet containing a
 closing frame before entering the draining state, using a CONNECTION_CLOSE frame
@@ -2813,13 +2822,13 @@ there are packet gaps which precede the received packet.  The endpoint MUST
 however acknowledge packets containing only ACK or PADDING frames when sending
 ACK frames in response to other packets.
 
-While PADDING frames do not elicit an ACK frame from a receiver, they are
-considered to be in flight for congestion control purposes
-{{QUIC-RECOVERY}}. Sending only PADDING frames might cause the sender to become
-limited by the congestion controller (as described in {{QUIC-RECOVERY}}) with no
-acknowledgments forthcoming from the receiver. Therefore, a sender should ensure
-that other frames are sent in addition to PADDING frames to elicit
-acknowledgments from the receiver.
+Packets containing PADDING frames are considered
+to be in flight for congestion control purposes {{QUIC-RECOVERY}}. Sending only
+PADDING frames might cause the sender to become limited by the congestion
+controller (as described in {{QUIC-RECOVERY}}) with no acknowledgments
+forthcoming from the receiver. Therefore, a sender should ensure that other
+frames are sent in addition to PADDING frames to elicit acknowledgments from the
+receiver.
 
 An endpoint MUST NOT send more than one packet containing only an ACK frame per
 received packet that contains frames other than ACK and PADDING frames.
