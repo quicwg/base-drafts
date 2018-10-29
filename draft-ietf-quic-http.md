@@ -337,7 +337,7 @@ sent until the peer is known to support them.
 
 ###  Control Streams
 
-The control stream is indicated by a stream type of `0x43` (ASCII 'C').  Data on
+A control stream is indicated by a stream type of `0x43` (ASCII 'C').  Data on
 this stream consists of HTTP/QUIC frames, as defined in {{frames}}.
 
 Each side MUST initiate a single control stream at the beginning of the
@@ -392,7 +392,7 @@ implementation chooses.
 
 # HTTP Framing Layer {#http-framing-layer}
 
-Frames are used on the control stream, request streams, and push streams.  This
+Frames are used on control streams, request streams, and push streams.  This
 section describes HTTP framing in QUIC.  For a comparison with HTTP/2 frames,
 see {{h2-frames}}.
 
