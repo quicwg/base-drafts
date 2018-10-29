@@ -1047,9 +1047,9 @@ bytes_in_flight:
 congestion_window:
 : Maximum number of bytes-in-flight that may be sent.
 
-end_of_recovery:
-: The largest packet number sent when QUIC detects a loss.  When a larger
-  packet is acknowledged, QUIC exits recovery.
+recovery_start_time:
+: The time when QUIC first detects a loss, causing it to enter recovery.
+  When a packet sent after this time is acknowledged, QUIC exits recovery.
 
 ssthresh:
 : Slow start threshold in bytes.  When the congestion window is below ssthresh,
@@ -1064,7 +1064,7 @@ variables as follows:
 ~~~
    congestion_window = kInitialWindow
    bytes_in_flight = 0
-   end_of_recovery = 0
+   start_time_of_recovery = 0
    ssthresh = infinite
    ecn_ce_counter = 0
 ~~~
@@ -1085,13 +1085,13 @@ Invoked from loss detection's OnPacketAcked and is supplied with
 acked_packet from sent_packets.
 
 ~~~
-   InRecovery(packet_number):
-     return packet_number <= end_of_recovery
+   InRecovery(sent_time):
+     return sent_time <= recovery_start_time
 
    OnPacketAckedCC(acked_packet):
      // Remove from bytes_in_flight.
      bytes_in_flight -= acked_packet.size
-     if (InRecovery(acked_packet.packet_number)):
+     if (InRecovery(acked_packet.time)):
        // Do not increase congestion window in recovery period.
        return
      if (congestion_window < ssthresh):
@@ -1162,7 +1162,6 @@ sent before the newly acknowledged RTO packet.
    OnRetransmissionTimeoutVerified(packet_number)
      congestion_window = kMinimumWindow
      // Declare all packets prior to packet_number lost.
-     for (sent_packet: sent_packets):
        if (sent_packet.packet_number < packet_number):
          bytes_in_flight -= sent_packet.size
          sent_packets.remove(sent_packet.packet_number)
