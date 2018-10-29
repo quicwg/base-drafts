@@ -4342,7 +4342,7 @@ Data Limit:
 ## STREAMS_BLOCKED Frame {#frame-streams-blocked}
 
 A sender SHOULD send a STREAMS_BLOCKED frame (type=0x1e or 0x1f) when it wishes
-to open a stream, but is unable to due to the maximum stream ID limit set by its
+to open a stream, but is unable to due to the maximum stream limit set by its
 peer (see {{frame-max-streams}}).  A STREAMS_BLOCKED frame of type 0x1e is used
 to indicate reaching the bidirectional stream limit; a STREAMS_BLOCKED frame of
 type 0x1f indicates reaching the unidirectional stream limit.
