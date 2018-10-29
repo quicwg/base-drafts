@@ -123,7 +123,7 @@ A QUIC packet is the content of the UDP datagrams exchanged by QUIC endpoints.
 This document describes the contents of those datagrams.
 
 QUIC defines two types of packet header: long and short.  Packets with long
-headers are identified by the most significant bit of the first octet being set;
+headers are identified by the most significant bit of the first byte being set;
 packets with a short header have that bit cleared.
 
 Aside from the values described here, the payload of QUIC packets is
@@ -154,21 +154,21 @@ version-specific semantics are marked with an X.
 ~~~
 {: #fig-long title="QUIC Long Header"}
 
-A QUIC packet with a long header has the high bit of the first octet set to 1.
-All other bits in that octet are version specific.
+A QUIC packet with a long header has the high bit of the first byte set to 1.
+All other bits in that byte are version specific.
 
-The next four octets include a 32-bit Version field (see {{version}}).
+The next four bytes include a 32-bit Version field (see {{version}}).
 
-The next octet contains the length in octets of the two Connection IDs (see
+The next byte contains the length in bytes of the two Connection IDs (see
 {{connection-id}}) that follow.  Each length is encoded as a 4-bit unsigned
 integer.  The length of the Destination Connection ID (DCIL) occupies the high
-bits of the octet and the length of the Source Connection ID (SCIL) occupies
-the low bits of the octet.  An encoded length of 0 indicates that the connection
-ID is also 0 octets in length.  Non-zero encoded lengths are increased by 3 to
-get the full length of the connection ID; the final value is therefore either 0
-or between 4 and 18 octets in length (inclusive).  For example, an octet with
-the value 0xe0 describes a 17 octet Destination Connection ID and a zero octet
-Source Connection ID.
+bits of the byte and the length of the Source Connection ID (SCIL) occupies the
+low bits of the byte.  An encoded length of 0 indicates that the connection ID
+is also 0 bytes in length.  Non-zero encoded lengths are increased by 3 to get
+the full length of the connection ID; the final value is therefore either 0 or
+between 4 and 18 bytes in length (inclusive).  For example, an byte with the
+value 0xe0 describes a 17 byte Destination Connection ID and a zero byte Source
+Connection ID.
 
 The connection ID lengths are followed by two connection IDs.  The connection
 ID associated with the recipient of the packet (the Destination Connection ID)
@@ -196,7 +196,7 @@ version-specific semantics are marked with an X.
 ~~~~~
 {: #fig-short title="QUIC Short Header"}
 
-A QUIC packet with a short header has the high bit of the first octet set to 0.
+A QUIC packet with a short header has the high bit of the first byte set to 0.
 
 A QUIC packet with a short header includes a Destination Connection ID.  The
 short header does not include the Connection ID Lengths, Source Connection ID,
@@ -239,7 +239,7 @@ either does not understand or does not support might send a Version Negotiation
 packet in response.  Packets with a short header do not trigger version
 negotiation.
 
-A Version Negotiation packet sets the high bit of the first octet, and thus it
+A Version Negotiation packet sets the high bit of the first byte, and thus it
 conforms with the format of a packet with a long header as defined in
 {{long-header}}.  A Version Negotiation packet is identifiable as such by the
 Version field, which is set to 0x00000000.
