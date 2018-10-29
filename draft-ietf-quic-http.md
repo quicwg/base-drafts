@@ -182,7 +182,7 @@ includes an explicit port.
 
 This document defines the "quic" parameter for Alt-Svc, which MAY be used to
 provide version-negotiation hints to HTTP/QUIC clients. QUIC versions are
-four-octet sequences with no additional constraints on format.  Leading zeros
+four-byte sequences with no additional constraints on format.  Leading zeros
 SHOULD be omitted for brevity.
 
 Syntax:
@@ -204,7 +204,7 @@ occurrence.
 
 For example, suppose a server supported both version 0x00000001 and the version
 rendered in ASCII as "Q034".  If it also opted to include the reserved version
-(from Section 3 of {{QUIC-TRANSPORT}}) 0x1abadaba, it could specify the
+(from Section 15 of {{QUIC-TRANSPORT}}) 0x1abadaba, it could specify the
 following header field:
 
 ~~~ example
@@ -269,7 +269,8 @@ the application.
 
 QUIC streams can be either unidirectional, carrying data only from initiator to
 receiver, or bidirectional.  Streams can be initiated by either the client or
-the server.  For more detail on QUIC streams, see {{QUIC-TRANSPORT}}, Section 9.
+the server.  For more detail on QUIC streams, see Section 2 of
+{{QUIC-TRANSPORT}}.
 
 When HTTP headers and data are sent over QUIC, the QUIC layer handles most of
 the stream management.  HTTP does not need to do any separate multiplexing when
@@ -303,9 +304,9 @@ or specify a value of zero for the QUIC transport parameter
 ## Unidirectional Streams
 
 Unidirectional streams, in either direction, are used for a range of purposes.
-The purpose is indicated by a stream type, which is sent as a single octet
-header at the start of the stream. The format and structure of data that follows
-this header is determined by the stream type.
+The purpose is indicated by a stream type, which is sent as a single byte header
+at the start of the stream. The format and structure of data that follows this
+header is determined by the stream type.
 
 ~~~~~~~~~~ drawing
  0 1 2 3 4 5 6 7
@@ -423,15 +424,15 @@ A frame includes the following fields:
   : A payload, the semantics of which are determined by the Type field.
 
 Each frame's payload MUST contain exactly the identified fields.  A frame that
-contains additional octets after the identified fields or a frame that
-terminates before the end of the identified fields MUST be treated as a
-connection error of type HTTP_MALFORMED_FRAME.
+contains additional bytes after the identified fields or a frame that terminates
+before the end of the identified fields MUST be treated as a connection error of
+type HTTP_MALFORMED_FRAME.
 
 ## Frame Definitions {#frames}
 
 ### DATA {#frame-data}
 
-DATA frames (type=0x0) convey arbitrary, variable-length sequences of octets
+DATA frames (type=0x0) convey arbitrary, variable-length sequences of bytes
 associated with an HTTP request or response payload.
 
 DATA frames MUST be associated with an HTTP request or response.  If a DATA
@@ -736,7 +737,7 @@ made in relation to every response in which server push might be needed without
 duplicating pushes.
 
 A server that uses the same Push ID in multiple PUSH_PROMISE frames MUST include
-the same header fields each time.  The octets of the header block MAY be
+the same header fields each time.  The bytes of the header block MAY be
 different due to differing encoding, but the header fields and their values MUST
 be identical.  Note that ordering of header fields is significant.  A client
 MUST treat receipt of a PUSH_PROMISE with conflicting header field values for
@@ -921,11 +922,11 @@ head-of-line blocking.  See that document for additional details.
 
 An HTTP/QUIC implementation MAY impose a limit on the maximum size of the header
 it will accept on an individual HTTP message.  This limit is conveyed as a
-number of octets in the `SETTINGS_MAX_HEADER_LIST_SIZE` parameter.  The size of
-a header list is calculated based on the uncompressed size of header fields,
-including the length of the name and value in octets plus an overhead of 32
-octets for each header field.  Encountering a message header larger than this
-value SHOULD be treated as a stream error of type `HTTP_EXCESSIVE_LOAD`.
+number of bytes in the `SETTINGS_MAX_HEADER_LIST_SIZE` parameter.  The size of a
+header list is calculated based on the uncompressed size of header fields,
+including the length of the name and value in bytes plus an overhead of 32 bytes
+for each header field.  Encountering a message header larger than this value
+SHOULD be treated as a stream error of type `HTTP_EXCESSIVE_LOAD`.
 
 ### Request Cancellation
 
@@ -1343,8 +1344,8 @@ HTTP_GENERAL_PROTOCOL_ERROR (0x00FF):
 
 HTTP_MALFORMED_FRAME (0x01XX):
 : An error in a specific frame type.  The frame type is included as the last
-  octet of the error code.  For example, an error in a MAX_PUSH_ID frame would
-  be indicated with the code (0x10D).
+  byte of the error code.  For example, an error in a MAX_PUSH_ID frame would be
+  indicated with the code (0x10D).
 
 
 # Security Considerations
