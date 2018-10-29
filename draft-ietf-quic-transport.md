@@ -5015,11 +5015,6 @@ Application protocol error codes are used for the RST_STREAM
 ({{frame-rst-stream}}) and APPLICATION_CLOSE ({{frame-application-close}})
 frames.
 
-There is no restriction on the use of the 16-bit error code space for
-application protocols.  Endpoints are encouraged to send a RST_STREAM with an
-error code of 0 in response to receiving a STOP_SENDING frame, so reserving 0
-for that use, or to indicate "no error", is advised.
-
 
 # Security Considerations
 
