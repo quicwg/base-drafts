@@ -4249,11 +4249,11 @@ Loss or reordering can cause a MAX_STREAMS frame to be received which states a
 lower stream limit than an endpoint has previously received.  MAX_STREAMS frames
 which do not increase the stream limit MUST be ignored.
 
-A peer MUST NOT open more streams than the limit it received permits.  For
-instance, a server that receives a unidirectional stream limit of 3 is permitted
-to open stream 3, 7, and 11, but not stream 15.  An endpoint MUST terminate a
-connection with a STREAM_LIMIT_ERROR error if a peer opens more streams than was
-permitted.
+An endpoint MUST NOT open more streams than permitted by the current stream
+limit set by its peer.  For instance, a server that receives a unidirectional
+stream limit of 3 is permitted to open stream 3, 7, and 11, but not stream 15.
+An endpoint MUST terminate a connection with a STREAM_LIMIT_ERROR error if a
+peer opens more streams than was permitted.
 
 
 ## PING Frame {#frame-ping}
