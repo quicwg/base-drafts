@@ -1042,6 +1042,9 @@ compromise and an attack, or if the peer is incorrectly reverting to use of old
 keys.  Because the latter cannot be differentiated from an attack, an endpoint
 MUST immediately terminate the connection if it detects this condition.
 
+In deciding when to update keys, endpoints MUST NOT exceed the limits for use of
+specific keys, as described in Section 5.5 of {{!TLS13}}.
+
 
 # Security of Initial Messages
 
