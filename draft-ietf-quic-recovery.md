@@ -1110,8 +1110,8 @@ detected. Starts a new recovery period and reduces the congestion window.
 
 ~~~
    CongestionEvent(time):
-     // Start a new congestion event if packet's sent time is
-     // larger than the start time of the previous recovery epoch.
+     // Start a new congestion event if the sent time is larger
+     // than the start time of the previous recovery epoch.
      if (!InRecovery(time)):
        recovery_start_time = time
        congestion_window *= kLossReductionFactor
