@@ -764,7 +764,7 @@ Pseudocode for OnPacketAcked follows:
 
 ~~~
    OnPacketAcked(acked_packet):
-     if (!acked_packet.retransmittable):
+     if (acked_packet.retransmittable):
        OnPacketAckedCC(acked_packet)
      sent_packets.remove(acked_packet.packet_number)
 ~~~
