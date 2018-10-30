@@ -267,7 +267,7 @@ on-path devices is in most cases negligible.
 There is however an exception, when parts of the path from client to server
 are hidden from observers. An example would be a server accessed through a
 proxy. The spin bit allows for measurement of the end-to-end
-RTT, and will thus enable adversaries near the client to discover that
+RTT, and will thus enable adversaries near the endpoint to discover that
 the connection does not terminate at the visible destination address, and
 that the client is probably accessing a hidden server through a proxy.
 
