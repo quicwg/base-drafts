@@ -240,15 +240,16 @@ in the downstream direction, and vice versa.
 
 # Disabling the Spin Bit
 
-Implementations SHOULD allow users to disable the spin bit either globally,
-or on a per-connection basis. Even when the spin bit is not disabled by
-the user, implementations SHOULD disable the spin bit on a randomly chosen
+Implementations SHOULD allow administrators of clients and servers to disable
+the spin bit either globally, or on a per-connection basis.
+Even when the spin bit is not disabled by the administrator implementations
+SHOULD disable the spin bit on a randomly chosen
 fraction of connections. The random process SHOULD be designed so that
-on average the spin-bit is disabled for at least 1/8th of the connections.
+on average the spin bit is disabled for at least 1/8th of the connections.
 
-When the spin-bit is disabled, peers MUST set the spin bit value to zero,
-regardless of the values received from their peer.
-
+When the spin bit is disabled, endpoints SHOULD set the spin bit value to zero,
+regardless of the values received from their peer. Addendums or revisions to
+this document MAY define alternative behaviors in the future.
 
 # IANA Considerations
 
@@ -272,11 +273,11 @@ the connection does not terminate at the visible destination address, and
 that the client is probably accessing a hidden server through a proxy.
 
 Endpoints that want to hide their use of a proxy or a relay will want to
-disable the spin bit. However, if only privacy sensitive clients ever
+disable the spin bit. However, if only privacy sensitive clients or servers ever
 disabled the spin bit, they would stick out. The probabilistic disabling
-behavior explained in {#disabling-the-spin-bit} ensures that other clients
-will also disabling the spin bit some of the time, thus hiding the
-privacy sensitive clients in a large anonymity set. It also provides
+behavior explained in {#disabling-the-spin-bit} ensures that other endpoints
+will also disable the spin bit some of the time, thus hiding the
+privacy sensitive endpoints in a large anonymity set. It also provides
 for a minimal greasing of the spin bit, in order to mitigate risks of
 ossification.
 
