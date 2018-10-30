@@ -1556,9 +1556,9 @@ times as many bytes as the number of bytes they have received.  This limits the
 magnitude of any amplification attack that can be mounted using spoofed source
 addresses.
 
-If sending a UDP datagram consisting entirely of an Initial Packet, clients
-MUST pad that packet to at least 1200 bytes unless the client has received a
-Handshake Packet ack from the server. This ensures that the server is not
+Clients MUST pad UDP datagrams that contain only Initial packets to 1200 octets.
+Once a client has received an acknowledgment for a Handshake packet it MAY send
+smaller datagrams.  Sending padded datagrams ensures that the server is not
 overly constrained by the amplification restriction.
 
 In order to prevent a handshake deadlock as a result of the server being unable
