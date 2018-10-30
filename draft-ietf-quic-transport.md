@@ -2495,7 +2495,8 @@ connection in a recoverable state, the endpoint can send a RST_STREAM frame
 ({{frame-rst-stream}}) with an appropriate error code to terminate just the
 affected stream.
 
-RST_STREAM MUST be instigated by the application.  RST_STREAM carries an
+RST_STREAM MUST be instigated by the protocol using QUIC, either directly or
+through the receipt of a STOP_SENDING frame from a peer.  RST_STREAM carries an
 application error code.  Resetting a stream without knowledge of the application
 protocol could cause the protocol to enter an unrecoverable state.  Application
 protocols might require certain streams to be reliably delivered in order to
