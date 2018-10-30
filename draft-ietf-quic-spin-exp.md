@@ -128,7 +128,7 @@ measure handshake RTT without a spin bit, it is sufficient to include the spin
 bit in the short packet header. The spin bit therefore appears only after
 version negotiation and connection establishment are completed.
 
-## Proposed Short Header Format Including Spin Bit
+## Proposed Short Header Format Including Spin Bit {#header}
 
 As of the current editor's version of {{QUIC-TRANSPORT}}, this proposal
 specifies using the sixth most significant bit (0x04) of the first byte in
@@ -184,7 +184,7 @@ observing these changes in the latency spin bit, as described in {{usage}}.
 See {{?QUIC-SPIN=I-D.trammell-quic-spin}} for further illustration of this
 mechanism in action.
 
-## Resetting Spin Value State
+## Resetting Spin Value State {#state-reset}
 
 Each client and server resets it spin value to zero when sending the first
 packet of a given connection with a new connection ID. This reduces the risk
@@ -285,3 +285,59 @@ grant agreement no. 688421 Measurement and Architecture for a Middleboxed
 Internet (MAMI), and by the Swiss State Secretariat for Education, Research,
 and Innovation under contract no. 15.0268. This support does not imply
 endorsement.
+
+--- back
+
+# Negotiating Spin Bit Usage
+
+This document describes the spin bit as a standard feature of the QUIC protocol.
+Alternately, the use or non-use of the spin bit could be negotiated using QUIC's
+version negotiation system. This section describes one method by which a version
+negotiated spin bit could work.
+
+We begin by assigning two version numbers to a given version of QUIC, which we
+will call version Vs and version Vt. Both headers use the same definition for
+the short header, as in {{header}}. Version Vs enables the spin bit, and version
+Vt disables it. For example, keeping with the version numbering scheme in
+Section 15 of {{QUIC-TRANSPORT}}, Vs could be 0x00000001, and Vt 0x00008001.
+
+A client proposing to use the spin bit for a connection sets version Vs in its
+Initial packet. If the server wants to support the spin bit for the connection,
+the handshake continues; otherwise, it sends a Version Negotiation packet
+proposing version Vt, and the Client restarts the handshake using version Vt,
+per Section 6 of {{QUIC-TRANSPORT}}.
+
+A client not wishing to use the spin bit sets version Vt in its Initial packet.
+To maintain the client's ability to choose whether to use the spin bit or not,
+the server MUST NOT reject an attempt to use version Vt with a proposal to use
+version Vs.
+
+Once version Vs is negotiated, client and server MUST enable the spin bit for
+the duration of the connectioon, by setting bit 0x04 in the first octet of each
+packet carrying a short header according to {{spinbit}}.
+
+Once version Vt is negotiated, client and server MUST disable the spin bit for
+the duration of the connection, by setting bit 0x04 in the first octet of each
+packet carrying a short header according to {{nospin}}.
+
+Negotiating the spin bit has a few properties that differ from the discretionary
+usage of the spin bit described in the main body of this document:
+
+- It provides a method to exercise version negotiation beyond the version
+  greasing mechanism described in section 15 of {{QUIC-TRANSPORT}}. This
+  additional exercise has the benefit of actually changing the protocol's
+  behavior in a way each endpoint can detect based on the negotiation of the
+  version, and may defend against ossification of the version negotiation
+  mechanism caused both by on-path interference as well as lazy implementations
+  better than greasing alone.
+
+- It provides a method by which on-path devices that observe the handshake can
+  explicitly classify a connection as spinning or not.
+
+## The Spin Bit in Spinless QUIC {#nospin}
+
+When version Vt is negotiated, both client and server randomly select a "pin
+value", 0 or 1, for each connection ID they will send packets with, and send
+this value as bit 0x04 in the first octet of each packet with a short header
+carrying the corresponding connection ID. This causes the spin bit to converge
+to a static state per connection ID.
