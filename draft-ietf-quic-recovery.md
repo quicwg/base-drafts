@@ -699,7 +699,6 @@ Pseudocode for OnAckReceived and UpdateRtt follow:
 
 ~~~
   OnAckReceived(ack):
-    largest_acked_packet = ack.largest_acked
     // If the largest acknowledged is newly acked,
     // update the RTT.
     if (sent_packets[ack.largest_acked]):
@@ -724,7 +723,7 @@ Pseudocode for OnAckReceived and UpdateRtt follow:
       tlp_count = 0
       rto_count = 0
 
-    DetectLostPackets(ack.largest_acked_packet)
+    DetectLostPackets(ack.acked_packet)
     SetLossDetectionTimer()
 
     // Process ECN information if present.
@@ -1106,14 +1105,15 @@ acked_packet from sent_packets.
 ### On New Congestion Event
 
 Invoked from ProcessECN and OnPacketsLost when a new congestion event is
-detected. Starts a new recovery period and reduces the congestion window.
+detected. May starts a new recovery period and reduces the congestion
+window.
 
 ~~~
-   CongestionEvent(time):
+   CongestionEvent(sent_time):
      // Start a new congestion event if the sent time is larger
      // than the start time of the previous recovery epoch.
-     if (!InRecovery(time)):
-       recovery_start_time = time
+     if (!InRecovery(sent_time)):
+       recovery_start_time = Now()
        congestion_window *= kLossReductionFactor
        congestion_window = max(congestion_window, kMinimumWindow)
        ssthresh = congestion_window
@@ -1130,8 +1130,9 @@ Invoked when an ACK frame with an ECN section is received from the peer.
      if (ack.ce_counter > ecn_ce_counter):
        ecn_ce_counter = ack.ce_counter
        // Start a new congestion event if the last acknowledged
-       // packet is past the end of the previous recovery epoch.
-       CongestionEvent(Now())
+       // packet was sent after the start of the previous
+       // recovery epoch.
+       CongestionEvent(sent_packets[ack.largest_acked].time)
 ~~~
 
 
