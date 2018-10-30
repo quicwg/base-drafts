@@ -238,6 +238,17 @@ and the observer and the client, respectively. It does this by measuring the
 delay between a spin edge observed in the upstream direction and that observed
 in the downstream direction, and vice versa.
 
+# Disabling the spin bit
+
+Implementation SHOULD allow users to disable the spin-bit either globally,
+or on a per-connection basis. Even when the spin-bit is not disabled by
+the user, implementations SHOULD disable the spin-bit on a randomly chosen
+fraction of connections. The random process SHOULD be designed so that
+on average the spin-bit is disabled for at least 1/8th of the connections.
+
+When the spin-bit is disabled, peers MUST set the spin bit value to zero,
+regardless of the values received from their peer.
+
 
 # IANA Considerations
 
@@ -251,7 +262,23 @@ same as those for passive RTT measurement in general. It has been shown
 {{PAM-RTT}} that RTT measurements do not provide more information for
 geolocation than is available in the most basic, freely-available IP address
 based location databases. The risk of exposure of per-flow network RTT to
-on-path devices is therefore negligible.
+on-path devices is in most cases negligible.
+
+There is however an exception, when parts of the path from client to server
+are hidden from observers. An example would be a server accessed through a
+proxy. The spin bit allows for measurement of the end-to-end
+RTT, and will thus enable adversaries near the client to discover that
+the connection does not terminate at the visible destination address, and
+that the client is probably accessing a hidden server through a proxy.
+
+Clients that want to hide their use of a proxy or a relay will want to
+disable the spin bit. However, if only privacy sensitive clients ever
+disabled the spin bit, they would stick out. The probabilistic disabling
+behavior explained in {#disabling-the-spin-bit} ensures that other clients
+will also disabling the spin bit some of the time, thus hiding the
+privacy sensitive clients in a large anonymity set. It also provides
+for a minimal greasing of the spin bit, in order to mitigate risks of
+ossification.
 
 
 # Change Log
