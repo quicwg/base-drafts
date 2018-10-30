@@ -116,7 +116,7 @@ Header field:
 
 Header list:
 
-: The ordered collection of header fields associated with an HTTP message.  A
+: An ordered collection of header fields associated with an HTTP message.  A
   header list can contain multiple header fields with the same name.  It can
   also contain duplicate header fields.
 
@@ -139,7 +139,7 @@ Absolute Index:
 
 Base Index:
 
-: An absolute index in a header block from which relative indices are made
+: An absolute index in a header block from which relative indices are made.
 
 QPACK is a name, not an acronym.
 
@@ -164,30 +164,32 @@ Like HPACK, QPACK uses two tables for associating header fields to indices.  The
 static table (see {{table-static}}) is predefined and contains common header
 fields (some of them with an empty value).  The dynamic table (see
 {{table-dynamic}}) is built up over the course of the connection and can be used
-by the encoder to index header fields repeated in the encoded header lists.
+by the encoder to index header fields in the encoded header lists.
 
 - The encoder uses a unidirectional stream to modify the state of the dynamic
-table without generating header fields to any particular request.
+table without generating header fields for any particular request.
 
 - HEADERS and PUSH_PROMISE frames on request and push streams reference the
 table state without modifying it.
 
-- The decoder sends feedback to the encoder on a unidirectional stream that
-enables the encoder to manage dynamic table state.
+- The decoder sends feedback to the encoder on a unidirectional stream.  This
+feedback enables the encoder to manage dynamic table state.
 
 ## Encoder
 
-<!-- new -->
-An encoder encodes a header list by emitting either an indexed or a literal
-representation of each header field in the list.  Index references to the static
-table and literals do not require any dynamic state and never risk head-of-line
-blocking.  References to the dynamic table do risk head-of-line blocking if the
-encoder has not received an acknowledgement indicating the entry is available
-at the decoder.
+An encoder compresses a header list by emitting either an indexed or a literal
+representation for each header field in the list.  Index references to the
+static table and literals do not require any dynamic state and never risk
+head-of-line blocking.  References to the dynamic table risk head-of-line
+blocking if the encoder has not received an acknowledgement indicating the entry
+is available at the decoder.
 
 QPACK preserves the ordering of header fields within each header list.  An
 encoder MUST emit header field representations in the order they appear in the
 input header list.
+
+QPACK is designed to contain the more complex state tracking to the encoder,
+while the decoder is relatively simple.
 
 ### Reference Tracking
 
@@ -205,7 +207,7 @@ a literal representation and maybe insert the entry later.
 
 To ensure that the encoder is not prevented from adding new entries, the encoder
 can avoid referencing entries that will be evicted soonest.  Rather than
-reference such an entry, the encoder SHOULD emit a Duplicate instruction (see
+reference such an entry, the encoder can emit a Duplicate instruction (see
 {{duplicate}}), and reference the duplicate instead.
 
 Determining which entries are too close to eviction to reference is an encoder
@@ -214,11 +216,10 @@ dynamic table: either unused space or space that can be reclaimed by evicting
 unreferenced entries.  To achieve this, the encoder can maintain a draining
 index, which is the smallest absolute index in the dynamic table that it will
 emit a reference for.  As new entries are inserted, the encoder increases the
-draining index to maintain the section of the table that it will not
-reference.  Draining entries - entries with an absolute index lower than the
-draining index - will not accumulate new references.  The number of
-unacknowledged references to draining entries will eventually become zero,
-making the entry available for eviction.
+draining index to maintain the section of the table that it will not reference.
+If the encoder does not create new references to entries with an absolute index
+lower than the draining index, the number of unacknowledged references to those
+entries will eventually become zero, allowing the entry to be evicted.
 
 ~~~~~~~~~~  drawing
    +----------+---------------------------------+--------+
@@ -242,20 +243,23 @@ received.
 Each header block contains a Largest Reference {{header-prefix}} which
 identifies the table state necessary for decoding. If the greatest absolute
 index in the dynamic table is less than the value of the Largest Reference, the
-stream is considered "blocked."  While blocked, header field data should remain
+stream is considered "blocked."  While blocked, header field data SHOULD remain
 in the blocked stream's flow control window.  When the Largest Reference is
 zero, the frame contains no references to the dynamic table and can always be
 processed immediately. A stream becomes unblocked when the greatest absolute
 index in the dynamic table becomes greater than or equal to the Largest
 Reference for all header blocks the decoder has started reading from the stream.
-If a decoder encounters a header block where the actual largest reference is not
-equal to the Largest Reference declared in the prefix, it MAY treat this as a
-stream error of type HTTP_QPACK_DECOMPRESSION_FAILED.
+If the decoder encounters a header block where the actual largest reference is
+not equal to the Largest Reference declared in the prefix, it MAY treat this as
+a stream error of type HTTP_QPACK_DECOMPRESSION_FAILED.
 
-A decoder can permit the possibility of blocked streams by setting
-SETTINGS_QPACK_BLOCKED_STREAMS to a non-zero value (see {{configuration}}).
-This setting specifies an upper bound on the number of streams which can be
-blocked.
+The SETTINGS_QPACK_BLOCKED_STREAMS setting (see {{configuration}}) specifies an
+upper bound on the number of streams which can be blocked. An encoder MUST limit
+the number of streams which could become blocked to the value of
+SETTINGS_QPACK_BLOCKED_STREAMS at all times. Note that the decoder might not
+actually become blocked on every stream which risks becoming blocked.  If the
+decoder encounters more blocked streams than it promised to support, it MUST
+treat this as a stream error of type HTTP_QPACK_DECOMPRESSION_FAILED.
 
 An encoder can decide whether to risk having a stream become blocked. If
 permitted by the value of SETTINGS_QPACK_BLOCKED_STREAMS, compression efficiency
@@ -266,20 +270,14 @@ which have been acknowledged, but this means using literals. Since literals make
 the header block larger, this can result in the encoder becoming blocked on
 congestion or flow control limits.
 
-An encoder MUST limit the number of streams which could become blocked to the
-value of SETTINGS_QPACK_BLOCKED_STREAMS at all times. Note that the decoder
-might not actually become blocked on every stream which risks becoming blocked.
-If the decoder encounters more blocked streams than it promised to support, it
-MUST treat this as a stream error of type HTTP_QPACK_DECOMPRESSION_FAILED.
-
 ### Largest Known Received
 
 For the encoder to identify which dynamic table entries can be safely used
 without a stream becoming blocked, the encoder tracks the absolute index of the
 decoder's Largest Known Received entry.
 
-When blocking references are permitted, the encoder uses acknowledgement of
-header blocks to identify the Largest Known Received index, as described in
+When blocking references are permitted, the encoder uses header block
+acknowledgement to identify the Largest Known Received index, as described in
 {{header-acknowledgement}}.
 
 To acknowledge dynamic table entries which are not referenced by header blocks,
@@ -290,10 +288,10 @@ streams, the decoder sends a Table State Synchronize instruction (see
 
 ### Speculative table updates {#speculative-updates}
 
-Implementations can *speculatively* send instructions on the encoder stream
+Implementations can speculatively send instructions on the encoder stream
 which are not needed for any current HTTP request or response.  Such headers
 could be used strategically to improve performance.  For instance, the encoder
-might decide to *refresh* by sending Duplicate representations for popular
+might decide to refresh by sending Duplicate representations for popular
 header fields ({{duplicate}}), ensuring they have small indices and hence
 minimal size on the wire.
 
@@ -301,12 +299,12 @@ minimal size on the wire.
 
 <!-- new -->
 
-Like in HPACK, the decoder processes header blocks and emits the corresponding
+As in HPACK, the decoder processes header blocks and emits the corresponding
 header lists. It also processes dynamic table modifications from instructions on
 the encoder stream.
 
-A decoder MUST must emit header fields in the order their representations appear
-in the input header block.
+The decoder MUST emit header fields in the order their representations appear in
+the input header block.
 
 
 ### State Synchronization
@@ -342,12 +340,11 @@ addressed.
 The static table consists of a predefined static list of header fields, each of
 which has a fixed index over time.  Its entries are defined in {{static-table}}.
 
-<!--new -->
 Note the QPACK static table is indexed from 0, whereas the HPACK static table
-was indexed from 1.
+is indexed from 1.
 
-A decoder that encounters an invalid static table index on a request stream or
-push stream MUST treat this as a stream error of type
+When the decoder encounters an invalid static table index on a request stream or
+push stream it MUST treat this as a stream error of type
 `HTTP_QPACK_DECOMPRESSION_FAILED`.  If this index is received on the encoder
 stream, this MUST be treated as a connection error of type
 `HTTP_QPACK_ENCODER_STREAM_ERROR`.
@@ -386,7 +383,7 @@ evicted from the dynamic table prior to inserting the new entry.
 
 The dynamic table can contain duplicate entries (i.e., entries with the same
 name and same value).  Therefore, duplicate entries MUST NOT be treated as an
-error by a decoder.
+error by the decoder.
 
 
 ### Maximum Table Size
@@ -718,23 +715,23 @@ Largest Known Received beyond what the encoder has sent MUST treat this as a
 connection error of type `HTTP_QPACK_DECODER_STREAM_ERROR`.
 
 <!-- move? -->
-A decoder chooses when to emit Table State Synchronize instructions. Emitting a
-Table State Synchronize after adding each new dynamic table entry will provide
+The decoder chooses when to emit Table State Synchronize instructions. Emitting
+a Table State Synchronize after adding each new dynamic table entry will provide
 the most timely feedback to the encoder, but could be redundant with other
-decoder feedback. By delaying a Table State Synchronize, a decoder might be able
-to coalesce multiple Table State Synchronize instructions, or replace them
-entirely with Header Acknowledgements. However, delaying too long may lead to
-compression inefficiencies if the encoder waits for an entry to be acknowledged
-before using it.
+decoder feedback. By delaying a Table State Synchronize instruction, the decoder
+might be able to coalesce multiple Table State Synchronize instructions, or
+replace them entirely with Header Acknowledgements. However, delaying too long
+may lead to compression inefficiencies if the encoder waits for an entry to be
+acknowledged before using it.
 
 ### Header Acknowledgement
 
 After processing a header block whose declared Largest Reference is not zero,
 the decoder emits a Header Acknowledgement instruction on the decoder stream.
 The instruction begins with the '1' one-bit pattern and includes the request
-stream's stream ID, encoded as a 7-bit prefix integer.  It is used by the
-peer's QPACK encoder to know when it is safe to evict an entry, and possibly
-update Largest Known Received.
+stream's stream ID, encoded as a 7-bit prefix integer.  It is used by the peer's
+encoder to know when it is safe to evict an entry, and possibly update Largest
+Known Received.
 
 ~~~~~~~~~~ drawing
   0   1   2   3   4   5   6   7
@@ -779,13 +776,14 @@ the stream ID of the affected stream - a request or push stream - encoded as a
 {:#fig-stream-cancel title="Stream Cancellation"}
 
 A stream that is reset might have multiple outstanding header blocks with
-dynamic table references.  A decoder that receives a stream reset before the end
-of a stream generates a Stream Cancellation instruction on the decoder stream.
-Similarly, a decoder that abandons reading of a stream needs to signal this
-using the Stream Cancellation instruction.  This signals to the encoder that all
-references to the dynamic table on that stream are no longer outstanding.  A
-decoder with a maximum dynamic table size equal to zero MAY omit sending Stream
-Cancellations, because the encoder cannot have any dynamic table references.
+dynamic table references.  When the decoder receives a stream reset before the
+end of a stream, it generates a Stream Cancellation instruction on the decoder
+stream.  Similarly, when the decoder abandons reading of a stream it needs to
+signal this using the Stream Cancellation instruction.  This signals to the
+encoder that all references to the dynamic table on that stream are no longer
+outstanding.  A decoder with a maximum dynamic table size equal to zero MAY omit
+sending Stream Cancellations, because the encoder cannot have any dynamic table
+references.
 
 An encoder cannot infer from this instruction that any updates to the dynamic
 table have been received.
