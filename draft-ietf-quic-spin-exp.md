@@ -240,7 +240,7 @@ in the downstream direction, and vice versa.
 
 # Disabling the Spin Bit
 
-Implementation SHOULD allow users to disable the spin-bit either globally,
+Implementations SHOULD allow users to disable the spin bit either globally,
 or on a per-connection basis. Even when the spin-bit is not disabled by
 the user, implementations SHOULD disable the spin-bit on a randomly chosen
 fraction of connections. The random process SHOULD be designed so that
