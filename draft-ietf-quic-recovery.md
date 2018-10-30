@@ -622,7 +622,7 @@ sent_packets:
   field indicating the packet's size in bytes.  sent_packets is ordered and
   indexed by packet number. Packets remain in sent_packets until acknowledged
   or lost.  A sent_packets data structure is maintained per packet number space,
-  and ACK processing only applies to a single space.
+  and processing of an ACK frame only applies to a single space.
 
 ### Initialization
 
