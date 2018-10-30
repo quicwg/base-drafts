@@ -241,7 +241,7 @@ in the downstream direction, and vice versa.
 # Disabling the Spin Bit
 
 Implementations SHOULD allow administrators of clients and servers to disable
-the spin bit either globally, or on a per-connection basis.
+the spin bit either globally or on a per-connection basis.
 Even when the spin bit is not disabled by the administrator implementations
 SHOULD disable the spin bit on a randomly chosen
 fraction of connections.  The selection process should be designed such that
@@ -274,7 +274,7 @@ the connection does not terminate at the visible destination address.
 Endpoints that want to hide their use of a proxy or a relay will want to
 disable the spin bit. However, if only privacy-sensitive clients or servers ever
 disabled the spin bit, they would stick out. The probabilistic disabling
-behavior explained in {#disabling-the-spin-bit} ensures that other endpoints
+behavior explained in {{disabling-the-spin-bit}} ensures that other endpoints
 will also disable the spin bit some of the time, thus hiding the
 privacy sensitive endpoints in a large anonymity set. It also provides
 for a minimal greasing of the spin bit, in order to mitigate risks of
@@ -288,7 +288,7 @@ ossification.
 
 ## Since draft-ietf-spin-exp-00
 
-Nothing yet.
+Adding section on disabling the spin bit and privacy considerations.
 
 # Acknowledgments
 {:numbered="false"}
