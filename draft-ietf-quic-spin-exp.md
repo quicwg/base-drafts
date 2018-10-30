@@ -199,16 +199,6 @@ can observe the time difference between edges (changes from 1 to 0 or 0 to 1)
 in the spin bit signal in a single direction to measure one sample of
 end-to-end RTT.
 
-An observer can store the largest observed packet number per flow, and reject
-edges that do not have a monotonically increasing packet number (greater than
-the largest observed packet number).  This will avoid detecting spurious edges
-caused by reordering events that include an edge, which would lead to very low
-RTT estimates if not ignored.
-
-If the spin bit edge occurs after a long packet number gap, it should be
-ignored: this filters out high RTT estimates due to loss of an actual edge in
-a burst of lost packets.
-
 Note that this measurement, as with passive RTT measurement for TCP, includes
 any transport protocol delay (e.g., delayed sending of acknowledgements)
 and/or application layer delay (e.g., waiting for a request to complete). It
@@ -224,11 +214,12 @@ small amount of periodic application traffic, where that period is longer than
 the RTT, measuring the spin bit provides information about the application
 period, not the network RTT.
 
-Simple heuristics based on the observed data rate per flow or changes in the
-RTT series can be used to reject bad RTT samples due to application or flow
-control limitation; for example, QoF {{TMA-QOF}} rejects component RTTs
-significantly higher than RTTs over the history of the flow. These heuristics
-may use the handshake RTT as an initial RTT estimate for a given flow.
+Simple heuristics based on the observed data rate per flow or changes in the RTT
+series can be used to reject bad RTT samples due to lost or reordered edges in
+the spin signal, as well as application or flow control limitation; for example,
+QoF {{TMA-QOF}} rejects component RTTs significantly higher than RTTs over the
+history of the flow. These heuristics may use the handshake RTT as an initial
+RTT estimate for a given flow.
 
 An on-path observer that can see traffic in both directions (from client to
 server and from server to client) can also use the spin bit to measure
