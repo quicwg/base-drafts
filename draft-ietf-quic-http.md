@@ -1526,7 +1526,7 @@ The entries in the following table are registered by this document.
 | ----------------------------------- | ---------- | ---------------------------------------- | ---------------------- |
 | Name                                | Code       | Description                              | Specification          |
 | ----------------------------------- | ---------- | ---------------------------------------- | ---------------------- |
-| HTTP_NO_ERROR                       | 0x0001     | No error                                 | {{http-error-codes}}   |
+| HTTP_NO_ERROR                       | 0x0000     | No error                                 | {{http-error-codes}}   |
 | HTTP_PUSH_REFUSED                   | 0x0002     | Client refused pushed content            | {{http-error-codes}}   |
 | HTTP_INTERNAL_ERROR                 | 0x0003     | Internal error                           | {{http-error-codes}}   |
 | HTTP_PUSH_ALREADY_IN_CACHE          | 0x0004     | Pushed content already cached            | {{http-error-codes}}   |
