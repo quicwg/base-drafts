@@ -132,7 +132,8 @@ acknowledged or declared lost and sent in new packets as necessary. The types
 of frames contained in a packet affect recovery and congestion control logic:
 
 * All packets are acknowledged, though packets that contain only ACK
-  and/or PADDING frames are only acknowledged along with other packets.
+  and/or PADDING frames are only acknowledged along with retransmittable
+  packets.
 
 * Long header packets that contain CRYPTO frames are critical to the
   performance of the QUIC handshake and use shorter timers for
