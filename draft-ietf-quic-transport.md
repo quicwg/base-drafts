@@ -452,7 +452,7 @@ data to a peer.
    +-------+                       |
        |                           |
        | Send STREAM /             |
-       |      STREAM_BLOCKED       |
+       |      STREAM_DATA_BLOCKED  |
        |                           |
        | Create Bidirectional      |
        |      Stream (Receiving)   |
@@ -484,10 +484,10 @@ protocol.  The "Ready" state represents a newly created stream that is able to
 accept data from the application.  Stream data might be buffered in this state
 in preparation for sending.
 
-Sending the first STREAM or STREAM_BLOCKED frame causes a send stream to enter
-the "Send" state.  An implementation might choose to defer allocating a Stream
-ID to a send stream until it sends the first frame and enters this state, which
-can allow for better stream prioritization.
+Sending the first STREAM or STREAM_DATA_BLOCKED frame causes a send stream to
+enter the "Send" state.  An implementation might choose to defer allocating a
+Stream ID to a send stream until it sends the first frame and enters this state,
+which can allow for better stream prioritization.
 
 The sending part of a bidirectional stream initiated by a peer (type 0 for a
 server, type 1 for a client) enters the "Ready" state then immediately
@@ -496,15 +496,16 @@ transitions to the "Send" state if the receiving part enters the "Recv" state.
 In the "Send" state, an endpoint transmits - and retransmits as necessary - data
 in STREAM frames.  The endpoint respects the flow control limits of its peer,
 accepting MAX_STREAM_DATA frames.  An endpoint in the "Send" state generates
-STREAM_BLOCKED frames if it encounters flow control limits.
+STREAM_DATA_BLOCKED frames if it encounters flow control limits.
 
 After the application indicates that stream data is complete and a STREAM frame
 containing the FIN bit is sent, the send stream enters the "Data Sent" state.
 From this state, the endpoint only retransmits stream data as necessary.  The
-endpoint no longer needs to track flow control limits or send STREAM_BLOCKED
-frames for a send stream in this state.  The endpoint can ignore any
-MAX_STREAM_DATA frames it receives from its peer in this state; MAX_STREAM_DATA
-frames might be received until the peer receives the final stream offset.
+endpoint no longer needs to track flow control limits or send
+STREAM_DATA_BLOCKED frames for a send stream in this state.  The endpoint can
+ignore any MAX_STREAM_DATA frames it receives from its peer in this state;
+MAX_STREAM_DATA frames might be received until the peer receives the final
+stream offset.
 
 Once all stream data has been successfully acknowledged, the send stream enters
 the "Data Recvd" state, which is a terminal state.
@@ -534,7 +535,7 @@ application protocol some of which cannot be observed by the sender.
 
 ~~~
        o
-       | Recv STREAM / STREAM_BLOCKED / RST_STREAM
+       | Recv STREAM / STREAM_DATA_BLOCKED / RST_STREAM
        | Create Bidirectional Stream (Sending)
        | Recv MAX_STREAM_DATA
        | Create Higher-Numbered Stream
@@ -568,7 +569,7 @@ application protocol some of which cannot be observed by the sender.
 {: #fig-stream-recv-states title="States for Receive Streams"}
 
 The receiving part of a stream initiated by a peer (types 1 and 3 for a client,
-or 0 and 2 for a server) are created when the first STREAM, STREAM_BLOCKED,
+or 0 and 2 for a server) are created when the first STREAM, STREAM_DATA_BLOCKED,
 RST_STREAM, or MAX_STREAM_DATA (bidirectional only, see below) is received for
 that stream.  The initial state for a receive stream is "Recv".  Receiving a
 RST_STREAM frame causes the receive stream to immediately transition to the
@@ -581,18 +582,19 @@ a server) enters the "Ready" state.
 A bidirectional stream also opens when a MAX_STREAM_DATA frame is received.
 Receiving a MAX_STREAM_DATA frame implies that the remote peer has opened the
 stream and is providing flow control credit.  A MAX_STREAM_DATA frame might
-arrive before a STREAM or STREAM_BLOCKED frame if packets are lost or reordered.
+arrive before a STREAM or STREAM_DATA_BLOCKED frame if packets are lost or
+reordered.
 
 Before creating a stream, all lower-numbered streams of the same type MUST be
 created.  That means that receipt of a frame that would open a stream causes all
 lower-numbered streams of the same type to be opened in numeric order.  This
 ensures that the creation order for streams is consistent on both endpoints.
 
-In the "Recv" state, the endpoint receives STREAM and STREAM_BLOCKED frames.
-Incoming data is buffered and can be reassembled into the correct order for
-delivery to the application.  As data is consumed by the application and buffer
-space becomes available, the endpoint sends MAX_STREAM_DATA frames to allow the
-peer to send more data.
+In the "Recv" state, the endpoint receives STREAM and STREAM_DATA_BLOCKED
+frames.  Incoming data is buffered and can be reassembled into the correct order
+for delivery to the application.  As data is consumed by the application and
+buffer space becomes available, the endpoint sends MAX_STREAM_DATA frames to
+allow the peer to send more data.
 
 When a STREAM frame with a FIN bit is received, the final offset (see
 {{final-offset}}) is known.  The receive stream enters the "Size Known" state.
@@ -602,8 +604,8 @@ only receives any retransmissions of stream data.
 Once all data for the stream has been received, the receive stream enters the
 "Data Recvd" state.  This might happen as a result of receiving the same STREAM
 frame that causes the transition to "Size Known".  In this state, the endpoint
-has all stream data.  Any STREAM or STREAM_BLOCKED frames it receives for the
-stream can be discarded.
+has all stream data.  Any STREAM or STREAM_DATA_BLOCKED frames it receives for
+the stream can be discarded.
 
 The "Data Recvd" state persists until stream data has been delivered to the
 application or application protocol.  Once stream data has been delivered, the
@@ -634,11 +636,12 @@ which is a terminal state.
 ## Permitted Frame Types
 
 The sender of a stream sends just three frame types that affect the state of a
-stream at either sender or receiver: STREAM ({{frame-stream}}), STREAM_BLOCKED
-({{frame-stream-blocked}}), and RST_STREAM ({{frame-rst-stream}}).
+stream at either sender or receiver: STREAM ({{frame-stream}}),
+STREAM_DATA_BLOCKED ({{frame-stream-data-blocked}}), and RST_STREAM
+({{frame-rst-stream}}).
 
 A sender MUST NOT send any of these frames from a terminal state ("Data Recvd"
-or "Reset Recvd").  A sender MUST NOT send STREAM or STREAM_BLOCKED after
+or "Reset Recvd").  A sender MUST NOT send STREAM or STREAM_DATA_BLOCKED after
 sending a RST_STREAM; that is, in the "Reset Sent" state in addition to the
 terminal states.  A receiver could receive any of these frames in any state, but
 only due to the possibility of delayed delivery of packets carrying them.
@@ -769,10 +772,10 @@ A receiver MUST close the connection with a FLOW_CONTROL_ERROR error
 ({{error-handling}}) if the peer violates the advertised connection or stream
 data limits.
 
-A sender SHOULD send STREAM_BLOCKED or BLOCKED frames to indicate it has data to
-write but is blocked by flow control limits.  These frames are expected to be
-sent infrequently in common cases, but they are considered useful for debugging
-and monitoring purposes.
+A sender SHOULD send STREAM_DATA_BLOCKED or DATA_BLOCKED frames to indicate it
+has data to write but is blocked by flow control limits.  These frames are
+expected to be sent infrequently in common cases, but they are considered useful
+for debugging and monitoring purposes.
 
 A similar method is used to control the number of open streams (see
 {{stream-limit-increment}} for details).
@@ -817,8 +820,8 @@ either side sends CONNECTION_CLOSE or APPLICATION_CLOSE.
 
 ## Data Limit Increments {#fc-credit}
 
-This document leaves when and how many bytes to advertise in a MAX_DATA or
-MAX_STREAM_DATA to implementations, but offers a few considerations.  These
+This document leaves when and how many bytes to advertise in a MAX_STREAM_DATA
+or MAX_DATA frame to implementations, but offers a few considerations.  These
 frames contribute to connection overhead.  Therefore frequently sending frames
 with small changes is undesirable.  At the same time, larger increments to
 limits are necessary to avoid blocking if updates are less frequent, requiring
@@ -833,22 +836,22 @@ implementations.
 
 If a sender runs out of flow control credit, it will be unable to send new
 data. That is, the sender is blocked. A blocked sender SHOULD send a
-STREAM_BLOCKED or BLOCKED frame.  A receiver uses these frames for debugging
-purposes.  A receiver MUST NOT wait for a STREAM_BLOCKED or BLOCKED frame
-before sending MAX_STREAM_DATA or MAX_DATA, since doing so will mean that a
-sender will be blocked for an entire round trip and the peer may never
-send a STREAM_BLOCKED or BLOCKED frame.
+STREAM_DATA_BLOCKED or DATA_BLOCKED frame.  A receiver uses these frames for
+debugging purposes.  A receiver MUST NOT wait for a STREAM_DATA_BLOCKED or
+DATA_BLOCKED frame before sending MAX_STREAM_DATA or MAX_DATA, since doing so
+will mean that a sender will be blocked for an entire round trip and the peer
+may never send a STREAM_DATA_BLOCKED or DATA_BLOCKED frame.
 
 It is generally considered best to not let the sender go into quiescence if
 avoidable.  To avoid blocking a sender, and to reasonably account for the
 possibility of loss, a receiver should send a MAX_DATA or MAX_STREAM_DATA frame
 at least two round trips before it expects the sender to get blocked.
 
-A sender sends a single BLOCKED or STREAM_BLOCKED frame only once when it
-reaches a data limit.  A sender SHOULD NOT send multiple BLOCKED or
-STREAM_BLOCKED frames for the same data limit, unless the original frame is
-determined to be lost.  Another BLOCKED or STREAM_BLOCKED frame can be sent
-after the data limit is increased.
+A sender sends a single STREAM_DATA_BLOCKED or DATA_BLOCKED frame only once when
+it reaches a data limit.  A sender SHOULD NOT send multiple STREAM_DATA_BLOCKED
+or DATA_BLOCKED frames for the same data limit, unless the original frame is
+determined to be lost.  Another STREAM_DATA_BLOCKED or DATA_BLOCKED frame can be
+sent after the data limit is increased.
 
 
 ## Stream Final Offset {#final-offset}
@@ -2688,8 +2691,8 @@ frames are explained in more detail in {{frame-formats}}.
 | 0x04        | MAX_DATA             | {{frame-max-data}}             |
 | 0x05        | MAX_STREAM_DATA      | {{frame-max-stream-data}}      |
 | 0x07        | PING                 | {{frame-ping}}                 |
-| 0x08        | BLOCKED              | {{frame-blocked}}              |
-| 0x09        | STREAM_BLOCKED       | {{frame-stream-blocked}}       |
+| 0x08        | DATA_BLOCKED         | {{frame-data-blocked}}         |
+| 0x09        | STREAM_DATA_BLOCKED  | {{frame-stream-data-blocked}}  |
 | 0x0b        | NEW_CONNECTION_ID    | {{frame-new-connection-id}}    |
 | 0x0c        | STOP_SENDING         | {{frame-stop-sending}}         |
 | 0x0d        | RETIRE_CONNECTION_ID | {{frame-retire-connection-id}} |
@@ -2884,13 +2887,13 @@ containing that information is acknowledged.
   MAX_STREAMS for a stream type frame is declared lost or when the limit is
   updated, with care taken to prevent the frame from being sent too often.
 
-* Blocked signals are carried in BLOCKED, STREAM_BLOCKED, and STREAMS_BLOCKED
-  frames. BLOCKED streams have connection scope, STREAM_BLOCKED frames have
-  stream scope, and STREAMS_BLOCKED frames are scoped to a specific stream
-  type. New frames are sent if packets containing the most recent frame for a
-  scope is lost, but only while the endpoint is blocked on the corresponding
-  limit. These frames always include the limit that is causing blocking at the
-  time that they are transmitted.
+* Blocked signals are carried in DATA_BLOCKED, STREAM_DATA_BLOCKED, and
+  STREAMS_BLOCKED frames. DATA_BLOCKED streams have connection scope,
+  STREAM_DATA_BLOCKED frames have stream scope, and STREAMS_BLOCKED frames are
+  scoped to a specific stream type. New frames are sent if packets containing
+  the most recent frame for a scope is lost, but only while the endpoint is
+  blocked on the corresponding limit. These frames always include the limit that
+  is causing blocking at the time that they are transmitted.
 
 * A liveness or path validation check using PATH_CHALLENGE frames is sent
   periodically until a matching PATH_RESPONSE frame is received or until there
@@ -4281,14 +4284,14 @@ experience shows that sending packets every 15 to 30 seconds is necessary to
 prevent the majority of middleboxes from losing state for UDP flows.
 
 
-## BLOCKED Frame {#frame-blocked}
+## DATA_BLOCKED Frame {#frame-data-blocked}
 
-A sender SHOULD send a BLOCKED frame (type=0x08) when it wishes to send data,
-but is unable to due to connection-level flow control (see {{flow-control}}).
-BLOCKED frames can be used as input to tuning of flow control algorithms (see
-{{fc-credit}}).
+A sender SHOULD send a DATA_BLOCKED frame (type=0x08) when it wishes to send
+data, but is unable to due to connection-level flow control (see
+{{flow-control}}).  DATA_BLOCKED frames can be used as input to tuning of flow
+control algorithms (see {{fc-credit}}).
 
-The BLOCKED frame is as follows:
+The DATA_BLOCKED frame is as follows:
 
 ~~~
  0                   1                   2                   3
@@ -4298,7 +4301,7 @@ The BLOCKED frame is as follows:
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
 
-The BLOCKED frame contains a single field.
+The DATA_BLOCKED frame contains a single field.
 
 Data Limit:
 
@@ -4306,16 +4309,16 @@ Data Limit:
   blocking occurred.
 
 
-## STREAM_BLOCKED Frame {#frame-stream-blocked}
+## STREAM_DATA_BLOCKED Frame {#frame-stream-data-blocked}
 
-A sender SHOULD send a STREAM_BLOCKED frame (type=0x09) when it wishes to send
-data, but is unable to due to stream-level flow control.  This frame is
-analogous to BLOCKED ({{frame-blocked}}).
+A sender SHOULD send a STREAM_DATA_BLOCKED frame (type=0x09) when it wishes to
+send data, but is unable to due to stream-level flow control.  This frame is
+analogous to DATA_BLOCKED ({{frame-data-blocked}}).
 
-An endpoint that receives a STREAM_BLOCKED frame for a send-only stream MUST
-terminate the connection with error PROTOCOL_VIOLATION.
+An endpoint that receives a STREAM_DATA_BLOCKED frame for a send-only stream
+MUST terminate the connection with error PROTOCOL_VIOLATION.
 
-The STREAM_BLOCKED frame is as follows:
+The STREAM_DATA_BLOCKED frame is as follows:
 
 ~~~
  0                   1                   2                   3
@@ -4327,7 +4330,7 @@ The STREAM_BLOCKED frame is as follows:
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
 
-The STREAM_BLOCKED frame contains two fields:
+The STREAM_DATA_BLOCKED frame contains two fields:
 
 Stream ID:
 
