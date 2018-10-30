@@ -141,6 +141,11 @@ Base Index:
 
 : An absolute index in a header block from which relative indices are made.
 
+
+Largest Reference:
+
+: The largest absolute index of an entry referenced in a header block.
+
 QPACK is a name, not an acronym.
 
 ## Notational Conventions
@@ -166,8 +171,10 @@ fields (some of them with an empty value).  The dynamic table (see
 {{table-dynamic}}) is built up over the course of the connection and can be used
 by the encoder to index header fields in the encoded header lists.
 
+QPACK instructions appear in three different types of streams:
+
 - The encoder uses a unidirectional stream to modify the state of the dynamic
-table without generating header fields for any particular request.
+table without emitting header fields associated with any particular request.
 
 - HEADERS and PUSH_PROMISE frames on request and push streams reference the
 table state without modifying it.
@@ -178,11 +185,14 @@ feedback enables the encoder to manage dynamic table state.
 ## Encoder
 
 An encoder compresses a header list by emitting either an indexed or a literal
-representation for each header field in the list.  Index references to the
-static table and literals do not require any dynamic state and never risk
-head-of-line blocking.  References to the dynamic table risk head-of-line
+representation for each header field in the list.  References to the static
+table and literal representations do not require any dynamic state and never
+risk head-of-line blocking.  References to the dynamic table risk head-of-line
 blocking if the encoder has not received an acknowledgement indicating the entry
 is available at the decoder.
+
+An encoder MAY insert any entry in the dynamic table it chooses; it is not
+limited to header fields it is compressing.
 
 QPACK preserves the ordering of header fields within each header list.  An
 encoder MUST emit header field representations in the order they appear in the
@@ -206,7 +216,7 @@ For header blocks that might rely on the newly added entry, the encoder can use
 a literal representation and maybe insert the entry later.
 
 To ensure that the encoder is not prevented from adding new entries, the encoder
-can avoid referencing entries that will be evicted soonest.  Rather than
+can avoid referencing entries that are close to eviction.  Rather than
 reference such an entry, the encoder can emit a Duplicate instruction (see
 {{duplicate}}), and reference the duplicate instead.
 
@@ -240,7 +250,7 @@ Because QUIC does not guarantee order between data on different streams, a
 header block might reference an entry in the dynamic table that has not yet been
 received.
 
-Each header block contains a Largest Reference {{header-prefix}} which
+Each header block contains a Largest Reference ({{header-prefix}}) which
 identifies the table state necessary for decoding. If the greatest absolute
 index in the dynamic table is less than the value of the Largest Reference, the
 stream is considered "blocked."  While blocked, header field data SHOULD remain
@@ -263,16 +273,16 @@ treat this as a stream error of type HTTP_QPACK_DECOMPRESSION_FAILED.
 
 An encoder can decide whether to risk having a stream become blocked. If
 permitted by the value of SETTINGS_QPACK_BLOCKED_STREAMS, compression efficiency
-can be improved by referencing dynamic table entries that are still in transit,
-but if there is loss or reordering the stream can become blocked at the decoder.
-An encoder avoids the risk of blocking by only referencing dynamic table entries
-which have been acknowledged, but this means using literals. Since literals make
-the header block larger, this can result in the encoder becoming blocked on
-congestion or flow control limits.
+can often be improved by referencing dynamic table entries that are still in
+transit, but if there is loss or reordering the stream can become blocked at the
+decoder.  An encoder avoids the risk of blocking by only referencing dynamic
+table entries which have been acknowledged, but this could mean using
+literals. Since literals make the header block larger, this can result in the
+encoder becoming blocked on congestion or flow control limits.
 
 ### Largest Known Received
 
-For the encoder to identify which dynamic table entries can be safely used
+In order to identify which dynamic table entries can be safely used
 without a stream becoming blocked, the encoder tracks the absolute index of the
 decoder's Largest Known Received entry.
 
@@ -285,15 +295,6 @@ for example because the encoder or the decoder have chosen not to risk blocked
 streams, the decoder sends a Table State Synchronize instruction (see
 {{table-state-synchronize}}).
 
-
-### Speculative table updates {#speculative-updates}
-
-Implementations can speculatively send instructions on the encoder stream
-which are not needed for any current HTTP request or response.  Such headers
-could be used strategically to improve performance.  For instance, the encoder
-might decide to refresh by sending Duplicate representations for popular
-header fields ({{duplicate}}), ensuring they have small indices and hence
-minimal size on the wire.
 
 ## Decoder
 
@@ -316,11 +317,12 @@ permit the encoder to track the decoder's state.  These events are:
 - Abandonment of a stream which might have remaining header blocks
 - Receipt of new dynamic table entries
 
-Regardless of whether a header block contained blocking references, the
-knowledge that it has been processed permits the encoder to evict
-entries to which no unacknowledged references remain; see {{blocked-insertion}}.
-When a stream is reset or abandoned, the indication that these header blocks
-will never be processed serves a similar function; see {{stream-cancellation}}.
+Knowledge that a header block with references to the dynamic table has been
+processed permits the encoder to evict entries to which no unacknowledged
+references remain, regardless of whether those references were potentially
+blocking (see {{blocked-insertion}}).  When a stream is reset or abandoned, the
+indication that these header blocks will never be processed serves a similar
+function; see {{stream-cancellation}}.
 
 ### Blocked Decoding
 
