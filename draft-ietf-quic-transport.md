@@ -4070,7 +4070,6 @@ peer that the connection is being closed.  The CONNECTION_CLOSE with a frame
 type of 0x02 is used to signal errors at only the QUIC layer, or the absence of
 errors (with the NO_ERROR code).  The CONNECTION_CLOSE frame with a type of 0x03
 is used to signal an error with the protocol that uses QUIC.
-is only used internally by QUIC.
 
 If there are open streams that haven't been explicitly closed, they are
 implicitly closed when the connection is closed.
