@@ -738,7 +738,7 @@ to two levels of flow control in QUIC:
   receive buffer for a connection.
 
 * Connection flow control, which prevents senders from exceeding a receiver's
-  buffer capacity for the connection, and
+  buffer capacity for the connection.
 
 A data receiver sets initial credits for all streams by sending transport
 parameters during the handshake ({{transport-parameters}}).
