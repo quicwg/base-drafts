@@ -699,7 +699,6 @@ Pseudocode for OnAckReceived and UpdateRtt follow:
 
 ~~~
   OnAckReceived(ack):
-    largest_acked_packet = ack.largest_acked
     // If the largest acknowledged is newly acked,
     // update the RTT.
     if (sent_packets[ack.largest_acked]):
@@ -724,7 +723,7 @@ Pseudocode for OnAckReceived and UpdateRtt follow:
       tlp_count = 0
       rto_count = 0
 
-    DetectLostPackets(ack.largest_acked_packet)
+    DetectLostPackets(ack.acked_packet)
     SetLossDetectionTimer()
 
     // Process ECN information if present.
@@ -1047,9 +1046,9 @@ bytes_in_flight:
 congestion_window:
 : Maximum number of bytes-in-flight that may be sent.
 
-end_of_recovery:
-: The largest packet number sent when QUIC detects a loss.  When a larger
-  packet is acknowledged, QUIC exits recovery.
+recovery_start_time:
+: The time when QUIC first detects a loss, causing it to enter recovery.
+  When a packet sent after this time is acknowledged, QUIC exits recovery.
 
 ssthresh:
 : Slow start threshold in bytes.  When the congestion window is below ssthresh,
@@ -1064,7 +1063,7 @@ variables as follows:
 ~~~
    congestion_window = kInitialWindow
    bytes_in_flight = 0
-   end_of_recovery = 0
+   recovery_start_time = 0
    ssthresh = infinite
    ecn_ce_counter = 0
 ~~~
@@ -1085,13 +1084,13 @@ Invoked from loss detection's OnPacketAcked and is supplied with
 acked_packet from sent_packets.
 
 ~~~
-   InRecovery(packet_number):
-     return packet_number <= end_of_recovery
+   InRecovery(sent_time):
+     return sent_time <= recovery_start_time
 
    OnPacketAckedCC(acked_packet):
      // Remove from bytes_in_flight.
      bytes_in_flight -= acked_packet.size
-     if (InRecovery(acked_packet.packet_number)):
+     if (InRecovery(acked_packet.time)):
        // Do not increase congestion window in recovery period.
        return
      if (congestion_window < ssthresh):
@@ -1106,14 +1105,15 @@ acked_packet from sent_packets.
 ### On New Congestion Event
 
 Invoked from ProcessECN and OnPacketsLost when a new congestion event is
-detected. Starts a new recovery period and reduces the congestion window.
+detected. May starts a new recovery period and reduces the congestion
+window.
 
 ~~~
-   CongestionEvent(packet_number):
-     // Start a new congestion event if packet_number
-     // is larger than the end of the previous recovery epoch.
-     if (!InRecovery(packet_number)):
-       end_of_recovery = largest_sent_packet
+   CongestionEvent(sent_time):
+     // Start a new congestion event if the sent time is larger
+     // than the start time of the previous recovery epoch.
+     if (!InRecovery(sent_time)):
+       recovery_start_time = Now()
        congestion_window *= kLossReductionFactor
        congestion_window = max(congestion_window, kMinimumWindow)
        ssthresh = congestion_window
@@ -1130,8 +1130,9 @@ Invoked when an ACK frame with an ECN section is received from the peer.
      if (ack.ce_counter > ecn_ce_counter):
        ecn_ce_counter = ack.ce_counter
        // Start a new congestion event if the last acknowledged
-       // packet is past the end of the previous recovery epoch.
-       CongestionEvent(ack.largest_acked_packet)
+       // packet was sent after the start of the previous
+       // recovery epoch.
+       CongestionEvent(sent_packets[ack.largest_acked].time)
 ~~~
 
 
@@ -1149,7 +1150,7 @@ are detected lost.
 
      // Start a new congestion epoch if the last lost packet
      // is past the end of the previous recovery epoch.
-     CongestionEvent(largest_lost_packet.packet_number)
+     CongestionEvent(largest_lost_packet.time)
 ~~~
 
 ### On Retransmission Timeout Verified
