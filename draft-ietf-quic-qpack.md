@@ -165,6 +165,7 @@ The dynamic table can contain duplicate entries (i.e., entries with the same
 name and same value).  Therefore, duplicate entries MUST NOT be treated as an
 error by a decoder.
 
+
 ### Maximum Table Size
 
 The encoder decides how to update the dynamic table and as such can control how
@@ -184,12 +185,13 @@ the dynamic table is less than or equal to the maximum size.
 This mechanism can be used to completely clear entries from the dynamic table by
 setting a maximum size of 0, which can subsequently be restored.
 
+
 ### Calculating Table Size
 
 The size of the dynamic table is the sum of the size of its entries.
 
-The size of an entry is the sum of its name's length in octets (as defined in
-{{string-literals}}), its value's length in octets, and 32.
+The size of an entry is the sum of its name's length in bytes (as defined in
+{{string-literals}}), its value's length in bytes, and 32.
 
 The size of an entry is calculated using the length of its name and value
 without any Huffman encoding applied.
@@ -464,7 +466,7 @@ This string format includes optional Huffman encoding.
 
 HPACK defines string literals to begin on a byte boundary.  They begin with a
 single flag (indicating whether the string is Huffman-coded), followed by the
-Length encoded as a 7-bit prefix integer, and finally Length octets of data.
+Length encoded as a 7-bit prefix integer, and finally Length bytes of data.
 When Huffman encoding is enabled, the Huffman table from Appendix B of [RFC7541]
 is used without modification.
 
@@ -507,7 +509,7 @@ string literal (see Section 5.2 of [RFC7541]).
    +---+---+-----------------------+
    | H |     Value Length (7+)     |
    +---+---------------------------+
-   | Value String (Length octets)  |
+   |  Value String (Length bytes)  |
    +-------------------------------+
 ~~~~~~~~~~
 {: title="Insert Header Field -- Indexed Name"}
@@ -527,11 +529,11 @@ represented as an 8-bit prefix string literal.
    +---+---+---+---+---+---+---+---+
    | 0 | 1 | H | Name Length (5+)  |
    +---+---+---+-------------------+
-   |  Name String (Length octets)  |
+   |  Name String (Length bytes)   |
    +---+---------------------------+
    | H |     Value Length (7+)     |
    +---+---------------------------+
-   | Value String (Length octets)  |
+   |  Value String (Length bytes)  |
    +-------------------------------+
 ~~~~~~~~~~
 {: title="Insert Header Field -- New Name"}
@@ -846,7 +848,7 @@ values that are not to be put at risk by compressing them (see Section 7.1 of
    +---+---+---+---+---------------+
    | H |     Value Length (7+)     |
    +---+---------------------------+
-   | Value String (Length octets)  |
+   |  Value String (Length bytes)  |
    +-------------------------------+
 ~~~~~~~~~~
 {: title="Literal Header Field With Name Reference"}
@@ -870,7 +872,7 @@ the header field name is represented using the post-base index of that entry
    +---+---+---+---+---+-----------+
    | H |     Value Length (7+)     |
    +---+---------------------------+
-   | Value String (Length octets)  |
+   |  Value String (Length bytes)  |
    +-------------------------------+
 ~~~~~~~~~~
 {: title="Literal Header Field With Post-Base Name Reference"}
@@ -899,11 +901,11 @@ represented as an 8-bit prefix string literal.
    +---+---+---+---+---+---+---+---+
    | 0 | 0 | 1 | N | H |NameLen(3+)|
    +---+---+---+---+---+-----------+
-   |  Name String (Length octets)  |
+   |  Name String (Length bytes)   |
    +---+---------------------------+
    | H |     Value Length (7+)     |
    +---+---------------------------+
-   | Value String (Length octets)  |
+   |  Value String (Length bytes)  |
    +-------------------------------+
 ~~~~~~~~~~
 {: title="Literal Header Field Without Name Reference"}
