@@ -4104,7 +4104,7 @@ Frame Type:
 : A variable-length integer encoding the type of frame that triggered the error.
   A value of 0 (equivalent to the mention of the PADDING frame) is used when the
   frame type is unknown.  The application-specific variant of CONNECTION_CLOSE
-  does not include this field.
+  (type 0x03) does not include this field.
 
 Reason Phrase Length:
 
