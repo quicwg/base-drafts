@@ -289,10 +289,6 @@ set to 1).  Separation of the stream identifiers ensures that client and server
 are able to open streams without the latency imposed by negotiating for an
 identifier.
 
-If an endpoint receives a frame for a stream that it expects to initiate (i.e.,
-odd-numbered for the client or even-numbered for the server), but which it has
-not yet opened, it MUST close the connection with error code STREAM_STATE_ERROR.
-
 The second least significant bit (0x2) of the Stream ID differentiates between
 unidirectional streams and bidirectional streams. Unidirectional streams always
 have this bit set to 1 and bidirectional streams have this bit set to 0.
@@ -309,6 +305,13 @@ The two type bits from a Stream ID therefore identify streams as summarized in
 {: #stream-id-types title="Stream ID Types"}
 
 The first bidirectional stream opened by the client is stream 0.
+
+If an endpoint receives a frame for a stream that it expects to initiate (i.e.,
+an even-numbered for the client or an odd-numbered for the server), but which it
+has not yet opened, it MUST close the connection with error code
+STREAM_STATE_ERROR.  Similarly, receiving a STREAM or RST_STREAM frame for a
+unidirectional streams that an endpoint expects to initiate MUST be treated as a
+connection error of type STREAM_STATE_ERROR.
 
 A QUIC endpoint MUST NOT reuse a Stream ID.  Streams of each type are created in
 numeric order.  Streams that are used out of order result in opening all
