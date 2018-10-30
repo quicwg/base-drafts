@@ -706,10 +706,10 @@ frames count toward flow control.
 
 A STOP_SENDING frame requests that the receiving endpoint send a RST_STREAM
 frame.  An endpoint that receives a STOP_SENDING frame MUST send a RST_STREAM
-frame for that stream.  An endpoint can use any application error code in the
-RST_STREAM frame, though they can copy the error code from the STOP_SENDING
-frame if no other option is available.  The endpoint that sends a STOP_SENDING
-frame can ignore the error code carried in any RST_STREAM frame they receive.
+frame for that stream.  An endpoint SHOULD copy the error code from the
+STOP_SENDING frame, but MAY use any other application error code.  The endpoint
+that sends a STOP_SENDING frame can ignore the error code carried in any
+RST_STREAM frame they receive.
 
 If the STOP_SENDING frame is received on a send stream that is already in the
 "Data Sent" state, a RST_STREAM frame MAY still be sent in order to cancel
