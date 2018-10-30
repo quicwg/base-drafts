@@ -4271,7 +4271,9 @@ The frame is as follows:
 The fields in the MAX_STREAMS frame are as follows:
 
 Maximum Streams:
-: A count of the number of streams that can be opened.
+
+: A count of the total number of streams of the corresponding type that can be
+  opened.
 
 Loss or reordering can cause a MAX_STREAMS frame to be received which states a
 lower stream limit than an endpoint has previously received.  MAX_STREAMS frames
@@ -4282,6 +4284,10 @@ limit set by its peer.  For instance, a server that receives a unidirectional
 stream limit of 3 is permitted to open stream 3, 7, and 11, but not stream 15.
 An endpoint MUST terminate a connection with a STREAM_LIMIT_ERROR error if a
 peer opens more streams than was permitted.
+
+Note that these frames (and the corresponding transport parameters) do not
+describe the number of streams that can be opened concurrently.  The limit
+includes streams that have been closed as well as those that are open.
 
 
 ## PING Frame {#frame-ping}
