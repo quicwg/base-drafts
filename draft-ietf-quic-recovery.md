@@ -90,7 +90,7 @@ Definitions of terms that are used in this document:
 
 ACK-only:
 
-: Any packet containing only an ACK frame.
+: Any packet containing only one or more ACK frame(s).
 
 In-flight:
 
