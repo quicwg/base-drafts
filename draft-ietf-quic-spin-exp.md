@@ -238,7 +238,7 @@ and the observer and the client, respectively. It does this by measuring the
 delay between a spin edge observed in the upstream direction and that observed
 in the downstream direction, and vice versa.
 
-# Disabling the spin bit
+# Disabling the Spin Bit
 
 Implementation SHOULD allow users to disable the spin-bit either globally,
 or on a per-connection basis. Even when the spin-bit is not disabled by
