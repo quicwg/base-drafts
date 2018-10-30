@@ -4326,7 +4326,7 @@ The STREAM_DATA_BLOCKED frame is as follows:
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                        Stream ID (i)                        ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                        Data Limit (i)                       ...
+|                    Stream Data Limit (i)                    ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
 
@@ -4336,7 +4336,7 @@ Stream ID:
 
 : A variable-length integer indicating the stream which is flow control blocked.
 
-Data Limit:
+Stream Data Limit:
 
 : A variable-length integer indicating the offset of the stream at which the
   blocking occurred.
