@@ -4096,7 +4096,7 @@ Error Code:
 
 : A 16-bit error code which indicates the reason for closing this connection.  A
   CONNECTION_CLOSE frame of type 0x02 uses codes from the space defined in
-  {{error-codes}}; a CONNECTION_CLOSE frame of type 0x03 uses codes from the
+  {{error-codes}}.  A CONNECTION_CLOSE frame of type 0x03 uses codes from the
   application protocol error code space, see {{app-error-codes}}
 
 Frame Type:
