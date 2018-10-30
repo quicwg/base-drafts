@@ -908,7 +908,7 @@ read from receive buffers.  In that setting, a length-prefixed message format
 makes it easier for a recipient to leave data unread and thereby withhold flow
 control credit.  If flow control limits prevent the remainder of a message from
 being sent, a deadlock will result.  However, a length prefix might enable the
-detection of this sort of deadlocks.  Where protocols have messages that might
+detection of this sort of deadlock.  Where protocols have messages that might
 be processed as a single unit, reserving flow control credit for the entire
 message atomically ensures that this style of deadlock is less likely.
 
@@ -929,7 +929,8 @@ that data is not sent until the data it depends on has consumed both stream- and
 connection- level flow control credit.
 
 Some deadlocking scenarios might be resolved by cancelling affected streams with
-STOP_SENDING or RST_STREAM, if the protocol permits that.
+STOP_SENDING or RST_STREAM.  Cancelling some streams results in the connection
+being terminated in some protocols.
 
 
 ## Stream Limit Increment {#stream-limit-increment}
