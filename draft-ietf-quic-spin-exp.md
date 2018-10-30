@@ -271,7 +271,7 @@ RTT, and will thus enable adversaries near the client to discover that
 the connection does not terminate at the visible destination address, and
 that the client is probably accessing a hidden server through a proxy.
 
-Clients that want to hide their use of a proxy or a relay will want to
+Endpoints that want to hide their use of a proxy or a relay will want to
 disable the spin bit. However, if only privacy sensitive clients ever
 disabled the spin bit, they would stick out. The probabilistic disabling
 behavior explained in {#disabling-the-spin-bit} ensures that other clients
