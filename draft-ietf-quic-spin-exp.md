@@ -269,7 +269,7 @@ There is however an exception, when parts of the path from client to server
 are hidden from observers. An example would be a server accessed through a
 proxy. The spin bit allows for measurement of the end-to-end
 RTT, and will thus enable adversaries near the endpoint to discover that
-the connection does not terminate at the visible destination address, and
+the connection does not terminate at the visible destination address.
 that the client is probably accessing a hidden server through a proxy.
 
 Endpoints that want to hide their use of a proxy or a relay will want to
