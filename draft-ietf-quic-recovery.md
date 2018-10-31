@@ -532,7 +532,7 @@ to the maximum expected packet reordering, such as 1 RTT.
 Sent packets are tracked for each packet number space, and ACK
 processing only applies to a single space.
 
-### Fields
+### Sent Packet Fields {#sent-packets-fields}
 
 packet_number
 : The packet number of the sent packet.
@@ -698,22 +698,8 @@ follows:
 
 ### On Sending a Packet
 
-After any packet is sent.  The parameters to OnPacketSent are as follows:
-
-* packet_number: The packet number of the sent packet.
-
-* ack_only: A boolean that indicates whether a packet contains only
-  ACK or PADDING frame(s).  If true, it is still expected an ack will
-  be received for this packet, but it is not retransmittable.
-
-* in_flight: A boolean that indicates whether the packet counts towards bytes in
-  flight.
-
-* is_crypto_packet: A boolean that indicates whether the packet contains
-  cryptographic handshake messages critical to the completion of the QUIC
-  handshake.
-
-* sent_bytes: The number of bytes sent in the packet.
+After any packet is sent.  The parameters to OnPacketSent are described in detail
+above in {{sent-packets-fields}}.
 
 Pseudocode for OnPacketSent follows:
 
