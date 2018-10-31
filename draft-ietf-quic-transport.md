@@ -930,7 +930,8 @@ prevents the receiver from extending flow control credit for the second stream.
 To reduce
 the likelihood of deadlock for interdependent data, the application sender
 should ensure
-that data is not sent until the data it depends on has consumed both stream- and
+that dependent data is not sent until the data it depends on has been accounted
+for in both stream- and connection- level flow control credit.
 connection- level flow control credit.
 
 Some deadlocking scenarios might be resolved by cancelling affected streams with
