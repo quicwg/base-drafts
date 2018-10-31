@@ -509,21 +509,17 @@ progress.
 
 ## Tracking Sent Packets {#tracking-sent-packets}
 
-QUIC stores information about every packet sent.  QUIC does not retransmit
-packets, but implementations SHOULD retransmit the data within a packet in a
-new QUIC packet when the packet is lost.  When retransmitting that data,
-it may be bundled with new data if there is space or split into multiple
-QUIC packets as necessary.
+QUIC stores information about every packet sent. It's expected implementations
+will index this per-packet information by packet number and store the
+per-packet field detailed below for loss recovery and congestion control.
+Additionally, implementations must ensure that any reliable frames being
+transmitted are tracked in case of loss.
 
-It's expected implementations will index this per-packet information by
-packet number and store the per-packet field detailed below for
-loss recovery and congestion control.  Additionally, implementations
-must ensure that any reliable frames being transmitted are tracked
-in case of loss.  If a packet containing reliable frames is lost,
-the QUIC transport needs to decide how to recover from that loss,
-such as by retransmitting the data, sending an updated frame, or
-or abandoning the transmission. In the case of STREAM data, the data
-should be retransmitted unless the send side of the stream is closed.
+If a packet containing reliable frames is lost, the QUIC transport needs to
+decide how to recover from that loss, such as by retransmitting the data,
+sending an updated frame, or abandoning the transmission. In the case of
+STREAM data, the data should be retransmitted unless the send side of the
+stream is closed.
 
 Packets remain in sent_packets until acknowledged or lost.  After a
 packet is lost, it SHOULD be kept for an amount of time comparable
