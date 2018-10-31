@@ -907,7 +907,6 @@ streams.
 A common flow control implementation technique is for a receiver to extend
 credit to the sender as a the data consumer reads data out of the receiver's
 buffers. In this setting, a length-prefixed message format
-read from receive buffers.  In that setting, a length-prefixed message format
 makes it easier for a recipient to leave data unread and thereby withhold flow
 control credit.  If flow control limits prevent the remainder of a message from
 being sent, a deadlock will result.  However, a length prefix might enable the
