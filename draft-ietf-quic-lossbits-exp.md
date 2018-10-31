@@ -27,6 +27,7 @@ author:
     email: isabelle.hamchaoui@orange.com
 
 normative:
+
   QUIC-TRANSPORT:
     title: "QUIC: A UDP-Based Multiplexed and Secure Transport"
     date: {DATE}
@@ -68,7 +69,7 @@ passive observer around.
 
 In the QUIC context, the equivalent transport headers being encrypted,
 no such observation is possible. To restore network operators' ability
-to restore quality  efficiently in the presence  of QUIC-only traffic,
+to maintain quality  efficiently in the presence  of QUIC-only traffic,
 this document  adds two explicit loss  bits to the QUIC  short header,
 named "Q" and "R". Together, these bits allow the observer to estimate
 upstream and downstream  loss, enabling the same  dichotomic search as
