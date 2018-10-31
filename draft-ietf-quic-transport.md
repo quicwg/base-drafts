@@ -928,7 +928,8 @@ Suppose that data on one stream arrives before the data on a second stream on
 which it depends.  A deadlock can occur if first stream cannot be read and that
 prevents the receiver from extending flow control credit for the second stream.
 To reduce
-the likelihood of deadlock for interdependent data, implementations can ensure
+the likelihood of deadlock for interdependent data, the application sender
+should ensure
 that data is not sent until the data it depends on has consumed both stream- and
 connection- level flow control credit.
 
