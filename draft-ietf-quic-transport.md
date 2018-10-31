@@ -322,23 +322,22 @@ lower-numbered streams of the same type in the same direction.
 
 QUIC allows for an arbitrary number of streams to operate concurrently.  An
 endpoint limits the number of concurrently active incoming streams by limiting
-the maximum stream ID (see {{stream-limit-increment}}).
+the number of streams of each type (see {{stream-limit-increment}}).
 
-The maximum stream ID is specific to each endpoint and applies only to the peer
-that receives the setting. That is, clients specify the maximum stream ID the
-server can initiate, and servers specify the maximum stream ID the client can
-initiate.  Each endpoint may respond on streams initiated by the other peer,
-regardless of whether it is permitted to initiate new streams.
+The stream limit is specific to each endpoint and applies only to the peer that
+receives the setting.  That is, the client limits the number of streams of each
+type the server can initiate, and the server limits the number of streams the
+client can initiate.  Each endpoint can respond on streams initiated by the
+other peer, regardless of whether it is permitted to initiate new streams.
 
 Endpoints MUST NOT exceed the limit set by their peer.  An endpoint that
 receives a STREAM frame with an ID greater than the limit it has sent MUST treat
-this as a stream error of type STREAM_ID_ERROR ({{error-handling}}), unless this
-is a result of a change in the initial limits (see {{zerortt-parameters}}).
+this as a stream error of type STREAM_LIMIT_ERROR ({{error-handling}}).
 
 A receiver cannot renege on an advertisement; that is, once a receiver
-advertises a stream ID via a MAX_STREAM_ID frame, advertising a smaller maximum
-ID has no effect.  A receiver MUST ignore any MAX_STREAM_ID frame that does not
-increase the maximum stream ID.
+advertises a stream limit using the MAX_STREAMS frame, advertising a smaller
+limit has no effect.  A receiver MUST ignore any MAX_STREAMS frame that does
+not increase the stream limit.
 
 
 ## Sending and Receiving Data
@@ -458,7 +457,7 @@ data to a peer.
    +-------+                       |
        |                           |
        | Send STREAM /             |
-       |      STREAM_BLOCKED       |
+       |      STREAM_DATA_BLOCKED  |
        |                           |
        | Create Bidirectional      |
        |      Stream (Receiving)   |
@@ -490,10 +489,10 @@ protocol.  The "Ready" state represents a newly created stream that is able to
 accept data from the application.  Stream data might be buffered in this state
 in preparation for sending.
 
-Sending the first STREAM or STREAM_BLOCKED frame causes a send stream to enter
-the "Send" state.  An implementation might choose to defer allocating a Stream
-ID to a send stream until it sends the first frame and enters this state, which
-can allow for better stream prioritization.
+Sending the first STREAM or STREAM_DATA_BLOCKED frame causes a send stream to
+enter the "Send" state.  An implementation might choose to defer allocating a
+Stream ID to a send stream until it sends the first frame and enters this state,
+which can allow for better stream prioritization.
 
 The sending part of a bidirectional stream initiated by a peer (type 0 for a
 server, type 1 for a client) enters the "Ready" state then immediately
@@ -502,15 +501,16 @@ transitions to the "Send" state if the receiving part enters the "Recv" state.
 In the "Send" state, an endpoint transmits - and retransmits as necessary - data
 in STREAM frames.  The endpoint respects the flow control limits of its peer,
 accepting MAX_STREAM_DATA frames.  An endpoint in the "Send" state generates
-STREAM_BLOCKED frames if it encounters flow control limits.
+STREAM_DATA_BLOCKED frames if it encounters flow control limits.
 
 After the application indicates that stream data is complete and a STREAM frame
 containing the FIN bit is sent, the send stream enters the "Data Sent" state.
 From this state, the endpoint only retransmits stream data as necessary.  The
-endpoint no longer needs to track flow control limits or send STREAM_BLOCKED
-frames for a send stream in this state.  The endpoint can ignore any
-MAX_STREAM_DATA frames it receives from its peer in this state; MAX_STREAM_DATA
-frames might be received until the peer receives the final stream offset.
+endpoint no longer needs to track flow control limits or send
+STREAM_DATA_BLOCKED frames for a send stream in this state.  The endpoint can
+ignore any MAX_STREAM_DATA frames it receives from its peer in this state;
+MAX_STREAM_DATA frames might be received until the peer receives the final
+stream offset.
 
 Once all stream data has been successfully acknowledged, the send stream enters
 the "Data Recvd" state, which is a terminal state.
@@ -540,7 +540,7 @@ application protocol some of which cannot be observed by the sender.
 
 ~~~
        o
-       | Recv STREAM / STREAM_BLOCKED / RST_STREAM
+       | Recv STREAM / STREAM_DATA_BLOCKED / RST_STREAM
        | Create Bidirectional Stream (Sending)
        | Recv MAX_STREAM_DATA
        | Create Higher-Numbered Stream
@@ -574,7 +574,7 @@ application protocol some of which cannot be observed by the sender.
 {: #fig-stream-recv-states title="States for Receive Streams"}
 
 The receiving part of a stream initiated by a peer (types 1 and 3 for a client,
-or 0 and 2 for a server) are created when the first STREAM, STREAM_BLOCKED,
+or 0 and 2 for a server) are created when the first STREAM, STREAM_DATA_BLOCKED,
 RST_STREAM, or MAX_STREAM_DATA (bidirectional only, see below) is received for
 that stream.  The initial state for a receive stream is "Recv".  Receiving a
 RST_STREAM frame causes the receive stream to immediately transition to the
@@ -587,18 +587,19 @@ a server) enters the "Ready" state.
 A bidirectional stream also opens when a MAX_STREAM_DATA frame is received.
 Receiving a MAX_STREAM_DATA frame implies that the remote peer has opened the
 stream and is providing flow control credit.  A MAX_STREAM_DATA frame might
-arrive before a STREAM or STREAM_BLOCKED frame if packets are lost or reordered.
+arrive before a STREAM or STREAM_DATA_BLOCKED frame if packets are lost or
+reordered.
 
 Before creating a stream, all lower-numbered streams of the same type MUST be
 created.  That means that receipt of a frame that would open a stream causes all
 lower-numbered streams of the same type to be opened in numeric order.  This
 ensures that the creation order for streams is consistent on both endpoints.
 
-In the "Recv" state, the endpoint receives STREAM and STREAM_BLOCKED frames.
-Incoming data is buffered and can be reassembled into the correct order for
-delivery to the application.  As data is consumed by the application and buffer
-space becomes available, the endpoint sends MAX_STREAM_DATA frames to allow the
-peer to send more data.
+In the "Recv" state, the endpoint receives STREAM and STREAM_DATA_BLOCKED
+frames.  Incoming data is buffered and can be reassembled into the correct order
+for delivery to the application.  As data is consumed by the application and
+buffer space becomes available, the endpoint sends MAX_STREAM_DATA frames to
+allow the peer to send more data.
 
 When a STREAM frame with a FIN bit is received, the final offset (see
 {{final-offset}}) is known.  The receive stream enters the "Size Known" state.
@@ -608,8 +609,8 @@ only receives any retransmissions of stream data.
 Once all data for the stream has been received, the receive stream enters the
 "Data Recvd" state.  This might happen as a result of receiving the same STREAM
 frame that causes the transition to "Size Known".  In this state, the endpoint
-has all stream data.  Any STREAM or STREAM_BLOCKED frames it receives for the
-stream can be discarded.
+has all stream data.  Any STREAM or STREAM_DATA_BLOCKED frames it receives for
+the stream can be discarded.
 
 The "Data Recvd" state persists until stream data has been delivered to the
 application or application protocol.  Once stream data has been delivered, the
@@ -640,11 +641,12 @@ which is a terminal state.
 ## Permitted Frame Types
 
 The sender of a stream sends just three frame types that affect the state of a
-stream at either sender or receiver: STREAM ({{frame-stream}}), STREAM_BLOCKED
-({{frame-stream-blocked}}), and RST_STREAM ({{frame-rst-stream}}).
+stream at either sender or receiver: STREAM ({{frame-stream}}),
+STREAM_DATA_BLOCKED ({{frame-stream-data-blocked}}), and RST_STREAM
+({{frame-rst-stream}}).
 
 A sender MUST NOT send any of these frames from a terminal state ("Data Recvd"
-or "Reset Recvd").  A sender MUST NOT send STREAM or STREAM_BLOCKED after
+or "Reset Recvd").  A sender MUST NOT send STREAM or STREAM_DATA_BLOCKED after
 sending a RST_STREAM; that is, in the "Reset Sent" state in addition to the
 terminal states.  A receiver could receive any of these frames in any state, but
 only due to the possibility of delayed delivery of packets carrying them.
@@ -779,13 +781,14 @@ A receiver MUST close the connection with a FLOW_CONTROL_ERROR error
 ({{error-handling}}) if the peer violates the advertised connection or stream
 data limits.
 
-A sender SHOULD send STREAM_BLOCKED or BLOCKED frames to indicate it has data to
-write but is blocked by flow control limits.  These frames are expected to be
-sent infrequently in common cases, but they are considered useful for debugging
-and monitoring purposes.
+A sender SHOULD send STREAM_DATA_BLOCKED or DATA_BLOCKED frames to indicate it
+has data to write but is blocked by flow control limits.  These frames are
+expected to be sent infrequently in common cases, but they are considered useful
+for debugging and monitoring purposes.
 
 A similar method is used to control the number of open streams (see
 {{stream-limit-increment}} for details).
+
 
 ## Handling of Stream Cancellation
 
@@ -823,10 +826,11 @@ encourage prompt termination. Both endpoints MUST maintain state for the stream
 in the unterminated direction until that direction enters a terminal state, or
 either side sends CONNECTION_CLOSE or APPLICATION_CLOSE.
 
+
 ## Data Limit Increments {#fc-credit}
 
-This document leaves when and how many bytes to advertise in a MAX_DATA or
-MAX_STREAM_DATA to implementations, but offers a few considerations.  These
+This document leaves when and how many bytes to advertise in a MAX_STREAM_DATA
+or MAX_DATA frame to implementations, but offers a few considerations.  These
 frames contribute to connection overhead.  Therefore frequently sending frames
 with small changes is undesirable.  At the same time, larger increments to
 limits are necessary to avoid blocking if updates are less frequent, requiring
@@ -841,22 +845,22 @@ implementations.
 
 If a sender runs out of flow control credit, it will be unable to send new
 data. That is, the sender is blocked. A blocked sender SHOULD send a
-STREAM_BLOCKED or BLOCKED frame.  A receiver uses these frames for debugging
-purposes.  A receiver MUST NOT wait for a STREAM_BLOCKED or BLOCKED frame before
-sending MAX_STREAM_DATA or MAX_DATA, since doing so will mean that a sender will
-be blocked for an entire round trip and the peer may never send a STREAM_BLOCKED
-or BLOCKED frame.
+STREAM_DATA_BLOCKED or DATA_BLOCKED frame.  A receiver uses these frames for
+debugging purposes.  A receiver MUST NOT wait for a STREAM_DATA_BLOCKED or
+DATA_BLOCKED frame before sending MAX_STREAM_DATA or MAX_DATA, since doing so
+will mean that a sender will be blocked for an entire round trip and the peer
+might never send a STREAM_DATA_BLOCKED or DATA_BLOCKED frame.
 
 It is generally considered best to not let the sender go into quiescence if
 avoidable.  To avoid blocking a sender, and to reasonably account for the
 possibility of loss, a receiver should send a MAX_DATA or MAX_STREAM_DATA frame
 at least two round trips before it expects the sender to get blocked.
 
-A sender sends a single BLOCKED or STREAM_BLOCKED frame only once when it
-reaches a data limit.  A sender SHOULD NOT send multiple BLOCKED or
-STREAM_BLOCKED frames for the same data limit, unless the original frame is
-determined to be lost.  Another BLOCKED or STREAM_BLOCKED frame can be sent
-after the data limit is increased.
+A sender sends a single STREAM_DATA_BLOCKED or DATA_BLOCKED frame only once when
+it reaches a data limit.  A sender SHOULD NOT send multiple STREAM_DATA_BLOCKED
+or DATA_BLOCKED frames for the same data limit, unless the original frame is
+determined to be lost.  Another STREAM_DATA_BLOCKED or DATA_BLOCKED frame can be
+sent after the data limit is increased.
 
 
 ## Stream Final Offset {#final-offset}
@@ -893,20 +897,20 @@ is not excessive buffering at multiple layers.
 
 ## Stream Limit Increment {#stream-limit-increment}
 
-An endpoint limits the number of concurrently active incoming streams by
-limiting the maximum stream ID.  An initial value is set in the transport
-parameters (see {{transport-parameter-definitions}}) and is subsequently
-increased by MAX_STREAM_ID frames (see {{frame-max-stream-id}}).
+An endpoint limits the number of concurrently active incoming streams.  An
+initial value is set in the transport parameters (see
+{{transport-parameter-definitions}}) and is subsequently increased by
+MAX_STREAMS frames (see {{frame-max-streams}}).  Separate limits apply to
+bidirectional and unidirectional streams.
 
 As with stream and connection flow control, this document leaves when and how
-many streams to make available to a peer via MAX_STREAM_ID to implementations,
-but offers a few considerations.  MAX_STREAM_ID frames constitute minimal
-overhead, while withholding MAX_STREAM_ID frames can prevent the peer from using
-the available parallelism.
+many streams to make available to a peer via MAX_STREAMS to implementations.
+Implementations might choose to increase limits as streams close to keep the
+number of streams available to peers roughly consistent.
 
-The STREAM_ID_BLOCKED frame ({{frame-stream-id-blocked}}) can be
-used to signal a shortage of available streams. Implementations will likely
-want to increase the maximum stream ID as peer-initiated streams close.
+The STREAMS_BLOCKED frame ({{frame-streams-blocked}}) signals that a new stream
+could not be created. Implementations can use this as a signal to the peer to
+send a MAX_STREAMS frame with a larger limit.
 
 
 # Connections {#connections}
@@ -1440,16 +1444,16 @@ by the server, the server MUST NOT reduce any limits or alter any values that
 might be violated by the client with its 0-RTT data.  In particular, a server
 that accepts 0-RTT data MUST NOT set values for initial_max_data,
 initial_max_stream_data_bidi_local, initial_max_stream_data_bidi_remote,
-initial_max_stream_data_uni, initial_max_bidi_streams, or
-initial_max_uni_streams ({{transport-parameter-definitions}}) that are smaller
+initial_max_stream_data_uni, initial_max_streams_bidi, or
+initial_max_streams_uni ({{transport-parameter-definitions}}) that are smaller
 than the remembered value of those parameters.
 
 Omitting or setting a zero value for certain transport parameters can result in
 0-RTT data being enabled, but not usable.  The applicable subset of transport
 parameters that permit sending of application data SHOULD be set to non-zero
 values for 0-RTT.  This includes initial_max_data and either
-initial_max_bidi_streams and initial_max_stream_data_bidi_remote, or
-initial_max_uni_streams and initial_max_stream_data_uni.
+initial_max_streams_bidi and initial_max_stream_data_bidi_remote, or
+initial_max_streams_uni and initial_max_stream_data_uni.
 
 The value of the server's previous preferred_address MUST NOT be used when
 establishing a new connection; rather, the client should wait to observe the
@@ -2706,11 +2710,9 @@ frames are explained in more detail in {{frame-formats}}.
 | 0x03        | APPLICATION_CLOSE    | {{frame-application-close}}    |
 | 0x04        | MAX_DATA             | {{frame-max-data}}             |
 | 0x05        | MAX_STREAM_DATA      | {{frame-max-stream-data}}      |
-| 0x06        | MAX_STREAM_ID        | {{frame-max-stream-id}}        |
 | 0x07        | PING                 | {{frame-ping}}                 |
-| 0x08        | BLOCKED              | {{frame-blocked}}              |
-| 0x09        | STREAM_BLOCKED       | {{frame-stream-blocked}}       |
-| 0x0a        | STREAM_ID_BLOCKED    | {{frame-stream-id-blocked}}    |
+| 0x08        | DATA_BLOCKED         | {{frame-data-blocked}}         |
+| 0x09        | STREAM_DATA_BLOCKED  | {{frame-stream-data-blocked}}  |
 | 0x0b        | NEW_CONNECTION_ID    | {{frame-new-connection-id}}    |
 | 0x0c        | STOP_SENDING         | {{frame-stop-sending}}         |
 | 0x0d        | RETIRE_CONNECTION_ID | {{frame-retire-connection-id}} |
@@ -2720,6 +2722,8 @@ frames are explained in more detail in {{frame-formats}}.
 | 0x18        | CRYPTO               | {{frame-crypto}}               |
 | 0x19        | NEW_TOKEN            | {{frame-new-token}}            |
 | 0x1a - 0x1b | ACK                  | {{frame-ack}}                  |
+| 0x1c - 0x1d | MAX_STREAMS          | {{frame-max-streams}}          |
+| 0x1e - 0x1f | STREAMS_BLOCKED      | {{frame-streams-blocked}}      |
 {: #frame-types title="Frame Types"}
 
 All QUIC frames are idempotent.  That is, a valid frame does not cause
@@ -2898,19 +2902,18 @@ containing that information is acknowledged.
   endpoint SHOULD stop sending MAX_STREAM_DATA frames when the receive stream
   enters a "Size Known" state.
 
-* The maximum stream ID for a stream of a given type is sent in MAX_STREAM_ID
-  frames.  Like MAX_DATA, an updated value is sent when a packet containing the
-  most recent MAX_STREAM_ID for a stream type frame is declared lost or when
-  the limit is updated, with care taken to prevent the frame from being sent
-  too often.
+* The limit on streams of a given type is sent in MAX_STREAMS frames.  Like
+  MAX_DATA, an updated value is sent when a packet containing the most recent
+  MAX_STREAMS for a stream type frame is declared lost or when the limit is
+  updated, with care taken to prevent the frame from being sent too often.
 
-* Blocked signals are carried in BLOCKED, STREAM_BLOCKED, and STREAM_ID_BLOCKED
-  frames. BLOCKED streams have connection scope, STREAM_BLOCKED frames have
-  stream scope, and STREAM_ID_BLOCKED frames are scoped to a specific stream
-  type. New frames are sent if packets containing the most recent frame for a
-  scope is lost, but only while the endpoint is blocked on the corresponding
-  limit. These frames always include the limit that is causing blocking at the
-  time that they are transmitted.
+* Blocked signals are carried in DATA_BLOCKED, STREAM_DATA_BLOCKED, and
+  STREAMS_BLOCKED frames. DATA_BLOCKED streams have connection scope,
+  STREAM_DATA_BLOCKED frames have stream scope, and STREAMS_BLOCKED frames are
+  scoped to a specific stream type. New frames are sent if packets containing
+  the most recent frame for a scope is lost, but only while the endpoint is
+  blocked on the corresponding limit. These frames always include the limit that
+  is causing blocking at the time that they are transmitted.
 
 * A liveness or path validation check using PATH_CHALLENGE frames is sent
   periodically until a matching PATH_RESPONSE frame is received or until there
@@ -3835,13 +3838,13 @@ language from Section 3 of {{!TLS13=RFC8446}}.
    enum {
       initial_max_stream_data_bidi_local(0),
       initial_max_data(1),
-      initial_max_bidi_streams(2),
+      initial_max_streams_bidi(2),
       idle_timeout(3),
       preferred_address(4),
       max_packet_size(5),
       stateless_reset_token(6),
       ack_delay_exponent(7),
-      initial_max_uni_streams(8),
+      initial_max_streams_uni(8),
       disable_migration(9),
       initial_max_stream_data_bidi_remote(10),
       initial_max_stream_data_uni(11),
@@ -3973,29 +3976,23 @@ initial_max_data (0x0001):
   completing the handshake. If the transport parameter is absent, the connection
   starts with a flow control limit of 0.
 
-initial_max_bidi_streams (0x0002):
+initial_max_streams_bidi (0x0002):
 
 : The initial maximum bidirectional streams parameter contains the initial
   maximum number of bidirectional streams the peer may initiate, encoded as an
-  unsigned 16-bit integer.  If this parameter is absent or zero, bidirectional
-  streams cannot be created until a MAX_STREAM_ID frame is sent.  Setting this
-  parameter is equivalent to sending a MAX_STREAM_ID ({{frame-max-stream-id}})
-  immediately after completing the handshake containing the corresponding Stream
-  ID. For example, a value of 0x05 would be equivalent to receiving a
-  MAX_STREAM_ID containing 16 when received by a client or 17 when received by a
-  server.
+  unsigned 16-bit integer.  If this parameter is absent or zero, the peer cannot
+  open bidirectional streams until a MAX_STREAMS frame is sent.  Setting this
+  parameter is equivalent to sending a MAX_STREAMS ({{frame-max-streams}}) of
+  the corresponding type with the same value.
 
-initial_max_uni_streams (0x0008):
+initial_max_streams_uni (0x0008):
 
 : The initial maximum unidirectional streams parameter contains the initial
   maximum number of unidirectional streams the peer may initiate, encoded as an
-  unsigned 16-bit integer.  If this parameter is absent or zero, unidirectional
-  streams cannot be created until a MAX_STREAM_ID frame is sent.  Setting this
-  parameter is equivalent to sending a MAX_STREAM_ID ({{frame-max-stream-id}})
-  immediately after completing the handshake containing the corresponding Stream
-  ID. For example, a value of 0x05 would be equivalent to receiving a
-  MAX_STREAM_ID containing 18 when received by a client or 19 when received by a
-  server.
+  unsigned 16-bit integer.  If this parameter is absent or zero, the peer cannot
+  open unidirectional streams until a MAX_STREAMS frame is sent.  Setting this
+  parameter is equivalent to sending a MAX_STREAMS ({{frame-max-streams}}) of
+  the corresponding type with the same value.
 
 A server MUST include the following transport parameter if it sent a Retry
 packet:
@@ -4260,10 +4257,12 @@ stream data that it has sent for the affected stream, unless this is a result of
 a change in the initial limits (see {{zerortt-parameters}}).
 
 
-## MAX_STREAM_ID Frame {#frame-max-stream-id}
+## MAX_STREAMS Frame {#frame-max-streams}
 
-The MAX_STREAM_ID frame (type=0x06) informs the peer of the maximum stream ID
-that they are permitted to open.
+The MAX_STREAMS frame (type=0x1c and 0x1d) informs the peer of the number of
+streams it is permitted to open.  A MAX_STREAMS frame with a type of 0x1c
+applies to bidirectional streams; a MAX_STREAMS frame with a type of 0x1d
+applies to unidirectional streams.
 
 The frame is as follows:
 
@@ -4271,28 +4270,30 @@ The frame is as follows:
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                    Maximum Stream ID (i)                    ...
+|                     Maximum Streams (i)                     ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
 
-The fields in the MAX_STREAM_ID frame are as follows:
+The fields in the MAX_STREAMS frame are as follows:
 
-Maximum Stream ID:
-: ID of the maximum unidirectional or bidirectional peer-initiated stream ID for
-  the connection encoded as a variable-length integer. The limit applies to
-  unidirectional steams if the second least signification bit of the stream ID
-  is 1, and applies to bidirectional streams if it is 0.
+Maximum Streams:
 
-Loss or reordering can mean that a MAX_STREAM_ID frame can be received which
-states a lower stream limit than the client has previously received.
-MAX_STREAM_ID frames which do not increase the maximum stream ID MUST be
-ignored.
+: A count of the total number of streams of the corresponding type that can be
+  opened.
 
-A peer MUST NOT initiate a stream with a higher stream ID than the greatest
-maximum stream ID it has received.  An endpoint MUST terminate a connection with
-a STREAM_ID_ERROR error if a peer initiates a stream with a higher stream ID
-than it has sent, unless this is a result of a change in the initial limits (see
-{{zerortt-parameters}}).
+Loss or reordering can cause a MAX_STREAMS frame to be received which states a
+lower stream limit than an endpoint has previously received.  MAX_STREAMS frames
+which do not increase the stream limit MUST be ignored.
+
+An endpoint MUST NOT open more streams than permitted by the current stream
+limit set by its peer.  For instance, a server that receives a unidirectional
+stream limit of 3 is permitted to open stream 3, 7, and 11, but not stream 15.
+An endpoint MUST terminate a connection with a STREAM_LIMIT_ERROR error if a
+peer opens more streams than was permitted.
+
+Note that these frames (and the corresponding transport parameters) do not
+describe the number of streams that can be opened concurrently.  The limit
+includes streams that have been closed as well as those that are open.
 
 
 ## PING Frame {#frame-ping}
@@ -4320,41 +4321,41 @@ experience shows that sending packets every 15 to 30 seconds is necessary to
 prevent the majority of middleboxes from losing state for UDP flows.
 
 
-## BLOCKED Frame {#frame-blocked}
+## DATA_BLOCKED Frame {#frame-data-blocked}
 
-A sender SHOULD send a BLOCKED frame (type=0x08) when it wishes to send data,
-but is unable to due to connection-level flow control (see {{flow-control}}).
-BLOCKED frames can be used as input to tuning of flow control algorithms (see
-{{fc-credit}}).
+A sender SHOULD send a DATA_BLOCKED frame (type=0x08) when it wishes to send
+data, but is unable to due to connection-level flow control (see
+{{flow-control}}).  DATA_BLOCKED frames can be used as input to tuning of flow
+control algorithms (see {{fc-credit}}).
 
-The BLOCKED frame is as follows:
+The DATA_BLOCKED frame is as follows:
 
 ~~~
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                         Offset (i)                         ...
+|                       Data Limit (i)                        ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
 
-The BLOCKED frame contains a single field.
+The DATA_BLOCKED frame contains a single field.
 
-Offset:
+Data Limit:
 
-: A variable-length integer indicating the connection-level offset at which
-  the blocking occurred.
+: A variable-length integer indicating the connection-level limit at which
+  blocking occurred.
 
 
-## STREAM_BLOCKED Frame {#frame-stream-blocked}
+## STREAM_DATA_BLOCKED Frame {#frame-stream-data-blocked}
 
-A sender SHOULD send a STREAM_BLOCKED frame (type=0x09) when it wishes to send
-data, but is unable to due to stream-level flow control.  This frame is
-analogous to BLOCKED ({{frame-blocked}}).
+A sender SHOULD send a STREAM_DATA_BLOCKED frame (type=0x09) when it wishes to
+send data, but is unable to due to stream-level flow control.  This frame is
+analogous to DATA_BLOCKED ({{frame-data-blocked}}).
 
-An endpoint that receives a STREAM_BLOCKED frame for a send-only stream MUST
-terminate the connection with error PROTOCOL_VIOLATION.
+An endpoint that receives a STREAM_DATA_BLOCKED frame for a send-only stream
+MUST terminate the connection with error PROTOCOL_VIOLATION.
 
-The STREAM_BLOCKED frame is as follows:
+The STREAM_DATA_BLOCKED frame is as follows:
 
 ~~~
  0                   1                   2                   3
@@ -4362,46 +4363,50 @@ The STREAM_BLOCKED frame is as follows:
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                        Stream ID (i)                        ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                         Offset (i)                          ...
+|                    Stream Data Limit (i)                    ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
 
-The STREAM_BLOCKED frame contains two fields:
+The STREAM_DATA_BLOCKED frame contains two fields:
 
 Stream ID:
 
 : A variable-length integer indicating the stream which is flow control blocked.
 
-Offset:
+Stream Data Limit:
 
 : A variable-length integer indicating the offset of the stream at which the
   blocking occurred.
 
 
-## STREAM_ID_BLOCKED Frame {#frame-stream-id-blocked}
+## STREAMS_BLOCKED Frame {#frame-streams-blocked}
 
-A sender SHOULD send a STREAM_ID_BLOCKED frame (type=0x0a) when it wishes to
-open a stream, but is unable to due to the maximum stream ID limit set by its
-peer (see {{frame-max-stream-id}}).  This does not open the stream, but informs
-the peer that a new stream was needed, but the stream limit prevented the
-creation of the stream.
+A sender SHOULD send a STREAMS_BLOCKED frame (type=0x1e or 0x1f) when it wishes
+to open a stream, but is unable to due to the maximum stream limit set by its
+peer (see {{frame-max-streams}}).  A STREAMS_BLOCKED frame of type 0x1e is used
+to indicate reaching the bidirectional stream limit; a STREAMS_BLOCKED frame of
+type 0x1f indicates reaching the unidirectional stream limit.
 
-The STREAM_ID_BLOCKED frame is as follows:
+A STREAMS_BLOCKED frame does not open the stream, but informs the peer that a
+new stream was needed and the stream limit prevented the creation of the stream.
+
+The STREAMS_BLOCKED frame is as follows:
 
 ~~~
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                        Stream ID (i)                        ...
+|                        Stream Limit (i)                     ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
 
-The STREAM_ID_BLOCKED frame contains a single field.
+The STREAMS_BLOCKED frame contains a single field.
 
-Stream ID:
+Stream Limit:
 
-: A variable-length integer indicating the highest stream ID that the sender
-  was permitted to open.
+: A variable-length integer indicating the stream limit at the time the frame
+  was sent.
+
 
 ## NEW_CONNECTION_ID Frame {#frame-new-connection-id}
 
@@ -4983,10 +4988,10 @@ FLOW_CONTROL_ERROR (0x3):
 : An endpoint received more data than it permitted in its advertised data limits
   (see {{flow-control}}).
 
-STREAM_ID_ERROR (0x4):
+STREAM_LIMIT_ERROR (0x4):
 
 : An endpoint received a frame for a stream identifier that exceeded its
-  advertised maximum stream ID.
+  advertised stream limit for the corresponding stream type.
 
 STREAM_STATE_ERROR (0x5):
 
@@ -5271,13 +5276,13 @@ The initial contents of this registry are shown in {{iana-tp-table}}.
 |:-------|:----------------------------|:------------------------------------|
 | 0x0000 | initial_max_stream_data_bidi_local | {{transport-parameter-definitions}} |
 | 0x0001 | initial_max_data            | {{transport-parameter-definitions}} |
-| 0x0002 | initial_max_bidi_streams    | {{transport-parameter-definitions}} |
+| 0x0002 | initial_max_streams_bidi    | {{transport-parameter-definitions}} |
 | 0x0003 | idle_timeout                | {{transport-parameter-definitions}} |
 | 0x0004 | preferred_address           | {{transport-parameter-definitions}} |
 | 0x0005 | max_packet_size             | {{transport-parameter-definitions}} |
 | 0x0006 | stateless_reset_token       | {{transport-parameter-definitions}} |
 | 0x0007 | ack_delay_exponent          | {{transport-parameter-definitions}} |
-| 0x0008 | initial_max_uni_streams     | {{transport-parameter-definitions}} |
+| 0x0008 | initial_max_streams_uni     | {{transport-parameter-definitions}} |
 | 0x0009 | disable_migration           | {{transport-parameter-definitions}} |
 | 0x000a | initial_max_stream_data_bidi_remote | {{transport-parameter-definitions}} |
 | 0x000b | initial_max_stream_data_uni | {{transport-parameter-definitions}} |
@@ -5367,7 +5372,7 @@ from 0xFF00 to 0xFFFF are reserved for Private Use {{!RFC8126}}.
 | 0x1   | INTERNAL_ERROR            | Implementation error          | {{error-codes}} |
 | 0x2   | SERVER_BUSY               | Server currently busy         | {{error-codes}} |
 | 0x3   | FLOW_CONTROL_ERROR        | Flow control error            | {{error-codes}} |
-| 0x4   | STREAM_ID_ERROR           | Invalid stream ID             | {{error-codes}} |
+| 0x4   | STREAM_LIMIT_ERROR        | Too many streams opened       | {{error-codes}} |
 | 0x5   | STREAM_STATE_ERROR        | Frame received in invalid stream state | {{error-codes}} |
 | 0x6   | FINAL_OFFSET_ERROR        | Change to final stream offset | {{error-codes}} |
 | 0x7   | FRAME_ENCODING_ERROR      | Frame encoding error          | {{error-codes}} |
