@@ -514,18 +514,20 @@ progress.
 QUIC stores information about every packet sent. It's expected implementations
 will index this per-packet information by packet number and store the
 per-packet fields detailed below for loss recovery and congestion control.
-Additionally, implementations must ensure that any reliable frames being
-transmitted are tracked in case of loss.
+Additionally, implementations MUST ensure that any retransmittable frames
+being transmitted are tracked in case of loss.
 
-If a packet containing reliable frames is lost, the QUIC transport needs to
-decide how to recover from that loss, such as by retransmitting the data,
-sending an updated frame, or abandoning the transmission. In the case of
+If a packet containing retransmittable frames is lost, the QUIC transport
+needs to recover from that loss, such as by retransmitting the data,
+sending an updated frame, or abandoning the frame. In the case of
 STREAM data, the data should be retransmitted unless the send side of the
 stream is closed.
 
-Packets remain in sent_packets until acknowledged or lost.  After a
-packet is lost, it SHOULD be kept for an amount of time comparable
-to the maximum expected packet reordering, such as 1 RTT.
+Packets MUST be tracked until acknowledged or lost.  After a packet is lost,
+it SHOULD be tracked for an amount of time comparable to the maximum
+expected packet reordering, such as 1 RTT.  This allows detection of
+spurious retransmissions and MAY allow avoiding an extra retransmissions if
+the frames contained within the packet were retransmitted and lost again.
 
 Sent packets are tracked for each packet number space, and ACK
 processing only applies to a single space.
