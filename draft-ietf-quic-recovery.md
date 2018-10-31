@@ -698,8 +698,8 @@ follows:
 
 ### On Sending a Packet
 
-After any packet is sent.  The parameters to OnPacketSent are described in detail
-above in {{sent-packets-fields}}.
+After any packet is sent.  The parameters to OnPacketSent are described in
+detail above in {{sent-packets-fields}}.
 
 Pseudocode for OnPacketSent follows:
 
