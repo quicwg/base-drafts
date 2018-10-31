@@ -513,7 +513,7 @@ progress.
 
 QUIC stores information about every packet sent. It's expected implementations
 will index this per-packet information by packet number and store the
-per-packet field detailed below for loss recovery and congestion control.
+per-packet fields detailed below for loss recovery and congestion control.
 Additionally, implementations must ensure that any reliable frames being
 transmitted are tracked in case of loss.
 
