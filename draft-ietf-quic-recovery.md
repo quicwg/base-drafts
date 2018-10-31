@@ -529,7 +529,7 @@ packet is lost, it SHOULD be kept for an amount of time comparable
 to the maximum expected packet reordering, such as 1 RTT.
 
 Sent packets are tracked for each packet number space, and ACK
-processing only applies to a single space.  
+processing only applies to a single space.
 
 ### Fields
 
