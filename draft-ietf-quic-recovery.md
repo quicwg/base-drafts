@@ -660,8 +660,8 @@ are as follows:
 
 * retransmittable: A boolean that indicates whether a packet contains
   frame(s) besides ACK or PADDING.  If true, it is expected that an
-  acknowledgement will be received, though the peer may delay sending the ACK
-  frame containing it by up to the MaxAckDelay.
+  acknowledgement will be received, though the peer could delay sending the
+  ACK frame containing it by up to the MaxAckDelay.
 
 * in_flight: A boolean that indicates whether the packet counts towards bytes in
   flight.
