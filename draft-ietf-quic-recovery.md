@@ -90,7 +90,7 @@ Definitions of terms that are used in this document:
 
 ACK-only:
 
-: Any packet containing only an ACK frame.
+: Any packet containing only one or more ACK frame(s).
 
 In-flight:
 
@@ -106,7 +106,8 @@ Retransmittable Frames:
 Retransmittable Packets:
 
 : Packets that contain retransmittable frames elicit an ACK from
-  the receiver and are called retransmittable packets.
+  the receiver within the maximum ack delay and are called
+  retransmittable packets.
 
 Crypto Packets:
 
@@ -131,8 +132,9 @@ mechanisms ensure that data and frames that need reliable delivery are
 acknowledged or declared lost and sent in new packets as necessary. The types
 of frames contained in a packet affect recovery and congestion control logic:
 
-* All packets are acknowledged, though packets that contain only ACK
-  and PADDING frames are not acknowledged immediately.
+* All packets are acknowledged, though packets that contain no
+  retransmittable frames are only acknowledged along with retransmittable
+  packets.
 
 * Long header packets that contain CRYPTO frames are critical to the
   performance of the QUIC handshake and use shorter timers for
@@ -616,12 +618,12 @@ sent_packets:
 
 : An association of packet numbers to information about them, including a number
   field indicating the packet number, a time field indicating the time a packet
-  was sent, a boolean indicating whether the packet is ack-only, a boolean
-  indicating whether it counts towards bytes in flight, and a size field that
-  indicates the packet's size in bytes.  sent_packets is ordered by packet
-  number, and packets remain in sent_packets until acknowledged or lost.  A
-  sent_packets data structure is maintained per packet number space, and ACK
-  processing only applies to a single space.
+  was sent, a boolean indicating whether the packet is retransmittable,
+  a boolean indicating whether it counts towards bytes in flight, and a size
+  field indicating the packet's size in bytes.  sent_packets is ordered and
+  indexed by packet number. Packets remain in sent_packets until acknowledged
+  or lost.  A sent_packets data structure is maintained per packet number space,
+  and processing of an ACK frame only applies to a single space.
 
 ### Initialization
 
@@ -657,9 +659,10 @@ are as follows:
 
 * packet_number: The packet number of the sent packet.
 
-* ack_only: A boolean that indicates whether a packet contains only
-  ACK or PADDING frame(s).  If true, it is still expected an ack will
-  be received for this packet, but it is not retransmittable.
+* retransmittable: A boolean that indicates whether a packet is
+  retransmittable. If true, it is expected that an acknowledgement will
+  be received, though the peer could delay sending the ACK frame containing
+  it by up to the MaxAckDelay.
 
 * in_flight: A boolean that indicates whether the packet counts towards bytes in
   flight.
@@ -675,14 +678,14 @@ are as follows:
 Pseudocode for OnPacketSent follows:
 
 ~~~
- OnPacketSent(packet_number, ack_only, in_flight,
+ OnPacketSent(packet_number, retransmittable, in_flight,
               is_crypto_packet, sent_bytes):
    largest_sent_packet = packet_number
    sent_packets[packet_number].packet_number = packet_number
    sent_packets[packet_number].time = now
-   sent_packets[packet_number].ack_only = ack_only
+   sent_packets[packet_number].retransmittable = retransmittable
    sent_packets[packet_number].in_flight = in_flight
-   if !ack_only:
+   if retransmittable:
      if is_crypto_packet:
        time_of_last_sent_crypto_packet = now
      time_of_last_sent_retransmittable_packet = now
@@ -764,7 +767,7 @@ Pseudocode for OnPacketAcked follows:
 
 ~~~
    OnPacketAcked(acked_packet):
-     if (!acked_packet.is_ack_only):
+     if (acked_packet.retransmittable):
        OnPacketAckedCC(acked_packet)
      sent_packets.remove(acked_packet.packet_number)
 ~~~
@@ -880,7 +883,7 @@ DetectLostPackets(largest_acked):
     if (time_since_sent > delay_until_lost ||
         delta > reordering_threshold):
       sent_packets.remove(unacked.packet_number)
-      if (!unacked.is_ack_only):
+      if (unacked.retransmittable):
         lost_packets.insert(unacked)
     else if (loss_time == 0 && delay_until_lost != infinite):
       loss_time = now() + delay_until_lost - time_since_sent
