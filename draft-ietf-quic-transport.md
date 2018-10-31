@@ -924,7 +924,7 @@ means of holding a peer accountable for the state commitment for partially
 processed messages.
 
 Deadlocking can also occur if data on different streams is interdependent.  In
-this case, data on one stream arrives before the data on a second stream on
+Suppose that data on one stream arrives before the data on a second stream on
 which it depends.  A deadlock can occur if first stream cannot be read and that
 prevents flow control limits for the second stream being increased.  To reduce
 the likelihood of deadlock for interdependent data, implementations can ensure
