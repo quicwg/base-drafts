@@ -511,18 +511,19 @@ progress.
 
 QUIC stores information about every packet sent.  QUIC does not retransmit
 packets, but implementations SHOULD retransmit the data within a packet in a
-new QUIC packet with a new packet number when the  packet is lost.  When
-retransmitting that data, it may be bundled with new data if there is space
-or split into multiple QUIC packets as necessary.
+new QUIC packet when the packet is lost.  When retransmitting that data,
+it may be bundled with new data if there is space or split into multiple
+QUIC packets as necessary.
 
 It's expected implementations will index this per-packet information by
-packet number and store the per-packet information detailed below for
+packet number and store the per-packet field detailed below for
 loss recovery and congestion control.  Additionally, implementations
 must ensure that any reliable frames being transmitted are tracked
 in case of loss.  If a packet containing reliable frames is lost,
-the QUIC transport needs to decide how to recovery from that loss.
-In the case of data contained in STREAM frames, the data should be
-retransmitted unless the send side of the stream is now closed.
+the QUIC transport needs to decide how to recover from that loss,
+such as by retransmitting the data, sending an updated frame, or
+or abandoning the transmission. In the case of STREAM data, the data
+should be retransmitted unless the send side of the stream is closed.
 
 Packets remain in sent_packets until acknowledged or lost.  After a
 packet is lost, it SHOULD be kept for an amount of time comparable
