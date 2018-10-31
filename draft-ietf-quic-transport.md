@@ -932,7 +932,6 @@ the likelihood of deadlock for interdependent data, the application sender
 should ensure
 that dependent data is not sent until the data it depends on has been accounted
 for in both stream- and connection- level flow control credit.
-connection- level flow control credit.
 
 Some deadlocking scenarios might be resolved by cancelling affected streams with
 STOP_SENDING or RST_STREAM.  Cancelling some streams results in the connection
