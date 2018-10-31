@@ -658,10 +658,10 @@ are as follows:
 
 * packet_number: The packet number of the sent packet.
 
-* retransmittable: A boolean that indicates whether a packet contains
-  frame(s) besides ACK or PADDING.  If true, it is expected that an
-  acknowledgement will be received, though the peer could delay sending the
-  ACK frame containing it by up to the MaxAckDelay.
+* retransmittable: A boolean that indicates whether a packet is
+  retransmittable. If true, it is expected that an acknowledgement will
+  be received, though the peer could delay sending the ACK frame containing
+  it by up to the MaxAckDelay.
 
 * in_flight: A boolean that indicates whether the packet counts towards bytes in
   flight.
