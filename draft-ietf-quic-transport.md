@@ -904,7 +904,9 @@ deadlock can occur.  This is possible even where stream flow control limits are
 not reached because connection flow control limits can be consumed by other
 streams.
 
-A common implementation technique has flow control credit extended as data is
+A common flow control implementation technique is for a receiver to extend
+credit to the sender as a the data consumer reads data out of the receiver's
+buffers. In this setting, a length-prefixed message format
 read from receive buffers.  In that setting, a length-prefixed message format
 makes it easier for a recipient to leave data unread and thereby withhold flow
 control credit.  If flow control limits prevent the remainder of a message from
