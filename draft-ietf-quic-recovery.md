@@ -98,16 +98,16 @@ In-flight:
   and neither acknowledged nor declared lost, and they are not
   ACK-only.
 
-Retransmittable Frames:
+Ack-eliciting Frames:
 
 : All frames besides ACK or PADDING are considered
-  retransmittable.
+  ack-eliciting.
 
-Retransmittable Packets:
+Ack-eliciting Packets:
 
-: Packets that contain retransmittable frames elicit an ACK from
+: Packets that contain ack-eliciting frames elicit an ACK from
   the receiver within the maximum ack delay and are called
-  retransmittable packets.
+  ack-eliciting packets.
 
 Crypto Packets:
 
@@ -133,7 +133,7 @@ acknowledged or declared lost and sent in new packets as necessary. The types
 of frames contained in a packet affect recovery and congestion control logic:
 
 * All packets are acknowledged, though packets that contain no
-  retransmittable frames are only acknowledged along with retransmittable
+  ack-eliciting frames are only acknowledged along with ack-eliciting
   packets.
 
 * Long header packets that contain CRYPTO frames are critical to the
@@ -264,10 +264,10 @@ round-trip time (kTimeReorderingFraction), is 1/8.
 ### Early Retransmit
 
 Unacknowledged packets close to the tail may have fewer than
-kReorderingThreshold retransmittable packets sent after them.  Loss of such
+kReorderingThreshold ack-eliciting packets sent after them.  Loss of such
 packets cannot be detected via Fast Retransmit. To enable ack-based loss
 detection of such packets, receipt of an acknowledgment for the last outstanding
-retransmittable packet triggers the Early Retransmit process, as follows.
+ack-eliciting packet triggers the Early Retransmit process, as follows.
 
 If there are unacknowledged in-flight packets still pending, they should
 be marked as lost. To compensate for the reduced reordering resilience, the
@@ -360,7 +360,7 @@ algorithm proposed for TCP {{?TLP=I-D.dukkipati-tcpm-tcp-loss-probe}}.
 A packet sent at the tail is particularly vulnerable to slow loss detection,
 since acks of subsequent packets are needed to trigger ack-based detection. To
 ameliorate this weakness of tail packets, the sender schedules a timer when the
-last retransmittable packet before quiescence is transmitted. Upon timeout,
+last ack-eliciting packet before quiescence is transmitted. Upon timeout,
 a Tail Loss Probe (TLP) packet is sent to evoke an acknowledgement from the
 receiver.
 
@@ -394,7 +394,7 @@ prior unacknowledged packets SHOULD NOT be marked as lost when a TLP timer
 expires.
 
 A sender may not know that a packet being sent is a tail packet.  Consequently,
-a sender may have to arm or adjust the TLP timer on every sent retransmittable
+a sender may have to arm or adjust the TLP timer on every sent ack-eliciting
 packet.
 
 ### Retransmission Timeout {#rto}
@@ -570,8 +570,8 @@ largest_sent_before_rto:
 : The last packet number sent prior to the first retransmission
   timeout.
 
-time_of_last_sent_retransmittable_packet:
-: The time the most recent retransmittable packet was sent.
+time_of_last_sent_ack_eliciting_packet:
+: The time the most recent ack-eliciting packet was sent.
 
 time_of_last_sent_crypto_packet:
 : The time the most recent crypto packet was sent.
@@ -604,8 +604,8 @@ max_ack_delay:
 
 reordering_threshold:
 : The largest packet number gap between the largest acknowledged
-  retransmittable packet and an unacknowledged
-  retransmittable packet before it is declared lost.
+  ack-eliciting packet and an unacknowledged
+  ack-eliciting packet before it is declared lost.
 
 time_reordering_fraction:
 : The reordering window as a fraction of max(smoothed_rtt, latest_rtt).
@@ -618,7 +618,7 @@ sent_packets:
 
 : An association of packet numbers to information about them, including a number
   field indicating the packet number, a time field indicating the time a packet
-  was sent, a boolean indicating whether the packet is retransmittable,
+  was sent, a boolean indicating whether the packet is ack-eliciting,
   a boolean indicating whether it counts towards bytes in flight, and a size
   field indicating the packet's size in bytes.  sent_packets is ordered and
   indexed by packet number. Packets remain in sent_packets until acknowledged
@@ -646,7 +646,7 @@ follows:
    rttvar = 0
    min_rtt = infinite
    largest_sent_before_rto = 0
-   time_of_last_sent_retransmittable_packet = 0
+   time_of_last_sent_ack_eliciting_packet = 0
    time_of_last_sent_crypto_packet = 0
    largest_sent_packet = 0
 ~~~
@@ -659,8 +659,8 @@ are as follows:
 
 * packet_number: The packet number of the sent packet.
 
-* retransmittable: A boolean that indicates whether a packet is
-  retransmittable. If true, it is expected that an acknowledgement will
+* ack_eliciting: A boolean that indicates whether a packet is
+  ack-eliciting. If true, it is expected that an acknowledgement will
   be received, though the peer could delay sending the ACK frame containing
   it by up to the MaxAckDelay.
 
@@ -678,17 +678,17 @@ are as follows:
 Pseudocode for OnPacketSent follows:
 
 ~~~
- OnPacketSent(packet_number, retransmittable, in_flight,
+ OnPacketSent(packet_number, ack_eliciting, in_flight,
               is_crypto_packet, sent_bytes):
    largest_sent_packet = packet_number
    sent_packets[packet_number].packet_number = packet_number
    sent_packets[packet_number].time = now
-   sent_packets[packet_number].retransmittable = retransmittable
+   sent_packets[packet_number].ack_eliciting = ack_eliciting
    sent_packets[packet_number].in_flight = in_flight
-   if retransmittable:
+   if ack_eliciting:
      if is_crypto_packet:
        time_of_last_sent_crypto_packet = now
-     time_of_last_sent_retransmittable_packet = now
+     time_of_last_sent_ack_eliciting_packet = now
      OnPacketSentCC(sent_bytes)
      sent_packets[packet_number].size = sent_bytes
      SetLossDetectionTimer()
@@ -767,7 +767,7 @@ Pseudocode for OnPacketAcked follows:
 
 ~~~
    OnPacketAcked(acked_packet):
-     if (acked_packet.retransmittable):
+     if (acked_packet.ack_eliciting):
        OnPacketAckedCC(acked_packet)
      sent_packets.remove(acked_packet.packet_number)
 ~~~
@@ -783,7 +783,7 @@ Pseudocode for SetLossDetectionTimer follows:
 
 ~~~
  SetLossDetectionTimer():
-    // Don't arm timer if there are no retransmittable packets
+    // Don't arm timer if there are no ack-eliciting packets
     // in flight.
     if (bytes_in_flight == 0):
       loss_detection_timer.cancel()
@@ -803,7 +803,7 @@ Pseudocode for SetLossDetectionTimer follows:
     if (loss_time != 0):
       // Early retransmit timer or time loss detection.
       timeout = loss_time -
-        time_of_last_sent_retransmittable_packet
+        time_of_last_sent_ack_eliciting_packet
     else:
       // RTO or TLP timer
       // Calculate RTO duration
@@ -818,7 +818,7 @@ Pseudocode for SetLossDetectionTimer follows:
         timeout = min(tlp_timeout, timeout)
 
     loss_detection_timer.set(
-      time_of_last_sent_retransmittable_packet + timeout)
+      time_of_last_sent_ack_eliciting_packet + timeout)
 ~~~
 
 ### On Timeout
@@ -883,7 +883,7 @@ DetectLostPackets(largest_acked):
     if (time_since_sent > delay_until_lost ||
         delta > reordering_threshold):
       sent_packets.remove(unacked.packet_number)
-      if (unacked.retransmittable):
+      if (unacked.ack_eliciting):
         lost_packets.insert(unacked)
     else if (loss_time == 0 && delay_until_lost != infinite):
       loss_time = now() + delay_until_lost - time_since_sent
@@ -1040,7 +1040,7 @@ ecn_ce_counter:
 
 bytes_in_flight:
 : The sum of the size in bytes of all sent packets that contain at least one
-  retransmittable or PADDING frame, and have not been acked or declared
+  ack_eliciting or PADDING frame, and have not been acked or declared
   lost. The size does not include IP or UDP overhead, but does include the QUIC
   header and AEAD overhead.  Packets only containing ACK frames do not count
   towards bytes_in_flight to ensure congestion control does not impede
