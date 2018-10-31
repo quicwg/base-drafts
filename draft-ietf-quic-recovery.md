@@ -90,7 +90,7 @@ Definitions of terms that are used in this document:
 
 ACK-only:
 
-: Any packet containing only an ACK frame.
+: Any packet containing only one or more ACK frame(s).
 
 In-flight:
 
@@ -106,7 +106,8 @@ Retransmittable Frames:
 Retransmittable Packets:
 
 : Packets that contain retransmittable frames elicit an ACK from
-  the receiver and are called retransmittable packets.
+  the receiver within the maximum ack delay and are called
+  retransmittable packets.
 
 Crypto Packets:
 
@@ -131,8 +132,9 @@ mechanisms ensure that data and frames that need reliable delivery are
 acknowledged or declared lost and sent in new packets as necessary. The types
 of frames contained in a packet affect recovery and congestion control logic:
 
-* All packets are acknowledged, though packets that contain only ACK
-  and PADDING frames are not acknowledged immediately.
+* All packets are acknowledged, though packets that contain no
+  retransmittable frames are only acknowledged along with retransmittable
+  packets.
 
 * Long header packets that contain CRYPTO frames are critical to the
   performance of the QUIC handshake and use shorter timers for
@@ -700,14 +702,14 @@ above in {{sent-packets-fields}}.
 Pseudocode for OnPacketSent follows:
 
 ~~~
- OnPacketSent(packet_number, ack_only, in_flight,
+ OnPacketSent(packet_number, retransmittable, in_flight,
               is_crypto_packet, sent_bytes):
    largest_sent_packet = packet_number
    sent_packets[packet_number].packet_number = packet_number
    sent_packets[packet_number].time = now
-   sent_packets[packet_number].ack_only = ack_only
+   sent_packets[packet_number].retransmittable = retransmittable
    sent_packets[packet_number].in_flight = in_flight
-   if !ack_only:
+   if retransmittable:
      if is_crypto_packet:
        time_of_last_sent_crypto_packet = now
      time_of_last_sent_retransmittable_packet = now
@@ -789,7 +791,7 @@ Pseudocode for OnPacketAcked follows:
 
 ~~~
    OnPacketAcked(acked_packet):
-     if (!acked_packet.is_ack_only):
+     if (acked_packet.retransmittable):
        OnPacketAckedCC(acked_packet)
      sent_packets.remove(acked_packet.packet_number)
 ~~~
@@ -905,7 +907,7 @@ DetectLostPackets(largest_acked):
     if (time_since_sent > delay_until_lost ||
         delta > reordering_threshold):
       sent_packets.remove(unacked.packet_number)
-      if (!unacked.is_ack_only):
+      if (unacked.retransmittable):
         lost_packets.insert(unacked)
     else if (loss_time == 0 && delay_until_lost != infinite):
       loss_time = now() + delay_until_lost - time_since_sent
