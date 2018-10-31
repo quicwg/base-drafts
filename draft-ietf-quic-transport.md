@@ -824,7 +824,7 @@ For a bidirectional stream, RST_STREAM has no effect on data flow in the
 opposite direction. The RST_STREAM sender can send a STOP_SENDING frame to
 encourage prompt termination. Both endpoints MUST maintain state for the stream
 in the unterminated direction until that direction enters a terminal state, or
-either side sends CONNECTION_CLOSE or APPLICATION_CLOSE.
+either side sends CONNECTION_CLOSE.
 
 
 ## Data Limit Increments {#fc-credit}
@@ -2152,13 +2152,13 @@ These states SHOULD persist for three times the current Retransmission Timeout
 
 An endpoint enters a closing period after initiating an immediate close
 ({{immediate-close}}).  While closing, an endpoint MUST NOT send packets unless
-they contain a CONNECTION_CLOSE or APPLICATION_CLOSE frame (see
-{{immediate-close}} for details).  An endpoint retains only enough information
-to generate a packet containing a closing frame and to identify packets as
-belonging to the connection.  The connection ID and QUIC version is sufficient
-information to identify packets for a closing connection; an endpoint can
-discard all other connection state.  An endpoint MAY retain packet protection
-keys for incoming packets to allow it to read and process a closing frame.
+they contain a CONNECTION_CLOSE frame (see {{immediate-close}} for details).  An
+endpoint retains only enough information to generate a packet containing a
+CONNECTION_CLOSE frame and to identify packets as belonging to the connection.
+The connection ID and QUIC version is sufficient information to identify packets
+for a closing connection; an endpoint can discard all other connection state.
+An endpoint MAY retain packet protection keys for incoming packets to allow it
+to read and process a CONNECTION_CLOSE frame.
 
 The draining state is entered once an endpoint receives a signal that its peer
 is closing or draining.  While otherwise identical to the closing state, an
@@ -2166,11 +2166,11 @@ endpoint in the draining state MUST NOT send any packets.  Retaining packet
 protection keys is unnecessary once a connection is in the draining state.
 
 An endpoint MAY transition from the closing period to the draining period if it
-can confirm that its peer is also closing or draining.  Receiving a closing
-frame is sufficient confirmation, as is receiving a stateless reset.  The
-draining period SHOULD end when the closing period would have ended.  In other
-words, the endpoint can use the same end time, but cease retransmission of the
-closing packet.
+can confirm that its peer is also closing or draining.  Receiving a
+CONNECTION_CLOSE frame is sufficient confirmation, as is receiving a stateless
+reset.  The draining period SHOULD end when the closing period would have ended.
+In other words, the endpoint can use the same end time, but cease retransmission
+of the closing packet.
 
 Disposing of connection state prior to the end of the closing or draining period
 could cause delayed or reordered packets to be handled poorly.  Endpoints that
@@ -2226,18 +2226,20 @@ before sending any data that cannot be retried safely.
 
 ## Immediate Close
 
-An endpoint sends a closing frame (CONNECTION_CLOSE or APPLICATION_CLOSE) to
-terminate the connection immediately.  Any closing frame causes all streams to
-immediately become closed; open streams can be assumed to be implicitly reset.
+An endpoint sends a CONNECTION_CLOSE frame ({{frame-connection-close}}) to
+terminate the connection immediately.  A CONNECTION_CLOSE frame causes all
+streams to immediately become closed; open streams can be assumed to be
+implicitly reset.
 
-After sending a closing frame, endpoints immediately enter the closing state.
-During the closing period, an endpoint that sends a closing frame SHOULD respond
-to any packet that it receives with another packet containing a closing frame.
-To minimize the state that an endpoint maintains for a closing connection,
-endpoints MAY send the exact same packet.  However, endpoints SHOULD limit the
-number of packets they generate containing a closing frame.  For instance, an
-endpoint could progressively increase the number of packets that it receives
-before sending additional packets or increase the time between packets.
+After sending a CONNECTION_CLOSE frame, endpoints immediately enter the closing
+state.  During the closing period, an endpoint that sends a CONNECTION_CLOSE
+frame SHOULD respond to any packet that it receives with another packet
+containing a CONNECTION_CLOSE frame.  To minimize the state that an endpoint
+maintains for a closing connection, endpoints MAY send the exact same packet.
+However, endpoints SHOULD limit the number of packets they generate containing a
+CONNECTION_CLOSE frame.  For instance, an endpoint could progressively increase
+the number of packets that it receives before sending additional packets or
+increase the time between packets.
 
 Note:
 
@@ -2249,32 +2251,32 @@ Note:
 
 New packets from unverified addresses could be used to create an amplification
 attack (see {{address-validation}}).  To avoid this, endpoints MUST either limit
-transmission of closing frames to validated addresses or drop packets without
-response if the response would be more than three times larger than the received
-packet.
+transmission of CONNECTION_CLOSE frames to validated addresses or drop packets
+without response if the response would be more than three times larger than the
+received packet.
 
-After receiving a closing frame, endpoints enter the draining state.  An
-endpoint that receives a closing frame MAY send a single packet containing a
-closing frame before entering the draining state, using a CONNECTION_CLOSE frame
-and a NO_ERROR code if appropriate.  An endpoint MUST NOT send further packets,
-which could result in a constant exchange of closing frames until the closing
-period on either peer ended.
+After receiving a CONNECTION_CLOSE frame, endpoints enter the draining state.
+An endpoint that receives a CONNECTION_CLOSE frame MAY send a single packet
+containing a CONNECTION_CLOSE frame before entering the draining state, using a
+CONNECTION_CLOSE frame and a NO_ERROR code if appropriate.  An endpoint MUST NOT
+send further packets, which could result in a constant exchange of
+CONNECTION_CLOSE frames until the closing period on either peer ended.
 
 An immediate close can be used after an application protocol has arranged to
 close a connection.  This might be after the application protocols negotiates a
 graceful shutdown.  The application protocol exchanges whatever messages that
 are needed to cause both endpoints to agree to close the connection, after which
 the application requests that the connection be closed.  The application
-protocol can use an APPLICATION_CLOSE message with an appropriate error code to
+protocol can use an CONNECTION_CLOSE frame with an appropriate error code to
 signal closure.
 
 If the connection has been successfully established, endpoints MUST send any
-closing frames in a 1-RTT packet.  Prior to connection establishment a peer
-might not have 1-RTT keys, so endpoints SHOULD send closing frames in a
-Handshake packet.  If the endpoint does not have Handshake keys, or it is not
-certain that the peer has Handshake keys, it MAY send closing frames in an
-Initial packet.  If multiple packets are sent, they can be coalesced (see
-{{packet-coalesce}}) to facilitate retransmission.
+CONNECTION_CLOSE frames in a 1-RTT packet.  Prior to connection establishment a
+peer might not have 1-RTT keys, so endpoints SHOULD send CONNECTION_CLOSE frames
+in a Handshake packet.  If the endpoint does not have Handshake keys, or it is
+not certain that the peer has Handshake keys, it MAY send CONNECTION_CLOSE
+frames in an Initial packet.  If multiple packets are sent, they can be
+coalesced (see {{packet-coalesce}}) to facilitate retransmission.
 
 
 ## Stateless Reset {#stateless-reset}
@@ -2283,8 +2285,8 @@ A stateless reset is provided as an option of last resort for an endpoint that
 does not have access to the state of a connection.  A crash or outage might
 result in peers continuing to send data to an endpoint that is unable to
 properly continue the connection.  An endpoint that wishes to communicate a
-fatal connection error MUST use a closing frame if it has sufficient state to do
-so.
+fatal connection error MUST use a CONNECTION_CLOSE frame if it has sufficient
+state to do so.
 
 To support this process, a token is sent by endpoints.  The token is carried in
 the NEW_CONNECTION_ID frame sent by either peer, and servers can specify the
@@ -2371,7 +2373,7 @@ Reset Token.
 
 A stateless reset is not appropriate for signaling error conditions.  An
 endpoint that wishes to communicate a fatal connection error MUST use a
-CONNECTION_CLOSE or APPLICATION_CLOSE frame if it has sufficient state to do so.
+CONNECTION_CLOSE frame if it has sufficient state to do so.
 
 This stateless reset design is specific to QUIC version 1.  An endpoint that
 supports multiple versions of QUIC needs to generate a stateless reset that will
@@ -2474,39 +2476,37 @@ frame that signals the error.  Where this specification identifies error
 conditions, it also identifies the error code that is used.
 
 A stateless reset ({{stateless-reset}}) is not suitable for any error that can
-be signaled with a CONNECTION_CLOSE, APPLICATION_CLOSE, or RST_STREAM frame.  A
-stateless reset MUST NOT be used by an endpoint that has the state necessary to
-send a frame on the connection.
+be signaled with a CONNECTION_CLOSE or RST_STREAM frame.  A stateless reset MUST
+NOT be used by an endpoint that has the state necessary to send a frame on the
+connection.
 
 
 ## Connection Errors
 
 Errors that result in the connection being unusable, such as an obvious
 violation of protocol semantics or corruption of state that affects an entire
-connection, MUST be signaled using a CONNECTION_CLOSE or APPLICATION_CLOSE frame
-({{frame-connection-close}}, {{frame-application-close}}). An endpoint MAY close
-the connection in this manner even if the error only affects a single stream.
+connection, MUST be signaled using a CONNECTION_CLOSE frame
+({{frame-connection-close}}). An endpoint MAY close the connection in this
+manner even if the error only affects a single stream.
 
 Application protocols can signal application-specific protocol errors using the
-APPLICATION_CLOSE frame.  Errors that are specific to the transport, including
-all those described in this document, are carried in a CONNECTION_CLOSE frame.
-Other than the type of error code they carry, these frames are identical in
-format and semantics.
+application-specific variant of the CONNECTION_CLOSE frame.  Errors that are
+specific to the transport, including all those described in this document, are
+carried the QUIC-specific variant of the CONNECTION_CLOSE frame.
 
-A CONNECTION_CLOSE or APPLICATION_CLOSE frame could be sent in a packet that is
-lost.  An endpoint SHOULD be prepared to retransmit a packet containing either
-frame type if it receives more packets on a terminated connection.  Limiting the
-number of retransmissions and the time over which this final packet is sent
-limits the effort expended on terminated connections.
+A CONNECTION_CLOSE frame could be sent in a packet that is lost.  An endpoint
+SHOULD be prepared to retransmit a packet containing containing a
+CONNECTION_CLOSE frame if it receives more packets on a terminated connection.
+Limiting the number of retransmissions and the time over which this final packet
+is sent limits the effort expended on terminated connections.
 
-An endpoint that chooses not to retransmit packets containing CONNECTION_CLOSE
-or APPLICATION_CLOSE risks a peer missing the first such packet.  The only
-mechanism available to an endpoint that continues to receive data for a
-terminated connection is to use the stateless reset process
-({{stateless-reset}}).
+An endpoint that chooses not to retransmit packets containing a CONNECTION_CLOSE
+frame risks a peer missing the first such packet.  The only mechanism available
+to an endpoint that continues to receive data for a terminated connection is to
+use the stateless reset process ({{stateless-reset}}).
 
-An endpoint that receives an invalid CONNECTION_CLOSE or APPLICATION_CLOSE frame
-MUST NOT signal the existence of the error to its peer.
+An endpoint that receives an invalid CONNECTION_CLOSE frame MUST NOT signal the
+existence of the error to its peer.
 
 
 ## Stream Errors
@@ -2706,8 +2706,7 @@ frames are explained in more detail in {{frame-formats}}.
 |:------------|:---------------------|:-------------------------------|
 | 0x00        | PADDING              | {{frame-padding}}              |
 | 0x01        | RST_STREAM           | {{frame-rst-stream}}           |
-| 0x02        | CONNECTION_CLOSE     | {{frame-connection-close}}     |
-| 0x03        | APPLICATION_CLOSE    | {{frame-application-close}}    |
+| 0x02 - 0x03 | CONNECTION_CLOSE     | {{frame-connection-close}}     |
 | 0x04        | MAX_DATA             | {{frame-max-data}}             |
 | 0x05        | MAX_STREAM_DATA      | {{frame-max-stream-data}}      |
 | 0x07        | PING                 | {{frame-ping}}                 |
@@ -2884,9 +2883,9 @@ containing that information is acknowledged.
   STOP_SENDING frame, is sent until the receive stream enters either a "Data
   Recvd" or "Reset Recvd" state, see {{solicited-state-transitions}}.
 
-* Connection close signals, including those that use CONNECTION_CLOSE and
-  APPLICATION_CLOSE frames, are not sent again when packet loss is detected, but
-  as described in {{termination}}.
+* Connection close signals, including packets that contain CONNECTION_CLOSE
+  frames, are not sent again when packet loss is detected, but as described in
+  {{termination}}.
 
 * The current connection maximum data is sent in MAX_DATA frames. An updated
   value is sent in a MAX_DATA frame if the packet containing the most recently
@@ -3706,9 +3705,8 @@ Handshake packets are their own packet number space.  Packet numbers are
 incremented normally for other Handshake packets.
 
 The payload of this packet contains CRYPTO frames and could contain PADDING, or
-ACK frames. Handshake packets MAY contain CONNECTION_CLOSE or APPLICATION_CLOSE
-frames.  Endpoints MUST treat receipt of Handshake packets with other frames as
-a connection error.
+ACK frames. Handshake packets MAY contain CONNECTION_CLOSE frames.  Endpoints
+MUST treat receipt of Handshake packets with other frames as a connection error.
 
 
 ## Retry Packet {#packet-retry}
@@ -4083,9 +4081,11 @@ Final Offset:
 
 ## CONNECTION_CLOSE frame {#frame-connection-close}
 
-An endpoint sends a CONNECTION_CLOSE frame (type=0x02) to notify its peer that
-the connection is being closed.  CONNECTION_CLOSE is used to signal errors at
-the QUIC layer, or the absence of errors (with the NO_ERROR code).
+An endpoint sends a CONNECTION_CLOSE frame (type=0x02 or 0x03) to notify its
+peer that the connection is being closed.  The CONNECTION_CLOSE with a frame
+type of 0x02 is used to signal errors at only the QUIC layer, or the absence of
+errors (with the NO_ERROR code).  The CONNECTION_CLOSE frame with a type of 0x03
+is used to signal an error with the application that uses QUIC.
 
 If there are open streams that haven't been explicitly closed, they are
 implicitly closed when the connection is closed.
@@ -4098,7 +4098,7 @@ The CONNECTION_CLOSE frame is as follows:
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |           Error Code (16)     |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                         Frame Type (i)                      ...
+|                       [ Frame Type (i) ]                    ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                    Reason Phrase Length (i)                 ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -4110,14 +4110,17 @@ The fields of a CONNECTION_CLOSE frame are as follows:
 
 Error Code:
 
-: A 16-bit error code which indicates the reason for closing this connection.
-  CONNECTION_CLOSE uses codes from the space defined in {{error-codes}}.
+: A 16-bit error code which indicates the reason for closing this connection.  A
+  CONNECTION_CLOSE frame of type 0x02 uses codes from the space defined in
+  {{error-codes}}.  A CONNECTION_CLOSE frame of type 0x03 uses codes from the
+  application protocol error code space, see {{app-error-codes}}
 
 Frame Type:
 
 : A variable-length integer encoding the type of frame that triggered the error.
   A value of 0 (equivalent to the mention of the PADDING frame) is used when the
-  frame type is unknown.
+  frame type is unknown.  The application-specific variant of CONNECTION_CLOSE
+  (type 0x03) does not include this field.
 
 Reason Phrase Length:
 
@@ -4131,49 +4134,6 @@ Reason Phrase:
 : A human-readable explanation for why the connection was closed.  This can be
   zero length if the sender chooses to not give details beyond the Error Code.
   This SHOULD be a UTF-8 encoded string {{!RFC3629}}.
-
-
-## APPLICATION_CLOSE frame {#frame-application-close}
-
-An APPLICATION_CLOSE frame (type=0x03) is used to signal an error with the
-protocol that uses QUIC.
-
-The APPLICATION_CLOSE frame is as follows:
-
-~~~
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|           Error Code (16)     |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                    Reason Phrase Length (i)                 ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                        Reason Phrase (*)                    ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-~~~
-
-The fields of an APPLICATION_CLOSE frame are as follows:
-
-Error Code:
-
-: A 16-bit error code which indicates the reason for closing this connection.
-  APPLICATION_CLOSE uses codes from the application protocol error code space,
-  see {{app-error-codes}}.
-
-Reason Phrase Length:
-
-: This field is identical in format and semantics to the Reason Phrase Length
-  field from CONNECTION_CLOSE.
-
-Reason Phrase:
-
-: This field is identical in format and semantics to the Reason Phrase field
-  from CONNECTION_CLOSE.
-
-APPLICATION_CLOSE has similar format and semantics to the CONNECTION_CLOSE frame
-({{frame-connection-close}}).  Aside from the semantics of the Error Code field
-and the omission of the Frame Type field, both frames are used to close the
-connection.
 
 
 ## MAX_DATA Frame {#frame-max-data}
@@ -5048,9 +5008,9 @@ See {{iana-error-codes}} for details of registering new error codes.
 
 Application protocol error codes are 16-bit unsigned integers, but the
 management of application error codes are left to application protocols.
-Application protocol error codes are used for the RST_STREAM
-({{frame-rst-stream}}) and APPLICATION_CLOSE ({{frame-application-close}})
-frames.
+Application protocol error codes are used for the RST_STREAM frame
+({{frame-rst-stream}}) and the CONNECTION_CLOSE frame with a type of 0x03
+({{frame-connection-close}}) frames.
 
 
 # Security Considerations
