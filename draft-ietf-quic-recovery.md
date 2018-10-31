@@ -106,7 +106,8 @@ Retransmittable Frames:
 Retransmittable Packets:
 
 : Packets that contain retransmittable frames elicit an ACK from
-  the receiver and are called retransmittable packets.
+  the receiver within the maximum ack delay and are called
+  retransmittable packets.
 
 Crypto Packets:
 
@@ -131,8 +132,8 @@ mechanisms ensure that data and frames that need reliable delivery are
 acknowledged or declared lost and sent in new packets as necessary. The types
 of frames contained in a packet affect recovery and congestion control logic:
 
-* All packets are acknowledged, though packets that contain only ACK
-  and/or PADDING frames are only acknowledged along with retransmittable
+* All packets are acknowledged, though packets that contain no
+  retransmittable frames are only acknowledged along with retransmittable
   packets.
 
 * Long header packets that contain CRYPTO frames are critical to the
