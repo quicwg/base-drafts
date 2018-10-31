@@ -898,7 +898,8 @@ design.
 
 Large messages can produce deadlocking if the recipient does not process the
 message incrementally.  If the message is larger than flow control credit
-available and the recipient does not release additional flow control credit, a
+available and the recipient does not release additional flow control credit
+until the entire message is received and delivered, a
 deadlock can occur.  This is possible even where stream flow control limits are
 not reached because connection flow control limits can be consumed by other
 streams.
