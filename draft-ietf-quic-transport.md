@@ -3873,6 +3873,13 @@ included in the cryptographic handshake.
 
 ## Transport Parameter Definitions {#transport-parameter-definitions}
 
+This section details the transport parameters defined in this document.
+
+Many transport parameters listed here have integer values.  Those transport
+parameters that are identified as integers use a variable-length integer
+encoding (see {{integer-encoding}}) and have a default value of 0 if the
+transport parameter is absent, unless otherwise stated.
+
 The following transport parameters are defined:
 
 original_connection_id (0x0000):
@@ -3884,38 +3891,34 @@ original_connection_id (0x0000):
 
 idle_timeout (0x0001):
 
-: The idle timeout is a value in seconds that is encoded as an unsigned 16-bit
-  integer.  If this parameter is absent or zero then the idle timeout is
-  disabled.
+: The idle timeout is a value in seconds that is encoded as an integer.  If this
+  parameter is absent or zero then the idle timeout is disabled.
 
 stateless_reset_token (0x0002):
 
-: The Stateless Reset Token is used in verifying a stateless reset, see
+: A stateless reset token is used in verifying a stateless reset, see
   {{stateless-reset}}.  This parameter is a sequence of 16 bytes.  This
   transport parameter is only sent by a server.
 
 max_packet_size (0x0003):
 
-: The maximum packet size parameter places a limit on the size of packets that
-  the endpoint is willing to receive, encoded as an unsigned 16-bit integer.
-  This indicates that packets larger than this limit will be dropped.  The
-  default for this parameter is the maximum permitted UDP payload of 65527.
-  Values below 1200 are invalid.  This limit only applies to protected packets
-  ({{packet-protected}}).
+: The maximum packet size parameter is an integer value that limits the size of
+  packets that the endpoint is willing to receive.  This indicates that packets
+  larger than this limit will be dropped.  The default for this parameter is the
+  maximum permitted UDP payload of 65527.  Values below 1200 are invalid.  This
+  limit only applies to protected packets ({{packet-protected}}).
 
 initial_max_data (0x0004):
 
-: The initial maximum data parameter contains the initial value for the maximum
-  amount of data that can be sent on the connection.  This parameter is encoded
-  as an unsigned 32-bit integer in units of bytes.  This is equivalent to
-  sending a MAX_DATA ({{frame-max-data}}) for the connection immediately after
-  completing the handshake. If the transport parameter is absent, the connection
-  starts with a flow control limit of 0.
+: The initial maximum data parameter is an integer value that contains the
+  initial value for the maximum amount of data that can be sent on the
+  connection.  This is equivalent to sending a MAX_DATA ({{frame-max-data}}) for
+  the connection immediately after completing the handshake.
 
 initial_max_stream_data_bidi_local (0x0005):
 
 : The initial stream maximum data for bidirectional, locally-initiated streams
-  parameter is a 32-bit integer that contains the initial flow control limit for
+  parameter is an integer value that contains the initial flow control limit for
   newly created bidirectional streams opened by the endpoint that sets the
   transport parameter.  In client transport parameters, this applies to streams
   with an identifier with the least significant two bits set to 0x0; in server
@@ -3925,7 +3928,7 @@ initial_max_stream_data_bidi_local (0x0005):
 initial_max_stream_data_bidi_remote (0x0006):
 
 : The initial stream maximum data for bidirectional, peer-initiated streams
-  parameter is a 32-bit integer that contains the initial flow control limit for
+  parameter is an integer value that contains the initial flow control limit for
   newly created bidirectional streams opened by the endpoint that receives the
   transport parameter.  In client transport parameters, this applies to streams
   with an identifier with the least significant two bits set to 0x1; in server
@@ -3934,8 +3937,8 @@ initial_max_stream_data_bidi_remote (0x0006):
 
 initial_max_stream_data_uni (0x0007):
 
-: The initial stream maximum data for unidirectional streams parameter is a
-  32-bit integer that contains the initial flow control limit for newly created
+: The initial stream maximum data for unidirectional streams parameter is an
+  integer value that contains the initial flow control limit for newly created
   unidirectional streams opened by the endpoint that receives the transport
   parameter.  In client transport parameters, this applies to streams with an
   identifier with the least significant two bits set to 0x3; in server transport
@@ -3944,36 +3947,35 @@ initial_max_stream_data_uni (0x0007):
 
 initial_max_streams_bidi (0x0008):
 
-: The initial maximum bidirectional streams parameter contains the initial
-  maximum number of bidirectional streams the peer may initiate, encoded as an
-  unsigned 16-bit integer.  If this parameter is absent or zero, the peer cannot
-  open bidirectional streams until a MAX_STREAMS frame is sent.  Setting this
+: The initial maximum bidirectional streams parameter is an integer value that
+  contains the initial maximum number of bidirectional streams the peer may
+  initiate.  If this parameter is absent or zero, the peer cannot open
+  bidirectional streams until a MAX_STREAMS frame is sent.  Setting this
   parameter is equivalent to sending a MAX_STREAMS ({{frame-max-streams}}) of
   the corresponding type with the same value.
 
 initial_max_streams_uni (0x0009):
 
-: The initial maximum unidirectional streams parameter contains the initial
-  maximum number of unidirectional streams the peer may initiate, encoded as an
-  unsigned 16-bit integer.  If this parameter is absent or zero, the peer cannot
-  open unidirectional streams until a MAX_STREAMS frame is sent.  Setting this
+: The initial maximum unidirectional streams parameter is an integer value that
+  contains the initial maximum number of unidirectional streams the peer may
+  initiate.  If this parameter is absent or zero, the peer cannot open
+  unidirectional streams until a MAX_STREAMS frame is sent.  Setting this
   parameter is equivalent to sending a MAX_STREAMS ({{frame-max-streams}}) of
   the corresponding type with the same value.
 
 ack_delay_exponent (0x000a):
 
-: The ACK delay exponent is an 8-bit unsigned integer value indicating an
-  exponent used to decode the ACK Delay field in the ACK frame, see
-  {{frame-ack}}.  If this value is absent, a default value of 3 is assumed
-  (indicating a multiplier of 8).  The default value is also used for ACK frames
-  that are sent in Initial and Handshake packets.  Values above 20 are invalid.
+: The ACK delay exponent is an integer value indicating an exponent used to
+  decode the ACK Delay field in the ACK frame, see {{frame-ack}}.  If this value
+  is absent, a default value of 3 is assumed (indicating a multiplier of 8).
+  This default value is also used for ACK frames that are sent in Initial and
+  Handshake packets.  Values above 20 are invalid.
 
 max_ack_delay (0x000b):
 
-: The maximum ACK delay is an 8 bit unsigned integer value indicating the
-  maximum amount of time in milliseconds by which the endpoint will delay
-  sending acknowledgments.  If this value is absent, a default of 25
-  milliseconds is assumed.
+: The maximum ACK delay is an integer value indicating the maximum amount of
+  time in milliseconds by which the endpoint will delay sending acknowledgments.
+  If this value is absent, a default of 25 milliseconds is assumed.
 
 disable_migration (0x000c):
 
