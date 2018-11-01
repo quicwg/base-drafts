@@ -92,10 +92,9 @@ informative:
 
 --- abstract
 
-This document defines the core of the QUIC transport protocol.  This document
-describes connection establishment, packet format, multiplexing, and
-reliability.  Accompanying documents describe the cryptographic handshake and
-loss detection.
+This document describes the core of the QUIC transport protocol.  Accompanying
+documents describe QUIC's loss detection and congestion control
+{{QUIC-RECOVERY}}, and the use of TLS 1.3 for key negotiation {{QUIC-TLS}}.
 
 
 --- note_Note_to_Readers
@@ -112,55 +111,52 @@ code and issues list for this draft can be found at
 
 # Introduction
 
-QUIC is a multiplexed and secure transport protocol that runs on top of UDP.
-QUIC aims to provide a flexible set of features that allow it to be a
-general-purpose secure transport for multiple applications.
-
-* Version negotiation
-
-* Low-latency connection establishment
-
-* Authenticated and encrypted header and payload
+QUIC is a multiplexed and secure general-purpose transport protocol that
+provides:
 
 * Stream multiplexing
 
 * Stream and connection-level flow control
 
+* Low-latency connection establishment
+
 * Connection migration and resilience to NAT rebinding
+
+* Authenticated and encrypted header and payload
 
 QUIC uses UDP as a substrate to avoid requiring changes in legacy client
 operating systems and middleboxes.  QUIC authenticates all of its headers and
-encrypts most of the data it exchanges, including its signaling.  This allows
-the protocol to evolve without incurring a dependency on upgrades to
-middleboxes.
+encrypts most of the data it exchanges, including its signaling, to avoid
+incurring a dependency on middleboxes.
+
 
 ## Document Structure
 
-This document describes the core QUIC protocol, and is structured as follows:
+This document describes the core QUIC protocol and is structured as follows.
 
-* Streams are the basic service abstraction that QUIC provides:
+* Streams are the basic service abstraction that QUIC provides.
   - {{streams}} describes core concepts related to streams,
   - {{stream-states}} provides a reference model for stream states, and
   - {{flow-control}} outlines the operation of flow control.
 
-* Connections are the context in which QUIC endpoints communicate:
+* Connections are the context in which QUIC endpoints communicate.
   - {{connections}} describes core concepts related to connections,
   - {{version-negotiation}} describes version negotiation,
   - {{handshake}} details the process for establishing connections,
   - {{address-validation}} specifies critical denial of service mitigation
     mechanisms,
-  - {{migration}} describes how endpoints migrate a connection to use a new
-    network paths,
+  - {{migration}} describes how endpoints migrate a connection to a new 
+    network path,
   - {{termination}} lists the options for terminating an open connection, and
   - {{error-handling}} provides general guidance for error handling.
 
-* Packets and frames are the basic unit used by QUIC to communicate:
+* Packets and frames are the basic unit used by QUIC to communicate.
   - {{packets-frames}} describes concepts related to packets and frames,
   - {{packetization}} defines models for the transmission, retransmission, and
-    acknowledgement of information, and
-  - {{packet-size}} contains a rules for managing the size of packets.
+    acknowledgement of packets and frames, and
+  - {{packet-size}} specifies rules for managing the size of packets.
 
-* Details of encoding of QUIC protocol elements is described in:
+* Finally, encoding details of QUIC protocol elements are described in:
   - {{versions}} (Versions),
   - {{integer-encoding}} (Integer Encoding),
   - {{packet-formats}} (Packet Headers),
@@ -171,17 +167,41 @@ This document describes the core QUIC protocol, and is structured as follows:
 Accompanying documents describe QUIC's loss detection and congestion control
 {{QUIC-RECOVERY}}, and the use of TLS 1.3 for key negotiation {{QUIC-TLS}}.
 
-QUIC version 1 conforms to the protocol invariants in {{QUIC-INVARIANTS}}.
+This document defines QUIC version 1, which conforms to the protocol invariants
+in {{QUIC-INVARIANTS}}.
 
 
 ## Conventions and Definitions
 
-The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD",
+### Keywords
+
+The keywords "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD",
 "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this
 document are to be interpreted as described in BCP 14 {{!RFC2119}} {{!RFC8174}}
 when, and only when, they appear in all capitals, as shown here.
 
-Definitions of terms that are used in this document:
+### Terms
+
+Commonly used terms in the document are described below.
+
+QUIC:
+
+: The transport protocol described by this document. QUIC is a name, not an
+  acronym.
+
+QUIC packet:
+
+: The smallest unit of QUIC that can be encapsulated in a UDP datagram. Multiple
+  QUIC packets can be encapsulated in a single UDP datagram.
+
+Endpoint:
+
+: An entity that can participate in a QUIC conversation by generating,
+  receiving, and fully processing QUIC packets.
+
+Connection:
+
+: A conversation between two QUIC endpoints with a single encryption context.
 
 Client:
 
@@ -191,50 +211,36 @@ Server:
 
 : The endpoint accepting incoming QUIC connections.
 
-Endpoint:
-
-: The client or server end of a connection.
-
-Stream:
-
-: A logical unidirectional or bidirectional channel of ordered bytes within a
-  QUIC connection.
-
-Connection:
-
-: A conversation between two QUIC endpoints with a single encryption context
-  that multiplexes streams within it.
-
 Connection ID:
 
 : An opaque identifier that is used to identify a QUIC connection at an
-  endpoint.  Each endpoint sets a value that its peer includes in packets.
+  endpoint.  Each endpoint sets a value for its peer to include in packets sent
+  towards the endpoint.
 
-QUIC packet:
+Stream:
 
-: The smallest unit of data that can be exchanged by QUIC endpoints.
+: A unidirectional or bidirectional channel of ordered bytes within a QUIC
+  connection. A QUIC connection can carry multiple simultaneous streams.
 
-QUIC is a name, not an acronym.
 
+### Notational Conventions
 
-## Notational Conventions
+Packet and frame diagrams in this document use the format described in Section
+3.1 of {{?RFC2360}}, with the following additional conventions:
 
-Packet and frame diagrams use the format described in Section 3.1 of
-{{?RFC2360}}, with the following additional conventions:
-
-\[x\]
+\[x\]:
 : Indicates that x is optional
 
-x (A)
+x (A):
 : Indicates that x is A bits long
 
-x (A/B/C) ...
+x (A/B/C) ...:
 : Indicates that x is one of A, B, or C bits long
 
-x (i) ...
+x (i) ...:
 : Indicates that x uses the variable-length encoding in {{integer-encoding}}
 
-x (*) ...
+x (*) ...:
 : Indicates that x is variable-length
 
 
