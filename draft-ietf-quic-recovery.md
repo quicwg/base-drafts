@@ -519,9 +519,8 @@ being transmitted are tracked in case of loss.
 
 If a packet containing retransmittable frames is lost, the QUIC transport
 needs to recover from that loss, such as by retransmitting the data,
-sending an updated frame, or abandoning the frame. In the case of
-STREAM data, the data should be retransmitted unless the send side of the
-stream is closed.
+sending an updated frame, or abandoning the frame.  For more information,
+see "Retransmission of Information" in {{QUIC-TRANSPORT}}.
 
 Packets MUST be tracked until acknowledged or lost.  After a packet is lost,
 it SHOULD be tracked for an amount of time comparable to the maximum
