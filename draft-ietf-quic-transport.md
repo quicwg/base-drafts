@@ -197,7 +197,8 @@ QUIC packet:
 Endpoint:
 
 : An entity that can participate in a QUIC conversation by generating,
-  receiving, and fully processing QUIC packets.
+  receiving, and fully processing QUIC packets. There are only two types of
+  endpoint in QUIC: client and server.
 
 Connection:
 
@@ -221,6 +222,10 @@ Stream:
 
 : A unidirectional or bidirectional channel of ordered bytes within a QUIC
   connection. A QUIC connection can carry multiple simultaneous streams.
+
+Application:
+
+ : An entity that uses QUIC to send and receive data.
 
 
 ### Notational Conventions
