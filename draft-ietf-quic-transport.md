@@ -240,16 +240,11 @@ x (*) ...
 
 # Streams {#streams}
 
-<!-- TODO: Replace bytes with octets -->
-
 Streams in QUIC provide a lightweight, ordered byte-stream abstraction to an
 application. An alternative view of QUIC streams is as an elastic "message"
 abstraction, similar to the way ephemeral streams are used in SST
 {{?SST=DOI.10.1145/1282427.1282421}}, which may be a more appealing description
 for some applications.
-
-QUIC does not provide any means of ensuring ordering between octets on different
-streams.
 
 Streams can be created by sending data. Other processes associated with stream
 management - ending, cancelling, and managing flow control - are all designed to
@@ -257,35 +252,37 @@ impose minimal overheads. For instance, a single STREAM frame ({{frame-stream}})
 can open, carry data for, and close a stream. Streams can also be long-lived and
 can last the entire duration of a connection.
 
+Streams can be created by either endpoint, can concurrently send data
+interleaved with other streams, and can be cancelled.  Any stream can be
+initiated by either endpoint.  QUIC does not provide any means of ensuring
+ordering between bytes on different streams.
+
 QUIC allows for an arbitrary number of streams to operate concurrently and for
 an arbitrary amount of data to be sent on any stream, subject to flow control
 constraints (see {{flow-control}}).
 
-## Stream Types and Identifiers {#stream-id}
 
-<!-- Stream ID or stream ID -->
+## Stream Types and Identifiers {#stream-id}
 
 Streams can be unidirectional or bidirectional.  Unidirectional streams carry
 data in one direction: from the initiator of the stream to its peer.
-Bidirectional streams allow for data to be sent in both directions.  Streams can
-be created by either endpoint, can concurrently send data interleaved with other
-streams, and can be cancelled.  Any stream can be initiated by either enndpoint.
+Bidirectional streams allow for data to be sent in both directions.
 
 Streams are identified within a connection by a numeric value, referred to as
-the Stream ID.  Stream IDs are unique to a stream: a QUIC endpoint MUST NOT
-reuse a Stream ID within a connection.  Stream IDs are encoded as a
+the stream ID.  Stream IDs are unique to a stream. A QUIC endpoint MUST NOT
+reuse a stream ID within a connection.  Stream IDs are encoded as a
 variable-length integer (see {{integer-encoding}}).
 
-The least significant bit (0x1) of the Stream ID identifies the initiator of the
-stream.  Client-initiated streams have even-numbered Stream IDs (with the bit
-set to 0), and server-initiated streams have odd-numbered Stream IDs (with the
+The least significant bit (0x1) of the stream ID identifies the initiator of the
+stream.  Client-initiated streams have even-numbered stream IDs (with the bit
+set to 0), and server-initiated streams have odd-numbered stream IDs (with the
 bit set to 1).
 
-The second least significant bit (0x2) of the Stream ID distinguishes between
+The second least significant bit (0x2) of the stream ID distinguishes between
 bidirectional streams (with the bit set to 0) and unidirectional streams (with
 the bit set to 1).
 
-The least significant two bits from a Stream ID therefore identify a stream as
+The least significant two bits from a stream ID therefore identify a stream as
 one of four types, as summarized in {{stream-id-types}}.
 
 | Bits | Stream Type                      |
@@ -296,17 +293,17 @@ one of four types, as summarized in {{stream-id-types}}.
 | 0x3  | Server-Initiated, Unidirectional |
 {: #stream-id-types title="Stream ID Types"}
 
-Within each type, streams are expected to be created with numerically increasing
-Stream IDs.  A Stream ID that is used out of order results in all streams of
-that type with lower-numbered stream IDs also being opened.
+Within each type, streams are created with numerically increasing stream IDs.  A
+stream ID that is used out of order results in all streams of that type with
+lower-numbered stream IDs also being opened.
 
-The first bidirectional stream opened by the client has a Stream ID of 0.
+The first bidirectional stream opened by the client has a stream ID of 0.
 
 ## Sending and Receiving Data
 
-Endpoints use STREAM frames to encapsulate data sent by an application on a
-stream ({{frame-stream}}). An endpoint uses the stream ID and offset fields in a
-received STREAM frame to place the contained data in order within the stream.
+STREAM frames ({{frame-stream}}) encapsulate data sent by an application. An
+endpoint uses the Stream ID and Offset fields in STREAM frames to place data in
+order.
 
 Endpoints MUST be able to deliver stream data to an application as an ordered
 byte-stream.  Delivering an ordered byte-stream requires that an endpoint buffer
@@ -317,7 +314,7 @@ order. However, implementations MAY choose to offer the ability to deliver data
 out of order to a receiving application.
 
 An endpoint could receive data for a stream at the same stream offset multiple
-times; data that has already been received can be discarded.  The data at a
+times.  Data that has already been received can be discarded.  The data at a
 given offset MUST NOT change if it is sent multiple times; an endpoint MAY treat
 receipt of different data at the same offset within a stream as a connection
 error of type PROTOCOL_VIOLATION.
@@ -343,11 +340,10 @@ it relies on receiving priority information from the application that uses QUIC.
 A QUIC implementation SHOULD provide ways in which an application can indicate
 the relative priority of streams.  When deciding which streams to dedicate
 resources to, the implementation SHOULD use the information provided by the
-application.  Failure to account for priority of streams can result in
-suboptimal application performance.
+application.
 
 
-# Stream States: Life of a Stream {#stream-states}
+# Stream States {#stream-states}
 
 This section describes streams in terms of their send or receive components.
 Two state machines are described: one for the streams on which an endpoint
@@ -361,9 +357,7 @@ conditions for opening a stream are slightly more complex for a bidirectional
 stream because the opening of either send or receive sides causes the stream
 to open in both directions.
 
-An endpoint can open streams up to its maximum stream limit in any order of
-stream ID. However, within each type, endpoints SHOULD open the send side of
-streams in numerically increasing order of stream ID.
+An endpoint MUST open streams of the same type in increasing order of stream ID.
 
 Note:
 
@@ -426,7 +420,7 @@ sending.
 
 Sending the first STREAM or STREAM_DATA_BLOCKED frame causes a send stream to
 enter the "Send" state.  An implementation might choose to defer allocating a
-Stream ID to a send stream until it sends the first frame and enters this state,
+stream ID to a send stream until it sends the first frame and enters this state,
 which can allow for better stream prioritization.
 
 The sending part of a bidirectional stream initiated by a peer (type 0 for a
@@ -527,9 +521,7 @@ providing flow control credit.  A MAX_STREAM_DATA frame might arrive before a
 STREAM or STREAM_DATA_BLOCKED frame if packets are lost or reordered.
 
 Before creating a stream, all streams of the same type with lower-numbered
-stream IDs MUST be created.  This means that receipt of a frame that would open
-a stream causes all streams of the same type with lower-numbered stream IDs to
-be opened in numeric order.  This ensures that the creation order for streams is
+stream IDs MUST be created.  This ensures that the creation order for streams is
 consistent on both endpoints.
 
 In the "Recv" state, the endpoint receives STREAM and STREAM_DATA_BLOCKED
@@ -585,10 +577,8 @@ STREAM_DATA_BLOCKED ({{frame-stream-data-blocked}}), and RST_STREAM
 A sender MUST NOT send any of these frames from a terminal state ("Data Recvd"
 or "Reset Recvd").  A sender MUST NOT send STREAM or STREAM_DATA_BLOCKED after
 sending a RST_STREAM; that is, in the terminal states and in the "Reset Sent"
-state.
-
-A receiver could receive any of these three frames in any state, due to the
-possibility of delayed delivery of packets carrying them.
+state.  A receiver could receive any of these three frames in any state, due to
+the possibility of delayed delivery of packets carrying them.
 
 The receiver of a stream sends MAX_STREAM_DATA ({{frame-max-stream-data}}) and
 STOP_SENDING frames ({{frame-stop-sending}}).
@@ -597,10 +587,8 @@ The receiver only sends MAX_STREAM_DATA in the "Recv" state.  A receiver can
 send STOP_SENDING in any state where it has not received a RST_STREAM frame;
 that is states other than "Reset Recvd" or "Reset Read".  However there is
 little value in sending a STOP_SENDING frame in the "Data Recvd" state, since
-all stream data has been received.
-
-A sender could receive either of these two frames in any state as a result of
-delayed delivery of packets.
+all stream data has been received.  A sender could receive either of these two
+frames in any state as a result of delayed delivery of packets.
 
 
 ## Bidirectional Stream States {#stream-bidi-states}
@@ -679,9 +667,9 @@ termination in the opposite direction by sending a STOP_SENDING frame.
 
 # Flow Control {#flow-control}
 
-It is necessary to limit the amount of data that a receiver may have to buffer,
-so as to prevent a fast sender from overwhelming a slow receiver, or to prevent
-a malicious sender from consuming a large amount of memory at a receiver.  To
+It is necessary to limit the amount of data that a receiver could buffer, to
+prevent a fast sender from overwhelming a slow receiver, or to prevent a
+malicious sender from consuming a large amount of memory at a receiver.  To
 enable a receiver to limit memory commitment to a connection and to apply back
 pressure on the sender, streams are flow controlled both individually and as an
 aggregate.  A QUIC receiver controls the maximum amount of data the sender can
@@ -720,8 +708,8 @@ MAX_STREAM_DATA ({{frame-max-stream-data}}) or MAX_DATA ({{frame-max-data}})
 frames to the sender to advertise additional credit.
 
 A receiver advertises credit for a stream by sending a MAX_STREAM_DATA frame
-with the Stream ID set appropriately.  A MAX_STREAM_DATA frame indicates the
-maximum absolute byte offset of a stream.  A receiver could use the current
+with the Stream ID field set appropriately.  A MAX_STREAM_DATA frame indicates
+the maximum absolute byte offset of a stream.  A receiver could use the current
 offset of data consumed to determine the flow control offset to be advertised.
 A receiver MAY send MAX_STREAM_DATA frames in multiple packets in order to make
 sure that the sender receives an update before running out of flow control
@@ -729,10 +717,9 @@ credit, even if one of the packets is lost.
 
 A receiver advertises credit for a connection by sending a MAX_DATA frame, which
 indicates the maximum of the sum of the absolute byte offsets of all streams.  A
-receiver maintains a cumulative sum of bytes received on all contributing
-streams, which is used to check for flow control violations. A receiver might
-use a sum of bytes consumed on all streams to determine the maximum data limit
-to be advertised.
+receiver maintains a cumulative sum of bytes received on all streams, which is
+used to check for flow control violations. A receiver might use a sum of bytes
+consumed on all streams to determine the maximum data limit to be advertised.
 
 A receiver can advertise a larger offset by sending MAX_STREAM_DATA or MAX_DATA
 frames at any time during the connection.  A receiver cannot renege on an
@@ -769,12 +756,14 @@ resource commitment and overhead when determining how large a limit is
 advertised.
 
 A receiver MAY use an autotuning mechanism to tune the frequency and amount of
-advertised additional credit.
+advertised additional credit based on a round-trip time estimate and the rate at
+which the receiving application consumes data, similar to common TCP
+implementations.
 
 If a sender runs out of flow control credit, it will be unable to send new data
 and is considered blocked.  It is generally considered best to not let the
-sender go into quiescence.  To avoid blocking a sender, and to reasonably
-account for the possibility of loss, a receiver should send a MAX_DATA or
+sender become blocked.  To avoid blocking a sender, and to reasonably account
+for the possibility of loss, a receiver should send a MAX_DATA or
 MAX_STREAM_DATA frame at least two round trips before it expects the sender to
 get blocked.
 
@@ -786,8 +775,8 @@ peer chooses to not send STREAM_DATA_BLOCKED or DATA_BLOCKED frames.
 
 ## Handling Stream Cancellation {#stream-cancellation}
 
-Given enough time, both endpoints must agree on flow control state, to avoid
-flow control violations or deadlock.
+Endpoints need to eventually agree on the amount of flow control credit that has
+been consumed, to avoid either exceeding flow control limits or deadlocking.
 
 On receipt of a RST_STREAM frame, an endpoint will tear down state for the
 matching stream and ignore further data arriving on that stream.  If a
@@ -4037,7 +4026,7 @@ The fields are:
 
 Stream ID:
 
-: A variable-length integer encoding of the Stream ID of the stream being
+: A variable-length integer encoding of the stream ID of the stream being
   terminated.
 
 Application Protocol Error Code:
@@ -4168,7 +4157,7 @@ The fields in the MAX_STREAM_DATA frame are as follows:
 
 Stream ID:
 
-: The Stream ID of the affected stream, encoded as a variable-length integer.
+: The stream ID of the affected stream, encoded as a variable-length integer.
 
 Maximum Stream Data:
 
@@ -4473,7 +4462,7 @@ The fields are:
 
 Stream ID:
 
-: A variable-length integer carrying the Stream ID of the stream being ignored.
+: A variable-length integer carrying the stream ID of the stream being ignored.
 
 Application Error Code:
 
@@ -4756,7 +4745,7 @@ are present in the frame.
 
 * The OFF bit (0x04) in the frame type is set to indicate that there is an
   Offset field present.  When set to 1, the Offset field is present; when set to
-  0, the Offset field is absent and the Stream Data starts at an offset of 0
+  0, the Offset field is absent and the stream data starts at an offset of 0
   (that is, the frame contains the first bytes of the stream, or the end of a
   stream that includes no data).
 
@@ -4819,8 +4808,8 @@ the offset of the next byte that would be sent.
 When new data is to be sent on a stream, a sender MUST set the encapsulating
 STREAM frame's offset field to the stream offset of the first byte of this new
 data.  The first byte in the stream has an offset of 0.  The largest offset
-delivered on a stream - the sum of the re-constructed offset and data length -
-MUST be less than 2^62.
+delivered on a stream - the sum of the offset and data length - MUST be less
+than 2^62.
 
 
 ## CRYPTO Frame {#frame-crypto}
@@ -4867,10 +4856,10 @@ There is a separate flow of cryptographic handshake data in each encryption
 level, each of which starts at an offset of 0. This implies that each encryption
 level is treated as a separate CRYPTO stream of data.
 
-Unlike STREAM frames, which include a Stream ID indicating to which stream the
-data belongs, the CRYPTO frame carries data for a single stream per encryption
-level. The stream does not have an explicit end, so CRYPTO frames do not have a
-FIN bit.
+Unlike STREAM frames, which include a Stream ID field indicating to which stream
+the data belongs, the CRYPTO frame carries data for a single stream per
+encryption level. The stream does not have an explicit end, so CRYPTO frames do
+not have a FIN bit.
 
 
 ## Extension Frames
