@@ -3917,33 +3917,32 @@ initial_max_data (0x0004):
 
 initial_max_stream_data_bidi_local (0x0005):
 
-: The initial stream maximum data for bidirectional, locally-initiated streams
-  parameter is an integer value that contains the initial flow control limit for
-  newly created bidirectional streams opened by the endpoint that sets the
-  transport parameter.  In client transport parameters, this applies to streams
-  with an identifier with the least significant two bits set to 0x0; in server
-  transport parameters, this applies to streams with the least significant two
-  bits set to 0x1.
+: This parameter is an integer value specifying the initial flow control limit
+  for locally-initiated bidirectional streams.  This limit applies to newly
+  created bidirectional streams opened by the endpoint that sends the transport
+  parameter.  In client transport parameters, this applies to streams with an
+  identifier with the least significant two bits set to 0x0; in server transport
+  parameters, this applies to streams with the least significant two bits set to
+  0x1.
 
 initial_max_stream_data_bidi_remote (0x0006):
 
-: The initial stream maximum data for bidirectional, peer-initiated streams
-  parameter is an integer value that contains the initial flow control limit for
-  newly created bidirectional streams opened by the endpoint that receives the
-  transport parameter.  In client transport parameters, this applies to streams
-  with an identifier with the least significant two bits set to 0x1; in server
-  transport parameters, this applies to streams with the least significant two
-  bits set to 0x0.
+: This parameter is an integer value specifying the initial flow control limit
+  for peer-initiated bidirectional streams.  This limit applies to newly created
+  bidirectional streams opened by the endpoint that receives the transport
+  parameter.  In client transport parameters, this applies to streams with an
+  identifier with the least significant two bits set to 0x1; in server transport
+  parameters, this applies to streams with the least significant two bits set to
+  0x0.
 
 initial_max_stream_data_uni (0x0007):
 
-: The initial stream maximum data for unidirectional streams parameter is an
-  integer value that contains the initial flow control limit for newly created
-  unidirectional streams opened by the endpoint that receives the transport
-  parameter.  In client transport parameters, this applies to streams with an
-  identifier with the least significant two bits set to 0x3; in server transport
-  parameters, this applies to streams with the least significant two bits set to
-  0x2.
+: This parameter is an integer value specifying the initial flow control limit
+  for unidirectional streams.  This limit applies to newly created bidirectional
+  streams opened by the endpoint that receives the transport parameter.  In
+  client transport parameters, this applies to streams with an identifier with
+  the least significant two bits set to 0x3; in server transport parameters,
+  this applies to streams with the least significant two bits set to 0x2.
 
 initial_max_streams_bidi (0x0008):
 
@@ -3965,23 +3964,24 @@ initial_max_streams_uni (0x0009):
 
 ack_delay_exponent (0x000a):
 
-: The ACK delay exponent is an integer value indicating an exponent used to
-  decode the ACK Delay field in the ACK frame, see {{frame-ack}}.  If this value
-  is absent, a default value of 3 is assumed (indicating a multiplier of 8).
-  This default value is also used for ACK frames that are sent in Initial and
-  Handshake packets.  Values above 20 are invalid.
+: The ACK delay exponent is an integer value indicating an
+  exponent used to decode the ACK Delay field in the ACK frame ({{frame-ack}}).
+  If this value is absent, a default value of 3 is assumed
+  (indicating a multiplier of 8).  The default value is also used for ACK frames
+  that are sent in Initial and Handshake packets.  Values above 20 are invalid.
 
 max_ack_delay (0x000b):
 
-: The maximum ACK delay is an integer value indicating the maximum amount of
-  time in milliseconds by which the endpoint will delay sending acknowledgments.
-  If this value is absent, a default of 25 milliseconds is assumed.
+: The maximum ACK delay is an integer value indicating the
+  maximum amount of time in milliseconds by which the endpoint will delay
+  sending acknowledgments.  If this value is absent, a default of 25
+  milliseconds is assumed.
 
 disable_migration (0x000c):
 
-: The disable migration transport is included if the endpoint does not support
-  connection migration ({{migration}}). Peers of an endpoint that sets this
-  transport parameter MUST NOT send any packets, including probing packets
+: The disable migration transport parameter is included if the endpoint does not
+  support connection migration ({{migration}}). Peers of an endpoint that sets
+  this transport parameter MUST NOT send any packets, including probing packets
   ({{probing}}), from a local address other than that used to perform the
   handshake.  This parameter is a zero-length value.
 
