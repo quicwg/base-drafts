@@ -4568,7 +4568,7 @@ a change in the initial limits (see {{zerortt-parameters}}).
 
 The MAX_STREAMS frames (type=0x12 and 0x13) inform the peer of the number of
 streams it is permitted to open.  A MAX_STREAMS frame with a type of 0x12
-applies to bidirectional streams; a MAX_STREAMS frame with a type of 0x13
+applies to bidirectional streams, and a MAX_STREAMS frame with a type of 0x13
 applies to unidirectional streams.
 
 The MAX_STREAMS frames are as follows:
