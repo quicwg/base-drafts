@@ -4417,7 +4417,7 @@ value of the three low-order bits of the frame type determine the fields that
 are present in the frame.
 
 * The OFF bit (0x04) in the frame type is set to indicate that there is an
-  Offset field present.  When set to 1, the Offset field is present; when set to
+  Offset field present.  When set to 1, the Offset field is present.  When set to
   0, the Offset field is absent and the Stream Data starts at an offset of 0
   (that is, the frame contains the first bytes of the stream, or the end of a
   stream that includes no data).
