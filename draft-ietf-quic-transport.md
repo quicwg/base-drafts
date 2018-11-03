@@ -145,7 +145,7 @@ This document describes the core QUIC protocol and is structured as follows.
   - {{handshake}} details the process for establishing connections,
   - {{address-validation}} specifies critical denial of service mitigation
     mechanisms,
-  - {{migration}} describes how endpoints migrate a connection to a new 
+  - {{migration}} describes how endpoints migrate a connection to a new
     network path,
   - {{termination}} lists the options for terminating an open connection, and
   - {{error-handling}} provides general guidance for error handling.
