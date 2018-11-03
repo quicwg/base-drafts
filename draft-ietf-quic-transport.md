@@ -193,9 +193,7 @@ Server:
 
 Endpoint:
 
-: An entity that can participate in a QUIC conversation by generating,
-  receiving, and fully processing QUIC packets. There are only two types of
-  endpoint in QUIC: client and server.
+: The client or server end of a connection.
 
 Stream:
 
@@ -217,10 +215,6 @@ QUIC packet:
 : The smallest unit of data that can be exchanged by QUIC endpoints.
 
 QUIC is a name, not an acronym.
-
-Application:
-
-: An entity that uses QUIC to send and receive data.
 
 
 ## Notational Conventions
