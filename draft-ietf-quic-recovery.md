@@ -250,7 +250,7 @@ the acknowledgement indicates that a later packet was received, while the
 reordering threshold provides some tolerance for reordering of packets in the
 network.
 
-#### Packet Threshold 
+#### Packet Threshold
 
 The RECOMMENDED initial value for kReorderingThreshold is 3, based on
 TCP loss recovery {{?RFC5681}} {{?RFC6675}}. Some networks may exhibit higher
