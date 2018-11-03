@@ -2649,24 +2649,24 @@ frames are explained in more detail in {{frame-formats}}.
 | Type Value  | Frame Type Name      | Definition                     |
 |:------------|:---------------------|:-------------------------------|
 | 0x00        | PADDING              | {{frame-padding}}              |
-| 0x01        | RST_STREAM           | {{frame-rst-stream}}           |
-| 0x02 - 0x03 | CONNECTION_CLOSE     | {{frame-connection-close}}     |
-| 0x04        | MAX_DATA             | {{frame-max-data}}             |
-| 0x05        | MAX_STREAM_DATA      | {{frame-max-stream-data}}      |
-| 0x07        | PING                 | {{frame-ping}}                 |
-| 0x08        | DATA_BLOCKED         | {{frame-data-blocked}}         |
-| 0x09        | STREAM_DATA_BLOCKED  | {{frame-stream-data-blocked}}  |
-| 0x0b        | NEW_CONNECTION_ID    | {{frame-new-connection-id}}    |
-| 0x0c        | STOP_SENDING         | {{frame-stop-sending}}         |
-| 0x0d        | RETIRE_CONNECTION_ID | {{frame-retire-connection-id}} |
-| 0x0e        | PATH_CHALLENGE       | {{frame-path-challenge}}       |
-| 0x0f        | PATH_RESPONSE        | {{frame-path-response}}        |
-| 0x10 - 0x17 | STREAM               | {{frame-stream}}               |
-| 0x18        | CRYPTO               | {{frame-crypto}}               |
-| 0x19        | NEW_TOKEN            | {{frame-new-token}}            |
-| 0x1a - 0x1b | ACK                  | {{frame-ack}}                  |
-| 0x1c - 0x1d | MAX_STREAMS          | {{frame-max-streams}}          |
-| 0x1e - 0x1f | STREAMS_BLOCKED      | {{frame-streams-blocked}}      |
+| 0x01        | PING                 | {{frame-ping}}                 |
+| 0x02 - 0x03 | ACK                  | {{frame-ack}}                  |
+| 0x04        | RST_STREAM           | {{frame-rst-stream}}           |
+| 0x05        | STOP_SENDING         | {{frame-stop-sending}}         |
+| 0x06        | CRYPTO               | {{frame-crypto}}               |
+| 0x07        | NEW_TOKEN            | {{frame-new-token}}            |
+| 0x08 - 0x0f | STREAM               | {{frame-stream}}               |
+| 0x10        | MAX_DATA             | {{frame-max-data}}             |
+| 0x11        | MAX_STREAM_DATA      | {{frame-max-stream-data}}      |
+| 0x12 - 0x13 | MAX_STREAMS          | {{frame-max-streams}}          |
+| 0x14        | DATA_BLOCKED         | {{frame-data-blocked}}         |
+| 0x15        | STREAM_DATA_BLOCKED  | {{frame-stream-data-blocked}}  |
+| 0x16 - 0x17 | STREAMS_BLOCKED      | {{frame-streams-blocked}}      |
+| 0x18        | NEW_CONNECTION_ID    | {{frame-new-connection-id}}    |
+| 0x19        | RETIRE_CONNECTION_ID | {{frame-retire-connection-id}} |
+| 0x1a        | PATH_CHALLENGE       | {{frame-path-challenge}}       |
+| 0x1b        | PATH_RESPONSE        | {{frame-path-response}}        |
+| 0x1c - 0x1d | CONNECTION_CLOSE     | {{frame-connection-close}}     |
 {: #frame-types title="Frame Types"}
 
 All QUIC frames are idempotent.  That is, a valid frame does not cause
@@ -3984,229 +3984,9 @@ A PADDING frame has no content.  That is, a PADDING frame consists of the single
 byte that identifies the frame as a PADDING frame.
 
 
-## RST_STREAM Frame {#frame-rst-stream}
-
-An endpoint may use a RST_STREAM frame (type=0x01) to abruptly terminate a
-stream.
-
-After sending a RST_STREAM, an endpoint ceases transmission and retransmission
-of STREAM frames on the identified stream.  A receiver of RST_STREAM can discard
-any data that it already received on that stream.
-
-An endpoint that receives a RST_STREAM frame for a send-only stream MUST
-terminate the connection with error PROTOCOL_VIOLATION.
-
-The RST_STREAM frame is as follows:
-
-~~~
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                        Stream ID (i)                        ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|  Application Error Code (16)  |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                       Final Offset (i)                     ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-~~~
-
-The fields are:
-
-Stream ID:
-
-: A variable-length integer encoding of the stream ID of the stream being
-  terminated.
-
-Application Protocol Error Code:
-
-: A 16-bit application protocol error code (see {{app-error-codes}}) which
-  indicates why the stream is being closed.
-
-Final Offset:
-
-: A variable-length integer indicating the absolute byte offset of the end of
-  data written on this stream by the RST_STREAM sender.
-
-
-## CONNECTION_CLOSE frame {#frame-connection-close}
-
-An endpoint sends a CONNECTION_CLOSE frame (type=0x02 or 0x03) to notify its
-peer that the connection is being closed.  The CONNECTION_CLOSE with a frame
-type of 0x02 is used to signal errors at only the QUIC layer, or the absence of
-errors (with the NO_ERROR code).  The CONNECTION_CLOSE frame with a type of 0x03
-is used to signal an error with the application that uses QUIC.
-
-If there are open streams that haven't been explicitly closed, they are
-implicitly closed when the connection is closed.
-
-The CONNECTION_CLOSE frame is as follows:
-
-~~~
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|           Error Code (16)     |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                       [ Frame Type (i) ]                    ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                    Reason Phrase Length (i)                 ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                        Reason Phrase (*)                    ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-~~~
-
-The fields of a CONNECTION_CLOSE frame are as follows:
-
-Error Code:
-
-: A 16-bit error code which indicates the reason for closing this connection.  A
-  CONNECTION_CLOSE frame of type 0x02 uses codes from the space defined in
-  {{error-codes}}.  A CONNECTION_CLOSE frame of type 0x03 uses codes from the
-  application protocol error code space, see {{app-error-codes}}
-
-Frame Type:
-
-: A variable-length integer encoding the type of frame that triggered the error.
-  A value of 0 (equivalent to the mention of the PADDING frame) is used when the
-  frame type is unknown.  The application-specific variant of CONNECTION_CLOSE
-  (type 0x03) does not include this field.
-
-Reason Phrase Length:
-
-: A variable-length integer specifying the length of the reason phrase in bytes.
-  Note that a CONNECTION_CLOSE frame cannot be split between packets, so in
-  practice any limits on packet size will also limit the space available for a
-  reason phrase.
-
-Reason Phrase:
-
-: A human-readable explanation for why the connection was closed.  This can be
-  zero length if the sender chooses to not give details beyond the Error Code.
-  This SHOULD be a UTF-8 encoded string {{!RFC3629}}.
-
-
-## MAX_DATA Frame {#frame-max-data}
-
-The MAX_DATA frame (type=0x04) is used in flow control to inform the peer of
-the maximum amount of data that can be sent on the connection as a whole.
-
-The frame is as follows:
-
-~~~
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                        Maximum Data (i)                     ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-~~~
-
-The fields in the MAX_DATA frame are as follows:
-
-Maximum Data:
-
-: A variable-length integer indicating the maximum amount of data that can be
-  sent on the entire connection, in units of bytes.
-
-All data sent in STREAM frames counts toward this limit.  The sum of the largest
-received offsets on all streams - including streams in terminal states - MUST
-NOT exceed the value advertised by a receiver.  An endpoint MUST terminate a
-connection with a FLOW_CONTROL_ERROR error if it receives more data than the
-maximum data value that it has sent, unless this is a result of a change in
-the initial limits (see {{zerortt-parameters}}).
-
-
-## MAX_STREAM_DATA Frame {#frame-max-stream-data}
-
-The MAX_STREAM_DATA frame (type=0x05) is used in flow control to inform a peer
-of the maximum amount of data that can be sent on a stream.
-
-An endpoint that receives a MAX_STREAM_DATA frame for a receive-only stream
-MUST terminate the connection with error PROTOCOL_VIOLATION.
-
-An endpoint that receives a MAX_STREAM_DATA frame for a send-only stream
-it has not opened MUST terminate the connection with error PROTOCOL_VIOLATION.
-
-Note that an endpoint may legally receive a MAX_STREAM_DATA frame on a
-bidirectional stream it has not opened.
-
-The frame is as follows:
-
-~~~
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                        Stream ID (i)                        ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                    Maximum Stream Data (i)                  ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-~~~
-
-The fields in the MAX_STREAM_DATA frame are as follows:
-
-Stream ID:
-
-: The stream ID of the affected stream, encoded as a variable-length integer.
-
-Maximum Stream Data:
-
-: A variable-length integer indicating the maximum amount of data that can be
-  sent on the identified stream, in units of bytes.
-
-When counting data toward this limit, an endpoint accounts for the largest
-received offset of data that is sent or received on the stream.  Loss or
-reordering can mean that the largest received offset on a stream can be greater
-than the total size of data received on that stream.  Receiving STREAM frames
-might not increase the largest received offset.
-
-The data sent on a stream MUST NOT exceed the largest maximum stream data value
-advertised by the receiver.  An endpoint MUST terminate a connection with a
-FLOW_CONTROL_ERROR error if it receives more data than the largest maximum
-stream data that it has sent for the affected stream, unless this is a result of
-a change in the initial limits (see {{zerortt-parameters}}).
-
-
-## MAX_STREAMS Frame {#frame-max-streams}
-
-The MAX_STREAMS frame (type=0x1c and 0x1d) informs the peer of the number of
-streams it is permitted to open.  A MAX_STREAMS frame with a type of 0x1c
-applies to bidirectional streams; a MAX_STREAMS frame with a type of 0x1d
-applies to unidirectional streams.
-
-The frame is as follows:
-
-~~~
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                     Maximum Streams (i)                     ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-~~~
-
-The fields in the MAX_STREAMS frame are as follows:
-
-Maximum Streams:
-
-: A count of the total number of streams of the corresponding type that can be
-  opened.
-
-Loss or reordering can cause a MAX_STREAMS frame to be received which states a
-lower stream limit than an endpoint has previously received.  MAX_STREAMS frames
-which do not increase the stream limit MUST be ignored.
-
-An endpoint MUST NOT open more streams than permitted by the current stream
-limit set by its peer.  For instance, a server that receives a unidirectional
-stream limit of 3 is permitted to open stream 3, 7, and 11, but not stream 15.
-An endpoint MUST terminate a connection with a STREAM_LIMIT_ERROR error if a
-peer opens more streams than was permitted.
-
-Note that these frames (and the corresponding transport parameters) do not
-describe the number of streams that can be opened concurrently.  The limit
-includes streams that have been closed as well as those that are open.
-
-
 ## PING Frame {#frame-ping}
 
-Endpoints can use PING frames (type=0x07) to verify that their peers are still
+Endpoints can use PING frames (type=0x01) to verify that their peers are still
 alive or to check reachability to the peer. The PING frame contains no
 additional fields.
 
@@ -4229,240 +4009,11 @@ experience shows that sending packets every 15 to 30 seconds is necessary to
 prevent the majority of middleboxes from losing state for UDP flows.
 
 
-## DATA_BLOCKED Frame {#frame-data-blocked}
+## ACK Frames {#frame-ack}
 
-A sender SHOULD send a DATA_BLOCKED frame (type=0x08) when it wishes to send
-data, but is unable to due to connection-level flow control (see
-{{flow-control}}).  DATA_BLOCKED frames can be used as input to tuning of flow
-control algorithms (see {{fc-credit}}).
-
-The DATA_BLOCKED frame is as follows:
-
-~~~
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                       Data Limit (i)                        ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-~~~
-
-The DATA_BLOCKED frame contains a single field.
-
-Data Limit:
-
-: A variable-length integer indicating the connection-level limit at which
-  blocking occurred.
-
-
-## STREAM_DATA_BLOCKED Frame {#frame-stream-data-blocked}
-
-A sender SHOULD send a STREAM_DATA_BLOCKED frame (type=0x09) when it wishes to
-send data, but is unable to due to stream-level flow control.  This frame is
-analogous to DATA_BLOCKED ({{frame-data-blocked}}).
-
-An endpoint that receives a STREAM_DATA_BLOCKED frame for a send-only stream
-MUST terminate the connection with error PROTOCOL_VIOLATION.
-
-The STREAM_DATA_BLOCKED frame is as follows:
-
-~~~
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                        Stream ID (i)                        ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                    Stream Data Limit (i)                    ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-~~~
-
-The STREAM_DATA_BLOCKED frame contains two fields:
-
-Stream ID:
-
-: A variable-length integer indicating the stream which is flow control blocked.
-
-Stream Data Limit:
-
-: A variable-length integer indicating the offset of the stream at which the
-  blocking occurred.
-
-
-## STREAMS_BLOCKED Frame {#frame-streams-blocked}
-
-A sender SHOULD send a STREAMS_BLOCKED frame (type=0x1e or 0x1f) when it wishes
-to open a stream, but is unable to due to the maximum stream limit set by its
-peer (see {{frame-max-streams}}).  A STREAMS_BLOCKED frame of type 0x1e is used
-to indicate reaching the bidirectional stream limit; a STREAMS_BLOCKED frame of
-type 0x1f indicates reaching the unidirectional stream limit.
-
-A STREAMS_BLOCKED frame does not open the stream, but informs the peer that a
-new stream was needed and the stream limit prevented the creation of the stream.
-
-The STREAMS_BLOCKED frame is as follows:
-
-~~~
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                        Stream Limit (i)                     ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-~~~
-
-The STREAMS_BLOCKED frame contains a single field.
-
-Stream Limit:
-
-: A variable-length integer indicating the stream limit at the time the frame
-  was sent.
-
-
-## NEW_CONNECTION_ID Frame {#frame-new-connection-id}
-
-An endpoint sends a NEW_CONNECTION_ID frame (type=0x0b) to provide its peer with
-alternative connection IDs that can be used to break linkability when migrating
-connections (see {{migration-linkability}}).
-
-The NEW_CONNECTION_ID frame is as follows:
-
-~~~
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|   Length (8)  |            Sequence Number (i)              ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                    Connection ID (32..144)                  ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                                                               |
-+                                                               +
-|                                                               |
-+                   Stateless Reset Token (128)                 +
-|                                                               |
-+                                                               +
-|                                                               |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-~~~
-
-The fields are:
-
-Length:
-
-: An 8-bit unsigned integer containing the length of the connection ID.  Values
-  less than 4 and greater than 18 are invalid and MUST be treated as a
-  connection error of type PROTOCOL_VIOLATION.
-
-Sequence Number:
-
-: The sequence number assigned to the connection ID by the sender.  See
-  {{issue-cid}}.
-
-Connection ID:
-
-: A connection ID of the specified length.
-
-Stateless Reset Token:
-
-: A 128-bit value that will be used for a stateless reset when the associated
-  connection ID is used (see {{stateless-reset}}).
-
-An endpoint MUST NOT send this frame if it currently requires that its peer send
-packets with a zero-length Destination Connection ID.  Changing the length of a
-connection ID to or from zero-length makes it difficult to identify when the
-value of the connection ID changed.  An endpoint that is sending packets with a
-zero-length Destination Connection ID MUST treat receipt of a NEW_CONNECTION_ID
-frame as a connection error of type PROTOCOL_VIOLATION.
-
-Transmission errors, timeouts and retransmissions might cause the same
-NEW_CONNECTION_ID frame to be received multiple times.  Receipt of the same
-frame multiple times MUST NOT be treated as a connection error.  A receiver can
-use the sequence number supplied in the NEW_CONNECTION_ID frame to identify new
-connection IDs from old ones.
-
-If an endpoint receives a NEW_CONNECTION_ID frame that repeats a previously
-issued connection ID with a different Stateless Reset Token or a different
-sequence number, the endpoint MAY treat that receipt as a connection error of
-type PROTOCOL_VIOLATION.
-
-## RETIRE_CONNECTION_ID Frame {#frame-retire-connection-id}
-
-An endpoint sends a RETIRE_CONNECTION_ID frame (type=0x0d) to indicate that it
-will no longer use a connection ID that was issued by its peer. This may include
-the connection ID provided during the handshake.  Sending a RETIRE_CONNECTION_ID
-frame also serves as a request to the peer to send additional connection IDs for
-future use (see {{connection-id}}).  New connection IDs can be delivered to a
-peer using the NEW_CONNECTION_ID frame ({{frame-new-connection-id}}).
-
-Retiring a connection ID invalidates the stateless reset token associated with
-that connection ID.
-
-The RETIRE_CONNECTION_ID frame is as follows:
-
-~~~
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                      Sequence Number (i)                    ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-~~~
-
-The fields are:
-
-Sequence Number:
-
-: The sequence number of the connection ID being retired.  See
-  {{retiring-cids}}.
-
-Receipt of a RETIRE_CONNECTION_ID frame containing a sequence number greater
-than any previously sent to the peer MAY be treated as a connection error of
-type PROTOCOL_VIOLATION.
-
-An endpoint cannot send this frame if it was provided with a zero-length
-connection ID by its peer.  An endpoint that provides a zero-length connection
-ID MUST treat receipt of a RETIRE_CONNECTION_ID frame as a connection error of
-type PROTOCOL_VIOLATION.
-
-
-## STOP_SENDING Frame {#frame-stop-sending}
-
-An endpoint may use a STOP_SENDING frame (type=0x0c) to communicate that
-incoming data is being discarded on receipt at application request.  This
-signals a peer to abruptly terminate transmission on a stream.
-
-Receipt of a STOP_SENDING frame is only valid for a send stream that exists and
-is not in the "Ready" state (see {{stream-send-states}}).  Receiving a
-STOP_SENDING frame for a send stream that is "Ready" or non-existent MUST be
-treated as a connection error of type PROTOCOL_VIOLATION.  An endpoint that
-receives a STOP_SENDING frame for a receive-only stream MUST terminate the
-connection with error PROTOCOL_VIOLATION.
-
-The STOP_SENDING frame is as follows:
-
-~~~
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                        Stream ID (i)                        ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|  Application Error Code (16)  |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-~~~
-
-The fields are:
-
-Stream ID:
-
-: A variable-length integer carrying the stream ID of the stream being ignored.
-
-Application Error Code:
-
-: A 16-bit, application-specified reason the sender is ignoring the stream (see
-  {{app-error-codes}}).
-
-
-## ACK Frame {#frame-ack}
-
-Receivers send ACK frames (types 0x1a and 0x1b) to inform senders of packets
+Receivers send ACK frames (types 0x02 and 0x03) to inform senders of packets
 they have received and processed. The ACK frame contains one or more ACK Blocks.
-ACK Blocks are ranges of acknowledged packets. If the frame type is 0x1b, ACK
+ACK Blocks are ranges of acknowledged packets. If the frame type is 0x03, ACK
 frames also contain the sum of QUIC packets with associated ECN marks received
 on the connection up until this point.
 
@@ -4479,7 +4030,7 @@ Version Negotiation and Retry packets cannot be acknowledged because they do not
 contain a packet number.  Rather than relying on ACK frames, these packets are
 implicitly acknowledged by the next Initial packet sent by the client.
 
-An ACK frame is shown below.
+An ACK frame is as follows:
 
 ~~~
  0                   1                   2                   3
@@ -4498,7 +4049,7 @@ An ACK frame is shown below.
 ~~~
 {: #ack-format title="ACK Frame Format"}
 
-The fields in the ACK frame are as follows:
+ACK frames contain the following fields:
 
 Largest Acknowledged:
 
@@ -4543,7 +4094,7 @@ Block describes progressively lower-numbered packets.  As long as contiguous
 ranges of packets are small, the variable-length integer encoding ensures that
 each range can be expressed in a small number of bytes.
 
-The ACK frame uses the least significant bit (that is, type 0x1b) to indicate
+The ACK frame uses the least significant bit (that is, type 0x03) to indicate
 ECN feedback and report receipt of QUIC packets with associated ECN codepoints
 of ECT(0), ECT(1), or CE in the packet's IP header.
 
@@ -4626,7 +4177,7 @@ Additional ACK Block (repeated):
 
 ### ECN section
 
-The ECN section should only be parsed when the ACK frame type is 0x1b.  The ECN
+The ECN section should only be parsed when the ACK frame type is 0x03.  The ECN
 section consists of 3 ECN counters as shown below.
 
 ~~~
@@ -4656,49 +4207,139 @@ CE Count:
 ECN counters are maintained separately for each packet number space.
 
 
-## PATH_CHALLENGE Frame {#frame-path-challenge}
+## RST_STREAM Frame {#frame-rst-stream}
 
-Endpoints can use PATH_CHALLENGE frames (type=0x0e) to check reachability to the
-peer and for path validation during connection migration.
+An endpoint uses a RST_STREAM frame (type=0x04) to abruptly terminate a stream.
 
-PATH_CHALLENGE frames contain an 8-byte payload.
+After sending a RST_STREAM, an endpoint ceases transmission and retransmission
+of STREAM frames on the identified stream.  A receiver of RST_STREAM can discard
+any data that it already received on that stream.
+
+An endpoint that receives a RST_STREAM frame for a send-only stream MUST
+terminate the connection with error PROTOCOL_VIOLATION.
+
+The RST_STREAM frame is as follows:
 
 ~~~
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                                                               |
-+                            Data (8)                           +
-|                                                               |
+|                        Stream ID (i)                        ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|  Application Error Code (16)  |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                       Final Offset (i)                     ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
 
-Data:
+RST_STREAM frames contain the following fields:
 
-: This 8-byte field contains arbitrary data.
+Stream ID:
 
-A PATH_CHALLENGE frame containing 8 bytes that are hard to guess is sufficient
-to ensure that it is easier to receive the packet than it is to guess the value
-correctly.
+: A variable-length integer encoding of the Stream ID of the stream being
+  terminated.
 
-The recipient of this frame MUST generate a PATH_RESPONSE frame
-({{frame-path-response}}) containing the same Data.
+Application Protocol Error Code:
+
+: A 16-bit application protocol error code (see {{app-error-codes}}) which
+  indicates why the stream is being closed.
+
+Final Offset:
+
+: A variable-length integer indicating the absolute byte offset of the end of
+  data written on this stream by the RST_STREAM sender.
 
 
-## PATH_RESPONSE Frame {#frame-path-response}
+## STOP_SENDING Frame {#frame-stop-sending}
 
-The PATH_RESPONSE frame (type=0x0f) is sent in response to a PATH_CHALLENGE
-frame.  Its format is identical to the PATH_CHALLENGE frame
-({{frame-path-challenge}}).
+An endpoint uses a STOP_SENDING frame (type=0x05) to communicate that incoming
+data is being discarded on receipt at application request.  This signals a peer
+to abruptly terminate transmission on a stream.
 
-If the content of a PATH_RESPONSE frame does not match the content of a
-PATH_CHALLENGE frame previously sent by the endpoint, the endpoint MAY generate
-a connection error of type PROTOCOL_VIOLATION.
+Receipt of a STOP_SENDING frame is only valid for a send stream that exists and
+is not in the "Ready" state (see {{stream-send-states}}).  Receiving a
+STOP_SENDING frame for a send stream that is "Ready" or non-existent MUST be
+treated as a connection error of type PROTOCOL_VIOLATION.  An endpoint that
+receives a STOP_SENDING frame for a receive-only stream MUST terminate the
+connection with error PROTOCOL_VIOLATION.
+
+The STOP_SENDING frame is as follows:
+
+~~~
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                        Stream ID (i)                        ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|  Application Error Code (16)  |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~
+
+STOP_SENDING frames contain the following fields:
+
+Stream ID:
+
+: A variable-length integer carrying the Stream ID of the stream being ignored.
+
+Application Error Code:
+
+: A 16-bit, application-specified reason the sender is ignoring the stream (see
+  {{app-error-codes}}).
+
+
+## CRYPTO Frame {#frame-crypto}
+
+The CRYPTO frame (type=0x06) is used to transmit cryptographic handshake
+messages. It can be sent in all packet types. The CRYPTO frame offers the
+cryptographic protocol an in-order stream of bytes.  CRYPTO frames are
+functionally identical to STREAM frames, except that they do not bear a stream
+identifier; they are not flow controlled; and they do not carry markers for
+optional offset, optional length, and the end of the stream.
+
+The CRYPTO frame is as follows:
+
+~~~
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                          Offset (i)                         ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                          Length (i)                         ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                        Crypto Data (*)                      ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~
+{: #crypto-format title="CRYPTO Frame Format"}
+
+CRYPTO frames contain the following fields:
+
+Offset:
+
+: A variable-length integer specifying the byte offset in the stream for the
+  data in this CRYPTO frame.
+
+Length:
+
+: A variable-length integer specifying the length of the Crypto Data field in
+  this CRYPTO frame.
+
+Crypto Data:
+
+: The cryptographic message data.
+
+There is a separate flow of cryptographic handshake data in each encryption
+level, each of which starts at an offset of 0. This implies that each encryption
+level is treated as a separate CRYPTO stream of data.
+
+Unlike STREAM frames, which include a Stream ID indicating to which stream the
+data belongs, the CRYPTO frame carries data for a single stream per encryption
+level. The stream does not have an explicit end, so CRYPTO frames do not have a
+FIN bit.
 
 
 ## NEW_TOKEN frame {#frame-new-token}
 
-A server sends a NEW_TOKEN frame (type=0x19) to provide the client a token to
+A server sends a NEW_TOKEN frame (type=0x07) to provide the client a token to
 send in the header of an Initial packet for a future connection.
 
 The NEW_TOKEN frame is as follows:
@@ -4713,7 +4354,7 @@ The NEW_TOKEN frame is as follows:
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
 
-The fields of a NEW_TOKEN frame are as follows:
+NEW_TOKEN frames contain the following fields:
 
 Token Length:
 
@@ -4727,13 +4368,13 @@ Token:
 ## STREAM Frames {#frame-stream}
 
 STREAM frames implicitly create a stream and carry stream data.  The STREAM
-frame takes the form 0b00010XXX (or the set of values from 0x10 to 0x17).  The
+frame takes the form 0b00001XXX (or the set of values from 0x08 to 0x0f).  The
 value of the three low-order bits of the frame type determine the fields that
 are present in the frame.
 
 * The OFF bit (0x04) in the frame type is set to indicate that there is an
-  Offset field present.  When set to 1, the Offset field is present; when set to
-  0, the Offset field is absent and the stream data starts at an offset of 0
+  Offset field present.  When set to 1, the Offset field is present.  When set
+  to 0, the Offset field is absent and the Stream Data starts at an offset of 0
   (that is, the frame contains the first bytes of the stream, or the end of a
   stream that includes no data).
 
@@ -4749,7 +4390,7 @@ are present in the frame.
 An endpoint that receives a STREAM frame for a send-only stream MUST terminate
 the connection with error PROTOCOL_VIOLATION.
 
-A STREAM frame is shown below.
+The STREAM frames are as follows:
 
 ~~~
  0                   1                   2                   3
@@ -4766,7 +4407,7 @@ A STREAM frame is shown below.
 ~~~
 {: #stream-format title="STREAM Frame Format"}
 
-The STREAM frame contains the following fields:
+STREAM frames contain the following fields:
 
 Stream ID:
 
@@ -4793,61 +4434,419 @@ Stream Data:
 When a Stream Data field has a length of 0, the offset in the STREAM frame is
 the offset of the next byte that would be sent.
 
-When new data is to be sent on a stream, a sender MUST set the encapsulating
-STREAM frame's offset field to the stream offset of the first byte of this new
-data.  The first byte in the stream has an offset of 0.  The largest offset
-delivered on a stream - the sum of the offset and data length - MUST be less
-than 2^62.
+The first byte in the stream has an offset of 0.  The largest offset delivered
+on a stream - the sum of the re-constructed offset and data length - MUST be
+less than 2^62.
 
 
-## CRYPTO Frame {#frame-crypto}
+## MAX_DATA Frame {#frame-max-data}
 
-The CRYPTO frame (type=0x18) is used to transmit cryptographic handshake
-messages. It can be sent in all packet types. The CRYPTO frame offers the
-cryptographic protocol an in-order stream of bytes.  CRYPTO frames are
-functionally identical to STREAM frames, except that they do not bear a stream
-identifier; they are not flow controlled; and they do not carry markers for
-optional offset, optional length, and the end of the stream.
+The MAX_DATA frame (type=0x10) is used in flow control to inform the peer of
+the maximum amount of data that can be sent on the connection as a whole.
 
-A CRYPTO frame is shown below.
+The MAX_DATA frame is as follows:
 
 ~~~
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                          Offset (i)                         ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                          Length (i)                         ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                        Crypto Data (*)                      ...
+|                        Maximum Data (i)                     ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
-{: #crypto-format title="CRYPTO Frame Format"}
 
-The CRYPTO frame contains the following fields:
+MAX_DATA frames contain the following fields:
 
-Offset:
+Maximum Data:
 
-: A variable-length integer specifying the byte offset in the stream for the
-  data in this CRYPTO frame.
+: A variable-length integer indicating the maximum amount of data that can be
+  sent on the entire connection, in units of bytes.
+
+All data sent in STREAM frames counts toward this limit.  The sum of the largest
+received offsets on all streams - including streams in terminal states - MUST
+NOT exceed the value advertised by a receiver.  An endpoint MUST terminate a
+connection with a FLOW_CONTROL_ERROR error if it receives more data than the
+maximum data value that it has sent, unless this is a result of a change in
+the initial limits (see {{zerortt-parameters}}).
+
+
+## MAX_STREAM_DATA Frame {#frame-max-stream-data}
+
+The MAX_STREAM_DATA frame (type=0x11) is used in flow control to inform a peer
+of the maximum amount of data that can be sent on a stream.
+
+An endpoint that receives a MAX_STREAM_DATA frame for a receive-only stream
+MUST terminate the connection with error PROTOCOL_VIOLATION.
+
+An endpoint that receives a MAX_STREAM_DATA frame for a send-only stream
+it has not opened MUST terminate the connection with error PROTOCOL_VIOLATION.
+
+Note that an endpoint may legally receive a MAX_STREAM_DATA frame on a
+bidirectional stream it has not opened.
+
+The MAX_STREAM_DATA frame is as follows:
+
+~~~
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                        Stream ID (i)                        ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                    Maximum Stream Data (i)                  ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~
+
+MAX_STREAM_DATA frames contain the following fields:
+
+Stream ID:
+
+: The stream ID of the stream that is affected encoded as a variable-length
+  integer.
+
+Maximum Stream Data:
+
+: A variable-length integer indicating the maximum amount of data that can be
+  sent on the identified stream, in units of bytes.
+
+When counting data toward this limit, an endpoint accounts for the largest
+received offset of data that is sent or received on the stream.  Loss or
+reordering can mean that the largest received offset on a stream can be greater
+than the total size of data received on that stream.  Receiving STREAM frames
+might not increase the largest received offset.
+
+The data sent on a stream MUST NOT exceed the largest maximum stream data value
+advertised by the receiver.  An endpoint MUST terminate a connection with a
+FLOW_CONTROL_ERROR error if it receives more data than the largest maximum
+stream data that it has sent for the affected stream, unless this is a result of
+a change in the initial limits (see {{zerortt-parameters}}).
+
+
+## MAX_STREAMS Frames {#frame-max-streams}
+
+The MAX_STREAMS frames (type=0x12 and 0x13) inform the peer of the number of
+streams it is permitted to open.  A MAX_STREAMS frame with a type of 0x12
+applies to bidirectional streams, and a MAX_STREAMS frame with a type of 0x13
+applies to unidirectional streams.
+
+The MAX_STREAMS frames are as follows:
+
+~~~
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                     Maximum Streams (i)                     ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~
+
+MAX_STREAMS frames contain the following fields:
+
+Maximum Streams:
+
+: A count of the total number of streams of the corresponding type that can be
+  opened.
+
+Loss or reordering can cause a MAX_STREAMS frame to be received which states a
+lower stream limit than an endpoint has previously received.  MAX_STREAMS frames
+which do not increase the stream limit MUST be ignored.
+
+An endpoint MUST NOT open more streams than permitted by the current stream
+limit set by its peer.  For instance, a server that receives a unidirectional
+stream limit of 3 is permitted to open stream 3, 7, and 11, but not stream 15.
+An endpoint MUST terminate a connection with a STREAM_LIMIT_ERROR error if a
+peer opens more streams than was permitted.
+
+Note that these frames (and the corresponding transport parameters) do not
+describe the number of streams that can be opened concurrently.  The limit
+includes streams that have been closed as well as those that are open.
+
+
+## DATA_BLOCKED Frame {#frame-data-blocked}
+
+A sender SHOULD send a DATA_BLOCKED frame (type=0x14) when it wishes to send
+data, but is unable to due to connection-level flow control (see
+{{flow-control}}).  DATA_BLOCKED frames can be used as input to tuning of flow
+control algorithms (see {{fc-credit}}).
+
+The DATA_BLOCKED frame is as follows:
+
+~~~
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                       Data Limit (i)                        ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~
+
+DATA_BLOCKED frames contain the following fields:
+
+Data Limit:
+
+: A variable-length integer indicating the connection-level limit at which
+  blocking occurred.
+
+
+## STREAM_DATA_BLOCKED Frame {#frame-stream-data-blocked}
+
+A sender SHOULD send a STREAM_DATA_BLOCKED frame (type=0x15) when it wishes to
+send data, but is unable to due to stream-level flow control.  This frame is
+analogous to DATA_BLOCKED ({{frame-data-blocked}}).
+
+An endpoint that receives a STREAM_DATA_BLOCKED frame for a send-only stream
+MUST terminate the connection with error PROTOCOL_VIOLATION.
+
+The STREAM_DATA_BLOCKED frame is as follows:
+
+~~~
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                        Stream ID (i)                        ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                    Stream Data Limit (i)                    ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~
+
+STREAM_DATA_BLOCKED frames contain the following fields:
+
+Stream ID:
+
+: A variable-length integer indicating the stream which is flow control blocked.
+
+Stream Data Limit:
+
+: A variable-length integer indicating the offset of the stream at which the
+  blocking occurred.
+
+
+## STREAMS_BLOCKED Frames {#frame-streams-blocked}
+
+A sender SHOULD send a STREAMS_BLOCKED frame (type=0x16 or 0x17) when it wishes
+to open a stream, but is unable to due to the maximum stream limit set by its
+peer (see {{frame-max-streams}}).  A STREAMS_BLOCKED frame of type 0x16 is used
+to indicate reaching the bidirectional stream limit, and a STREAMS_BLOCKED frame
+of type 0x17 indicates reaching the unidirectional stream limit.
+
+A STREAMS_BLOCKED frame does not open the stream, but informs the peer that a
+new stream was needed and the stream limit prevented the creation of the stream.
+
+The STREAMS_BLOCKED frames are as follows:
+
+~~~
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                        Stream Limit (i)                     ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~
+
+STREAMS_BLOCKED frames contain the following fields:
+
+Stream Limit:
+
+: A variable-length integer indicating the stream limit at the time the frame
+  was sent.
+
+
+## NEW_CONNECTION_ID Frame {#frame-new-connection-id}
+
+An endpoint sends a NEW_CONNECTION_ID frame (type=0x18) to provide its peer with
+alternative connection IDs that can be used to break linkability when migrating
+connections (see {{migration-linkability}}).
+
+The NEW_CONNECTION_ID frame is as follows:
+
+~~~
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|   Length (8)  |            Sequence Number (i)              ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                    Connection ID (32..144)                  ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                                                               |
++                                                               +
+|                                                               |
++                   Stateless Reset Token (128)                 +
+|                                                               |
++                                                               +
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~
+
+NEW_CONNECTION_ID frames contain the following fields:
 
 Length:
 
-: A variable-length integer specifying the length of the Crypto Data field in
-  this CRYPTO frame.
+: An 8-bit unsigned integer containing the length of the connection ID.  Values
+  less than 4 and greater than 18 are invalid and MUST be treated as a
+  connection error of type PROTOCOL_VIOLATION.
 
-Crypto Data:
+Sequence Number:
 
-: The cryptographic message data.
+: The sequence number assigned to the connection ID by the sender.  See
+  {{issue-cid}}.
 
-There is a separate flow of cryptographic handshake data in each encryption
-level, each of which starts at an offset of 0. This implies that each encryption
-level is treated as a separate CRYPTO stream of data.
+Connection ID:
 
-Unlike STREAM frames, which include a Stream ID field indicating to which stream
-the data belongs, the CRYPTO frame carries data for a single stream per
-encryption level. The stream does not have an explicit end, so CRYPTO frames do
-not have a FIN bit.
+: A connection ID of the specified length.
+
+Stateless Reset Token:
+
+: A 128-bit value that will be used for a stateless reset when the associated
+  connection ID is used (see {{stateless-reset}}).
+
+An endpoint MUST NOT send this frame if it currently requires that its peer send
+packets with a zero-length Destination Connection ID.  Changing the length of a
+connection ID to or from zero-length makes it difficult to identify when the
+value of the connection ID changed.  An endpoint that is sending packets with a
+zero-length Destination Connection ID MUST treat receipt of a NEW_CONNECTION_ID
+frame as a connection error of type PROTOCOL_VIOLATION.
+
+Transmission errors, timeouts and retransmissions might cause the same
+NEW_CONNECTION_ID frame to be received multiple times.  Receipt of the same
+frame multiple times MUST NOT be treated as a connection error.  A receiver can
+use the sequence number supplied in the NEW_CONNECTION_ID frame to identify new
+connection IDs from old ones.
+
+If an endpoint receives a NEW_CONNECTION_ID frame that repeats a previously
+issued connection ID with a different Stateless Reset Token or a different
+sequence number, the endpoint MAY treat that receipt as a connection error of
+type PROTOCOL_VIOLATION.
+
+
+## RETIRE_CONNECTION_ID Frame {#frame-retire-connection-id}
+
+An endpoint sends a RETIRE_CONNECTION_ID frame (type=0x19) to indicate that it
+will no longer use a connection ID that was issued by its peer. This may include
+the connection ID provided during the handshake.  Sending a RETIRE_CONNECTION_ID
+frame also serves as a request to the peer to send additional connection IDs for
+future use (see {{connection-id}}).  New connection IDs can be delivered to a
+peer using the NEW_CONNECTION_ID frame ({{frame-new-connection-id}}).
+
+Retiring a connection ID invalidates the stateless reset token associated with
+that connection ID.
+
+The RETIRE_CONNECTION_ID frame is as follows:
+
+~~~
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                      Sequence Number (i)                    ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~
+
+RETIRE_CONNECTION_ID frames contain the following fields:
+
+Sequence Number:
+
+: The sequence number of the connection ID being retired.  See
+  {{retiring-cids}}.
+
+Receipt of a RETIRE_CONNECTION_ID frame containing a sequence number greater
+than any previously sent to the peer MAY be treated as a connection error of
+type PROTOCOL_VIOLATION.
+
+An endpoint cannot send this frame if it was provided with a zero-length
+connection ID by its peer.  An endpoint that provides a zero-length connection
+ID MUST treat receipt of a RETIRE_CONNECTION_ID frame as a connection error of
+type PROTOCOL_VIOLATION.
+
+
+## PATH_CHALLENGE Frame {#frame-path-challenge}
+
+Endpoints can use PATH_CHALLENGE frames (type=0x1a) to check reachability to the
+peer and for path validation during connection migration.
+
+The PATH_CHALLENGE frames are as follows:
+
+~~~
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                                                               |
++                            Data (8)                           +
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~
+
+PATH_CHALLENGE frames contain the following fields:
+
+Data:
+
+: This 8-byte field contains arbitrary data.
+
+A PATH_CHALLENGE frame containing 8 bytes that are hard to guess is sufficient
+to ensure that it is easier to receive the packet than it is to guess the value
+correctly.
+
+The recipient of this frame MUST generate a PATH_RESPONSE frame
+({{frame-path-response}}) containing the same Data.
+
+
+## PATH_RESPONSE Frame {#frame-path-response}
+
+The PATH_RESPONSE frame (type=0x1b) is sent in response to a PATH_CHALLENGE
+frame.  Its format is identical to the PATH_CHALLENGE frame
+({{frame-path-challenge}}).
+
+If the content of a PATH_RESPONSE frame does not match the content of a
+PATH_CHALLENGE frame previously sent by the endpoint, the endpoint MAY generate
+a connection error of type PROTOCOL_VIOLATION.
+
+
+## CONNECTION_CLOSE Frames {#frame-connection-close}
+
+An endpoint sends a CONNECTION_CLOSE frame (type=0x1c or 0x1d) to notify its
+peer that the connection is being closed.  The CONNECTION_CLOSE with a frame
+type of 0x1c is used to signal errors at only the QUIC layer, or the absence of
+errors (with the NO_ERROR code).  The CONNECTION_CLOSE frame with a type of 0x1d
+is used to signal an error with the application that uses QUIC.
+
+If there are open streams that haven't been explicitly closed, they are
+implicitly closed when the connection is closed.
+
+The CONNECTION_CLOSE frames are as follows:
+
+~~~
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|           Error Code (16)     |      [ Frame Type (i) ]     ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                    Reason Phrase Length (i)                 ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                        Reason Phrase (*)                    ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~
+
+CONNECTION_CLOSE frames contain the following fields:
+
+Error Code:
+
+: A 16-bit error code which indicates the reason for closing this connection.  A
+  CONNECTION_CLOSE frame of type 0x1c uses codes from the space defined in
+  {{error-codes}}.  A CONNECTION_CLOSE frame of type 0x1d uses codes from the
+  application protocol error code space, see {{app-error-codes}}
+
+Frame Type:
+
+: A variable-length integer encoding the type of frame that triggered the error.
+  A value of 0 (equivalent to the mention of the PADDING frame) is used when the
+  frame type is unknown.  The application-specific variant of CONNECTION_CLOSE
+  (type 0x1d) does not include this field.
+
+Reason Phrase Length:
+
+: A variable-length integer specifying the length of the reason phrase in bytes.
+  Note that a CONNECTION_CLOSE frame cannot be split between packets, so in
+  practice any limits on packet size will also limit the space available for a
+  reason phrase.
+
+Reason Phrase:
+
+: A human-readable explanation for why the connection was closed.  This can be
+  zero length if the sender chooses to not give details beyond the Error Code.
+  This SHOULD be a UTF-8 encoded string {{!RFC3629}}.
 
 
 ## Extension Frames
@@ -4869,7 +4868,6 @@ in the extension.
 
 An IANA registry is used to manage the assignment of frame types, see
 {{iana-frames}}.
-
 
 
 # Transport Error Codes {#error-codes}
@@ -4959,8 +4957,8 @@ See {{iana-error-codes}} for details of registering new error codes.
 Application protocol error codes are 16-bit unsigned integers, but the
 management of application error codes are left to application protocols.
 Application protocol error codes are used for the RST_STREAM frame
-({{frame-rst-stream}}) and the CONNECTION_CLOSE frame with a type of 0x03
-({{frame-connection-close}}) frames.
+({{frame-rst-stream}}) and the CONNECTION_CLOSE frame with a type of 0x1d
+({{frame-connection-close}}).
 
 
 # Security Considerations
