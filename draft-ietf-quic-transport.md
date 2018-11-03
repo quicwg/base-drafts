@@ -778,8 +778,6 @@ account for the possibility of loss, a receiver should send a MAX_DATA or
 MAX_STREAM_DATA frame at least two round trips before it expects the sender to
 get blocked.
 
-<!-- This should be SHOULD NOT -->
-
 A receiver MUST NOT wait for a STREAM_DATA_BLOCKED or DATA_BLOCKED frame before
 sending MAX_STREAM_DATA or MAX_DATA, since doing so will mean that a sender will
 be blocked for at least an entire round trip, and potentially for longer if the
@@ -859,7 +857,7 @@ number of streams available to peers roughly consistent.
 
 An endpoint that is unable to open a new stream due to the peer's limits SHOULD
 send a STREAMS_BLOCKED frame ({{frame-streams-blocked}}).  This signal is
-considered useful for debugging. An endpoint SHOULD NOT wait to receive this
+considered useful for debugging. An endpoint MUST NOT wait to receive this
 signal before advertising additional credit, since doing so will mean that the
 peer will be blocked for at least an entire round trip, and potentially for
 longer if the peer chooses to not send STREAMS_BLOCKED frames.
