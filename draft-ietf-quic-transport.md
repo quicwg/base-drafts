@@ -3969,7 +3969,7 @@ ack_delay_exponent (0x000a):
 
 max_ack_delay (0x000b):
 
-: The maximum ACK delay is an 8 bit unsigned integer value indicating the
+: The maximum ACK delay is an 8-bit unsigned integer value indicating the
   maximum amount of time in milliseconds by which the endpoint will delay
   sending acknowledgments.  If this value is absent, a default of 25
   milliseconds is assumed.
