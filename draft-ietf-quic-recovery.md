@@ -889,7 +889,7 @@ Pseudocode for OnLossDetectionTimeout follows:
 
 DetectLostPackets is called every time an ACK is received and operates on
 the sent_packets for that packet number space. If the loss detection timer
-expires and the loss_time is set, the previous largest acked packet is supplied.
+expires and the loss_time is set, the previous largest acknowledged packet is supplied.
 
 DetectLostPackets takes one parameter, acked, which is the largest acked packet.
 
