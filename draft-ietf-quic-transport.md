@@ -92,10 +92,9 @@ informative:
 
 --- abstract
 
-This document defines the core of the QUIC transport protocol.  This document
-describes connection establishment, packet format, multiplexing, and
-reliability.  Accompanying documents describe the cryptographic handshake and
-loss detection.
+This document defines the core of the QUIC transport protocol.  Accompanying
+documents describe QUIC's loss detection and congestion control
+{{QUIC-RECOVERY}} and the use of TLS 1.3 for key negotiation {{QUIC-TLS}}.
 
 
 --- note_Note_to_Readers
@@ -112,55 +111,52 @@ code and issues list for this draft can be found at
 
 # Introduction
 
-QUIC is a multiplexed and secure transport protocol that runs on top of UDP.
-QUIC aims to provide a flexible set of features that allow it to be a
-general-purpose secure transport for multiple applications.
-
-* Version negotiation
-
-* Low-latency connection establishment
-
-* Authenticated and encrypted header and payload
+QUIC is a multiplexed and secure general-purpose transport protocol that
+provides:
 
 * Stream multiplexing
 
 * Stream and connection-level flow control
 
+* Low-latency connection establishment
+
 * Connection migration and resilience to NAT rebinding
+
+* Authenticated and encrypted header and payload
 
 QUIC uses UDP as a substrate to avoid requiring changes in legacy client
 operating systems and middleboxes.  QUIC authenticates all of its headers and
-encrypts most of the data it exchanges, including its signaling.  This allows
-the protocol to evolve without incurring a dependency on upgrades to
-middleboxes.
+encrypts most of the data it exchanges, including its signaling, to avoid
+incurring a dependency on middleboxes.
+
 
 ## Document Structure
 
-This document describes the core QUIC protocol, and is structured as follows:
+This document describes the core QUIC protocol and is structured as follows.
 
-* Streams are the basic service abstraction that QUIC provides:
+* Streams are the basic service abstraction that QUIC provides.
   - {{streams}} describes core concepts related to streams,
   - {{stream-states}} provides a reference model for stream states, and
   - {{flow-control}} outlines the operation of flow control.
 
-* Connections are the context in which QUIC endpoints communicate:
+* Connections are the context in which QUIC endpoints communicate.
   - {{connections}} describes core concepts related to connections,
   - {{version-negotiation}} describes version negotiation,
   - {{handshake}} details the process for establishing connections,
   - {{address-validation}} specifies critical denial of service mitigation
     mechanisms,
-  - {{migration}} describes how endpoints migrate a connection to use a new
-    network paths,
+  - {{migration}} describes how endpoints migrate a connection to a new
+    network path,
   - {{termination}} lists the options for terminating an open connection, and
   - {{error-handling}} provides general guidance for error handling.
 
-* Packets and frames are the basic unit used by QUIC to communicate:
+* Packets and frames are the basic unit used by QUIC to communicate.
   - {{packets-frames}} describes concepts related to packets and frames,
   - {{packetization}} defines models for the transmission, retransmission, and
-    acknowledgement of information, and
-  - {{packet-size}} contains a rules for managing the size of packets.
+    acknowledgement of data, and
+  - {{packet-size}} specifies rules for managing the size of packets.
 
-* Details of encoding of QUIC protocol elements is described in:
+* Finally, encoding details of QUIC protocol elements are described in:
   - {{versions}} (Versions),
   - {{integer-encoding}} (Integer Encoding),
   - {{packet-formats}} (Packet Headers),
@@ -171,17 +167,38 @@ This document describes the core QUIC protocol, and is structured as follows:
 Accompanying documents describe QUIC's loss detection and congestion control
 {{QUIC-RECOVERY}}, and the use of TLS 1.3 for key negotiation {{QUIC-TLS}}.
 
-QUIC version 1 conforms to the protocol invariants in {{QUIC-INVARIANTS}}.
+This document defines QUIC version 1, which conforms to the protocol invariants
+in {{QUIC-INVARIANTS}}.
 
 
-## Conventions and Definitions
+## Terms and Definitions
 
-The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD",
+The keywords "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD",
 "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this
 document are to be interpreted as described in BCP 14 {{!RFC2119}} {{!RFC8174}}
 when, and only when, they appear in all capitals, as shown here.
 
-Definitions of terms that are used in this document:
+Commonly used terms in the document are described below.
+
+QUIC:
+
+: The transport protocol described by this document. QUIC is a name, not an
+  acronym.
+
+QUIC packet:
+
+: The smallest unit of QUIC that can be encapsulated in a UDP datagram. Multiple
+  QUIC packets can be encapsulated in a single UDP datagram.
+
+Endpoint:
+
+: An entity that can participate in a QUIC conversation by generating,
+  receiving, and processing QUIC packets. There are only two types of endpoint
+  in QUIC: client and server.
+
+Connection:
+
+: A conversation between two QUIC endpoints with a single encryption context.
 
 Client:
 
@@ -191,66 +208,48 @@ Server:
 
 : The endpoint accepting incoming QUIC connections.
 
-Endpoint:
-
-: The client or server end of a connection.
-
-Stream:
-
-: A logical unidirectional or bidirectional channel of ordered bytes within a
-  QUIC connection.
-
-Connection:
-
-: A conversation between two QUIC endpoints with a single encryption context
-  that multiplexes streams within it.
-
 Connection ID:
 
 : An opaque identifier that is used to identify a QUIC connection at an
-  endpoint.  Each endpoint sets a value that its peer includes in packets.
+  endpoint.  Each endpoint sets a value for its peer to include in packets sent
+  towards the endpoint.
 
-QUIC packet:
+Stream:
 
-: The smallest unit of data that can be exchanged by QUIC endpoints.
+: A unidirectional or bidirectional channel of ordered bytes within a QUIC
+  connection. A QUIC connection can carry multiple simultaneous streams.
 
-QUIC is a name, not an acronym.
+Application:
+
+ : An entity that uses QUIC to send and receive data.
 
 
 ## Notational Conventions
 
-Packet and frame diagrams use the format described in Section 3.1 of
-{{?RFC2360}}, with the following additional conventions:
+Packet and frame diagrams in this document use the format described in Section
+3.1 of {{?RFC2360}}, with the following additional conventions:
 
-\[x\]
+\[x\]:
 : Indicates that x is optional
 
-x (A)
+x (A):
 : Indicates that x is A bits long
 
-x (A/B/C) ...
+x (A/B/C) ...:
 : Indicates that x is one of A, B, or C bits long
 
-x (i) ...
+x (i) ...:
 : Indicates that x uses the variable-length encoding in {{integer-encoding}}
 
-x (*) ...
+x (*) ...:
 : Indicates that x is variable-length
 
 
 # Streams {#streams}
 
-Streams in QUIC provide a lightweight, ordered byte-stream abstraction.
-
-There are two basic types of stream in QUIC.  Unidirectional streams carry data
-in one direction: from the initiator of the stream to its peer;
-bidirectional streams allow for data to be sent in both directions.  Different
-stream identifiers are used to distinguish between unidirectional and
-bidirectional streams, as well as to create a separation between streams that
-are initiated by the client and server (see {{stream-id}}).
-
-Either type of stream can be created by either endpoint, can concurrently send
-data interleaved with other streams, and can be cancelled.
+Streams in QUIC provide a lightweight, ordered byte-stream abstraction to an
+application. An alternative view of QUIC streams is as an elastic "message"
+abstraction.
 
 Streams can be created by sending data. Other processes associated with stream
 management - ending, cancelling, and managing flow control - are all designed to
@@ -258,160 +257,103 @@ impose minimal overheads. For instance, a single STREAM frame ({{frame-stream}})
 can open, carry data for, and close a stream. Streams can also be long-lived and
 can last the entire duration of a connection.
 
-Stream offsets allow for the bytes on a stream to be placed in order.  An
-endpoint MUST be capable of delivering data received on a stream in order.
-Implementations MAY choose to offer the ability to deliver data out of order.
-There is no means of ensuring ordering between bytes on different streams.
+Streams can be created by either endpoint, can concurrently send data
+interleaved with other streams, and can be cancelled.  Any stream can be
+initiated by either endpoint.  QUIC does not provide any means of ensuring
+ordering between bytes on different streams.
 
-Streams are individually flow controlled, allowing an endpoint to limit memory
-commitment and to apply back pressure.  The creation of streams is also flow
-controlled, with each peer declaring the maximum stream ID it is willing to
-accept at a given time.
-
-An alternative view of QUIC streams is as an elastic "message" abstraction,
-similar to the way ephemeral streams are used in SST
-{{?SST=DOI.10.1145/1282427.1282421}}, which may be a more appealing description
-for some applications.
+QUIC allows for an arbitrary number of streams to operate concurrently and for
+an arbitrary amount of data to be sent on any stream, subject to flow control
+constraints (see {{flow-control}}).
 
 
-## Stream Identifiers {#stream-id}
+## Stream Types and Identifiers {#stream-id}
 
-Streams are identified by an unsigned 62-bit integer, referred to as the Stream
-ID.  Stream IDs are encoded as a variable-length integer (see
-{{integer-encoding}}).  The least significant two bits of the Stream ID are used
-to identify the type of stream (unidirectional or bidirectional) and the
-initiator of the stream.
+Streams can be unidirectional or bidirectional.  Unidirectional streams carry
+data in one direction: from the initiator of the stream to its peer.
+Bidirectional streams allow for data to be sent in both directions.
 
-The least significant bit (0x1) of the Stream ID identifies the initiator of the
-stream.  Clients initiate even-numbered streams (those with the least
-significant bit set to 0); servers initiate odd-numbered streams (with the bit
-set to 1).  Separation of the stream identifiers ensures that client and server
-are able to open streams without the latency imposed by negotiating for an
-identifier.
+Streams are identified within a connection by a numeric value, referred to as
+the stream ID.  Stream IDs are unique to a stream. A QUIC endpoint MUST NOT
+reuse a stream ID within a connection.  Stream IDs are encoded as
+variable-length integers (see {{integer-encoding}}).
 
-The second least significant bit (0x2) of the Stream ID differentiates between
-unidirectional streams and bidirectional streams. Unidirectional streams always
-have this bit set to 1 and bidirectional streams have this bit set to 0.
+The least significant bit (0x1) of the stream ID identifies the initiator of the
+stream.  Client-initiated streams have even-numbered stream IDs (with the bit
+set to 0), and server-initiated streams have odd-numbered stream IDs (with the
+bit set to 1).
 
-The two type bits from a Stream ID therefore identify streams as summarized in
-{{stream-id-types}}.
+The second least significant bit (0x2) of the stream ID distinguishes between
+bidirectional streams (with the bit set to 0) and unidirectional streams (with
+the bit set to 1).
 
-| Low Bits | Stream Type                      |
-|:---------|:---------------------------------|
-| 0x0      | Client-Initiated, Bidirectional  |
-| 0x1      | Server-Initiated, Bidirectional  |
-| 0x2      | Client-Initiated, Unidirectional |
-| 0x3      | Server-Initiated, Unidirectional |
+The least significant two bits from a stream ID therefore identify a stream as
+one of four types, as summarized in {{stream-id-types}}.
+
+| Bits | Stream Type                      |
+|:-----|:---------------------------------|
+| 0x0  | Client-Initiated, Bidirectional  |
+| 0x1  | Server-Initiated, Bidirectional  |
+| 0x2  | Client-Initiated, Unidirectional |
+| 0x3  | Server-Initiated, Unidirectional |
 {: #stream-id-types title="Stream ID Types"}
 
-The first bidirectional stream opened by the client is stream 0.
+Within each type, streams are created with numerically increasing stream IDs.  A
+stream ID that is used out of order results in all streams of that type with
+lower-numbered stream IDs also being opened.
 
-A QUIC endpoint MUST NOT reuse a Stream ID.  Streams of each type are created in
-numeric order.  Streams that are used out of order result in opening all
-lower-numbered streams of the same type in the same direction.
-
-
-## Stream Concurrency {#stream-concurrency}
-
-QUIC allows for an arbitrary number of streams to operate concurrently.  An
-endpoint limits the number of concurrently active incoming streams by limiting
-the number of streams of each type (see {{stream-limit-increment}}).
-
-The stream limit is specific to each endpoint and applies only to the peer that
-receives the setting.  That is, the client limits the number of streams of each
-type the server can initiate, and the server limits the number of streams the
-client can initiate.  Each endpoint can respond on streams initiated by the
-other peer, regardless of whether it is permitted to initiate new streams.
-
-Endpoints MUST NOT exceed the limit set by their peer.  An endpoint that
-receives a STREAM frame with an ID greater than the limit it has sent MUST treat
-this as a stream error of type STREAM_LIMIT_ERROR ({{error-handling}}).
-
-A receiver cannot renege on an advertisement; that is, once a receiver
-advertises a stream limit using the MAX_STREAMS frame, advertising a smaller
-limit has no effect.  A receiver MUST ignore any MAX_STREAMS frame that does
-not increase the stream limit.
-
+The first bidirectional stream opened by the client has a stream ID of 0.
 
 ## Sending and Receiving Data
 
-Endpoints uses streams to send and receive data. Endpoints send STREAM frames,
-which encapsulate data for a stream. STREAM frames carry a flag that can be used
-to signal the end of a stream.
+STREAM frames ({{frame-stream}}) encapsulate data sent by an application. An
+endpoint uses the Stream ID and Offset fields in STREAM frames to place data in
+order.
+
+Endpoints MUST be able to deliver stream data to an application as an ordered
+byte-stream.  Delivering an ordered byte-stream requires that an endpoint buffer
+any data that is received out of order, up to the advertised flow control limit.
+
+QUIC makes no specific allowances for delivery of stream data out of
+order. However, implementations MAY choose to offer the ability to deliver data
+out of order to a receiving application.
+
+An endpoint could receive data for a stream at the same stream offset multiple
+times.  Data that has already been received can be discarded.  The data at a
+given offset MUST NOT change if it is sent multiple times; an endpoint MAY treat
+receipt of different data at the same offset within a stream as a connection
+error of type PROTOCOL_VIOLATION.
 
 Streams are an ordered byte-stream abstraction with no other structure that is
-visible to QUIC. STREAM frame boundaries are not expected to preserved when data
-is transmitted, when data is retransmitted after packet loss, or when data is
-delivered to the application at the receiver.
-
-When new data is to be sent on a stream, a sender MUST set the encapsulating
-STREAM frame's offset field to the stream offset of the first byte of this new
-data.  The first byte of data on a stream has an offset of 0.  An endpoint is
-expected to send every stream byte.  The largest offset delivered on a stream
-MUST be less than 2^62.
-
-QUIC makes no specific allowances for partial reliability or delivery of stream
-data out of order.  Endpoints MUST be able to deliver stream data to an
-application as an ordered byte-stream.  Delivering an ordered byte-stream
-requires that an endpoint buffer any data that is received out of order, up to
-the advertised flow control limit.
-
-An endpoint could receive the same bytes multiple times; bytes that have already
-been received can be discarded.  The value for a given byte MUST NOT change if
-it is sent multiple times; an endpoint MAY treat receipt of a changed byte as a
-connection error of type PROTOCOL_VIOLATION.
+visible to QUIC. STREAM frame boundaries are not expected to be preserved when
+data is transmitted, when data is retransmitted after packet loss, or when data
+is delivered to the application at a receiver.
 
 An endpoint MUST NOT send data on any stream without ensuring that it is within
-the data limits set by its peer.  Flow control is described in detail in
+the flow control limits set by its peer.  Flow control is described in detail in
 {{flow-control}}.
 
 
-## Stream Prioritization
+## Stream Prioritization {#stream-prioritization}
 
-Stream multiplexing has a significant effect on application performance if
-resources allocated to streams are correctly prioritized.  Experience with other
-multiplexed protocols, such as HTTP/2 {{?HTTP2}}, shows that effective
-prioritization strategies have a significant positive impact on performance.
+Stream multiplexing can have a significant effect on application performance if
+resources allocated to streams are correctly prioritized.
 
 QUIC does not provide frames for exchanging prioritization information.  Instead
 it relies on receiving priority information from the application that uses QUIC.
-Protocols that use QUIC are able to define any prioritization scheme that suits
-their application semantics.  A protocol might define explicit messages for
-signaling priority, such as those defined in HTTP/2; it could define rules that
-allow an endpoint to determine priority based on context; or it could leave the
-determination to the application.
 
 A QUIC implementation SHOULD provide ways in which an application can indicate
 the relative priority of streams.  When deciding which streams to dedicate
-resources to, QUIC SHOULD use the information provided by the application.
-Failure to account for priority of streams can result in suboptimal performance.
-
-Stream priority is most relevant when deciding which stream data will be
-transmitted.  Often, there will be limits on what can be transmitted as a result
-of connection flow control or the current congestion controller state.
-
-Giving preference to the transmission of its own management frames ensures that
-the protocol functions efficiently.  That is, prioritizing frames other than
-STREAM frames ensures that loss recovery, congestion control, and flow control
-operate effectively.
-
-CRYPTO frames SHOULD be prioritized over other streams prior to the completion
-of the cryptographic handshake.  This includes the retransmission of the second
-flight of client handshake messages, that is, the TLS Finished and any client
-authentication messages.
-
-STREAM data in frames determined to be lost SHOULD be retransmitted before
-sending new data, unless application priorities indicate otherwise.
-Retransmitting lost stream data can fill in gaps, which allows the peer to
-consume already received data and free up the flow control window.
+resources to, the implementation SHOULD use the information provided by the
+application.
 
 
-# Stream States: Life of a Stream {#stream-states}
+# Stream States {#stream-states}
 
-This section describes the two types of QUIC stream in terms of the states of
-their send or receive components.  Two state machines are described: one for
-streams on which an endpoint transmits data ({{stream-send-states}}); another
-for streams from which an endpoint receives data ({{stream-recv-states}}).
+This section describes streams in terms of their send or receive components.
+Two state machines are described: one for the streams on which an endpoint
+transmits data ({{stream-send-states}}), and another for streams on which an
+endpoint receives data ({{stream-recv-states}}).
 
 Unidirectional streams use the applicable state machine directly.  Bidirectional
 streams use both state machines.  For the most part, the use of these state
@@ -420,8 +362,7 @@ conditions for opening a stream are slightly more complex for a bidirectional
 stream because the opening of either send or receive sides causes the stream
 to open in both directions.
 
-An endpoint can open streams up to its maximum stream limit in any order,
-however endpoints SHOULD open the send side of streams for each type in order.
+An endpoint MUST open streams of the same type in increasing order of stream ID.
 
 Note:
 
@@ -477,39 +418,42 @@ data to a peer.
 {: #fig-stream-send-states title="States for Send Streams"}
 
 The sending part of stream that the endpoint initiates (types 0 and 2 for
-clients, 1 and 3 for servers) is opened by the application or application
-protocol.  The "Ready" state represents a newly created stream that is able to
-accept data from the application.  Stream data might be buffered in this state
-in preparation for sending.
+clients, 1 and 3 for servers) is opened by the application.  The "Ready" state
+represents a newly created stream that is able to accept data from the
+application.  Stream data might be buffered in this state in preparation for
+sending.
 
 Sending the first STREAM or STREAM_DATA_BLOCKED frame causes a send stream to
 enter the "Send" state.  An implementation might choose to defer allocating a
-Stream ID to a send stream until it sends the first frame and enters this state,
+stream ID to a send stream until it sends the first frame and enters this state,
 which can allow for better stream prioritization.
 
 The sending part of a bidirectional stream initiated by a peer (type 0 for a
 server, type 1 for a client) enters the "Ready" state then immediately
-transitions to the "Send" state if the receiving part enters the "Recv" state.
+transitions to the "Send" state if the receiving part enters the "Recv" state
+({{stream-recv-states}}).
 
-In the "Send" state, an endpoint transmits - and retransmits as necessary - data
-in STREAM frames.  The endpoint respects the flow control limits of its peer,
-accepting MAX_STREAM_DATA frames.  An endpoint in the "Send" state generates
-STREAM_DATA_BLOCKED frames if it encounters flow control limits.
+In the "Send" state, an endpoint transmits - and retransmits as necessary -
+stream data in STREAM frames.  The endpoint respects the flow control limits set
+by its peer, and continues to accept and process MAX_STREAM_DATA frames.  An
+endpoint in the "Send" state generates STREAM_DATA_BLOCKED frames if it is
+blocked from sending by stream or connection flow control limits
+{{data-flow-control}}.
 
-After the application indicates that stream data is complete and a STREAM frame
-containing the FIN bit is sent, the send stream enters the "Data Sent" state.
-From this state, the endpoint only retransmits stream data as necessary.  The
-endpoint no longer needs to track flow control limits or send
-STREAM_DATA_BLOCKED frames for a send stream in this state.  The endpoint can
-ignore any MAX_STREAM_DATA frames it receives from its peer in this state;
-MAX_STREAM_DATA frames might be received until the peer receives the final
-stream offset.
+After the application indicates that all stream data has been sent and a STREAM
+frame containing the FIN bit is sent, the send stream enters the "Data Sent"
+state.  From this state, the endpoint only retransmits stream data as necessary.
+The endpoint does not need to check flow control limits or send
+STREAM_DATA_BLOCKED frames for a send stream in this state.  MAX_STREAM_DATA
+frames might be received until the peer receives the final stream offset. The
+endpoint can safely ignore any MAX_STREAM_DATA frames it receives from its peer
+for a stream in this state.
 
 Once all stream data has been successfully acknowledged, the send stream enters
 the "Data Recvd" state, which is a terminal state.
 
 From any of the "Ready", "Send", or "Data Sent" states, an application can
-signal that it wishes to abandon transmission of stream data.  Similarly, the
+signal that it wishes to abandon transmission of stream data. Alternatively, an
 endpoint might receive a STOP_SENDING frame from its peer.  In either case, the
 endpoint sends a RST_STREAM frame, which causes the stream to enter the "Reset
 Sent" state.
@@ -526,10 +470,10 @@ enters the "Reset Recvd" state, which is a terminal state.
 
 {{fig-stream-recv-states}} shows the states for the part of a stream that
 receives data from a peer.  The states for a receive stream mirror only some of
-the states of the send stream at the peer.  A receive stream doesn't track
-states on the send stream that cannot be observed, such as the "Ready" state;
-instead, receive streams track the delivery of data to the application or
-application protocol some of which cannot be observed by the sender.
+the states of the send stream at the peer.  A receive stream does not track
+states on the send stream that cannot be observed, such as the "Ready" state.
+Instead, receive streams track the delivery of data to the application, some of
+which cannot be observed by the sender.
 
 ~~~
        o
@@ -567,26 +511,23 @@ application protocol some of which cannot be observed by the sender.
 {: #fig-stream-recv-states title="States for Receive Streams"}
 
 The receiving part of a stream initiated by a peer (types 1 and 3 for a client,
-or 0 and 2 for a server) are created when the first STREAM, STREAM_DATA_BLOCKED,
+or 0 and 2 for a server) is created when the first STREAM, STREAM_DATA_BLOCKED,
 RST_STREAM, or MAX_STREAM_DATA (bidirectional only, see below) is received for
-that stream.  The initial state for a receive stream is "Recv".  Receiving a
-RST_STREAM frame causes the receive stream to immediately transition to the
-"Reset Recvd".
+that stream.  The initial state for a receive stream is "Recv".
 
 The receive stream enters the "Recv" state when the sending part of a
 bidirectional stream initiated by the endpoint (type 0 for a client, type 1 for
 a server) enters the "Ready" state.
 
-A bidirectional stream also opens when a MAX_STREAM_DATA frame is received.
-Receiving a MAX_STREAM_DATA frame implies that the remote peer has opened the
-stream and is providing flow control credit.  A MAX_STREAM_DATA frame might
-arrive before a STREAM or STREAM_DATA_BLOCKED frame if packets are lost or
-reordered.
+An endpoint opens a bidirectional stream when a MAX_STREAM_DATA frame is
+received from the peer for that stream.  Receiving a MAX_STREAM_DATA frame for
+an unopened stream indicates that the remote peer has opened the stream and is
+providing flow control credit.  A MAX_STREAM_DATA frame might arrive before a
+STREAM or STREAM_DATA_BLOCKED frame if packets are lost or reordered.
 
-Before creating a stream, all lower-numbered streams of the same type MUST be
-created.  That means that receipt of a frame that would open a stream causes all
-lower-numbered streams of the same type to be opened in numeric order.  This
-ensures that the creation order for streams is consistent on both endpoints.
+Before creating a stream, all streams of the same type with lower-numbered
+stream IDs MUST be created.  This ensures that the creation order for streams is
+consistent on both endpoints.
 
 In the "Recv" state, the endpoint receives STREAM and STREAM_DATA_BLOCKED
 frames.  Incoming data is buffered and can be reassembled into the correct order
@@ -594,10 +535,10 @@ for delivery to the application.  As data is consumed by the application and
 buffer space becomes available, the endpoint sends MAX_STREAM_DATA frames to
 allow the peer to send more data.
 
-When a STREAM frame with a FIN bit is received, the final offset (see
-{{final-offset}}) is known.  The receive stream enters the "Size Known" state.
-In this state, the endpoint no longer needs to send MAX_STREAM_DATA frames, it
-only receives any retransmissions of stream data.
+When a STREAM frame with a FIN bit is received, the final offset is known (see
+{{final-offset}}).  The receive stream enters the "Size Known" state.  In this
+state, the endpoint no longer needs to send MAX_STREAM_DATA frames, it only
+receives any retransmissions of stream data.
 
 Once all data for the stream has been received, the receive stream enters the
 "Data Recvd" state.  This might happen as a result of receiving the same STREAM
@@ -606,8 +547,8 @@ has all stream data.  Any STREAM or STREAM_DATA_BLOCKED frames it receives for
 the stream can be discarded.
 
 The "Data Recvd" state persists until stream data has been delivered to the
-application or application protocol.  Once stream data has been delivered, the
-stream enters the "Data Read" state, which is a terminal state.
+application.  Once stream data has been delivered, the stream enters the "Data
+Read" state, which is a terminal state.
 
 Receiving a RST_STREAM frame in the "Recv" or "Size Known" states causes the
 stream to enter the "Reset Recvd" state.  This might cause the delivery of
@@ -616,15 +557,15 @@ stream data to the application to be interrupted.
 It is possible that all stream data is received when a RST_STREAM is received
 (that is, from the "Data Recvd" state).  Similarly, it is possible for remaining
 stream data to arrive after receiving a RST_STREAM frame (the "Reset Recvd"
-state).  An implementation is able to manage this situation as they choose.
+state).  An implementation is free to manage this situation as it chooses.
 Sending RST_STREAM means that an endpoint cannot guarantee delivery of stream
 data; however there is no requirement that stream data not be delivered if a
 RST_STREAM is received.  An implementation MAY interrupt delivery of stream
-data, discard any data that was not consumed, and signal the existence of the
+data, discard any data that was not consumed, and signal the receipt of the
 RST_STREAM immediately.  Alternatively, the RST_STREAM signal might be
-suppressed or withheld if stream data is completely received.  In the latter
-case, the receive stream effectively transitions to "Data Recvd" from "Reset
-Recvd".
+suppressed or withheld if stream data is completely received and is buffered to
+be read by the application.  In the latter case, the receive stream transitions
+from "Reset Recvd" to "Data Recvd".
 
 Once the application has been delivered the signal indicating that the receive
 stream was reset, the receive stream transitions to the "Reset Read" state,
@@ -640,9 +581,9 @@ STREAM_DATA_BLOCKED ({{frame-stream-data-blocked}}), and RST_STREAM
 
 A sender MUST NOT send any of these frames from a terminal state ("Data Recvd"
 or "Reset Recvd").  A sender MUST NOT send STREAM or STREAM_DATA_BLOCKED after
-sending a RST_STREAM; that is, in the "Reset Sent" state in addition to the
-terminal states.  A receiver could receive any of these frames in any state, but
-only due to the possibility of delayed delivery of packets carrying them.
+sending a RST_STREAM; that is, in the terminal states and in the "Reset Sent"
+state.  A receiver could receive any of these three frames in any state, due to
+the possibility of delayed delivery of packets carrying them.
 
 The receiver of a stream sends MAX_STREAM_DATA ({{frame-max-stream-data}}) and
 STOP_SENDING frames ({{frame-stop-sending}}).
@@ -650,9 +591,9 @@ STOP_SENDING frames ({{frame-stop-sending}}).
 The receiver only sends MAX_STREAM_DATA in the "Recv" state.  A receiver can
 send STOP_SENDING in any state where it has not received a RST_STREAM frame;
 that is states other than "Reset Recvd" or "Reset Read".  However there is
-little value in sending a STOP_SENDING frame after all stream data has been
-received in the "Data Recvd" state.  A sender could receive these frames in any
-state as a result of delayed delivery of packets.
+little value in sending a STOP_SENDING frame in the "Data Recvd" state, since
+all stream data has been received.  A sender could receive either of these two
+frames in any state as a result of delayed delivery of packets.
 
 
 ## Bidirectional Stream States {#stream-bidi-states}
@@ -697,23 +638,22 @@ If an endpoint is no longer interested in the data it is receiving on a stream,
 it MAY send a STOP_SENDING frame identifying that stream to prompt closure of
 the stream in the opposite direction.  This typically indicates that the
 receiving application is no longer reading data it receives from the stream, but
-is not a guarantee that incoming data will be ignored.
+it is not a guarantee that incoming data will be ignored.
 
-STREAM frames received after sending STOP_SENDING are still counted toward the
-connection and stream flow-control windows, even though these frames will be
-discarded upon receipt.  This avoids potential ambiguity about which STREAM
-frames count toward flow control.
+STREAM frames received after sending STOP_SENDING are still counted toward
+connection and stream flow control, even though these frames will be discarded
+upon receipt.
 
 A STOP_SENDING frame requests that the receiving endpoint send a RST_STREAM
 frame.  An endpoint that receives a STOP_SENDING frame MUST send a RST_STREAM
 frame for that stream.  An endpoint SHOULD copy the error code from the
 STOP_SENDING frame, but MAY use any other application error code.  The endpoint
 that sends a STOP_SENDING frame can ignore the error code carried in any
-RST_STREAM frame they receive.
+RST_STREAM frame it receives.
 
 If the STOP_SENDING frame is received on a send stream that is already in the
 "Data Sent" state, a RST_STREAM frame MAY still be sent in order to cancel
-retransmission of previously-sent STREAM frames.
+retransmissions of previously-sent STREAM frames.
 
 STOP_SENDING SHOULD only be sent for a receive stream that has not been
 reset. STOP_SENDING is most useful for streams in the "Recv" or "Size Known"
@@ -725,102 +665,91 @@ data or a RST_STREAM frame has been received for the stream - that is, the
 stream is in any state other than "Recv" or "Size Known" - sending a
 STOP_SENDING frame is unnecessary.
 
+An endpoint that wishes to terminate both directions of a bidirectional stream
+can terminate one direction by sending a RST_STREAM, and it can encourage prompt
+termination in the opposite direction by sending a STOP_SENDING frame.
+
 
 # Flow Control {#flow-control}
 
-It is necessary to limit the amount of data that a sender may have outstanding
-at any time, so as to prevent a fast sender from overwhelming a slow receiver,
-or to prevent a malicious sender from consuming significant resources at a
-receiver.  To this end, QUIC employs a credit-based flow-control scheme similar
-to that in HTTP/2 {{?HTTP2}}.  A receiver advertises the number of bytes it is
-prepared to receive on a given stream and for the entire connection.  This leads
-to two levels of flow control in QUIC:
+It is necessary to limit the amount of data that a receiver could buffer, to
+prevent a fast sender from overwhelming a slow receiver, or to prevent a
+malicious sender from consuming a large amount of memory at a receiver.  To
+enable a receiver to limit memory commitment to a connection and to apply back
+pressure on the sender, streams are flow controlled both individually and as an
+aggregate.  A QUIC receiver controls the maximum amount of data the sender can
+send on a stream at any time, as described in {{data-flow-control}} and
+{{fc-credit}}
+
+Similarly, to limit concurrency within a connection, a QUIC endpoint controls
+the maximum number of streams that its peer can initiate at any time, as
+described in {{controlling-concurrency}}.
+
+Data sent in CRYPTO frames is not flow controlled in the same way as stream
+data.  QUIC relies on the cryptographic protocol implementation to avoid
+excessive buffering of data, see {{QUIC-TLS}}.  The implementation SHOULD
+provide an interface to QUIC to tell it about its buffering limits so that there
+is not excessive buffering at multiple layers.
+
+
+## Data Flow Control {#data-flow-control}
+
+QUIC employs a credit-based flow-control scheme similar to that in HTTP/2
+{{?HTTP2}}, where a receiver advertises the number of bytes it is prepared to
+receive on a given stream and for the entire connection.  This leads to two
+levels of data flow control in QUIC:
 
 * Stream flow control, which prevents a single stream from consuming the entire
-  receive buffer for a connection.
+  receive buffer for a connection by limiting the amount of data that can be
+  sent on any stream.
 
 * Connection flow control, which prevents senders from exceeding a receiver's
-  buffer capacity for the connection.
+  buffer capacity for the connection, by limiting the total bytes of stream data
+  sent in STREAM frames on all streams.
 
-A data receiver sets initial credits for all streams by sending transport
-parameters during the handshake ({{transport-parameters}}).
-
-A data receiver sends MAX_STREAM_DATA or MAX_DATA frames to the sender to
-advertise additional credit. MAX_STREAM_DATA frames send the maximum absolute
-byte offset of a stream, while MAX_DATA frames send the maximum of the sum of
-the absolute byte offsets of all streams.
+A receiver sets initial credits for all streams by sending transport parameters
+during the handshake ({{transport-parameters}}).  A receiver sends
+MAX_STREAM_DATA ({{frame-max-stream-data}}) or MAX_DATA ({{frame-max-data}})
+frames to the sender to advertise additional credit.
 
 A receiver advertises credit for a stream by sending a MAX_STREAM_DATA frame
-with the Stream ID set appropriately. A receiver could use the current offset of
-data consumed to determine the flow control offset to be advertised.  A receiver
-MAY send MAX_STREAM_DATA frames in multiple packets in order to make sure that
-the sender receives an update before running out of flow control credit, even if
-one of the packets is lost.
+with the Stream ID field set appropriately.  A MAX_STREAM_DATA frame indicates
+the maximum absolute byte offset of a stream.  A receiver could use the current
+offset of data consumed to determine the flow control offset to be advertised.
+A receiver MAY send MAX_STREAM_DATA frames in multiple packets in order to make
+sure that the sender receives an update before running out of flow control
+credit, even if one of the packets is lost.
 
-Connection flow control is a limit to the total bytes of stream data sent in
-STREAM frames on all streams.  A receiver advertises credit for a connection by
-sending a MAX_DATA frame.  A receiver maintains a cumulative sum of bytes
-received on all contributing streams, which are used to check for flow control
-violations. A receiver might use a sum of bytes consumed on all streams to
-determine the maximum data limit to be advertised.
+A receiver advertises credit for a connection by sending a MAX_DATA frame, which
+indicates the maximum of the sum of the absolute byte offsets of all streams.  A
+receiver maintains a cumulative sum of bytes received on all streams, which is
+used to check for flow control violations. A receiver might use a sum of bytes
+consumed on all streams to determine the maximum data limit to be advertised.
 
-A receiver MAY advertise a larger offset at any point by sending MAX_STREAM_DATA
-or MAX_DATA frames.  A receiver cannot renege on an advertisement; that is, once
-a receiver advertises an offset, advertising a smaller offset has no effect.  A
-sender MUST therefore ignore any MAX_STREAM_DATA or MAX_DATA frames that do not
-increase flow control limits.
+A receiver can advertise a larger offset by sending MAX_STREAM_DATA or MAX_DATA
+frames at any time during the connection.  A receiver cannot renege on an
+advertisement however.  That is, once a receiver advertises an offset,
+advertising a smaller offset has no effect.  A sender MUST therefore ignore any
+MAX_STREAM_DATA or MAX_DATA frames that do not increase flow control limits.
 
 A receiver MUST close the connection with a FLOW_CONTROL_ERROR error
-({{error-handling}}) if the peer violates the advertised connection or stream
+({{error-handling}}) if the sender violates the advertised connection or stream
 data limits.
 
-A sender SHOULD send STREAM_DATA_BLOCKED or DATA_BLOCKED frames to indicate it
-has data to write but is blocked by flow control limits.  These frames are
-expected to be sent infrequently in common cases, but they are considered useful
-for debugging and monitoring purposes.
+If a sender runs out of flow control credit, it will be unable to send new data
+and is considered blocked.  A sender SHOULD send STREAM_DATA_BLOCKED or
+DATA_BLOCKED frames to indicate it has data to write but is blocked by flow
+control limits.  These frames are expected to be sent infrequently in common
+cases, but they are considered useful for debugging and monitoring purposes.
 
-A similar method is used to control the number of open streams (see
-{{stream-limit-increment}} for details).
-
-
-## Handling of Stream Cancellation
-
-There are some edge cases which must be considered when dealing with stream and
-connection level flow control.  Given enough time, both endpoints must agree on
-flow control state.  If one end believes it can send more than the other end is
-willing to receive, the connection will be torn down when too much data arrives.
-Conversely if a sender believes it is blocked, while endpoint B expects more
-data can be received, then the connection can be in a deadlock, with the sender
-waiting for a MAX_STREAM_DATA or MAX_DATA frame which will never come.
-
-On receipt of a RST_STREAM frame, an endpoint will tear down state for the
-matching stream and ignore further data arriving on that stream.  This could
-result in the endpoints getting out of sync, since the RST_STREAM frame may have
-arrived out of order and there could be more data in flight.  The data sender
-would have counted the data against its connection level flow control budget,
-but a receiver that has not received these bytes would not know to include them
-as well.  The receiver must learn the number of bytes that were sent on the
-stream to make the same adjustment in its connection flow controller.
-
-To ensure that endpoints maintain a consistent connection-level flow control
-state, the RST_STREAM frame ({{frame-rst-stream}}) includes the largest offset
-of data sent on the stream.  On receiving a RST_STREAM frame, a receiver
-definitively knows how many bytes were sent on that stream before the RST_STREAM
-frame, and the receiver MUST use the final offset to account for all bytes sent
-on the stream in its connection level flow controller.
-
-RST_STREAM terminates one direction of a stream abruptly.  Whether any action or
-response can or should be taken on the data already received is application
-specific.
-
-For a bidirectional stream, RST_STREAM has no effect on data flow in the
-opposite direction. The RST_STREAM sender can send a STOP_SENDING frame to
-encourage prompt termination. Both endpoints MUST maintain state for the stream
-in the unterminated direction until that direction enters a terminal state, or
-either side sends CONNECTION_CLOSE.
+A sender sends a single STREAM_DATA_BLOCKED or DATA_BLOCKED frame only once when
+it reaches a data limit.  A sender SHOULD NOT send multiple STREAM_DATA_BLOCKED
+or DATA_BLOCKED frames for the same data limit, unless the original frame is
+determined to be lost.  Another STREAM_DATA_BLOCKED or DATA_BLOCKED frame can be
+sent after the data limit is increased.
 
 
-## Data Limit Increments {#fc-credit}
+## Flow Credit Increments {#fc-credit}
 
 This document leaves when and how many bytes to advertise in a MAX_STREAM_DATA
 or MAX_DATA frame to implementations, but offers a few considerations.  These
@@ -831,29 +760,48 @@ larger resource commitments at the receiver.  Thus there is a trade-off between
 resource commitment and overhead when determining how large a limit is
 advertised.
 
-A receiver MAY use an autotuning mechanism to tune the frequency and amount that
-it increases data limits based on a round-trip time estimate and the rate at
+A receiver MAY use an autotuning mechanism to tune the frequency and amount of
+advertised additional credit based on a round-trip time estimate and the rate at
 which the receiving application consumes data, similar to common TCP
 implementations.
 
-If a sender runs out of flow control credit, it will be unable to send new
-data. That is, the sender is blocked. A blocked sender SHOULD send a
-STREAM_DATA_BLOCKED or DATA_BLOCKED frame.  A receiver uses these frames for
-debugging purposes.  A receiver MUST NOT wait for a STREAM_DATA_BLOCKED or
-DATA_BLOCKED frame before sending MAX_STREAM_DATA or MAX_DATA, since doing so
-will mean that a sender will be blocked for an entire round trip and the peer
-might never send a STREAM_DATA_BLOCKED or DATA_BLOCKED frame.
+If a sender runs out of flow control credit, it will be unable to send new data
+and is considered blocked.  It is generally considered best to not let the
+sender become blocked.  To avoid blocking a sender, and to reasonably account
+for the possibility of loss, a receiver should send a MAX_DATA or
+MAX_STREAM_DATA frame at least two round trips before it expects the sender to
+get blocked.
 
-It is generally considered best to not let the sender go into quiescence if
-avoidable.  To avoid blocking a sender, and to reasonably account for the
-possibility of loss, a receiver should send a MAX_DATA or MAX_STREAM_DATA frame
-at least two round trips before it expects the sender to get blocked.
+A receiver MUST NOT wait for a STREAM_DATA_BLOCKED or DATA_BLOCKED frame before
+sending MAX_STREAM_DATA or MAX_DATA, since doing so will mean that a sender will
+be blocked for at least an entire round trip, and potentially for longer if the
+peer chooses to not send STREAM_DATA_BLOCKED or DATA_BLOCKED frames.
 
-A sender sends a single STREAM_DATA_BLOCKED or DATA_BLOCKED frame only once when
-it reaches a data limit.  A sender SHOULD NOT send multiple STREAM_DATA_BLOCKED
-or DATA_BLOCKED frames for the same data limit, unless the original frame is
-determined to be lost.  Another STREAM_DATA_BLOCKED or DATA_BLOCKED frame can be
-sent after the data limit is increased.
+
+## Handling Stream Cancellation {#stream-cancellation}
+
+Endpoints need to eventually agree on the amount of flow control credit that has
+been consumed, to avoid either exceeding flow control limits or deadlocking.
+
+On receipt of a RST_STREAM frame, an endpoint will tear down state for the
+matching stream and ignore further data arriving on that stream.  If a
+RST_STREAM frame is reordered with stream data for the same stream, the
+receiver's estimate of the number of bytes received on that stream can be lower
+than the sender's estimate of the number sent.  As a result, the two endpoints
+could disagree on the number of bytes that count towards connection flow
+control.
+
+To remedy this issue, a RST_STREAM frame ({{frame-rst-stream}}) includes the
+final offset of data sent on the stream.  On receiving a RST_STREAM frame, a
+receiver definitively knows how many bytes were sent on that stream before the
+RST_STREAM frame, and the receiver MUST use the final offset to account for all
+bytes sent on the stream in its connection level flow controller.
+
+RST_STREAM terminates one direction of a stream abruptly.  For a bidirectional
+stream, RST_STREAM has no effect on data flow in the opposite direction.  Both
+endpoints MUST maintain flow control state for the stream in the unterminated
+direction until that direction enters a terminal state, or until one of the
+endpoints sends CONNECTION_CLOSE.
 
 
 ## Stream Final Offset {#final-offset}
@@ -865,45 +813,48 @@ data carried in a STREAM frame marked with a FIN flag, or 0 in the case of
 incoming unidirectional streams.
 
 An endpoint will know the final offset for a stream when the receive stream
-enters the "Size Known" or "Reset Recvd" state.
+enters the "Size Known" or "Reset Recvd" state ({{stream-states}}).
 
 An endpoint MUST NOT send data on a stream at or beyond the final offset.
 
 Once a final offset for a stream is known, it cannot change.  If a RST_STREAM or
-STREAM frame causes the final offset to change for a stream, an endpoint SHOULD
-respond with a FINAL_OFFSET_ERROR error (see {{error-handling}}).  A receiver
-SHOULD treat receipt of data at or beyond the final offset as a
-FINAL_OFFSET_ERROR error, even after a stream is closed.  Generating these
-errors is not mandatory, but only because requiring that an endpoint generate
-these errors also means that the endpoint needs to maintain the final offset
-state for closed streams, which could mean a significant state commitment.
+STREAM frame is received indicating a change in the final offset for the stream,
+an endpoint SHOULD respond with a FINAL_OFFSET_ERROR error (see
+{{error-handling}}).  A receiver SHOULD treat receipt of data at or beyond the
+final offset as a FINAL_OFFSET_ERROR error, even after a stream is closed.
+Generating these errors is not mandatory, but only because requiring that an
+endpoint generate these errors also means that the endpoint needs to maintain
+the final offset state for closed streams, which could mean a significant state
+commitment.
 
+## Controlling Concurrency {#controlling-concurrency}
 
-## Flow Control for Cryptographic Handshake {#flow-control-crypto}
+An endpoint controls concurrency by limiting the total number of incoming
+streams.  An initial value is set in the transport parameters (see
+{{transport-parameter-definitions}}) and subsequently increments are advertised
+using MAX_STREAMS frames ({{frame-max-streams}}).  Separate limits apply to
+unidirectional and bidirectional streams.
 
-Data sent in CRYPTO frames is not flow controlled in the same way as STREAM
-frames.  QUIC relies on the cryptographic protocol implementation to avoid
-excessive buffering of data, see {{QUIC-TLS}}.  The implementation SHOULD
-provide an interface to QUIC to tell it about its buffering limits so that there
-is not excessive buffering at multiple layers.
+Endpoints MUST NOT exceed the limit set by their peer.  An endpoint that
+receives a STREAM frame with a stream ID exceeding the limit it has sent MUST
+treat this as a stream error of type STREAM_LIMIT_ERROR ({{error-handling}}).
 
-
-## Stream Limit Increment {#stream-limit-increment}
-
-An endpoint limits the number of concurrently active incoming streams.  An
-initial value is set in the transport parameters (see
-{{transport-parameter-definitions}}) and is subsequently increased by
-MAX_STREAMS frames (see {{frame-max-streams}}).  Separate limits apply to
-bidirectional and unidirectional streams.
+A receiver cannot renege on an advertisement. That is, once a receiver
+advertises a stream limit using the MAX_STREAMS frame, advertising a smaller
+limit has no effect.  A receiver MUST ignore any MAX_STREAMS frame that does not
+increase the stream limit.
 
 As with stream and connection flow control, this document leaves when and how
-many streams to make available to a peer via MAX_STREAMS to implementations.
+many streams to advertise to a peer via MAX_STREAMS to implementations.
 Implementations might choose to increase limits as streams close to keep the
 number of streams available to peers roughly consistent.
 
-The STREAMS_BLOCKED frame ({{frame-streams-blocked}}) signals that a new stream
-could not be created. Implementations can use this as a signal to the peer to
-send a MAX_STREAMS frame with a larger limit.
+An endpoint that is unable to open a new stream due to the peer's limits SHOULD
+send a STREAMS_BLOCKED frame ({{frame-streams-blocked}}).  This signal is
+considered useful for debugging. An endpoint MUST NOT wait to receive this
+signal before advertising additional credit, since doing so will mean that the
+peer will be blocked for at least an entire round trip, and potentially for
+longer if the peer chooses to not send STREAMS_BLOCKED frames.
 
 
 # Connections {#connections}
@@ -1567,7 +1518,7 @@ magnitude of any amplification attack that can be mounted using spoofed source
 addresses.  In determining this limit, servers only count the size of
 successfully processed packets.
 
-Clients MUST pad UDP datagrams that contain only Initial packets to 1200 octets.
+Clients MUST pad UDP datagrams that contain only Initial packets to 1200 bytes.
 Once a client has received an acknowledgment for a Handshake packet it MAY send
 smaller datagrams.  Sending padded datagrams ensures that the server is not
 overly constrained by the amplification restriction.
@@ -2299,7 +2250,7 @@ following layout:
 +-+-+-+-+-+-+-+-+
 |0|K|1|1|0|0|0|0|
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                      Random Octets (160..)                  ...
+|                      Random Bytes (160..)                   ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                                                               |
 +                                                               +
@@ -2319,7 +2270,7 @@ The message consists of a header byte, followed by an arbitrary number of random
 bytes, followed by a Stateless Reset Token.
 
 A stateless reset will be interpreted by a recipient as a packet with a short
-header.  For the packet to appear as valid, the Random Octets field needs to
+header.  For the packet to appear as valid, the Random Bytes field needs to
 include at least 20 bytes of random or unpredictable values.  This is intended
 to allow for a destination connection ID of the maximum length permitted, a
 packet number, and minimal payload.  The Stateless Reset Token corresponds to
@@ -2924,6 +2875,10 @@ containing that information is acknowledged.
 
 * PADDING frames contain no information, so lost PADDING frames do not require
   repair.
+
+Endpoints SHOULD prioritize retransmission of data over sending new data, unless
+priorities specified by the application indicate otherwise (see
+{{stream-prioritization}}).
 
 Upon detecting losses, a sender MUST take appropriate congestion control action.
 The details of loss detection and congestion control are described in
@@ -3827,20 +3782,20 @@ language from Section 3 of {{!TLS13=RFC8446}}.
    uint32 QuicVersion;
 
    enum {
-      initial_max_stream_data_bidi_local(0),
-      initial_max_data(1),
-      initial_max_streams_bidi(2),
-      idle_timeout(3),
-      preferred_address(4),
-      max_packet_size(5),
-      stateless_reset_token(6),
-      ack_delay_exponent(7),
-      initial_max_streams_uni(8),
-      disable_migration(9),
-      initial_max_stream_data_bidi_remote(10),
-      initial_max_stream_data_uni(11),
-      max_ack_delay(12),
-      original_connection_id(13),
+      original_connection_id(0),
+      idle_timeout(1),
+      stateless_reset_token(2),
+      max_packet_size(3),
+      initial_max_data(4),
+      initial_max_stream_data_bidi_local(5),
+      initial_max_stream_data_bidi_remote(6),
+      initial_max_stream_data_uni(7),
+      initial_max_streams_bidi(8),
+      initial_max_streams_uni(9),
+      ack_delay_exponent(10),
+      max_ack_delay(11),
+      disable_migration(12),
+      preferred_address(13),
       (65535)
    } TransportParameterId;
 
@@ -3860,14 +3815,6 @@ language from Section 3 of {{!TLS13=RFC8446}}.
       };
       TransportParameter parameters<0..2^16-1>;
    } TransportParameters;
-
-   struct {
-     enum { IPv4(4), IPv6(6), (15) } ipVersion;
-     opaque ipAddress<4..2^8-1>;
-     uint16 port;
-     opaque connectionId<0..18>;
-     opaque statelessResetToken[16];
-   } PreferredAddress;
 ~~~
 {: #figure-transport-parameters title="Definition of TransportParameters"}
 
@@ -3881,17 +3828,28 @@ included in the cryptographic handshake.
 
 ## Transport Parameter Definitions {#transport-parameter-definitions}
 
-<!-- TODO: reorganize this section -->
+The following transport parameters are defined:
 
-An endpoint MAY use the following transport parameters:
+original_connection_id (0x0000):
 
-idle_timeout (0x0003):
+: The value of the Destination Connection ID field from the first Initial packet
+  sent by the client.  This transport parameter is only sent by a server.  A
+  server MUST include the original_connection_id transport parameter if it sent
+  a Retry packet.
+
+idle_timeout (0x0001):
 
 : The idle timeout is a value in seconds that is encoded as an unsigned 16-bit
   integer.  If this parameter is absent or zero then the idle timeout is
   disabled.
 
-max_packet_size (0x0005):
+stateless_reset_token (0x0002):
+
+: The Stateless Reset Token is used in verifying a stateless reset, see
+  {{stateless-reset}}.  This parameter is a sequence of 16 bytes.  This
+  transport parameter is only sent by a server.
+
+max_packet_size (0x0003):
 
 : The maximum packet size parameter places a limit on the size of packets that
   the endpoint is willing to receive, encoded as an unsigned 16-bit integer.
@@ -3900,65 +3858,7 @@ max_packet_size (0x0005):
   Values below 1200 are invalid.  This limit only applies to protected packets
   ({{packet-protected}}).
 
-ack_delay_exponent (0x0007):
-
-: An 8-bit unsigned integer value indicating an exponent used to decode the ACK
-  Delay field in the ACK frame, see {{frame-ack}}.  If this value is absent, a
-  default value of 3 is assumed (indicating a multiplier of 8).  The default
-  value is also used for ACK frames that are sent in Initial and Handshake
-  packets.  Values above 20 are invalid.
-
-disable_migration (0x0009):
-
-: The endpoint does not support connection migration ({{migration}}). Peers MUST
-  NOT send any packets, including probing packets ({{probing}}), from a local
-  address other than that used to perform the handshake.  This parameter is a
-  zero-length value.
-
-max_ack_delay (0x000c):
-
-: An 8 bit unsigned integer value indicating the maximum amount of time in
-  milliseconds by which the endpoint will delay sending acknowledgments.
-  If this value is absent, a default of 25 milliseconds is assumed.
-
-Either peer MAY advertise an initial value for flow control of each type of
-stream on which they might receive data.  Each of the following transport
-parameters is encoded as an unsigned 32-bit integer in units of bytes:
-
-initial_max_stream_data_bidi_local (0x0000):
-
-: The initial stream maximum data for bidirectional, locally-initiated streams
-  parameter contains the initial flow control limit for newly created
-  bidirectional streams opened by the endpoint that sets the transport
-  parameter.  In client transport parameters, this applies to streams with an
-  identifier ending in 0x0; in server transport parameters, this applies to
-  streams ending in 0x1.
-
-initial_max_stream_data_bidi_remote (0x000a):
-
-: The initial stream maximum data for bidirectional, peer-initiated streams
-  parameter contains the initial flow control limit for newly created
-  bidirectional streams opened by the endpoint that receives the transport
-  parameter.  In client transport parameters, this applies to streams with an
-  identifier ending in 0x1; in server transport parameters, this applies to
-  streams ending in 0x0.
-
-initial_max_stream_data_uni (0x000b):
-
-: The initial stream maximum data for unidirectional streams parameter contains
-  the initial flow control limit for newly created unidirectional streams opened
-  by the endpoint that receives the transport parameter.  In client transport
-  parameters, this applies to streams with an identifier ending in 0x3; in
-  server transport parameters, this applies to streams ending in 0x2.
-
-If present, transport parameters that set initial flow control limits
-(initial_max_stream_data_bidi_local, initial_max_stream_data_bidi_remote, and
-initial_max_stream_data_uni) are equivalent to sending a MAX_STREAM_DATA frame
-({{frame-max-stream-data}}) on every stream of the corresponding type
-immediately after opening.  If the transport parameter is absent, streams of
-that type start with a flow control limit of 0.
-
-initial_max_data (0x0001):
+initial_max_data (0x0004):
 
 : The initial maximum data parameter contains the initial value for the maximum
   amount of data that can be sent on the connection.  This parameter is encoded
@@ -3967,7 +3867,36 @@ initial_max_data (0x0001):
   completing the handshake. If the transport parameter is absent, the connection
   starts with a flow control limit of 0.
 
-initial_max_streams_bidi (0x0002):
+initial_max_stream_data_bidi_local (0x0005):
+
+: This parameter is a 32-bit integer specifying the initial flow control limit
+  for locally-initiated bidirectional streams.  This limit applies to newly
+  created bidirectional streams opened by the endpoint that sends the transport
+  parameter.  In client transport parameters, this applies to streams with an
+  identifier with the least significant two bits set to 0x0; in server transport
+  parameters, this applies to streams with the least significant two bits set to
+  0x1.
+
+initial_max_stream_data_bidi_remote (0x0006):
+
+: This parameter is a 32-bit integer specifying the initial flow control limit
+  for peer-initiated bidirectional streams.  This limit applies to newly created
+  bidirectional streams opened by the endpoint that receives the transport
+  parameter.  In client transport parameters, this applies to streams with an
+  identifier with the least significant two bits set to 0x1; in server transport
+  parameters, this applies to streams with the least significant two bits set to
+  0x0.
+
+initial_max_stream_data_uni (0x0007):
+
+: This parameter is a 32-bit integer specifying the initial flow control limit
+  for unidirectional streams.  This limit applies to newly created bidirectional
+  streams opened by the endpoint that receives the transport parameter.  In
+  client transport parameters, this applies to streams with an identifier with
+  the least significant two bits set to 0x3; in server transport parameters,
+  this applies to streams with the least significant two bits set to 0x2.
+
+initial_max_streams_bidi (0x0008):
 
 : The initial maximum bidirectional streams parameter contains the initial
   maximum number of bidirectional streams the peer may initiate, encoded as an
@@ -3976,7 +3905,7 @@ initial_max_streams_bidi (0x0002):
   parameter is equivalent to sending a MAX_STREAMS ({{frame-max-streams}}) of
   the corresponding type with the same value.
 
-initial_max_streams_uni (0x0008):
+initial_max_streams_uni (0x0009):
 
 : The initial maximum unidirectional streams parameter contains the initial
   maximum number of unidirectional streams the peer may initiate, encoded as an
@@ -3985,30 +3914,57 @@ initial_max_streams_uni (0x0008):
   parameter is equivalent to sending a MAX_STREAMS ({{frame-max-streams}}) of
   the corresponding type with the same value.
 
-A server MUST include the following transport parameter if it sent a Retry
-packet:
+ack_delay_exponent (0x000a):
 
-original_connection_id (0x000d):
+: The ACK delay exponent is an 8-bit unsigned integer value indicating an
+  exponent used to decode the ACK Delay field in the ACK frame ({{frame-ack}}).
+  If this value is absent, a default value of 3 is assumed
+  (indicating a multiplier of 8).  The default value is also used for ACK frames
+  that are sent in Initial and Handshake packets.  Values above 20 are invalid.
 
-: The value of the Destination Connection ID field from the first Initial packet
-  sent by the client.  This transport parameter is only sent by the server.
+max_ack_delay (0x000b):
 
-A server MAY include the following transport parameters:
+: The maximum ACK delay is an 8-bit unsigned integer value indicating the
+  maximum amount of time in milliseconds by which the endpoint will delay
+  sending acknowledgments.  If this value is absent, a default of 25
+  milliseconds is assumed.
 
-stateless_reset_token (0x0006):
+disable_migration (0x000c):
 
-: The Stateless Reset Token is used in verifying a stateless reset, see
-  {{stateless-reset}}.  This parameter is a sequence of 16 bytes.
+: The disable migration transport parameter is included if the endpoint does not
+  support connection migration ({{migration}}). Peers of an endpoint that sets
+  this transport parameter MUST NOT send any packets, including probing packets
+  ({{probing}}), from a local address other than that used to perform the
+  handshake.  This parameter is a zero-length value.
 
-preferred_address (0x0004):
+preferred_address (0x000d):
 
-: The server's Preferred Address is used to effect a change in server address at
-  the end of the handshake, as described in {{preferred-address}}.
+: The server's preferred address is used to effect a change in server address at
+  the end of the handshake, as described in {{preferred-address}}.  The format
+  of this transport parameter is the PreferredAddress struct shown in
+  {{fig-preffered-address}}.  This transport parameter is only sent by a server.
+
+~~~
+   struct {
+     enum { IPv4(4), IPv6(6), (15) } ipVersion;
+     opaque ipAddress<4..2^8-1>;
+     uint16 port;
+     opaque connectionId<0..18>;
+     opaque statelessResetToken[16];
+   } PreferredAddress;
+~~~
+{: #fig-preffered-address title="Preferred Address format"}
+
+If present, transport parameters that set initial flow control limits
+(initial_max_stream_data_bidi_local, initial_max_stream_data_bidi_remote, and
+initial_max_stream_data_uni) are equivalent to sending a MAX_STREAM_DATA frame
+({{frame-max-stream-data}}) on every stream of the corresponding type
+immediately after opening.  If the transport parameter is absent, streams of
+that type start with a flow control limit of 0.
 
 A client MUST NOT include an original connection ID, a stateless reset token, or
 a preferred address.  A server MUST treat receipt of any of these transport
 parameters as a connection error of type TRANSPORT_PARAMETER_ERROR.
-
 
 
 # Frame Types and Formats {#frame-formats}
@@ -5146,10 +5102,10 @@ higher-numbered stream ID is received.  Thus, on a new connection, opening
 stream 2000001 opens 1 million streams, as required by the specification.
 
 The number of active streams is limited by the concurrent stream limit transport
-parameter, as explained in {{stream-concurrency}}.  If chosen judiciously, this
-limit mitigates the effect of the stream commitment attack.  However, setting
-the limit too low could affect performance when applications expect to open
-large number of streams.
+parameter, as explained in {{controlling-concurrency}}.  If chosen judiciously,
+this limit mitigates the effect of the stream commitment attack.  However,
+setting the limit too low could affect performance when applications expect to
+open large number of streams.
 
 ## Explicit Congestion Notification Attacks {#security-ecn}
 
@@ -5216,7 +5172,6 @@ Specification:
 
 : A reference to a publicly available specification for the value.
 
-
 The nominated expert(s) verify that a specification exists and is readily
 accessible.  Expert(s) are encouraged to be biased towards approving
 registrations unless they are abusive, frivolous, or actively harmful (not
@@ -5226,20 +5181,20 @@ The initial contents of this registry are shown in {{iana-tp-table}}.
 
 | Value  | Parameter Name              | Specification                       |
 |:-------|:----------------------------|:------------------------------------|
-| 0x0000 | initial_max_stream_data_bidi_local | {{transport-parameter-definitions}} |
-| 0x0001 | initial_max_data            | {{transport-parameter-definitions}} |
-| 0x0002 | initial_max_streams_bidi    | {{transport-parameter-definitions}} |
-| 0x0003 | idle_timeout                | {{transport-parameter-definitions}} |
-| 0x0004 | preferred_address           | {{transport-parameter-definitions}} |
-| 0x0005 | max_packet_size             | {{transport-parameter-definitions}} |
-| 0x0006 | stateless_reset_token       | {{transport-parameter-definitions}} |
-| 0x0007 | ack_delay_exponent          | {{transport-parameter-definitions}} |
-| 0x0008 | initial_max_streams_uni     | {{transport-parameter-definitions}} |
-| 0x0009 | disable_migration           | {{transport-parameter-definitions}} |
-| 0x000a | initial_max_stream_data_bidi_remote | {{transport-parameter-definitions}} |
-| 0x000b | initial_max_stream_data_uni | {{transport-parameter-definitions}} |
-| 0x000c | max_ack_delay               | {{transport-parameter-definitions}} |
-| 0x000d | original_connection_id      | {{transport-parameter-definitions}} |
+| 0x0000 | original_connection_id      | {{transport-parameter-definitions}} |
+| 0x0001 | idle_timeout                | {{transport-parameter-definitions}} |
+| 0x0002 | stateless_reset_token       | {{transport-parameter-definitions}} |
+| 0x0003 | max_packet_size             | {{transport-parameter-definitions}} |
+| 0x0004 | initial_max_data            | {{transport-parameter-definitions}} |
+| 0x0005 | initial_max_stream_data_bidi_local | {{transport-parameter-definitions}} |
+| 0x0006 | initial_max_stream_data_bidi_remote | {{transport-parameter-definitions}} |
+| 0x0007 | initial_max_stream_data_uni | {{transport-parameter-definitions}} |
+| 0x0008 | initial_max_streams_bidi    | {{transport-parameter-definitions}} |
+| 0x0009 | initial_max_streams_uni     | {{transport-parameter-definitions}} |
+| 0x000a | ack_delay_exponent          | {{transport-parameter-definitions}} |
+| 0x000b | max_ack_delay               | {{transport-parameter-definitions}} |
+| 0x000c | disable_migration           | {{transport-parameter-definitions}} |
+| 0x000d | preferred_address           | {{transport-parameter-definitions}} |
 {: #iana-tp-table title="Initial QUIC Transport Parameters Entries"}
 
 ## QUIC Frame Type Registry {#iana-frames}
