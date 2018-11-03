@@ -3963,7 +3963,7 @@ ack_delay_exponent (0x000a):
 
 : The ACK delay exponent is an 8-bit unsigned integer value indicating an
   exponent used to decode the ACK Delay field in the ACK frame ({{frame-ack}}).
-  {{frame-ack}}.  If this value is absent, a default value of 3 is assumed
+  If this value is absent, a default value of 3 is assumed
   (indicating a multiplier of 8).  The default value is also used for ACK frames
   that are sent in Initial and Handshake packets.  Values above 20 are invalid.
 
