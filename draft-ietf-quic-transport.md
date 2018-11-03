@@ -153,7 +153,7 @@ This document describes the core QUIC protocol and is structured as follows.
 * Packets and frames are the basic unit used by QUIC to communicate.
   - {{packets-frames}} describes concepts related to packets and frames,
   - {{packetization}} defines models for the transmission, retransmission, and
-    acknowledgement of packets and frames, and
+    acknowledgement of data, and
   - {{packet-size}} specifies rules for managing the size of packets.
 
 * Finally, encoding details of QUIC protocol elements are described in:
