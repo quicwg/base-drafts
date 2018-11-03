@@ -4053,7 +4053,7 @@ experience shows that sending packets every 15 to 30 seconds is necessary to
 prevent the majority of middleboxes from losing state for UDP flows.
 
 
-## ACK Frame {#frame-ack}
+## ACK Frames {#frame-ack}
 
 Receivers send ACK frames (types 0x02 and 0x03) to inform senders of packets
 they have received and processed. The ACK frame contains one or more ACK Blocks.
@@ -4253,8 +4253,7 @@ ECN counters are maintained separately for each packet number space.
 
 ## RST_STREAM Frame {#frame-rst-stream}
 
-An endpoint may use a RST_STREAM frame (type=0x04) to abruptly terminate a
-stream.
+An endpoint uses a RST_STREAM frame (type=0x04) to abruptly terminate a stream.
 
 After sending a RST_STREAM, an endpoint ceases transmission and retransmission
 of STREAM frames on the identified stream.  A receiver of RST_STREAM can discard
@@ -4297,9 +4296,9 @@ Final Offset:
 
 ## STOP_SENDING Frame {#frame-stop-sending}
 
-An endpoint may use a STOP_SENDING frame (type=0x05) to communicate that
-incoming data is being discarded on receipt at application request.  This
-signals a peer to abruptly terminate transmission on a stream.
+An endpoint uses a STOP_SENDING frame (type=0x05) to communicate that incoming
+data is being discarded on receipt at application request.  This signals a peer
+to abruptly terminate transmission on a stream.
 
 Receipt of a STOP_SENDING frame is only valid for a send stream that exists and
 is not in the "Ready" state (see {{stream-send-states}}).  Receiving a
