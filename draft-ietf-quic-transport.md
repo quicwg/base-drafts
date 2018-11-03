@@ -275,8 +275,8 @@ Bidirectional streams allow for data to be sent in both directions.
 
 Streams are identified within a connection by a numeric value, referred to as
 the stream ID.  Stream IDs are unique to a stream. A QUIC endpoint MUST NOT
-reuse a stream ID within a connection.  Stream IDs are encoded as a
-variable-length integer (see {{integer-encoding}}).
+reuse a stream ID within a connection.  Stream IDs are encoded as
+variable-length integers (see {{integer-encoding}}).
 
 The least significant bit (0x1) of the stream ID identifies the initiator of the
 stream.  Client-initiated streams have even-numbered stream IDs (with the bit
@@ -786,9 +786,9 @@ been consumed, to avoid either exceeding flow control limits or deadlocking.
 On receipt of a RST_STREAM frame, an endpoint will tear down state for the
 matching stream and ignore further data arriving on that stream.  If a
 RST_STREAM frame is reordered with stream data for the same stream, the
-receiver's estimate of the number of octets received on that stream can be lower
+receiver's estimate of the number of bytes received on that stream can be lower
 than the sender's estimate of the number sent.  As a result, the two endpoints
-could disagree on the number of octets that count towards connection flow
+could disagree on the number of bytes that count towards connection flow
 control.
 
 To remedy this issue, a RST_STREAM frame ({{frame-rst-stream}}) includes the
@@ -1518,7 +1518,7 @@ magnitude of any amplification attack that can be mounted using spoofed source
 addresses.  In determining this limit, servers only count the size of
 successfully processed packets.
 
-Clients MUST pad UDP datagrams that contain only Initial packets to 1200 octets.
+Clients MUST pad UDP datagrams that contain only Initial packets to 1200 bytes.
 Once a client has received an acknowledgment for a Handshake packet it MAY send
 smaller datagrams.  Sending padded datagrams ensures that the server is not
 overly constrained by the amplification restriction.
@@ -2250,7 +2250,7 @@ following layout:
 +-+-+-+-+-+-+-+-+
 |0|K|1|1|0|0|0|0|
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                      Random Octets (160..)                  ...
+|                      Random Bytes (160..)                   ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                                                               |
 +                                                               +
@@ -2270,7 +2270,7 @@ The message consists of a header byte, followed by an arbitrary number of random
 bytes, followed by a Stateless Reset Token.
 
 A stateless reset will be interpreted by a recipient as a packet with a short
-header.  For the packet to appear as valid, the Random Octets field needs to
+header.  For the packet to appear as valid, the Random Bytes field needs to
 include at least 20 bytes of random or unpredictable values.  This is intended
 to allow for a destination connection ID of the maximum length permitted, a
 packet number, and minimal payload.  The Stateless Reset Token corresponds to
