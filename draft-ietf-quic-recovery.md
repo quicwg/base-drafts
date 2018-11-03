@@ -163,17 +163,18 @@ across packet number spaces.
 
 ### Monotonically Increasing Packet Numbers
 
-TCP conflates transmission sequence number at the sender with delivery sequence
-number at the receiver, which results in retransmissions of the same data
-carrying the same sequence number, and consequently to problems caused by
-"retransmission ambiguity".  QUIC separates the two: QUIC uses a packet number
-for transmissions, and any application data is sent in one or more streams,
-with delivery order determined by stream offsets encoded within STREAM frames.
+TCP conflates transmission order at the sender with delivery order at the
+receiver, which results in retransmissions of the same data carrying the same
+sequence number, and consequently to "retransmission ambiguity".  QUIC
+separates the two: QUIC uses a packet number to indicate transmission order,
+and any application data is sent in one or more streams, with delivery order
+determined by stream offsets encoded within STREAM frames.
 
-QUIC's packet number is strictly increasing, and directly encodes transmission
-order.  A higher QUIC packet number signifies that the packet was sent later,
-and a lower QUIC packet number signifies that the packet was sent earlier.  When
-a packet containing frames is deemed lost, QUIC rebundles necessary frames in a
+QUIC's packet number is strictly increasing within a packet number space,
+and directly encodes transmission order.  A higher QUIC packet number
+signifies that the packet was sent later, and a lower QUIC packet number
+signifies that the packet was sent earlier.  When a packet containing
+retransmittable frames is deemed lost, QUIC rebundles necessary frames in a
 new packet with a new packet number, removing ambiguity about which packet is
 acknowledged when an ACK is received.  Consequently, more accurate RTT
 measurements can be made, spurious retransmissions are trivially detected, and
@@ -236,7 +237,9 @@ underestimation of min RTT, which in turn prevents underestimating smoothed RTT.
 Ack-based loss detection implements the spirit of TCP's Fast Retransmit
 {{?RFC5681}}, Early Retransmit {{?RFC5827}}, FACK, and SACK loss recovery
 {{?RFC6675}}. This section provides an overview of how these algorithms are
-implemented in QUIC.
+implemented in QUIC.  Though both time-based loss detection and early retransmit
+use a timer, they're part of Ack-based detection because they do not use a timer
+to send probes, but rather to declare packets lost.
 
 ### Fast Retransmit
 
@@ -247,6 +250,8 @@ the acknowledgement indicates that a later packet was received, while the
 reordering threshold provides some tolerance for reordering of packets in the
 network.
 
+#### Packet Threshold 
+
 The RECOMMENDED initial value for kReorderingThreshold is 3, based on
 TCP loss recovery {{?RFC5681}} {{?RFC6675}}. Some networks may exhibit higher
 degrees of reordering, causing a sender to detect spurious losses. Spuriously
@@ -254,6 +259,8 @@ declaring packets lost leads to unnecessary retransmissions and may result in
 degraded performance due to the actions of the congestion controller upon
 detecting loss. Implementers MAY use algorithms developed for TCP, such as
 TCP-NCR {{?RFC4653}}, to improve QUIC's reordering resilience.
+
+#### Time-based
 
 QUIC implementations can use time-based loss detection to handle reordering
 based on time elapsed since the packet was sent.  This may be used either as
@@ -265,9 +272,10 @@ round-trip time (kTimeReorderingFraction), is 1/8.
 
 Unacknowledged packets close to the tail may have fewer than
 kReorderingThreshold retransmittable packets sent after them.  Loss of such
-packets cannot be detected via Fast Retransmit. To enable ack-based loss
-detection of such packets, receipt of an acknowledgment for the last outstanding
-retransmittable packet triggers the Early Retransmit process, as follows.
+packets cannot be detected via Packet Threshold Fast Retransmit. To enable
+ack-based loss detection of such packets, receipt of an acknowledgment for
+the last outstanding retransmittable packet triggers the Early Retransmit
+process, as follows.
 
 If there are unacknowledged in-flight packets still pending, they should
 be marked as lost. To compensate for the reduced reordering resilience, the
@@ -298,9 +306,9 @@ prone to spurious retransmissions due to its reduced reordering resilence
 without the timer. This observation led Linux TCP implementers to implement a
 timer for TCP as well, and this document incorporates this advancement.
 
-## Timer-based Detection
+## Timeout Loss Detection
 
-Timer-based loss detection recovers from losses that cannot be handled by
+Timeout loss detection recovers from losses that cannot be handled by
 ack-based loss detection.  It uses a single timer which switches between
 a crypto retransmission timer, a Tail Loss Probe timer and Retransmission
 Timeout mechanisms.
@@ -426,22 +434,22 @@ QUIC's RTO algorithm differs from TCP in that the firing of an RTO timer is not
 considered a strong enough signal of packet loss, so does not result in an
 immediate change to congestion window or recovery state. An RTO timer expires
 only when there's a prolonged period of network silence, which could be caused
-by a change in the underlying network RTT.
+by a change in the network RTT.
 
 QUIC also diverges from TCP by including MaxAckDelay in the RTO period. Since
 QUIC corrects for this delay in its SRTT and RTTVAR computations, it is
 necessary to add this delay explicitly in the TLP and RTO computation.
 
-When an acknowledgment is received for a packet sent on an RTO event, any
-unacknowledged packets with lower packet numbers than those acknowledged MUST be
-marked as lost.  If an acknowledgement for a packet sent on an RTO is received
-at the same time packets sent prior to the first RTO are acknowledged, the RTO
-is considered spurious and standard loss detection rules apply.
+When an ACK is received that acknowledges only one or more packets sent on
+an RTO event, all unacknowledged packets with lower packet numbers MUST be
+marked as lost.  If packets sent prior to the first RTO are acknowledged in
+the same ACK, the RTO is considered spurious and standard loss detection rules
+apply.
 
 A packet sent when an RTO timer expires MAY carry new data if available or
 unacknowledged data to potentially reduce recovery time. Since this packet is
 sent as a probe into the network prior to establishing any packet loss, prior
-unacknowledged packets SHOULD NOT be marked as lost.
+unacknowledged packets SHOULD NOT be marked as lost when the timer expires.
 
 A packet sent on an RTO timer MUST NOT be blocked by the sender's congestion
 controller. A sender MUST however count these packets as being in flight, since
@@ -450,11 +458,10 @@ this packet adds network load without establishing packet loss.
 ## Generating Acknowledgements
 
 QUIC SHOULD delay sending acknowledgements in response to packets, but MUST NOT
-excessively delay acknowledgements of packets containing frames other than ACK.
-Specifically, implementations MUST attempt to enforce a maximum
-ack delay to avoid causing the peer spurious timeouts.  The maximum ack delay
-is communicated in the `max_ack_delay` transport parameter and the default
-value is 25ms.
+excessively delay acknowledgements of retransmittable packets. Specifically,
+implementations MUST attempt to enforce a maximum ack delay to avoid causing
+the peer spurious timeouts.  The maximum ack delay is communicated in the
+`max_ack_delay` transport parameter and the default value is 25ms.
 
 An acknowledgement SHOULD be sent immediately upon receipt of a second
 packet but the delay SHOULD NOT exceed the maximum ack delay. QUIC recovery
@@ -501,13 +508,13 @@ frame may be saved.  When a packet containing an ACK frame is acknowledged, the
 receiver can stop acknowledging packets less than or equal to the largest
 acknowledged in the sent ACK frame.
 
-In cases without ACK frame loss, this algorithm allows for a minimum of 1 RTT of
-reordering. In cases with ACK frame loss, this approach does not guarantee that
-every acknowledgement is seen by the sender before it is no longer included in
-the ACK frame. Packets could be received out of order and all subsequent ACK
-frames containing them could be lost. In this case, the loss recovery algorithm
-may cause spurious retransmits, but the sender will continue making forward
-progress.
+In cases without ACK frame loss, this algorithm allows for a minimum of 1 RTT
+of reordering. In cases with ACK frame loss and reordering, this approach does
+not guarantee that every acknowledgement is seen by the sender before it is no
+longer included in the ACK frame. Packets could be received out of order and
+all subsequent ACK frames containing them could be lost. In this case, the
+loss recovery algorithm may cause spurious retransmits, but the sender will
+continue making forward progress.
 
 ## Tracking Sent Packets {#tracking-sent-packets}
 
@@ -777,16 +784,12 @@ Pseudocode for OnAckReceived and UpdateRtt follow:
 
 ### On Packet Acknowledgment
 
-When a packet is acked for the first time, the following OnPacketAcked function
-is called.  Note that a single ACK frame may newly acknowledge several packets.
-OnPacketAcked must be called once for each of these newly acked packets.
+When a packet is acknowledged for the first time, the following OnPacketAcked
+function is called.  Note that a single ACK frame may newly acknowledge several
+packets. OnPacketAcked must be called once for each of these newly acked packets.
 
-OnPacketAcked takes one parameter, acked_packet, which is the struct of the
-newly acked packet.
-
-If this is the first acknowledgement following RTO, check if the smallest newly
-acknowledged packet is one sent by the RTO, and if so, inform congestion control
-of a verified RTO, similar to F-RTO {{?RFC5682}}.
+OnPacketAcked takes one parameter, acked_packet, which is the struct detailed in
+{{sent-packets-fields}}.
 
 Pseudocode for OnPacketAcked follows:
 
@@ -878,13 +881,9 @@ Pseudocode for OnLossDetectionTimeout follows:
 
 ### Detecting Lost Packets
 
-Packets in QUIC are only considered lost once a larger packet number in
-the same packet number space is acknowledged.  DetectLostPackets is called
-every time an ack is received and operates on the sent_packets for that
-packet number space.  If the loss detection timer expires and the loss_time
-is set, the previous largest acked packet is supplied.
-
-#### Pseudocode
+DetectLostPackets is called every time an ack is received and operates on
+the sent_packets for that packet number space. If the loss detection timer
+expires and the loss_time is set, the previous largest acked packet is supplied.
 
 DetectLostPackets takes one parameter, acked, which is the largest acked packet.
 
@@ -977,11 +976,10 @@ congestion window.
 ## Recovery Period
 
 Recovery is a period of time beginning with detection of a lost packet or an
-increase in the ECN-CE counter. Because QUIC retransmits stream data and control
-frames, not packets, it defines the end of recovery as a packet sent after the
-start of recovery being acknowledged. This is slightly different from TCP's
-definition of recovery, which ends when the lost packet that started recovery is
-acknowledged.
+increase in the ECN-CE counter. Because QUIC does not retransmit packets,
+it defines the end of recovery as a packet sent after the start of recovery
+being acknowledged. This is slightly different from TCP's definition of
+recovery, which ends when the lost packet that started recovery is acknowledged.
 
 The recovery period limits congestion window reduction to once per round trip.
 During recovery, the congestion window remains unchanged irrespective of new
@@ -1098,8 +1096,8 @@ variables as follows:
 
 ### On Packet Sent
 
-Whenever a packet is sent, and it contains non-ACK frames,
-the packet increases bytes_in_flight.
+Whenever a packet is sent, and it contains non-ACK frames, the packet
+increases bytes_in_flight.
 
 ~~~
    OnPacketSentCC(bytes_sent):
@@ -1108,7 +1106,7 @@ the packet increases bytes_in_flight.
 
 ### On Packet Acknowledgement
 
-Invoked from loss detection's OnPacketAcked and is supplied with
+Invoked from loss detection's OnPacketAcked and is supplied with the
 acked_packet from sent_packets.
 
 ~~~
@@ -1133,7 +1131,7 @@ acked_packet from sent_packets.
 ### On New Congestion Event
 
 Invoked from ProcessECN and OnPacketsLost when a new congestion event is
-detected. May starts a new recovery period and reduces the congestion
+detected. May start a new recovery period and reduces the congestion
 window.
 
 ~~~
