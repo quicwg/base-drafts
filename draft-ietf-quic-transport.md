@@ -92,9 +92,9 @@ informative:
 
 --- abstract
 
-This document describes the core of the QUIC transport protocol.  Accompanying
+This document defines the core of the QUIC transport protocol.  Accompanying
 documents describe QUIC's loss detection and congestion control
-{{QUIC-RECOVERY}}, and the use of TLS 1.3 for key negotiation {{QUIC-TLS}}.
+{{QUIC-RECOVERY}} and the use of TLS 1.3 for key negotiation {{QUIC-TLS}}.
 
 
 --- note_Note_to_Readers
@@ -171,16 +171,12 @@ This document defines QUIC version 1, which conforms to the protocol invariants
 in {{QUIC-INVARIANTS}}.
 
 
-## Conventions and Definitions
-
-### Keywords
+## Terms and Definitions
 
 The keywords "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD",
 "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this
 document are to be interpreted as described in BCP 14 {{!RFC2119}} {{!RFC8174}}
 when, and only when, they appear in all capitals, as shown here.
-
-### Terms
 
 Commonly used terms in the document are described below.
 
@@ -197,8 +193,8 @@ QUIC packet:
 Endpoint:
 
 : An entity that can participate in a QUIC conversation by generating,
-  receiving, and fully processing QUIC packets. There are only two types of
-  endpoint in QUIC: client and server.
+  receiving, and processing QUIC packets. There are only two types of endpoint
+  in QUIC: client and server.
 
 Connection:
 
@@ -228,7 +224,7 @@ Application:
  : An entity that uses QUIC to send and receive data.
 
 
-### Notational Conventions
+## Notational Conventions
 
 Packet and frame diagrams in this document use the format described in Section
 3.1 of {{?RFC2360}}, with the following additional conventions:
