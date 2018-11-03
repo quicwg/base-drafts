@@ -4666,7 +4666,7 @@ Stream Data Limit:
 A sender SHOULD send a STREAMS_BLOCKED frame (type=0x16 or 0x17) when it wishes
 to open a stream, but is unable to due to the maximum stream limit set by its
 peer (see {{frame-max-streams}}).  A STREAMS_BLOCKED frame of type 0x16 is used
-to indicate reaching the bidirectional stream limit; a STREAMS_BLOCKED frame of
+to indicate reaching the bidirectional stream limit, and a STREAMS_BLOCKED frame of
 type 0x17 indicates reaching the unidirectional stream limit.
 
 A STREAMS_BLOCKED frame does not open the stream, but informs the peer that a
