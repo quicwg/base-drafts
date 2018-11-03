@@ -242,9 +242,7 @@ x (*) ...
 
 Streams in QUIC provide a lightweight, ordered byte-stream abstraction to an
 application. An alternative view of QUIC streams is as an elastic "message"
-abstraction, similar to the way ephemeral streams are used in SST
-{{?SST=DOI.10.1145/1282427.1282421}}, which may be a more appealing description
-for some applications.
+abstraction.
 
 Streams can be created by sending data. Other processes associated with stream
 management - ending, cancelling, and managing flow control - are all designed to
@@ -2708,28 +2706,6 @@ streams as necessary in outgoing packets without losing transmission efficiency
 to underfilled packets.
 
 
-## Frame Priority {#frame-priority}
-
-Often, there will be limits on what can be transmitted as a result of connection
-flow control or the current congestion controller state.
-
-Giving preference to the transmission of its own management functions ensures
-that a protocol functions efficiently.  That is, prioritizing frames other than
-STREAM frames ensures that loss recovery, congestion control, and flow control
-operate effectively.
-
-CRYPTO frames SHOULD be prioritized over STREAM frames prior to the completion
-of the cryptographic handshake.  This includes the retransmission of the second
-flight of client handshake messages, that is, the TLS Finished and any client
-authentication messages.
-
-STREAM data in frames determined to be lost SHOULD be retransmitted before
-sending new data, unless priorities specified by the application indicate
-otherwise (see {{stream-prioritization}}).  Retransmitting lost stream data can
-fill in gaps, which allows the peer to consume already received data and free up
-the flow control window.
-
-
 ## Packet Processing and Acknowledgment {#processing-and-ack}
 
 A packet MUST NOT be acknowledged until packet protection has been successfully
@@ -2892,6 +2868,10 @@ containing that information is acknowledged.
 
 * PADDING frames contain no information, so lost PADDING frames do not require
   repair.
+
+Endpoints SHOULD prioritize retransmission of data over sending new data, unless
+priorities specified by the application indicate otherwise (see
+{{stream-prioritization}}).
 
 Upon detecting losses, a sender MUST take appropriate congestion control action.
 The details of loss detection and congestion control are described in
