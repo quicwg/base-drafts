@@ -3914,33 +3914,32 @@ initial_max_data (0x0004):
 
 initial_max_stream_data_bidi_local (0x0005):
 
-: The initial stream maximum data for bidirectional, locally-initiated streams
-  parameter is a 32-bit integer that contains the initial flow control limit for
-  newly created bidirectional streams opened by the endpoint that sets the
-  transport parameter.  In client transport parameters, this applies to streams
-  with an identifier with the least significant two bits set to 0x0; in server
-  transport parameters, this applies to streams with the least significant two
-  bits set to 0x1.
+: This parameter is a 32-bit integer specifying the initial flow control limit
+  for locally-initiated bidirectional streams.  This limit applies to newly
+  created bidirectional streams opened by the endpoint that sends the transport
+  parameter.  In client transport parameters, this applies to streams with an
+  identifier with the least significant two bits set to 0x0; in server transport
+  parameters, this applies to streams with the least significant two bits set to
+  0x1.
 
 initial_max_stream_data_bidi_remote (0x0006):
 
-: The initial stream maximum data for bidirectional, peer-initiated streams
-  parameter is a 32-bit integer that contains the initial flow control limit for
-  newly created bidirectional streams opened by the endpoint that receives the
-  transport parameter.  In client transport parameters, this applies to streams
-  with an identifier with the least significant two bits set to 0x1; in server
-  transport parameters, this applies to streams with the least significant two
-  bits set to 0x0.
+: This parameter is a 32-bit integer specifying the initial flow control limit
+  for peer-initiated bidirectional streams.  This limit applies to newly created
+  bidirectional streams opened by the endpoint that receives the transport
+  parameter.  In client transport parameters, this applies to streams with an
+  identifier with the least significant two bits set to 0x1; in server transport
+  parameters, this applies to streams with the least significant two bits set to
+  0x0.
 
 initial_max_stream_data_uni (0x0007):
 
-: The initial stream maximum data for unidirectional streams parameter is a
-  32-bit integer that contains the initial flow control limit for newly created
-  unidirectional streams opened by the endpoint that receives the transport
-  parameter.  In client transport parameters, this applies to streams with an
-  identifier with the least significant two bits set to 0x3; in server transport
-  parameters, this applies to streams with the least significant two bits set to
-  0x2.
+: This parameter is a 32-bit integer specifying the initial flow control limit
+  for unidirectional streams.  This limit applies to newly created bidirectional
+  streams opened by the endpoint that receives the transport parameter.  In
+  client transport parameters, this applies to streams with an identifier with
+  the least significant two bits set to 0x3; in server transport parameters,
+  this applies to streams with the least significant two bits set to 0x2.
 
 initial_max_streams_bidi (0x0008):
 
