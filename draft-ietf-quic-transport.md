@@ -3929,7 +3929,7 @@ max_ack_delay (0x000b):
 
 : The maximum ACK delay is an integer value indicating the
   maximum amount of time in milliseconds by which the endpoint will delay
-  sending acknowledgments.  This value should include the receiver's expected
+  sending acknowledgments.  This value SHOULD include the receiver's expected
   delays in alarms firing.  For example, if a receiver sets a timer for 5ms
   and alarms commonly fire up to 1ms late, then it should send a max_ack_delay
   of 6ms.  If this value is absent, a default of 25 milliseconds is assumed.
