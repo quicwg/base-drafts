@@ -250,23 +250,31 @@ the acknowledgement indicates that a later packet was received, while the
 reordering threshold provides some tolerance for reordering of packets in the
 network.
 
+Spuriously declaring packets lost leads to unnecessary retransmissions and
+may result in degraded performance due to the actions of the congestion
+controller upon detecting loss.  Implementations that detect spurious
+retransmissions and increase the reordering threshold in packets or time
+MAY choose to start with smaller initial reordering thresholds to minimize
+recovery latency.
+
 #### Packet Threshold
 
 The RECOMMENDED initial value for kReorderingThreshold is 3, based on
 TCP loss recovery {{?RFC5681}} {{?RFC6675}}. Some networks may exhibit higher
-degrees of reordering, causing a sender to detect spurious losses. Spuriously
-declaring packets lost leads to unnecessary retransmissions and may result in
-degraded performance due to the actions of the congestion controller upon
-detecting loss. Implementers MAY use algorithms developed for TCP, such as
+degrees of reordering, causing a sender to detect spurious losses.
+Implementers MAY use algorithms developed for TCP, such as
 TCP-NCR {{?RFC4653}}, to improve QUIC's reordering resilience.
 
 #### Time-based
 
-QUIC implementations can use time-based loss detection to handle reordering
-based on time elapsed since the packet was sent.  This may be used either as
-a replacement for a packet reordering threshold or in addition to it.  When
-a larger packet is acknowledged, if it was sent more than the threshold after
-any in flight packets, those packets are immediately declared lost.
+Time-based loss detection uses a time threshold to determine how much
+reordering to tolerate.  In this document, the threshold is expressed as a
+fraction of an RTT, but implemenantations MAY experiment with absolute
+thresholds.  This may be used either as a replacement for a packet reordering
+threshold or in addition to it.
+
+When a larger packet is acknowledged, if it was sent more than the
+threshold after any in flight packets, those packets are immediately declared lost.
 Otherwise, a timer is set for the the reordering threshold minus the time
 difference between the earliest in flight packet and the largest newly
 acknowledged packet.  Note that in some cases the timer could become longer
