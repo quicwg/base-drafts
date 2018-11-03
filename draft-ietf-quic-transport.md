@@ -4417,8 +4417,8 @@ value of the three low-order bits of the frame type determine the fields that
 are present in the frame.
 
 * The OFF bit (0x04) in the frame type is set to indicate that there is an
-  Offset field present.  When set to 1, the Offset field is present.  When set to
-  0, the Offset field is absent and the Stream Data starts at an offset of 0
+  Offset field present.  When set to 1, the Offset field is present.  When set
+  to 0, the Offset field is absent and the Stream Data starts at an offset of 0
   (that is, the frame contains the first bytes of the stream, or the end of a
   stream that includes no data).
 
@@ -4666,8 +4666,8 @@ Stream Data Limit:
 A sender SHOULD send a STREAMS_BLOCKED frame (type=0x16 or 0x17) when it wishes
 to open a stream, but is unable to due to the maximum stream limit set by its
 peer (see {{frame-max-streams}}).  A STREAMS_BLOCKED frame of type 0x16 is used
-to indicate reaching the bidirectional stream limit, and a STREAMS_BLOCKED frame of
-type 0x17 indicates reaching the unidirectional stream limit.
+to indicate reaching the bidirectional stream limit, and a STREAMS_BLOCKED frame
+of type 0x17 indicates reaching the unidirectional stream limit.
 
 A STREAMS_BLOCKED frame does not open the stream, but informs the peer that a
 new stream was needed and the stream limit prevented the creation of the stream.
