@@ -792,7 +792,7 @@ Pseudocode for OnAckReceived and UpdateRtt follow:
 
 When a packet is acknowledged for the first time, the following OnPacketAcked
 function is called.  Note that a single ACK frame may newly acknowledge several
-packets. OnPacketAcked must be called once for each of these newly acked
+packets. OnPacketAcked must be called once for each of these newly acknowledged
 packets.
 
 OnPacketAcked takes one parameter, acked_packet, which is the struct detailed in
