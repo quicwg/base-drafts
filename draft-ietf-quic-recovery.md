@@ -533,7 +533,7 @@ processing only applies to a single space.
 
 ### Sent Packet Fields {#sent-packets-fields}
 
-packet_number
+packet_number:
 : The packet number of the sent packet.
 
 retransmittable:
