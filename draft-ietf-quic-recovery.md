@@ -511,11 +511,11 @@ progress.
 
 ## Tracking Sent Packets {#tracking-sent-packets}
 
-QUIC stores information about every packet sent. It's expected implementations
-will index this information by packet number and crypto context and store the
-per-packet fields detailed below for loss recovery and congestion control.
-Additionally, implementations MUST ensure that any retransmittable frames
-being transmitted are tracked in case of loss.
+QUIC implementations store about every packet sent. It is expected
+implementations will index this information by packet number and crypto context
+and store the per-packet fields detailed below for loss recovery and congestion
+control. Additionally, implementations MUST ensure that any retransmittable
+frames being transmitted are tracked in case of loss.
 
 If a packet containing retransmittable frames is lost, the QUIC transport
 needs to recover from that loss, such as by retransmitting the data,
