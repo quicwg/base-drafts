@@ -515,7 +515,7 @@ progress.
 
 ## Tracking Sent Packets {#tracking-sent-packets}
 
-QRetransmittable packets MUST be tracked until acknowledged or lost in order to
+Retransmittable packets MUST be tracked until acknowledged or lost in order to
 correctly implement congestion control. It is expected implementations will
 index this information by packet number and crypto context and store the
 per-packet fields ({{sent-packet-fields}}) for loss recovery and congestion
