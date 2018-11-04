@@ -519,7 +519,7 @@ To correctly implement congestion control, a QUIC sender tracks every
 retransmittable packet until the packet is acknowledged or lost.
 It is expected that implementations will be able to access this information by
 packet number and crypto context and store the per-packet fields
-({{sent-packet-fields}}) for loss recovery and congestion control.
+({{sent-packets-fields}}) for loss recovery and congestion control.
 
 After a packet is declared lost, it SHOULD be tracked for an amount of time
 comparable to the maximum expected packet reordering, such as 1 RTT.  This
