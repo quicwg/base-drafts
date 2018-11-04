@@ -171,7 +171,7 @@ and any application data is sent in one or more streams, with delivery order
 determined by stream offsets encoded within STREAM frames.
 
 QUIC's packet number is strictly increasing within a packet number space,
-and directly encodes transmission order.  A higher QUIC packet number
+and directly encodes transmission order.  A higher packet number
 signifies that the packet was sent later, and a lower QUIC packet number
 signifies that the packet was sent earlier.  When a packet containing
 retransmittable frames is deemed lost, QUIC rebundles necessary frames in a
