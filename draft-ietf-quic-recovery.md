@@ -214,6 +214,10 @@ QUIC senders use both ack information and timeouts to detect lost packets, and
 this section provides a description of these algorithms. Estimating the network
 round-trip time (RTT) is critical to these algorithms and is described first.
 
+If a packet is lost, the QUIC transport needs to recover from that loss, such
+as by retransmitting the data, sending an updated frame, or abandoning the
+frame.  For more information, see Section 13.2 of {{QUIC-TRANSPORT}}.
+
 ## Computing the RTT estimate
 
 RTT is calculated when an ACK frame arrives by computing the difference between
@@ -509,6 +513,50 @@ frames containing them could be lost. In this case, the loss recovery algorithm
 may cause spurious retransmits, but the sender will continue making forward
 progress.
 
+## Tracking Sent Packets {#tracking-sent-packets}
+
+To correctly implement congestion control, a QUIC sender tracks every
+retransmittable packet until the packet is acknowledged or lost.
+It is expected that implementations will be able to access this information by
+packet number and crypto context and store the per-packet fields
+({{sent-packets-fields}}) for loss recovery and congestion control.
+
+After a packet is declared lost, it SHOULD be tracked for an amount of time
+comparable to the maximum expected packet reordering, such as 1 RTT.  This
+allows for detection of spurious retransmissions.
+
+Sent packets are tracked for each packet number space, and ACK
+processing only applies to a single space.
+
+### Sent Packet Fields {#sent-packets-fields}
+
+packet_number:
+: The packet number of the sent packet.
+
+retransmittable:
+: A boolean that indicates whether a packet is retransmittable.
+  If true, it is expected that an acknowledgement will be received,
+  though the peer could delay sending the ACK frame containing it
+  by up to the MaxAckDelay.
+
+in_flight:
+: A boolean that indicates whether the packet counts towards bytes in
+  flight.
+
+is_crypto_packet:
+: A boolean that indicates whether the packet contains
+  cryptographic handshake messages critical to the completion of the QUIC
+  handshake. In this version of QUIC, this includes any packet with the long
+  header that includes a CRYPTO frame.
+
+sent_bytes:
+: The number of bytes sent in the packet, not including UDP or IP
+  overhead, but including QUIC framing overhead.
+
+time:
+: The time the packet was sent.
+
+
 ## Pseudocode
 
 ### Constants of interest
@@ -615,15 +663,8 @@ loss_time:
 transmit or exceeding the reordering window in time.
 
 sent_packets:
-
-: An association of packet numbers to information about them, including a number
-  field indicating the packet number, a time field indicating the time a packet
-  was sent, a boolean indicating whether the packet is retransmittable,
-  a boolean indicating whether it counts towards bytes in flight, and a size
-  field indicating the packet's size in bytes.  sent_packets is ordered and
-  indexed by packet number. Packets remain in sent_packets until acknowledged
-  or lost.  A sent_packets data structure is maintained per packet number space,
-  and processing of an ACK frame only applies to a single space.
+: An association of packet numbers to information about them.  Described
+  in detail above in {{tracking-sent-packets}}.
 
 ### Initialization
 
@@ -653,27 +694,8 @@ follows:
 
 ### On Sending a Packet
 
-After any packet is sent, be it a new transmission or a rebundled transmission,
-the following OnPacketSent function is called.  The parameters to OnPacketSent
-are as follows:
-
-* packet_number: The packet number of the sent packet.
-
-* retransmittable: A boolean that indicates whether a packet is
-  retransmittable. If true, it is expected that an acknowledgement will
-  be received, though the peer could delay sending the ACK frame containing
-  it by up to the MaxAckDelay.
-
-* in_flight: A boolean that indicates whether the packet counts towards bytes in
-  flight.
-
-* is_crypto_packet: A boolean that indicates whether the packet contains
-  cryptographic handshake messages critical to the completion of the QUIC
-  handshake. In this version of QUIC, this includes any packet with the long
-  header that includes a CRYPTO frame.
-
-* sent_bytes: The number of bytes sent in the packet, not including UDP or IP
-  overhead, but including QUIC framing overhead.
+After a packet is sent, information about the packet is stored.  The parameters
+to OnPacketSent are described in detail above in {{sent-packets-fields}}.
 
 Pseudocode for OnPacketSent follows:
 
