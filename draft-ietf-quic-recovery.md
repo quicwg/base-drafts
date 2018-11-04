@@ -522,11 +522,12 @@ needs to recover from that loss, such as by retransmitting the data,
 sending an updated frame, or abandoning the frame.  For more information,
 see Section 13.2 of {{QUIC-TRANSPORT}}.
 
-Packets MUST be tracked until acknowledged or lost.  After a packet is lost,
-it SHOULD be tracked for an amount of time comparable to the maximum
-expected packet reordering, such as 1 RTT.  This allows detection of
-spurious retransmissions and MAY avoid extra retransmissions if the frames
-contained within the packet were retransmitted and lost again.
+Packets MUST be tracked until acknowledged or lost in order to correctly
+implement congestion control.  After a packet is lost, it SHOULD be tracked
+for an amount of time comparable to the maximum expected packet reordering,
+such as 1 RTT.  This allows detection of spurious retransmissions and MAY
+avoid extra retransmissions if the frames contained within the packet were
+retransmitted and lost again.
 
 Sent packets are tracked for each packet number space, and ACK
 processing only applies to a single space.
