@@ -696,8 +696,8 @@ follows:
 
 ### On Sending a Packet
 
-After any packet is sent.  The parameters to OnPacketSent are described in
-detail above in {{sent-packets-fields}}.
+After a packet is sent, information about the packet is stored.  The parameters
+to OnPacketSent are described in detail above in {{sent-packets-fields}}.
 
 Pseudocode for OnPacketSent follows:
 
