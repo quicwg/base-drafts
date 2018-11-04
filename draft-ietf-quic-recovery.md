@@ -814,7 +814,7 @@ Pseudocode for OnPacketAcked follows:
 
 ### Setting the Loss Detection Timer
 
-QUIC loss detection uses a single timer for all timeout based loss detection.  The
+QUIC loss detection uses a single timer for all timeout loss detection.  The
 duration of the timer is based on the timer's mode, which is set in the packet
 and timer events further below.  The function SetLossDetectionTimer defined
 below shows how the single timer is set.
