@@ -214,6 +214,10 @@ QUIC senders use both ack information and timeouts to detect lost packets, and
 this section provides a description of these algorithms. Estimating the network
 round-trip time (RTT) is critical to these algorithms and is described first.
 
+If a packet is lost, the QUIC transport needs to recover from that loss, such
+as by retransmitting the data, sending an updated frame, or abandoning the
+frame.  For more information, see Section 13.2 of {{QUIC-TRANSPORT}}.
+
 ## Computing the RTT estimate
 
 RTT is calculated when an ACK frame arrives by computing the difference between
@@ -515,10 +519,6 @@ QUIC implementations store information about every packet sent. It is expected
 implementations will index this information by packet number and crypto context
 and store the per-packet fields detailed below for loss recovery and congestion
 control.
-
-If a packet is lost, the QUIC transport needs to recover from that loss, such
-as by retransmitting the data, sending an updated frame, or abandoning the
-frame.  For more information, see Section 13.2 of {{QUIC-TRANSPORT}}.
 
 Packets MUST be tracked until acknowledged or lost in order to correctly
 implement congestion control.  After a packet is lost, it SHOULD be tracked
