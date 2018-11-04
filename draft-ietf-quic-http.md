@@ -564,13 +564,13 @@ When a server receives this frame, it aborts sending the response for the
 identified server push.  If the server has not yet started to send the server
 push, it can use the receipt of a CANCEL_PUSH frame to avoid opening a push
 stream.  If the push stream has been opened by the server, the server SHOULD
-send a QUIC RST_STREAM frame on that stream and cease transmission of the
+send a QUIC RESET_STREAM frame on that stream and cease transmission of the
 response.
 
 A server can send this frame to indicate that it will not be fulfilling a
 promise prior to creation of a push stream.  Once the push stream has been
 created, sending CANCEL_PUSH has no effect on the state of the push stream.  A
-QUIC RST_STREAM frame SHOULD be used instead to abort transmission of the
+QUIC RESET_STREAM frame SHOULD be used instead to abort transmission of the
 server push response.
 
 A CANCEL_PUSH frame is sent on the control stream.  Sending a CANCEL_PUSH frame
@@ -885,12 +885,12 @@ response, and cleanly closing its stream. Clients MUST NOT discard complete
 responses as a result of having their request terminated abruptly, though
 clients can always discard responses at their discretion for other reasons.
 
-Changes to the state of a request stream, including receiving a RST_STREAM with
-any error code, do not affect the state of the server's response. Servers do not
-abort a response in progress solely due to a state change on the request stream.
-However, if the request stream terminates without containing a usable HTTP
-request, the server SHOULD abort its response with the error code
-HTTP_INCOMPLETE_REQUEST.
+Changes to the state of a request stream, including receiving a QUIC
+RESET_STREAM with any error code, do not affect the state of the server's
+response. Servers do not abort a response in progress solely due to a state
+change on the request stream.  However, if the request stream terminates without
+containing a usable HTTP request, the server SHOULD abort its response with the
+error code HTTP_INCOMPLETE_REQUEST.
 
 
 ### Header Formatting and Compression
@@ -931,7 +931,7 @@ SHOULD be treated as a stream error of type `HTTP_EXCESSIVE_LOAD`.
 ### Request Cancellation
 
 Either client or server can cancel requests by aborting the stream (QUIC
-RST_STREAM and/or STOP_SENDING frames, as appropriate) with an error code of
+RESET_STREAM and/or STOP_SENDING frames, as appropriate) with an error code of
 HTTP_REQUEST_CANCELLED ({{http-error-codes}}).  When the client cancels a
 response, it indicates that this response is no longer of interest.
 Implementations SHOULD cancel requests by aborting both directions of a stream.
@@ -989,11 +989,11 @@ a single direction are not invalid, but are often handled poorly by servers, so
 clients SHOULD NOT close a stream for sending while they still expect to receive
 data from the target of the CONNECT.
 
-A TCP connection error is signaled with RST_STREAM. A proxy treats any error in
-the TCP connection, which includes receiving a TCP segment with the RST bit set,
-as a stream error of type HTTP_CONNECT_ERROR ({{http-error-codes}}).
-Correspondingly, a proxy MUST send a TCP segment with the RST bit set if it
-detects an error with the stream or the QUIC connection.
+A TCP connection error is signaled with QUIC RESET_STREAM frame. A proxy treats
+any error in the TCP connection, which includes receiving a TCP segment with the
+RST bit set, as a stream error of type HTTP_CONNECT_ERROR
+({{http-error-codes}}).  Correspondingly, a proxy MUST send a TCP segment with
+the RST bit set if it detects an error with the stream or the QUIC connection.
 
 ## Request Prioritization {#priority}
 
@@ -1269,7 +1269,7 @@ express the cause of a connection or stream error.
 
 ## HTTP/QUIC Error Codes {#http-error-codes}
 
-The following error codes are defined for use in QUIC RST_STREAM frames,
+The following error codes are defined for use in QUIC RESET_STREAM frames,
 STOP_SENDING frames, and CONNECTION_CLOSE frames when using HTTP/QUIC.
 
 HTTP_NO_ERROR (0x00):

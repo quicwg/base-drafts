@@ -386,7 +386,7 @@ data to a peer.
        | Create Bidirectional Stream (Receiving)
        v
    +-------+
-   | Ready | Send RST_STREAM
+   | Ready | Send RESET_STREAM
    |       |-----------------------.
    +-------+                       |
        |                           |
@@ -397,14 +397,14 @@ data to a peer.
        |      Stream (Receiving)   |
        v                           |
    +-------+                       |
-   | Send  | Send RST_STREAM       |
+   | Send  | Send RESET_STREAM     |
    |       |---------------------->|
    +-------+                       |
        |                           |
        | Send STREAM + FIN         |
        v                           v
    +-------+                   +-------+
-   | Data  | Send RST_STREAM   | Reset |
+   | Data  | Send RESET_STREAM | Reset |
    | Sent  |------------------>| Sent  |
    +-------+                   +-------+
        |                           |
@@ -455,14 +455,14 @@ the "Data Recvd" state, which is a terminal state.
 From any of the "Ready", "Send", or "Data Sent" states, an application can
 signal that it wishes to abandon transmission of stream data. Alternatively, an
 endpoint might receive a STOP_SENDING frame from its peer.  In either case, the
-endpoint sends a RST_STREAM frame, which causes the stream to enter the "Reset
+endpoint sends a RESET_STREAM frame, which causes the stream to enter the "Reset
 Sent" state.
 
-An endpoint MAY send a RST_STREAM as the first frame on a send stream; this
+An endpoint MAY send a RESET_STREAM as the first frame on a send stream; this
 causes the send stream to open and then immediately transition to the "Reset
 Sent" state.
 
-Once a packet containing a RST_STREAM has been acknowledged, the send stream
+Once a packet containing a RESET_STREAM has been acknowledged, the send stream
 enters the "Reset Recvd" state, which is a terminal state.
 
 
@@ -477,26 +477,26 @@ which cannot be observed by the sender.
 
 ~~~
        o
-       | Recv STREAM / STREAM_DATA_BLOCKED / RST_STREAM
+       | Recv STREAM / STREAM_DATA_BLOCKED / RESET_STREAM
        | Create Bidirectional Stream (Sending)
        | Recv MAX_STREAM_DATA
        | Create Higher-Numbered Stream
        v
    +-------+
-   | Recv  | Recv RST_STREAM
+   | Recv  | Recv RESET_STREAM
    |       |-----------------------.
    +-------+                       |
        |                           |
        | Recv STREAM + FIN         |
        v                           |
    +-------+                       |
-   | Size  | Recv RST_STREAM       |
+   | Size  | Recv RESET_STREAM     |
    | Known |---------------------->|
    +-------+                       |
        |                           |
        | Recv All Data             |
        v                           v
-   +-------+  Recv RST_STREAM  +-------+
+   +-------+ Recv RESET_STREAM +-------+
    | Data  |--- (optional) --->| Reset |
    | Recvd |  Recv All Data    | Recvd |
    +-------+<-- (optional) ----+-------+
@@ -512,7 +512,7 @@ which cannot be observed by the sender.
 
 The receiving part of a stream initiated by a peer (types 1 and 3 for a client,
 or 0 and 2 for a server) is created when the first STREAM, STREAM_DATA_BLOCKED,
-RST_STREAM, or MAX_STREAM_DATA (bidirectional only, see below) is received for
+RESET_STREAM, or MAX_STREAM_DATA (bidirectional only, see below) is received for
 that stream.  The initial state for a receive stream is "Recv".
 
 The receive stream enters the "Recv" state when the sending part of a
@@ -550,19 +550,19 @@ The "Data Recvd" state persists until stream data has been delivered to the
 application.  Once stream data has been delivered, the stream enters the "Data
 Read" state, which is a terminal state.
 
-Receiving a RST_STREAM frame in the "Recv" or "Size Known" states causes the
+Receiving a RESET_STREAM frame in the "Recv" or "Size Known" states causes the
 stream to enter the "Reset Recvd" state.  This might cause the delivery of
 stream data to the application to be interrupted.
 
-It is possible that all stream data is received when a RST_STREAM is received
+It is possible that all stream data is received when a RESET_STREAM is received
 (that is, from the "Data Recvd" state).  Similarly, it is possible for remaining
-stream data to arrive after receiving a RST_STREAM frame (the "Reset Recvd"
+stream data to arrive after receiving a RESET_STREAM frame (the "Reset Recvd"
 state).  An implementation is free to manage this situation as it chooses.
-Sending RST_STREAM means that an endpoint cannot guarantee delivery of stream
+Sending RESET_STREAM means that an endpoint cannot guarantee delivery of stream
 data; however there is no requirement that stream data not be delivered if a
-RST_STREAM is received.  An implementation MAY interrupt delivery of stream
+RESET_STREAM is received.  An implementation MAY interrupt delivery of stream
 data, discard any data that was not consumed, and signal the receipt of the
-RST_STREAM immediately.  Alternatively, the RST_STREAM signal might be
+RESET_STREAM immediately.  Alternatively, the RESET_STREAM signal might be
 suppressed or withheld if stream data is completely received and is buffered to
 be read by the application.  In the latter case, the receive stream transitions
 from "Reset Recvd" to "Data Recvd".
@@ -576,12 +576,12 @@ which is a terminal state.
 
 The sender of a stream sends just three frame types that affect the state of a
 stream at either sender or receiver: STREAM ({{frame-stream}}),
-STREAM_DATA_BLOCKED ({{frame-stream-data-blocked}}), and RST_STREAM
-({{frame-rst-stream}}).
+STREAM_DATA_BLOCKED ({{frame-stream-data-blocked}}), and RESET_STREAM
+({{frame-reset-stream}}).
 
 A sender MUST NOT send any of these frames from a terminal state ("Data Recvd"
 or "Reset Recvd").  A sender MUST NOT send STREAM or STREAM_DATA_BLOCKED after
-sending a RST_STREAM; that is, in the terminal states and in the "Reset Sent"
+sending a RESET_STREAM; that is, in the terminal states and in the "Reset Sent"
 state.  A receiver could receive any of these three frames in any state, due to
 the possibility of delayed delivery of packets carrying them.
 
@@ -589,7 +589,7 @@ The receiver of a stream sends MAX_STREAM_DATA ({{frame-max-stream-data}}) and
 STOP_SENDING frames ({{frame-stop-sending}}).
 
 The receiver only sends MAX_STREAM_DATA in the "Recv" state.  A receiver can
-send STOP_SENDING in any state where it has not received a RST_STREAM frame;
+send STOP_SENDING in any state where it has not received a RESET_STREAM frame;
 that is states other than "Reset Recvd" or "Reset Read".  However there is
 little value in sending a STOP_SENDING frame in the "Data Recvd" state, since
 all stream data has been received.  A sender could receive either of these two
@@ -644,15 +644,15 @@ STREAM frames received after sending STOP_SENDING are still counted toward
 connection and stream flow control, even though these frames will be discarded
 upon receipt.
 
-A STOP_SENDING frame requests that the receiving endpoint send a RST_STREAM
-frame.  An endpoint that receives a STOP_SENDING frame MUST send a RST_STREAM
+A STOP_SENDING frame requests that the receiving endpoint send a RESET_STREAM
+frame.  An endpoint that receives a STOP_SENDING frame MUST send a RESET_STREAM
 frame for that stream.  An endpoint SHOULD copy the error code from the
 STOP_SENDING frame, but MAY use any other application error code.  The endpoint
 that sends a STOP_SENDING frame can ignore the error code carried in any
-RST_STREAM frame it receives.
+RESET_STREAM frame it receives.
 
 If the STOP_SENDING frame is received on a send stream that is already in the
-"Data Sent" state, a RST_STREAM frame MAY still be sent in order to cancel
+"Data Sent" state, a RESET_STREAM frame MAY still be sent in order to cancel
 retransmissions of previously-sent STREAM frames.
 
 STOP_SENDING SHOULD only be sent for a receive stream that has not been
@@ -661,13 +661,13 @@ states.
 
 An endpoint is expected to send another STOP_SENDING frame if a packet
 containing a previous STOP_SENDING is lost.  However, once either all stream
-data or a RST_STREAM frame has been received for the stream - that is, the
+data or a RESET_STREAM frame has been received for the stream - that is, the
 stream is in any state other than "Recv" or "Size Known" - sending a
 STOP_SENDING frame is unnecessary.
 
 An endpoint that wishes to terminate both directions of a bidirectional stream
-can terminate one direction by sending a RST_STREAM, and it can encourage prompt
-termination in the opposite direction by sending a STOP_SENDING frame.
+can terminate one direction by sending a RESET_STREAM, and it can encourage
+prompt termination in the opposite direction by sending a STOP_SENDING frame.
 
 
 # Flow Control {#flow-control}
@@ -783,22 +783,22 @@ peer chooses to not send STREAM_DATA_BLOCKED or DATA_BLOCKED frames.
 Endpoints need to eventually agree on the amount of flow control credit that has
 been consumed, to avoid either exceeding flow control limits or deadlocking.
 
-On receipt of a RST_STREAM frame, an endpoint will tear down state for the
+On receipt of a RESET_STREAM frame, an endpoint will tear down state for the
 matching stream and ignore further data arriving on that stream.  If a
-RST_STREAM frame is reordered with stream data for the same stream, the
+RESET_STREAM frame is reordered with stream data for the same stream, the
 receiver's estimate of the number of bytes received on that stream can be lower
 than the sender's estimate of the number sent.  As a result, the two endpoints
 could disagree on the number of bytes that count towards connection flow
 control.
 
-To remedy this issue, a RST_STREAM frame ({{frame-rst-stream}}) includes the
-final offset of data sent on the stream.  On receiving a RST_STREAM frame, a
+To remedy this issue, a RESET_STREAM frame ({{frame-reset-stream}}) includes the
+final offset of data sent on the stream.  On receiving a RESET_STREAM frame, a
 receiver definitively knows how many bytes were sent on that stream before the
-RST_STREAM frame, and the receiver MUST use the final offset to account for all
-bytes sent on the stream in its connection level flow controller.
+RESET_STREAM frame, and the receiver MUST use the final offset to account for
+all bytes sent on the stream in its connection level flow controller.
 
-RST_STREAM terminates one direction of a stream abruptly.  For a bidirectional
-stream, RST_STREAM has no effect on data flow in the opposite direction.  Both
+RESET_STREAM terminates one direction of a stream abruptly.  For a bidirectional
+stream, RESET_STREAM has no effect on data flow in the opposite direction.  Both
 endpoints MUST maintain flow control state for the stream in the unterminated
 direction until that direction enters a terminal state, or until one of the
 endpoints sends CONNECTION_CLOSE.
@@ -808,7 +808,7 @@ endpoints sends CONNECTION_CLOSE.
 
 The final offset is the count of the number of bytes that are transmitted on a
 stream.  For a stream that is reset, the final offset is carried explicitly in a
-RST_STREAM frame.  Otherwise, the final offset is the offset of the end of the
+RESET_STREAM frame.  Otherwise, the final offset is the offset of the end of the
 data carried in a STREAM frame marked with a FIN flag, or 0 in the case of
 incoming unidirectional streams.
 
@@ -817,9 +817,9 @@ enters the "Size Known" or "Reset Recvd" state ({{stream-states}}).
 
 An endpoint MUST NOT send data on a stream at or beyond the final offset.
 
-Once a final offset for a stream is known, it cannot change.  If a RST_STREAM or
-STREAM frame is received indicating a change in the final offset for the stream,
-an endpoint SHOULD respond with a FINAL_OFFSET_ERROR error (see
+Once a final offset for a stream is known, it cannot change.  If a RESET_STREAM
+or STREAM frame is received indicating a change in the final offset for the
+stream, an endpoint SHOULD respond with a FINAL_OFFSET_ERROR error (see
 {{error-handling}}).  A receiver SHOULD treat receipt of data at or beyond the
 final offset as a FINAL_OFFSET_ERROR error, even after a stream is closed.
 Generating these errors is not mandatory, but only because requiring that an
@@ -2420,9 +2420,9 @@ frame that signals the error.  Where this specification identifies error
 conditions, it also identifies the error code that is used.
 
 A stateless reset ({{stateless-reset}}) is not suitable for any error that can
-be signaled with a CONNECTION_CLOSE or RST_STREAM frame.  A stateless reset MUST
-NOT be used by an endpoint that has the state necessary to send a frame on the
-connection.
+be signaled with a CONNECTION_CLOSE or RESET_STREAM frame.  A stateless reset
+MUST NOT be used by an endpoint that has the state necessary to send a frame on
+the connection.
 
 
 ## Connection Errors
@@ -2456,16 +2456,16 @@ existence of the error to its peer.
 ## Stream Errors
 
 If an application-level error affects a single stream, but otherwise leaves the
-connection in a recoverable state, the endpoint can send a RST_STREAM frame
-({{frame-rst-stream}}) with an appropriate error code to terminate just the
+connection in a recoverable state, the endpoint can send a RESET_STREAM frame
+({{frame-reset-stream}}) with an appropriate error code to terminate just the
 affected stream.
 
-RST_STREAM MUST be instigated by the protocol using QUIC, either directly or
-through the receipt of a STOP_SENDING frame from a peer.  RST_STREAM carries an
-application error code.  Resetting a stream without knowledge of the application
-protocol could cause the protocol to enter an unrecoverable state.  Application
-protocols might require certain streams to be reliably delivered in order to
-guarantee consistent state between endpoints.
+RESET_STREAM MUST be instigated by the protocol using QUIC, either directly or
+through the receipt of a STOP_SENDING frame from a peer.  RESET_STREAM carries
+an application error code.  Resetting a stream without knowledge of the
+application protocol could cause the protocol to enter an unrecoverable state.
+Application protocols might require certain streams to be reliably delivered in
+order to guarantee consistent state between endpoints.
 
 
 # Packets and Frames {#packets-frames}
@@ -2651,7 +2651,7 @@ frames are explained in more detail in {{frame-formats}}.
 | 0x00        | PADDING              | {{frame-padding}}              |
 | 0x01        | PING                 | {{frame-ping}}                 |
 | 0x02 - 0x03 | ACK                  | {{frame-ack}}                  |
-| 0x04        | RST_STREAM           | {{frame-rst-stream}}           |
+| 0x04        | RESET_STREAM         | {{frame-reset-stream}}         |
 | 0x05        | STOP_SENDING         | {{frame-stop-sending}}         |
 | 0x06        | CRYPTO               | {{frame-crypto}}               |
 | 0x07        | NEW_TOKEN            | {{frame-new-token}}            |
@@ -2810,17 +2810,17 @@ containing that information is acknowledged.
   {{QUIC-RECOVERY}}, until all data has been acknowledged.
 
 * Application data sent in STREAM frames is retransmitted in new STREAM frames
-  unless the endpoint has sent a RST_STREAM for that stream.  Once an endpoint
-  sends a RST_STREAM frame, no further STREAM frames are needed.
+  unless the endpoint has sent a RESET_STREAM for that stream.  Once an endpoint
+  sends a RESET_STREAM frame, no further STREAM frames are needed.
 
 * The most recent set of acknowledgments are sent in ACK frames.  An ACK frame
   SHOULD contain all unacknowledged acknowledgments, as described in
   {{sending-ack-frames}}.
 
-* Cancellation of stream transmission, as carried in a RST_STREAM frame, is
+* Cancellation of stream transmission, as carried in a RESET_STREAM frame, is
   sent until acknowledged or until all stream data is acknowledged by the peer
   (that is, either the "Reset Recvd" or "Data Recvd" state is reached on the
-  send stream). The content of a RST_STREAM frame MUST NOT change when it is
+  send stream). The content of a RESET_STREAM frame MUST NOT change when it is
   sent again.
 
 * Similarly, a request to cancel stream transmission, as encoded in a
@@ -4212,18 +4212,19 @@ CE Count:
 ECN counters are maintained separately for each packet number space.
 
 
-## RST_STREAM Frame {#frame-rst-stream}
+## RESET_STREAM Frame {#frame-reset-stream}
 
-An endpoint uses a RST_STREAM frame (type=0x04) to abruptly terminate a stream.
+An endpoint uses a RESET_STREAM frame (type=0x04) to abruptly terminate a
+stream.
 
-After sending a RST_STREAM, an endpoint ceases transmission and retransmission
-of STREAM frames on the identified stream.  A receiver of RST_STREAM can discard
-any data that it already received on that stream.
+After sending a RESET_STREAM, an endpoint ceases transmission and retransmission
+of STREAM frames on the identified stream.  A receiver of RESET_STREAM can
+discard any data that it already received on that stream.
 
-An endpoint that receives a RST_STREAM frame for a send-only stream MUST
+An endpoint that receives a RESET_STREAM frame for a send-only stream MUST
 terminate the connection with error PROTOCOL_VIOLATION.
 
-The RST_STREAM frame is as follows:
+The RESET_STREAM frame is as follows:
 
 ~~~
  0                   1                   2                   3
@@ -4237,7 +4238,7 @@ The RST_STREAM frame is as follows:
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
 
-RST_STREAM frames contain the following fields:
+RESET_STREAM frames contain the following fields:
 
 Stream ID:
 
@@ -4252,7 +4253,7 @@ Application Protocol Error Code:
 Final Offset:
 
 : A variable-length integer indicating the absolute byte offset of the end of
-  data written on this stream by the RST_STREAM sender.
+  data written on this stream by the RESET_STREAM sender.
 
 
 ## STOP_SENDING Frame {#frame-stop-sending}
@@ -4914,9 +4915,9 @@ STREAM_STATE_ERROR (0x5):
 FINAL_OFFSET_ERROR (0x6):
 
 : An endpoint received a STREAM frame containing data that exceeded the
-  previously established final offset.  Or an endpoint received a RST_STREAM
+  previously established final offset.  Or an endpoint received a RESET_STREAM
   frame containing a final offset that was lower than the maximum offset of data
-  that was already received.  Or an endpoint received a RST_STREAM frame
+  that was already received.  Or an endpoint received a RESET_STREAM frame
   containing a different final offset to the one already established.
 
 FRAME_ENCODING_ERROR (0x7):
@@ -4961,8 +4962,8 @@ See {{iana-error-codes}} for details of registering new error codes.
 
 Application protocol error codes are 16-bit unsigned integers, but the
 management of application error codes are left to application protocols.
-Application protocol error codes are used for the RST_STREAM frame
-({{frame-rst-stream}}) and the CONNECTION_CLOSE frame with a type of 0x1d
+Application protocol error codes are used for the RESET_STREAM frame
+({{frame-reset-stream}}) and the CONNECTION_CLOSE frame with a type of 0x1d
 ({{frame-connection-close}}).
 
 
@@ -5508,7 +5509,7 @@ Substantial editorial reorganization; no technical changes.
 
 ## Since draft-ietf-quic-transport-04
 
-- Introduce STOP_SENDING frame, RST_STREAM only resets in one direction (#165)
+- Introduce STOP_SENDING frame, RESET_STREAM only resets in one direction (#165)
 - Removed GOAWAY; application protocols are responsible for graceful shutdown
   (#696)
 - Reduced the number of error codes (#96, #177, #184, #211)
@@ -5527,7 +5528,7 @@ Substantial editorial reorganization; no technical changes.
 
 ## Since draft-ietf-quic-transport-03
 
-- Change STREAM and RST_STREAM layout
+- Change STREAM and RESET_STREAM layout
 - Add MAX_STREAM_ID settings
 
 ## Since draft-ietf-quic-transport-02
@@ -5596,13 +5597,13 @@ Substantial editorial reorganization; no technical changes.
 - Define packet protection rules (#336)
 
 - Require that stream be entirely delivered or reset, including acknowledgment
-  of all STREAM frames or the RST_STREAM, before it closes (#381)
+  of all STREAM frames or the RESET_STREAM, before it closes (#381)
 - Remove stream reservation from state machine (#174, #280)
 - Only stream 1 does not contribute to connection-level flow control (#204)
 - Stream 1 counts towards the maximum concurrent stream limit (#201, #282)
 - Remove connection-level flow control exclusion for some streams (except 1)
   (#246)
-- RST_STREAM affects connection-level flow control (#162, #163)
+- RESET_STREAM affects connection-level flow control (#162, #163)
 - Flow control accounting uses the maximum data offset on each stream, rather
   than bytes received (#378)
 
@@ -5610,8 +5611,8 @@ Substantial editorial reorganization; no technical changes.
 - Added the ability to pad between frames (#158, #276)
 - Remove error code and reason phrase from GOAWAY (#352, #355)
 - GOAWAY includes a final stream number for both directions (#347)
-- Error codes for RST_STREAM and CONNECTION_CLOSE are now at a consistent offset
-  (#249)
+- Error codes for RESET_STREAM and CONNECTION_CLOSE are now at a consistent
+  offset (#249)
 
 - Defined priority as the responsibility of the application protocol (#104,
   #303)
