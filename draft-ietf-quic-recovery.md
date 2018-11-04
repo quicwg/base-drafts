@@ -515,17 +515,17 @@ progress.
 
 ## Tracking Sent Packets {#tracking-sent-packets}
 
-QUIC implementations store information about every packet sent. It is expected
-implementations will index this information by packet number and crypto context
-and store the per-packet fields ({{sent-packet-fields}}) for loss recovery and
-congestion control.
+QRetransmittable packets MUST be tracked until acknowledged or lost in order to
+correctly implement congestion control. It is expected implementations will
+index this information by packet number and crypto context and store the
+per-packet fields ({{sent-packet-fields}}) for loss recovery and congestion
+control.
 
-Retransmittable packets MUST be tracked until acknowledged or lost in order to
-correctly implement congestion control.  After a packet is lost, it SHOULD be
-tracked for an amount of time comparable to the maximum expected packet
-reordering, such as 1 RTT.  This allows detection of spurious retransmissions
-and MAY avoid extra retransmissions if the frames contained within the packet
-were retransmitted and lost again.
+After a packet is declared lost, it SHOULD be tracked for an amount of time
+comparable to the maximum expected packet reordering, such as 1 RTT.  This
+allows detection of spurious retransmissions and MAY avoid extra
+retransmissions if the frames contained within the packet were
+retransmitted and lost again.
 
 Sent packets are tracked for each packet number space, and ACK
 processing only applies to a single space.
