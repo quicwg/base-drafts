@@ -516,7 +516,7 @@ progress.
 ## Tracking Sent Packets {#tracking-sent-packets}
 
 To correctly implement congestion control, a QUIC sender tracks every
-retransmittable packet that it sends until the packet is acknowledged or lost.
+retransmittable packet until the packet is acknowledged or lost.
 It is expected that implementations will be able to access this information by
 packet number and crypto context and store the per-packet fields
 ({{sent-packet-fields}}) for loss recovery and congestion control.
