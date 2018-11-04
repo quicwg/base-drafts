@@ -511,7 +511,7 @@ progress.
 
 ## Tracking Sent Packets {#tracking-sent-packets}
 
-QUIC implementations store about every packet sent. It is expected
+QUIC implementations store information about every packet sent. It is expected
 implementations will index this information by packet number and crypto context
 and store the per-packet fields detailed below for loss recovery and congestion
 control. Additionally, implementations MUST ensure that any retransmittable
