@@ -238,7 +238,7 @@ Ack-based loss detection implements the spirit of TCP's Fast Retransmit
 {{?RFC5681}}, Early Retransmit {{?RFC5827}}, FACK, and SACK loss recovery
 {{?RFC6675}}. This section provides an overview of how these algorithms are
 implemented in QUIC.  Though both time-based loss detection and early retransmit
-use a timer, they are part of Ack-based detection because they do not use a
+use a timer, they are part of ack-based detection because they do not use a
 timer to send probes, but rather to declare packets lost.
 
 ### Fast Retransmit
