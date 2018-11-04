@@ -514,13 +514,11 @@ progress.
 QUIC implementations store information about every packet sent. It is expected
 implementations will index this information by packet number and crypto context
 and store the per-packet fields detailed below for loss recovery and congestion
-control. Additionally, implementations MUST ensure that any retransmittable
-frames being transmitted are tracked in case of loss.
+control.
 
-If a packet containing retransmittable frames is lost, the QUIC transport
-needs to recover from that loss, such as by retransmitting the data,
-sending an updated frame, or abandoning the frame.  For more information,
-see Section 13.2 of {{QUIC-TRANSPORT}}.
+If a packet is lost, the QUIC transport needs to recover from that loss, such
+as by retransmitting the data, sending an updated frame, or abandoning the
+frame.  For more information, see Section 13.2 of {{QUIC-TRANSPORT}}.
 
 Packets MUST be tracked until acknowledged or lost in order to correctly
 implement congestion control.  After a packet is lost, it SHOULD be tracked
