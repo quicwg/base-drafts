@@ -174,7 +174,7 @@ QUIC's packet number is strictly increasing within a packet number space,
 and directly encodes transmission order.  A higher packet number
 signifies that the packet was sent later, and a lower packet number
 signifies that the packet was sent earlier.  When a packet containing
-retransmittable frames is deemed lost, QUIC rebundles necessary frames in a
+retransmittable frames is detected lost, QUIC rebundles necessary frames in a
 new packet with a new packet number, removing ambiguity about which packet is
 acknowledged when an ACK is received.  Consequently, more accurate RTT
 measurements can be made, spurious retransmissions are trivially detected, and
