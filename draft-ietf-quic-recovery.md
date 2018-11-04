@@ -273,14 +273,13 @@ fraction of an RTT, but implemenantations MAY experiment with absolute
 thresholds.  This may be used either as a replacement for a packet reordering
 threshold or in addition to it.
 
-When a larger packet is acknowledged, if it was sent more than the
-threshold after any in flight packets, those packets are immediately declared
-lost. Otherwise, a timer is set for the the reordering threshold minus the
-time difference between the earliest in flight packet and the largest newly
-acknowledged packet.  Note that in some cases the timer could become longer
-when packets are acknowleged out of order. The RECOMMENDED time threshold,
-expressed as a fraction of the round-trip time (kTimeReorderingFraction),
-is 1/8.
+When a larger packet is acknowledged, if it was sent more than the threshold
+after any in flight packets, those packets are immediately declared lost.
+Otherwise, a timer is set for the the reordering threshold minus the time
+difference between the earliest in flight packet and the largest newly
+acknowledged packet.  Note that in some cases the timer could become longer when
+packets are acknowleged out of order. The RECOMMENDED time threshold, expressed
+as a fraction of the round-trip time (kTimeReorderingFraction), is 1/8.
 
 ### Early Retransmit
 
