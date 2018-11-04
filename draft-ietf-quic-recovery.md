@@ -517,10 +517,10 @@ progress.
 
 QUIC implementations store information about every packet sent. It is expected
 implementations will index this information by packet number and crypto context
-and store the per-packet fields detailed below for loss recovery and congestion
-control.
+and store the per-packet fields ({{sent-packet-fields}}) for loss recovery and
+congestion control.
 
-Retrasnmittable packets MUST be tracked until acknowledged or lost in order to
+Retransmittable packets MUST be tracked until acknowledged or lost in order to
 correctly implement congestion control.  After a packet is lost, it SHOULD be
 tracked for an amount of time comparable to the maximum expected packet
 reordering, such as 1 RTT.  This allows detection of spurious retransmissions
