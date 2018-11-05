@@ -142,7 +142,7 @@ of frames contained in a packet affect recovery and congestion control logic:
 
 * Packets that contain only ACK frames do not count toward congestion control
   limits and are not considered in-flight. Note that this means PADDING frames
-  cause packets to contribute toward bytes in flight without directly causing an
+  cause packets to contribute toward bytes in-flight without directly causing an
   acknowledgment to be sent.
 
 ## Relevant Differences Between QUIC and TCP
@@ -278,9 +278,9 @@ thresholds.  This may be used either as a replacement for a packet reordering
 threshold or in addition to it.
 
 When a larger packet is acknowledged, if it was sent more than the threshold
-after any in flight packets, those packets are immediately declared lost.
+after any in-flight packets, those packets are immediately declared lost.
 Otherwise, a timer is set for the the reordering threshold minus the time
-difference between the earliest in flight packet and the largest newly
+difference between the earliest in-flight packet and the largest newly
 acknowledged packet.  Note that in some cases the timer could become longer when
 packets are acknowleged out of order. The RECOMMENDED time threshold, expressed
 as a fraction of the round-trip time (kTimeReorderingFraction), is 1/8.
@@ -422,7 +422,7 @@ If no new data or unacknowledged data is available to send, a retransmittable
 frame SHOULD be sent.  Sending a retransmittable frame ensures that any in
 flight packets are acknowledged or declared lost in a timely manner.
 Otherwise, a deadlock results if there is no available congestion window and
-all in flight packets contain no data that can be retransmitted.
+all in-flight packets contain no data that can be retransmitted.
 
 A sender may not know that a packet being sent is a tail packet.  Consequently,
 a sender may have to arm or adjust the TLP timer on every sent retransmittable
@@ -475,7 +475,7 @@ sent as a probe into the network prior to establishing any packet loss, prior
 unacknowledged packets SHOULD NOT be marked as lost when the timer expires.
 
 A packet sent on an RTO timer MUST NOT be blocked by the sender's congestion
-controller. A sender MUST however count these packets as being in flight, since
+controller. A sender MUST however count these packets as being in-flight, since
 this packet adds network load without establishing packet loss.
 
 ## Generating Acknowledgements
@@ -829,7 +829,7 @@ Pseudocode for SetLossDetectionTimer follows:
 ~~~
  SetLossDetectionTimer():
     // Don't arm timer if there are no retransmittable packets
-    // in flight.
+    // in-flight.
     if (bytes_in_flight == 0):
       loss_detection_timer.cancel()
       return
@@ -1008,7 +1008,7 @@ losses or increases in the ECN-CE counter.
 ## Tail Loss Probe
 
 A TLP packet MUST NOT be blocked by the sender's congestion controller. The
-sender MUST however count TLP packets against bytes in flight, since a TLP adds
+sender MUST however count TLP packets against bytes in-flight, since a TLP adds
 network load without establishing packet loss.
 
 Acknowledgement or loss of tail loss probes are treated like any other packet.
