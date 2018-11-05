@@ -4664,9 +4664,11 @@ The NEW_CONNECTION_ID frame is as follows:
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|   Length (8)  |            Sequence Number (i)              ...
+|                      Sequence Number (i)                    ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                    Connection ID (32..144)                  ...
+|   Length (8)  |                                               |
++-+-+-+-+-+-+-+-+       Connection ID (32..144)                 +
+|                                                             ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                                                               |
 +                                                               +
@@ -4680,16 +4682,16 @@ The NEW_CONNECTION_ID frame is as follows:
 
 NEW_CONNECTION_ID frames contain the following fields:
 
+Sequence Number:
+
+: The sequence number assigned to the connection ID by the sender.  See
+  {{issue-cid}}.
+
 Length:
 
 : An 8-bit unsigned integer containing the length of the connection ID.  Values
   less than 4 and greater than 18 are invalid and MUST be treated as a
   connection error of type PROTOCOL_VIOLATION.
-
-Sequence Number:
-
-: The sequence number assigned to the connection ID by the sender.  See
-  {{issue-cid}}.
 
 Connection ID:
 
