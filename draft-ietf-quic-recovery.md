@@ -422,7 +422,7 @@ If no new data or unacknowledged data is available to send, a retransmittable
 frame SHOULD be sent.  Sending a retransmittable frame ensures that any in
 flight packets are acknowledged or declared lost in a timely manner,
 potentially preventing a deadlock if all in flight packets contain no data
-that needs to be retransmission.  
+that needs to be retransmission.
 
 A sender may not know that a packet being sent is a tail packet.  Consequently,
 a sender may have to arm or adjust the TLP timer on every sent retransmittable
