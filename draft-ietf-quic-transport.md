@@ -60,6 +60,12 @@ normative:
         name: Sean Turner
         org: sn3rd
         role: editor
+  
+  DPLPMTUD:
+    title: "Datagram Packetization Layer Path MTU Discovery"
+    date: {DATE}
+    seriesinfo:
+      Internet-Draft: draft-ietf-tsvwg-datagram-plpmtud
 
 informative:
 
@@ -3020,7 +3026,7 @@ header, protected payload, and any authentication fields.
 
 All QUIC packets SHOULD be sized to fit within the estimated PMTU to avoid IP
 fragmentation or packet drops. To optimize bandwidth efficiency, endpoints
-SHOULD use Packetization Layer PMTU Discovery ({{!PLPMTUD=RFC4821}}).  Endpoints
+SHOULD use Datagram Packetization Layer PMTU Discovery ({{DPLPMTUD}}).  Endpoints
 MAY use PMTU Discovery ({{!PMTUDv4=RFC1191}}, {{!PMTUDv6=RFC8201}}) for
 detecting the PMTU, setting the PMTU appropriately, and storing the result of
 previous PMTU determinations.
