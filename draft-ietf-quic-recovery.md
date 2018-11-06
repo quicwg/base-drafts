@@ -249,7 +249,7 @@ timer to send probes, but rather to declare packets lost.
 
 An unacknowledged packet is marked as lost when an acknowledgment is received
 for a packet that was sent a threshold number of packets (kReorderingThreshold)
-and/or a threshold amount of time after the unacknowledged packet. Receipt of
+or a threshold amount of time after the unacknowledged packet. Receipt of
 the acknowledgement indicates that a later packet was received, while the
 reordering threshold provides some tolerance for reordering of packets in the
 network.
