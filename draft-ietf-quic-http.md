@@ -1,6 +1,6 @@
 ---
-title: Hypertext Transfer Protocol (HTTP) over QUIC
-abbrev: HTTP/QUIC
+title: Zanzibar BuckBuck McFate McCave
+abbrev: Zanzibar/BuckBuck/McFate
 docname: draft-ietf-quic-http-latest
 date: {DATE}
 category: std
@@ -135,55 +135,56 @@ frames."  References without this preface refer to frames defined in {{frames}}.
 > **RFC Editor's Note:**  Please remove this section prior to publication of a
 > final version of this document.
 
-HTTP/QUIC uses the token "hq" to identify itself in ALPN and Alt-Svc.  Only
-implementations of the final, published RFC can identify themselves as "hq".
-Until such an RFC exists, implementations MUST NOT identify themselves using
-this string.
+Zanzibar/BuckBuck/McFate uses the token "zbbmf" to identify itself in ALPN and
+Alt-Svc.  Only implementations of the final, published RFC can identify
+themselves as "zbbmf". Until such an RFC exists, implementations MUST NOT
+identify themselves using this string.
 
 Implementations of draft versions of the protocol MUST add the string "-" and
 the corresponding draft number to the identifier. For example,
-draft-ietf-quic-http-01 is identified using the string "hq-01".
+draft-ietf-quic-http-01 is identified using the string "zbbmf-01".
 
 Non-compatible experiments that are based on these draft versions MUST append
 the string "-" and an experiment name to the identifier. For example, an
 experimental implementation based on draft-ietf-quic-http-09 which reserves an
 extra stream for unsolicited transmission of 1980s pop music might identify
-itself as "hq-09-rickroll". Note that any label MUST conform to the "token"
+itself as "zbbmf-09-rickroll". Note that any label MUST conform to the "token"
 syntax defined in Section 3.2.6 of [RFC7230]. Experimenters are encouraged to
 coordinate their experiments on the quic@ietf.org mailing list.
 
-## Discovering an HTTP/QUIC Endpoint
+## Discovering a Zanzibar/BuckBuck/McFate Endpoint
 
-An HTTP origin advertises the availability of an equivalent HTTP/QUIC endpoint
-via the Alt-Svc HTTP response header field or the HTTP/2 ALTSVC frame
-({{!ALTSVC=RFC7838}}), using the ALPN token defined in
+An HTTP origin advertises the availability of an equivalent
+Zanzibar/BuckBuck/McFate endpoint via the Alt-Svc HTTP response header field or
+the HTTP/2 ALTSVC frame ({{!ALTSVC=RFC7838}}), using the ALPN token defined in
 {{connection-establishment}}.
 
 For example, an origin could indicate in an HTTP/1.1 or HTTP/2 response that
-HTTP/QUIC was available on UDP port 50781 at the same hostname by including the
-following header field in any response:
+Zanzibar/BuckBuck/McFate was available on UDP port 50781 at the same hostname by
+including the following header field in any response:
 
 ~~~ example
-Alt-Svc: hq=":50781"
+Alt-Svc: zbbmf=":50781"
 ~~~
 
-On receipt of an Alt-Svc record indicating HTTP/QUIC support, a client MAY
-attempt to establish a QUIC connection to the indicated host and port and, if
-successful, send HTTP requests using the mapping described in this document.
+On receipt of an Alt-Svc record indicating Zanzibar/BuckBuck/McFate support, a
+client MAY attempt to establish a QUIC connection to the indicated host and port
+and, if successful, send HTTP requests using the mapping described in this
+document.
 
 Connectivity problems (e.g. firewall blocking UDP) can result in QUIC connection
 establishment failure, in which case the client SHOULD continue using the
 existing connection or try another alternative endpoint offered by the origin.
 
-Servers MAY serve HTTP/QUIC on any UDP port, since an alternative always
-includes an explicit port.
+Servers MAY serve Zanzibar/BuckBuck/McFate on any UDP port, since an alternative
+always includes an explicit port.
 
 ### QUIC Version Hints {#alt-svc-version-hint}
 
 This document defines the "quic" parameter for Alt-Svc, which MAY be used to
-provide version-negotiation hints to HTTP/QUIC clients. QUIC versions are
-four-byte sequences with no additional constraints on format.  Leading zeros
-SHOULD be omitted for brevity.
+provide version-negotiation hints to Zanzibar/BuckBuck/McFate clients. QUIC
+versions are four-byte sequences with no additional constraints on format.
+Leading zeros SHOULD be omitted for brevity.
 
 Syntax:
 
@@ -208,7 +209,7 @@ rendered in ASCII as "Q034".  If it also opted to include the reserved version
 following header field:
 
 ~~~ example
-Alt-Svc: hq=":49288";quic="1,1abadaba,51303334"
+Alt-Svc: zbbmf=":49288";quic="1,1abadaba,51303334"
 ~~~
 
 A client acting on this header field would drop the reserved version (not
@@ -217,24 +218,24 @@ in the list which it does support, if any.
 
 ## Connection Establishment {#connection-establishment}
 
-HTTP/QUIC relies on QUIC as the underlying transport.  The QUIC version being
-used MUST use TLS version 1.3 or greater as its handshake protocol.  HTTP/QUIC
-clients MUST indicate the target domain name during the TLS handshake. This may
-be done using the Server Name Indication (SNI) {{!RFC6066}} extension to TLS or
-using some other mechanism.
+Zanzibar/BuckBuck/McFate relies on QUIC as the underlying transport.  The QUIC
+version being used MUST use TLS version 1.3 or greater as its handshake
+protocol.  Zanzibar/BuckBuck/McFate clients MUST indicate the target domain name
+during the TLS handshake. This may be done using the Server Name Indication
+(SNI) {{!RFC6066}} extension to TLS or using some other mechanism.
 
 QUIC connections are established as described in {{QUIC-TRANSPORT}}. During
-connection establishment, HTTP/QUIC support is indicated by selecting the ALPN
-token "hq" in the TLS handshake.  Support for other application-layer protocols
-MAY be offered in the same handshake.
+connection establishment, Zanzibar/BuckBuck/McFate support is indicated by
+selecting the ALPN token "hq" in the TLS handshake.  Support for other
+application-layer protocols MAY be offered in the same handshake.
 
 While connection-level options pertaining to the core QUIC protocol are set in
-the initial crypto handshake, HTTP/QUIC-specific settings are conveyed in the
-SETTINGS frame. After the QUIC connection is established, a SETTINGS frame
-({{frame-settings}}) MUST be sent by each endpoint as the initial frame of their
-respective HTTP control stream (see {{control-streams}}). The server MUST NOT
-process any request streams or send responses until the client's SETTINGS frame
-has been received.
+the initial crypto handshake, Zanzibar/BuckBuck/McFate-specific settings are
+conveyed in the SETTINGS frame. After the QUIC connection is established, a
+SETTINGS frame ({{frame-settings}}) MUST be sent by each endpoint as the initial
+frame of their respective HTTP control stream (see {{control-streams}}). The
+server MUST NOT process any request streams or send responses until the client's
+SETTINGS frame has been received.
 
 ## Connection Reuse
 
@@ -242,13 +243,13 @@ Once a connection exists to a server endpoint, this connection MAY be reused for
 requests with multiple different URI authority components.  The client MAY send
 any requests for which the client considers the server authoritative.
 
-An authoritative HTTP/QUIC endpoint is typically discovered because the client
-has received an Alt-Svc record from the request's origin which nominates the
-endpoint as a valid HTTP Alternative Service for that origin.  As required by
-{{RFC7838}}, clients MUST check that the nominated server can present a valid
-certificate for the origin before considering it authoritative. Clients MUST NOT
-assume that an HTTP/QUIC endpoint is authoritative for other origins without an
-explicit signal.
+An authoritative Zanzibar/BuckBuck/McFate endpoint is typically discovered
+because the client has received an Alt-Svc record from the request's origin
+which nominates the endpoint as a valid HTTP Alternative Service for that
+origin.  As required by {{RFC7838}}, clients MUST check that the nominated
+server can present a valid certificate for the origin before considering it
+authoritative. Clients MUST NOT assume that an Zanzibar/BuckBuck/McFate endpoint
+is authoritative for other origins without an explicit signal.
 
 A server that does not wish clients to reuse connections for a particular origin
 can indicate that it is not authoritative for a request by sending a 421
@@ -256,7 +257,7 @@ can indicate that it is not authoritative for a request by sending a 421
 of {{!RFC7540}}).
 
 The considerations discussed in Section 9.1 of {{?RFC7540}} also apply to the
-management of HTTP/QUIC connections.
+management of Zanzibar/BuckBuck/McFate connections.
 
 # Stream Mapping and Usage {#stream-mapping}
 
@@ -283,9 +284,10 @@ All client-initiated bidirectional streams are used for HTTP requests and
 responses.  A bidirectional stream ensures that the response can be readily
 correlated with the request. This means that the client's first request occurs
 on QUIC stream 0, with subsequent requests on stream 4, 8, and so on. In order
-to permit these streams to open, an HTTP/QUIC client SHOULD send non-zero values
-for the QUIC transport parameters `initial_max_stream_data_bidi_local`. An
-HTTP/QUIC server SHOULD send non-zero values for the QUIC transport parameters
+to permit these streams to open, a Zanzibar/BuckBuck/McFate client SHOULD send
+non-zero values for the QUIC transport parameters
+`initial_max_stream_data_bidi_local`. A Zanzibar/BuckBuck/McFate server SHOULD
+send non-zero values for the QUIC transport parameters
 `initial_max_stream_data_bidi_remote` and `initial_max_bidi_streams`. It is
 recommended that `initial_max_bidi_streams` be no smaller than 100, so as to not
 unnecessarily limit parallelism.
@@ -293,11 +295,11 @@ unnecessarily limit parallelism.
 These streams carry frames related to the request/response (see
 {{request-response}}). When a stream terminates cleanly, if the last frame on
 the stream was truncated, this MUST be treated as a connection error (see
-HTTP_MALFORMED_FRAME in {{http-error-codes}}).  Streams which terminate abruptly
-may be reset at any point in the frame.
+ZBBMF_MALFORMED_FRAME in {{http-error-codes}}).  Streams which terminate
+abruptly may be reset at any point in the frame.
 
-HTTP/QUIC does not use server-initiated bidirectional streams; clients MUST omit
-or specify a value of zero for the QUIC transport parameter
+Zanzibar/BuckBuck/McFate does not use server-initiated bidirectional streams;
+clients MUST omit or specify a value of zero for the QUIC transport parameter
 `initial_max_bidi_streams`.
 
 
@@ -319,7 +321,7 @@ header is determined by the stream type.
 Some stream types are reserved ({{stream-grease}}).  Two stream types are
 defined in this document: control streams ({{control-streams}}) and push streams
 ({{push-streams}}).  Other stream types can be defined by extensions to
-HTTP/QUIC.
+Zanzibar/BuckBuck/McFate.
 
 Both clients and servers SHOULD send a value of three or greater for the QUIC
 transport parameter `initial_max_uni_streams`.
@@ -327,8 +329,8 @@ transport parameter `initial_max_uni_streams`.
 If the stream header indicates a stream type which is not supported by the
 recipient, the remainder of the stream cannot be consumed as the semantics are
 unknown. Recipients of unknown stream types MAY trigger a QUIC STOP_SENDING
-frame with an error code of HTTP_UNKNOWN_STREAM_TYPE, but MUST NOT consider such
-streams to be an error of any kind.
+frame with an error code of ZBBMF_UNKNOWN_STREAM_TYPE, but MUST NOT consider
+such streams to be an error of any kind.
 
 Implementations MAY send stream types before knowing whether the peer supports
 them.  However, stream types which could modify the state or semantics of
@@ -338,16 +340,17 @@ sent until the peer is known to support them.
 ###  Control Streams
 
 A control stream is indicated by a stream type of `0x43` (ASCII 'C').  Data on
-this stream consists of HTTP/QUIC frames, as defined in {{frames}}.
+this stream consists of Zanzibar/BuckBuck/McFate frames, as defined in
+{{frames}}.
 
 Each side MUST initiate a single control stream at the beginning of the
 connection and send its SETTINGS frame as the first frame on this stream.  If
 the first frame of the control stream is any other frame type, this MUST be
-treated as a connection error of type HTTP_MISSING_SETTINGS. Only one control
+treated as a connection error of type ZBBMF_MISSING_SETTINGS. Only one control
 stream per peer is permitted; receipt of a second stream which claims to be a
 control stream MUST be treated as a connection error of type
-HTTP_WRONG_STREAM_COUNT.  If the control stream is closed at any point, this
-MUST be treated as a connection error of type HTTP_CLOSED_CRITICAL_STREAM.
+ZBBMF_WRONG_STREAM_COUNT.  If the control stream is closed at any point, this
+MUST be treated as a connection error of type ZBBMF_CLOSED_CRITICAL_STREAM.
 
 A pair of unidirectional streams is used rather than a single bidirectional
 stream.  This allows either peer to send data as soon they are able.  Depending
@@ -358,12 +361,12 @@ able to send stream data first after the cryptographic handshake completes.
 
 A push stream is indicated by a stream type of `0x50` (ASCII 'P'), followed by
 the Push ID of the promise that it fulfills, encoded as a variable-length
-integer. The remaining data on this stream consists of HTTP/QUIC frames, as
-defined in {{frames}}, and fulfills a promised server push.  Server push and
-Push IDs are described in {{server-push}}.
+integer. The remaining data on this stream consists of Zanzibar/BuckBuck/McFate
+frames, as defined in {{frames}}, and fulfills a promised server push.  Server
+push and Push IDs are described in {{server-push}}.
 
 Only servers can push; if a server receives a client-initiated push stream,
-this MUST be treated as a stream error of type HTTP_WRONG_STREAM_DIRECTION.
+this MUST be treated as a stream error of type ZBBMF_WRONG_STREAM_DIRECTION.
 
 ~~~~~~~~~~ drawing
  0                   1                   2                   3
@@ -376,7 +379,7 @@ this MUST be treated as a stream error of type HTTP_WRONG_STREAM_DIRECTION.
 
 Each Push ID MUST only be used once in a push stream header. If a push stream
 header includes a Push ID that was used in another push stream header, the
-client MUST treat this as a connection error of type HTTP_DUPLICATE_PUSH.
+client MUST treat this as a connection error of type ZBBMF_DUPLICATE_PUSH.
 
 ### Reserved Stream Types {#stream-grease}
 
@@ -409,7 +412,7 @@ All frames have the following format:
 |    Type (8)   |               Frame Payload (*)             ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~~~~~~~~
-{: #fig-frame title="HTTP/QUIC frame format"}
+{: #fig-frame title="Zanzibar/BuckBuck/McFate frame format"}
 
 A frame includes the following fields:
 
@@ -426,7 +429,7 @@ A frame includes the following fields:
 Each frame's payload MUST contain exactly the identified fields.  A frame that
 contains additional bytes after the identified fields or a frame that terminates
 before the end of the identified fields MUST be treated as a connection error of
-type HTTP_MALFORMED_FRAME.
+type ZBBMF_MALFORMED_FRAME.
 
 ## Frame Definitions {#frames}
 
@@ -437,7 +440,7 @@ associated with an HTTP request or response payload.
 
 DATA frames MUST be associated with an HTTP request or response.  If a DATA
 frame is received on either control stream, the recipient MUST respond with a
-connection error ({{errors}}) of type HTTP_WRONG_STREAM.
+connection error ({{errors}}) of type ZBBMF_WRONG_STREAM.
 
 ~~~~~~~~~~ drawing
  0                   1                   2                   3
@@ -450,7 +453,7 @@ connection error ({{errors}}) of type HTTP_WRONG_STREAM.
 
 DATA frames MUST contain a non-zero-length payload.  If a DATA frame is received
 with a payload length of zero, the recipient MUST respond with a stream error
-({{errors}}) of type HTTP_MALFORMED_FRAME.
+({{errors}}) of type ZBBMF_MALFORMED_FRAME.
 
 ### HEADERS {#frame-headers}
 
@@ -474,7 +477,7 @@ The PRIORITY (type=0x02) frame specifies the sender-advised priority of a
 stream.  In order to ensure that prioritization is processed in a consistent
 order, PRIORITY frames MUST be sent on the control stream.  A PRIORITY frame
 sent on any other stream MUST be treated as a connection error of type
-HTTP_WRONG_STREAM.
+ZBBMF_WRONG_STREAM.
 
 ~~~~~~~~~~  drawing
  0                   1                   2                   3
@@ -542,15 +545,16 @@ the interpretation of the associated Element ID fields.
 Note that the root of the tree cannot be referenced using a Stream ID of 0, as
 in {{!RFC7540}}; QUIC stream 0 carries a valid HTTP request.  The root of the
 tree cannot be reprioritized. A PRIORITY frame that prioritizes the root of the
-tree MUST be treated as a connection error of type HTTP_MALFORMED_FRAME.
+tree MUST be treated as a connection error of type ZBBMF_MALFORMED_FRAME.
 
 When a PRIORITY frame claims to reference a request, the associated ID MUST
 identify a client-initiated bidirectional stream.  A server MUST treat receipt
 of PRIORITY frame with a Stream ID of any other type as a connection error of
-type HTTP_MALFORMED_FRAME.
+type ZBBMF_MALFORMED_FRAME.
 
 A PRIORITY frame that references a non-existent Push ID or a Placeholder ID
-greater than the server's limit MUST be treated as a HTTP_MALFORMED_FRAME error.
+greater than the server's limit MUST be treated as a ZBBMF_MALFORMED_FRAME
+error.
 
 
 ### CANCEL_PUSH {#frame-cancel-push}
@@ -575,7 +579,7 @@ server push response.
 
 A CANCEL_PUSH frame is sent on the control stream.  Sending a CANCEL_PUSH frame
 on a stream other than the control stream MUST be treated as a stream error of
-type HTTP_WRONG_STREAM.
+type ZBBMF_WRONG_STREAM.
 
 ~~~~~~~~~~  drawing
  0                   1                   2                   3
@@ -595,7 +599,7 @@ that has not yet been mentioned by a PUSH_PROMISE frame.
 
 An endpoint MUST treat a CANCEL_PUSH frame which does not contain exactly one
 properly-formatted variable-length integer as a connection error of type
-HTTP_MALFORMED_FRAME.
+ZBBMF_MALFORMED_FRAME.
 
 
 ### SETTINGS {#frame-settings}
@@ -619,7 +623,7 @@ while servers are more cautious about request size.
 
 Parameters MUST NOT occur more than once.  A receiver MAY treat the presence of
 the same parameter more than once as a connection error of type
-HTTP_MALFORMED_FRAME.
+ZBBMF_MALFORMED_FRAME.
 
 The payload of a SETTINGS frame consists of zero or more parameters, each
 consisting of an unsigned 16-bit setting identifier and a value which uses the
@@ -637,7 +641,7 @@ QUIC variable-length integer encoding.
 Each value MUST be compared against the remaining length of the SETTINGS frame.
 A variable-length integer value which cannot fit within the remaining length of
 the SETTINGS frame MUST cause the SETTINGS frame to be considered malformed and
-trigger a connection error of type HTTP_MALFORMED_FRAME.
+trigger a connection error of type ZBBMF_MALFORMED_FRAME.
 
 An implementation MUST ignore the contents for any SETTINGS identifier it does
 not understand.
@@ -646,18 +650,18 @@ SETTINGS frames always apply to a connection, never a single stream.  A SETTINGS
 frame MUST be sent as the first frame of each control stream (see
 {{control-streams}}) by each peer, and MUST NOT be sent subsequently or on any
 other stream. If an endpoint receives a SETTINGS frame on a different stream,
-the endpoint MUST respond with a connection error of type HTTP_WRONG_STREAM.  If
-an endpoint receives a second SETTINGS frame, the endpoint MUST respond with a
-connection error of type HTTP_MALFORMED_FRAME.
+the endpoint MUST respond with a connection error of type ZBBMF_WRONG_STREAM.
+If an endpoint receives a second SETTINGS frame, the endpoint MUST respond with
+a connection error of type ZBBMF_MALFORMED_FRAME.
 
 The SETTINGS frame affects connection state. A badly formed or incomplete
 SETTINGS frame MUST be treated as a connection error ({{errors}}) of type
-HTTP_MALFORMED_FRAME.
+ZBBMF_MALFORMED_FRAME.
 
 
 #### Defined SETTINGS Parameters {#settings-parameters}
 
-The following settings are defined in HTTP/QUIC:
+The following settings are defined in Zanzibar/BuckBuck/McFate:
 
   SETTINGS_NUM_PLACEHOLDERS (0x3):
   : This value SHOULD be non-zero.  The default value is 16.
@@ -674,7 +678,7 @@ receipt.
 Because the setting has no defined meaning, the value of the setting can be any
 value the implementation selects.
 
-Additional settings MAY be defined by extensions to HTTP/QUIC.
+Additional settings MAY be defined by extensions to Zanzibar/BuckBuck/McFate.
 
 #### Initialization
 
@@ -687,8 +691,8 @@ frame is received.
 
 A server can remember the settings that it advertised, or store an
 integrity-protected copy of the values in the ticket and recover the information
-when accepting 0-RTT data. A server uses the HTTP/QUIC settings values in
-determining whether to accept 0-RTT data.
+when accepting 0-RTT data. A server uses the Zanzibar/BuckBuck/McFate settings
+values in determining whether to accept 0-RTT data.
 
 A server MAY accept 0-RTT and subsequently provide different settings in its
 SETTINGS frame. If 0-RTT data is accepted by the server, its SETTINGS frame MUST
@@ -728,7 +732,7 @@ Header Block:
 A server MUST NOT use a Push ID that is larger than the client has provided in a
 MAX_PUSH_ID frame ({{frame-max-push-id}}).  A client MUST treat receipt of a
 PUSH_PROMISE that contains a larger Push ID than the client has advertised as a
-connection error of type HTTP_MALFORMED_FRAME.
+connection error of type ZBBMF_MALFORMED_FRAME.
 
 A server MAY use the same Push ID in multiple PUSH_PROMISE frames.  This allows
 the server to use the same server push in response to multiple concurrent
@@ -741,7 +745,7 @@ the same header fields each time.  The bytes of the header block MAY be
 different due to differing encoding, but the header fields and their values MUST
 be identical.  Note that ordering of header fields is significant.  A client
 MUST treat receipt of a PUSH_PROMISE with conflicting header field values for
-the same Push ID as a connection error of type HTTP_MALFORMED_FRAME.
+the same Push ID as a connection error of type ZBBMF_MALFORMED_FRAME.
 
 Allowing duplicate references to the same Push ID is primarily to reduce
 duplication caused by concurrent requests.  A server SHOULD avoid reusing a Push
@@ -771,15 +775,15 @@ close a connection.
 The GOAWAY frame carries a QUIC Stream ID for a client-initiated bidirectional
 stream encoded as a variable-length integer.  A client MUST treat receipt of a
 GOAWAY frame containing a Stream ID of any other type as a connection error of
-type HTTP_MALFORMED_FRAME.
+type ZBBMF_MALFORMED_FRAME.
 
 Clients do not need to send GOAWAY to initiate a graceful shutdown; they simply
 stop making new requests.  A server MUST treat receipt of a GOAWAY frame as a
-connection error ({{errors}}) of type HTTP_UNEXPECTED_GOAWAY.
+connection error ({{errors}}) of type ZBBMF_UNEXPECTED_GOAWAY.
 
 The GOAWAY frame applies to the connection, not a specific stream.  An endpoint
 MUST treat a GOAWAY frame on a stream other than the control stream as a
-connection error ({{errors}}) of type HTTP_WRONG_STREAM.
+connection error ({{errors}}) of type ZBBMF_WRONG_STREAM.
 
 See {{connection-shutdown}} for more information on the use of the GOAWAY frame.
 
@@ -793,10 +797,10 @@ to the limit set by the QUIC MAX_STREAM_ID frame.
 
 The MAX_PUSH_ID frame is always sent on a control stream.  Receipt of a
 MAX_PUSH_ID frame on any other stream MUST be treated as a connection error of
-type HTTP_WRONG_STREAM.
+type ZBBMF_WRONG_STREAM.
 
 A server MUST NOT send a MAX_PUSH_ID frame.  A client MUST treat the receipt of
-a MAX_PUSH_ID frame as a connection error of type HTTP_MALFORMED_FRAME.
+a MAX_PUSH_ID frame as a connection error of type ZBBMF_MALFORMED_FRAME.
 
 The maximum Push ID is unset when a connection is created, meaning that a server
 cannot push until it receives a MAX_PUSH_ID frame.  A client that wishes to
@@ -816,11 +820,11 @@ The MAX_PUSH_ID frame carries a single variable-length integer that identifies
 the maximum value for a Push ID that the server can use (see
 {{frame-push-promise}}).  A MAX_PUSH_ID frame cannot reduce the maximum Push ID;
 receipt of a MAX_PUSH_ID that contains a smaller value than previously received
-MUST be treated as a connection error of type HTTP_MALFORMED_FRAME.
+MUST be treated as a connection error of type ZBBMF_MALFORMED_FRAME.
 
 A server MUST treat a MAX_PUSH_ID frame payload that does not contain a single
 variable-length integer as a connection error of type
-HTTP_MALFORMED_FRAME.
+ZBBMF_MALFORMED_FRAME.
 
 ### Reserved Frame Types {#frame-grease}
 
@@ -880,7 +884,7 @@ A server can send a complete response prior to the client sending an entire
 request if the response does not depend on any portion of the request that has
 not been sent and received. When this is true, a server MAY request that the
 client abort transmission of a request without error by triggering a QUIC
-STOP_SENDING frame with error code HTTP_EARLY_RESPONSE, sending a complete
+STOP_SENDING frame with error code ZBBMF_EARLY_RESPONSE, sending a complete
 response, and cleanly closing its stream. Clients MUST NOT discard complete
 responses as a result of having their request terminated abruptly, though
 clients can always discard responses at their discretion for other reasons.
@@ -890,7 +894,7 @@ RESET_STREAM with any error code, do not affect the state of the server's
 response. Servers do not abort a response in progress solely due to a state
 change on the request stream.  However, if the request stream terminates without
 containing a usable HTTP request, the server SHOULD abort its response with the
-error code HTTP_INCOMPLETE_REQUEST.
+error code ZBBMF_INCOMPLETE_REQUEST.
 
 
 ### Header Formatting and Compression
@@ -903,45 +907,47 @@ Header Field" registry maintained at
 Just as in previous versions of HTTP, header field names are strings of ASCII
 characters that are compared in a case-insensitive fashion.  Properties of HTTP
 header field names and values are discussed in more detail in Section 3.2 of
-{{!RFC7230}}, though the wire rendering in HTTP/QUIC differs.  As in HTTP/2,
-header field names MUST be converted to lowercase prior to their encoding.  A
-request or response containing uppercase header field names MUST be treated as
-malformed.
+{{!RFC7230}}, though the wire rendering in Zanzibar/BuckBuck/McFate differs.  As
+in HTTP/2, header field names MUST be converted to lowercase prior to their
+encoding.  A request or response containing uppercase header field names MUST be
+treated as malformed.
 
-As in HTTP/2, HTTP/QUIC uses special pseudo-header fields beginning with the ':'
-character (ASCII 0x3a) to convey the target URI, the method of the request, and
-the status code for the response.  These pseudo-header fields are defined in
-Section 8.1.2.3 and 8.1.2.4 of {{!RFC7540}}. Pseudo-header fields are not HTTP
-header fields.  Endpoints MUST NOT generate pseudo-header fields other than
-those defined in {{!RFC7540}}.  The restrictions on the use of pseudo-header
-fields in Section 8.1.2.1 of {{!RFC7540}} also apply to HTTP/QUIC.
+As in HTTP/2, Zanzibar/BuckBuck/McFate uses special pseudo-header fields
+beginning with the ':' character (ASCII 0x3a) to convey the target URI, the
+method of the request, and the status code for the response.  These
+pseudo-header fields are defined in Section 8.1.2.3 and 8.1.2.4 of {{!RFC7540}}.
+Pseudo-header fields are not HTTP header fields.  Endpoints MUST NOT generate
+pseudo-header fields other than those defined in {{!RFC7540}}.  The restrictions
+on the use of pseudo-header fields in Section 8.1.2.1 of {{!RFC7540}} also apply
+to Zanzibar/BuckBuck/McFate.
 
-HTTP/QUIC uses QPACK header compression as described in [QPACK], a variation of
-HPACK which allows the flexibility to avoid header-compression-induced
-head-of-line blocking.  See that document for additional details.
+Zanzibar/BuckBuck/McFate uses QPACK header compression as described in [QPACK],
+a variation of HPACK which allows the flexibility to avoid
+header-compression-induced head-of-line blocking.  See that document for
+additional details.
 
-An HTTP/QUIC implementation MAY impose a limit on the maximum size of the header
-it will accept on an individual HTTP message.  This limit is conveyed as a
-number of bytes in the `SETTINGS_MAX_HEADER_LIST_SIZE` parameter.  The size of a
-header list is calculated based on the uncompressed size of header fields,
-including the length of the name and value in bytes plus an overhead of 32 bytes
-for each header field.  Encountering a message header larger than this value
-SHOULD be treated as a stream error of type `HTTP_EXCESSIVE_LOAD`.
+An Zanzibar/BuckBuck/McFate implementation MAY impose a limit on the maximum
+size of the header it will accept on an individual HTTP message.  This limit is
+conveyed as a number of bytes in the `SETTINGS_MAX_HEADER_LIST_SIZE` parameter.
+The size of a header list is calculated based on the uncompressed size of header
+fields, including the length of the name and value in bytes plus an overhead of
+32 bytes for each header field.  Encountering a message header larger than this
+value SHOULD be treated as a stream error of type `ZBBMF_EXCESSIVE_LOAD`.
 
 ### Request Cancellation
 
 Either client or server can cancel requests by aborting the stream (QUIC
 RESET_STREAM and/or STOP_SENDING frames, as appropriate) with an error code of
-HTTP_REQUEST_CANCELLED ({{http-error-codes}}).  When the client cancels a
+ZBBMF_REQUEST_CANCELLED ({{http-error-codes}}).  When the client cancels a
 response, it indicates that this response is no longer of interest.
 Implementations SHOULD cancel requests by aborting both directions of a stream.
 
-When the server aborts its response stream using HTTP_REQUEST_CANCELLED, it
+When the server aborts its response stream using ZBBMF_REQUEST_CANCELLED, it
 indicates that no application processing was performed.  The client can treat
 requests cancelled by the server as though they had never been sent at all,
 thereby allowing them to be retried later on a new connection.  Servers MUST NOT
-use the HTTP_REQUEST_CANCELLED status for requests which were partially or fully
-processed.
+use the ZBBMF_REQUEST_CANCELLED status for requests which were partially or
+fully processed.
 
   Note:
   : In this context, "processed" means that some data from the stream was
@@ -964,10 +970,10 @@ an entire HTTP connection into a tunnel to a remote host. In HTTP/2, the CONNECT
 method is used to establish a tunnel over a single HTTP/2 stream to a remote
 host for similar purposes.
 
-A CONNECT request in HTTP/QUIC functions in the same manner as in HTTP/2. The
-request MUST be formatted as described in {{!RFC7540}}, Section 8.3. A CONNECT
-request that does not conform to these restrictions is malformed. The request
-stream MUST NOT be closed at the end of the request.
+A CONNECT request in Zanzibar/BuckBuck/McFate functions in the same manner as in
+HTTP/2. The request MUST be formatted as described in {{!RFC7540}}, Section 8.3.
+A CONNECT request that does not conform to these restrictions is malformed. The
+request stream MUST NOT be closed at the end of the request.
 
 A proxy that supports CONNECT establishes a TCP connection ({{!RFC0793}}) to the
 server identified in the ":authority" pseudo-header field. Once this connection
@@ -991,20 +997,20 @@ data from the target of the CONNECT.
 
 A TCP connection error is signaled with QUIC RESET_STREAM frame. A proxy treats
 any error in the TCP connection, which includes receiving a TCP segment with the
-RST bit set, as a stream error of type HTTP_CONNECT_ERROR
+RST bit set, as a stream error of type ZBBMF_CONNECT_ERROR
 ({{http-error-codes}}).  Correspondingly, a proxy MUST send a TCP segment with
 the RST bit set if it detects an error with the stream or the QUIC connection.
 
 ## Request Prioritization {#priority}
 
-HTTP/QUIC uses a priority scheme similar to that described in {{!RFC7540}},
-Section 5.3. In this priority scheme, a given stream can be designated as
-dependent upon another request, which expresses the preference that the latter
-stream (the "parent" request) be allocated resources before the former stream
-(the "dependent" request). Taken together, the dependencies across all requests
-in a connection form a dependency tree. The structure of the dependency tree
-changes as PRIORITY frames add, remove, or change the dependency links between
-requests.
+Zanzibar/BuckBuck/McFate uses a priority scheme similar to that described in
+{{!RFC7540}}, Section 5.3. In this priority scheme, a given stream can be
+designated as dependent upon another request, which expresses the preference
+that the latter stream (the "parent" request) be allocated resources before the
+former stream (the "dependent" request). Taken together, the dependencies across
+all requests in a connection form a dependency tree. The structure of the
+dependency tree changes as PRIORITY frames add, remove, or change the dependency
+links between requests.
 
 The PRIORITY frame {{frame-priority}} identifies a prioritized element. The
 elements which can be prioritized are:
@@ -1027,10 +1033,10 @@ tree could safely be discarded. Clients could potentially reference closed
 streams long after the server had discarded state, leading to disparate views of
 the prioritization the client had attempted to express.
 
-In HTTP/QUIC, a number of placeholders are explicitly permitted by the server
-using the `SETTINGS_NUM_PLACEHOLDERS` setting. Because the server commits to
-maintain these IDs in the tree, clients can use them with confidence that the
-server will not have discarded the state.
+In Zanzibar/BuckBuck/McFate, a number of placeholders are explicitly permitted
+by the server using the `SETTINGS_NUM_PLACEHOLDERS` setting. Because the server
+commits to maintain these IDs in the tree, clients can use them with confidence
+that the server will not have discarded the state.
 
 Placeholders are identified by an ID between zero and one less than the number
 of placeholders the server has permitted.
@@ -1078,8 +1084,8 @@ NOT declare a dependency on a stream it knows to have been closed.
 
 ## Server Push
 
-HTTP/QUIC server push is similar to what is described in HTTP/2 {{!RFC7540}},
-but uses different mechanisms.
+Zanzibar/BuckBuck/McFate server push is similar to what is described in HTTP/2
+{{!RFC7540}}, but uses different mechanisms.
 
 Each server push is identified by a unique Push ID. The same Push ID can be used
 in one or more PUSH_PROMISE frames (see {{frame-push-promise}}), then included
@@ -1091,7 +1097,7 @@ until it receives a MAX_PUSH_ID frame. A client sends additional MAX_PUSH_ID
 frames to control the number of pushes that a server can promise. A server
 SHOULD use Push IDs sequentially, starting at 0. A client MUST treat receipt
 of a push stream with a Push ID that is greater than the maximum Push ID as a
-connection error of type HTTP_PUSH_LIMIT_EXCEEDED.
+connection error of type ZBBMF_PUSH_LIMIT_EXCEEDED.
 
 The header of the request message is carried by a PUSH_PROMISE frame (see
 {{frame-push-promise}}) on the request stream which generated the push. This
@@ -1108,24 +1114,24 @@ using the same format described for responses in {{request-response}}.
 If a promised server push is not needed by the client, the client SHOULD send a
 CANCEL_PUSH frame. If the push stream is already open or opens after sending the
 CANCEL_PUSH frame, a QUIC STOP_SENDING frame with an appropriate error code can
-also be used (e.g., HTTP_PUSH_REFUSED, HTTP_PUSH_ALREADY_IN_CACHE; see
+also be used (e.g., ZBBMF_PUSH_REFUSED, ZBBMF_PUSH_ALREADY_IN_CACHE; see
 {{errors}}). This asks the server not to transfer additional data and indicates
 that it will be discarded upon receipt.
 
 # Connection Closure
 
-Once established, an HTTP/QUIC connection can be used for many requests and
-responses over time until the connection is closed.  Connection closure can
-happen in any of several different ways.
+Once established, an Zanzibar/BuckBuck/McFate connection can be used for many
+requests and responses over time until the connection is closed.  Connection
+closure can happen in any of several different ways.
 
 ## Idle Connections
 
 Each QUIC endpoint declares an idle timeout during the handshake.  If the
 connection remains idle (no packets received) for longer than this duration, the
-peer will assume that the connection has been closed.  HTTP/QUIC implementations
-will need to open a new connection for new requests if the existing connection
-has been idle for longer than the server's advertised idle timeout, and SHOULD
-do so if approaching the idle timeout.
+peer will assume that the connection has been closed.  Zanzibar/BuckBuck/McFate
+implementations will need to open a new connection for new requests if the
+existing connection has been idle for longer than the server's advertised idle
+timeout, and SHOULD do so if approaching the idle timeout.
 
 HTTP clients are expected to use QUIC PING frames to keep connections open while
 there are responses outstanding for requests or server pushes. If the client is
@@ -1162,7 +1168,7 @@ transit. A new connection can be established for new requests.
 If the client has sent requests on streams with a higher Stream ID than
 indicated in the GOAWAY frame, those requests are considered cancelled
 ({{request-cancellation}}).  Clients SHOULD reset any streams above this ID with
-the error code HTTP_REQUEST_CANCELLED.  Servers MAY also cancel requests on
+the error code ZBBMF_REQUEST_CANCELLED.  Servers MAY also cancel requests on
 streams below the indicated ID if these requests were not processed.
 
 Requests on Stream IDs less than the Stream ID in the GOAWAY frame might have
@@ -1193,15 +1199,15 @@ connection can be cleanly shut down without losing requests.
 Once all accepted requests have been processed, the server can permit the
 connection to become idle, or MAY initiate an immediate closure of the
 connection.  An endpoint that completes a graceful shutdown SHOULD use the
-HTTP_NO_ERROR code when closing the connection.
+ZBBMF_NO_ERROR code when closing the connection.
 
 ## Immediate Application Closure
 
-An HTTP/QUIC implementation can immediately close the QUIC connection at any
-time. This results in sending a QUIC CONNECTION_CLOSE frame to the peer; the
-error code in this frame indicates to the peer why the connection is being
-closed.  See {{errors}} for error codes which can be used when closing a
-connection.
+A Zanzibar/BuckBuck/McFate implementation can immediately close the QUIC
+connection at any time. This results in sending a QUIC CONNECTION_CLOSE frame to
+the peer; the error code in this frame indicates to the peer why the connection
+is being closed.  See {{errors}} for error codes which can be used when closing
+a connection.
 
 Before closing the connection, a GOAWAY MAY be sent to allow the client to retry
 some requests.  Including the GOAWAY frame in the same packet as the QUIC
@@ -1218,12 +1224,12 @@ interrupts connectivity.
 If a connection terminates without a GOAWAY frame, clients MUST assume that any
 request which was sent, whether in whole or in part, might have been processed.
 
-# Extensions to HTTP/QUIC {#extensions}
+# Extensions to Zanzibar/BuckBuck/McFate {#extensions}
 
-HTTP/QUIC permits extension of the protocol.  Within the limitations described
-in this section, protocol extensions can be used to provide additional services
-or alter any aspect of the protocol.  Extensions are effective only within the
-scope of a single HTTP/QUIC connection.
+Zanzibar/BuckBuck/McFate permits extension of the protocol.  Within the
+limitations described in this section, protocol extensions can be used to
+provide additional services or alter any aspect of the protocol.  Extensions are
+effective only within the scope of a single Zanzibar/BuckBuck/McFate connection.
 
 This applies to the protocol elements defined in this document.  This does not
 affect the existing options for extending HTTP, such as defining new methods,
@@ -1264,81 +1270,82 @@ the entire connection when an error is encountered.  These are referred to as
 {{QUIC-TRANSPORT}}.  An endpoint MAY choose to treat a stream error as a
 connection error.
 
-This section describes HTTP/QUIC-specific error codes which can be used to
-express the cause of a connection or stream error.
+This section describes Zanzibar/BuckBuck/McFate-specific error codes which can
+be used to express the cause of a connection or stream error.
 
-## HTTP/QUIC Error Codes {#http-error-codes}
+## Zanzibar/BuckBuck/McFate Error Codes {#http-error-codes}
 
 The following error codes are defined for use in QUIC RESET_STREAM frames,
-STOP_SENDING frames, and CONNECTION_CLOSE frames when using HTTP/QUIC.
+STOP_SENDING frames, and CONNECTION_CLOSE frames when using
+Zanzibar/BuckBuck/McFate.
 
-HTTP_NO_ERROR (0x00):
+ZBBMF_NO_ERROR (0x00):
 : No error.  This is used when the connection or stream needs to be closed, but
   there is no error to signal.
 
-HTTP_PUSH_REFUSED (0x02):
+ZBBMF_PUSH_REFUSED (0x02):
 : The server has attempted to push content which the client will not accept
   on this connection.
 
-HTTP_INTERNAL_ERROR (0x03):
+ZBBMF_INTERNAL_ERROR (0x03):
 : An internal error has occurred in the HTTP stack.
 
-HTTP_PUSH_ALREADY_IN_CACHE (0x04):
+ZBBMF_PUSH_ALREADY_IN_CACHE (0x04):
 : The server has attempted to push content which the client has cached.
 
-HTTP_REQUEST_CANCELLED (0x05):
+ZBBMF_REQUEST_CANCELLED (0x05):
 : The client no longer needs the requested data.
 
-HTTP_INCOMPLETE_REQUEST (0x06):
+ZBBMF_INCOMPLETE_REQUEST (0x06):
 : The client's stream terminated without containing a fully-formed request.
 
-HTTP_CONNECT_ERROR (0x07):
+ZBBMF_CONNECT_ERROR (0x07):
 : The connection established in response to a CONNECT request was reset or
   abnormally closed.
 
-HTTP_EXCESSIVE_LOAD (0x08):
+ZBBMF_EXCESSIVE_LOAD (0x08):
 : The endpoint detected that its peer is exhibiting a behavior that might be
   generating excessive load.
 
-HTTP_VERSION_FALLBACK (0x09):
-: The requested operation cannot be served over HTTP/QUIC.  The peer should
-  retry over HTTP/1.1.
+ZBBMF_VERSION_FALLBACK (0x09):
+: The requested operation cannot be served over Zanzibar/BuckBuck/McFate.  The
+  peer should retry over HTTP/1.1.
 
-HTTP_WRONG_STREAM (0x0A):
+ZBBMF_WRONG_STREAM (0x0A):
 : A frame was received on a stream where it is not permitted.
 
-HTTP_PUSH_LIMIT_EXCEEDED (0x0B):
+ZBBMF_PUSH_LIMIT_EXCEEDED (0x0B):
 : A Push ID greater than the current maximum Push ID was referenced.
 
-HTTP_DUPLICATE_PUSH (0x0C):
+ZBBMF_DUPLICATE_PUSH (0x0C):
 : A Push ID was referenced in two different stream headers.
 
-HTTP_UNKNOWN_STREAM_TYPE (0x0D):
+ZBBMF_UNKNOWN_STREAM_TYPE (0x0D):
 : A unidirectional stream header contained an unknown stream type.
 
-HTTP_WRONG_STREAM_COUNT (0x0E):
+ZBBMF_WRONG_STREAM_COUNT (0x0E):
 : A unidirectional stream type was used more times than is permitted by that
   type.
 
-HTTP_CLOSED_CRITICAL_STREAM (0x0F):
+ZBBMF_CLOSED_CRITICAL_STREAM (0x0F):
 : A stream required by the connection was closed or reset.
 
-HTTP_WRONG_STREAM_DIRECTION (0x0010):
+ZBBMF_WRONG_STREAM_DIRECTION (0x0010):
 : A unidirectional stream type was used by a peer which is not permitted to do
   so.
 
-HTTP_EARLY_RESPONSE (0x0011):
+ZBBMF_EARLY_RESPONSE (0x0011):
 : The remainder of the client's request is not needed to produce a response.
   For use in STOP_SENDING only.
 
-HTTP_MISSING_SETTINGS (0x0012):
+ZBBMF_MISSING_SETTINGS (0x0012):
 : No SETTINGS frame was received at the beginning of the control stream.
 
-HTTP_GENERAL_PROTOCOL_ERROR (0x00FF):
+ZBBMF_GENERAL_PROTOCOL_ERROR (0x00FF):
 : Peer violated protocol requirements in a way which doesn't match a more
   specific error code, or endpoint declines to use the more specific error code.
 
-HTTP_MALFORMED_FRAME (0x01XX):
+ZBBMF_MALFORMED_FRAME (0x01XX):
 : An error in a specific frame type.  The frame type is included as the last
   byte of the error code.  For example, an error in a MAX_PUSH_ID frame would be
   indicated with the code (0x10D).
@@ -1346,14 +1353,16 @@ HTTP_MALFORMED_FRAME (0x01XX):
 
 # Security Considerations
 
-The security considerations of HTTP/QUIC should be comparable to those of HTTP/2
-with TLS.  Note that where HTTP/2 employs PADDING frames and Padding fields in
-other frames to make a connection more resistant to traffic analysis, HTTP/QUIC
-can rely on QUIC PADDING frames or employ the reserved frame and stream types
-discussed in {{frame-grease}} and {{stream-grease}}.
+The security considerations of Zanzibar/BuckBuck/McFate should be comparable to
+those of HTTP/2 with TLS.  Note that where HTTP/2 employs PADDING frames and
+Padding fields in other frames to make a connection more resistant to traffic
+analysis, Zanzibar/BuckBuck/McFate can rely on QUIC PADDING frames or employ the
+reserved frame and stream types discussed in {{frame-grease}} and
+{{stream-grease}}.
 
-When HTTP Alternative Services is used for discovery for HTTP/QUIC endpoints,
-the security considerations of {{!ALTSVC}} also apply.
+When HTTP Alternative Services is used for discovery for
+Zanzibar/BuckBuck/McFate endpoints, the security considerations of {{!ALTSVC}}
+also apply.
 
 Several protocol elements contain nested length elements, typically in the form
 of frames with an explicit length containing variable-length integers.  This
@@ -1364,19 +1373,19 @@ contains.
 
 # IANA Considerations
 
-## Registration of HTTP/QUIC Identification String
+## Registration of Zanzibar/BuckBuck/McFate Identification String
 
-This document creates a new registration for the identification of HTTP/QUIC in
-the "Application Layer Protocol Negotiation (ALPN) Protocol IDs" registry
-established in {{?RFC7301}}.
+This document creates a new registration for the identification of
+Zanzibar/BuckBuck/McFate in the "Application Layer Protocol Negotiation (ALPN)
+Protocol IDs" registry established in {{?RFC7301}}.
 
-The "hq" string identifies HTTP/QUIC:
+The "zbbmf" string identifies Zanzibar/BuckBuck/McFate:
 
   Protocol:
-  : HTTP/QUIC
+  : Zanzibar/BuckBuck/McFate
 
   Identification Sequence:
-  : 0x68 0x71 ("hq")
+  : 0x7A 0x62 0x62 0x6D 0x66 ("zbbmf")
 
   Specification:
   : This document
@@ -1395,11 +1404,12 @@ This document creates a new registration for version-negotiation hints in the
 
 ## Frame Types {#iana-frames}
 
-This document establishes a registry for HTTP/QUIC frame type codes. The
-"HTTP/QUIC Frame Type" registry manages an 8-bit space.  The "HTTP/QUIC Frame
-Type" registry operates under either of the "IETF Review" or "IESG Approval"
-policies {{?RFC8126}} for values from 0x00 up to and including 0xef, with values
-from 0xf0 up to and including 0xff being reserved for Experimental Use.
+This document establishes a registry for Zanzibar/BuckBuck/McFate frame type
+codes. The "Zanzibar/BuckBuck/McFate Frame Type" registry manages an 8-bit
+space.  The "Zanzibar/BuckBuck/McFate Frame Type" registry operates under either
+of the "IETF Review" or "IESG Approval" policies {{?RFC8126}} for values from
+0x00 up to and including 0xef, with values from 0xf0 up to and including 0xff
+being reserved for Experimental Use.
 
 While this registry is separate from the "HTTP/2 Frame Type" registry defined in
 {{RFC7540}}, it is preferable that the assignments parallel each other.  If an
@@ -1449,12 +1459,13 @@ Specification:
 
 ## Settings Parameters {#iana-settings}
 
-This document establishes a registry for HTTP/QUIC settings.  The "HTTP/QUIC
-Settings" registry manages a 16-bit space.  The "HTTP/QUIC Settings" registry
-operates under the "Expert Review" policy {{?RFC8126}} for values in the range
-from 0x0000 to 0xefff, with values between and 0xf000 and 0xffff being reserved
-for Experimental Use.  The designated experts are the same as those for the
-"HTTP/2 Settings" registry defined in {{RFC7540}}.
+This document establishes a registry for Zanzibar/BuckBuck/McFate settings.  The
+"Zanzibar/BuckBuck/McFate Settings" registry manages a 16-bit space.  The
+"Zanzibar/BuckBuck/McFate Settings" registry operates under the "Expert Review"
+policy {{?RFC8126}} for values in the range from 0x0000 to 0xefff, with values
+between and 0xf000 and 0xffff being reserved for Experimental Use.  The
+designated experts are the same as those for the "HTTP/2 Settings" registry
+defined in {{RFC7540}}.
 
 While this registry is separate from the "HTTP/2 Settings" registry defined in
 {{RFC7540}}, it is preferable that the assignments parallel each other.  If an
@@ -1497,10 +1508,10 @@ Specification:
 
 ## Error Codes {#iana-error-codes}
 
-This document establishes a registry for HTTP/QUIC error codes.  The
-"HTTP/QUIC Error Code" registry manages a 16-bit space.  The "HTTP/QUIC
-Error Code" registry operates under the "Expert Review" policy
-{{?RFC8126}}.
+This document establishes a registry for Zanzibar/BuckBuck/McFate error codes.
+The "Zanzibar/BuckBuck/McFate Error Code" registry manages a 16-bit space.  The
+"Zanzibar/BuckBuck/McFate Error Code" registry operates under the "Expert
+Review" policy {{?RFC8126}}.
 
 Registrations for error codes are required to include a description
 of the error code.  An expert reviewer is advised to examine new
@@ -1527,35 +1538,35 @@ The entries in the following table are registered by this document.
 | ----------------------------------- | ---------- | ---------------------------------------- | ---------------------- |
 | Name                                | Code       | Description                              | Specification          |
 | ----------------------------------- | ---------- | ---------------------------------------- | ---------------------- |
-| HTTP_NO_ERROR                       | 0x0000     | No error                                 | {{http-error-codes}}   |
-| HTTP_PUSH_REFUSED                   | 0x0002     | Client refused pushed content            | {{http-error-codes}}   |
-| HTTP_INTERNAL_ERROR                 | 0x0003     | Internal error                           | {{http-error-codes}}   |
-| HTTP_PUSH_ALREADY_IN_CACHE          | 0x0004     | Pushed content already cached            | {{http-error-codes}}   |
-| HTTP_REQUEST_CANCELLED              | 0x0005     | Data no longer needed                    | {{http-error-codes}}   |
-| HTTP_INCOMPLETE_REQUEST             | 0x0006     | Stream terminated early                  | {{http-error-codes}}   |
-| HTTP_CONNECT_ERROR                  | 0x0007     | TCP reset or error on CONNECT request    | {{http-error-codes}}   |
-| HTTP_EXCESSIVE_LOAD                 | 0x0008     | Peer generating excessive load           | {{http-error-codes}}   |
-| HTTP_VERSION_FALLBACK               | 0x0009     | Retry over HTTP/1.1                      | {{http-error-codes}}   |
-| HTTP_WRONG_STREAM                   | 0x000A     | A frame was sent on the wrong stream     | {{http-error-codes}}   |
-| HTTP_PUSH_LIMIT_EXCEEDED            | 0x000B     | Maximum Push ID exceeded                 | {{http-error-codes}}   |
-| HTTP_DUPLICATE_PUSH                 | 0x000C     | Push ID was fulfilled multiple times     | {{http-error-codes}}   |
-| HTTP_UNKNOWN_STREAM_TYPE            | 0x000D     | Unknown unidirectional stream type       | {{http-error-codes}}   |
-| HTTP_WRONG_STREAM_COUNT             | 0x000E     | Too many unidirectional streams          | {{http-error-codes}}   |
-| HTTP_CLOSED_CRITICAL_STREAM         | 0x000F     | Critical stream was closed               | {{http-error-codes}}   |
-| HTTP_WRONG_STREAM_DIRECTION         | 0x0010     | Unidirectional stream in wrong direction | {{http-error-codes}}   |
-| HTTP_EARLY_RESPONSE                 | 0x0011     | Remainder of request not needed          | {{http-error-codes}}   |
-| HTTP_MISSING_SETTINGS               | 0x0012     | No SETTINGS frame received               | {{http-error-codes}}   |
-| HTTP_MALFORMED_FRAME                | 0x01XX     | Error in frame formatting or use         | {{http-error-codes}}   |
+| ZBBMF_NO_ERROR                       | 0x0000     | No error                                 | {{http-error-codes}}   |
+| ZBBMF_PUSH_REFUSED                   | 0x0002     | Client refused pushed content            | {{http-error-codes}}   |
+| ZBBMF_INTERNAL_ERROR                 | 0x0003     | Internal error                           | {{http-error-codes}}   |
+| ZBBMF_PUSH_ALREADY_IN_CACHE          | 0x0004     | Pushed content already cached            | {{http-error-codes}}   |
+| ZBBMF_REQUEST_CANCELLED              | 0x0005     | Data no longer needed                    | {{http-error-codes}}   |
+| ZBBMF_INCOMPLETE_REQUEST             | 0x0006     | Stream terminated early                  | {{http-error-codes}}   |
+| ZBBMF_CONNECT_ERROR                  | 0x0007     | TCP reset or error on CONNECT request    | {{http-error-codes}}   |
+| ZBBMF_EXCESSIVE_LOAD                 | 0x0008     | Peer generating excessive load           | {{http-error-codes}}   |
+| ZBBMF_VERSION_FALLBACK               | 0x0009     | Retry over HTTP/1.1                      | {{http-error-codes}}   |
+| ZBBMF_WRONG_STREAM                   | 0x000A     | A frame was sent on the wrong stream     | {{http-error-codes}}   |
+| ZBBMF_PUSH_LIMIT_EXCEEDED            | 0x000B     | Maximum Push ID exceeded                 | {{http-error-codes}}   |
+| ZBBMF_DUPLICATE_PUSH                 | 0x000C     | Push ID was fulfilled multiple times     | {{http-error-codes}}   |
+| ZBBMF_UNKNOWN_STREAM_TYPE            | 0x000D     | Unknown unidirectional stream type       | {{http-error-codes}}   |
+| ZBBMF_WRONG_STREAM_COUNT             | 0x000E     | Too many unidirectional streams          | {{http-error-codes}}   |
+| ZBBMF_CLOSED_CRITICAL_STREAM         | 0x000F     | Critical stream was closed               | {{http-error-codes}}   |
+| ZBBMF_WRONG_STREAM_DIRECTION         | 0x0010     | Unidirectional stream in wrong direction | {{http-error-codes}}   |
+| ZBBMF_EARLY_RESPONSE                 | 0x0011     | Remainder of request not needed          | {{http-error-codes}}   |
+| ZBBMF_MISSING_SETTINGS               | 0x0012     | No SETTINGS frame received               | {{http-error-codes}}   |
+| ZBBMF_MALFORMED_FRAME                | 0x01XX     | Error in frame formatting or use         | {{http-error-codes}}   |
 | ----------------------------------- | ---------- | ---------------------------------------- | ---------------------- |
 
 ## Stream Types {#iana-stream-types}
 
-This document establishes a registry for HTTP/QUIC unidirectional stream types.
-The "HTTP/QUIC Stream Type" registry manages an 8-bit space.  The "HTTP/QUIC
-Stream Type" registry operates under either of the "IETF Review" or "IESG
-Approval" policies {{?RFC8126}} for values from 0x00 up to and including 0xef,
-with values from 0xf0 up to and including 0xff being reserved for Experimental
-Use.
+This document establishes a registry for Zanzibar/BuckBuck/McFate unidirectional
+stream types. The "Zanzibar/BuckBuck/McFate Stream Type" registry manages an
+8-bit space.  The "Zanzibar/BuckBuck/McFate Stream Type" registry operates under
+either of the "IETF Review" or "IESG Approval" policies {{?RFC8126}} for values
+from 0x00 up to and including 0xef, with values from 0xf0 up to and including
+0xff being reserved for Experimental Use.
 
 New entries in this registry require the following information:
 
@@ -1599,26 +1610,27 @@ Sender:
 
 # Considerations for Transitioning from HTTP/2
 
-HTTP/QUIC is strongly informed by HTTP/2, and bears many similarities.  This
-section describes the approach taken to design HTTP/QUIC, points out important
-differences from HTTP/2, and describes how to map HTTP/2 extensions into
-HTTP/QUIC.
+Zanzibar/BuckBuck/McFate is strongly informed by HTTP/2, and bears many
+similarities.  This section describes the approach taken to design
+Zanzibar/BuckBuck/McFate, points out important differences from HTTP/2, and
+describes how to map HTTP/2 extensions into Zanzibar/BuckBuck/McFate.
 
-HTTP/QUIC begins from the premise that similarity to HTTP/2 is preferable,
-but not a hard requirement.  HTTP/QUIC departs from HTTP/2 primarily where
-necessary to accommodate the differences in behavior between QUIC and TCP (lack
-of ordering, support for streams).  We intend to avoid gratuitous changes which
-make it difficult or impossible to build extensions with the same semantics
-applicable to both protocols at once.
+Zanzibar/BuckBuck/McFate begins from the premise that similarity to HTTP/2 is
+preferable, but not a hard requirement.  Zanzibar/BuckBuck/McFate departs from
+HTTP/2 primarily where necessary to accommodate the differences in behavior
+between QUIC and TCP (lack of ordering, support for streams).  We intend to
+avoid gratuitous changes which make it difficult or impossible to build
+extensions with the same semantics applicable to both protocols at once.
 
 These departures are noted in this section.
 
 ## Streams {#h2-streams}
 
-HTTP/QUIC permits use of a larger number of streams (2^62-1) than HTTP/2.  The
-considerations about exhaustion of stream identifier space apply, though the
-space is significantly larger such that it is likely that other limits in QUIC
-are reached first, such as the limit on the connection flow control window.
+Zanzibar/BuckBuck/McFate permits use of a larger number of streams (2^62-1) than
+HTTP/2.  The considerations about exhaustion of stream identifier space apply,
+though the space is significantly larger such that it is likely that other
+limits in QUIC are reached first, such as the limit on the connection flow
+control window.
 
 ## HTTP Frame Types {#h2-frames}
 
@@ -1633,16 +1645,16 @@ frame layout.
 Frame payloads are largely drawn from {{!RFC7540}}. However, QUIC includes many
 features (e.g. flow control) which are also present in HTTP/2. In these cases,
 the HTTP mapping does not re-implement them. As a result, several HTTP/2 frame
-types are not required in HTTP/QUIC. Where an HTTP/2-defined frame is no longer
-used, the frame ID has been reserved in order to maximize portability between
-HTTP/2 and HTTP/QUIC implementations. However, even equivalent frames between
-the two mappings are not identical.
+types are not required in Zanzibar/BuckBuck/McFate. Where an HTTP/2-defined
+frame is no longer used, the frame ID has been reserved in order to maximize
+portability between HTTP/2 and Zanzibar/BuckBuck/McFate implementations.
+However, even equivalent frames between the two mappings are not identical.
 
 Many of the differences arise from the fact that HTTP/2 provides an absolute
 ordering between frames across all streams, while QUIC provides this guarantee
 on each stream only.  As a result, if a frame type makes assumptions that frames
-from different streams will still be received in the order sent, HTTP/QUIC will
-break them.
+from different streams will still be received in the order sent,
+Zanzibar/BuckBuck/McFate will break them.
 
 For example, implicit in the HTTP/2 prioritization scheme is the notion of
 in-order delivery of priority changes (i.e., dependency tree mutations): since
@@ -1650,41 +1662,43 @@ operations on the dependency tree such as reparenting a subtree are not
 commutative, both sender and receiver must apply them in the same order to
 ensure that both sides have a consistent view of the stream dependency tree.
 HTTP/2 specifies priority assignments in PRIORITY frames and (optionally) in
-HEADERS frames. To achieve in-order delivery of priority changes in HTTP/QUIC,
-PRIORITY frames are sent on the control stream and the PRIORITY section is
-removed from the HEADERS frame.
+HEADERS frames. To achieve in-order delivery of priority changes in
+Zanzibar/BuckBuck/McFate, PRIORITY frames are sent on the control stream and the
+PRIORITY section is removed from the HEADERS frame.
 
 Likewise, HPACK was designed with the assumption of in-order delivery. A
 sequence of encoded header blocks must arrive (and be decoded) at an endpoint in
 the same order in which they were encoded. This ensures that the dynamic state
-at the two endpoints remains in sync.  As a result, HTTP/QUIC uses a modified
-version of HPACK, described in [QPACK].
+at the two endpoints remains in sync.  As a result, Zanzibar/BuckBuck/McFate
+uses a modified version of HPACK, described in [QPACK].
 
-Frame type definitions in HTTP/QUIC often use the QUIC variable-length integer
-encoding.  In particular, Stream IDs use this encoding, which allow for a larger
-range of possible values than the encoding used in HTTP/2.  Some frames in
-HTTP/QUIC use an identifier rather than a Stream ID (e.g. Push IDs in PRIORITY
-frames). Redefinition of the encoding of extension frame types might be
-necessary if the encoding includes a Stream ID.
+Frame type definitions in Zanzibar/BuckBuck/McFate often use the QUIC
+variable-length integer encoding.  In particular, Stream IDs use this encoding,
+which allow for a larger range of possible values than the encoding used in
+HTTP/2.  Some frames in Zanzibar/BuckBuck/McFate use an identifier rather than a
+Stream ID (e.g. Push IDs in PRIORITY frames). Redefinition of the encoding of
+extension frame types might be necessary if the encoding includes a Stream ID.
 
-Because the Flags field is not present in generic HTTP/QUIC frames, those frames
-which depend on the presence of flags need to allocate space for flags as part
-of their frame payload.
+Because the Flags field is not present in generic Zanzibar/BuckBuck/McFate
+frames, those frames which depend on the presence of flags need to allocate
+space for flags as part of their frame payload.
 
 Other than this issue, frame type HTTP/2 extensions are typically portable to
-QUIC simply by replacing Stream 0 in HTTP/2 with a control stream in HTTP/QUIC.
-HTTP/QUIC extensions will not assume ordering, but would not be harmed by
-ordering, and would be portable to HTTP/2 in the same manner.
+QUIC simply by replacing Stream 0 in HTTP/2 with a control stream in
+Zanzibar/BuckBuck/McFate. Zanzibar/BuckBuck/McFate extensions will not assume
+ordering, but would not be harmed by ordering, and would be portable to HTTP/2
+in the same manner.
 
 Below is a listing of how each HTTP/2 frame type is mapped:
 
 DATA (0x0):
-: Padding is not defined in HTTP/QUIC frames.  See {{frame-data}}.
+: Padding is not defined in Zanzibar/BuckBuck/McFate frames.  See
+  {{frame-data}}.
 
 HEADERS (0x1):
 : As described above, the PRIORITY region of HEADERS is not supported. A
-  separate PRIORITY frame MUST be used. Padding is not defined in HTTP/QUIC
-  frames.  See {{frame-headers}}.
+  separate PRIORITY frame MUST be used. Padding is not defined in
+  Zanzibar/BuckBuck/McFate frames.  See {{frame-headers}}.
 
 PRIORITY (0x2):
 : As described above, the PRIORITY frame is sent on the control stream and can
@@ -1719,8 +1733,8 @@ CONTINUATION (0x9):
   frames than HTTP/2 are permitted.
 
 Frame types defined by extensions to HTTP/2 need to be separately registered for
-HTTP/QUIC if still applicable.  The IDs of frames defined in {{!RFC7540}} have
-been reserved for simplicity.  See {{iana-frames}}.
+Zanzibar/BuckBuck/McFate if still applicable.  The IDs of frames defined in
+{{!RFC7540}} have been reserved for simplicity.  See {{iana-frames}}.
 
 ## HTTP/2 SETTINGS Parameters {#h2-settings}
 
@@ -1729,8 +1743,9 @@ beginning of the connection, and thereafter cannot change.  This eliminates
 many corner cases around synchronization of changes.
 
 Some transport-level options that HTTP/2 specifies via the SETTINGS frame are
-superseded by QUIC transport parameters in HTTP/QUIC. The HTTP-level options
-that are retained in HTTP/QUIC have the same value as in HTTP/2.
+superseded by QUIC transport parameters in Zanzibar/BuckBuck/McFate. The
+HTTP-level options that are retained in Zanzibar/BuckBuck/McFate have the same
+value as in HTTP/2.
 
 Below is a listing of how each HTTP/2 SETTINGS parameter is mapped:
 
@@ -1751,21 +1766,22 @@ SETTINGS_INITIAL_WINDOW_SIZE:
   SETTINGS_INITIAL_WINDOW_SIZE in the SETTINGS frame is an error.
 
 SETTINGS_MAX_FRAME_SIZE:
-: This setting has no equivalent in HTTP/QUIC.  Specifying it in the SETTINGS
-  frame is an error.
+: This setting has no equivalent in Zanzibar/BuckBuck/McFate.  Specifying it in
+  the SETTINGS frame is an error.
 
 SETTINGS_MAX_HEADER_LIST_SIZE:
 : See {{settings-parameters}}.
 
-In HTTP/QUIC, setting values are variable-length integers (6, 14, 30, or 62 bits
-long) rather than fixed-length 32-bit fields as in HTTP/2.  This will often
-produce a shorter encoding, but can produce a longer encoding for settings which
-use the full 32-bit space.  Settings ported from HTTP/2 might choose to redefine
-the format of their settings to avoid using the 62-bit encoding.
+In Zanzibar/BuckBuck/McFate, setting values are variable-length integers (6, 14,
+30, or 62 bits long) rather than fixed-length 32-bit fields as in HTTP/2.  This
+will often produce a shorter encoding, but can produce a longer encoding for
+settings which use the full 32-bit space.  Settings ported from HTTP/2 might
+choose to redefine the format of their settings to avoid using the 62-bit
+encoding.
 
-Settings need to be defined separately for HTTP/2 and HTTP/QUIC.  The IDs of
-settings defined in {{!RFC7540}} have been reserved for simplicity.  See
-{{iana-settings}}.
+Settings need to be defined separately for HTTP/2 and Zanzibar/BuckBuck/McFate.
+The IDs of settings defined in {{!RFC7540}} have been reserved for simplicity.
+See {{iana-settings}}.
 
 
 ## HTTP/2 Error Codes
@@ -1773,18 +1789,18 @@ settings defined in {{!RFC7540}} have been reserved for simplicity.  See
 QUIC has the same concepts of "stream" and "connection" errors that HTTP/2
 provides. However, there is no direct portability of HTTP/2 error codes.
 
-The HTTP/2 error codes defined in Section 7 of {{!RFC7540}} map to the HTTP/QUIC
-error codes as follows:
+The HTTP/2 error codes defined in Section 7 of {{!RFC7540}} map to the
+Zanzibar/BuckBuck/McFate error codes as follows:
 
 NO_ERROR (0x0):
-: HTTP_NO_ERROR in {{http-error-codes}}.
+: ZBBMF_NO_ERROR in {{http-error-codes}}.
 
 PROTOCOL_ERROR (0x1):
-: No single mapping.  See new HTTP_MALFORMED_FRAME error codes defined in
+: No single mapping.  See new ZBBMF_MALFORMED_FRAME error codes defined in
   {{http-error-codes}}.
 
 INTERNAL_ERROR (0x2):
-: HTTP_INTERNAL_ERROR in {{http-error-codes}}.
+: ZBBMF_INTERNAL_ERROR in {{http-error-codes}}.
 
 FLOW_CONTROL_ERROR (0x3):
 : Not applicable, since QUIC handles flow control.  Would provoke a
@@ -1798,33 +1814,33 @@ STREAM_CLOSED (0x5):
   QUIC_STREAM_DATA_AFTER_TERMINATION from the QUIC layer.
 
 FRAME_SIZE_ERROR (0x6):
-: HTTP_MALFORMED_FRAME error codes defined in {{http-error-codes}}.
+: ZBBMF_MALFORMED_FRAME error codes defined in {{http-error-codes}}.
 
 REFUSED_STREAM (0x7):
 : Not applicable, since QUIC handles stream management.  Would provoke a
   STREAM_ID_ERROR from the QUIC layer.
 
 CANCEL (0x8):
-: HTTP_REQUEST_CANCELLED in {{http-error-codes}}.
+: ZBBMF_REQUEST_CANCELLED in {{http-error-codes}}.
 
 COMPRESSION_ERROR (0x9):
 : Multiple error codes are defined in [QPACK].
 
 CONNECT_ERROR (0xa):
-: HTTP_CONNECT_ERROR in {{http-error-codes}}.
+: ZBBMF_CONNECT_ERROR in {{http-error-codes}}.
 
 ENHANCE_YOUR_CALM (0xb):
-: HTTP_EXCESSIVE_LOAD in {{http-error-codes}}.
+: ZBBMF_EXCESSIVE_LOAD in {{http-error-codes}}.
 
 INADEQUATE_SECURITY (0xc):
 : Not applicable, since QUIC is assumed to provide sufficient security on all
   connections.
 
-HTTP_1_1_REQUIRED (0xd):
-: HTTP_VERSION_FALLBACK in {{http-error-codes}}.
+ZBBMF_1_1_REQUIRED (0xd):
+: ZBBMF_VERSION_FALLBACK in {{http-error-codes}}.
 
-Error codes need to be defined for HTTP/2 and HTTP/QUIC separately.  See
-{{iana-error-codes}}.
+Error codes need to be defined for HTTP/2 and Zanzibar/BuckBuck/McFate
+separately.  See {{iana-error-codes}}.
 
 # Change Log
 
@@ -1842,7 +1858,7 @@ Substantial editorial reorganization; no technical changes.
 - Setting values are variable-length integers (#1556,#1807) and do not have
   separate maximum values (#1820)
 - Expanded discussion of connection closure (#1599,#1717,#1712)
-- HTTP_VERSION_FALLBACK falls back to HTTP/1.1 (#1677,#1685)
+- ZBBMF_VERSION_FALLBACK falls back to HTTP/1.1 (#1677,#1685)
 
 ## Since draft-ietf-quic-http-13
 
@@ -1857,7 +1873,7 @@ Substantial editorial reorganization; no technical changes.
 
 - TLS SNI extension isn't mandatory if an alternative method is used (#1459,
   #1462, #1466)
-- Removed flags from HTTP/QUIC frames (#1388, #1398)
+- Removed flags from Zanzibar/BuckBuck/McFate frames (#1388, #1398)
 - Reserved frame types and settings for use in preserving extensibility (#1333,
   #1446)
 - Added general error code (#1391, #1397)
@@ -1939,7 +1955,7 @@ None.
 
 ## Since draft-ietf-quic-http-00
 
-- Changed "HTTP/2-over-QUIC" to "HTTP/QUIC" throughout (#11,#29)
+- Changed "HTTP/2-over-QUIC" to "Zanzibar/BuckBuck/McFate" throughout (#11,#29)
 - Changed from using HTTP/2 framing within Stream 3 to new framing format and
   two-stream-per-request model (#71,#72,#73)
 - Adopted SETTINGS format from draft-bishop-httpbis-extended-settings-01
