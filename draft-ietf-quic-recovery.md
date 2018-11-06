@@ -239,20 +239,21 @@ underestimation of min RTT, which in turn prevents underestimating smoothed RTT.
 ## Ack-based Detection
 
 Ack-based loss detection implements the spirit of TCP's Fast Retransmit
-{{?RFC5681}}, Early Retransmit {{?RFC5827}}, FACK, and SACK loss recovery
-{{?RFC6675}}. This section provides an overview of how these algorithms are
-implemented in QUIC.  Though both time-based loss detection and early retransmit
-use a timer, they are part of ack-based detection because they do not use a
-timer to send probes, but rather to declare packets lost.
+{{?RFC5681}}, Early Retransmit {{?RFC5827}}, FACK, SACK loss recovery
+{{?RFC6675}}, and RACK {{draft-ietf-tcpm-rack-04}}. This section provides an
+overview of how these algorithms are implemented in QUIC.  Though both
+time-based loss detection and early retransmit use a timer, they are part
+of ack-based detection because they do not use a timer to send probes,
+but rather to declare packets lost.
 
 ### Fast Retransmit
 
 An unacknowledged packet is marked as lost when an acknowledgment is received
 for a packet that was sent a threshold number of packets (kReorderingThreshold)
-or a threshold amount of time after the unacknowledged packet. Receipt of
-the acknowledgement indicates that a later packet was received, while the
-reordering threshold provides some tolerance for reordering of packets in the
-network.
+or a threshold amount of time (kTimeReorderingFraction) after the
+unacknowledged packet. Receipt of the acknowledgement indicates that a later
+packet was received, while the reordering threshold provides some tolerance
+for reordering of packets in the network.
 
 Spuriously declaring packets lost leads to unnecessary retransmissions and
 may result in degraded performance due to the actions of the congestion
