@@ -285,21 +285,6 @@ acknowledged packet.  Note that in some cases the timer could become longer when
 packets are acknowleged out of order. The RECOMMENDED time threshold, expressed
 as a fraction of the round-trip time (kTimeReorderingFraction), is 1/8.
 
-### Early Retransmit
-
-Unacknowledged packets close to the tail may have fewer than
-kReorderingThreshold retransmittable packets sent after them.  Loss of such
-packets cannot be detected via Packet Threshold Fast Retransmit. To enable
-ack-based loss detection of such packets, receipt of an acknowledgment for
-the last outstanding retransmittable packet triggers the Early Retransmit
-process, as follows.
-
-If there are unacknowledged in-flight packets still pending, they should
-be marked as lost. To compensate for the reduced reordering resilience, the
-sender SHOULD set a timer for a small period of time. If the unacknowledged
-in-flight packets are not acknowledged during this time, then these
-packets MUST be marked as lost.
-
 An endpoint SHOULD set the timer such that a packet is marked as lost no earlier
 than 1.125 * max(SRTT, latest_RTT) since when it was sent.
 
@@ -316,12 +301,6 @@ The 1.125 multiplier increases reordering resilience. Implementers MAY
 experiment with using other multipliers, bearing in mind that a lower multiplier
 reduces reordering resilience and increases spurious retransmissions, and a
 higher multiplier increases loss recovery delay.
-
-This mechanism is based on Early Retransmit for TCP {{?RFC5827}}. However,
-{{?RFC5827}} does not include the timer described above. Early Retransmit is
-prone to spurious retransmissions due to its reduced reordering resilence
-without the timer. This observation led Linux TCP implementers to implement a
-timer for TCP as well, and this document incorporates this advancement.
 
 ## Timeout Loss Detection
 
@@ -597,10 +576,6 @@ kTimeReorderingFraction:
 : Maximum reordering in time space before time based loss detection considers
   a packet lost.  In fraction of an RTT. The RECOMMENDED value is 1/8.
 
-kUsingTimeLossDetection:
-: Whether time based loss detection is in use.  If false, uses FACK style
-  loss detection. The RECOMMENDED value is false.
-
 kMinTLPTimeout:
 : Minimum time in the future a tail loss probe timer may be set for.
   The RECOMMENDED value is 10ms.
@@ -696,12 +671,8 @@ follows:
    crypto_count = 0
    tlp_count = 0
    rto_count = 0
-   if (kUsingTimeLossDetection)
-     reordering_threshold = infinite
-     time_reordering_fraction = kTimeReorderingFraction
-   else:
-     reordering_threshold = kReorderingThreshold
-     time_reordering_fraction = infinite
+   time_reordering_fraction = kTimeReorderingFraction
+   reordering_threshold = kReorderingThreshold
    loss_time = 0
    smoothed_rtt = 0
    rttvar = 0
@@ -840,7 +811,7 @@ Pseudocode for SetLossDetectionTimer follows:
         time_of_last_sent_crypto_packet + timeout)
       return
     if (loss_time != 0):
-      // Early retransmit timer or time loss detection.
+      // Time threshold loss detection.
       timeout = loss_time -
         time_of_last_sent_retransmittable_packet
     else:
@@ -874,7 +845,7 @@ Pseudocode for OnLossDetectionTimeout follows:
        RetransmitUnackedCryptoData()
        crypto_count++
      else if (loss_time != 0):
-       // Early retransmit or Time Loss Detection
+       // Time threshold loss Detection
        DetectLostPackets(largest_acked_packet)
      else if (tlp_count < kMaxTLPs):
        // Tail Loss Probe.
@@ -906,14 +877,8 @@ Pseudocode for DetectLostPackets follows:
 DetectLostPackets(largest_acked):
   loss_time = 0
   lost_packets = {}
-  delay_until_lost = infinite
-  if (kUsingTimeLossDetection):
-    delay_until_lost =
-      (1 + time_reordering_fraction) *
-          max(latest_rtt, smoothed_rtt)
-  else if (largest_acked.packet_number == largest_sent_packet):
-    // Early retransmit timer.
-    delay_until_lost = 9/8 * max(latest_rtt, smoothed_rtt)
+  delay_until_lost = (1 + time_reordering_fraction) *
+      max(latest_rtt, smoothed_rtt)
   foreach (unacked < largest_acked.packet_number):
     time_since_sent = now() - unacked.time_sent
     delta = largest_acked.packet_number - unacked.packet_number
