@@ -921,9 +921,7 @@ Implementations MAY use other congestion control algorithms, and endpoints MAY
 use different algorithms from one another. An example would be the
 experimental BBR Congestion Control Mechanism
 {{?I-D.cardwell-iccrg-bbr-congestion-control}} which minimises induced
-latency along delivery path.
-
-The signals QUIC provides for
+latency along delivery path. The signals QUIC provides for
 congestion control are generic and are designed to support different algorithms.
 
 ## Explicit Congestion Notification {#congestion-ecn}
