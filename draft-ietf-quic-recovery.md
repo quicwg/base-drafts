@@ -269,9 +269,9 @@ degrees of reordering, causing a sender to detect spurious losses.
 Implementers MAY use algorithms developed for TCP, such as
 TCP-NCR {{?RFC4653}}, to improve QUIC's reordering resilience.
 
-#### Time-based
+#### Time Threshold
 
-Time-based loss detection uses a time threshold to determine how much
+Time threshold loss detection uses a time threshold to determine how much
 reordering to tolerate.  In this document, the threshold is expressed as a
 fraction of an RTT, but implemenantations MAY experiment with absolute
 thresholds.  This may be used either as a replacement for a packet reordering
@@ -573,8 +573,9 @@ kReorderingThreshold:
   considers a packet lost. The RECOMMENDED value is 3.
 
 kTimeReorderingFraction:
-: Maximum reordering in time space before time based loss detection considers
-  a packet lost.  In fraction of an RTT. The RECOMMENDED value is 1/8.
+: Maximum reordering in time space before time threshold loss detection
+  considers a packet lost.  In fraction of an RTT. The RECOMMENDED value
+  is 1/8.
 
 kMinTLPTimeout:
 : Minimum time in the future a tail loss probe timer may be set for.
@@ -784,7 +785,7 @@ Pseudocode for OnPacketAcked follows:
 
 ### Setting the Loss Detection Timer
 
-QUIC loss detection uses a single timer for all timer-based loss detection.  The
+QUIC loss detection uses a single timer for all timeout loss detection.  The
 duration of the timer is based on the timer's mode, which is set in the packet
 and timer events further below.  The function SetLossDetectionTimer defined
 below shows how the single timer is set.
