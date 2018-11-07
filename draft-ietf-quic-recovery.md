@@ -279,9 +279,9 @@ threshold fast retransmit. The RECOMMENDED time threshold, expressed
 as a fraction of the round-trip time (kTimeReorderingFraction), is 1/8.
 
 An endpoint SHOULD declare packets lost no earlier than
-1.125 * max(SRTT, latest_RTT) after when they were sent.  If packets sent prior
-to the largest acknowledged packet cannot yet be declared lost, then a timer
-SHOULD be set for the remainint time.
+(1 + kTimeReorderingFraction) * max(SRTT, latest_RTT) after when they were
+sent.  If packets sent prior to the largest acknowledged packet cannot yet
+be declared lost, then a timer SHOULD be set for the remainint time.
 
 Using max(SRTT, latest_RTT) protects from the two following cases:
 
@@ -292,10 +292,10 @@ Using max(SRTT, latest_RTT) protects from the two following cases:
 * the latest RTT sample is higher than the SRTT, perhaps due to a sustained
   increase in the actual RTT, but the smoothed SRTT has not yet caught up.
 
-The 1.125 multiplier increases reordering resilience. Implementers MAY
-experiment with using other multipliers, bearing in mind that a lower multiplier
-reduces reordering resilience and increases spurious retransmissions, and a
-higher multiplier increases loss recovery delay.
+Implementers MAY experiment with using other reordering fractoins, bearing
+in mind that a lower multiplier reduces reordering resilience and increases
+spurious retransmissions, and a higher multiplier increases loss recovery
+delay.
 
 ## Timeout Loss Detection
 
