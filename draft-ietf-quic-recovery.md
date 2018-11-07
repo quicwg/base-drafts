@@ -274,19 +274,14 @@ TCP-NCR {{?RFC4653}}, to improve QUIC's reordering resilience.
 Time threshold loss detection uses a time threshold to determine how much
 reordering to tolerate.  In this document, the threshold is expressed as a
 fraction of an RTT, but implemenantations MAY experiment with absolute
-thresholds.  This may be used either as a replacement for a packet reordering
-threshold or in addition to it.
-
-When a larger packet is acknowledged, if it was sent more than the threshold
-after any in flight packets, those packets are immediately declared lost.
-Otherwise, a timer is set for the the reordering threshold minus the time
-difference between the earliest in flight packet and the largest newly
-acknowledged packet.  Note that in some cases the timer could become longer when
-packets are acknowleged out of order. The RECOMMENDED time threshold, expressed
+thresholds.  It is recommended this is is used in conjunction with packet
+threshold fast retransmit. The RECOMMENDED time threshold, expressed
 as a fraction of the round-trip time (kTimeReorderingFraction), is 1/8.
 
-An endpoint SHOULD set the timer such that a packet is marked as lost no earlier
-than 1.125 * max(SRTT, latest_RTT) since when it was sent.
+An endpoint SHOULD declare packets lost no earlier than
+1.125 * max(SRTT, latest_RTT) after when they were sent.  If packets sent prior
+to the largest acknowledged packet cannot yet be declared lost, then a timer
+SHOULD be set for the remainint time.
 
 Using max(SRTT, latest_RTT) protects from the two following cases:
 
