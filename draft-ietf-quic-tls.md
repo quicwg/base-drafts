@@ -710,16 +710,14 @@ based on the client's initial Destination Connection ID, as described in
 {{initial-secrets}}.
 
 The keys used for packet protection are computed from the TLS secrets using the
-method described in Section 7.3 of {{!TLS13}}), except that the label for
-HKDF-Expand-Label uses the prefix "quic " rather than "tls13 ". A different
-label provides key separation between TLS and QUIC.
+method described in Section 7.3 of {{!TLS13}}).
 
 For example, where TLS might use a label of 0x002009746c733133206b657900 to
 derive a key, QUIC uses 0x00200871756963206b657900.
 
-The HKDF-Expand-Label function with a "quic " label is also used to derive the
-initial secrets (see {{initial-secrets}}) and to derive a packet number
-protection key (the "pn" label, see {{pn-encrypt}}).
+The HKDF-Expand-Label function is also used to derive the initial secrets (see
+{{initial-secrets}}) and to derive a packet number protection key (the "pn"
+label, see {{pn-encrypt}}).
 
 
 ## Initial Secrets {#initial-secrets}
@@ -989,9 +987,8 @@ packet with a matching KEY_PHASE.
 
 A receiving endpoint detects an update when the KEY_PHASE bit does not match
 what it is expecting.  It creates a new secret (see Section 7.2 of {{!TLS13}})
-and the corresponding read key and IV using the same variation on HKDF as
-defined in {{protection-keys}}; that is, the prefix "quic " is used in place of
-"tls13 ".
+and the corresponding read key and IV using the same HKDF-Expand-Label function
+used in TLS.
 
 If the packet can be decrypted and authenticated using the updated key and IV,
 then the keys the endpoint uses for packet protection are also updated.  The
