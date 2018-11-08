@@ -235,10 +235,16 @@ Implementations SHOULD allow administrators of clients and servers to disable
 the spin bit either globally or on a per-connection basis.
 Even when the spin bit is not disabled by the administrator implementations
 SHOULD disable the spin bit on a randomly chosen
-fraction of connections.  The selection process should be designed such that
-on average the spin bit is disabled for at least 1/8th of the connections.
+fraction of connections.  
 
-When the spin bit is disabled, endpoints SHOULD set the spin bit value to zero,
+The selection process SHOULD be designed such that
+on average the spin bit is disabled for at least 1/8th of the connections, or
+1/8th of the paths when doing migrations. The random choice SHOULD be dependent
+on the address of the peer, so that the spin bit is consistently enables or
+disabled for repeated connections to the same address.
+
+When the spin bit is disabled, endpoints SHOULD set the spin bit value to
+a constant value randomly chosen to be 0 or 1,
 regardless of the values received from their peer. Addendums or revisions to
 this document MAY define alternative behaviors in the future.
 
