@@ -128,7 +128,7 @@ measure handshake RTT without a spin bit, it is sufficient to include the spin
 bit in the short packet header. The spin bit therefore appears only after
 version negotiation and connection establishment are completed.
 
-## Proposed Short Header Format Including Spin Bit
+## Proposed Short Header Format Including Spin Bit {#header}
 
 As of the current editor's version of {{QUIC-TRANSPORT}}, this proposal
 specifies using the sixth most significant bit (0x04) of the first byte in
@@ -184,7 +184,7 @@ observing these changes in the latency spin bit, as described in {{usage}}.
 See {{?QUIC-SPIN=I-D.trammell-quic-spin}} for further illustration of this
 mechanism in action.
 
-## Resetting Spin Value State
+## Resetting Spin Value State {#state-reset}
 
 Each client and server resets it spin value to zero when sending the first
 packet of a given connection with a new connection ID. This reduces the risk
@@ -198,16 +198,6 @@ direction changes value once per round-trip time (RTT). An on-path observer
 can observe the time difference between edges (changes from 1 to 0 or 0 to 1)
 in the spin bit signal in a single direction to measure one sample of
 end-to-end RTT.
-
-An observer can store the largest observed packet number per flow, and reject
-edges that do not have a monotonically increasing packet number (greater than
-the largest observed packet number).  This will avoid detecting spurious edges
-caused by reordering events that include an edge, which would lead to very low
-RTT estimates if not ignored.
-
-If the spin bit edge occurs after a long packet number gap, it should be
-ignored: this filters out high RTT estimates due to loss of an actual edge in
-a burst of lost packets.
 
 Note that this measurement, as with passive RTT measurement for TCP, includes
 any transport protocol delay (e.g., delayed sending of acknowledgements)
@@ -224,11 +214,12 @@ small amount of periodic application traffic, where that period is longer than
 the RTT, measuring the spin bit provides information about the application
 period, not the network RTT.
 
-Simple heuristics based on the observed data rate per flow or changes in the
-RTT series can be used to reject bad RTT samples due to application or flow
-control limitation; for example, QoF {{TMA-QOF}} rejects component RTTs
-significantly higher than RTTs over the history of the flow. These heuristics
-may use the handshake RTT as an initial RTT estimate for a given flow.
+Simple heuristics based on the observed data rate per flow or changes in the RTT
+series can be used to reject bad RTT samples due to lost or reordered edges in
+the spin signal, as well as application or flow control limitation; for example,
+QoF {{TMA-QOF}} rejects component RTTs significantly higher than RTTs over the
+history of the flow. These heuristics may use the handshake RTT as an initial
+RTT estimate for a given flow.
 
 An on-path observer that can see traffic in both directions (from client to
 server and from server to client) can also use the spin bit to measure
@@ -238,6 +229,18 @@ and the observer and the client, respectively. It does this by measuring the
 delay between a spin edge observed in the upstream direction and that observed
 in the downstream direction, and vice versa.
 
+# Disabling the Spin Bit
+
+Implementations SHOULD allow administrators of clients and servers to disable
+the spin bit either globally or on a per-connection basis.
+Even when the spin bit is not disabled by the administrator implementations
+SHOULD disable the spin bit on a randomly chosen
+fraction of connections.  The selection process should be designed such that
+on average the spin bit is disabled for at least 1/8th of the connections.
+
+When the spin bit is disabled, endpoints SHOULD set the spin bit value to zero,
+regardless of the values received from their peer. Addendums or revisions to
+this document MAY define alternative behaviors in the future.
 
 # IANA Considerations
 
@@ -251,7 +254,22 @@ same as those for passive RTT measurement in general. It has been shown
 {{PAM-RTT}} that RTT measurements do not provide more information for
 geolocation than is available in the most basic, freely-available IP address
 based location databases. The risk of exposure of per-flow network RTT to
-on-path devices is therefore negligible.
+on-path devices is in most cases negligible.
+
+There is however an exception, when parts of the path from client to server
+are hidden from observers. An example would be a server accessed through a
+proxy. The spin bit allows for measurement of the end-to-end
+RTT, and will thus enable adversaries near the endpoint to discover that
+the connection does not terminate at the visible destination address.
+
+Endpoints that want to hide their use of a proxy or a relay will want to
+disable the spin bit. However, if only privacy-sensitive clients or servers ever
+disabled the spin bit, they would stick out. The probabilistic disabling
+behavior explained in {{disabling-the-spin-bit}} ensures that other endpoints
+will also disable the spin bit some of the time, thus hiding the
+privacy sensitive endpoints in a large anonymity set. It also provides
+for a minimal greasing of the spin bit, in order to mitigate risks of
+ossification.
 
 
 # Change Log
@@ -261,7 +279,7 @@ on-path devices is therefore negligible.
 
 ## Since draft-ietf-spin-exp-00
 
-Nothing yet.
+Adding section on disabling the spin bit and privacy considerations.
 
 # Acknowledgments
 {:numbered="false"}
@@ -285,3 +303,59 @@ grant agreement no. 688421 Measurement and Architecture for a Middleboxed
 Internet (MAMI), and by the Swiss State Secretariat for Education, Research,
 and Innovation under contract no. 15.0268. This support does not imply
 endorsement.
+
+--- back
+
+# Negotiating Spin Bit Usage
+
+This document describes the spin bit as a standard feature of the QUIC protocol.
+Alternately, the use or non-use of the spin bit could be negotiated using QUIC's
+version negotiation system. This section describes one method by which a version
+negotiated spin bit could work.
+
+We begin by assigning two version numbers to a given version of QUIC, which we
+will call version Vs and version Vt. Both headers use the same definition for
+the short header, as in {{header}}. Version Vs enables the spin bit, and version
+Vt disables it. For example, keeping with the version numbering scheme in
+Section 15 of {{QUIC-TRANSPORT}}, Vs could be 0x00000001, and Vt 0x00008001.
+
+A client proposing to use the spin bit for a connection sets version Vs in its
+Initial packet. If the server wants to support the spin bit for the connection,
+the handshake continues; otherwise, it sends a Version Negotiation packet
+proposing version Vt, and the Client restarts the handshake using version Vt,
+per Section 6 of {{QUIC-TRANSPORT}}.
+
+A client not wishing to use the spin bit sets version Vt in its Initial packet.
+To maintain the client's ability to choose whether to use the spin bit or not,
+the server MUST NOT reject an attempt to use version Vt with a proposal to use
+version Vs.
+
+Once version Vs is negotiated, client and server MUST enable the spin bit for
+the duration of the connectioon, by setting bit 0x04 in the first octet of each
+packet carrying a short header according to {{spinbit}}.
+
+Once version Vt is negotiated, client and server MUST disable the spin bit for
+the duration of the connection, by setting bit 0x04 in the first octet of each
+packet carrying a short header according to {{nospin}}.
+
+Negotiating the spin bit has a few properties that differ from the discretionary
+usage of the spin bit described in the main body of this document:
+
+- It provides a method to exercise version negotiation beyond the version
+  greasing mechanism described in section 15 of {{QUIC-TRANSPORT}}. This
+  additional exercise has the benefit of actually changing the protocol's
+  behavior in a way each endpoint can detect based on the negotiation of the
+  version, and may defend against ossification of the version negotiation
+  mechanism caused both by on-path interference as well as lazy implementations
+  better than greasing alone.
+
+- It provides a method by which on-path devices that observe the handshake can
+  explicitly classify a connection as spinning or not.
+
+## The Spin Bit in Spinless QUIC {#nospin}
+
+When version Vt is negotiated, both client and server randomly select a "pin
+value", 0 or 1, for each connection ID they will send packets with, and send
+this value as bit 0x04 in the first octet of each packet with a short header
+carrying the corresponding connection ID. This causes the spin bit to converge
+to a static state per connection ID.

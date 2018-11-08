@@ -124,7 +124,7 @@ This document uses the variable-length integer encoding from
 
 Protocol elements called "frames" exist in both this document and
 {{QUIC-TRANSPORT}}. Where frames from {{QUIC-TRANSPORT}} are referenced, the
-frame name will be prefaced with "QUIC."  For example, "QUIC APPLICATION_CLOSE
+frame name will be prefaced with "QUIC."  For example, "QUIC CONNECTION_CLOSE
 frames."  References without this preface refer to frames defined in {{frames}}.
 
 
@@ -564,13 +564,13 @@ When a server receives this frame, it aborts sending the response for the
 identified server push.  If the server has not yet started to send the server
 push, it can use the receipt of a CANCEL_PUSH frame to avoid opening a push
 stream.  If the push stream has been opened by the server, the server SHOULD
-send a QUIC RST_STREAM frame on that stream and cease transmission of the
+send a QUIC RESET_STREAM frame on that stream and cease transmission of the
 response.
 
 A server can send this frame to indicate that it will not be fulfilling a
 promise prior to creation of a push stream.  Once the push stream has been
 created, sending CANCEL_PUSH has no effect on the state of the push stream.  A
-QUIC RST_STREAM frame SHOULD be used instead to abort transmission of the
+QUIC RESET_STREAM frame SHOULD be used instead to abort transmission of the
 server push response.
 
 A CANCEL_PUSH frame is sent on the control stream.  Sending a CANCEL_PUSH frame
@@ -885,12 +885,12 @@ response, and cleanly closing its stream. Clients MUST NOT discard complete
 responses as a result of having their request terminated abruptly, though
 clients can always discard responses at their discretion for other reasons.
 
-Changes to the state of a request stream, including receiving a RST_STREAM with
-any error code, do not affect the state of the server's response. Servers do not
-abort a response in progress solely due to a state change on the request stream.
-However, if the request stream terminates without containing a usable HTTP
-request, the server SHOULD abort its response with the error code
-HTTP_INCOMPLETE_REQUEST.
+Changes to the state of a request stream, including receiving a QUIC
+RESET_STREAM with any error code, do not affect the state of the server's
+response. Servers do not abort a response in progress solely due to a state
+change on the request stream.  However, if the request stream terminates without
+containing a usable HTTP request, the server SHOULD abort its response with the
+error code HTTP_INCOMPLETE_REQUEST.
 
 
 ### Header Formatting and Compression
@@ -931,7 +931,7 @@ SHOULD be treated as a stream error of type `HTTP_EXCESSIVE_LOAD`.
 ### Request Cancellation
 
 Either client or server can cancel requests by aborting the stream (QUIC
-RST_STREAM and/or STOP_SENDING frames, as appropriate) with an error code of
+RESET_STREAM and/or STOP_SENDING frames, as appropriate) with an error code of
 HTTP_REQUEST_CANCELLED ({{http-error-codes}}).  When the client cancels a
 response, it indicates that this response is no longer of interest.
 Implementations SHOULD cancel requests by aborting both directions of a stream.
@@ -989,11 +989,11 @@ a single direction are not invalid, but are often handled poorly by servers, so
 clients SHOULD NOT close a stream for sending while they still expect to receive
 data from the target of the CONNECT.
 
-A TCP connection error is signaled with RST_STREAM. A proxy treats any error in
-the TCP connection, which includes receiving a TCP segment with the RST bit set,
-as a stream error of type HTTP_CONNECT_ERROR ({{http-error-codes}}).
-Correspondingly, a proxy MUST send a TCP segment with the RST bit set if it
-detects an error with the stream or the QUIC connection.
+A TCP connection error is signaled with QUIC RESET_STREAM frame. A proxy treats
+any error in the TCP connection, which includes receiving a TCP segment with the
+RST bit set, as a stream error of type HTTP_CONNECT_ERROR
+({{http-error-codes}}).  Correspondingly, a proxy MUST send a TCP segment with
+the RST bit set if it detects an error with the stream or the QUIC connection.
 
 ## Request Prioritization {#priority}
 
@@ -1198,14 +1198,14 @@ HTTP_NO_ERROR code when closing the connection.
 ## Immediate Application Closure
 
 An HTTP/QUIC implementation can immediately close the QUIC connection at any
-time. This results in sending a QUIC APPLICATION_CLOSE frame to the peer; the
+time. This results in sending a QUIC CONNECTION_CLOSE frame to the peer; the
 error code in this frame indicates to the peer why the connection is being
 closed.  See {{errors}} for error codes which can be used when closing a
 connection.
 
 Before closing the connection, a GOAWAY MAY be sent to allow the client to retry
 some requests.  Including the GOAWAY frame in the same packet as the QUIC
-APPLICATION_CLOSE frame improves the chances of the frame being received by
+CONNECTION_CLOSE frame improves the chances of the frame being received by
 clients.
 
 ## Transport Closure
@@ -1269,14 +1269,10 @@ express the cause of a connection or stream error.
 
 ## HTTP/QUIC Error Codes {#http-error-codes}
 
-The following error codes are defined for use in QUIC RST_STREAM, STOP_SENDING,
-and APPLICATION_CLOSE frames when using HTTP/QUIC.
+The following error codes are defined for use in QUIC RESET_STREAM frames,
+STOP_SENDING frames, and CONNECTION_CLOSE frames when using HTTP/QUIC.
 
-STOPPING (0x00):
-: This value is reserved by the transport to be used in response to QUIC
-  STOP_SENDING frames.
-
-HTTP_NO_ERROR (0x01):
+HTTP_NO_ERROR (0x00):
 : No error.  This is used when the connection or stream needs to be closed, but
   there is no error to signal.
 
@@ -1531,8 +1527,7 @@ The entries in the following table are registered by this document.
 | ----------------------------------- | ---------- | ---------------------------------------- | ---------------------- |
 | Name                                | Code       | Description                              | Specification          |
 | ----------------------------------- | ---------- | ---------------------------------------- | ---------------------- |
-| STOPPING                            | 0x0000     | Reserved by QUIC                         | {{QUIC-TRANSPORT}}     |
-| HTTP_NO_ERROR                       | 0x0001     | No error                                 | {{http-error-codes}}   |
+| HTTP_NO_ERROR                       | 0x0000     | No error                                 | {{http-error-codes}}   |
 | HTTP_PUSH_REFUSED                   | 0x0002     | Client refused pushed content            | {{http-error-codes}}   |
 | HTTP_INTERNAL_ERROR                 | 0x0003     | Internal error                           | {{http-error-codes}}   |
 | HTTP_PUSH_ALREADY_IN_CACHE          | 0x0004     | Pushed content already cached            | {{http-error-codes}}   |
