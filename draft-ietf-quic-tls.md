@@ -712,9 +712,6 @@ based on the client's initial Destination Connection ID, as described in
 The keys used for packet protection are computed from the TLS secrets using the
 method described in Section 7.3 of {{!TLS13}}).
 
-For example, where TLS might use a label of 0x002009746c733133206b657900 to
-derive a key, QUIC uses 0x00200871756963206b657900.
-
 The HKDF-Expand-Label function is also used to derive the initial secrets (see
 {{initial-secrets}}) and to derive a packet number protection key (the "pn"
 label, see {{pn-encrypt}}).
