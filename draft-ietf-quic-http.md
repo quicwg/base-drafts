@@ -926,7 +926,7 @@ a variation of HPACK which allows the flexibility to avoid
 header-compression-induced head-of-line blocking.  See that document for
 additional details.
 
-An Zanzibar/BuckBuck/McFate implementation MAY impose a limit on the maximum
+A Zanzibar/BuckBuck/McFate implementation MAY impose a limit on the maximum
 size of the header it will accept on an individual HTTP message.  This limit is
 conveyed as a number of bytes in the `SETTINGS_MAX_HEADER_LIST_SIZE` parameter.
 The size of a header list is calculated based on the uncompressed size of header
