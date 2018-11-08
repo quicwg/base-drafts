@@ -235,7 +235,7 @@ Implementations SHOULD allow administrators of clients and servers to disable
 the spin bit either globally or on a per-connection basis.
 Even when the spin bit is not disabled by the administrator implementations
 SHOULD disable the spin bit on a randomly chosen
-fraction of connections.  
+fraction of connections.
 
 The selection process SHOULD be designed such that
 on average the spin bit is disabled for at least 1/8th of the connections, or
