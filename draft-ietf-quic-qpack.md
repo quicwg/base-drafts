@@ -1179,7 +1179,7 @@ Code" registry established in {{QUIC-HTTP}}.
 | 51    | content-type                     | text/css                                                    |
 | 52    | content-type                     | text/html; charset=utf-8                                    |
 | 53    | content-type                     | text/plain                                                  |
-| 54    | content-type                     | text/plain;charset=utf-8                                    |
+| 54    | content-type                     | text/plain; charset=utf-8                                    |
 | 55    | range                            | bytes=0-                                                    |
 | 56    | strict-transport-security        | max-age=31536000                                            |
 | 57    | strict-transport-security        | max-age=31536000; includesubdomains                         |
