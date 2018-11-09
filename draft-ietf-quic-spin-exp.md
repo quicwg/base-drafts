@@ -240,8 +240,9 @@ fraction of connections.
 The selection process SHOULD be designed such that
 on average the spin bit is disabled for at least 1/8th of the connections, or
 1/8th of the paths when doing migrations. The random choice SHOULD be dependent
-on the address of the peer, so that the spin bit is consistently enables or
-disabled for repeated connections to the same address.
+on the source and destination addresses of the connection,
+so that the spin bit is consistently enabled or
+disabled for repeated connections between the same addresses.
 
 When the spin bit is disabled, endpoints SHOULD set the spin bit value to
 a constant value randomly chosen to be 0 or 1,
