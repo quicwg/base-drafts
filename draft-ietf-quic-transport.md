@@ -3411,7 +3411,7 @@ Google QUIC Demultiplexing Bit:
 Spin Bit:
 
 : The sixth bit (0x4) of byte 0 is the Latency Spin Bit, set as described in
-{{!SPIN:I-D.ietf-quic-spin-exp}}.
+{{!SPIN=I-D.ietf-quic-spin-exp}}.
 
 Reserved:
 
