@@ -925,17 +925,22 @@ handshake.  The sequence number of the initial connection ID is 0.  If the
 preferred_address transport parameter is sent, the sequence number of the
 supplied connection ID is 1.
 
-Additional connection IDs are communicated to the
-peer using NEW_CONNECTION_ID frames ({{frame-new-connection-id}}).  The
-sequence number on each newly-issued connection ID MUST increase by 1. The
-connection ID randomly selected by the client in the Initial packet and any
-connection ID provided by a Reset packet are not assigned sequence numbers
-unless a server opts to retain them as its initial connection ID.
+Additional connection IDs are communicated to the peer using NEW_CONNECTION_ID
+frames ({{frame-new-connection-id}}).  The sequence number on each newly-issued
+connection ID MUST increase by 1. The connection ID randomly selected by the
+client in the Initial packet and any connection ID provided by a Reset packet
+are not assigned sequence numbers unless a server opts to retain them as its
+initial connection ID.
 
 When an endpoint issues a connection ID, it MUST accept packets that carry this
 connection ID for the duration of the connection or until its peer invalidates
 the connection ID via a RETIRE_CONNECTION_ID frame
 ({{frame-retire-connection-id}}).
+
+Endpoints store received connection IDs for future use.  An endpoint that
+receives excessive connection IDs MAY discard those it cannot store.  An
+endpoint that issues connection IDs cannot expect its peer to store and use all
+issued connection IDs.
 
 An endpoint SHOULD ensure that its peer has a sufficient number of available and
 unused connection IDs.  While each endpoint independently chooses how many
