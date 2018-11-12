@@ -919,8 +919,10 @@ QPACK which prevent the stream or connection from continuing:
 HTTP_QPACK_DECOMPRESSION_FAILED (TBD):
 : The decoder failed to interpret an instruction on a request or push stream and
   is not able to continue decoding that header block.
+
 HTTP_QPACK_ENCODER_STREAM_ERROR (TBD):
 : The decoder failed to interpret an instruction on the encoder stream.
+
 HTTP_QPACK_DECODER_STREAM_ERROR (TBD):
 : The encoder failed to interpret an instruction on the decoder stream.
 
