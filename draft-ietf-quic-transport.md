@@ -871,7 +871,7 @@ endpoint, as described in {{termination}}.
 ## Connection ID {#connection-id}
 
 Each connection possesses a set of connection identifiers, or connection IDs,
-each of which can be identify the connection.  Connection IDs are independently
+each of which can identify the connection.  Connection IDs are independently
 selected by endpoints; each endpoint selects the connection IDs that its peer
 uses.
 
