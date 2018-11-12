@@ -3,7 +3,7 @@ title: The QUIC Latency Spin Bit
 abbrev: QUIC Spin Bit
 docname: draft-ietf-quic-spin-exp-latest
 date: {DATE}
-category: exp
+category: std
 
 ipr: trust200902
 workgroup: QUIC

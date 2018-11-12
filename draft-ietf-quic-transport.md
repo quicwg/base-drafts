@@ -3358,7 +3358,7 @@ Length field enables packet coalescing ({{packet-coalesce}}).
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+
-|0|K|1|1|0|R R R|
+|0|K|1|1|0|S|R R|
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                Destination Connection ID (0..144)           ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -3408,9 +3408,14 @@ Google QUIC Demultiplexing Bit:
   specification when Google QUIC has finished transitioning to the new header
   format.
 
+Spin Bit:
+
+: The sixth bit (0x4) of byte 0 is the Latency Spin Bit, set as described in
+{{!SPIN=I-D.ietf-quic-spin-exp}}.
+
 Reserved:
 
-: The sixth, seventh, and eighth bits (0x7) of byte 0 are reserved for
+: The seventh and eighth bits (0x3) of byte 0 are reserved for
   experimentation.  Endpoints MUST ignore these bits on packets they receive
   unless they are participating in an experiment that uses these bits.  An
   endpoint not actively using these bits SHOULD set the value randomly on
