@@ -710,10 +710,12 @@ based on the client's initial Destination Connection ID, as described in
 {{initial-secrets}}.
 
 The keys used for packet protection are computed from the TLS secrets using the
-method described in Section 7.3 of {{!TLS13}}).
+method described in Section 7.3 of {{!TLS13}}), with the labels "quic key" and
+"quic iv" in place of the labels used by TLS (that is, "key" and "iv"
+respectively).
 
 The HKDF-Expand-Label function is also used to derive the initial secrets (see
-{{initial-secrets}}) and to derive a packet number protection key (the "pn"
+{{initial-secrets}}) and to derive a packet number protection key (the "quic pn"
 label, see {{pn-encrypt}}).
 
 
@@ -806,9 +808,9 @@ prior to exceeding any limit set for the AEAD that is in use.
 ## Packet Number Protection {#pn-encrypt}
 
 QUIC packet numbers are protected using a key that is derived from the current
-set of secrets.  The key derived using the "pn" label is used to protect the
-packet number from casual observation.  The packet number protection algorithm
-depends on the negotiated AEAD.
+set of secrets.  The key derived using the "quic pn" label is used to protect
+the packet number from casual observation.  The packet number protection
+algorithm depends on the negotiated AEAD.
 
 Packet number protection is applied after packet protection is applied (see
 {{aead}}).  The ciphertext of the packet is sampled and used as input to an
