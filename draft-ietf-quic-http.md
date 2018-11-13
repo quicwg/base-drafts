@@ -152,7 +152,7 @@ itself as "h3-09-rickroll". Note that any label MUST conform to the "token"
 syntax defined in Section 3.2.6 of [RFC7230]. Experimenters are encouraged to
 coordinate their experiments on the quic@ietf.org mailing list.
 
-## Discovering a HTTP/3 Endpoint
+## Discovering an HTTP/3 Endpoint
 
 An HTTP origin advertises the availability of an equivalent HTTP/3 endpoint via
 the Alt-Svc HTTP response header field or the HTTP/2 ALTSVC frame
@@ -283,9 +283,9 @@ All client-initiated bidirectional streams are used for HTTP requests and
 responses.  A bidirectional stream ensures that the response can be readily
 correlated with the request. This means that the client's first request occurs
 on QUIC stream 0, with subsequent requests on stream 4, 8, and so on. In order
-to permit these streams to open, a HTTP/3 client SHOULD send non-zero values for
-the QUIC transport parameters `initial_max_stream_data_bidi_local`. A HTTP/3
-server SHOULD send non-zero values for the QUIC transport parameters
+to permit these streams to open, an HTTP/3 client SHOULD send non-zero values
+for the QUIC transport parameters `initial_max_stream_data_bidi_local`. An
+HTTP/3 server SHOULD send non-zero values for the QUIC transport parameters
 `initial_max_stream_data_bidi_remote` and `initial_max_bidi_streams`. It is
 recommended that `initial_max_bidi_streams` be no smaller than 100, so as to not
 unnecessarily limit parallelism.
@@ -549,7 +549,8 @@ of PRIORITY frame with a Stream ID of any other type as a connection error of
 type HTTP_MALFORMED_FRAME.
 
 A PRIORITY frame that references a non-existent Push ID or a Placeholder ID
-greater than the server's limit MUST be treated as a HTTP_MALFORMED_FRAME error.
+greater than the server's limit MUST be treated as an HTTP_MALFORMED_FRAME
+error.
 
 
 ### CANCEL_PUSH {#frame-cancel-push}
@@ -918,7 +919,7 @@ HTTP/3 uses QPACK header compression as described in [QPACK], a variation of
 HPACK which allows the flexibility to avoid header-compression-induced
 head-of-line blocking.  See that document for additional details.
 
-A HTTP/3 implementation MAY impose a limit on the maximum size of the header it
+An HTTP/3 implementation MAY impose a limit on the maximum size of the header it
 will accept on an individual HTTP message.  This limit is conveyed as a number
 of bytes in the `SETTINGS_MAX_HEADER_LIST_SIZE` parameter. The size of a header
 list is calculated based on the uncompressed size of header fields, including
@@ -1194,7 +1195,7 @@ HTTP_NO_ERROR code when closing the connection.
 
 ## Immediate Application Closure
 
-A HTTP/3 implementation can immediately close the QUIC connection at any time.
+An HTTP/3 implementation can immediately close the QUIC connection at any time.
 This results in sending a QUIC CONNECTION_CLOSE frame to the peer; the error
 code in this frame indicates to the peer why the connection is being closed.
 See {{errors}} for error codes which can be used when closing a connection.
