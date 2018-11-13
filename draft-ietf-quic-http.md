@@ -648,7 +648,7 @@ frame MUST be sent as the first frame of each control stream (see
 other stream. If an endpoint receives a SETTINGS frame on a different stream,
 the endpoint MUST respond with a connection error of type HTTP_WRONG_STREAM. If
 an endpoint receives a second SETTINGS frame, the endpoint MUST respond with a
-connection error of type HTTP_MALFORMED_FRAME.
+connection error of type HTTP_UNEXPECTED_FRAME.
 
 The SETTINGS frame affects connection state. A badly formed or incomplete
 SETTINGS frame MUST be treated as a connection error ({{errors}}) of type
@@ -774,12 +774,12 @@ GOAWAY frame containing a Stream ID of any other type as a connection error of
 type HTTP_MALFORMED_FRAME.
 
 Clients do not need to send GOAWAY to initiate a graceful shutdown; they simply
-stop making new requests.  A server MUST treat receipt of a GOAWAY frame as a
-connection error ({{errors}}) of type HTTP_UNEXPECTED_GOAWAY.
+stop making new requests.  A server MUST treat receipt of a GOAWAY frame on any
+stream as a connection error ({{errors}}) of type HTTP_UNEXPECTED_FRAME.
 
-The GOAWAY frame applies to the connection, not a specific stream.  An endpoint
+The GOAWAY frame applies to the connection, not a specific stream.  A client
 MUST treat a GOAWAY frame on a stream other than the control stream as a
-connection error ({{errors}}) of type HTTP_WRONG_STREAM.
+connection error ({{errors}}) of type HTTP_UNEXPECTED_FRAME.
 
 See {{connection-shutdown}} for more information on the use of the GOAWAY frame.
 
@@ -1331,8 +1331,8 @@ HTTP_EARLY_RESPONSE (0x0011):
 HTTP_MISSING_SETTINGS (0x0012):
 : No SETTINGS frame was received at the beginning of the control stream.
 
-HTTP_UNEXPECTED_GOAWAY (0x0013):
-: A GOAWAY frame was received from the client.
+HTTP_UNEXPECTED_FRAME (0x0013):
+: A frame was received which was not permitted in the current state.
 
 HTTP_GENERAL_PROTOCOL_ERROR (0x00FF):
 : Peer violated protocol requirements in a way which doesn't match a more
@@ -1544,8 +1544,8 @@ The entries in the following table are registered by this document.
 | HTTP_WRONG_STREAM_DIRECTION         | 0x0010     | Unidirectional stream in wrong direction | {{http-error-codes}}   |
 | HTTP_EARLY_RESPONSE                 | 0x0011     | Remainder of request not needed          | {{http-error-codes}}   |
 | HTTP_MISSING_SETTINGS               | 0x0012     | No SETTINGS frame received               | {{http-error-codes}}   |
-| HTTP_UNEXPECTED_GOAWAY              | 0x0013     | GOAWAY frame received from client        | {{http-error-codes}}   |
-| HTTP_MALFORMED_FRAME                | 0x01XX     | Error in frame formatting or use         | {{http-error-codes}}   |
+| HTTP_UNEXPECTED_FRAME               | 0x0013     | Frame not permitted in the current state | {{http-error-codes}}   |
+| HTTP_MALFORMED_FRAME                | 0x01XX     | Error in frame formatting                | {{http-error-codes}}   |
 | ----------------------------------- | ---------- | ---------------------------------------- | ---------------------- |
 
 ## Stream Types {#iana-stream-types}
