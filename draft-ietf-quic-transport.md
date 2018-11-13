@@ -941,20 +941,17 @@ connection ID for the duration of the connection or until its peer invalidates
 the connection ID via a RETIRE_CONNECTION_ID frame
 ({{frame-retire-connection-id}}).
 
-Endpoints store received connection IDs for future use.  An endpoint that
-receives excessive connection IDs MAY discard those it cannot store without
-sending a RETIRE_CONNECTION_ID frame.  An endpoint that issues connection IDs
-cannot expect its peer to store and use all issued connection IDs.
-
 An endpoint SHOULD ensure that its peer has a sufficient number of available and
-unused connection IDs.  While each endpoint independently chooses how many
-connection IDs to issue, endpoints SHOULD provide and maintain at least eight
-connection IDs.  The endpoint SHOULD do this by always supplying a new
-connection ID when a connection ID is retired by its peer or when the endpoint
-receives a packet with a previously unused connection ID.  Endpoints that
-initiate migration and require non-zero-length connection IDs SHOULD provide
-their peers with new connection IDs before migration, or risk the peer closing
-the connection.
+unused connection IDs. Endpoints store received connection IDs for future use. 
+They advertise the limit how many unretired connection IDs they are willing to 
+store in the transport parameters. An endpoint MUST NOT provide more connection 
+IDs than this limit. An endpoint MUST treat receipt of more than this number of
+connection IDs as an error of type CONNECTION_ID_LIMIT_ERROR. If an endpoint has
+provided its peer with the maximum number of connection IDs, the earliest time
+it can provide a new connection ID is when the peer retires a connection ID.
+Endpoints that initiate migration and require non-zero-length connection IDs
+SHOULD provide their peers with new connection IDs before migration, or risk the
+peer closing the connection.
 
 
 ### Consuming and Retiring Connection IDs {#retiring-cids}
@@ -3931,6 +3928,7 @@ language from Section 3 of {{!TLS13=RFC8446}}.
       max_ack_delay(11),
       disable_migration(12),
       preferred_address(13),
+      max_connection_ids(14),
       (65535)
    } TransportParameterId;
 
@@ -4105,6 +4103,12 @@ that type start with a flow control limit of 0.
 A client MUST NOT include an original connection ID, a stateless reset token, or
 a preferred address.  A server MUST treat receipt of any of these transport
 parameters as a connection error of type TRANSPORT_PARAMETER_ERROR.
+
+max_connection_ids (0x000e):
+
+: The maximum number of connection IDs that the peer is willing to store.
+  This value includes only connection IDs sent in NEW_CONNECTION_ID frames.
+  If this parameter is absent, a default of 8 is assumed.
 
 
 # Frame Types and Formats {#frame-formats}
@@ -5084,6 +5088,10 @@ INVALID_MIGRATION (0xC):
 : A peer has migrated to a different network when the endpoint had disabled
   migration.
 
+CONNECTION_ID_LIMIT_ERROR (0xd):
+
+: A peer received more connection IDs than its advertised limit.
+
 CRYPTO_ERROR (0x1XX):
 
 : The cryptographic handshake failed.  A range of 256 values is reserved for
@@ -5322,6 +5330,7 @@ The initial contents of this registry are shown in {{iana-tp-table}}.
 | 0x000b | max_ack_delay               | {{transport-parameter-definitions}} |
 | 0x000c | disable_migration           | {{transport-parameter-definitions}} |
 | 0x000d | preferred_address           | {{transport-parameter-definitions}} |
+| 0x000e | max_connection_ids          | {{transport-parameter-definitions}} |
 {: #iana-tp-table title="Initial QUIC Transport Parameters Entries"}
 
 ## QUIC Frame Type Registry {#iana-frames}
@@ -5414,6 +5423,7 @@ from 0xFF00 to 0xFFFF are reserved for Private Use {{!RFC8126}}.
 | 0x9   | VERSION_NEGOTIATION_ERROR | Version negotiation failure   | {{error-codes}} |
 | 0xA   | PROTOCOL_VIOLATION        | Generic protocol violation    | {{error-codes}} |
 | 0xC   | INVALID_MIGRATION         | Violated disabled migration   | {{error-codes}} |
+| 0xD   | CONNECTION_ID_LIMIT_ERROR | Too many connection IDs provided | {{error-codes}} |
 {: #iana-error-table title="Initial QUIC Transport Error Codes Entries"}
 
 
