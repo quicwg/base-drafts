@@ -928,7 +928,7 @@ supplied connection ID is 1.
 Additional connection IDs are communicated to the peer using NEW_CONNECTION_ID
 frames ({{frame-new-connection-id}}).  The sequence number on each newly-issued
 connection ID MUST increase by 1. The connection ID randomly selected by the
-client in the Initial packet and any connection ID provided by a Reset packet
+client in the Initial packet and any connection ID provided by a Retry packet
 are not assigned sequence numbers unless a server opts to retain them as its
 initial connection ID.
 
