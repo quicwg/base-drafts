@@ -712,7 +712,8 @@ based on the client's initial Destination Connection ID, as described in
 The keys used for packet protection are computed from the TLS secrets using the
 method described in Section 7.3 of {{!TLS13}}), with the labels "quic key" and
 "quic iv" in place of the labels used by TLS (that is, "key" and "iv"
-respectively).
+respectively).  Using these labels provides key separation between QUIC and TLS,
+see {{key-diversity}}.
 
 The HKDF-Expand-Label function is also used to derive the initial secrets (see
 {{initial-secrets}}) and to derive a packet number protection key (the "quic pn"
@@ -1226,6 +1227,29 @@ side-channels.
 For the sending of packets, construction and protection of packet payloads and
 packet numbers MUST be free from side-channels that would reveal the packet
 number or its encoded size.
+
+
+## Key Diversity
+
+In using TLS, the central key schedule of TLS is used.  As a result of the TLS
+handshake messages being integrated into the calculation of secrets, the
+inclusion of the QUIC transport parameters extension ensures that handshake and
+1-RTT keys are not the same as those that might be produced by a server running
+TLS over TCP.  However, 0-RTT keys only include the ClientHello message and
+might therefore use the same secrets.  To avoid the possibility of
+cross-protocol key synchronization, additional measures are provided to improve
+key separation.
+
+The QUIC packet protection keys and IVs are derived using a different label than
+the equivalent keys in TLS.
+
+To preserve this separation, a new version of QUIC SHOULD define new labels for
+key derivation for packet protection key and IV, plus the packet number
+protection keys.
+
+The initial secrets also use a key that is specific to the negotiated QUIC
+version.  New QUIC versions SHOULD define a new salt value used in calculating
+initial secrets.
 
 
 # IANA Considerations
