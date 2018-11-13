@@ -938,9 +938,9 @@ the connection ID via a RETIRE_CONNECTION_ID frame
 ({{frame-retire-connection-id}}).
 
 Endpoints store received connection IDs for future use.  An endpoint that
-receives excessive connection IDs MAY discard those it cannot store.  An
-endpoint that issues connection IDs cannot expect its peer to store and use all
-issued connection IDs.
+receives excessive connection IDs MAY discard those it cannot store without
+sending a RETIRE_CONNECTION_ID frame.  An endpoint that issues connection IDs
+cannot expect its peer to store and use all issued connection IDs.
 
 An endpoint SHOULD ensure that its peer has a sufficient number of available and
 unused connection IDs.  While each endpoint independently chooses how many
