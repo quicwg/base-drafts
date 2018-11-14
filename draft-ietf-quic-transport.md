@@ -4108,7 +4108,7 @@ max_connection_ids (0x000e):
 
 : The maximum number of connection IDs that the peer is willing to store.
   This value includes only connection IDs sent in NEW_CONNECTION_ID frames.
-  If this parameter is absent, a default of 8 is assumed.
+  If this parameter is absent, a default of 0 is assumed.
 
 
 # Frame Types and Formats {#frame-formats}
