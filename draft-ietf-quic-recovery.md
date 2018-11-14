@@ -957,9 +957,10 @@ in {{vars-of-interest}}) beyond the available congestion window, unless the
 packet is a probe packet sent after the TLP or RTO timer expires, as described
 in {{tlp}} and {{rto}}.
 
-Implementations MAY use other congestion control algorithms, and endpoints MAY
-use other algorithms, such as Cubic {{?RFC8312}}. The signals QUIC provides for
-congestion control are generic and are designed to support different algorithms.
+Implementations MAY use other congestion control algorithms, such as
+Cubic {{?RFC8312}}, and endpoints MAY use different algorithms from one another.
+The signals QUIC provides for congestion control are generic and are designed
+to support different algorithms.
 
 ## Explicit Congestion Notification {#congestion-ecn}
 
