@@ -3182,24 +3182,11 @@ value of fields.
 
 ## Packet Number Encoding and Decoding {#packet-encoding}
 
-Packet numbers in long and short packet headers are encoded as follows.  The
-number of bits required to represent the packet number is first reduced by
-including only a variable number of the least significant bits of the packet
-number.  One or two of the most significant bits of the first byte are then used
-to represent how many bits of the packet number are provided, as shown in
-{{pn-encodings}}.
+Packet numbers in long and short packet headers are encoded on 1 to 4 octets.
+The number of bits required to represent the packet number reduced by including
+the least significant bits of the packet number.
 
-| First byte pattern | Encoded Length | Bits Present |
-|:-------------------|:---------------|:-------------|
-| 0b0xxxxxxx         | 1 byte         | 7            |
-| 0b10xxxxxx         | 2              | 14           |
-| 0b11xxxxxx         | 4              | 30           |
-{: #pn-encodings title="Packet Number Encodings for Packet Headers"}
-
-Note that these encodings are similar to those in {{integer-encoding}}, but
-use different values.
-
-Finally, the encoded packet number is protected as described in Section 5.3 of
+The encoded packet number is protected as described in Section 5.4 of
 {{QUIC-TLS}}.
 
 The sender MUST use a packet number size able to represent more than twice as
@@ -3210,14 +3197,14 @@ arrives after many higher-numbered packets have been received.  An endpoint
 SHOULD use a large enough packet number encoding to allow the packet number to
 be recovered even if the packet arrives after packets that are sent afterwards.
 
-As a result, the size of the packet number encoding is at least one more than
-the base 2 logarithm of the number of contiguous unacknowledged packet numbers,
-including the new packet.
+As a result, the size of the packet number encoding is at least one bit more
+than the base 2 logarithm of the number of contiguous unacknowledged packet
+numbers, including the new packet.
 
-For example, if an endpoint has received an acknowledgment for packet 0x6afa2f,
-sending a packet with a number of 0x6b2d79 requires a packet number encoding
-with 14 bits or more; whereas the 30-bit packet number encoding is needed to
-send a packet with a number of 0x6bc107.
+For example, if an endpoint has received an acknowledgment for packet 0xabe8bc,
+sending a packet with a number of 0xac5c02 requires a packet number encoding
+with 16 bits or more; whereas the 24-bit packet number encoding is needed to
+send a packet with a number of 0xace8fe.
 
 At a receiver, protection of the packet number is removed prior to recovering
 the full packet number. The full packet number is then reconstructed based on
@@ -3229,8 +3216,8 @@ Once packet number protection is removed, the packet number is decoded by
 finding the packet number value that is closest to the next expected packet.
 The next expected packet is the highest received packet number plus one.  For
 example, if the highest successfully authenticated packet had a packet number of
-0xaa82f30e, then a packet containing a 14-bit value of 0x9b3 will be decoded as
-0xaa8309b3.  Example pseudo-code for packet number decoding can be found in
+0xa82f30ea, then a packet containing a 16-bit value of 0x9b32 will be decoded as
+0xa8309b32.  Example pseudo-code for packet number decoding can be found in
 {{sample-packet-number-decoding}}.
 
 
@@ -3240,7 +3227,7 @@ example, if the highest successfully authenticated packet had a packet number of
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+
-|1|   Type (7)  |
+|1|1|T T|R R|P P|
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                         Version (32)                          |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -3271,15 +3258,37 @@ Header Form:
 : The most significant bit (0x80) of byte 0 (the first byte) is set to 1 for
   long headers.
 
-Long Packet Type:
+Fixed Bit:
 
-: The remaining seven bits of byte 0 contain the packet type.  This field can
-  indicate one of 128 packet types.  The types specified for this version are
-  listed in {{long-packet-types}}.
+: The next bit (0x40) of byte 0 is set to 1.  Packets containing a zero value
+  for this bit are not valid packets in this version.
+
+Long Packet Type (T):
+
+: The next two bits (those with a mask of 0x30) of byte 0 contain a packet type.
+  Packet types are listed in {{long-packet-types}}.
+
+Reserved Bits (R):
+
+: The next two bits (those with a mask of 0x0c) of byte 0 are reserved.  These
+  bits are protected using packet number protection (see Section 5.4 of
+  {{QUIC-TLS}}).  The value included prior to protection MUST be set to 0.  An
+  endpoint MUST treat receipt of a packet that has a non-zero value for these
+  bits after removing protection as a connection error of type
+  PROTOCOL_VIOLATION.
+
+Packet Number Length (P):
+
+: The least significant two bits (those with a mask of 0x03) of byte 0 contain
+  the length of the packet number, encoded as an unsigned, two-bit integer that
+  is one less than the length of the packet number field in bytes.  That is, the
+  length of the packet number field is the value of this field, plus one.  These
+  bits are protected using packet number protection (see Section 5.4 of
+  {{QUIC-TLS}}).
 
 Version:
 
-: The QUIC Version is a 32-bit field that follows the Type.  This field
+: The QUIC Version is a 32-bit field that follows the first octet.  This field
   indicates which version of QUIC is in use and determines how the rest of the
   protocol fields are interpreted.
 
@@ -3316,9 +3325,9 @@ Length:
 
 Packet Number:
 
-: The packet number field is 1, 2, or 4 bytes long. The packet number has
+: The packet number field is 1 to 4 bytes long. The packet number has
   confidentiality protection separate from packet protection, as described in
-  Section 5.3 of {{QUIC-TLS}}. The length of the packet number field is encoded
+  Section 5.4 of {{QUIC-TLS}}. The length of the packet number field is encoded
   in the plaintext packet number. See {{packet-encoding}} for details.
 
 Payload:
@@ -3327,23 +3336,18 @@ Payload:
 
 The following packet types are defined:
 
-<!-- TODO: Fix the description of the long header. We have 3 formats and only 2
-of the 4 types use the generic format we show here. It's a little confusing to
-have such a high amount of variance from what we put forth as the baseline
-format. The same applies when implementing this. -->
-
 | Type | Name                          | Section                     |
-|:-----|:------------------------------|:----------------------------|
-| 0x7F | Initial                       | {{packet-initial}}          |
-| 0x7E | Retry                         | {{packet-retry}}            |
-| 0x7D | Handshake                     | {{packet-handshake}}        |
-| 0x7C | 0-RTT Protected               | {{packet-protected}}        |
+|-----:|:------------------------------|:----------------------------|
+|  0x0 | Initial                       | {{packet-initial}}          |
+|  0x1 | 0-RTT Protected               | {{packet-protected}}        |
+|  0x2 | Handshake                     | {{packet-handshake}}        |
+|  0x3 | Retry                         | {{packet-retry}}            |
 {: #long-packet-types title="Long Header Packet Types"}
 
-The header form, type, connection ID lengths byte, destination and source
-connection IDs, and version fields of a long header packet are
-version-independent. The packet number and values for packet types defined in
-{{long-packet-types}} are version-specific.  See {{QUIC-INVARIANTS}} for details
+The header form bit, connection ID lengths byte, Destination and Source
+Connection ID fields, and Version fields of a long header packet are
+version-independent. The other fields in the first octet, plus the Length and
+Packet Number fields are version-specific.  See {{QUIC-INVARIANTS}} for details
 on how packets from different versions of QUIC are interpreted.
 
 The interpretation of the fields and the payload are specific to a version and
@@ -3363,7 +3367,7 @@ Length field enables packet coalescing ({{packet-coalesce}}).
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+
-|0|K|1|1|0|S|R R|
+|0|1|S|R|R|K|P P|
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                Destination Connection ID (0..144)           ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -3381,51 +3385,40 @@ Header Form:
 
 : The most significant bit (0x80) of byte 0 is set to 0 for the short header.
 
-Key Phase Bit:
+Fixed Bit:
 
-: The second bit (0x40) of byte 0 indicates the key phase, which allows a
+: The next bit (0x40) of byte 0 is set to 1.  Packets containing a zero value
+  for this bit are not valid packets in this version.
+
+Spin Bit (S):
+
+: The sixth bit (0x20) of byte 0 is the Latency Spin Bit, set as described in
+  {{!SPIN=I-D.ietf-quic-spin-exp}}.
+
+Reserved Bits (R):
+
+: The next two bits (those with a mask of 0x18) of byte 0 are reserved.  These
+  bits are protected using packet number protection (see Section 5.4 of
+  {{QUIC-TLS}}).  The value included prior to protection MUST be set to 0.  An
+  endpoint MUST treat receipt of a packet that has a non-zero value for these
+  bits after removing protection as a connection error of type
+  PROTOCOL_VIOLATION.
+
+Key Phase (K):
+
+: The next bit (0x04) of byte 0 indicates the key phase, which allows a
   recipient of a packet to identify the packet protection keys that are used to
-  protect the packet.  See {{QUIC-TLS}} for details.
+  protect the packet.  See {{QUIC-TLS}} for details.  This bit is protected
+  using packet number protection (see Section 5.4 of {{QUIC-TLS}}).
 
-\[\[Editor's Note: this section should be removed and the bit definitions
-changed before this draft goes to the IESG.]]
+Packet Number Length (P):
 
-Third Bit:
-
-: The third bit (0x20) of byte 0 is set to 1.
-
-\[\[Editor's Note: this section should be removed and the bit definitions
-changed before this draft goes to the IESG.]]
-
-Fourth Bit:
-
-: The fourth bit (0x10) of byte 0 is set to 1.
-
-\[\[Editor's Note: this section should be removed and the bit definitions
-changed before this draft goes to the IESG.]]
-
-Google QUIC Demultiplexing Bit:
-
-: The fifth bit (0x8) of byte 0 is set to 0. This allows implementations of
-  Google QUIC to distinguish Google QUIC packets from short header packets sent
-  by a client because Google QUIC servers expect the connection ID to always be
-  present.  The special interpretation of this bit SHOULD be removed from this
-  specification when Google QUIC has finished transitioning to the new header
-  format.
-
-Spin Bit:
-
-: The sixth bit (0x4) of byte 0 is the Latency Spin Bit, set as described in
-{{!SPIN=I-D.ietf-quic-spin-exp}}.
-
-Reserved:
-
-: The seventh and eighth bits (0x3) of byte 0 are reserved for
-  experimentation.  Endpoints MUST ignore these bits on packets they receive
-  unless they are participating in an experiment that uses these bits.  An
-  endpoint not actively using these bits SHOULD set the value randomly on
-  packets they send to protect against unwanted inference about particular
-  values.
+: The least significant two bits (those with a mask of 0x03) of byte 0 contain
+  the length of the packet number, encoded as an unsigned, two-bit integer that
+  is one less than the length of the packet number field in bytes.  That is, the
+  length of the packet number field is the value of this field, plus one.  These
+  bits are protected using packet number protection (see Section 5.4 of
+  {{QUIC-TLS}}).
 
 Destination Connection ID:
 
@@ -3434,16 +3427,16 @@ Destination Connection ID:
 
 Packet Number:
 
-: The packet number field is 1, 2, or 4 bytes long. The packet number has
+: The packet number field is 1 to 4 bytes long. The packet number has
   confidentiality protection separate from packet protection, as described in
-  Section 5.3 of {{QUIC-TLS}}. The length of the packet number field is encoded
+  Section 5.4 of {{QUIC-TLS}}. The length of the packet number field is encoded
   in the plaintext packet number. See {{packet-encoding}} for details.
 
 Protected Payload:
 
 : Packets with a short header always include a 1-RTT protected payload.
 
-The header form and connection ID field of a short header packet are
+The header form bit and the connection ID field of a short header packet are
 version-independent.  The remaining fields are specific to the selected QUIC
 version.  See {{QUIC-INVARIANTS}} for details on how packets from different
 versions of QUIC are interpreted.
@@ -3515,7 +3508,7 @@ process.
 
 ## Initial Packet {#packet-initial}
 
-An Initial packet uses long headers with a type value of 0x7F.  It carries the
+An Initial packet uses long headers with a type value of 0x0.  It carries the
 first CRYPTO frames sent by the client and server to perform key exchange, and
 carries ACKs in either direction.
 
@@ -3530,7 +3523,7 @@ that are added to the Long Header before the Length field.
 
 ~~~
 +-+-+-+-+-+-+-+-+
-|1|    0x7f     |
+|1|1| 0 |R R|P P|
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                         Version (32)                          |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -3645,7 +3638,7 @@ the connection.
 
 ## Handshake Packet {#packet-handshake}
 
-A Handshake packet uses long headers with a type value of 0x7D.  It is
+A Handshake packet uses long headers with a type value of 0x3.  It is
 used to carry acknowledgments and cryptographic handshake messages from the
 server and client.
 
@@ -3677,7 +3670,7 @@ wishes to perform a stateless retry (see {{validate-handshake}}).
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+
-|1|    0x7e     |
+|1|1| 3 |R R|P P|
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                         Version (32)                          |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
