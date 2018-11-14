@@ -1319,9 +1319,8 @@ abandons the connection attempt and starts a new one. The initial Destination
 Connection ID is used to determine packet protection keys for Initial packets.
 
 A client SHOULD select a Destination Connection ID length long enough to fulfill
-the minimum for every QUIC version it supports. This makes it easier to detect
-version downgrade attacks, by increasing the chance Initial packets are routed
-to the same server.
+the minimum for every QUIC version it supports. This increases the chance
+subsequent Initial packets are routed to the same server.
 
 The client populates the Source Connection ID field with a value of its choosing
 and sets the SCIL field to match.
