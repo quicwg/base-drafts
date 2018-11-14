@@ -758,7 +758,7 @@ indicates that the Base Index is less than the Largest Reference.  That is:
    if sign == 0:
       baseIndex = largestReference + deltaBaseIndex
    else:
-      baseIndex = largestReference - deltaBaseIndex
+      baseIndex = largestReference - deltaBaseIndex - 1
 ~~~
 
 A single-pass encoder is expected to determine the absolute value of Base Index
@@ -770,10 +770,8 @@ not insert any new entries, Base Index will be greater than the Largest
 Reference, so the delta will be positive and the sign bit is set to 0.
 
 An encoder that produces table updates before encoding a header block might set
-Largest Reference and Base Index to the same value.  When Largest Reference and
-Base Index are equal, the Delta Base Index is encoded with a zero sign bit.  A
-sign bit set to 1 when the Delta Base Index is 0 MUST be treated as a decoder
-error.
+Largest Reference and Base Index to the same value.  In such case, both the sign
+bit and the Delta Base Index will be set to zero.
 
 A header block that does not reference the dynamic table can use any value for
 Base Index; setting both Largest Reference and Base Index to zero is the most
