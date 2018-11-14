@@ -860,9 +860,9 @@ details.
 The "chunked" transfer encoding defined in Section 4.1 of {{!RFC7230}} MUST NOT
 be used.
 
-Trailing header fields are carried in an additional header block following the
-body. Senders MUST send only one header block in the trailers section;
-receivers MUST discard any subsequent header blocks.
+Trailing header fields are carried in an additional HEADERS frame following the
+body. Senders MUST send only one HEADERS frame in the trailers section;
+receivers MUST discard any subsequent HEADERS frames.
 
 A response MAY consist of multiple messages when and only when one or more
 informational responses (1xx, see {{!RFC7231}}, Section 6.2) precede a final
@@ -870,10 +870,17 @@ response to the same request.  Non-final responses do not contain a payload body
 or trailers.
 
 An HTTP request/response exchange fully consumes a bidirectional QUIC stream.
-After sending a request, a client closes the stream for sending; after sending a
-final response, the server closes the stream for sending and the QUIC stream is
-fully closed.  Requests and responses are considered complete when the
-corresponding QUIC stream is closed in the appropriate direction.
+After sending a request, a client SHOULD close the stream for sending; after
+sending a final response, the server SHOULD close the stream for sending. At
+this point, the QUIC stream is fully closed.
+
+Changes to the state of a request stream do not directly affect message
+processing.  Endpoints MUST process complete HTTP messages without relying on
+stream closure as an end-of-message signal.  For example, servers do not abort a
+response in progress solely due to a state change on the request stream.
+However, if a client stream terminates without containing a usable HTTP message,
+the server SHOULD abort its response with the error code
+HTTP_INCOMPLETE_REQUEST.
 
 A server can send a complete response prior to the client sending an entire
 request if the response does not depend on any portion of the request that has
@@ -883,13 +890,6 @@ STOP_SENDING frame with error code HTTP_EARLY_RESPONSE, sending a complete
 response, and cleanly closing its stream. Clients MUST NOT discard complete
 responses as a result of having their request terminated abruptly, though
 clients can always discard responses at their discretion for other reasons.
-
-Changes to the state of a request stream, including receiving a QUIC
-RESET_STREAM with any error code, do not affect the state of the server's
-response. Servers do not abort a response in progress solely due to a state
-change on the request stream.  However, if the request stream terminates without
-containing a usable HTTP request, the server SHOULD abort its response with the
-error code HTTP_INCOMPLETE_REQUEST.
 
 
 ### Header Formatting and Compression
