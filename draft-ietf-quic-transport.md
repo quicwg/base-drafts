@@ -264,8 +264,7 @@ ordering between bytes on different streams.
 
 QUIC allows for an arbitrary number of streams to operate concurrently and for
 an arbitrary amount of data to be sent on any stream, subject to flow control
-constraints (see {{flow-control}}) and stream limits
-(see {{stream-concurrency}}).
+constraints (see {{flow-control}}) and stream limits.
 
 
 ## Stream Types and Identifiers {#stream-id}
