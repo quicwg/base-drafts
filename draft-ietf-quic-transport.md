@@ -479,7 +479,7 @@ which cannot be observed by the sender.
        o
        | Recv STREAM / STREAM_DATA_BLOCKED / RESET_STREAM
        | Create Bidirectional Stream (Sending)
-       | Recv MAX_STREAM_DATA
+       | Recv MAX_STREAM_DATA / STOP_SENDING (Bidirectional)
        | Create Higher-Numbered Stream
        v
    +-------+
@@ -512,18 +512,22 @@ which cannot be observed by the sender.
 
 The receiving part of a stream initiated by a peer (types 1 and 3 for a client,
 or 0 and 2 for a server) is created when the first STREAM, STREAM_DATA_BLOCKED,
-RESET_STREAM, or MAX_STREAM_DATA (bidirectional only, see below) is received for
-that stream.  The initial state for a receive stream is "Recv".
+or RESET_STREAM is received for that stream.  For bidirectional streams
+initiated by a peer, receipt of a MAX_STREAM_DATA or STOP_SENDING frame for the
+sending part of the stream also creates the receiving part.  The initial state
+for a receive stream is "Recv".
 
 The receive stream enters the "Recv" state when the sending part of a
 bidirectional stream initiated by the endpoint (type 0 for a client, type 1 for
 a server) enters the "Ready" state.
 
-An endpoint opens a bidirectional stream when a MAX_STREAM_DATA frame is
-received from the peer for that stream.  Receiving a MAX_STREAM_DATA frame for
-an unopened stream indicates that the remote peer has opened the stream and is
-providing flow control credit.  A MAX_STREAM_DATA frame might arrive before a
-STREAM or STREAM_DATA_BLOCKED frame if packets are lost or reordered.
+An endpoint opens a bidirectional stream when a MAX_STREAM_DATA or STOP_SENDING
+frame is received from the peer for that stream.  Receiving a MAX_STREAM_DATA
+frame for an unopened stream indicates that the remote peer has opened the
+stream and is providing flow control credit.  Receiving a STOP_SENDING frame for
+an unopened stream indicates that the remote peer no longer wishes to receive
+data on this stream.  Either frame might arrive before a STREAM or
+STREAM_DATA_BLOCKED frame if packets are lost or reordered.
 
 Before creating a stream, all streams of the same type with lower-numbered
 stream IDs MUST be created.  This ensures that the creation order for streams is
@@ -4276,12 +4280,12 @@ An endpoint uses a STOP_SENDING frame (type=0x05) to communicate that incoming
 data is being discarded on receipt at application request.  This signals a peer
 to abruptly terminate transmission on a stream.
 
-Receipt of a STOP_SENDING frame is only valid for a send stream that exists and
-is not in the "Ready" state (see {{stream-send-states}}).  Receiving a
-STOP_SENDING frame for a send stream that is "Ready" or non-existent MUST be
-treated as a connection error of type PROTOCOL_VIOLATION.  An endpoint that
-receives a STOP_SENDING frame for a receive-only stream MUST terminate the
-connection with error PROTOCOL_VIOLATION.
+Receipt of a STOP_SENDING frame is invalid for a locally-initiated stream which
+does not exist or is in the "Ready" state (see {{stream-send-states}}).
+Receiving a STOP_SENDING frame for a locally-initiated send stream that is
+"Ready" or non-existent MUST be treated as a connection error of type
+PROTOCOL_VIOLATION.  An endpoint that receives a STOP_SENDING frame for a
+receive-only stream MUST terminate the connection with error PROTOCOL_VIOLATION.
 
 The STOP_SENDING frame is as follows:
 
