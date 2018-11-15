@@ -940,8 +940,8 @@ if packet_type == Initial:
 ~~~
 
 To ensure that this process does not sample the packet number, header protection
-algorithms MUST NOT sample more ciphertext than the minimum expansion of the
-corresponding AEAD.
+algorithms MUST NOT require sample that is longer than the minimum expansion of
+the corresponding AEAD.
 
 
 ### AES-Based Header Protection
