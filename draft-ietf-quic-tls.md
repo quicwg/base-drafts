@@ -718,8 +718,8 @@ For example, where TLS might use a label of 0x002009746c733133206b657900 to
 derive a key, QUIC uses 0x00200871756963206b657900.
 
 The HKDF-Expand-Label function with a "quic " label is also used to derive the
-initial secrets (see {{initial-secrets}}) and to derive a packet number
-protection key (the "pn" label, see {{pn-encrypt}}).
+initial secrets (see {{initial-secrets}}) and to derive a header
+protection key (the "quic hp" label, see {{header-protect}}).
 
 
 ## Initial Secrets {#initial-secrets}
@@ -771,10 +771,9 @@ used for QUIC packet protection is the AEAD that is negotiated for use with the
 TLS connection.  For example, if TLS is using the TLS_AES_128_GCM_SHA256, the
 AEAD_AES_128_GCM function is used.
 
-QUIC packets are protected prior to applying packet number protection
-({{pn-encrypt}}).  The unprotected packet number is part of the associated data
-(A).  When removing packet protection, an endpoint first removes the protection
-from the packet number.
+Packets are protected prior to applying header protection ({{header-protect}}).
+The unprotected packet header is part of the associated data (A).  When removing
+packet protection, an endpoint first removes the header protection.
 
 All QUIC packets other than Version Negotiation and Retry packets are protected
 with an AEAD algorithm {{!AEAD}}. Prior to establishing a shared secret, packets
@@ -808,26 +807,110 @@ packet number limit.  An endpoint MUST initiate a key update ({{key-update}})
 prior to exceeding any limit set for the AEAD that is in use.
 
 
-## Packet Number Protection {#pn-encrypt}
+## Header Protection {#header-protect}
 
-QUIC packet numbers are protected using a key that is derived from the current
-set of secrets.  The key derived using the "pn" label is used to protect the
-packet number from casual observation.  The packet number protection algorithm
-depends on the negotiated AEAD.
+Parts of QUIC packet headers, in particular the Packet Number field, are
+protected using a key that is derived separate to the packet protection key and
+IV.  The key derived using the "quic hp" label is used to provide
+confidentiality protection for those fields that are not exposed to on-path
+elements.
 
-Packet number protection is applied after packet protection is applied (see
-{{aead}}).  The ciphertext of the packet is sampled and used as input to an
-encryption algorithm.
+This protection applies to the least-significant bits of the first byte, plus
+the Packet Number field.  The four least-significant bits of the first byte are
+protected for packets with long headers; the five least significant bits of the
+first byte are protected for packets with short headers.  For both header forms,
+this covers the reserved bits and the Packet Number Length field; the Key Phase
+bit is also protected for packets with a short header.
 
-In sampling the packet ciphertext, the packet number length is assumed to be 4
-bytes (its maximum possible encoded length), unless there is insufficient space
-in the packet for sampling.  The sampled ciphertext starts after allowing for a
-4 byte packet number unless this would cause the sample to extend past the end
-of the packet.  If the sample would extend past the end of the packet, the end
-of the packet is sampled.
+This process does not apply to Retry or Version Negotiation packets, which do
+not contain a protected payload or any of the fields that are protected by this
+process.
 
-For example, the sampled ciphertext for a packet with a short header can be
-determined by:
+
+### Header Protection Application
+
+Header protection is applied after packet protection is applied (see {{aead}}).
+The ciphertext of the packet is sampled and used as input to an encryption
+algorithm.  The algorithm used depends on the negotiated AEAD.
+
+The output of this algorithm is 5 bytes of mask which are applied to the
+protected using exclusive OR.  The least significant bits of the first byte of
+the packet are masked by the first mask byte, and the packet number is masked
+with the remaining bytes.
+
+{{pseudo-hp}} shows a sample algorithm for applying header protection. Removing
+protection only differs in the order in which the packet number length
+(pn_length) is determined.
+
+~~~
+mask = header_protection(hp_key, sample)
+
+pn_length = (packet[0] & 0x03) + 1
+if packet[0] & 0x80 == 0x80:
+   # Long header: 4 bits masked
+   packet[0] ^= mask[0] & 0x0f
+else:
+   # Short header: 5 bits masked
+   packet[0] ^= mask[0] & 0x1f
+
+# pn_offset is the start of the Packet Number field.
+packet[pn_offset:pn_offset+pn_length] ^= mask[1:1+pn_length]
+~~~
+{: #pseudo-hp title="Header Protection Pseudocode"}
+
+{{fig-sample}} shows the protected fields of long and short headers marked with
+an E.  {{fig-sample}} also shows the sampled fields.
+
+~~~
+Long Header:
++-+-+-+-+-+-+-+-+
+|1|1|T T|E E E E|
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                    Version -> Length Fields                 ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+Short Header:
++-+-+-+-+-+-+-+-+
+|0|1|S|E E E E E|
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|               Destination Connection ID (0/32..144)         ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+Common Fields:
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|E E E E E E E E E  Packet Number (8/16/24/32) E E E E E E E E...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|   [Protected Payload (8/16/24)]             ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|             Sampled part of Protected Payload (128)         ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                 Protected Payload Remainder (*)             ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~
+{: #fig-sample title="Header Protection and Ciphertext Sample"}
+
+Before a TLS ciphersuite can be used with QUIC, a header protection algorithm
+MUST be specified for the AEAD used with that ciphersuite.  This document
+defines algorithms for AEAD_AES_128_GCM, AEAD_AES_128_CCM, AEAD_AES_256_GCM,
+AEAD_AES_256_CCM (all AES AEADs are defined in {{!AEAD=RFC5116}}), and
+AEAD_CHACHA20_POLY1305 {{!CHACHA=RFC8439}}.
+
+
+### Header Protection Sample {#hp-sample}
+
+The header protection algorithm uses both the header protection key and a sample
+of the ciphertext from the packet Payload field.
+
+The same number of bytes are always sampled, but an allowance needs to be made
+for the endpoint removing protection, which will not know the length of the
+Packet Number field.  In sampling the packet ciphertext, the Packet Number field
+is assumed to be 4 bytes long (its maximum possible encoded length), unless
+there is insufficient space in the packet for a complete sample.  The starting
+offset for the sample is set to 4 bytes after the start of the Packet Number
+field, then is reduced until there are enough bytes to sample.
+
+The sampled ciphertext for a packet with a short header can be determined by the
+following pseudocode:
 
 ~~~
 sample_offset = 1 + len(connection_id) + 4
@@ -836,6 +919,12 @@ if sample_offset + sample_length > packet_length then
     sample_offset = packet_length - sample_length
 sample = packet[sample_offset..sample_offset+sample_length]
 ~~~
+
+For example, for a packet with a short header, an 8 byte connection ID, and
+protected with AEAD_AES_128_GCM, the sample takes bytes 13 to 28 inclusive
+(using zero-based indexing) as long as the packet is at least 29 bytes long.
+The shortest packet that can be produced with this configuration is 27 bytes
+long, in which case bytes 11 to 26 are sampled.
 
 A packet with a long header is sampled in the same way, noting that multiple
 QUIC packets might be included in the same UDP datagram and that each one is
@@ -850,55 +939,45 @@ if packet_type == Initial:
                      len(token)
 ~~~
 
-To ensure that this process does not sample the packet number, packet number
-protection algorithms MUST NOT sample more ciphertext than the minimum expansion
-of the corresponding AEAD.
-
-Packet number protection is applied to the packet number encoded as described in
-Section 17.1 of {{QUIC-TRANSPORT}}. Since the length of the packet number is
-stored in the first byte of the encoded packet number, it may be necessary to
-progressively decrypt the packet number.
-
-Before a TLS ciphersuite can be used with QUIC, a packet protection algorithm
-MUST be specifed for the AEAD used with that ciphersuite.  This document defines
-algorithms for AEAD_AES_128_GCM, AEAD_AES_128_CCM, AEAD_AES_256_GCM,
-AEAD_AES_256_CCM (all AES AEADs are defined in {{!AEAD=RFC5116}}), and
-AEAD_CHACHA20_POLY1305 ({{!CHACHA=RFC8439}}).
+To ensure that this process does not sample the packet number, header protection
+algorithms MUST NOT sample more ciphertext than the minimum expansion of the
+corresponding AEAD.
 
 
-### AES-Based Packet Number Protection
+### AES-Based Header Protection
 
 This section defines the packet protection algorithm for AEAD_AES_128_GCM,
 AEAD_AES_128_CCM, AEAD_AES_256_GCM, and AEAD_AES_256_CCM. AEAD_AES_128_GCM and
-AEAD_AES_128_CCM use 128-bit AES {{!AES=DOI.10.6028/NIST.FIPS.197}} in counter
-(CTR) mode. AEAD_AES_256_GCM, and AEAD_AES_256_CCM use 256-bit AES in CTR mode.
+AEAD_AES_128_CCM use 128-bit AES {{!AES=DOI.10.6028/NIST.FIPS.197}} in
+electronic code-book (ECB) mode. AEAD_AES_256_GCM, and AEAD_AES_256_CCM use
+256-bit AES in ECB mode.
 
 This algorithm samples 16 bytes from the packet ciphertext. This value is used
-as the counter input to AES-CTR.
+as the counter input to AES-ECB.  In pseudocode:
 
 ~~~
-encrypted_pn = AES-CTR(pn_key, sample, packet_number)
+mask = AES-ECB(pn_key, sample)
 ~~~
 
 
-### ChaCha20-Based Packet Number Protection
+### ChaCha20-Based Header Protection
 
-When AEAD_CHACHA20_POLY1305 is in use, packet number protection uses the raw
-ChaCha20 function as defined in Section 2.4 of {{!CHACHA}}.  This uses a 256-bit
-key and 16 bytes sampled from the packet protection output.
+When AEAD_CHACHA20_POLY1305 is in use, header protection uses the raw ChaCha20
+function as defined in Section 2.4 of {{!CHACHA}}.  This uses a 256-bit key and
+16 bytes sampled from the packet protection output.
 
 The first 4 bytes of the sampled ciphertext are interpreted as a 32-bit number
 in little-endian order and are used as the block count.  The remaining 12 bytes
 are interpreted as three concatenated 32-bit numbers in little-endian order and
 used as the nonce.
 
-The encoded packet number is then encrypted with ChaCha20 directly. In
+The encryption mask is produced by invoking ChaCha20 to protect 5 zero bytes. In
 pseudocode:
 
 ~~~
 counter = DecodeLE(sample[0..3])
 nonce = DecodeLE(sample[4..7], sample[8..11], sample[12..15])
-encrypted_pn = ChaCha20(pn_key, counter, nonce, packet_number)
+mask = ChaCha20(pn_key, counter, nonce, 0)
 ~~~
 
 
@@ -1183,48 +1262,47 @@ SHOULD track redundant packets and treat excessive volumes of any non-productive
 packets as indicative of an attack.
 
 
-## Packet Number Protection Analysis {#pn-encrypt-analysis}
+## Header Protection Analysis {#pn-encrypt-analysis}
 
-Packet number protection relies on the packet protection AEAD being a
-pseudorandom function (PRF), which is not a property that AEAD algorithms
+Header protection relies on the packet protection AEAD being a pseudorandom
+function (PRF), which is not a property that AEAD algorithms
 guarantee. Therefore, no strong assurances about the general security of this
 mechanism can be shown in the general case. The AEAD algorithms described in
 this document are assumed to be PRFs.
 
-The packet number protection algorithms defined in this document take the
-form:
+The header protection algorithms defined in this document take the form:
 
 ~~~
-encrypted_pn = packet_number XOR PRF(pn_key, sample)
+protected_field = field XOR PRF(pn_key, sample)
 ~~~
 
 This construction is secure against chosen plaintext attacks (IND-CPA) {{IMC}}.
 
 Use of the same key and ciphertext sample more than once risks compromising
-packet number protection. Protecting two different packet numbers with the same
-key and ciphertext sample reveals the exclusive OR of those packet numbers.
-Assuming that the AEAD acts as a PRF, if L bits are sampled, the odds of two
-ciphertext samples being identical approach 2^(-L/2), that is, the birthday
-bound. For the algorithms described in this document, that probability is one in
-2^64.
+header protection. Protecting two different headers with the same key and
+ciphertext sample reveals the exclusive OR of the protected fields.  Assuming
+that the AEAD acts as a PRF, if L bits are sampled, the odds of two ciphertext
+samples being identical approach 2^(-L/2), that is, the birthday bound. For the
+algorithms described in this document, that probability is one in 2^64.
 
 Note:
 
 : In some cases, inputs shorter than the full size required by the packet
   protection algorithm might be used.
 
-To prevent an attacker from modifying packet numbers, values of packet numbers
-are transitively authenticated using packet protection; packet numbers are part
-of the authenticated additional data.  A falsified or modified packet number can
-only be detected once the packet protection is removed.
+To prevent an attacker from modifying packet headers, the header is transitively
+authenticated using packet protection; the entire packet header is part of the
+authenticated additional data.  Protected fields that are falsified or modified
+can only be detected once the packet protection is removed.
 
-An attacker can guess values for packet numbers and have an endpoint confirm
-guesses through timing side channels.  If the recipient of a packet discards
+An attacker could guess values for packet numbers and have an endpoint confirm
+guesses through timing side channels.  Similarly, guesses for the packet number
+length can be trialed and exposed.  If the recipient of a packet discards
 packets with duplicate packet numbers without attempting to remove packet
 protection they could reveal through timing side-channels that the packet number
 matches a received packet.  For authentication to be free from side-channels,
-the entire process of packet number protection removal, packet number recovery,
-and packet protection removal MUST be applied together without timing and other
+the entire process of header protection removal, packet number recovery, and
+packet protection removal MUST be applied together without timing and other
 side-channels.
 
 For the sending of packets, construction and protection of packet payloads and

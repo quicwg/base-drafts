@@ -3050,6 +3050,7 @@ IP addresses has fallen below 1280 bytes, it MUST immediately cease sending QUIC
 packets on the affected path.  This could result in termination of the
 connection if an alternative path cannot be found.
 
+
 ### IPv4 PMTU Discovery {#v4-pmtud}
 
 Traditional ICMP-based path MTU discovery in IPv4 {{!PMTUDv4}} is potentially
@@ -3079,7 +3080,6 @@ mitigate this risk. For instance, an application could:
 
 ## Special Considerations for Packetization Layer PMTU Discovery
 
-
 The PADDING frame provides a useful option for PMTU probe packets. PADDING
 frames generate acknowledgements, but they need not be delivered reliably. As a
 result, the loss of PADDING frames in probe packets does not require
@@ -3094,7 +3094,6 @@ therefore are not QUIC-compliant.
 Section 7.3 of {{!PLPMTUD}} discusses trade-offs between small and large
 increases in the size of probe packets. As QUIC probe packets need not contain
 application data, aggressive increases in probe size carry fewer consequences.
-
 
 
 # Versions {#versions}
@@ -3212,12 +3211,12 @@ the number of significant bits present, the value of those bits, and the largest
 packet number received on a successfully authenticated packet. Recovering the
 full packet number is necessary to successfully remove packet protection.
 
-Once packet number protection is removed, the packet number is decoded by
-finding the packet number value that is closest to the next expected packet.
-The next expected packet is the highest received packet number plus one.  For
-example, if the highest successfully authenticated packet had a packet number of
-0xa82f30ea, then a packet containing a 16-bit value of 0x9b32 will be decoded as
-0xa8309b32.  Example pseudo-code for packet number decoding can be found in
+Once header protection is removed, the packet number is decoded by finding the
+packet number value that is closest to the next expected packet.  The next
+expected packet is the highest received packet number plus one.  For example, if
+the highest successfully authenticated packet had a packet number of 0xa82f30ea,
+then a packet containing a 16-bit value of 0x9b32 will be decoded as 0xa8309b32.
+Example pseudo-code for packet number decoding can be found in
 {{sample-packet-number-decoding}}.
 
 
@@ -3239,7 +3238,7 @@ example, if the highest successfully authenticated packet had a packet number of
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                           Length (i)                        ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                     Packet Number (8/16/32)                   |
+|                    Packet Number (8/16/24/32)               ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                          Payload (*)                        ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -3271,11 +3270,10 @@ Long Packet Type (T):
 Reserved Bits (R):
 
 : The next two bits (those with a mask of 0x0c) of byte 0 are reserved.  These
-  bits are protected using packet number protection (see Section 5.4 of
-  {{QUIC-TLS}}).  The value included prior to protection MUST be set to 0.  An
-  endpoint MUST treat receipt of a packet that has a non-zero value for these
-  bits after removing protection as a connection error of type
-  PROTOCOL_VIOLATION.
+  bits are protected using header protection (see Section 5.4 of {{QUIC-TLS}}).
+  The value included prior to protection MUST be set to 0.  An endpoint MUST
+  treat receipt of a packet that has a non-zero value for these bits after
+  removing protection as a connection error of type PROTOCOL_VIOLATION.
 
 Packet Number Length (P):
 
@@ -3283,8 +3281,7 @@ Packet Number Length (P):
   the length of the packet number, encoded as an unsigned, two-bit integer that
   is one less than the length of the packet number field in bytes.  That is, the
   length of the packet number field is the value of this field, plus one.  These
-  bits are protected using packet number protection (see Section 5.4 of
-  {{QUIC-TLS}}).
+  bits are protected using header protection (see Section 5.4 of {{QUIC-TLS}}).
 
 Version:
 
@@ -3357,8 +3354,8 @@ following sections.
 The end of the packet is determined by the Length field.  The Length field
 covers both the Packet Number and Payload fields, both of which are
 confidentiality protected and initially of unknown length.  The size of the
-Payload field is learned once the packet number protection is removed.  The
-Length field enables packet coalescing ({{packet-coalesce}}).
+Payload field is learned once the header protection is removed.  The Length
+field enables packet coalescing ({{packet-coalesce}}).
 
 
 ## Short Header Packet {#short-header}
@@ -3371,7 +3368,7 @@ Length field enables packet coalescing ({{packet-coalesce}}).
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                Destination Connection ID (0..144)           ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                      Packet Number (8/16/32)                ...
+|                     Packet Number (8/16/24/32)              ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                     Protected Payload (*)                   ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -3398,7 +3395,7 @@ Spin Bit (S):
 Reserved Bits (R):
 
 : The next two bits (those with a mask of 0x18) of byte 0 are reserved.  These
-  bits are protected using packet number protection (see Section 5.4 of
+  bits are protected using header protection (see Section 5.4 of
   {{QUIC-TLS}}).  The value included prior to protection MUST be set to 0.  An
   endpoint MUST treat receipt of a packet that has a non-zero value for these
   bits after removing protection as a connection error of type
@@ -3409,7 +3406,7 @@ Key Phase (K):
 : The next bit (0x04) of byte 0 indicates the key phase, which allows a
   recipient of a packet to identify the packet protection keys that are used to
   protect the packet.  See {{QUIC-TLS}} for details.  This bit is protected
-  using packet number protection (see Section 5.4 of {{QUIC-TLS}}).
+  using header protection (see Section 5.4 of {{QUIC-TLS}}).
 
 Packet Number Length (P):
 
@@ -3417,8 +3414,7 @@ Packet Number Length (P):
   the length of the packet number, encoded as an unsigned, two-bit integer that
   is one less than the length of the packet number field in bytes.  That is, the
   length of the packet number field is the value of this field, plus one.  These
-  bits are protected using packet number protection (see Section 5.4 of
-  {{QUIC-TLS}}).
+  bits are protected using header protection (see Section 5.4 of {{QUIC-TLS}}).
 
 Destination Connection ID:
 
@@ -3539,7 +3535,7 @@ that are added to the Long Header before the Length field.
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                           Length (i)                        ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                     Packet Number (8/16/32)                   |
+|                    Packet Number (8/16/24/32)               ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                          Payload (*)                        ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -3670,7 +3666,7 @@ wishes to perform a stateless retry (see {{validate-handshake}}).
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+
-|1|1| 3 |R R|P P|
+|1|1| 3 |ODCIL(4|
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                         Version (32)                          |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -3680,7 +3676,7 @@ wishes to perform a stateless retry (see {{validate-handshake}}).
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                 Source Connection ID (0/32..144)            ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|    ODCIL(8)   |      Original Destination Connection ID (*)   |
+|          Original Destination Connection ID (0/32..144)     ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                        Retry Token (*)                      ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -3696,11 +3692,11 @@ Packet Number, and Payload fields.  These are replaced with:
 
 ODCIL:
 
-: The length of the Original Destination Connection ID field.  The length is
-  encoded in the least significant 4 bits of the byte, using the same encoding
-  as the DCIL and SCIL fields.  The most significant 4 bits of this byte are
-  reserved.  Unless a use for these bits has been negotiated, endpoints SHOULD
-  send randomized values and MUST ignore any value that it receives.
+: The four least-significant bits of the first byte of a Retry packet are not
+  protected as they are for other packets with the long header, because Retry
+  packets don't contain a protected payload.  These bits instead encode the
+  length of the Original Destination Connection ID field.  The length uses the
+  same encoding as the DCIL and SCIL fields.
 
 Original Destination Connection ID:
 
@@ -5306,7 +5302,7 @@ from 0xFF00 to 0xFFFF are reserved for Private Use {{!RFC8126}}.
 # Sample Packet Number Decoding Algorithm {#sample-packet-number-decoding}
 
 The following pseudo-code shows how an implementation can decode packet
-numbers after packet number protection has been removed.
+numbers after header protection has been removed.
 
 ~~~
 DecodePacketNumber(largest_pn, truncated_pn, pn_nbits):
