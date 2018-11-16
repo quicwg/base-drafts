@@ -4561,8 +4561,8 @@ MAX_STREAMS frames contain the following fields:
 
 Maximum Streams:
 
-: A count of the cumulative number of streams of the corresponding type that can be
-  opened over the lifetime of the connection.
+: A count of the cumulative number of streams of the corresponding type that
+  can be opened over the lifetime of the connection.
 
 Loss or reordering can cause a MAX_STREAMS frame to be received which states a
 lower stream limit than an endpoint has previously received.  MAX_STREAMS frames
