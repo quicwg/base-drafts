@@ -242,7 +242,7 @@ on average the spin bit is disabled for at least one eighth of network paths.
 The random choice SHOULD be dependent
 on the source and destination addresses of the path,
 so that the spin bit is consistently enabled or
-disabled for repeated connections between the same addresses.
+disabled for repeated use of the same path.
 
 When the spin bit is disabled, endpoints SHOULD set the spin bit value to
 a constant value randomly chosen to be 0 or 1,
