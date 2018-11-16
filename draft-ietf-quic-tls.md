@@ -833,20 +833,20 @@ Header protection is applied after packet protection is applied (see {{aead}}).
 The ciphertext of the packet is sampled and used as input to an encryption
 algorithm.  The algorithm used depends on the negotiated AEAD.
 
-The output of this algorithm is 5 bytes of mask which are applied to the
-protected using exclusive OR.  The least significant bits of the first byte of
+The output of this algorithm is a 5 byte mask which is applied to the
+protected header fields using exclusive OR.  The least significant bits of the first byte of
 the packet are masked by the first mask byte, and the packet number is masked
 with the remaining bytes.
 
 {{pseudo-hp}} shows a sample algorithm for applying header protection. Removing
-protection only differs in the order in which the packet number length
+header protection only differs in the order in which the packet number length
 (pn_length) is determined.
 
 ~~~
 mask = header_protection(hp_key, sample)
 
 pn_length = (packet[0] & 0x03) + 1
-if packet[0] & 0x80 == 0x80:
+if (packet[0] & 0x80) == 0x80:
    # Long header: 4 bits masked
    packet[0] ^= mask[0] & 0x0f
 else:
@@ -940,7 +940,7 @@ if packet_type == Initial:
 ~~~
 
 To ensure that this process does not sample the packet number, header protection
-algorithms MUST NOT require sample that is longer than the minimum expansion of
+algorithms MUST NOT require a sample size larger than the minimum expansion of
 the corresponding AEAD.
 
 

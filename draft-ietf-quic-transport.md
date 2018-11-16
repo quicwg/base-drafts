@@ -3181,8 +3181,8 @@ value of fields.
 
 ## Packet Number Encoding and Decoding {#packet-encoding}
 
-Packet numbers in long and short packet headers are encoded on 1 to 4 octets.
-The number of bits required to represent the packet number reduced by including
+Packet numbers in long and short packet headers are encoded in 1 to 4 octets.
+The number of bits required to represent the packet number is reduced by including
 the least significant bits of the packet number.
 
 The encoded packet number is protected as described in Section 5.4 of
@@ -3197,7 +3197,7 @@ SHOULD use a large enough packet number encoding to allow the packet number to
 be recovered even if the packet arrives after packets that are sent afterwards.
 
 As a result, the size of the packet number encoding is at least one bit more
-than the base 2 logarithm of the number of contiguous unacknowledged packet
+than the base-2 logarithm of the number of contiguous unacknowledged packet
 numbers, including the new packet.
 
 For example, if an endpoint has received an acknowledgment for packet 0xabe8bc,
