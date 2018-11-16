@@ -829,11 +829,13 @@ commitment.
 
 ## Controlling Concurrency {#controlling-concurrency}
 
-An endpoint controls concurrency by limiting the total number of incoming
-streams.  An initial value is set in the transport parameters (see
-{{transport-parameter-definitions}}) and subsequently increments are advertised
-using MAX_STREAMS frames ({{frame-max-streams}}).  Separate limits apply to
-unidirectional and bidirectional streams.
+An endpoint limits the cumulative number of incoming streams a peer can open.
+Only steams with a stream id less than
+(max_stream * 4 + initial_stream_id_for_type) can be opened.  Initial limits
+are set in the transport parameters (see {{transport-parameter-definitions}})
+and subsequently limits are advertised using MAX_STREAMS frames
+({{frame-max-streams}}). Separate limits apply to unidirectional and
+bidirectional streams.
 
 Endpoints MUST NOT exceed the limit set by their peer.  An endpoint that
 receives a STREAM frame with a stream ID exceeding the limit it has sent MUST
