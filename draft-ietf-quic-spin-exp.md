@@ -246,7 +246,8 @@ disabled for repeated use of the same path.
 
 When the spin bit is disabled, endpoints SHOULD set the spin bit value to
 a constant value randomly chosen to be 0 or 1,
-regardless of the values received from their peer. Addendums or revisions to
+regardless of the values received from their peer.  Alternatively, endpoints MAY
+change this value when changing connection ID.  Addendums or revisions to
 this document MAY define alternative behaviors in the future.
 
 # IANA Considerations
