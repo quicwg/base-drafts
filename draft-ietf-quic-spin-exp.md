@@ -238,7 +238,7 @@ SHOULD disable the spin bit on a randomly chosen
 fraction of connections.
 
 The selection process SHOULD be designed such that
-on average the spin bit is disabled for at least 1/8th of the connections, or
+on average the spin bit is disabled for at least one eighth of network paths.
 1/8th of the paths when doing migrations. The random choice SHOULD be dependent
 on the source and destination addresses of the connection,
 so that the spin bit is consistently enabled or
