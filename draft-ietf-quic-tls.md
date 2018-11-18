@@ -833,10 +833,11 @@ Header protection is applied after packet protection is applied (see {{aead}}).
 The ciphertext of the packet is sampled and used as input to an encryption
 algorithm.  The algorithm used depends on the negotiated AEAD.
 
-The output of this algorithm is a 5 byte mask which is applied to the
-protected header fields using exclusive OR.  The least significant bits of the first byte of
-the packet are masked by the first mask byte, and the packet number is masked
-with the remaining bytes.
+The output of this algorithm is a 5 byte mask which is applied to the protected
+header fields using exclusive OR.  The least significant bits of the first byte
+of the packet are masked by the least significant bits of the first mask byte,
+and the packet number is masked with the remaining bytes.  Any unused bytes of
+mask that might result from a shorter packet number encoding are unused.
 
 {{pseudo-hp}} shows a sample algorithm for applying header protection. Removing
 header protection only differs in the order in which the packet number length
