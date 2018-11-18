@@ -894,7 +894,9 @@ Before a TLS ciphersuite can be used with QUIC, a header protection algorithm
 MUST be specified for the AEAD used with that ciphersuite.  This document
 defines algorithms for AEAD_AES_128_GCM, AEAD_AES_128_CCM, AEAD_AES_256_GCM,
 AEAD_AES_256_CCM (all AES AEADs are defined in {{!AEAD=RFC5116}}), and
-AEAD_CHACHA20_POLY1305 {{!CHACHA=RFC8439}}.
+AEAD_CHACHA20_POLY1305 {{!CHACHA=RFC8439}}.  Prior to TLS selecting a
+ciphersuite, AES header protection is used ({{hp-aes}}), matching the
+AEAD_AES_128_GCM packet protection.
 
 
 ### Header Protection Sample {#hp-sample}
@@ -945,7 +947,7 @@ algorithms MUST NOT require a sample size larger than the minimum expansion of
 the corresponding AEAD.
 
 
-### AES-Based Header Protection
+### AES-Based Header Protection {#hp-aes}
 
 This section defines the packet protection algorithm for AEAD_AES_128_GCM,
 AEAD_AES_128_CCM, AEAD_AES_256_GCM, and AEAD_AES_256_CCM. AEAD_AES_128_GCM and
@@ -961,7 +963,7 @@ mask = AES-ECB(pn_key, sample)
 ~~~
 
 
-### ChaCha20-Based Header Protection
+### ChaCha20-Based Header Protection {#hp-chacha}
 
 When AEAD_CHACHA20_POLY1305 is in use, header protection uses the raw ChaCha20
 function as defined in Section 2.4 of {{!CHACHA}}.  This uses a 256-bit key and
