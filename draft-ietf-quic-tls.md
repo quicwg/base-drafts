@@ -940,6 +940,10 @@ sample_offset = 6 + len(destination_connection_id) +
 if packet_type == Initial:
     sample_offset += len(token_length) +
                      len(token)
+
+if sample_offset + sample_length > packet_length then
+    sample_offset = packet_length - sample_length
+sample = packet[sample_offset..sample_offset+sample_length]
 ~~~
 
 To ensure that this process does not sample the packet number, header protection
