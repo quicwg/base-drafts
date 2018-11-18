@@ -3182,8 +3182,8 @@ value of fields.
 ## Packet Number Encoding and Decoding {#packet-encoding}
 
 Packet numbers in long and short packet headers are encoded in 1 to 4 octets.
-The number of bits required to represent the packet number is reduced by including
-the least significant bits of the packet number.
+The number of bits required to represent the packet number is reduced by
+including the least significant bits of the packet number.
 
 The encoded packet number is protected as described in Section 5.4 of
 {{QUIC-TLS}}.
@@ -3260,7 +3260,7 @@ Header Form:
 Fixed Bit:
 
 : The next bit (0x40) of byte 0 is set to 1.  Packets containing a zero value
-  for this bit are not valid packets in this version.
+  for this bit are not valid packets in this version and MUST be discarded.
 
 Long Packet Type (T):
 
@@ -3353,9 +3353,9 @@ following sections.
 
 The end of the packet is determined by the Length field.  The Length field
 covers both the Packet Number and Payload fields, both of which are
-confidentiality protected and initially of unknown length.  The size of the
-Payload field is learned once the header protection is removed.  The Length
-field enables packet coalescing ({{packet-coalesce}}).
+confidentiality protected and initially of unknown length.  The length of the
+Payload field is learned once header protection is removed.  The Length field
+enables packet coalescing ({{packet-coalesce}}).
 
 
 ## Short Header Packet {#short-header}
@@ -3385,7 +3385,7 @@ Header Form:
 Fixed Bit:
 
 : The next bit (0x40) of byte 0 is set to 1.  Packets containing a zero value
-  for this bit are not valid packets in this version.
+  for this bit are not valid packets in this version and MUST be discarded.
 
 Spin Bit (S):
 
@@ -3426,7 +3426,7 @@ Packet Number:
 : The packet number field is 1 to 4 bytes long. The packet number has
   confidentiality protection separate from packet protection, as described in
   Section 5.4 of {{QUIC-TLS}}. The length of the packet number field is encoded
-  in the plaintext packet number. See {{packet-encoding}} for details.
+  in Packet Number Length field. See {{packet-encoding}} for details.
 
 Protected Payload:
 
