@@ -874,13 +874,12 @@ After sending a request, a client SHOULD close the stream for sending; after
 sending a final response, the server SHOULD close the stream for sending. At
 this point, the QUIC stream is fully closed.
 
-Changes to the state of a request stream do not directly affect message
-processing.  Endpoints MUST process complete HTTP messages without relying on
-stream closure as an end-of-message signal.  For example, servers do not abort a
-response in progress solely due to a state change on the request stream.
-However, if a client stream terminates without containing a usable HTTP message,
-the server SHOULD abort its response with the error code
-HTTP_INCOMPLETE_REQUEST.
+When a stream is closed, this indicates the end of an HTTP message.
+Because some messages are large or unbounded, endpoints SHOULD begin processing
+partial HTTP messages once enough of the message has been received to make
+progress.  If a client stream terminates without enough of the HTTP message to
+provide a complete response, the server SHOULD abort its response with the error
+code HTTP_INCOMPLETE_REQUEST.
 
 A server can send a complete response prior to the client sending an entire
 request if the response does not depend on any portion of the request that has
