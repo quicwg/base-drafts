@@ -670,7 +670,7 @@ Largest Known Received.
 A stream that is reset might have multiple outstanding header blocks with
 dynamic table references.  An endpoint that receives a stream reset before
 the end of a stream generates a Stream Cancellation instruction on the
-decoder stream.  Similarly, a decoder that abandons reading of a stream needs
+decoder stream.  Similarly, an endpoint that abandons reading of a stream needs
 to signal this using the Stream Cancellation instruction.  This signals to
 the encoder that all references to the dynamic table on that stream are no
 longer outstanding.  A decoder with a maximum dynamic table size equal to
