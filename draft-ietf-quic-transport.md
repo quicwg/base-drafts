@@ -4280,8 +4280,8 @@ An endpoint uses a STOP_SENDING frame (type=0x05) to communicate that incoming
 data is being discarded on receipt at application request.  This signals a peer
 to abruptly terminate transmission on a stream.
 
-Receipt of a STOP_SENDING frame is invalid for a locally-initiated stream which
-does not exist or is in the "Ready" state (see {{stream-send-states}}).
+Receipt of a STOP_SENDING frame is invalid for a locally-initiated stream that
+has not yet been created or is in the "Ready" state (see {{stream-send-states}}).
 Receiving a STOP_SENDING frame for a locally-initiated send stream that is
 "Ready" or non-existent MUST be treated as a connection error of type
 PROTOCOL_VIOLATION.  An endpoint that receives a STOP_SENDING frame for a
