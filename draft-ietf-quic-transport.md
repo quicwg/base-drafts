@@ -3181,7 +3181,7 @@ value of fields.
 
 ## Packet Number Encoding and Decoding {#packet-encoding}
 
-Packet numbers in long and short packet headers are encoded in 1 to 4 octets.
+Packet numbers in long and short packet headers are encoded in 1 to 4 bytes.
 The number of bits required to represent the packet number is reduced by
 including the least significant bits of the packet number.
 
@@ -3285,7 +3285,7 @@ Packet Number Length (P):
 
 Version:
 
-: The QUIC Version is a 32-bit field that follows the first octet.  This field
+: The QUIC Version is a 32-bit field that follows the first byte.  This field
   indicates which version of QUIC is in use and determines how the rest of the
   protocol fields are interpreted.
 
@@ -3343,7 +3343,7 @@ The following packet types are defined:
 
 The header form bit, connection ID lengths byte, Destination and Source
 Connection ID fields, and Version fields of a long header packet are
-version-independent. The other fields in the first octet, plus the Length and
+version-independent. The other fields in the first byte, plus the Length and
 Packet Number fields are version-specific.  See {{QUIC-INVARIANTS}} for details
 on how packets from different versions of QUIC are interpreted.
 
