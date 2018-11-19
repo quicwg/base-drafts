@@ -2598,7 +2598,7 @@ has not processed another packet with the same packet number from the same
 packet number space. Duplicate suppression MUST happen after removing packet
 protection for the reasons described in Section 9.3 of {{QUIC-TLS}}. An
 efficient algorithm for duplicate suppression can be found in Section 3.4.3 of
-{{?RFC2406}}.
+{{?RFC4303}}.
 
 Packet number encoding at a sender and decoding at a receiver are described in
 {{packet-encoding}}.
