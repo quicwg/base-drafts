@@ -264,7 +264,7 @@ ordering between bytes on different streams.
 
 QUIC allows for an arbitrary number of streams to operate concurrently and for
 an arbitrary amount of data to be sent on any stream, subject to flow control
-constraints (see {{flow-control}}).
+constraints (see {{flow-control}}) and stream limits.
 
 
 ## Stream Types and Identifiers {#stream-id}
@@ -682,7 +682,7 @@ send on a stream at any time, as described in {{data-flow-control}} and
 {{fc-credit}}
 
 Similarly, to limit concurrency within a connection, a QUIC endpoint controls
-the maximum number of streams that its peer can initiate at any time, as
+the maximum cumulative number of streams that its peer can initiate, as
 described in {{controlling-concurrency}}.
 
 Data sent in CRYPTO frames is not flow controlled in the same way as stream
@@ -829,11 +829,13 @@ commitment.
 
 ## Controlling Concurrency {#controlling-concurrency}
 
-An endpoint controls concurrency by limiting the total number of incoming
-streams.  An initial value is set in the transport parameters (see
-{{transport-parameter-definitions}}) and subsequently increments are advertised
-using MAX_STREAMS frames ({{frame-max-streams}}).  Separate limits apply to
-unidirectional and bidirectional streams.
+An endpoint limits the cumulative number of incoming streams a peer can open.
+Only steams with a stream id less than
+(max_stream * 4 + initial_stream_id_for_type) can be opened.  Initial limits
+are set in the transport parameters (see {{transport-parameter-definitions}})
+and subsequently limits are advertised using MAX_STREAMS frames
+({{frame-max-streams}}). Separate limits apply to unidirectional and
+bidirectional streams.
 
 Endpoints MUST NOT exceed the limit set by their peer.  An endpoint that
 receives a STREAM frame with a stream ID exceeding the limit it has sent MUST
@@ -4542,10 +4544,10 @@ a change in the initial limits (see {{zerortt-parameters}}).
 
 ## MAX_STREAMS Frames {#frame-max-streams}
 
-The MAX_STREAMS frames (type=0x12 and 0x13) inform the peer of the number of
-streams it is permitted to open.  A MAX_STREAMS frame with a type of 0x12
-applies to bidirectional streams, and a MAX_STREAMS frame with a type of 0x13
-applies to unidirectional streams.
+The MAX_STREAMS frames (type=0x12 and 0x13) inform the peer of the cumulative
+number of streams of a given type it is permitted to open.  A MAX_STREAMS frame
+with a type of 0x12 applies to bidirectional streams, and a MAX_STREAMS frame
+with a type of 0x13 applies to unidirectional streams.
 
 The MAX_STREAMS frames are as follows:
 
@@ -4561,8 +4563,8 @@ MAX_STREAMS frames contain the following fields:
 
 Maximum Streams:
 
-: A count of the total number of streams of the corresponding type that can be
-  opened.
+: A count of the cumulative number of streams of the corresponding type that
+  can be opened over the lifetime of the connection.
 
 Loss or reordering can cause a MAX_STREAMS frame to be received which states a
 lower stream limit than an endpoint has previously received.  MAX_STREAMS frames
