@@ -2252,10 +2252,8 @@ following layout:
 ~~~
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+
-|0|K|1|1|0|0|0|0|
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                      Random Bytes (160..)                   ...
+|0|1|                   Random Bytes (166..)                  ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                                                               |
 +                                                               +
@@ -2271,8 +2269,8 @@ following layout:
 This design ensures that a stateless reset packet is - to the extent possible -
 indistinguishable from a regular packet with a short header.
 
-The message consists of a header byte, followed by an arbitrary number of random
-bytes, followed by a Stateless Reset Token.
+The message consists of the first two fixed bits of the packet header, followed
+by an arbitrary number of random bytes, followed by a Stateless Reset Token.
 
 A stateless reset will be interpreted by a recipient as a packet with a short
 header.  For the packet to appear as valid, the Random Bytes field needs to
