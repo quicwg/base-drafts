@@ -2239,9 +2239,10 @@ coalesced (see {{packet-coalesce}}) to facilitate retransmission.
 A stateless reset is provided as an option of last resort for an endpoint that
 does not have access to the state of a connection.  A crash or outage might
 result in peers continuing to send data to an endpoint that is unable to
-properly continue the connection.  An endpoint that wishes to communicate a
-fatal connection error MUST use a CONNECTION_CLOSE frame if it has sufficient
-state to do so.
+properly continue the connection.  A stateless reset is not appropriate for
+signaling error conditions.  An endpoint that wishes to communicate a fatal
+connection error MUST use a CONNECTION_CLOSE frame if it has sufficient state
+to do so.
 
 To support this process, a token is sent by endpoints.  The token is carried in
 the NEW_CONNECTION_ID frame sent by either peer, and servers can specify the
@@ -2325,10 +2326,6 @@ Using a randomized connection ID results in two problems:
 
 Finally, the last 16 bytes of the packet are set to the value of the Stateless
 Reset Token.
-
-A stateless reset is not appropriate for signaling error conditions.  An
-endpoint that wishes to communicate a fatal connection error MUST use a
-CONNECTION_CLOSE frame if it has sufficient state to do so.
 
 This stateless reset design is specific to QUIC version 1.  An endpoint that
 supports multiple versions of QUIC needs to generate a stateless reset that will
