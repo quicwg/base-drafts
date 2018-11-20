@@ -132,7 +132,6 @@ Decoder:
 
 : An implementation which transforms a header block into a header list.
 
-<!-- new definitions -->
 Absolute Index:
 
 : A unique index for each entry in the dynamic table.
@@ -140,7 +139,6 @@ Absolute Index:
 Base Index:
 
 : An absolute index in a header block from which relative indices are made.
-
 
 Largest Reference:
 
@@ -204,9 +202,10 @@ while the decoder is relatively simple.
 ### Reference Tracking
 
 An encoder MUST ensure that a header block which references a dynamic table
-entry is not received by the decoder after the referenced entry has already been
-evicted.  To enable this, the encoder needs to track outstanding
-(unacknowledged) header blocks that reference the dynamic table.
+entry is not received by the decoder after the referenced entry has been
+evicted.  Hence the encoder needs to track information about each compressed
+header block that references the dynamic table until that header block is
+acknowledged by the decoder.
 
 ### Blocked Dynamic Table Insertions {#blocked-insertion}
 
@@ -229,7 +228,7 @@ emit a reference for.  As new entries are inserted, the encoder increases the
 draining index to maintain the section of the table that it will not reference.
 If the encoder does not create new references to entries with an absolute index
 lower than the draining index, the number of unacknowledged references to those
-entries will eventually become zero, allowing the entry to be evicted.
+entries will eventually become zero, allowing them to be evicted.
 
 ~~~~~~~~~~  drawing
    +----------+---------------------------------+--------+
@@ -298,8 +297,6 @@ streams, the decoder sends a Table State Synchronize instruction (see
 
 ## Decoder
 
-<!-- new -->
-
 As in HPACK, the decoder processes header blocks and emits the corresponding
 header lists. It also processes dynamic table modifications from instructions on
 the encoder stream.
@@ -323,6 +320,16 @@ references remain, regardless of whether those references were potentially
 blocking (see {{blocked-insertion}}).  When a stream is reset or abandoned, the
 indication that these header blocks will never be processed serves a similar
 function; see {{stream-cancellation}}.
+
+The decoder chooses when to emit Table State Synchronize instructions (see
+{{table-state-synchronize}}). Emitting an instruction after adding each new
+dynamic table entry will provide the most timely feedback to the encoder, but
+could be redundant with other decoder feedback. By delaying a Table State
+Synchronize instruction, the decoder might be able to coalesce multiple Table
+State Synchronize instructions, or replace them entirely with Header
+Acknowledgements (see {{header-acknowledgement}}). However, delaying too long
+may lead to compression inefficiencies if the encoder waits for an entry to be
+acknowledged before using it.
 
 ### Blocked Decoding
 
@@ -433,8 +440,8 @@ decoder (see {{maximum-table-size}}).
 ### Absolute Indexing {#indexing}
 
 Each entry possesses both an absolute index which is fixed for the lifetime of
-that entry and a relative index which changes over time based on the context of
-the reference. The first entry inserted has an absolute index of "1"; indices
+that entry and a relative index which changes based on the context of the
+reference. The first entry inserted has an absolute index of "1"; indices
 increase sequentially with each insertion.
 
 ### Relative Indexing
@@ -716,16 +723,6 @@ An encoder that receives an Insert Count equal to zero or one that increases
 Largest Known Received beyond what the encoder has sent MUST treat this as a
 connection error of type `HTTP_QPACK_DECODER_STREAM_ERROR`.
 
-<!-- move? -->
-The decoder chooses when to emit Table State Synchronize instructions. Emitting
-a Table State Synchronize after adding each new dynamic table entry will provide
-the most timely feedback to the encoder, but could be redundant with other
-decoder feedback. By delaying a Table State Synchronize instruction, the decoder
-might be able to coalesce multiple Table State Synchronize instructions, or
-replace them entirely with Header Acknowledgements. However, delaying too long
-may lead to compression inefficiencies if the encoder waits for an entry to be
-acknowledged before using it.
-
 ### Header Acknowledgement
 
 After processing a header block whose declared Largest Reference is not zero,
@@ -864,11 +861,11 @@ indicates that the Base Index is less than the Largest Reference.  That is:
       baseIndex = largestReference - deltaBaseIndex
 ~~~
 
-A single-pass encoder is expected to determine the absolute value of Base Index
-before encoding a header block.  If the encoder inserted entries in the dynamic
-table while encoding the header block, Largest Reference will be greater than
-Base Index, so the encoded difference is negative and the sign bit is set to 1.
-If the header block did not reference the most recent entry in the table and did
+A single-pass encoder determines the absolute value of Base Index before
+encoding a header block.  If the encoder inserted entries in the dynamic table
+while encoding the header block, Largest Reference will be greater than Base
+Index, so the encoded difference is negative and the sign bit is set to 1.  If
+the header block did not reference the most recent entry in the table and did
 not insert any new entries, Base Index will be greater than the Largest
 Reference, so the delta will be positive and the sign bit is set to 0.
 
