@@ -1042,6 +1042,23 @@ As an example of a well-known and publicly available implementation of a flow
 pacer, implementers are referred to the Fair Queue packet scheduler (fq qdisc)
 in Linux (3.11 onwards).
 
+## Restart after idle
+
+A connection is idle if there are no bytes in flight and there is no pending
+retransmittable data to send.  This can occur when the connection is
+application limited or after a retransmission timeout. In order to limit
+the size of bursts sent into the network, the behavior when restarting from
+idle depends upon whether pacing is used.
+
+If the sender uses pacing, the connection should limit the initial burst of
+packets to no more than the initial congestion window and subsequent packets
+SHOULD be paced. The congestion window does not change while the connection
+is idle.
+
+A sender that does not use pacing SHOULD reset its congestion window to the
+minimum of the current congestion window and the initial congestion window.
+This recommendation is based on Section 4.1 of {{?RFC5681}}.
+
 ## Pseudocode
 
 ### Constants of interest
