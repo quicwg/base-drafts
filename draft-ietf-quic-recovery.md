@@ -491,7 +491,7 @@ packet which is not one greater than the largest received packet number.  The
 receiver MAY send an immediate ACK when a missing packet begins exceeding the
 peer's reordering threshold in packets to accelerate fast retransmit.  Time
 threshold loss detection does not require any special ACK generation to
-accelerate fast retransmit because it uses a timer.
+accelerate fast retransmit, because it uses a timer.
 
 Similarly, packets marked with the ECN Congestion Experienced (CE) codepoint in
 the IP header SHOULD be acknowledged immediately, to reduce the peer's response
