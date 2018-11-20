@@ -1320,8 +1320,8 @@ Connection ID is used to determine packet protection keys for Initial packets.
 
 The final version used for a connection might be different from the version of
 the first Initial from the client.  To enable consistent routing through the
-handshake, a client SHOULD select a Destination Connection ID length long enough
-to fulfill the minimum size for every QUIC version it supports.
+handshake, a client SHOULD select an initial Destination Connection ID length
+long enough to fulfill the minimum size for every QUIC version it supports.
 
 The client populates the Source Connection ID field with a value of its choosing
 and sets the SCIL field to match.
