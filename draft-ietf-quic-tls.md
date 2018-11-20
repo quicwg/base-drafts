@@ -717,7 +717,7 @@ see {{key-diversity}}.
 
 The HKDF-Expand-Label function is also used to derive the initial secrets (see
 {{initial-secrets}}) and to derive a packet number protection key (the "quic hp"
-label, see {{pn-encrypt}}).
+label, see {{header-protect}}).
 
 
 ## Initial Secrets {#initial-secrets}
@@ -1266,7 +1266,7 @@ SHOULD track redundant packets and treat excessive volumes of any non-productive
 packets as indicative of an attack.
 
 
-## Header Protection Analysis {#pn-encrypt-analysis}
+## Header Protection Analysis {#header-protect-analysis}
 
 Header protection relies on the packet protection AEAD being a pseudorandom
 function (PRF), which is not a property that AEAD algorithms
