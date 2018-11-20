@@ -710,16 +710,14 @@ based on the client's initial Destination Connection ID, as described in
 {{initial-secrets}}.
 
 The keys used for packet protection are computed from the TLS secrets using the
-method described in Section 7.3 of {{!TLS13}}), except that the label for
-HKDF-Expand-Label uses the prefix "quic " rather than "tls13 ". A different
-label provides key separation between TLS and QUIC.
+method described in Section 7.3 of {{!TLS13}}), with the labels "quic key" and
+"quic iv" in place of the labels used by TLS (that is, "key" and "iv"
+respectively).  Using these labels provides key separation between QUIC and TLS,
+see {{key-diversity}}.
 
-For example, where TLS might use a label of 0x002009746c733133206b657900 to
-derive a key, QUIC uses 0x00200871756963206b657900.
-
-The HKDF-Expand-Label function with a "quic " label is also used to derive the
-initial secrets (see {{initial-secrets}}) and to derive a packet number
-protection key (the "pn" label, see {{pn-encrypt}}).
+The HKDF-Expand-Label function is also used to derive the initial secrets (see
+{{initial-secrets}}) and to derive a packet number protection key (the "quic pn"
+label, see {{pn-encrypt}}).
 
 
 ## Initial Secrets {#initial-secrets}
@@ -811,9 +809,9 @@ prior to exceeding any limit set for the AEAD that is in use.
 ## Packet Number Protection {#pn-encrypt}
 
 QUIC packet numbers are protected using a key that is derived from the current
-set of secrets.  The key derived using the "pn" label is used to protect the
-packet number from casual observation.  The packet number protection algorithm
-depends on the negotiated AEAD.
+set of secrets.  The key derived using the "quic pn" label is used to protect
+the packet number from casual observation.  The packet number protection
+algorithm depends on the negotiated AEAD.
 
 Packet number protection is applied after packet protection is applied (see
 {{aead}}).  The ciphertext of the packet is sampled and used as input to an
@@ -989,9 +987,8 @@ packet with a matching KEY_PHASE.
 
 A receiving endpoint detects an update when the KEY_PHASE bit does not match
 what it is expecting.  It creates a new secret (see Section 7.2 of {{!TLS13}})
-and the corresponding read key and IV using the same variation on HKDF as
-defined in {{protection-keys}}; that is, the prefix "quic " is used in place of
-"tls13 ".
+and the corresponding read key and IV using the same HKDF-Expand-Label function
+used in TLS.
 
 If the packet can be decrypted and authenticated using the updated key and IV,
 then the keys the endpoint uses for packet protection are also updated.  The
@@ -1230,6 +1227,29 @@ side-channels.
 For the sending of packets, construction and protection of packet payloads and
 packet numbers MUST be free from side-channels that would reveal the packet
 number or its encoded size.
+
+
+## Key Diversity
+
+In using TLS, the central key schedule of TLS is used.  As a result of the TLS
+handshake messages being integrated into the calculation of secrets, the
+inclusion of the QUIC transport parameters extension ensures that handshake and
+1-RTT keys are not the same as those that might be produced by a server running
+TLS over TCP.  However, 0-RTT keys only include the ClientHello message and
+might therefore use the same secrets.  To avoid the possibility of
+cross-protocol key synchronization, additional measures are provided to improve
+key separation.
+
+The QUIC packet protection keys and IVs are derived using a different label than
+the equivalent keys in TLS.
+
+To preserve this separation, a new version of QUIC SHOULD define new labels for
+key derivation for packet protection key and IV, plus the packet number
+protection keys.
+
+The initial secrets also use a key that is specific to the negotiated QUIC
+version.  New QUIC versions SHOULD define a new salt value used in calculating
+initial secrets.
 
 
 # IANA Considerations
