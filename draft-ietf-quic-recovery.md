@@ -1040,7 +1040,7 @@ As an example of a well-known and publicly available implementation of a flow
 pacer, implementers are referred to the Fair Queue packet scheduler (fq qdisc)
 in Linux (3.11 onwards).
 
-## Resumption from idle
+## Restart after idle
 
 A connection is idle if bytes in flight is 0 and there is nothing
 retransmittable to send.  This occurs when the connection is application
