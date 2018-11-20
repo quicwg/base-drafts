@@ -978,7 +978,6 @@ congestion window is less than ssthresh, which typically only occurs after an
 RTO. While in slow start, QUIC increases the congestion window by the number of
 bytes acknowledged when each acknowledgment is processed.
 
-
 ## Congestion Avoidance
 
 Slow start exits to congestion avoidance.  Congestion avoidance in NewReno
@@ -1000,6 +999,17 @@ The recovery period limits congestion window reduction to once per round trip.
 During recovery, the congestion window remains unchanged irrespective of new
 losses or increases in the ECN-CE counter.
 
+## Loss of protected packets during the handshake
+
+0RTT and 1RTT packets sent prior to handshake completion can arrive before
+the peer has keys to unprotect them.  In those cases, the peer may decide
+not to buffer the packets.  This will cause the packets to never be
+acknowledged and eventually declared lost, despite being delivered to
+the peer.  If the server rejects 0RTT, then the congestion controller
+SHOULD ignore the loss of 0RTT packets.  If any 0RTT or 1RTT packets sent
+prior to knowing the peer has keys to unprotect them are lost, the
+sender's congestion control MAY ignore the loss of those packets if it's
+believe they were received by the peer prior to having the correct keys.
 
 ## Tail Loss Probe
 
