@@ -894,7 +894,6 @@ Pseudocode for DetectLostPackets follows:
 
 ~~~
 DetectLostPackets(largest_acked):
-  loss_time = 0
   lost_packets = {}
   delay_until_lost = infinite
   if (kUsingTimeLossDetection):
@@ -904,6 +903,11 @@ DetectLostPackets(largest_acked):
   else if (largest_acked.packet_number == largest_sent_packet):
     // Early retransmit timer.
     delay_until_lost = 9/8 * max(latest_rtt, smoothed_rtt)
+  else if (loss_time != 0):
+    // If loss time was set, we were waiting to detect loss via
+    // time threshold.
+    delay_until_lost = now() > loss_time ? now() - loss_time : 0;
+  loss_time = 0
   foreach (unacked < largest_acked.packet_number):
     time_since_sent = now() - unacked.time_sent
     delta = largest_acked.packet_number - unacked.packet_number
