@@ -870,8 +870,8 @@ response to the same request.  Non-final responses do not contain a payload body
 or trailers.
 
 An HTTP request/response exchange fully consumes a bidirectional QUIC stream.
-After sending a request, a client SHOULD close the stream for sending; after
-sending a final response, the server SHOULD close the stream for sending. At
+After sending a request, a client MUST close the stream for sending; after
+sending a final response, the server MUST close the stream for sending. At
 this point, the QUIC stream is fully closed.
 
 When a stream is closed, this indicates the end of an HTTP message.
