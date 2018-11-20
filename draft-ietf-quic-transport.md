@@ -264,7 +264,7 @@ ordering between bytes on different streams.
 
 QUIC allows for an arbitrary number of streams to operate concurrently and for
 an arbitrary amount of data to be sent on any stream, subject to flow control
-constraints (see {{flow-control}}).
+constraints (see {{flow-control}}) and stream limits.
 
 
 ## Stream Types and Identifiers {#stream-id}
@@ -479,7 +479,7 @@ which cannot be observed by the sender.
        o
        | Recv STREAM / STREAM_DATA_BLOCKED / RESET_STREAM
        | Create Bidirectional Stream (Sending)
-       | Recv MAX_STREAM_DATA
+       | Recv MAX_STREAM_DATA / STOP_SENDING (Bidirectional)
        | Create Higher-Numbered Stream
        v
    +-------+
@@ -512,18 +512,22 @@ which cannot be observed by the sender.
 
 The receiving part of a stream initiated by a peer (types 1 and 3 for a client,
 or 0 and 2 for a server) is created when the first STREAM, STREAM_DATA_BLOCKED,
-RESET_STREAM, or MAX_STREAM_DATA (bidirectional only, see below) is received for
-that stream.  The initial state for a receive stream is "Recv".
+or RESET_STREAM is received for that stream.  For bidirectional streams
+initiated by a peer, receipt of a MAX_STREAM_DATA or STOP_SENDING frame for the
+sending part of the stream also creates the receiving part.  The initial state
+for a receive stream is "Recv".
 
 The receive stream enters the "Recv" state when the sending part of a
 bidirectional stream initiated by the endpoint (type 0 for a client, type 1 for
 a server) enters the "Ready" state.
 
-An endpoint opens a bidirectional stream when a MAX_STREAM_DATA frame is
-received from the peer for that stream.  Receiving a MAX_STREAM_DATA frame for
-an unopened stream indicates that the remote peer has opened the stream and is
-providing flow control credit.  A MAX_STREAM_DATA frame might arrive before a
-STREAM or STREAM_DATA_BLOCKED frame if packets are lost or reordered.
+An endpoint opens a bidirectional stream when a MAX_STREAM_DATA or STOP_SENDING
+frame is received from the peer for that stream.  Receiving a MAX_STREAM_DATA
+frame for an unopened stream indicates that the remote peer has opened the
+stream and is providing flow control credit.  Receiving a STOP_SENDING frame for
+an unopened stream indicates that the remote peer no longer wishes to receive
+data on this stream.  Either frame might arrive before a STREAM or
+STREAM_DATA_BLOCKED frame if packets are lost or reordered.
 
 Before creating a stream, all streams of the same type with lower-numbered
 stream IDs MUST be created.  This ensures that the creation order for streams is
@@ -682,7 +686,7 @@ send on a stream at any time, as described in {{data-flow-control}} and
 {{fc-credit}}
 
 Similarly, to limit concurrency within a connection, a QUIC endpoint controls
-the maximum number of streams that its peer can initiate at any time, as
+the maximum cumulative number of streams that its peer can initiate, as
 described in {{controlling-concurrency}}.
 
 Data sent in CRYPTO frames is not flow controlled in the same way as stream
@@ -829,11 +833,13 @@ commitment.
 
 ## Controlling Concurrency {#controlling-concurrency}
 
-An endpoint controls concurrency by limiting the total number of incoming
-streams.  An initial value is set in the transport parameters (see
-{{transport-parameter-definitions}}) and subsequently increments are advertised
-using MAX_STREAMS frames ({{frame-max-streams}}).  Separate limits apply to
-unidirectional and bidirectional streams.
+An endpoint limits the cumulative number of incoming streams a peer can open.
+Only steams with a stream id less than
+(max_stream * 4 + initial_stream_id_for_type) can be opened.  Initial limits
+are set in the transport parameters (see {{transport-parameter-definitions}})
+and subsequently limits are advertised using MAX_STREAMS frames
+({{frame-max-streams}}). Separate limits apply to unidirectional and
+bidirectional streams.
 
 Endpoints MUST NOT exceed the limit set by their peer.  An endpoint that
 receives a STREAM frame with a stream ID exceeding the limit it has sent MUST
@@ -1317,6 +1323,10 @@ with an unpredictable value.  This MUST be at least 8 bytes in length. Until a
 packet is received from the server, the client MUST use the same value unless it
 abandons the connection attempt and starts a new one. The initial Destination
 Connection ID is used to determine packet protection keys for Initial packets.
+
+A client SHOULD select a Destination Connection ID length long enough to fulfill
+the minimum for every QUIC version it supports. This increases the chance
+subsequent Initial packets are routed to the same server.
 
 The client populates the Source Connection ID field with a value of its choosing
 and sets the SCIL field to match.
@@ -2233,18 +2243,18 @@ coalesced (see {{packet-coalesce}}) to facilitate retransmission.
 A stateless reset is provided as an option of last resort for an endpoint that
 does not have access to the state of a connection.  A crash or outage might
 result in peers continuing to send data to an endpoint that is unable to
-properly continue the connection.  An endpoint that wishes to communicate a
-fatal connection error MUST use a CONNECTION_CLOSE frame if it has sufficient
-state to do so.
+properly continue the connection.  A stateless reset is not appropriate for
+signaling error conditions.  An endpoint that wishes to communicate a fatal
+connection error MUST use a CONNECTION_CLOSE frame if it has sufficient state
+to do so.
 
 To support this process, a token is sent by endpoints.  The token is carried in
 the NEW_CONNECTION_ID frame sent by either peer, and servers can specify the
 stateless_reset_token transport parameter during the handshake (clients cannot
 because their transport parameters don't have confidentiality protection).  This
 value is protected by encryption, so only client and server know this value.
-Tokens sent via NEW_CONNECTION_ID frames are invalidated when their associated
-connection ID is retired via a RETIRE_CONNECTION_ID frame
-({{frame-retire-connection-id}}).
+Tokens are invalidated when their associated connection ID is retired via a
+RETIRE_CONNECTION_ID frame ({{frame-retire-connection-id}}).
 
 An endpoint that receives packets that it cannot process sends a packet in the
 following layout:
@@ -2319,10 +2329,6 @@ Using a randomized connection ID results in two problems:
 
 Finally, the last 16 bytes of the packet are set to the value of the Stateless
 Reset Token.
-
-A stateless reset is not appropriate for signaling error conditions.  An
-endpoint that wishes to communicate a fatal connection error MUST use a
-CONNECTION_CLOSE frame if it has sufficient state to do so.
 
 This stateless reset design is specific to QUIC version 1.  An endpoint that
 supports multiple versions of QUIC needs to generate a stateless reset that will
@@ -2598,7 +2604,7 @@ has not processed another packet with the same packet number from the same
 packet number space. Duplicate suppression MUST happen after removing packet
 protection for the reasons described in Section 9.3 of {{QUIC-TLS}}. An
 efficient algorithm for duplicate suppression can be found in Section 3.4.3 of
-{{?RFC2406}}.
+{{?RFC4303}}.
 
 Packet number encoding at a sender and decoding at a receiver are described in
 {{packet-encoding}}.
@@ -4261,12 +4267,13 @@ An endpoint uses a STOP_SENDING frame (type=0x05) to communicate that incoming
 data is being discarded on receipt at application request.  This signals a peer
 to abruptly terminate transmission on a stream.
 
-Receipt of a STOP_SENDING frame is only valid for a send stream that exists and
-is not in the "Ready" state (see {{stream-send-states}}).  Receiving a
-STOP_SENDING frame for a send stream that is "Ready" or non-existent MUST be
-treated as a connection error of type PROTOCOL_VIOLATION.  An endpoint that
-receives a STOP_SENDING frame for a receive-only stream MUST terminate the
-connection with error PROTOCOL_VIOLATION.
+Receipt of a STOP_SENDING frame is invalid for a locally-initiated stream that
+has not yet been created or is in the "Ready" state (see
+{{stream-send-states}}). Receiving a STOP_SENDING frame for a locally-initiated
+send stream that is "Ready" or non-existent MUST be treated as a connection
+error of type PROTOCOL_VIOLATION.  An endpoint that receives a STOP_SENDING
+frame for a receive-only stream MUST terminate the connection with error
+PROTOCOL_VIOLATION.
 
 The STOP_SENDING frame is as follows:
 
@@ -4527,10 +4534,10 @@ a change in the initial limits (see {{zerortt-parameters}}).
 
 ## MAX_STREAMS Frames {#frame-max-streams}
 
-The MAX_STREAMS frames (type=0x12 and 0x13) inform the peer of the number of
-streams it is permitted to open.  A MAX_STREAMS frame with a type of 0x12
-applies to bidirectional streams, and a MAX_STREAMS frame with a type of 0x13
-applies to unidirectional streams.
+The MAX_STREAMS frames (type=0x12 and 0x13) inform the peer of the cumulative
+number of streams of a given type it is permitted to open.  A MAX_STREAMS frame
+with a type of 0x12 applies to bidirectional streams, and a MAX_STREAMS frame
+with a type of 0x13 applies to unidirectional streams.
 
 The MAX_STREAMS frames are as follows:
 
@@ -4546,8 +4553,8 @@ MAX_STREAMS frames contain the following fields:
 
 Maximum Streams:
 
-: A count of the total number of streams of the corresponding type that can be
-  opened.
+: A count of the cumulative number of streams of the corresponding type that
+  can be opened over the lifetime of the connection.
 
 Loss or reordering can cause a MAX_STREAMS frame to be received which states a
 lower stream limit than an endpoint has previously received.  MAX_STREAMS frames
