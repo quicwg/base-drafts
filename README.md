@@ -3,6 +3,12 @@
 This is the working area for the IETF QUIC Working Group documents for the
 QUIC protocol suite.
 
+## QUIC Invariants
+
+* [Editor's copy](https://quicwg.github.io/base-drafts/draft-ietf-quic-invariants.html)
+* [Working Group Draft](https://tools.ietf.org/html/draft-ietf-quic-invariants)
+* [Compare Working Group Draft and Editor's copy](https://tools.ietf.org/rfcdiff?url1=https://tools.ietf.org/id/draft-ietf-quic-invariants&url2=https://quicwg.github.io/base-drafts/draft-ietf-quic-invariants.txt)
+
 ## Core Transport Protocol
 
 * [Editor's copy](https://quicwg.github.io/base-drafts/draft-ietf-quic-transport.html)

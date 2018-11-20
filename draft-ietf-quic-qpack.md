@@ -65,9 +65,8 @@ normative:
 --- abstract
 
 This specification defines QPACK, a compression format for efficiently
-representing HTTP header fields, to be used in HTTP over QUIC. This is a
-variation of HPACK header compression that seeks to reduce head-of-line
-blocking.
+representing HTTP header fields, to be used in HTTP/QUIC. This is a variation of
+HPACK header compression that seeks to reduce head-of-line blocking.
 
 --- note_Note_to_Readers
 
@@ -102,39 +101,60 @@ balance between resilience against head-of-line blocking and optimal compression
 ratio.  The design goals are to closely approach the compression ratio of HPACK
 with substantially less head-of-line blocking under the same loss conditions.
 
+QPACK preserves the ordering of header fields within each header list.  An
+encoder MUST emit header field representations in the order they appear in the
+input header list.  A decoder MUST must emit header fields in the order their
+representations appear in the input header block.
+
 # Header Tables
 
-Like HPACK, QPACK uses two tables for associating header fields to indexes.  The
+Like HPACK, QPACK uses two tables for associating header fields to indices.  The
 static table (see {{table-static}}) is predefined and contains common header
 fields (some of them with an empty value).  The dynamic table (see
-{{table-dynamic}}) built up over the course of the connection and can be used by
-the encoder to index header fields repeated in the encoded header lists.
+{{table-dynamic}}) is built up over the course of the connection and can be used
+by the encoder to index header fields repeated in the encoded header lists.
 
 Unlike in HPACK, entries in the QPACK static and dynamic tables are addressed
-separately.  The following sections describe how entries in each table is
+separately.  The following sections describe how entries in each table are
 addressed.
 
 ## Static Table {#table-static}
 
 The static table consists of a predefined static list of header fields, each of
-which has a fixed index over time.  Its entries are defined in Appendix A of
-{{!RFC7541}}. Note that because HPACK did not use zero-based references, there
-is no value at index zero of the static table.
+which has a fixed index over time.  Its entries are defined in {{static-table}}.
+
+A decoder that encounters an invalid static table index on a request stream or
+push stream MUST treat this as a stream error of type
+`HTTP_QPACK_DECOMPRESSION_FAILED`.  If this index is received on the encoder
+stream, this MUST be treated as a connection error of type
+`HTTP_QPACK_ENCODER_STREAM_ERROR`.
 
 ## Dynamic Table {#table-dynamic}
 
 The dynamic table consists of a list of header fields maintained in first-in,
 first-out order.  The dynamic table is initially empty.  Entries are added by
-instructions on the Encoder Stream (see {{encoder-stream}}).
+instructions on the encoder stream (see {{encoder-stream}}).
+
+The maximum size of the dynamic table can be modified by the encoder, subject to
+a decoder-controlled limit (see {{configuration}} and {{size-update}}).  The
+initial maximum size is determined by the corresponding setting when HTTP
+requests or responses are first permitted to be sent. For clients using 0-RTT
+data in HTTP/QUIC, the table size is the remembered value of the setting, even
+if the server later specifies a larger maximum in its SETTINGS frame.  For
+HTTP/QUIC servers and HTTP/QUIC clients when 0-RTT is not attempted or is
+rejected, the initial maximum table size is the value of the setting in the
+peer's SETTINGS frame.
 
 Before a new entry is added to the dynamic table, entries are evicted from the
 end of the dynamic table until the size of the dynamic table is less than or
-equal to (maximum size - new entry size) or until the table is empty.
+equal to (maximum size - new entry size) or until the table is empty. The
+encoder MUST NOT evict a dynamic table entry unless it has first been
+acknowledged by the decoder.
 
 If the size of the new entry is less than or equal to the maximum size, that
 entry is added to the table.  It is an error to attempt to add an entry that is
 larger than the maximum size; this MUST be treated as a connection error of type
-`HTTP_QPACK_DECOMPRESSION_FAILED`.
+`HTTP_QPACK_ENCODER_STREAM_ERROR`.
 
 A new entry can reference an entry in the dynamic table that will be evicted
 when adding this new entry into the dynamic table.  Implementations are
@@ -144,6 +164,9 @@ evicted from the dynamic table prior to inserting the new entry.
 The dynamic table can contain duplicate entries (i.e., entries with the same
 name and same value).  Therefore, duplicate entries MUST NOT be treated as an
 error by a decoder.
+
+
+### Maximum Table Size
 
 The encoder decides how to update the dynamic table and as such can control how
 much memory is used by the dynamic table.  To limit the memory requirements of
@@ -162,18 +185,43 @@ the dynamic table is less than or equal to the maximum size.
 This mechanism can be used to completely clear entries from the dynamic table by
 setting a maximum size of 0, which can subsequently be restored.
 
-### Absolute and Relative Indexing {#indexing}
+
+### Calculating Table Size
+
+The size of the dynamic table is the sum of the size of its entries.
+
+The size of an entry is the sum of its name's length in bytes (as defined in
+{{string-literals}}), its value's length in bytes, and 32.
+
+The size of an entry is calculated using the length of its name and value
+without any Huffman encoding applied.
+
+`MaxEntries` is the maximum number of entries that the dynamic table can have.
+The smallest entry has empty name and value strings and has the size of 32.
+The MaxEntries is calculated as
+
+~~~
+   MaxEntries = floor( MaxTableSize / 32 )
+~~~
+
+MaxTableSize is the maximum size of the dynamic table as specified by the
+decoder (see {{maximum-table-size}}).
+
+
+### Absolute Indexing {#indexing}
 
 Each entry possesses both an absolute index which is fixed for the lifetime of
 that entry and a relative index which changes over time based on the context of
 the reference. The first entry inserted has an absolute index of "1"; indices
 increase sequentially with each insertion.
 
+### Relative Indexing
+
 The relative index begins at zero and increases in the opposite direction from
 the absolute index.  Determining which entry has a relative index of "0" depends
 on the context of the reference.
 
-On the control stream, a relative index of "0" always refers to the most
+On the encoder stream, a relative index of "0" always refers to the most
 recently inserted value in the dynamic table.  Note that this means the entry
 referenced by a given relative index will change while interpreting instructions
 on the encoder stream.
@@ -184,8 +232,8 @@ on the encoder stream.
     + - +---------------+ - - - - - +
     | 0 |      ...      | n - d - 1 |  Relative Index
     +---+---------------+-----------+
-      ^                     |
-      |                     V
+      ^                       |
+      |                       V
 Insertion Point         Dropping Point
 
 n = count of entries inserted
@@ -194,7 +242,7 @@ d = count of entries dropped
 {: title="Example Dynamic Table Indexing - Control Stream"}
 
 Because frames from request streams can be delivered out of order with
-instructions on the control stream, relative indices are relative to the Base
+instructions on the encoder stream, relative indices are relative to the Base
 Index at the beginning of the header block (see {{absolute-index}}). The Base
 Index is an absolute index. When interpreting the rest of the frame, the entry
 identified by Base Index has a relative index of zero.  The relative indices of
@@ -213,7 +261,7 @@ entries do not change while interpreting headers on a request or push stream.
 n = count of entries inserted
 d = count of entries dropped
 ~~~~~
-{: title="Example Dynamic Table Indexing - Request Stream"}
+{: title="Example Dynamic Table Indexing - Relative Index on Request Stream"}
 
 ### Post-Base Indexing
 
@@ -237,13 +285,16 @@ as absolute indices, but the zero value is one higher than the Base Index.
 n = count of entries inserted
 d = count of entries dropped
 ~~~~~
-{: title="Dynamic Table Indexing - Post-Base References"}
+{: title="Example Dynamic Table Indexing - Post-Base Index on Request Stream"}
 
-If the decoder encounters a reference to an entry which has already been dropped
-from the table or which is greater than the declared Largest Reference (see
-{{absolute-index}}), this MUST be treated as a stream error of type
-`HTTP_QPACK_DECOMPRESSION_FAILED` error code.  If this reference occurs on the
-control stream, this MUST be treated as a session error.
+If the decoder encounters a reference on a request or push stream to a dynamic
+table entry which has already been dropped or which has an absolute index
+greater than the declared Largest Reference (see {{absolute-index}}), it MUST
+treat this as a stream error of type `HTTP_QPACK_DECOMPRESSION_FAILED`.
+
+If the decoder encounters a reference on the encoder stream to a dynamic table
+entry which has already been dropped, it MUST treat this as a connection error
+of type `HTTP_QPACK_ENCODER_STREAM_ERROR`.
 
 ## Avoiding Head-of-Line Blocking in HTTP/QUIC {#overview-hol-avoidance}
 
@@ -261,7 +312,7 @@ immediately. A stream becomes unblocked when the greatest absolute index in the
 dynamic table becomes greater than or equal to the Largest Reference for all
 header blocks the decoder has started reading from the stream.  If a decoder
 encounters a header block where the actual largest reference is not equal to the
-largest reference declared in the prefix, it MAY treat this as a stream error of
+Largest Reference declared in the prefix, it MAY treat this as a stream error of
 type HTTP_QPACK_DECOMPRESSION_FAILED.
 
 A decoder can permit the possibility of blocked streams by setting
@@ -282,20 +333,20 @@ An encoder MUST limit the number of streams which could become blocked to the
 value of SETTINGS_QPACK_BLOCKED_STREAMS at all times. Note that the decoder
 might not actually become blocked on every stream which risks becoming blocked.
 If the decoder encounters more blocked streams than it promised to support, it
-SHOULD treat this as a stream error of type HTTP_QPACK_DECOMPRESSION_FAILED.
+MUST treat this as a stream error of type HTTP_QPACK_DECOMPRESSION_FAILED.
 
 ### State Synchronization
 
-The decoder stream signals key events at the decoder that permit the encoder to
-track the decoder's state.  These events are:
+The decoder stream ({{qpack-decoder-stream}}) signals key events at the
+decoder that permit the encoder to track the decoder's state.  These events are:
 
-- Successful processing of a header block
+- Complete processing of a header block
 - Abandonment of a stream which might have remaining header blocks
 - Receipt of new dynamic table entries
 
 Regardless of whether a header block contained blocking references, the
-knowledge that it was processed successfully permits the encoder to avoid
-evicting entries while references remain outstanding; see {{blocked-eviction}}.
+knowledge that it has been processed permits the encoder to evict
+entries to which no unacknowledged references remain; see {{blocked-insertion}}.
 When a stream is reset or abandoned, the indication that these header blocks
 will never be processed serves a similar function; see {{stream-cancellation}}.
 
@@ -321,25 +372,27 @@ when, and only when, they appear in all capitals, as shown here.
 
 Definitions of terms that are used in this document:
 
-Header:
+Header field:
 
 : A name-value pair sent as part of an HTTP message.
 
-Header set:
+Header list:
 
-: The full collection of headers associated with an HTTP message.
+: The ordered collection of header fields associated with an HTTP message.  A
+  header list can contain multiple header fields with the same name.  It can
+  also contain duplicate header fields.
 
 Header block:
 
-: The compressed representation of a header set.
+: The compressed representation of a header list.
 
 Encoder:
 
-: An implementation which transforms a header set into a header block.
+: An implementation which transforms a header list into a header block.
 
 Decoder:
 
-: An implementation which transforms a header block into a header set.
+: An implementation which transforms a header block into a header list.
 
 QPACK is a name, not an acronym.
 
@@ -403,7 +456,8 @@ only carry header blocks that do not modify the state of the table.
 ### Prefixed Integers
 
 The prefixed integer from Section 5.1 of [RFC7541] is used heavily throughout
-this document.  The format from [RFC7541] is used unmodified.
+this document.  The format from [RFC7541] is used unmodified.  QPACK
+implementations MUST be able to decode integers up to 62 bits long.
 
 ### String Literals
 
@@ -412,7 +466,7 @@ This string format includes optional Huffman encoding.
 
 HPACK defines string literals to begin on a byte boundary.  They begin with a
 single flag (indicating whether the string is Huffman-coded), followed by the
-Length encoded as a 7-bit prefix integer, and finally Length octets of data.
+Length encoded as a 7-bit prefix integer, and finally Length bytes of data.
 When Huffman encoding is enabled, the Huffman table from Appendix B of [RFC7541]
 is used without modification.
 
@@ -455,7 +509,7 @@ string literal (see Section 5.2 of [RFC7541]).
    +---+---+-----------------------+
    | H |     Value Length (7+)     |
    +---+---------------------------+
-   | Value String (Length octets)  |
+   |  Value String (Length bytes)  |
    +-------------------------------+
 ~~~~~~~~~~
 {: title="Insert Header Field -- Indexed Name"}
@@ -475,11 +529,11 @@ represented as an 8-bit prefix string literal.
    +---+---+---+---+---+---+---+---+
    | 0 | 1 | H | Name Length (5+)  |
    +---+---+---+-------------------+
-   |  Name String (Length octets)  |
+   |  Name String (Length bytes)   |
    +---+---------------------------+
    | H |     Value Length (7+)     |
    +---+---------------------------+
-   | Value String (Length octets)  |
+   |  Value String (Length bytes)  |
    +-------------------------------+
 ~~~~~~~~~~
 {: title="Insert Header Field -- New Name"}
@@ -522,9 +576,9 @@ maximum table size is represented as an integer with a 5-bit prefix (see Section
 
 The new maximum size MUST be lower than or equal to the limit determined by the
 protocol using QPACK.  A value that exceeds this limit MUST be treated as a
-decoding error.  In HTTP/QUIC, this limit is the value of the
-SETTINGS_HEADER_TABLE_SIZE parameter (see {{configuration}}) received from the
-decoder.
+connection error of type `HTTP_QPACK_ENCODER_STREAM_ERROR`.  In HTTP/QUIC, this
+limit is the value of the SETTINGS_HEADER_TABLE_SIZE parameter (see
+{{configuration}}) received from the decoder.
 
 Reducing the maximum size of the dynamic table can cause entries to be evicted
 (see Section 4.3 of [RFC7541]).  This MUST NOT cause the eviction of entries
@@ -533,7 +587,7 @@ the dynamic table is not acknowledged as this instruction does not insert an
 entry.
 
 
-## QPACK Decoder Stream {#feedback}
+## QPACK Decoder Stream
 
 The decoder stream carries information used to ensure consistency of the dynamic
 table. Information is sent from the QPACK decoder to the QPACK encoder; that is,
@@ -562,6 +616,10 @@ entries might cause a stream to become blocked, as described in
 ~~~~~~~~~~
 {:#fig-size-sync title="Table State Synchronize"}
 
+An encoder that receives an Insert Count equal to zero or one that increases
+Largest Known Received beyond what the encoder has sent MUST treat this as a
+connection error of type `HTTP_QPACK_DECODER_STREAM_ERROR`.
+
 A decoder chooses when to emit Table State Synchronize instructions. Emitting a
 Table State Synchronize after adding each new dynamic table entry will provide
 the most timely feedback to the encoder, but could be redundant with other
@@ -573,17 +631,11 @@ before using it.
 
 ### Header Acknowledgement
 
-After processing a header block on a request or push stream, the decoder emits a
-Header Acknowledgement instruction on the decoder stream.  The instruction
-begins with the '1' one-bit pattern and includes the request stream's stream ID,
-encoded as a 7-bit prefix integer.  It is used by the peer's QPACK encoder to
-know when it is safe to evict an entry.
-
-The same Stream ID can be identified multiple times, as multiple header blocks
-can be sent on a single stream in the case of intermediate responses, trailers,
-and pushed requests.  Since header frames on each stream are received and
-processed in order, this gives the encoder precise feedback on which header
-blocks within a stream have been fully processed.
+After processing a header block whose declared Largest Reference is not zero,
+the decoder emits a Header Acknowledgement instruction on the decoder stream.
+The instruction begins with the '1' one-bit pattern and includes the request
+stream's stream ID, encoded as a 7-bit prefix integer.  It is used by the
+peer's QPACK encoder to know when it is safe to evict an entry.
 
 ~~~~~~~~~~ drawing
   0   1   2   3   4   5   6   7
@@ -592,6 +644,17 @@ blocks within a stream have been fully processed.
 +---+---------------------------+
 ~~~~~~~~~~
 {:#fig-header-ack title="Header Acknowledgement"}
+
+The same Stream ID can be identified multiple times, as multiple header blocks
+can be sent on a single stream in the case of intermediate responses, trailers,
+and pushed requests.  Since header frames on each stream are received and
+processed in order, this gives the encoder precise feedback on which header
+blocks within a stream have been fully processed.
+
+If an encoder receives a Header Acknowledgement instruction referring to a
+stream on which every header block with a non-zero Largest Reference has already
+been acknowledged, that MUST be treated as a connection error of type
+`HTTP_QPACK_DECODER_STREAM_ERROR`.
 
 When blocking references are permitted, the encoder uses acknowledgement of
 header blocks to update the Largest Known Received index.  If a header block was
@@ -604,12 +667,14 @@ Largest Known Received.
 
 ### Stream Cancellation
 
-A stream that is reset might have multiple outstanding header blocks.  A decoder
-that receives a stream reset before the end of a stream generates a Stream
-Cancellation instruction on the decoder stream.  Similarly, a decoder that
-abandons reading of a stream needs to signal this using the Stream Cancellation
-instruction.  This signals to the encoder that all references to the dynamic
-table on that stream are no longer outstanding.
+A stream that is reset might have multiple outstanding header blocks with
+dynamic table references.  A decoder that receives a stream reset before the end
+of a stream generates a Stream Cancellation instruction on the decoder stream.
+Similarly, a decoder that abandons reading of a stream needs to signal this
+using the Stream Cancellation instruction.  This signals to the encoder that all
+references to the dynamic table on that stream are no longer outstanding.  A
+decoder with a maximum dynamic table size equal to zero MAY omit sending Stream
+Cancellations, because the encoder cannot have any dynamic table references.
 
 An encoder cannot infer from this instruction that any updates to the dynamic
 table have been received.
@@ -651,10 +716,36 @@ Header data is prefixed with two integers, `Largest Reference` and `Base Index`.
 
 `Largest Reference` identifies the largest absolute dynamic index referenced in
 the block.  Blocking decoders use the Largest Reference to determine when it is
-safe to process the rest of the block.
+safe to process the rest of the block.  If Largest Reference is greater than
+zero, the encoder transforms it as follows before encoding:
+
+~~~
+   LargestReference = (LargestReference mod (2 * MaxEntries)) + 1
+~~~
+
+The decoder reconstructs the Largest Reference using the following algorithm:
+
+~~~
+   if LargestReference > 0:
+      LargestReference -= 1
+      CurrentWrapped = TotalNumberOfInserts mod (2 * MaxEntries)
+
+      if CurrentWrapped >= LargestReference + MaxEntries:
+         # Largest Reference wrapped around 1 extra time
+         LargestReference += 2 * MaxEntries
+      else if CurrentWrapped + MaxEntries < LargestReference
+         # Decoder wrapped around 1 extra time
+         CurrentWrapped += 2 * MaxEntries
+
+      LargestReference += TotalNumberOfInserts - CurrentWrapped
+~~~
+
+TotalNumberOfInserts is the total number of inserts into the decoder's
+dynamic table.  This encoding limits the length of the prefix on
+long-lived connections.
 
 `Base Index` is used to resolve references in the dynamic table as described in
-{{indexing}}.
+{{relative-indexing}}.
 
 To save space, Base Index is encoded relative to Largest Reference using a
 one-bit sign and the `Delta Base Index` value.  A sign bit of 0 indicates that
@@ -717,8 +808,8 @@ Section 5.1 of [RFC7541]).
 
 If the entry is in the dynamic table with an absolute index greater than Base
 Index, the representation starts with the '0001' 4-bit pattern, followed by the
-post-base index (see {{indexing}}) of the matching header field, represented as
-an integer with a 4-bit prefix (see Section 5.1 of [RFC7541]).
+post-base index (see {{post-base-indexing}}) of the matching header field,
+represented as an integer with a 4-bit prefix (see Section 5.1 of [RFC7541]).
 
 ~~~~~~~~~~ drawing
   0   1   2   3   4   5   6   7
@@ -757,7 +848,7 @@ values that are not to be put at risk by compressing them (see Section 7.1 of
    +---+---+---+---+---------------+
    | H |     Value Length (7+)     |
    +---+---------------------------+
-   | Value String (Length octets)  |
+   |  Value String (Length bytes)  |
    +-------------------------------+
 ~~~~~~~~~~
 {: title="Literal Header Field With Name Reference"}
@@ -772,7 +863,7 @@ reference is to the static (S=1) or dynamic (S=0) table.
 
 For entries in the dynamic table with an absolute index greater than Base Index,
 the header field name is represented using the post-base index of that entry
-(see {{indexing}}) encoded as an integer with a 3-bit prefix.
+(see {{post-base-indexing}}) encoded as an integer with a 3-bit prefix.
 
 ~~~~~~~~~~ drawing
      0   1   2   3   4   5   6   7
@@ -781,7 +872,7 @@ the header field name is represented using the post-base index of that entry
    +---+---+---+---+---+-----------+
    | H |     Value Length (7+)     |
    +---+---------------------------+
-   | Value String (Length octets)  |
+   |  Value String (Length bytes)  |
    +-------------------------------+
 ~~~~~~~~~~
 {: title="Literal Header Field With Post-Base Name Reference"}
@@ -810,23 +901,32 @@ represented as an 8-bit prefix string literal.
    +---+---+---+---+---+---+---+---+
    | 0 | 0 | 1 | N | H |NameLen(3+)|
    +---+---+---+---+---+-----------+
-   |  Name String (Length octets)  |
+   |  Name String (Length bytes)   |
    +---+---------------------------+
    | H |     Value Length (7+)     |
    +---+---------------------------+
-   | Value String (Length octets)  |
+   |  Value String (Length bytes)  |
    +-------------------------------+
 ~~~~~~~~~~
 {: title="Literal Header Field Without Name Reference"}
 
 
-# Error Handling
+# Error Handling {#error-handling}
 
-The following error code is defined for HTTP/QUIC to indicate all failures of
+The following error codes are defined for HTTP/QUIC to indicate failures of
 QPACK which prevent the stream or connection from continuing:
 
-HTTP_QPACK_DECOMPRESSION_FAILED (0x06):
-: QPACK failed to decompress a frame and cannot continue.
+HTTP_QPACK_DECOMPRESSION_FAILED (TBD):
+: The decoder failed to interpret an instruction on a request or push stream and
+  is not able to continue decoding that header block.
+HTTP_QPACK_ENCODER_STREAM_ERROR (TBD):
+: The decoder failed to interpret an instruction on the encoder stream.
+HTTP_QPACK_DECODER_STREAM_ERROR (TBD):
+: The encoder failed to interpret an instruction on the decoder stream.
+
+Upon encountering an error, an implementation MAY elect to treat it as a
+connection error even if this document prescribes that it MUST be treated as a
+stream error.
 
 
 # Encoding Strategies
@@ -860,31 +960,49 @@ In order to enable this, the encoder will need to track outstanding
 (unacknowledged) header blocks and table updates using feedback received from
 the decoder.
 
-### Blocked Eviction
+### Blocked Dynamic Table Insertions {#blocked-insertion}
 
-The encoder MUST NOT permit an entry to be evicted while a reference to that
-entry remains unacknowledged.  If a new header to be inserted into the dynamic
-table would cause the eviction of such an entry, the encoder MUST NOT emit the
-insert instruction until the reference has been processed by the decoder and
-acknowledged.
+An encoder MUST NOT insert an entry into the dynamic table (or duplicate an
+existing entry) if doing so would evict an entry with unacknowledged references.
+For header blocks that might rely on the newly added entry, the encoder can use
+a literal representation and maybe insert the entry later.
 
-The encoder can emit a literal representation for the new header in order to
-avoid encoding delays, and MAY insert the header into the table later if
-desired.
+To ensure that the encoder is not prevented from adding new entries, the encoder
+can avoid referencing entries that will be evicted soonest.  Rather than
+reference such an entry, the encoder SHOULD emit a Duplicate instruction (see
+{{duplicate}}), and reference the duplicate instead.
 
-To ensure that the blocked eviction case is rare, references to the oldest
-entries in the dynamic table SHOULD be avoided.  When one of the oldest entries
-in the table is still actively used for references, the encoder SHOULD emit an
-Duplicate representation instead (see {{duplicate}}).
+Determining which entries are too close to eviction to reference is an encoder
+preference.  One heuristic is to target a fixed amount of available space in the
+dynamic table: either unused space or space that can be reclaimed by evicting
+unreferenced entries.  To achieve this, the encoder can maintain a draining
+index, which is the smallest absolute index in the dynamic table that it will
+emit a reference for.  As new entries are inserted, the encoder increases the
+draining index to maintain the section of the table that it will not
+reference.  Draining entries - entries with an absolute index lower than the
+draining index - will not accumulate new references.  The number of
+unacknowledged references to draining entries will eventually become zero,
+making the entry available for eviction.
 
+~~~~~~~~~~  drawing
+   +----------+---------------------------------+--------+
+   | Draining |          Referenceable          | Unused |
+   | Entries  |             Entries             | Space  |
+   +----------+---------------------------------+--------+
+   ^          ^                                 ^
+   |          |                                 |
+ Dropping    Draining Index               Base Index /
+  Point                                   Insertion Point
+~~~~~~~~~~
+{:#fig-draining-index title="Draining Dynamic Table Entries"}
 
 ### Blocked Decoding
 
 For header blocks encoded in non-blocking mode, the encoder needs to forego
 indexed representations that refer to table updates which have not yet been
-acknowledged with {{feedback}}.  Since all table updates are processed in
-sequence on the control stream, an index into the dynamic table is sufficient to
-track which entries have been acknowledged.
+acknowledged (see {{qpack-decoder-stream}}).  Since all table updates are
+processed in sequence on the control stream, an index into the dynamic
+table is sufficient to track which entries have been acknowledged.
 
 To track blocked streams, the necessary Base Index value for each stream can be
 used.  Whenever the decoder processes a table update, it can begin decoding any
@@ -893,12 +1011,12 @@ blocked streams that now have their dependencies satisfied.
 
 ## Speculative table updates {#speculative-updates}
 
-Implementations can *speculatively* send header frames on the HTTP Control
-Streams which are not needed for any current HTTP request or response.  Such
-headers could be used strategically to improve performance.  For instance, the
-encoder might decide to *refresh* by sending Duplicate representations for
-popular header fields ({{duplicate}}), ensuring they have small indices and
-hence minimal size on the wire.
+Implementations can *speculatively* send instructions on the encoder stream
+which are not needed for any current HTTP request or response.  Such headers
+could be used strategically to improve performance.  For instance, the encoder
+might decide to *refresh* by sending Duplicate representations for popular
+header fields ({{duplicate}}), ensuring they have small indices and hence
+minimal size on the wire.
 
 ## Sample One Pass Encoding Algorithm
 
@@ -989,25 +1107,149 @@ The entries in the following table are registered by this document.
 
 ## Error Code Registration
 
-This document establishes one new error code in the "HTTP/QUIC Error Code"
-registry established in {{QUIC-HTTP}}.
+This document establishes the following new error codes in the "HTTP/QUIC Error
+Code" registry established in {{QUIC-HTTP}}.
 
-Name:
-: HTTP_QPACK_DECOMPRESSION_FAILED
-
-Code:
-: 0x06
-
-Description:
-: QPACK failed to interpret an instruction and cannot continue.
+| --------------------------------- | ----- | ---------------------------------------- | ---------------------- |
+| Name                              | Code  | Description                              | Specification          |
+| --------------------------------- | ----- | ---------------------------------------- | ---------------------- |
+| HTTP_QPACK_DECOMPRESSION_FAILED   | TBD   | Decompression of a header block failed   | {{error-handling}}     |
+| HTTP_QPACK_ENCODER_STREAM_ERROR   | TBD   | Error on the encoder stream              | {{error-handling}}     |
+| HTTP_QPACK_DECODER_STREAM_ERROR   | TBD   | Error on the decoder stream              | {{error-handling}}     |
+| --------------------------------- | ----- | ---------------------------------------- | ---------------------- |
 
 
 --- back
+
+# Static Table
+
+| Index | Name                             | Value                                                       |
+| ----- | -------------------------------- | ----------------------------------------------------------- |
+| 0     | :authority                       |                                                             |
+| 1     | :path                            | /                                                           |
+| 2     | age                              | 0                                                           |
+| 3     | content-disposition              |                                                             |
+| 4     | content-length                   | 0                                                           |
+| 5     | cookie                           |                                                             |
+| 6     | date                             |                                                             |
+| 7     | etag                             |                                                             |
+| 8     | if-modified-since                |                                                             |
+| 9     | if-none-match                    |                                                             |
+| 10    | last-modified                    |                                                             |
+| 11    | link                             |                                                             |
+| 12    | location                         |                                                             |
+| 13    | referer                          |                                                             |
+| 14    | set-cookie                       |                                                             |
+| 15    | :method                          | CONNECT                                                     |
+| 16    | :method                          | DELETE                                                      |
+| 17    | :method                          | GET                                                         |
+| 18    | :method                          | HEAD                                                        |
+| 19    | :method                          | OPTIONS                                                     |
+| 20    | :method                          | POST                                                        |
+| 21    | :method                          | PUT                                                         |
+| 22    | :scheme                          | http                                                        |
+| 23    | :scheme                          | https                                                       |
+| 24    | :status                          | 103                                                         |
+| 25    | :status                          | 200                                                         |
+| 26    | :status                          | 304                                                         |
+| 27    | :status                          | 404                                                         |
+| 28    | :status                          | 503                                                         |
+| 29    | accept                           | \*/\*                                                       |
+| 30    | accept                           | application/dns-message                                     |
+| 31    | accept-encoding                  | gzip, deflate, br                                           |
+| 32    | accept-ranges                    | bytes                                                       |
+| 33    | access-control-allow-headers     | cache-control                                               |
+| 34    | access-control-allow-headers     | content-type                                                |
+| 35    | access-control-allow-origin      | \*                                                          |
+| 36    | cache-control                    | max-age=0                                                   |
+| 37    | cache-control                    | max-age=2592000                                             |
+| 38    | cache-control                    | max-age=604800                                              |
+| 39    | cache-control                    | no-cache                                                    |
+| 40    | cache-control                    | no-store                                                    |
+| 41    | cache-control                    | public, max-age=31536000                                    |
+| 42    | content-encoding                 | br                                                          |
+| 43    | content-encoding                 | gzip                                                        |
+| 44    | content-type                     | application/dns-message                                     |
+| 45    | content-type                     | application/javascript                                      |
+| 46    | content-type                     | application/json                                            |
+| 47    | content-type                     | application/x-www-form-urlencoded                           |
+| 48    | content-type                     | image/gif                                                   |
+| 49    | content-type                     | image/jpeg                                                  |
+| 50    | content-type                     | image/png                                                   |
+| 51    | content-type                     | text/css                                                    |
+| 52    | content-type                     | text/html; charset=utf-8                                    |
+| 53    | content-type                     | text/plain                                                  |
+| 54    | content-type                     | text/plain;charset=utf-8                                    |
+| 55    | range                            | bytes=0-                                                    |
+| 56    | strict-transport-security        | max-age=31536000                                            |
+| 57    | strict-transport-security        | max-age=31536000; includesubdomains                         |
+| 58    | strict-transport-security        | max-age=31536000; includesubdomains; preload                |
+| 59    | vary                             | accept-encoding                                             |
+| 60    | vary                             | origin                                                      |
+| 61    | x-content-type-options           | nosniff                                                     |
+| 62    | x-xss-protection                 | 1; mode=block                                               |
+| 63    | :status                          | 100                                                         |
+| 64    | :status                          | 204                                                         |
+| 65    | :status                          | 206                                                         |
+| 66    | :status                          | 302                                                         |
+| 67    | :status                          | 400                                                         |
+| 68    | :status                          | 403                                                         |
+| 69    | :status                          | 421                                                         |
+| 70    | :status                          | 425                                                         |
+| 71    | :status                          | 500                                                         |
+| 72    | accept-language                  |                                                             |
+| 73    | access-control-allow-credentials | FALSE                                                       |
+| 74    | access-control-allow-credentials | TRUE                                                        |
+| 75    | access-control-allow-headers     | \*                                                          |
+| 76    | access-control-allow-methods     | get                                                         |
+| 77    | access-control-allow-methods     | get, post, options                                          |
+| 78    | access-control-allow-methods     | options                                                     |
+| 79    | access-control-expose-headers    | content-length                                              |
+| 80    | access-control-request-headers   | content-type                                                |
+| 81    | access-control-request-method    | get                                                         |
+| 82    | access-control-request-method    | post                                                        |
+| 83    | alt-svc                          | clear                                                       |
+| 84    | authorization                    |                                                             |
+| 85    | content-security-policy          | script-src \'none\'; object-src \'none\'; base-uri \'none\' |
+| 86    | early-data                       | 1                                                           |
+| 87    | expect-ct                        |                                                             |
+| 88    | forwarded                        |                                                             |
+| 89    | if-range                         |                                                             |
+| 90    | origin                           |                                                             |
+| 91    | purpose                          | prefetch                                                    |
+| 92    | server                           |                                                             |
+| 93    | timing-allow-origin              | \*                                                          |
+| 94    | upgrade-insecure-requests        | 1                                                           |
+| 95    | user-agent                       |                                                             |
+| 96    | x-forwarded-for                  |                                                             |
+| 97    | x-frame-options                  | deny                                                        |
+| 98    | x-frame-options                  | sameorigin                                                  |
 
 # Change Log
 
 > **RFC Editor's Note:** Please remove this section prior to publication of a
 > final version of this document.
+
+## Since draft-ietf-quic-qpack-03
+
+Substantial editorial reorganization; no technical changes.
+
+## Since draft-ietf-quic-qpack-02
+
+- Largest Reference encoded modulo MaxEntries (#1763)
+- New Static Table (#1355)
+- Table Size Update with Insert Count=0 is a connection error (#1762)
+- Stream Cancellations are optional when SETTINGS_HEADER_TABLE_SIZE=0 (#1761)
+- Implementations must handle 62 bit integers (#1760)
+- Different error types for each QPACK stream, other changes to error
+  handling (#1726)
+- Preserve header field order (#1725)
+- Initial table size is the maximum permitted when table is first usable (#1642)
+
+## Since draft-ietf-quic-qpack-01
+
+- Only header blocks that reference the dynamic table are acknowledged (#1603,
+  #1605)
 
 ## Since draft-ietf-quic-qpack-00
 
@@ -1029,7 +1271,6 @@ Description:
 - Added a setting to control the number of blocked decoders (#238, #1140, #1143)
 - Moved table updates and acknowledgments to dedicated streams (#1121, #1122,
   #1238)
-
 
 # Acknowledgments
 {:numbered="false"}
