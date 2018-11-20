@@ -248,11 +248,11 @@ they do not use a timer to send probes, but rather to declare packets lost.
 ### Fast Retransmit
 
 An unacknowledged packet is marked as lost when an acknowledgment is received
-for a packet that was sent a threshold number of packets (kReorderingThreshold)
-or a threshold amount of time (kTimeReorderingFraction) after the
-unacknowledged packet. Receipt of the acknowledgement indicates that a later
-packet was received, while the reordering threshold provides some tolerance
-for reordering of packets in the network.
+for a packet that was sent kReorderingThreshold number of packets or
+kTimeReorderingFraction amount of time after the unacknowledged packet.
+Receipt of the acknowledgement indicates that a later packet was received,
+while the reordering threshold provides some tolerance for reordering of
+packets in the network.
 
 Spuriously declaring packets lost leads to unnecessary retransmissions and
 may result in degraded performance due to the actions of the congestion
@@ -274,9 +274,8 @@ TCP-NCR {{?RFC4653}}, to improve QUIC's reordering resilience.
 Time threshold loss detection uses a time threshold to determine how much
 reordering to tolerate.  In this document, the threshold is expressed as a
 fraction of an RTT, but implemenantations MAY experiment with absolute
-thresholds.  It is recommended this is is used in conjunction with packet
-threshold fast retransmit. The RECOMMENDED time threshold, expressed
-as a fraction of the round-trip time (kTimeReorderingFraction), is 1/8.
+thresholds. The RECOMMENDED time threshold, expressed as a fraction
+of the round-trip time (kTimeReorderingFraction), is 1/8.
 
 An endpoint SHOULD declare packets lost no earlier than
 (1 + kTimeReorderingFraction) * max(SRTT, latest_RTT) after when they were
