@@ -375,8 +375,8 @@ packet, effectively restarting the connection process.
 
 Either packet indicates that the Initial was received but not processed.
 Neither packet can be treated as an acknowledgment for the Initial, but they MAY
-be used to improve the RTT estimate.  Whether or not the RTT estimate is
-updated, the handshake timer should be reset as though it has not yet fired.
+be used to improve the RTT estimate.  Initial packets that are sent in response
+to VN or Retry packets will reset the handshake timer.
 
 ### Tail Loss Probe {#tlp}
 
