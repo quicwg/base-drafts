@@ -1342,11 +1342,10 @@ initial secrets.
 This document does not create any new IANA registries, but it registers the
 values in the following registries:
 
-* TLS ExtensionsType Registry
-  {{!TLS-REGISTRIES=I-D.ietf-tls-iana-registry-updates}} - IANA is to register
-  the quic_transport_parameters extension found in {{quic_parameters}}.
-  The Recommended column is to be marked Yes.  The TLS 1.3 Column
-  is to include CH and EE.
+* TLS ExtensionsType Registry {{!TLS-REGISTRIES=RFC8447}} - IANA is to register
+  the quic_transport_parameters extension found in {{quic_parameters}}.  The
+  Recommended column is to be marked Yes.  The TLS 1.3 Column is to include CH
+  and EE.
 
 
 --- back
