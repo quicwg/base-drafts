@@ -715,6 +715,11 @@ method described in Section 7.3 of {{!TLS13}}), with the labels "quic key" and
 respectively).  Using these labels provides key separation between QUIC and TLS,
 see {{key-diversity}}.
 
+The HKDF-Expand-Label function defined in TLS 1.3 MUST be used even when a
+different TLS version is negotiated, or - for Initial packets - if the TLS
+versions offered do not include TLS 1.3.  This ensures that the selection of TLS
+version is independent of the process used to derive QUIC keys.
+
 The HKDF-Expand-Label function is also used to derive the initial secrets (see
 {{initial-secrets}}) and to derive a packet number protection key (the "quic hp"
 label, see {{header-protect}}).
@@ -752,10 +757,6 @@ hexadecimal notation. Future versions of QUIC SHOULD generate a new salt value,
 thus ensuring that the keys are different for each version of QUIC. This
 prevents a middlebox that only recognizes one version of QUIC from seeing or
 modifying the contents of handshake packets from future versions.
-
-The HKDF function defined in TLS 1.3 MUST be used even in case the minimum TLS
-version that the endpoint is willing to use is greater, so as to assure that
-the peer can decrypt the packet.
 
 Note:
 
