@@ -753,6 +753,10 @@ thus ensuring that the keys are different for each version of QUIC. This
 prevents a middlebox that only recognizes one version of QUIC from seeing or
 modifying the contents of handshake packets from future versions.
 
+The HKDF function defined in TLS 1.3 MUST be used even in case the minimum TLS
+version that the endpoint is willing to use is greater, so as to assure that
+the peer can decrypt the packet.
+
 Note:
 
 : The Destination Connection ID is of arbitrary length, and it could be zero
