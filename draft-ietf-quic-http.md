@@ -232,9 +232,7 @@ While connection-level options pertaining to the core QUIC protocol are set in
 the initial crypto handshake, HTTP/3-specific settings are conveyed in the
 SETTINGS frame. After the QUIC connection is established, a SETTINGS frame
 ({{frame-settings}}) MUST be sent by each endpoint as the initial frame of their
-respective HTTP control stream (see {{control-streams}}). The server MUST NOT
-process any request streams or send responses until the client's SETTINGS frame
-has been received.
+respective HTTP control stream (see {{control-streams}}).
 
 ## Connection Reuse
 
@@ -608,10 +606,10 @@ identifier" and a "setting value".
 
 SETTINGS parameters are not negotiated; they describe characteristics of the
 sending peer, which can be used by the receiving peer. However, a negotiation
-can be implied by the use of SETTINGS -- a peer uses SETTINGS to advertise a set
-of supported values. The recipient can then choose which entries from this list
-are also acceptable and proceed with the value it has chosen. (This choice could
-be announced in a field of an extension frame, or in its own value in SETTINGS.)
+can be implied by the use of SETTINGS -- each peer uses SETTINGS to advertise a
+set of supported values. The definition of the setting would describe how each
+peer combines the two sets to conclude which choice will be used.  SETTINGS does
+not provide a mechanism to identify when the choice takes effect.
 
 Different values for the same parameter can be advertised by each peer. For
 example, a client might be willing to consume a very large response header,
@@ -660,7 +658,7 @@ HTTP_MALFORMED_FRAME.
 The following settings are defined in HTTP/3:
 
   SETTINGS_NUM_PLACEHOLDERS (0x3):
-  : This value SHOULD be non-zero.  The default value is 16.
+  : This value SHOULD be non-zero.  The default value is 0.
 
   SETTINGS_MAX_HEADER_LIST_SIZE (0x6):
   : The default value is unlimited.
@@ -678,12 +676,18 @@ Additional settings MAY be defined by extensions to HTTP/3.
 
 #### Initialization
 
-When a 0-RTT QUIC connection is being used, the client's initial requests will
-be sent before the arrival of the server's SETTINGS frame.  Clients MUST store
-the settings the server provided in the session being resumed and MUST comply
-with stored settings until the server's current settings are received.
-Remembered settings apply to the new connection until the server's SETTINGS
-frame is received.
+An HTTP implementation MUST NOT send frames or requests which would be invalid
+based on its current understanding of the peer's settings.  All settings begin
+at an initial value, and are updated upon receipt of a SETTINGS frame.  For
+servers, the initial values of the client's settings are the defaults of each
+setting.
+
+For clients using a 1-RTT QUIC connection, the initial values of the server's
+settings are the defaults of each setting. When a 0-RTT QUIC connection is being
+used, the initial values are the values used in the previous session.  Clients
+MUST store the settings the server provided in the session being resumed and
+MUST comply with stored settings until the server's current settings are
+received.
 
 A server can remember the settings that it advertised, or store an
 integrity-protected copy of the values in the ticket and recover the information
@@ -695,8 +699,6 @@ SETTINGS frame. If 0-RTT data is accepted by the server, its SETTINGS frame MUST
 NOT reduce any limits or alter any values that might be violated by the client
 with its 0-RTT data.
 
-When a 1-RTT QUIC connection is being used, the client MUST NOT send requests
-prior to receiving and processing the server's SETTINGS frame.
 
 ### PUSH_PROMISE {#frame-push-promise}
 
