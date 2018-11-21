@@ -2280,7 +2280,7 @@ This design ensures that a stateless reset packet is - to the extent possible -
 indistinguishable from a regular packet with a short header.
 
 A stateless reset uses an entire UDP datagram, starting with the first two bits
-of the packet header.  The remainder of the first byte and an an arbitrary
+of the packet header.  The remainder of the first byte and an arbitrary
 number of random bytes following it are set to unpredictable values.  The last
 16 bytes of the datagram contain a Stateless Reset Token.
 
