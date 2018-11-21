@@ -1753,10 +1753,12 @@ have failed, even if the data matches that sent in the PATH_CHALLENGE.
 Additionally, the PATH_RESPONSE frame MUST be received on the same local address
 from which the corresponding PATH_CHALLENGE was sent.  If a PATH_RESPONSE frame
 is received on a different local address than the one from which the
-PATH_CHALLENGE was sent, path validation is considered to have failed, even if
-the data matches that sent in the PATH_CHALLENGE.  Thus, the endpoint considers
-the path to be valid when a PATH_RESPONSE frame is received on the same path
-with the same payload as the PATH_CHALLENGE frame.
+PATH_CHALLENGE was sent, path validation is not considered to be successful,
+even if the data matches that sent in the PATH_CHALLENGE.  This doesn't result
+in path validation failure, as it might be a result of a forwarded packet (see
+{{off-path-forward}}) or misrouting.  Thus, the endpoint considers the path to
+be valid when a PATH_RESPONSE frame is received on the same path with the same
+payload as the PATH_CHALLENGE frame.
 
 
 ## Failed Path Validation
@@ -1766,7 +1768,8 @@ abandons its attempt to validate the path.
 
 Endpoints SHOULD abandon path validation based on a timer. When setting this
 timer, implementations are cautioned that the new path could have a longer
-round-trip time than the original.
+round-trip time than the original.  A value of three times the current
+Retransmittion Timeout (RTO) as defined in {{QUIC-RECOVERY}} is RECOMMENDED.
 
 Note that the endpoint might receive packets containing other frames on the new
 path, but a PATH_RESPONSE frame with appropriate data is required for path
@@ -1891,7 +1894,7 @@ After verifying a new client address, the server SHOULD send new address
 validation tokens ({{address-validation}}) to the client.
 
 
-### Handling Address Spoofing by a Peer {#address-spoofing}
+### Peer Address Spoofing {#address-spoofing}
 
 It is possible that a peer is spoofing its source address to cause an endpoint
 to send excessive amounts of data to an unwilling host.  If the endpoint sends
@@ -1914,7 +1917,7 @@ If an endpoint skips validation of a peer address as described in
 {{migration-response}}, it does not need to limit its sending rate.
 
 
-### Handling Address Spoofing by an On-path Attacker {#on-path-spoofing}
+### On-Path Address Spoofing {#on-path-spoofing}
 
 An on-path attacker could cause a spurious connection migration by copying and
 forwarding a packet with a spoofed address such that it arrives before the
@@ -1937,6 +1940,52 @@ MAY send a stateless reset in response to any further incoming packets.
 Note that receipt of packets with higher packet numbers from the legitimate peer
 address will trigger another connection migration.  This will cause the
 validation of the address of the spurious migration to be abandoned.
+
+
+### Off-Path Packet Forwarding {#off-path-forward}
+
+An off-path attacker that can observe packets might forward copies of genuine
+packets to endpoints.  If the copied packet arrives before the genuine packet,
+this will appear as a NAT rebinding.  Any genuine packet will be discarded as a
+duplicate.  If the attacker is able to continue forwarding packets, it might be
+able to cause migration to a path via the attacker.  This places the attacker on
+path, giving it the ability to observe or drop all subsequent packets.
+
+Unlike the attack described in {{on-path-spoofing}}, the attacker can ensure
+that the new path is successfully validated.
+
+This style of attack relies on the attacker using a path that is approximately
+as fast as the direct path between endpoints.  The attack is more reliable if
+relatively few packets are sent or if packet loss coincides with the attempted
+attack.
+
+A non-probing packet received on the original path that increases the maximum
+received packet number will cause the endpoint to move back to that path.
+Eliciting packets on this path increases the likelihood that the attack is
+unsuccessful.  Therefore, mitigation of this attack relies on triggering the
+exchange of packets.
+
+In response to an apparent migration, endpoints MUST validate the previously
+active path using a PATH_CHALLENGE frame.  This induces the sending of new
+packets on that path.  If the path is no longer viable, the validation attempt
+will time out and fail; if the path is viable, but no longer desired, the
+validation will succeed, but only result in a probing packet being sent on the
+path.
+
+An endpoint that receives a PATH_CHALLENGE on an active path SHOULD send a
+non-probing packet in response.  If the non-probing packet arrives before any
+copy made by an attacker, this results in the connection being migrated back to
+the original path.  Any subsequent migration to another path resets this entire
+process.
+
+Abandoning this validation attempt before it either succeeds or times out
+increases exposure to the packet copying attack.
+
+This defense is imperfect, but this is not considered a serious problem. If the
+path via the attack is reliably faster than the original path despite multiple
+attempts to use that original path, it is not possible to distinguish between
+attack and an improvement in routing.
+
 
 ## Loss Detection and Congestion Control {#migration-cc}
 
@@ -1963,13 +2012,16 @@ multiple paths will still send ACK frames covering all received packets.
 
 While multiple paths might be used during connection migration, a single
 congestion control context and a single loss recovery context (as described in
-{{QUIC-RECOVERY}}) may be adequate.  A sender can make exceptions for probe
-packets so that their loss detection is independent and does not unduly cause
-the congestion controller to reduce its sending rate.  An endpoint might set a
-separate timer when a PATH_CHALLENGE is sent, which is cancelled when the
-corresponding PATH_RESPONSE is received.  If the timer fires before the
-PATH_RESPONSE is received, the endpoint might send a new PATH_CHALLENGE, and
-restart the timer for a longer period of time.
+{{QUIC-RECOVERY}}) may be adequate.  For instance, an endpoint might delay
+switching to a new congestion control context until it is confirmed that an old
+path is no longer needed (for the case in {{off-path-forward}}).
+
+A sender can make exceptions for probe packets so that their loss detection is
+independent and does not unduly cause the congestion controller to reduce its
+sending rate.  An endpoint might set a separate timer when a PATH_CHALLENGE is
+sent, which is cancelled when the corresponding PATH_RESPONSE is received.  If
+the timer fires before the PATH_RESPONSE is received, the endpoint might send a
+new PATH_CHALLENGE, and restart the timer for a longer period of time.
 
 
 ## Privacy Implications of Connection Migration {#migration-linkability}
