@@ -371,12 +371,10 @@ When crypto packets are outstanding, the TLP and RTO timers are not active.
 #### Retry and Version Negotiation
 
 A Retry or Version Negotiation packet causes a client to send another Initial
-packet, effectively restarting the connection process.
-
-Either packet indicates that the Initial was received but not processed.
-Neither packet can be treated as an acknowledgment for the Initial, but they MAY
-be used to improve the RTT estimate.  Initial packets that are sent in response
-to VN or Retry packets will reset the handshake timer.
+packet, effectively restarting the connection process and resetting connection
+state, such as pending timers.  Either packet indicates that the Initial was
+received but not processed.  Neither packet can be treated as an acknowledgment
+for the Initial, but they MAY be used to improve the RTT estimate.
 
 ### Tail Loss Probe {#tlp}
 
