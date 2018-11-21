@@ -2263,7 +2263,7 @@ following layout:
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|0|1|                   Random Bytes (166..)                  ...
+|0|1|                   Random Bits (190..)                  ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                                                               |
 +                                                               +
@@ -2285,18 +2285,18 @@ number of random bytes following it are set to unpredictable values.  The last
 16 bytes of the datagram contain a Stateless Reset Token.
 
 A stateless reset will be interpreted by a recipient as a packet with a short
-header.  For the packet to appear as valid, the Random Bytes field needs to
-include at least 20 bytes of random or unpredictable values.  This is intended
-to allow for a destination connection ID of the maximum length permitted, a
-packet number, and minimal payload.  The Stateless Reset Token corresponds to
-the minimum expansion of the packet protection AEAD.  More random bytes might be
-necessary if the endpoint could have negotiated a packet protection scheme with
-a larger minimum AEAD expansion.
+header.  For the packet to appear as valid, the Random Bits field needs to
+include at least 190 bits of random or unpredictable values (or 24 bytes, less
+the two fixed bits).  This is intended to allow for a destination connection ID
+of the maximum length permitted, with a minimal packet number, and payload.  The
+Stateless Reset Token corresponds to the minimum expansion of the packet
+protection AEAD.  More random bytes might be necessary if the endpoint could
+have negotiated a packet protection scheme with a larger minimum AEAD expansion.
 
 An endpoint SHOULD NOT send a stateless reset that is significantly larger than
 the packet it receives.  Endpoints MUST discard packets that are too small to be
 valid QUIC packets.  With the set of AEAD functions defined in {{QUIC-TLS}},
-packets less than 19 bytes long are never valid.
+packets less than 21 bytes long are never valid.
 
 An endpoint MAY send a stateless reset in response to a packet with a long
 header.  This would not be effective if the stateless reset token was not yet
