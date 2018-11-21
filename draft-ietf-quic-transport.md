@@ -2986,23 +2986,20 @@ the network path might be corrupting ECN codepoints, the endpoint MAY cease
 setting ECT codepoints in subsequent packets. Doing so allows the connection to
 traverse network elements that drop or corrupt ECN codepoints in the IP header.
 
-
 # Packet Size {#packet-size}
 
 The QUIC packet size includes the QUIC header and integrity check, but not the
 UDP or IP header.
 
 Clients MUST ensure that the first Initial packet they send is sent in a UDP
-datagram that is at least 1200 bytes. Padding the Initial packet or including a
-0-RTT packet in the same datagram are ways to meet this requirement.  Sending a
-UDP datagram of this size ensures that the network path supports a reasonable
-Maximum Transmission Unit (MTU), and helps reduce the amplitude of amplification
-attacks caused by server responses toward an unverified client address, see
+datagram with a payload of at least 1200 bytes.  The payload of a UDP datagram
+carrying the Initial packet MUST be expanded to at least 1200 bytes, by adding
+PADDING frames to the Initial packet and/or by combining the Initial packet
+with a 0-RTT packet (see {{packet-coalesce}}).  Sending a UDP datagram of this
+size ensures that the network path supports a reasonable Maximum Transmission
+Unit (MTU), and helps reduce the amplitude of amplification attacks caused by
+server responses toward an unverified client address, see
 {{address-validation}}.
-
-The payload of a UDP datagram carrying the Initial packet MUST be expanded to at
-least 1200 bytes, by adding PADDING frames to the Initial packet and/or by
-combining the Initial packet with a 0-RTT packet (see {{packet-coalesce}}).
 
 The datagram containing the first Initial packet from a client MAY exceed 1200
 bytes if the client believes that the Path Maximum Transmission Unit (PMTU)
@@ -3017,86 +3014,107 @@ processed as valid.
 The server MUST also limit the number of bytes it sends before validating the
 address of the client, see {{address-validation}}.
 
+## Path Maximum Transmission Unit (PMTU)
 
-## Path Maximum Transmission Unit
+The PMTU is the maximum size of the entire IP datagram including the IP header,
+UDP header, and UDP payload.  The UDP payload includes the QUIC packet header,
+protected payload, and any authentication fields. This can be depend upon the
+current path characteristics.  Therefore, the current largest UDP payload an
+implementation will send is referred to as QUIC Maximum Packet Size (MPS).
 
-The Path Maximum Transmission Unit (PMTU) is the maximum size of the entire IP
-header, UDP header, and UDP payload. The UDP payload includes the QUIC packet
-header, protected payload, and any authentication fields.
+QUIC depends on a PMTU of at least 1280 bytes. This is the IPv6 minimum size
+{{!RFC8200}} and is also supported by most modern IPv4 networks.  All QUIC
+packets (except for PMTU probe packets) SHOULD be sized to fit within the MPS
+to avoid IP fragmentation or packet drop along the path {{!RFC8805}.
 
-All QUIC packets SHOULD be sized to fit within the estimated PMTU to avoid IP
-fragmentation or packet drops. To optimize bandwidth efficiency, endpoints
-SHOULD use Datagram Packetization Layer PMTU Discovery ({{DPLPMTUD}}).  Endpoints
-MAY use PMTU Discovery ({{!PMTUDv4=RFC1191}}, {{!PMTUDv6=RFC8201}}) for
-detecting the PMTU, setting the PMTU appropriately, and storing the result of
-previous PMTU determinations.
+To optimize capacity efficiency, endpoints SHOULD use Datagram
+Packetization Layer PMTU Discovery ({{DPLPMTUD}}), or implement Path MTU
+Discovery (PMTUD) {{!RFC1191}} {{!RFC8201}} to determine whether the
+path to a destination will support its desired message size without
+fragmentation.
 
 In the absence of these mechanisms, QUIC endpoints SHOULD NOT send IP packets
-larger than 1280 bytes. Assuming the minimum IP header size, this results in a
-QUIC packet size of 1232 bytes for IPv6 and 1252 bytes for IPv4. Some QUIC
-implementations MAY be more conservative in computing allowed QUIC packet size
-given unknown tunneling overheads or IP header options.
+larger than 1280 bytes (assuming the minimum IP header size).  This results in
+a QUIC MPS of 1232 bytes for IPv6 and 1252 bytes for IPv4. A QUIC
+implementation MAY be more conservative in computing the QUIC MPS to allow for
+unknown tunnel overheads or IP header options/extensions.
 
-QUIC endpoints that implement any kind of PMTU discovery SHOULD maintain an
-estimate for each combination of local and remote IP addresses.  Each pairing of
-local and remote addresses could have a different maximum MTU in the path.
+Each pair of local and remote addresses could have a different PMTU.  QUIC
+implementations that implement any kind of PMTU discovery therefore SHOULD
+maintain a MPS for each combination of local and remote IP addresses.
 
-QUIC depends on the network path supporting an MTU of at least 1280 bytes. This
-is the IPv6 minimum MTU and therefore also supported by most modern IPv4
-networks.  An endpoint MUST NOT reduce its MTU below this number, even if it
-receives signals that indicate a smaller limit might exist.
+If a QUIC endpoint determines that the PMTU between any pair of local and
+remote IP addresses has fallen below the size needed to support the smallest
+allowed MPS, it MUST immediately cease sending QUIC packets on the
+affected path.  This could result in termination of the connection if an
+alternative path cannot be found.
 
-If a QUIC endpoint determines that the PMTU between any pair of local and remote
-IP addresses has fallen below 1280 bytes, it MUST immediately cease sending QUIC
-packets on the affected path.  This could result in termination of the
-connection if an alternative path cannot be found.
+### Processing ICMP Messages to reduce the PMTU {#icmp-pmtud}
 
-### IPv4 PMTU Discovery {#v4-pmtud}
+PMTU discovery {{!RFC1191}} {{!RFC8201}} relies on reception of ICMP messages
+(e.g., IPv6 Packet Too Big, PTB, messages) that indicate when a packet is
+dropped because it is larger than the local router MTU. DPLPMTUD can also
+optionally utilise these messages.  This use of ICMP messages is
+potentially vulnerable to off-path attacks that successfully guess the IP
+address 3-tuple and reduce the PMTU to a bandwidth-inefficient value
+{{!RFC8201}}.
 
-Traditional ICMP-based path MTU discovery in IPv4 {{!PMTUDv4}} is potentially
-vulnerable to off-path attacks that successfully guess the IP/port 4-tuple and
-reduce the MTU to a bandwidth-inefficient value. TCP connections mitigate this
-risk by using the (at minimum) 8 bytes of transport header echoed in the ICMP
-message to validate the TCP sequence number as valid for the current
-connection. However, as QUIC operates over UDP, in IPv4 the echoed information
-could consist only of the IP and UDP headers, which usually has insufficient
-entropy to mitigate off-path attacks.
+QUIC endpoints SHOULD provide validation to protect from off-path injection of
+ICMP messages as specified in {{!RFC8201}} and Section 5.2 of {{!RFC8085}}.
+This uses the quoted packet supplied in the payload of an ICMP message, which,
+when present, can be used to associate the message with a corresponding
+transport connection {{!DPLPMTUD}}.
 
-As a result, endpoints that implement PMTUD in IPv4 SHOULD take steps to
-mitigate this risk. For instance, an application could:
+The IPv4 Router requirements {{!RFC1812} state that the quoted
+packet should contain as much of the original datagram as possible without the
+length of the ICMP datagram exceeding 576 bytes. IPv6 routers include as much
+of invoking packet as possible without the ICMPv6 packet exceeding 1280 bytes
+{{!RFC4443}}.  The size of the quoted packet can actually be smaller, or
+the information unintelligible, for various reasons {{!DPLPMTUD}}.
 
-* Set the IPv4 Don't Fragment (DF) bit on a small proportion of packets, so that
-  most invalid ICMP messages arrive when there are no DF packets outstanding,
-  and can therefore be identified as spurious.
+When a randomized source port is used, this can provide some protection from
+off path attacks that forge ICMP messages. The source port
+in a quoted packet can be checked for TCP {{!RFC6056}}
+and UDP transports {{!RFC8085}}, such as QUIC.  When used, a stack will only
+pass ICMP messages to a QUIC endpoint where the port information in quoted
+packet within the ICMP payload matches a port used by QUIC.
 
-* Store additional information from the IP or UDP headers from DF packets (for
-  example, the IP ID or UDP checksum) to further authenticate incoming Datagram
-  Too Big messages.
+As a part of ICMP validation, QUIC endpoints SHOULD validate
+that connection ID information corresponds to an active session.
 
-* Any reduction in PMTU due to a report contained in an ICMP packet is
-  provisional until QUIC's loss detection algorithm determines that the packet
-  is actually lost.
+Further validation can also be provided:
 
+* An IPv4 endpoint could set the Don't Fragment (DF) bit on a small proportion
+  of packets, so that most invalid ICMP messages arrive when there are no DF
+  packets outstanding, and can therefore be identified as spurious.
 
-## Special Considerations for Packetization Layer PMTU Discovery
+* An endpoint could store additional information from the IP or UDP headers to
+  use for validation (for example, the IP ID or UDP checksum).
 
+The endpoint SHOULD ignore all ICMP messages that are not validated or do not
+carry sufficient quoted packet payload to perform validation.  Any reduction in
+the QUIC MPS MAY be provisional until QUIC's loss detection algorithm
+determines that the quoted packet has actually been lost.
 
-The PADDING frame provides a useful option for PMTU probe packets. PADDING
-frames generate acknowledgements, but they need not be delivered reliably. As a
-result, the loss of PADDING frames in probe packets does not require
-delay-inducing retransmission. However, PADDING frames do consume congestion
-window, which may delay the transmission of subsequent application data.
+## Considerations for Datagram Packetization Layer PMTU Discovery
 
-When implementing the algorithm in Section 7.2 of {{!PLPMTUD}}, the initial
-value of search_low SHOULD be consistent with the IPv6 minimum packet size.
-Paths that do not support this size cannot deliver Initial packets, and
-therefore are not QUIC-compliant.
+Section 6.4 of {{DPLPMTUD}} provides considerations for implementing Datagram
+Packetization Layer PMTUD (DPLPMTUD) with QUIC.
 
-Section 7.3 of {{!PLPMTUD}} discusses trade-offs between small and large
-increases in the size of probe packets. As QUIC probe packets need not contain
-application data, aggressive increases in probe size carry fewer consequences.
+When implementing the algorithm in Section 5.3 of {{DPLPMTUD}}, the initial
+value of BASE_PMTU SHOULD be consistent with the minimum QUIC packet size.
 
+A PADDING frame can be used to generate PMTU probe packets. PADDING need not be
+delivered reliably. As a result, the loss of PADDING frames in probe packets
+does not require delay-inducing retransmission. However, PADDING frames do
+consume congestion window, which could delay the transmission of subsequent
+application data.
 
+A QUIC PING frame can be included in a PMTU probe to ensure that a valid
+probe is acknowledged.
+
+The considerations for processing ICMP messages in the previous
+section also apply if these messages are used by DPLPMTUD.
 
 # Versions {#versions}
 
@@ -5666,3 +5684,11 @@ Hamilton, Jana Iyengar, Fedor Kouranov, Charles Krasic, Jo Kulik, Adam Langley,
 Jim Roskind, Robbie Shade, Satyam Shekhar, Cherie Shi, Ian Swett, Raman Tenneti,
 Victor Vasiliev, Antonio Vicente, Patrik Westin, Alyssa Wilk, Dale Worley, Fan
 Yang, Dan Zhang, Daniel Ziegler.
+This new text attempts the following:
+- Fixes to wording to reflect the way things are described in other IETF 
+RFCs.
+- Clarity on how ICMP PTB messages are processed.
+- Improved desctription of IPv4 and IPv6 protocols.
+- Separation of ICMP processing from the method: PMTUD or PLPMTUD.
+- Alignment with what is expected by DPLPMTUD.
+
