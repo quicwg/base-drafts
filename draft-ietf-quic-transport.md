@@ -60,7 +60,7 @@ normative:
         name: Sean Turner
         org: sn3rd
         role: editor
-  
+
   DPLPMTUD:
     title: "Datagram Packetization Layer Path MTU Discovery"
     date: {DATE}
@@ -2997,6 +2997,7 @@ the network path might be corrupting ECN codepoints, the endpoint MAY cease
 setting ECT codepoints in subsequent packets. Doing so allows the connection to
 traverse network elements that drop or corrupt ECN codepoints in the IP header.
 
+
 # Packet Size {#packet-size}
 
 The QUIC packet size includes the QUIC header and integrity check, but not the
@@ -3045,7 +3046,6 @@ path to a destination will support its desired message size without
 fragmentation.
 
 In the absence of these mechanisms, QUIC endpoints SHOULD NOT send IP packets
-<<<<<<< HEAD
 larger than 1280 bytes (assuming the minimum IP header size).  This results in
 a QUIC MPS of 1232 bytes for IPv6 and 1252 bytes for IPv4. A QUIC
 implementation MAY be more conservative in computing the QUIC MPS to allow for
@@ -5694,11 +5694,3 @@ Hamilton, Jana Iyengar, Fedor Kouranov, Charles Krasic, Jo Kulik, Adam Langley,
 Jim Roskind, Robbie Shade, Satyam Shekhar, Cherie Shi, Ian Swett, Raman Tenneti,
 Victor Vasiliev, Antonio Vicente, Patrik Westin, Alyssa Wilk, Dale Worley, Fan
 Yang, Dan Zhang, Daniel Ziegler.
-This new text attempts the following:
-- Fixes to wording to reflect the way things are described in other IETF 
-RFCs.
-- Clarity on how ICMP PTB messages are processed.
-- Improved desctription of IPv4 and IPv6 protocols.
-- Separation of ICMP processing from the method: PMTUD or PLPMTUD.
-- Alignment with what is expected by DPLPMTUD.
-
