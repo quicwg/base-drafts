@@ -61,12 +61,6 @@ normative:
         org: sn3rd
         role: editor
 
-  DPLPMTUD:
-    title: "Datagram Packetization Layer Path MTU Discovery"
-    date: {DATE}
-    seriesinfo:
-      Internet-Draft: draft-ietf-tsvwg-datagram-plpmtud
-
 informative:
 
   QUIC-INVARIANTS:
@@ -3039,10 +3033,10 @@ QUIC depends on a PMTU of at least 1280 bytes. This is the IPv6 minimum size
 packets (except for PMTU probe packets) SHOULD be sized to fit within the MPS
 to avoid IP fragmentation or packet drop along the path {{!RFC8805}.
 
-To optimize capacity efficiency, endpoints SHOULD use Datagram
-Packetization Layer PMTU Discovery ({{DPLPMTUD}}), or implement Path MTU
-Discovery (PMTUD) {{!RFC1191}} {{!RFC8201}} to determine whether the
-path to a destination will support its desired message size without
+To optimize capacity efficiency, endpoints SHOULD use Datagram Packetization
+Layer PMTU Discovery ({{!DPLPMTUD=I-D.ietf-tsvwg-datagram-plpmtud}}), or
+implement Path MTU Discovery (PMTUD) {{!RFC1191}} {{!RFC8201}} to determine
+whether the path to a destination will support its desired message size without
 fragmentation.
 
 In the absence of these mechanisms, QUIC endpoints SHOULD NOT send IP packets
@@ -3072,17 +3066,17 @@ address 3-tuple and reduce the PMTU to a bandwidth-inefficient value
 {{!RFC8201}}.
 
 QUIC endpoints SHOULD provide validation to protect from off-path injection of
-ICMP messages as specified in {{!RFC8201}} and Section 5.2 of {{!RFC8085}}.
-This uses the quoted packet supplied in the payload of an ICMP message, which,
-when present, can be used to associate the message with a corresponding
-transport connection {{!DPLPMTUD}}.
+ICMP messages as specified in {{!RFC8201}} and Section 5.2 of {{!RFC8085}}. This
+uses the quoted packet supplied in the payload of an ICMP message, which, when
+present, can be used to associate the message with a corresponding transport
+connection {{!DPLPMTUD}}.
 
-The IPv4 Router requirements {{!RFC1812} state that the quoted
-packet should contain as much of the original datagram as possible without the
-length of the ICMP datagram exceeding 576 bytes. IPv6 routers include as much
-of invoking packet as possible without the ICMPv6 packet exceeding 1280 bytes
-{{!RFC4443}}.  The size of the quoted packet can actually be smaller, or
-the information unintelligible, for various reasons {{!DPLPMTUD}}.
+The IPv4 Router requirements {{!RFC1812} state that the quoted packet should
+contain as much of the original datagram as possible without the length of the
+ICMP datagram exceeding 576 bytes. IPv6 routers include as much of invoking
+packet as possible without the ICMPv6 packet exceeding 1280 bytes {{!RFC4443}}.
+The size of the quoted packet can actually be smaller, or the information
+unintelligible, for various reasons {{!DPLPMTUD}}.
 
 When a randomized source port is used, this can provide some protection from
 off path attacks that forge ICMP messages. The source port
@@ -3110,11 +3104,12 @@ determines that the quoted packet has actually been lost.
 
 ## Considerations for Datagram Packetization Layer PMTU Discovery
 
-Section 6.4 of {{DPLPMTUD}} provides considerations for implementing Datagram
-Packetization Layer PMTUD (DPLPMTUD) with QUIC.
+Section 6.4 of {{!DPLPMTUD}} provides considerations for
+implementing Datagram Packetization Layer PMTUD (DPLPMTUD) with QUIC.
 
-When implementing the algorithm in Section 5.3 of {{DPLPMTUD}}, the initial
-value of BASE_PMTU SHOULD be consistent with the minimum QUIC packet size.
+When implementing the algorithm in Section 5.3 of
+{{!DPLPMTUD}}, the initial value of BASE_PMTU SHOULD be
+consistent with the minimum QUIC packet size.
 
 A PADDING frame can be used to generate PMTU probe packets. PADDING need not be
 delivered reliably. As a result, the loss of PADDING frames in probe packets
@@ -5011,10 +5006,10 @@ endpoints discard most packets that are not authenticated, greatly limiting the
 ability of an attacker to interfere with existing connections.
 
 Once a connection is established QUIC endpoints might accept some
-unauthenticated ICMP packets (see {{v4-pmtud}}), but the use of these packets is
-extremely limited.  The only other type of packet that an endpoint might accept
-is a stateless reset ({{stateless-reset}}) which relies on the token being kept
-secret until it is used.
+unauthenticated ICMP packets (see {{icmp-pmtud}}), but the use of these packets
+is extremely limited.  The only other type of packet that an endpoint might
+accept is a stateless reset ({{stateless-reset}}) which relies on the token
+being kept secret until it is used.
 
 During the creation of a connection, QUIC only provides protection against
 attack from off the network path.  All QUIC packets contain proof that the
