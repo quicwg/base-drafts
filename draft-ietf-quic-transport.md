@@ -3022,9 +3022,9 @@ address of the client, see {{address-validation}}.
 
 ## Path Maximum Transmission Unit (PMTU)
 
-The PMTU is the maximum size of the entire IP datagram including the IP header,
+The PMTU is the maximum size of the entire IP packet including the IP header,
 UDP header, and UDP payload.  The UDP payload includes the QUIC packet header,
-protected payload, and any authentication fields. This can be depend upon the
+protected payload, and any authentication fields. This can depend upon the
 current path characteristics.  Therefore, the current largest UDP payload an
 implementation will send is referred to as QUIC Maximum Packet Size (MPS).
 
@@ -3040,7 +3040,7 @@ whether the path to a destination will support its desired message size without
 fragmentation.
 
 In the absence of these mechanisms, QUIC endpoints SHOULD NOT send IP packets
-larger than 1280 bytes (assuming the minimum IP header size).  This results in
+larger than 1280 bytes. Assuming the minimum IP header size, this results in
 a QUIC MPS of 1232 bytes for IPv6 and 1252 bytes for IPv4. A QUIC
 implementation MAY be more conservative in computing the QUIC MPS to allow for
 unknown tunnel overheads or IP header options/extensions.
@@ -3055,12 +3055,12 @@ allowed MPS, it MUST immediately cease sending QUIC packets on the
 affected path.  This could result in termination of the connection if an
 alternative path cannot be found.
 
-### Processing ICMP Messages to reduce the PMTU {#icmp-pmtud}
+### Processing ICMP Packet Too Big Messages {#icmp-pmtud}
 
 PMTU discovery {{!RFC1191}} {{!RFC8201}} relies on reception of ICMP messages
-(e.g., IPv6 Packet Too Big, PTB, messages) that indicate when a packet is
+(e.g., IPv6 Packet Too Big messages) that indicate when a packet is
 dropped because it is larger than the local router MTU. DPLPMTUD can also
-optionally utilise these messages.  This use of ICMP messages is
+optionally use these messages.  This use of ICMP messages is
 potentially vulnerable to off-path attacks that successfully guess the IP
 address 3-tuple and reduce the PMTU to a bandwidth-inefficient value
 {{!RFC8201}}.
