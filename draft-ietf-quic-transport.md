@@ -1969,7 +1969,7 @@ In response to an apparent migration, endpoints MUST validate the previously
 active path using a PATH_CHALLENGE frame.  This induces the sending of new
 packets on that path.  If the path is no longer viable, the validation attempt
 will time out and fail; if the path is viable, but no longer desired, the
-validation will succeed, but only result in a probing packet being sent on the
+validation will succeed, but only results in a probing packet being sent on the
 path.
 
 An endpoint that receives a PATH_CHALLENGE on an active path SHOULD send a
@@ -1977,9 +1977,6 @@ non-probing packet in response.  If the non-probing packet arrives before any
 copy made by an attacker, this results in the connection being migrated back to
 the original path.  Any subsequent migration to another path resets this entire
 process.
-
-Abandoning this validation attempt before it either succeeds or times out
-increases exposure to the packet copying attack.
 
 This defense is imperfect, but this is not considered a serious problem. If the
 path via the attack is reliably faster than the original path despite multiple
@@ -2014,7 +2011,7 @@ While multiple paths might be used during connection migration, a single
 congestion control context and a single loss recovery context (as described in
 {{QUIC-RECOVERY}}) may be adequate.  For instance, an endpoint might delay
 switching to a new congestion control context until it is confirmed that an old
-path is no longer needed (for the case in {{off-path-forward}}).
+path is no longer needed (such as the case in {{off-path-forward}}).
 
 A sender can make exceptions for probe packets so that their loss detection is
 independent and does not unduly cause the congestion controller to reduce its
