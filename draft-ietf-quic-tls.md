@@ -112,16 +112,16 @@ code and issues list for this draft can be found at
 
 # Introduction
 
-This document describes how QUIC {{QUIC-TRANSPORT}} is secured using TLS version
-1.3 {{!TLS13=RFC8446}}.  TLS 1.3 provides critical
-latency improvements for connection establishment over previous versions.
-Absent packet loss, most new connections can be established and secured within a
-single round trip; on subsequent connections between the same client and server,
-the client can often send application data immediately, that is, using a zero
-round trip setup.
+This document describes how QUIC {{QUIC-TRANSPORT}} is secured using TLS
+{{!TLS13=RFC8446}}.
 
-This document describes how the standardized TLS 1.3 acts as a security
-component of QUIC.
+TLS 1.3 provides critical latency improvements for connection establishment over
+previous versions.  Absent packet loss, most new connections can be established
+and secured within a single round trip; on subsequent connections between the
+same client and server, the client can often send application data immediately,
+that is, using a zero round trip setup.
+
+This document describes how TLS acts as a security component of QUIC.
 
 
 # Notational Conventions
@@ -133,7 +133,8 @@ when, and only when, they appear in all capitals, as shown here.
 
 This document uses the terminology established in {{QUIC-TRANSPORT}}.
 
-For brevity, the acronym TLS is used to refer to TLS 1.3.
+For brevity, the acronym TLS is used to refer to TLS 1.3, though a newer version
+could be used (see {{tls-version}}).
 
 
 ## TLS Overview
@@ -178,7 +179,7 @@ learn and authenticate an identity for the client.  TLS supports X.509
 The TLS key exchange is resistant to tampering by attackers and it produces
 shared secrets that cannot be controlled by either participating peer.
 
-TLS 1.3 provides two basic handshake modes of interest to QUIC:
+TLS provides two basic handshake modes of interest to QUIC:
 
  * A full 1-RTT handshake in which the client is able to send application data
    after one round trip and the server immediately responds after receiving the
@@ -189,9 +190,9 @@ TLS 1.3 provides two basic handshake modes of interest to QUIC:
    application data can be replayed by an attacker so it MUST NOT carry a
    self-contained trigger for any non-idempotent action.
 
-A simplified TLS 1.3 handshake with 0-RTT application data is shown in
-{{tls-full}}.  Note that this omits the EndOfEarlyData message, which is not
-used in QUIC (see {{remove-eoed}}).
+A simplified TLS handshake with 0-RTT application data is shown in {{tls-full}}.
+Note that this omits the EndOfEarlyData message, which is not used in QUIC (see
+{{remove-eoed}}).
 
 ~~~
     Client                                             Server
@@ -232,7 +233,7 @@ server.
 # Protocol Overview
 
 QUIC {{QUIC-TRANSPORT}} assumes responsibility for the confidentiality and
-integrity protection of packets.  For this it uses keys derived from a TLS 1.3
+integrity protection of packets.  For this it uses keys derived from a TLS
 handshake {{!TLS13}}, but instead of carrying TLS records over QUIC (as with
 TCP), TLS Handshake and Alert messages are carried directly over the QUIC
 transport, which takes over the responsibilities of the TLS record layer, as
@@ -257,8 +258,8 @@ shown below.
 ~~~~
 
 
-QUIC also relies on TLS 1.3 for authentication and negotiation of parameters
-that are critical to security and performance.
+QUIC also relies on TLS for authentication and negotiation of parameters that
+are critical to security and performance.
 
 Rather than a strict layering, these two protocols are co-dependent: QUIC uses
 the TLS handshake; TLS uses the reliability, ordered delivery, and record
@@ -311,7 +312,7 @@ chunk of data that is produced by TLS is associated with the set of keys that
 TLS is currently using.  If QUIC needs to retransmit that data, it MUST use the
 same keys even if TLS has already updated to newer keys.
 
-One important difference between TLS 1.3 records (used with TCP) and QUIC CRYPTO
+One important difference between TLS records (used with TCP) and QUIC CRYPTO
 frames is that in QUIC multiple frames may appear in the same QUIC packet as
 long as they are associated with the same encryption level. For instance, an
 implementation might bundle a Handshake message and an ACK for some Handshake
@@ -516,7 +517,7 @@ Handshake Received
 {: #exchange-summary title="Interaction Summary between QUIC and TLS"}
 
 
-## TLS Version
+## TLS Version {#tls-version}
 
 This document describes how TLS 1.3 {{!TLS13}} is used with QUIC.
 
