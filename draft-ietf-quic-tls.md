@@ -909,10 +909,18 @@ of the ciphertext from the packet Payload field.
 The same number of bytes are always sampled, but an allowance needs to be made
 for the endpoint removing protection, which will not know the length of the
 Packet Number field.  In sampling the packet ciphertext, the Packet Number field
-is assumed to be 4 bytes long (its maximum possible encoded length), unless
-there is insufficient space in the packet for a complete sample.  The starting
-offset for the sample is set to 4 bytes after the start of the Packet Number
-field, then is reduced until there are enough bytes to sample.
+is assumed to be 4 bytes long (its maximum possible encoded length).
+
+An endpoint MUST discard packets that are not long enough to contain a complete
+sample.
+
+To ensure that sufficient data is available for sampling, packets are padded so
+that the combined lengths of the encoded packet number and protected payload is
+at least 4 bytes longer than the sample required for header protection.  For the
+AEAD functions defined in {{?TLS13}}, which have 16-byte expansions and 16-byte
+header protection samples, this results in needing at least 3 bytes of frames in
+the unprotected payload if the packet number is encoded on a single byte, or 2
+bytes of frames for a 2-byte packet number encoding.
 
 The sampled ciphertext for a packet with a short header can be determined by the
 following pseudocode:
@@ -920,16 +928,12 @@ following pseudocode:
 ~~~
 sample_offset = 1 + len(connection_id) + 4
 
-if sample_offset + sample_length > packet_length then
-    sample_offset = packet_length - sample_length
 sample = packet[sample_offset..sample_offset+sample_length]
 ~~~
 
 For example, for a packet with a short header, an 8 byte connection ID, and
 protected with AEAD_AES_128_GCM, the sample takes bytes 13 to 28 inclusive
-(using zero-based indexing) as long as the packet is at least 29 bytes long.
-The shortest packet that can be produced with this configuration is 27 bytes
-long, in which case bytes 11 to 26 are sampled.
+(using zero-based indexing).
 
 A packet with a long header is sampled in the same way, noting that multiple
 QUIC packets might be included in the same UDP datagram and that each one is
@@ -943,14 +947,8 @@ if packet_type == Initial:
     sample_offset += len(token_length) +
                      len(token)
 
-if sample_offset + sample_length > packet_length then
-    sample_offset = packet_length - sample_length
 sample = packet[sample_offset..sample_offset+sample_length]
 ~~~
-
-To ensure that this process does not sample the packet number, header protection
-algorithms MUST NOT require a sample size larger than the minimum expansion of
-the corresponding AEAD.
 
 
 ### AES-Based Header Protection {#hp-aes}
