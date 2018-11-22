@@ -54,7 +54,7 @@ transport protocol and describes how to use them to measure and locate packet lo
 
 # Introduction
 
-Packet  loss is  a hard  an  pervasive problem  of day-to-day  network
+Packet  loss is  a hard  and  pervasive problem  of day-to-day  network
 operation,  and  locating them  is  crucial  to timely  resolution  of
 crippling  end-to-end  throughput  issues.    To  this  effect,  in  a
 TCP-dominated world,  network operators  have been heavily  relying on
@@ -68,22 +68,17 @@ passive observer around.
 
 
 In the QUIC context, the equivalent transport headers being encrypted,
-no such observation is possible. To restore network operators' ability
-to maintain quality  efficiently in the presence  of QUIC-only traffic,
-this document  adds two explicit loss  bits to the QUIC  short header,
+such observation is not possible. To restore network operators' ability
+to maintain QUIC clients experience, this document  adds two explicit loss bits to the QUIC  short header,
 named "Q" and "R". Together, these bits allow the observer to estimate
 upstream and downstream  loss, enabling the same  dichotomic search as
 with TCP.
 
 zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz
 
-# The Spin Bit Mechanism
+# Passive Segmental Loss measurement
 
-The latency spin bit enables latency monitoring from observation points on the
-network path throughout the duration of a connection. Since it is possible to
-measure handshake RTT without a spin bit, it is sufficient to include the spin
-bit in the short packet header. The spin bit therefore appears only after
-version negotiation and connection establishment are completed.
+The proposed mechanism enable loss measurement from observation points on the network path throughout the lifetime of a connection. End-to end loss as well as segmental loss (upstream or downstream from the observation point) are measurable thanks to two dedicated bits in short packet headers. The loss bits therefore appear only after version negotiation and connection establishment are completed.
 
 ## Proposed Short Header Format Including Spin Bit
 
