@@ -2263,7 +2263,7 @@ following layout:
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|0|1|                   Random Bits (190..)                  ...
+|0|1|                   Random Bits (182..)                  ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                                                               |
 +                                                               +
@@ -2286,7 +2286,7 @@ number of random bytes following it are set to unpredictable values.  The last
 
 A stateless reset will be interpreted by a recipient as a packet with a short
 header.  For the packet to appear as valid, the Random Bits field needs to
-include at least 190 bits of random or unpredictable values (or 24 bytes, less
+include at least 182 bits of random or unpredictable values (or 24 bytes, less
 the two fixed bits).  This is intended to allow for a destination connection ID
 of the maximum length permitted, with a minimal packet number, and payload.  The
 Stateless Reset Token corresponds to the minimum expansion of the packet
