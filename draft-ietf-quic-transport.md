@@ -2296,7 +2296,7 @@ have negotiated a packet protection scheme with a larger minimum AEAD expansion.
 An endpoint SHOULD NOT send a stateless reset that is significantly larger than
 the packet it receives.  Endpoints MUST discard packets that are too small to be
 valid QUIC packets.  With the set of AEAD functions defined in {{QUIC-TLS}},
-packets less than 21 bytes long are never valid.
+packets that are smaller than 21 bytes are never valid.
 
 An endpoint MAY send a stateless reset in response to a packet with a long
 header.  This would not be effective if the stateless reset token was not yet

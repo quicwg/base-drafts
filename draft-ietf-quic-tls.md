@@ -913,10 +913,10 @@ sample.
 To ensure that sufficient data is available for sampling, packets are padded so
 that the combined lengths of the encoded packet number and protected payload is
 at least 4 bytes longer than the sample required for header protection.  For the
-AEAD functions defined in {{?TLS13}}, which have 16 byte expansion and 16 byte
+AEAD functions defined in {{?TLS13}}, which have 16-byte expansions and 16-byte
 header protection samples, this results in needing at least 3 bytes of frames in
 the unprotected payload if the packet number is encoded on a single byte, or 2
-bytes of frames for a 2 byte packet number encoding.
+bytes of frames for a 2-byte packet number encoding.
 
 The sampled ciphertext for a packet with a short header can be determined by the
 following pseudocode:
