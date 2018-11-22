@@ -1983,6 +1983,12 @@ path via the attack is reliably faster than the original path despite multiple
 attempts to use that original path, it is not possible to distinguish between
 attack and an improvement in routing.
 
+An endpoint could also use heuristics to improve detection of this style of
+attack.  For instance, NAT rebinding is improbable if packets were recently
+received on the old path, similarly rebinding is rare on IPv6 paths.  Endpoints
+can also look for duplicated packets.  Conversely, a change in connection ID is
+more likely to indicate an intentional migration rather than an attack.
+
 
 ## Loss Detection and Congestion Control {#migration-cc}
 
