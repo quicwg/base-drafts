@@ -74,7 +74,6 @@ named "Q" and "R". Together, these bits allow the observer to estimate
 upstream and downstream  loss, enabling the same  dichotomic search as
 with TCP.
 
-zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz
 
 # Passive Segmental Loss measurement
 
