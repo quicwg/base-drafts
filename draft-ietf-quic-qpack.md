@@ -32,8 +32,8 @@ author:
 
 normative:
 
-  QUIC-HTTP:
-    title: "Hypertext Transfer Protocol (HTTP) over QUIC"
+  HTTP3:
+    title: "Hypertext Transfer Protocol Version 3 (HTTP/3)"
     date: {DATE}
     seriesinfo:
       Internet-Draft: draft-ietf-quic-http-latest
@@ -65,7 +65,7 @@ normative:
 --- abstract
 
 This specification defines QPACK, a compression format for efficiently
-representing HTTP header fields, to be used in HTTP/QUIC. This is a variation of
+representing HTTP header fields, to be used in HTTP/3. This is a variation of
 HPACK header compression that seeks to reduce head-of-line blocking.
 
 --- note_Note_to_Readers
@@ -87,12 +87,12 @@ semantics, and its design subsumes many of the features of HTTP/2.  HTTP/2 uses
 HPACK ({{!RFC7541}}) for header compression, but QUIC's stream multiplexing
 comes into some conflict with HPACK.  A key goal of the design of QUIC is to
 improve stream multiplexing relative to HTTP/2 by reducing head-of-line
-blocking.  If HPACK were used for HTTP/QUIC, it would induce head-of-line
+blocking.  If HPACK were used for HTTP/3, it would induce head-of-line
 blocking due to built-in assumptions of a total ordering across frames on all
 streams.
 
-QUIC is described in {{QUIC-TRANSPORT}}.  The HTTP/QUIC mapping is described in
-{{QUIC-HTTP}}. For a full description of HTTP/2, see {{?RFC7540}}. The
+QUIC is described in {{QUIC-TRANSPORT}}.  The HTTP/3 mapping is described in
+{{HTTP3}}. For a full description of HTTP/2, see {{?RFC7540}}. The
 description of HPACK is {{!RFC7541}}.
 
 QPACK reuses core concepts from HPACK, but is redesigned to allow correctness in
@@ -368,11 +368,11 @@ The maximum size of the dynamic table can be modified by the encoder, subject to
 a decoder-controlled limit (see {{configuration}} and {{size-update}}).  The
 initial maximum size is determined by the corresponding setting when HTTP
 requests or responses are first permitted to be sent. For clients using 0-RTT
-data in HTTP/QUIC, the table size is the remembered value of the setting, even
-if the server later specifies a larger maximum in its SETTINGS frame.  For
-HTTP/QUIC servers and HTTP/QUIC clients when 0-RTT is not attempted or is
-rejected, the initial maximum table size is the value of the setting in the
-peer's SETTINGS frame.
+data in HTTP/3, the table size is the remembered value of the setting, even if
+the server later specifies a larger maximum in its SETTINGS frame.  For HTTP/3
+servers and HTTP/3 clients when 0-RTT is not attempted or is rejected, the
+initial maximum table size is the value of the setting in the peer's SETTINGS
+frame.
 
 Before a new entry is added to the dynamic table, entries are evicted from the
 end of the dynamic table until the size of the dynamic table is less than or
@@ -402,7 +402,7 @@ much memory is used by the dynamic table.  To limit the memory requirements of
 the decoder, the dynamic table size is strictly bounded.
 
 The decoder determines the maximum size that the encoder is permitted to use for
-the dynamic table.  In HTTP/QUIC, this value is determined by the
+the dynamic table.  In HTTP/3, this value is determined by the
 SETTINGS_HEADER_TABLE_SIZE setting (see {{configuration}}).
 
 An encoder can choose to use less capacity than this maximum size (see
@@ -679,7 +679,7 @@ maximum table size is represented as an integer with a 5-bit prefix (see Section
 
 The new maximum size MUST be lower than or equal to the limit determined by the
 protocol using QPACK.  A value that exceeds this limit MUST be treated as a
-connection error of type `HTTP_QPACK_ENCODER_STREAM_ERROR`.  In HTTP/QUIC, this
+connection error of type `HTTP_QPACK_ENCODER_STREAM_ERROR`.  In HTTP/3, this
 limit is the value of the SETTINGS_HEADER_TABLE_SIZE parameter (see
 {{configuration}}) received from the decoder.
 
@@ -1011,7 +1011,7 @@ represented as an 8-bit prefix string literal.
 
 #  Configuration
 
-QPACK defines two settings which are included in the HTTP/QUIC SETTINGS frame.
+QPACK defines two settings which are included in the HTTP/3 SETTINGS frame.
 
   SETTINGS_HEADER_TABLE_SIZE (0x1):
   : An integer with a maximum value of 2^30 - 1.  The default value is 4,096
@@ -1024,7 +1024,7 @@ QPACK defines two settings which are included in the HTTP/QUIC SETTINGS frame.
 
 # Error Handling {#error-handling}
 
-The following error codes are defined for HTTP/QUIC to indicate failures of
+The following error codes are defined for HTTP/3 to indicate failures of
 QPACK which prevent the stream or connection from continuing:
 
 HTTP_QPACK_DECOMPRESSION_FAILED (TBD):
@@ -1048,8 +1048,8 @@ TBD.
 
 ## Settings Registration
 
-This document creates two new settings in the "HTTP/QUIC Settings" registry
-established in {{QUIC-HTTP}}.
+This document creates two new settings in the "HTTP/3 Settings" registry
+established in {{HTTP3}}.
 
 The entries in the following table are registered by this document.
 
@@ -1062,8 +1062,8 @@ The entries in the following table are registered by this document.
 
 ## Stream Type Registration
 
-This document creates two new settings in the "HTTP/QUIC Stream Type" registry
-established in {{QUIC-HTTP}}.
+This document creates two new settings in the "HTTP/3 Stream Type" registry
+established in {{HTTP3}}.
 
 The entries in the following table are registered by this document.
 
@@ -1076,8 +1076,8 @@ The entries in the following table are registered by this document.
 
 ## Error Code Registration
 
-This document establishes the following new error codes in the "HTTP/QUIC Error
-Code" registry established in {{QUIC-HTTP}}.
+This document establishes the following new error codes in the "HTTP/3 Error
+Code" registry established in {{HTTP3}}.
 
 | --------------------------------- | ----- | ---------------------------------------- | ---------------------- |
 | Name                              | Code  | Description                              | Specification          |
