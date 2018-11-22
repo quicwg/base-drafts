@@ -3031,7 +3031,7 @@ implementation will send is referred to as QUIC Maximum Packet Size (MPS).
 QUIC depends on a PMTU of at least 1280 bytes. This is the IPv6 minimum size
 {{!RFC8200}} and is also supported by most modern IPv4 networks.  All QUIC
 packets (except for PMTU probe packets) SHOULD be sized to fit within the MPS
-to avoid IP fragmentation or packet drop along the path {{!RFC8805}.
+to avoid the packet being fragmented or dropped {{!RFC8805}.
 
 To optimize capacity efficiency, endpoints SHOULD use Datagram Packetization
 Layer PMTU Discovery ({{!DPLPMTUD=I-D.ietf-tsvwg-datagram-plpmtud}}), or
