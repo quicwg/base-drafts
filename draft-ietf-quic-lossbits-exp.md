@@ -83,15 +83,16 @@ The proposed mechanism enable loss measurement from observation points on the ne
 ## Proposed Short Header Format Including Spin Bit
 
 As of the current editor's version of {{QUIC-TRANSPORT}}, this proposal
-specifies using the sixth most significant bit (0x04) of the first byte in
-the short header for the spin bit.
+specifies using the seventh amost significant bit (0x04) of the first byte in
+the short header for the sQuare bit and the eight amost significant bit (0x04) of the first byte in
+the short header for the Retransmit bit.
 
 ~~~~~
 
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+
-|0|K|1|1|0|S|R R|
+|0|K|1|1|0|S|Q|R|
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                Destination Connection ID (0..144)           ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -101,15 +102,16 @@ the short header for the spin bit.
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
 ~~~~~
-{: #fig-short-header title="Short Header Format including proposed Spin Bit"}
+{: #fig-short-header title="Short Header Format including proposed Q and R Bit"}
 
-S: The Spin bit is set 0 or 1 depending on the stored spin value that is
-updated on packet reception as explained in {{spinbit}}.
+Q: The sQuare bit is toggled every 64 outgoing packets as explained in {{squarebit}}.
 
-R: Two additional bits are reserved for experimentation in the short header.
+R: The Retransmit bit is set to 0 or 1 according to the not-yet-disclosed-lost-packets
+counter, as explained in {{retransmitbit}}.
 
-## Setting the Spin Bit on Outgoing Packets {#spinbit}
+## Setting the Square Bit on Outgoing Packets {#squarebit}
 
+For a given direction, the sender 
 Each endpoint, client and server, maintains a spin value, 0 or 1, for each
 QUIC connection, and sets the spin bit in the short header to the currently
 stored value when a packet with a short header is sent out. The spin value is
