@@ -3078,8 +3078,8 @@ packet as possible without the ICMPv6 packet exceeding 1280 bytes {{!RFC4443}}.
 The size of the quoted packet can actually be smaller, or the information
 unintelligible, for various reasons see Section 1.1 of {{!DPLPMTUD}}.
 
-When a randomized source port is used, this can provide some protection from
-off path attacks that forge ICMP messages. The source port
+When a randomized source port is used for a QUIC connection, this can provide 
+some protection from off path attacks that forge ICMP messages. The source port
 in a quoted packet can be checked for TCP {{!RFC6056}}
 and UDP transports {{!RFC8085}}, such as QUIC.  When used, a stack will only
 pass ICMP messages to a QUIC endpoint where the port information in quoted
