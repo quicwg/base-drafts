@@ -1185,6 +1185,45 @@ Handshake[0]: CRYPTO[FIN], ACK[0]
 
 ## Negotiating Versions {#negotiating-versions}
 
+Version negotiation in QUIC is straightforward: the client supports a
+set of ordered versions V_0 ... V_N. Its Initial packet is sent using
+the oldest version that the client supports (V_0) and then lists all
+of the versions that the client supports in the supported_versions
+field of its transport parameters
+{{transport-parameter-encoding}}. The server then selects its
+preferred version and responds with that version in all of its future
+packets (except for Retry, as below). It also inserts the selected
+version in the version field of its transport parameters.
+
+The server MUST NOT select a version not offered by the client.  The
+client MUST validate that the version in the server's packets is one
+of the versions that it offered and that it matches the value in the
+server's transport parameters.
+
+If the server sends a Retry, it MUST use the same version that
+the client provided in its Initial. Version negotiation takes
+place after the retry cycle is over.
+
+In order for negotiation to complete successfully, the client's
+Initial packet (and initial CRYPTO frames) MUST be interpretable
+by the server. This has several implications:
+
+- Servers MUST retain the ability to process the Initial packet
+  from older versions as long as they are reasonably popular.
+  This is not generally an issue in practice as long as the
+  the overall structure of the protocol remains similar.
+
+- It is not possible for a client which supports two totally
+  incompatible versions of QUIC to reliably interoperate with
+  servers which might only support one of those versions.
+  This seems unlikely to happen in practice, however, as each
+  application binding is likely to stick with a particular
+  set of compatible versions.
+
+If the server receives an Initial packet with a version it does
+not understand this will cause a connection failure and the
+server SHOULD send a Version Error packet {{packet-version}}.
+
 
 ## Negotiating Connection IDs {#negotiating-connection-ids}
 
@@ -3341,10 +3380,9 @@ version.  See {{QUIC-INVARIANTS}} for details on how packets from different
 versions of QUIC are interpreted.
 
 
-## Version Mismatch Packet {#packet-version}
+## Version Error Packet {#packet-version}
 
 
-[TODO]
 
 ## Initial Packet {#packet-initial}
 
@@ -3650,12 +3688,11 @@ language from Section 3 of {{!TLS13=RFC8446}}.
    struct {
       select (Handshake.msg_type) {
          case client_hello:
-            QuicVersion initial_version;
+            QuicVersion supported_versions<4..2^8-4>;
 
          case encrypted_extensions:
-            QuicVersion negotiated_version;
-            QuicVersion supported_versions<4..2^8-4>;
-      };
+            QuicVersion version;
+      }
       TransportParameter parameters<0..2^16-1>;
    } TransportParameters;
 ~~~
