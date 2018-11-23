@@ -77,7 +77,7 @@ with TCP.
 
 # Passive Segmental Loss measurement
 
-The proposed mechanism enable loss measurement from observation points on the network path throughout the lifetime of a connection. End-to end loss as well as segmental loss (upstream or downstream from the observation point) are measurable thanks to two dedicated bits in short packet headers. The loss bits therefore appear only after version negotiation and connection establishment are completed.
+The proposed mechanism enable loss measurement from observation points on the network path throughout the lifetime of a connection. End-to end loss as well as segmental loss (upstream or downstream from the observation point) are measurable thanks to two dedicated bits in short packet headers, nammed loss bits. The loss bits therefore appear only after version negotiation and connection establishment are completed.
 
 ## Proposed Short Header Format Including sQuare and Retransmit Bits
 
@@ -110,37 +110,16 @@ counter, as explained in {{retransmitbit}}.
 
 ## Setting the Square Bit on Outgoing Packets {#squarebit}
 
-For a given direction, the sender 
-Each endpoint, client and server, maintains a spin value, 0 or 1, for each
-QUIC connection, and sets the spin bit in the short header to the currently
-stored value when a packet with a short header is sent out. The spin value is
-initialized to 0 at each endpoint, client and server, at connection start.
-Each endpoint also remembers the highest packet number seen from its peer on
-the connection.
+Each endpoint maintains independantly a sQuare value, 0 or 1, during a block of N outgoing packets (e.g.N=64), and sets the sQuare  bit in the short header to the currently stored value when a packet with a short header is sent out. The sQuare value is initiated to 0 at each endpoint, client and server, at connection start.
+This mechanism delineates thus slots of N packets with the same marking. Observation points can estimate the  upstream losses  by simply counting le number of packets during an half period of the square signal, as described in {{usage}}.
 
-The spin value is then determined at each endpoint within a single connection
-as follows:
-
-* When the server receives a packet from the client, if that packet has a
-  short header and if it increments the highest packet number seen by the
-  server from the client, the server sets the spin value to the value observed
-  in the spin bit in the received packet.
-
-* When the client receives a packet from the server, if the packet has a short
-  header and if it increments the highest packet number seen by the client
-  from the server, it sets the spin value to the opposite of the spin bit in
-  the received packet.
-
-This procedure will cause the spin bit to change value in each direction once
-per round trip. Observation points can estimate the network latency by
-observing these changes in the latency spin bit, as described in {{usage}}.
-See {{?QUIC-SPIN=I-D.trammell-quic-spin}} for further illustration of this
-mechanism in action.
 
 ## Setting the Retransmit Bit on Outgoing Packets {#retransmitbit}
 
-For a given direction, the sender 
-Each endpoint, client and server, maintains a spin value, 0 or 1, for each
+Each endpoint, client and server, The Retransmit bit is set to 0 or 1 according to the not-yet-disclosed-lost-packets
+counter
+
+maintains a spin value, 0 or 1, for each
 QUIC connection, and sets the spin bit in the short header to the currently
 stored value when a packet with a short header is sent out. The spin value is
 initialized to 0 at each endpoint, client and server, at connection start.
