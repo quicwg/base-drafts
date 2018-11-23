@@ -44,6 +44,23 @@ normative:
         org: Mozilla
         role: editor
 
+  QUIC-TLS:
+    title: "Using Transport Layer Security (TLS) to Secure QUIC"
+    date: {DATE}
+    seriesinfo:
+      Internet-Draft: draft-ietf-quic-tls-latest
+    author:
+      -
+        ins: M. Thomson
+        name: Martin Thomson
+        org: Mozilla
+        role: editor
+      -
+        ins: S. Turner
+        name: Sean Turner
+        org: sn3rd
+        role: editor
+
 
 informative:
 
@@ -438,6 +455,13 @@ packet, effectively restarting the connection process.
 Either packet indicates that the Initial was received but not processed.
 Neither packet can be treated as an acknowledgment for the Initial, but they MAY
 be used to improve the RTT estimate.
+
+#### Discarding Initial State
+
+As described in Section 4.10 of {{QUIC-TLS}}, endpoints stop sending and
+receiving Initial packets once they start exchanging Handshake packets.  At this
+point, all loss recovery state for the Initial encryption level is also
+discarded.
 
 ### Tail Loss Probe {#tlp}
 
@@ -1058,6 +1082,14 @@ is idle.
 A sender that does not use pacing SHOULD reset its congestion window to the
 minimum of the current congestion window and the initial congestion window.
 This recommendation is based on Section 4.1 of {{?RFC5681}}.
+
+## In-Flight Packet Accounting
+
+When keys for an encryption level are discarded (see {{QUIC-TLS}}), any packets
+sent with those keys are removed from the count of bytes in flight.  No loss
+events will occur for these packets.  Note that it is expected that keys are
+discarded after those packets would be declared lost, but Initial secrets are
+destroyed earlier.
 
 ## Pseudocode
 

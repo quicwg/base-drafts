@@ -641,7 +641,8 @@ alerts at the "warning" level.
 
 After QUIC moves to a new encryption level, packet protection keys for previous
 encryption levels can be discarded.  This occurs several times during the
-handshake, as well as when keys are updated (see {{key-update}}).
+handshake, as well as when keys are updated (see {{key-update}}).  Initial
+packet protection keys are treated specially, see {{discard-initial}}.
 
 Packet protection keys are not discarded immediately when new keys are
 available.  If packets from a lower encryption level contain CRYPTO frames,
@@ -689,6 +690,24 @@ only be performed once per round trip time, only packets that are delayed by
 more than a round trip will be lost as a result of changing keys; such packets
 will be marked as lost before this, as they leave a gap in the sequence of
 packet numbers.
+
+
+## Discarding Initial Keys {#discard-initial}
+
+Packets protected with Initial secrets ({{initial-secrets}}) are not
+authenticated, meaning that an attacker could spoof packets with the intent to
+disrupt a connection.  To limit these attacks, Initial packet protection keys
+can be discarded more aggressively than other keys.
+
+The successful use of Handshake packets indicates that no more Initial packets
+need to be exchanged, as these keys can only be produced after receiving all
+CRYPTO frames from Initial packets.  Thus, a client MUST discard Initial keys
+when it first sends a Handshake packet and a server MUST discard Initial keys
+when it first successfully processes a Handshake packet.  Endpoints MUST NOT
+send Initial packets after this point.
+
+This results in abandoning loss recovery state for the Initial encryption level
+and ignoring any outstanding Initial packets.
 
 
 # Packet Protection {#packet-protection}
