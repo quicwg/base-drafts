@@ -3665,7 +3665,7 @@ MUST treat receipt of Handshake packets with other frames as a connection error.
 
 ## Retry Packet {#packet-retry}
 
-A Retry packet uses a long packet header with a type value of 0x7E. It carries
+A Retry packet uses a long packet header with a type value of 0x3. It carries
 an address validation token created by the server. It is used by a server that
 wishes to perform a stateless retry (see {{validate-handshake}}).
 
