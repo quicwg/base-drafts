@@ -244,11 +244,8 @@ on the source and destination addresses of the path,
 so that the spin bit is consistently enabled or
 disabled for repeated use of the same path.
 
-When the spin bit is disabled, endpoints SHOULD set the spin bit value to
-a constant value randomly chosen to be 0 or 1,
-regardless of the values received from their peer.  Alternatively, endpoints MAY
-change this value when changing connection ID.  Addendums or revisions to
-this document MAY define alternative behaviors in the future.
+When the spin bit is disabled, endpoints MAY set the spin bit to any value,
+and MUST accept any incoming value.
 
 # IANA Considerations
 
