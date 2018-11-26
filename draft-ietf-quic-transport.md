@@ -3222,7 +3222,7 @@ Once header protection is removed, the packet number is decoded by finding the
 packet number value that is closest to the next expected packet.  The next
 expected packet is the highest received packet number plus one.  For example, if
 the highest successfully authenticated packet had a packet number of 0xa82f30ea,
-then a packet containing a 16-bit value of 0x9b32 will be decoded as 0xa8309b32.
+then a packet containing a 16-bit value of 0x9b32 will be decoded as 0xa82f9b32.
 Example pseudo-code for packet number decoding can be found in
 {{sample-packet-number-decoding}}.
 
