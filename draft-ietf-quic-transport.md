@@ -3026,12 +3026,12 @@ The PMTU is the maximum size of the entire IP packet including the IP header,
 UDP header, and UDP payload.  The UDP payload includes the QUIC packet header,
 protected payload, and any authentication fields. This can depend upon the
 current path characteristics.  Therefore, the current largest UDP payload an
-implementation will send is referred to as QUIC Maximum Packet Size (MPS).
+implementation will send is referred to as QUIC maximum packet size.
 
 QUIC depends on a PMTU of at least 1280 bytes. This is the IPv6 minimum size
 {{!RFC8200}} and is also supported by most modern IPv4 networks.  All QUIC
-packets (except for PMTU probe packets) SHOULD be sized to fit within the MPS
-to avoid the packet being fragmented or dropped {{!RFC8805}.
+packets (except for PMTU probe packets) SHOULD be sized to fit within the 
+maximum packet size to avoid the packet being fragmented or dropped {{!RFC8805}.
 
 To optimize capacity efficiency, endpoints SHOULD use Datagram Packetization
 Layer PMTU Discovery ({{!DPLPMTUD=I-D.ietf-tsvwg-datagram-plpmtud}}), or
@@ -3041,17 +3041,18 @@ fragmentation.
 
 In the absence of these mechanisms, QUIC endpoints SHOULD NOT send IP packets
 larger than 1280 bytes. Assuming the minimum IP header size, this results in
-a QUIC MPS of 1232 bytes for IPv6 and 1252 bytes for IPv4. A QUIC
-implementation MAY be more conservative in computing the QUIC MPS to allow for
-unknown tunnel overheads or IP header options/extensions.
+a QUIC maximum packet size of 1232 bytes for IPv6 and 1252 bytes for IPv4. A QUIC
+implementation MAY be more conservative in computing the QUIC maximum packet 
+size to allow for unknown tunnel overheads or IP header options/extensions.
 
 Each pair of local and remote addresses could have a different PMTU.  QUIC
 implementations that implement any kind of PMTU discovery therefore SHOULD
-maintain a MPS for each combination of local and remote IP addresses.
+maintain a maximum packet size for each combination of local and remote IP 
+addresses.
 
 If a QUIC endpoint determines that the PMTU between any pair of local and
 remote IP addresses has fallen below the size needed to support the smallest
-allowed MPS, it MUST immediately cease sending QUIC packets on the
+allowed maximum packet size, it MUST immediately cease sending QUIC packets on the
 affected path.  This could result in termination of the connection if an
 alternative path cannot be found.
 
@@ -3099,8 +3100,8 @@ Further validation can also be provided:
 
 The endpoint SHOULD ignore all ICMP messages that are not validated or do not
 carry sufficient quoted packet payload to perform validation.  Any reduction in
-the QUIC MPS MAY be provisional until QUIC's loss detection algorithm
-determines that the quoted packet has actually been lost.
+the QUIC maximum packet size MAY be provisional until QUIC's loss detection 
+algorithm determines that the quoted packet has actually been lost.
 
 ## Considerations for Datagram Packetization Layer PMTU Discovery
 
