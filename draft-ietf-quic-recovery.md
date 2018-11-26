@@ -338,8 +338,8 @@ The RECOMMENDED initial value for the packet reordering threshold
 {{?RFC5681}} {{?RFC6675}}.
 
 Some networks may exhibit higher degrees of reordering, causing a sender to
-detect spurious losses.  Implementers MAY use algorithms developed for TCP, such
-as TCP-NCR {{?RFC4653}}, to improve QUIC's reordering resilience.
+detect spurious losses.  Implementers MAY increase the packet threshold under
+such conditions.
 
 ### Time Threshold {#time-threshold}
 
@@ -352,7 +352,7 @@ lost, then a timer SHOULD be set for the remaining time.
 The RECOMMENDED time threshold (kTimeThreshold), expressed as a round-trip time
 multiplier, is 9/8.
 
-Using max(SRTT, latest_RTT) protects from the two following cases:
+Using max(smoothed_rtt, latest_rtt) protects from the two following cases:
 
 * the latest RTT sample is lower than the SRTT, perhaps due to reordering where
   packet whose ack triggered the Early Retransmit process encountered a shorter
@@ -424,100 +424,68 @@ from when the first Initial was sent to when a Retry or a Version Negotiation
 packet is received.  The client MAY use this value to seed the RTT estimator for
 a subsequent connection attempt to the server.
 
-### Tail Loss Probe {#tlp}
 
-The algorithm described in this section is an adaptation of the Tail Loss Probe
-algorithm proposed for TCP {{?TLP=I-D.dukkipati-tcpm-tcp-loss-probe}}.
+### Probe Timeout {#pto}
 
-A packet sent at the tail is particularly vulnerable to slow loss detection,
-since acks of subsequent packets are needed to trigger ack-based detection. To
-ameliorate this weakness of tail packets, the sender schedules a timer when the
-last ack-eliciting packet before quiescence is transmitted. Upon timeout,
-a Tail Loss Probe (TLP) packet is sent to evoke an acknowledgement from the
-receiver.
+A Probe Timeout (PTO) timer is the final backstop for loss detection, enabling a
+connection to recover from severe loss of packets or acks.  The PTO mechanism
+additionally enables recovery of tail packets, where acks of subsequent packets
+are not available to trigger ack-based loss detection.  The PTO algorithm used
+in QUIC implements the reliability functions of Tail Loss Probe
+{{?TLP=I-D.dukkipati-tcpm-tcp-loss-probe}}, RTO {{?RFC5681}} and F-RTO
+algorithms for TCP {{?RFC5682}}.
 
-The timer duration, or Probe Timeout (PTO), is set based on the following
-conditions:
+When the final retransmittable packet before quiescence is transmitted, the
+sender schedules a timer for the PTO period as follows:
 
-* PTO SHOULD be scheduled for max(1.5*SRTT+MaxAckDelay, kMinTLPTimeout)
+PTO = max(smoothed_rtt + 4*rttvar + max_ack_delay, G)
 
-* If RTO ({{rto}}) is earlier, schedule a TLP in its place. That is,
-  PTO SHOULD be scheduled for min(RTO, PTO).
+G is the timer granularity, and the other variables are defined in
+{{ld-vars-of-interest}}.
 
-QUIC includes MaxAckDelay in all probe timeouts, because it assumes the ack
-delay may come into play, regardless of the number of ack-eliciting
-packets in flight. TCP's TLP assumes if at least 2 ack-eliciting packets are
-in flight, acks will not be delayed.
+The sender explicitly includes max_ack_delay in the PTO period, to account for
+the maximum time by which the receiver might delay sending an acknowledgement.
 
-A PTO value of at least 1.5*SRTT ensures that the ACK is overdue.  The 1.5 is
-based on {{?TLP}}, but implementations MAY experiment with other constants.
+When a PTO timer expires, the PTO period MUST be set to twice its current value.
+This exponential reduction in the sender's rate is important because the PTOs
+might be caused by loss of packets or acknowledgements due to severe congestion.
 
-To reduce latency, it is RECOMMENDED that the sender set and allow the TLP timer
-to fire twice before setting an RTO timer. In other words, when the TLP timer
-expires the first time, a TLP packet is sent, and it is RECOMMENDED that the TLP
-timer be scheduled for a second time. When the TLP timer expires the second
-time, a second TLP packet is sent, and an RTO timer SHOULD be scheduled {{rto}}.
+A PTO is set on a tail packet.  A sender may not know that a packet being sent
+is a tail packet, and may have to arm or adjust the timer every time a
+retransmittable packet is sent.
 
-A TLP packet SHOULD carry new data when possible. If new data is unavailable or
-new data cannot be sent due to flow control, a TLP packet MAY retransmit
-unacknowledged data to potentially reduce recovery time. Since a TLP timer is
-used to send a probe into the network prior to establishing any packet loss,
-prior unacknowledged packets SHOULD NOT be marked as lost when a TLP timer
-expires.
+Upon timeout, the sender sends up to two retransmittable packets are sent to
+evoke acknowledgements from the receiver.  The sender might have incurred a high
+latency penalty by the time a PTO timer expires, and this penalty increases
+exponentially in subsequent consecutive PTO events. Sending a single packet on
+an RTO event therefore makes the connection very sensitive to single packet
+loss. Sending two packets significantly increases resilience to packet drop in
+both directions, thus reducing the probability of consecutive PTO events.
 
-A sender may not know that a packet being sent is a tail packet.  Consequently,
-a sender may have to arm or adjust the TLP timer on every sent ack-eliciting
-packet.
+A packet sent on a PTO timer expiration SHOULD carry new data when possible. If
+new data is unavailable or new data cannot be sent due to flow control, the
+sender MAY retransmit unacknowledged data.  A sender MAY also retransmit
+unacknowledged data to potentially reduce loss recovery time.
 
-### Retransmission Timeout {#rto}
+Since packets sent on a PTO timer expiration are sent as a probes into the
+network, the timer expiration event MUST NOT cause prior unacknowledged packets
+to be marked as lost.
 
-A Retransmission Timeout (RTO) timer is the final backstop for loss
-detection. The algorithm used in QUIC is based on the RTO algorithm for TCP
-{{?RFC5681}} and is additionally resilient to spurious RTO events {{?RFC5682}}.
+A packet sent on an PTO timer expiration MUST NOT be blocked by the sender's
+congestion controller. A sender MUST however count these packets as being in
+flight, since this packet adds network load without establishing packet loss.
 
-When the last TLP packet is sent, a timer is set for the RTO period. When
-this timer expires, the sender sends two packets, to evoke acknowledgements from
-the receiver, and restarts the RTO timer.
+The sender might have several consecutive PTO timer expirations before receiving
+an ACK frame from the peer that newly acknowledges one or more packets.
 
-Similar to TCP {{?RFC6298}}, the RTO period is set based on the following
-conditions:
+If an ACK frame is received that newly acknowledges packets sent prior to the
+first of one or more consecutive PTO expirations, the PTOs are considered
+spurious.  Loss detection proceeds as dictated by Fast Retransmit
+{{fast-retransmit}} and Early Retransmit {{early-retransmit}} mechanisms.
 
-* When the final TLP packet is sent, the RTO period is set to max(SRTT +
-  4*RTTVAR + MaxAckDelay, kMinRTOTimeout)
-
-* When an RTO timer expires, the RTO period is doubled.
-
-The sender typically has incurred a high latency penalty by the time an RTO
-timer expires, and this penalty increases exponentially in subsequent
-consecutive RTO events. Sending a single packet on an RTO event therefore makes
-the connection very sensitive to single packet loss. Sending two packets instead
-of one significantly increases resilience to packet drop in both directions,
-thus reducing the probability of consecutive RTO events.
-
-QUIC's RTO algorithm differs from TCP in that the firing of an RTO timer is not
-considered a strong enough signal of packet loss, so does not result in an
-immediate change to congestion window or recovery state. An RTO timer expires
-only when there's a prolonged period of network silence, which could be caused
-by a change in the network RTT.
-
-QUIC also diverges from TCP by including MaxAckDelay in the RTO period. Since
-QUIC corrects for this delay in its SRTT and RTTVAR computations, it is
-necessary to add this delay explicitly in the TLP and RTO computation.
-
-When an ACK is received that acknowledges only one or more packets sent on
-an RTO event, all unacknowledged packets with lower packet numbers MUST be
-marked as lost.  If packets sent prior to the first RTO are acknowledged in
-the same ACK, the RTO is considered spurious and standard loss detection rules
-apply.
-
-A packet sent when an RTO timer expires MAY carry new data if available or
-unacknowledged data to potentially reduce recovery time. Since this packet is
-sent as a probe into the network prior to establishing any packet loss, prior
-unacknowledged packets SHOULD NOT be marked as lost when the timer expires.
-
-A packet sent on an RTO timer MUST NOT be blocked by the sender's congestion
-controller. A sender MUST however count these packets as being in flight, since
-this packet adds network load without establishing packet loss.
+If an ACK frame is received that newly acknowledges only those packets that were
+sent after a PTO timer expiration, all unacknowledged packets with lower packet
+numbers MUST be marked as lost.
 
 
 ## Tracking Sent Packets {#tracking-sent-packets}
@@ -600,7 +568,7 @@ kDelayedAckTimeout:
 kInitialRtt:
 : The RTT used before an RTT sample is taken. The RECOMMENDED value is 100ms.
 
-### Variables of interest
+### Variables of interest {#ld-vars-of-interest}
 
 Variables required to implement the congestion control mechanisms
 are described in this section.
