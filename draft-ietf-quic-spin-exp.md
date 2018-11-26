@@ -244,6 +244,9 @@ on the source and destination addresses of the path,
 so that the spin bit is consistently enabled or
 disabled for repeated use of the same path.
 
+Note that where multiple connections use the same path,
+the use of the spin bit MAY be coordinated by endpoints,
+recognizing that this might not be possible in many cases.
 When the spin bit is disabled, endpoints MAY set the spin bit to any value,
 and MUST accept any incoming value.
 
