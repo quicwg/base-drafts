@@ -3109,7 +3109,7 @@ Section 6.4 of {{!DPLPMTUD}} provides considerations for
 implementing Datagram Packetization Layer PMTUD (DPLPMTUD) with QUIC.
 
 When implementing the algorithm in Section 5.3 of
-{{!DPLPMTUD}}, the initial value of BASE_PMTU SHOULD be consistent with the 
+{{!DPLPMTUD}}, the initial value of BASE_PMTU SHOULD be consistent with the
 minimum QUIC packet size (1232 bytes for IPv6 and 1252 bytes for IPv4).
 
 A PADDING frame can be used to generate PMTU probe packets. PADDING need not be
