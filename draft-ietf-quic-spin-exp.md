@@ -239,14 +239,17 @@ fraction of connections.
 
 The selection process SHOULD be designed such that
 on average the spin bit is disabled for at least one eighth of network paths.
-The random choice SHOULD be dependent
-on the source and destination addresses of the path,
-so that the spin bit is consistently enabled or
-disabled for repeated use of the same path.
+The selection process SHOULD be externally unpredictable but consistent for
+any given combination of source and destination address/port. For instance,
+the implementation might have a static key which it uses to key a pseudorandom
+function over these values and use the output to determine whether to
+send the spin bit. The selection process performed at the beginning
+of the connection SHOULD be applied for all paths used by the connection.
 
 Note that where multiple connections use the same path,
 the use of the spin bit MAY be coordinated by endpoints,
 recognizing that this might not be possible in many cases.
+
 When the spin bit is disabled, endpoints MAY set the spin bit to any value,
 and MUST accept any incoming value.
 
