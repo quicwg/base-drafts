@@ -658,10 +658,11 @@ HTTP_MALFORMED_FRAME.
 The following settings are defined in HTTP/3:
 
   SETTINGS_NUM_PLACEHOLDERS (0x3):
-  : This value SHOULD be non-zero.  The default value is 0.
+  : The default value is 0.  However, this value SHOULD be set to a non-zero
+    value by servers.  See {{placeholders}} for usage.
 
   SETTINGS_MAX_HEADER_LIST_SIZE (0x6):
-  : The default value is unlimited.
+  : The default value is unlimited.  See {{header-formatting}} for usage.
 
 Setting identifiers of the format `0x?a?a` are reserved to exercise the
 requirement that unknown identifiers be ignored.  Such settings have no defined
@@ -679,14 +680,13 @@ Additional settings MAY be defined by extensions to HTTP/3.
 An HTTP implementation MUST NOT send frames or requests which would be invalid
 based on its current understanding of the peer's settings.  All settings begin
 at an initial value, and are updated upon receipt of a SETTINGS frame.  For
-servers, the initial values of the client's settings are the defaults of each
-setting.
+servers, the initial value of each client setting is the default value.
 
-For clients using a 1-RTT QUIC connection, the initial values of the server's
-settings are the defaults of each setting. When a 0-RTT QUIC connection is being
-used, the initial values are the values used in the previous session.  Clients
-MUST store the settings the server provided in the session being resumed and
-MUST comply with stored settings until the server's current settings are
+For clients using a 1-RTT QUIC connection, the initial value of each server
+setting is the default value. When a 0-RTT QUIC connection is being used, the
+initial value of each server setting is the value used in the previous session.
+Clients MUST store the settings the server provided in the session being resumed
+and MUST comply with stored settings until the current server settings are
 received.
 
 A server can remember the settings that it advertised, or store an
@@ -894,7 +894,7 @@ containing a usable HTTP request, the server SHOULD abort its response with the
 error code HTTP_INCOMPLETE_REQUEST.
 
 
-### Header Formatting and Compression
+### Header Formatting and Compression {#header-formatting}
 
 HTTP message headers carry information as a series of key-value pairs, called
 header fields. For a listing of registered HTTP header fields, see the "Message
