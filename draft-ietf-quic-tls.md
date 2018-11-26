@@ -785,9 +785,12 @@ connection ID in the client's first Initial packet (see {{initial-secrets}}).
 This provides protection against off-path attackers and robustness against QUIC
 version unaware middleboxes, but not against on-path attackers.
 
-All ciphersuites currently defined for TLS 1.3 - and therefore QUIC - have a
-16-byte authentication tag and produce an output 16 bytes larger than their
-input.
+QUIC can use any of the ciphersuites defined in {{!TLS13}} with the exception of
+TLS_AES_128_CCM_8_SHA256.  The AEAD for that ciphersuite, AEAD_AES_128_CCM_8
+{{?CCM=RFC6655}}, does not produce a large enough authentication tag for use
+with the header protection designs provided (see {{header-protect}}).  All other
+ciphersuites defined in {{!TLS13}} have a 16-byte authentication tag and produce
+an output 16 bytes larger than their input.
 
 The key and IV for the packet are computed as described in {{protection-keys}}.
 The nonce, N, is formed by combining the packet protection IV with the packet
