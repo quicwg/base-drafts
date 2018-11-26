@@ -316,7 +316,8 @@ header is determined by the stream type.
 
 Some stream types are reserved ({{stream-grease}}).  Two stream types are
 defined in this document: control streams ({{control-streams}}) and push streams
-({{push-streams}}).  Other stream types can be defined by extensions to HTTP/3.
+({{push-streams}}).  Other stream types can be defined by extensions to HTTP/3;
+see {{extensions}} for more details.
 
 Both clients and servers SHOULD send a value of three or greater for the QUIC
 transport parameter `initial_max_uni_streams`.
@@ -673,7 +674,8 @@ receipt.
 Because the setting has no defined meaning, the value of the setting can be any
 value the implementation selects.
 
-Additional settings MAY be defined by extensions to HTTP/3.
+Additional settings can be defined by extensions to HTTP/3; see {{extensions}}
+for more details.
 
 #### Initialization
 
