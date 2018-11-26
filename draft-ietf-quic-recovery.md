@@ -368,7 +368,7 @@ than 1.125 * max(SRTT, latest_RTT) since when it was sent.
 Using max(SRTT, latest_RTT) protects from the two following cases:
 
 * the latest RTT sample is lower than the SRTT, perhaps due to reordering where
-  packet whose ack triggered the Early Retransit process encountered a shorter
+  packet whose ack triggered the Early Retransmit process encountered a shorter
   path;
 
 * the latest RTT sample is higher than the SRTT, perhaps due to a sustained
