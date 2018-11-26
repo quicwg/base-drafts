@@ -3278,9 +3278,10 @@ Reserved Bits (R):
 
 : The next two bits (those with a mask of 0x0c) of byte 0 are reserved.  These
   bits are protected using header protection (see Section 5.4 of {{QUIC-TLS}}).
-  The value included prior to protection MUST be set to 0.  An endpoint MUST
-  treat receipt of a packet that has a non-zero value for these bits after
-  removing protection as a connection error of type PROTOCOL_VIOLATION.
+  The value included prior to protection MUST be set to 0.  For Handshake and
+  0-RTT packets and endpoint MUST treat a non-zero value after removing
+  protection as a connection error of type PROTOCOL_VIOLATION. For Initial
+  packets, and endpoint MAY instead choose to drop the packet.
 
 Packet Number Length (P):
 
