@@ -4271,7 +4271,7 @@ to abruptly terminate transmission on a stream.
 Receipt of a STOP_SENDING frame is invalid for a locally-initiated stream that
 has not yet been created or is in the "Ready" state (see
 {{stream-send-states}}). Receiving a STOP_SENDING frame for a locally-initiated
-send stream that is "Ready" or non-existent MUST be treated as a connection
+send stream that is "Ready" or not yet created MUST be treated as a connection
 error of type PROTOCOL_VIOLATION.  An endpoint that receives a STOP_SENDING
 frame for a receive-only stream MUST terminate the connection with error
 PROTOCOL_VIOLATION.
