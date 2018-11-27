@@ -1026,9 +1026,9 @@ streams long after the server had discarded state, leading to disparate views of
 the prioritization the client had attempted to express.
 
 In HTTP/3, a number of placeholders are explicitly permitted by the server using
-the `SETTINGS_NUM_PLACEHOLDERS` setting. Because the server commits to maintain
-these IDs in the tree, clients can use them with confidence that the server will
-not have discarded the state.  Clients MUST NOT send the
+the `SETTINGS_NUM_PLACEHOLDERS` setting. Because the server commits to
+maintaining these IDs in the tree, clients can use them with confidence that the
+server will not have discarded the state.  Clients MUST NOT send the
 `SETTINGS_NUM_PLACEHOLDERS` setting; receipt of this setting by a server MUST be
 treated as a connection error of type `HTTP_WRONG_SETTING_DIRECTION`.
 
