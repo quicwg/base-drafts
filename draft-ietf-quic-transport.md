@@ -3030,7 +3030,7 @@ implementation will send is referred to as QUIC maximum packet size.
 
 QUIC depends on a PMTU of at least 1280 bytes. This is the IPv6 minimum size
 {{!RFC8200}} and is also supported by most modern IPv4 networks.  All QUIC
-packets (except for PMTU probe packets) SHOULD be sized to fit within the 
+packets (except for PMTU probe packets) SHOULD be sized to fit within the
 maximum packet size to avoid the packet being fragmented or dropped {{!RFC8805}.
 
 To optimize capacity efficiency, endpoints SHOULD use Datagram Packetization
@@ -3042,12 +3042,12 @@ fragmentation.
 In the absence of these mechanisms, QUIC endpoints SHOULD NOT send IP packets
 larger than 1280 bytes. Assuming the minimum IP header size, this results in
 a QUIC maximum packet size of 1232 bytes for IPv6 and 1252 bytes for IPv4. A QUIC
-implementation MAY be more conservative in computing the QUIC maximum packet 
+implementation MAY be more conservative in computing the QUIC maximum packet
 size to allow for unknown tunnel overheads or IP header options/extensions.
 
 Each pair of local and remote addresses could have a different PMTU.  QUIC
 implementations that implement any kind of PMTU discovery therefore SHOULD
-maintain a maximum packet size for each combination of local and remote IP 
+maintain a maximum packet size for each combination of local and remote IP
 addresses.
 
 If a QUIC endpoint determines that the PMTU between any pair of local and
@@ -3079,7 +3079,7 @@ packet as possible without the ICMPv6 packet exceeding 1280 bytes {{!RFC4443}}.
 The size of the quoted packet can actually be smaller, or the information
 unintelligible, for various reasons see Section 1.1 of {{!DPLPMTUD}}.
 
-When a randomized source port is used for a QUIC connection, this can provide 
+When a randomized source port is used for a QUIC connection, this can provide
 some protection from off path attacks that forge ICMP messages. The source port
 in a quoted packet can be checked for TCP {{!RFC6056}}
 and UDP transports {{!RFC8085}}, such as QUIC.  When used, a stack will only
@@ -3100,7 +3100,7 @@ Further validation can also be provided:
 
 The endpoint SHOULD ignore all ICMP messages that are not validated or do not
 carry sufficient quoted packet payload to perform validation.  Any reduction in
-the QUIC maximum packet size MAY be provisional until QUIC's loss detection 
+the QUIC maximum packet size MAY be provisional until QUIC's loss detection
 algorithm determines that the quoted packet has actually been lost.
 
 ## Considerations for Datagram Packetization Layer PMTU Discovery
