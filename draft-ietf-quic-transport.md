@@ -3020,6 +3020,7 @@ processed as valid.
 The server MUST also limit the number of bytes it sends before validating the
 address of the client, see {{address-validation}}.
 
+
 ## Path Maximum Transmission Unit (PMTU)
 
 The PMTU is the maximum size of the entire IP packet including the IP header,
@@ -3040,8 +3041,8 @@ whether the path to a destination will support its desired message size without
 fragmentation.
 
 In the absence of these mechanisms, QUIC endpoints SHOULD NOT send IP packets
-larger than 1280 bytes. Assuming the minimum IP header size, this results in
-a QUIC maximum packet size of 1232 bytes for IPv6 and 1252 bytes for IPv4. A QUIC
+larger than 1280 bytes. Assuming the minimum IP header size, this results in a
+QUIC maximum packet size of 1232 bytes for IPv6 and 1252 bytes for IPv4. A QUIC
 implementation MAY be more conservative in computing the QUIC maximum packet
 size to allow for unknown tunnel overheads or IP header options/extensions.
 
@@ -3050,21 +3051,21 @@ implementations that implement any kind of PMTU discovery therefore SHOULD
 maintain a maximum packet size for each combination of local and remote IP
 addresses.
 
-If a QUIC endpoint determines that the PMTU between any pair of local and
-remote IP addresses has fallen below the size needed to support the smallest
-allowed maximum packet size, it MUST immediately cease sending QUIC packets on the
+If a QUIC endpoint determines that the PMTU between any pair of local and remote
+IP addresses has fallen below the size needed to support the smallest allowed
+maximum packet size, it MUST immediately cease sending QUIC packets on the
 affected path.  This could result in termination of the connection if an
 alternative path cannot be found.
+
 
 ### Processing ICMP Packet Too Big Messages {#icmp-pmtud}
 
 PMTU discovery {{!RFC1191}} {{!RFC8201}} relies on reception of ICMP messages
-(e.g., IPv6 Packet Too Big messages) that indicate when a packet is
-dropped because it is larger than the local router MTU. DPLPMTUD can also
-optionally use these messages.  This use of ICMP messages is
-potentially vulnerable to off-path attacks that successfully guess the IP
-address 3-tuple and reduce the PMTU to a bandwidth-inefficient value
-{{!RFC8201}}.
+(e.g., IPv6 Packet Too Big messages) that indicate when a packet is dropped
+because it is larger than the local router MTU. DPLPMTUD can also optionally use
+these messages.  This use of ICMP messages is potentially vulnerable to off-path
+attacks that successfully guess the IP address 3-tuple and reduce the PMTU to a
+bandwidth-inefficient value {{!RFC8201}}.
 
 QUIC endpoints SHOULD provide validation to protect from off-path injection of
 ICMP messages as specified in {{!RFC8201}} and Section 5.2 of {{!RFC8085}}. This
@@ -3072,22 +3073,21 @@ uses the quoted packet supplied in the payload of an ICMP message, which, when
 present, can be used to associate the message with a corresponding transport
 connection {{!DPLPMTUD}}.
 
-The IPv4 Router requirements {{!RFC1812} state that the quoted packet should
-contain as much of the original datagram as possible without the length of the
-ICMP datagram exceeding 576 bytes. IPv6 routers include as much of invoking
-packet as possible without the ICMPv6 packet exceeding 1280 bytes {{!RFC4443}}.
-The size of the quoted packet can actually be smaller, or the information
-unintelligible, for various reasons see Section 1.1 of {{!DPLPMTUD}}.
+The requirements for generating ICMP ({{?RFC1812}}, {{?RFC4443}}) state that the
+quoted packet should contain as much of the original packet as possible without
+exceeding the minimum MTU for the IP version.  The size of the quoted packet can
+actually be smaller, or the information unintelligible, as described in Section
+1.1 of {{!DPLPMTUD}}.
 
 When a randomized source port is used for a QUIC connection, this can provide
 some protection from off path attacks that forge ICMP messages. The source port
-in a quoted packet can be checked for TCP {{!RFC6056}}
-and UDP transports {{!RFC8085}}, such as QUIC.  When used, a stack will only
-pass ICMP messages to a QUIC endpoint where the port information in quoted
-packet within the ICMP payload matches a port used by QUIC.
+in a quoted packet can be checked for TCP {{!RFC6056}} and UDP transports
+{{!RFC8085}}, such as QUIC.  When used, a stack will only pass ICMP messages to
+a QUIC endpoint where the port information in quoted packet within the ICMP
+payload matches a port used by QUIC.
 
-As a part of ICMP validation, QUIC endpoints SHOULD validate
-that connection ID information corresponds to an active session.
+As a part of ICMP validation, QUIC endpoints SHOULD validate that connection ID
+information corresponds to an active session.
 
 Further validation can also be provided:
 
@@ -3103,26 +3103,27 @@ carry sufficient quoted packet payload to perform validation.  Any reduction in
 the QUIC maximum packet size MAY be provisional until QUIC's loss detection
 algorithm determines that the quoted packet has actually been lost.
 
+
 ## Considerations for Datagram Packetization Layer PMTU Discovery
 
-Section 6.4 of {{!DPLPMTUD}} provides considerations for
-implementing Datagram Packetization Layer PMTUD (DPLPMTUD) with QUIC.
+Section 6.4 of {{!DPLPMTUD}} provides considerations for implementing Datagram
+Packetization Layer PMTUD (DPLPMTUD) with QUIC.
 
-When implementing the algorithm in Section 5.3 of
-{{!DPLPMTUD}}, the initial value of BASE_PMTU SHOULD be consistent with the
-minimum QUIC packet size (1232 bytes for IPv6 and 1252 bytes for IPv4).
+When implementing the algorithm in Section 5.3 of {{!DPLPMTUD}}, the initial
+value of BASE_PMTU SHOULD be consistent with the minimum QUIC packet size (1232
+bytes for IPv6 and 1252 bytes for IPv4).
 
-A PADDING frame can be used to generate PMTU probe packets. PADDING need not be
-delivered reliably. As a result, the loss of PADDING frames in probe packets
-does not require delay-inducing retransmission. However, PADDING frames do
-consume congestion window, which could delay the transmission of subsequent
-application data.
+PADDING and PING frames can be used to generate PMTU probe packets. These frames
+are not delivered reliably, so do not result in retransmission if the packet is
+lost.  However, these frames do consume congestion window, which could delay the
+transmission of subsequent application data.
 
-A QUIC PING frame can be included in a PMTU probe to ensure that a valid
-probe is acknowledged.
+A PING frame can be included in a PMTU probe to ensure that a valid probe is
+acknowledged.
 
-The considerations for processing ICMP messages in the previous
-section also apply if these messages are used by DPLPMTUD.
+The considerations for processing ICMP messages in the previous section also
+apply if these messages are used by DPLPMTUD.
+
 
 # Versions {#versions}
 
