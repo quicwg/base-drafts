@@ -94,7 +94,7 @@ informative:
 
 This document defines the core of the QUIC transport protocol.  Accompanying
 documents describe QUIC's loss detection and congestion control
-{{QUIC-RECOVERY}} and the use of TLS 1.3 for key negotiation {{QUIC-TLS}}.
+{{QUIC-RECOVERY}} and the use of TLS for key negotiation {{QUIC-TLS}}.
 
 
 --- note_Note_to_Readers
@@ -165,7 +165,7 @@ This document describes the core QUIC protocol and is structured as follows.
   - {{error-codes}} (Errors).
 
 Accompanying documents describe QUIC's loss detection and congestion control
-{{QUIC-RECOVERY}}, and the use of TLS 1.3 for key negotiation {{QUIC-TLS}}.
+{{QUIC-RECOVERY}}, and the use of TLS for key negotiation {{QUIC-TLS}}.
 
 This document defines QUIC version 1, which conforms to the protocol invariants
 in {{QUIC-INVARIANTS}}.
@@ -1189,9 +1189,9 @@ solicit a list of supported versions from a server.
 
 QUIC relies on a combined cryptographic and transport handshake to minimize
 connection establishment latency.  QUIC uses the CRYPTO frame {{frame-crypto}}
-to transmit the cryptographic handshake.  Version 0x00000001 of QUIC uses TLS
-1.3 as described in {{QUIC-TLS}}; a different QUIC version number could indicate
-that a different cryptographic handshake protocol is in use.
+to transmit the cryptographic handshake.  Version 0x00000001 of QUIC uses TLS as
+described in {{QUIC-TLS}}; a different QUIC version number could indicate that a
+different cryptographic handshake protocol is in use.
 
 QUIC provides reliable, ordered delivery of the cryptographic handshake
 data. QUIC packet protection ensures confidentiality and integrity protection
@@ -1324,9 +1324,10 @@ packet is received from the server, the client MUST use the same value unless it
 abandons the connection attempt and starts a new one. The initial Destination
 Connection ID is used to determine packet protection keys for Initial packets.
 
-A client SHOULD select a Destination Connection ID length long enough to fulfill
-the minimum for every QUIC version it supports. This increases the chance
-subsequent Initial packets are routed to the same server.
+The final version used for a connection might be different from the version of
+the first Initial from the client.  To enable consistent routing through the
+handshake, a client SHOULD select an initial Destination Connection ID length
+long enough to fulfill the minimum size for every QUIC version it supports.
 
 The client populates the Source Connection ID field with a value of its choosing
 and sets the SCIL field to match.
@@ -1811,7 +1812,7 @@ This document limits migration of connections to new client addresses, except as
 described in {{preferred-address}}. Clients are responsible for initiating all
 migrations.  Servers do not send non-probing packets (see {{probing}}) toward a
 client address until they see a non-probing packet from that address.  If a
-client receives packets from an unknown server address, the client MAY discard
+client receives packets from an unknown server address, the client MUST discard
 these packets.
 
 
@@ -2179,7 +2180,7 @@ endpoint is only used to determine whether the connection is live at that
 endpoint.  An endpoint that sends packets near the end of the idle timeout
 period of a peer risks having those packets discarded if its peer enters the
 draining state before the packets arrive.  If a peer could timeout within an RTO
-(see Section 4.3.3 of {{QUIC-RECOVERY}}), it is advisable to test for liveness
+(see Section 5.3.3 of {{QUIC-RECOVERY}}), it is advisable to test for liveness
 before sending any data that cannot be retried safely.
 
 
@@ -2263,7 +2264,7 @@ following layout:
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|0|1|                   Random Bytes (166..)                  ...
+|0|1|                   Random Bits (182..)                  ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                                                               |
 +                                                               +
@@ -2280,23 +2281,23 @@ This design ensures that a stateless reset packet is - to the extent possible -
 indistinguishable from a regular packet with a short header.
 
 A stateless reset uses an entire UDP datagram, starting with the first two bits
-of the packet header.  The remainder of the first byte and an an arbitrary
+of the packet header.  The remainder of the first byte and an arbitrary
 number of random bytes following it are set to unpredictable values.  The last
 16 bytes of the datagram contain a Stateless Reset Token.
 
 A stateless reset will be interpreted by a recipient as a packet with a short
-header.  For the packet to appear as valid, the Random Bytes field needs to
-include at least 20 bytes of random or unpredictable values.  This is intended
-to allow for a destination connection ID of the maximum length permitted, a
-packet number, and minimal payload.  The Stateless Reset Token corresponds to
-the minimum expansion of the packet protection AEAD.  More random bytes might be
-necessary if the endpoint could have negotiated a packet protection scheme with
-a larger minimum AEAD expansion.
+header.  For the packet to appear as valid, the Random Bits field needs to
+include at least 182 bits of random or unpredictable values (or 24 bytes, less
+the two fixed bits).  This is intended to allow for a destination connection ID
+of the maximum length permitted, with a minimal packet number, and payload.  The
+Stateless Reset Token corresponds to the minimum expansion of the packet
+protection AEAD.  More random bytes might be necessary if the endpoint could
+have negotiated a packet protection scheme with a larger minimum AEAD expansion.
 
 An endpoint SHOULD NOT send a stateless reset that is significantly larger than
 the packet it receives.  Endpoints MUST discard packets that are too small to be
 valid QUIC packets.  With the set of AEAD functions defined in {{QUIC-TLS}},
-packets less than 19 bytes long are never valid.
+packets that are smaller than 21 bytes are never valid.
 
 An endpoint MAY send a stateless reset in response to a packet with a long
 header.  This would not be effective if the stateless reset token was not yet
@@ -2802,7 +2803,7 @@ messages are delayed or lost.  Note that the same limitation applies to other
 data sent by the server protected by the 1-RTT keys.
 
 Endpoints SHOULD send acknowledgments for packets containing CRYPTO frames with
-a reduced delay; see Section 4.3.1 of {{QUIC-RECOVERY}}.
+a reduced delay; see Section 5.3.1 of {{QUIC-RECOVERY}}.
 
 
 ## Retransmission of Information
@@ -3221,7 +3222,7 @@ Once header protection is removed, the packet number is decoded by finding the
 packet number value that is closest to the next expected packet.  The next
 expected packet is the highest received packet number plus one.  For example, if
 the highest successfully authenticated packet had a packet number of 0xa82f30ea,
-then a packet containing a 16-bit value of 0x9b32 will be decoded as 0xa8309b32.
+then a packet containing a 16-bit value of 0x9b32 will be decoded as 0xa82f9b32.
 Example pseudo-code for packet number decoding can be found in
 {{sample-packet-number-decoding}}.
 
@@ -3664,7 +3665,7 @@ MUST treat receipt of Handshake packets with other frames as a connection error.
 
 ## Retry Packet {#packet-retry}
 
-A Retry packet uses a long packet header with a type value of 0x7E. It carries
+A Retry packet uses a long packet header with a type value of 0x3. It carries
 an address validation token created by the server. It is used by a server that
 wishes to perform a stateless retry (see {{validate-handshake}}).
 
@@ -4270,7 +4271,7 @@ to abruptly terminate transmission on a stream.
 Receipt of a STOP_SENDING frame is invalid for a locally-initiated stream that
 has not yet been created or is in the "Ready" state (see
 {{stream-send-states}}). Receiving a STOP_SENDING frame for a locally-initiated
-send stream that is "Ready" or non-existent MUST be treated as a connection
+send stream that is "Ready" or not yet created MUST be treated as a connection
 error of type PROTOCOL_VIOLATION.  An endpoint that receives a STOP_SENDING
 frame for a receive-only stream MUST terminate the connection with error
 PROTOCOL_VIOLATION.

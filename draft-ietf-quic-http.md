@@ -658,12 +658,12 @@ HTTP_MALFORMED_FRAME.
 
 The following settings are defined in HTTP/3:
 
-  SETTINGS_NUM_PLACEHOLDERS (0x3):
-  : The default value is 0.  However, this value SHOULD be set to a non-zero
-    value by servers.  See {{placeholders}} for usage.
-
   SETTINGS_MAX_HEADER_LIST_SIZE (0x6):
   : The default value is unlimited.  See {{header-formatting}} for usage.
+
+  SETTINGS_NUM_PLACEHOLDERS (0x8):
+  : The default value is 0.  However, this value SHOULD be set to a non-zero
+    value by servers.  See {{placeholders}} for usage.
 
 Setting identifiers of the format `0x?a?a` are reserved to exercise the
 requirement that unknown identifiers be ignored.  Such settings have no defined
@@ -1484,10 +1484,11 @@ The entries in the following table are registered by this document.
 | Setting Name                 | Code   | Specification             |
 | ---------------------------- | :----: | ------------------------- |
 | Reserved                     | 0x2    | N/A                       |
-| NUM_PLACEHOLDERS             | 0x3    | {{settings-parameters}}   |
+| Reserved                     | 0x3    | N/A                       |
 | Reserved                     | 0x4    | N/A                       |
 | Reserved                     | 0x5    | N/A                       |
 | MAX_HEADER_LIST_SIZE         | 0x6    | {{settings-parameters}}   |
+| NUM_PLACEHOLDERS             | 0x8    | {{settings-parameters}}   |
 | ---------------------------- | ------ | ------------------------- |
 
 Additionally, each code of the format `0x?a?a` where each `?` is any four bits

@@ -112,16 +112,16 @@ code and issues list for this draft can be found at
 
 # Introduction
 
-This document describes how QUIC {{QUIC-TRANSPORT}} is secured using TLS version
-1.3 {{!TLS13=RFC8446}}.  TLS 1.3 provides critical
-latency improvements for connection establishment over previous versions.
-Absent packet loss, most new connections can be established and secured within a
-single round trip; on subsequent connections between the same client and server,
-the client can often send application data immediately, that is, using a zero
-round trip setup.
+This document describes how QUIC {{QUIC-TRANSPORT}} is secured using TLS
+{{!TLS13=RFC8446}}.
 
-This document describes how the standardized TLS 1.3 acts as a security
-component of QUIC.
+TLS 1.3 provides critical latency improvements for connection establishment over
+previous versions.  Absent packet loss, most new connections can be established
+and secured within a single round trip; on subsequent connections between the
+same client and server, the client can often send application data immediately,
+that is, using a zero round trip setup.
+
+This document describes how TLS acts as a security component of QUIC.
 
 
 # Notational Conventions
@@ -133,7 +133,8 @@ when, and only when, they appear in all capitals, as shown here.
 
 This document uses the terminology established in {{QUIC-TRANSPORT}}.
 
-For brevity, the acronym TLS is used to refer to TLS 1.3.
+For brevity, the acronym TLS is used to refer to TLS 1.3, though a newer version
+could be used (see {{tls-version}}).
 
 
 ## TLS Overview
@@ -178,7 +179,7 @@ learn and authenticate an identity for the client.  TLS supports X.509
 The TLS key exchange is resistant to tampering by attackers and it produces
 shared secrets that cannot be controlled by either participating peer.
 
-TLS 1.3 provides two basic handshake modes of interest to QUIC:
+TLS provides two basic handshake modes of interest to QUIC:
 
  * A full 1-RTT handshake in which the client is able to send application data
    after one round trip and the server immediately responds after receiving the
@@ -189,9 +190,9 @@ TLS 1.3 provides two basic handshake modes of interest to QUIC:
    application data can be replayed by an attacker so it MUST NOT carry a
    self-contained trigger for any non-idempotent action.
 
-A simplified TLS 1.3 handshake with 0-RTT application data is shown in
-{{tls-full}}.  Note that this omits the EndOfEarlyData message, which is not
-used in QUIC (see {{remove-eoed}}).
+A simplified TLS handshake with 0-RTT application data is shown in {{tls-full}}.
+Note that this omits the EndOfEarlyData message, which is not used in QUIC (see
+{{remove-eoed}}).
 
 ~~~
     Client                                             Server
@@ -232,7 +233,7 @@ server.
 # Protocol Overview
 
 QUIC {{QUIC-TRANSPORT}} assumes responsibility for the confidentiality and
-integrity protection of packets.  For this it uses keys derived from a TLS 1.3
+integrity protection of packets.  For this it uses keys derived from a TLS
 handshake {{!TLS13}}, but instead of carrying TLS records over QUIC (as with
 TCP), TLS Handshake and Alert messages are carried directly over the QUIC
 transport, which takes over the responsibilities of the TLS record layer, as
@@ -257,8 +258,8 @@ shown below.
 ~~~~
 
 
-QUIC also relies on TLS 1.3 for authentication and negotiation of parameters
-that are critical to security and performance.
+QUIC also relies on TLS for authentication and negotiation of parameters that
+are critical to security and performance.
 
 Rather than a strict layering, these two protocols are co-dependent: QUIC uses
 the TLS handshake; TLS uses the reliability, ordered delivery, and record
@@ -311,7 +312,7 @@ chunk of data that is produced by TLS is associated with the set of keys that
 TLS is currently using.  If QUIC needs to retransmit that data, it MUST use the
 same keys even if TLS has already updated to newer keys.
 
-One important difference between TLS 1.3 records (used with TCP) and QUIC CRYPTO
+One important difference between TLS records (used with TCP) and QUIC CRYPTO
 frames is that in QUIC multiple frames may appear in the same QUIC packet as
 long as they are associated with the same encryption level. For instance, an
 implementation might bundle a Handshake message and an ACK for some Handshake
@@ -453,6 +454,18 @@ indicates to QUIC that it is now reading or writing with keys at that encryption
 level.  These events are not asynchronous; they always occur immediately after
 TLS is provided with new handshake bytes, or after TLS produces handshake bytes.
 
+TLS provides QUIC with three items as a new encryption level becomes available:
+
+* A secret
+
+* An Authenticated Encryption with Associated Data (AEAD) function
+
+* A Key Derivation Function (KDF)
+
+These values are based on the values that TLS negotiates and are used by QUIC to
+generate packet and header protection keys (see {{packet-protection}} and
+{{header-protect}}).
+
 If 0-RTT is possible, it is ready after the client sends a TLS ClientHello
 message or the server receives that message.  After providing a QUIC client with
 the first handshake bytes, the TLS stack might signal the change to 0-RTT
@@ -516,7 +529,7 @@ Handshake Received
 {: #exchange-summary title="Interaction Summary between QUIC and TLS"}
 
 
-## TLS Version
+## TLS Version {#tls-version}
 
 This document describes how TLS 1.3 {{!TLS13}} is used with QUIC.
 
@@ -710,14 +723,19 @@ based on the client's initial Destination Connection ID, as described in
 {{initial-secrets}}.
 
 The keys used for packet protection are computed from the TLS secrets using the
-method described in Section 7.3 of {{!TLS13}}), with the labels "quic key" and
-"quic iv" in place of the labels used by TLS (that is, "key" and "iv"
-respectively).  Using these labels provides key separation between QUIC and TLS,
-see {{key-diversity}}.
+KDF provided by TLS.  In TLS 1.3, the HKDF-Expand-Label function described in
+Section 7.1 of {{!TLS13}}) is used, using the hash function from the negotiated
+cipher suite.  Other versions of TLS MUST provide a similar function in order to
+be used QUIC.
 
-The HKDF-Expand-Label function is also used to derive the initial secrets (see
-{{initial-secrets}}) and to derive a packet number protection key (the "quic hp"
-label, see {{header-protect}}).
+The current encryption level secret and the label "quic key" are input to the
+KDF to produce the AEAD key; the label "quic iv" is used to derive the IV, see
+{{aead}}.  The packet number protection key uses the "quic hp" label, see
+{{header-protect}}).  Using these labels provides key separation between QUIC
+and TLS, see {{key-diversity}}.
+
+The KDF used for initial secrets is always the HKDF-Expand-Label function from
+TLS 1.3 (see {{initial-secrets}}).
 
 
 ## Initial Secrets {#initial-secrets}
@@ -753,9 +771,8 @@ thus ensuring that the keys are different for each version of QUIC. This
 prevents a middlebox that only recognizes one version of QUIC from seeing or
 modifying the contents of handshake packets from future versions.
 
-The HKDF function defined in TLS 1.3 MUST be used even in case the minimum TLS
-version that the endpoint is willing to use is greater, so as to assure that
-the peer can decrypt the packet.
+The HKDF-Expand-Label function defined in TLS 1.3 MUST be used for Initial
+packets even where the TLS versions offered do not include TLS 1.3.
 
 Note:
 
@@ -784,9 +801,12 @@ connection ID in the client's first Initial packet (see {{initial-secrets}}).
 This provides protection against off-path attackers and robustness against QUIC
 version unaware middleboxes, but not against on-path attackers.
 
-All ciphersuites currently defined for TLS 1.3 - and therefore QUIC - have a
-16-byte authentication tag and produce an output 16 bytes larger than their
-input.
+QUIC can use any of the ciphersuites defined in {{!TLS13}} with the exception of
+TLS_AES_128_CCM_8_SHA256.  The AEAD for that ciphersuite, AEAD_AES_128_CCM_8
+{{?CCM=RFC6655}}, does not produce a large enough authentication tag for use
+with the header protection designs provided (see {{header-protect}}).  All other
+ciphersuites defined in {{!TLS13}} have a 16-byte authentication tag and produce
+an output 16 bytes larger than their input.
 
 The key and IV for the packet are computed as described in {{protection-keys}}.
 The nonce, N, is formed by combining the packet protection IV with the packet
@@ -909,10 +929,18 @@ of the ciphertext from the packet Payload field.
 The same number of bytes are always sampled, but an allowance needs to be made
 for the endpoint removing protection, which will not know the length of the
 Packet Number field.  In sampling the packet ciphertext, the Packet Number field
-is assumed to be 4 bytes long (its maximum possible encoded length), unless
-there is insufficient space in the packet for a complete sample.  The starting
-offset for the sample is set to 4 bytes after the start of the Packet Number
-field, then is reduced until there are enough bytes to sample.
+is assumed to be 4 bytes long (its maximum possible encoded length).
+
+An endpoint MUST discard packets that are not long enough to contain a complete
+sample.
+
+To ensure that sufficient data is available for sampling, packets are padded so
+that the combined lengths of the encoded packet number and protected payload is
+at least 4 bytes longer than the sample required for header protection.  For the
+AEAD functions defined in {{?TLS13}}, which have 16-byte expansions and 16-byte
+header protection samples, this results in needing at least 3 bytes of frames in
+the unprotected payload if the packet number is encoded on a single byte, or 2
+bytes of frames for a 2-byte packet number encoding.
 
 The sampled ciphertext for a packet with a short header can be determined by the
 following pseudocode:
@@ -920,16 +948,12 @@ following pseudocode:
 ~~~
 sample_offset = 1 + len(connection_id) + 4
 
-if sample_offset + sample_length > packet_length then
-    sample_offset = packet_length - sample_length
 sample = packet[sample_offset..sample_offset+sample_length]
 ~~~
 
 For example, for a packet with a short header, an 8 byte connection ID, and
 protected with AEAD_AES_128_GCM, the sample takes bytes 13 to 28 inclusive
-(using zero-based indexing) as long as the packet is at least 29 bytes long.
-The shortest packet that can be produced with this configuration is 27 bytes
-long, in which case bytes 11 to 26 are sampled.
+(using zero-based indexing).
 
 A packet with a long header is sampled in the same way, noting that multiple
 QUIC packets might be included in the same UDP datagram and that each one is
@@ -943,14 +967,8 @@ if packet_type == Initial:
     sample_offset += len(token_length) +
                      len(token)
 
-if sample_offset + sample_length > packet_length then
-    sample_offset = packet_length - sample_length
 sample = packet[sample_offset..sample_offset+sample_length]
 ~~~
-
-To ensure that this process does not sample the packet number, header protection
-algorithms MUST NOT require a sample size larger than the minimum expansion of
-the corresponding AEAD.
 
 
 ### AES-Based Header Protection {#hp-aes}
@@ -1077,8 +1095,7 @@ packet with a matching KEY_PHASE.
 
 A receiving endpoint detects an update when the KEY_PHASE bit does not match
 what it is expecting.  It creates a new secret (see Section 7.2 of {{!TLS13}})
-and the corresponding read key and IV using the same HKDF-Expand-Label function
-used in TLS.
+and the corresponding read key and IV using the KDF function provided by TLS.
 
 If the packet can be decrypted and authenticated using the updated key and IV,
 then the keys the endpoint uses for packet protection are also updated.  The
