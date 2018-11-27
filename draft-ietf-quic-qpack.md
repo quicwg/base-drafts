@@ -1014,12 +1014,12 @@ represented as an 8-bit prefix string literal.
 QPACK defines two settings which are included in the HTTP/3 SETTINGS frame.
 
   SETTINGS_HEADER_TABLE_SIZE (0x1):
-  : An integer with a maximum value of 2^30 - 1.  The default value is 4,096
+  : An integer with a maximum value of 2^30 - 1.  The default value is zero
     bytes.  See {{table-dynamic}} for usage.
 
   SETTINGS_QPACK_BLOCKED_STREAMS (0x7):
-  : An integer with a maximum value of 2^16 - 1.  The default value is 100.  See
-    {{overview-hol-avoidance}}.
+  : An integer with a maximum value of 2^16 - 1.  The default value is zero.
+    See {{overview-hol-avoidance}}.
 
 
 # Error Handling {#error-handling}
