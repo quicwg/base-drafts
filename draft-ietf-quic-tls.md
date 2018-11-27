@@ -454,6 +454,18 @@ indicates to QUIC that it is now reading or writing with keys at that encryption
 level.  These events are not asynchronous; they always occur immediately after
 TLS is provided with new handshake bytes, or after TLS produces handshake bytes.
 
+TLS provides QUIC with three items as a new encryption level becomes available:
+
+* A secret
+
+* An Authenticated Encryption with Associated Data (AEAD) function
+
+* A Key Derivation Function (KDF)
+
+These values are based on the values that TLS negotiates and are used by QUIC to
+generate packet and header protection keys (see {{packet-protection}} and
+{{header-protect}}).
+
 If 0-RTT is possible, it is ready after the client sends a TLS ClientHello
 message or the server receives that message.  After providing a QUIC client with
 the first handshake bytes, the TLS stack might signal the change to 0-RTT
@@ -711,14 +723,19 @@ based on the client's initial Destination Connection ID, as described in
 {{initial-secrets}}.
 
 The keys used for packet protection are computed from the TLS secrets using the
-method described in Section 7.3 of {{!TLS13}}), with the labels "quic key" and
-"quic iv" in place of the labels used by TLS (that is, "key" and "iv"
-respectively).  Using these labels provides key separation between QUIC and TLS,
-see {{key-diversity}}.
+KDF provided by TLS.  In TLS 1.3, the HKDF-Expand-Label function described in
+Section 7.1 of {{!TLS13}}) is used, using the hash function from the negotiated
+cipher suite.  Other versions of TLS MUST provide a similar function in order to
+be used QUIC.
 
-The HKDF-Expand-Label function is also used to derive the initial secrets (see
-{{initial-secrets}}) and to derive a packet number protection key (the "quic hp"
-label, see {{header-protect}}).
+The current encryption level secret and the label "quic key" are input to the
+KDF to produce the AEAD key; the label "quic iv" is used to derive the IV, see
+{{aead}}.  The packet number protection key uses the "quic hp" label, see
+{{header-protect}}).  Using these labels provides key separation between QUIC
+and TLS, see {{key-diversity}}.
+
+The KDF used for initial secrets is always the HKDF-Expand-Label function from
+TLS 1.3 (see {{initial-secrets}}).
 
 
 ## Initial Secrets {#initial-secrets}
@@ -754,9 +771,8 @@ thus ensuring that the keys are different for each version of QUIC. This
 prevents a middlebox that only recognizes one version of QUIC from seeing or
 modifying the contents of handshake packets from future versions.
 
-The HKDF function defined in TLS 1.3 MUST be used even in case the minimum TLS
-version that the endpoint is willing to use is greater, so as to assure that
-the peer can decrypt the packet.
+The HKDF-Expand-Label function defined in TLS 1.3 MUST be used for Initial
+packets even where the TLS versions offered do not include TLS 1.3.
 
 Note:
 
@@ -1079,8 +1095,7 @@ packet with a matching KEY_PHASE.
 
 A receiving endpoint detects an update when the KEY_PHASE bit does not match
 what it is expecting.  It creates a new secret (see Section 7.2 of {{!TLS13}})
-and the corresponding read key and IV using the same HKDF-Expand-Label function
-used in TLS.
+and the corresponding read key and IV using the KDF function provided by TLS.
 
 If the packet can be decrypted and authenticated using the updated key and IV,
 then the keys the endpoint uses for packet protection are also updated.  The
