@@ -2819,7 +2819,9 @@ information is determined to be lost and sending ceases when a packet
 containing that information is acknowledged.
 
 * Data sent in CRYPTO frames is retransmitted according to the rules in
-  {{QUIC-RECOVERY}}, until all data has been acknowledged.
+  {{QUIC-RECOVERY}}, until all data has been acknowledged.  Data in CRYPTO
+  frames for Initial and Handshake packets is discarded when keys for the
+  corresponding encryption level are discarded.
 
 * Application data sent in STREAM frames is retransmitted in new STREAM frames
   unless the endpoint has sent a RESET_STREAM for that stream.  Once an endpoint
@@ -3592,6 +3594,21 @@ and will contain a CRYPTO frame with an offset matching the size of the CRYPTO
 frame sent in the first Initial packet.  Cryptographic handshake messages
 subsequent to the first do not need to fit within a single UDP datagram.
 
+
+### Abandoning Initial Packets {#discard-initial}
+
+A client stops both sending and accepting Initial packets when it sends its
+first Handshake packet.  A server stops sending and accepting Initial packets
+with it receives its first Handshake packet.  Though packets might still be in
+flight or awaiting acknowledgment, no further Initial packets need to be
+exchanged beyond this point.  Initial packet protection keys are discarded (see
+Section 4.10 of {{QUIC-TLS}}) along with any loss recovery and congestion
+control state (see Sections 5.3.1.2 and 6.9 of {{QUIC-RECOVERY}}).
+
+Any data in CRYPTO frames is discarded - and no longer retransmitted - when
+Initial keys are discarded.
+
+
 ### Starting Packet Numbers
 
 <!-- TODO: delete this section after confirming that it is redundant -->
@@ -3600,6 +3617,7 @@ The first Initial packet sent by either endpoint contains a packet number of
 0. The packet number MUST increase monotonically thereafter.  Initial packets
 are in a different packet number space to other packets (see
 {{packet-numbers}}).
+
 
 ### 0-RTT Packet Numbers {#retry-0rtt-pn}
 
@@ -3662,13 +3680,9 @@ The payload of this packet contains CRYPTO frames and could contain PADDING, or
 ACK frames. Handshake packets MAY contain CONNECTION_CLOSE frames.  Endpoints
 MUST treat receipt of Handshake packets with other frames as a connection error.
 
-A client stops both sending and accepting Initial packets when it sends its
-first Handshake packet.  A server stops sending and accepting Initial packets
-with it receives its first Handshake packet.  Though packets might still be in
-flight or awaiting acknowledgment, no further Initial packets need to be
-exchanged beyond this point.  Initial packet protection keys are discarded (see
-Section 4.10 of {{QUIC-TLS}}) along with any loss recovery and congestion
-control state (see Sections 5.3.1.2 and 6.9 of {{QUIC-RECOVERY}}).
+Like Initial packets (see {{discard-initial}}), data in CRYPTO frames at the
+Handshake encryption level is discarded - and no longer retransmitted - when
+Handshake protection keys are discarded.
 
 
 ## Retry Packet {#packet-retry}
