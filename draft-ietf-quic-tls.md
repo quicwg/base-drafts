@@ -727,7 +727,7 @@ Section 7.1 of {{!TLS13}}) is used, using the hash function from the negotiated
 cipher suite.  Other versions of TLS MUST provide a similar function in order to
 be used QUIC.
 
- The current encryption level secret and the label "quic key" are input to the
+The current encryption level secret and the label "quic key" are input to the
 KDF to produce the AEAD key; the label "quic iv" is used to derive the IV, see
 {{aead}}.  The packet number protection key uses the "quic hp" label, see
 {{header-protect}}).  Using these labels provides key separation between QUIC
