@@ -3599,7 +3599,7 @@ subsequent to the first do not need to fit within a single UDP datagram.
 
 A client stops both sending and accepting Initial packets when it sends its
 first Handshake packet.  A server stops sending and accepting Initial packets
-with it receives its first Handshake packet.  Though packets might still be in
+when it receives its first Handshake packet.  Though packets might still be in
 flight or awaiting acknowledgment, no further Initial packets need to be
 exchanged beyond this point.  Initial packet protection keys are discarded (see
 Section 4.10 of {{QUIC-TLS}}) along with any loss recovery and congestion
