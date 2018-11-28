@@ -251,7 +251,9 @@ the use of the spin bit MAY be coordinated by endpoints,
 recognizing that this might not be possible in many cases.
 
 When the spin bit is disabled, endpoints MAY set the spin bit to any value,
-and MUST accept any incoming value.
+and MUST accept any incoming value. It is RECOMMENDED that they
+set the spin bit to a random value either chosen independently for each packet,
+or chosen independently for each path and kept constant for that path.
 
 # IANA Considerations
 
