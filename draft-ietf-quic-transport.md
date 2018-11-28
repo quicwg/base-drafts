@@ -1637,6 +1637,9 @@ able to reuse a token.  To avoid attacks that exploit this property, a server
 can limit its use of tokens to only the information needed validate client
 addresses.
 
+Fraudulently obtained tokens could enable botnets to use servers as amplifiers
+in DDOS attacks. Servers SHOULD protect against such attacks by ensuring that
+tokens are used by clients only once.
 
 ### Address Validation Token Integrity {#token-integrity}
 
