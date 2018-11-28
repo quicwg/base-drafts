@@ -1032,9 +1032,11 @@ streams long after the server had discarded state, leading to disparate views of
 the prioritization the client had attempted to express.
 
 In HTTP/3, a number of placeholders are explicitly permitted by the server using
-the `SETTINGS_NUM_PLACEHOLDERS` setting. Because the server commits to maintain
-these IDs in the tree, clients can use them with confidence that the server will
-not have discarded the state.
+the `SETTINGS_NUM_PLACEHOLDERS` setting. Because the server commits to
+maintaining these IDs in the tree, clients can use them with confidence that the
+server will not have discarded the state.  Clients MUST NOT send the
+`SETTINGS_NUM_PLACEHOLDERS` setting; receipt of this setting by a server MUST be
+treated as a connection error of type `HTTP_WRONG_SETTING_DIRECTION`.
 
 Placeholders are identified by an ID between zero and one less than the number
 of placeholders the server has permitted.
@@ -1278,6 +1280,10 @@ STOP_SENDING frames, and CONNECTION_CLOSE frames when using HTTP/3.
 HTTP_NO_ERROR (0x00):
 : No error.  This is used when the connection or stream needs to be closed, but
   there is no error to signal.
+
+HTTP_WRONG_SETTING_DIRECTION (0x01):
+: A client-only setting was sent by a server, or a server-only setting by a
+  client.
 
 HTTP_PUSH_REFUSED (0x02):
 : The server has attempted to push content which the client will not accept
@@ -1534,6 +1540,7 @@ The entries in the following table are registered by this document.
 | Name                                | Code       | Description                              | Specification          |
 | ----------------------------------- | ---------- | ---------------------------------------- | ---------------------- |
 | HTTP_NO_ERROR                       | 0x0000     | No error                                 | {{http-error-codes}}   |
+| HTTP_WRONG_SETTING_DIRECTION        | 0x0001     | Setting sent in wrong direction          | {{http-error-codes}}   |
 | HTTP_PUSH_REFUSED                   | 0x0002     | Client refused pushed content            | {{http-error-codes}}   |
 | HTTP_INTERNAL_ERROR                 | 0x0003     | Internal error                           | {{http-error-codes}}   |
 | HTTP_PUSH_ALREADY_IN_CACHE          | 0x0004     | Pushed content already cached            | {{http-error-codes}}   |
