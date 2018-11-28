@@ -775,9 +775,9 @@ the stream ID of the affected stream - a request or push stream - encoded as a
 {:#fig-stream-cancel title="Stream Cancellation"}
 
 A stream that is reset might have multiple outstanding header blocks with
-dynamic table references.  When the decoder receives a stream reset before the
+dynamic table references.  When an endpoint receives a stream reset before the
 end of a stream, it generates a Stream Cancellation instruction on the decoder
-stream.  Similarly, when the decoder abandons reading of a stream it needs to
+stream.  Similarly, when an endpoint abandons reading of a stream it needs to
 signal this using the Stream Cancellation instruction.  This signals to the
 encoder that all references to the dynamic table on that stream are no longer
 outstanding.  A decoder with a maximum dynamic table size equal to zero MAY omit
