@@ -2997,15 +2997,14 @@ traverse network elements that drop or corrupt ECN codepoints in the IP header.
 The QUIC packet size includes the QUIC header and integrity check, but not the
 UDP or IP header.
 
-Clients MUST ensure that the first Initial packet they send is sent in a UDP
-datagram with a payload of at least 1200 bytes.  The payload of a UDP datagram
-carrying the Initial packet MUST be expanded to at least 1200 bytes, by adding
-PADDING frames to the Initial packet and/or by combining the Initial packet
-with a 0-RTT packet (see {{packet-coalesce}}).  Sending a UDP datagram of this
-size ensures that the network path supports a reasonable Maximum Transmission
-Unit (MTU), and helps reduce the amplitude of amplification attacks caused by
-server responses toward an unverified client address, see
-{{address-validation}}.
+Clients MUST ensure they send the first Initial packet in a UDP datagram that is
+at least 1200 bytes.  The payload of a UDP datagram carrying the Initial packet
+MUST be expanded to at least 1200 bytes, by adding PADDING frames to the Initial
+packet and/or by combining the Initial packet with a 0-RTT packet (see
+{{packet-coalesce}}).  Sending a UDP datagram of this size ensures that the
+network path supports a reasonable Maximum Transmission Unit (MTU), and helps
+reduce the amplitude of amplification attacks caused by server responses toward
+an unverified client address, see {{address-validation}}.
 
 The datagram containing the first Initial packet from a client MAY exceed 1200
 bytes if the client believes that the Path Maximum Transmission Unit (PMTU)
@@ -3025,9 +3024,9 @@ address of the client, see {{address-validation}}.
 
 The PMTU is the maximum size of the entire IP packet including the IP header,
 UDP header, and UDP payload.  The UDP payload includes the QUIC packet header,
-protected payload, and any authentication fields. This can depend upon the
+protected payload, and any authentication fields. The PMTU can depend upon the
 current path characteristics.  Therefore, the current largest UDP payload an
-implementation will send is referred to as QUIC maximum packet size.
+implementation will send is referred to as the QUIC maximum packet size.
 
 QUIC depends on a PMTU of at least 1280 bytes. This is the IPv6 minimum size
 {{!RFC8200}} and is also supported by most modern IPv4 networks.  All QUIC
@@ -3054,8 +3053,8 @@ addresses.
 If a QUIC endpoint determines that the PMTU between any pair of local and remote
 IP addresses has fallen below the size needed to support the smallest allowed
 maximum packet size, it MUST immediately cease sending QUIC packets on the
-affected path.  This could result in termination of the connection if an
-alternative path cannot be found.
+affected path.  An endpoint MAY terminate the connection if an alternative path
+cannot be found.
 
 
 ### Processing ICMP Packet Too Big Messages {#icmp-pmtud}
