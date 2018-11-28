@@ -870,11 +870,11 @@ response to the same request.  Non-final responses do not contain a payload body
 or trailers.
 
 An HTTP request/response exchange fully consumes a bidirectional QUIC stream.
-After sending a request, a client MUST close the stream for sending; clients
-MUST NOT make stream closure dependent on receiving a response to their request,
-unless using the CONNECT method (see {{the-connect-method}}). After sending a
-final response, the server MUST close the stream for sending. At this point, the
-QUIC stream is fully closed.
+After sending a request, a client MUST close the stream for sending.  Unless
+using the CONNECT method (see {{the-connect-method}}), clients MUST NOT make
+stream closure dependent on receiving a response to their request. After sending
+a final response, the server MUST close the stream for sending. At this point,
+the QUIC stream is fully closed.
 
 When a stream is closed, this indicates the end of an HTTP message. Because some
 messages are large or unbounded, endpoints SHOULD begin processing partial HTTP
