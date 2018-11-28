@@ -848,8 +848,8 @@ Pseudocode for SetLossDetectionTimer follows:
       return
     if (loss_time != 0):
       // Early retransmit timer or time loss detection.
-      timeout = loss_time -
-        time_of_last_sent_retransmittable_packet
+      loss_detection_timer.set(loss_time)
+      return
     else:
       // RTO or TLP timer
       // Calculate RTO duration
