@@ -232,9 +232,7 @@ While connection-level options pertaining to the core QUIC protocol are set in
 the initial crypto handshake, HTTP/3-specific settings are conveyed in the
 SETTINGS frame. After the QUIC connection is established, a SETTINGS frame
 ({{frame-settings}}) MUST be sent by each endpoint as the initial frame of their
-respective HTTP control stream (see {{control-streams}}). The server MUST NOT
-process any request streams or send responses until the client's SETTINGS frame
-has been received.
+respective HTTP control stream (see {{control-streams}}).
 
 ## Connection Reuse
 
@@ -318,7 +316,8 @@ header is determined by the stream type.
 
 Some stream types are reserved ({{stream-grease}}).  Two stream types are
 defined in this document: control streams ({{control-streams}}) and push streams
-({{push-streams}}).  Other stream types can be defined by extensions to HTTP/3.
+({{push-streams}}).  Other stream types can be defined by extensions to HTTP/3;
+see {{extensions}} for more details.
 
 Both clients and servers SHOULD send a value of three or greater for the QUIC
 transport parameter `initial_max_uni_streams`.
@@ -608,10 +607,10 @@ identifier" and a "setting value".
 
 SETTINGS parameters are not negotiated; they describe characteristics of the
 sending peer, which can be used by the receiving peer. However, a negotiation
-can be implied by the use of SETTINGS -- a peer uses SETTINGS to advertise a set
-of supported values. The recipient can then choose which entries from this list
-are also acceptable and proceed with the value it has chosen. (This choice could
-be announced in a field of an extension frame, or in its own value in SETTINGS.)
+can be implied by the use of SETTINGS -- each peer uses SETTINGS to advertise a
+set of supported values. The definition of the setting would describe how each
+peer combines the two sets to conclude which choice will be used.  SETTINGS does
+not provide a mechanism to identify when the choice takes effect.
 
 Different values for the same parameter can be advertised by each peer. For
 example, a client might be willing to consume a very large response header,
@@ -659,11 +658,12 @@ HTTP_MALFORMED_FRAME.
 
 The following settings are defined in HTTP/3:
 
-  SETTINGS_NUM_PLACEHOLDERS (0x3):
-  : This value SHOULD be non-zero.  The default value is 16.
-
   SETTINGS_MAX_HEADER_LIST_SIZE (0x6):
-  : The default value is unlimited.
+  : The default value is unlimited.  See {{header-formatting}} for usage.
+
+  SETTINGS_NUM_PLACEHOLDERS (0x8):
+  : The default value is 0.  However, this value SHOULD be set to a non-zero
+    value by servers.  See {{placeholders}} for usage.
 
 Setting identifiers of the format `0x?a?a` are reserved to exercise the
 requirement that unknown identifiers be ignored.  Such settings have no defined
@@ -674,16 +674,22 @@ receipt.
 Because the setting has no defined meaning, the value of the setting can be any
 value the implementation selects.
 
-Additional settings MAY be defined by extensions to HTTP/3.
+Additional settings can be defined by extensions to HTTP/3; see {{extensions}}
+for more details.
 
 #### Initialization
 
-When a 0-RTT QUIC connection is being used, the client's initial requests will
-be sent before the arrival of the server's SETTINGS frame.  Clients MUST store
-the settings the server provided in the session being resumed and MUST comply
-with stored settings until the server's current settings are received.
-Remembered settings apply to the new connection until the server's SETTINGS
-frame is received.
+An HTTP implementation MUST NOT send frames or requests which would be invalid
+based on its current understanding of the peer's settings.  All settings begin
+at an initial value, and are updated upon receipt of a SETTINGS frame.  For
+servers, the initial value of each client setting is the default value.
+
+For clients using a 1-RTT QUIC connection, the initial value of each server
+setting is the default value. When a 0-RTT QUIC connection is being used, the
+initial value of each server setting is the value used in the previous session.
+Clients MUST store the settings the server provided in the session being resumed
+and MUST comply with stored settings until the current server settings are
+received.
 
 A server can remember the settings that it advertised, or store an
 integrity-protected copy of the values in the ticket and recover the information
@@ -695,8 +701,6 @@ SETTINGS frame. If 0-RTT data is accepted by the server, its SETTINGS frame MUST
 NOT reduce any limits or alter any values that might be violated by the client
 with its 0-RTT data.
 
-When a 1-RTT QUIC connection is being used, the client MUST NOT send requests
-prior to receiving and processing the server's SETTINGS frame.
 
 ### PUSH_PROMISE {#frame-push-promise}
 
@@ -892,7 +896,7 @@ containing a usable HTTP request, the server SHOULD abort its response with the
 error code HTTP_INCOMPLETE_REQUEST.
 
 
-### Header Formatting and Compression
+### Header Formatting and Compression {#header-formatting}
 
 HTTP message headers carry information as a series of key-value pairs, called
 header fields. For a listing of registered HTTP header fields, see the "Message
@@ -920,12 +924,13 @@ HPACK which allows the flexibility to avoid header-compression-induced
 head-of-line blocking.  See that document for additional details.
 
 An HTTP/3 implementation MAY impose a limit on the maximum size of the header it
-will accept on an individual HTTP message.  This limit is conveyed as a number
-of bytes in the `SETTINGS_MAX_HEADER_LIST_SIZE` parameter. The size of a header
-list is calculated based on the uncompressed size of header fields, including
-the length of the name and value in bytes plus an overhead of 32 bytes for each
-header field.  Encountering a message header larger than this value SHOULD be
-treated as a stream error of type `HTTP_EXCESSIVE_LOAD`.
+will accept on an individual HTTP message; encountering a larger message header
+SHOULD be treated as a stream error of type `HTTP_EXCESSIVE_LOAD`.  If an
+implementation wishes to advise its peer of this limit, it can be conveyed as a
+number of bytes in the `SETTINGS_MAX_HEADER_LIST_SIZE` parameter. The size of a
+header list is calculated based on the uncompressed size of header fields,
+including the length of the name and value in bytes plus an overhead of 32 bytes
+for each header field.
 
 ### Request Cancellation
 
@@ -1479,10 +1484,11 @@ The entries in the following table are registered by this document.
 | Setting Name                 | Code   | Specification             |
 | ---------------------------- | :----: | ------------------------- |
 | Reserved                     | 0x2    | N/A                       |
-| NUM_PLACEHOLDERS             | 0x3    | {{settings-parameters}}   |
+| Reserved                     | 0x3    | N/A                       |
 | Reserved                     | 0x4    | N/A                       |
 | Reserved                     | 0x5    | N/A                       |
 | MAX_HEADER_LIST_SIZE         | 0x6    | {{settings-parameters}}   |
+| NUM_PLACEHOLDERS             | 0x8    | {{settings-parameters}}   |
 | ---------------------------- | ------ | ------------------------- |
 
 Additionally, each code of the format `0x?a?a` where each `?` is any four bits
