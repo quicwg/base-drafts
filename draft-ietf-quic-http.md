@@ -870,16 +870,18 @@ response to the same request.  Non-final responses do not contain a payload body
 or trailers.
 
 An HTTP request/response exchange fully consumes a bidirectional QUIC stream.
-After sending a request, a client MUST close the stream for sending; after
-sending a final response, the server MUST close the stream for sending. At
-this point, the QUIC stream is fully closed.
+After sending a request, a client MUST close the stream for sending; clients
+MUST NOT make stream closure dependent on receiving a response to their request,
+unless using the CONNECT method (see {{the-connect-method}}). After sending a
+final response, the server MUST close the stream for sending. At this point, the
+QUIC stream is fully closed.
 
-When a stream is closed, this indicates the end of an HTTP message.
-Because some messages are large or unbounded, endpoints SHOULD begin processing
-partial HTTP messages once enough of the message has been received to make
-progress.  If a client stream terminates without enough of the HTTP message to
-provide a complete response, the server SHOULD abort its response with the error
-code HTTP_INCOMPLETE_REQUEST.
+When a stream is closed, this indicates the end of an HTTP message. Because some
+messages are large or unbounded, endpoints SHOULD begin processing partial HTTP
+messages once enough of the message has been received to make progress.  If a
+client stream terminates without enough of the HTTP message to provide a
+complete response, the server SHOULD abort its response with the error code
+HTTP_INCOMPLETE_REQUEST.
 
 A server can send a complete response prior to the client sending an entire
 request if the response does not depend on any portion of the request that has
