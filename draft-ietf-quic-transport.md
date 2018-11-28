@@ -3030,9 +3030,10 @@ current path characteristics.  Therefore, the current largest UDP payload an
 implementation will send is referred to as the QUIC maximum packet size.
 
 QUIC depends on a PMTU of at least 1280 bytes. This is the IPv6 minimum size
-{{!RFC8200}} and is also supported by most modern IPv4 networks.  All QUIC
+{{?RFC8200}} and is also supported by most modern IPv4 networks.  All QUIC
 packets (except for PMTU probe packets) SHOULD be sized to fit within the
-maximum packet size to avoid the packet being fragmented or dropped {{!RFC8805}.
+maximum packet size to avoid the packet being fragmented or dropped
+{{?RFC8085}}.
 
 To optimize capacity efficiency, endpoints SHOULD use Datagram Packetization
 Layer PMTU Discovery ({{!DPLPMTUD=I-D.ietf-tsvwg-datagram-plpmtud}}), or
@@ -3058,14 +3059,14 @@ affected path.  An endpoint MAY terminate the connection if an alternative path
 cannot be found.
 
 
-### Processing ICMP Packet Too Big Messages {#icmp-pmtud}
+## ICMP Packet Too Big Messages {#icmp-pmtud}
 
 PMTU discovery {{!RFC1191}} {{!RFC8201}} relies on reception of ICMP messages
 (e.g., IPv6 Packet Too Big messages) that indicate when a packet is dropped
 because it is larger than the local router MTU. DPLPMTUD can also optionally use
 these messages.  This use of ICMP messages is potentially vulnerable to off-path
 attacks that successfully guess the IP address 3-tuple and reduce the PMTU to a
-bandwidth-inefficient value {{!RFC8201}}.
+bandwidth-inefficient value.
 
 QUIC endpoints SHOULD provide validation to protect from off-path injection of
 ICMP messages as specified in {{!RFC8201}} and Section 5.2 of {{!RFC8085}}. This
@@ -3081,10 +3082,10 @@ actually be smaller, or the information unintelligible, as described in Section
 
 When a randomized source port is used for a QUIC connection, this can provide
 some protection from off path attacks that forge ICMP messages. The source port
-in a quoted packet can be checked for TCP {{!RFC6056}} and UDP transports
-{{!RFC8085}}, such as QUIC.  When used, a stack will only pass ICMP messages to
-a QUIC endpoint where the port information in quoted packet within the ICMP
-payload matches a port used by QUIC.
+in a quoted packet can be checked for UDP transports {{!RFC8085}} such as QUIC.
+When used, a stack will only pass ICMP messages to a QUIC endpoint where the
+port information in quoted packet within the ICMP payload matches a port used by
+QUIC.
 
 As a part of ICMP validation, QUIC endpoints SHOULD validate that connection ID
 information corresponds to an active session.
@@ -3104,7 +3105,7 @@ the QUIC maximum packet size MAY be provisional until QUIC's loss detection
 algorithm determines that the quoted packet has actually been lost.
 
 
-## Considerations for Datagram Packetization Layer PMTU Discovery
+## Datagram Packetization Layer PMTU Discovery
 
 Section 6.4 of {{!DPLPMTUD}} provides considerations for implementing Datagram
 Packetization Layer PMTUD (DPLPMTUD) with QUIC.
