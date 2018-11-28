@@ -787,8 +787,7 @@ Pseudocode for OnAckReceived and UpdateRtt follow:
     // min_rtt ignores ack delay.
     min_rtt = min(min_rtt, latest_rtt)
     // Adjust for ack delay if it's plausible.
-    if (latest_rtt - min_rtt > ack_delay):
-      latest_rtt -= ack_delay
+    latest_rtt = max(latest_rtt - ack_delay, min_rtt)
     // Based on {{?RFC6298}}.
     if (smoothed_rtt == 0):
       smoothed_rtt = latest_rtt
