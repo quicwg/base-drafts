@@ -209,6 +209,68 @@ which is useful in receivers which may incur delays such as context-switch
 latency before a userspace QUIC receiver processes a received packet.
 
 
+# Generating Acknowledgements
+
+QUIC SHOULD delay sending acknowledgements in response to packets, but MUST NOT
+excessively delay acknowledgements of retransmittable packets. Specifically,
+implementations MUST attempt to enforce a maximum ack delay to avoid causing
+the peer spurious timeouts.  The maximum ack delay is communicated in the
+`max_ack_delay` transport parameter and the default value is 25ms.
+
+An acknowledgement SHOULD be sent immediately upon receipt of a second
+packet but the delay SHOULD NOT exceed the maximum ack delay. QUIC recovery
+algorithms do not assume the peer generates an acknowledgement immediately when
+receiving a second full-packet.
+
+Out-of-order packets SHOULD be acknowledged more quickly, in order to accelerate
+loss recovery.  The receiver SHOULD send an immediate ACK when it receives a new
+packet which is not one greater than the largest received packet number.
+
+Similarly, packets marked with the ECN Congestion Experienced (CE) codepoint in
+the IP header SHOULD be acknowledged immediately, to reduce the peer's response
+time to congestion events.
+
+As an optimization, a receiver MAY process multiple packets before sending any
+ACK frames in response.  In this case they can determine whether an immediate or
+delayed acknowledgement should be generated after processing incoming packets.
+
+## Crypto Handshake Data
+
+In order to quickly complete the handshake and avoid spurious retransmissions
+due to crypto retransmission timeouts, crypto packets SHOULD use a very short
+ack delay, such as 1ms.  ACK frames MAY be sent immediately when the crypto
+stack indicates all data for that encryption level has been received.
+
+## ACK Ranges
+
+When an ACK frame is sent, one or more ranges of acknowledged packets are
+included.  Including older packets reduces the chance of spurious retransmits
+caused by losing previously sent ACK frames, at the cost of larger ACK frames.
+
+ACK frames SHOULD always acknowledge the most recently received packets, and the
+more out-of-order the packets are, the more important it is to send an updated
+ACK frame quickly, to prevent the peer from declaring a packet as lost and
+spuriously retransmitting the frames it contains.
+
+Below is one recommended approach for determining what packets to include in an
+ACK frame.
+
+## Receiver Tracking of ACK Frames
+
+When a packet containing an ACK frame is sent, the largest acknowledged in that
+frame may be saved.  When a packet containing an ACK frame is acknowledged, the
+receiver can stop acknowledging packets less than or equal to the largest
+acknowledged in the sent ACK frame.
+
+In cases without ACK frame loss, this algorithm allows for a minimum of 1 RTT
+of reordering. In cases with ACK frame loss and reordering, this approach does
+not guarantee that every acknowledgement is seen by the sender before it is no
+longer included in the ACK frame. Packets could be received out of order and
+all subsequent ACK frames containing them could be lost. In this case, the
+loss recovery algorithm may cause spurious retransmits, but the sender will
+continue making forward progress.
+
+
 # Loss Detection
 
 QUIC senders use both ack information and timeouts to detect lost packets, and
@@ -306,7 +368,7 @@ than 1.125 * max(SRTT, latest_RTT) since when it was sent.
 Using max(SRTT, latest_RTT) protects from the two following cases:
 
 * the latest RTT sample is lower than the SRTT, perhaps due to reordering where
-  packet whose ack triggered the Early Retransit process encountered a shorter
+  packet whose ack triggered the Early Retransmit process encountered a shorter
   path;
 
 * the latest RTT sample is higher than the SRTT, perhaps due to a sustained
@@ -371,11 +433,15 @@ When crypto packets are outstanding, the TLP and RTO timers are not active.
 #### Retry and Version Negotiation
 
 A Retry or Version Negotiation packet causes a client to send another Initial
-packet, effectively restarting the connection process.
+packet, effectively restarting the connection process and resetting congestion
+control and loss recovery state, including resetting any pending timers.  Either
+packet indicates that the Initial was received but not processed.  Neither
+packet can be treated as an acknowledgment for the Initial.
 
-Either packet indicates that the Initial was received but not processed.
-Neither packet can be treated as an acknowledgment for the Initial, but they MAY
-be used to improve the RTT estimate.
+The client MAY however compute an RTT estimate to the server as the time period
+from when the first Initial was sent to when a Retry or a Version Negotiation
+packet is received.  The client MAY use this value to seed the RTT estimator for
+a subsequent connection attempt to the server.
 
 ### Tail Loss Probe {#tlp}
 
@@ -472,66 +538,6 @@ A packet sent on an RTO timer MUST NOT be blocked by the sender's congestion
 controller. A sender MUST however count these packets as being in flight, since
 this packet adds network load without establishing packet loss.
 
-## Generating Acknowledgements
-
-QUIC SHOULD delay sending acknowledgements in response to packets, but MUST NOT
-excessively delay acknowledgements of retransmittable packets. Specifically,
-implementations MUST attempt to enforce a maximum ack delay to avoid causing
-the peer spurious timeouts.  The maximum ack delay is communicated in the
-`max_ack_delay` transport parameter and the default value is 25ms.
-
-An acknowledgement SHOULD be sent immediately upon receipt of a second
-packet but the delay SHOULD NOT exceed the maximum ack delay. QUIC recovery
-algorithms do not assume the peer generates an acknowledgement immediately when
-receiving a second full-packet.
-
-Out-of-order packets SHOULD be acknowledged more quickly, in order to accelerate
-loss recovery.  The receiver SHOULD send an immediate ACK when it receives a new
-packet which is not one greater than the largest received packet number.
-
-Similarly, packets marked with the ECN Congestion Experienced (CE) codepoint in
-the IP header SHOULD be acknowledged immediately, to reduce the peer's response
-time to congestion events.
-
-As an optimization, a receiver MAY process multiple packets before sending any
-ACK frames in response.  In this case they can determine whether an immediate or
-delayed acknowledgement should be generated after processing incoming packets.
-
-### Crypto Handshake Data
-
-In order to quickly complete the handshake and avoid spurious retransmissions
-due to crypto retransmission timeouts, crypto packets SHOULD use a very short
-ack delay, such as 1ms.  ACK frames MAY be sent immediately when the crypto
-stack indicates all data for that encryption level has been received.
-
-### ACK Ranges
-
-When an ACK frame is sent, one or more ranges of acknowledged packets are
-included.  Including older packets reduces the chance of spurious retransmits
-caused by losing previously sent ACK frames, at the cost of larger ACK frames.
-
-ACK frames SHOULD always acknowledge the most recently received packets, and the
-more out-of-order the packets are, the more important it is to send an updated
-ACK frame quickly, to prevent the peer from declaring a packet as lost and
-spuriously retransmitting the frames it contains.
-
-Below is one recommended approach for determining what packets to include in an
-ACK frame.
-
-### Receiver Tracking of ACK Frames
-
-When a packet containing an ACK frame is sent, the largest acknowledged in that
-frame may be saved.  When a packet containing an ACK frame is acknowledged, the
-receiver can stop acknowledging packets less than or equal to the largest
-acknowledged in the sent ACK frame.
-
-In cases without ACK frame loss, this algorithm allows for a minimum of 1 RTT
-of reordering. In cases with ACK frame loss and reordering, this approach does
-not guarantee that every acknowledgement is seen by the sender before it is no
-longer included in the ACK frame. Packets could be received out of order and
-all subsequent ACK frames containing them could be lost. In this case, the
-loss recovery algorithm may cause spurious retransmits, but the sender will
-continue making forward progress.
 
 ## Tracking Sent Packets {#tracking-sent-packets}
 
@@ -957,9 +963,10 @@ in {{vars-of-interest}}) beyond the available congestion window, unless the
 packet is a probe packet sent after the TLP or RTO timer expires, as described
 in {{tlp}} and {{rto}}.
 
-Implementations MAY use other congestion control algorithms, and endpoints MAY
-use different algorithms from one another. The signals QUIC provides for
-congestion control are generic and are designed to support different algorithms.
+Implementations MAY use other congestion control algorithms, such as
+Cubic {{?RFC8312}}, and endpoints MAY use different algorithms from one another.
+The signals QUIC provides for congestion control are generic and are designed
+to support different algorithms.
 
 ## Explicit Congestion Notification {#congestion-ecn}
 
@@ -1038,6 +1045,23 @@ their delivery to the peer.
 As an example of a well-known and publicly available implementation of a flow
 pacer, implementers are referred to the Fair Queue packet scheduler (fq qdisc)
 in Linux (3.11 onwards).
+
+## Restart after idle
+
+A connection is idle if there are no bytes in flight and there is no pending
+retransmittable data to send.  This can occur when the connection is
+application limited or after a retransmission timeout. In order to limit
+the size of bursts sent into the network, the behavior when restarting from
+idle depends upon whether pacing is used.
+
+If the sender uses pacing, the connection should limit the initial burst of
+packets to no more than the initial congestion window and subsequent packets
+SHOULD be paced. The congestion window does not change while the connection
+is idle.
+
+A sender that does not use pacing SHOULD reset its congestion window to the
+minimum of the current congestion window and the initial congestion window.
+This recommendation is based on Section 4.1 of {{?RFC5681}}.
 
 ## Pseudocode
 
