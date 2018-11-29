@@ -478,7 +478,7 @@ HTTP_WRONG_STREAM.
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|PT |DT |Empty|E|          Prioritized Element ID (i)         ...
+|PT |DT | Empty |          Prioritized Element ID (i)         ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                 Element Dependency ID (i)                   ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -496,12 +496,8 @@ The PRIORITY frame payload has the following fields:
   : A two-bit field indicating the type of element being depended on.
 
   Empty:
-  : A three-bit field which MUST be zero when sent and MUST be ignored
+  : A four-bit field which MUST be zero when sent and MUST be ignored
     on receipt.
-
-  Exclusive:
-  : A flag which indicates that the stream dependency is exclusive (see
-    {{!RFC7540}}, Section 5.3).
 
   Prioritized Element ID:
   : A variable-length integer that identifies the element being prioritized.
@@ -825,6 +821,70 @@ MUST be treated as a connection error of type HTTP_MALFORMED_FRAME.
 A server MUST treat a MAX_PUSH_ID frame payload that does not contain a single
 variable-length integer as a connection error of type HTTP_MALFORMED_FRAME.
 
+### INITIAL_PRIORITY {#frame-initial-priority}
+
+The INITIAL_PRIORITY (type=0x0F) frame specifies the client-advised priority of
+a new stream.  INITIAL_PRIORITY frames MAY be sent as the first frame of a
+request stream, and MUST NOT be sent thereafter or on other streams.  An
+INITIAL_PRIORITY frame sent on a non-request stream MUST be treated as a
+connection error of type HTTP_WRONG_STREAM.  An INITIAL_PRIORITY frame received
+after other frames or received by a client MUST be treated as a stream error of
+type HTTP_UNEXPECTED_FRAME.
+
+~~~~~~~~~~  drawing
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|DT |   Empty   |           Element Dependency ID (i)         ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|   Weight (8)  |
++-+-+-+-+-+-+-+-+
+~~~~~~~~~~
+{: #fig-initial-priority title="INITIAL_PRIORITY frame payload"}
+
+The INITIAL_PRIORITY frame payload has the following fields:
+
+  Dependency Type:
+  : A two-bit field indicating the type of element being depended on.
+
+  Empty:
+  : A six-bit field which MUST be zero when sent and MUST be ignored
+    on receipt.
+
+  Element Dependency ID:
+  : A variable-length integer that identifies the element on which a dependency
+    is being expressed. Depending on the value of Dependency Type, this contains
+    the Stream ID of a request stream, the Push ID of a promised resource, the
+    Placeholder ID of a placeholder, or is ignored.  For details of
+    dependencies, see {{priority}} and {{!RFC7540}}, Section 5.3.
+
+  Weight:
+  : An unsigned 8-bit integer representing a priority weight for the stream (see
+    {{!RFC7540}}, Section 5.3). Add one to the value to obtain a weight between
+    1 and 256.
+
+An INITIAL_PRIORITY frame identifies an element upon which the current request
+stream depends at creation.  The values for the Dependency Type and Element
+Dependency ID have the same interpretation as in the PRIORITY frame (see
+{{frame-priority}}).
+
+When an INITIAL_PRIORITY frame claims to reference a request, the associated ID
+MUST identify a client-initiated bidirectional stream.  A server MUST treat
+receipt of PRIORITY frame with a Stream ID of any other type as a connection
+error of type HTTP_MALFORMED_FRAME.
+
+An INITIAL_PRIORITY frame that references a non-existent Push ID or a
+Placeholder ID greater than the server's limit MUST be treated as an
+HTTP_MALFORMED_FRAME error.
+
+The INITIAL_PRIORITY frame enables a request to be given a priority upon
+receipt, independent of reordering that might occur between data on the client's
+control stream and the request stream.  Subsequent PRIORITY frames on the
+control stream can update this dependency; the contents of the INITIAL_PRIORITY
+frame are ignored if a PRIORITY frame has already been received which assigns a
+different priority to the request.  See {{priority}} for more information.
+
+
 ### Reserved Frame Types {#frame-grease}
 
 Frame types of the format `0xb + (0x1f * N)` are reserved to exercise the
@@ -1009,10 +1069,13 @@ another request, which expresses the preference that the latter stream (the
 "dependent" request). Taken together, the dependencies across all requests in a
 connection form a dependency tree.
 
-When a client request is first sent or a placeholder first allocated, the
-element is dependent on the root of the priority tree. Pushed streams are
-initially dependent on the client request on which the PUSH_PROMISE frame was
-sent. In all cases, elements are assigned an initial weight of 16.
+When a client request is first sent, its parent and weight are determined by the
+INITIAL_PRIORITY frame (see {{frame-initial-priority}}) which begins the stream,
+if present.  Otherwise, the element is dependent on the root of the priority
+tree. Placeholders are also dependent on the root of the priority tree when
+first allocated.  Pushed streams are initially dependent on the client request
+on which the PUSH_PROMISE frame was sent. In all cases, elements are assigned an
+initial weight of 16 unless an INITIAL_PRIORITY frame is present.
 
 The structure of the dependency tree changes as PRIORITY frames modify the
 dependency links between requests. The PRIORITY frame {{frame-priority}}
@@ -1672,8 +1735,8 @@ commutative, both sender and receiver must apply them in the same order to
 ensure that both sides have a consistent view of the stream dependency tree.
 HTTP/2 specifies priority assignments in PRIORITY frames and (optionally) in
 HEADERS frames. To achieve in-order delivery of priority changes in HTTP/3,
-PRIORITY frames are sent on the control stream and the PRIORITY section is
-removed from the HEADERS frame.
+PRIORITY frames are sent on the control stream and exclusive prioritization
+has been removed.
 
 Likewise, HPACK was designed with the assumption of in-order delivery. A
 sequence of encoded header blocks must arrive (and be decoded) at an endpoint in
