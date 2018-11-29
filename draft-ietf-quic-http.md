@@ -836,9 +836,9 @@ payload that does not contain a single variable-length integer as a connection
 error of type HTTP_MALFORMED_FRAME.
 
 This frame allows the server to use the same server push in response to multiple
-concurrent requests.  Referencing the same server push ensures that a
-PUSH_PROMISE can be made in relation to every response in which server push
-might be needed without duplicating request headers or pushed responses.
+concurrent requests.  Referencing the same server push ensures that a promise
+can be made in relation to every response in which server push might be needed
+without duplicating request headers or pushed responses.
 
 Allowing duplicate references to the same Push ID is primarily to reduce
 duplication caused by concurrent requests.  A server SHOULD avoid reusing a Push
