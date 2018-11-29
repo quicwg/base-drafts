@@ -971,10 +971,6 @@ connection ID from use, it sends a RETIRE_CONNECTION_ID frame to its peer,
 indicating that the peer might bring a new connection ID into circulation using
 the NEW_CONNECTION_ID frame.
 
-An endpoint that retires a connection ID can retain knowledge of that connection
-ID for a period of time after sending the RETIRE_CONNECTION_ID frame, or until
-that frame is acknowledged.
-
 As discussed in {{migration-linkability}}, each connection ID MUST be used on
 packets sent from only one local address.  An endpoint that migrates away from a
 local address SHOULD retire all connection IDs used on that address once it no
