@@ -879,8 +879,8 @@ DetectLostPackets(largest_acked):
     if unacked.packet_number > largest_acked.packet_number:
       continue
 
-    if (unacked.time_sent < lost_send_time ||
-        unacked.packet_number < lost_pn):
+    if (unacked.time_sent <= lost_send_time ||
+        unacked.packet_number <= lost_pn):
       sent_packets.remove(unacked.packet_number)
       if (unacked.retransmittable):
         lost_packets.insert(unacked)
