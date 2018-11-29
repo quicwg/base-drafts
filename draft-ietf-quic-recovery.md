@@ -335,16 +335,16 @@ TCP-NCR {{?RFC4653}}, to improve QUIC's reordering resilience.
 
 Time threshold loss detection uses a time threshold to determine how much
 reordering to tolerate.  In this document, the threshold is expressed as a
-fraction of an RTT, but implemenantations MAY experiment with absolute
+fraction of an RTT, but implementations MAY experiment with absolute
 thresholds.  This may be used either as a replacement for a packet reordering
 threshold or in addition to it.
 
 When a larger packet is acknowledged, if it was sent more than the threshold
 after any in flight packets, those packets are immediately declared lost.
-Otherwise, a timer is set for the the reordering threshold minus the time
+Otherwise, a timer is set for the reordering threshold minus the time
 difference between the earliest in flight packet and the largest newly
 acknowledged packet.  Note that in some cases the timer could become longer when
-packets are acknowleged out of order. The RECOMMENDED time threshold, expressed
+packets are acknowledged out of order. The RECOMMENDED time threshold, expressed
 as a fraction of the round-trip time (kTimeReorderingFraction), is 1/8.
 
 ### Early Retransmit
@@ -381,7 +381,7 @@ higher multiplier increases loss recovery delay.
 
 This mechanism is based on Early Retransmit for TCP {{?RFC5827}}. However,
 {{?RFC5827}} does not include the timer described above. Early Retransmit is
-prone to spurious retransmissions due to its reduced reordering resilence
+prone to spurious retransmissions due to its reduced reordering resilience
 without the timer. This observation led Linux TCP implementers to implement a
 timer for TCP as well, and this document incorporates this advancement.
 
