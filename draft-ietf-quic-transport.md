@@ -2315,7 +2315,7 @@ Using a randomized connection ID results in two problems:
   critical for routing toward the peer, then this packet could be incorrectly
   routed.  This might also trigger another Stateless Reset in response, see
   {{reset-looping}}.  A Stateless Reset that is not correctly routed is
-  ineffective in causing errors to be quickly detected and recovered.  In this
+  an ineffective error detection and recovery mechanism.  In this
   case, endpoints will need to rely on other methods - such as timers - to
   detect that the connection has failed.
 
