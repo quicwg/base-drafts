@@ -867,26 +867,39 @@ Pseudocode for DetectLostPackets follows:
 DetectLostPackets(largest_acked):
   loss_time = 0
   lost_packets = {}
-  delay_until_lost = kTimeThreshold *
-                     max(latest_rtt, smoothed_rtt)
-  foreach (unacked < largest_acked.packet_number):
-    time_since_sent = now() - unacked.time_sent
-    delta = largest_acked.packet_number - unacked.packet_number
-    if (time_since_sent > delay_until_lost ||
-        delta > kPacketThreshold):
+  loss_delay = kTimeThreshold * max(latest_rtt, smoothed_rtt)
+  lost_packet_send_time = now()
+
+  // Packets sent before this time are deemed lost.
+  lost_send_time -= loss_delay
+
+  // Packets with packet numbers before this are deemed lost.
+  lost_pn = largest_acked.packet_number - reordering_threshold
+
+  foreach unacked:
+    if unacked.packet_number > largest_acked.packet_number:
+      continue
+
+    if (unacked.time_sent > lost_send_time ||
+        unacked.packet_number > lost_pn):
       sent_packets.remove(unacked.packet_number)
       if (unacked.retransmittable):
         lost_packets.insert(unacked)
-    else if (loss_time == 0 && delay_until_lost != infinite):
-      loss_time = now() + delay_until_lost - time_since_sent
+    else:
+      loss_time = min(loss_time, unacked.time_sent + loss_delay)
 
   // Inform the congestion controller of lost packets and
-  // lets it decide whether to retransmit immediately.
+  // let it decide whether to retransmit immediately.
   if (!lost_packets.empty()):
     OnPacketsLost(lost_packets)
 ~~~
 
+This algorithm results in loss_time being set to the earliest time that the
+earliest packet was sent.  As a result loss_time could be in the past.  Timers
+set based on a loss_time that has already passed need to fire immediately.
+
 ## Discussion
+
 The majority of constants were derived from best common practices among widely
 deployed TCP implementations on the internet.  Exceptions follow.
 
