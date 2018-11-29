@@ -3035,17 +3035,17 @@ packets (except for PMTU probe packets) SHOULD be sized to fit within the
 maximum packet size to avoid the packet being fragmented or dropped
 {{?RFC8085}}.
 
-To optimize capacity efficiency, endpoints SHOULD use Datagram Packetization
-Layer PMTU Discovery ({{!DPLPMTUD=I-D.ietf-tsvwg-datagram-plpmtud}}), or
-implement Path MTU Discovery (PMTUD) {{!RFC1191}} {{!RFC8201}} to determine
-whether the path to a destination will support its desired message size without
-fragmentation.
+An endpoint SHOULD use Datagram Packetization Layer PMTU Discovery
+({{!DPLPMTUD=I-D.ietf-tsvwg-datagram-plpmtud}}) or implement Path MTU Discovery
+(PMTUD) {{!RFC1191}} {{!RFC8201}} to determine whether the path to a destination
+will support a desired message size without fragmentation.
 
-In the absence of these mechanisms, QUIC endpoints SHOULD NOT send IP packets
-larger than 1280 bytes. Assuming the minimum IP header size, this results in a
-QUIC maximum packet size of 1232 bytes for IPv6 and 1252 bytes for IPv4. A QUIC
-implementation MAY be more conservative in computing the QUIC maximum packet
-size to allow for unknown tunnel overheads or IP header options/extensions.
+In the absence of these aforementioned mechanisms, QUIC endpoints SHOULD NOT
+send IP packets larger than 1280 bytes. Assuming the minimum IP header size,
+this results in a QUIC maximum packet size of 1232 bytes for IPv6 and 1252 bytes
+for IPv4. A QUIC implementation MAY be more conservative in computing the QUIC
+maximum packet size to allow for unknown tunnel overheads or IP header
+options/extensions.
 
 Each pair of local and remote addresses could have a different PMTU.  QUIC
 implementations that implement any kind of PMTU discovery therefore SHOULD
@@ -3114,12 +3114,12 @@ When implementing the algorithm in Section 5.3 of {{!DPLPMTUD}}, the initial
 value of BASE_PMTU SHOULD be consistent with the minimum QUIC packet size (1232
 bytes for IPv6 and 1252 bytes for IPv4).
 
-PADDING and PING frames can be used to generate PMTU probe packets. These frames
-are not delivered reliably, so do not result in retransmission if the packet is
-lost.  However, these frames do consume congestion window, which could delay the
-transmission of subsequent application data.
+PADDING frames can be used to generate PMTU probe packets. PADDING frames are
+not delivered reliably, so do not result in retransmission if the packet is
+lost.  However, PADDING frames do consume congestion window, which could delay
+the transmission of subsequent application data.
 
-A PING frame can be included in a PMTU probe to ensure that a valid probe is
+PING frames can be included in a PMTU probe to ensure that a valid probe is
 acknowledged.
 
 The considerations for processing ICMP messages in the previous section also
