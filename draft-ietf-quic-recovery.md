@@ -47,6 +47,33 @@ normative:
 
 informative:
 
+  RACK:
+    title: "RACK: a time-based fast loss detection algorithm for TCP"
+    date: {DATE}
+    seriesinfo:
+      Internet-Draft: draft-ietf-tcpm-rack-latest
+    author:
+      -
+        ins: Y. Cheng
+        name: Yuchung Cheng
+        org: Google
+        role: author
+      -
+        ins: N. Cardwell
+        name: Neal Cardwell
+        org: Google
+        role: author
+      -
+        ins: N. Dukkipati
+        name: Nandita Dukkipati
+        org: Google
+        role: author
+      -
+        ins: P. Jha
+        name: Priyaranjan Jha
+        org: Google
+        role: author
+
 
 --- abstract
 
