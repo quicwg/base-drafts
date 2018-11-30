@@ -263,7 +263,7 @@ underestimation of min RTT, which in turn prevents underestimating smoothed RTT.
 
 Ack-based loss detection implements the spirit of TCP's Fast Retransmit
 {{?RFC5681}}, Early Retransmit {{?RFC5827}}, FACK, SACK loss recovery
-{{?RFC6675}}, and RACK. This section provides an overview of how these
+{{?RFC6675}}, and RACK {{RACK}}. This section provides an overview of how these
 algorithms are implemented in QUIC.  Though both time threshold loss detection
 and early retransmit use a timer, they are part of ack-based detection because
 they do not use a timer to send probes, but rather to declare packets lost.
