@@ -1037,8 +1037,17 @@ Servers MUST drop other packets that contain unsupported versions.
 
 Packets with a supported version, or no version field, are matched to a
 connection using the connection ID or - for packets with zero-length connection
-IDs - the address tuple.  If the packet doesn't match an existing connection,
-the server continues below.
+IDs - the address tuple, with the following exception.
+
+A server that uses a non-zero-length connection ID SHOULD handle Initial packets
+that share the same address tuple, Source and Destination Connection IDs, but
+contain different first ClientHello messages as belonging to different
+connections, so that an attacker racing a spoofed Initial packet to the server
+cannot disrupt the handshake.  The requirement can be met by remembering the
+length and the hashed payload of the CRYPTO frame starting at offset of zero for
+each connection, and by comparing the values against newly received packets.
+
+If the packet doesn't match an existing connection, the server continues below.
 
 If the packet is an Initial packet fully conforming with the specification, the
 server proceeds with the handshake ({{handshake}}). This commits the server to
