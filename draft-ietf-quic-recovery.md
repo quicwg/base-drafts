@@ -332,12 +332,12 @@ they do not use a timer to send probes, but rather to declare packets lost.
 
 ### Fast Retransmit
 
-An unacknowledged packet is marked as lost when an acknowledgment is received
-for a packet sent sufficiently after the unacknowledged packet.
-* The largest acknowledged packet is more than kPacketThreshold packets larger
-  than the unacknowleged packet.
-* The unacknowledged packet was sent more than
-  (1 + kTimeThreshold) * max(SRTT, latest_RTT) ago.
+Fast Retransmit uses two thresholds to mark packets as lost when a packet
+sent later has been acknowledged.  An unacknowledged retransmittable packet
+is declared lost when either:
+* A packet more than kPacketThreshold larger has been acknowledged.
+* (1 + kTimeThreshold) * max(SRTT, latest_RTT) has elapsed since the
+  unacknowledged packet was sent.
 
 Receipt of the acknowledgement indicates that a later packet was received,
 while the reordering threshold provides some tolerance for reordering of
