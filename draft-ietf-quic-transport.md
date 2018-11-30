@@ -4372,7 +4372,7 @@ level. The stream does not have an explicit end, so CRYPTO frames do not have a
 FIN bit.
 
 
-## NEW_TOKEN frame {#frame-new-token}
+## NEW_TOKEN Frame {#frame-new-token}
 
 A server sends a NEW_TOKEN frame (type=0x07) to provide the client a token to
 send in the header of an Initial packet for a future connection.
