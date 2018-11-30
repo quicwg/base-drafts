@@ -1042,7 +1042,7 @@ IDs - the address tuple, with the following exception.
 A server that uses a non-zero-length connection ID SHOULD handle Initial packets
 that share the same address tuple, Source and Destination Connection IDs, but
 contain different first ClientHello messages as belonging to different
-connections, so that an attacker racing a spoofed Initial packet to the server
+connections. This might be used by a client to defend against attacks that race spoofed Initial packets with legitimate ones.  A server can treat every Initial packet containing a CRYPTO frame at an offset of 0 as potentially creating a new connection, discarding any packet that has the same Destination Connection ID and CRYPTO frame content as one that has been answered.
 cannot disrupt the handshake.  The requirement can be met by remembering the
 length and the hashed payload of the CRYPTO frame starting at offset of zero for
 each connection, and by comparing the values against newly received packets.
