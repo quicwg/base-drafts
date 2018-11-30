@@ -248,8 +248,8 @@ they do not use a timer to send probes, but rather to declare packets lost.
 ### Fast Retransmit
 
 An unacknowledged packet is marked as lost when an acknowledgment is received
-for a packet that was sent kReorderingThreshold number of packets or
-kTimeReorderingFraction amount of time after the unacknowledged packet.
+for a packet that was sent kPacketThreshold number of packets or
+kTimeThreshold amount of time after the unacknowledged packet.
 Receipt of the acknowledgement indicates that a later packet was received,
 while the reordering threshold provides some tolerance for reordering of
 packets in the network.
@@ -263,7 +263,7 @@ recovery latency.
 
 #### Packet Threshold
 
-The RECOMMENDED initial value for kReorderingThreshold is 3, based on
+The RECOMMENDED initial value for kPacketThreshold is 3, based on
 TCP loss recovery {{?RFC5681}} {{?RFC6675}}. Some networks may exhibit higher
 degrees of reordering, causing a sender to detect spurious losses.
 Implementers MAY use algorithms developed for TCP, such as
@@ -275,10 +275,10 @@ Time threshold loss detection uses a time threshold to determine how much
 reordering to tolerate.  In this document, the threshold is expressed as a
 fraction of an RTT, but implemenantations MAY experiment with absolute
 thresholds. The RECOMMENDED time threshold, expressed as a fraction
-of the round-trip time (kTimeReorderingFraction), is 1/8.
+of the round-trip time (kTimeThreshold), is 1/8.
 
 An endpoint SHOULD declare packets lost no earlier than
-(1 + kTimeReorderingFraction) * max(SRTT, latest_RTT) after when they were
+(1 + kTimeThreshold) * max(SRTT, latest_RTT) after when they were
 sent.  If packets sent prior to the largest acknowledged packet cannot yet
 be declared lost, then a timer SHOULD be set for the remaining time.
 
@@ -562,11 +562,11 @@ kMaxTLPs:
 : Maximum number of tail loss probes before an RTO expires.
   The RECOMMENDED value is 2.
 
-kReorderingThreshold:
+kPacketThreshold:
 : Maximum reordering in packet number space before FACK style loss detection
   considers a packet lost. The RECOMMENDED value is 3.
 
-kTimeReorderingFraction:
+kTimeThreshold:
 : Maximum reordering in time space before time threshold loss detection
   considers a packet lost.  In fraction of an RTT. The RECOMMENDED value
   is 1/8.
@@ -640,12 +640,12 @@ max_ack_delay:
   received ACK frame may be larger due to late timers, reordering,
   or lost ACKs.
 
-reordering_threshold:
+packet_threshold:
 : The largest packet number gap between the largest acknowledged
   retransmittable packet and an unacknowledged
   retransmittable packet before it is declared lost.
 
-time_reordering_fraction:
+time_reordering_threshold:
 : The reordering window as a fraction of max(smoothed_rtt, latest_rtt).
 
 loss_time:
@@ -666,8 +666,8 @@ follows:
    crypto_count = 0
    tlp_count = 0
    rto_count = 0
-   time_reordering_fraction = kTimeReorderingFraction
-   reordering_threshold = kReorderingThreshold
+   time_reordering_fraction = kTimeThreshold
+   packet_threshold = kPacketThreshold
    loss_time = 0
    smoothed_rtt = 0
    rttvar = 0
@@ -878,7 +878,7 @@ DetectLostPackets(largest_acked):
     time_since_sent = now() - unacked.time_sent
     delta = largest_acked.packet_number - unacked.packet_number
     if (time_since_sent > delay_until_lost ||
-        delta > reordering_threshold):
+        delta > packet_threshold):
       sent_packets.remove(unacked.packet_number)
       if (unacked.retransmittable):
         lost_packets.insert(unacked)
