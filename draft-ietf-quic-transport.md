@@ -1337,7 +1337,8 @@ Source Connection IDs during the handshake.
 On first receiving an Initial or Retry packet from the server, the client uses
 the Source Connection ID supplied by the server as the Destination Connection ID
 for subsequent packets.  That means that a client might change the Destination
-Connection ID twice during connection establishment.  Once a client has received
+Connection ID twice during connection establishment, once in response to a
+Retry and once in response to the server's Initial. Once a client has received
 an Initial packet from the server, it MUST discard any packet it receives with a
 different Source Connection ID.
 
@@ -1377,7 +1378,8 @@ of duplicate transport parameters as a connection error of type
 TRANSPORT_PARAMETER_ERROR.
 
 A server MUST include the original_connection_id transport parameter
-({{transport-parameter-definitions}}) if it sent a Retry packet.
+({{transport-parameter-definitions}}) if it sent a Retry packet, in
+order to enable validation of the Retry, as described in {{packet-retry}}.
 
 
 ### Values of Transport Parameters for 0-RTT {#zerortt-parameters}
@@ -1398,11 +1400,16 @@ A server MAY accept 0-RTT and subsequently provide different values for
 transport parameters for use in the new connection.  If 0-RTT data is accepted
 by the server, the server MUST NOT reduce any limits or alter any values that
 might be violated by the client with its 0-RTT data.  In particular, a server
-that accepts 0-RTT data MUST NOT set values for initial_max_data,
-initial_max_stream_data_bidi_local, initial_max_stream_data_bidi_remote,
-initial_max_stream_data_uni, initial_max_streams_bidi, or
-initial_max_streams_uni ({{transport-parameter-definitions}}) that are smaller
+that accepts 0-RTT data MUST NOT set values for the following parameters
+({{transport-parameter-definitions}}) that are smaller
 than the remembered value of those parameters.
+
+* initial_max_data
+* initial_max_stream_data_bidi_local
+* initial_max_stream_data_bidi_remote
+* initial_max_stream_data_uni
+* initial_max_streams_bidi
+* initial_max_streams_uni
 
 Omitting or setting a zero value for certain transport parameters can result in
 0-RTT data being enabled, but not usable.  The applicable subset of transport
@@ -1415,7 +1422,7 @@ The value of the server's previous preferred_address MUST NOT be used when
 establishing a new connection; rather, the client should wait to observe the
 server's new preferred_address value in the handshake.
 
-A server MUST reject 0-RTT data or even abort a handshake if the implied values
+A server MUST either reject 0-RTT data or abort a handshake if the implied values
 for transport parameters cannot be supported.
 
 
