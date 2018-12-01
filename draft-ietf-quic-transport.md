@@ -383,7 +383,7 @@ data to a peer.
 ~~~
        o
        | Create Stream (Sending)
-       | Create Bidirectional Stream (Receiving)
+       | Remote Creates Bidirectional Stream
        v
    +-------+
    | Ready | Send RESET_STREAM
