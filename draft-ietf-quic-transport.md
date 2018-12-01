@@ -647,13 +647,14 @@ upon receipt.
 A STOP_SENDING frame requests that the receiving endpoint send a RESET_STREAM
 frame.  An endpoint that receives a STOP_SENDING frame MUST send a RESET_STREAM
 frame for that stream.  An endpoint SHOULD copy the error code from the
-STOP_SENDING frame, but MAY use any other application error code.  The endpoint
+STOP_SENDING frame, but MAY use any application error code.  The endpoint
 that sends a STOP_SENDING frame can ignore the error code carried in any
 RESET_STREAM frame it receives.
 
 If the STOP_SENDING frame is received on a send stream that is already in the
-"Data Sent" state, a RESET_STREAM frame MAY still be sent in order to cancel
-retransmissions of previously-sent STREAM frames.
+"Data Sent" state, an endpoint which wishes to cease retransmission of
+previously-sent STREAM frames on that stream MUST first send a RESET_STREAM
+frame.
 
 STOP_SENDING SHOULD only be sent for a receive stream that has not been
 reset. STOP_SENDING is most useful for streams in the "Recv" or "Size Known"
@@ -830,7 +831,7 @@ commitment.
 ## Controlling Concurrency {#controlling-concurrency}
 
 An endpoint limits the cumulative number of incoming streams a peer can open.
-Only steams with a stream id less than
+Only streams with a stream id less than
 (max_stream * 4 + initial_stream_id_for_type) can be opened.  Initial limits
 are set in the transport parameters (see {{transport-parameter-definitions}})
 and subsequently limits are advertised using MAX_STREAMS frames
@@ -877,13 +878,13 @@ selected by endpoints; each endpoint selects the connection IDs that its peer
 uses.
 
 The primary function of a connection ID is to ensure that changes in addressing
-at lower protocol layers (UDP, IP, and below) don't cause packets for a QUIC
+at lower protocol layers (UDP, IP) don't cause packets for a QUIC
 connection to be delivered to the wrong endpoint.  Each endpoint selects
 connection IDs using an implementation-specific (and perhaps
 deployment-specific) method which will allow packets with that connection ID to
 be routed back to the endpoint and identified by the endpoint upon receipt.
 
-Connection IDs MUST NOT contain any information that can be used to correlate
+Connection IDs MUST NOT contain any information that can be used by to correlate
 them with other connection IDs for the same connection.  As a trivial example,
 this means the same connection ID MUST NOT be issued more than once on the same
 connection.
@@ -1188,8 +1189,9 @@ described in {{QUIC-TLS}}; a different QUIC version number could indicate that a
 different cryptographic handshake protocol is in use.
 
 QUIC provides reliable, ordered delivery of the cryptographic handshake
-data. QUIC packet protection ensures confidentiality and integrity protection
-that meets the requirements of the cryptographic handshake protocol:
+data. QUIC packet protection is used to encrypt as much of the handshake
+protocol as possible. The cryptographic handshake MUST provide the following
+properties:
 
 * authenticated key exchange, where
 
