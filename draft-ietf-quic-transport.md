@@ -124,9 +124,9 @@ provides:
 
 * Authenticated and encrypted header and payload
 
-QUIC uses UDP as a substrate to avoid requiring changes in legacy client
+QUIC uses UDP as a substrate to avoid requiring changes to legacy client
 operating systems and middleboxes.  QUIC authenticates all of its headers and
-encrypts most of the data it exchanges, including its signaling, to avoid
+encrypts most of the data it exchanges -- including its signaling -- to avoid
 incurring a dependency on middleboxes.
 
 
