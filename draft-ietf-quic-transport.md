@@ -1538,25 +1538,23 @@ Handshake keys, it SHOULD send an Initial packet in a UDP datagram of at least
 packet.
 
 A server might wish to validate the client address before starting the
-cryptographic handshake.  Client addresses can be verified using an address
-validation token.  This token is delivered during connection establishment with
-a Retry packet (see {{validate-retry}}) or in a previous connection using the
-NEW_TOKEN frame (see {{validate-future}}).
-
+cryptographic handshake. QUIC uses a token in the Initial packet to provide
+address validation prior to completing the handshake. This token is delivered
+to the client during connection establishment with a Retry packet
+(see {{validate-retry}}) or in a previous connection using the NEW_TOKEN
+frame (see {{validate-future}}).
 
 ### Address Validation using Retry Packets {#validate-retry}
 
-QUIC uses token-based address validation during connection establishment.  Any
-time the server wishes to validate a client address, it provides the client with
-a token.  As long as it is not possible for an attacker to generate a valid
-token for its own address (see {{token-integrity}}) and the client is able to
-return that token, it proves to the server that it received the token.
-
 Upon receiving the client's Initial packet, the server can request address
 validation by sending a Retry packet ({{packet-retry}}) containing a token. This
-token is repeated by the client in an Initial packet after it receives the Retry
-packet.  In response to receiving a token in an Initial packet, a server can
-either abort the connection or permit it to proceed.
+token is repeated by the client in all Initial packets after it receives the
+Retry packet.  In response to receiving a token in an Initial packet, a server
+can either abort the connection or permit it to proceed.
+
+As long as it is not possible for an attacker to generate a valid token for
+its own address (see {{token-integrity}}) and the client is able to return
+that token, it proves to the server that it received the token.
 
 A server can also use a Retry packet to defer the state and processing costs
 of connection establishment.  By giving the client a different connection ID to
@@ -1590,9 +1588,11 @@ amount of data to a client in response to 0-RTT data.
 
 The server uses the NEW_TOKEN frame {{frame-new-token}} to provide the client
 with an address validation token that can be used to validate future
-connections.  The client may then use this token to validate future connections
-by including it in the Initial packet's header.  The client MUST NOT use the
-token provided in a Retry for future connections.
+connections.  The client includes this token in Initial packets to provide
+address validation in a future connection.  The client MUST include the
+token in all Initial packets it sends, unless a Retry replaces the token
+with a newer token. The client MUST NOT use the token provided in a Retry
+for future connections.
 
 Unlike the token that is created for a Retry packet, there might be some time
 between when the token is created and when the token is subsequently used.
@@ -1614,17 +1614,19 @@ token was issued and any connection where it is used.  Clients that want to
 break continuity of identity with a server MAY discard tokens provided using the
 NEW_TOKEN frame.  Tokens obtained in Retry packets MUST NOT be discarded.
 
-A client SHOULD NOT reuse a token.  Reusing a token allows connections to be
-linked by entities on the network path (see {{migration-linkability}}).  A
-client MUST NOT reuse a token if it believes that its point of network
-attachment has changed since the token was last used; that is, if there is a
-change in its local IP address or network interface.  A client needs to start
-the connection process over if it migrates prior to completing the handshake.
+A client SHOULD NOT reuse a token in different connections. Reusing a token
+allows connections to be linked by entities on the network path
+(see {{migration-linkability}}).  A client MUST NOT reuse a token if it
+believes that its point of network attachment has changed since the token was
+last used; that is, if there is a change in its local IP address or network
+interface.  A client needs to start the connection process over if it migrates
+prior to completing the handshake.
 
 When a server receives an Initial packet with an address validation token, it
-SHOULD attempt to validate it.  If the token is invalid then the server SHOULD
-proceed as if the client did not have a validated address, including potentially
-sending a Retry. If the validation succeeds, the server SHOULD then allow the
+SHOULD attempt to validate it, unless it has already completed address
+validation.  If the token is invalid then the server SHOULD proceed as if
+the client did not have a validated address, including potentially sending
+a Retry. If the validation succeeds, the server SHOULD then allow the
 handshake to proceed.
 
 Note:
