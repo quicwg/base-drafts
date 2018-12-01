@@ -192,13 +192,9 @@ QUIC packet:
 
 Endpoint:
 
-: An entity that can participate in a QUIC conversation by generating,
+: An entity that can participate in a QUIC connection by generating,
   receiving, and processing QUIC packets. There are only two types of endpoint
   in QUIC: client and server.
-
-Connection:
-
-: A conversation between two QUIC endpoints with a single encryption context.
 
 Client:
 
@@ -865,11 +861,10 @@ longer if the peer chooses to not send STREAMS_BLOCKED frames.
 
 # Connections {#connections}
 
-A QUIC connection is a single conversation between two QUIC endpoints.  QUIC's
-connection establishment combines version negotiation with the cryptographic
-and transport handshakes to reduce connection establishment latency, as
-described in {{handshake}}.  Once established, a connection may migrate to a
-different IP or port at either endpoint as
+QUIC's connection establishment combines version negotiation with the
+cryptographic and transport handshakes to reduce connection establishment
+latency, as described in {{handshake}}.  Once established, a connection
+may migrate to a different IP or port at either endpoint as
 described in {{migration}}.  Finally, a connection may be terminated by either
 endpoint, as described in {{termination}}.
 
