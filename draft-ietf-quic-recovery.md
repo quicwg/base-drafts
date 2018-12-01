@@ -325,25 +325,24 @@ smaller initial reordering thresholds to minimize recovery latency.
 
 ### Packet Threshold
 
-The RECOMMENDED initial value for kPacketThreshold is 3, based on
-TCP loss recovery {{?RFC5681}} {{?RFC6675}}. Some networks may exhibit higher
-degrees of reordering, causing a sender to detect spurious losses.
-Implementers MAY use algorithms developed for TCP, such as
-TCP-NCR {{?RFC4653}}, to improve QUIC's reordering resilience.
+The RECOMMENDED initial value for the packet reordering threshold
+(kPacketThreshold) is 3, based on TCP loss detection {{?RFC5681}} {{?RFC6675}}.
+
+Some networks may exhibit higher degrees of reordering, causing a sender to
+detect spurious losses.  Implementers MAY use algorithms developed for TCP, such
+as TCP-NCR {{?RFC4653}}, to improve QUIC's reordering resilience.
 
 ### Time Threshold {#time-threshold}
 
-Ack-based loss detection uses a time threshold to determine how much
-reordering to tolerate.  In this document, the threshold is expressed as a
-fraction of an RTT, but implementations MAY experiment with absolute
-thresholds. The RECOMMENDED time threshold, expressed as a fraction
-of the round-trip time (kTimeThreshold), is 1/8.
+Ack-based loss detection uses a time threshold to determine how much reordering
+to tolerate.  The RECOMMENDED time threshold (kTimeThreshold), expressed as a
+round-trip time multiplier, is 9/8.
 
-Once a later packet has been acknowledged, an endpoint SHOULD declare packets
-lost if a time threshold of (1 + kTimeThreshold) * max(SRTT, latest_RTT) has
-passed since they were sent.  If packets sent prior to the largest acknowledged
-packet cannot yet be declared lost, then a timer SHOULD be set for the remaining
-time.
+Once a later packet has been acknowledged, an endpoint SHOULD declare an earlier
+packet lost if it was sent a threshold amount of time in the past. The time
+threshold is computed as kTimeThreshold * max(SRTT, latest_RTT).
+If packets sent prior to the largest acknowledged packet cannot yet be declared
+lost, then a timer SHOULD be set for the remaining time.
 
 Using max(SRTT, latest_RTT) protects from the two following cases:
 
@@ -354,10 +353,11 @@ Using max(SRTT, latest_RTT) protects from the two following cases:
 * the latest RTT sample is higher than the SRTT, perhaps due to a sustained
   increase in the actual RTT, but the smoothed SRTT has not yet caught up.
 
-Implementers MAY experiment with using other reordering fractions, bearing
-in mind that a lower multiplier reduces reordering resilience and increases
-spurious retransmissions, and a higher multiplier increases loss recovery
-delay.
+Implementers MAY experiment with using other reordering thresholds, including
+absolute thresholds, bearing in mind that a lower multiplier reduces reordering
+resilience and increases spurious retransmissions, and a higher multiplier
+increases loss detection delay.
+
 
 ## Timeout Loss Detection
 
@@ -570,13 +570,14 @@ kMaxTLPs:
   The RECOMMENDED value is 2.
 
 kPacketThreshold:
-: Maximum reordering in packet number space before FACK style loss detection
+: Maximum reordering in packets  before packet threshold loss detection
   considers a packet lost. The RECOMMENDED value is 3.
 
 kTimeThreshold:
-: Maximum reordering in time space before time threshold loss detection
-  considers a packet lost.  In fraction of an RTT. The RECOMMENDED value
-  is 1/8.
+
+: Maximum reordering in time before time threshold loss detection
+  considers a packet lost. Specified as an RTT multiplier. The RECOMMENDED
+  value is 9/8.
 
 kMinTLPTimeout:
 : Minimum time in the future a tail loss probe timer may be set for.
@@ -673,7 +674,7 @@ follows:
    crypto_count = 0
    tlp_count = 0
    rto_count = 0
-   time_reordering_fraction = kTimeThreshold
+   time_threshold = kTimeThreshold
    packet_threshold = kPacketThreshold
    loss_time = 0
    smoothed_rtt = 0
@@ -879,8 +880,7 @@ Pseudocode for DetectLostPackets follows:
 DetectLostPackets(largest_acked):
   loss_time = 0
   lost_packets = {}
-  delay_until_lost = (1 + time_reordering_fraction) *
-      max(latest_rtt, smoothed_rtt)
+  delay_until_lost = time_threshold * max(latest_rtt, smoothed_rtt)
   foreach (unacked < largest_acked.packet_number):
     time_since_sent = now() - unacked.time_sent
     delta = largest_acked.packet_number - unacked.packet_number
