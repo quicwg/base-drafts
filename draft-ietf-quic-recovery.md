@@ -910,7 +910,8 @@ DetectLostPackets(largest_acked):
   foreach (unacked < largest_acked.packet_number):
     time_since_sent = now() - unacked.time_sent
     delta = largest_acked.packet_number - unacked.packet_number
-    if (time_since_sent > delay_until_lost || delta > packet_threshold):
+    if (time_since_sent > delay_until_lost ||
+        delta > packet_threshold):
       sent_packets.remove(unacked.packet_number)
       if (unacked.retransmittable):
         lost_packets.insert(unacked)
