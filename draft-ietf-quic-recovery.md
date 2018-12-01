@@ -326,31 +326,30 @@ underestimation of min RTT, which in turn prevents underestimating smoothed RTT.
 Ack-based loss detection implements the spirit of TCP's Fast Retransmit
 {{?RFC5681}}, Early Retransmit {{?RFC5827}}, FACK, SACK loss recovery
 {{?RFC6675}}, and RACK {{RACK}}. This section provides an overview of how these
-algorithms are implemented in QUIC.  Though both time threshold loss detection
-and early retransmit use a timer, they are part of ack-based detection because
-they do not use a timer to send probes, but rather to declare packets lost.
+algorithms are implemented in QUIC.
 
-### Fast Retransmit
+When an ACK frame is received that newly acknowledges a packet, a QUIC sender
+uses two thresholds to determine if prior packets should be declared lost.  A
+packet is declared lost under the following conditions:
 
-Fast Retransmit uses two thresholds to mark packets as lost when a packet
-sent later has been acknowledged.  An unacknowledged retransmittable packet
-is declared lost when either:
-* A packet more than kPacketThreshold larger has been acknowledged.
-* (1 + kTimeThreshold) * max(SRTT, latest_RTT) has elapsed since the
-  unacknowledged packet was sent.
+* it has a smaller packet number than the newly acknowledged packet,
 
-Receipt of the acknowledgement indicates that a later packet was received,
-while the reordering threshold provides some tolerance for reordering of
-packets in the network.
+* it is retransmittable and unacknowledged,
 
-Spuriously declaring packets lost leads to unnecessary retransmissions and
-may result in degraded performance due to the actions of the congestion
-controller upon detecting loss.  Implementations that detect spurious
-retransmissions and increase the reordering threshold in packets or time
-MAY choose to start with smaller initial reordering thresholds to minimize
-recovery latency.
+* either its packet number is kPacketThreshold smaller than the acknowledged
+  packet ({{packet-threshold}}), or it was sent long enough in the past
+  ({{time-threshold}}).
 
-#### Packet Threshold
+The received acknowledgement indicates that a later packet was delivered, while
+the packet and time thresholds provide some tolerance for packet reordering.
+
+Spuriously declaring packets lost leads to unnecessary retransmissions and may
+result in degraded performance due to the actions of the congestion controller
+upon detecting loss.  Implementations that detect spurious retransmissions and
+increase the reordering threshold in packets or time MAY choose to start with
+smaller initial reordering thresholds to minimize recovery latency.
+
+### Packet Threshold
 
 The RECOMMENDED initial value for kPacketThreshold is 3, based on
 TCP loss recovery {{?RFC5681}} {{?RFC6675}}. Some networks may exhibit higher
@@ -358,18 +357,19 @@ degrees of reordering, causing a sender to detect spurious losses.
 Implementers MAY use algorithms developed for TCP, such as
 TCP-NCR {{?RFC4653}}, to improve QUIC's reordering resilience.
 
-#### Time Threshold
+### Time Threshold {#time-threshold}
 
-Time threshold loss detection uses a time threshold to determine how much
+Ack-based loss detection uses a time threshold to determine how much
 reordering to tolerate.  In this document, the threshold is expressed as a
 fraction of an RTT, but implementations MAY experiment with absolute
 thresholds. The RECOMMENDED time threshold, expressed as a fraction
 of the round-trip time (kTimeThreshold), is 1/8.
 
-An endpoint SHOULD declare packets lost no earlier than
-(1 + kTimeThreshold) * max(SRTT, latest_RTT) after when they were
-sent.  If packets sent prior to the largest acknowledged packet cannot yet
-be declared lost, then a timer SHOULD be set for the remaining time.
+Once a later packet has been acknowledged, an endpoint SHOULD declare packets
+lost if a time threshold of (1 + kTimeThreshold) * max(SRTT, latest_RTT) has
+passed since they were sent.  If packets sent prior to the largest acknowledged
+packet cannot yet be declared lost, then a timer SHOULD be set for the remaining
+time.
 
 Using max(SRTT, latest_RTT) protects from the two following cases:
 
@@ -910,8 +910,7 @@ DetectLostPackets(largest_acked):
   foreach (unacked < largest_acked.packet_number):
     time_since_sent = now() - unacked.time_sent
     delta = largest_acked.packet_number - unacked.packet_number
-    if (time_since_sent > delay_until_lost ||
-        delta > packet_threshold):
+    if (time_since_sent > delay_until_lost || delta > packet_threshold):
       sent_packets.remove(unacked.packet_number)
       if (unacked.retransmittable):
         lost_packets.insert(unacked)
