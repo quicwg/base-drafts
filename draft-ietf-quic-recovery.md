@@ -45,32 +45,6 @@ normative:
         role: editor
 
 
-informative:
-
-  RACK:
-    title: "RACK: a time-based fast loss detection algorithm for TCP"
-    date: {DATE}
-    seriesinfo:
-      Internet-Draft: draft-ietf-tcpm-rack-latest
-    author:
-      -
-        ins: Y. Cheng
-        name: Yuchung Cheng
-        org: Google
-      -
-        ins: N. Cardwell
-        name: Neal Cardwell
-        org: Google
-      -
-        ins: N. Dukkipati
-        name: Nandita Dukkipati
-        org: Google
-      -
-        ins: P. Jha
-        name: Priyaranjan Jha
-        org: Google
-
-
 --- abstract
 
 This document describes loss detection and congestion control mechanisms for
@@ -325,8 +299,8 @@ underestimation of min RTT, which in turn prevents underestimating smoothed RTT.
 
 Ack-based loss detection implements the spirit of TCP's Fast Retransmit
 {{?RFC5681}}, Early Retransmit {{?RFC5827}}, FACK, SACK loss recovery
-{{?RFC6675}}, and RACK {{RACK}}. This section provides an overview of how these
-algorithms are implemented in QUIC.
+{{?RFC6675}}, and RACK {{?RACK=I-D.ietf-tcpm-rack}}. This section provides an
+overview of how these algorithms are implemented in QUIC.
 
 When an ACK frame is received that newly acknowledges a packet, a QUIC sender
 uses two thresholds to determine if prior packets should be declared lost.  A
