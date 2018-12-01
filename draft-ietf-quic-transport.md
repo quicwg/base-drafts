@@ -1422,8 +1422,8 @@ The value of the server's previous preferred_address MUST NOT be used when
 establishing a new connection; rather, the client should wait to observe the
 server's new preferred_address value in the handshake.
 
-A server MUST either reject 0-RTT data or abort a handshake if the implied values
-for transport parameters cannot be supported.
+A server MUST either reject 0-RTT data or abort a handshake if the implied
+values for transport parameters cannot be supported.
 
 
 ### New Transport Parameters
