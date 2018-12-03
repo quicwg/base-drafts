@@ -1108,7 +1108,9 @@ is a mutually supported version.
 
 If the version selected by the client is not acceptable to the server, the
 server responds with a Version Negotiation packet (see {{packet-version}}).
-This includes a list of versions that the server will accept.
+This includes a list of versions that the server will accept.  An endpoint MUST
+NOT send a Version Negotiation packet in response to receiving a Version
+Negotiation packet.
 
 This system allows a server to process packets with unsupported versions without
 retaining state.  Though either the Initial packet or the Version Negotiation
