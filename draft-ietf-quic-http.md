@@ -468,19 +468,25 @@ HEADERS frames can only be sent on request / push streams.
 
 ### PRIORITY {#frame-priority}
 
-The PRIORITY (type=0x02) frame specifies the sender-advised priority of a
-stream.  In order to ensure that prioritization is processed in a consistent
-order, PRIORITY frames MUST be sent on the control stream.  A PRIORITY frame
-sent on any other stream MUST be treated as a connection error of type
-HTTP_WRONG_STREAM.
+The PRIORITY (type=0x02) frame specifies the client-advised priority of a
+stream.  When opening a new request stream, a PRIORITY frame MAY be sent as the
+first frame of the stream.  In order to ensure that prioritization is processed
+in a consistent order, any subsequent PRIORITY frames MUST be sent on the
+control stream.  A PRIORITY frame received on a push stream, received after
+other frames on a request stream, or received by a client MUST be treated as a
+stream error of type HTTP_UNEXPECTED_FRAME.
+
+Subsequent PRIORITY frames sent on the control stream might arrive before
+PRIORITY frames sent on a request stream due to reordering.  PRIORITY frames on
+the control stream always take precedence.
 
 ~~~~~~~~~~  drawing
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|PT |DT | Empty |          Prioritized Element ID (i)         ...
+|PT |DT | Empty |         [Prioritized Element ID (i)]        ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                 Element Dependency ID (i)                   ...
+|                [Element Dependency ID (i)]                  ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |   Weight (8)  |
 +-+-+-+-+-+-+-+-+
@@ -490,7 +496,9 @@ HTTP_WRONG_STREAM.
 The PRIORITY frame payload has the following fields:
 
   Prioritized Type:
-  : A two-bit field indicating the type of element being prioritized.
+  : A two-bit field indicating the type of element being prioritized.   When
+    sent on a request stream, this MUST be set to `11`.  When sent on the
+    control stream, this MUST NOT be set to `11`.
 
   Dependency Type:
   : A two-bit field indicating the type of element being depended on.
@@ -502,14 +510,14 @@ The PRIORITY frame payload has the following fields:
   Prioritized Element ID:
   : A variable-length integer that identifies the element being prioritized.
     Depending on the value of Prioritized Type, this contains the Stream ID of a
-    request stream, the Push ID of a promised resource, or a Placeholder ID of a
-    placeholder.
+    request stream, the Push ID of a promised resource, a Placeholder ID of a
+    placeholder, or is absent.
 
   Element Dependency ID:
   : A variable-length integer that identifies the element on which a dependency
     is being expressed. Depending on the value of Dependency Type, this contains
     the Stream ID of a request stream, the Push ID of a promised resource, the
-    Placeholder ID of a placeholder, or is ignored.  For details of
+    Placeholder ID of a placeholder, or is absent.  For details of
     dependencies, see {{priority}} and {{!RFC7540}}, Section 5.3.
 
   Weight:
@@ -526,17 +534,27 @@ request using the corresponding stream ID, a server push using a Push ID (see
 The values for the Prioritized Element Type and Element Dependency Type imply
 the interpretation of the associated Element ID fields.
 
-| Type Bits | Type Description | Element ID Contents |
-| --------- | ---------------- | ------------------- |
-| 00        | Request stream   | Stream ID           |
-| 01        | Push stream      | Push ID             |
-| 10        | Placeholder      | Placeholder ID      |
-| 11        | Root of the tree | Ignored             |
+| Type Bits | Type Description | Prioritized Element ID Contents |
+| --------- | ---------------- | ------------------------------- |
+| 00        | Request stream   | Stream ID                       |
+| 01        | Push stream      | Push ID                         |
+| 10        | Placeholder      | Placeholder ID                  |
+| 11        | Current stream   | Absent                          |
+
+| Type Bits | Type Description | Element Dependency ID Contents |
+| --------- | ---------------- | ------------------------------ |
+| 00        | Request stream   | Stream ID                      |
+| 01        | Push stream      | Push ID                        |
+| 10        | Placeholder      | Placeholder ID                 |
+| 11        | Root of the tree | Absent                         |
 
 Note that the root of the tree cannot be referenced using a Stream ID of 0, as
 in {{!RFC7540}}; QUIC stream 0 carries a valid HTTP request.  The root of the
 tree cannot be reprioritized. A PRIORITY frame that prioritizes the root of the
-tree MUST be treated as a connection error of type HTTP_MALFORMED_FRAME.
+tree or the control stream MUST be treated as a connection error of type
+HTTP_MALFORMED_FRAME.  A PRIORITY frame sent on a request stream that
+prioritizes any other stream MUST be treated as a stream error of type
+HTTP_MALFORMED_FRAME.
 
 When a PRIORITY frame claims to reference a request, the associated ID MUST
 identify a client-initiated bidirectional stream.  A server MUST treat receipt
@@ -821,69 +839,6 @@ MUST be treated as a connection error of type HTTP_MALFORMED_FRAME.
 A server MUST treat a MAX_PUSH_ID frame payload that does not contain a single
 variable-length integer as a connection error of type HTTP_MALFORMED_FRAME.
 
-### INITIAL_PRIORITY {#frame-initial-priority}
-
-The INITIAL_PRIORITY (type=0x0F) frame specifies the client-advised priority of
-a new stream.  INITIAL_PRIORITY frames MAY be sent as the first frame of a
-request stream, and MUST NOT be sent thereafter or on other streams.  An
-INITIAL_PRIORITY frame sent on a non-request stream MUST be treated as a
-connection error of type HTTP_WRONG_STREAM.  An INITIAL_PRIORITY frame received
-after other frames or received by a client MUST be treated as a stream error of
-type HTTP_UNEXPECTED_FRAME.
-
-~~~~~~~~~~  drawing
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|DT |   Empty   |           Element Dependency ID (i)         ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|   Weight (8)  |
-+-+-+-+-+-+-+-+-+
-~~~~~~~~~~
-{: #fig-initial-priority title="INITIAL_PRIORITY frame payload"}
-
-The INITIAL_PRIORITY frame payload has the following fields:
-
-  Dependency Type:
-  : A two-bit field indicating the type of element being depended on.
-
-  Empty:
-  : A six-bit field which MUST be zero when sent and MUST be ignored
-    on receipt.
-
-  Element Dependency ID:
-  : A variable-length integer that identifies the element on which a dependency
-    is being expressed. Depending on the value of Dependency Type, this contains
-    the Stream ID of a request stream, the Push ID of a promised resource, the
-    Placeholder ID of a placeholder, or is ignored.  For details of
-    dependencies, see {{priority}} and {{!RFC7540}}, Section 5.3.
-
-  Weight:
-  : An unsigned 8-bit integer representing a priority weight for the stream (see
-    {{!RFC7540}}, Section 5.3). Add one to the value to obtain a weight between
-    1 and 256.
-
-An INITIAL_PRIORITY frame identifies an element upon which the current request
-stream depends at creation.  The values for the Dependency Type and Element
-Dependency ID have the same interpretation as in the PRIORITY frame (see
-{{frame-priority}}).
-
-When an INITIAL_PRIORITY frame claims to reference a request, the associated ID
-MUST identify a client-initiated bidirectional stream.  A server MUST treat
-receipt of PRIORITY frame with a Stream ID of any other type as a connection
-error of type HTTP_MALFORMED_FRAME.
-
-An INITIAL_PRIORITY frame that references a non-existent Push ID or a
-Placeholder ID greater than the server's limit MUST be treated as an
-HTTP_MALFORMED_FRAME error.
-
-The INITIAL_PRIORITY frame enables a request to be given a priority upon
-receipt, independent of reordering that might occur between data on the client's
-control stream and the request stream.  Subsequent PRIORITY frames on the
-control stream can update this dependency; the contents of the INITIAL_PRIORITY
-frame are ignored if a PRIORITY frame has already been received which assigns a
-different priority to the request.  See {{priority}} for more information.
-
 
 ### Reserved Frame Types {#frame-grease}
 
@@ -1070,16 +1025,17 @@ another request, which expresses the preference that the latter stream (the
 connection form a dependency tree.
 
 When a client request is first sent, its parent and weight are determined by the
-INITIAL_PRIORITY frame (see {{frame-initial-priority}}) which begins the stream,
-if present.  Otherwise, the element is dependent on the root of the priority
-tree. Placeholders are also dependent on the root of the priority tree when
-first allocated.  Pushed streams are initially dependent on the client request
-on which the PUSH_PROMISE frame was sent. In all cases, elements are assigned an
-initial weight of 16 unless an INITIAL_PRIORITY frame is present.
+PRIORITY frame (see {{frame-priority}}) which begins the stream, if present.
+Otherwise, the element is dependent on the root of the priority tree.
+Placeholders are also dependent on the root of the priority tree when first
+allocated.  Pushed streams are initially dependent on the client request on
+which the PUSH_PROMISE frame was sent. In all cases, elements are assigned an
+initial weight of 16 unless an PRIORITY frame begins the stream.
 
-The structure of the dependency tree changes as PRIORITY frames modify the
-dependency links between requests. The PRIORITY frame {{frame-priority}}
-identifies a prioritized element. The elements which can be prioritized are:
+The structure of the dependency tree changes as PRIORITY frames on the control
+stream modify the dependency links between requests. The PRIORITY frame
+{{frame-priority}} identifies a prioritized element. The elements which can be
+prioritized are:
 
 - Requests, identified by the ID of the request stream
 - Pushes, identified by the Push ID of the promised resource
