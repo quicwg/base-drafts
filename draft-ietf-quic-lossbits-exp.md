@@ -110,40 +110,24 @@ counter, as explained in {{retransmitbit}}.
 
 ## Setting the Square Bit on Outgoing Packets {#squarebit}
 
-Each endpoint maintains independantly a sQuare value, 0 or 1, during a block of N outgoing packets (e.g.N=64), and sets the sQuare  bit in the short header to the currently stored value when a packet with a short header is sent out. The sQuare value is initiated to 0 at each endpoint, client and server, at connection start.
+Each endpoint maintains independantly a sQuare value, 0 or 1, during a block of N outgoing packets (e.g. N=64), and sets the sQuare  bit in the short header to the currently stored value when a packet with a short header is sent out. The sQuare value is initiated to 0 at each endpoint, client and server, at connection start.
 This mechanism delineates thus slots of N packets with the same marking. Observation points can estimate the  upstream losses  by simply counting le number of packets during an half period of the square signal, as described in {{usage}}.
 
 
 ## Setting the Retransmit Bit on Outgoing Packets {#retransmitbit}
 
-Each endpoint, client and server, The Retransmit bit is set to 0 or 1 according to the not-yet-disclosed-lost-packets
-counter
+Each endpoint, client and server, sets the Retransmit bit of short header packets to 0 or 1 according to the not-yet-disclosed-lost-packets counter.
+The not-yet-disclosed-lost-packets counter is initialized to 0 at each endpoint, client and server, at connection start. When a packet is declared lost by the QUIC transmission machinery (see https://github.com/quicwg/base-drafts/blob/ac5e4af758cd61329244297737b93c87c3889e3d/draft-ietf-quic-recovery.md#loss-detection )
+the not-yet-disclosed-lost-packets counter is incremented by 1. When a packet with a short header is sent out by an end-point within a single connection, its retransmit bit is set at 0 when the not-yet-disclosed-lost-packets counter is equal to 0. Otherwise, the packet is sent out with a retransmit bit set to 1 and the not-yet-disclosed-lost-packets counter is decremented by 1.
 
-maintains a spin value, 0 or 1, for each
-QUIC connection, and sets the spin bit in the short header to the currently
-stored value when a packet with a short header is sent out. The spin value is
-initialized to 0 at each endpoint, client and server, at connection start.
-Each endpoint also remembers the highest packet number seen from its peer on
-the connection.
+Observation points can estimate the number of packets considered lost by the QUIC transmission machinery by observing the number of packets which retransmit bit is set to 1 in the reverse direction. This estimation is delayed at least by the uplink one way delay in case of fast retransmit. 
 
-The spin value is then determined at each endpoint within a single connection
-as follows:
 
-* When the server receives a packet from the client, if that packet has a
-  short header and if it increments the highest packet number seen by the
-  server from the client, the server sets the spin value to the value observed
-  in the spin bit in the received packet.
 
-* When the client receives a packet from the server, if the packet has a short
-  header and if it increments the highest packet number seen by the client
-  from the server, it sets the spin value to the opposite of the spin bit in
-  the received packet.
 
-This procedure will cause the spin bit to change value in each direction once
-per round trip. Observation points can estimate the network latency by
-observing these changes in the latency spin bit, as described in {{usage}}.
-See {{?QUIC-SPIN=I-D.trammell-quic-spin}} for further illustration of this
-mechanism in action.
+{{?QUIC-SPIN=I-D.trammell-quic-spin}} 
+
+
 
 ## Resetting Spin Value State
 
