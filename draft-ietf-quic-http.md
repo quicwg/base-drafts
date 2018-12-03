@@ -469,12 +469,13 @@ HEADERS frames can only be sent on request / push streams.
 ### PRIORITY {#frame-priority}
 
 The PRIORITY (type=0x02) frame specifies the client-advised priority of a
-stream.  When opening a new request stream, a PRIORITY frame MAY be sent as the
-first frame of the stream.  In order to ensure that prioritization is processed
-in a consistent order, any subsequent PRIORITY frames MUST be sent on the
-control stream.  A PRIORITY frame received on a push stream, received after
-other frames on a request stream, or received by a client MUST be treated as a
-stream error of type HTTP_UNEXPECTED_FRAME.
+stream.
+
+When opening a new request stream, a PRIORITY frame MAY be sent as the first
+frame of the stream.  In order to ensure that prioritization is processed in a
+consistent order, any subsequent PRIORITY frames MUST be sent on the control
+stream.  A PRIORITY frame received after other frames on a request stream MUST
+be treated as a stream error of type HTTP_UNEXPECTED_FRAME.
 
 Subsequent PRIORITY frames sent on the control stream might arrive before
 PRIORITY frames sent on a request stream due to reordering.  PRIORITY frames on
@@ -565,6 +566,11 @@ A PRIORITY frame that references a non-existent Push ID or a Placeholder ID
 greater than the server's limit MUST be treated as an HTTP_MALFORMED_FRAME
 error.
 
+A PRIORITY frame received on any stream other than a request or control stream
+MUST be treated as a connection error of type HTTP_WRONG_STREAM.
+
+PRIORITY frames received by a client MUST be treated as a stream error of type
+HTTP_UNEXPECTED_FRAME.
 
 ### CANCEL_PUSH {#frame-cancel-push}
 
