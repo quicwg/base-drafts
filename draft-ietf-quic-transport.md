@@ -94,7 +94,7 @@ informative:
 
 This document defines the core of the QUIC transport protocol.  Accompanying
 documents describe QUIC's loss detection and congestion control
-{{QUIC-RECOVERY}} and the use of TLS 1.3 for key negotiation {{QUIC-TLS}}.
+{{QUIC-RECOVERY}} and the use of TLS for key negotiation {{QUIC-TLS}}.
 
 
 --- note_Note_to_Readers
@@ -165,7 +165,7 @@ This document describes the core QUIC protocol and is structured as follows.
   - {{error-codes}} (Errors).
 
 Accompanying documents describe QUIC's loss detection and congestion control
-{{QUIC-RECOVERY}}, and the use of TLS 1.3 for key negotiation {{QUIC-TLS}}.
+{{QUIC-RECOVERY}}, and the use of TLS for key negotiation {{QUIC-TLS}}.
 
 This document defines QUIC version 1, which conforms to the protocol invariants
 in {{QUIC-INVARIANTS}}.
@@ -192,13 +192,9 @@ QUIC packet:
 
 Endpoint:
 
-: An entity that can participate in a QUIC conversation by generating,
+: An entity that can participate in a QUIC connection by generating,
   receiving, and processing QUIC packets. There are only two types of endpoint
   in QUIC: client and server.
-
-Connection:
-
-: A conversation between two QUIC endpoints with a single encryption context.
 
 Client:
 
@@ -264,7 +260,7 @@ ordering between bytes on different streams.
 
 QUIC allows for an arbitrary number of streams to operate concurrently and for
 an arbitrary amount of data to be sent on any stream, subject to flow control
-constraints (see {{flow-control}}).
+constraints (see {{flow-control}}) and stream limits.
 
 
 ## Stream Types and Identifiers {#stream-id}
@@ -479,7 +475,7 @@ which cannot be observed by the sender.
        o
        | Recv STREAM / STREAM_DATA_BLOCKED / RESET_STREAM
        | Create Bidirectional Stream (Sending)
-       | Recv MAX_STREAM_DATA
+       | Recv MAX_STREAM_DATA / STOP_SENDING (Bidirectional)
        | Create Higher-Numbered Stream
        v
    +-------+
@@ -512,18 +508,22 @@ which cannot be observed by the sender.
 
 The receiving part of a stream initiated by a peer (types 1 and 3 for a client,
 or 0 and 2 for a server) is created when the first STREAM, STREAM_DATA_BLOCKED,
-RESET_STREAM, or MAX_STREAM_DATA (bidirectional only, see below) is received for
-that stream.  The initial state for a receive stream is "Recv".
+or RESET_STREAM is received for that stream.  For bidirectional streams
+initiated by a peer, receipt of a MAX_STREAM_DATA or STOP_SENDING frame for the
+sending part of the stream also creates the receiving part.  The initial state
+for a receive stream is "Recv".
 
 The receive stream enters the "Recv" state when the sending part of a
 bidirectional stream initiated by the endpoint (type 0 for a client, type 1 for
 a server) enters the "Ready" state.
 
-An endpoint opens a bidirectional stream when a MAX_STREAM_DATA frame is
-received from the peer for that stream.  Receiving a MAX_STREAM_DATA frame for
-an unopened stream indicates that the remote peer has opened the stream and is
-providing flow control credit.  A MAX_STREAM_DATA frame might arrive before a
-STREAM or STREAM_DATA_BLOCKED frame if packets are lost or reordered.
+An endpoint opens a bidirectional stream when a MAX_STREAM_DATA or STOP_SENDING
+frame is received from the peer for that stream.  Receiving a MAX_STREAM_DATA
+frame for an unopened stream indicates that the remote peer has opened the
+stream and is providing flow control credit.  Receiving a STOP_SENDING frame for
+an unopened stream indicates that the remote peer no longer wishes to receive
+data on this stream.  Either frame might arrive before a STREAM or
+STREAM_DATA_BLOCKED frame if packets are lost or reordered.
 
 Before creating a stream, all streams of the same type with lower-numbered
 stream IDs MUST be created.  This ensures that the creation order for streams is
@@ -682,7 +682,7 @@ send on a stream at any time, as described in {{data-flow-control}} and
 {{fc-credit}}
 
 Similarly, to limit concurrency within a connection, a QUIC endpoint controls
-the maximum number of streams that its peer can initiate at any time, as
+the maximum cumulative number of streams that its peer can initiate, as
 described in {{controlling-concurrency}}.
 
 Data sent in CRYPTO frames is not flow controlled in the same way as stream
@@ -829,11 +829,13 @@ commitment.
 
 ## Controlling Concurrency {#controlling-concurrency}
 
-An endpoint controls concurrency by limiting the total number of incoming
-streams.  An initial value is set in the transport parameters (see
-{{transport-parameter-definitions}}) and subsequently increments are advertised
-using MAX_STREAMS frames ({{frame-max-streams}}).  Separate limits apply to
-unidirectional and bidirectional streams.
+An endpoint limits the cumulative number of incoming streams a peer can open.
+Only steams with a stream id less than
+(max_stream * 4 + initial_stream_id_for_type) can be opened.  Initial limits
+are set in the transport parameters (see {{transport-parameter-definitions}})
+and subsequently limits are advertised using MAX_STREAMS frames
+({{frame-max-streams}}). Separate limits apply to unidirectional and
+bidirectional streams.
 
 Endpoints MUST NOT exceed the limit set by their peer.  An endpoint that
 receives a STREAM frame with a stream ID exceeding the limit it has sent MUST
@@ -859,11 +861,10 @@ longer if the peer chooses to not send STREAMS_BLOCKED frames.
 
 # Connections {#connections}
 
-A QUIC connection is a single conversation between two QUIC endpoints.  QUIC's
-connection establishment combines version negotiation with the cryptographic
-and transport handshakes to reduce connection establishment latency, as
-described in {{handshake}}.  Once established, a connection may migrate to a
-different IP or port at either endpoint as
+QUIC's connection establishment combines version negotiation with the
+cryptographic and transport handshakes to reduce connection establishment
+latency, as described in {{handshake}}.  Once established, a connection
+may migrate to a different IP or port at either endpoint as
 described in {{migration}}.  Finally, a connection may be terminated by either
 endpoint, as described in {{termination}}.
 
@@ -964,10 +965,6 @@ which it can use when sending packets.  When the endpoint wishes to remove a
 connection ID from use, it sends a RETIRE_CONNECTION_ID frame to its peer,
 indicating that the peer might bring a new connection ID into circulation using
 the NEW_CONNECTION_ID frame.
-
-An endpoint that retires a connection ID can retain knowledge of that connection
-ID for a period of time after sending the RETIRE_CONNECTION_ID frame, or until
-that frame is acknowledged.
 
 As discussed in {{migration-linkability}}, each connection ID MUST be used on
 packets sent from only one local address.  An endpoint that migrates away from a
@@ -1183,9 +1180,9 @@ solicit a list of supported versions from a server.
 
 QUIC relies on a combined cryptographic and transport handshake to minimize
 connection establishment latency.  QUIC uses the CRYPTO frame {{frame-crypto}}
-to transmit the cryptographic handshake.  Version 0x00000001 of QUIC uses TLS
-1.3 as described in {{QUIC-TLS}}; a different QUIC version number could indicate
-that a different cryptographic handshake protocol is in use.
+to transmit the cryptographic handshake.  Version 0x00000001 of QUIC uses TLS as
+described in {{QUIC-TLS}}; a different QUIC version number could indicate that a
+different cryptographic handshake protocol is in use.
 
 QUIC provides reliable, ordered delivery of the cryptographic handshake
 data. QUIC packet protection ensures confidentiality and integrity protection
@@ -1317,6 +1314,11 @@ with an unpredictable value.  This MUST be at least 8 bytes in length. Until a
 packet is received from the server, the client MUST use the same value unless it
 abandons the connection attempt and starts a new one. The initial Destination
 Connection ID is used to determine packet protection keys for Initial packets.
+
+The final version used for a connection might be different from the version of
+the first Initial from the client.  To enable consistent routing through the
+handshake, a client SHOULD select an initial Destination Connection ID length
+long enough to fulfill the minimum size for every QUIC version it supports.
 
 The client populates the Source Connection ID field with a value of its choosing
 and sets the SCIL field to match.
@@ -1801,7 +1803,7 @@ This document limits migration of connections to new client addresses, except as
 described in {{preferred-address}}. Clients are responsible for initiating all
 migrations.  Servers do not send non-probing packets (see {{probing}}) toward a
 client address until they see a non-probing packet from that address.  If a
-client receives packets from an unknown server address, the client MAY discard
+client receives packets from an unknown server address, the client MUST discard
 these packets.
 
 
@@ -2169,7 +2171,7 @@ endpoint is only used to determine whether the connection is live at that
 endpoint.  An endpoint that sends packets near the end of the idle timeout
 period of a peer risks having those packets discarded if its peer enters the
 draining state before the packets arrive.  If a peer could timeout within an RTO
-(see Section 4.3.3 of {{QUIC-RECOVERY}}), it is advisable to test for liveness
+(see Section 5.3.3 of {{QUIC-RECOVERY}}), it is advisable to test for liveness
 before sending any data that cannot be retried safely.
 
 
@@ -2233,18 +2235,18 @@ coalesced (see {{packet-coalesce}}) to facilitate retransmission.
 A stateless reset is provided as an option of last resort for an endpoint that
 does not have access to the state of a connection.  A crash or outage might
 result in peers continuing to send data to an endpoint that is unable to
-properly continue the connection.  An endpoint that wishes to communicate a
-fatal connection error MUST use a CONNECTION_CLOSE frame if it has sufficient
-state to do so.
+properly continue the connection.  A stateless reset is not appropriate for
+signaling error conditions.  An endpoint that wishes to communicate a fatal
+connection error MUST use a CONNECTION_CLOSE frame if it has sufficient state
+to do so.
 
 To support this process, a token is sent by endpoints.  The token is carried in
 the NEW_CONNECTION_ID frame sent by either peer, and servers can specify the
 stateless_reset_token transport parameter during the handshake (clients cannot
 because their transport parameters don't have confidentiality protection).  This
 value is protected by encryption, so only client and server know this value.
-Tokens sent via NEW_CONNECTION_ID frames are invalidated when their associated
-connection ID is retired via a RETIRE_CONNECTION_ID frame
-({{frame-retire-connection-id}}).
+Tokens are invalidated when their associated connection ID is retired via a
+RETIRE_CONNECTION_ID frame ({{frame-retire-connection-id}}).
 
 An endpoint that receives packets that it cannot process sends a packet in the
 following layout:
@@ -2252,10 +2254,8 @@ following layout:
 ~~~
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+
-|0|K|1|1|0|0|0|0|
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                      Random Bytes (160..)                   ...
+|0|1|                   Random Bits (182..)                  ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                                                               |
 +                                                               +
@@ -2271,22 +2271,24 @@ following layout:
 This design ensures that a stateless reset packet is - to the extent possible -
 indistinguishable from a regular packet with a short header.
 
-The message consists of a header byte, followed by an arbitrary number of random
-bytes, followed by a Stateless Reset Token.
+A stateless reset uses an entire UDP datagram, starting with the first two bits
+of the packet header.  The remainder of the first byte and an arbitrary
+number of random bytes following it are set to unpredictable values.  The last
+16 bytes of the datagram contain a Stateless Reset Token.
 
 A stateless reset will be interpreted by a recipient as a packet with a short
-header.  For the packet to appear as valid, the Random Bytes field needs to
-include at least 20 bytes of random or unpredictable values.  This is intended
-to allow for a destination connection ID of the maximum length permitted, a
-packet number, and minimal payload.  The Stateless Reset Token corresponds to
-the minimum expansion of the packet protection AEAD.  More random bytes might be
-necessary if the endpoint could have negotiated a packet protection scheme with
-a larger minimum AEAD expansion.
+header.  For the packet to appear as valid, the Random Bits field needs to
+include at least 182 bits of random or unpredictable values (or 24 bytes, less
+the two fixed bits).  This is intended to allow for a destination connection ID
+of the maximum length permitted, with a minimal packet number, and payload.  The
+Stateless Reset Token corresponds to the minimum expansion of the packet
+protection AEAD.  More random bytes might be necessary if the endpoint could
+have negotiated a packet protection scheme with a larger minimum AEAD expansion.
 
 An endpoint SHOULD NOT send a stateless reset that is significantly larger than
 the packet it receives.  Endpoints MUST discard packets that are too small to be
 valid QUIC packets.  With the set of AEAD functions defined in {{QUIC-TLS}},
-packets less than 19 bytes long are never valid.
+packets that are smaller than 21 bytes are never valid.
 
 An endpoint MAY send a stateless reset in response to a packet with a long
 header.  This would not be effective if the stateless reset token was not yet
@@ -2308,7 +2310,7 @@ Using a randomized connection ID results in two problems:
   critical for routing toward the peer, then this packet could be incorrectly
   routed.  This might also trigger another Stateless Reset in response, see
   {{reset-looping}}.  A Stateless Reset that is not correctly routed is
-  ineffective in causing errors to be quickly detected and recovered.  In this
+  an ineffective error detection and recovery mechanism.  In this
   case, endpoints will need to rely on other methods - such as timers - to
   detect that the connection has failed.
 
@@ -2319,10 +2321,6 @@ Using a randomized connection ID results in two problems:
 
 Finally, the last 16 bytes of the packet are set to the value of the Stateless
 Reset Token.
-
-A stateless reset is not appropriate for signaling error conditions.  An
-endpoint that wishes to communicate a fatal connection error MUST use a
-CONNECTION_CLOSE frame if it has sufficient state to do so.
 
 This stateless reset design is specific to QUIC version 1.  An endpoint that
 supports multiple versions of QUIC needs to generate a stateless reset that will
@@ -2598,7 +2596,7 @@ has not processed another packet with the same packet number from the same
 packet number space. Duplicate suppression MUST happen after removing packet
 protection for the reasons described in Section 9.3 of {{QUIC-TLS}}. An
 efficient algorithm for duplicate suppression can be found in Section 3.4.3 of
-{{?RFC2406}}.
+{{?RFC4303}}.
 
 Packet number encoding at a sender and decoding at a receiver are described in
 {{packet-encoding}}.
@@ -2796,7 +2794,7 @@ messages are delayed or lost.  Note that the same limitation applies to other
 data sent by the server protected by the 1-RTT keys.
 
 Endpoints SHOULD send acknowledgments for packets containing CRYPTO frames with
-a reduced delay; see Section 4.3.1 of {{QUIC-RECOVERY}}.
+a reduced delay; see Section 5.3.1 of {{QUIC-RECOVERY}}.
 
 
 ## Retransmission of Information
@@ -2991,17 +2989,14 @@ traverse network elements that drop or corrupt ECN codepoints in the IP header.
 The QUIC packet size includes the QUIC header and integrity check, but not the
 UDP or IP header.
 
-Clients MUST ensure that the first Initial packet they send is sent in a UDP
-datagram that is at least 1200 bytes. Padding the Initial packet or including a
-0-RTT packet in the same datagram are ways to meet this requirement.  Sending a
-UDP datagram of this size ensures that the network path supports a reasonable
-Maximum Transmission Unit (MTU), and helps reduce the amplitude of amplification
-attacks caused by server responses toward an unverified client address, see
-{{address-validation}}.
-
-The payload of a UDP datagram carrying the Initial packet MUST be expanded to at
-least 1200 bytes, by adding PADDING frames to the Initial packet and/or by
-combining the Initial packet with a 0-RTT packet (see {{packet-coalesce}}).
+Clients MUST ensure they send the first Initial packet in a UDP datagram that is
+at least 1200 bytes.  The payload of a UDP datagram carrying the Initial packet
+MUST be expanded to at least 1200 bytes, by adding PADDING frames to the Initial
+packet and/or by combining the Initial packet with a 0-RTT packet (see
+{{packet-coalesce}}).  Sending a UDP datagram of this size ensures that the
+network path supports a reasonable Maximum Transmission Unit (MTU), and helps
+reduce the amplitude of amplification attacks caused by server responses toward
+an unverified client address, see {{address-validation}}.
 
 The datagram containing the first Initial packet from a client MAY exceed 1200
 bytes if the client believes that the Path Maximum Transmission Unit (PMTU)
@@ -3017,84 +3012,112 @@ The server MUST also limit the number of bytes it sends before validating the
 address of the client, see {{address-validation}}.
 
 
-## Path Maximum Transmission Unit
+## Path Maximum Transmission Unit (PMTU)
 
-The Path Maximum Transmission Unit (PMTU) is the maximum size of the entire IP
-header, UDP header, and UDP payload. The UDP payload includes the QUIC packet
-header, protected payload, and any authentication fields.
+The PMTU is the maximum size of the entire IP packet including the IP header,
+UDP header, and UDP payload.  The UDP payload includes the QUIC packet header,
+protected payload, and any authentication fields. The PMTU can depend upon the
+current path characteristics.  Therefore, the current largest UDP payload an
+implementation will send is referred to as the QUIC maximum packet size.
 
-All QUIC packets SHOULD be sized to fit within the estimated PMTU to avoid IP
-fragmentation or packet drops. To optimize bandwidth efficiency, endpoints
-SHOULD use Packetization Layer PMTU Discovery ({{!PLPMTUD=RFC4821}}).  Endpoints
-MAY use PMTU Discovery ({{!PMTUDv4=RFC1191}}, {{!PMTUDv6=RFC8201}}) for
-detecting the PMTU, setting the PMTU appropriately, and storing the result of
-previous PMTU determinations.
+QUIC depends on a PMTU of at least 1280 bytes. This is the IPv6 minimum size
+{{?RFC8200}} and is also supported by most modern IPv4 networks.  All QUIC
+packets (except for PMTU probe packets) SHOULD be sized to fit within the
+maximum packet size to avoid the packet being fragmented or dropped
+{{?RFC8085}}.
+
+To optimize capacity efficiency, endpoints SHOULD use Datagram Packetization
+Layer PMTU Discovery ({{!DPLPMTUD=I-D.ietf-tsvwg-datagram-plpmtud}}), or
+implement Path MTU Discovery (PMTUD) {{!RFC1191}} {{!RFC8201}} to determine
+whether the path to a destination will support its desired message size without
+fragmentation.
 
 In the absence of these mechanisms, QUIC endpoints SHOULD NOT send IP packets
 larger than 1280 bytes. Assuming the minimum IP header size, this results in a
-QUIC packet size of 1232 bytes for IPv6 and 1252 bytes for IPv4. Some QUIC
-implementations MAY be more conservative in computing allowed QUIC packet size
-given unknown tunneling overheads or IP header options.
+QUIC maximum packet size of 1232 bytes for IPv6 and 1252 bytes for IPv4. A QUIC
+implementation MAY be more conservative in computing the QUIC maximum packet
+size to allow for unknown tunnel overheads or IP header options/extensions.
 
-QUIC endpoints that implement any kind of PMTU discovery SHOULD maintain an
-estimate for each combination of local and remote IP addresses.  Each pairing of
-local and remote addresses could have a different maximum MTU in the path.
-
-QUIC depends on the network path supporting an MTU of at least 1280 bytes. This
-is the IPv6 minimum MTU and therefore also supported by most modern IPv4
-networks.  An endpoint MUST NOT reduce its MTU below this number, even if it
-receives signals that indicate a smaller limit might exist.
+Each pair of local and remote addresses could have a different PMTU.  QUIC
+implementations that implement any kind of PMTU discovery therefore SHOULD
+maintain a maximum packet size for each combination of local and remote IP
+addresses.
 
 If a QUIC endpoint determines that the PMTU between any pair of local and remote
-IP addresses has fallen below 1280 bytes, it MUST immediately cease sending QUIC
-packets on the affected path.  This could result in termination of the
-connection if an alternative path cannot be found.
-
-### IPv4 PMTU Discovery {#v4-pmtud}
-
-Traditional ICMP-based path MTU discovery in IPv4 {{!PMTUDv4}} is potentially
-vulnerable to off-path attacks that successfully guess the IP/port 4-tuple and
-reduce the MTU to a bandwidth-inefficient value. TCP connections mitigate this
-risk by using the (at minimum) 8 bytes of transport header echoed in the ICMP
-message to validate the TCP sequence number as valid for the current
-connection. However, as QUIC operates over UDP, in IPv4 the echoed information
-could consist only of the IP and UDP headers, which usually has insufficient
-entropy to mitigate off-path attacks.
-
-As a result, endpoints that implement PMTUD in IPv4 SHOULD take steps to
-mitigate this risk. For instance, an application could:
-
-* Set the IPv4 Don't Fragment (DF) bit on a small proportion of packets, so that
-  most invalid ICMP messages arrive when there are no DF packets outstanding,
-  and can therefore be identified as spurious.
-
-* Store additional information from the IP or UDP headers from DF packets (for
-  example, the IP ID or UDP checksum) to further authenticate incoming Datagram
-  Too Big messages.
-
-* Any reduction in PMTU due to a report contained in an ICMP packet is
-  provisional until QUIC's loss detection algorithm determines that the packet
-  is actually lost.
+IP addresses has fallen below the size needed to support the smallest allowed
+maximum packet size, it MUST immediately cease sending QUIC packets on the
+affected path.  An endpoint MAY terminate the connection if an alternative path
+cannot be found.
 
 
-## Special Considerations for Packetization Layer PMTU Discovery
+## ICMP Packet Too Big Messages {#icmp-pmtud}
+
+PMTU discovery {{!RFC1191}} {{!RFC8201}} relies on reception of ICMP messages
+(e.g., IPv6 Packet Too Big messages) that indicate when a packet is dropped
+because it is larger than the local router MTU. DPLPMTUD can also optionally use
+these messages.  This use of ICMP messages is potentially vulnerable to off-path
+attacks that successfully guess the IP address 3-tuple and reduce the PMTU to a
+bandwidth-inefficient value.
+
+An endpoint MUST ignore an ICMP message that claims the PMTU has decreased below
+1280 bytes.
+
+QUIC endpoints SHOULD provide validation to protect from off-path injection of
+ICMP messages as specified in {{!RFC8201}} and Section 5.2 of {{!RFC8085}}. This
+uses the quoted packet supplied in the payload of an ICMP message, which, when
+present, can be used to associate the message with a corresponding transport
+connection {{!DPLPMTUD}}.
+
+The requirements for generating ICMP ({{?RFC1812}}, {{?RFC4443}}) state that the
+quoted packet should contain as much of the original packet as possible without
+exceeding the minimum MTU for the IP version.  The size of the quoted packet can
+actually be smaller, or the information unintelligible, as described in Section
+1.1 of {{!DPLPMTUD}}.
+
+When a randomized source port is used for a QUIC connection, this can provide
+some protection from off path attacks that forge ICMP messages. The source port
+in a quoted packet can be checked for UDP transports {{!RFC8085}} such as QUIC.
+When used, a stack will only pass ICMP messages to a QUIC endpoint where the
+port information in quoted packet within the ICMP payload matches a port used by
+QUIC.
+
+As a part of ICMP validation, QUIC endpoints SHOULD validate that connection ID
+information corresponds to an active session.
+
+Further validation can also be provided:
+
+* An IPv4 endpoint could set the Don't Fragment (DF) bit on a small proportion
+  of packets, so that most invalid ICMP messages arrive when there are no DF
+  packets outstanding, and can therefore be identified as spurious.
+
+* An endpoint could store additional information from the IP or UDP headers to
+  use for validation (for example, the IP ID or UDP checksum).
+
+The endpoint SHOULD ignore all ICMP messages that are not validated or do not
+carry sufficient quoted packet payload to perform validation.  Any reduction in
+the QUIC maximum packet size MAY be provisional until QUIC's loss detection
+algorithm determines that the quoted packet has actually been lost.
 
 
-The PADDING frame provides a useful option for PMTU probe packets. PADDING
-frames generate acknowledgements, but they need not be delivered reliably. As a
-result, the loss of PADDING frames in probe packets does not require
-delay-inducing retransmission. However, PADDING frames do consume congestion
-window, which may delay the transmission of subsequent application data.
+## Datagram Packetization Layer PMTU Discovery
 
-When implementing the algorithm in Section 7.2 of {{!PLPMTUD}}, the initial
-value of search_low SHOULD be consistent with the IPv6 minimum packet size.
-Paths that do not support this size cannot deliver Initial packets, and
-therefore are not QUIC-compliant.
+Section 6.4 of {{!DPLPMTUD}} provides considerations for implementing Datagram
+Packetization Layer PMTUD (DPLPMTUD) with QUIC.
 
-Section 7.3 of {{!PLPMTUD}} discusses trade-offs between small and large
-increases in the size of probe packets. As QUIC probe packets need not contain
-application data, aggressive increases in probe size carry fewer consequences.
+When implementing the algorithm in Section 5.3 of {{!DPLPMTUD}}, the initial
+value of BASE_PMTU SHOULD be consistent with the minimum QUIC packet size (1232
+bytes for IPv6 and 1252 bytes for IPv4).
 
+PADDING and PING frames can be used to generate PMTU probe packets. These frames
+are not delivered reliably, so do not result in retransmission if the packet is
+lost.  However, these frames do consume congestion window, which could delay the
+transmission of subsequent application data.
+
+A PING frame can be included in a PMTU probe to ensure that a valid probe is
+acknowledged.
+
+The considerations for processing ICMP messages in the previous section also
+apply if these messages are used by DPLPMTUD.
 
 
 # Versions {#versions}
@@ -3182,24 +3205,11 @@ value of fields.
 
 ## Packet Number Encoding and Decoding {#packet-encoding}
 
-Packet numbers in long and short packet headers are encoded as follows.  The
-number of bits required to represent the packet number is first reduced by
-including only a variable number of the least significant bits of the packet
-number.  One or two of the most significant bits of the first byte are then used
-to represent how many bits of the packet number are provided, as shown in
-{{pn-encodings}}.
+Packet numbers in long and short packet headers are encoded in 1 to 4 bytes.
+The number of bits required to represent the packet number is reduced by
+including the least significant bits of the packet number.
 
-| First byte pattern | Encoded Length | Bits Present |
-|:-------------------|:---------------|:-------------|
-| 0b0xxxxxxx         | 1 byte         | 7            |
-| 0b10xxxxxx         | 2              | 14           |
-| 0b11xxxxxx         | 4              | 30           |
-{: #pn-encodings title="Packet Number Encodings for Packet Headers"}
-
-Note that these encodings are similar to those in {{integer-encoding}}, but
-use different values.
-
-Finally, the encoded packet number is protected as described in Section 5.3 of
+The encoded packet number is protected as described in Section 5.4 of
 {{QUIC-TLS}}.
 
 The sender MUST use a packet number size able to represent more than twice as
@@ -3210,14 +3220,14 @@ arrives after many higher-numbered packets have been received.  An endpoint
 SHOULD use a large enough packet number encoding to allow the packet number to
 be recovered even if the packet arrives after packets that are sent afterwards.
 
-As a result, the size of the packet number encoding is at least one more than
-the base 2 logarithm of the number of contiguous unacknowledged packet numbers,
-including the new packet.
+As a result, the size of the packet number encoding is at least one bit more
+than the base-2 logarithm of the number of contiguous unacknowledged packet
+numbers, including the new packet.
 
-For example, if an endpoint has received an acknowledgment for packet 0x6afa2f,
-sending a packet with a number of 0x6b2d79 requires a packet number encoding
-with 14 bits or more; whereas the 30-bit packet number encoding is needed to
-send a packet with a number of 0x6bc107.
+For example, if an endpoint has received an acknowledgment for packet 0xabe8bc,
+sending a packet with a number of 0xac5c02 requires a packet number encoding
+with 16 bits or more; whereas the 24-bit packet number encoding is needed to
+send a packet with a number of 0xace8fe.
 
 At a receiver, protection of the packet number is removed prior to recovering
 the full packet number. The full packet number is then reconstructed based on
@@ -3225,12 +3235,12 @@ the number of significant bits present, the value of those bits, and the largest
 packet number received on a successfully authenticated packet. Recovering the
 full packet number is necessary to successfully remove packet protection.
 
-Once packet number protection is removed, the packet number is decoded by
-finding the packet number value that is closest to the next expected packet.
-The next expected packet is the highest received packet number plus one.  For
-example, if the highest successfully authenticated packet had a packet number of
-0xaa82f30e, then a packet containing a 14-bit value of 0x9b3 will be decoded as
-0xaa8309b3.  Example pseudo-code for packet number decoding can be found in
+Once header protection is removed, the packet number is decoded by finding the
+packet number value that is closest to the next expected packet.  The next
+expected packet is the highest received packet number plus one.  For example, if
+the highest successfully authenticated packet had a packet number of 0xa82f30ea,
+then a packet containing a 16-bit value of 0x9b32 will be decoded as 0xa82f9b32.
+Example pseudo-code for packet number decoding can be found in
 {{sample-packet-number-decoding}}.
 
 
@@ -3240,7 +3250,7 @@ example, if the highest successfully authenticated packet had a packet number of
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+
-|1|   Type (7)  |
+|1|1|T T|R R|P P|
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                         Version (32)                          |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -3252,7 +3262,7 @@ example, if the highest successfully authenticated packet had a packet number of
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                           Length (i)                        ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                     Packet Number (8/16/32)                   |
+|                    Packet Number (8/16/24/32)               ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                          Payload (*)                        ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -3271,15 +3281,35 @@ Header Form:
 : The most significant bit (0x80) of byte 0 (the first byte) is set to 1 for
   long headers.
 
-Long Packet Type:
+Fixed Bit:
 
-: The remaining seven bits of byte 0 contain the packet type.  This field can
-  indicate one of 128 packet types.  The types specified for this version are
-  listed in {{long-packet-types}}.
+: The next bit (0x40) of byte 0 is set to 1.  Packets containing a zero value
+  for this bit are not valid packets in this version and MUST be discarded.
+
+Long Packet Type (T):
+
+: The next two bits (those with a mask of 0x30) of byte 0 contain a packet type.
+  Packet types are listed in {{long-packet-types}}.
+
+Reserved Bits (R):
+
+: The next two bits (those with a mask of 0x0c) of byte 0 are reserved.  These
+  bits are protected using header protection (see Section 5.4 of {{QUIC-TLS}}).
+  The value included prior to protection MUST be set to 0.  An endpoint MUST
+  treat receipt of a packet that has a non-zero value for these bits after
+  removing protection as a connection error of type PROTOCOL_VIOLATION.
+
+Packet Number Length (P):
+
+: The least significant two bits (those with a mask of 0x03) of byte 0 contain
+  the length of the packet number, encoded as an unsigned, two-bit integer that
+  is one less than the length of the packet number field in bytes.  That is, the
+  length of the packet number field is the value of this field, plus one.  These
+  bits are protected using header protection (see Section 5.4 of {{QUIC-TLS}}).
 
 Version:
 
-: The QUIC Version is a 32-bit field that follows the Type.  This field
+: The QUIC Version is a 32-bit field that follows the first byte.  This field
   indicates which version of QUIC is in use and determines how the rest of the
   protocol fields are interpreted.
 
@@ -3316,9 +3346,9 @@ Length:
 
 Packet Number:
 
-: The packet number field is 1, 2, or 4 bytes long. The packet number has
+: The packet number field is 1 to 4 bytes long. The packet number has
   confidentiality protection separate from packet protection, as described in
-  Section 5.3 of {{QUIC-TLS}}. The length of the packet number field is encoded
+  Section 5.4 of {{QUIC-TLS}}. The length of the packet number field is encoded
   in the plaintext packet number. See {{packet-encoding}} for details.
 
 Payload:
@@ -3327,23 +3357,18 @@ Payload:
 
 The following packet types are defined:
 
-<!-- TODO: Fix the description of the long header. We have 3 formats and only 2
-of the 4 types use the generic format we show here. It's a little confusing to
-have such a high amount of variance from what we put forth as the baseline
-format. The same applies when implementing this. -->
-
 | Type | Name                          | Section                     |
-|:-----|:------------------------------|:----------------------------|
-| 0x7F | Initial                       | {{packet-initial}}          |
-| 0x7E | Retry                         | {{packet-retry}}            |
-| 0x7D | Handshake                     | {{packet-handshake}}        |
-| 0x7C | 0-RTT Protected               | {{packet-protected}}        |
+|-----:|:------------------------------|:----------------------------|
+|  0x0 | Initial                       | {{packet-initial}}          |
+|  0x1 | 0-RTT Protected               | {{packet-protected}}        |
+|  0x2 | Handshake                     | {{packet-handshake}}        |
+|  0x3 | Retry                         | {{packet-retry}}            |
 {: #long-packet-types title="Long Header Packet Types"}
 
-The header form, type, connection ID lengths byte, destination and source
-connection IDs, and version fields of a long header packet are
-version-independent. The packet number and values for packet types defined in
-{{long-packet-types}} are version-specific.  See {{QUIC-INVARIANTS}} for details
+The header form bit, connection ID lengths byte, Destination and Source
+Connection ID fields, and Version fields of a long header packet are
+version-independent. The other fields in the first byte, plus the Length and
+Packet Number fields are version-specific.  See {{QUIC-INVARIANTS}} for details
 on how packets from different versions of QUIC are interpreted.
 
 The interpretation of the fields and the payload are specific to a version and
@@ -3352,9 +3377,9 @@ following sections.
 
 The end of the packet is determined by the Length field.  The Length field
 covers both the Packet Number and Payload fields, both of which are
-confidentiality protected and initially of unknown length.  The size of the
-Payload field is learned once the packet number protection is removed.  The
-Length field enables packet coalescing ({{packet-coalesce}}).
+confidentiality protected and initially of unknown length.  The length of the
+Payload field is learned once header protection is removed.  The Length field
+enables packet coalescing ({{packet-coalesce}}).
 
 
 ## Short Header Packet {#short-header}
@@ -3363,11 +3388,11 @@ Length field enables packet coalescing ({{packet-coalesce}}).
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+
-|0|K|1|1|0|S|R R|
+|0|1|S|R|R|K|P P|
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                Destination Connection ID (0..144)           ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                      Packet Number (8/16/32)                ...
+|                     Packet Number (8/16/24/32)              ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                     Protected Payload (*)                   ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -3381,51 +3406,39 @@ Header Form:
 
 : The most significant bit (0x80) of byte 0 is set to 0 for the short header.
 
-Key Phase Bit:
+Fixed Bit:
 
-: The second bit (0x40) of byte 0 indicates the key phase, which allows a
+: The next bit (0x40) of byte 0 is set to 1.  Packets containing a zero value
+  for this bit are not valid packets in this version and MUST be discarded.
+
+Spin Bit (S):
+
+: The sixth bit (0x20) of byte 0 is the Latency Spin Bit, set as described in
+  {{!SPIN=I-D.ietf-quic-spin-exp}}.
+
+Reserved Bits (R):
+
+: The next two bits (those with a mask of 0x18) of byte 0 are reserved.  These
+  bits are protected using header protection (see Section 5.4 of
+  {{QUIC-TLS}}).  The value included prior to protection MUST be set to 0.  An
+  endpoint MUST treat receipt of a packet that has a non-zero value for these
+  bits after removing protection as a connection error of type
+  PROTOCOL_VIOLATION.
+
+Key Phase (K):
+
+: The next bit (0x04) of byte 0 indicates the key phase, which allows a
   recipient of a packet to identify the packet protection keys that are used to
-  protect the packet.  See {{QUIC-TLS}} for details.
+  protect the packet.  See {{QUIC-TLS}} for details.  This bit is protected
+  using header protection (see Section 5.4 of {{QUIC-TLS}}).
 
-\[\[Editor's Note: this section should be removed and the bit definitions
-changed before this draft goes to the IESG.]]
+Packet Number Length (P):
 
-Third Bit:
-
-: The third bit (0x20) of byte 0 is set to 1.
-
-\[\[Editor's Note: this section should be removed and the bit definitions
-changed before this draft goes to the IESG.]]
-
-Fourth Bit:
-
-: The fourth bit (0x10) of byte 0 is set to 1.
-
-\[\[Editor's Note: this section should be removed and the bit definitions
-changed before this draft goes to the IESG.]]
-
-Google QUIC Demultiplexing Bit:
-
-: The fifth bit (0x8) of byte 0 is set to 0. This allows implementations of
-  Google QUIC to distinguish Google QUIC packets from short header packets sent
-  by a client because Google QUIC servers expect the connection ID to always be
-  present.  The special interpretation of this bit SHOULD be removed from this
-  specification when Google QUIC has finished transitioning to the new header
-  format.
-
-Spin Bit:
-
-: The sixth bit (0x4) of byte 0 is the Latency Spin Bit, set as described in
-{{!SPIN=I-D.ietf-quic-spin-exp}}.
-
-Reserved:
-
-: The seventh and eighth bits (0x3) of byte 0 are reserved for
-  experimentation.  Endpoints MUST ignore these bits on packets they receive
-  unless they are participating in an experiment that uses these bits.  An
-  endpoint not actively using these bits SHOULD set the value randomly on
-  packets they send to protect against unwanted inference about particular
-  values.
+: The least significant two bits (those with a mask of 0x03) of byte 0 contain
+  the length of the packet number, encoded as an unsigned, two-bit integer that
+  is one less than the length of the packet number field in bytes.  That is, the
+  length of the packet number field is the value of this field, plus one.  These
+  bits are protected using header protection (see Section 5.4 of {{QUIC-TLS}}).
 
 Destination Connection ID:
 
@@ -3434,16 +3447,16 @@ Destination Connection ID:
 
 Packet Number:
 
-: The packet number field is 1, 2, or 4 bytes long. The packet number has
+: The packet number field is 1 to 4 bytes long. The packet number has
   confidentiality protection separate from packet protection, as described in
-  Section 5.3 of {{QUIC-TLS}}. The length of the packet number field is encoded
-  in the plaintext packet number. See {{packet-encoding}} for details.
+  Section 5.4 of {{QUIC-TLS}}. The length of the packet number field is encoded
+  in Packet Number Length field. See {{packet-encoding}} for details.
 
 Protected Payload:
 
 : Packets with a short header always include a 1-RTT protected payload.
 
-The header form and connection ID field of a short header packet are
+The header form bit and the connection ID field of a short header packet are
 version-independent.  The remaining fields are specific to the selected QUIC
 version.  See {{QUIC-INVARIANTS}} for details on how packets from different
 versions of QUIC are interpreted.
@@ -3515,7 +3528,7 @@ process.
 
 ## Initial Packet {#packet-initial}
 
-An Initial packet uses long headers with a type value of 0x7F.  It carries the
+An Initial packet uses long headers with a type value of 0x0.  It carries the
 first CRYPTO frames sent by the client and server to perform key exchange, and
 carries ACKs in either direction.
 
@@ -3530,7 +3543,7 @@ that are added to the Long Header before the Length field.
 
 ~~~
 +-+-+-+-+-+-+-+-+
-|1|    0x7f     |
+|1|1| 0 |R R|P P|
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                         Version (32)                          |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -3546,7 +3559,7 @@ that are added to the Long Header before the Length field.
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                           Length (i)                        ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                     Packet Number (8/16/32)                   |
+|                    Packet Number (8/16/24/32)               ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                          Payload (*)                        ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -3645,7 +3658,7 @@ the connection.
 
 ## Handshake Packet {#packet-handshake}
 
-A Handshake packet uses long headers with a type value of 0x7D.  It is
+A Handshake packet uses long headers with a type value of 0x3.  It is
 used to carry acknowledgments and cryptographic handshake messages from the
 server and client.
 
@@ -3669,7 +3682,7 @@ MUST treat receipt of Handshake packets with other frames as a connection error.
 
 ## Retry Packet {#packet-retry}
 
-A Retry packet uses a long packet header with a type value of 0x7E. It carries
+A Retry packet uses a long packet header with a type value of 0x3. It carries
 an address validation token created by the server. It is used by a server that
 wishes to perform a stateless retry (see {{validate-handshake}}).
 
@@ -3677,7 +3690,7 @@ wishes to perform a stateless retry (see {{validate-handshake}}).
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+
-|1|    0x7e     |
+|1|1| 3 |ODCIL(4|
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                         Version (32)                          |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -3687,7 +3700,7 @@ wishes to perform a stateless retry (see {{validate-handshake}}).
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                 Source Connection ID (0/32..144)            ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|    ODCIL(8)   |      Original Destination Connection ID (*)   |
+|          Original Destination Connection ID (0/32..144)     ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                        Retry Token (*)                      ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -3703,11 +3716,11 @@ Packet Number, and Payload fields.  These are replaced with:
 
 ODCIL:
 
-: The length of the Original Destination Connection ID field.  The length is
-  encoded in the least significant 4 bits of the byte, using the same encoding
-  as the DCIL and SCIL fields.  The most significant 4 bits of this byte are
-  reserved.  Unless a use for these bits has been negotiated, endpoints SHOULD
-  send randomized values and MUST ignore any value that it receives.
+: The four least-significant bits of the first byte of a Retry packet are not
+  protected as they are for other packets with the long header, because Retry
+  packets don't contain a protected payload.  These bits instead encode the
+  length of the Original Destination Connection ID field.  The length uses the
+  same encoding as the DCIL and SCIL fields.
 
 Original Destination Connection ID:
 
@@ -4272,12 +4285,13 @@ An endpoint uses a STOP_SENDING frame (type=0x05) to communicate that incoming
 data is being discarded on receipt at application request.  This signals a peer
 to abruptly terminate transmission on a stream.
 
-Receipt of a STOP_SENDING frame is only valid for a send stream that exists and
-is not in the "Ready" state (see {{stream-send-states}}).  Receiving a
-STOP_SENDING frame for a send stream that is "Ready" or non-existent MUST be
-treated as a connection error of type PROTOCOL_VIOLATION.  An endpoint that
-receives a STOP_SENDING frame for a receive-only stream MUST terminate the
-connection with error PROTOCOL_VIOLATION.
+Receipt of a STOP_SENDING frame is invalid for a locally-initiated stream that
+has not yet been created or is in the "Ready" state (see
+{{stream-send-states}}). Receiving a STOP_SENDING frame for a locally-initiated
+send stream that is "Ready" or not yet created MUST be treated as a connection
+error of type PROTOCOL_VIOLATION.  An endpoint that receives a STOP_SENDING
+frame for a receive-only stream MUST terminate the connection with error
+PROTOCOL_VIOLATION.
 
 The STOP_SENDING frame is as follows:
 
@@ -4353,7 +4367,7 @@ level. The stream does not have an explicit end, so CRYPTO frames do not have a
 FIN bit.
 
 
-## NEW_TOKEN frame {#frame-new-token}
+## NEW_TOKEN Frame {#frame-new-token}
 
 A server sends a NEW_TOKEN frame (type=0x07) to provide the client a token to
 send in the header of an Initial packet for a future connection.
@@ -4538,10 +4552,10 @@ a change in the initial limits (see {{zerortt-parameters}}).
 
 ## MAX_STREAMS Frames {#frame-max-streams}
 
-The MAX_STREAMS frames (type=0x12 and 0x13) inform the peer of the number of
-streams it is permitted to open.  A MAX_STREAMS frame with a type of 0x12
-applies to bidirectional streams, and a MAX_STREAMS frame with a type of 0x13
-applies to unidirectional streams.
+The MAX_STREAMS frames (type=0x12 and 0x13) inform the peer of the cumulative
+number of streams of a given type it is permitted to open.  A MAX_STREAMS frame
+with a type of 0x12 applies to bidirectional streams, and a MAX_STREAMS frame
+with a type of 0x13 applies to unidirectional streams.
 
 The MAX_STREAMS frames are as follows:
 
@@ -4557,8 +4571,8 @@ MAX_STREAMS frames contain the following fields:
 
 Maximum Streams:
 
-: A count of the total number of streams of the corresponding type that can be
-  opened.
+: A count of the cumulative number of streams of the corresponding type that
+  can be opened over the lifetime of the connection.
 
 Loss or reordering can cause a MAX_STREAMS frame to be received which states a
 lower stream limit than an endpoint has previously received.  MAX_STREAMS frames
@@ -4989,10 +5003,10 @@ endpoints discard most packets that are not authenticated, greatly limiting the
 ability of an attacker to interfere with existing connections.
 
 Once a connection is established QUIC endpoints might accept some
-unauthenticated ICMP packets (see {{v4-pmtud}}), but the use of these packets is
-extremely limited.  The only other type of packet that an endpoint might accept
-is a stateless reset ({{stateless-reset}}) which relies on the token being kept
-secret until it is used.
+unauthenticated ICMP packets (see {{icmp-pmtud}}), but the use of these packets
+is extremely limited.  The only other type of packet that an endpoint might
+accept is a stateless reset ({{stateless-reset}}) which relies on the token
+being kept secret until it is used.
 
 During the creation of a connection, QUIC only provides protection against
 attack from off the network path.  All QUIC packets contain proof that the
@@ -5313,7 +5327,7 @@ from 0xFF00 to 0xFFFF are reserved for Private Use {{!RFC8126}}.
 # Sample Packet Number Decoding Algorithm {#sample-packet-number-decoding}
 
 The following pseudo-code shows how an implementation can decode packet
-numbers after packet number protection has been removed.
+numbers after header protection has been removed.
 
 ~~~
 DecodePacketNumber(largest_pn, truncated_pn, pn_nbits):
