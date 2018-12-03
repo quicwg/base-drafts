@@ -551,10 +551,10 @@ the interpretation of the associated Element ID fields.
 
 Note that the root of the tree cannot be referenced using a Stream ID of 0, as
 in {{!RFC7540}}; QUIC stream 0 carries a valid HTTP request.  The root of the
-tree cannot be reprioritized. A PRIORITY frame that prioritizes the root of the
-tree or the control stream MUST be treated as a connection error of type
-HTTP_MALFORMED_FRAME.  A PRIORITY frame sent on a request stream that
+tree cannot be reprioritized. A PRIORITY frame sent on a request stream that
 prioritizes any other stream MUST be treated as a stream error of type
+HTTP_MALFORMED_FRAME.  Likewise, a PRIORITY frame sent on a control stream that
+prioritizes the current stream MUST be treated as a connection error of type
 HTTP_MALFORMED_FRAME.
 
 When a PRIORITY frame claims to reference a request, the associated ID MUST
