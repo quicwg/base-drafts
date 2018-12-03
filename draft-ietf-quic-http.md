@@ -1136,7 +1136,11 @@ DUPLICATE_PUSH frame (see {{frame-duplicate-push}}).  Ordering of a
 DUPLICATE_PUSH in relation to certain parts of the response is similarly
 important.  Due to reordering, DUPLICATE_PUSH frames can arrive before the
 corresponding PUSH_PROMISE frame, in which case the request headers of the push
-would not be immediately available.
+would not be immediately available.  Clients which receive a DUPLICATE_PUSH
+frame for an as-yet-unknown Push ID can either delay generating new requests for
+content referenced following the DUPLICATE_PUSH frame until the request headers
+become available, or can initiate requests for discovered resources and cancel
+the requests if the requested resource is already being pushed.
 
 When a server later fulfills a promise, the server push response is conveyed on
 a push stream (see {{push-streams}}). The push stream identifies the Push ID of
