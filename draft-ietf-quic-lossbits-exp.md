@@ -118,9 +118,9 @@ This mechanism delineates thus slots of N packets with the same marking. Observa
 
 Each endpoint, client and server, sets the Retransmit bit of short header packets to 0 or 1 according to the not-yet-disclosed-lost-packets counter.
 The not-yet-disclosed-lost-packets counter is initialized to 0 at each endpoint, client and server, at connection start. When a packet is declared lost by the QUIC transmission machinery (see https://github.com/quicwg/base-drafts/blob/ac5e4af758cd61329244297737b93c87c3889e3d/draft-ietf-quic-recovery.md#loss-detection )
-the not-yet-disclosed-lost-packets counter is incremented by 1. When a packet with a short header is sent out by an end-point within a single connection, its retransmit bit is set at 0 when the not-yet-disclosed-lost-packets counter is equal to 0. Otherwise, the packet is sent out with a retransmit bit set to 1 and the not-yet-disclosed-lost-packets counter is decremented by 1.
+the not-yet-disclosed-lost-packets counter is incremented by 1. When a packet with a short header is sent out by an end-point, its retransmit bit is set at 0 when the not-yet-disclosed-lost-packets counter is equal to 0. Otherwise, the packet is sent out with a retransmit bit set to 1 and the not-yet-disclosed-lost-packets counter is decremented by 1.
 
-Observation points can estimate the number of packets considered lost by the QUIC transmission machinery by observing the number of packets which retransmit bit is set to 1 in the reverse direction. This estimation is delayed at least by the uplink one way delay in case of fast retransmit. 
+Observation points can estimate the number of packets considered lost by the QUIC transmission machinery by observing the number of packets which retransmit bit is set to 1 in the reverse direction. This estimation is delayed at least by the uplink one way delay (in case of fast retransmit). 
 
 
 
