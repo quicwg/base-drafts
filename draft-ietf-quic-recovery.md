@@ -876,7 +876,8 @@ Pseudocode for DetectLostPackets follows:
 DetectLostPackets(largest_acked):
   loss_time = 0
   lost_packets = {}
-  delay_until_lost = time_threshold * max(latest_rtt, smoothed_rtt)
+  delay_until_lost = time_threshold *
+                     max(latest_rtt, smoothed_rtt)
   foreach (unacked < largest_acked.packet_number):
     time_since_sent = now() - unacked.time_sent
     delta = largest_acked.packet_number - unacked.packet_number
