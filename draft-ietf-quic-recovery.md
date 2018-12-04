@@ -311,9 +311,8 @@ A packet is declared lost under the following conditions:
   packet ({{packet-threshold}}), or it was sent long enough in the past
   ({{time-threshold}}).
 
-The acknowledgement of a later packet indicates that a packet sent later was
-delivered, while the packet and time thresholds provide some tolerance for
-packet reordering.
+The acknowledgement indicates that a packet sent later was delivered, while the
+packet and time thresholds provide some tolerance for packet reordering.
 
 Spuriously declaring packets lost leads to unnecessary retransmissions and may
 result in degraded performance due to the actions of the congestion controller
