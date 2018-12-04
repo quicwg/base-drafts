@@ -1592,7 +1592,8 @@ connections.  The client includes this token in Initial packets to provide
 address validation in a future connection.  The client MUST include the
 token in all Initial packets it sends, unless a Retry replaces the token
 with a newer token. The client MUST NOT use the token provided in a Retry
-for future connections.
+for future connections. Servers MAY discard any Initial packet that does not
+carry the expected token.
 
 Unlike the token that is created for a Retry packet, there might be some time
 between when the token is created and when the token is subsequently used.
