@@ -850,7 +850,7 @@ Pseudocode for SetLossDetectionTimer follows:
       // Early retransmit timer or time loss detection.
       loss_detection_timer.set(loss_time)
       return
-    
+
     // RTO or TLP timer
     // Calculate RTO duration
     timeout =
