@@ -4743,8 +4743,9 @@ connection IDs from old ones.
 
 If an endpoint receives a NEW_CONNECTION_ID frame that repeats a previously
 issued connection ID with a different Stateless Reset Token or a different
-sequence number, the endpoint MAY treat that receipt as a connection error of
-type PROTOCOL_VIOLATION.
+sequence number, or if a sequence number is used for different connection
+IDs, the endpoint MAY treat that receipt as a connection error of type
+PROTOCOL_VIOLATION.
 
 
 ## RETIRE_CONNECTION_ID Frame {#frame-retire-connection-id}
