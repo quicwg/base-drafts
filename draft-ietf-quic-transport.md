@@ -2878,8 +2878,8 @@ containing that information is acknowledged.
   RETIRE_CONNECTION_ID frames and retransmitted if the packet containing them is
   lost.
 
-* PADDING frames contain no information, so lost PADDING frames do not require
-  repair.
+* PING and PADDING frames contain no information, so lost PING or PADDING frames
+  do not require repair.
 
 Endpoints SHOULD prioritize retransmission of data over sending new data, unless
 priorities specified by the application indicate otherwise (see
