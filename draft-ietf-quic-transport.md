@@ -1549,8 +1549,8 @@ frame (see {{validate-future}}).
 Upon receiving the client's Initial packet, the server can request address
 validation by sending a Retry packet ({{packet-retry}}) containing a token. This
 token MUST be repeated by the client in all Initial packets it sends after it
-receives the Retry packet.  In response to receiving a token in an Initial
-packet, a server can either abort the connection or permit it to proceed.
+receives the Retry packet.  In response to processing an Initial containing a
+token, a server can either abort the connection or permit it to proceed.
 
 As long as it is not possible for an attacker to generate a valid token for
 its own address (see {{token-integrity}}) and the client is able to return
