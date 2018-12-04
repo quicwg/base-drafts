@@ -644,14 +644,6 @@ max_ack_delay:
   received ACK frame may be larger due to late timers, reordering,
   or lost ACKs.
 
-packet_threshold:
-: The largest packet number gap between the largest acknowledged
-  retransmittable packet and an unacknowledged
-  retransmittable packet before it is declared lost.
-
-time_threshold:
-: The reordering window as a fraction of max(smoothed_rtt, latest_rtt).
-
 loss_time:
 : The time at which the next packet will be considered lost based on early
 transmit or exceeding the reordering window in time.
@@ -670,8 +662,6 @@ follows:
    crypto_count = 0
    tlp_count = 0
    rto_count = 0
-   time_threshold = kTimeThreshold
-   packet_threshold = kPacketThreshold
    loss_time = 0
    smoothed_rtt = 0
    rttvar = 0
@@ -876,13 +866,13 @@ Pseudocode for DetectLostPackets follows:
 DetectLostPackets(largest_acked):
   loss_time = 0
   lost_packets = {}
-  delay_until_lost = time_threshold *
+  delay_until_lost = kTimeThreshold *
                      max(latest_rtt, smoothed_rtt)
   foreach (unacked < largest_acked.packet_number):
     time_since_sent = now() - unacked.time_sent
     delta = largest_acked.packet_number - unacked.packet_number
     if (time_since_sent > delay_until_lost ||
-        delta > packet_threshold):
+        delta > kPacketThreshold):
       sent_packets.remove(unacked.packet_number)
       if (unacked.retransmittable):
         lost_packets.insert(unacked)
