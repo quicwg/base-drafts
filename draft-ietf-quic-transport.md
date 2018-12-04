@@ -1970,14 +1970,14 @@ In response to an apparent migration, endpoints MUST validate the previously
 active path using a PATH_CHALLENGE frame.  This induces the sending of new
 packets on that path.  If the path is no longer viable, the validation attempt
 will time out and fail; if the path is viable, but no longer desired, the
-validation will succeed, but only results in a probing packet being sent on the
+validation will succeed, but only results in probing packets being sent on the
 path.
 
 An endpoint that receives a PATH_CHALLENGE on an active path SHOULD send a
 non-probing packet in response.  If the non-probing packet arrives before any
 copy made by an attacker, this results in the connection being migrated back to
-the original path.  Any subsequent migration to another path resets this entire
-process.
+the original path.  Any subsequent migration to another path restarts this
+entire process.
 
 This defense is imperfect, but this is not considered a serious problem. If the
 path via the attack is reliably faster than the original path despite multiple
