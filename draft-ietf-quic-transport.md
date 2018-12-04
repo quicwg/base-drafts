@@ -1751,14 +1751,15 @@ the one to which the PATH_CHALLENGE was sent, path validation is considered to
 have failed, even if the data matches that sent in the PATH_CHALLENGE.
 
 Additionally, the PATH_RESPONSE frame MUST be received on the same local address
-from which the corresponding PATH_CHALLENGE was sent.  If a PATH_RESPONSE frame
-is received on a different local address than the one from which the
-PATH_CHALLENGE was sent, path validation is not considered to be successful,
-even if the data matches that sent in the PATH_CHALLENGE.  This doesn't result
-in path validation failure, as it might be a result of a forwarded packet (see
-{{off-path-forward}}) or misrouting.  Thus, the endpoint considers the path to
-be valid when a PATH_RESPONSE frame is received on the same path with the same
-payload as the PATH_CHALLENGE frame.
+from which the corresponding PATH_CHALLENGE was sent.  An endpoint considers the
+path to be valid when a PATH_RESPONSE frame is received on the same path with
+the same payload as the PATH_CHALLENGE frame.
+
+If a PATH_RESPONSE frame is received on a different local address than the one
+from which the PATH_CHALLENGE was sent, path validation is not considered to be
+successful, even if the data matches the PATH_CHALLENGE.  This doesn't result in
+path validation failure, as it might be a result of a forwarded packet (see
+{{off-path-forward}}) or misrouting.
 
 
 ## Failed Path Validation
