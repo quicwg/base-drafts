@@ -12,7 +12,7 @@ keyword: Internet-Draft
 stand_alone: yes
 pi: [toc, sortrefs, symrefs]
 
-authors:
+author:
   -
     ins: A. Ferrieux
     role: editor
@@ -79,12 +79,12 @@ with TCP.
 
 The proposed mechanisms enable loss measurement from observation points on the network path throughout the lifetime of a connection. End-to end loss as well as segmental loss (upstream or downstream from the observation point) are measurable thanks to two dedicated bits in short packet headers, named loss bits. The loss bits therefore appear only after version negotiation and connection establishment are completed.
 
-## Proposed Short Header Format Including sQuare and Retransmit Bits
+## Proposed Short Header Format Including Loss Bits
 
 As of the current editor's version of {{QUIC-TRANSPORT}}, this proposal
 specifies using the seventh amost significant bit (0x02) of the first byte in
 the short header for the sQuare bit and the eight amost significant bit (0x01) of the first byte in
-the short header for the Retransmit bit.
+the short header for the Retransmit bit. The sQuare and Retransmit bits constitute the Loss bits.
 
 ~~~~~
 
@@ -111,7 +111,7 @@ counter, as explained in {{retransmitbit}}.
 ## Setting the Square Bit on Outgoing Packets {#squarebit}
 
 Each endpoint independently maintains  a sQuare value, 0 or 1, during a block of N outgoing packets (e.g. N=64), and sets the sQuare  bit in the short header to the currently stored value when a packet with a short header is sent out. The sQuare value is initiated to 0 at each endpoint, client and server, at connection start.
-This mechanism delineates thus slots of N packets with the same marking. Observation points can estimate the  upstream losses  by simply counting le number of packets during an half period of the square signal, as described in {{usage}}.
+This mechanism delineates thus slots of N packets with the same marking. Observation points can estimate the  upstream losses  by simply counting the number of packets during an half period of the square signal, as described in {{usage}}.
 
 
 ## Setting the Retransmit Bit on Outgoing Packets {#retransmitbit}
@@ -131,21 +131,21 @@ packet of a given connection with a new connection ID. This reduces the risk tha
 
 
 ## Resetting Retransmit Value 
-The not-yet-disclosed-lost-packets counter is reset at each endpoint, client and server, when sending the first packet of a given connection with a new connection ID. This reduces the risk that transient retransmit bit state can be used to link flows across connection migration or ID change.
+The not-yet-disclosed-lost-packets counter is reset at each endpoint, client and server, when sending the first packet of a given connection with a new connection ID. This reduces the risk that transient Retransmit bit state can be used to link flows across connection migration or ID change.
 
 # Using the loss bits for Passive Loss Measurement {#usage}
 
-When a QUIC flow sends data continuously, the latency spin bit in each direction changes value once per round-trip time (RTT). An on-path observer can observe the time difference between edges (changes from 1 to 0 or 0 to 1) in the spin bit signal in a single direction to measure one sample of
-end-to-end RTT.
+When a QUIC flow sends data continuously, the latency spin bit in each direction changes value once per round-trip time (RTT). An on-path observer can observe the time difference between edges (changes from 1 to 0 or 0 to 1) in the spin bit signal in a single direction to measure one sample of end-to-end RTT.
 
-An observer can store the largest observed packet number per flow, and reject edges that do not have a monotonically increasing packet number (greater than
-the largest observed packet number).  This will avoid detecting spurious edges
-caused by reordering events that include an edge, which would lead to very low
-RTT estimates if not ignored.
 
-If the spin bit edge occurs after a long packet number gap, it should be
-ignored: this filters out high RTT estimates due to loss of an actual edge in
-a burst of lost packets.
+
+During a QUIC connection lifetime, the sQuare bit mechanism delineates slots of N packets with the same marking. When focusing on the sQuare bit of consecutive packets, this mechanism sketches a periodic sQuare signal which toggles every N packets. On-path observation points can then estimate the  upstream losses by simply counting the number of packets during a half period (level 0 or level 1) of the square signal.
+Packets with a long header are not marked, but yet taken into account by the observation point via integration in the closest slot of the sQuare signal. Thus, slots with less than N paquets, whatever their header length, generally denote upstream loss. 
+As with TCP passive detection based on missing sequence numbers, this estimation may become incaccurate in case of packet reordering which blurs the edges of the square signal ; heuristics may be proposed to filter this noise. 
+
+Value of N 
+N should be carefully chosen : too short, it becomes very sensitive to reordering and thus to spurious loss destection. Too large, short connections may end before completion of the first slot, preventing any loss estimation. Slots of 64 packets are suggested.
+
 
 Note that this measurement, as with passive RTT measurement for TCP, includes
 any transport protocol delay (e.g., delayed sending of acknowledgements)
@@ -155,12 +155,7 @@ experienced by the application. A simple linear smoothing or moving minimum
 filter can be applied to the stream of RTT information to get a more stable
 estimate.
 
-However, application-limited and flow-control-limited senders can have
-application and transport layer delay, respectively, that are much greater
-than network RTT. When the sender is application-limited and e.g. only sends
-small amount of periodic application traffic, where that period is longer than
-the RTT, measuring the spin bit provides information about the application
-period, not the network RTT.
+
 
 Simple heuristics based on the observed data rate per flow or changes in the
 RTT series can be used to reject bad RTT samples due to application or flow
