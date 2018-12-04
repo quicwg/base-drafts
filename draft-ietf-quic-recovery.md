@@ -570,7 +570,7 @@ kMaxTLPs:
   The RECOMMENDED value is 2.
 
 kPacketThreshold:
-: Maximum reordering in packets  before packet threshold loss detection
+: Maximum reordering in packets before packet threshold loss detection
   considers a packet lost. The RECOMMENDED value is 3.
 
 kTimeThreshold:
