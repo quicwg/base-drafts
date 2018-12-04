@@ -775,9 +775,9 @@ the stream ID of the affected stream - a request or push stream - encoded as a
 {:#fig-stream-cancel title="Stream Cancellation"}
 
 A stream that is reset might have multiple outstanding header blocks with
-dynamic table references.  When the decoder receives a stream reset before the
+dynamic table references.  When an endpoint receives a stream reset before the
 end of a stream, it generates a Stream Cancellation instruction on the decoder
-stream.  Similarly, when the decoder abandons reading of a stream it needs to
+stream.  Similarly, when an endpoint abandons reading of a stream it needs to
 signal this using the Stream Cancellation instruction.  This signals to the
 encoder that all references to the dynamic table on that stream are no longer
 outstanding.  A decoder with a maximum dynamic table size equal to zero MAY omit
@@ -858,7 +858,7 @@ indicates that the Base Index is less than the Largest Reference.  That is:
    if sign == 0:
       baseIndex = largestReference + deltaBaseIndex
    else:
-      baseIndex = largestReference - deltaBaseIndex
+      baseIndex = largestReference - deltaBaseIndex - 1
 ~~~
 
 A single-pass encoder determines the absolute value of Base Index before
@@ -870,10 +870,8 @@ not insert any new entries, Base Index will be greater than the Largest
 Reference, so the delta will be positive and the sign bit is set to 0.
 
 An encoder that produces table updates before encoding a header block might set
-Largest Reference and Base Index to the same value.  When Largest Reference and
-Base Index are equal, the Delta Base Index is encoded with a zero sign bit.  A
-sign bit set to 1 when the Delta Base Index is 0 MUST be treated as a decoder
-error.
+Largest Reference and Base Index to the same value.  In such case, both the sign
+bit and the Delta Base Index will be set to zero.
 
 A header block that does not reference the dynamic table can use any value for
 Base Index; setting both Largest Reference and Base Index to zero is the most
