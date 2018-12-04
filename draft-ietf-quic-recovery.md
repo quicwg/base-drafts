@@ -811,20 +811,20 @@ Pseudocode for SetLossDetectionTimer follows:
       return
     if (loss_time != 0):
       // Time threshold loss detection.
-      timeout = loss_time -
-        time_of_last_sent_retransmittable_packet
-    else:
-      // RTO or TLP timer
-      // Calculate RTO duration
-      timeout =
-        smoothed_rtt + 4 * rttvar + max_ack_delay
-      timeout = max(timeout, kMinRTOTimeout)
-      timeout = timeout * (2 ^ rto_count)
-      if (tlp_count < kMaxTLPs):
-        // Tail Loss Probe
-        tlp_timeout = max(1.5 * smoothed_rtt
-                           + max_ack_delay, kMinTLPTimeout)
-        timeout = min(tlp_timeout, timeout)
+      loss_detection_timer.set(loss_time)
+      return
+
+    // RTO or TLP timer
+    // Calculate RTO duration
+    timeout =
+      smoothed_rtt + 4 * rttvar + max_ack_delay
+    timeout = max(timeout, kMinRTOTimeout)
+    timeout = timeout * (2 ^ rto_count)
+    if (tlp_count < kMaxTLPs):
+      // Tail Loss Probe
+      tlp_timeout = max(1.5 * smoothed_rtt
+                        + max_ack_delay, kMinTLPTimeout)
+      timeout = min(tlp_timeout, timeout)
 
     loss_detection_timer.set(
       time_of_last_sent_retransmittable_packet + timeout)
