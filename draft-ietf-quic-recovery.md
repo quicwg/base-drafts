@@ -649,7 +649,7 @@ packet_threshold:
   retransmittable packet and an unacknowledged
   retransmittable packet before it is declared lost.
 
-time_reordering_threshold:
+time_threshold:
 : The reordering window as a fraction of max(smoothed_rtt, latest_rtt).
 
 loss_time:
