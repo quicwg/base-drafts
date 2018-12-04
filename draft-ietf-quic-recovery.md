@@ -256,7 +256,7 @@ delayed acknowledgement should be generated after processing incoming packets.
 In order to quickly complete the handshake and avoid spurious retransmissions
 due to crypto retransmission timeouts, crypto packets SHOULD use a very short
 ack delay, such as 1ms.  ACK frames MAY be sent immediately when the crypto
-stack indicates all data for that encryption level has been received.
+stack indicates all data for that packet number space has been received.
 
 ## ACK Ranges
 
@@ -456,12 +456,13 @@ Either packet indicates that the Initial was received but not processed.
 Neither packet can be treated as an acknowledgment for the Initial, but they MAY
 be used to improve the RTT estimate.
 
-#### Discarding Initial State
+#### Discarding Initial State {#discard-initial}
 
 As described in Section 4.10 of {{QUIC-TLS}}, endpoints stop sending and
 receiving Initial packets once they start exchanging Handshake packets.  At this
-point, all loss recovery state for the Initial encryption level is also
-discarded.
+point, all loss recovery state for the Initial packet number space is also
+discarded.  After discarding state, new Initial packets will not be sent and no
+additional packets will be declared lost.
 
 ### Tail Loss Probe {#tlp}
 
@@ -1085,11 +1086,12 @@ This recommendation is based on Section 4.1 of {{?RFC5681}}.
 
 ## In-Flight Packet Accounting
 
-When keys for an encryption level are discarded (see {{QUIC-TLS}}), any packets
-sent with those keys are removed from the count of bytes in flight.  No loss
-events will occur for these packets.  Note that it is expected that keys are
-discarded after those packets would be declared lost, but Initial secrets are
-destroyed earlier.
+When keys for an packet number space are discarded (see {{QUIC-TLS}}), any
+packets sent with those keys are removed from the count of bytes in flight.  No
+loss events will occur for these packets, as a result of discarding loss
+recovery state (see {{discard-initial}}).  Note that it is expected that keys
+are discarded after those packets would be declared lost, but Initial secrets
+are destroyed earlier.
 
 ## Pseudocode
 
