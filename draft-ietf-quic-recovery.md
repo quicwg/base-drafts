@@ -302,20 +302,18 @@ Ack-based loss detection implements the spirit of TCP's Fast Retransmit
 {{?RFC6675}}, and RACK {{?RACK=I-D.ietf-tcpm-rack}}. This section provides an
 overview of how these algorithms are implemented in QUIC.
 
-When an ACK frame is received that newly acknowledges a packet, a QUIC sender
-uses two thresholds to determine if prior packets should be declared lost.  A
-packet is declared lost under the following conditions:
+A packet is declared lost under the following conditions:
 
-* it has a smaller packet number than the newly acknowledged packet,
+* The packet is unacknowledged, retransmittable, and was sent prior to an
+  acknowledged packet.
 
-* it is retransmittable and unacknowledged,
-
-* either its packet number is kPacketThreshold smaller than the acknowledged
+* Either its packet number is kPacketThreshold smaller than an acknowledged
   packet ({{packet-threshold}}), or it was sent long enough in the past
   ({{time-threshold}}).
 
-The received acknowledgement indicates that a later packet was delivered, while
-the packet and time thresholds provide some tolerance for packet reordering.
+The acknowledgement of a later packet indicates that a packet sent later was
+delivered, while the packet and time thresholds provide some tolerance for
+packet reordering.
 
 Spuriously declaring packets lost leads to unnecessary retransmissions and may
 result in degraded performance due to the actions of the congestion controller
@@ -334,15 +332,14 @@ as TCP-NCR {{?RFC4653}}, to improve QUIC's reordering resilience.
 
 ### Time Threshold {#time-threshold}
 
-Ack-based loss detection uses a time threshold to determine how much reordering
-to tolerate.  The RECOMMENDED time threshold (kTimeThreshold), expressed as a
-round-trip time multiplier, is 9/8.
-
 Once a later packet has been acknowledged, an endpoint SHOULD declare an earlier
 packet lost if it was sent a threshold amount of time in the past. The time
 threshold is computed as kTimeThreshold * max(SRTT, latest_RTT).
 If packets sent prior to the largest acknowledged packet cannot yet be declared
 lost, then a timer SHOULD be set for the remaining time.
+
+The RECOMMENDED time threshold (kTimeThreshold), expressed as a round-trip time
+multiplier, is 9/8.
 
 Using max(SRTT, latest_RTT) protects from the two following cases:
 
