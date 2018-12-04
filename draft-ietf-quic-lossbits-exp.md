@@ -12,7 +12,7 @@ keyword: Internet-Draft
 stand_alone: yes
 pi: [toc, sortrefs, symrefs]
 
-author:
+authors:
   -
     ins: A. Ferrieux
     role: editor
@@ -77,13 +77,13 @@ with TCP.
 
 # Passive Segmental Loss measurement
 
-The proposed mechanism enable loss measurement from observation points on the network path throughout the lifetime of a connection. End-to end loss as well as segmental loss (upstream or downstream from the observation point) are measurable thanks to two dedicated bits in short packet headers, nammed loss bits. The loss bits therefore appear only after version negotiation and connection establishment are completed.
+The proposed mechanisms enable loss measurement from observation points on the network path throughout the lifetime of a connection. End-to end loss as well as segmental loss (upstream or downstream from the observation point) are measurable thanks to two dedicated bits in short packet headers, named loss bits. The loss bits therefore appear only after version negotiation and connection establishment are completed.
 
 ## Proposed Short Header Format Including sQuare and Retransmit Bits
 
 As of the current editor's version of {{QUIC-TRANSPORT}}, this proposal
-specifies using the seventh amost significant bit (0x04) of the first byte in
-the short header for the sQuare bit and the eight amost significant bit (0x04) of the first byte in
+specifies using the seventh amost significant bit (0x02) of the first byte in
+the short header for the sQuare bit and the eight amost significant bit (0x01) of the first byte in
 the short header for the Retransmit bit.
 
 ~~~~~
@@ -110,42 +110,35 @@ counter, as explained in {{retransmitbit}}.
 
 ## Setting the Square Bit on Outgoing Packets {#squarebit}
 
-Each endpoint maintains independantly a sQuare value, 0 or 1, during a block of N outgoing packets (e.g. N=64), and sets the sQuare  bit in the short header to the currently stored value when a packet with a short header is sent out. The sQuare value is initiated to 0 at each endpoint, client and server, at connection start.
+Each endpoint independently maintains  a sQuare value, 0 or 1, during a block of N outgoing packets (e.g. N=64), and sets the sQuare  bit in the short header to the currently stored value when a packet with a short header is sent out. The sQuare value is initiated to 0 at each endpoint, client and server, at connection start.
 This mechanism delineates thus slots of N packets with the same marking. Observation points can estimate the  upstream losses  by simply counting le number of packets during an half period of the square signal, as described in {{usage}}.
 
 
 ## Setting the Retransmit Bit on Outgoing Packets {#retransmitbit}
 
-Each endpoint, client and server, sets the Retransmit bit of short header packets to 0 or 1 according to the not-yet-disclosed-lost-packets counter.
-The not-yet-disclosed-lost-packets counter is initialized to 0 at each endpoint, client and server, at connection start. When a packet is declared lost by the QUIC transmission machinery (see https://github.com/quicwg/base-drafts/blob/ac5e4af758cd61329244297737b93c87c3889e3d/draft-ietf-quic-recovery.md#loss-detection )
-the not-yet-disclosed-lost-packets counter is incremented by 1. When a packet with a short header is sent out by an end-point, its retransmit bit is set at 0 when the not-yet-disclosed-lost-packets counter is equal to 0. Otherwise, the packet is sent out with a retransmit bit set to 1 and the not-yet-disclosed-lost-packets counter is decremented by 1.
+Each endpoint, client and server, independently maintains a not-yet-disclosed-lost-packets counter and sets the Retransmit bit of short header packets to 0 or 1 accordingly.
+The not-yet-disclosed-lost-packets counter is initialized to 0 at each endpoint, client and server, at connection start, and reflects packets considered lost by the QUIC machinery which content is pending for retranmission. When a packet is declared lost by the QUIC transmission machinery (see https://github.com/quicwg/base-drafts/blob/ac5e4af758cd61329244297737b93c87c3889e3d/draft-ietf-quic-recovery.md#loss-detection) the not-yet-disclosed-lost-packets counter is incremented by 1. When a packet with a short header is sent out by an end-point, its retransmit bit is set at 0 when the not-yet-disclosed-lost-packets counter is equal to 0. Otherwise, the packet is sent out with a retransmit bit set to 1 and the not-yet-disclosed-lost-packets counter is decremented by 1.
 
-Observation points can estimate the number of packets considered lost by the QUIC transmission machinery by observing the number of packets which retransmit bit is set to 1 in the reverse direction. This estimation is delayed at least by the uplink one way delay (in case of fast retransmit). 
-
-
+Observation points can estimate the number of packets considered lost by the QUIC transmission machinery in a given direction by observing the number of packets which retransmit bit is set to 1 in this direction. This estimation of end-to-end loss is delayed at least by the uplink one way delay (in case of fast retransmit). 
 
 
 {{?QUIC-SPIN=I-D.trammell-quic-spin}} 
 
+## Resetting sQuare Value 
+
+Each client and server resets its sQuare value to zero and initiates a new slot of 64 packets when sending the first
+packet of a given connection with a new connection ID. This reduces the risk that transient sQuare bit state can be used to link flows across connection migration or ID change.
 
 
-## Resetting Spin Value State
+## Resetting Retransmit Value 
+The not-yet-disclosed-lost-packets counter is reset at each endpoint, client and server, when sending the first packet of a given connection with a new connection ID. This reduces the risk that transient retransmit bit state can be used to link flows across connection migration or ID change.
 
-Each client and server resets it spin value to zero when sending the first
-packet of a given connection with a new connection ID. This reduces the risk
-that transient spin bit state can be used to link flows across connection
-migration or ID change.
+# Using the loss bits for Passive Loss Measurement {#usage}
 
-# Using the Spin Bit for Passive RTT Measurement {#usage}
-
-When a QUIC flow sends data continuously, the latency spin bit in each
-direction changes value once per round-trip time (RTT). An on-path observer
-can observe the time difference between edges (changes from 1 to 0 or 0 to 1)
-in the spin bit signal in a single direction to measure one sample of
+When a QUIC flow sends data continuously, the latency spin bit in each direction changes value once per round-trip time (RTT). An on-path observer can observe the time difference between edges (changes from 1 to 0 or 0 to 1) in the spin bit signal in a single direction to measure one sample of
 end-to-end RTT.
 
-An observer can store the largest observed packet number per flow, and reject
-edges that do not have a monotonically increasing packet number (greater than
+An observer can store the largest observed packet number per flow, and reject edges that do not have a monotonically increasing packet number (greater than
 the largest observed packet number).  This will avoid detecting spurious edges
 caused by reordering events that include an edge, which would lead to very low
 RTT estimates if not ignored.
@@ -204,29 +197,13 @@ on-path devices is therefore negligible.
 > **RFC Editor's Note:**  Please remove this section prior to
 > publication of a final version of this document.
 
-## Since draft-ietf-spin-exp-00
 
-Nothing yet.
 
 # Acknowledgments
 {:numbered="false"}
+ 
 
-This document is derived from {{QUIC-SPIN}}, which was the work
-of the following authors in addition to the editor of this document:
+Kazuho Square signal
 
-- Piet De Vaere, ETH Zurich
-- Roni Even, Huawei
-- Giuseppe Fioccola, Telecom Italia
-- Thomas Fossati, Nokia
-- Marcus Ihlar, Ericsson
-- Al Morton, AT&T Labs
-- Emile Stephan, Orange
 
-The QUIC Spin Bit was originally specified in a slightly different form by
-Christian Huitema.
 
-This work is partially supported by the European Commission under Horizon 2020
-grant agreement no. 688421 Measurement and Architecture for a Middleboxed
-Internet (MAMI), and by the Swiss State Secretariat for Education, Research,
-and Innovation under contract no. 15.0268. This support does not imply
-endorsement.
