@@ -45,13 +45,35 @@ normative:
         org: Mozilla
         role: editor
 
+ QUIC-RECOVERY:
+title: "QUIC Loss Detection and Congestion Control"
+abbrev: QUIC Loss Detection 
+docname: draft-ietf-quic-recovery-latest 
+date: {DATE} 
+category: std ipr: trust200902 area: Transport workgroup: QUIC
+
+stand_alone: yes pi: [toc, sortrefs, symrefs, docmapping]
+
+author:
+ins: J. Iyengar
+name: Jana Iyengar
+org: Fastly
+email: jri.ietf@gmail.com
+role: editor
+ins: I. Swett name: Ian Swett org: Google email: ianswett@google.com role: editor
+
+
+
+
+
 --- abstract
 
 This document specifies the addition of loss bits to the QUIC
 transport protocol and describes how to use them to measure and locate packet loss.
+--- note_Note_to_Readers
 
+This document specifies an experimental delta to the QUIC transport protocol. 
 --- middle
-
 # Introduction
 
 Packet  loss is  a hard  and  pervasive problem  of day-to-day  network
