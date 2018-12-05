@@ -142,13 +142,19 @@ As with TCP passive detection based on missing sequence numbers, this estimation
 Value of N 
 N should be carefully chosen : too short, it becomes very sensitive to reordering and loss. Too large, short connections may end before completion of the first square slot, preventing any loss estimation. Slots of 64 packets are suggested.
 
+
+
+
+The Retransmit bit mechanism merely reflects the number of packets considered lost by the sender QUIC stack with a slight delay. In case of fast retransmit due to repeted acknowlegments of a packet, this delay is at least equal to the uplink one way delay. It is larger otherwise.
+The sole retransmit mechanism estimates the end-to-end losses; similar to TCP passive measurement, its accuracy depends on the loss affecting the retransmitt-bit-marked packets, which are in themselves proof of previous loss.
+
+The retransmit bit mechanism may be coupled with the square signal mechanism to estimate segmental losses.
+
+
+
+
+
 Accuracy of the measurement 
-
-Mid point oberservers 
-The Retransmit bit mechanism merely reflects the number of packets considered lost by the sender QUIC stack with a slight delay, at least the uplink one way delay. In case of fast retransmit.
-
-may be coupled with the square signal
-
 Note that this measurement, as with passive RTT measurement for TCP, i). It
 therefore provides devices on path a good instantaneous estimate of the RTT as
 experienced by the application. A simple linear smoothing or moving minimum
