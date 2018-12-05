@@ -139,20 +139,21 @@ The not-yet-disclosed-lost-packets counter is reset at each endpoint, client and
 The Retransmit bit mechanism merely reflects the number of packets considered lost by the sender QUIC stack with a slight delay. In case of fast retransmit due to repeted acknowlegments of a packet, this delay is at least equal to the uplink one way delay. It is larger otherwise. The retransmit mechanism alone suffices to estimate the end-to-end losses; similar to TCP passive loss measurement, its accuracy depends on the loss affecting the retransmitt-bit-marked packets, which are in themselves proof of previous loss.
 ## Upstream loss 
 During a QUIC connection lifetime, the sQuare bit mechanism delineates slots of N packets with the same marking. When focusing on the sQuare bit of consecutive packets in a direction, this mechanism sketches a periodic sQuare signal which toggles every N packets. On-path observers can then estimate the  upstream losses by simply counting the number of packets during a half period (level 0 or level 1) of the square signal.
-Packets with a long header are not marked, but yet taken into account by the sender when counting the N outgoing packets before it toggles the square. Observers should assign long header packets to the pending slot if possible (i.e. up to N packets counted in this slot), to the next one otherwise. Thus, slots with less than N packets, whatever their header length, generally denote upstream loss. 
+Packets with a long header are not marked, but yet taken into account by the sender when counting the N outgoing packets before its next toggle. Observers should assign long header packets to the pending slot if possible (i.e. up to N packets counted in this slot), to the next one otherwise. Thus, slots with less than N packets, whatever their header length, generally denote upstream loss. 
 As with TCP passive detection based on missing sequence numbers, this estimation may become incaccurate in case of packet reordering which blurs the edges of the square signal ; heuristics may be proposed to filter out this noise in the observation points. 
 
-The packet slot size N should be carefully chosen : too short, it becomes very sensitive to reordering and loss. Too large, short connections may end before completion of the first square slot, preventing any loss estimation. Slots of 64 packets are suggested.
+The slot size N should be carefully chosen : too short, it becomes very sensitive to packet reordering and loss. Too large, short connections may end before completion of the first square slot, preventing any loss estimation. Slots of 64 packets are suggested.
 
 ## Downstream loss 
 
- The retransmit bit mechanism may be coupled with the square bit mechanism to estimate downstream losses. Indeed, passive observers can infer downstream losses by difference between end-to-end and upstream losses. This 
-
+ The retransmit bit mechanism may be coupled with the square bit mechanism to estimate downstream losses. Indeed, passive observers can infer downstream losses by difference between end-to-end and upstream losses. 
+ The sQuare bit mechanism allows for observers to compute loss measurment at the end of every half sQuare signal period (level 0 or level 1).
+ The retransmit bit mechanism provides for the end-to-end loss after reaction of the sender stack.
+ 
+ On path observers can estimate upstream and downstream loss at various scales, from the N slot level to the connection lifetime level.
  
  
- The sQuare bit mechanism allows for observers to compute loss measurment at the end of every half sQuare signal period (level x).
- The retransmit bit mechanism provides for the end-to-end loss after reaction of the sender stack, which may be later ou sooner delay than the previous one.
- On path observers can then estimate upstream and downstream loss at various scales. Note that observers should perform a loose synchronisation between these two measurements when accurate evolution of segmental loss over connection lifetime is sought so as to compare the same portion of the packet stream.
+ Note that observers should perform a loose synchronisation between the sQuare and the retransmit measurements when accurate evolution of segmental loss over connection lifetime is sought so as to compare the same portion of the packet stream.
  
  
  
@@ -162,13 +163,7 @@ This document has no actions for IANA.
 
 # Security and Privacy Considerations
 
-The spin bit is intended to expose end-to-end RTT to observers along the path,
-so the privacy considerations for the latency spin bit are essentially the
-same as those for passive RTT measurement in general. It has been shown
-{{PAM-RTT}} that RTT measurements do not provide more information for
-geolocation than is available in the most basic, freely-available IP address
-based location databases. The risk of exposure of per-flow network RTT to
-on-path devices is therefore negligible.
+The loss bits are intended to expose loss to observers along the path, so the privacy considerations for the loss bits are essentially the same as those for passive loss measurement in general. Loss gives no hint on customer geolocalisation; moreover, reset of the loss counting at conenction Id change prevent for linkability.
 
 
 # Change Log
