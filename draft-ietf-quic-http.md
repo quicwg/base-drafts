@@ -472,10 +472,11 @@ The PRIORITY (type=0x02) frame specifies the client-advised priority of a
 stream.
 
 When opening a new request stream, a PRIORITY frame MAY be sent as the first
-frame of the stream.  In order to ensure that prioritization is processed in a
-consistent order, any subsequent PRIORITY frames MUST be sent on the control
-stream.  A PRIORITY frame received after other frames on a request stream MUST
-be treated as a stream error of type HTTP_UNEXPECTED_FRAME.
+frame of the stream creating a dependency on an existing element.  In order to
+ensure that prioritization is processed in a consistent order, any subsequent
+PRIORITY frames MUST be sent on the control stream.  A PRIORITY frame received
+after other frames on a request stream MUST be treated as a stream error of type
+HTTP_UNEXPECTED_FRAME.
 
 Subsequent PRIORITY frames sent on the control stream might arrive before
 PRIORITY frames sent on a request stream due to reordering.  PRIORITY frames on
@@ -552,10 +553,11 @@ the interpretation of the associated Element ID fields.
 Note that the root of the tree cannot be referenced using a Stream ID of 0, as
 in {{!RFC7540}}; QUIC stream 0 carries a valid HTTP request.  The root of the
 tree cannot be reprioritized. A PRIORITY frame sent on a request stream that
-prioritizes any other stream MUST be treated as a stream error of type
-HTTP_MALFORMED_FRAME.  Likewise, a PRIORITY frame sent on a control stream that
-prioritizes the current stream MUST be treated as a connection error of type
-HTTP_MALFORMED_FRAME.
+prioritizes any other stream or expresses a dependency on a request with a
+greater Stream ID than the current stream MUST be treated as a stream error of
+type HTTP_MALFORMED_FRAME.  Likewise, a PRIORITY frame sent on a control stream
+that prioritizes the current stream MUST be treated as a connection error of
+type HTTP_MALFORMED_FRAME.
 
 When a PRIORITY frame claims to reference a request, the associated ID MUST
 identify a client-initiated bidirectional stream.  A server MUST treat receipt
