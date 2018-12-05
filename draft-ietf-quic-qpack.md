@@ -581,12 +581,13 @@ HTTP_CLOSED_CRITICAL_STREAM.
 
 An endpoint MUST NOT create an encoder stream if the maximum size of the
 dynamic table permitted by the peer is zero.  Observation of a peer-initiated
-encoder stream when the value is zero MUST be treated as a connection error of
-type HTTP_QPACK_ENCODER_STREAM_ERROR.
+encoder stream without sending a non-zero value for SETTINGS_HEADER_TABLE_SIZE
+zero MUST be treated as a connection error of type
+HTTP_QPACK_ENCODER_STREAM_ERROR.
 
 An endpoint MUST NOT create a decoder stream until the peer opens an encoder
-stream.  Observation of a peer-initiated decoder stream that lacks the
-corresponding encoder stream MUST be treated as a connection error of type
+stream.  Observation of a peer-initiated decoder stream when no encoder stream
+has been initiated locally MUST be treated as a connection error of type
 HTTP_QPACK_DECODER_STREAM_ERROR.
 
 This section describes the instructions which are possible on each stream type.
