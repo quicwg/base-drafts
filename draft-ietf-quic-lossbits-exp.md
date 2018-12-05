@@ -45,6 +45,7 @@ normative:
         org: Mozilla
         role: editor
 
+normative:
  QUIC-RECOVERY:
 title: "QUIC Loss Detection and Congestion Control"
 abbrev: QUIC Loss Detection 
@@ -139,7 +140,7 @@ This mechanism delineates thus slots of N packets with the same marking. Observa
 ## Setting the Retransmit Bit on Outgoing Packets {#retransmitbit}
 
 Each endpoint, client and server, independently maintains a not-yet-disclosed-lost-packets counter and sets the Retransmit bit of short header packets to 0 or 1 accordingly.
-The not-yet-disclosed-lost-packets counter is initialized to 0 at each endpoint, client and server, at connection start, and reflects packets considered lost by the QUIC machinery which content is pending for retranmission. When a packet is declared lost by the QUIC transmission machinery (see https://github.com/quicwg/base-drafts/blob/ac5e4af758cd61329244297737b93c87c3889e3d/draft-ietf-quic-recovery.md#loss-detection) the not-yet-disclosed-lost-packets counter is incremented by 1. When a packet with a short header is sent out by an end-point, its retransmit bit is set at 0 when the not-yet-disclosed-lost-packets counter is equal to 0. Otherwise, the packet is sent out with a retransmit bit set to 1 and the not-yet-disclosed-lost-packets counter is decremented by 1.
+The not-yet-disclosed-lost-packets counter is initialized to 0 at each endpoint, client and server, at connection start, and reflects packets considered lost by the QUIC machinery which content is pending for retranmission. When a packet is declared lost by the QUIC transmission machinery (see {{QUIC-RECOVERY}}) the not-yet-disclosed-lost-packets counter is incremented by 1. When a packet with a short header is sent out by an end-point, its retransmit bit is set at 0 when the not-yet-disclosed-lost-packets counter is equal to 0. Otherwise, the packet is sent out with a retransmit bit set to 1 and the not-yet-disclosed-lost-packets counter is decremented by 1.
 
 Observation points can estimate the number of packets considered lost by the QUIC transmission machinery in a given direction by observing the number of packets which retransmit bit is set to 1 in this direction. This estimation of end-to-end loss is delayed at least by the uplink one way delay (in case of fast retransmit). 
 
