@@ -45,9 +45,6 @@ normative:
         role: editor
 
 
-informative:
-
-
 --- abstract
 
 This document describes loss detection and congestion control mechanisms for
@@ -301,69 +298,47 @@ underestimation of min RTT, which in turn prevents underestimating smoothed RTT.
 ## Ack-based Detection
 
 Ack-based loss detection implements the spirit of TCP's Fast Retransmit
-{{?RFC5681}}, Early Retransmit {{?RFC5827}}, FACK, and SACK loss recovery
-{{?RFC6675}}. This section provides an overview of how these algorithms are
-implemented in QUIC.  Though both time-based loss detection and early retransmit
-use a timer, they are part of ack-based detection because they do not use a
-timer to send probes, but rather to declare packets lost.
+{{?RFC5681}}, Early Retransmit {{?RFC5827}}, FACK, SACK loss recovery
+{{?RFC6675}}, and RACK {{?RACK=I-D.ietf-tcpm-rack}}. This section provides an
+overview of how these algorithms are implemented in QUIC.
 
-### Fast Retransmit
+A packet is declared lost under the following conditions:
 
-An unacknowledged packet is marked as lost when an acknowledgment is received
-for a packet that was sent a threshold number of packets (kReorderingThreshold)
-and/or a threshold amount of time after the unacknowledged packet. Receipt of
-the acknowledgement indicates that a later packet was received, while the
-reordering threshold provides some tolerance for reordering of packets in the
-network.
+* The packet is unacknowledged, retransmittable, and was sent prior to an
+  acknowledged packet.
 
-Spuriously declaring packets lost leads to unnecessary retransmissions and
-may result in degraded performance due to the actions of the congestion
-controller upon detecting loss.  Implementations that detect spurious
-retransmissions and increase the reordering threshold in packets or time
-MAY choose to start with smaller initial reordering thresholds to minimize
-recovery latency.
+* Either its packet number is kPacketThreshold smaller than an acknowledged
+  packet ({{packet-threshold}}), or it was sent long enough in the past
+  ({{time-threshold}}).
 
-#### Packet Threshold
+The acknowledgement indicates that a packet sent later was delivered, while the
+packet and time thresholds provide some tolerance for packet reordering.
 
-The RECOMMENDED initial value for kReorderingThreshold is 3, based on
-TCP loss recovery {{?RFC5681}} {{?RFC6675}}. Some networks may exhibit higher
-degrees of reordering, causing a sender to detect spurious losses.
-Implementers MAY use algorithms developed for TCP, such as
-TCP-NCR {{?RFC4653}}, to improve QUIC's reordering resilience.
+Spuriously declaring packets lost leads to unnecessary retransmissions and may
+result in degraded performance due to the actions of the congestion controller
+upon detecting loss.  Implementations that detect spurious retransmissions and
+increase the reordering threshold in packets or time MAY choose to start with
+smaller initial reordering thresholds to minimize recovery latency.
 
-#### Time Threshold
+### Packet Threshold
 
-Time threshold loss detection uses a time threshold to determine how much
-reordering to tolerate.  In this document, the threshold is expressed as a
-fraction of an RTT, but implementations MAY experiment with absolute
-thresholds.  This may be used either as a replacement for a packet reordering
-threshold or in addition to it.
+The RECOMMENDED initial value for the packet reordering threshold
+(kPacketThreshold) is 3, based on TCP loss detection {{?RFC5681}} {{?RFC6675}}.
 
-When a larger packet is acknowledged, if it was sent more than the threshold
-after any in flight packets, those packets are immediately declared lost.
-Otherwise, a timer is set for the reordering threshold minus the time
-difference between the earliest in flight packet and the largest newly
-acknowledged packet.  Note that in some cases the timer could become longer when
-packets are acknowledged out of order. The RECOMMENDED time threshold, expressed
-as a fraction of the round-trip time (kTimeReorderingFraction), is 1/8.
+Some networks may exhibit higher degrees of reordering, causing a sender to
+detect spurious losses.  Implementers MAY use algorithms developed for TCP, such
+as TCP-NCR {{?RFC4653}}, to improve QUIC's reordering resilience.
 
-### Early Retransmit
+### Time Threshold {#time-threshold}
 
-Unacknowledged packets close to the tail may have fewer than
-kReorderingThreshold retransmittable packets sent after them.  Loss of such
-packets cannot be detected via Packet Threshold Fast Retransmit. To enable
-ack-based loss detection of such packets, receipt of an acknowledgment for
-the last outstanding retransmittable packet triggers the Early Retransmit
-process, as follows.
+Once a later packet has been acknowledged, an endpoint SHOULD declare an earlier
+packet lost if it was sent a threshold amount of time in the past. The time
+threshold is computed as kTimeThreshold * max(SRTT, latest_RTT).
+If packets sent prior to the largest acknowledged packet cannot yet be declared
+lost, then a timer SHOULD be set for the remaining time.
 
-If there are unacknowledged in-flight packets still pending, they should
-be marked as lost. To compensate for the reduced reordering resilience, the
-sender SHOULD set a timer for a small period of time. If the unacknowledged
-in-flight packets are not acknowledged during this time, then these
-packets MUST be marked as lost.
-
-An endpoint SHOULD set the timer such that a packet is marked as lost no earlier
-than 1.125 * max(SRTT, latest_RTT) since when it was sent.
+The RECOMMENDED time threshold (kTimeThreshold), expressed as a round-trip time
+multiplier, is 9/8.
 
 Using max(SRTT, latest_RTT) protects from the two following cases:
 
@@ -374,16 +349,11 @@ Using max(SRTT, latest_RTT) protects from the two following cases:
 * the latest RTT sample is higher than the SRTT, perhaps due to a sustained
   increase in the actual RTT, but the smoothed SRTT has not yet caught up.
 
-The 1.125 multiplier increases reordering resilience. Implementers MAY
-experiment with using other multipliers, bearing in mind that a lower multiplier
-reduces reordering resilience and increases spurious retransmissions, and a
-higher multiplier increases loss recovery delay.
+Implementers MAY experiment with using other reordering thresholds, including
+absolute thresholds, bearing in mind that a lower multiplier reduces reordering
+resilience and increases spurious retransmissions, and a higher multiplier
+increases loss detection delay.
 
-This mechanism is based on Early Retransmit for TCP {{?RFC5827}}. However,
-{{?RFC5827}} does not include the timer described above. Early Retransmit is
-prone to spurious retransmissions due to its reduced reordering resilience
-without the timer. This observation led Linux TCP implementers to implement a
-timer for TCP as well, and this document incorporates this advancement.
 
 ## Timeout Loss Detection
 
@@ -595,18 +565,15 @@ kMaxTLPs:
 : Maximum number of tail loss probes before an RTO expires.
   The RECOMMENDED value is 2.
 
-kReorderingThreshold:
-: Maximum reordering in packet number space before FACK style loss detection
+kPacketThreshold:
+: Maximum reordering in packets before packet threshold loss detection
   considers a packet lost. The RECOMMENDED value is 3.
 
-kTimeReorderingFraction:
-: Maximum reordering in time space before time threshold loss detection
-  considers a packet lost.  In fraction of an RTT. The RECOMMENDED value
-  is 1/8.
+kTimeThreshold:
 
-kUsingTimeLossDetection:
-: Whether time threshold loss detection is in use.  If false, uses only packet
-  threshold loss detection. The RECOMMENDED value is false.
+: Maximum reordering in time before time threshold loss detection
+  considers a packet lost. Specified as an RTT multiplier. The RECOMMENDED
+  value is 9/8.
 
 kMinTLPTimeout:
 : Minimum time in the future a tail loss probe timer may be set for.
@@ -677,14 +644,6 @@ max_ack_delay:
   received ACK frame may be larger due to late timers, reordering,
   or lost ACKs.
 
-reordering_threshold:
-: The largest packet number gap between the largest acknowledged
-  retransmittable packet and an unacknowledged
-  retransmittable packet before it is declared lost.
-
-time_reordering_fraction:
-: The reordering window as a fraction of max(smoothed_rtt, latest_rtt).
-
 loss_time:
 : The time at which the next packet will be considered lost based on early
 transmit or exceeding the reordering window in time.
@@ -703,12 +662,6 @@ follows:
    crypto_count = 0
    tlp_count = 0
    rto_count = 0
-   if (kUsingTimeLossDetection)
-     reordering_threshold = infinite
-     time_reordering_fraction = kTimeReorderingFraction
-   else:
-     reordering_threshold = kReorderingThreshold
-     time_reordering_fraction = infinite
    loss_time = 0
    smoothed_rtt = 0
    rttvar = 0
@@ -847,21 +800,21 @@ Pseudocode for SetLossDetectionTimer follows:
         time_of_last_sent_crypto_packet + timeout)
       return
     if (loss_time != 0):
-      // Early retransmit timer or time loss detection.
-      timeout = loss_time -
-        time_of_last_sent_retransmittable_packet
-    else:
-      // RTO or TLP timer
-      // Calculate RTO duration
-      timeout =
-        smoothed_rtt + 4 * rttvar + max_ack_delay
-      timeout = max(timeout, kMinRTOTimeout)
-      timeout = timeout * (2 ^ rto_count)
-      if (tlp_count < kMaxTLPs):
-        // Tail Loss Probe
-        tlp_timeout = max(1.5 * smoothed_rtt
-                           + max_ack_delay, kMinTLPTimeout)
-        timeout = min(tlp_timeout, timeout)
+      // Time threshold loss detection.
+      loss_detection_timer.set(loss_time)
+      return
+
+    // RTO or TLP timer
+    // Calculate RTO duration
+    timeout =
+      smoothed_rtt + 4 * rttvar + max_ack_delay
+    timeout = max(timeout, kMinRTOTimeout)
+    timeout = timeout * (2 ^ rto_count)
+    if (tlp_count < kMaxTLPs):
+      // Tail Loss Probe
+      tlp_timeout = max(1.5 * smoothed_rtt
+                        + max_ack_delay, kMinTLPTimeout)
+      timeout = min(tlp_timeout, timeout)
 
     loss_detection_timer.set(
       time_of_last_sent_retransmittable_packet + timeout)
@@ -881,7 +834,7 @@ Pseudocode for OnLossDetectionTimeout follows:
        RetransmitUnackedCryptoData()
        crypto_count++
      else if (loss_time != 0):
-       // Early retransmit or Time Loss Detection
+       // Time threshold loss Detection
        DetectLostPackets(largest_acked_packet)
      else if (tlp_count < kMaxTLPs):
        // Tail Loss Probe.
@@ -913,19 +866,13 @@ Pseudocode for DetectLostPackets follows:
 DetectLostPackets(largest_acked):
   loss_time = 0
   lost_packets = {}
-  delay_until_lost = infinite
-  if (kUsingTimeLossDetection):
-    delay_until_lost =
-      (1 + time_reordering_fraction) *
-          max(latest_rtt, smoothed_rtt)
-  else if (largest_acked.packet_number == largest_sent_packet):
-    // Early retransmit timer.
-    delay_until_lost = 9/8 * max(latest_rtt, smoothed_rtt)
+  delay_until_lost = kTimeThreshold *
+                     max(latest_rtt, smoothed_rtt)
   foreach (unacked < largest_acked.packet_number):
     time_since_sent = now() - unacked.time_sent
     delta = largest_acked.packet_number - unacked.packet_number
     if (time_since_sent > delay_until_lost ||
-        delta > reordering_threshold):
+        delta > kPacketThreshold):
       sent_packets.remove(unacked.packet_number)
       if (unacked.retransmittable):
         lost_packets.insert(unacked)
