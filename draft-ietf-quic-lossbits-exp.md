@@ -176,8 +176,7 @@ The loss bits are intended to expose loss to observers along the path, so the pr
 # Acknowledgments
 {:numbered="false"}
  
-
-Kazuho Square signal
+The sQuare Bit was originally specified by Kazuho Oku for RTT measurment.
 
 
 
