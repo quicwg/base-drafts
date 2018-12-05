@@ -135,27 +135,25 @@ The not-yet-disclosed-lost-packets counter is reset at each endpoint, client and
 
 # Using the loss bits for Passive Loss Measurement {#usage}
 
-When a QUIC flow sends data continuously, the latency spin bit in each direction changes value once per round-trip time (RTT). An on-path observer can observe the time difference between edges (changes from 1 to 0 or 0 to 1) in the spin bit signal in a single direction to measure one sample of end-to-end RTT.
-
-
-
-During a QUIC connection lifetime, the sQuare bit mechanism delineates slots of N packets with the same marking. When focusing on the sQuare bit of consecutive packets, this mechanism sketches a periodic sQuare signal which toggles every N packets. On-path observation points can then estimate the  upstream losses by simply counting the number of packets during a half period (level 0 or level 1) of the square signal.
-Packets with a long header are not marked, but yet taken into account by the observation point via integration in the closest slot of the sQuare signal. Thus, slots with less than N paquets, whatever their header length, generally denote upstream loss. 
-As with TCP passive detection based on missing sequence numbers, this estimation may become incaccurate in case of packet reordering which blurs the edges of the square signal ; heuristics may be proposed to filter this noise. 
+During a QUIC connection lifetime, the sQuare bit mechanism delineates slots of N packets with the same marking. When focusing on the sQuare bit of consecutive packets in a direction, this mechanism sketches a periodic sQuare signal which toggles every N packets. On-path observation points can then estimate the  upstream losses by simply counting the number of packets during a half period (level 0 or level 1) of the square signal.
+Packets with a long header are not marked, but yet taken into account by the sender when counting down the N outgoing packets before the square toggles. Observation point should assign long header packets to the pending slot if possible (i.e. number of counted packets <N in this slot), to the next one otherwise. Thus, slots with less than N paquets, whatever their header length, generally denote upstream loss. 
+As with TCP passive detection based on missing sequence numbers, this estimation may become incaccurate in case of packet reordering which blurs the edges of the square signal ; heuristics may be proposed to filter this noise in the observation points. 
 
 Value of N 
-N should be carefully chosen : too short, it becomes very sensitive to reordering and thus to spurious loss destection. Too large, short connections may end before completion of the first slot, preventing any loss estimation. Slots of 64 packets are suggested.
+N should be carefully chosen : too short, it becomes very sensitive to reordering and loss. Too large, short connections may end before completion of the first square slot, preventing any loss estimation. Slots of 64 packets are suggested.
 
+Accuracy of the measurement 
 
-Note that this measurement, as with passive RTT measurement for TCP, includes
-any transport protocol delay (e.g., delayed sending of acknowledgements)
-and/or application layer delay (e.g., waiting for a request to complete). It
+Mid point oberservers 
+The Retransmit bit mechanism merely reflects the number of packets considered lost by the sender QUIC stack with a slight delay, at least the uplink one way delay. In case of fast retransmit.
+
+may be coupled with the square signal
+
+Note that this measurement, as with passive RTT measurement for TCP, i). It
 therefore provides devices on path a good instantaneous estimate of the RTT as
 experienced by the application. A simple linear smoothing or moving minimum
 filter can be applied to the stream of RTT information to get a more stable
 estimate.
-
-
 
 Simple heuristics based on the observed data rate per flow or changes in the
 RTT series can be used to reject bad RTT samples due to application or flow
