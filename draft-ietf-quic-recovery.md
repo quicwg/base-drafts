@@ -302,10 +302,9 @@ Ack-based loss detection implements the spirit of TCP's Fast Retransmit
 {{?RFC6675}}, and RACK {{?RACK=I-D.ietf-tcpm-rack}}. This section provides an
 overview of how these algorithms are implemented in QUIC.
 
-A packet is declared lost under the following conditions:
+A packet is declared lost if it meets both of the following conditions:
 
-* The packet is unacknowledged, retransmittable, and was sent prior to an
-  acknowledged packet.
+* The packet is in-flight, and was sent prior to an acknowledged packet.
 
 * Either its packet number is kPacketThreshold smaller than an acknowledged
   packet ({{packet-threshold}}), or it was sent long enough in the past
@@ -875,7 +874,7 @@ DetectLostPackets(largest_acked):
     if (time_since_sent > delay_until_lost ||
         delta > kPacketThreshold):
       sent_packets.remove(unacked.packet_number)
-      if (unacked.retransmittable):
+      if (unacked.in_flight):
         lost_packets.insert(unacked)
     else if (loss_time == 0 && delay_until_lost != infinite):
       loss_time = now() + delay_until_lost - time_since_sent
