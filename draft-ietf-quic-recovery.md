@@ -687,8 +687,8 @@ Pseudocode for OnPacketSent follows:
    sent_packets[packet_number].time = now
    sent_packets[packet_number].retransmittable = retransmittable
    sent_packets[packet_number].in_flight = in_flight
-   if retransmittable:
-     if is_crypto_packet:
+   if (retransmittable):
+     if (is_crypto_packet):
        time_of_last_sent_crypto_packet = now
      time_of_last_sent_retransmittable_packet = now
      OnPacketSentCC(sent_bytes)
@@ -716,7 +716,7 @@ Pseudocode for OnAckReceived and UpdateRtt follow:
     for acked_packet in newly_acked_packets:
       OnPacketAcked(acked_packet.packet_number)
 
-    if !newly_acked_packets.empty():
+    if (!newly_acked_packets.empty()):
       // Find the smallest newly acknowledged packet
       smallest_newly_acked =
         FindSmallestNewlyAcked(newly_acked_packets)
@@ -778,6 +778,9 @@ QUIC loss detection uses a single timer for all timeout loss detection.  The
 duration of the timer is based on the timer's mode, which is set in the packet
 and timer events further below.  The function SetLossDetectionTimer defined
 below shows how the single timer is set.
+
+This algorithm may result in the timer being set in the past, particularly if
+timers wake up late. Timers set in the past SHOULD fire immediately.
 
 Pseudocode for SetLossDetectionTimer follows:
 
@@ -867,26 +870,37 @@ Pseudocode for DetectLostPackets follows:
 DetectLostPackets(largest_acked):
   loss_time = 0
   lost_packets = {}
-  delay_until_lost = kTimeThreshold *
-                     max(latest_rtt, smoothed_rtt)
-  foreach (unacked < largest_acked.packet_number):
-    time_since_sent = now() - unacked.time_sent
-    delta = largest_acked.packet_number - unacked.packet_number
-    if (time_since_sent > delay_until_lost ||
-        delta > kPacketThreshold):
+  loss_delay = kTimeThreshold * max(latest_rtt, smoothed_rtt)
+
+  // Packets sent before this time are deemed lost.
+  lost_send_time = now() - loss_delay
+
+  // Packets with packet numbers before this are deemed lost.
+  lost_pn = largest_acked.packet_number - kPacketThreshold
+
+  foreach unacked in sent_packets:
+    if (unacked.packet_number > largest_acked.packet_number):
+      continue
+
+    // Mark packet as lost, or set time when it should be marked.
+    if (unacked.time_sent <= lost_send_time ||
+        unacked.packet_number <= lost_pn):
       sent_packets.remove(unacked.packet_number)
       if (unacked.retransmittable):
         lost_packets.insert(unacked)
-    else if (loss_time == 0 && delay_until_lost != infinite):
-      loss_time = now() + delay_until_lost - time_since_sent
+    else if (loss_time == 0):
+      loss_time = unacked.time_sent + loss_delay
+    else:
+      loss_time = min(loss_time, unacked.time_sent + loss_delay)
 
   // Inform the congestion controller of lost packets and
-  // lets it decide whether to retransmit immediately.
+  // let it decide whether to retransmit immediately.
   if (!lost_packets.empty()):
     OnPacketsLost(lost_packets)
 ~~~
 
 ## Discussion
+
 The majority of constants were derived from best common practices among widely
 deployed TCP implementations on the internet.  Exceptions follow.
 
