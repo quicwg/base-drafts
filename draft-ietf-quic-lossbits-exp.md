@@ -72,7 +72,9 @@ transport protocol and describes how to use them to measure and locate packet lo
 --- note_Note_to_Readers
 
 This document specifies an experimental delta to the QUIC transport protocol. 
+
 --- middle
+
 # Introduction
 
 Packet  loss is  a hard  and  pervasive problem  of day-to-day  network
